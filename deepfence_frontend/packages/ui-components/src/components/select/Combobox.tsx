@@ -262,7 +262,13 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                         {startIcon ? (
                           <div className="w-4 h-4 shrink-0">{startIcon}</div>
                         ) : null}
-                        <div className="pl-1.5">
+                        <div
+                          className={cn('pl-1.5', {
+                            'dark:text-df-gray-600': !getDisplayValue?.(
+                              value as unknown as any,
+                            ),
+                          })}
+                        >
                           {getDisplayValue?.(value as unknown as any) ?? placeholder}
                         </div>
                         <div className="h-2.5 w-2.5 shrink-0 dark:text-text-text-and-icon ml-auto mr-1.5">

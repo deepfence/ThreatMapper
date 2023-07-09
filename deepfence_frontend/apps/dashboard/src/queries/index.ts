@@ -2,6 +2,7 @@ import { mergeQueryKeys } from '@lukemorales/query-key-factory';
 import { QueryKey } from '@tanstack/react-query';
 
 import { queryClient } from '@/queries/client';
+import { integrationQueries } from '@/queries/integration';
 import { lookupQueries } from '@/queries/lookup';
 import { malwareQueries } from '@/queries/malware';
 import { onboardQueries } from '@/queries/onboard';
@@ -33,6 +34,7 @@ export const queries = mergeQueryKeys(
   malwareQueries,
   registryQueries,
   postureQueries,
+  integrationQueries,
   lookupQueries,
   settingQueries,
   threatQueries,

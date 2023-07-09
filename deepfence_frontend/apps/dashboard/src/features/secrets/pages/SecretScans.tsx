@@ -3,8 +3,6 @@ import { useIsFetching } from '@tanstack/react-query';
 import cx from 'classnames';
 import { capitalize } from 'lodash-es';
 import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { IconContext } from 'react-icons';
-import { HiArchive, HiDownload } from 'react-icons/hi';
 import {
   ActionFunctionArgs,
   generatePath,
@@ -253,7 +251,6 @@ const ActionDropdown = ({
       content={
         <>
           <DropdownItem
-            className="text-sm"
             onClick={(e) => {
               if (!isScanComplete(scanStatus)) return;
               e.preventDefault();
@@ -265,12 +262,10 @@ const ActionDropdown = ({
                 'opacity-60 dark:opacity-30 cursor-default': !isScanComplete(scanStatus),
               })}
             >
-              <HiDownload />
               Download Report
             </span>
           </DropdownItem>
           <DropdownItem
-            className="text-sm"
             onClick={(e) => {
               if (!isScanComplete(scanStatus)) return;
               e.preventDefault();
@@ -283,7 +278,6 @@ const ActionDropdown = ({
                 'opacity-60 dark:opacity-30 cursor-default': !isScanComplete(scanStatus),
               })}
             >
-              <HiDownload />
               Start scan
             </span>
           </DropdownItem>
@@ -295,12 +289,7 @@ const ActionDropdown = ({
               setShowDeleteDialog(true);
             }}
           >
-            <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
-              <IconContext.Provider
-                value={{ className: 'text-red-700 dark:text-red-400' }}
-              >
-                <HiArchive />
-              </IconContext.Provider>
+            <span className="text-red-700 dark:text-status-error dark:hover:text-[#C45268]">
               Delete
             </span>
           </DropdownItem>

@@ -1,31 +1,26 @@
 import { Suspense, useState } from 'react';
-import { IconContext } from 'react-icons';
-import { FaBook, FaBullhorn, FaCopyright, FaFire } from 'react-icons/fa';
-import { HiDownload, HiOutlineChevronRight } from 'react-icons/hi';
-import { useLoaderData } from 'react-router-dom';
-import { Card } from 'ui-components';
+import { Button, Card, Separator } from 'ui-components';
 
-import { ModelIntegrationListResp } from '@/api/generated';
-import { ErrorBoundary } from '@/components/error/ErrorBoundary';
-import { LinkButton } from '@/components/LinkButton';
-import {
-  // AwsSecurityHub,
-  ElasticSearch,
-  Email,
-  GoogleChronicle,
-  HttpEndpoint,
-  Jira,
-  MicrosoftTeams,
-  PagerDuty,
-  S3,
-  Slack,
-  Splunk,
-  SumoLogic,
-} from '@/constants/logos';
+import { DFLink } from '@/components/DFLink';
+import { DownloadReportIcon } from '@/components/icons/integration/DownloadReport';
+import { ElasticsearchIcon } from '@/components/icons/integration/Elasticsearch';
+import { EmailIcon } from '@/components/icons/integration/Email';
+import { GoogleChronicleIcon } from '@/components/icons/integration/GoogleChronicle';
+import { HttpIcon } from '@/components/icons/integration/Http';
+import { JiraIcon } from '@/components/icons/integration/Jira';
+import { PagerDutyIcon } from '@/components/icons/integration/PagerDuty';
+import { S3ArchivalIcon } from '@/components/icons/integration/S3Archival';
+import { SlackIcon } from '@/components/icons/integration/Slack';
+import { SplunkIcon } from '@/components/icons/integration/Splunk';
+import { SumoLogicIcon } from '@/components/icons/integration/SumoLogic';
+import { TeamsIcon } from '@/components/icons/integration/Teams';
+import { AmazonECRRegistryIcon } from '@/components/icons/registries/AmazonEcr';
+import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
 import { IntegrationType } from '@/features/integrations/components/IntegrationForm';
-import { DFAwait } from '@/utils/suspense';
+import { useGetReports } from '@/features/integrations/pages/DownloadReport';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
-import { loader } from './IntegrationAdd';
+import { useListIntegrations } from './IntegrationAdd';
 
 export const integrationTypeToNameMapping: { [key: string]: string } = {
   slack: 'Slack',
@@ -42,282 +37,276 @@ export const integrationTypeToNameMapping: { [key: string]: string } = {
   email: 'Email',
 };
 
+type Type = {
+  name: string;
+  id: string;
+  icon: JSX.Element;
+  path: string;
+};
+
 const IntegrationsData = [
   {
     name: 'Notification',
-    icon: (
-      <>
-        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-400',
-            }}
-          >
-            <FaBullhorn />
-          </IconContext.Provider>
-        </div>
-      </>
-    ),
     types: [
       {
         name: integrationTypeToNameMapping[IntegrationType.slack],
         id: IntegrationType.slack,
-        icon: <img src={Slack} alt="Slack Logo" />,
+        icon: <SlackIcon />,
         path: '/integrations/notifications/add/slack',
       },
       {
         name: integrationTypeToNameMapping[IntegrationType.microsoftTeams],
         id: IntegrationType.microsoftTeams,
-        icon: <img src={MicrosoftTeams} alt="MicrosoftTeams Logo" />,
+        icon: <TeamsIcon />,
         path: '/integrations/notifications/add/teams',
       },
       {
         name: integrationTypeToNameMapping[IntegrationType.pagerDuty],
         id: IntegrationType.pagerDuty,
-        icon: <img src={PagerDuty} alt="PagerDuty Logo" />,
+        icon: <PagerDutyIcon />,
         path: '/integrations/notifications/add/pagerduty',
       },
       {
         name: integrationTypeToNameMapping[IntegrationType.httpEndpoint],
         id: IntegrationType.httpEndpoint,
-        icon: <img src={HttpEndpoint} alt="HttpEndpoint Logo" />,
+        icon: <HttpIcon />,
         path: '/integrations/notifications/add/http_endpoint',
       },
       {
         name: integrationTypeToNameMapping[IntegrationType.email],
         id: IntegrationType.email,
-        icon: <img src={Email} alt="Email Logo" />,
+        icon: <EmailIcon />,
         path: '/integrations/notifications/add/email',
       },
     ],
   },
   {
     name: 'SIEM/SOAR',
-    icon: (
-      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-        <IconContext.Provider
-          value={{
-            className: 'text-blue-600 dark:text-blue-400',
-          }}
-        >
-          <FaBook />
-        </IconContext.Provider>
-      </div>
-    ),
     types: [
       {
         name: integrationTypeToNameMapping[IntegrationType.splunk],
         id: IntegrationType.splunk,
-        icon: <img src={Splunk} alt="Splunk Logo" />,
+        icon: <SplunkIcon />,
         path: '/integrations/seim/add/splunk',
       },
       {
         name: integrationTypeToNameMapping[IntegrationType.elasticsearch],
         id: IntegrationType.elasticsearch,
-        icon: <img src={ElasticSearch} alt="ElasticSearch Logo" />,
+        icon: <ElasticsearchIcon />,
         path: '/integrations/seim/add/elasticsearch',
       },
       {
         name: integrationTypeToNameMapping[IntegrationType.sumoLogic],
         id: IntegrationType.sumoLogic,
-        icon: <img src={SumoLogic} alt="SumoLogic Logo" />,
+        icon: <SumoLogicIcon />,
         path: '/integrations/seim/add/sumologic',
       },
       {
         name: integrationTypeToNameMapping[IntegrationType.googleChronicle],
         id: IntegrationType.googleChronicle,
-        icon: <img src={GoogleChronicle} alt="GoogleChronicle Logo" />,
+        icon: <GoogleChronicleIcon />,
         path: '/integrations/seim/add/googlechronicle',
       },
-      // {
-      //   name: integrationTypeToNameMapping[IntegrationType.awsSecurityHub],
-      //   id: IntegrationType.awsSecurityHub,
-      //   icon: <img src={AwsSecurityHub} alt="AwsSecurityHub Logo" />,
-      //   path: '/integrations/seim/add/aws_security_hub',
-      // },
+      {
+        name: integrationTypeToNameMapping[IntegrationType.awsSecurityHub],
+        id: IntegrationType.awsSecurityHub,
+        icon: <AmazonECRRegistryIcon />,
+        path: '/integrations/seim/add/aws_security_hub',
+      },
     ],
   },
   {
     name: 'Ticketing',
-    icon: (
-      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 flex items-center justify-center rounded-sm">
-        <IconContext.Provider
-          value={{
-            className: 'text-blue-600 dark:text-blue-400',
-          }}
-        >
-          <FaCopyright />
-        </IconContext.Provider>
-      </div>
-    ),
     types: [
       {
         name: integrationTypeToNameMapping[IntegrationType.jira],
         id: IntegrationType.jira,
-        icon: <img src={Jira} alt="Jira Logo" />,
+        icon: <JiraIcon />,
         path: '/integrations/ticketing/add/jira',
       },
     ],
   },
   {
     name: 'Archival',
-    icon: (
-      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 flex items-center justify-center rounded-sm">
-        <IconContext.Provider
-          value={{
-            className: 'text-blue-600 dark:text-blue-400',
-          }}
-        >
-          <FaFire />
-        </IconContext.Provider>
-      </div>
-    ),
     types: [
       {
         name: integrationTypeToNameMapping[IntegrationType.s3],
         id: IntegrationType.s3,
-        icon: <img src={S3} alt="AWS S3 Logo" />,
+        icon: <S3ArchivalIcon />,
         path: '/integrations/archival/add/s3',
       },
     ],
   },
 ];
 
-const Integrations = () => {
-  const loaderData = useLoaderData() as {
-    data: ModelIntegrationListResp[];
-  };
+const Count = ({
+  type,
+  setError,
+}: {
+  type: Type;
+  setError: React.Dispatch<React.SetStateAction<string | undefined>>;
+}) => {
+  const { data: list } = useListIntegrations();
+  const { data = [], message } = list ?? {};
 
+  if (message && message.length) {
+    setError(message);
+    throw new Error();
+  }
+
+  const len = data.filter(
+    (integration) => integration.integration_type === type.id,
+  ).length;
+  return (
+    <div className="flex items-center gap-x-2 mt-2">
+      <span className="text-h2 dark:text-text-input-value">{len}</span>
+      <span className="text-p7 dark:text-text-text-and-icon">
+        {`Connection${len > 1 ? 's' : ''}`}
+      </span>
+    </div>
+  );
+};
+const Type = ({
+  type,
+  setError,
+}: {
+  type: Type;
+  setError: React.Dispatch<React.SetStateAction<string | undefined>>;
+}) => {
+  return (
+    <div className="flex flex-col">
+      <DFLink to={type.path} unstyled>
+        <h4 className="text-t4 uppercase dark:text-text-input-value dark:hover:text-text-link">
+          {type.name}
+        </h4>
+      </DFLink>
+      <Suspense
+        fallback={
+          <div className="flex items-center gap-x-2 mt-2">
+            <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-2 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          </div>
+        }
+      >
+        <Count type={type} setError={setError} />
+      </Suspense>
+    </div>
+  );
+};
+const Integrations = () => {
   const [error, setError] = useState<string>();
 
   return (
     <>
-      <div className="flex p-2 w-full shadow bg-white dark:bg-gray-800 items-center">
-        <span className="text-md font-medium text-gray-700 dark:text-gray-200">
+      <div className="flex py-2 w-full bg-white dark:bg-bg-breadcrumb-bar">
+        <span className="dark:text-text-input-value pl-6 flex items-center text-sm leading-[30px]">
+          <span className="w-4 h-4 mr-1.5">
+            <IntegrationsIcon />
+          </span>
           Integrations
         </span>
       </div>
-      <div className="p-2 gap-y-4 flex flex-col">
-        <Card className="w-fit">
-          <div className="flex items-center">
-            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 flex items-center justify-center rounded-sm">
-              <IconContext.Provider
-                value={{
-                  className: 'text-blue-600 dark:text-blue-400',
-                }}
-              >
-                <HiDownload />
-              </IconContext.Provider>
-            </div>
-            <h2 className="px-4 tracking-wider text-gary-900 dark:text-gray-200 font-semibold">
-              Reports Download
-            </h2>
-            <div className="px-2">
-              <LinkButton to="/integrations/download/report" sizing="sm">
-                Generate and download PDF/Excel Reports&nbsp;
-                <HiOutlineChevronRight />
-              </LinkButton>
-            </div>
-          </div>
-        </Card>
-        <ErrorBoundary
-          fallback={
-            <div>
-              <p className="text-red-500 text-sm">{error}</p>
-            </div>
-          }
-        >
-          {IntegrationsData.map((integration) => {
-            return (
-              <section key={integration.name} className="flex flex-col">
-                <div className="flex items-center">
-                  <IconContext.Provider
-                    value={{
-                      className: 'w-4 h-4',
-                    }}
-                  >
-                    {integration.icon}
-                  </IconContext.Provider>
-                  <h2 className="px-4 tracking-wider text-gary-900 dark:text-gray-200 font-semibold">
-                    {integration.name}
-                  </h2>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {integration?.types?.map((type) => {
-                    return (
-                      <Card key={type.name} className="p-2 flex flex-col shrink-0 pb-3">
-                        <div className="flex items-center justify-between w-full">
-                          <h4 className="text-gray-900 font-medium text-sm dark:text-white mr-4">
-                            {type.name}
-                          </h4>
-                          <div className="flex ml-auto">
-                            <LinkButton to={type.path} sizing="xs">
-                              <>
-                                Go to details&nbsp;
-                                <HiOutlineChevronRight />
-                              </>
-                            </LinkButton>
-                          </div>
+      <div className="m-4 p-2 gap-y-6 flex flex-col">
+        {IntegrationsData.map((integration) => {
+          return (
+            <section key={integration.name} className="flex flex-col">
+              <h2 className="uppercase text-t3 dark:text-text-input-value">
+                {integration.name}
+              </h2>
+              <div className="mt-2 flex flex-wrap gap-4">
+                {integration?.types?.map((type) => {
+                  return (
+                    <Card
+                      key={type.name}
+                      className="p-3 flex flex-col shrink-0 min-w-[208px]"
+                    >
+                      <div className="flex items-center gap-x-6">
+                        <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
+                          <span className="h-9 w-9">{type.icon}</span>
                         </div>
-                        <div className="flex items-center gap-x-6 mt-2">
-                          <div className="border-r border-gray-200 dark:border-gray-700">
-                            <div className="px-4 flex justify-center items-center h-8 w-20 m-w-[32px] m-h-[32px]">
-                              {type.icon}
-                            </div>
-                          </div>
-                          <Suspense
-                            fallback={
-                              <div className="w-16">
-                                <div className="h-8 w-4 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                                <div className="mt-2 h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                              </div>
-                            }
-                          >
-                            <DFAwait resolve={loaderData?.data}>
-                              {(resolvedData: {
-                                data?: ModelIntegrationListResp[];
-                                message?: string;
-                              }) => {
-                                const { data = [], message } = resolvedData ?? {};
-
-                                if (message && message.length) {
-                                  setError(message);
-                                  throw new Error();
-                                }
-
-                                const len = data.filter(
-                                  (integration) =>
-                                    integration.integration_type === type.id,
-                                ).length;
-
-                                return (
-                                  <div className="flex flex-col">
-                                    <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
-                                      {len}
-                                    </span>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                                      {`Connection${len > 1 ? 's' : ''}`}
-                                    </span>
-                                  </div>
-                                );
-                              }}
-                            </DFAwait>
-                          </Suspense>
-                        </div>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </section>
-            );
-          })}
-        </ErrorBoundary>
+                        <Type setError={setError} type={type} />
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+        <Separator className="dark:bg-bg-grid-border h-px w-full" />
+        <DownloadReport />
       </div>
     </>
   );
 };
 
+const ReportCount = () => {
+  const { data } = useGetReports();
+  const reportCount = data?.data?.length ?? 0;
+
+  return (
+    <div className="flex gap-x-2 items-center">
+      {reportCount > 0 ? (
+        <DFLink to={'/integrations/download/report'}>
+          <span className="text-h2">{reportCount}</span>
+        </DFLink>
+      ) : (
+        <span className="text-h2">0</span>
+      )}
+
+      <span className="text-p7">Reports generated</span>
+    </div>
+  );
+};
+const ReportCountSkeleton = () => {
+  return (
+    <div className="animate-pulse flex gap-x-2 items-center">
+      <div className="dark:bg-bg-grid-default rounded-md">
+        <div className="w-4 h-6"></div>
+      </div>
+      <div className="dark:bg-bg-grid-default rounded-md">
+        <div className="w-16 h-2"></div>
+      </div>
+    </div>
+  );
+};
+const DownloadReport = () => {
+  const { navigate } = usePageNavigation();
+
+  return (
+    <div>
+      <h2 className="uppercase text-t3 dark:text-text-input-value">Download reports</h2>
+      <div className="mt-2 flex gap-x-4 items-center">
+        <div className="flex flex-col w-fit min-w-[208px]">
+          <Card className=" p-3 flex shrink-0 items-center dark:text-text-text-and-icon gap-x-4">
+            <span className="h-9 w-9 ">
+              <DownloadReportIcon />
+            </span>
+            <Suspense fallback={<ReportCountSkeleton />}>
+              <ReportCount />
+            </Suspense>
+          </Card>
+        </div>
+        <Button
+          className="self-center"
+          size="md"
+          type="button"
+          onClick={() => {
+            navigate('/integrations/download/report/create');
+          }}
+          startIcon={
+            <span className="w-2 h-2 ">
+              <DownloadReportIcon />
+            </span>
+          }
+        >
+          Create New Report
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 export const module = {
   element: <Integrations />,
-  loader,
 };

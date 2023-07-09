@@ -2,8 +2,6 @@ import { useSuspenseQuery } from '@suspensive/react-query';
 import { useIsFetching } from '@tanstack/react-query';
 import { capitalize } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
-import { IconContext } from 'react-icons';
-import { HiExternalLink } from 'react-icons/hi';
 import { Outlet, useSearchParams } from 'react-router-dom';
 import {
   Badge,
@@ -23,6 +21,7 @@ import { ModelVulnerability } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { FilterIcon } from '@/components/icons/common/Filter';
+import { PopOutIcon } from '@/components/icons/common/PopOut';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { CveCVSSScore, SeverityBadge } from '@/components/SeverityBadge';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
@@ -251,13 +250,9 @@ const UniqueTable = () => {
           if (!info.getValue().length) return '-';
           return (
             <DFLink href={info.getValue()} target="_blank">
-              <IconContext.Provider
-                value={{
-                  className: 'w-4 h-4',
-                }}
-              >
-                <HiExternalLink />
-              </IconContext.Provider>
+              <div className="w-4 h-4">
+                <PopOutIcon />
+              </div>
             </DFLink>
           );
         },

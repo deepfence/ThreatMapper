@@ -4,12 +4,12 @@ import { capitalize } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
-  Form,
   generatePath,
   useFetcher,
   useParams,
   useSearchParams,
 } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
   Badge,
   Breadcrumb,
@@ -41,6 +41,7 @@ import { FilterBadge } from '@/components/filters/FilterBadge';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
+import { PlusIcon } from '@/components/icons/common/Plus';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { CLOUDS } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
@@ -66,6 +67,7 @@ import {
   getPageFromSearchParams,
   useSortingState,
 } from '@/utils/table';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 enum ActionEnumType {
   DELETE = 'delete',
@@ -486,19 +488,39 @@ const BulkActions = ({
   onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   disabled: boolean;
 }) => {
+  const { navigate } = usePageNavigation();
+  const params = useParams();
+
   return (
     <>
-      <Form>
-        <Button
-          color="default"
-          variant="flat"
-          size="sm"
-          disabled={disabled}
-          onClick={onClick}
-        >
-          Start scan
-        </Button>
-      </Form>
+      <Button
+        color="default"
+        variant="flat"
+        size="sm"
+        startIcon={<PlusIcon />}
+        onClick={() => {
+          if (!params?.nodeType) {
+            toast.error('Provide correct posture account');
+            return;
+          }
+          navigate(
+            generatePath('/posture/add-connection/:account', {
+              account: encodeURIComponent(params.nodeType ?? ''),
+            }),
+          );
+        }}
+      >
+        ADD NEW ACCOUNT
+      </Button>
+      <Button
+        color="default"
+        variant="flat"
+        size="sm"
+        disabled={disabled}
+        onClick={onClick}
+      >
+        Start scan
+      </Button>
     </>
   );
 };
@@ -801,7 +823,7 @@ const Accounts = () => {
   return (
     <div>
       <Header />
-      <div className="mx-4">
+      <div className="m-4">
         <div className="flex py-2 items-center">
           <BulkActions
             disabled={Object.keys(rowSelectionState).length === 0}

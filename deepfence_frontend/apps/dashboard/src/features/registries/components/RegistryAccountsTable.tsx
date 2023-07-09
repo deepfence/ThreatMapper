@@ -1,6 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useMemo } from 'react';
-import {} from 'react-icons/hi';
 import { generatePath, useParams } from 'react-router-dom';
 import {
   createColumnHelper,

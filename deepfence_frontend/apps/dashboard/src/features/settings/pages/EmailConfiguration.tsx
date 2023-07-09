@@ -18,7 +18,7 @@ import {
 import { getSettingsApiClient } from '@/api/api';
 import { ModelEmailConfigurationAdd, ModelEmailConfigurationResp } from '@/api/generated';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
-import { invalidateQueries, queries } from '@/queries';
+import { invalidateAllQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 
 type AddEmailConfigurationReturnType = {
@@ -120,7 +120,7 @@ export const action = async ({
       throw addResponse.error;
     }
   }
-  invalidateQueries(queries.setting.getEmailConfiguration._def);
+  invalidateAllQueries();
   return {
     success: true,
   };

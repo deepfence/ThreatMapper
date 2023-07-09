@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
@@ -13,6 +13,7 @@ export type Props = {
   defaultSelectedContainers?: string[];
   valueKey?: 'nodeId' | 'hostName';
   active?: boolean;
+  triggerVariant?: 'select' | 'button';
 };
 const PAGE_SIZE = 15;
 export const SearchableContainerList = ({
@@ -22,12 +23,17 @@ export const SearchableContainerList = ({
   defaultSelectedContainers,
   valueKey = 'nodeId',
   active,
+  triggerVariant,
 }: Props) => {
   const [searchText, setSearchText] = useState('');
 
   const [selectedContainers, setSelectedContainers] = useState<string[]>(
     defaultSelectedContainers ?? [],
   );
+
+  const isSelectVariantType = useMemo(() => {
+    return triggerVariant === 'select';
+  }, [triggerVariant]);
 
   useEffect(() => {
     setSelectedContainers(defaultSelectedContainers ?? []);
@@ -72,7 +78,14 @@ export const SearchableContainerList = ({
           isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="containerFilter"
-        getDisplayValue={() => 'Container'}
+        triggerVariant={triggerVariant || 'button'}
+        label={isSelectVariantType ? 'Container' : undefined}
+        getDisplayValue={() =>
+          isSelectVariantType && selectedContainers.length > 0
+            ? `${selectedContainers.length} selected`
+            : null
+        }
+        placeholder="Select container"
         multiple
         value={selectedContainers}
         onChange={(values) => {

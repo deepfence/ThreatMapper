@@ -14,7 +14,7 @@ import { getSettingsApiClient } from '@/api/api';
 import { PostgresqlDbScheduler } from '@/api/generated';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { TruncatedText } from '@/components/TruncatedText';
-import { invalidateQueries, queries } from '@/queries';
+import { invalidateAllQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 
@@ -58,7 +58,7 @@ export const action = async ({
   }
 
   toast('Scheduled job status updated sucessfully');
-  invalidateQueries(queries.setting.listScheduledJobs._def);
+  invalidateAllQueries();
   return {
     success: true,
   };

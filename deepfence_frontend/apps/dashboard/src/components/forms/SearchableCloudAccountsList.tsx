@@ -12,6 +12,7 @@ export type SearchableCloudAccountsListProps = {
   defaultSelectedAccounts?: string[];
   valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
+  triggerVariant?: 'select' | 'button';
 };
 
 const PAGE_SIZE = 15;
@@ -22,6 +23,7 @@ export const SearchableCloudAccountsList = ({
   defaultSelectedAccounts,
   valueKey = 'nodeId',
   active,
+  triggerVariant,
 }: SearchableCloudAccountsListProps) => {
   const [searchText, setSearchText] = useState('');
 
@@ -68,6 +70,7 @@ export const SearchableCloudAccountsList = ({
         value={selectedAccounts.length}
       />
       <Combobox
+        triggerVariant={triggerVariant}
         startIcon={
           isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }

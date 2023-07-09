@@ -1,22 +1,38 @@
-import { ActionFunctionArgs, useParams } from 'react-router-dom';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense, useCallback, useState } from 'react';
+import {
+  ActionFunctionArgs,
+  FetcherWithComponents,
+  useFetcher,
+  useParams,
+} from 'react-router-dom';
 import { toast } from 'sonner';
+import {
+  Button,
+  Modal,
+  SlidingModal,
+  SlidingModalCloseButton,
+  SlidingModalHeader,
+  TableSkeleton,
+} from 'ui-components';
 
 import { getIntegrationApiClient } from '@/api/api';
 import {
+  ApiDocsBadRequestResponse,
   ModelIntegrationListResp,
   ModelNodeIdentifier,
   ModelNodeIdentifierNodeTypeEnum,
   ReportersFieldsFilters,
 } from '@/api/generated';
+import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
+import { PlusIcon } from '@/components/icons/common/Plus';
+import { integrationTypeToNameMapping } from '@/features/integrations/pages/Integrations';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { invalidateAllQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
 
 import { IntegrationForm, IntegrationType } from '../components/IntegrationForm';
 import { IntegrationTable } from '../components/IntegrationTable';
-
-type LoaderDataType = {
-  data: ReturnType<typeof getIntegrations>;
-};
 
 export const CLOUD_TRAIL_ALERT = 'CloudTrail Alert';
 export const USER_ACTIVITIES = 'User Activities';
@@ -24,6 +40,7 @@ export const USER_ACTIVITIES = 'User Activities';
 export enum ActionEnumType {
   DELETE = 'delete',
   ADD = 'add',
+  CONFIRM_DELETE = 'confirm_delete',
 }
 const severityMap: {
   [key: string]: string;
@@ -33,37 +50,13 @@ const severityMap: {
   Malware: 'file_severity',
   Compliance: 'status',
 };
-const getIntegrations = async (): Promise<{
-  message?: string;
-  data?: ModelIntegrationListResp[];
-}> => {
-  const listIntegrationApi = apiWrapper({
-    fn: getIntegrationApiClient().listIntegration,
-  });
-  const integrationResponse = await listIntegrationApi();
-  if (!integrationResponse.ok) {
-    if (integrationResponse.error.response.status === 403) {
-      return {
-        message: 'You do not have enough permissions to view integrations',
-      };
-    } else {
-      return {
-        message: 'Error in getting integrations',
-      };
-    }
-  }
 
-  return {
-    data: integrationResponse.value,
-  };
-};
-
-export const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
-  return typedDefer({
-    data: getIntegrations(),
+export const useListIntegrations = () => {
+  return useSuspenseQuery({
+    ...queries.integration.listIntegrations(),
+    keepPreviousData: true,
   });
 };
-
 const getConfigBodyNotificationType = (formData: FormData, integrationType: string) => {
   const formBody = Object.fromEntries(formData);
 
@@ -85,7 +78,7 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
     case IntegrationType.httpEndpoint:
       return {
         url: formBody.apiUrl,
-        auth_key: formBody.authorizationKey,
+        auth_header: formBody.authorizationKey,
       };
     case IntegrationType.email:
       return {
@@ -112,12 +105,21 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
         url: formBody.url,
         auth_header: formBody.authKey,
       };
-    case IntegrationType.awsSecurityHub:
+    case IntegrationType.awsSecurityHub: {
+      const selectedAccountsLength = Number(formData.get('selectedCloudAccountsLength'));
+      const accounts = [];
+      if (selectedAccountsLength > 0) {
+        for (let i = 0; i < selectedAccountsLength; i++) {
+          accounts.push(formData.get(`cloudAccountsFilter[${i}]`) as string);
+        }
+      }
       return {
         aws_access_key: formBody.accessKey,
         aws_secret_key: formBody.secretKey,
         aws_region: formBody.region,
+        aws_account_ids: accounts,
       };
+    }
     case IntegrationType.jira: {
       const authTypeRadio = formBody.authTypeRadio;
       if (authTypeRadio === 'apiToken') {
@@ -153,14 +155,13 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
       break;
   }
 };
-
-const action = async ({
-  request,
-  params,
-}: ActionFunctionArgs): Promise<{
+type ActionData = {
   message?: string;
   deleteSuccess?: boolean;
-} | null> => {
+  fieldErrors?: Record<string, string>;
+} | null;
+
+const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionData> => {
   const _integrationType = params.integrationType?.toString();
   const formData = await request.formData();
   let _notificationType = formData.get('_notificationType')?.toString();
@@ -168,22 +169,11 @@ const action = async ({
 
   if (!_actionType) {
     return {
-      message: 'Action Type is required',
+      message: 'Action Type is required1',
     };
   }
 
   if (_actionType === ActionEnumType.ADD) {
-    if (!_integrationType) {
-      return {
-        message: 'Integration Type is required',
-      };
-    }
-    if (!_notificationType) {
-      return {
-        message: 'Notification Type is required',
-      };
-    }
-
     if (_notificationType === 'CloudTrail Alert') {
       _notificationType = 'CloudTrailAlert';
     } else if (_notificationType === 'User Activities') {
@@ -293,8 +283,8 @@ const action = async ({
       const filters = _filters.fields_filters.contains_filter.filter_in;
       const newFilter = {
         ...filters,
-        [severityMap[_notificationType] || 'severity']: severityFilter.map((severity) =>
-          severity.toLowerCase(),
+        [severityMap[_notificationType ?? ''] || 'severity']: severityFilter.map(
+          (severity) => severity.toLowerCase(),
         ),
       };
       _filters.fields_filters.contains_filter.filter_in = newFilter;
@@ -312,7 +302,6 @@ const action = async ({
     }
 
     _filters.node_ids = nodeIds;
-
     const addIntegrationApi = apiWrapper({
       fn: getIntegrationApiClient().addIntegration,
     });
@@ -326,8 +315,10 @@ const action = async ({
     });
     if (!r.ok) {
       if (r.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.error.response.json();
         return {
-          message: r.error.message ?? '',
+          message: modelResponse.message ?? '',
+          fieldErrors: modelResponse.error_fields ?? {},
         };
       } else if (r.error.response.status === 403) {
         return {
@@ -336,6 +327,7 @@ const action = async ({
       }
     }
     toast('Integration added successfully');
+    invalidateAllQueries();
   } else if (_actionType === ActionEnumType.DELETE) {
     const id = formData.get('id')?.toString();
     if (!id) {
@@ -358,6 +350,7 @@ const action = async ({
       }
     }
     toast('Integration deleted successfully');
+    invalidateAllQueries();
     return {
       deleteSuccess: true,
     };
@@ -366,19 +359,156 @@ const action = async ({
   return null;
 };
 
+const DeleteConfirmationModal = ({
+  showDialog,
+  row,
+  setShowDialog,
+  fetcher,
+  onTableAction,
+}: {
+  showDialog: boolean;
+  row: ModelIntegrationListResp | undefined;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  fetcher: FetcherWithComponents<ActionData>;
+  onTableAction: (row: ModelIntegrationListResp, actionType: ActionEnumType) => void;
+}) => {
+  return (
+    <Modal
+      size="s"
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title={
+        !fetcher.data?.deleteSuccess ? (
+          <div className="flex gap-3 items-center dark:text-status-error">
+            <span className="h-6 w-6 shrink-0">
+              <ErrorStandardLineIcon />
+            </span>
+            Delete report
+          </div>
+        ) : undefined
+      }
+      footer={
+        !fetcher.data?.deleteSuccess ? (
+          <div className={'flex gap-x-4 justify-end'}>
+            <Button
+              size="sm"
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              color="error"
+              onClick={(e) => {
+                e.preventDefault();
+                onTableAction(row!, ActionEnumType.CONFIRM_DELETE);
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.deleteSuccess ? (
+        <div className="grid">
+          <span>The selected integration will be deleted.</span>
+          <br />
+          <span>Are you sure you want to delete?</span>
+          {fetcher.data?.message ? (
+            <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
+          ) : null}
+          <div className="flex items-center justify-right gap-4"></div>
+        </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
+    </Modal>
+  );
+};
+
+const Header = ({ title }: { title: string }) => {
+  return (
+    <SlidingModalHeader>
+      <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+        Add Integration: &nbsp;{title}
+      </div>
+    </SlidingModalHeader>
+  );
+};
+
 const IntegrationAdd = () => {
   const { integrationType } = useParams() as {
     integrationType: string;
   };
+  const [modelRow, setModelRow] = useState<ModelIntegrationListResp>();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const fetcher = useFetcher<ActionData>();
+  const [openModal, setOpenModal] = useState(false);
+
+  const params = useParams() as {
+    integrationType: string;
+  };
+
+  const onTableAction = useCallback(
+    (row: ModelIntegrationListResp, actionType: string) => {
+      if (actionType === ActionEnumType.DELETE) {
+        setModelRow(row);
+        setShowDeleteDialog(true);
+      } else if (actionType === ActionEnumType.CONFIRM_DELETE) {
+        const formData = new FormData();
+        formData.append('_actionType', ActionEnumType.DELETE);
+        formData.append('id', row.id?.toString() ?? '');
+
+        fetcher.submit(formData, {
+          method: 'post',
+        });
+      }
+    },
+    [],
+  );
 
   if (!integrationType) {
     throw new Error('Integration Type is required');
   }
 
   return (
-    <div className="grid grid-cols-[310px_1fr] gap-x-2">
-      <IntegrationForm integrationType={integrationType} />
-      <IntegrationTable />
+    <div className="m-4">
+      <Button
+        variant="outline"
+        startIcon={<PlusIcon />}
+        onClick={() => {
+          setOpenModal(true);
+        }}
+        size="sm"
+      >
+        Add new integration
+      </Button>
+      <SlidingModal
+        open={openModal}
+        onOpenChange={() => {
+          setOpenModal(false);
+        }}
+        size="l"
+      >
+        <SlidingModalCloseButton />
+        <Header title={integrationTypeToNameMapping[params.integrationType]} />
+        <IntegrationForm integrationType={integrationType} setOpenModal={setOpenModal} />
+      </SlidingModal>
+      <div className="self-start mt-2">
+        <Suspense fallback={<TableSkeleton columns={4} rows={5} />}>
+          <IntegrationTable onTableAction={onTableAction} />
+        </Suspense>
+      </div>
+      <DeleteConfirmationModal
+        showDialog={showDeleteDialog}
+        row={modelRow}
+        setShowDialog={setShowDeleteDialog}
+        onTableAction={onTableAction}
+        fetcher={fetcher}
+      />
     </div>
   );
 };
@@ -386,5 +516,4 @@ const IntegrationAdd = () => {
 export const module = {
   element: <IntegrationAdd />,
   action,
-  loader,
 };

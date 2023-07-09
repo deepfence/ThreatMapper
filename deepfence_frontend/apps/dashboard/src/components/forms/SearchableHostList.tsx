@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
@@ -13,6 +13,7 @@ export type SearchableHostListProps = {
   defaultSelectedHosts?: string[];
   valueKey?: 'nodeId' | 'hostName' | 'nodeName';
   active?: boolean;
+  triggerVariant?: 'select' | 'button';
 };
 
 const PAGE_SIZE = 15;
@@ -23,12 +24,17 @@ export const SearchableHostList = ({
   defaultSelectedHosts,
   valueKey = 'nodeId',
   active,
+  triggerVariant,
 }: SearchableHostListProps) => {
   const [searchText, setSearchText] = useState('');
 
   const [selectedHosts, setSelectedHosts] = useState<string[]>(
     defaultSelectedHosts ?? [],
   );
+
+  const isSelectVariantType = useMemo(() => {
+    return triggerVariant === 'select';
+  }, [triggerVariant]);
 
   useEffect(() => {
     setSelectedHosts(defaultSelectedHosts ?? []);
@@ -73,7 +79,14 @@ export const SearchableHostList = ({
           isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="hostFilter"
-        getDisplayValue={() => 'Host'}
+        triggerVariant={triggerVariant || 'button'}
+        label={isSelectVariantType ? 'Host' : undefined}
+        getDisplayValue={() =>
+          isSelectVariantType && selectedHosts.length > 0
+            ? `${selectedHosts.length} selected`
+            : null
+        }
+        placeholder="Select host"
         multiple
         value={selectedHosts}
         onChange={(values) => {
