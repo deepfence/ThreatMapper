@@ -1,4 +1,4 @@
-export const RereshIcon = () => {
+export const RefreshIcon = () => {
   return (
     <svg
       width="100%"

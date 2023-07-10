@@ -11,7 +11,6 @@ import {
   createColumnHelper,
   Dropdown,
   DropdownItem,
-  IconButton,
   Listbox,
   ListboxOption,
   Modal,
@@ -38,6 +37,7 @@ import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLi
 import { EyeHideSolid } from '@/components/icons/common/EyeHideSolid';
 import { EyeSolidIcon } from '@/components/icons/common/EyeSolid';
 import { PlusIcon } from '@/components/icons/common/Plus';
+import { RefreshIcon } from '@/components/icons/common/Refresh';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
@@ -67,32 +67,28 @@ export enum ActionEnumType {
   CHANGE_PASSWORD = 'changePassword',
   INVITE_USER = 'inviteUser',
   EDIT_USER = 'editUser',
+  RESET_API_KEY = 'resetAPIKey',
 }
 
 const useListUsers = () => {
   return useSuspenseQuery({
     ...queries.setting.listUsers(),
-    keepPreviousData: true,
   });
 };
 
 const useGetCurrentUser = () => {
   return useSuspenseQuery({
     ...queries.auth.currentUser(),
-    keepPreviousData: true,
   });
 };
 
 const useGetApiToken = () => {
   return useSuspenseQuery({
     ...queries.auth.apiToken(),
-    keepPreviousData: true,
   });
 };
 
-export const action = async ({
-  request,
-}: ActionFunctionArgs): Promise<ActionReturnType> => {
+const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
 
   const _actionType = formData.get('_actionType')?.toString();
@@ -245,12 +241,27 @@ export const action = async ({
       }
       throw updateResponse.error;
     }
+  } else if (_actionType === ActionEnumType.RESET_API_KEY) {
+    const resetApiTokens = apiWrapper({
+      fn: getUserApiClient().resetApiTokens,
+    });
+    const resetApiTokensResponse = await resetApiTokens();
+    if (!resetApiTokensResponse.ok) {
+      if (resetApiTokensResponse.error.response.status === 403) {
+        return {
+          success: false,
+          message: 'You do not have enough permissions to reset API tokens',
+        };
+      }
+      throw resetApiTokensResponse.error;
+    }
   }
   invalidateAllQueries();
   return {
     success: true,
   };
 };
+
 const ActionDropdown = ({
   user,
   trigger,
@@ -264,7 +275,7 @@ const ActionDropdown = ({
   return (
     <>
       {showDeleteDialog && user.id && (
-        <DeleteConfirmationModal
+        <DeleteUserConfirmationModal
           showDialog={showDeleteDialog}
           userId={user.id}
           setShowDialog={setShowDeleteDialog}
@@ -595,6 +606,7 @@ const APITokenSkeletonComponent = () => {
 };
 const ApiToken = () => {
   const [showApikey, setShowApiKey] = useState(false);
+  const [showResetAPIKeyModal, setShowResetAPIKeyModal] = useState(false);
   const { data } = useGetApiToken();
   const { copy, isCopied } = useCopyToClipboardState();
 
@@ -603,64 +615,45 @@ const ApiToken = () => {
       <span className="font-mono">
         {showApikey
           ? data?.apiToken?.api_token || '-'
-          : '************************************'}
+          : '********************************************'}
       </span>
-      <div className="flex ml-2">
-        {!showApikey ? (
-          <IconButton
-            icon={
-              <span className="h-4 w-4">
-                <EyeSolidIcon />
-              </span>
-            }
-            variant="flat"
-            onClick={() => {
-              setShowApiKey(true);
-            }}
-          />
-        ) : (
-          <IconButton
-            icon={
-              <span className="h-4 w-4">
-                <EyeHideSolid />
-              </span>
-            }
-            variant="flat"
-            onClick={() => {
-              setShowApiKey(false);
-            }}
-          />
-        )}
-        <div className="relative top-0 right-0 ml-2">
-          {isCopied ? (
-            <div className="dark:text-text-text-and-icon gap-x-2 flex items-center">
-              <IconButton
-                icon={
-                  <span className="w-4 h-4">
-                    <CopyLineIcon />
-                  </span>
-                }
-                type="button"
-                variant="flat"
-              />{' '}
-              copied
-            </div>
-          ) : (
-            <IconButton
-              icon={
-                <span className="w-4 h-4">
-                  <CopyLineIcon />
-                </span>
-              }
-              variant="flat"
-              onClick={() => copy(data?.apiToken?.api_token ?? '')}
-            />
-          )}
-        </div>
+      <div className="flex ml-2 items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          startIcon={showApikey ? <EyeHideSolid /> : <EyeSolidIcon />}
+          onClick={() => setShowApiKey((prev) => !prev)}
+        >
+          {showApikey ? 'Hide' : 'Show'}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          startIcon={<CopyLineIcon />}
+          onClick={() => copy(data?.apiToken?.api_token ?? '')}
+        >
+          {isCopied ? 'Copied' : 'Copy'}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          color="error"
+          startIcon={<RefreshIcon />}
+          onClick={() => setShowResetAPIKeyModal(true)}
+        >
+          Reset Key
+        </Button>
       </div>
+      {showResetAPIKeyModal && (
+        <ResetAPIKeyConfirmationModal
+          showDialog={showResetAPIKeyModal}
+          setShowDialog={setShowResetAPIKeyModal}
+        />
+      )}
     </>
   );
 };
+
 const CurrentUserInfo = ({
   setOpenChangePasswordForm,
 }: {
@@ -671,13 +664,13 @@ const CurrentUserInfo = ({
   return (
     <div>
       <div className="flex">
-        <div className="flex flex-col">
+        <div className="flex items-end gap-2">
           <span className="text-2xl dark:text-gray-100 font-semibold">
             {`${currentUser?.first_name || ''} ${currentUser?.last_name || ''}`}
           </span>
           <span
             className={twMerge(
-              cx('font-semibold w-fit text-xs rounded-sm dark:text-gray-100 self-start', {
+              cx('font-semibold w-fit text-xs rounded-sm dark:text-gray-100 pb-0.5', {
                 'text-green-500 dark:text-status-success': currentUser?.is_active,
                 'text-gray-700 dark:text-df-gray-400': !currentUser?.is_active,
               }),
@@ -717,7 +710,7 @@ const CurrentUserInfo = ({
           </Suspense>
         </div>
       </div>
-      <Button size="sm" variant="flat" onClick={() => setOpenChangePasswordForm(true)}>
+      <Button size="sm" variant="outline" onClick={() => setOpenChangePasswordForm(true)}>
         Change Password
       </Button>
     </div>
@@ -806,7 +799,13 @@ const UsersTable = () => {
         maxSize: 70,
       }),
       columnHelper.accessor('is_active', {
-        cell: (cell) => capitalize(cell.getValue() + ''),
+        cell: (cell) => {
+          const active = cell.getValue();
+          if (active) {
+            return <span className="dark:text-status-success">Yes</span>;
+          }
+          return <span className="dark:text-status-error">No</span>;
+        },
         header: () => 'Active',
         minSize: 60,
         size: 60,
@@ -851,7 +850,7 @@ const UserManagement = () => {
           setShowDialog={setOpenInviteUserForm}
         />
       )}
-      <div className="mt-8">
+      <div className="mt-6">
         <div className="mt-2">
           <h3 className="text-h6 dark:text-text-input-value">User accounts</h3>
         </div>
@@ -887,7 +886,7 @@ export const module = {
   action,
 };
 
-const DeleteConfirmationModal = ({
+const DeleteUserConfirmationModal = ({
   showDialog,
   userId,
   setShowDialog,
@@ -924,6 +923,9 @@ const DeleteConfirmationModal = ({
       footer={
         !fetcher.data?.success ? (
           <div className={'flex gap-x-4 justify-end'}>
+            <Button onClick={() => setShowDialog(false)} type="button" variant="outline">
+              Cancel
+            </Button>
             <Button
               color="error"
               type="submit"
@@ -934,10 +936,7 @@ const DeleteConfirmationModal = ({
                 onDeleteAction();
               }}
             >
-              Yes, I&apos;m sure
-            </Button>
-            <Button onClick={() => setShowDialog(false)} type="button" variant="outline">
-              Cancel
+              Yes, Delete
             </Button>
           </div>
         ) : undefined
@@ -945,14 +944,85 @@ const DeleteConfirmationModal = ({
     >
       {!fetcher.data?.success ? (
         <div className="grid">
-          <span>The selected user will be deleted.</span>
+          <span>The selected user will be deleted. This action cannot be undone.</span>
           <br />
           <span>Are you sure you want to delete?</span>
+          <br />
           {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
           <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (
         <SuccessModalContent text="Deleted successfully" />
+      )}
+    </Modal>
+  );
+};
+
+const ResetAPIKeyConfirmationModal = ({
+  showDialog,
+  setShowDialog,
+}: {
+  showDialog: boolean;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const fetcher = useFetcher();
+
+  const onResetAction = useCallback(() => {
+    const formData = new FormData();
+    formData.append('_actionType', ActionEnumType.RESET_API_KEY);
+    fetcher.submit(formData, {
+      method: 'post',
+    });
+  }, [fetcher]);
+
+  return (
+    <Modal
+      size="s"
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title={
+        !fetcher.data?.success ? (
+          <div className="flex gap-3 items-center dark:text-status-error">
+            <span className="h-6 w-6 shrink-0">
+              <ErrorStandardLineIcon />
+            </span>
+            Reset API key
+          </div>
+        ) : undefined
+      }
+      footer={
+        !fetcher.data?.success ? (
+          <div className={'flex gap-x-4 justify-end'}>
+            <Button onClick={() => setShowDialog(false)} type="button" variant="outline">
+              Cancel
+            </Button>
+            <Button
+              color="error"
+              type="submit"
+              loading={fetcher.state !== 'idle'}
+              disabled={fetcher.state !== 'idle'}
+              onClick={(e) => {
+                e.preventDefault();
+                onResetAction();
+              }}
+            >
+              Yes, Reset
+            </Button>
+          </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.success ? (
+        <div className="grid">
+          <span>The API key will be reset. This action cannot be undone.</span>
+          <br />
+          <span>Are you sure you want to reset?</span>
+          <br />
+          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
+          <div className="flex items-center justify-right gap-4"></div>
+        </div>
+      ) : (
+        <SuccessModalContent text="API key reset successfully" />
       )}
     </Modal>
   );

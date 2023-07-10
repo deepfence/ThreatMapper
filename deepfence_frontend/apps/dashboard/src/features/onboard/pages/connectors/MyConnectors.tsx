@@ -17,7 +17,7 @@ import {
 import { DFLink } from '@/components/DFLink';
 import { NoConnectors } from '@/components/hosts-connector/NoConnectors';
 import { CaretDown } from '@/components/icons/common/CaretDown';
-import { RereshIcon } from '@/components/icons/common/Refresh';
+import { RefreshIcon } from '@/components/icons/common/Refresh';
 import { connectorLayoutTabs } from '@/features/onboard/layouts/ConnectorsLayout';
 import { invalidateAllQueries, queries } from '@/queries';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -356,7 +356,7 @@ function RefreshButton() {
         loading={state === 'loading'}
         startIcon={
           <span className="w-4 h-4">
-            <RereshIcon />
+            <RefreshIcon />
           </span>
         }
         onClick={() => {
