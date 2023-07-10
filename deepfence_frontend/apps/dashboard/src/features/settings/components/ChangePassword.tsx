@@ -13,7 +13,7 @@ export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
 
   if (data?.success) return <SuccessModalContent text="Password changed successfully!" />;
   return (
-    <fetcher.Form method="post" className="flex flex-col gap-y-8 mt-4 mx-4">
+    <fetcher.Form method="post" className="flex flex-col gap-y-9 mt-4 mx-4">
       <TextInput
         label="Old Password"
         type={'password'}
@@ -24,7 +24,6 @@ export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
         required
       />
       <TextInput
-        className="mt-8"
         label="New Password"
         type={'password'}
         placeholder="New Password"
@@ -34,7 +33,6 @@ export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
         required
       />
       <TextInput
-        className="mt-8"
         label="Confirm Password"
         type={'password'}
         placeholder="Confirm Password"
@@ -51,13 +49,16 @@ export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
         readOnly
         value={ActionEnumType.CHANGE_PASSWORD}
       />
-      <div className={`text-red-600 dark:text-status-error mt-4 text-p7`}>
-        {!data?.success && data?.message && <span>{data.message}</span>}
-      </div>
+
+      {!data?.success && data?.message && (
+        <div className={`text-red-600 dark:text-status-error text-p7`}>
+          <span>{data.message}</span>{' '}
+        </div>
+      )}
 
       <div className="flex gap-x-2">
         <Button
-          size="sm"
+          size="md"
           type="submit"
           className=" w-fit"
           disabled={state !== 'idle'}
@@ -65,7 +66,7 @@ export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
         >
           Submit
         </Button>
-        <Button onClick={() => onCancel()} type="button" variant="outline">
+        <Button size="md" onClick={() => onCancel()} type="button" variant="outline">
           Cancel
         </Button>
       </div>

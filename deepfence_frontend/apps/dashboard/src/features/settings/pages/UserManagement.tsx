@@ -328,7 +328,7 @@ const ChangePasswordModal = ({
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
         <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
-          Change Password
+          Change your password
         </div>
       </SlidingModalHeader>
       <SlidingModalCloseButton />
@@ -410,7 +410,7 @@ const InviteUserModal = ({
             )}
             <div className="flex items-center gap-x-2">
               <Button
-                size="sm"
+                size="md"
                 type="submit"
                 name="intent"
                 value={ModelInviteUserRequestActionEnum['SendInviteEmail']}
@@ -429,7 +429,7 @@ const InviteUserModal = ({
               <Button
                 variant="outline"
                 type="submit"
-                size="sm"
+                size="md"
                 name="intent"
                 value={ModelInviteUserRequestActionEnum['GetInviteLink']}
               >
@@ -556,8 +556,9 @@ const EditUserModal = ({
               <p className="dark:text-status-error text-p7">{data.message}</p>
             )}
 
-            <div className="flex gap-x-2 mt-9">
+            <div className="flex gap-x-2">
               <Button
+                size="md"
                 type="submit"
                 loading={fetcher.state !== 'idle'}
                 disabled={fetcher.state !== 'idle'}
@@ -565,6 +566,7 @@ const EditUserModal = ({
                 Update
               </Button>
               <Button
+                size="md"
                 variant="outline"
                 type="button"
                 onClick={() => setShowDialog(false)}
@@ -663,7 +665,7 @@ const CurrentUserInfo = ({
   const currentUser = user.user;
   return (
     <div>
-      <div className="flex">
+      <div className="flex items-center">
         <div className="flex items-end gap-2">
           <span className="text-2xl dark:text-gray-100 font-semibold">
             {`${currentUser?.first_name || ''} ${currentUser?.last_name || ''}`}
@@ -679,15 +681,23 @@ const CurrentUserInfo = ({
             {currentUser?.is_active ? 'Active' : 'Inactive'}
           </span>
         </div>
+        <Button
+          size="sm"
+          className="ml-auto"
+          variant="flat"
+          onClick={() => setOpenChangePasswordForm(true)}
+        >
+          Change Password
+        </Button>
       </div>
       <div className="flex mt-4 mb-2">
-        <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">Email</span>
+        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Email</span>
         <span className="text-p4 dark:text-text-input-value">
           {currentUser?.email || '-'}
         </span>
       </div>
       <div className="flex my-3">
-        <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
+        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">
           Company
         </span>
         <span className="text-p4 dark:text-text-input-value">
@@ -695,14 +705,14 @@ const CurrentUserInfo = ({
         </span>
       </div>
       <div className="flex my-3">
-        <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">Role</span>
+        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Role</span>
         <span className="text-p4 dark:text-text-input-value">
           {currentUser?.role || '-'}
         </span>
       </div>
       <div className="flex my-3">
-        <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-          Api key
+        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">
+          API key
         </span>
         <div className="text-p4 items-center dark:text-text-input-value flex gap-x-2">
           <Suspense fallback={<CircleSpinner size="sm" />}>
@@ -710,9 +720,6 @@ const CurrentUserInfo = ({
           </Suspense>
         </div>
       </div>
-      <Button size="sm" variant="outline" onClick={() => setOpenChangePasswordForm(true)}>
-        Change Password
-      </Button>
     </div>
   );
 };
@@ -923,10 +930,16 @@ const DeleteUserConfirmationModal = ({
       footer={
         !fetcher.data?.success ? (
           <div className={'flex gap-x-4 justify-end'}>
-            <Button onClick={() => setShowDialog(false)} type="button" variant="outline">
+            <Button
+              size="md"
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+            >
               Cancel
             </Button>
             <Button
+              size="md"
               color="error"
               type="submit"
               loading={fetcher.state !== 'idle'}
@@ -993,11 +1006,17 @@ const ResetAPIKeyConfirmationModal = ({
       footer={
         !fetcher.data?.success ? (
           <div className={'flex gap-x-4 justify-end'}>
-            <Button onClick={() => setShowDialog(false)} type="button" variant="outline">
+            <Button
+              size="md"
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+            >
               Cancel
             </Button>
             <Button
               color="error"
+              size="md"
               type="submit"
               loading={fetcher.state !== 'idle'}
               disabled={fetcher.state !== 'idle'}
