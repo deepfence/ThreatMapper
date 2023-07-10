@@ -332,6 +332,9 @@ func (u *User) LoadFromDbByID(ctx context.Context, pgClient *postgresqlDb.Querie
 func GetUserByEmail(ctx context.Context, email string) (*User, int, *postgresqlDb.Queries, error) {
 	user := User{Email: email}
 	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return nil, http.StatusInternalServerError, pgClient, err
+	}
 	err = user.LoadFromDbByEmail(ctx, pgClient)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, http.StatusNotFound, pgClient, UserNotFoundErr

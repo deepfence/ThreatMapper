@@ -632,7 +632,7 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	emailSender, err := sendemail.NewEmailSender(r.Context())
+	emailSender, err := sendemail.NewEmailSender(ctx)
 	if err != nil {
 		pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
 		respondError(err, w)
