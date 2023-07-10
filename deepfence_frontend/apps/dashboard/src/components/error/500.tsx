@@ -36,7 +36,7 @@ export const FiveZeroZero = () => {
         <div className="pt-[56px] h-screen">
           <ErrorComponent />
         </div>
-        <OnboardAppHeader showGotoDashboard={false} />
+        <OnboardAppHeader />
       </div>
     );
   }

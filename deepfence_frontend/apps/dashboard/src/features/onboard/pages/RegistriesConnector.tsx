@@ -19,7 +19,7 @@ export const RegistriesConnector = () => {
           }}
           registryType={connectorType}
           renderButton={(state) => (
-            <div className="flex mt-4 gap-x-4">
+            <div className="flex mt-4 gap-x-2">
               <Button
                 type="submit"
                 disabled={state !== 'idle'}

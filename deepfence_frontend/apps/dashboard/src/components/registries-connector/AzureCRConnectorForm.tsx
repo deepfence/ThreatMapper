@@ -24,7 +24,7 @@ export const AzureCRConnectorForm = ({
 }: RegistryFormProps) => {
   return (
     <>
-      <div className="text-p2 dark:text-text-input-value">
+      <div className="text-p4 dark:text-text-input-value">
         Connect to your Google Azure Account. Find out more information by{' '}
         <DFLink
           href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage`}

@@ -208,9 +208,11 @@ export const SecretScanConfigureForm = ({
         <Button disabled={state !== 'idle'} loading={state !== 'idle'} type="submit">
           Start Scan
         </Button>
-        <Button type="button" variant="outline" onClick={() => onCancel?.()}>
-          Cancel
-        </Button>
+        {onCancel ? (
+          <Button type="button" variant="outline" onClick={() => onCancel?.()}>
+            Cancel
+          </Button>
+        ) : null}
       </div>
     </fetcher.Form>
   );

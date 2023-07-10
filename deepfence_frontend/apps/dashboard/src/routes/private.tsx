@@ -8,7 +8,6 @@ import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/Vu
 import { module as logoutAction } from '@/features/auth/data-components/logoutAction';
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
 import { action as downloadScanAction } from '@/features/common/data-component/downloadScanAction';
-import { getApiTokenApiLoader } from '@/features/common/data-component/getApiTokenApiLoader';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchCloudAccountsApiLoader } from '@/features/common/data-component/searchCloudAccountsApiLoader';
@@ -35,10 +34,7 @@ import {
   ConnectorsLayout,
   connectorsLoader,
 } from '@/features/onboard/layouts/ConnectorsLayout';
-import {
-  OnboardLayout,
-  rootOnboardLoader,
-} from '@/features/onboard/layouts/OnboardLayout';
+import { OnboardLayout } from '@/features/onboard/layouts/OnboardLayout';
 import { module as chooseScan } from '@/features/onboard/pages/ChooseScan';
 import { module as complianceScanSummary } from '@/features/onboard/pages/ComplianceScanSummary';
 import { module as configureScanForm } from '@/features/onboard/pages/ConfigureScanForm';
@@ -95,10 +91,15 @@ import { CustomRouteObject } from '@/utils/router';
 export const privateRoutes: CustomRouteObject[] = [
   {
     path: '/onboard',
+    id: 'onboard',
     errorElement: <FiveZeroZero />,
     element: <OnboardLayout />,
-    loader: rootOnboardLoader,
+    loader: authenticatedRootLoader,
     children: [
+      {
+        index: true,
+        loader: () => redirect('/onboard/connectors', 302),
+      },
       {
         path: 'connectors',
         element: <ConnectorsLayout />,
@@ -140,22 +141,22 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Configure Scan' },
           },
           {
-            path: 'view-summary/compliance/:nodeType/:bulkScanId',
+            path: 'view-summary/:scanType/:nodeType/:bulkScanId',
             ...complianceScanSummary,
             meta: { title: 'Summary Compliance Scan' },
           },
           {
-            path: 'view-summary/vulnerability/:nodeType/:bulkScanId',
+            path: 'view-summary/VulnerabilityScan/:nodeType/:bulkScanId',
             ...vulnerabilityScanSumary,
             meta: { title: 'Summary Vulnerability Scan' },
           },
           {
-            path: 'view-summary/secret/:nodeType/:bulkScanId',
+            path: 'view-summary/SecretScan/:nodeType/:bulkScanId',
             ...secretScanSumary,
             meta: { title: 'Summary Secret Scan' },
           },
           {
-            path: 'view-summary/malware/:nodeType/:bulkScanId',
+            path: 'view-summary/MalwareScan/:nodeType/:bulkScanId',
             ...malwareScanSumary,
             meta: { title: 'Summary Malware Scan' },
           },
@@ -624,10 +625,6 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'auth/logout',
         ...logoutAction,
-      },
-      {
-        path: 'auth/apiToken',
-        loader: getApiTokenApiLoader,
       },
       {
         path: 'scan/download',

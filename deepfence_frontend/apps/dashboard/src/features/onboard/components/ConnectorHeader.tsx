@@ -1,8 +1,9 @@
 import cx from 'classnames';
-import { HiChevronRight } from 'react-icons/hi';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
-import { Breadcrumb, BreadcrumbLink, Typography } from 'ui-components';
+import { Breadcrumb, BreadcrumbLink } from 'ui-components';
+
+import { DFLink } from '@/components/DFLink';
 
 type ConnectorHeaderProps = {
   title: string;
@@ -38,82 +39,66 @@ export const ConnectorHeader = ({
   return (
     <div className="pt-6 mb-4">
       <div className="mb-4">
-        <Breadcrumb separator={<HiChevronRight />} transparent>
-          <BreadcrumbLink>
-            <>
-              <span
-                className={twMerge(
-                  cx(
-                    'w-6 h-6 rounded-full bg-gray-200 text-sm flex items-center justify-center',
-                    'dark:bg-gray-700 dark:text-gray-100',
-                    'cursor-auto',
-                    {
-                      ['text-blue-600 dark:text-blue-500']: isAddConnectorRoutePath(),
-                    },
-                  ),
-                )}
-              >
-                1
-              </span>
-              <Link
-                to={'/onboard/connectors/add-connectors'}
-                className={cx('ml-2', {
-                  ['text-blue-600 dark:text-blue-500']: isAddConnectorRoutePath(),
-                })}
-              >
-                Add a connector
-              </Link>
-            </>
+        <Breadcrumb>
+          <BreadcrumbLink isLink>
+            <span
+              className={twMerge(
+                cx(
+                  'w-6 h-6 rounded-full dark:bg-df-gray-200 text-p7 flex items-center justify-center',
+                  'dark:bg-gray-700 dark:text-df-gray-100 cursor-default',
+                ),
+              )}
+            >
+              1
+            </span>
+            <DFLink
+              unstyled
+              className={cx('flex items-center ml-2', {
+                ['dark:text-text-text-and-icon']: !isAddConnectorRoutePath(),
+              })}
+              to={'/onboard/connectors/add-connectors'}
+            >
+              Add a connector
+            </DFLink>
           </BreadcrumbLink>
           <BreadcrumbLink className="cursor-auto">
-            <>
-              <span
-                className={twMerge(
-                  cx(
-                    'w-6 h-6 rounded-full bg-gray-200 text-sm flex items-center justify-center',
-                    'dark:bg-gray-700 dark:text-gray-100',
-                    'cursor-auto',
-                    {
-                      ['text-blue-600 dark:text-blue-500']: isScanRoutePath(),
-                    },
-                  ),
-                )}
-              >
-                2
-              </span>
-              <span
-                className={cx('cursor-auto ml-2', {
-                  ['text-blue-600 dark:text-blue-500']: isScanRoutePath(),
-                })}
-              >
-                Scan Infrastructure
-              </span>
-            </>
+            <span
+              className={twMerge(
+                cx(
+                  'w-6 h-6 rounded-full dark:bg-df-gray-200 text-p7 flex items-center justify-center',
+                  'dark:bg-gray-700 dark:text-df-gray-100 cursor-default',
+                ),
+              )}
+            >
+              2
+            </span>
+
+            <span
+              className={cx('cursor-auto ml-2', {
+                ['dark:text-text-link']: isScanRoutePath(),
+              })}
+            >
+              Scan infrastructure
+            </span>
           </BreadcrumbLink>
           <BreadcrumbLink>
-            <>
-              <span
-                className={twMerge(
-                  cx(
-                    'w-6 h-6 rounded-full bg-gray-200 text-sm flex items-center justify-center',
-                    'dark:bg-gray-700 dark:text-gray-100',
-                    'cursor-auto',
-                    {
-                      ['text-blue-600 dark:text-blue-500']: isViewScanSummaryRoutePath(),
-                    },
-                  ),
-                )}
-              >
-                3
-              </span>
-              <span
-                className={cx('cursor-auto ml-2', {
-                  ['text-blue-600 dark:text-blue-500']: isViewScanSummaryRoutePath(),
-                })}
-              >
-                View Scan Results
-              </span>
-            </>
+            <span
+              className={twMerge(
+                cx(
+                  'w-6 h-6 rounded-full dark:bg-df-gray-200 text-p7 flex items-center justify-center',
+                  'dark:bg-gray-700 dark:text-df-gray-100 cursor-default',
+                ),
+              )}
+            >
+              3
+            </span>
+            <span
+              className={cx('cursor-auto ml-2', {
+                ['dark:text-text-link']: isViewScanSummaryRoutePath(),
+              })}
+            >
+              View scan results
+            </span>
           </BreadcrumbLink>
         </Breadcrumb>
       </div>
@@ -121,7 +106,9 @@ export const ConnectorHeader = ({
         <div>
           <h1 className={`text-h1 dark:text-text-input-value`}>{title}</h1>
           {description && (
-            <p className={`text-p7 mt-1.5 mb-4 dark:text-white text-gray-900`}>
+            <p
+              className={`text-p4 mt-1.5 mb-4 dark:text-text-text-and-icon text-gray-900`}
+            >
               {description}
             </p>
           )}

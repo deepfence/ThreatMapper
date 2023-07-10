@@ -5,6 +5,7 @@ import { queryClient } from '@/queries/client';
 import { integrationQueries } from '@/queries/integration';
 import { lookupQueries } from '@/queries/lookup';
 import { malwareQueries } from '@/queries/malware';
+import { onboardQueries } from '@/queries/onboard';
 import { postureQueries } from '@/queries/posture';
 import { registryQueries } from '@/queries/registry';
 import { searchQueries } from '@/queries/search';
@@ -37,5 +38,6 @@ export const queries = mergeQueryKeys(
   lookupQueries,
   settingQueries,
   threatQueries,
+  onboardQueries,
   userQueries,
 );

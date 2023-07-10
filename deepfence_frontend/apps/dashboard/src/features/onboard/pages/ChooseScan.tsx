@@ -1,17 +1,13 @@
-import { IconContext } from 'react-icons';
-import { HiArrowRight, HiSwitchHorizontal } from 'react-icons/hi';
 import { generatePath, Navigate, useLocation } from 'react-router-dom';
-import { Button, Card, Separator, Tooltip, Typography } from 'ui-components';
+import { Button, Card, Separator, Tooltip } from 'ui-components';
 
-import LogoAws from '@/assets/logo-aws.svg';
-import LogoAwsWhite from '@/assets/logo-aws-white.svg';
-import LogoAzure from '@/assets/logo-azure.svg';
-import LogoAzureRegistry from '@/assets/logo-azure-registry.svg';
-import LogoGoogle from '@/assets/logo-google.svg';
-import LogoK8 from '@/assets/logo-k8.svg';
-import LogoLinux from '@/assets/logo-linux.svg';
+import { ArrowLine } from '@/components/icons/common/ArrowLine';
+import { CloudLine } from '@/components/icons/common/CloudLine';
+import { SwitchIcon } from '@/components/icons/common/Switch';
+import { HostIcon } from '@/components/icons/host';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
+import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
@@ -95,39 +91,33 @@ const logoAndTextMap = (
   string,
   {
     title: string;
-    logo: string;
+    logo: React.ReactNode;
   }
 > => {
   return {
-    aws:
-      mode === 'dark'
-        ? {
-            title: `Amazon Web Service Account${count > 1 ? 's' : ''}`,
-            logo: LogoAwsWhite,
-          }
-        : {
-            title: `Amazon Web Service Account${count > 1 ? 's' : ''}`,
-            logo: LogoAws,
-          },
+    aws: {
+      title: `Amazon Web Service Account${count > 1 ? 's' : ''}`,
+      logo: <CloudLine />,
+    },
     gcp: {
       title: `Google Cloud Service Account${count > 1 ? 's' : ''}`,
-      logo: LogoGoogle,
+      logo: <CloudLine />,
     },
     azure: {
       title: `Azure Web Service Account${count > 1 ? 's' : ''}`,
-      logo: LogoAzure,
+      logo: <CloudLine />,
     },
     host: {
       title: `Linux Host${count > 1 ? 's' : ''}`,
-      logo: LogoLinux,
+      logo: <HostIcon />,
     },
     kubernetes_cluster: {
       title: `Kubernetes Service${count > 1 ? 's' : ''}`,
-      logo: LogoK8,
+      logo: <HostIcon />,
     },
     registry: {
       title: `Registr${count > 1 ? 'ies' : 'y'}`,
-      logo: LogoAzureRegistry,
+      logo: <RegistryIcon />,
     },
   };
 };
@@ -140,20 +130,18 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
 
   return (
     <div className="flex w-fit p-3 pt-0 items-center mb-8">
-      <span className="mr-6">
-        <img src={logoAndTextMap(state.length, mode)[nodeType].logo} alt="logo" />
+      <span className="mr-6 w-8 h-8 dark:text-text-text-and-icon">
+        {logoAndTextMap(state.length, mode)[nodeType].logo}
       </span>
       <div className="flex flex-col mr-20">
-        <span
-          className={`${Typography.size.lg} ${Typography.weight.medium} text-gray-700 dark:text-gray-100`}
-        >
+        <span className="dark:text-text-input-value text-h4">
           {logoAndTextMap(state.length, mode)[nodeType].title}
         </span>
-        <span
-          className={`${Typography.size.base} ${Typography.weight.medium} text-gray-500 dark:text-gray-400`}
-        >
+        <span>
           <Tooltip content={state[0].accountId ?? ''} triggerAsChild>
-            <span>{getNodeDisplayText(state[0].accountId ?? '')}</span>
+            <span className="text-p7 dark:text-text-text-and-icon">
+              {getNodeDisplayText(state[0].accountId ?? '')}
+            </span>
           </Tooltip>
           &nbsp;
           {state.length > 1 && (
@@ -163,10 +151,12 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
                   {state.map((node, index) => {
                     return (
                       <li key={node.accountId}>
-                        <span className="text-gray-400 py-2 pr-1 font-semibold">
+                        <span className="text-p7 dark:text-text-input-value py-2 pr-1">
                           {index + 1}.
                         </span>
-                        <span className="text-gray-300">{node.accountId}</span>
+                        <span className="text-p7 dark:text-text-input-value">
+                          {node.accountId}
+                        </span>
                       </li>
                     );
                   })}
@@ -174,7 +164,7 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
               }
               triggerAsChild
             >
-              <span className={'text-sm text-gray-600 dark:text-gray-300'}>
+              <span className={'text-p7 dark:text-text-input-value'}>
                 +{state.length - 1} more
               </span>
             </Tooltip>
@@ -183,9 +173,14 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
       </div>
       <div>
         <Button
-          className="ml-auto bg-gray-100 px-2 py-1"
+          variant="flat"
+          className="ml-auto px-2 py-1"
           size="sm"
-          startIcon={<HiSwitchHorizontal />}
+          startIcon={
+            <span className="w-4 h-4">
+              <SwitchIcon />
+            </span>
+          }
           onClick={() => {
             navigate('/onboard/connectors/my-connectors');
           }}
@@ -208,46 +203,45 @@ const ScanHeader = ({ state }: { state: OnboardConnectionNode[] }) => {
             <Card key={scanType} className="py-3 px-4 flex flex-col">
               <div>
                 <h2
-                  className={`flex items-center gap-x-2 ${Typography.size.lg} ${Typography.weight.medium} text-gray-700 dark:text-gray-100 pb-2`}
+                  className={`flex items-center gap-x-2 text-h3 dark:text-text-input-value pb-2`}
                 >
-                  <IconContext.Provider
-                    value={{ className: 'w-8 h-8 text-blue-600 dark:text-blue-500' }}
-                  >
-                    {scanType === ScanTypeEnum.VulnerabilityScan && (
-                      <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
-                        <VulnerabilityIcon />
-                      </div>
-                    )}
-                    {scanType === ScanTypeEnum.ComplianceScan && (
-                      <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
-                        <PostureIcon />
-                      </div>
-                    )}
-                    {scanType === ScanTypeEnum.SecretScan && (
-                      <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
-                        <SecretsIcon />
-                      </div>
-                    )}
-                    {scanType === ScanTypeEnum.MalwareScan && (
-                      <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
-                        <MalwareIcon />
-                      </div>
-                    )}
-                  </IconContext.Provider>
+                  {scanType === ScanTypeEnum.VulnerabilityScan && (
+                    <div className="w-5 h-5 text-blue-600 dark:text-status-info">
+                      <VulnerabilityIcon />
+                    </div>
+                  )}
+                  {scanType === ScanTypeEnum.ComplianceScan && (
+                    <div className="w-5 h-5 text-blue-600 dark:text-status-info">
+                      <PostureIcon />
+                    </div>
+                  )}
+                  {scanType === ScanTypeEnum.SecretScan && (
+                    <div className="w-5 h-5 text-blue-600 dark:text-status-info">
+                      <SecretsIcon />
+                    </div>
+                  )}
+                  {scanType === ScanTypeEnum.MalwareScan && (
+                    <div className="w-5 h-5 text-blue-600 dark:text-status-info">
+                      <MalwareIcon />
+                    </div>
+                  )}
                   {scanTitle}
                 </h2>
                 <Separator />
               </div>
               <div className="flex-1 flex flex-col justify-between">
-                <p className="text-sm font-normal py-2 text-gray-500 dark:text-gray-400">
+                <p className="text-p4 py-2 text-gray-500 dark:text-text-text-and-icon">
                   {description}
                 </p>
 
                 <Button
-                  size="xs"
-                  color="primary"
+                  size="sm"
                   className="mt-2 w-full"
-                  endIcon={<HiArrowRight />}
+                  endIcon={
+                    <span className="w-4 h-4">
+                      <ArrowLine className="rotate-90" />
+                    </span>
+                  }
                   onClick={() => {
                     navigate(
                       generatePath('/onboard/scan/configure/:scanType', {
@@ -288,8 +282,14 @@ const ChooseScan = () => {
       />
       <SelectedAccount state={state} />
       <ScanHeader state={state} />
-      <Button onClick={goBack} color="default" size="xs" className="mt-12" type="button">
-        Go Back
+      <Button
+        onClick={goBack}
+        color="default"
+        className="mt-12"
+        type="button"
+        variant="outline"
+      >
+        cancel
       </Button>
     </>
   );

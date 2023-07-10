@@ -1,25 +1,38 @@
-import cx from 'classnames';
-import { HiViewGridAdd } from 'react-icons/hi';
-import { Card, Step, Stepper, Typography } from 'ui-components';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense } from 'react';
+import { Card, IconButton, Step, Stepper } from 'ui-components';
 
-import { CopyToClipboard } from '@/components/CopyToClipboard';
-import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
+import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { DFLink } from '@/components/DFLink';
+import { CopyLineIcon } from '@/components/icons/common/CopyLine';
+import { InfoIcon } from '@/components/icons/common/Info';
+import { queries } from '@/queries';
 
-export const GCPConnectorForm = () => {
+const useGetApiToken = () => {
+  return useSuspenseQuery({
+    ...queries.auth.apiToken(),
+    keepPreviousData: true,
+  });
+};
+const PLACEHOLDER_API_KEY = '---DEEPFENCE-API-KEY--';
+
+const FirstCommand = () => {
+  const { copy, isCopied } = useCopyToClipboardState();
   const { status, data } = useGetApiToken();
+  const apiToken = data?.apiToken?.api_token;
   const dfApiKey =
-    status !== 'idle'
-      ? '---DEEPFENCE-API-KEY---'
-      : data?.api_token === undefined
-      ? '---DEEPFENCE-API-KEY---'
-      : data?.api_token;
-  const code = `
-provider "google" {
+    status !== 'success'
+      ? PLACEHOLDER_API_KEY
+      : apiToken === undefined
+      ? PLACEHOLDER_API_KEY
+      : apiToken;
+
+  const code = `provider "google" {
   project = "<PROJECT_ID>; ex. dev1-123456"
   region  = "<REGION_ID>; ex. asia-east1"
 }
 
-provider "google-beta" {
+ provider "google-beta" {
   project = "<PROJECT_ID> ex. dev1-123456"
   region  = "<REGION_ID>; ex. asia-east1"
 }
@@ -41,81 +54,164 @@ variable "image" {
 `;
 
   return (
+    <>
+      <pre className="h-fit text-p7 dark:text-text-text-and-icon">{code}</pre>
+      <div className="flex items-center ml-auto self-start">
+        {isCopied ? 'copied' : null}
+        <IconButton
+          className="dark:focus:outline-none"
+          icon={<CopyLineIcon />}
+          variant="flat"
+          onClick={() => {
+            copy(code);
+          }}
+        />
+      </div>
+    </>
+  );
+};
+const SecondCommand = () => {
+  const { copy, isCopied } = useCopyToClipboardState();
+
+  return (
+    <div className="flex items-center">
+      <pre className="h-fit text-p7 dark:text-text-text-and-icon">terraform init</pre>
+      <div className="flex items-center ml-auto self-start">
+        {isCopied ? 'copied' : null}
+        <IconButton
+          className="dark:focus:outline-none"
+          icon={<CopyLineIcon />}
+          variant="flat"
+          onClick={() => {
+            copy('terraform init');
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+const ThirdCommand = () => {
+  const { copy, isCopied } = useCopyToClipboardState();
+
+  return (
+    <div className="flex items-center">
+      <pre className="h-fit text-p7 dark:text-text-text-and-icon">terraform plan</pre>
+      <div className="flex items-center ml-auto self-start">
+        {isCopied ? 'copied' : null}
+        <IconButton
+          className="dark:focus:outline-none"
+          icon={<CopyLineIcon />}
+          variant="flat"
+          onClick={() => {
+            copy('terraform plan');
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+const FourthCommand = () => {
+  const { copy, isCopied } = useCopyToClipboardState();
+
+  return (
+    <div className="flex items-center">
+      <pre className="h-fit text-p7 dark:text-text-text-and-icon">terraform apply</pre>
+      <div className="flex items-center ml-auto self-start">
+        {isCopied ? 'copied' : null}
+        <IconButton
+          className="dark:focus:outline-none"
+          icon={<CopyLineIcon />}
+          variant="flat"
+          onClick={() => {
+            copy('terraform apply');
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+const Skeleton = () => {
+  return (
+    <>
+      <div className="animate-pulse flex flex-col gap-y-2">
+        <div className="h-2 w-[200px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="ml-4 h-2 w-[300px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="ml-4 h-2 w-[310px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[4px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <br />
+
+        <div className="h-2 w-[200px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="ml-4 h-2 w-[300px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="ml-4 h-2 w-[310px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[4px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <br />
+
+        <div className="h-2 w-[400px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="ml-4 h-2 w-[420px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="ml-4 h-2 w-[200px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="ml-4 h-2 w-[380px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="ml-4 h-2 w-[220px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="ml-4 h-2 w-[190px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="ml-4 h-2 w-[300px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="ml-4 h-2 w-[450px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[4px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <br />
+
+        <div className="h-2 w-[200px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[240px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[600px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[4px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+      </div>
+    </>
+  );
+};
+
+export const GCPConnectorForm = () => {
+  return (
     <Stepper>
-      <Step indicator={<HiViewGridAdd />} title="Teraform">
-        <div className={`${Typography.size.sm} dark:text-gray-200`}>
+      <Step
+        indicator={
+          <span className="w-4 h-4">
+            <InfoIcon />
+          </span>
+        }
+        title="Teraform"
+      >
+        <div className="text-p7 dark:text-text-text-and-icon">
           Connect to your Google Cloud Account via Teraform. Find out more information by{' '}
-          <a
+          <DFLink
             href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage`}
             target="_blank"
             rel="noreferrer"
-            className="text-blue-600 dark:text-blue-500 mt-2"
+            className="mt-2"
           >
             reading our documentation
-          </a>
+          </DFLink>
           .
         </div>
       </Step>
-      <Step indicator="1" title="Region Selection">
-        <div>
-          <p className={`mb-2.5 ${Typography.size.sm} dark:text-gray-200`}>
+      <Step indicator="1" title="Copy Code">
+        <div className="text-p7 dark:text-text-text-and-icon">
+          <p className="mb-2.5">
             Copy the following code and paste it into a .tf file on your local machine:
           </p>
-          <Card className="w-full relative ">
-            <pre
-              className={cx(
-                'p-4 overflow-auto',
-                `${Typography.weight.normal} ${Typography.size.xs} `,
-              )}
-            >
-              {code}
-            </pre>
-            <CopyToClipboard data={code} asIcon />
+          <Card className="w-full relative flex p-4 items-center">
+            <Suspense fallback={<Skeleton />}>
+              <FirstCommand />
+            </Suspense>
           </Card>
         </div>
       </Step>
       <Step indicator="2" title="Deploy">
-        <div className={`${Typography.size.sm} dark:text-gray-400`}>
+        <div className="text-p7 dark:text-text-text-and-icon">
           <p className="mb-2.5">
             Copy the following commands and paste them into your shell.
           </p>
-          <Card className="w-full relative">
-            <div className="relative">
-              <pre
-                className={cx(
-                  'pl-4 pt-4',
-                  'h-fit',
-                  `${Typography.weight.normal} ${Typography.size.xs} `,
-                )}
-              >
-                terraform init
-              </pre>
-              <CopyToClipboard data={'terraform init'} className="top-4" asIcon />
-            </div>
-            <div className="relative">
-              <pre
-                className={cx(
-                  'px-4',
-                  'h-fit',
-                  `${Typography.weight.normal} ${Typography.size.xs} `,
-                )}
-              >
-                terraform plan
-              </pre>
-              <CopyToClipboard data={'terraform plan'} className="top-0" asIcon />
-            </div>
-            <div className="relative">
-              <pre
-                className={cx(
-                  'px-4',
-                  'h-fit',
-                  `${Typography.weight.normal} ${Typography.size.xs} `,
-                )}
-              >
-                terraform apply
-              </pre>
-              <CopyToClipboard data={'terraform apply'} className="top-0" asIcon />
-            </div>
+          <Card className="w-full relative flex flex-col p-4">
+            <SecondCommand />
+            <ThirdCommand />
+            <FourthCommand />
           </Card>
         </div>
       </Step>

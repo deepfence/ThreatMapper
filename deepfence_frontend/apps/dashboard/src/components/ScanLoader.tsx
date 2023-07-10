@@ -2,7 +2,7 @@ import './scan.css';
 
 export const ScanLoader = ({ text }: { text: string }) => {
   return (
-    <div className="flex flex-col items-center mb-10">
+    <div className="flex flex-col items-center">
       <div className="scan-summary">
         <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150">
           <circle
@@ -101,9 +101,13 @@ export const ScanLoader = ({ text }: { text: string }) => {
       <span className="text-blue-500 animate-pulse text-md tracking-wider">
         Scanning...
       </span>
-      <section className="text-center mt-4">
-        <h2 className="text-base font-medium text-gray-700 dark:text-gray-400">{text}</h2>
-      </section>
+      {text ? (
+        <section className="text-center mt-4">
+          <h2 className="text-base font-medium text-gray-700 dark:text-gray-400">
+            {text}
+          </h2>
+        </section>
+      ) : null}
     </div>
   );
 };

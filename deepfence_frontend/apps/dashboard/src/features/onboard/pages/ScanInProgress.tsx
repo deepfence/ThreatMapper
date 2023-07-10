@@ -1,26 +1,7 @@
-import cx from 'classnames';
+import { useSuspenseQuery } from '@suspensive/react-query';
 import { uniq } from 'lodash-es';
-import { useMemo, useState } from 'react';
-import { FaCheckDouble, FaExclamationTriangle } from 'react-icons/fa';
-import {
-  HiCheck,
-  HiChevronDown,
-  HiChevronRight,
-  HiChevronUp,
-  HiExclamationCircle,
-  HiOutlineChevronDoubleLeft,
-  HiOutlineChevronDoubleRight,
-  HiOutlineExclamationCircle,
-} from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
-import {
-  generatePath,
-  Link,
-  LoaderFunctionArgs,
-  useLoaderData,
-  useParams,
-  useRevalidator,
-} from 'react-router-dom';
+import { Suspense, useMemo, useState } from 'react';
+import { generatePath, useParams } from 'react-router-dom';
 import { useInterval } from 'react-use';
 import {
   Button,
@@ -30,25 +11,19 @@ import {
   Table,
 } from 'ui-components';
 
-import {
-  getCloudComplianceApiClient,
-  getComplianceApiClient,
-  getMalwareApiClient,
-  getSecretApiClient,
-  getVulnerabilityApiClient,
-} from '@/api/api';
 import { ModelScanInfo } from '@/api/generated';
 import { ModelComplianceScanInfo } from '@/api/generated/models/ModelComplianceScanInfo';
+import { DFLink } from '@/components/DFLink';
+import { ArrowLine } from '@/components/icons/common/ArrowLine';
+import { CaretDown } from '@/components/icons/common/CaretDown';
+import { ErrorIcon, SuccessIcon } from '@/components/icons/common/ScanStatuses';
 import { ScanLoader } from '@/components/ScanLoader';
+import { ScanStatusBadge } from '@/components/ScanStatusBadge';
+import { TruncatedText } from '@/components/TruncatedText';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
-import { apiWrapper } from '@/utils/api';
+import { invalidateAllQueries, queries } from '@/queries';
+import { ScanTypeEnum } from '@/types/common';
 import { usePageNavigation } from '@/utils/usePageNavigation';
-
-export type LoaderDataType = {
-  error?: string;
-  message?: string;
-  data?: (ModelComplianceScanInfo | ModelScanInfo)[];
-};
 
 type TableDataType = ModelComplianceScanInfo | ModelScanInfo;
 
@@ -59,40 +34,39 @@ type TextProps = {
 };
 
 type ConfigProps = {
-  vulnerability: TextProps;
-  secret: TextProps;
-  malware: TextProps;
-  compliance: TextProps;
+  [ScanTypeEnum.VulnerabilityScan]: TextProps;
+  [ScanTypeEnum.SecretScan]: TextProps;
+  [ScanTypeEnum.MalwareScan]: TextProps;
+  [ScanTypeEnum.ComplianceScan]: TextProps;
+  [ScanTypeEnum.CloudComplianceScan]: TextProps;
   alert: TextProps;
 };
 
-export const statusScanApiFunctionMap = {
-  vulnerability: getVulnerabilityApiClient().statusVulnerabilityScan,
-  secret: getSecretApiClient().statusSecretScan,
-  malware: getMalwareApiClient().statusMalwareScan,
-  compliance: getComplianceApiClient().statusComplianceScan,
-  cloudCompliance: getCloudComplianceApiClient().statusCloudComplianceScan,
-};
-
 const configMap: ConfigProps = {
-  vulnerability: {
+  [ScanTypeEnum.VulnerabilityScan]: {
     scanningText: 'Your Vulnerability Scan is currently running...',
     headerText: 'Vulnerability Scan',
     subHeaderText:
       'Vulnerability Scan has been initiated, it will be completed in few moments.',
   },
-  secret: {
+  [ScanTypeEnum.SecretScan]: {
     scanningText: 'Your Secret Scan is currently running...',
     headerText: 'Secret Scan',
     subHeaderText: 'Secret Scan has been initiated, it will be completed in few moments.',
   },
-  malware: {
+  [ScanTypeEnum.MalwareScan]: {
     scanningText: 'Your Malware Scan is currently running...',
     headerText: 'Malware Scan',
     subHeaderText:
       'Malware Scan has been initiated, it will be completed in few moments.',
   },
-  compliance: {
+  [ScanTypeEnum.ComplianceScan]: {
+    scanningText: 'Your Posture Scan is currently running...',
+    headerText: 'Posture Scan',
+    subHeaderText:
+      'Posture Scan has been initiated, it will be completed in few moments.',
+  },
+  [ScanTypeEnum.CloudComplianceScan]: {
     scanningText: 'Your Posture Scan is currently running...',
     headerText: 'Posture Scan',
     subHeaderText:
@@ -106,50 +80,16 @@ const configMap: ConfigProps = {
   },
 };
 
-async function getScanStatus(
-  scanType: keyof typeof statusScanApiFunctionMap,
-  bulkScanId: string,
-  nodeType: string,
-): Promise<LoaderDataType> {
-  // TODO: Backend wants compliance status api for cloud to use cloud-compliance api
-  if (scanType === 'compliance' && nodeType === 'cloud_account') {
-    scanType = 'cloudCompliance';
-  }
-
-  const statusScanApi = apiWrapper({
-    fn: statusScanApiFunctionMap[scanType],
-  });
-  const statusResponse = await statusScanApi({
-    modelScanStatusReq: {
-      scan_ids: [],
-      bulk_scan_id: bulkScanId,
-    },
-  });
-  if (!statusResponse.ok) {
-    throw statusResponse.error;
-  }
-
-  if (statusResponse.value === null) {
-    return {
-      data: [],
-    };
-  }
-  if (statusResponse.value.statuses && Array.isArray(statusResponse.value.statuses)) {
-    return {
-      data: statusResponse.value.statuses,
-    };
-  }
-
-  return {
-    data: Object.values(statusResponse.value.statuses ?? {}),
-  };
-}
-
-const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderDataType> => {
-  const nodeType = params?.nodeType ?? '';
+const useScanInProgress = () => {
+  const params = useParams();
   const bulkScanId = params?.bulkScanId ?? '';
-  const scanType = params?.scanType as keyof typeof statusScanApiFunctionMap;
-  return await getScanStatus(scanType, bulkScanId, nodeType);
+  const scanType = params?.scanType as ScanTypeEnum;
+  return useSuspenseQuery({
+    ...queries.onboard.scanStatus({
+      bulkScanId,
+      scanType,
+    }),
+  });
 };
 
 function areAllScanDone(scanStatuses: string[]) {
@@ -168,14 +108,6 @@ function areAllScanFailed(scanStatuses: string[]) {
   );
 }
 
-function isScanDone(status: string) {
-  return status === 'COMPLETE' || status === 'ERROR';
-}
-
-function isScanCompleted(status: string) {
-  return status === 'COMPLETE';
-}
-
 function isScanFailed(status: string) {
   return status === 'ERROR';
 }
@@ -188,53 +120,45 @@ export const ScanInProgressError = () => {
         description={'An error has occured, please retry.'}
       />
       <div className="flex flex-col items-center">
-        <IconContext.Provider
-          value={{
-            className: 'w-[70px] h-[70px] dark:text-gray-400 text-gray-900',
-          }}
-        >
-          <FaExclamationTriangle />
-        </IconContext.Provider>
-        <p className="text-sm text-red-500 mt-3">
-          Opps! An error has occured during your scan, please try again
+        <span className="w-[70px] h-[70px]">
+          <ErrorIcon />
+        </span>
+        <p className="text-p7 dark:text-status-error mt-4">
+          An error has occured during your scan, please try again
         </p>
 
-        <Link
-          to="/onboard/connectors/my-connectors"
-          className={cx(
-            `test-sm mt-2`,
-            'underline underline-offset-4 bg-transparent text-blue-600 dark:text-blue-500',
-          )}
-        >
-          Try Again
-        </Link>
+        <DFLink to="/onboard/connectors/my-connectors" className="mt-2">
+          Try again
+        </DFLink>
       </div>
     </>
   );
 };
-
-const ScanInProgress = () => {
+const ScanStatus = () => {
   const params = useParams();
-  const { navigate } = usePageNavigation();
-  const loaderData = useLoaderData() as LoaderDataType;
-  const revalidator = useRevalidator();
-  const [expand, setExpand] = useState(false);
-
   const { scanType, bulkScanId } = params as {
     scanType: keyof ConfigProps;
     bulkScanId: string;
   };
-  const textMap = configMap[scanType];
+  const { data } = useScanInProgress();
+
+  const allScanFailed = areAllScanFailed(data?.data?.map((data) => data.status) ?? []);
+  const allScanDone = areAllScanDone(data?.data?.map((data) => data.status) ?? []);
+
+  useInterval(() => {
+    if (!data.message && !allScanDone) {
+      invalidateAllQueries();
+    }
+  }, 10000);
+
+  const { navigate } = usePageNavigation();
+  const [expand, setExpand] = useState(false);
+
   const columnHelper = createColumnHelper<TableDataType>();
-
-  const allScanFailed = areAllScanFailed(
-    loaderData?.data?.map((data) => data.status) ?? [],
-  );
-  const allScanDone = areAllScanDone(loaderData?.data?.map((data) => data.status) ?? []);
-
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('node_type', {
+        enableSorting: true,
         cell: (info) => {
           return (
             <span className="capitalize">{info.getValue()?.replaceAll('_', ' ')}</span>
@@ -245,7 +169,8 @@ const ScanInProgress = () => {
         size: 70,
       }),
       columnHelper.accessor('node_id', {
-        cell: (info) => info.getValue(),
+        enableSorting: true,
+        cell: (info) => <TruncatedText text={info.getValue()} />,
         header: () => 'Name',
         minSize: 125,
         size: 150,
@@ -254,34 +179,12 @@ const ScanInProgress = () => {
 
     columns.push(
       columnHelper.accessor((row) => row.status, {
+        enableSorting: true,
         id: 'status',
         minSize: 50,
         size: 70,
         cell: (info) => {
-          let color = null;
-          let icon = null;
-          if (!isScanDone(info.row.original.status)) {
-            color = 'text-blue-500';
-            icon = <CircleSpinner size="xs" className="mr-2" />;
-          } else if (isScanCompleted(info.row.original.status)) {
-            color = 'text-green-500';
-            icon = <HiCheck />;
-          } else if (isScanFailed(info.row.original.status)) {
-            color = 'text-red-500';
-            icon = <HiExclamationCircle />;
-          }
-          return (
-            <div className={cx(`${color} flex items-center gap-x-2`)}>
-              {info.getValue().replaceAll('_', ' ')}
-              <IconContext.Provider
-                value={{
-                  className: `${color} w-4 h-4 mr-2`,
-                }}
-              >
-                {icon}
-              </IconContext.Provider>
-            </div>
-          );
+          return <ScanStatusBadge status={info.getValue()} />;
         },
         header: () => <span>Status</span>,
       }),
@@ -303,69 +206,74 @@ const ScanInProgress = () => {
                 row.getToggleExpandedHandler()();
               }}
             >
-              {row.getIsExpanded() ? <HiChevronDown /> : <HiChevronRight />}
+              {row.getIsExpanded() ? (
+                <span className="w-4 h-4 block">
+                  <CaretDown />
+                </span>
+              ) : (
+                <span className="w-4 h-4 block -rotate-90">
+                  <CaretDown />
+                </span>
+              )}
             </button>
           ) : null;
         },
       }),
     );
     return columns;
-  }, [loaderData.data]);
-
-  useInterval(() => {
-    if (!loaderData.message && !allScanDone) {
-      revalidator.revalidate();
-    }
-  }, 10000);
+  }, [data]);
 
   return (
     <>
-      <ConnectorHeader title={textMap.headerText} description={textMap.subHeaderText} />
       <section className="flex flex-col justify-center items-center">
         {!allScanDone ? (
           <ScanLoader text={''} />
         ) : (
           <>
-            <IconContext.Provider
-              value={{
-                className: cx('w-[80px] h-[80px]', {
-                  'text-green-500': !allScanFailed,
-                  'text-red-500': allScanFailed,
-                }),
-              }}
-            >
-              {allScanFailed ? <HiOutlineExclamationCircle /> : <FaCheckDouble />}
-            </IconContext.Provider>
-            <h3 className="text-2xl font-semibold pt-1 dark:text-gray-200">
+            {allScanFailed ? (
+              <span className="w-20 h-20">
+                <ErrorIcon />
+              </span>
+            ) : (
+              <span className="w-20 h-20">
+                <SuccessIcon />
+              </span>
+            )}
+            <h3 className="text-h2 pt-1 dark:text-df-gray-200">
               Scan {allScanFailed ? 'Failed' : 'Done'}
             </h3>
-            <div className="mt-6">
+            <div className="mt-2">
               {allScanFailed ? (
                 <Button
+                  variant="flat"
                   size="sm"
-                  startIcon={<HiOutlineChevronDoubleLeft />}
+                  color="error"
+                  startIcon={<ArrowLine className="-rotate-90" />}
                   onClick={() => navigate('/onboard/connectors/my-connectors')}
-                  color="primary"
                   type="button"
                 >
                   Go back to try again
                 </Button>
               ) : (
                 <Button
+                  variant="flat"
                   size="sm"
-                  endIcon={<HiOutlineChevronDoubleRight />}
+                  endIcon={
+                    <span className="block -rotate-90">
+                      <CaretDown />
+                    </span>
+                  }
                   onClick={() =>
                     navigate(
                       generatePath(
                         `/onboard/scan/view-summary/${scanType}/:nodeType/:bulkScanId`,
                         {
-                          nodeType: loaderData?.data?.[0]?.node_type ?? '',
+                          nodeType: data?.data?.[0]?.node_type ?? '',
                           bulkScanId,
                         },
                       ),
                     )
                   }
-                  color="primary"
                 >
                   Go to scan results
                 </Button>
@@ -374,27 +282,32 @@ const ScanInProgress = () => {
           </>
         )}
 
-        <div
-          className={cx('flex justify-center items-center', {
-            'mt-10': allScanDone,
-            '-mt-10': !allScanDone,
-          })}
-        >
-          <p className="text-sm text-gray-700 dark:text-gray-200">
+        <div className="flex justify-center items-center mt-10">
+          <p className="text-p7 text-gray-700 dark:text-text-text-and-icon">
             {!allScanDone
               ? `${
                   scanType.charAt(0).toUpperCase() + scanType.slice(1)
-                } scan started for ${loaderData?.data?.length} ${uniq(
-                  loaderData.data?.map((data) => data.node_type?.replace('_', ' ')) ?? [],
-                ).join(' and ')}${(loaderData?.data?.length ?? 0) > 1 ? 's' : ''}`
-              : 'All the scan are done'}
+                } scan started for ${data?.data?.length} ${uniq(
+                  data.data?.map((data) => data.node_type?.replace('_', ' ')) ?? [],
+                ).join(' and ')}${(data?.data?.length ?? 0) > 1 ? 's' : ''}`
+              : 'All scan are done'}
           </p>
         </div>
         <Button
           size="sm"
-          endIcon={expand ? <HiChevronUp /> : <HiChevronDown />}
+          color={allScanFailed ? 'error' : 'default'}
+          endIcon={
+            expand ? (
+              <span className="rotate-180">
+                <CaretDown />
+              </span>
+            ) : (
+              <span className="block -rotate-90">
+                <CaretDown />
+              </span>
+            )
+          }
           onClick={() => setExpand((state) => !state)}
-          color={expand ? 'primary' : 'normal'}
           outline={expand ? false : true}
           className="mt-4"
         >
@@ -405,15 +318,16 @@ const ScanInProgress = () => {
         <section className="mt-4 flex justify-center ">
           <div className="max-w-[900px]">
             <Table
-              size="sm"
-              data={loaderData.data ?? []}
+              enableSorting
+              size="default"
+              data={data.data ?? []}
               columns={columns}
               getRowCanExpand={() => {
                 return true;
               }}
               renderSubComponent={({ row }) => {
                 return (
-                  <p className="text-red-500 py-2 px-4 overflow-auto text-sm">
+                  <p className="dark:text-status-error py-2 px-4 overflow-auto text-p7">
                     {row.original.status_message}
                   </p>
                 );
@@ -425,9 +339,26 @@ const ScanInProgress = () => {
     </>
   );
 };
+const ScanInProgress = () => {
+  const params = useParams();
+
+  const { scanType } = params as {
+    scanType: keyof ConfigProps;
+    bulkScanId: string;
+  };
+  const textMap = configMap[scanType];
+
+  return (
+    <>
+      <ConnectorHeader title={textMap.headerText} description={textMap.subHeaderText} />
+      <Suspense fallback={<CircleSpinner size="md" />}>
+        <ScanStatus />
+      </Suspense>
+    </>
+  );
+};
 
 export const module = {
-  loader,
   element: <ScanInProgress />,
   errorElement: <ScanInProgressError />,
 };
