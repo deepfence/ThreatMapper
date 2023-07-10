@@ -451,6 +451,7 @@ const ScanHistory = () => {
 };
 const HistoryControls = () => {
   const { data } = useScanResults();
+  const { nodeType } = useParams();
   const { scanStatusResult } = data;
   const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
   const { navigate } = usePageNavigation();
@@ -466,7 +467,7 @@ const HistoryControls = () => {
     }),
   });
 
-  if (!scan_id || !node_id || !node_type) {
+  if (!scan_id || !node_id || !node_type || !nodeType) {
     throw new Error('Scan Type, Node Type and Node Id are required');
   }
   if (!updated_at) {
@@ -492,8 +493,9 @@ const HistoryControls = () => {
           },
           onScanClick: () => {
             navigate(
-              generatePath('/posture/cloud/scan-results/:scanId', {
-                scanId: item.scanId,
+              generatePath(`/posture/cloud/scan-results/:nodeType/:scanId`, {
+                scanId: encodeURIComponent(item.scanId),
+                nodeType: nodeType,
               }),
               {
                 replace: true,

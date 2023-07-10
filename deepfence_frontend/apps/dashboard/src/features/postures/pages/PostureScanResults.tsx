@@ -488,7 +488,7 @@ const HistoryControls = () => {
           onScanClick: () => {
             navigate(
               generatePath('/posture/scan-results/:scanId', {
-                scanId: item.scanId,
+                scanId: encodeURIComponent(item.scanId),
               }),
               {
                 replace: true,
