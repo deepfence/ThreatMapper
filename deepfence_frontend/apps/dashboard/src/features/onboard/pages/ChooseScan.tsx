@@ -1,9 +1,9 @@
-import { IconContext } from 'react-icons';
-import { HiArrowRight, HiSwitchHorizontal } from 'react-icons/hi';
 import { generatePath, Navigate, useLocation } from 'react-router-dom';
 import { Button, Card, Separator, Tooltip } from 'ui-components';
 
+import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { CloudLine } from '@/components/icons/common/CloudLine';
+import { SwitchIcon } from '@/components/icons/common/Switch';
 import { HostIcon } from '@/components/icons/host';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
@@ -176,7 +176,11 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
           variant="flat"
           className="ml-auto px-2 py-1"
           size="sm"
-          startIcon={<HiSwitchHorizontal />}
+          startIcon={
+            <span className="w-4 h-4">
+              <SwitchIcon />
+            </span>
+          }
           onClick={() => {
             navigate('/onboard/connectors/my-connectors');
           }}
@@ -201,30 +205,26 @@ const ScanHeader = ({ state }: { state: OnboardConnectionNode[] }) => {
                 <h2
                   className={`flex items-center gap-x-2 text-h3 dark:text-text-input-value pb-2`}
                 >
-                  <IconContext.Provider
-                    value={{ className: 'w-8 h-8 text-blue-600 dark:text-blue-500' }}
-                  >
-                    {scanType === ScanTypeEnum.VulnerabilityScan && (
-                      <div className="w-5 h-5 text-blue-600 dark:text-status-info">
-                        <VulnerabilityIcon />
-                      </div>
-                    )}
-                    {scanType === ScanTypeEnum.ComplianceScan && (
-                      <div className="w-5 h-5 text-blue-600 dark:text-status-info">
-                        <PostureIcon />
-                      </div>
-                    )}
-                    {scanType === ScanTypeEnum.SecretScan && (
-                      <div className="w-5 h-5 text-blue-600 dark:text-status-info">
-                        <SecretsIcon />
-                      </div>
-                    )}
-                    {scanType === ScanTypeEnum.MalwareScan && (
-                      <div className="w-5 h-5 text-blue-600 dark:text-status-info">
-                        <MalwareIcon />
-                      </div>
-                    )}
-                  </IconContext.Provider>
+                  {scanType === ScanTypeEnum.VulnerabilityScan && (
+                    <div className="w-5 h-5 text-blue-600 dark:text-status-info">
+                      <VulnerabilityIcon />
+                    </div>
+                  )}
+                  {scanType === ScanTypeEnum.ComplianceScan && (
+                    <div className="w-5 h-5 text-blue-600 dark:text-status-info">
+                      <PostureIcon />
+                    </div>
+                  )}
+                  {scanType === ScanTypeEnum.SecretScan && (
+                    <div className="w-5 h-5 text-blue-600 dark:text-status-info">
+                      <SecretsIcon />
+                    </div>
+                  )}
+                  {scanType === ScanTypeEnum.MalwareScan && (
+                    <div className="w-5 h-5 text-blue-600 dark:text-status-info">
+                      <MalwareIcon />
+                    </div>
+                  )}
                   {scanTitle}
                 </h2>
                 <Separator />
@@ -237,7 +237,11 @@ const ScanHeader = ({ state }: { state: OnboardConnectionNode[] }) => {
                 <Button
                   size="sm"
                   className="mt-2 w-full"
-                  endIcon={<HiArrowRight />}
+                  endIcon={
+                    <span className="w-4 h-4">
+                      <ArrowLine className="rotate-90" />
+                    </span>
+                  }
                   onClick={() => {
                     navigate(
                       generatePath('/onboard/scan/configure/:scanType', {

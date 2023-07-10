@@ -1,7 +1,5 @@
 import cx from 'classnames';
 import { startCase } from 'lodash-es';
-import { HiOutlineArrowCircleRight, HiOutlineArrowLeft } from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
 import { generatePath, useParams } from 'react-router-dom';
 import { Card } from 'ui-components';
 
@@ -13,6 +11,7 @@ import { DFLink } from '@/components/DFLink';
 import { DockerConnectorForm } from '@/components/hosts-connector/DockerConnectorForm';
 import { K8ConnectorForm } from '@/components/hosts-connector/K8ConnectorForm';
 import { LinuxConnectorForm } from '@/components/hosts-connector/LinuxConnectorForm';
+import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { CloudLine } from '@/components/icons/common/CloudLine';
 import { HostIcon } from '@/components/icons/host';
 import { AwsIcon } from '@/components/icons/posture/Aws';
@@ -61,14 +60,9 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
       >
         <div className="w-10 h-10">{icon}</div>
         <div className="whitespace-nowrap overflow-hidden text-ellipsis">{label}</div>
-        <IconContext.Provider
-          value={{
-            className: 'ml-auto text-blue-700 dark:text-blue-500',
-            size: '18px',
-          }}
-        >
-          <HiOutlineArrowCircleRight />
-        </IconContext.Provider>
+        <span className="w-6 h-6 ml-auto">
+          <ArrowLine className="rotate-90" />
+        </span>
       </button>
     </div>
   );
@@ -186,15 +180,11 @@ const Host = () => {
 const Instructions = ({ connectorType }: { connectorType: string }) => {
   return (
     <>
-      <div className="p-2 flex gap-x-2 items-center">
+      <div className="mt-2 flex gap-x-2 items-center">
         <DFLink to={'../connection-instructions'}>
-          <IconContext.Provider
-            value={{
-              className: 'h-5 w-5',
-            }}
-          >
-            <HiOutlineArrowLeft />
-          </IconContext.Provider>
+          <div className="w-6 h-6 -rotate-90">
+            <ArrowLine />
+          </div>
         </DFLink>
         <h3 className="font-medium text-gray-900 dark:text-white text-base">
           {startCase(connectorType)}

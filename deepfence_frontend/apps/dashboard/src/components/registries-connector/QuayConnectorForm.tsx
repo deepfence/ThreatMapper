@@ -1,5 +1,4 @@
-import { HiViewGridAdd } from 'react-icons/hi';
-import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
+import { TextInput } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
