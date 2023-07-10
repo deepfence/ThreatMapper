@@ -38,6 +38,7 @@ const action = async ({
     modelPasswordResetVerifyRequest: {
       code: code as string,
       password: body.password as string,
+      namespace: body.namespace as string,
     },
   });
 
@@ -73,6 +74,7 @@ const ResetPassword = () => {
     <fetcher.Form method="post">
       <h1 className="dark:text-text-text-and-icon text-h2 text-center">Reset Password</h1>
       <input type="hidden" name="code" value={searchParams.get('code') ?? ''} />
+      <input type="hidden" name="namespace" value={searchParams.get('namespace') ?? ''} />
 
       <TextInput
         label="Password"

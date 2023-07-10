@@ -51,6 +51,7 @@ const action = async ({
       first_name: body.firstName as string,
       last_name: body.lastName as string,
       password: body.password as string,
+      namespace: body.namespace as string,
       is_temporary_password: false,
     },
   });
@@ -105,6 +106,7 @@ const RegisterWithInvite = () => {
         name="invite_code"
         value={searchParams.get('invite_code') ?? ''}
       />
+      <input type="hidden" name="namespace" value={searchParams.get('namespace') ?? ''} />
       <TextInput
         className="mt-8"
         label="First Name"
