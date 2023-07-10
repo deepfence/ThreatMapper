@@ -47,11 +47,11 @@ export const FourZeroFour = () => {
     <div className="min-h-screen isolate">
       {isAuth ? (
         <div>
-          <AppHeader
-            sideNavExpanded={sideNavExpanded}
-            onSideNavExpandedChange={(state) => setSideNavExpanded(state)}
+          <AppHeader />
+          <SideNavigation
+            expanded={sideNavExpanded}
+            onExpandedChange={(state) => setSideNavExpanded(state)}
           />
-          <SideNavigation expanded={sideNavExpanded} />
           <main
             className={classNames(
               'pt-[64px] h-screen overflow-hidden transition-[margin-left]',
