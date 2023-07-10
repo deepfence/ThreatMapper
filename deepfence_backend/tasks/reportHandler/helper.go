@@ -50,6 +50,11 @@ func newRedisPool() *redis.Pool {
 			}
 			return c, err
 		},
+		IdleTimeout: 240 * time.Second,
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			_, err := c.Do("PING")
+			return err
+		},
 	}
 }
 
