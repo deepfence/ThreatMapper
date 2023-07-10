@@ -12,43 +12,43 @@ variable "DEEPFENCE_KEY" {
   sensitive = true
 }
 
-# FAIL_CVE_COUNT variable can be overidden in variables.pkrvars.hcl
-variable "FAIL_CVE_COUNT" {
+# FAIL_SECRET_COUNT variable can be overidden in variables.pkrvars.hcl
+variable "FAIL_SECRET_COUNT" {
   type      = string
   default   = "100"
   sensitive = false
 }
 
-# FAIL_CRITICAL_CVE_COUNT variable can be overidden in variables.pkrvars.hcl
-variable "FAIL_CRITICAL_CVE_COUNT" {
+# FAIL_CRITICAL_SECRET_COUNT variable can be overidden in variables.pkrvars.hcl
+variable "FAIL_CRITICAL_SECRET_COUNT" {
   type      = string
   default   = "1"
   sensitive = false
 }
 
-# FAIL_HIGH_CVE_COUNT variable can be overidden in variables.pkrvars.hcl
-variable "FAIL_HIGH_CVE_COUNT" {
+# FAIL_HIGH_SECRET_COUNT variable can be overidden in variables.pkrvars.hcl
+variable "FAIL_HIGH_SECRET_COUNT" {
   type      = string
   default   = "5"
   sensitive = false
 }
 
-# FAIL_MEDIUM_CVE_COUNT variable can be overidden in variables.pkrvars.hcl
-variable "FAIL_MEDIUM_CVE_COUNT" {
+# FAIL_MEDIUM_SECRET_COUNT variable can be overidden in variables.pkrvars.hcl
+variable "FAIL_MEDIUM_SECRET_COUNT" {
   type      = string
   default   = "10"
   sensitive = false
 }
 
-# FAIL_LOW_CVE_COUNT variable can be overidden in variables.pkrvars.hcl
-variable "FAIL_LOW_CVE_COUNT" {
+# FAIL_LOW_SECRET_COUNT variable can be overidden in variables.pkrvars.hcl
+variable "FAIL_LOW_SECRET_COUNT" {
   type      = string
   default   = "20"
   sensitive = false
 }
 
-# FAIL_CVE_SCORE variable can be overidden in variables.pkrvars.hcl
-variable "FAIL_CVE_SCORE" {
+# FAIL_SECRET_SCORE variable can be overidden in variables.pkrvars.hcl
+variable "FAIL_SECRET_SCORE" {
   type      = string
   default   = "9"
   sensitive = false
@@ -57,7 +57,7 @@ variable "FAIL_CVE_SCORE" {
 # image_name variable can be overidden in variables.pkrvars.hcl
 variable "image_name" {
   type      = string
-  default   = "packer-alpine-nginx"
+  default   = "packer-nginx"
   sensitive = false
 }
 
