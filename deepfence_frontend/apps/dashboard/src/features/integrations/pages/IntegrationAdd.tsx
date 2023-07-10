@@ -477,7 +477,7 @@ const IntegrationAdd = () => {
   return (
     <div className="m-4">
       <Button
-        variant="outline"
+        variant="flat"
         startIcon={<PlusIcon />}
         onClick={() => {
           setOpenModal(true);

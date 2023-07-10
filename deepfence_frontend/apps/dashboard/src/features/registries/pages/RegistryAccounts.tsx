@@ -228,7 +228,7 @@ const Header = () => {
     queryKey: queries.registry.listRegistryAccounts._def,
   });
   return (
-    <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
       <Breadcrumb>
         <BreadcrumbLink asChild icon={<RegistryIcon />} isLink>
           <DFLink to={'/registries'} unstyled>
@@ -315,7 +315,7 @@ const CountWidget = () => {
 };
 const Widgets = () => {
   return (
-    <Card className="min-h-[140px] px-4 py-1.5 flex">
+    <Card className="min-h-[130px] px-4 flex">
       <Suspense
         fallback={
           <div className="flex m-auto items-center min-h-[100px]">
@@ -432,7 +432,7 @@ const RegistryAccountsResults = () => {
 
   return (
     <div className="self-start">
-      <div className="py-2 flex items-center">
+      <div className="h-12 flex items-center">
         <BulkActions
           ids={Object.keys(rowSelectionState)}
           onTableAction={onTableAction}
@@ -478,12 +478,11 @@ const RegistryAccounts = () => {
   return (
     <>
       <Header />
-      <div className="p-4">
+      <div className="m-4">
         <Widgets />
-      </div>
-
-      <div className="px-4 pb-4">
-        <RegistryAccountsResults />
+        <div className="py-4">
+          <RegistryAccountsResults />
+        </div>
       </div>
     </>
   );

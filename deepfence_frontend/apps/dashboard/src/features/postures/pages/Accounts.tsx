@@ -753,7 +753,7 @@ const Header = () => {
   });
 
   return (
-    <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
       <Breadcrumb>
         <BreadcrumbLink asChild icon={<PostureIcon />} isLink>
           <DFLink to={'/posture'} unstyled>
@@ -823,8 +823,8 @@ const Accounts = () => {
   return (
     <div>
       <Header />
-      <div className="m-4">
-        <div className="flex py-2 items-center">
+      <div className="mx-4 mb-4">
+        <div className="flex h-12 items-center">
           <BulkActions
             disabled={Object.keys(rowSelectionState).length === 0}
             onClick={() => {

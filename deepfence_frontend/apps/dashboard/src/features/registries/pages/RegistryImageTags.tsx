@@ -130,7 +130,7 @@ export const useScanResults = () => {
 
 const Header = () => {
   return (
-    <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<RegistryIcon />} isLink>
@@ -447,7 +447,7 @@ const RegistryImagesTagsResults = () => {
 
   return (
     <div className="self-start">
-      <div className="py-2 flex items-center">
+      <div className="h-12 flex items-center">
         <BulkActions
           ids={Object.keys(rowSelectionState).map((key) => key.split('<==>')[0])}
           onTableAction={onTableAction}
@@ -499,7 +499,7 @@ const RegistryImageTags = () => {
     <>
       <Header />
 
-      <div className="px-4 pb-4">
+      <div className="mx-4">
         <RegistryImagesTagsResults />
       </div>
     </>

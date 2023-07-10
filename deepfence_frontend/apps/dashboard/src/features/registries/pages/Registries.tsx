@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense } from 'react';
-import { Card } from 'ui-components';
+import { Breadcrumb, BreadcrumbLink, Card } from 'ui-components';
 
 import { ModelSummary } from '@/api/generated/models/ModelSummary';
 import { DFLink } from '@/components/DFLink';
@@ -114,19 +114,24 @@ const RegistryList = () => {
 const Registries = () => {
   return (
     <>
-      <div className="flex py-2 w-full bg-white dark:bg-bg-breadcrumb-bar">
-        <span className="dark:text-text-input-value pl-6 flex items-center text-sm leading-[30px]">
-          <span className="w-4 h-4 mr-1.5">
-            <RegistryIcon />
-          </span>
-          Registries
-        </span>
+      <div className="dark:bg-bg-breadcrumb-bar py-2 px-4">
+        <Breadcrumb>
+          <BreadcrumbLink icon={<RegistryIcon />} className="dark:text-text-input-value">
+            Registries
+          </BreadcrumbLink>
+        </Breadcrumb>
       </div>
-      <div className="mx-4 mt-[66px] flex gap-x-[20px] gap-y-[42px] flex-wrap">
-        <Suspense fallback={<RegistrySkeleton />}>
+      <Suspense
+        fallback={
+          <div className="flex gap-4 mx-4 my-10">
+            <RegistrySkeleton />
+          </div>
+        }
+      >
+        <div className="mx-4 my-10 flex gap-x-4 gap-y-10 flex-wrap">
           <RegistryList />
-        </Suspense>
-      </div>
+        </div>
+      </Suspense>
     </>
   );
 };

@@ -1,5 +1,5 @@
 import { Suspense, useState } from 'react';
-import { Button, Card, Separator } from 'ui-components';
+import { Breadcrumb, BreadcrumbLink, Button, Card, Separator } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { DownloadReportIcon } from '@/components/icons/integration/DownloadReport';
@@ -159,8 +159,8 @@ const Count = ({
   ).length;
   return (
     <div className="flex items-center gap-x-2 mt-2">
-      <span className="text-h2 dark:text-text-input-value">{len}</span>
-      <span className="text-p7 dark:text-text-text-and-icon">
+      <span className="text-h1 dark:text-text-input-value">{len}</span>
+      <span className="text-p4 dark:text-text-text-and-icon">
         {`Connection${len > 1 ? 's' : ''}`}
       </span>
     </div>
@@ -198,15 +198,17 @@ const Integrations = () => {
 
   return (
     <>
-      <div className="flex py-2 w-full bg-white dark:bg-bg-breadcrumb-bar">
-        <span className="dark:text-text-input-value pl-6 flex items-center text-sm leading-[30px]">
-          <span className="w-4 h-4 mr-1.5">
-            <IntegrationsIcon />
-          </span>
-          Integrations
-        </span>
+      <div className="dark:bg-bg-breadcrumb-bar py-2 px-4">
+        <Breadcrumb>
+          <BreadcrumbLink
+            icon={<IntegrationsIcon />}
+            className="dark:text-text-input-value"
+          >
+            Integrations
+          </BreadcrumbLink>
+        </Breadcrumb>
       </div>
-      <div className="m-4 p-2 gap-y-6 flex flex-col">
+      <div className="m-4 gap-y-6 flex flex-col">
         {IntegrationsData.map((integration) => {
           return (
             <section key={integration.name} className="flex flex-col">
@@ -248,10 +250,10 @@ const ReportCount = () => {
     <div className="flex gap-x-2 items-center">
       {reportCount > 0 ? (
         <DFLink to={'/integrations/download/report'}>
-          <span className="text-h2">{reportCount}</span>
+          <span className="text-h1">{reportCount}</span>
         </DFLink>
       ) : (
-        <span className="text-h2">0</span>
+        <span className="text-h1">0</span>
       )}
 
       <span className="text-p7">Reports generated</span>
@@ -277,8 +279,8 @@ const DownloadReport = () => {
     <div>
       <h2 className="uppercase text-t3 dark:text-text-input-value">Download reports</h2>
       <div className="mt-2 flex gap-x-4 items-center">
-        <div className="flex flex-col w-fit min-w-[208px]">
-          <Card className=" p-3 flex shrink-0 items-center dark:text-text-text-and-icon gap-x-4">
+        <div className="flex flex-col w-fit min-w-[208px] h-[84px]">
+          <Card className="p-3 flex shrink-0 items-center dark:text-text-text-and-icon gap-x-4 h-full">
             <span className="h-9 w-9 ">
               <DownloadReportIcon />
             </span>
