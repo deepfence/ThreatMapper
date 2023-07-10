@@ -33,7 +33,7 @@ build {
 
   post-processor "shell-local" {
     inline = [
-      "docker pull deepfenceio/deepfence_package_scanner_ce:v2",
+      "docker pull deepfenceio/deepfence_secret_scanner_ce:v2",
       "docker run -i --rm --net=host --privileged=true --cpus=\"0.3\" -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_secret_scanner_ce:v2 -image-name ${var.image_name}:${var.image_tag}"
     ]
   }
