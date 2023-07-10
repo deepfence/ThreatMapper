@@ -55,6 +55,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Microsoft/hcsshim v0.10.0-rc.8 // indirect
+	github.com/PagerDuty/go-pagerduty v1.7.0 // indirect
 	github.com/Shopify/sarama v1.38.1 // indirect
 	github.com/XSAM/otelsql v0.23.0 // indirect
 	github.com/acobaugh/osrelease v0.1.0 // indirect
@@ -122,6 +123,7 @@ require (
 	github.com/google/gnostic v0.6.9 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-containerregistry v0.15.2 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
