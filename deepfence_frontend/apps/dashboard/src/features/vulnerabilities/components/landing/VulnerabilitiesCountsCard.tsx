@@ -28,12 +28,6 @@ function getChartOptions({
     legend: {
       show: false,
     },
-    dataset: {
-      source: Object.keys(data).map((key) => ({
-        Secrets: key,
-        value: data[key],
-      })),
-    },
     series: [
       {
         type: 'pie',
@@ -56,13 +50,19 @@ function getChartOptions({
         emphasis: {
           disabled: true,
         },
-        color: [
-          SEVERITY_COLORS['critical'],
-          SEVERITY_COLORS['high'],
-          SEVERITY_COLORS['medium'],
-          SEVERITY_COLORS['low'],
-          SEVERITY_COLORS['unknown'],
-        ],
+        data: Object.keys(data)
+          .filter((key) => data[key] > 0)
+          .map((key) => {
+            return {
+              value: data[key],
+              name: key,
+              itemStyle: {
+                color:
+                  SEVERITY_COLORS[key as VulnerabilitySeverityType] ??
+                  SEVERITY_COLORS['unknown'],
+              },
+            };
+          }),
       },
     ],
   };
