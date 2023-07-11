@@ -1231,27 +1231,6 @@ const DynamicBreadcrumbs = () => {
 };
 
 const SeverityCountWidget = () => {
-  const params = useParams() as {
-    nodeType: string;
-    scanId: string;
-  };
-  let color: string[] = [];
-  if (params.nodeType === 'linux') {
-    color = [
-      POSTURE_STATUS_COLORS['info'],
-      POSTURE_STATUS_COLORS['pass'],
-      POSTURE_STATUS_COLORS['warn'],
-      POSTURE_STATUS_COLORS['note'],
-    ];
-  } else {
-    color = [
-      POSTURE_STATUS_COLORS['alarm'],
-      POSTURE_STATUS_COLORS['info'],
-      POSTURE_STATUS_COLORS['ok'],
-      POSTURE_STATUS_COLORS['skip'],
-      POSTURE_STATUS_COLORS['delete'],
-    ];
-  }
   const {
     data: { data },
   } = useScanResults();
@@ -1266,7 +1245,7 @@ const SeverityCountWidget = () => {
   return (
     <div className="grid grid-cols-12 px-6 items-center">
       <div className="col-span-2 h-[120px] w-[120px]">
-        <PostureScanResultsPieChart data={statusCounts} color={color} />
+        <PostureScanResultsPieChart data={statusCounts} />
       </div>
       <div className="col-span-2 dark:text-text-text-and-icon">
         <span className="text-p1">Total compliances</span>

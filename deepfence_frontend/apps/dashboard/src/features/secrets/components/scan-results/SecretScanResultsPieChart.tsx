@@ -3,6 +3,7 @@ import { preset } from 'tailwind-preset';
 
 import { ReactECharts } from '@/components/ReactEcharts';
 import { SEVERITY_COLORS } from '@/constants/charts';
+import { VulnerabilitySeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
 
 function getChartOptions({ data }: { data: { [key: string]: number } }) {
@@ -13,12 +14,6 @@ function getChartOptions({ data }: { data: { [key: string]: number } }) {
     },
     legend: {
       show: false,
-    },
-    dataset: {
-      source: Object.keys(data).map((key) => ({
-        Secrets: key,
-        value: data[key],
-      })),
     },
     series: [
       {
@@ -46,13 +41,19 @@ function getChartOptions({ data }: { data: { [key: string]: number } }) {
         emphasis: {
           scale: false,
         },
-        color: [
-          SEVERITY_COLORS['critical'],
-          SEVERITY_COLORS['high'],
-          SEVERITY_COLORS['medium'],
-          SEVERITY_COLORS['low'],
-          SEVERITY_COLORS['unknown'],
-        ],
+        data: Object.keys(data)
+          .filter((key) => data[key] > 0)
+          .map((key) => {
+            return {
+              value: data[key],
+              name: key,
+              itemStyle: {
+                color:
+                  SEVERITY_COLORS[key as VulnerabilitySeverityType] ??
+                  SEVERITY_COLORS['unknown'],
+              },
+            };
+          }),
       },
     ],
   };

@@ -1279,16 +1279,7 @@ const SeverityCountWidget = () => {
   return (
     <div className="grid grid-cols-12 px-6 items-center">
       <div className="col-span-2 h-[120px] w-[120px]">
-        <PostureScanResultsPieChart
-          data={statusCounts}
-          color={[
-            POSTURE_STATUS_COLORS['alarm'],
-            POSTURE_STATUS_COLORS['info'],
-            POSTURE_STATUS_COLORS['ok'],
-            POSTURE_STATUS_COLORS['skip'],
-            POSTURE_STATUS_COLORS['delete'],
-          ]}
-        />
+        <PostureScanResultsPieChart data={statusCounts} />
       </div>
       <div className="col-span-2 dark:text-text-text-and-icon">
         <span className="text-p1">Total compliances</span>

@@ -5,7 +5,7 @@ import { cn } from 'tailwind-preset';
 import { Dropdown, DropdownItem } from 'ui-components';
 
 import { CaretDown } from '@/components/icons/common/CaretDown';
-import { RereshIcon } from '@/components/icons/common/Refresh';
+import { RefreshIcon } from '@/components/icons/common/Refresh';
 import { queryClient } from '@/queries/client';
 
 // function that converts seconds to human friendly time
@@ -68,7 +68,7 @@ export const AutoRefresh = () => {
             'animate-spin direction-reverse': spinning,
           })}
         >
-          <RereshIcon />
+          <RefreshIcon />
         </span>
       </button>
       <Dropdown
