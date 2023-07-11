@@ -1,10 +1,9 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import cx from 'classnames';
 import { capitalize } from 'lodash-es';
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
-import { twMerge } from 'tailwind-merge';
+import { cn } from 'tailwind-preset';
 import {
   Button,
   CircleSpinner,
@@ -408,7 +407,7 @@ const InviteUserModal = ({
                 <span>{data?.message}</span>
               </div>
             )}
-            <div className="flex items-center gap-x-2">
+            <div className="flex items-center gap-x-2 mt-6">
               <Button
                 size="md"
                 type="submit"
@@ -556,7 +555,7 @@ const EditUserModal = ({
               <p className="dark:text-status-error text-p7">{data.message}</p>
             )}
 
-            <div className="flex gap-x-2">
+            <div className="flex gap-x-2 mt-6">
               <Button
                 size="md"
                 type="submit"
@@ -666,29 +665,30 @@ const CurrentUserInfo = ({
   return (
     <div>
       <div className="flex items-center">
-        <div className="flex items-end gap-2">
-          <span className="text-2xl dark:text-gray-100 font-semibold">
+        <div className="flex items-end">
+          <span className="text-2xl dark:text-gray-100 font-semibold min-w-[140px]">
             {`${currentUser?.first_name || ''} ${currentUser?.last_name || ''}`}
           </span>
-          <span
-            className={twMerge(
-              cx('font-semibold w-fit text-xs rounded-sm dark:text-gray-100 pb-0.5', {
-                'text-green-500 dark:text-status-success': currentUser?.is_active,
-                'text-gray-700 dark:text-df-gray-400': !currentUser?.is_active,
-              }),
-            )}
+          <Button
+            size="sm"
+            className="ml-auto"
+            variant="outline"
+            onClick={() => setOpenChangePasswordForm(true)}
           >
-            {currentUser?.is_active ? 'Active' : 'Inactive'}
-          </span>
+            Change Password
+          </Button>
         </div>
-        <Button
-          size="sm"
-          className="ml-auto"
-          variant="flat"
-          onClick={() => setOpenChangePasswordForm(true)}
+      </div>
+      <div className="flex mt-4 mb-2">
+        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Status</span>
+        <span
+          className={cn('text-p4 dark:text-text-input-value', {
+            'text-green-500 dark:text-status-success': currentUser?.is_active,
+            'text-gray-700 dark:text-df-gray-400': !currentUser?.is_active,
+          })}
         >
-          Change Password
-        </Button>
+          {currentUser?.is_active ? 'Active' : 'Inactive'}
+        </span>
       </div>
       <div className="flex mt-4 mb-2">
         <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Email</span>

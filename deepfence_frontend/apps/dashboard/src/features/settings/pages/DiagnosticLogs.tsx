@@ -22,6 +22,8 @@ import {
 import { DFLink } from '@/components/DFLink';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
+import { PlusIcon } from '@/components/icons/common/Plus';
 import { invalidateAllQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
@@ -163,8 +165,17 @@ const ConsoleDiagnosticLogsTable = () => {
             return 'No logs';
           }
           return (
-            <DFLink href={cell.row.original.url_link ?? ''} download target={'_blank'}>
-              Click to download
+            <DFLink
+              href={cell.row.original.url_link ?? ''}
+              download
+              target={'_blank'}
+              className="flex items-center gap-x-1 dark:text-accent-accent dark:hover:text-bg-hover-1"
+              unstyled
+            >
+              <span className="h-3 w-3">
+                <DownloadLineIcon />
+              </span>
+              Download
             </DFLink>
           );
         },
@@ -286,6 +297,8 @@ const ConsoleDiagnosticLogsComponent = () => {
       />
       <Button
         variant="flat"
+        size="sm"
+        startIcon={<PlusIcon />}
         disabled={fetcher.state !== 'idle'}
         loading={fetcher.state !== 'idle'}
       >
@@ -330,8 +343,10 @@ const AgentDiagnosticsLogsModal = ({
               hidden
               value={ACTION_TYPE.AGENT_LOGS}
             />
-            <SearchableHostList scanType="none" active={true} />
-            <SearchableClusterList active={true} />
+            <div className="flex flex-col gap-y-8">
+              <SearchableHostList scanType="none" active={true} triggerVariant="select" />
+              <SearchableClusterList active={true} triggerVariant="select" />
+            </div>
             <div className="flex gap-x-2 mt-8">
               <Button
                 type="submit"
@@ -366,7 +381,13 @@ const AgentDiagnosticLogsComponent = () => {
           setShowDialog={setShowDialog}
         />
       ) : null}
-      <Button variant="flat" onClick={() => setShowDialog(true)} className="w-fit">
+      <Button
+        variant="flat"
+        onClick={() => setShowDialog(true)}
+        className="w-fit"
+        size="sm"
+        startIcon={<PlusIcon />}
+      >
         Generate agent diagnostic logs
       </Button>
     </>
