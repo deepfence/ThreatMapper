@@ -90,16 +90,16 @@ const CardSkeleton = () => {
 const CardHeader = ({ name }: { name: string }) => {
   return (
     <div className="flex items-center w-full relative">
-      <div
+      {/* <div
         className={
-          'dark:bg-bg-grid-default absolute -top-[34px] left-[16px] rounded-full p-3 outline outline-red-500'
+          'dark:bg-bg-grid-default absolute -top-[36px] left-[16px] rounded-t-full ring-none ring-inset dark:group-hover:ring-2 dark:group-hover:ring-bg-hover-3 p-3'
         }
       >
         <div className="w-10 h-5" />
-      </div>
+      </div> */}
       <div
         className={
-          'dark:bg-bg-grid-default absolute -top-[34px] left-[16px] rounded-full p-3'
+          'dark:bg-bg-grid-default absolute -top-[38px] left-[16px] rounded-full before:absolute before:block before:height-full before:bg-transparent after:absolute after:block after:h-full  p-3'
         }
       >
         <PostureLogos name={name} />

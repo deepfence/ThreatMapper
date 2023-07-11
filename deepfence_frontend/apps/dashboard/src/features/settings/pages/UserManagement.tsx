@@ -925,6 +925,15 @@ const DeleteConfirmationModal = ({
         !fetcher.data?.success ? (
           <div className={'flex gap-x-4 justify-end'}>
             <Button
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+              size="md"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="md"
               color="error"
               type="submit"
               loading={fetcher.state !== 'idle'}
@@ -934,10 +943,7 @@ const DeleteConfirmationModal = ({
                 onDeleteAction();
               }}
             >
-              Yes, I&apos;m sure
-            </Button>
-            <Button onClick={() => setShowDialog(false)} type="button" variant="outline">
-              Cancel
+              Yes, delete
             </Button>
           </div>
         ) : undefined

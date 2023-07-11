@@ -310,7 +310,7 @@ const DeleteConfirmationModal = ({
         !fetcher.data?.success ? (
           <div className={'flex gap-x-4 justify-end'}>
             <Button
-              size="sm"
+              size="md"
               onClick={() => setShowDialog(false)}
               type="button"
               variant="outline"
@@ -318,14 +318,14 @@ const DeleteConfirmationModal = ({
               Cancel
             </Button>
             <Button
-              size="sm"
+              size="md"
               color="error"
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteAction(ActionEnumType.DELETE);
               }}
             >
-              Yes, I&apos;m sure
+              Yes, delete
             </Button>
           </div>
         ) : undefined
@@ -383,7 +383,7 @@ const DeleteScanConfirmationModal = ({
         !fetcher.data?.success ? (
           <div className={'flex gap-x-4 justify-end'}>
             <Button
-              size="sm"
+              size="md"
               onClick={() => onOpenChange(false)}
               type="button"
               variant="outline"
@@ -391,14 +391,14 @@ const DeleteScanConfirmationModal = ({
               Cancel
             </Button>
             <Button
-              size="sm"
+              size="md"
               color="error"
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteScan();
               }}
             >
-              Yes, I&apos;m sure
+              Yes, delete
             </Button>
           </div>
         ) : undefined
