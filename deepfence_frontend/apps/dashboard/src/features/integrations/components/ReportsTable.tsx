@@ -134,6 +134,7 @@ export const ReportTable = ({
         maxSize: 70,
       }),
       columnHelper.accessor('filters', {
+        enableSorting: false,
         cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
         header: () => 'Filters',
         minSize: 75,

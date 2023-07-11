@@ -14,7 +14,7 @@ export const TopRisksRuntimeDummy = () => {
   return (
     <Card className="rounded-[5px] flex flex-col h-full">
       <CardHeader icon={<AlertIcon />} title="Runtime incidents" />
-      <div className="flex-1 flex flex-col items-center">
+      <div className="flex-1 flex flex-col mb-4 items-center">
         <div className="relative mt-2">
           <div className="h-[152px] w-[152px] blur-[5px] opacity-[0.15]">
             <DummyDonutChart />

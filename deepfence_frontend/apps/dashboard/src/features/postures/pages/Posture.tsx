@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense } from 'react';
 import { cn } from 'tailwind-preset';
-import { Card, Separator } from 'ui-components';
+import { Breadcrumb, BreadcrumbLink, Card, Separator } from 'ui-components';
 
 import { ModelPostureProvider } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
@@ -90,14 +90,15 @@ const CardSkeleton = () => {
 const CardHeader = ({ name }: { name: string }) => {
   return (
     <div className="flex items-center w-full relative">
-      <div className="dark:bg-bg-grid-default absolute -top-[34px] left-[16px] rounded-full p-4">
-        <PostureLogos name={name} />
-      </div>
-      <DFLink className="ml-[114px]" to={`/posture/accounts/${name}`} unstyled>
-        <span className="flex items-center gap-2 text-t4 uppercase dark:text-text-input-value dark:hover:text-text-link pt-1">
-          {providersToNameMapping[name]}
+      <div className="dark:bg-bg-grid-default absolute -top-[34px] left-[12px] rounded-full p-3">
+        <span className="w-10 h-10 block">
+          <PostureLogos name={name} />
         </span>
-      </DFLink>
+      </div>
+
+      <span className="ml-[114px] flex items-center gap-2 text-t4 uppercase dark:text-text-input-value pt-1">
+        {providersToNameMapping[name]}
+      </span>
     </div>
   );
 };
@@ -170,13 +171,23 @@ const CardSectionCount = ({ provider }: { provider: ModelPostureProvider }) => {
 };
 const PostureCard = ({ provider }: { provider: ModelPostureProvider }) => {
   return (
-    <Card className="p-2 pb-3 flex flex-col dark:bg-bg-card">
-      <CardHeader name={provider.name || ''} />
-      <div className="mt-6 mb-2 grid grid-cols-3 place-items-center min-w-[322px]">
-        <CardSectionIcon provider={provider} />
-        <CardSectionText name={provider.name ?? ''} />
-        <CardSectionCount provider={provider} />
-      </div>
+    <Card
+      className={cn(
+        'relative group p-2 pb-3 flex flex-col dark:bg-bg-card',
+        'hover:outline outline-2 dark:outline-bg-hover-3',
+        "before:content-none hover:before:content-[''] before:w-[68px] before:h-[68px]",
+        'dark:before:bg-bg-hover-3 before:absolute before:-top-[28px]',
+        'before:left-[18px] before:rounded-full before:-z-10 cursor-pointer',
+      )}
+    >
+      <DFLink to={`/posture/accounts/${provider.name}`} unstyled>
+        <CardHeader name={provider.name || ''} />
+        <div className="mt-6 mb-2 grid grid-cols-3 place-items-center min-w-[322px]">
+          <CardSectionIcon provider={provider} />
+          <CardSectionText name={provider.name ?? ''} />
+          <CardSectionCount provider={provider} />
+        </div>
+      </DFLink>
     </Card>
   );
 };
@@ -224,19 +235,20 @@ const PosturenNonCloudList = () => {
 const Posture = () => {
   return (
     <>
-      <div className="flex py-2 w-full bg-white dark:bg-bg-breadcrumb-bar">
-        <span className="dark:text-text-input-value pl-6 flex items-center text-sm leading-[30px]">
-          <span className="w-4 h-4 mr-1.5">
-            <PostureIcon />
-          </span>
-          Posture
-        </span>
+      <div className="dark:bg-bg-breadcrumb-bar py-2 px-4">
+        <Breadcrumb>
+          <BreadcrumbLink icon={<PostureIcon />} className="dark:text-text-input-value">
+            Posture
+          </BreadcrumbLink>
+        </Breadcrumb>
       </div>
-      <div className="mx-4 mt-10 mb-10 flex gap-x-[20px] gap-y-[42px] flex-wrap">
+      <div className="mx-4 my-10 flex gap-x-4 flex-wrap gap-y-10">
         <Suspense fallback={<CardSkeleton />}>
           <PostureCloudList />
           <Separator className="dark:bg-bg-grid-border h-px w-full" />
-          <PosturenNonCloudList />
+          <div className="mt-6 flex gap-x-4">
+            <PosturenNonCloudList />
+          </div>
         </Suspense>
       </div>
     </>

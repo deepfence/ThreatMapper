@@ -36,7 +36,7 @@ export const AzureCRConnectorForm = ({
         .
       </div>
       <p className="mt-6 text-p1 dark:text-text-input-value">Enter Information</p>
-      <div className="w-full flex flex-col relative p-4 mt-2 gap-y-8">
+      <div className="w-full flex flex-col relative mt-4 gap-y-8">
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"
           label="Registry Name"

@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
-import { Button, FileInput, Listbox, ListboxOption, Modal, Radio } from 'ui-components';
+import {
+  Button,
+  FileInput,
+  Listbox,
+  ListboxOption,
+  Modal,
+  Radio,
+  Separator,
+} from 'ui-components';
 
 import { getScanResultsApiClient, getSettingsApiClient } from '@/api/api';
 import { ModelBulkDeleteScansRequestScanTypeEnum as ModelBulkDeleteScansRequestScanTypeEnumType } from '@/api/generated';
@@ -165,13 +173,21 @@ const DeleteConfirmationModal = ({
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
-            Delete resource
+            Delete scan history
           </div>
         ) : undefined
       }
       footer={
         !fetcher.data?.deleteSuccess ? (
           <div className={'flex gap-x-4 justify-end'}>
+            <Button
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+              size="md"
+            >
+              Cancel
+            </Button>
             <Button
               color="error"
               type="button"
@@ -184,11 +200,9 @@ const DeleteConfirmationModal = ({
                   method: 'post',
                 });
               }}
+              size="md"
             >
-              Yes, I&apos;m sure
-            </Button>
-            <Button onClick={() => setShowDialog(false)} type="button" variant="outline">
-              Cancel
+              Yes, delete
             </Button>
           </div>
         ) : undefined
@@ -196,7 +210,7 @@ const DeleteConfirmationModal = ({
     >
       {!fetcher.data?.deleteSuccess ? (
         <div className="grid">
-          <span>The selected resource scan history will be deleted.</span>
+          <span>The selected scan history will be deleted.</span>
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
@@ -220,7 +234,7 @@ const UploadVulnerabilityDatabase = () => {
 
   return (
     <>
-      <div className="mt-6">
+      <div className="mt-9">
         <h3 className="text-h6 dark:text-text-input-value">Database management</h3>
       </div>
 
@@ -241,29 +255,31 @@ const UploadVulnerabilityDatabase = () => {
         }}
       />
 
-      <div className="w-fit mt-4 flex gap-x-4 items-center">
-        <Button
-          className="w-[108px]"
-          type="button"
-          loading={state !== 'idle'}
-          disabled={state !== 'idle'}
-          onClick={() => {
-            const formData = new FormData();
-            formData.append('vulnerabilityDatabase', vulnerabilityDatabaseFile as File);
-            formData.append('actionType', ActionEnumType.UPLOAD);
-            fetcher.submit(formData, {
-              method: 'post',
-            });
-          }}
-        >
-          Upload
-        </Button>
-        {!fetcher.data?.uploadSuccess && fetcher.data?.message ? (
-          <p className="text-red-500 text-sm">{fetcher.data?.message}</p>
-        ) : null}
-        {fetcher.data?.uploadSuccess ? (
-          <p className="text-green-500 text-sm">Upload successfull</p>
-        ) : null}
+      <div className="w-fit mt-6">
+        <div className="flex gap-x-4 items-center">
+          <Button
+            className="w-[108px]"
+            type="button"
+            loading={state !== 'idle'}
+            disabled={state !== 'idle'}
+            onClick={() => {
+              const formData = new FormData();
+              formData.append('vulnerabilityDatabase', vulnerabilityDatabaseFile as File);
+              formData.append('actionType', ActionEnumType.UPLOAD);
+              fetcher.submit(formData, {
+                method: 'post',
+              });
+            }}
+          >
+            Upload
+          </Button>
+          {!fetcher.data?.uploadSuccess && fetcher.data?.message ? (
+            <p className="dark:text-status-error text-p7">{fetcher.data?.message}</p>
+          ) : null}
+          {fetcher.data?.uploadSuccess ? (
+            <p className="text-green-500 text-sm">Upload successfull</p>
+          ) : null}
+        </div>
       </div>
     </>
   );
@@ -295,87 +311,85 @@ const ScanHistoryAndDbManagement = () => {
           }}
         />
       )}
-      <div>
-        <div className="mt-2">
-          <h3 className="text-h6 dark:text-text-input-value">Scan History</h3>
-        </div>
-
-        <p className="mt-4 text-p4 dark:text-text-text-and-icon">
-          Please specify the resource and duration you would like to delete from the scan
-          history.
-        </p>
-        <div className="mt-2 flex gap-x-24">
-          <div>
-            <h6 className="text-p3 text-text-text-and-icon dark:text-text-text-and-icon pb-[10px]">
-              Choose resource
-            </h6>
-            <Radio
-              name="severityOrStatus"
-              value={selectedResource}
-              options={[
-                {
-                  label: 'Vulnerability',
-                  value: ModelBulkDeleteScansRequestScanTypeEnum.Vulnerability,
-                },
-                {
-                  label: 'Secret',
-                  value: ModelBulkDeleteScansRequestScanTypeEnum.Secret,
-                },
-                {
-                  label: 'Malware',
-                  value: ModelBulkDeleteScansRequestScanTypeEnum.Malware,
-                },
-                {
-                  label: 'Compliance',
-                  value: ModelBulkDeleteScansRequestScanTypeEnum.Compliance,
-                },
-                {
-                  label: 'Cloud Compliance',
-                  value: ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance,
-                },
-              ]}
-              onValueChange={(value) => {
-                setSelectedResource(value);
-                setSeverityOrResources('severity');
-              }}
-            />
-          </div>
-          <div className="w-[300px]">
-            <Listbox
-              label="Choose duration"
-              name="duration"
-              value={duration}
-              onChange={(value) => {
-                setDuration(value);
-              }}
-              getDisplayValue={(item) => {
-                for (const [key, value] of Object.entries(DURATION)) {
-                  if (value == item) {
-                    return key;
-                  }
-                }
-                return 'Last 1 Day';
-              }}
-            >
-              {Object.keys(DURATION).map((key) => {
-                return (
-                  <ListboxOption key={key} value={DURATION[key]}>
-                    {key}
-                  </ListboxOption>
-                );
-              })}
-            </Listbox>
-            <Button
-              type="button"
-              className="mt-4 w-full"
-              onClick={() => setShowDeleteDialog(true)}
-            >
-              Submit
-            </Button>
-          </div>
-        </div>
-        <UploadVulnerabilityDatabase />
+      <div className="mt-2">
+        <h3 className="text-h6 dark:text-text-input-value">Scan History</h3>
       </div>
+
+      <p className="mt-4 text-p4 dark:text-text-text-and-icon">
+        Please specify the resource and duration you would like to delete from the scan
+        history.
+      </p>
+      <div className="mt-4 flex flex-col">
+        <h6 className="text-p3 text-text-text-and-icon dark:text-text-text-and-icon pb-[10px]">
+          Choose resource
+        </h6>
+        <Radio
+          direction="row"
+          name="severityOrStatus"
+          value={selectedResource}
+          options={[
+            {
+              label: 'Vulnerability',
+              value: ModelBulkDeleteScansRequestScanTypeEnum.Vulnerability,
+            },
+            {
+              label: 'Secret',
+              value: ModelBulkDeleteScansRequestScanTypeEnum.Secret,
+            },
+            {
+              label: 'Malware',
+              value: ModelBulkDeleteScansRequestScanTypeEnum.Malware,
+            },
+            {
+              label: 'Compliance',
+              value: ModelBulkDeleteScansRequestScanTypeEnum.Compliance,
+            },
+            {
+              label: 'Cloud Compliance',
+              value: ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance,
+            },
+          ]}
+          onValueChange={(value) => {
+            setSelectedResource(value);
+            setSeverityOrResources('severity');
+          }}
+        />
+      </div>
+      <div className="w-[300px] mt-6">
+        <Listbox
+          label="Choose duration"
+          name="duration"
+          value={duration}
+          onChange={(value) => {
+            setDuration(value);
+          }}
+          getDisplayValue={(item) => {
+            for (const [key, value] of Object.entries(DURATION)) {
+              if (value == item) {
+                return key;
+              }
+            }
+            return 'Last 1 Day';
+          }}
+        >
+          {Object.keys(DURATION).map((key) => {
+            return (
+              <ListboxOption key={key} value={DURATION[key]}>
+                {key}
+              </ListboxOption>
+            );
+          })}
+        </Listbox>
+        <Button
+          type="button"
+          className="mt-4 w-full"
+          onClick={() => setShowDeleteDialog(true)}
+        >
+          Submit
+        </Button>
+      </div>
+      <Separator className="mt-6 dark:bg-bg-grid-border h-px w-full" />
+      <UploadVulnerabilityDatabase />
     </>
   );
 };

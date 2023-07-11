@@ -42,7 +42,7 @@ export const AddRegistryModal = ({
         onOpenChange={() => {
           setAddRegistryModal(false);
         }}
-        size="l"
+        size="s"
       >
         <SlidingModalCloseButton />
         <Header title={account} />

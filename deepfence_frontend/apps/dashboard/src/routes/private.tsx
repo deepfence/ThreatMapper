@@ -544,7 +544,7 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Connector Instructions' },
           },
           {
-            path: 'connector-instructions/:connectorType',
+            path: 'connection-instructions/:connectorType',
             ...connectorInstructions,
           },
         ],

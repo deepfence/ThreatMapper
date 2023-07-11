@@ -10,47 +10,19 @@ import { LinuxIcon } from './Linux';
 
 export const PostureLogos = ({ name }: { name: string }) => {
   if (name === 'aws') {
-    return (
-      <span className="w-10 h-10 block">
-        <AwsIcon />
-      </span>
-    );
+    return <AwsIcon />;
   } else if (name === 'aws_org') {
-    return (
-      <span className="w-10 h-10 block">
-        <AwsIcon />
-      </span>
-    );
+    return <AwsIcon />;
   } else if (name === 'azure') {
-    return (
-      <span className="w-10 h-10 block">
-        <AzureIcon />
-      </span>
-    );
+    return <AzureIcon />;
   } else if (name === 'gcp_org') {
-    return (
-      <span className="w-10 h-10 block">
-        <GoogleIcon />
-      </span>
-    );
+    return <GoogleIcon />;
   } else if (name === 'gcp') {
-    return (
-      <span className="w-10 h-10 block">
-        <GoogleIcon />
-      </span>
-    );
+    return <GoogleIcon />;
   } else if (name === 'kubernetes') {
-    return (
-      <span className="w-10 h-10 block">
-        <KubernetesIcon />
-      </span>
-    );
+    return <KubernetesIcon />;
   } else if (name === 'linux') {
-    return (
-      <span className="w-10 h-10 block">
-        <LinuxIcon />
-      </span>
-    );
+    return <LinuxIcon />;
   }
   return null;
 };

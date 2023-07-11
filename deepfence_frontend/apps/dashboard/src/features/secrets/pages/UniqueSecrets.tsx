@@ -150,10 +150,8 @@ const UniqueTable = () => {
             }}
             className="flex items-center gap-x-2"
           >
-            <div className="p-2 bg-gray-100 dark:bg-gray-500/10 rounded-lg shrink-0">
-              <div className="w-3 h-3 dark:text-status-error">
-                <SecretsIcon />
-              </div>
+            <div className="w-4 h-4 shrink-0 dark:text-text-text-and-icon">
+              <SecretsIcon />
             </div>
             <TruncatedText text={info.getValue() ?? ''} />
           </DFLink>
@@ -288,7 +286,7 @@ const UniqueSecrets = () => {
 
   return (
     <div>
-      <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<SecretsIcon />} isLink>
             <DFLink to={'/secret'} unstyled>
@@ -304,28 +302,30 @@ const UniqueSecrets = () => {
           {isFetching ? <CircleSpinner size="sm" /> : null}
         </div>
       </div>
-      <div className="mx-4 pb-4">
-        <Button
-          variant="flat"
-          className="ml-auto py-2"
-          startIcon={<FilterIcon />}
-          endIcon={
-            getAppliedFiltersCount(searchParams) > 0 ? (
-              <Badge
-                label={String(getAppliedFiltersCount(searchParams))}
-                variant="filled"
-                size="small"
-                color="blue"
-              />
-            ) : null
-          }
-          size="sm"
-          onClick={() => {
-            setFiltersExpanded((prev) => !prev);
-          }}
-        >
-          Filter
-        </Button>
+      <div className="mx-4">
+        <div className="h-12 flex items-center">
+          <Button
+            variant="flat"
+            className="ml-auto py-2"
+            startIcon={<FilterIcon />}
+            endIcon={
+              getAppliedFiltersCount(searchParams) > 0 ? (
+                <Badge
+                  label={String(getAppliedFiltersCount(searchParams))}
+                  variant="filled"
+                  size="small"
+                  color="blue"
+                />
+              ) : null
+            }
+            size="sm"
+            onClick={() => {
+              setFiltersExpanded((prev) => !prev);
+            }}
+          >
+            Filter
+          </Button>
+        </div>
         {filtersExpanded ? <Filters /> : null}
         <Suspense fallback={<TableSkeleton columns={9} rows={10} />}>
           <UniqueTable />

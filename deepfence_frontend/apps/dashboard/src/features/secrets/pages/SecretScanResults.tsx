@@ -326,7 +326,7 @@ const DeleteConfirmationModal = ({
         !fetcher.data?.success ? (
           <div className={'flex gap-x-4 justify-end'}>
             <Button
-              size="sm"
+              size="md"
               onClick={() => setShowDialog(false)}
               type="button"
               variant="outline"
@@ -334,14 +334,14 @@ const DeleteConfirmationModal = ({
               Cancel
             </Button>
             <Button
-              size="sm"
+              size="md"
               color="error"
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteAction(ActionEnumType.DELETE);
               }}
             >
-              Yes, I&apos;m sure
+              Yes, delete
             </Button>
           </div>
         ) : undefined
@@ -399,7 +399,7 @@ const DeleteScanConfirmationModal = ({
         !fetcher.data?.success ? (
           <div className={'flex gap-x-4 justify-end'}>
             <Button
-              size="sm"
+              size="md"
               onClick={() => onOpenChange(false)}
               type="button"
               variant="outline"
@@ -407,14 +407,14 @@ const DeleteScanConfirmationModal = ({
               Cancel
             </Button>
             <Button
-              size="sm"
+              size="md"
               color="error"
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteScan();
               }}
             >
-              Yes, I&apos;m sure
+              Yes, delete
             </Button>
           </div>
         ) : undefined
@@ -437,7 +437,7 @@ const DeleteScanConfirmationModal = ({
 
 const ScanHistory = () => {
   return (
-    <div className="mx-4 mt-1.5 min-h-[36px] flex items-center">
+    <div className="flex items-center h-12">
       <span className="h-3.5 w-3.5 dark:text-text-input-value">
         <ClockLineIcon />
       </span>
@@ -603,6 +603,7 @@ const ActionDropdown = ({
               setIdsToDelete(ids);
               setShowDeleteDialog(true);
             }}
+            className="dark:text-status-error dark:hover:text-[#C45268]"
           >
             Delete
           </DropdownItem>
@@ -894,9 +895,9 @@ const SecretTable = ({
           />
         ),
         header: () => '',
-        size: 30,
-        minSize: 30,
-        maxSize: 50,
+        size: 55,
+        minSize: 40,
+        maxSize: 55,
         enableResizing: false,
       }),
       columnHelper.accessor('node_id', {
@@ -908,10 +909,8 @@ const SecretTable = ({
             }}
             className="flex items-center gap-x-[6px]"
           >
-            <div className="h-6 w-6 flex items-center justify-center bg-gray-100 shrink-0 dark:bg-[rgba(224,_81,_109,_0.2)] rounded-[5px]">
-              <div className="w-3 h-3 dark:text-status-error">
-                <SecretsIcon />
-              </div>
+            <div className="w-4 h-4 shrink-0 dark:text-text-text-and-icon">
+              <SecretsIcon />
             </div>
             <div className="truncate">{info.getValue()}</div>
           </DFLink>
@@ -964,6 +963,8 @@ const SecretTable = ({
         maxSize: 190,
       }),
       columnHelper.accessor('name', {
+        enableSorting: false,
+        enableResizing: true,
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
         header: () => <TruncatedText text="Description" />,
         minSize: 100,
@@ -1064,7 +1065,7 @@ const SecretTable = ({
 
 const Header = () => {
   return (
-    <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<SecretsIcon />} isLink>
@@ -1138,7 +1139,7 @@ const ScanResults = () => {
 
   return (
     <div className="self-start">
-      <div className="py-2 flex items-center">
+      <div className="mt-4 h-12 flex items-center">
         <BulkActions
           ids={selectedIds}
           onTableAction={onTableAction}
@@ -1318,15 +1319,12 @@ const SecretScanResults = () => {
   return (
     <>
       <Header />
-      <ScanHistory />
-      <div className="px-4 pb-4 pt-1.5">
+      <div className="mx-4">
+        <ScanHistory />
         <Widgets />
-      </div>
-
-      <div className="px-4 pb-4">
         <ScanResults />
+        <Outlet />
       </div>
-      <Outlet />
     </>
   );
 };

@@ -414,6 +414,14 @@ const DeleteConfirmationModal = ({
       footer={
         !fetcher.data?.success ? (
           <div className={'flex gap-x-4 justify-end'}>
+            <Button
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+              size="md"
+            >
+              Cancel
+            </Button>
             <fetcher.Form method="post">
               <input readOnly type="hidden" name="id" value={id} />
               <input
@@ -422,13 +430,10 @@ const DeleteConfirmationModal = ({
                 name="_actionType"
                 value={ActionEnumType.DELETE}
               />
-              <Button color="error" type="submit">
-                Yes, I&apos;m sure
+              <Button color="error" type="submit" size="md">
+                Yes, delete
               </Button>
             </fetcher.Form>
-            <Button onClick={() => setShowDialog(false)} type="button" variant="outline">
-              Cancel
-            </Button>
           </div>
         ) : undefined
       }
