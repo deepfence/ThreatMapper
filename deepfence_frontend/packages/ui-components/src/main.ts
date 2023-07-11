@@ -54,6 +54,7 @@ export {
   getRowExpanderColumn,
   getRowSelectionColumn,
   Table,
+  TableNoDataElement,
 } from '@/components/table/Table';
 export type { TableSkeletonProps } from '@/components/table/TableSkeleton';
 export { TableSkeleton } from '@/components/table/TableSkeleton';
