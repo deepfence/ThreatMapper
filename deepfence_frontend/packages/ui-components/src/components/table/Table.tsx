@@ -452,10 +452,11 @@ function TableBody<TData>({
             <tr
               {...rowProps}
               className={cn(
-                {
-                  '!bg-gray-100 dark:!bg-bg-active-selection': row.getIsSelected(),
-                },
                 `hover:!bg-gray-100 dark:hover:!bg-bg-breadcrumb-bar`,
+                {
+                  '!bg-gray-100 dark:!bg-bg-active-selection dark:hover:!bg-bg-active-selection/90':
+                    row.getIsSelected(),
+                },
                 'transition-colors',
                 rowProps?.className ?? '',
               )}
