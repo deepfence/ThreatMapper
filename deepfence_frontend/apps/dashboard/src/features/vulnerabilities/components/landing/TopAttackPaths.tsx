@@ -118,14 +118,16 @@ const tooltip = new G6.Tooltip({
 export const VulnerabilityThreatGraph = ({
   nodeIds,
   direction = 'TB',
+  hideToolbar,
 }: {
   nodeIds?: string[];
   direction?: 'LR' | 'TB';
+  hideToolbar?: boolean;
 }) => {
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const { graph } = useG6Graph(container, {
-    plugins: [g6Toolbar, tooltip],
+    plugins: [hideToolbar ? undefined : g6Toolbar, tooltip].filter(Boolean),
     layout: {
       type: 'dagre',
       rankdir: direction,
