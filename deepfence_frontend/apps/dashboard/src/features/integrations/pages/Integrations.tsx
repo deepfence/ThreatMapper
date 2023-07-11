@@ -175,11 +175,8 @@ const Type = ({
 }) => {
   return (
     <div className="flex flex-col">
-      <DFLink to={type.path} unstyled>
-        <h4 className="text-t4 uppercase dark:text-text-input-value dark:hover:text-text-link">
-          {type.name}
-        </h4>
-      </DFLink>
+      <h4 className="text-t4 uppercase dark:text-text-input-value">{type.name}</h4>
+
       <Suspense
         fallback={
           <div className="flex items-center gap-x-2 mt-2">
@@ -218,17 +215,16 @@ const Integrations = () => {
               <div className="mt-2 flex flex-wrap gap-4">
                 {integration?.types?.map((type) => {
                   return (
-                    <Card
-                      key={type.name}
-                      className="p-3 flex flex-col shrink-0 min-w-[208px]"
-                    >
-                      <div className="flex items-center gap-x-6">
-                        <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
-                          <span className="h-9 w-9">{type.icon}</span>
+                    <DFLink to={type.path} unstyled key={type.name}>
+                      <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-2 dark:focus:ring-bg-hover-3 dark:focus:ring-2 cursor-pointer">
+                        <div className="flex items-center gap-x-6">
+                          <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
+                            <span className="h-9 w-9">{type.icon}</span>
+                          </div>
+                          <Type setError={setError} type={type} />
                         </div>
-                        <Type setError={setError} type={type} />
-                      </div>
-                    </Card>
+                      </Card>
+                    </DFLink>
                   );
                 })}
               </div>
@@ -248,13 +244,7 @@ const ReportCount = () => {
 
   return (
     <div className="flex gap-x-2 items-center">
-      {reportCount > 0 ? (
-        <DFLink to={'/integrations/download/report'}>
-          <span className="text-h1">{reportCount}</span>
-        </DFLink>
-      ) : (
-        <span className="text-h1">0</span>
-      )}
+      <span className="text-h1">{reportCount}</span>
 
       <span className="text-p7">Reports generated</span>
     </div>
@@ -279,15 +269,19 @@ const DownloadReport = () => {
     <div>
       <h2 className="uppercase text-t3 dark:text-text-input-value">Download reports</h2>
       <div className="mt-2 flex gap-x-4 items-center">
-        <div className="flex flex-col w-fit min-w-[208px] h-[84px]">
-          <Card className="p-3 flex shrink-0 items-center dark:text-text-text-and-icon gap-x-4 h-full">
-            <span className="h-9 w-9 ">
-              <DownloadReportIcon />
-            </span>
-            <Suspense fallback={<ReportCountSkeleton />}>
-              <ReportCount />
-            </Suspense>
-          </Card>
+        <div className="flex flex-col w-fit min-w-[208px]">
+          <DFLink to={'/integrations/download/report'} className="h-[84px]" unstyled>
+            <Card className="p-3 flex shrink-0 items-center dark:text-text-text-and-icon gap-x-4 h-full ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-2 dark:focus:ring-bg-hover-3 dark:focus:ring-2 cursor-pointer">
+              <span className="h-9 w-9 ">
+                <DownloadReportIcon />
+              </span>
+              <Suspense fallback={<ReportCountSkeleton />}>
+                <div>
+                  <ReportCount />
+                </div>
+              </Suspense>
+            </Card>
+          </DFLink>
         </div>
         <Button
           className="self-center"

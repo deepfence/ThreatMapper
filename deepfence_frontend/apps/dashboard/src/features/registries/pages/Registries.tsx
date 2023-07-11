@@ -60,40 +60,44 @@ const CardHeader = ({ registry }: { registry: RegistryResponseType }) => {
           registryType={registry.type as unknown as keyof typeof RegistryType}
         />
       </div>
-      <DFLink className="ml-[102px]" to={`/registries/${registry.type}`} unstyled>
-        <span className="flex items-center gap-2 text-t4 uppercase dark:text-text-input-value dark:hover:text-text-link pt-1">
-          {name}
-        </span>
-      </DFLink>
+
+      <span className="ml-[102px] flex items-center gap-2 text-t4 uppercase dark:text-text-input-value pt-1">
+        {name}
+      </span>
     </div>
   );
 };
 
 const Registry = ({ registry }: { registry: RegistryResponseType }) => {
   return (
-    <Card className="p-2 pb-3 flex flex-col dark:bg-bg-card" key={registry.type}>
-      <CardHeader registry={registry} />
-      <div className="flex mt-6 gap-x-[48px] justify-center items-center w-[322px]">
-        <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
-          <span className="text-h1 text-gray-900 dark:text-text-input-value">
-            {abbreviateNumber(registry.registries ?? 0)}
-          </span>
-          Registries
+    <DFLink className="flex flex-col" to={`/registries/${registry.type}`} unstyled>
+      <Card
+        className="p-2 pb-3 dark:bg-bg-card ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-2 dark:focus:ring-bg-hover-3 dark:focus:ring-2 cursor-pointer"
+        key={registry.type}
+      >
+        <CardHeader registry={registry} />
+        <div className="flex mt-6 gap-x-[48px] justify-center items-center w-[322px]">
+          <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
+            <span className="text-h1 text-gray-900 dark:text-text-input-value">
+              {abbreviateNumber(registry.registries ?? 0)}
+            </span>
+            Registries
+          </div>
+          <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
+            <span className="text-h1 text-gray-900 dark:text-text-input-value">
+              {abbreviateNumber(registry.images ?? 0)}
+            </span>
+            Images
+          </div>
+          <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
+            <span className="text-h1 text-gray-900 dark:text-text-input-value">
+              {abbreviateNumber(registry.tags ?? 0)}
+            </span>
+            Tags
+          </div>
         </div>
-        <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
-          <span className="text-h1 text-gray-900 dark:text-text-input-value">
-            {abbreviateNumber(registry.images ?? 0)}
-          </span>
-          Images
-        </div>
-        <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
-          <span className="text-h1 text-gray-900 dark:text-text-input-value">
-            {abbreviateNumber(registry.tags ?? 0)}
-          </span>
-          Tags
-        </div>
-      </div>
-    </Card>
+      </Card>
+    </DFLink>
   );
 };
 

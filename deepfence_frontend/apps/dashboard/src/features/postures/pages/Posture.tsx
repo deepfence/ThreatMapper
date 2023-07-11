@@ -90,19 +90,17 @@ const CardSkeleton = () => {
 const CardHeader = ({ name }: { name: string }) => {
   return (
     <div className="flex items-center w-full relative">
-      {/* <div
-        className={
-          'dark:bg-bg-grid-default absolute -top-[36px] left-[16px] rounded-t-full ring-none ring-inset dark:group-hover:ring-2 dark:group-hover:ring-bg-hover-3 p-3'
-        }
-      >
-        <div className="w-10 h-5" />
-      </div> */}
-      <div
-        className={
-          'dark:bg-bg-grid-default absolute -top-[38px] left-[16px] rounded-full before:absolute before:block before:height-full before:bg-transparent after:absolute after:block after:h-full  p-3'
-        }
-      >
-        <PostureLogos name={name} />
+      <div className="dark:bg-bg-grid-default absolute -top-[40px] left-[16px] rounded-full">
+        <div
+          className={cn(
+            'h-full w-full  p-3 rounded-[50%] dark:group-hover:-rotate-45',
+            'dark:group-hover:border-2 dark:group-hover:border-bg-hover-3 border-box dark:group-hover:border-b-transparent dark:group-hover:border-r-transparent dark:group-hover:rotate-45',
+          )}
+        >
+          <div className="dark:group-hover:-rotate-45">
+            <PostureLogos name={name} />
+          </div>
+        </div>
       </div>
 
       <span className="ml-[114px] flex items-center gap-2 text-t4 uppercase dark:text-text-input-value pt-1">
