@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Badge,
@@ -58,17 +58,19 @@ import { CLOUD_PROVIDERS } from '@/utils/topology';
 const DEFAULT_PAGE_SIZE = 25;
 
 export const HostsTable = () => {
-  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+  const [selectedNodes, setSelectedNodes] = useState<ModelHost[]>([]);
   const [searchParams] = useSearchParams();
   const [filtersExpanded, setFiltersExpanded] = useState(false);
-  const selectedIds = useMemo(() => {
-    return Object.keys(rowSelectionState);
-  }, [rowSelectionState]);
 
   return (
     <div className="px-4 pb-4">
       <div className="py-2 flex items-center">
-        <BulkActions nodeIds={selectedIds} />
+        <BulkActions
+          nodes={selectedNodes.map((host) => ({
+            nodeId: host.node_id,
+            agentRunning: host.agent_running,
+          }))}
+        />
         <Button
           variant="flat"
           className="ml-auto"
@@ -96,34 +98,39 @@ export const HostsTable = () => {
       <Suspense
         fallback={<TableSkeleton rows={DEFAULT_PAGE_SIZE} columns={8} size="default" />}
       >
-        <DataTable
-          rowSelectionState={rowSelectionState}
-          setRowSelectionState={setRowSelectionState}
-        />
+        <DataTable setSelectedNodes={setSelectedNodes} />
       </Suspense>
     </div>
   );
 };
 
-const BulkActions = ({ nodeIds }: { nodeIds: string[] }) => {
+const BulkActions = ({
+  nodes,
+}: {
+  nodes: {
+    nodeId: string;
+    agentRunning: boolean;
+  }[];
+}) => {
   const [scanOptions, setScanOptions] =
     useState<ConfigureScanModalProps['scanOptions']>();
+  const nodesWithAgentRunning = nodes.filter((node) => node.agentRunning);
   return (
     <>
       <Dropdown
         triggerAsChild
         align={'start'}
-        disabled={!nodeIds.length}
+        disabled={!nodesWithAgentRunning.length}
         content={
           <>
             <DropdownItem
               onSelect={(e) => {
                 e.preventDefault();
                 setScanOptions({
-                  showAdvancedOptions: nodeIds.length === 1,
+                  showAdvancedOptions: nodesWithAgentRunning.length === 1,
                   scanType: ScanTypeEnum.VulnerabilityScan,
                   data: {
-                    nodeIds,
+                    nodeIds: nodesWithAgentRunning.map((node) => node.nodeId),
                     nodeType: VulnerabilityScanNodeTypeEnum.host,
                   },
                 });
@@ -136,10 +143,10 @@ const BulkActions = ({ nodeIds }: { nodeIds: string[] }) => {
               onSelect={(e) => {
                 e.preventDefault();
                 setScanOptions({
-                  showAdvancedOptions: nodeIds.length === 1,
+                  showAdvancedOptions: nodesWithAgentRunning.length === 1,
                   scanType: ScanTypeEnum.SecretScan,
                   data: {
-                    nodeIds,
+                    nodeIds: nodesWithAgentRunning.map((node) => node.nodeId),
                     nodeType: SecretScanNodeTypeEnum.host,
                   },
                 });
@@ -152,10 +159,10 @@ const BulkActions = ({ nodeIds }: { nodeIds: string[] }) => {
               onSelect={(e) => {
                 e.preventDefault();
                 setScanOptions({
-                  showAdvancedOptions: nodeIds.length === 1,
+                  showAdvancedOptions: nodesWithAgentRunning.length === 1,
                   scanType: ScanTypeEnum.MalwareScan,
                   data: {
-                    nodeIds,
+                    nodeIds: nodesWithAgentRunning.map((node) => node.nodeId),
                     nodeType: MalwareScanNodeTypeEnum.host,
                   },
                 });
@@ -168,10 +175,10 @@ const BulkActions = ({ nodeIds }: { nodeIds: string[] }) => {
               onSelect={(e) => {
                 e.preventDefault();
                 setScanOptions({
-                  showAdvancedOptions: nodeIds.length === 1,
+                  showAdvancedOptions: nodesWithAgentRunning.length === 1,
                   scanType: ScanTypeEnum.ComplianceScan,
                   data: {
-                    nodeIds,
+                    nodeIds: nodesWithAgentRunning.map((node) => node.nodeId),
                     nodeType: ComplianceScanNodeTypeEnum.host,
                   },
                 });
@@ -188,7 +195,7 @@ const BulkActions = ({ nodeIds }: { nodeIds: string[] }) => {
           variant="flat"
           size="sm"
           endIcon={<CaretDown />}
-          disabled={!nodeIds.length}
+          disabled={!nodesWithAgentRunning.length}
         >
           Actions
         </Button>
@@ -474,20 +481,36 @@ function useSearchHostsWithPagination() {
 }
 
 const DataTable = ({
-  rowSelectionState,
-  setRowSelectionState,
+  setSelectedNodes,
 }: {
-  rowSelectionState: RowSelectionState;
-  setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
+  setSelectedNodes: React.Dispatch<React.SetStateAction<ModelHost[]>>;
 }) => {
   const { data } = useSearchHostsWithPagination();
   const columnHelper = createColumnHelper<ModelHost>();
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [clickedItem, setClickedItem] = useState<{
     nodeId: string;
     nodeType: string;
   }>();
   const [sort, setSort] = useSortingState();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    setSelectedNodes((prev) => {
+      const newSelectedNodes: ModelHost[] = [];
+      prev.forEach((node) => {
+        if (rowSelectionState[node.node_id] === true) {
+          newSelectedNodes.push(node);
+        }
+      });
+      Object.keys(rowSelectionState).forEach((nodeId) => {
+        if (!newSelectedNodes.find((node) => node.node_id === nodeId)) {
+          newSelectedNodes.push(data.hosts.find((node) => node.node_id === nodeId)!);
+        }
+      });
+      return newSelectedNodes;
+    });
+  }, [rowSelectionState, data]);
 
   const columns = useMemo(
     () => [

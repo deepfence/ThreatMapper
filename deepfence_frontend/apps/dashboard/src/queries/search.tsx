@@ -1,4 +1,5 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
+import { isNil } from 'lodash-es';
 
 import { getSearchApiClient } from '@/api/api';
 import { SearchSearchNodeReq } from '@/api/generated';
@@ -20,6 +21,7 @@ export const searchQueries = createQueryKeys('search', {
     searchText?: string;
     size: number;
     active?: boolean;
+    agentRunning?: boolean;
   }) => {
     return {
       queryKey: [{ filters }],
@@ -32,48 +34,53 @@ export const searchQueries = createQueryKeys('search', {
           nodeName: string;
         }[];
       }> => {
-        const { searchText, size, active } = filters;
-        const matchFilter = { filter_in: {} };
+        const { searchText, size, active, agentRunning } = filters;
+        const searchSearchNodeReq: SearchSearchNodeReq = {
+          node_filter: {
+            filters: {
+              contains_filter: {
+                filter_in: {
+                  pseudo: [false],
+                  ...(active !== undefined && { active: [active === true] }),
+                },
+              },
+              order_filter: {
+                order_fields: [
+                  {
+                    field_name: 'updated_at',
+                    descending: true,
+                  },
+                ],
+              },
+              match_filter: { filter_in: {} },
+              compare_filter: null,
+            },
+            in_field_filter: null,
+            window: {
+              offset: 0,
+              size: 0,
+            },
+          },
+          window: {
+            offset: pageParam,
+            size,
+          },
+        };
         if (searchText?.length) {
-          matchFilter.filter_in = {
+          searchSearchNodeReq.node_filter.filters.match_filter.filter_in = {
             node_name: [searchText],
           };
+        }
+        if (!isNil(agentRunning)) {
+          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
+            'agent_running'
+          ] = [agentRunning];
         }
         const searchHostsApi = apiWrapper({
           fn: getSearchApiClient().searchHosts,
         });
         const searchHostsResponse = await searchHostsApi({
-          searchSearchNodeReq: {
-            node_filter: {
-              filters: {
-                contains_filter: {
-                  filter_in: {
-                    pseudo: [false],
-                    ...(active !== undefined && { active: [active === true] }),
-                  },
-                },
-                order_filter: {
-                  order_fields: [
-                    {
-                      field_name: 'updated_at',
-                      descending: true,
-                    },
-                  ],
-                },
-                match_filter: matchFilter,
-                compare_filter: null,
-              },
-              in_field_filter: null,
-              window: {
-                offset: 0,
-                size: 0,
-              },
-            },
-            window: {
-              offset: pageParam,
-              size,
-            },
-          },
+          searchSearchNodeReq,
         });
         if (!searchHostsResponse.ok) {
           throw searchHostsResponse.error;
@@ -258,7 +265,12 @@ export const searchQueries = createQueryKeys('search', {
       },
     };
   },
-  clusters: (filters: { searchText?: string; size: number; active?: boolean }) => {
+  clusters: (filters: {
+    searchText?: string;
+    size: number;
+    active?: boolean;
+    agentRunning?: boolean;
+  }) => {
     return {
       queryKey: [{ filters }],
       queryFn: async ({
@@ -269,46 +281,52 @@ export const searchQueries = createQueryKeys('search', {
           nodeName: string;
         }[];
       }> => {
-        const { searchText, size, active } = filters;
+        const { searchText, size, active, agentRunning } = filters;
 
-        const matchFilter = { filter_in: {} };
+        const searchSearchNodeReq: SearchSearchNodeReq = {
+          node_filter: {
+            filters: {
+              compare_filter: null,
+              contains_filter: {
+                filter_in: {
+                  pseudo: [false],
+                  ...(active !== undefined && { active: [active === true] }),
+                },
+              },
+              match_filter: {
+                filter_in: {},
+              },
+              order_filter: {
+                order_fields: null,
+              },
+            },
+            in_field_filter: null,
+            window: {
+              offset: 0,
+              size: 0,
+            },
+          },
+          window: {
+            offset: pageParam,
+            size,
+          },
+        };
+
         if (searchText?.length) {
-          matchFilter.filter_in = {
+          searchSearchNodeReq.node_filter.filters.match_filter.filter_in = {
             node_name: [searchText],
           };
         }
-
+        if (!isNil(agentRunning)) {
+          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
+            'agent_running'
+          ] = [agentRunning];
+        }
         const searchKubernetesClustersApi = apiWrapper({
           fn: getSearchApiClient().searchKubernetesClusters,
         });
         const searchKubernetesClustersResponse = await searchKubernetesClustersApi({
-          searchSearchNodeReq: {
-            node_filter: {
-              filters: {
-                compare_filter: null,
-                contains_filter: {
-                  filter_in: {
-                    pseudo: [false],
-                    ...(active !== undefined && { active: [active === true] }),
-                  },
-                },
-                match_filter: matchFilter,
-
-                order_filter: {
-                  order_fields: null,
-                },
-              },
-              in_field_filter: null,
-              window: {
-                offset: 0,
-                size: 0,
-              },
-            },
-            window: {
-              offset: pageParam,
-              size,
-            },
-          },
+          searchSearchNodeReq,
         });
         if (!searchKubernetesClustersResponse.ok) {
           throw searchKubernetesClustersResponse.error;

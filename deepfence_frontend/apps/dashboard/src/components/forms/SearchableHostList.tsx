@@ -46,6 +46,7 @@ export const SearchableHostList = ({
       size: PAGE_SIZE,
       searchText,
       active,
+      agentRunning: true,
     }),
     keepPreviousData: true,
     getNextPageParam: (lastPage, allPages) => {

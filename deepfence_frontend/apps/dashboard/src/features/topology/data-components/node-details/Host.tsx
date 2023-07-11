@@ -65,6 +65,7 @@ export const Host = (props: HostModalProps) => {
             nodeType="host"
             onGoBack={onGoBack}
             showBackBtn={showBackBtn}
+            agentRunning={false}
           />
         }
       >
@@ -99,7 +100,9 @@ const HostHeader = ({
   onStartScanClick,
   onGoBack,
   showBackBtn,
-}: HostModalProps) => {
+}: HostModalProps & {
+  agentRunning?: boolean;
+}) => {
   const { data } = useLookupHost(nodeId);
   return (
     <Header
@@ -109,6 +112,7 @@ const HostHeader = ({
       nodeType="host"
       onGoBack={onGoBack}
       showBackBtn={showBackBtn}
+      agentRunning={data.hostData[0].agent_running}
     />
   );
 };
@@ -147,6 +151,7 @@ const TabContent = ({
               data.hostData[0].availability_zone,
             ),
             resource_group: toTopologyMetadataString(data.hostData[0].resource_group),
+            agent_running: toTopologyMetadataString(data.hostData[0].agent_running),
           }}
         />
       )}

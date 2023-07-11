@@ -42,6 +42,7 @@ export const SearchableClusterList = ({
       size: PAGE_SIZE,
       searchText,
       active,
+      agentRunning: true,
     }),
     keepPreviousData: true,
     getNextPageParam: (lastPage, allPages) => {
