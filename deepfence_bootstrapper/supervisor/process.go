@@ -90,6 +90,9 @@ func (ph *procHandler) start() error {
 	}
 	cmd := exec.Command("/bin/bash", "-c", ph.command)
 	cmd.Env = ph.env
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Pdeathsig: syscall.SIGKILL,
+	}
 	startLogging(ph.name, cmd)
 	if !ph.autorestart {
 		err := cmd.Start()
@@ -153,6 +156,9 @@ func (ph *procHandler) start() error {
 					time.Sleep(time.Second * 5)
 					cmd = exec.Command("/bin/bash", "-c", ph.command)
 					cmd.Env = ph.env
+					cmd.SysProcAttr = &syscall.SysProcAttr{
+						Pdeathsig: syscall.SIGKILL,
+					}
 					startLogging(ph.name, cmd)
 				}
 			}
