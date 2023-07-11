@@ -303,6 +303,24 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		return err
 	}
 
+	latestScanIDFieldName := wrkingest.LatestScanIdField[scanType]
+	scanStatusFieldName := wrkingest.ScanStatusField[scanType]
+
+	if _, err = tx.Run(fmt.Sprintf(`
+		MERGE (n:%s{node_id: $scan_id})
+		SET n.status = $status, n.updated_at = TIMESTAMP()
+		WITH n
+		OPTIONAL MATCH (n) -[:DETECTED]- (m)
+		WITH n
+		MATCH (n) -[:SCANNED]- (r)
+		SET r.%s=n.status, r.%s=n.node_id`,
+		scanType, scanStatusFieldName, latestScanIDFieldName),
+		map[string]interface{}{
+			"scan_id": scanId,
+			"status":  utils.SCAN_STATUS_STARTING}); err != nil {
+		return err
+	}
+
 	if _, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
 		MATCH (m:%s{node_id:$node_id})
