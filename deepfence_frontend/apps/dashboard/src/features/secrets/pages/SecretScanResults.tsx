@@ -894,9 +894,9 @@ const SecretTable = ({
           />
         ),
         header: () => '',
-        size: 30,
-        minSize: 30,
-        maxSize: 30,
+        size: 55,
+        minSize: 40,
+        maxSize: 55,
         enableResizing: false,
       }),
       columnHelper.accessor('node_id', {
