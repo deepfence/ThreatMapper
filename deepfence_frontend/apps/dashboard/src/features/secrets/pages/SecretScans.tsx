@@ -639,9 +639,10 @@ const ScansTable = () => {
         minSize: 100,
         size: 110,
         maxSize: 110,
-        enableResizing: false,
+        enableResizing: true,
       }),
       columnHelper.accessor('total', {
+        enableSorting: false,
         cell: (info) => (
           <div className="flex items-center justify-end tabular-nums">
             <span className="truncate">{info.getValue()}</span>
@@ -657,6 +658,7 @@ const ScansTable = () => {
         maxSize: 80,
       }),
       columnHelper.accessor('critical', {
+        enableSorting: false,
         cell: (info) => {
           const params = new URLSearchParams();
           params.set('severity', 'critical');
@@ -684,6 +686,7 @@ const ScansTable = () => {
         maxSize: 80,
       }),
       columnHelper.accessor('high', {
+        enableSorting: false,
         cell: (info) => {
           const params = new URLSearchParams();
           params.set('severity', 'high');
@@ -711,6 +714,7 @@ const ScansTable = () => {
         maxSize: 80,
       }),
       columnHelper.accessor('medium', {
+        enableSorting: false,
         cell: (info) => {
           const params = new URLSearchParams();
           params.set('severity', 'medium');
@@ -738,6 +742,7 @@ const ScansTable = () => {
         maxSize: 80,
       }),
       columnHelper.accessor('low', {
+        enableSorting: false,
         cell: (info) => {
           const params = new URLSearchParams();
           params.set('severity', 'low');
@@ -765,6 +770,7 @@ const ScansTable = () => {
         maxSize: 80,
       }),
       columnHelper.accessor('unknown', {
+        enableSorting: false,
         cell: (info) => {
           const params = new URLSearchParams();
           params.set('severity', 'unknown');

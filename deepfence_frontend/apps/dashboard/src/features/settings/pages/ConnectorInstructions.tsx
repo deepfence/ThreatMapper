@@ -43,7 +43,7 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
   const { navigate } = usePageNavigation();
   const handleSelection = () => {
     navigate(
-      generatePath(`../../settings/connector-instructions/:connectorType`, {
+      generatePath(`../../settings/connection-instructions/:connectorType`, {
         connectorType: path,
       }),
     );
@@ -215,7 +215,7 @@ const Connectors = () => {
         </h3>
       </div>
       <div className="h-full dark:text-white mt-4">
-        <div className="grid grid-cols-1 gap-2 lg:grid-cols-2 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 sm:grid-cols-2">
           <Card className="dark:border-0">
             <Cloud />
           </Card>

@@ -140,6 +140,9 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
     success: true,
   };
 };
+
+const DEFAULT_PAGE_SIZE = 10;
+
 const useCounts = () => {
   const params = useParams() as {
     account: string;
@@ -446,7 +449,7 @@ const RegistryAccountsResults = () => {
           }
         />
       </div>
-      <Suspense fallback={<TableSkeleton columns={7} rows={10} />}>
+      <Suspense fallback={<TableSkeleton columns={7} rows={DEFAULT_PAGE_SIZE} />}>
         <RegistryAccountsTable
           onTableAction={onTableAction}
           setShowDeleteDialog={setShowDeleteDialog}

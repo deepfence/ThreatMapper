@@ -111,7 +111,7 @@ export const useScanResults = () => {
       page: getPageFromSearchParams(searchParams),
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       order: getOrderFromSearchParams(searchParams) || {
-        sortBy: 'last_updated',
+        sortBy: 'node_id',
         descending: true,
       },
       vulnerabilityScanStatus: searchParams.get('vulnerabilityScanStatus') as

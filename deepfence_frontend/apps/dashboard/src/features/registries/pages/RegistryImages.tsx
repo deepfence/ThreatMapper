@@ -60,7 +60,7 @@ export const useListImages = () => {
       page: getPageFromSearchParams(searchParams),
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       order: getOrderFromSearchParams(searchParams) || {
-        sortBy: 'status',
+        sortBy: 'id',
         descending: true,
       },
     }),

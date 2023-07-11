@@ -4,6 +4,7 @@ import { getRegistriesApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
   ModelRegistryImagesReq,
+  ModelRegistryImageStubsReq,
   ModelSummary,
 } from '@/api/generated';
 import { apiWrapper } from '@/utils/api';
@@ -112,11 +113,11 @@ export const registryQueries = createQueryKeys('registry', {
       descending: boolean;
     };
   }) => {
-    const { page = 1, pageSize, registryId } = filters;
+    const { page = 1, pageSize, registryId, order } = filters;
     return {
       queryKey: [{ filters }],
       queryFn: async () => {
-        const imageRequest = {
+        const imageRequest: ModelRegistryImageStubsReq = {
           image_filter: {
             contains_filter: {
               filter_in: null,
@@ -221,6 +222,7 @@ export const registryQueries = createQueryKeys('registry', {
       vulnerabilityScanStatus,
       secretScanStatus,
       malwareScanStatus,
+      order,
     } = filters;
     return {
       queryKey: [filters],
