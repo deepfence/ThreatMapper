@@ -42,7 +42,7 @@ const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
     };
   }
   return {
-    lineWidth: 1.5,
+    lineWidth: 2.5,
     shadowBlur: 14,
     shadowColor: theme === 'dark' ? '#8AB9FF' : '#8AB9FF',
     stroke:
@@ -124,9 +124,9 @@ const getNodeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
     shadowColor: theme === 'dark' ? '#8AB9FF' : '#8AB9FF',
     stroke:
       theme === 'dark'
-        ? preset.theme.extend.colors.chart.blue3
-        : preset.theme.extend.colors.chart.blue3,
-    fill: preset.theme.extend.colors.bg['map-node'],
+        ? preset.theme.extend.colors.accent.accent
+        : preset.theme.extend.colors.accent.accent,
+    fill: preset.theme.extend.colors.bg['card'],
   };
 };
 
@@ -197,7 +197,7 @@ const getDefaultOptions = (theme: Mode): G6GraphOptionsWithoutContainer => {
   } satisfies G6GraphOptionsWithoutContainer;
 };
 
-export const useG6raph = <D,>(
+export const useG6Graph = <D,>(
   graphContainer: HTMLElement | null,
   data: D,
   options: G6GraphOptionsWithoutContainer = {},

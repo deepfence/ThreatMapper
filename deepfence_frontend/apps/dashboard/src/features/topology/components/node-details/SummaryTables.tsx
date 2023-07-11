@@ -1,5 +1,10 @@
 import { useMemo, useState } from 'react';
-import { createColumnHelper, SortingState, Table } from 'ui-components';
+import {
+  createColumnHelper,
+  SortingState,
+  Table,
+  TableNoDataElement,
+} from 'ui-components';
 
 import {
   ModelConnection,
@@ -98,12 +103,14 @@ export const ProcessTable = ({
         data={processes}
         size="compact"
         enablePagination
-        pageSize={15}
+        pageSize={10}
         enableSorting
         enableColumnResizing
         sortingState={sort}
         onSortingChange={setSort}
-        noDataText="No processes"
+        noDataElement={
+          <TableNoDataElement text="No processes" className="min-h-[192px]" />
+        }
       />
     </div>
   );
@@ -187,12 +194,14 @@ export const ContainerTable = ({
         data={containers}
         size="compact"
         enablePagination
-        pageSize={15}
+        pageSize={10}
         enableSorting
         enableColumnResizing
         sortingState={sort}
         onSortingChange={setSort}
-        noDataText="No containers"
+        noDataElement={
+          <TableNoDataElement text="No containers" className="min-h-[192px]" />
+        }
       />
     </div>
   );
@@ -257,12 +266,14 @@ export const ImageTable = ({
         data={images}
         size="compact"
         enablePagination
-        pageSize={15}
+        pageSize={10}
         enableSorting
         enableColumnResizing
         sortingState={sort}
         onSortingChange={setSort}
-        noDataText="No container images"
+        noDataElement={
+          <TableNoDataElement text="No container images" className="min-h-[192px]" />
+        }
       />
     </div>
   );
@@ -316,12 +327,14 @@ export const ConnectionsTable = ({
         data={connections}
         size="compact"
         enablePagination
-        pageSize={15}
+        pageSize={10}
         enableSorting
         enableColumnResizing
         sortingState={sort}
         onSortingChange={setSort}
-        noDataText="No connections"
+        noDataElement={
+          <TableNoDataElement text="No connections" className="min-h-[192px]" />
+        }
       />
     </div>
   );

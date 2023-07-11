@@ -13,6 +13,7 @@ import {
   RowSelectionState,
   SortingState,
   Table,
+  TableNoDataElement,
   TableSkeleton,
 } from 'ui-components';
 
@@ -595,7 +596,7 @@ const DataTable = ({
       <Table
         data={data.hosts ?? []}
         columns={columns}
-        noDataText="No hosts are connected"
+        noDataElement={<TableNoDataElement text="No hosts are connected" />}
         size="default"
         enableColumnResizing
         enablePagination

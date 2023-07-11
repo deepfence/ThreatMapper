@@ -10,6 +10,7 @@ import {
   getRowSelectionColumn,
   RowSelectionState,
   Table,
+  TableNoDataElement,
   TableSkeleton,
   Tabs,
 } from 'ui-components';
@@ -305,7 +306,7 @@ function MyConnectorsTable() {
       <Table
         size="default"
         data={data}
-        noDataText="No connectors found"
+        noDataElement={<TableNoDataElement text="No connectors found" />}
         columns={columns}
         expanded={expandedState}
         onExpandedChange={setExpandedState}

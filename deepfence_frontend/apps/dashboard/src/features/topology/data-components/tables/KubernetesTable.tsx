@@ -10,6 +10,7 @@ import {
   RowSelectionState,
   SortingState,
   Table,
+  TableNoDataElement,
   TableSkeleton,
 } from 'ui-components';
 
@@ -227,7 +228,7 @@ const DataTable = ({
       <Table
         data={data.clusters ?? []}
         columns={columns}
-        noDataText="No kubernetes clusters are connected"
+        noDataElement={<TableNoDataElement text="No kubernetes clusters are connected" />}
         size="default"
         enableColumnResizing
         enablePagination

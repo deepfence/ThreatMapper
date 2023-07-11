@@ -13,6 +13,7 @@ import {
   RowSelectionState,
   SortingState,
   Table,
+  TableNoDataElement,
   TableSkeleton,
 } from 'ui-components';
 
@@ -512,7 +513,7 @@ const DataTable = ({
       <Table
         data={data.containers ?? []}
         columns={columns}
-        noDataText="No containers are connected"
+        noDataElement={<TableNoDataElement text="No containers are connected" />}
         size="default"
         enableColumnResizing
         enablePagination

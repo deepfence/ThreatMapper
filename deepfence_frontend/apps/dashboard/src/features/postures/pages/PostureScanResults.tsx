@@ -437,9 +437,6 @@ const ScanHistory = () => {
       >
         <HistoryControls />
       </Suspense>
-      <Button className="ml-auto" size="md">
-        Start scan
-      </Button>
     </div>
   );
 };
