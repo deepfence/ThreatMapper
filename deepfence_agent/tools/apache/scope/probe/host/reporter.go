@@ -166,8 +166,8 @@ func (r *Reporter) updateHostDetailsMetrics() {
 	r.hostDetailsMetrics.Lock()
 	r.hostDetailsMetrics.CpuMax = cpuMax
 	r.hostDetailsMetrics.CpuUsage = cpuUsage
-	r.hostDetailsMetrics.MemoryMax = memoryMax
-	r.hostDetailsMetrics.MemoryUsage = memoryUsage
+	r.hostDetailsMetrics.MemoryMax = int64(memoryMax)
+	r.hostDetailsMetrics.MemoryUsage = int64(memoryUsage)
 	r.hostDetailsMetrics.Unlock()
 }
 

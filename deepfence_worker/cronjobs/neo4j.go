@@ -175,9 +175,22 @@ func CleanUpDB(msg *message.Message) error {
 		MATCH (n:KubernetesCluster)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND n.active = true
+		AND n.agent_running=true
 		WITH n LIMIT 10000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:KubernetesCluster)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND n.active = true
+		AND n.agent_running=false
+		WITH n LIMIT 10000
+		SET n.active=false`,
+		map[string]interface{}{"time_ms": dbCloudResourceCleanupTimeout.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
