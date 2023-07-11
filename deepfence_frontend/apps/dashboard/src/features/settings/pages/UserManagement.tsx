@@ -682,7 +682,7 @@ const CurrentUserInfo = ({
       <div className="flex mt-4 mb-2">
         <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Status</span>
         <span
-          className={cn('text-p4 dark:text-text-input-value', {
+          className={cn('text-p1 dark:text-text-input-value', {
             'text-green-500 dark:text-status-success': currentUser?.is_active,
             'text-gray-700 dark:text-df-gray-400': !currentUser?.is_active,
           })}
@@ -692,7 +692,7 @@ const CurrentUserInfo = ({
       </div>
       <div className="flex mt-4 mb-2">
         <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Email</span>
-        <span className="text-p4 dark:text-text-input-value">
+        <span className="text-p1 dark:text-text-input-value">
           {currentUser?.email || '-'}
         </span>
       </div>
@@ -700,13 +700,13 @@ const CurrentUserInfo = ({
         <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">
           Company
         </span>
-        <span className="text-p4 dark:text-text-input-value">
+        <span className="text-p1 dark:text-text-input-value">
           {currentUser?.company || '-'}
         </span>
       </div>
       <div className="flex my-3">
         <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Role</span>
-        <span className="text-p4 dark:text-text-input-value">
+        <span className="text-p1 dark:text-text-input-value">
           {currentUser?.role || '-'}
         </span>
       </div>
@@ -714,7 +714,7 @@ const CurrentUserInfo = ({
         <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">
           API key
         </span>
-        <div className="text-p4 items-center dark:text-text-input-value flex gap-x-2">
+        <div className="text-p1 items-center dark:text-text-input-value flex gap-x-2">
           <Suspense fallback={<CircleSpinner size="sm" />}>
             <ApiToken />
           </Suspense>

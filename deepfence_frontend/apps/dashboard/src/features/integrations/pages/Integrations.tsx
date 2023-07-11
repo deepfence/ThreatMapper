@@ -1,4 +1,5 @@
 import { Suspense, useState } from 'react';
+import { cn } from 'tailwind-preset';
 import { Breadcrumb, BreadcrumbLink, Button, Card, Separator } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
@@ -244,7 +245,7 @@ const ReportCount = () => {
 
   return (
     <div className="flex gap-x-2 items-center">
-      <span className="text-h1">{reportCount}</span>
+      <span className="text-h1 dark:text-text-input-value">{reportCount}</span>
 
       <span className="text-p7">Reports generated</span>
     </div>
@@ -271,14 +272,19 @@ const DownloadReport = () => {
       <div className="mt-2 flex gap-x-4 items-center">
         <div className="flex flex-col w-fit min-w-[208px]">
           <DFLink to={'/integrations/download/report'} className="h-[84px]" unstyled>
-            <Card className="p-3 flex shrink-0 items-center dark:text-text-text-and-icon gap-x-4 h-full ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-2 dark:focus:ring-bg-hover-3 dark:focus:ring-2 cursor-pointer">
+            <Card
+              className={cn(
+                'p-3 flex shrink-0 items-center h-full gap-x-4',
+                'dark:text-text-text-and-icon',
+                'hover:outline dark:hover:outline-bg-hover-3 dark:hover:outline-2',
+                'dark:focus:outline-bg-hover-3 dark:focus:outline-2 cursor-pointer',
+              )}
+            >
               <span className="h-9 w-9 ">
                 <DownloadReportIcon />
               </span>
               <Suspense fallback={<ReportCountSkeleton />}>
-                <div>
-                  <ReportCount />
-                </div>
+                <ReportCount />
               </Suspense>
             </Card>
           </DFLink>

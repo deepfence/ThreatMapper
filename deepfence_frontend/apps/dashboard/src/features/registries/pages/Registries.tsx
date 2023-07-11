@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense } from 'react';
+import { cn } from 'tailwind-preset';
 import { Breadcrumb, BreadcrumbLink, Card } from 'ui-components';
 
 import { ModelSummary } from '@/api/generated/models/ModelSummary';
@@ -72,7 +73,13 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
   return (
     <DFLink className="flex flex-col" to={`/registries/${registry.type}`} unstyled>
       <Card
-        className="p-2 pb-3 dark:bg-bg-card ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-2 dark:focus:ring-bg-hover-3 dark:focus:ring-2 cursor-pointer"
+        className={cn(
+          'relative group p-2 pb-3 flex flex-col',
+          'dark:bg-bg-card hover:outline outline-2 dark:outline-bg-hover-3',
+          "before:content-none dark:hover:before:content-[''] before:w-[68px] before:h-[68px]",
+          'dark:before:bg-bg-hover-3 before:absolute before:-top-[28px]',
+          'before:left-[18px] before:rounded-full before:-z-10 cursor-pointer',
+        )}
         key={registry.type}
       >
         <CardHeader registry={registry} />

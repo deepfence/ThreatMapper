@@ -40,7 +40,7 @@ const PostureCardContent = () => {
   const { data } = usePostureSummary();
 
   return (
-    <div className="h-full w-full grid grid-cols-3 p-4 gap-4">
+    <div className="h-full w-full grid max-[1536px]:grid-cols-2 grid-cols-3 p-4 gap-4">
       {data.providers?.map((provider) => {
         return <PostureCardItem key={provider.name} provider={provider} />;
       })}
@@ -53,8 +53,10 @@ const PostureCardItem = ({ provider }: { provider: ModelPostureProvider }) => {
   return (
     <div className="dark:bg-bg-side-panel rounded-[5px] flex" key={provider.name}>
       <div className="flex items-center justify-center p-3">
-        <div className="h-[60px] w-[60px] shrink-0 dark:bg-bg-breadcrumb-bar rounded-full flex items-center justify-center">
-          <PostureLogos name={provider.name ?? ''} />
+        <div className="h-14 w-14 shrink-0 dark:bg-bg-breadcrumb-bar rounded-full flex items-center justify-center">
+          <span className="w-9 h-9 block">
+            <PostureLogos name={provider.name ?? ''} />
+          </span>
         </div>
       </div>
       <div className="flex flex-col gap-1">
@@ -69,12 +71,12 @@ const PostureCardItem = ({ provider }: { provider: ModelPostureProvider }) => {
             ),
           }}
         >
-          <div className="h-7 w-7 shrink-0">
+          <div className="h-6 w-6 shrink-0">
             <ComplianceIconByPercent
               percent={isScanned ? provider.compliance_percentage : null}
             />
           </div>
-          <div className="text-h1">
+          <div className="xl:text-h2 lg:text-h3 ">
             {isScanned
               ? `${formatPercentage(provider.compliance_percentage ?? 0, {
                   maximumFractionDigits: 1,

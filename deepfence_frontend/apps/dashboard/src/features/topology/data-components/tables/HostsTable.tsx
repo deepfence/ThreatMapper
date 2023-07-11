@@ -67,7 +67,7 @@ export const HostsTable = () => {
 
   return (
     <div className="px-4 pb-4">
-      <div className="py-2 flex items-center">
+      <div className="h-12 flex items-center">
         <BulkActions nodeIds={selectedIds} />
         <Button
           variant="flat"
@@ -534,7 +534,7 @@ const DataTable = ({
       }),
       columnHelper.accessor('vulnerability_scan_status', {
         cell: (info) => {
-          return <ScanStatusBadge status={info.getValue()} />;
+          return <ScanStatusBadge status={''} />;
         },
         header: () => <TruncatedText text="Vulnerability scan status" />,
         minSize: 100,

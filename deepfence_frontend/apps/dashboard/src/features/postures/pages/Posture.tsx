@@ -90,17 +90,10 @@ const CardSkeleton = () => {
 const CardHeader = ({ name }: { name: string }) => {
   return (
     <div className="flex items-center w-full relative">
-      <div className="dark:bg-bg-grid-default absolute -top-[40px] left-[16px] rounded-full">
-        <div
-          className={cn(
-            'h-full w-full  p-3 rounded-[50%] dark:group-hover:-rotate-45',
-            'dark:group-hover:border-2 dark:group-hover:border-bg-hover-3 border-box dark:group-hover:border-b-transparent dark:group-hover:border-r-transparent dark:group-hover:rotate-45',
-          )}
-        >
-          <div className="dark:group-hover:-rotate-45">
-            <PostureLogos name={name} />
-          </div>
-        </div>
+      <div className="dark:bg-bg-grid-default absolute -top-[34px] left-[12px] rounded-full p-3">
+        <span className="w-10 h-10 block">
+          <PostureLogos name={name} />
+        </span>
       </div>
 
       <span className="ml-[114px] flex items-center gap-2 text-t4 uppercase dark:text-text-input-value pt-1">
@@ -178,7 +171,15 @@ const CardSectionCount = ({ provider }: { provider: ModelPostureProvider }) => {
 };
 const PostureCard = ({ provider }: { provider: ModelPostureProvider }) => {
   return (
-    <Card className="group p-2 pb-3 flex flex-col dark:bg-bg-card ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-2 dark:focus:ring-bg-hover-3 dark:focus:ring-2 cursor-pointer">
+    <Card
+      className={cn(
+        'relative group p-2 pb-3 flex flex-col dark:bg-bg-card',
+        'hover:outline outline-2 dark:outline-bg-hover-3',
+        "before:content-none hover:before:content-[''] before:w-[68px] before:h-[68px]",
+        'dark:before:bg-bg-hover-3 before:absolute before:-top-[28px]',
+        'before:left-[18px] before:rounded-full before:-z-10 cursor-pointer',
+      )}
+    >
       <DFLink to={`/posture/accounts/${provider.name}`} unstyled>
         <CardHeader name={provider.name || ''} />
         <div className="mt-6 mb-2 grid grid-cols-3 place-items-center min-w-[322px]">
@@ -241,11 +242,11 @@ const Posture = () => {
           </BreadcrumbLink>
         </Breadcrumb>
       </div>
-      <div className="mx-4 my-10 flex gap-x-4 flex-wrap">
+      <div className="mx-4 my-10 flex gap-x-4 flex-wrap gap-y-10">
         <Suspense fallback={<CardSkeleton />}>
           <PostureCloudList />
-          <Separator className="mt-4 dark:bg-bg-grid-border h-px w-full" />
-          <div className="mt-10 flex gap-x-4">
+          <Separator className="dark:bg-bg-grid-border h-px w-full" />
+          <div className="mt-6 flex gap-x-4">
             <PosturenNonCloudList />
           </div>
         </Suspense>

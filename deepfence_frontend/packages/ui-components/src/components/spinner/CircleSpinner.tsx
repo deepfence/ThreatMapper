@@ -8,18 +8,15 @@ type CircleSpinnerProps = {
   className?: string;
 };
 
-const spinnerCVA = cva(
-  ['animate-spin dark:text-bg-active-selection fill-accent-accent'],
-  {
-    variants: {
-      size: {
-        sm: 'w-[18px] h-[18px]',
-        md: 'w-[36px] h-[36px]',
-        lg: 'w-[72px] h-[72px]',
-      },
+const spinnerCVA = cva(['animate-spin dark:text-bg-side-panel fill-accent-accent'], {
+  variants: {
+    size: {
+      sm: 'w-[18px] h-[18px]',
+      md: 'w-[36px] h-[36px]',
+      lg: 'w-[72px] h-[72px]',
     },
   },
-);
+});
 
 export const CircleSpinner = ({ size = 'md', className }: CircleSpinnerProps) => {
   return (
