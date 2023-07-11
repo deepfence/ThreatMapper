@@ -13,12 +13,13 @@ import (
 )
 
 const (
-	NodeTypeHost           = "host"
-	Ec2DnsSuffix           = ".compute.amazonaws.com"
-	AwsEc2ResourceId       = "aws_ec2_instance"
-	GcpComputeResourceId   = "gcp_compute_instance"
-	AzureComputeResourceId = "azure_compute_virtual_machine"
-	DeepfenceVersion       = "v2.0.0"
+	NodeTypeHost              = "host"
+	NodeTypeKubernetesCluster = "kubernetes_cluster"
+	Ec2DnsSuffix              = ".compute.amazonaws.com"
+	AwsEc2ResourceId          = "aws_ec2_instance"
+	GcpComputeResourceId      = "gcp_compute_instance"
+	AzureComputeResourceId    = "azure_compute_virtual_machine"
+	DeepfenceVersion          = "v2.0.0"
 )
 
 type CloudResource struct {
@@ -123,7 +124,7 @@ func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 	}
 	defer session.Close()
 
-	batch, hosts := ResourceToMaps(cs)
+	batch, hosts, clusters := ResourceToMaps(cs)
 
 	start := time.Now()
 
@@ -144,34 +145,54 @@ func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 			"shown_types": TopologyCloudResourceTypes,
 		},
 	)
+	if err != nil {
+		return err
+	}
 
 	if len(hosts) > 0 {
-		_, err = tx.Run(`
+		if _, err = tx.Run(`
 		UNWIND $batch as row
 		OPTIONAL MATCH (n:Node{node_id:row.node_id})
 		WITH n, row as row
 		WHERE n IS NULL or n.active=false
 		MERGE (m:Node{node_id:row.node_id})
-		FOREACH(dummy IN CASE WHEN EXISTS(row.kubernetes_cluster_id) THEN [1] ELSE [] END | MERGE (k:KubernetesCluster{node_id:row.kubernetes_cluster_id}))
-		FOREACH(dummy IN CASE WHEN EXISTS(row.kubernetes_cluster_id) THEN [1] ELSE [] END | SET k+=row, k.updated_at = TIMESTAMP(), k.node_type='cluster', k.node_name = row.kubernetes_cluster_id)
-		FOREACH(dummy IN CASE WHEN EXISTS(row.kubernetes_cluster_id) THEN [1] ELSE [] END | MERGE (k)-[:INSTANCIATE]->(m))
 		SET m+=row, m.updated_at = TIMESTAMP()`,
-			map[string]interface{}{"batch": hosts},
-		)
+			map[string]interface{}{"batch": hosts}); err != nil {
+			return err
+		}
+	}
+
+	if len(clusters) > 0 {
+		if _, err = tx.Run(`
+		UNWIND $batch as row
+		OPTIONAL MATCH (n:KubernetesCluster{node_id:row.node_id})
+		WITH n, row as row
+		WHERE n IS NULL or n.active=false
+		MERGE (m:KubernetesCluster{node_id:row.node_id})
+		SET m+=row, m.updated_at = TIMESTAMP()`,
+			map[string]interface{}{"batch": clusters}); err != nil {
+			return err
+		}
+
+		if _, err := session.Run(`
+		MATCH (k:KubernetesCluster)
+		WHERE not (k) -[:INSTANCIATE]-> (:Node)
+		MATCH (n:Node{kubernetes_cluster_id:k.kubernetes_cluster_id})
+		MERGE (k) -[:INSTANCIATE]-> (n)`,
+			map[string]interface{}{}); err != nil {
+			return err
+		}
 	}
 
 	log.Debug().Msgf("cloud resource ingest took: %v", time.Until(start))
 
-	if err != nil {
-		return err
-	}
-
 	return tx.Commit()
 }
 
-func ResourceToMaps(ms []CloudResource) ([]map[string]interface{}, []map[string]interface{}) {
+func ResourceToMaps(ms []CloudResource) ([]map[string]interface{}, []map[string]interface{}, []map[string]interface{}) {
 	res := make([]map[string]interface{}, 0, len(ms))
 	hosts := make([]map[string]interface{}, 0)
+	clusters := make([]map[string]interface{}, 0)
 	timestampNow := time.Now().UTC().Format(time.RFC3339Nano)
 	for _, v := range ms {
 		newmap, err := v.ToMap()
@@ -220,9 +241,22 @@ func ResourceToMaps(ms []CloudResource) ([]map[string]interface{}, []map[string]
 				"host_name":               v.Name,
 				"node_id":                 v.Name,
 			})
+			if k8sClusterName != "" {
+				clusters = append(clusters, map[string]interface{}{
+					"timestamp":               timestampNow,
+					"node_id":                 k8sClusterName,
+					"node_name":               k8sClusterName,
+					"node_type":               NodeTypeKubernetesCluster,
+					"kubernetes_cluster_name": k8sClusterName,
+					"kubernetes_cluster_id":   k8sClusterName,
+					"active":                  true,
+					"cloud_provider":          v.CloudProvider,
+					"agent_running":           false,
+				})
+			}
 		}
 	}
-	return res, hosts
+	return res, hosts, clusters
 }
 
 func (c *CloudResource) ToMap() (map[string]interface{}, error) {
