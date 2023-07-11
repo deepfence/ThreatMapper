@@ -26,7 +26,7 @@ export const Tooltip = (props: TooltipProps) => {
     label,
   } = props;
   return (
-    <TooltipPrimitive.Provider delayDuration={delayDuration ?? 2}>
+    <TooltipPrimitive.Provider delayDuration={delayDuration ?? 0}>
       <TooltipPrimitive.Root
         open={open}
         onOpenChange={onOpenChange}
