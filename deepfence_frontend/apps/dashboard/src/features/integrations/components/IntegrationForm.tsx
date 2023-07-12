@@ -328,7 +328,7 @@ export const IntegrationForm = ({
             />
             <TextInputType
               name="auth_header"
-              label="Authorization key"
+              label="Authorization header"
               helperText={fieldErrors?.auth_key}
               color={fieldErrors?.auth_key ? 'error' : 'default'}
             />
@@ -509,7 +509,7 @@ export const IntegrationForm = ({
             />
             <TextInputType
               name="assigne"
-              label="Assigne"
+              label="Assignee"
               helperText={fieldErrors?.jira_assignee}
               color={fieldErrors?.jira_assignee ? 'error' : 'default'}
             />

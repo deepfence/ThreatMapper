@@ -78,7 +78,7 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
     case IntegrationType.httpEndpoint:
       return {
         url: formBody.apiUrl,
-        auth_header: formBody.authorizationKey,
+        auth_header: formBody.auth_header,
       };
     case IntegrationType.email:
       return {
