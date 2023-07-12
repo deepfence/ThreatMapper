@@ -13,6 +13,7 @@ import { GoogleCRConnectorForm } from '@/components/registries-connector/GoogleC
 import { HarborConnectorForm } from '@/components/registries-connector/HarborConnectorForm';
 import { JfrogConnectorForm } from '@/components/registries-connector/JfrogConnectorForm';
 import { QuayConnectorForm } from '@/components/registries-connector/QuayConnectorForm';
+import { invalidateAllQueries } from '@/queries';
 import { RegistryType } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 
@@ -118,7 +119,7 @@ export const registryConnectorActionApi = async ({
       }
     }
   }
-
+  invalidateAllQueries();
   toast('Registry added successfully');
   return {
     success: true,

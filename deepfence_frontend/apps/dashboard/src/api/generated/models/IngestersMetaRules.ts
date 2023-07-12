@@ -42,6 +42,12 @@ export interface IngestersMetaRules {
      * @type {string}
      * @memberof IngestersMetaRules
      */
+    file_severity?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof IngestersMetaRules
+     */
     filetype?: string;
     /**
      * 
@@ -97,6 +103,7 @@ export function IngestersMetaRulesFromJSONTyped(json: any, ignoreDiscriminator: 
         'author': !exists(json, 'author') ? undefined : json['author'],
         'date': !exists(json, 'date') ? undefined : json['date'],
         'description': !exists(json, 'description') ? undefined : json['description'],
+        'file_severity': !exists(json, 'file_severity') ? undefined : json['file_severity'],
         'filetype': !exists(json, 'filetype') ? undefined : json['filetype'],
         'info': !exists(json, 'info') ? undefined : json['info'],
         'reference': !exists(json, 'reference') ? undefined : json['reference'],
@@ -118,6 +125,7 @@ export function IngestersMetaRulesToJSON(value?: IngestersMetaRules | null): any
         'author': value.author,
         'date': value.date,
         'description': value.description,
+        'file_severity': value.file_severity,
         'filetype': value.filetype,
         'info': value.info,
         'reference': value.reference,

@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
-import { useEffect, useState } from 'react';
-import { Combobox, ComboboxOption } from 'ui-components';
+import { useEffect, useMemo, useState } from 'react';
+import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
@@ -9,24 +9,32 @@ import { ScanTypeEnum } from '@/types/common';
 export type SearchableHostListProps = {
   scanType: ScanTypeEnum | 'none';
   onChange?: (value: string[]) => void;
+  onClearAll?: () => void;
   defaultSelectedHosts?: string[];
   valueKey?: 'nodeId' | 'hostName' | 'nodeName';
   active?: boolean;
+  triggerVariant?: 'select' | 'button';
 };
 
 const PAGE_SIZE = 15;
 export const SearchableHostList = ({
   scanType,
   onChange,
+  onClearAll,
   defaultSelectedHosts,
   valueKey = 'nodeId',
   active,
+  triggerVariant,
 }: SearchableHostListProps) => {
   const [searchText, setSearchText] = useState('');
 
   const [selectedHosts, setSelectedHosts] = useState<string[]>(
     defaultSelectedHosts ?? [],
   );
+
+  const isSelectVariantType = useMemo(() => {
+    return triggerVariant === 'select';
+  }, [triggerVariant]);
 
   useEffect(() => {
     setSelectedHosts(defaultSelectedHosts ?? []);
@@ -39,6 +47,7 @@ export const SearchableHostList = ({
       searchText,
       active,
     }),
+    keepPreviousData: true,
     getNextPageParam: (lastPage, allPages) => {
       return allPages.length * PAGE_SIZE;
     },
@@ -66,21 +75,27 @@ export const SearchableHostList = ({
         value={selectedHosts.length}
       />
       <Combobox
-        multiple
-        sizing="sm"
-        label="Select host"
-        placeholder="Select host"
+        startIcon={
+          isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+        }
         name="hostFilter"
+        triggerVariant={triggerVariant || 'button'}
+        label={isSelectVariantType ? 'Host' : undefined}
+        getDisplayValue={() =>
+          isSelectVariantType && selectedHosts.length > 0
+            ? `${selectedHosts.length} selected`
+            : null
+        }
+        placeholder="Select host"
+        multiple
         value={selectedHosts}
-        onChange={(value) => {
-          setSelectedHosts(value);
-          onChange?.(value);
+        onChange={(values) => {
+          setSelectedHosts(values);
+          onChange?.(values);
         }}
-        getDisplayValue={() => {
-          return searchText;
-        }}
-        loading={isFetching}
         onQueryChange={searchHost}
+        clearAllElement="Clear"
+        onClearAll={onClearAll}
         onEndReached={onEndReached}
       >
         {data?.pages

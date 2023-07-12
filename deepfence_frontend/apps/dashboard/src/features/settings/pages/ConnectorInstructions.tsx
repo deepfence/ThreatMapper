@@ -1,19 +1,8 @@
 import cx from 'classnames';
 import { startCase } from 'lodash-es';
-import { HiCode, HiOutlineArrowCircleRight, HiOutlineArrowLeft } from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
 import { generatePath, useParams } from 'react-router-dom';
 import { Card } from 'ui-components';
 
-import LogoAws from '@/assets/logo-aws.svg';
-import LogoAwsWhite from '@/assets/logo-aws-white.svg';
-import LogoAzure from '@/assets/logo-azure.svg';
-import LogoCloudConnector from '@/assets/logo-cloud-connector.svg';
-import LogoDocker from '@/assets/logo-docker.svg';
-import LogoGoogle from '@/assets/logo-google.svg';
-import LogoHostConnector from '@/assets/logo-host-connector.svg';
-import LogoK8 from '@/assets/logo-k8.svg';
-import LogoLinux from '@/assets/logo-linux.svg';
 import { AWSCloudFormation } from '@/components/clouds-connector/AWSCloudFormation';
 import { AWSTerraform } from '@/components/clouds-connector/AWSTerraform';
 import { AzureConnectorForm } from '@/components/clouds-connector/AzureConnectorForm';
@@ -22,14 +11,21 @@ import { DFLink } from '@/components/DFLink';
 import { DockerConnectorForm } from '@/components/hosts-connector/DockerConnectorForm';
 import { K8ConnectorForm } from '@/components/hosts-connector/K8ConnectorForm';
 import { LinuxConnectorForm } from '@/components/hosts-connector/LinuxConnectorForm';
-import { SettingsTab } from '@/features/settings/components/SettingsTab';
-import { useTheme } from '@/theme/ThemeContext';
+import { ArrowLine } from '@/components/icons/common/ArrowLine';
+import { CloudLine } from '@/components/icons/common/CloudLine';
+import { HostIcon } from '@/components/icons/host';
+import { AwsIcon } from '@/components/icons/posture/Aws';
+import { AzureIcon } from '@/components/icons/posture/Azure';
+import { GoogleIcon } from '@/components/icons/posture/Google';
+import { KubernetesIcon } from '@/components/icons/posture/Kubernetes';
+import { LinuxIcon } from '@/components/icons/posture/Linux';
+import { DockerRegistryIcon } from '@/components/icons/registries/Docker';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 interface CardConnectProps {
   path: string;
   label: string;
-  icon: string;
+  icon: React.ReactNode;
 }
 
 const ACCOUNT_CONNECTOR = {
@@ -47,7 +43,7 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
   const { navigate } = usePageNavigation();
   const handleSelection = () => {
     navigate(
-      generatePath(`../../settings/connector-instructions/:connectorType`, {
+      generatePath(`../../settings/connection-instructions/:connectorType`, {
         connectorType: path,
       }),
     );
@@ -62,52 +58,40 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
         )}
         onClick={handleSelection}
       >
-        <div className="w-10">
-          <img src={icon} alt="Cloud Connector" />
-        </div>
+        <div className="w-10 h-10">{icon}</div>
         <div className="whitespace-nowrap overflow-hidden text-ellipsis">{label}</div>
-        <IconContext.Provider
-          value={{
-            className: 'ml-auto text-blue-700 dark:text-blue-500',
-            size: '18px',
-          }}
-        >
-          <HiOutlineArrowCircleRight />
-        </IconContext.Provider>
+        <span className="w-6 h-6 ml-auto">
+          <ArrowLine className="rotate-90" />
+        </span>
       </button>
     </div>
   );
 };
 
 const Cloud = () => {
-  const { mode } = useTheme();
   const connectors = [
     {
-      icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
+      icon: <AwsIcon />,
       label: 'Amazon Web Services (AWS)',
       path: ACCOUNT_CONNECTOR.AWS,
     },
     {
-      icon: LogoGoogle,
+      icon: <GoogleIcon />,
       label: 'Google Cloud Platform',
       path: ACCOUNT_CONNECTOR.GCP,
     },
     {
-      icon: LogoAzure,
+      icon: <AzureIcon />,
       label: 'Microsoft Azure',
       path: ACCOUNT_CONNECTOR.AZURE,
     },
   ];
   return (
     <>
-      <div className="py-4 items-center flex px-6">
-        <img
-          src={LogoCloudConnector}
-          alt="Cloud Connector"
-          width="28"
-          height="28"
-          className="pr-2"
-        />
+      <div className="py-4 items-center flex px-6 gap-x-2">
+        <span className="w-6 h-6 dark:text-accent-accent">
+          <CloudLine />
+        </span>
         <span className={`text-2xl font-medium leading-[29px] dark:text-gray-50`}>
           Cloud
         </span>
@@ -141,17 +125,17 @@ const Cloud = () => {
 const Host = () => {
   const connectors = [
     {
-      icon: LogoK8,
+      icon: <KubernetesIcon />,
       label: 'Kubernetes Clusters',
       path: ACCOUNT_CONNECTOR.KUBERNETES,
     },
     {
-      icon: LogoDocker,
+      icon: <DockerRegistryIcon />,
       label: 'Docker Container',
       path: ACCOUNT_CONNECTOR.DOCKER,
     },
     {
-      icon: LogoLinux,
+      icon: <LinuxIcon />,
       label: 'Linux Bare-Metal/VM',
       path: ACCOUNT_CONNECTOR.LINUX,
     },
@@ -159,14 +143,10 @@ const Host = () => {
 
   return (
     <>
-      <div className="py-4 items-center flex px-6">
-        <img
-          src={LogoHostConnector}
-          alt="Cloud Connector"
-          width="28"
-          height="28"
-          className="pr-2"
-        />
+      <div className="py-4 items-center flex px-6 gap-x-2">
+        <span className="w-6 h-6 dark:text-accent-accent">
+          <HostIcon />
+        </span>
         <span className={`text-2xl font-medium leading-[29px] dark:text-gray-50`}>
           Host
         </span>
@@ -200,15 +180,11 @@ const Host = () => {
 const Instructions = ({ connectorType }: { connectorType: string }) => {
   return (
     <>
-      <div className="p-2 flex gap-x-2 items-center">
+      <div className="mt-2 flex gap-x-2 items-center">
         <DFLink to={'../connection-instructions'}>
-          <IconContext.Provider
-            value={{
-              className: 'h-5 w-5',
-            }}
-          >
-            <HiOutlineArrowLeft />
-          </IconContext.Provider>
+          <div className="w-6 h-6 -rotate-90">
+            <ArrowLine />
+          </div>
         </DFLink>
         <h3 className="font-medium text-gray-900 dark:text-white text-base">
           {startCase(connectorType)}
@@ -233,22 +209,13 @@ const Instructions = ({ connectorType }: { connectorType: string }) => {
 const Connectors = () => {
   return (
     <div className="max-w-[900px]">
-      <div className="mt-2 flex gap-x-2 items-center">
-        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-400',
-            }}
-          >
-            <HiCode />
-          </IconContext.Provider>
-        </div>
+      <div className="mt-2">
         <h3 className="font-medium text-gray-900 dark:text-white text-base">
-          Connection Instructions
+          Connection instructions
         </h3>
       </div>
       <div className="h-full dark:text-white mt-4">
-        <div className="grid grid-cols-1 gap-2 lg:grid-cols-2 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 sm:grid-cols-2">
           <Card className="dark:border-0">
             <Cloud />
           </Card>
@@ -265,11 +232,10 @@ const ConnectorInstructions = () => {
     connectorType: string;
   };
 
-  return (
-    <SettingsTab value="connection-instructions">
-      {connectorType ? <Instructions connectorType={connectorType} /> : <Connectors />}
-    </SettingsTab>
-  );
+  if (connectorType) {
+    return <Instructions connectorType={connectorType} />;
+  }
+  return <Connectors />;
 };
 
 export const module = {

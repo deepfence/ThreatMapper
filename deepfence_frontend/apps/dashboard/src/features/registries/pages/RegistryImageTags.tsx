@@ -1,613 +1,511 @@
-import { Suspense, useRef } from 'react';
-import { FiFilter } from 'react-icons/fi';
-import { HiChevronRight } from 'react-icons/hi';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense, useCallback, useState } from 'react';
+import { generatePath, useParams, useSearchParams } from 'react-router-dom';
 import {
-  Form,
-  generatePath,
-  LoaderFunctionArgs,
-  useLoaderData,
-  useParams,
-  useSearchParams,
-} from 'react-router-dom';
-import {
+  Badge,
   Breadcrumb,
   BreadcrumbLink,
-  Checkbox,
-  IconButton,
-  Popover,
+  Button,
+  CircleSpinner,
+  Combobox,
+  ComboboxOption,
+  Dropdown,
+  DropdownItem,
+  RowSelectionState,
   TableSkeleton,
 } from 'ui-components';
 
-import { getRegistriesApiClient } from '@/api/api';
-import { ModelContainerImage, ModelRegistryImagesReq } from '@/api/generated';
+import {
+  ConfigureScanModal,
+  ConfigureScanModalProps,
+} from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
-import { FilterHeader } from '@/components/forms/FilterHeader';
+import { FilterBadge } from '@/components/filters/FilterBadge';
+import { CaretDown } from '@/components/icons/common/CaretDown';
+import { FilterIcon } from '@/components/icons/common/Filter';
+import { TimesIcon } from '@/components/icons/common/Times';
+import { StartScanIcon } from '@/components/icons/registries/StartScan';
+import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { RegistryImageTagsTable } from '@/features/registries/components/RegistryImageTagsTable';
-import { apiWrapper } from '@/utils/api';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
-import { DFAwait } from '@/utils/suspense';
-import { getPageFromSearchParams } from '@/utils/table';
+import {
+  ActionEnumType,
+  RegistryScanType,
+} from '@/features/registries/pages/RegistryImages';
+import { queries } from '@/queries';
+import {
+  MalwareScanNodeTypeEnum,
+  ScanTypeEnum,
+  SecretScanNodeTypeEnum,
+  VulnerabilityScanNodeTypeEnum,
+} from '@/types/common';
+import {
+  MalwareScanGroupedStatus,
+  SCAN_STATUS_GROUPS,
+  SecretScanGroupedStatus,
+  VulnerabilityScanGroupedStatus,
+} from '@/utils/scan';
+import { getOrderFromSearchParams, getPageFromSearchParams } from '@/utils/table';
 
-const PAGE_SIZE = 15;
+const DEFAULT_PAGE_SIZE = 10;
 
-export type LoaderDataTypeForImageTags = {
-  error?: string;
-  message?: string;
-  tableData: Awaited<ReturnType<typeof getTags>>;
-};
+const scanStatusMap = new Map();
+scanStatusMap.set('complete', 'Completed');
+scanStatusMap.set('in_progress', 'In Progress');
+scanStatusMap.set('not_scan', 'Never scanned');
+scanStatusMap.set('error', 'Failed');
 
-const getVulnerabilityScanStatus = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('vulnerabilityScanStatus');
-};
-
-const getSecretScanStatus = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('secretScanStatus');
-};
-
-const getMalwareScanStatus = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('malwareScanStatus');
-};
-
-async function getTags(
-  nodeId: string,
-  imageId: string,
-  searchParams: URLSearchParams,
-): Promise<{
-  tags: ModelContainerImage[];
-  currentPage: number;
-  totalRows: number;
-}> {
-  const page = getPageFromSearchParams(searchParams);
-  const vulnerabilityScanStatus = getVulnerabilityScanStatus(searchParams);
-  const secretScanStatus = getSecretScanStatus(searchParams);
-  const malwareScanStatus = getMalwareScanStatus(searchParams);
-
-  const imageTagsRequest: ModelRegistryImagesReq = {
-    image_filter: {
-      filter_in: {
-        docker_image_name: [imageId],
-      },
-    },
-    registry_id: nodeId,
-    window: {
-      offset: page * PAGE_SIZE,
-      size: PAGE_SIZE,
-    },
-  };
-
-  if (vulnerabilityScanStatus.length) {
-    imageTagsRequest.image_filter.filter_in!['vulnerability_scan_status'] =
-      vulnerabilityScanStatus;
-  }
-
-  if (secretScanStatus.length) {
-    imageTagsRequest.image_filter.filter_in!['secret_scan_status'] = secretScanStatus;
-  }
-
-  if (malwareScanStatus.length) {
-    imageTagsRequest.image_filter.filter_in!['malware_scan_status'] = malwareScanStatus;
-  }
-
-  const listImages = apiWrapper({ fn: getRegistriesApiClient().listImages });
-
-  const result = await listImages({
-    modelRegistryImagesReq: imageTagsRequest,
-  });
-
-  if (!result.ok) {
-    throw result.error;
-  }
-
-  if (!result.value) {
+function getScanOptions(
+  scanType: ScanTypeEnum,
+  nodeIds: string[],
+): ConfigureScanModalProps['scanOptions'] {
+  if (scanType === ScanTypeEnum.VulnerabilityScan) {
     return {
-      tags: [],
-      currentPage: 0,
-      totalRows: 0,
+      showAdvancedOptions: nodeIds.length === 1,
+      scanType,
+      data: {
+        nodeIds,
+        nodeType: VulnerabilityScanNodeTypeEnum.imageTag,
+      },
     };
   }
 
-  const countImages = apiWrapper({ fn: getRegistriesApiClient().countImages });
-  const resultCounts = await countImages({
-    modelRegistryImagesReq: {
-      ...imageTagsRequest,
-      window: {
-        ...imageTagsRequest.window,
-        size: 10 * imageTagsRequest.window.size,
+  if (scanType === ScanTypeEnum.SecretScan) {
+    return {
+      showAdvancedOptions: nodeIds.length === 1,
+      scanType,
+      data: {
+        nodeIds,
+        nodeType: SecretScanNodeTypeEnum.imageTag,
       },
-    },
-  });
-
-  if (!resultCounts.ok) {
-    throw resultCounts.error;
+    };
   }
-  return {
-    tags: result.value,
-    currentPage: page,
-    totalRows: page * PAGE_SIZE + (resultCounts.value.count || 0),
-  };
+
+  if (scanType === ScanTypeEnum.MalwareScan) {
+    return {
+      showAdvancedOptions: nodeIds.length === 1,
+      scanType,
+      data: {
+        nodeIds,
+        nodeType: MalwareScanNodeTypeEnum.imageTag,
+      },
+    };
+  }
+
+  throw new Error('invalid scan type');
 }
 
-const loader = async ({
-  params,
-  request,
-}: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataTypeForImageTags>> => {
-  const { account, nodeId, imageId } = params as {
+export const useScanResults = () => {
+  const [searchParams] = useSearchParams();
+  const params = useParams() as {
     account: string;
     nodeId: string;
     imageId: string;
   };
-
-  if (!account || !nodeId || !imageId) {
+  if (!params?.account || !params?.nodeId || !params?.imageId) {
     throw new Error('Account Type, Node Id and Image Id are required');
   }
-  const searchParams = new URL(request.url).searchParams;
-
-  return typedDefer({
-    tableData: getTags(nodeId, imageId, searchParams),
+  return useSuspenseQuery({
+    ...queries.registry.registryScanResults({
+      registryId: params.nodeId,
+      imageId: params.imageId,
+      page: getPageFromSearchParams(searchParams),
+      pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
+      order: getOrderFromSearchParams(searchParams) || {
+        sortBy: 'node_id',
+        descending: true,
+      },
+      vulnerabilityScanStatus: searchParams.get('vulnerabilityScanStatus') as
+        | VulnerabilityScanGroupedStatus
+        | undefined,
+      secretScanStatus: searchParams.get('secretScanStatus') as
+        | SecretScanGroupedStatus
+        | undefined,
+      malwareScanStatus: searchParams.get('malwareScanStatus') as
+        | MalwareScanGroupedStatus
+        | undefined,
+    }),
+    keepPreviousData: true,
   });
 };
 
-const HeaderComponent = () => {
-  const elementToFocusOnClose = useRef(null);
-  const [searchParams, setSearchParams] = useSearchParams();
+const Header = () => {
+  return (
+    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <>
+        <Breadcrumb>
+          <BreadcrumbLink asChild icon={<RegistryIcon />} isLink>
+            <DFLink to={'/registries'} unstyled>
+              Registries
+            </DFLink>
+          </BreadcrumbLink>
+          <Suspense
+            fallback={
+              <BreadcrumbLink isLast>
+                <CircleSpinner size="sm" />
+              </BreadcrumbLink>
+            }
+          >
+            <DynamicBreadcrumbs />
+          </Suspense>
+        </Breadcrumb>
+      </>
+    </div>
+  );
+};
+
+const DynamicBreadcrumbs = () => {
   const { account, nodeId, imageId } = useParams() as {
     account: string;
     nodeId: string;
     imageId: string;
   };
+  return (
+    <>
+      <BreadcrumbLink icon={<RegistryIcon />}>
+        <DFLink
+          to={generatePath('/registries/:account', {
+            account: encodeURIComponent(account),
+          })}
+        >
+          {account}
+        </DFLink>
+      </BreadcrumbLink>
+      <BreadcrumbLink icon={<RegistryIcon />}>
+        <DFLink
+          to={generatePath('/registries/images/:account/:nodeId', {
+            account: encodeURIComponent(account),
+            nodeId: encodeURIComponent(nodeId),
+          })}
+        >
+          {nodeId}
+        </DFLink>
+      </BreadcrumbLink>
+      <BreadcrumbLink icon={<RegistryIcon />} isLast>
+        <span className="inherit cursor-auto">{imageId}</span>
+      </BreadcrumbLink>
+    </>
+  );
+};
 
-  const isFilterApplied =
-    searchParams.has('vulnerabilityScanStatus') ||
-    searchParams.has('secretScanStatus') ||
-    searchParams.has('malwareScanStatus');
+const FILTER_SEARCHPARAMS: Record<string, string> = {
+  vulnerabilityScanStatus: 'Vulnerability scan status',
+  secretScanStatus: 'Secret scan status',
+  malwareScanStatus: 'Malware scan status',
+};
 
-  const onResetFilters = () => {
-    setSearchParams(() => {
-      return {};
-    });
+const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
+  return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
+    return prev + searchParams.getAll(curr).length;
+  }, 0);
+};
+const Filters = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const appliedFilterCount = getAppliedFiltersCount(searchParams);
+  const [vulnerabilityScanStatusSearchText, setVulnerabilityScanStatusSearchText] =
+    useState('');
+  const [secretScanStatusSearchText, setSecretScanStatusSearchText] = useState('');
+  const [malwareScanStatusSearchText, setMalwareScanStatusSearchText] = useState('');
+
+  const params = useParams() as {
+    nodeId: string;
+    imageId: string;
   };
 
+  if (!params.nodeId || !params.imageId) {
+    console.warn('Node id, Image id not found');
+  }
+
   return (
-    <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-      <Breadcrumb separator={<HiChevronRight />} transparent>
-        <BreadcrumbLink>
-          <DFLink to={'/registries'}>Registries</DFLink>
-        </BreadcrumbLink>
-        <BreadcrumbLink>
-          <DFLink
-            to={generatePath('/registries/:account', {
-              account: encodeURIComponent(account),
-            })}
-          >
-            {account}
-          </DFLink>
-        </BreadcrumbLink>
-
-        <BreadcrumbLink>
-          <DFLink
-            to={generatePath('/registries/images/:account/:nodeId', {
-              account: encodeURIComponent(account),
-              nodeId: encodeURIComponent(nodeId),
-            })}
-          >
-            {nodeId}
-          </DFLink>
-        </BreadcrumbLink>
-
-        <BreadcrumbLink>
-          <span className="inherit cursor-auto">{imageId}</span>
-        </BreadcrumbLink>
-      </Breadcrumb>
-      <div className="ml-auto flex items-center gap-x-4">
-        <div className="relative">
-          {isFilterApplied && (
-            <span className="absolute -left-[2px] -top-[2px] inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
-          )}
-          <Popover
-            triggerAsChild
-            elementToFocusOnCloseRef={elementToFocusOnClose}
-            content={
-              <div className="dark:text-white">
-                <FilterHeader onReset={onResetFilters} />
-                <Form className="flex flex-col gap-y-6  p-4">
-                  <fieldset>
-                    <legend className="text-sm font-medium">
-                      Vulnerability Scan Status
-                    </legend>
-                    <div className="flex gap-x-4 mt-1">
-                      <Checkbox
-                        label="Completed"
-                        checked={searchParams
-                          .getAll('vulnerabilityScanStatus')
-                          .includes('complete')}
-                        onCheckedChange={(state) => {
-                          if (state) {
-                            setSearchParams((prev) => {
-                              prev.append('vulnerabilityScanStatus', 'complete');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          } else {
-                            setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('vulnerabilityScanStatus');
-                              prev.delete('vulnerabilityScanStatus');
-                              prev.delete('page');
-                              prevStatuses
-                                .filter((status) => status !== 'complete')
-                                .forEach((status) => {
-                                  prev.append('vulnerabilityScanStatus', status);
-                                });
-                              return prev;
-                            });
-                          }
-                        }}
-                      />
-                      <Checkbox
-                        label="In Progress"
-                        checked={searchParams
-                          .getAll('vulnerabilityScanStatus')
-                          .includes('in_progress')}
-                        onCheckedChange={(state) => {
-                          if (state) {
-                            setSearchParams((prev) => {
-                              prev.append('vulnerabilityScanStatus', 'in_progress');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          } else {
-                            setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('vulnerabilityScanStatus');
-                              prev.delete('vulnerabilityScanStatus');
-                              prevStatuses
-                                .filter((status) => status !== 'in_progress')
-                                .forEach((status) => {
-                                  prev.append('vulnerabilityScanStatus', status);
-                                });
-                              prev.delete('page');
-                              return prev;
-                            });
-                          }
-                        }}
-                      />
-                      <Checkbox
-                        label="Not scan"
-                        checked={searchParams
-                          .getAll('vulnerabilityScanStatus')
-                          .includes('not_scan')}
-                        onCheckedChange={(state) => {
-                          if (state) {
-                            setSearchParams((prev) => {
-                              prev.append('vulnerabilityScanStatus', 'not_scan');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          } else {
-                            setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('vulnerabilityScanStatus');
-                              prev.delete('vulnerabilityScanStatus');
-                              prevStatuses
-                                .filter((status) => status !== 'not_scan')
-                                .forEach((status) => {
-                                  prev.append('vulnerabilityScanStatus', status);
-                                });
-                              prev.delete('page');
-                              return prev;
-                            });
-                          }
-                        }}
-                      />
-                      <Checkbox
-                        label="Failed"
-                        checked={searchParams
-                          .getAll('vulnerabilityScanStatus')
-                          .includes('error')}
-                        onCheckedChange={(state) => {
-                          if (state) {
-                            setSearchParams((prev) => {
-                              prev.append('vulnerabilityScanStatus', 'error');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          } else {
-                            setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('vulnerabilityScanStatus');
-                              prev.delete('vulnerabilityScanStatus');
-                              prev.delete('page');
-                              prevStatuses
-                                .filter((status) => status !== 'error')
-                                .forEach((status) => {
-                                  prev.append('vulnerabilityScanStatus', status);
-                                });
-                              return prev;
-                            });
-                          }
-                        }}
-                      />
-                    </div>
-                  </fieldset>
-
-                  <fieldset>
-                    <legend className="text-sm font-medium">Secret Scan Status</legend>
-                    <div className="flex gap-x-4 mt-1">
-                      <Checkbox
-                        label="Completed"
-                        checked={searchParams
-                          .getAll('secretScanStatus')
-                          .includes('complete')}
-                        onCheckedChange={(state) => {
-                          if (state) {
-                            setSearchParams((prev) => {
-                              prev.append('secretScanStatus', 'complete');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          } else {
-                            setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('secretScanStatus');
-                              prev.delete('secretScanStatus');
-                              prev.delete('page');
-                              prevStatuses
-                                .filter((status) => status !== 'complete')
-                                .forEach((status) => {
-                                  prev.append('secretScanStatus', status);
-                                });
-                              return prev;
-                            });
-                          }
-                        }}
-                      />
-                      <Checkbox
-                        label="In Progress"
-                        checked={searchParams
-                          .getAll('secretScanStatus')
-                          .includes('in_progress')}
-                        onCheckedChange={(state) => {
-                          if (state) {
-                            setSearchParams((prev) => {
-                              prev.append('secretScanStatus', 'in_progress');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          } else {
-                            setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('secretScanStatus');
-                              prev.delete('secretScanStatus');
-                              prevStatuses
-                                .filter((status) => status !== 'in_progress')
-                                .forEach((status) => {
-                                  prev.append('secretScanStatus', status);
-                                });
-                              prev.delete('page');
-                              return prev;
-                            });
-                          }
-                        }}
-                      />
-                      <Checkbox
-                        label="Not scan"
-                        checked={searchParams
-                          .getAll('secretScanStatus')
-                          .includes('not_scan')}
-                        onCheckedChange={(state) => {
-                          if (state) {
-                            setSearchParams((prev) => {
-                              prev.append('secretScanStatus', 'not_scan');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          } else {
-                            setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('secretScanStatus');
-                              prev.delete('secretScanStatus');
-                              prevStatuses
-                                .filter((status) => status !== 'not_scan')
-                                .forEach((status) => {
-                                  prev.append('secretScanStatus', status);
-                                });
-                              prev.delete('page');
-                              return prev;
-                            });
-                          }
-                        }}
-                      />
-                      <Checkbox
-                        label="Failed"
-                        checked={searchParams
-                          .getAll('secretScanStatus')
-                          .includes('error')}
-                        onCheckedChange={(state) => {
-                          if (state) {
-                            setSearchParams((prev) => {
-                              prev.append('secretScanStatus', 'error');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          } else {
-                            setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('secretScanStatus');
-                              prev.delete('secretScanStatus');
-                              prev.delete('page');
-                              prevStatuses
-                                .filter((status) => status !== 'error')
-                                .forEach((status) => {
-                                  prev.append('secretScanStatus', status);
-                                });
-                              return prev;
-                            });
-                          }
-                        }}
-                      />
-                    </div>
-                  </fieldset>
-
-                  <fieldset>
-                    <legend className="text-sm font-medium">Malware Scan Status</legend>
-                    <div className="flex gap-x-4 mt-1">
-                      <Checkbox
-                        label="Completed"
-                        checked={searchParams
-                          .getAll('malwareScanStatus')
-                          .includes('complete')}
-                        onCheckedChange={(state) => {
-                          if (state) {
-                            setSearchParams((prev) => {
-                              prev.append('malwareScanStatus', 'complete');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          } else {
-                            setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('malwareScanStatus');
-                              prev.delete('malwareScanStatus');
-                              prev.delete('page');
-                              prevStatuses
-                                .filter((status) => status !== 'complete')
-                                .forEach((status) => {
-                                  prev.append('malwareScanStatus', status);
-                                });
-                              return prev;
-                            });
-                          }
-                        }}
-                      />
-                      <Checkbox
-                        label="In Progress"
-                        checked={searchParams
-                          .getAll('malwareScanStatus')
-                          .includes('in_progress')}
-                        onCheckedChange={(state) => {
-                          if (state) {
-                            setSearchParams((prev) => {
-                              prev.append('malwareScanStatus', 'in_progress');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          } else {
-                            setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('malwareScanStatus');
-                              prev.delete('malwareScanStatus');
-                              prevStatuses
-                                .filter((status) => status !== 'in_progress')
-                                .forEach((status) => {
-                                  prev.append('malwareScanStatus', status);
-                                });
-                              prev.delete('page');
-                              return prev;
-                            });
-                          }
-                        }}
-                      />
-                      <Checkbox
-                        label="Not scan"
-                        checked={searchParams
-                          .getAll('malwareScanStatus')
-                          .includes('not_scan')}
-                        onCheckedChange={(state) => {
-                          if (state) {
-                            setSearchParams((prev) => {
-                              prev.append('malwareScanStatus', 'not_scan');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          } else {
-                            setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('malwareScanStatus');
-                              prev.delete('malwareScanStatus');
-                              prevStatuses
-                                .filter((status) => status !== 'not_scan')
-                                .forEach((status) => {
-                                  prev.append('malwareScanStatus', status);
-                                });
-                              prev.delete('page');
-                              return prev;
-                            });
-                          }
-                        }}
-                      />
-                      <Checkbox
-                        label="Failed"
-                        checked={searchParams
-                          .getAll('malwareScanStatus')
-                          .includes('error')}
-                        onCheckedChange={(state) => {
-                          if (state) {
-                            setSearchParams((prev) => {
-                              prev.append('malwareScanStatus', 'error');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          } else {
-                            setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('malwareScanStatus');
-                              prev.delete('malwareScanStatus');
-                              prev.delete('page');
-                              prevStatuses
-                                .filter((status) => status !== 'error')
-                                .forEach((status) => {
-                                  prev.append('malwareScanStatus', status);
-                                });
-                              return prev;
-                            });
-                          }
-                        }}
-                      />
-                    </div>
-                  </fieldset>
-                </Form>
-              </div>
-            }
-          >
-            <IconButton
-              className="rounded-lg"
-              size="xs"
-              outline
-              color="primary"
-              ref={elementToFocusOnClose}
-              icon={<FiFilter />}
-            />
-          </Popover>
-        </div>
+    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+      <div className="flex gap-2">
+        <Combobox
+          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
+            return groupStatus.value === searchParams.get('vulnerabilityScanStatus');
+          })}
+          nullable
+          onQueryChange={(query) => {
+            setVulnerabilityScanStatusSearchText(query);
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              if (value) {
+                prev.set('vulnerabilityScanStatus', value.value);
+              } else {
+                prev.delete('vulnerabilityScanStatus');
+              }
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          getDisplayValue={() => FILTER_SEARCHPARAMS['vulnerabilityScanStatus']}
+        >
+          {SCAN_STATUS_GROUPS.filter((item) => {
+            if (!vulnerabilityScanStatusSearchText.length) return true;
+            return item.label
+              .toLowerCase()
+              .includes(vulnerabilityScanStatusSearchText.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item.value} value={item}>
+                {item.label}
+              </ComboboxOption>
+            );
+          })}
+        </Combobox>
+        <Combobox
+          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
+            return groupStatus.value === searchParams.get('secretScanStatus');
+          })}
+          nullable
+          onQueryChange={(query) => {
+            setSecretScanStatusSearchText(query);
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              if (value) {
+                prev.set('secretScanStatus', value.value);
+              } else {
+                prev.delete('secretScanStatus');
+              }
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          getDisplayValue={() => FILTER_SEARCHPARAMS['secretScanStatus']}
+        >
+          {SCAN_STATUS_GROUPS.filter((item) => {
+            if (!secretScanStatusSearchText.length) return true;
+            return item.label
+              .toLowerCase()
+              .includes(secretScanStatusSearchText.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item.value} value={item}>
+                {item.label}
+              </ComboboxOption>
+            );
+          })}
+        </Combobox>
+        <Combobox
+          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
+            return groupStatus.value === searchParams.get('malwareScanStatus');
+          })}
+          nullable
+          onQueryChange={(query) => {
+            setMalwareScanStatusSearchText(query);
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              if (value) {
+                prev.set('malwareScanStatus', value.value);
+              } else {
+                prev.delete('malwareScanStatus');
+              }
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          getDisplayValue={() => FILTER_SEARCHPARAMS['malwareScanStatus']}
+        >
+          {SCAN_STATUS_GROUPS.filter((item) => {
+            if (!malwareScanStatusSearchText.length) return true;
+            return item.label
+              .toLowerCase()
+              .includes(malwareScanStatusSearchText.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item.value} value={item}>
+                {item.label}
+              </ComboboxOption>
+            );
+          })}
+        </Combobox>
       </div>
+
+      {appliedFilterCount > 0 ? (
+        <div className="flex gap-2.5 mt-4 flex-wrap items-center">
+          {Array.from(searchParams)
+            .filter(([key]) => {
+              return Object.keys(FILTER_SEARCHPARAMS).includes(key);
+            })
+            .map(([key, value]) => {
+              return (
+                <FilterBadge
+                  key={`${key}-${value}`}
+                  onRemove={() => {
+                    setSearchParams((prev) => {
+                      const existingValues = prev.getAll(key);
+                      prev.delete(key);
+                      existingValues.forEach((existingValue) => {
+                        if (existingValue !== value) prev.append(key, existingValue);
+                      });
+                      prev.delete('page');
+                      return prev;
+                    });
+                  }}
+                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                />
+              );
+            })}
+          <Button
+            variant="flat"
+            color="default"
+            startIcon={<TimesIcon />}
+            onClick={() => {
+              setSearchParams((prev) => {
+                Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                  prev.delete(key);
+                });
+                prev.delete('page');
+                return prev;
+              });
+            }}
+            size="sm"
+          >
+            Clear all
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
+const BulkActions = ({
+  ids,
+  onTableAction,
+}: {
+  ids: string[];
+  onTableAction: (ids: string[], scanType: RegistryScanType, actionType: string) => void;
+}) => {
+  return (
+    <>
+      <Dropdown
+        triggerAsChild
+        align={'start'}
+        disabled={!ids.length}
+        content={
+          <>
+            <DropdownItem
+              onClick={() =>
+                onTableAction(
+                  ids,
+                  ScanTypeEnum.VulnerabilityScan,
+                  ActionEnumType.START_SCAN,
+                )
+              }
+            >
+              Start Vulnerability Scan
+            </DropdownItem>
+            <DropdownItem
+              onClick={() =>
+                onTableAction(ids, ScanTypeEnum.SecretScan, ActionEnumType.START_SCAN)
+              }
+            >
+              Start Secret Scan
+            </DropdownItem>
+            <DropdownItem
+              onClick={() =>
+                onTableAction(ids, ScanTypeEnum.MalwareScan, ActionEnumType.START_SCAN)
+              }
+            >
+              Start Malware Scan
+            </DropdownItem>
+          </>
+        }
+      >
+        <Button
+          color="default"
+          variant="flat"
+          size="sm"
+          startIcon={<StartScanIcon />}
+          endIcon={<CaretDown />}
+          disabled={!ids.length}
+        >
+          Start scan
+        </Button>
+      </Dropdown>
+    </>
+  );
+};
+const RegistryImagesTagsResults = () => {
+  const [selectedScanType, setSelectedScanType] = useState<RegistryScanType>();
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+  const [nodeIdsToScan, setNodeIdsToScan] = useState<string[]>([]);
+
+  const [searchParams] = useSearchParams();
+
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
+
+  const onTableAction = useCallback(
+    (nodeIds: string[], scanType: RegistryScanType, _: string) => {
+      setNodeIdsToScan(nodeIds);
+      setSelectedScanType(scanType);
+    },
+    [],
+  );
+
+  return (
+    <div className="self-start">
+      <div className="h-12 flex items-center">
+        <BulkActions
+          ids={Object.keys(rowSelectionState).map((key) => key.split('<==>')[0])}
+          onTableAction={onTableAction}
+        />
+        <div className="pr-2 ml-auto flex items-center gap-1">
+          <Button
+            className="pr-0"
+            color="default"
+            variant="flat"
+            size="sm"
+            startIcon={<FilterIcon />}
+            onClick={() => {
+              setFiltersExpanded((prev) => !prev);
+            }}
+          >
+            Filter
+          </Button>
+          {getAppliedFiltersCount(searchParams) > 0 ? (
+            <Badge
+              label={String(getAppliedFiltersCount(searchParams))}
+              variant="filled"
+              size="small"
+              color="blue"
+            />
+          ) : null}
+        </div>
+        <ConfigureScanModal
+          open={!!selectedScanType}
+          onOpenChange={() => setSelectedScanType(undefined)}
+          scanOptions={
+            selectedScanType ? getScanOptions(selectedScanType, nodeIdsToScan) : undefined
+          }
+        />
+      </div>
+      {filtersExpanded ? <Filters /> : null}
+      <Suspense fallback={<TableSkeleton columns={7} rows={10} />}>
+        <RegistryImageTagsTable
+          onTableAction={onTableAction}
+          rowSelectionState={rowSelectionState}
+          setRowSelectionState={setRowSelectionState}
+        />
+      </Suspense>
     </div>
   );
 };
 
 const RegistryImageTags = () => {
-  const loaderData = useLoaderData() as LoaderDataTypeForImageTags;
-
   return (
     <>
-      <HeaderComponent />
-      <div className="p-2">
-        <Suspense
-          fallback={
-            <>
-              <div className="h-4 w-28 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-              <TableSkeleton columns={8} rows={10} size={'sm'} />
-            </>
-          }
-        >
-          <DFAwait resolve={loaderData.tableData}>
-            {(resolvedData: LoaderDataTypeForImageTags['tableData']) => {
-              const { tags, currentPage, totalRows } = resolvedData;
-              return (
-                <RegistryImageTagsTable
-                  data={tags}
-                  pagination={{
-                    totalRows,
-                    currentPage,
-                  }}
-                />
-              );
-            }}
-          </DFAwait>
-        </Suspense>
+      <Header />
+
+      <div className="mx-4">
+        <RegistryImagesTagsResults />
       </div>
     </>
   );
 };
 
 export const module = {
-  loader,
   element: <RegistryImageTags />,
 };

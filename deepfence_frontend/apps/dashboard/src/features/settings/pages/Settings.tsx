@@ -1,14 +1,27 @@
 import { Outlet } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbLink } from 'ui-components';
+
+import { SettingsIcon } from '@/components/sideNavigation/icons/Settings';
+import { SettingNavigation } from '@/features/settings/components/SettingNavigation';
 
 const Settings = () => {
   return (
     <>
-      <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-        <span className="text-md font-medium text-gray-700 dark:text-gray-200">
-          Settings
-        </span>
+      <div className="dark:bg-bg-breadcrumb-bar py-2 px-4">
+        <Breadcrumb>
+          <BreadcrumbLink icon={<SettingsIcon />} className="dark:text-text-input-value">
+            Settings
+          </BreadcrumbLink>
+        </Breadcrumb>
       </div>
-      <Outlet />
+      <div className="flex">
+        <div>
+          <SettingNavigation />
+        </div>
+        <div className="mx-4 flex-1">
+          <Outlet />
+        </div>
+      </div>
     </>
   );
 };

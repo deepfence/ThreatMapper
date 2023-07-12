@@ -37,6 +37,7 @@ export const Disabled = {
       {
         label: 'Disabled',
         value: 'disabled',
+        checked: true,
         disabled: true,
       },
       {

@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
-import { LoaderFunctionArgs, useFetcher } from 'react-router-dom';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Button,
   createColumnHelper,
@@ -9,19 +10,22 @@ import {
   RowSelectionState,
   SortingState,
   Table,
+  TableNoDataElement,
   TableSkeleton,
 } from 'ui-components';
 
-import { getSearchApiClient } from '@/api/api';
-import { ModelKubernetesCluster, SearchSearchNodeReq } from '@/api/generated';
+import { ModelKubernetesCluster } from '@/api/generated';
 import {
   ConfigureScanModal,
   ConfigureScanModalProps,
 } from '@/components/ConfigureScanModal';
+import { CaretDown } from '@/components/icons/common/CaretDown';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { TruncatedText } from '@/components/TruncatedText';
+import { queries } from '@/queries';
 import {
   ComplianceScanNodeTypeEnum,
   MalwareScanNodeTypeEnum,
@@ -29,89 +33,47 @@ import {
   SecretScanNodeTypeEnum,
   VulnerabilityScanNodeTypeEnum,
 } from '@/types/common';
-import { apiWrapper } from '@/utils/api';
-import { getPageFromSearchParams } from '@/utils/table';
+import {
+  getOrderFromSearchParams,
+  getPageFromSearchParams,
+  useSortingState,
+} from '@/utils/table';
 
-type LoaderData = {
-  clusters: ModelKubernetesCluster[];
-  currentPage: number;
-  totalRows: number;
-};
-const PAGE_SIZE = 20;
-const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
-  const searchParams = new URL(request.url).searchParams;
-  const page = getPageFromSearchParams(searchParams);
-  const searchSearchNodeReq: SearchSearchNodeReq = {
-    node_filter: {
-      filters: {
-        compare_filter: null,
-        contains_filter: {
-          filter_in: {
-            active: [true],
-          },
-        },
-        match_filter: {
-          filter_in: null,
-        },
-        order_filter: {
-          order_fields: null,
-        },
-      },
-      in_field_filter: null,
-      window: {
-        offset: 0,
-        size: 0,
-      },
-    },
-    window: { offset: page * PAGE_SIZE, size: PAGE_SIZE },
-  };
-  const searchKubernetesClustersApi = apiWrapper({
-    fn: getSearchApiClient().searchKubernetesClusters,
-  });
-  const clusterData = await searchKubernetesClustersApi({
-    searchSearchNodeReq,
-  });
-  if (!clusterData.ok) {
-    throw clusterData.error;
-  }
+const DEFAULT_PAGE_SIZE = 25;
 
-  const countKubernetesClustersApi = apiWrapper({
-    fn: getSearchApiClient().countKubernetesClusters,
-  });
-  const clustersDataCount = await countKubernetesClustersApi({
-    searchSearchNodeReq: {
-      ...searchSearchNodeReq,
-      window: {
-        ...searchSearchNodeReq.window,
-        size: 10 * searchSearchNodeReq.window.size,
-      },
-    },
-  });
+export const KubernetesTable = () => {
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+  const selectedIds = useMemo(() => {
+    return Object.keys(rowSelectionState);
+  }, [rowSelectionState]);
 
-  if (!clustersDataCount.ok) {
-    throw clustersDataCount;
-  }
+  return (
+    <div className="px-4 pb-4">
+      <div className="h-12 flex items-center">
+        <BulkActions nodeIds={selectedIds} />
+      </div>
 
-  if (clusterData.value === null) {
-    return {
-      clusters: [],
-      currentPage: 0,
-      totalRows: 0,
-    };
-  }
-  return {
-    clusters: clusterData.value,
-    currentPage: page,
-    totalRows: page * PAGE_SIZE + clustersDataCount.value.count,
-  };
+      <Suspense
+        fallback={<TableSkeleton rows={DEFAULT_PAGE_SIZE} columns={3} size="default" />}
+      >
+        <DataTable
+          rowSelectionState={rowSelectionState}
+          setRowSelectionState={setRowSelectionState}
+        />
+      </Suspense>
+    </div>
+  );
 };
 
-function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
+const BulkActions = ({ nodeIds }: { nodeIds: string[] }) => {
   const [scanOptions, setScanOptions] =
     useState<ConfigureScanModalProps['scanOptions']>();
   return (
     <>
       <Dropdown
+        triggerAsChild
+        align={'start'}
+        disabled={!nodeIds.length}
         content={
           <>
             <DropdownItem
@@ -126,11 +88,9 @@ function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
                   },
                 });
               }}
+              icon={<VulnerabilityIcon />}
             >
-              <span className="h-6 w-6">
-                <VulnerabilityIcon />
-              </span>
-              <span>Start Vulnerability Scan</span>
+              Start Vulnerability Scan
             </DropdownItem>
             <DropdownItem
               onSelect={(e) => {
@@ -144,11 +104,9 @@ function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
                   },
                 });
               }}
+              icon={<SecretsIcon />}
             >
-              <span className="h-6 w-6">
-                <SecretsIcon />
-              </span>
-              <span>Start Secret Scan</span>
+              Start Secret Scan
             </DropdownItem>
             <DropdownItem
               onSelect={(e) => {
@@ -162,11 +120,9 @@ function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
                   },
                 });
               }}
+              icon={<MalwareIcon />}
             >
-              <span className="h-6 w-6">
-                <MalwareIcon />
-              </span>
-              <span>Start Malware Scan</span>
+              Start Malware Scan
             </DropdownItem>
             <DropdownItem
               onSelect={(e) => {
@@ -180,16 +136,20 @@ function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
                   },
                 });
               }}
+              icon={<PostureIcon />}
             >
-              <span className="h-6 w-6">
-                <PostureIcon />
-              </span>
-              <span>Start Posture Scan</span>
+              Start Posture Scan
             </DropdownItem>
           </>
         }
       >
-        <Button size="xs" color="primary" outline>
+        <Button
+          color="default"
+          variant="flat"
+          size="sm"
+          endIcon={<CaretDown />}
+          disabled={!nodeIds.length}
+        >
           Actions
         </Button>
       </Dropdown>
@@ -202,54 +162,57 @@ function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
       )}
     </>
   );
+};
+
+function useSearchClustersWithPagination() {
+  const [searchParams] = useSearchParams();
+  return useSuspenseQuery({
+    ...queries.search.clustersWithPagination({
+      page: getPageFromSearchParams(searchParams),
+      pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
+      order: getOrderFromSearchParams(searchParams),
+    }),
+    keepPreviousData: true,
+  });
 }
 
-export const KubernetesTable = () => {
-  const fetcher = useFetcher<LoaderData>();
-  const columnHelper = createColumnHelper<LoaderData['clusters'][number]>();
-  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
-  const [sortState, setSortState] = useState<SortingState>([]);
-  const [page, setPage] = useState(0);
-
-  function fetchClustersData() {
-    const searchParams = new URLSearchParams();
-    searchParams.set('page', page.toString());
-    fetcher.load(
-      `/data-component/topology/table/kubernetesCluster?${searchParams.toString()}`,
-    );
-  }
-
-  useEffect(() => {
-    fetchClustersData();
-  }, [sortState, page]);
-
-  const selectedIds = useMemo(() => {
-    return Object.keys(rowSelectionState);
-  }, [rowSelectionState]);
+const DataTable = ({
+  rowSelectionState,
+  setRowSelectionState,
+}: {
+  rowSelectionState: RowSelectionState;
+  setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
+}) => {
+  const { data } = useSearchClustersWithPagination();
+  const columnHelper = createColumnHelper<ModelKubernetesCluster>();
+  const [sort, setSort] = useSortingState();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const columns = useMemo(
     () => [
       getRowSelectionColumn(columnHelper, {
-        minSize: 40,
-        size: 40,
-        maxSize: 40,
+        minSize: 50,
+        size: 50,
+        maxSize: 60,
       }),
       columnHelper.accessor('node_name', {
         cell: (info) => {
           let name = '';
           if (info.row.original.node_name.length > 0) {
             name = info.row.original.node_name;
+          } else {
+            name = info.row.original.node_id;
           }
-          return <span className="flex-1 shrink-0 pl-2">{name}</span>;
+          return <TruncatedText text={name} />;
         },
-        header: () => 'name',
+        header: () => 'Name',
         minSize: 150,
         size: 160,
         maxSize: 170,
       }),
       columnHelper.accessor('node_id', {
         cell: (info) => {
-          return info.getValue();
+          return <TruncatedText text={info.getValue() ?? ''} />;
         },
         header: () => <span>Node Id</span>,
         minSize: 150,
@@ -257,65 +220,73 @@ export const KubernetesTable = () => {
         maxSize: 170,
       }),
     ],
-    [fetcher.data],
+    [],
   );
-
-  if (fetcher.state !== 'idle' && !fetcher.data) {
-    return (
-      <div className="mt-9">
-        <TableSkeleton rows={10} columns={columns.length} size="sm" />
-      </div>
-    );
-  }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center h-9">
-        {selectedIds.length ? (
-          <BulkActionButton nodeIds={selectedIds} />
-        ) : (
-          <div className="text-gray-400 pl-4 text-sm">No rows selected</div>
-        )}
-      </div>
-      <div>
-        <Table
-          data={fetcher.data?.clusters ?? []}
-          columns={columns}
-          noDataText="No clusters are connected"
-          size="sm"
-          enableColumnResizing
-          enablePagination
-          manualPagination
-          enableRowSelection
-          approximatePagination
-          rowSelectionState={rowSelectionState}
-          onRowSelectionChange={setRowSelectionState}
-          getRowId={(row) => row.node_id}
-          totalRows={fetcher.data?.totalRows}
-          pageSize={PAGE_SIZE}
-          pageIndex={fetcher.data?.currentPage}
-          onPaginationChange={(updaterOrValue) => {
-            let newPageIndex = 0;
-            if (typeof updaterOrValue === 'function') {
-              newPageIndex = updaterOrValue({
-                pageIndex: fetcher.data?.currentPage ?? 0,
-                pageSize: PAGE_SIZE,
-              }).pageIndex;
+    <>
+      <Table
+        data={data.clusters ?? []}
+        columns={columns}
+        noDataElement={<TableNoDataElement text="No kubernetes clusters are connected" />}
+        size="default"
+        enableColumnResizing
+        enablePagination
+        manualPagination
+        enableRowSelection
+        approximatePagination
+        rowSelectionState={rowSelectionState}
+        onRowSelectionChange={setRowSelectionState}
+        getRowId={(row) => row.node_id}
+        totalRows={data.totalRows}
+        pageIndex={data.currentPage}
+        onPaginationChange={(updaterOrValue) => {
+          let newPageIndex = 0;
+          if (typeof updaterOrValue === 'function') {
+            newPageIndex = updaterOrValue({
+              pageIndex: data.currentPage,
+              pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
+            }).pageIndex;
+          } else {
+            newPageIndex = updaterOrValue.pageIndex;
+          }
+          setSearchParams((prev) => {
+            prev.set('page', String(newPageIndex));
+            return prev;
+          });
+        }}
+        enableSorting
+        manualSorting
+        sortingState={sort}
+        onSortingChange={(updaterOrValue) => {
+          let newSortState: SortingState = [];
+          if (typeof updaterOrValue === 'function') {
+            newSortState = updaterOrValue(sort);
+          } else {
+            newSortState = updaterOrValue;
+          }
+          setSearchParams((prev) => {
+            if (!newSortState.length) {
+              prev.delete('sortby');
+              prev.delete('desc');
             } else {
-              newPageIndex = updaterOrValue.pageIndex;
+              prev.set('sortby', String(newSortState[0].id));
+              prev.set('desc', String(newSortState[0].desc));
             }
-            setPage(newPageIndex);
-          }}
-          enableSorting
-          manualSorting
-          sortingState={sortState}
-          onSortingChange={setSortState}
-        />
-      </div>
-    </div>
+            return prev;
+          });
+          setSort(newSortState);
+        }}
+        pageSize={parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE))}
+        enablePageResize
+        onPageResize={(newSize) => {
+          setSearchParams((prev) => {
+            prev.set('size', String(newSize));
+            prev.delete('page');
+            return prev;
+          });
+        }}
+      />
+    </>
   );
-};
-
-export const module = {
-  loader,
 };

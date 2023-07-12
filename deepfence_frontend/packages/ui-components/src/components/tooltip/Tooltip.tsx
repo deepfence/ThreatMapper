@@ -1,5 +1,5 @@
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import cx from 'classnames';
+import { cn } from 'tailwind-preset';
 
 import { Typography } from '@/components/typography/Typography';
 
@@ -10,6 +10,7 @@ export interface TooltipProps
   triggerAsChild?: boolean;
   content: string | React.ReactNode;
   delayDuration?: number;
+  label?: string;
 }
 
 export const Tooltip = (props: TooltipProps) => {
@@ -22,6 +23,7 @@ export const Tooltip = (props: TooltipProps) => {
     onOpenChange,
     defaultOpen,
     delayDuration,
+    label,
   } = props;
   return (
     <TooltipPrimitive.Provider delayDuration={delayDuration ?? 0}>
@@ -38,38 +40,42 @@ export const Tooltip = (props: TooltipProps) => {
             arrowPadding={8}
             sideOffset={4}
             side={placement}
-            className={cx(
-              'radix-side-top:animate-slide-down-fade',
-              'radix-side-right:animate-slide-left-fade',
-              'radix-side-bottom:animate-slide-up-fade',
-              'radix-side-left:animate-slide-right-fade',
-              'inline-flex items-center rounded-lg px-3 py-2 shadow-sm',
-              'bg-gray-900 dark:bg-gray-700 max-w-xs',
+            className={cn(
+              'data-[side=top]:animate-slide-down-fade',
+              'data-[side=right]:animate-slide-left-fade',
+              'data-[side=bottom]:animate-slide-up-fade',
+              'data-[side=left]:animate-slide-right-fade',
+              'rounded-md px-3 py-2 shadow-sm max-w-[400px]',
+              'bg-bg-tooltip dark:bg-bg-tooltip',
               Typography.leading.normal,
             )}
           >
             <TooltipPrimitive.Arrow
-              height={6}
-              width={14}
-              className="fill-gray-900 dark:fill-gray-700"
+              height={9}
+              width={16}
+              className="fill-bg-tooltip dark:fill-bg-tooltip"
             />
-
-            {typeof content === 'string' ? (
-              <span
-                className={cx(
-                  'block text-white',
-                  Typography.size.sm,
-                  Typography.weight.medium,
-                )}
-                style={{
-                  wordBreak: 'break-word',
-                }}
-              >
-                {content}
-              </span>
-            ) : (
-              content
-            )}
+            <>
+              {label && (
+                <span
+                  className={cn('text-p6', 'text-text-input-value', 'block', 'pb-[3px]')}
+                >
+                  {label}
+                </span>
+              )}
+              {typeof content === 'string' ? (
+                <span
+                  className={cn('text-p4', 'text-text-input-value block')}
+                  style={{
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  <span>{content}</span>
+                </span>
+              ) : (
+                content
+              )}
+            </>
           </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
       </TooltipPrimitive.Root>

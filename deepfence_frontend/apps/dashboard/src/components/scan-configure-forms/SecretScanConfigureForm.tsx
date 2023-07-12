@@ -30,6 +30,7 @@ export type SecretScanConfigureFormProps = {
         nodeType: SecretScanNodeTypeEnum.image;
       };
   onSuccess: (data?: { nodeType: string; bulkScanId: string }) => void;
+  onCancel?: () => void;
 };
 
 type ScanActionReturnType = {
@@ -130,6 +131,7 @@ export const scanSecretApiAction = async ({
 export const SecretScanConfigureForm = ({
   data,
   onSuccess,
+  onCancel,
   showAdvancedOptions: wantAdvanceOptions,
 }: SecretScanConfigureFormProps) => {
   const [imageTag, setImageTag] = useState('latest');
@@ -159,7 +161,7 @@ export const SecretScanConfigureForm = ({
         <input type="text" name="_images" hidden readOnly value={data.images.join(',')} />
       )}
       {fetcherData?.message && (
-        <p className="text-red-500 text-sm pb-3">{fetcherData.message}</p>
+        <p className="dark:text-status-error text-p7 pb-3">{fetcherData.message}</p>
       )}
       <div className="flex">
         {wantAdvanceOptions &&
@@ -168,30 +170,20 @@ export const SecretScanConfigureForm = ({
             <h6 className={'text-md font-medium dark:text-white'}>Advanced Options</h6>
           )}
         {!wantAdvanceOptions && (
-          <p className="text-gray-900 dark:text-white text-base pr-3">
+          <p className="text-gray-900 dark:text-text-text-and-icon text-p4 pr-3">
             You can start scanning to find secrets
           </p>
         )}
         {wantAdvanceOptions && isNodeTypeARegistryTagType(data.nodeType) && (
-          <p className="text-gray-900 dark:text-white text-base pr-3">
+          <p className="text-gray-900 dark:text-text-text-and-icon text-p4 pr-3">
             You can start scanning to find secrets
           </p>
         )}
         {wantAdvanceOptions && !isNodeTypeARegistryType(data.nodeType) && (
-          <p className="text-gray-900 dark:text-white text-base pr-3">
+          <p className="text-gray-900 dark:text-text-text-and-icon text-p4 pr-3">
             You can start scanning to find secrets
           </p>
         )}
-        <Button
-          disabled={state !== 'idle'}
-          loading={state !== 'idle'}
-          size="sm"
-          color="primary"
-          className="ml-auto"
-          type="submit"
-        >
-          Start Scan
-        </Button>
       </div>
       {wantAdvanceOptions ? (
         <div className="flex flex-col gap-y-6">
@@ -212,6 +204,16 @@ export const SecretScanConfigureForm = ({
             )}
         </div>
       ) : null}
+      <div className="flex gap-3 mt-14">
+        <Button disabled={state !== 'idle'} loading={state !== 'idle'} type="submit">
+          Start Scan
+        </Button>
+        {onCancel ? (
+          <Button type="button" variant="outline" onClick={() => onCancel?.()}>
+            Cancel
+          </Button>
+        ) : null}
+      </div>
     </fetcher.Form>
   );
 };

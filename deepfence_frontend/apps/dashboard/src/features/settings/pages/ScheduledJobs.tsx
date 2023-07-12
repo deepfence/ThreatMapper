@@ -1,11 +1,8 @@
-import { Suspense, useMemo } from 'react';
-import { IconContext } from 'react-icons';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { HiClock, HiDotsVertical } from 'react-icons/hi';
-import { ActionFunctionArgs, useFetcher, useLoaderData } from 'react-router-dom';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense, useCallback, useMemo, useState } from 'react';
+import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  Button,
   createColumnHelper,
   Dropdown,
   DropdownItem,
@@ -15,47 +12,19 @@ import {
 
 import { getSettingsApiClient } from '@/api/api';
 import { PostgresqlDbScheduler } from '@/api/generated';
-import { SettingsTab } from '@/features/settings/components/SettingsTab';
+import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
+import { TruncatedText } from '@/components/TruncatedText';
+import { invalidateAllQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
-import { DFAwait } from '@/utils/suspense';
-
-type LoaderDataType = {
-  message?: string;
-  data?: PostgresqlDbScheduler[];
-};
-const getData = async (): Promise<LoaderDataType> => {
-  const getScheduledTasks = apiWrapper({
-    fn: getSettingsApiClient().getScheduledTasks,
-  });
-
-  const response = await getScheduledTasks();
-
-  if (!response.ok) {
-    if (response.error.response.status === 403) {
-      return {
-        message: 'You do not have enough permissions to view sheduled jobs',
-      };
-    }
-    throw response.error;
-  }
-  return {
-    data: response.value,
-  };
-};
-
-const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
-  return typedDefer({
-    data: getData(),
-  });
-};
 
 export type ActionReturnType = {
   message?: string;
   success: boolean;
 };
-
+enum ActionEnumType {
+  ENABLE_DISABLE = 'enable_disable',
+}
 export const action = async ({
   request,
 }: ActionFunctionArgs): Promise<ActionReturnType> => {
@@ -89,80 +58,104 @@ export const action = async ({
   }
 
   toast('Scheduled job status updated sucessfully');
+  invalidateAllQueries();
   return {
     success: true,
   };
 };
-const ActionDropdown = ({ scheduler }: { scheduler: PostgresqlDbScheduler }) => {
-  const fetcher = useFetcher();
-  const toggle = (scheduler: PostgresqlDbScheduler) => {
-    if (scheduler.id) {
-      const formData = new FormData();
-      formData.append('id', scheduler.id?.toString() ?? '');
-      formData.append('isEnabled', (!scheduler.is_enabled)?.toString() ?? '');
-      fetcher.submit(formData, {
-        method: 'post',
-      });
-    }
-  };
+const useJobs = () => {
+  return useSuspenseQuery({
+    ...queries.setting.listScheduledJobs(),
+    keepPreviousData: true,
+  });
+};
+const ActionDropdown = ({
+  trigger,
+  scheduler,
+  onTableAction,
+}: {
+  trigger: React.ReactNode;
+  scheduler: PostgresqlDbScheduler;
+  onTableAction: (scheduler: PostgresqlDbScheduler, actionType: string) => void;
+}) => {
   return (
-    <>
-      <Dropdown
-        triggerAsChild={true}
-        align="end"
-        content={
+    <Dropdown
+      triggerAsChild={true}
+      align={'start'}
+      content={
+        <>
           <DropdownItem
-            className="text-sm"
-            onClick={() => {
-              toggle(scheduler);
-            }}
+            onClick={() => onTableAction(scheduler, ActionEnumType.ENABLE_DISABLE)}
           >
-            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-              <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
-              >
-                {scheduler.is_enabled ? <FaEyeSlash /> : <FaEye />}
-              </IconContext.Provider>
-              {scheduler.is_enabled ? 'Disable' : 'Enable'}
-            </span>
+            {scheduler.is_enabled ? 'Disable' : 'Enable'}
           </DropdownItem>
-        }
-      >
-        <Button size="xs" color="normal" className="hover:bg-transparent">
-          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            <HiDotsVertical />
-          </IconContext.Provider>
-        </Button>
-      </Dropdown>
-    </>
+        </>
+      }
+    >
+      {trigger}
+    </Dropdown>
   );
 };
 
-const ScheduledJobs = () => {
+const ScheduledJobsTable = ({
+  onTableAction,
+}: {
+  onTableAction: (scheduler: PostgresqlDbScheduler, actionType: string) => void;
+}) => {
+  const { data } = useJobs();
   const columnHelper = createColumnHelper<PostgresqlDbScheduler>();
-  const loaderData = useLoaderData() as LoaderDataType;
+  const [pageSize, setPageSize] = useState(15);
   const columns = useMemo(() => {
     const columns = [
+      columnHelper.display({
+        id: 'actions',
+        enableSorting: false,
+        cell: (cell) => {
+          if (!cell.row.original.id) {
+            throw new Error('Scheduled job id not found');
+          }
+          return (
+            <ActionDropdown
+              scheduler={cell.row.original}
+              onTableAction={onTableAction}
+              trigger={
+                <button className="p-1">
+                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                    <EllipsisIcon />
+                  </div>
+                </button>
+              }
+            />
+          );
+        },
+        header: () => '',
+        minSize: 25,
+        size: 25,
+        maxSize: 25,
+        enableResizing: false,
+      }),
       columnHelper.accessor('created_at', {
-        cell: (cell) => formatMilliseconds(cell.getValue() || ''),
+        cell: (cell) => (
+          <TruncatedText text={formatMilliseconds(cell.getValue() || '')} />
+        ),
         header: () => 'Timestamp',
         minSize: 30,
         size: 50,
         maxSize: 60,
       }),
       columnHelper.accessor('action', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
         header: () => 'Action',
         minSize: 30,
         size: 50,
         maxSize: 85,
       }),
       columnHelper.accessor('description', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
         header: () => 'Description',
-        minSize: 30,
-        size: 90,
-        maxSize: 100,
+        minSize: 50,
+        size: 60,
+        maxSize: 70,
       }),
       columnHelper.accessor('payload', {
         cell: (cell) => cell.row.original.payload.node_type,
@@ -173,104 +166,89 @@ const ScheduledJobs = () => {
       }),
       columnHelper.accessor('cron_expr', {
         cell: (cell) => cell.getValue(),
-        header: () => 'Cron Expression',
+        header: () => <TruncatedText text="Cron Expression" />,
         minSize: 30,
         size: 40,
         maxSize: 85,
       }),
       columnHelper.accessor('is_enabled', {
-        cell: (cell) =>
-          cell.getValue() ? (
-            <span className="text-green-600 dark:text-green-500">Yes</span>
-          ) : (
-            <span className="text-red-600 dark:text-red-500">No</span>
-          ),
-        header: () => 'Enabled',
+        cell: (cell) => (cell.getValue() ? <span>Yes</span> : <span>No</span>),
+        header: () => <TruncatedText text="Enabled" />,
         minSize: 30,
         size: 30,
         maxSize: 85,
       }),
-      columnHelper.accessor('status', {
-        cell: (cell) => cell.getValue(),
-        header: () => 'Status',
-        minSize: 30,
-        size: 30,
-        maxSize: 85,
-      }),
-      columnHelper.display({
-        id: 'actions',
-        enableSorting: false,
-        cell: (cell) => {
-          if (!cell.row.original.id) {
-            throw new Error('Scheduled job id not found');
-          }
-          return <ActionDropdown scheduler={cell.row.original} />;
-        },
-        header: () => '',
-        minSize: 20,
-        size: 20,
-        maxSize: 20,
-        enableResizing: false,
+      columnHelper.accessor('payload', {
+        cell: (cell) => <TruncatedText text={JSON.stringify(cell.getValue())} />,
+        header: () => <TruncatedText text="Payload" />,
+        minSize: 40,
+        size: 50,
+        maxSize: 60,
       }),
     ];
     return columns;
   }, []);
+  return (
+    <div className="mt-2">
+      {data.message ? (
+        <p className="dark:text-status-error text-p7">{data.message}</p>
+      ) : (
+        <Table
+          size="default"
+          data={data.data ?? []}
+          columns={columns}
+          enableColumnResizing
+          enableSorting
+          enablePageResize
+          pageSize={pageSize}
+          enablePagination
+          onPageResize={(newSize) => {
+            setPageSize(newSize);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+const ScheduledJobs = () => {
+  const fetcher = useFetcher();
+
+  const onTableAction = useCallback(
+    (scheduler: PostgresqlDbScheduler, actionType: string) => {
+      if (scheduler.id) {
+        const formData = new FormData();
+        formData.append('id', scheduler.id?.toString() ?? '');
+        formData.append('isEnabled', (!scheduler.is_enabled)?.toString() ?? '');
+        fetcher.submit(formData, {
+          method: 'post',
+        });
+      }
+    },
+    [fetcher],
+  );
 
   return (
-    <SettingsTab value="scheduled-jobs">
-      <div className="h-full mt-2">
-        <div className="mt-4">
-          <div className="flex justify-between">
-            <div>
-              <div className="mt-2 flex gap-x-2 items-center">
-                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-                  <IconContext.Provider
-                    value={{
-                      className: 'text-blue-600 dark:text-blue-400',
-                    }}
-                  >
-                    <HiClock />
-                  </IconContext.Provider>
-                </div>
-                <h3 className="font-medium text-gray-900 dark:text-white text-base">
-                  Scheduled Jobs
-                </h3>
-              </div>
-            </div>
+    <>
+      <div className="flex justify-between">
+        <div>
+          <div className="mt-2">
+            <h3 className="text-h6 dark:text-text-input-value">Scheduled jobs</h3>
           </div>
-          <Suspense
-            fallback={<TableSkeleton columns={8} rows={5} size={'sm'} className="mt-4" />}
-          >
-            <DFAwait resolve={loaderData.data}>
-              {(resolvedData: LoaderDataType) => {
-                const { data, message } = resolvedData;
-                const list = data ?? [];
-                return (
-                  <div className="mt-4">
-                    {message ? (
-                      <p className="text-red-500 text-sm">{message}</p>
-                    ) : (
-                      <Table
-                        size="sm"
-                        data={list}
-                        columns={columns}
-                        enableColumnResizing
-                        enableSorting
-                      />
-                    )}
-                  </div>
-                );
-              }}
-            </DFAwait>
-          </Suspense>
         </div>
       </div>
-    </SettingsTab>
+      <Suspense
+        fallback={
+          <TableSkeleton columns={8} rows={5} size={'default'} className="mt-4" />
+        }
+      >
+        <ScheduledJobsTable onTableAction={onTableAction} />
+      </Suspense>
+    </>
   );
 };
 
 export const module = {
   element: <ScheduledJobs />,
-  loader,
   action,
 };

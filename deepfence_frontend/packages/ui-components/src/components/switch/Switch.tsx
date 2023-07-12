@@ -3,9 +3,7 @@ import * as SwitchPrimitive from '@radix-ui/react-switch';
 import cx from 'classnames';
 import { useId } from 'react';
 
-import { Typography } from '@/main';
-
-type SizeType = 'sm' | 'md';
+type SizeType = 'md';
 
 export type SwitchProps = SwitchPrimitive.SwitchProps & {
   label?: string;
@@ -13,7 +11,7 @@ export type SwitchProps = SwitchPrimitive.SwitchProps & {
 };
 
 const Switch = (props: SwitchProps) => {
-  const { label, disabled, id, size = 'sm', ...rest } = props;
+  const { label, disabled, id, size = 'md', ...rest } = props;
   const internalId = useId();
   const _id = id ? id : internalId;
   return (
@@ -22,16 +20,18 @@ const Switch = (props: SwitchProps) => {
         id={_id}
         disabled={disabled}
         className={cx(
-          'group items-center',
-          'radix-state-checked:bg-blue-600',
-          'radix-state-unchecked:bg-gray-200 dark:radix-state-unchecked:bg-gray-600',
-          'relative inline-flex flex-shrink-0 cursor-pointer rounded-[40px] transition-colors duration-200 ease-in-out',
+          'group peer items-center disabled:cursor-not-allowed',
+          'dark:data-[state=checked]:bg-[#60B515]',
+          'dark:disabled:data-[state=checked]:bg-gray-600',
+          'data-[state=unchecked]:bg-gray-200 dark:data-[state=unchecked]:bg-text-input-value',
+          // disabled on off state
+          'disabled:ring-inset disabled:data-[state=unchecked]:ring-2 dark:disabled:data-[state=unchecked]:ring-gray-600',
+          'dark:disabled:data-[state=unchecked]:bg-transparent',
+
+          'relative inline-flex flex-shrink-0 cursor-pointer rounded-[15px] transition-colors duration-200 ease-in-out',
           'focus:outline-none',
-          'focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800',
-          'disabled:cursor-not-allowed',
           {
-            'h-5 w-10': size === 'sm',
-            'h-6 w-11': size === 'md',
+            'h-[18px] w-[34px]': size === 'md',
           },
         )}
         data-testid={`switch-${_id}`}
@@ -39,13 +39,14 @@ const Switch = (props: SwitchProps) => {
       >
         <SwitchPrimitive.Thumb
           className={cx(
-            'group-radix-state-checked:translate-x-[1.325rem]',
-            'group-radix-state-unchecked:ring-1 ring-blue-200 translate-x-[0.125rem] dark:group-radix-state-unchecked:ring-0',
-            'pointer-events-none inline-block transform rounded-full bg-white shadow-lg transition duration-200 ease-in-out',
-            'dark:group-radix-state-unchecked:bg-gray-400 dark:group-radix-state-checked: bg-white',
+            'translate-x-[2px] dark:bg-bg-left-nav',
+            'pointer-events-none inline-block transform rounded-full',
+            'transition duration-200 ease-in-out',
+            'group-data-[state=checked]:translate-x-[17px]',
+            // disable
+            'dark:group-disabled:group-data-[state=unchecked]:ring-2 dark:group-disabled:group-data-[state=unchecked]:ring-gray-600',
             {
-              'h-4 w-4': size === 'sm',
-              'h-5 w-5': size === 'md',
+              'h-[14px] w-[14px]': size === 'md',
             },
           )}
         />
@@ -54,11 +55,8 @@ const Switch = (props: SwitchProps) => {
         <LabelPrimitive.Label
           htmlFor={_id}
           className={cx(
-            'pl-2 font-normal text-gray-600 dark:text-gray-300 cursor-default',
-            `${Typography.size.sm} ${Typography.weight.medium}`,
-            {
-              'cursor-not-allowed': disabled,
-            },
+            'pl-2 text-p4 dark:text-text-text-and-icon cursor-default',
+            'dark:peer-disabled:text-gray-600 dark:peer-disabled:cursor-not-allowed',
           )}
         >
           {label}

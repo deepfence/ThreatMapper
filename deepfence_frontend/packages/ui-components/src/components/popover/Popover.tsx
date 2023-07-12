@@ -36,7 +36,7 @@ export const Popover: React.FC<PopoverProps> = (props) => {
           align={align}
           onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
           className={cx(
-            'radix-side-top:animate-slide-up radix-side-bottom:animate-slide-down',
+            'data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down',
             'shadow-md bg-white dark:bg-gray-700 min-w-[195px]',
             'rounded-md overflow-hidden',
           )}

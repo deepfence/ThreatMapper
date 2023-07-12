@@ -10,7 +10,7 @@ export default {
 
 const OPTIONS = [
   {
-    name: 'John',
+    name: 'Jon',
     id: '1',
     age: 20,
   },
@@ -20,43 +20,28 @@ const OPTIONS = [
     age: 21,
   },
   {
-    name: 'John',
-    id: '1',
+    name: 'Jack',
+    id: '3',
     age: 20,
   },
   {
-    name: 'Jane',
-    id: '2',
+    name: 'July',
+    id: '4',
     age: 21,
   },
   {
-    name: 'John',
-    id: '1',
-    age: 20,
-  },
-  {
-    name: 'Jane',
-    id: '2',
+    name: 'Juju',
+    id: '5',
     age: 21,
   },
   {
-    name: 'John',
-    id: '1',
-    age: 20,
-  },
-  {
-    name: 'Jane',
-    id: '2',
+    name: 'Jessie',
+    id: '6',
     age: 21,
   },
   {
-    name: 'John',
-    id: '1',
-    age: 20,
-  },
-  {
-    name: 'Jane',
-    id: '2',
+    name: 'Jessy',
+    id: '7',
     age: 21,
   },
 ];
@@ -79,7 +64,6 @@ const SingleSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
 
   return (
     <Combobox
-      sizing="sm"
       value={selected}
       nullable
       onQueryChange={(query) => {
@@ -89,7 +73,9 @@ const SingleSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
       onChange={(value) => {
         setSelected(value);
       }}
-      getDisplayValue={(item) => item?.name ?? ''}
+      getDisplayValue={() => {
+        return 'PropertyName';
+      }}
       onEndReached={() => {
         fetchMoreData();
       }}
@@ -111,6 +97,52 @@ export const SingleSelectNullable = {
   args: {},
 };
 
+const SingleSelectNullableWithStringValuesTemplate: StoryFn<typeof Combobox> = () => {
+  const [selected, setSelected] = useState<string | null>(null);
+  const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
+
+  const [query, setQuery] = useState('');
+
+  return (
+    <Combobox
+      value={selected}
+      nullable
+      triggerVariant="select"
+      onQueryChange={(query) => {
+        setQuery(query);
+      }}
+      label="Select your value"
+      onChange={(value) => {
+        setSelected(value);
+      }}
+      disabled={false}
+      color="error"
+      placeholder="Select a value"
+      helperText="This is a helper text"
+      getDisplayValue={(value) => {
+        return options.find((opt) => opt.id === value)?.name ?? null;
+      }}
+    >
+      {options
+        .filter((opt) => {
+          return opt.name.toLowerCase().includes(query.toLowerCase());
+        })
+        .map((person, index) => {
+          return (
+            <ComboboxOption key={`${person.id}-${index}`} value={person.id}>
+              {person.name}
+            </ComboboxOption>
+          );
+        })}
+    </Combobox>
+  );
+};
+
+export const SingleSelectNullableStringValuesAndSelectTrigger = {
+  render: SingleSelectNullableWithStringValuesTemplate,
+  args: {},
+};
+
 const SingleSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
   const [selected, setSelected] = useState<(typeof OPTIONS)[number]>(OPTIONS[0]);
   const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
@@ -129,7 +161,6 @@ const SingleSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
 
   return (
     <Combobox
-      sizing="sm"
       value={selected}
       onQueryChange={(query) => {
         setQuery(query);
@@ -138,7 +169,9 @@ const SingleSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
       onChange={(value) => {
         setSelected(value);
       }}
-      getDisplayValue={(item) => item.name}
+      getDisplayValue={() => {
+        return 'PropertyName';
+      }}
       onEndReached={() => {
         fetchMoreData();
       }}
@@ -178,7 +211,6 @@ const MultiSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
 
   return (
     <Combobox
-      sizing="sm"
       value={selected}
       onQueryChange={(query) => {
         setQuery(query);
@@ -187,9 +219,12 @@ const MultiSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
       onChange={(value) => {
         setSelected(value);
       }}
+      clearAllElement="Clear filters"
       multiple
       nullable
-      getDisplayValue={(item) => item?.map((i) => i.name).join(',') ?? ''}
+      getDisplayValue={() => {
+        return 'PropertyName';
+      }}
       onEndReached={() => {
         fetchMoreData();
       }}
@@ -211,6 +246,64 @@ export const MultiSelectNullable = {
   args: {},
 };
 
+const MultiSelectNullableWithSelectVariantTemplate: StoryFn<typeof Combobox> = () => {
+  const [selected, setSelected] = useState<typeof OPTIONS>([]);
+  const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
+  const [loading, setLoading] = useState(false);
+
+  const [query, setQuery] = useState('');
+
+  function fetchMoreData() {
+    // we can use query here as well
+    setLoading(true);
+    setTimeout(() => {
+      setOptions([...options, ...OPTIONS]);
+      setLoading(false);
+    }, 1000);
+  }
+
+  return (
+    <Combobox
+      triggerVariant="select"
+      value={selected}
+      onQueryChange={(query) => {
+        setQuery(query);
+      }}
+      label="Select your value"
+      onChange={(value) => {
+        setSelected(value);
+      }}
+      clearAllElement="Clear"
+      multiple
+      nullable
+      placeholder="Please select..."
+      getDisplayValue={(value) => {
+        return value.length ? `${value.length} selected` : null;
+      }}
+      onEndReached={() => {
+        fetchMoreData();
+      }}
+      onClearAll={() => {
+        setSelected([]);
+      }}
+      loading={loading}
+    >
+      {options.map((person, index) => {
+        return (
+          <ComboboxOption key={`${person.id}-${index}`} value={person}>
+            {person.name}
+          </ComboboxOption>
+        );
+      })}
+    </Combobox>
+  );
+};
+
+export const MultiSelectNullableWithSelectVariant = {
+  render: MultiSelectNullableWithSelectVariantTemplate,
+  args: {},
+};
+
 const MultiSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
   const [selected, setSelected] = useState<typeof OPTIONS>([]);
   const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
@@ -229,17 +322,19 @@ const MultiSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
 
   return (
     <Combobox
-      sizing="sm"
       value={selected}
       onQueryChange={(query) => {
         setQuery(query);
       }}
       label="Select your value"
+      clearAllElement="Clear filters"
       onChange={(value) => {
         setSelected(value);
       }}
       multiple
-      getDisplayValue={(item) => ''}
+      getDisplayValue={() => {
+        return 'PropertyName';
+      }}
       onEndReached={() => {
         fetchMoreData();
       }}

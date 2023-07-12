@@ -99,28 +99,23 @@ const Connector = () => {
       ) : (
         <>
           <div className="flex flex-col mb-6 ml-14">
-            <p className="text-xs dark:text-gray-400 text-gray-900">
+            <p className="text-p7 dark:text-text-text-and-icon">
               Note: After completing the steps above, your connector will appear on
               MyConnector page and you will be able to scan them.
             </p>
           </div>
-          <div className="flex">
-            <Button onClick={goBack} size="xs" type="button">
-              Go Back
+          <div className="flex items-center gap-x-2">
+            <Button
+              type="button"
+              onClick={() => {
+                navigate('/onboard/connectors/my-connectors');
+              }}
+            >
+              Go to connectors
             </Button>
-            <div className="flex items-center ml-auto">
-              <Button
-                color="primary"
-                size="xs"
-                className="ml-auto"
-                type="button"
-                onClick={() => {
-                  navigate('/onboard/connectors/my-connectors');
-                }}
-              >
-                Go to connectors
-              </Button>
-            </div>
+            <Button onClick={goBack} type="button" variant="outline">
+              Cancel
+            </Button>
           </div>
         </>
       )}

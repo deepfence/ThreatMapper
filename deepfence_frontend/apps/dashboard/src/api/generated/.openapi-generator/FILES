@@ -27,6 +27,7 @@ models/ApiDocsBadRequestResponse.ts
 models/ApiDocsFailureResponse.ts
 models/ApiDocsGraphResult.ts
 models/ControlsAction.ts
+models/ControlsAgentBeat.ts
 models/ControlsAgentControls.ts
 models/DetailedConnectionSummary.ts
 models/DetailedNodeSummary.ts
@@ -38,13 +39,13 @@ models/DiagnosisGenerateConsoleDiagnosticLogsRequest.ts
 models/DiagnosisGetDiagnosticLogsResponse.ts
 models/DiagnosisNodeIdentifier.ts
 models/GraphCloudProviderFilter.ts
+models/GraphIndividualThreatGraph.ts
+models/GraphIndividualThreatGraphRequest.ts
 models/GraphNodeInfo.ts
 models/GraphProviderThreatGraph.ts
 models/GraphThreatFilters.ts
 models/GraphThreatNodeInfo.ts
 models/GraphTopologyFilters.ts
-models/GraphVulnerabilityThreatGraph.ts
-models/GraphVulnerabilityThreatGraphRequest.ts
 models/IngestersCloudCompliance.ts
 models/IngestersCloudComplianceScanStatus.ts
 models/IngestersCloudResource.ts
@@ -63,6 +64,8 @@ models/IngestersVulnerability.ts
 models/IngestersVulnerabilityScanStatus.ts
 models/LookupLookupFilter.ts
 models/ModelAgentId.ts
+models/ModelAgentPluginDisable.ts
+models/ModelAgentPluginEnable.ts
 models/ModelAgentUpgrade.ts
 models/ModelApiAuthRequest.ts
 models/ModelApiTokenResponse.ts
@@ -86,6 +89,7 @@ models/ModelCloudNodeEnableDisableReq.ts
 models/ModelCloudNodeProvidersListResp.ts
 models/ModelCloudResource.ts
 models/ModelCompliance.ts
+models/ModelComplianceRule.ts
 models/ModelComplianceScanInfo.ts
 models/ModelComplianceScanResult.ts
 models/ModelComplianceScanStatusResp.ts
@@ -115,6 +119,7 @@ models/ModelKubernetesCluster.ts
 models/ModelLoginRequest.ts
 models/ModelLoginResponse.ts
 models/ModelMalware.ts
+models/ModelMalwareRule.ts
 models/ModelMalwareScanResult.ts
 models/ModelMalwareScanResultClass.ts
 models/ModelMalwareScanResultRules.ts
@@ -151,6 +156,7 @@ models/ModelScanStatusReq.ts
 models/ModelScanStatusResp.ts
 models/ModelScanTriggerResp.ts
 models/ModelSecret.ts
+models/ModelSecretRule.ts
 models/ModelSecretScanResult.ts
 models/ModelSecretScanResultRules.ts
 models/ModelSecretScanTriggerReq.ts
@@ -164,6 +170,7 @@ models/ModelUpdateUserRequest.ts
 models/ModelUser.ts
 models/ModelUserRegisterRequest.ts
 models/ModelVulnerability.ts
+models/ModelVulnerabilityRule.ts
 models/ModelVulnerabilityScanConfigLanguage.ts
 models/ModelVulnerabilityScanResult.ts
 models/ModelVulnerabilityScanTriggerReq.ts

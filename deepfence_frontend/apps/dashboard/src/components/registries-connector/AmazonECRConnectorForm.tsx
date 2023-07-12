@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { HiViewGridAdd } from 'react-icons/hi';
-import { Card, Step, Stepper, Switch, TextInput, Typography } from 'ui-components';
+import { Checkbox, TextInput } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
@@ -29,122 +28,105 @@ export const AmazonECRConnectorForm = ({
   const [isPublic, setIsPublic] = useState(false);
   const [useIAMRole, setUseIAMRole] = useState(false);
   return (
-    <Stepper>
-      <Step indicator={<HiViewGridAdd />} title="Amazon Registry Connecton">
-        <div className={`${Typography.size.sm} dark:text-gray-200`}>
-          Connect to your Amazon Cloud Account. Find out more information by{' '}
-          <DFLink
-            href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            reading our documentation
-          </DFLink>
-          .
+    <>
+      <div className="text-p4 dark:text-text-input-value">
+        Connect to your Amazon Cloud Account. Find out more information by{' '}
+        <DFLink
+          href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          reading our documentation
+        </DFLink>
+        .
+      </div>
+      <p className="mt-6 text-p1 dark:text-text-input-value">Enter Information</p>
+      <div className="w-full flex flex-col relative mt-4 gap-y-8">
+        <TextInput
+          className="w-3/4 min-[200px] max-w-xs"
+          label="Registry Name"
+          type={'text'}
+          name="name"
+          placeholder="Registry Name"
+          color={fieldErrors?.['name'] ? 'error' : 'default'}
+          helperText={fieldErrors?.['name']}
+        />
+        <div className="flex flex-col gap-y-4">
+          <input hidden value={String(isPublic)} name="non_secret.is_public" />
+          <Checkbox
+            label="Public Registry"
+            checked={isPublic}
+            onCheckedChange={(checked: boolean) => {
+              setIsPublic(checked);
+            }}
+          />
+          <input hidden value={String(useIAMRole)} name="non_secret.use_iam_role" />
+          <Checkbox
+            label="Use AWS IAM Role"
+            checked={useIAMRole}
+            onCheckedChange={(checked: boolean) => {
+              setUseIAMRole(checked);
+            }}
+          />
         </div>
-      </Step>
-      <Step indicator="1" title="Region Selection">
-        <Card className="w-full relative p-5 mt-2">
+        <div className="flex flex-row gap-4">
+          {!useIAMRole ? (
+            <>
+              <TextInput
+                className="w-3/4 min-[200px] max-w-xs"
+                label="AWS Access Key"
+                type={'text'}
+                name="non_secret.aws_access_key_id"
+                placeholder="AWS Access Key"
+                color={fieldErrors?.['aws_access_key_id'] ? 'error' : 'default'}
+                helperText={fieldErrors?.['aws_access_key_id']}
+              />
+              <TextInput
+                className="w-3/4 min-[200px] max-w-xs"
+                label="AWS Secret Key"
+                type={'password'}
+                name="secret.aws_secret_access_key"
+                placeholder="AWS Secret Key"
+                color={fieldErrors?.['aws_secret_access_key'] ? 'error' : 'default'}
+                helperText={fieldErrors?.['aws_secret_access_key']}
+              />
+            </>
+          ) : (
+            <>
+              <TextInput
+                className="w-3/4 min-[200px] max-w-xs"
+                label="AWS Account ID"
+                type={'text'}
+                name="non_secret.aws_account_id"
+                placeholder="AWS Account ID"
+                info="(Optional) Pull from registries belonging to other AWS Accounts"
+                color={fieldErrors?.['aws_account_id'] ? 'error' : 'default'}
+                helperText={fieldErrors?.['aws_account_id']}
+              />
+              <TextInput
+                className="w-3/4 min-[200px] max-w-xs"
+                label="Target Account Role ARN"
+                type={'text'}
+                name="non_secret.target_account_role_arn"
+                placeholder="Target Account Role ARN"
+                info="(Optional) Pull from registries belonging to other AWS Accounts"
+                color={fieldErrors?.['target_account_role_arn'] ? 'error' : 'default'}
+                helperText={fieldErrors?.['target_account_role_arn']}
+              />
+            </>
+          )}
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
-            label="Registry Name"
+            label="AWS Region"
             type={'text'}
-            sizing="sm"
-            name="name"
-            placeholder="Registry Name"
-            color={fieldErrors?.['name'] ? 'error' : 'default'}
-            helperText={fieldErrors?.['name']}
+            name="non_secret.aws_region_name"
+            placeholder="AWS Region"
+            color={fieldErrors?.['aws_region_name'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['aws_region_name']}
           />
-          <div className="flex flex-col gap-4 mt-4">
-            <input hidden value={String(isPublic)} name="non_secret.is_public" />
-            <Switch
-              label="Public Registry"
-              checked={isPublic}
-              onCheckedChange={(checked) => {
-                setIsPublic(checked);
-              }}
-            />
-            <input hidden value={String(useIAMRole)} name="non_secret.use_iam_role" />
-            <Switch
-              label="Use AWS IAM Role"
-              checked={useIAMRole}
-              onCheckedChange={(checked) => {
-                setUseIAMRole(checked);
-              }}
-            />
-          </div>
-          <div className="mt-5 flex flex-row gap-4">
-            {!useIAMRole ? (
-              <>
-                <TextInput
-                  className="w-3/4 min-[200px] max-w-xs"
-                  label="AWS Access Key"
-                  type={'text'}
-                  sizing="sm"
-                  name="non_secret.aws_access_key_id"
-                  placeholder="AWS Access Key"
-                  color={
-                    fieldErrors?.['non_secret.aws_access_key_id'] ? 'error' : 'default'
-                  }
-                  helperText={fieldErrors?.['non_secret.aws_access_key_id']}
-                />
-                <TextInput
-                  className="w-3/4 min-[200px] max-w-xs"
-                  label="AWS Secret Key"
-                  type={'password'}
-                  sizing="sm"
-                  name="secret.aws_secret_access_key"
-                  placeholder="AWS Secret Key"
-                  color={
-                    fieldErrors?.['secret.aws_secret_access_key'] ? 'error' : 'default'
-                  }
-                  helperText={fieldErrors?.['secret.aws_secret_access_key']}
-                />
-              </>
-            ) : (
-              <>
-                <TextInput
-                  className="w-3/4 min-[200px] max-w-xs"
-                  label="AWS Account ID"
-                  type={'text'}
-                  sizing="sm"
-                  name="non_secret.aws_account_id"
-                  placeholder="AWS Account ID"
-                  hint="(Optional) Pull from registries belonging to other AWS Accounts"
-                  color={fieldErrors?.['non_secret.aws_account_id'] ? 'error' : 'default'}
-                  helperText={fieldErrors?.['non_secret.aws_account_id']}
-                />
-                <TextInput
-                  className="w-3/4 min-[200px] max-w-xs"
-                  label="Target Account Role ARN"
-                  type={'text'}
-                  sizing="sm"
-                  name="non_secret.target_account_role_arn"
-                  placeholder="Target Account Role ARN"
-                  hint="(Optional) Pull from registries belonging to other AWS Accounts"
-                  color={
-                    fieldErrors?.['non_secret.target_account_role_arn']
-                      ? 'error'
-                      : 'default'
-                  }
-                  helperText={fieldErrors?.['non_secret.target_account_role_arn']}
-                />
-              </>
-            )}
-            <TextInput
-              className="w-3/4 min-[200px] max-w-xs"
-              label="AWS Region"
-              type={'text'}
-              sizing="sm"
-              name="non_secret.aws_region_name"
-              placeholder="AWS Region"
-              color={fieldErrors?.['non_secret.aws_region_name'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['non_secret.aws_region_name']}
-            />
-          </div>
-          {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
-        </Card>
-      </Step>
-    </Stepper>
+        </div>
+        {errorMessage && <p className="dark:text-status-error text-p7">{errorMessage}</p>}
+      </div>
+    </>
   );
 };

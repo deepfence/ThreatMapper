@@ -30,6 +30,15 @@ export default defineConfig(({ mode }) => {
         statements: 100,
       },
     },
+    optimizeDeps: {
+      include: ['tailwind-preset'],
+    },
+    build: {
+      // https://github.com/vitejs/vite/issues/5668
+      commonjsOptions: {
+        include: [/tailwind-preset/, /node_modules/],
+      },
+    },
     server: {
       host: true,
       port: 5050,

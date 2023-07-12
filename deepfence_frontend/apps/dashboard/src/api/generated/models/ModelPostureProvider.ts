@@ -39,6 +39,12 @@ export interface ModelPostureProvider {
     node_count?: number;
     /**
      * 
+     * @type {number}
+     * @memberof ModelPostureProvider
+     */
+    node_count_inactive?: number;
+    /**
+     * 
      * @type {string}
      * @memberof ModelPostureProvider
      */
@@ -79,6 +85,7 @@ export function ModelPostureProviderFromJSONTyped(json: any, ignoreDiscriminator
         'compliance_percentage': !exists(json, 'compliance_percentage') ? undefined : json['compliance_percentage'],
         'name': !exists(json, 'name') ? undefined : json['name'],
         'node_count': !exists(json, 'node_count') ? undefined : json['node_count'],
+        'node_count_inactive': !exists(json, 'node_count_inactive') ? undefined : json['node_count_inactive'],
         'node_label': !exists(json, 'node_label') ? undefined : json['node_label'],
         'resource_count': !exists(json, 'resource_count') ? undefined : json['resource_count'],
         'scan_count': !exists(json, 'scan_count') ? undefined : json['scan_count'],
@@ -97,6 +104,7 @@ export function ModelPostureProviderToJSON(value?: ModelPostureProvider | null):
         'compliance_percentage': value.compliance_percentage,
         'name': value.name,
         'node_count': value.node_count,
+        'node_count_inactive': value.node_count_inactive,
         'node_label': value.node_label,
         'resource_count': value.resource_count,
         'scan_count': value.scan_count,

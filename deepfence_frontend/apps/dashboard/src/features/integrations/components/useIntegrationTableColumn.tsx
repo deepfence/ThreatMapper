@@ -1,134 +1,47 @@
 import { isEmpty } from 'lodash-es';
-import { useMemo, useState } from 'react';
-import { IconContext } from 'react-icons';
-import { HiArchive, HiDotsVertical, HiOutlineExclamationCircle } from 'react-icons/hi';
-import { useFetcher, useParams } from 'react-router-dom';
-import { Button, createColumnHelper, Dropdown, DropdownItem, Modal } from 'ui-components';
+import { useMemo } from 'react';
+import { useParams } from 'react-router-dom';
+import { createColumnHelper, Dropdown, DropdownItem } from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
-import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
+import { TruncatedText } from '@/components/TruncatedText';
+import { ActionEnumType } from '@/features/integrations/pages/IntegrationAdd';
 
 import { IntegrationType } from './IntegrationForm';
 
-const DeleteConfirmationModal = ({
-  showDialog,
-  id,
-  setShowDialog,
-}: {
-  showDialog: boolean;
-  id: string;
-  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
-  const fetcher = useFetcher<{
-    deleteSuccess: boolean;
-    message: string;
-  }>();
-
-  return (
-    <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      {!fetcher.data?.deleteSuccess ? (
-        <div className="grid place-items-center p-6">
-          <IconContext.Provider
-            value={{
-              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-            }}
-          >
-            <HiOutlineExclamationCircle />
-          </IconContext.Provider>
-          <h3 className="mb-4 font-normal text-center text-sm">
-            The selected integration will be deleted.
-            <br />
-            <span>Are you sure you want to delete?</span>
-          </h3>
-
-          {fetcher.data?.message ? (
-            <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
-          ) : null}
-
-          <div className="flex items-center justify-right gap-4">
-            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-              No, Cancel
-            </Button>
-            <Button
-              size="xs"
-              color="danger"
-              disabled={fetcher.state !== 'idle'}
-              loading={fetcher.state !== 'idle'}
-              onClick={() => {
-                const formData = new FormData();
-                formData.append('_actionType', 'delete');
-                formData.append('id', id);
-                fetcher.submit(formData, {
-                  method: 'post',
-                });
-              }}
-            >
-              Yes, I&apos;m sure
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <SuccessModalContent text="Deleted successfully!" />
-      )}
-    </Modal>
-  );
-};
-
 const ActionDropdown = ({
-  icon,
-  id,
-  label,
+  row,
+  trigger,
+  onTableAction,
 }: {
-  icon: React.ReactNode;
-  id: string;
-  label?: string;
+  row: ModelIntegrationListResp;
+  trigger: React.ReactNode;
+  onTableAction: (row: ModelIntegrationListResp, actionType: ActionEnumType) => void;
 }) => {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
   return (
-    <>
-      {showDeleteDialog && (
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          id={id}
-          setShowDialog={setShowDeleteDialog}
-        />
-      )}
-      <Dropdown
-        triggerAsChild={true}
-        align="end"
-        content={
-          <>
-            <DropdownItem
-              className="text-sm"
-              onClick={() => {
-                setShowDeleteDialog(true);
-              }}
-            >
-              <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
-                <IconContext.Provider
-                  value={{ className: 'text-red-700 dark:text-red-400' }}
-                >
-                  <HiArchive />
-                </IconContext.Provider>
-                Delete
-              </span>
-            </DropdownItem>
-          </>
-        }
-      >
-        <Button size="xs" color="normal" className="hover:bg-transparent">
-          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            {icon}
-          </IconContext.Provider>
-          {label ? <span className="ml-2">{label}</span> : null}
-        </Button>
-      </Dropdown>
-    </>
+    <Dropdown
+      triggerAsChild={true}
+      align={'start'}
+      content={
+        <>
+          <DropdownItem
+            onClick={() => onTableAction(row, ActionEnumType.DELETE)}
+            className="dark:text-status-error dark:hover:text-[#C45268]"
+          >
+            Delete
+          </DropdownItem>
+        </>
+      }
+    >
+      {trigger}
+    </Dropdown>
   );
 };
 
-export const useIntegrationTableColumn = () => {
+export const useIntegrationTableColumn = (
+  onTableAction: (row: ModelIntegrationListResp, actionType: ActionEnumType) => void,
+) => {
   const { integrationType } = useParams() as {
     integrationType: string;
   };
@@ -144,14 +57,14 @@ export const useIntegrationTableColumn = () => {
         return [
           columnHelper.accessor('channel', {
             cell: (cell) => cell.row.original.config?.channel,
-            header: () => 'Channel',
+            header: () => <TruncatedText text={'Channel'} />,
             minSize: 75,
             size: 80,
             maxSize: 85,
           }),
           columnHelper.accessor('webhook_url', {
             cell: (cell) => cell.row.original.config?.webhook_url,
-            header: () => 'URL',
+            header: () => <TruncatedText text={'URL'} />,
             minSize: 75,
             size: 80,
             maxSize: 85,
@@ -163,7 +76,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.aws_region : '-'),
             {
               id: 'aws_region',
-              header: () => 'Region',
+              header: () => <TruncatedText text={'Region'} />,
               minSize: 50,
               size: 55,
               maxSize: 60,
@@ -173,7 +86,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.s3_bucket_name : '-'),
             {
               id: 's3_bucket_name',
-              header: () => 'Bucket Name',
+              header: () => <TruncatedText text={'Bucket name'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -183,7 +96,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.s3_folder_name : '-'),
             {
               id: 's3_folder_name',
-              header: () => 'Folder Name',
+              header: () => <TruncatedText text={'Folder name'} />,
               minSize: 50,
               size: 55,
               maxSize: 60,
@@ -193,7 +106,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.aws_access_key : '-'),
             {
               id: 'aws_access_key',
-              header: () => 'Access Key',
+              header: () => <TruncatedText text={'Access key'} />,
               minSize: 50,
               size: 55,
               maxSize: 60,
@@ -203,7 +116,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.aws_secret_key : '-'),
             {
               id: 'aws_secret_key',
-              header: () => 'Secret Key',
+              header: () => <TruncatedText text={'Secret key'} />,
               minSize: 50,
               size: 55,
               maxSize: 60,
@@ -219,14 +132,14 @@ export const useIntegrationTableColumn = () => {
               }
               const isToken = cell.config?.api_token !== undefined;
               if (isToken) {
-                return 'Token';
+                return <TruncatedText text={'Token'} />;
               } else {
-                return 'Password';
+                return <TruncatedText text={'Password'} />;
               }
             },
             {
               id: 'api_token',
-              header: () => 'Auth Type',
+              header: () => <TruncatedText text={'Auth type'} />,
               minSize: 50,
               size: 55,
               maxSize: 60,
@@ -236,7 +149,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.issueType : '-'),
             {
               id: 'issueType',
-              header: () => 'Issue Type',
+              header: () => <TruncatedText text={'Issye type'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -246,7 +159,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.jiraAssignee : '-'),
             {
               id: 'jiraAssignee',
-              header: () => 'Assignee',
+              header: () => <TruncatedText text={'Assigne'} />,
               minSize: 50,
               size: 55,
               maxSize: 60,
@@ -256,7 +169,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.username : '-'),
             {
               id: 'username',
-              header: () => 'Username',
+              header: () => <TruncatedText text={'Username'} />,
               minSize: 50,
               size: 55,
               maxSize: 60,
@@ -266,7 +179,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.jiraSiteUrl : '-'),
             {
               id: 'jiraSiteUrl',
-              header: () => 'Url',
+              header: () => <TruncatedText text={'Url'} />,
               minSize: 50,
               size: 55,
               maxSize: 60,
@@ -279,7 +192,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.endpoint_url : '-'),
             {
               id: 'endpoint_url',
-              header: () => 'Endpoint Url',
+              header: () => <TruncatedText text={'Endpoint url'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -289,7 +202,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.token : '-'),
             {
               id: 'token',
-              header: () => 'Token',
+              header: () => <TruncatedText text={'Token'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -302,7 +215,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.endpoint_url : '-'),
             {
               id: 'endpoint_url',
-              header: () => 'Endpoint Url',
+              header: () => <TruncatedText text={'Endpoint url'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -312,7 +225,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.index : '-'),
             {
               id: 'index',
-              header: () => 'Index',
+              header: () => <TruncatedText text={'Index'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -322,7 +235,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.auth_header : '-'),
             {
               id: 'auth_header',
-              header: () => 'Auth',
+              header: () => <TruncatedText text={'Auth'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -332,7 +245,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.docType : '-'),
             {
               id: 'docType',
-              header: () => 'Doc Type',
+              header: () => <TruncatedText text={'Doc type'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -345,7 +258,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.endpoint_url : '-'),
             {
               id: 'endpoint_url',
-              header: () => 'Endpoint Url',
+              header: () => <TruncatedText text={'Endpoint url'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -358,7 +271,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.url : '-'),
             {
               id: 'url',
-              header: () => 'Endpoint Url',
+              header: () => <TruncatedText text={'Endpoint url'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -368,7 +281,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.auth_header : '-'),
             {
               id: 'auth_header',
-              header: () => 'Auth Header',
+              header: () => <TruncatedText text={'Auth header'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -381,7 +294,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.aws_access_key : '-'),
             {
               id: 'aws_access_key',
-              header: () => 'Access Key',
+              header: () => <TruncatedText text={'Access key'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -391,7 +304,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.aws_secret_key : '-'),
             {
               id: 'aws_secret_key',
-              header: () => 'Secret Key',
+              header: () => <TruncatedText text={'Secret key'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -401,7 +314,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.aws_region : '-'),
             {
               id: 'aws_region',
-              header: () => 'Region',
+              header: () => <TruncatedText text={'Region'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -414,7 +327,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.webhook_url : '-'),
             {
               id: 'webhook_url',
-              header: () => 'Webhook Url',
+              header: () => <TruncatedText text={'Webhook url'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -427,7 +340,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.service_key : '-'),
             {
               id: 'service_key',
-              header: () => 'Service Key',
+              header: () => <TruncatedText text={'Service key'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -437,7 +350,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.api_key : '-'),
             {
               id: 'api_key',
-              header: () => 'Api Key',
+              header: () => <TruncatedText text={'Api key'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -450,7 +363,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.url : '-'),
             {
               id: 'url',
-              header: () => 'Url',
+              header: () => <TruncatedText text={'Url'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -460,7 +373,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.auth_header : '-'),
             {
               id: 'auth_header',
-              header: () => 'Auth Header',
+              header: () => <TruncatedText text={'Auth header'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -482,6 +395,34 @@ export const useIntegrationTableColumn = () => {
         size: 40,
         maxSize: 45,
       }),
+      columnHelper.display({
+        id: 'actions',
+        enableSorting: false,
+        cell: (cell) => {
+          const id = cell.row.original.id;
+          if (!id) {
+            throw new Error('Integration id not found');
+          }
+          return (
+            <ActionDropdown
+              row={cell.row.original}
+              onTableAction={onTableAction}
+              trigger={
+                <button className="p-1">
+                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                    <EllipsisIcon />
+                  </div>
+                </button>
+              }
+            />
+          );
+        },
+        header: () => '',
+        minSize: 30,
+        size: 30,
+        maxSize: 35,
+        enableResizing: false,
+      }),
       columnHelper.accessor('integration_type', {
         cell: (cell) => cell.getValue(),
         header: () => 'Integration Type',
@@ -497,22 +438,6 @@ export const useIntegrationTableColumn = () => {
         maxSize: 75,
       }),
       ...getDynamicTableColumns(),
-      columnHelper.display({
-        id: 'actions',
-        enableSorting: false,
-        cell: (cell) => {
-          const id = cell.row.original.id;
-          if (!id) {
-            throw new Error('Integration id not found');
-          }
-          return <ActionDropdown icon={<HiDotsVertical />} id={id.toString()} />;
-        },
-        header: () => '',
-        minSize: 30,
-        size: 30,
-        maxSize: 35,
-        enableResizing: false,
-      }),
     ];
     return columns;
   }, []);

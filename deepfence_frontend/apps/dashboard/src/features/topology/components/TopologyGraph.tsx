@@ -1,29 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
-import { IconContext } from 'react-icons';
-import {
-  HiArrowsExpand,
-  HiInformationCircle,
-  HiOutlineInformationCircle,
-} from 'react-icons/hi';
 import { useFetcher, useParams } from 'react-router-dom';
-import { useEffectOnce, useMeasure } from 'react-use';
+import { useDebounce, useEffectOnce, useHoverDirty, useMeasure } from 'react-use';
 import { toast } from 'sonner';
-import { CircleSpinner, Dropdown, DropdownItem } from 'ui-components';
+import { cn } from 'tailwind-preset';
+import { CircleSpinner } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
+import { DetailsLineIcon } from '@/components/icons/common/DetailsLine';
+import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
+import { ResizeUpIcon } from '@/components/icons/common/ResizeUp';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import {
   TopologyLoaderData,
   useTopologyActionDeduplicator,
 } from '@/features/topology/data-components/topologyLoader';
-import { useG6raph } from '@/features/topology/hooks/useG6Graph';
+import { useG6Graph } from '@/features/topology/hooks/useG6Graph';
 import { G6GraphEvent, G6Node, NodeModel } from '@/features/topology/types/graph';
 import {
   focusItem,
   itemExpands,
   itemHasDetails,
   nodeToFront,
-  showContextMenu,
 } from '@/features/topology/utils/expand-collapse';
 import { onNodeHover } from '@/features/topology/utils/graph-styles';
 import { updateGraph } from '@/features/topology/utils/graph-update';
@@ -34,31 +31,61 @@ import {
 
 const MAX_NODES_COUNT_THRESHOLD = 200;
 
+type TooltipState = {
+  x: number;
+  y: number;
+  show: boolean;
+  item: G6Node | null;
+};
+
 export const TopologyGraph = () => {
+  // measures parent of the graph, so we can set the graph width and height
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
+
+  // tooltip related hooks
+  const [tooltipLoc, setTooltipLoc] = useState<TooltipState>({
+    show: false,
+    x: 0,
+    y: 0,
+    item: null,
+  });
+  const [debouncedTooltipLoc, setDebouncedTooltipLoc] = useState<TooltipState>({
+    show: false,
+    x: 0,
+    y: 0,
+    item: null,
+  });
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
+  const isHoveringTooltip = useHoverDirty(tooltipRef);
+  useDebounce(
+    () => {
+      if (!isHoveringTooltip) {
+        setDebouncedTooltipLoc({ ...tooltipLoc });
+      }
+    },
+    300,
+    [isHoveringTooltip, tooltipLoc],
+  );
+
+  // for sidepanel to know which item we need to show details for
   const [clickedItem, setClickedItem] = useState<{
     nodeId: string;
     nodeType: string;
     parentId?: string;
   }>();
-  const [contextmenu, setContextmenu] = useState<{
-    open: boolean;
-    x: number;
-    y: number;
-    model?: NodeModel;
-  }>({ open: false, x: 0, y: 0 });
+
+  // g6 hooks
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
-  const { graph } = useG6raph(container, {}, {});
+  const { graph } = useG6Graph(container, {}, {});
+
+  // graph data management hooks
   const { dataDiffWithAction, isRefreshInProgress, ...graphDataManagerFunctions } =
     useGraphDataManager();
   const graphDataManagerFunctionsRef = useRef(graphDataManagerFunctions);
-
   graphDataManagerFunctionsRef.current = graphDataManagerFunctions;
-
   useEffectOnce(() => {
     graphDataManagerFunctionsRef.current.getDataUpdates({ type: 'refresh' });
   });
-
   useEffect(() => {
     if (dataDiffWithAction.diff && dataDiffWithAction.action) {
       updateGraph(graph!, dataDiffWithAction.diff, dataDiffWithAction.action);
@@ -69,45 +96,86 @@ export const TopologyGraph = () => {
     }
   }, [dataDiffWithAction]);
 
+  // change graph size if parent size changes
   useEffect(() => {
     if (graph !== null && width && height) {
       graph.changeSize(width, height);
     }
   }, [width, height]);
 
+  // set up graph events
   useEffect(() => {
     if (!graph) return;
     graph.on('node:click', (e: G6GraphEvent) => {
       e.preventDefault();
-      e.stopPropagation();
-
-      const { item: node } = e;
-      const model = node?.getModel() as NodeModel;
-      if (!model?.df_data?.type) return;
-      if (!showContextMenu(model.df_data)) return;
-
-      setContextmenu({ open: true, x: e.canvasX, y: e.canvasY, model });
     });
     graph.on('node:contextmenu', (e) => {
       e.preventDefault();
-      e.stopPropagation();
-
-      const { item: node } = e;
-      const model = node?.getModel() as NodeModel;
-      if (!model?.df_data?.type) return;
-      if (!showContextMenu(model.df_data)) return;
-
-      setContextmenu({ open: true, x: e.canvasX, y: e.canvasY, model });
     });
     graph.on('node:mouseenter', (e: G6GraphEvent) => {
       onNodeHover(e.item as G6Node, true);
+      if (e.item) {
+        // https://github.com/antvis/G6/blob/master/packages/plugin/src/tooltip/index.ts
+        // TODO: this can be much improved, see above file.
+        const width: number = graph.get('width');
+        const height: number = graph.get('height');
+
+        // how far you want to tooltip to open from cursor
+        const offsetX = 10;
+        const offsetY = 10;
+
+        const point = graph.getPointByClient(e.clientX, e.clientY);
+
+        const { x, y } = graph.getCanvasByPoint(point.x, point.y);
+
+        const graphContainer = graph.getContainer();
+
+        const res = {
+          x: x + graphContainer.offsetLeft + offsetX,
+          y: y + graphContainer.offsetTop + offsetY,
+        };
+
+        const tooltipBBox = {
+          width: 200,
+          height: 120,
+        };
+
+        if (x + tooltipBBox.width + offsetX > width) {
+          res.x -= tooltipBBox.width + offsetX;
+        }
+
+        if (y + tooltipBBox.height + offsetY > height) {
+          res.y -= tooltipBBox.height + offsetY;
+          if (res.y < 0) {
+            res.y = 0;
+          }
+        }
+        setDebouncedTooltipLoc((prev) => ({ ...prev, show: false }));
+        setTooltipLoc({
+          show: true,
+          x: res.x,
+          y: res.y,
+          item: e.item as G6Node,
+        });
+      }
     });
     graph.on('node:mouseleave', (e: G6GraphEvent) => {
       onNodeHover(e.item as G6Node, false);
+      setTooltipLoc((prev) => {
+        return { ...prev, show: false };
+      });
     });
-    graph.on('node:drag', (e: G6GraphEvent) => {
+    graph.on('node:dragstart', (e: G6GraphEvent) => {
       e.preventDefault();
+      setDebouncedTooltipLoc((prev) => {
+        return { ...prev, show: false };
+      });
     });
+    graph.on('node:dragend', (e: G6GraphEvent) => {
+      e.preventDefault();
+      graph.emit('node:mouseenter', e);
+    });
+
     graph.on('combo:drag', (e: G6GraphEvent) => {
       e.preventDefault();
     });
@@ -118,116 +186,74 @@ export const TopologyGraph = () => {
 
   return (
     <>
-      <div className="h-full w-full relative select-none" ref={measureRef}>
+      <div
+        className="h-full w-full relative select-none overflow-hidden"
+        ref={measureRef}
+        style={{
+          background: `radial-gradient(48.55% 48.55% at 50.04% 51.45%, #16253B 0%, #0B121E 100%)`,
+        }}
+      >
         {/** had to use this absolute relative trick, otherwise element does not shrink, only grows */}
         <div className="absolute inset-0" ref={setContainer} />
+        <div
+          className="absolute"
+          style={{
+            top: tooltipLoc.y,
+            left: tooltipLoc.x,
+            display: !debouncedTooltipLoc.show ? 'none' : 'block',
+          }}
+          ref={tooltipRef}
+        >
+          <GraphTooltip
+            item={debouncedTooltipLoc.item}
+            onExpandCollapseClick={(model) => {
+              setDebouncedTooltipLoc((prev) => {
+                return { ...prev, show: false };
+              });
+              if (!model.df_data?.type) return;
+              if (
+                !graphDataManagerFunctionsRef.current.isNodeExpanded({
+                  nodeId: model.id,
+                  nodeType: model.df_data.type,
+                })
+              ) {
+                graphDataManagerFunctionsRef.current.getDataUpdates({
+                  type: 'expandNode',
+                  nodeId: model.id,
+                  nodeType: model.df_data.type,
+                });
+              } else {
+                graphDataManagerFunctionsRef.current.getDataUpdates({
+                  type: 'collapseNode',
+                  nodeId: model.id,
+                  nodeType: model.df_data.type,
+                });
+              }
+            }}
+            onViewDetailsClick={(model) => {
+              setDebouncedTooltipLoc((prev) => {
+                return { ...prev, show: false };
+              });
+              if (!model?.df_data?.type || !model?.df_data?.id) return;
+              setClickedItem({
+                nodeId: model.df_data.id,
+                nodeType: model.df_data.type,
+                parentId: model.df_data.immediate_parent_id,
+              });
+            }}
+          />
+        </div>
+
         {isRefreshInProgress ? (
           <div className="absolute bottom-32 left-6 text-gray-600 dark:text-gray-400">
-            <CircleSpinner size="xl" />
+            <CircleSpinner size="sm" />
           </div>
         ) : null}
         {!isRefreshInProgress && graphDataManagerFunctions.isEmpty() ? (
-          <div className="absolute inset-0 flex gap-2 flex-col items-center justify-center p-6">
-            <div>
-              <IconContext.Provider
-                value={{ className: 'text-[3rem] text-blue-600 dark:text-blue-400' }}
-              >
-                <HiOutlineInformationCircle />
-              </IconContext.Provider>
-            </div>
-            <div className="text-gray-600 dark:text-gray-400 text-lg text-center">
-              No data to display, please{' '}
-              <DFLink to="/settings/connection-instructions">
-                connect your infrastructure
-              </DFLink>{' '}
-              to the platform to visualize it.
-            </div>
+          <div className="absolute inset-0">
+            <NoData />
           </div>
         ) : null}
-        {
-          <Dropdown
-            open={contextmenu.open}
-            onOpenChange={(open) => {
-              setContextmenu((prev) => {
-                return {
-                  ...prev,
-                  open,
-                };
-              });
-            }}
-            content={
-              <>
-                {!!contextmenu.model?.df_data?.type &&
-                  itemExpands(contextmenu.model.df_data) && (
-                    <DropdownItem
-                      onClick={() => {
-                        const model = contextmenu.model;
-                        if (!model) return;
-                        if (!model.df_data?.type) return;
-                        if (
-                          !graphDataManagerFunctionsRef.current.isNodeExpanded({
-                            nodeId: model.id,
-                            nodeType: model.df_data.type,
-                          })
-                        ) {
-                          graphDataManagerFunctionsRef.current.getDataUpdates({
-                            type: 'expandNode',
-                            nodeId: model.id,
-                            nodeType: model.df_data.type,
-                          });
-                        } else {
-                          graphDataManagerFunctionsRef.current.getDataUpdates({
-                            type: 'collapseNode',
-                            nodeId: model.id,
-                            nodeType: model.df_data.type,
-                          });
-                        }
-                      }}
-                    >
-                      <IconContext.Provider value={{ size: '18px' }}>
-                        <HiArrowsExpand />
-                      </IconContext.Provider>
-                      <span>Expand/Collapse</span>
-                    </DropdownItem>
-                  )}
-                {!!contextmenu.model?.df_data?.type &&
-                  itemHasDetails(contextmenu.model.df_data) && (
-                    <DropdownItem
-                      onClick={() => {
-                        const model = contextmenu.model;
-                        if (!model) return;
-                        if (!model?.df_data?.type || !model?.df_data?.id) return;
-                        setClickedItem({
-                          nodeId: model.df_data.id,
-                          nodeType: model.df_data.type,
-                          parentId: model.df_data.immediate_parent_id,
-                        });
-                      }}
-                    >
-                      <IconContext.Provider value={{ size: '18px' }}>
-                        <HiInformationCircle />
-                      </IconContext.Provider>
-                      <span>Details</span>
-                    </DropdownItem>
-                  )}
-              </>
-            }
-            triggerAsChild
-          >
-            {
-              <div
-                style={{
-                  height: 0,
-                  width: 0,
-                  opacity: 0,
-                  position: 'absolute',
-                  left: contextmenu.x,
-                  top: contextmenu.y,
-                }}
-              ></div>
-            }
-          </Dropdown>
-        }
       </div>
       {clickedItem ? (
         <NodeDetailsStackedModal
@@ -239,6 +265,89 @@ export const TopologyGraph = () => {
         />
       ) : null}
     </>
+  );
+};
+
+const GraphTooltip = ({
+  item,
+  onExpandCollapseClick,
+  onViewDetailsClick,
+}: {
+  item: G6Node | null;
+  onExpandCollapseClick: (model: NodeModel) => void;
+  onViewDetailsClick: (model: NodeModel) => void;
+}) => {
+  const model = item?.getModel() as NodeModel | undefined;
+  if (!model) return null;
+  const expands = itemExpands(model.df_data);
+  const hasDetails = itemHasDetails(model.df_data);
+  return (
+    <div
+      role="tooltip"
+      className={cn(
+        'inline-block rounded-[5px] dark:bg-[#C1CFD9] w-[200px] select-text',
+        'pt-1.5 pb-1.5 px-2.5 dark:text-text-text-inverse',
+      )}
+    >
+      <div className="text-p3 capitalize">
+        {(model.df_data?.type ?? 'Unknown').replaceAll('_', ' ')}
+      </div>
+      <div className="mt-[3px] text-[13px] leading-[18px]">
+        {model.df_data?.label ?? '-'}
+      </div>
+      {expands || hasDetails ? (
+        <>
+          <div className="h-[1px] mt-2 mb-2 dark:bg-df-gray-600 -mx-2.5" />
+          {expands && (
+            <div className="-mx-2.5">
+              <button
+                onClick={() => {
+                  onExpandCollapseClick(model);
+                }}
+                className="px-2.5 text-p6 py-1 hover:dark:bg-[#A1AFB9] flex items-center gap-2 w-full"
+              >
+                <div className="h-4 w-4 shrink-0">
+                  <ResizeUpIcon />
+                </div>
+                <div>Expand / Collapse</div>
+              </button>
+            </div>
+          )}
+          {hasDetails && (
+            <div className="-mx-2.5">
+              <button
+                onClick={() => {
+                  onViewDetailsClick(model);
+                }}
+                className="px-2.5 text-p6 py-1 hover:dark:bg-[#A1AFB9] flex items-center gap-2 w-full"
+              >
+                <div className="h-4 w-4 shrink-0">
+                  <DetailsLineIcon />
+                </div>
+                <div>View details</div>
+              </button>
+            </div>
+          )}
+        </>
+      ) : null}
+    </div>
+  );
+};
+
+const NoData = () => {
+  return (
+    <div className="h-full flex gap-2 flex-col items-center justify-center p-6">
+      <div className="w-8 h-8 text-blue-600 dark:text-status-info">
+        <ErrorStandardSolidIcon />
+      </div>
+      <div className="text-gray-600 dark:text-gray-400 text-lg text-center">
+        No data to display, please{' '}
+        <DFLink to="/settings/connection-instructions">
+          connect your infrastructure
+        </DFLink>{' '}
+        to the platform to visualize it.
+      </div>
+    </div>
   );
 };
 

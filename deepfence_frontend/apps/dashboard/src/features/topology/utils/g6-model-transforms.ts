@@ -7,14 +7,13 @@ import {
   G6Graph,
   NodeModel,
 } from '@/features/topology/types/graph';
-import { getNodeImage, getShortLabel } from '@/features/topology/utils/graph-styles';
+import { getShortLabel } from '@/features/topology/utils/graph-styles';
 
 function enhanceApiNode(apiNode: DetailedNodeSummary): EnhancedDetailedNodeSummary {
   return {
     id: apiNode.id!,
-    label: apiNode.type === 'process' ? getShortLabel(apiNode.label) : apiNode.label,
+    label: getShortLabel(apiNode.label, apiNode.type),
     df_data: apiNode,
-    img: getNodeImage(apiNode.type ?? '', apiNode.label),
   };
 }
 

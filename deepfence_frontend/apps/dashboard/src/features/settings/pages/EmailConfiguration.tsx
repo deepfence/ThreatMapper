@@ -1,31 +1,25 @@
+import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useState } from 'react';
-import { IconContext } from 'react-icons';
-import {
-  HiLocationMarker,
-  HiOutlineExclamationCircle,
-  HiOutlineMail,
-  HiServer,
-  HiSun,
-  HiTerminal,
-} from 'react-icons/hi';
-import { ActionFunctionArgs, useFetcher, useLoaderData } from 'react-router-dom';
-import { toast } from 'sonner';
+import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import {
   Button,
+  Card,
   CircleSpinner,
+  Listbox,
+  ListboxOption,
   Modal,
-  Select,
-  SelectItem,
+  SlidingModal,
+  SlidingModalCloseButton,
+  SlidingModalContent,
+  SlidingModalHeader,
   TextInput,
 } from 'ui-components';
 
 import { getSettingsApiClient } from '@/api/api';
 import { ModelEmailConfigurationAdd, ModelEmailConfigurationResp } from '@/api/generated';
-import { SettingsTab } from '@/features/settings/components/SettingsTab';
-import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
+import { invalidateAllQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
-import { DFAwait } from '@/utils/suspense';
 
 type AddEmailConfigurationReturnType = {
   error?: string;
@@ -58,6 +52,12 @@ enum ActionEnumType {
   ADD_CONFIGURATION = 'addConfiguration',
 }
 
+const useEmailConfiguration = () => {
+  return useSuspenseQuery({
+    ...queries.setting.getEmailConfiguration(),
+    keepPreviousData: true,
+  });
+};
 export const action = async ({
   request,
 }: ActionFunctionArgs): Promise<ActionReturnType> => {
@@ -87,8 +87,6 @@ export const action = async ({
       }
       throw deleteResponse.error;
     }
-
-    toast('Email configuration deleted sucessfully');
   } else if (_actionType === ActionEnumType.ADD_CONFIGURATION) {
     const body = Object.fromEntries(formData);
 
@@ -121,45 +119,11 @@ export const action = async ({
       }
       throw addResponse.error;
     }
-    toast('Email configuration added sucessfully');
   }
+  invalidateAllQueries();
   return {
     success: true,
   };
-};
-type LoaderDataType = {
-  message?: string;
-  data?: ModelEmailConfigurationResp[];
-};
-const getData = async (): Promise<LoaderDataType> => {
-  const emailApi = apiWrapper({
-    fn: getSettingsApiClient().getEmailConfiguration,
-  });
-  const emailResponse = await emailApi();
-  if (!emailResponse.ok) {
-    if (
-      emailResponse.error.response.status === 400 ||
-      emailResponse.error.response.status === 409
-    ) {
-      return {
-        message: emailResponse.error.message,
-      };
-    } else if (emailResponse.error.response.status === 403) {
-      return {
-        message: 'You do not have enough permissions to view email configurations',
-      };
-    }
-    throw emailResponse.error;
-  }
-
-  return {
-    data: emailResponse.value,
-  };
-};
-const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
-  return typedDefer({
-    data: getData(),
-  });
 };
 
 const EmailConfigurationModal = ({
@@ -174,41 +138,43 @@ const EmailConfigurationModal = ({
   const [emailProvider, setEmailProvider] = useState<string>('Google SMTP');
 
   return (
-    <Modal
-      open={showDialog}
-      onOpenChange={() => setShowDialog(false)}
-      title="Add Email Configuration"
-    >
-      {!data?.success ? (
-        <fetcher.Form
-          method="post"
-          className="flex flex-col gap-y-3 mt-2 pb-8 mx-8 min-w-[384px]"
-        >
+    <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
+      <SlidingModalHeader>
+        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+          Add email configuration
+        </div>
+      </SlidingModalHeader>
+      <SlidingModalCloseButton />
+      <SlidingModalContent>
+        <fetcher.Form method="post" className="flex flex-col gap-y-8 mt-2 mx-4">
           <input
             readOnly
             type="hidden"
             name="_actionType"
             value={ActionEnumType.ADD_CONFIGURATION}
           />
-          <Select
-            noPortal
+          <Listbox
+            variant="underline"
             name="email_provider"
             label={'Email Provider'}
             placeholder="Email Provider"
-            sizing="xs"
             onChange={(value) => setEmailProvider(value)}
+            getDisplayValue={(item) => {
+              return ['Google SMTP', 'Amazon SES', 'SMTP'].filter(
+                (value) => value === item,
+              )[0];
+            }}
             value={emailProvider}
           >
-            <SelectItem value={'Google SMTP'}>Google SMTP</SelectItem>
-            <SelectItem value={'Amazon SES'}>Amazon SES</SelectItem>
-            <SelectItem value={'SMTP'}>SMTP</SelectItem>
-          </Select>
+            <ListboxOption value={'Google SMTP'}>Google SMTP</ListboxOption>
+            <ListboxOption value={'Amazon SES'}>Amazon SES</ListboxOption>
+            <ListboxOption value={'SMTP'}>SMTP</ListboxOption>
+          </Listbox>
           <TextInput
             label="Email"
             type={'email'}
             placeholder="Email"
             name="email_id"
-            sizing="sm"
             required
           />
           {emailProvider !== 'Amazon SES' ? (
@@ -218,7 +184,6 @@ const EmailConfigurationModal = ({
                 type={'password'}
                 placeholder="Password"
                 name="password"
-                sizing="sm"
                 required
               />
               <TextInput
@@ -228,7 +193,6 @@ const EmailConfigurationModal = ({
                   emailProvider === 'SMTP' ? 'SMTP port (SSL)' : 'Gmail SMTP port (SSL)'
                 }
                 name="port"
-                sizing="sm"
                 required
               />
               <TextInput
@@ -236,7 +200,6 @@ const EmailConfigurationModal = ({
                 type={'text'}
                 placeholder="SMTP server"
                 name="smtp"
-                sizing="sm"
                 required
               />
             </>
@@ -247,7 +210,6 @@ const EmailConfigurationModal = ({
                 type={'text'}
                 placeholder="SES Region"
                 name="ses_region"
-                sizing="sm"
                 required
               />
               <TextInput
@@ -255,7 +217,6 @@ const EmailConfigurationModal = ({
                 type={'text'}
                 placeholder="Amazon Access Key"
                 name="amazon_access_key"
-                sizing="sm"
                 required
               />
               <TextInput
@@ -263,28 +224,32 @@ const EmailConfigurationModal = ({
                 type={'text'}
                 placeholder="Amazon Secret Key"
                 name="amazon_secret_key"
-                sizing="sm"
                 required
               />
             </>
           )}
-          <div className={`text-red-600 dark:text-red-500 text-sm`}>
-            {!data?.success && data?.message && <span>{data.message}</span>}
+          {!data?.success ? (
+            <div className={`text-red-600 dark:text-status-error text-p7`}>
+              <span>{data?.message}</span>
+            </div>
+          ) : null}
+
+          <div className="flex gap-x-2">
+            <Button
+              size="sm"
+              type="submit"
+              disabled={state !== 'idle'}
+              loading={state !== 'idle'}
+            >
+              Submit
+            </Button>
+            <Button variant="outline" type="button" onClick={() => setShowDialog(false)}>
+              Cancel
+            </Button>
           </div>
-          <Button
-            color="primary"
-            size="sm"
-            type="submit"
-            disabled={state !== 'idle'}
-            loading={state !== 'idle'}
-          >
-            Submit
-          </Button>
         </fetcher.Form>
-      ) : (
-        <SuccessModalContent text="Email configuration successfully updated!" />
-      )}
-    </Modal>
+      </SlidingModalContent>
+    </SlidingModal>
   );
 };
 
@@ -300,21 +265,18 @@ const AddEmailConfigurationComponent = ({ show }: { show: boolean }) => {
       )}
       {show && (
         <div className="p-4 max-w-sm shadow-lg dark:bg-gray-800 rounded-md">
-          <h4 className="text-lg font-medium pb-2 dark:text-white">
-            Configuration Setup
-          </h4>
-          <p className="text-base text-gray-500 dark:text-gray-400">
+          <h4 className="text-p2 pb-2 dark:text-text-text-and-icon">Setup</h4>
+          <p className="text-p7 dark:text-text-text-and-icon">
             Please connect an email provider in order to configure email, you can click on
             Add Configuration to set up email configurations
           </p>
           <Button
             size="sm"
-            className="text-center mt-4 w-full"
-            color="primary"
+            className="text-center mt-4 w-fit"
             type="button"
             onClick={() => setOpenEmailConfiguration(true)}
           >
-            Add configurations
+            Add configuration
           </Button>
         </div>
       )}
@@ -322,158 +284,104 @@ const AddEmailConfigurationComponent = ({ show }: { show: boolean }) => {
   );
 };
 
-const EmailConfiguration = () => {
-  const loaderData = useLoaderData() as LoaderDataType;
+const Configuration = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { data } = useEmailConfiguration();
+
+  const { data: configData = [], message } = data;
+
+  const configuration: ModelEmailConfigurationResp = configData[0];
+  if (message) {
+    return <p className="text-p7 dark:text-status-error">{message}</p>;
+  }
+
+  if (!configuration) {
+    return <AddEmailConfigurationComponent show={!configuration} />;
+  }
 
   return (
-    <SettingsTab value="email-configuration">
-      <div className="mt-2 flex gap-x-2 items-center">
-        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-400',
-            }}
-          >
-            <HiOutlineMail />
-          </IconContext.Provider>
+    <>
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          id={String(configuration?.id || 0)}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
+      <Card className="p-4 flex flex-col gap-y-3">
+        <div className="flex">
+          <div className="flex flex-col">
+            <span className="text-h4 dark:text-text-text-and-icon">Configuration</span>
+          </div>
         </div>
-        <h3 className="font-medium text-gray-900 dark:text-white text-base">
-          Email Configuration
-        </h3>
+        <div className="flex mt-2">
+          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
+            Email Provider
+          </span>
+          <span className="text-p4 dark:text-text-input-value">
+            {configuration?.email_provider || '-'}
+          </span>
+        </div>
+        <div className="flex">
+          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
+            Email Id
+          </span>
+          <span className="text-p4 dark:text-text-input-value">
+            {configuration?.email_id || '-'}
+          </span>
+        </div>
+        <div className="flex">
+          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
+            Region
+          </span>
+          <span className="text-p4 dark:text-text-input-value">
+            {configuration?.ses_region || '-'}
+          </span>
+        </div>
+        <div className="flex">
+          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">Port</span>
+          <span className="text-p4 dark:text-text-input-value">
+            {configuration.port || '-'}
+          </span>
+        </div>
+        <div className="flex">
+          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">SMTP</span>
+          <span className="text-p4 dark:text-text-input-value">
+            {configuration.smtp || '-'}
+          </span>
+        </div>
+        <Button
+          size="sm"
+          color="error"
+          className="mt-4 w-fit"
+          type="button"
+          onClick={() => {
+            setShowDeleteDialog(true);
+          }}
+        >
+          Delete configuration
+        </Button>
+      </Card>
+    </>
+  );
+};
+const EmailConfiguration = () => {
+  return (
+    <div>
+      <div className="mt-2">
+        <h3 className="text-h6 dark:text-text-input-value">Email configurations</h3>
       </div>
-      <div className="h-full mt-4 grid grid-flow-row-dense gap-y-8">
-        <Suspense fallback={<CircleSpinner size="xs" />}>
-          <DFAwait resolve={loaderData.data}>
-            {(resolvedData: LoaderDataType) => {
-              const { data: configData = [], message } = resolvedData;
-
-              const configuration: ModelEmailConfigurationResp = configData[0];
-              if (message) {
-                return <p className="text-sm text-red-500">{message}</p>;
-              }
-              return (
-                <>
-                  {showDeleteDialog && (
-                    <DeleteConfirmationModal
-                      showDialog={showDeleteDialog}
-                      id={String(configuration?.id || 0)}
-                      setShowDialog={setShowDeleteDialog}
-                    />
-                  )}
-                  {configuration && (
-                    <>
-                      <div className="p-4 max-w-sm shadow-lg dark:bg-gray-800 rounded-md flex flex-col gap-y-3">
-                        <div className="flex">
-                          <div className="flex flex-col">
-                            <span className="text-lg dark:text-gray-100 font-semibold">
-                              Configurations
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex mt-2">
-                          <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
-                            <IconContext.Provider
-                              value={{
-                                className: 'w-4 h-4',
-                              }}
-                            >
-                              <HiServer />
-                            </IconContext.Provider>
-                            Email Provider
-                          </span>
-                          <span className="text-sm dark:text-gray-100 font-semibold">
-                            {configuration?.email_provider || '-'}
-                          </span>
-                        </div>
-                        <div className="flex">
-                          <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
-                            <IconContext.Provider
-                              value={{
-                                className: 'w-4 h-4',
-                              }}
-                            >
-                              <HiOutlineMail />
-                            </IconContext.Provider>
-                            Email Id
-                          </span>
-                          <span className="text-sm dark:text-gray-100 font-semibold">
-                            {configuration?.email_id || '-'}
-                          </span>
-                        </div>
-                        <div className="flex">
-                          <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
-                            <IconContext.Provider
-                              value={{
-                                className: 'w-4 h-4',
-                              }}
-                            >
-                              <HiLocationMarker />
-                            </IconContext.Provider>
-                            Region
-                          </span>
-                          <span className="text-sm dark:text-gray-100 font-semibold">
-                            {configuration?.ses_region || '-'}
-                          </span>
-                        </div>
-                        <div className="flex">
-                          <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
-                            <IconContext.Provider
-                              value={{
-                                className: 'w-4 h-4',
-                              }}
-                            >
-                              <HiTerminal />
-                            </IconContext.Provider>
-                            Port
-                          </span>
-                          <span className="text-sm dark:text-gray-100 font-semibold">
-                            {configuration.port || '-'}
-                          </span>
-                        </div>
-                        <div className="flex">
-                          <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
-                            <IconContext.Provider
-                              value={{
-                                className: 'w-4 h-4',
-                              }}
-                            >
-                              <HiSun />
-                            </IconContext.Provider>
-                            SMTP
-                          </span>
-                          <span className="text-sm dark:text-gray-100 font-semibold">
-                            {configuration.smtp || '-'}
-                          </span>
-                        </div>
-                        <Button
-                          color="danger"
-                          size="sm"
-                          className="mt-4"
-                          type="button"
-                          onClick={() => {
-                            setShowDeleteDialog(true);
-                          }}
-                        >
-                          Delete configurations
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                  <AddEmailConfigurationComponent show={!configuration} />
-                </>
-              );
-            }}
-          </DFAwait>
+      <div className="mt-2">
+        <Suspense fallback={<CircleSpinner size="sm" />}>
+          <Configuration />
         </Suspense>
       </div>
-    </SettingsTab>
+    </div>
   );
 };
 
 export const module = {
   element: <EmailConfiguration />,
-  loader,
   action,
 };
 
@@ -489,24 +397,30 @@ const DeleteConfirmationModal = ({
   const fetcher = useFetcher();
 
   return (
-    <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      {!fetcher.data?.success ? (
-        <div className="grid place-items-center p-6">
-          <IconContext.Provider
-            value={{
-              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-            }}
-          >
-            <HiOutlineExclamationCircle />
-          </IconContext.Provider>
-          <h3 className="mb-4 font-normal text-center text-sm">
-            Email configuration will be deleted.
-            <br />
-            <span>Are you sure you want to delete?</span>
-          </h3>
-          <div className="flex items-center justify-right gap-4">
-            <Button size="xs" type="button" onClick={() => setShowDialog(false)} outline>
-              No, Cancel
+    <Modal
+      size="s"
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title={
+        !fetcher.data?.success ? (
+          <div className="flex gap-3 items-center dark:text-status-error">
+            <span className="h-6 w-6 shrink-0">
+              <ErrorStandardLineIcon />
+            </span>
+            Delete configuration
+          </div>
+        ) : undefined
+      }
+      footer={
+        !fetcher.data?.success ? (
+          <div className={'flex gap-x-4 justify-end'}>
+            <Button
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+              size="md"
+            >
+              Cancel
             </Button>
             <fetcher.Form method="post">
               <input readOnly type="hidden" name="id" value={id} />
@@ -516,15 +430,23 @@ const DeleteConfirmationModal = ({
                 name="_actionType"
                 value={ActionEnumType.DELETE}
               />
-              <Button size="xs" color="danger" type="submit">
-                Yes, I&apos;m sure
+              <Button color="error" type="submit" size="md">
+                Yes, delete
               </Button>
             </fetcher.Form>
           </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.success ? (
+        <div className="grid">
+          <span>The configuration will be deleted.</span>
+          <br />
+          <span>Are you sure you want to delete?</span>
+          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
+          <div className="flex items-center justify-right gap-4"></div>
         </div>
-      ) : (
-        <SuccessModalContent text="Email configuration deleted successfully!" />
-      )}
+      ) : undefined}
     </Modal>
   );
 };

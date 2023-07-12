@@ -1,11 +1,10 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import cx from 'classnames';
+import { cva, VariantProps } from 'cva';
 import React, { FC, useEffect } from 'react';
-import { IconContext } from 'react-icons';
-import { HiX } from 'react-icons/hi';
 
 import { useUpdateStateIfMounted } from '@/components/hooks/useUpdateStateIfMounted';
-import Separator from '@/components/separator/Separator';
+import { ObjectWithNonNullableValues } from '@/types/utils';
 
 interface FocusableElement {
   focus(options?: FocusOptions): void;
@@ -14,54 +13,44 @@ interface FocusableElement {
 type ChildrenType = {
   children: React.ReactNode;
 };
-export interface ModalProps extends DialogPrimitive.DialogProps {
-  width?: string;
-  title?: string;
+type SizeType = 's' | 'm' | 'l' | 'xl' | 'xxl';
+export interface ModalProps
+  extends DialogPrimitive.DialogProps,
+    ObjectWithNonNullableValues<VariantProps<typeof contentCva>> {
+  size?: SizeType;
+  title?: React.ReactNode;
   footer?: React.ReactNode;
   elementToFocusOnCloseRef?: React.RefObject<FocusableElement>;
 }
 
-const ModalHeader: FC<{ title?: string }> = ({ title }) => {
+const ModalHeader: FC<{ title?: React.ReactNode }> = ({ title }) => {
   return (
     <>
       <div
-        className={cx({
-          'h-[76px]': title,
-          'h-[36px]': !title,
+        className={cx('pt-5', {
+          'pb-[32px]': !title,
+          'pb-[22px]': title,
         })}
       >
-        {title && (
-          <>
-            <DialogPrimitive.Title className={cx('p-6')} data-testid="modal-title">
-              {title}
-            </DialogPrimitive.Title>
-            <Separator className="h-px block bg-gray-200 dark:bg-gray-600" />
-          </>
-        )}
+        <DialogPrimitive.Title
+          className={cx('text-h2 dark:text-text-input-value')}
+          data-testid="modal-title"
+        >
+          {title}
+        </DialogPrimitive.Title>
       </div>
+
       <DialogPrimitive.Close
         aria-label="Close"
         className={cx(
-          'h-36px rounded-lg cursor-pointer',
-          'text-gray-400 hover:text-gray-900 dark:hover:text-white',
-          'hover:bg-gray-200 dark:hover:bg-gray-600',
-          'absolute right-3.5 inline-flex items-center justify-center p-1',
-          'focus:outline-none focus:ring-1 focus:ring-blue-600 dark:focus:ring-blue-800',
-          {
-            'top-[22px]': title,
-            'top-[10px]': !title,
-          },
+          'absolute top-[30px] right-6 cursor-pointer',
+          // text
+          'text-gray-400 dark:text-[#ADBBC4]',
         )}
         id={'modal-close-button'}
         data-testid={'modal-close-button'}
       >
-        <IconContext.Provider
-          value={{
-            size: '20px',
-          }}
-        >
-          <HiX />
-        </IconContext.Provider>
+        <CloseIcon />
       </DialogPrimitive.Close>
     </>
   );
@@ -73,8 +62,7 @@ const ModalFooter: FC<ChildrenType> = ({ children }) => {
   }
   return (
     <>
-      <Separator className="h-px block bg-gray-200 dark:bg-gray-600" />
-      <div className="p-6" data-testid="modal-footer">
+      <div className="pb-6" data-testid="modal-footer">
         {children}
       </div>
     </>
@@ -83,12 +71,66 @@ const ModalFooter: FC<ChildrenType> = ({ children }) => {
 
 // TODO: To make modal body scrollable with fixed header and footer
 
+const CloseIcon = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M6.88173 5.98639L11.8557 1.0257C12.0596 0.788284 12.0459 0.434373 11.8243 0.213345C11.6026 -0.00768377 11.2478 -0.0213538 11.0097 0.181967L6.03573 5.14266L1.06174 0.175983C0.82647 -0.0586609 0.445018 -0.0586609 0.209745 0.175983C-0.025528 0.410626 -0.025528 0.791059 0.209745 1.0257L5.18974 5.98639L0.209745 10.9471C0.0385195 11.0933 -0.0360639 11.3229 0.0166591 11.5415C0.0693821 11.7601 0.240513 11.9308 0.459693 11.9834C0.678873 12.036 0.90911 11.9616 1.05574 11.7908L6.03573 6.83013L11.0097 11.7908C11.2478 11.9941 11.6026 11.9805 11.8243 11.7594C12.0459 11.5384 12.0596 11.1845 11.8557 10.9471L6.88173 5.98639Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+const contentCva = cva(
+  [
+    cx(
+      'max-h-[90vh] relative flex flex-col overflow-x-hidden focus:outline-none',
+      // border
+      'border rounded dark:border-bg-grid-border',
+      // bg
+      'dark:bg-bg-breadcrumb-bar',
+      // text
+      'text-p1 dark:text-text-text-and-icon',
+      // padding
+      'px-6',
+      {
+        'animate-modal-slide-in': open,
+        // 'animate-pop-out': !open,
+      },
+    ),
+  ],
+  {
+    variants: {
+      size: {
+        s: 'w-[480px]',
+        m: 'w-[560px]',
+        l: 'w-[640px]',
+        xl: 'w-[720px]',
+        xxl: 'w-[800px]',
+      },
+      open: {
+        true: '',
+      },
+    },
+    defaultVariants: {
+      size: 'm',
+    },
+  },
+);
 export const Modal: FC<ModalProps> = ({
   title,
   children,
   footer,
   elementToFocusOnCloseRef,
-  width = '',
+  size,
   open,
   ...rest
 }) => {
@@ -105,29 +147,25 @@ export const Modal: FC<ModalProps> = ({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
           className={cx(
-            'fixed inset-0 bg-black/50 dark:bg-black/50 flex justify-center items-center',
-            {
-              'animate-opacity-in': wasOpen,
-              // 'animate-opacity-out': !wasOpen, TODO: Add animation on close of modal
-            },
+            'fixed inset-0 bg-black/50 dark:bg-bg-left-nav/80 flex justify-center items-center',
           )}
         >
           <DialogPrimitive.Content
-            className={cx(
-              'max-h-[90vh] relative flex flex-col overflow-x-hidden focus:outline-none',
-              'border rounded-lg border-gray-200 bg-white text-gray-900',
-              'dark:bg-gray-700 dark:border-gray-600 dark:text-white',
-              'max-w-[90%]',
-              `${width}`,
-              {
-                'animate-pop-in': wasOpen,
-                'animate-pop-out': !wasOpen,
-              },
-            )}
+            className={contentCva({
+              size,
+              open: wasOpen,
+            })}
             onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
           >
             <ModalHeader title={title} />
-            <div className="overflow-y-auto h-full">{children}</div>
+            <div
+              className={cx('overflow-y-auto h-full', {
+                'pb-3': footer,
+                'pb-[24px]': !footer,
+              })}
+            >
+              {children}
+            </div>
             <ModalFooter>{footer}</ModalFooter>
           </DialogPrimitive.Content>
         </DialogPrimitive.Overlay>

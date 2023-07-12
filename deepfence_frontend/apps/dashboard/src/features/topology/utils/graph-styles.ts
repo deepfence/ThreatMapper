@@ -1,39 +1,40 @@
+import { IEdge, INode, ShapeStyle } from '@antv/g6';
 import { truncate } from 'lodash-es';
+import { preset } from 'tailwind-preset';
 
-import AWSLogo from '@/assets/topology/aws.png';
-import AWSEc2ALBLogo from '@/assets/topology/aws_ec2_application_load_balancer.png';
-import AWSEc2CLBLogo from '@/assets/topology/aws_ec2_classic_load_balancer.png';
-import AWSEc2InstanceLogo from '@/assets/topology/aws_ec2_instance.png';
-import AWSEc2NLBLogo from '@/assets/topology/aws_ec2_network_load_balancer.png';
-import AWSECRRepositoryLogo from '@/assets/topology/aws_ecr_repository.png';
-import AWSECSClusterLogo from '@/assets/topology/aws_ecs_cluster.png';
-import AWSECSTaskLogo from '@/assets/topology/aws_ecs_task.png';
-import AWSLambdaFunctionLogo from '@/assets/topology/aws_lambda_function.png';
-import AWSRDSDBClusterLogo from '@/assets/topology/aws_rds_db_cluster.png';
-import AWSRDSDBInstanceLogo from '@/assets/topology/aws_rds_db_instance.png';
-import AWSS3BucketLogo from '@/assets/topology/aws_s3_bucket.png';
-import AzureLogo from '@/assets/topology/azure.png';
+import AWSLogo from '@/assets/topology/aws.svg';
+import AWSEc2ALBLogo from '@/assets/topology/aws_ec2_application_load_balancer.svg';
+import AWSEc2CLBLogo from '@/assets/topology/aws_ec2_classic_load_balancer.svg';
+import AWSEc2InstanceLogo from '@/assets/topology/aws_ec2_instance.svg';
+import AWSEc2NLBLogo from '@/assets/topology/aws_ec2_network_load_balancer.svg';
+import AWSECRRepositoryLogo from '@/assets/topology/aws_ecr_repository.svg';
+import AWSECSClusterLogo from '@/assets/topology/aws_ecs_cluster.svg';
+import AWSECSTaskLogo from '@/assets/topology/aws_ecs_task.svg';
+import AWSLambdaFunctionLogo from '@/assets/topology/aws_lambda_function.svg';
+import AWSRDSDBClusterLogo from '@/assets/topology/aws_rds_db_cluster.svg';
+import AWSRDSDBInstanceLogo from '@/assets/topology/aws_rds_db_instance.svg';
+import AWSS3BucketLogo from '@/assets/topology/aws_s3_bucket.svg';
+import AzureLogo from '@/assets/topology/azure.svg';
 import AzureAppServiceFunction from '@/assets/topology/azure_app_service_function_app.svg';
 import AzureComputeVirtualMachine from '@/assets/topology/azure_compute_virtual_machine.svg';
 import AzureStorageContainer from '@/assets/topology/azure_storage_container.svg';
 import AzureStorageQueue from '@/assets/topology/azure_storage_queue.svg';
 import AzureStorageTable from '@/assets/topology/azure_storage_table.svg';
-import CloudLogo from '@/assets/topology/cloud.png';
-import CloudRegionLogo from '@/assets/topology/cloud-region.png';
-import ContainerLogo from '@/assets/topology/container.png';
-import ContainerImageLogo from '@/assets/topology/container_image.png';
-import DigitalOceanLogo from '@/assets/topology/digital_ocean.png';
-import GCPLogo from '@/assets/topology/gcp.png';
+import CloudLogo from '@/assets/topology/cloud.svg';
+import CloudRegionLogo from '@/assets/topology/cloud-region.svg';
+import ContainerLogo from '@/assets/topology/container.svg';
+import ContainerImageLogo from '@/assets/topology/container_image.svg';
+import DigitalOceanLogo from '@/assets/topology/digital_ocean.svg';
+import GCPLogo from '@/assets/topology/gcp.svg';
 import GCPComputeInstance from '@/assets/topology/gcp_compute_instance.svg';
 import GCPDatabaseInstance from '@/assets/topology/gcp_sql_database_instance.svg';
 import GCPStorageBucket from '@/assets/topology/gcp_storage_bucket.svg';
-import HostLogo from '@/assets/topology/host.png';
-import KubernetesClusterLogo from '@/assets/topology/kubernetes-cluster.png';
-import PodLogo from '@/assets/topology/pod.png';
-import ProcessLogo from '@/assets/topology/process.png';
-import TheInternetLogo from '@/assets/topology/the-internet.png';
+import HostLogo from '@/assets/topology/host.svg';
+import KubernetesClusterLogo from '@/assets/topology/kubernetes-cluster.svg';
+import PodLogo from '@/assets/topology/pod.svg';
+import ProcessLogo from '@/assets/topology/process.svg';
+import TheInternetLogo from '@/assets/topology/the-internet.svg';
 import { EnhancedDetailedNodeSummary, G6Node } from '@/features/topology/types/graph';
-import { showContextMenu } from '@/features/topology/utils/expand-collapse';
 
 export const GraphPalette = {
   NODE_OUTLINE_DARK: '#E5E7EB',
@@ -48,85 +49,42 @@ export const GraphPalette = {
   COMBO_FILL_LIGHT: '#EBF5FF',
 };
 
-// TODO: remove these legacy colors
-export const PALETTE = {
-  BLUE: '#55c1e9',
-  DEEP_BLUE: '#426ca9',
-  DARK_BLUE: '#1D3372',
-  DARK_BLUE_HEADLINE: '#1e3374',
-  HOT_PINK: '#EA00F7',
-  DEEP_PURPLE: '#8a1a9c',
-  DEEP_GREY: '#696e72',
-  DARK_GREY: '#7f888f',
-  MID_GREY: '#909a9c',
-  LIGHT_GREY: '#acb1b5',
-  BLACK: '#231f20',
-  ALERT_CRITICAL: '#f40197',
-  ALERT_HIGH: '#9a00f4',
-  ALERT_MEDIUM: '#4d01f2',
-  ALERT_LOW: '#0080ff',
-  ALERT_INFO: '#acb1b5',
-
-  AWS_YELLOW: '#FF9900',
-  GOOGLE_BLUE: '#4285F4',
-  EDGE_BLUE: '#007fff',
-  OFF_WHITE: '#fefefe',
+const DEFAULT_FILL_COLOR = preset.theme.extend.colors.bg['map-node'];
+const NODE_FILL_COLORS: Record<string, string> = {
+  cloud_provider: DEFAULT_FILL_COLOR,
+  region: DEFAULT_FILL_COLOR,
+  host: DEFAULT_FILL_COLOR,
+  pod: DEFAULT_FILL_COLOR,
+  container: DEFAULT_FILL_COLOR,
+  process: DEFAULT_FILL_COLOR,
 };
 
-export const COLORS = {
-  NODE: PALETTE.DARK_GREY,
-  NODE_OUTLINE: 'white',
-  NODE_SEVERITY_HIGH: PALETTE.ALERT_HIGH,
-  NODE_SEVERITY_MEDIUM: PALETTE.ALERT_MEDIUM,
-  NODE_SEVERITY_LOW: PALETTE.ALERT_LOW,
-
-  LABEL: 'white',
-
-  EDGE: PALETTE.EDGE_BLUE,
-  ACTIVE_EDGE: PALETTE.AWS_YELLOW,
-
-  CLOUD_PROVIDER: PALETTE.DEEP_GREY,
-  REGION: PALETTE.DARK_GREY,
-  HOST: PALETTE.MID_GREY,
-  POD: PALETTE.MID_GREY,
-  CONTAINER: PALETTE.MID_GREY,
-  PROCESS: PALETTE.LIGHT_GREY,
-};
-
-export const nodeStyle = (
-  node: EnhancedDetailedNodeSummary,
-  override: Record<string, any>,
-) => {
-  let style: Record<string, string> = {};
-  const fill: Record<string, string> = {
-    cloud_provider: COLORS.CLOUD_PROVIDER,
-    region: COLORS.REGION,
-    host: COLORS.HOST,
-    pod: COLORS.POD,
-    container: COLORS.CONTAINER,
-    process: COLORS.PROCESS,
+export const nodeStyle = (node: EnhancedDetailedNodeSummary, override?: ShapeStyle) => {
+  const style: ShapeStyle = {
+    cursor: 'pointer',
+    fill: NODE_FILL_COLORS[node?.df_data?.type ?? ''] || DEFAULT_FILL_COLOR,
   };
-  style.fill = fill[node?.df_data?.type ?? ''] || COLORS.NODE;
-
-  style = { ...style, ...override };
-  if (node.df_data && getNodeImage(node.df_data?.type ?? '')) {
-    delete style.fill;
-  } else if (node?.df_data?.type === 'process') {
-    style.fill = COLORS.PROCESS;
-  }
-  if (showContextMenu(node.df_data)) {
-    style.cursor = 'pointer';
-  }
-
-  return style;
+  return { ...style, ...override };
 };
 
-export const getShortLabel = (label?: string) => {
+export const getNodeIconConfig = (node: EnhancedDetailedNodeSummary) => {
+  if (node.df_data && getNodeImage(node.df_data.type ?? '')) {
+    return {
+      show: true,
+      img: getNodeImage(node.df_data.type ?? '', node.df_data.label),
+      width: ['pseudo'].includes(node.df_data.type ?? '') ? 35 : 30,
+      height: ['pseudo'].includes(node.df_data.type ?? '') ? 35 : 30,
+      cursor: 'pointer',
+    };
+  }
+};
+
+export const getShortLabel = (label?: string, nodeType?: string) => {
   if (!label || !label.length) {
     return 'unknown';
   }
   let shortLabel = label;
-  if (label.lastIndexOf('/') >= 0) {
+  if (nodeType === 'process' && label.lastIndexOf('/') >= 0) {
     shortLabel = label.split('/')[label.split('/').length - 1];
   }
 
@@ -135,15 +93,37 @@ export const getShortLabel = (label?: string) => {
 
 export const onNodeHover = (item: G6Node, enter: boolean) => {
   const model = item.get('model') as EnhancedDetailedNodeSummary | undefined;
-  if (model?.df_data?.type === 'process') {
-    if (enter) {
-      item.update({ label: model?.df_data?.label ?? 'unknown' });
-      item.toFront();
-    } else {
-      item.update({ label: getShortLabel(model?.df_data?.label) });
+  if (enter) {
+    item.update({ label: model?.df_data?.label ?? 'unknown' });
+  } else {
+    item.update({ label: getShortLabel(model?.df_data?.label) });
+  }
+
+  setActiveState(item, enter);
+  item?.getEdges?.()?.forEach?.((edge) => {
+    if (
+      !edge?.getModel?.()?.combo_pseudo_center &&
+      !edge?.getModel?.()?.combo_pseudo_inner
+    ) {
+      const source = edge.getSource();
+      if (source.getID() !== item.getID()) setActiveState(source, enter);
+      const target = edge.getTarget();
+      if (target.getID() !== item.getID() && target.getType() !== 'combo')
+        setActiveState(target, enter);
+
+      setActiveState(edge, enter);
     }
+  });
+};
+
+const setActiveState = (item: INode | IEdge, active: boolean) => {
+  if (active) {
+    item.setState('active', true);
+  } else {
+    item.clearStates('active');
   }
 };
+
 export const getNodeImage = (
   nodeType: string,
   nodeLabel?: string,

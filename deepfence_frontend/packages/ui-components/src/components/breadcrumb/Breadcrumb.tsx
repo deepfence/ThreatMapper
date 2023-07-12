@@ -1,8 +1,6 @@
 import { Slot, Slottable } from '@radix-ui/react-slot';
 import cx from 'classnames';
 import React from 'react';
-import { IconContext } from 'react-icons';
-import { HiChevronRight } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
 type BreadcrumbLinkType = {
@@ -10,21 +8,35 @@ type BreadcrumbLinkType = {
   asChild?: boolean;
   icon?: React.ReactNode;
   isLast?: boolean;
-  separator?: React.ReactNode;
+  isLink?: boolean;
   className?: string;
 };
 
 type BreadCrumbProps = {
   children: React.ReactNode | React.ReactNode[];
-  outline?: boolean;
-  separator?: React.ReactNode;
-  transparent?: boolean;
+};
+
+const CaretIcon = () => {
+  return (
+    <svg
+      width="30"
+      height="30"
+      viewBox="0 0 30 30"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M13.2505 19.6813L17.8661 15.2205L13.2505 10.7598C12.9885 10.5075 12.5716 10.5153 12.3192 10.7772C12.0669 11.0392 12.0747 11.4561 12.3366 11.7085L15.9726 15.2205L12.3366 18.7365C12.0747 18.9888 12.0669 19.4057 12.3192 19.6677C12.5716 19.9297 12.9885 19.9375 13.2505 19.6851V19.6813Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
 };
 
 export const BreadcrumbLink = React.forwardRef<
   React.ElementRef<'button'>,
   BreadcrumbLinkType
->(({ asChild, children, icon, isLast, separator, className, ...props }, forwardedRef) => {
+>(({ asChild, children, icon, isLast, className, isLink, ...props }, forwardedRef) => {
   const Comp = asChild ? Slot : 'button';
   return (
     <>
@@ -32,44 +44,29 @@ export const BreadcrumbLink = React.forwardRef<
         {...props}
         className={twMerge(
           cx(
-            `inline-flex items-center leading-[21px] item-center`,
-            'outline-none focus-visible:outline-none focus:ring-2 focus-visible:ring-blue-600 dark:focus-visible:ring-blue-500 focus-visible:rounded-sm',
-            'text-gray-700 dark:text-gray-400 text-sm',
+            `inline-flex items-center`,
+            'text-gray-700 dark:text-text-text-and-icon text-[14px] font-normal leading-[30px]',
+            {
+              'dark:text-text-link': isLink,
+            },
             className,
           ),
         )}
         ref={forwardedRef}
       >
-        {icon && (
-          <IconContext.Provider
-            value={{
-              className: 'mr-2 w-[16px] h-[16px]',
-            }}
-          >
-            {icon}
-          </IconContext.Provider>
-        )}
+        {icon && <div className="mr-1.5 w-[16px] h-[16px]">{icon}</div>}
         <Slottable>{children}</Slottable>
       </Comp>
       {!isLast && (
-        <IconContext.Provider
-          value={{
-            className: 'mx-2 text-gray-700 dark:text-gray-400 text-sm',
-          }}
-        >
-          {separator ? <span>{separator}</span> : <HiChevronRight />}
-        </IconContext.Provider>
+        <span className="ml-1.5 w-[30px] h-[30px] dark:text-df-gray-500">
+          <CaretIcon />
+        </span>
       )}
     </>
   );
 });
 
-export const Breadcrumb = ({
-  children,
-  separator,
-  outline = false,
-  transparent,
-}: BreadCrumbProps) => {
+export const Breadcrumb = ({ children }: BreadCrumbProps) => {
   const childrenEl = React.Children.map<React.ReactNode, React.ReactNode>(
     children,
     function (child: React.ReactNode, index) {
@@ -83,7 +80,6 @@ export const Breadcrumb = ({
         elementChild = React.cloneElement(
           elementChild,
           {
-            separator,
             isLast,
             ...child.props,
           },
@@ -94,15 +90,5 @@ export const Breadcrumb = ({
     },
   );
 
-  return (
-    <div
-      className={cx('flex w-fit items-center rounded-lg', {
-        'outline-none border border-gray-200 dark:border-gray-700': outline,
-        'bg-transparent': transparent,
-        'bg-gray-50 dark:bg-gray-800': !transparent,
-      })}
-    >
-      {childrenEl}
-    </div>
-  );
+  return <div className={cx('flex w-fit items-center bg-transparent')}>{childrenEl}</div>;
 };

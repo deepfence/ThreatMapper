@@ -23,13 +23,14 @@ export const ModalWithTrigger = () => {
 
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(true)} ref={ref}>
+      <Button color="default" onClick={() => setOpen(true)} ref={ref}>
         Click to open
       </Button>
       <SlidingModal
         open={open}
         onOpenChange={() => setOpen(false)}
         elementToFocusOnCloseRef={ref}
+        size="xl"
       >
         <SlidingModalCloseButton />
         <SlidingModalHeader>
@@ -49,7 +50,7 @@ export const TriggerFromLeft = () => {
 
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(true)} ref={ref}>
+      <Button color="default" onClick={() => setOpen(true)} ref={ref}>
         Click to open
       </Button>
       <SlidingModal
@@ -80,7 +81,7 @@ export const WithoutTitle = () => {
 
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(true)} ref={ref}>
+      <Button color="default" onClick={() => setOpen(true)} ref={ref}>
         Click to open
       </Button>
       <SlidingModal
@@ -100,7 +101,7 @@ export const LongContent = () => {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(true)}>
+      <Button color="default" onClick={() => setOpen(true)}>
         Click to open
       </Button>
       <SlidingModal open={open} onOpenChange={() => setOpen(false)}>

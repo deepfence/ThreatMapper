@@ -25,7 +25,7 @@ const SelectedAccountComponent = ({
   accounts: string[];
 }) => {
   return (
-    <span className={'text-sm text-gray-500 dark:text-gray-400'}>
+    <span className={'text-p4 text-gray-500 dark:text-text-text-and-icon'}>
       {accounts.length > 0 ? `${type} / ${accounts[0]}` : null}
       &nbsp;
       {accounts.length > 1 && (
@@ -35,10 +35,10 @@ const SelectedAccountComponent = ({
               {accounts.map((node, index) => {
                 return (
                   <li key={node}>
-                    <span className="text-gray-400 py-2 pr-1 font-semibold">
+                    <span className="text-p7 dark:text-text-input-value py-2 pr-1">
                       {index + 1}.
                     </span>
-                    <span className="text-gray-300">{node}</span>
+                    <span className="text-p7 dark:text-text-input-value">{node}</span>
                   </li>
                 );
               })}
@@ -46,7 +46,7 @@ const SelectedAccountComponent = ({
           }
           triggerAsChild
         >
-          <span className={'text-sm text-gray-600 dark:text-gray-300'}>
+          <span className={'text-p7 dark:text-text-input-value'}>
             +{accounts.length - 1} more
           </span>
         </Tooltip>
@@ -69,22 +69,21 @@ const ScanConfigureForm = () => {
 
   let title = '';
   if (scanType === ScanTypeEnum.VulnerabilityScan) {
-    title = 'Vulnerability';
+    title = 'vulnerability';
   } else if (scanType === ScanTypeEnum.SecretScan) {
-    title = 'Secret';
+    title = 'secret';
   } else if (scanType === ScanTypeEnum.MalwareScan) {
-    title = 'Malware';
+    title = 'malware';
   } else if (
     scanType === ScanTypeEnum.ComplianceScan ||
     scanType === ScanTypeEnum.CloudComplianceScan
   ) {
-    title = 'Posture';
+    title = 'posture';
   }
-
   return (
     <>
       <ConnectorHeader
-        title={`Configure ${title} Scan`}
+        title={`New ${title} scan`}
         description="Choose from the below options to perform your first scan."
         endComponent={
           <SelectedAccountComponent
@@ -110,7 +109,7 @@ const ScanConfigureForm = () => {
                     '/onboard/scan/view-summary/running/:nodeType/:scanType/:bulkScanId',
                     {
                       nodeType,
-                      scanType: 'vulnerability',
+                      scanType: ScanTypeEnum.VulnerabilityScan,
                       bulkScanId,
                     },
                   ),
@@ -135,7 +134,7 @@ const ScanConfigureForm = () => {
                     '/onboard/scan/view-summary/running/:nodeType/:scanType/:bulkScanId',
                     {
                       nodeType,
-                      scanType: 'secret',
+                      scanType: ScanTypeEnum.SecretScan,
                       bulkScanId,
                     },
                   ),
@@ -160,7 +159,7 @@ const ScanConfigureForm = () => {
                     '/onboard/scan/view-summary/running/:nodeType/:scanType/:bulkScanId',
                     {
                       nodeType,
-                      scanType: 'malware',
+                      scanType: ScanTypeEnum.MalwareScan,
                       bulkScanId,
                     },
                   ),
@@ -172,7 +171,7 @@ const ScanConfigureForm = () => {
         {(scanType === ScanTypeEnum.ComplianceScan ||
           scanType === ScanTypeEnum.CloudComplianceScan) && (
           <ComplianceScanConfigureForm
-            showAdvancedOptions={false}
+            showAdvancedOptions={true}
             data={{
               nodeIds: state.map((node) => node.urlId),
               nodeType: state[0].urlType as ComplianceScanNodeTypeEnum,
@@ -185,7 +184,10 @@ const ScanConfigureForm = () => {
                     '/onboard/scan/view-summary/running/:nodeType/:scanType/:bulkScanId',
                     {
                       nodeType,
-                      scanType: 'compliance', // TODO: change this compliance and cloud compliance
+                      scanType:
+                        scanType === ScanTypeEnum.ComplianceScan
+                          ? ScanTypeEnum.ComplianceScan
+                          : ScanTypeEnum.CloudComplianceScan,
                       bulkScanId,
                     },
                   ),
@@ -197,8 +199,8 @@ const ScanConfigureForm = () => {
       </Card>
 
       <div className="flex">
-        <Button onClick={goBack} size="xs" className="mt-12" type="button">
-          Go Back
+        <Button onClick={goBack} className="mt-12" type="button" variant="outline">
+          Cancel
         </Button>
       </div>
     </>

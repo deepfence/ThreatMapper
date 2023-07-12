@@ -33,10 +33,10 @@ export const FiveZeroZero = () => {
   if (location.pathname.startsWith('/onboard')) {
     return (
       <div className="min-h-screen isolate">
-        <div className="pt-[64px] h-screen">
+        <div className="pt-[56px] h-screen">
           <ErrorComponent />
         </div>
-        <OnboardAppHeader showGotoDashboard={false} />
+        <OnboardAppHeader />
       </div>
     );
   }
@@ -45,14 +45,14 @@ export const FiveZeroZero = () => {
     <div className="min-h-screen isolate">
       {isAuth ? (
         <>
-          <AppHeader
-            sideNavExpanded={sideNavExpanded}
-            onSideNavExpandedChange={(state) => setSideNavExpanded(state)}
+          <AppHeader />
+          <SideNavigation
+            expanded={sideNavExpanded}
+            onExpandedChange={(state) => setSideNavExpanded(state)}
           />
-          <SideNavigation expanded={sideNavExpanded} />
           <main
             className={classNames(
-              'pt-[64px] h-screen overflow-auto transition-[margin-left]',
+              'pt-[56px] h-screen overflow-auto transition-[margin-left]',
               {
                 'ml-[60px]': !sideNavExpanded,
                 'ml-[240px]': sideNavExpanded,

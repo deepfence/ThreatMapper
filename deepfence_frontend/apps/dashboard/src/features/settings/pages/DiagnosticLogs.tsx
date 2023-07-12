@@ -1,57 +1,34 @@
-import { Suspense, useMemo } from 'react';
-import {
-  ActionFunctionArgs,
-  useFetcher,
-  useLoaderData,
-  useRevalidator,
-} from 'react-router-dom';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense, useMemo, useState } from 'react';
+import { ActionFunctionArgs, useFetcher, useRevalidator } from 'react-router-dom';
 import { useInterval } from 'react-use';
 import { toast } from 'sonner';
-import { Button, createColumnHelper, Table, TableSkeleton } from 'ui-components';
+import {
+  Button,
+  createColumnHelper,
+  SlidingModal,
+  SlidingModalCloseButton,
+  SlidingModalContent,
+  SlidingModalHeader,
+  Table,
+  TableSkeleton,
+} from 'ui-components';
 
 import { getDiagnosisApiClient } from '@/api/api';
 import {
   DiagnosisDiagnosticLogsLink,
-  DiagnosisGetDiagnosticLogsResponse,
   DiagnosisNodeIdentifierNodeTypeEnum,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
-import { SettingsTab } from '@/features/settings/components/SettingsTab';
+import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
+import { PlusIcon } from '@/components/icons/common/Plus';
+import { invalidateAllQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
-import { DFAwait } from '@/utils/suspense';
 
-type LoaderDataType = {
-  message?: string;
-  data?: DiagnosisGetDiagnosticLogsResponse;
-};
-const getDiagnosticLogs = async (): Promise<LoaderDataType> => {
-  const getDiagnosticLogs = apiWrapper({ fn: getDiagnosisApiClient().getDiagnosticLogs });
-  const response = await getDiagnosticLogs();
-
-  if (!response.ok) {
-    if (response.error.response.status === 403) {
-      return {
-        message: 'You do not have enough permissions to view diagnostic logs',
-      };
-    }
-    throw response.error;
-  }
-
-  return {
-    data: response.value,
-  };
-};
-
-const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
-  return typedDefer({
-    data: getDiagnosticLogs(),
-  });
-};
-
+const DEFAULT_PAGE_SIZE = 10;
 const ACTION_TYPE = {
   CONSOLE_LOGS: 'consoleLogs',
   AGENT_LOGS: 'agentLogs',
@@ -141,13 +118,19 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
   }
 
   toast('You have successfully generated the logs');
-
+  invalidateAllQueries();
   return null;
 };
 
+const useGetLogs = () => {
+  return useSuspenseQuery({
+    ...queries.setting.listDiagnosticLogs(),
+  });
+};
 const ConsoleDiagnosticLogsTable = () => {
   const columnHelper = createColumnHelper<DiagnosisDiagnosticLogsLink>();
-  const loaderData = useLoaderData() as LoaderDataType;
+  const { data } = useGetLogs();
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('label', {
@@ -182,8 +165,17 @@ const ConsoleDiagnosticLogsTable = () => {
             return 'No logs';
           }
           return (
-            <DFLink href={cell.row.original.url_link ?? ''} download target={'_blank'}>
-              Click to download
+            <DFLink
+              href={cell.row.original.url_link ?? ''}
+              download
+              target={'_blank'}
+              className="flex items-center gap-x-1 dark:text-accent-accent dark:hover:text-bg-hover-1"
+              unstyled
+            >
+              <span className="h-3 w-3">
+                <DownloadLineIcon />
+              </span>
+              Download
             </DFLink>
           );
         },
@@ -196,41 +188,32 @@ const ConsoleDiagnosticLogsTable = () => {
     return columns;
   }, []);
 
+  const { data: _logs, message } = data;
+  const consoleLogs = _logs?.console_logs ?? [];
+  if (message) {
+    return <p className="dark:text-status-error text-sm">{message}</p>;
+  }
   return (
-    <>
-      <Suspense fallback={<TableSkeleton columns={4} rows={5} size={'sm'} />}>
-        <DFAwait resolve={loaderData.data}>
-          {(resolvedData: LoaderDataType) => {
-            const { data, message } = resolvedData;
-            const logs = data?.console_logs ?? [];
-
-            return (
-              <div>
-                <h3 className="py-2 font-medium text-gray-900 dark:text-white text-base">
-                  Console Diagnostic Logs
-                </h3>
-                {message ? (
-                  <p className="text-red-500 text-sm">{message}</p>
-                ) : (
-                  <Table
-                    size="sm"
-                    data={logs}
-                    columns={columns}
-                    enablePagination
-                    pageSize={5}
-                  />
-                )}
-              </div>
-            );
-          }}
-        </DFAwait>
-      </Suspense>
-    </>
+    <Table
+      size="default"
+      data={consoleLogs}
+      columns={columns}
+      enablePagination
+      pageSize={pageSize}
+      enablePageResize
+      onPageResize={(newSize) => {
+        setPageSize(newSize);
+      }}
+    />
   );
 };
 const AgentDiagnosticLogsTable = () => {
   const columnHelper = createColumnHelper<DiagnosisDiagnosticLogsLink>();
-  const loaderData = useLoaderData() as LoaderDataType;
+  const { data } = useGetLogs();
+  const { data: _logs, message } = data;
+  const agentLogs = _logs?.agent_logs ?? [];
+
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('label', {
@@ -280,127 +263,170 @@ const AgentDiagnosticLogsTable = () => {
     revalidator.revalidate();
   }, 15000);
 
+  if (message) {
+    return <p className="dark:text-status-error text-sm">{message}</p>;
+  }
+
   return (
     <>
-      <Suspense fallback={<TableSkeleton columns={4} rows={5} size={'sm'} />}>
-        <DFAwait resolve={loaderData.data}>
-          {(resolvedData: LoaderDataType) => {
-            const { data, message } = resolvedData;
-            const logs = data?.agent_logs ?? [];
-
-            return (
-              <div>
-                <h3 className="py-2 font-medium text-gray-900 dark:text-white text-base">
-                  Agent Diagnostic Logs
-                </h3>
-                {message ? (
-                  <p className="text-red-500 text-sm">{message}</p>
-                ) : (
-                  <Table
-                    size="sm"
-                    data={logs}
-                    columns={columns}
-                    enablePagination
-                    pageSize={5}
-                  />
-                )}
-              </div>
-            );
-          }}
-        </DFAwait>
-      </Suspense>
+      <Table
+        size="default"
+        data={agentLogs}
+        columns={columns}
+        enablePagination
+        pageSize={pageSize}
+        enablePageResize
+        onPageResize={(newSize) => {
+          setPageSize(newSize);
+        }}
+      />
     </>
   );
 };
 const ConsoleDiagnosticLogsComponent = () => {
-  const loaderData = useLoaderData() as LoaderDataType;
   const fetcher = useFetcher<string>();
-  const { data } = fetcher;
 
   return (
-    <div className="bg-green-100 dark:bg-green-900/75 text-gray-500 dark:text-gray-300 px-4 pt-4 pb-6 w-fit rounded-lg flex flex-col max-w-[300px]">
-      <h4 className="text-lg font-medium pb-2">Console Diagnostic Logs</h4>
-      <span className="text-sm text-gray-500 dark:text-gray-300">
-        Generate a link to download pdf for your console
-      </span>
-      <fetcher.Form method="post">
-        {loaderData.message ? (
-          <p className="text-sm text-red-500 pt-2">{loaderData.message}</p>
-        ) : null}
-        {data ? <p className="text-sm text-red-500 pt-2">{data}</p> : null}
-        <input
-          type="text"
-          name="actionType"
-          readOnly
-          hidden
-          value={ACTION_TYPE.CONSOLE_LOGS}
-        />
-        <Button size="xs" className="text-center mt-3 w-full" color="success">
-          Get Logs
-        </Button>
-      </fetcher.Form>
-    </div>
+    <fetcher.Form method="post">
+      <input
+        type="text"
+        name="actionType"
+        readOnly
+        hidden
+        value={ACTION_TYPE.CONSOLE_LOGS}
+      />
+      <Button
+        variant="flat"
+        size="sm"
+        startIcon={<PlusIcon />}
+        disabled={fetcher.state !== 'idle'}
+        loading={fetcher.state !== 'idle'}
+      >
+        Generate console diagnostics logs
+      </Button>
+    </fetcher.Form>
+  );
+};
+
+const AgentDiagnosticsLogsModal = ({
+  showDialog,
+  setShowDialog,
+}: {
+  showDialog: boolean;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const { data } = useGetLogs();
+  const { message } = data;
+  const fetcher = useFetcher<string>();
+
+  return (
+    <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
+      <SlidingModalHeader>
+        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+          Agent diagnostic logs
+        </div>
+      </SlidingModalHeader>
+      <SlidingModalCloseButton />
+      <SlidingModalContent>
+        <div className="m-4">
+          <span className="text-sm text-gray-500 dark:text-gray-300">
+            Generate a link to download pdf for your host/cluster agent
+          </span>
+          <fetcher.Form method="post" className="mt-4 flex flex-col gap-y-3">
+            {message ? (
+              <p className="text-p7 dark:text-status-error pt-2">{message}</p>
+            ) : null}
+            <input
+              type="text"
+              name="actionType"
+              readOnly
+              hidden
+              value={ACTION_TYPE.AGENT_LOGS}
+            />
+            <div className="flex flex-col gap-y-8">
+              <SearchableHostList scanType="none" active={true} triggerVariant="select" />
+              <SearchableClusterList active={true} triggerVariant="select" />
+            </div>
+            <div className="flex gap-x-2 mt-8">
+              <Button
+                type="submit"
+                disabled={fetcher.state !== 'idle'}
+                loading={fetcher.state !== 'idle'}
+              >
+                Generate
+              </Button>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setShowDialog(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </fetcher.Form>
+        </div>
+      </SlidingModalContent>
+    </SlidingModal>
   );
 };
 
 const AgentDiagnosticLogsComponent = () => {
-  const loaderData = useLoaderData() as LoaderDataType;
-  const fetcher = useFetcher<string>();
-  const { data, state } = fetcher;
+  const [showDialog, setShowDialog] = useState(false);
 
   return (
-    <div className="bg-blue-100 dark:bg-blue-900/75 text-gray-600 dark:text-white px-4 pt-4 pb-6 w-fit rounded-lg flex flex-col max-w-[300px]">
-      <h4 className="text-lg font-medium pb-2">Agent Diagnostic Logs</h4>
-      <span className="text-sm text-gray-500 dark:text-gray-300">
-        Generate a link to download pdf for your host/cluster agent
-      </span>
-      <fetcher.Form method="post" className="mt-4 flex flex-col gap-y-3">
-        {loaderData.message ? (
-          <p className="text-sm text-red-500 pt-2">{loaderData.message}</p>
-        ) : null}
-        {data ? <p className="text-sm text-red-500 pt-2">{data}</p> : null}
-        <input
-          type="text"
-          name="actionType"
-          readOnly
-          hidden
-          value={ACTION_TYPE.AGENT_LOGS}
+    <>
+      {showDialog ? (
+        <AgentDiagnosticsLogsModal
+          showDialog={showDialog}
+          setShowDialog={setShowDialog}
         />
-        <SearchableHostList scanType="none" active={true} />
-        <SearchableClusterList active={true} />
-        <Button
-          size="xs"
-          className="text-center mt-3 w-full"
-          color="primary"
-          type="submit"
-          disabled={state !== 'idle'}
-          loading={state !== 'idle'}
-        >
-          Get Logs
-        </Button>
-      </fetcher.Form>
-    </div>
+      ) : null}
+      <Button
+        variant="flat"
+        onClick={() => setShowDialog(true)}
+        className="w-fit"
+        size="sm"
+        startIcon={<PlusIcon />}
+      >
+        Generate agent diagnostic logs
+      </Button>
+    </>
   );
 };
 const DiagnosticLogs = () => {
   return (
-    <SettingsTab value="diagnostic-logs">
-      <div className="grid grid-cols-[310px_1fr] gap-x-2">
-        <div className="flex flex-col mt-2 gap-y-3">
+    <div className="my-2">
+      <div className="flex flex-col">
+        <h6 className="text-h5 dark:text-text-input-value">Console diagnostic logs</h6>
+        <div className="mt-2 flex flex-col gap-y-2">
           <ConsoleDiagnosticLogsComponent />
-          <AgentDiagnosticLogsComponent />
-        </div>
-        <div className="flex flex-col gap-y-10">
-          <ConsoleDiagnosticLogsTable />
-          <AgentDiagnosticLogsTable />
+          <Suspense
+            fallback={
+              <TableSkeleton columns={4} rows={DEFAULT_PAGE_SIZE} size={'default'} />
+            }
+          >
+            <ConsoleDiagnosticLogsTable />
+          </Suspense>
         </div>
       </div>
-    </SettingsTab>
+      <div className="flex flex-col mt-8">
+        <h6 className="text-h5 dark:text-text-input-value">Agent diagnostic logs</h6>
+        <div className="mt-2 gap-y-2 flex flex-col ">
+          <AgentDiagnosticLogsComponent />
+          <Suspense
+            fallback={
+              <TableSkeleton columns={4} rows={DEFAULT_PAGE_SIZE} size={'default'} />
+            }
+          >
+            <AgentDiagnosticLogsTable />
+          </Suspense>
+        </div>
+      </div>
+    </div>
   );
 };
 
 export const module = {
   element: <DiagnosticLogs />,
   action,
-  loader,
 };

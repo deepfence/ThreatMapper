@@ -1,8 +1,8 @@
 import { Label } from '@radix-ui/react-label';
 import * as RadioGroupPrimitive from '@radix-ui/react-radio-group';
 import { RadioGroupProps } from '@radix-ui/react-radio-group';
-import cx from 'classnames';
 import { FC, useState } from 'react';
+import { cn } from 'tailwind-preset';
 
 type Direction = 'col' | 'row';
 type Props = RadioGroupProps & {
@@ -33,7 +33,7 @@ const Radio: FC<Props> = (props) => {
       onValueChange={onChange}
       data-testid={`radio-group-${name}`}
       value={selected}
-      className={cx({
+      className={cn({
         'flex flex-col space-y-2': !isRow(direction),
         'flex flex-row space-x-2': isRow(direction),
       })}
@@ -42,7 +42,7 @@ const Radio: FC<Props> = (props) => {
     >
       {options.map((option) => {
         if (option.value) {
-          const { value, label, disabled, id } = option;
+          const { value, label, disabled, id, ...rest } = option;
           const _id = id ? id : value;
 
           return (
@@ -52,34 +52,32 @@ const Radio: FC<Props> = (props) => {
                 value={value}
                 data-testid={`radio-item-${_id}`}
                 disabled={disabled}
-                className={cx(
-                  'rounded-full py-2 w-4 h-4 flex shrink-0',
-                  'radix-state-checked:bg-blue-600 dark:radix-state-checked:bg-blue-600',
-                  'focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-2 dark:focus:ring-blue-800',
-                  'radix-state-unchecked:ring-2 radix-state-unchecked:ring-inset ring-gray-300 bg-gray-50 dark:radix-state-unchecked:ring-1 dark:ring-gray-600 dark:bg-gray-700',
-                  'radix-state-disabled:pointer-events-none',
+                className={cn(
+                  'rounded-full py-2 w-4 h-4 flex shrink-0 peer group',
+                  'data-[state=checked]:bg-blue-600 dark:data-[state=checked]:bg-accent-accent',
+                  'bg-gray-50 ring-inset dark:data-[state=unchecked]:ring-1 dark:data-[state=unchecked]:ring-text-text-and-icon dark:bg-transparent',
+                  'data-[state=disabled]:pointer-events-none',
+                  // uncheck disabled
+                  'dark:data-[state=unchecked]:disabled:bg-gray-600 dark:data-[state=unchecked]:disabled:ring-gray-600',
+                  // check disabled
+                  'dark:data-[state=checked]:disabled:bg-gray-600 dark:data-[state=checked]:disabled:ring-gray-600',
                   'disabled:cursor-not-allowed',
                 )}
+                {...rest}
               >
                 <RadioGroupPrimitive.Indicator
-                  className={cx(
+                  className={cn(
                     'flex items-center justify-center w-full h-full relative shrink-0',
-                    'after:bg-white after:content-[""] dark:after:bg-white',
-                    'after:block after:w-2 after:h-2 after:rounded-full',
-                    'radix-state-checked:bg-blue-800',
-                    'dark:radix-state-unchecked:bg-gray-700',
-                    'radix-state-disabled:pointer-events-none',
-                    'disabled:cursor-not-allowed',
+                    'after:bg-white after:content-[""] dark:after:bg-black dark:group-disabled:group-data-[state=checked]:bg-gray-900',
+                    'after:block after:w-1 after:h-1 after:rounded-full',
+                    'data-[state=disabled]:pointer-events-none',
                   )}
                 />
               </RadioGroupPrimitive.Item>
               <Label
                 htmlFor={_id + ''}
-                className={cx(
-                  'ml-2 text-sm font-medium text-gray-900 dark:text-gray-300',
-                  {
-                    'cursor-not-allowed': disabled,
-                  },
+                className={cn(
+                  'pl-1.5 text-p4 dark:text-text-input-value dark:peer-disabled:text-gray-600 peer-disabled:cursor-not-allowed',
                 )}
               >
                 {label}

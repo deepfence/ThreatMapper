@@ -1,8 +1,8 @@
-import { HiChevronRight } from 'react-icons/hi';
 import { Outlet, useParams } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbLink } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
+import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
 import { integrationTypeToNameMapping } from '@/features/integrations/pages/Integrations';
 
 const IntegrationsLayout = () => {
@@ -16,12 +16,13 @@ const IntegrationsLayout = () => {
 
   return (
     <>
-      <div className="flex p-2  w-full items-center shadow bg-white dark:bg-gray-800">
-        <Breadcrumb separator={<HiChevronRight />} transparent>
-          <BreadcrumbLink>
-            <DFLink to="/integrations">Integrations</DFLink>
+      <div className="px-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+        <Breadcrumb>
+          <BreadcrumbLink asChild icon={<IntegrationsIcon />} isLink>
+            <DFLink to={'/integrations'} unstyled>
+              Integrations
+            </DFLink>
           </BreadcrumbLink>
-
           <BreadcrumbLink>
             <span className="inherit cursor-auto">
               {integrationTypeToNameMapping[params.integrationType]}
@@ -30,9 +31,7 @@ const IntegrationsLayout = () => {
         </Breadcrumb>
       </div>
 
-      <div className="p-2">
-        <Outlet />
-      </div>
+      <Outlet />
     </>
   );
 };

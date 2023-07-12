@@ -61,6 +61,7 @@ export function getUserApiClient() {
     registerInvitedUser: userApi.registerInvitedUser.bind(userApi),
     resetPasswordRequest: userApi.resetPasswordRequest.bind(userApi),
     verifyResetPasswordRequest: userApi.verifyResetPasswordRequest.bind(userApi),
+    resetApiTokens: userApi.resetApiTokens.bind(userApi),
   };
 }
 
@@ -254,6 +255,13 @@ export function getLookupApiClient() {
     lookupProcess: lookupApi.getProcesses.bind(lookupApi),
     lookupKubernetesClusters: lookupApi.getKubernetesClusters.bind(lookupApi),
     lookupCloudResources: lookupApi.getCloudResources.bind(lookupApi),
+    lookupCloudPostures: lookupApi.getCloudCompliances.bind(lookupApi),
+    lookupPostures: lookupApi.getCompliances.bind(lookupApi),
+    lookupVulnerabilities: lookupApi.getVulnerabilities.bind(lookupApi),
+    lookupSecrets: lookupApi.getSecrets.bind(lookupApi),
+    lookupMalwares: lookupApi.getMalwares.bind(lookupApi),
+    lookupCompliances: lookupApi.getCompliances.bind(lookupApi),
+    lookupCloudCompliances: lookupApi.getCloudCompliances.bind(lookupApi),
   };
 }
 
@@ -262,8 +270,8 @@ export function getThreatGraphApiClient() {
 
   return {
     getThreatGraph: threatGraphApi.getThreatGraph.bind(threatGraphApi),
-    getVulnerabilityThreatGraph:
-      threatGraphApi.getVulnerabilityThreatGraph.bind(threatGraphApi),
+    getIndividualThreatGraph:
+      threatGraphApi.getIndividualThreatGraph.bind(threatGraphApi),
   };
 }
 

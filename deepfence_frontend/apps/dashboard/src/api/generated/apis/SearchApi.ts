@@ -21,6 +21,7 @@ import type {
   ModelCloudNodeAccountInfo,
   ModelCloudResource,
   ModelCompliance,
+  ModelComplianceRule,
   ModelContainer,
   ModelContainerImage,
   ModelFiltersReq,
@@ -28,10 +29,13 @@ import type {
   ModelHost,
   ModelKubernetesCluster,
   ModelMalware,
+  ModelMalwareRule,
   ModelPod,
   ModelScanInfo,
   ModelSecret,
+  ModelSecretRule,
   ModelVulnerability,
+  ModelVulnerabilityRule,
   SearchNodeCountResp,
   SearchSearchCountResp,
   SearchSearchNodeReq,
@@ -50,6 +54,8 @@ import {
     ModelCloudResourceToJSON,
     ModelComplianceFromJSON,
     ModelComplianceToJSON,
+    ModelComplianceRuleFromJSON,
+    ModelComplianceRuleToJSON,
     ModelContainerFromJSON,
     ModelContainerToJSON,
     ModelContainerImageFromJSON,
@@ -64,14 +70,20 @@ import {
     ModelKubernetesClusterToJSON,
     ModelMalwareFromJSON,
     ModelMalwareToJSON,
+    ModelMalwareRuleFromJSON,
+    ModelMalwareRuleToJSON,
     ModelPodFromJSON,
     ModelPodToJSON,
     ModelScanInfoFromJSON,
     ModelScanInfoToJSON,
     ModelSecretFromJSON,
     ModelSecretToJSON,
+    ModelSecretRuleFromJSON,
+    ModelSecretRuleToJSON,
     ModelVulnerabilityFromJSON,
     ModelVulnerabilityToJSON,
+    ModelVulnerabilityRuleFromJSON,
+    ModelVulnerabilityRuleToJSON,
     SearchNodeCountRespFromJSON,
     SearchNodeCountRespToJSON,
     SearchSearchCountRespFromJSON,
@@ -95,6 +107,10 @@ export interface CountCloudCompliancesRequest {
 }
 
 export interface CountCloudResourcesRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
+export interface CountComplianceRulesRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
@@ -122,6 +138,10 @@ export interface CountKubernetesClustersRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
+export interface CountMalwareRulesRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
 export interface CountMalwareScansRequest {
     searchSearchScanReq?: SearchSearchScanReq;
 }
@@ -134,6 +154,10 @@ export interface CountPodsRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
+export interface CountSecretRulesRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
 export interface CountSecretsRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
@@ -143,6 +167,10 @@ export interface CountSecretsScansRequest {
 }
 
 export interface CountVulnerabilitiesRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
+export interface CountVulnerabilityRulesRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
@@ -174,6 +202,10 @@ export interface SearchCloudResourcesRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
+export interface SearchComplianceRulesRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
 export interface SearchComplianceScansRequest {
     searchSearchScanReq?: SearchSearchScanReq;
 }
@@ -198,6 +230,10 @@ export interface SearchKubernetesClustersRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
+export interface SearchMalwareRulesRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
 export interface SearchMalwareScansRequest {
     searchSearchScanReq?: SearchSearchScanReq;
 }
@@ -210,12 +246,20 @@ export interface SearchPodsRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
+export interface SearchSecretRulesRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
 export interface SearchSecretsRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
 export interface SearchSecretsScansRequest {
     searchSearchScanReq?: SearchSearchScanReq;
+}
+
+export interface SearchVulerabilityRulesRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
 export interface SearchVulnerabilitiesRequest {
@@ -296,6 +340,22 @@ export interface SearchApiInterface {
      * Count Cloud resources
      */
     countCloudResources(requestParameters: CountCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Count across all the data associated with compliance rules
+     * @summary Count Compliance Rules
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countComplianceRulesRaw(requestParameters: CountComplianceRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Count across all the data associated with compliance rules
+     * Count Compliance Rules
+     */
+    countComplianceRules(requestParameters: CountComplianceRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
      * Count across all the data associated with compliance scans
@@ -394,6 +454,22 @@ export interface SearchApiInterface {
     countKubernetesClusters(requestParameters: CountKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
+     * Count across all the data associated with malware rules
+     * @summary Count Malware Rules
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countMalwareRulesRaw(requestParameters: CountMalwareRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Count across all the data associated with malware rules
+     * Count Malware Rules
+     */
+    countMalwareRules(requestParameters: CountMalwareRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
      * Count across all the data associated with malware scans
      * @summary Count Malware Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
@@ -457,6 +533,22 @@ export interface SearchApiInterface {
     countPods(requestParameters: CountPodsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
+     * Count across all the data associated with secret rules
+     * @summary Count Secret Rules
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countSecretRulesRaw(requestParameters: CountSecretRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Count across all the data associated with secret rules
+     * Count Secret Rules
+     */
+    countSecretRules(requestParameters: CountSecretRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
      * Count across all the data associated with secrets
      * @summary Count Secrets
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
@@ -503,6 +595,22 @@ export interface SearchApiInterface {
      * Count Vulnerabilities
      */
     countVulnerabilities(requestParameters: CountVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Count across all the data associated with vulnerability rules
+     * @summary Count Vulnerability Rules
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countVulnerabilityRulesRaw(requestParameters: CountVulnerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Count across all the data associated with vulnerability rules
+     * Count Vulnerability Rules
+     */
+    countVulnerabilityRules(requestParameters: CountVulnerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
      * Count across all the data associated with vulnerability scans
@@ -617,6 +725,22 @@ export interface SearchApiInterface {
     searchCloudResources(requestParameters: SearchCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudResource>>;
 
     /**
+     * Search across all the data associated with compliance rules
+     * @summary Search Compliance Rules
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    searchComplianceRulesRaw(requestParameters: SearchComplianceRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelComplianceRule>>>;
+
+    /**
+     * Search across all the data associated with compliance rules
+     * Search Compliance Rules
+     */
+    searchComplianceRules(requestParameters: SearchComplianceRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelComplianceRule>>;
+
+    /**
      * Search across all the data associated with compliance scan
      * @summary Search Compliance Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
@@ -713,6 +837,22 @@ export interface SearchApiInterface {
     searchKubernetesClusters(requestParameters: SearchKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelKubernetesCluster>>;
 
     /**
+     * Search across all the data associated with malware rules
+     * @summary Search Malware Rules
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    searchMalwareRulesRaw(requestParameters: SearchMalwareRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelMalwareRule>>>;
+
+    /**
+     * Search across all the data associated with malware rules
+     * Search Malware Rules
+     */
+    searchMalwareRules(requestParameters: SearchMalwareRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelMalwareRule>>;
+
+    /**
      * Search across all the data associated with malwares scan
      * @summary Search Malware Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
@@ -761,6 +901,22 @@ export interface SearchApiInterface {
     searchPods(requestParameters: SearchPodsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelPod>>;
 
     /**
+     * Search across all the data associated with secret ruless
+     * @summary Search Secret Rules
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    searchSecretRulesRaw(requestParameters: SearchSecretRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecretRule>>>;
+
+    /**
+     * Search across all the data associated with secret ruless
+     * Search Secret Rules
+     */
+    searchSecretRules(requestParameters: SearchSecretRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecretRule>>;
+
+    /**
      * Search across all the data associated with secrets
      * @summary Search Secrets
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
@@ -791,6 +947,22 @@ export interface SearchApiInterface {
      * Search Secrets Scan results
      */
     searchSecretsScans(requestParameters: SearchSecretsScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanInfo>>;
+
+    /**
+     * Search across all the data associated with vulnerability rules
+     * @summary Search Vulnerability Rules
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    searchVulerabilityRulesRaw(requestParameters: SearchVulerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelVulnerabilityRule>>>;
+
+    /**
+     * Search across all the data associated with vulnerability rules
+     * Search Vulnerability Rules
+     */
+    searchVulerabilityRules(requestParameters: SearchVulerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerabilityRule>>;
 
     /**
      * Search across all the data associated with vulnerabilities
@@ -984,6 +1156,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
      */
     async countCloudResources(requestParameters: CountCloudResourcesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countCloudResourcesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Count across all the data associated with compliance rules
+     * Count Compliance Rules
+     */
+    async countComplianceRulesRaw(requestParameters: CountComplianceRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/compliance-rules`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Count across all the data associated with compliance rules
+     * Count Compliance Rules
+     */
+    async countComplianceRules(requestParameters: CountComplianceRulesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countComplianceRulesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1222,6 +1433,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
+     * Count across all the data associated with malware rules
+     * Count Malware Rules
+     */
+    async countMalwareRulesRaw(requestParameters: CountMalwareRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/malware-rules`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Count across all the data associated with malware rules
+     * Count Malware Rules
+     */
+    async countMalwareRules(requestParameters: CountMalwareRulesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countMalwareRulesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Count across all the data associated with malware scans
      * Count Malware Scan results
      */
@@ -1375,6 +1625,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
+     * Count across all the data associated with secret rules
+     * Count Secret Rules
+     */
+    async countSecretRulesRaw(requestParameters: CountSecretRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/secret-rules`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Count across all the data associated with secret rules
+     * Count Secret Rules
+     */
+    async countSecretRules(requestParameters: CountSecretRulesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countSecretRulesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Count across all the data associated with secrets
      * Count Secrets
      */
@@ -1488,6 +1777,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
      */
     async countVulnerabilities(requestParameters: CountVulnerabilitiesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countVulnerabilitiesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Count across all the data associated with vulnerability rules
+     * Count Vulnerability Rules
+     */
+    async countVulnerabilityRulesRaw(requestParameters: CountVulnerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/vulnerability-rules`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Count across all the data associated with vulnerability rules
+     * Count Vulnerability Rules
+     */
+    async countVulnerabilityRules(requestParameters: CountVulnerabilityRulesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countVulnerabilityRulesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1765,6 +2093,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
+     * Search across all the data associated with compliance rules
+     * Search Compliance Rules
+     */
+    async searchComplianceRulesRaw(requestParameters: SearchComplianceRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelComplianceRule>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/compliance-rules`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelComplianceRuleFromJSON));
+    }
+
+    /**
+     * Search across all the data associated with compliance rules
+     * Search Compliance Rules
+     */
+    async searchComplianceRules(requestParameters: SearchComplianceRulesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelComplianceRule>> {
+        const response = await this.searchComplianceRulesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Search across all the data associated with compliance scan
      * Search Compliance Scan results
      */
@@ -1999,6 +2366,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
+     * Search across all the data associated with malware rules
+     * Search Malware Rules
+     */
+    async searchMalwareRulesRaw(requestParameters: SearchMalwareRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelMalwareRule>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/malware-rules`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelMalwareRuleFromJSON));
+    }
+
+    /**
+     * Search across all the data associated with malware rules
+     * Search Malware Rules
+     */
+    async searchMalwareRules(requestParameters: SearchMalwareRulesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelMalwareRule>> {
+        const response = await this.searchMalwareRulesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Search across all the data associated with malwares scan
      * Search Malware Scan results
      */
@@ -2116,6 +2522,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
+     * Search across all the data associated with secret ruless
+     * Search Secret Rules
+     */
+    async searchSecretRulesRaw(requestParameters: SearchSecretRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecretRule>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/secret-rules`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelSecretRuleFromJSON));
+    }
+
+    /**
+     * Search across all the data associated with secret ruless
+     * Search Secret Rules
+     */
+    async searchSecretRules(requestParameters: SearchSecretRulesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecretRule>> {
+        const response = await this.searchSecretRulesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Search across all the data associated with secrets
      * Search Secrets
      */
@@ -2190,6 +2635,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
      */
     async searchSecretsScans(requestParameters: SearchSecretsScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanInfo>> {
         const response = await this.searchSecretsScansRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Search across all the data associated with vulnerability rules
+     * Search Vulnerability Rules
+     */
+    async searchVulerabilityRulesRaw(requestParameters: SearchVulerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelVulnerabilityRule>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/vulnerability-rules`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelVulnerabilityRuleFromJSON));
+    }
+
+    /**
+     * Search across all the data associated with vulnerability rules
+     * Search Vulnerability Rules
+     */
+    async searchVulerabilityRules(requestParameters: SearchVulerabilityRulesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerabilityRule>> {
+        const response = await this.searchVulerabilityRulesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

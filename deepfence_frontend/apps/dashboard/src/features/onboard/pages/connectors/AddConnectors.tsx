@@ -2,35 +2,31 @@ import cx from 'classnames';
 import { useRef } from 'react';
 import { useState } from 'react';
 import { useMemo } from 'react';
-import { IconContext } from 'react-icons';
-import { HiOutlineArrowCircleRight } from 'react-icons/hi';
 import { generatePath } from 'react-router-dom';
-import { Button, Card, Tabs, Typography } from 'ui-components';
+import { Button, Card, Tabs } from 'ui-components';
 
-import LogoAws from '@/assets/logo-aws.svg';
-import LogoAwsWhite from '@/assets/logo-aws-white.svg';
-import LogoAzure from '@/assets/logo-azure.svg';
-import LogoAzureRegistry from '@/assets/logo-azure-registry.svg';
-import LogoCloudConnector from '@/assets/logo-cloud-connector.svg';
-import LogoDocker from '@/assets/logo-docker.svg';
-import LogoGoogle from '@/assets/logo-google.svg';
-import LogoHarbor from '@/assets/logo-harbor.svg';
-import LogoHostConnector from '@/assets/logo-host-connector.svg';
-import LogoJFrog from '@/assets/logo-jfrog.svg';
-import LogoK8 from '@/assets/logo-k8.svg';
-import LogoLinux from '@/assets/logo-linux.svg';
-import LogoQuay from '@/assets/logo-quay.svg';
-import LogoRegistryConnector from '@/assets/logo-registry-connector.svg';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
+import { ArrowLine } from '@/components/icons/common/ArrowLine';
+import { CloudLine } from '@/components/icons/common/CloudLine';
+import { HostIcon } from '@/components/icons/host';
+import { AwsIcon } from '@/components/icons/posture/Aws';
+import { AzureIcon } from '@/components/icons/posture/Azure';
+import { GoogleIcon } from '@/components/icons/posture/Google';
+import { KubernetesIcon } from '@/components/icons/posture/Kubernetes';
+import { LinuxIcon } from '@/components/icons/posture/Linux';
+import { DockerRegistryIcon } from '@/components/icons/registries/Docker';
+import { HarborRegistryIcon } from '@/components/icons/registries/Harbor';
+import { JfrogRegistryIcon } from '@/components/icons/registries/Jfrog';
+import { QuayRegistryIcon } from '@/components/icons/registries/Quay';
+import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { connectorLayoutTabs } from '@/features/onboard/layouts/ConnectorsLayout';
-import { useTheme } from '@/theme/ThemeContext';
 import { RegistryType } from '@/types/common';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 interface CardConnectProps {
   path: string;
   label: string;
-  icon: string;
+  icon: React.ReactNode;
 }
 
 const CardConnect = ({ label, path, icon }: CardConnectProps) => {
@@ -48,79 +44,55 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
       <button
         className={cx(
           'text-sm text-left flex items-center w-full gap-5',
-          'border-b dark:border-gray-700 border-gray-200 h-[72px] dark:text-gray-300 dark:bg-transparent',
+          'border-b dark:border-bg-grid-border border-gray-200 h-[72px]  dark:hover:text-text-input-value dark:bg-transparent',
         )}
         onClick={handleSelection}
       >
-        <div className="w-10">
-          <img src={icon} alt="Cloud Connector" />
-        </div>
+        <div className="w-10 h-10">{icon}</div>
         <div className="whitespace-nowrap overflow-hidden text-ellipsis">{label}</div>
-        <IconContext.Provider
-          value={{
-            className: 'ml-auto text-blue-700 dark:text-blue-500',
-            size: '18px',
-          }}
-        >
-          <HiOutlineArrowCircleRight />
-        </IconContext.Provider>
+        <span className="w-6 h-6 ml-auto">
+          <ArrowLine className="rotate-90" />
+        </span>
       </button>
     </div>
   );
 };
 
 const Cloud = () => {
-  const { mode } = useTheme();
   const connectors = [
     {
-      icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
+      icon: <AwsIcon />,
       label: 'Amazon Web Services (AWS)',
       path: ACCOUNT_CONNECTOR.AWS,
     },
     {
-      icon: LogoGoogle,
+      icon: <GoogleIcon />,
       label: 'Google Cloud Platform',
       path: ACCOUNT_CONNECTOR.GCP,
     },
     {
-      icon: LogoAzure,
+      icon: <AzureIcon />,
       label: 'Microsoft Azure',
       path: ACCOUNT_CONNECTOR.AZURE,
     },
   ];
   return (
     <>
-      <div className="py-4 items-center flex px-6">
-        <img
-          src={LogoCloudConnector}
-          alt="Cloud Connector"
-          width="28"
-          height="28"
-          className="pr-2"
-        />
-        <span
-          className={`${Typography.size['2xl']} ${Typography.weight.medium} leading-[29px] dark:text-gray-50`}
-        >
-          Cloud
+      <div className="py-4 items-center flex px-6 gap-x-2">
+        <span className="w-6 h-6 dark:text-accent-accent">
+          <CloudLine />
         </span>
+        <span className="dark:text-text-text-and-icon text-h2">Cloud</span>
       </div>
       <div className="mb-4">
-        <p
-          className={`px-6 ${Typography.size.sm} ${Typography.weight.normal} leading-6 text-gray-700 dark:text-gray-400 min-h-[110px]`}
-        >
+        <p className={`px-6 text-p4 dark:text-text-text-and-icon min-h-[110px]`}>
           Connect an AWS, GCP, or Azure cloud account to check for compliance
           misconfigurations.
         </p>
-        <div className="flex flex-col">
+        <div className="flex flex-col dark:text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div
-                key={connector.label}
-                className={cx(
-                  'hover:bg-[linear-gradient(270deg,_#EBF5FF_-0.07%,_#FFFFFF_100%)]',
-                  'dark:hover:bg-[linear-gradient(270deg,_#1c2431_-0.07%,_#1f2937_100%)]',
-                )}
-              >
+              <div key={connector.label} className="dark:hover:bg-bg-hover-2">
                 <CardConnect {...connector} />
               </div>
             );
@@ -133,17 +105,17 @@ const Cloud = () => {
 const Host = () => {
   const connectors = [
     {
-      icon: LogoK8,
+      icon: <KubernetesIcon />,
       label: 'Kubernetes Clusters',
       path: ACCOUNT_CONNECTOR.KUBERNETES,
     },
     {
-      icon: LogoDocker,
+      icon: <DockerRegistryIcon />,
       label: 'Docker Container',
       path: ACCOUNT_CONNECTOR.DOCKER,
     },
     {
-      icon: LogoLinux,
+      icon: <LinuxIcon />,
       label: 'Linux Bare-Metal/VM',
       path: ACCOUNT_CONNECTOR.LINUX,
     },
@@ -151,37 +123,21 @@ const Host = () => {
 
   return (
     <>
-      <div className="py-4 items-center flex px-6">
-        <img
-          src={LogoHostConnector}
-          alt="Cloud Connector"
-          width="28"
-          height="28"
-          className="pr-2"
-        />
-        <span
-          className={`${Typography.size['2xl']} ${Typography.weight.medium} leading-[29px] dark:text-gray-50`}
-        >
-          Host
+      <div className="py-4 items-center flex px-6 gap-x-2">
+        <span className="w-6 h-6 dark:text-accent-accent">
+          <HostIcon />
         </span>
+        <span className="dark:text-text-text-and-icon text-h2">Host</span>
       </div>
       <div className="mb-4">
-        <p
-          className={`px-6 ${Typography.size.sm} ${Typography.weight.normal} leading-6 text-gray-700 dark:text-gray-400 min-h-[110px]`}
-        >
+        <p className={`px-6 text-p4 dark:text-text-text-and-icon min-h-[110px]`}>
           Connect a K8s cluster, Docker container, or Linux host to check for
           vulnerabilities, secrets, malware, and compliance misconfigurations.
         </p>
-        <div className="flex flex-col">
+        <div className="flex flex-col dark:text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div
-                key={connector.label}
-                className={cx(
-                  'hover:bg-[linear-gradient(270deg,_#EBF5FF_-0.07%,_#FFFFFF_100%)]',
-                  'dark:hover:bg-[linear-gradient(270deg,_#1c2431_-0.07%,_#1f2937_100%)]',
-                )}
-              >
+              <div key={connector.label} className="dark:hover:bg-bg-hover-2">
                 <CardConnect {...connector} />
               </div>
             );
@@ -193,52 +149,51 @@ const Host = () => {
 };
 
 const Registries = () => {
-  const { mode } = useTheme();
   const [showAll, setShowAll] = useState(false);
 
   const registriesConnectors = [
     {
-      icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
+      icon: <AwsIcon />,
       label: 'Amazon Elastic Container Registry',
       path: RegistryType.ecr,
     },
     {
-      icon: LogoAzureRegistry,
+      icon: <AzureIcon />,
       label: 'Azure Container Registry',
       path: RegistryType.azure_container_registry,
     },
     {
-      icon: LogoGoogle,
+      icon: <GoogleIcon />,
       label: 'Container Registry | Google Cloud',
       path: RegistryType.google_container_registry,
     },
     {
-      icon: LogoDocker,
+      icon: <DockerRegistryIcon />,
       label: 'Docker Container Registry',
       path: RegistryType.docker_hub,
     },
     {
-      icon: LogoAzureRegistry,
+      icon: <DockerRegistryIcon />,
       label: 'Docker Container Registry | Self Hosted',
       path: RegistryType.docker_private_registry,
     },
     {
-      icon: LogoQuay,
+      icon: <QuayRegistryIcon />,
       label: 'Quay Container Registry',
       path: RegistryType.quay,
     },
     {
-      icon: LogoHarbor,
+      icon: <HarborRegistryIcon />,
       label: 'Harbor Container Registry',
       path: RegistryType.harbor,
     },
     {
-      icon: LogoJFrog,
+      icon: <JfrogRegistryIcon />,
       label: 'Smarter Docker Registry | JFrog',
       path: RegistryType.jfrog_container_registry,
     },
     {
-      icon: LogoGoogle,
+      icon: <GoogleIcon />,
       label: 'GitLab Container Registry',
       path: RegistryType.gitlab,
     },
@@ -259,48 +214,28 @@ const Registries = () => {
 
   return (
     <>
-      <div className="py-4 items-center flex px-6">
-        <img
-          src={LogoRegistryConnector}
-          alt="Cloud Connector"
-          width="28"
-          height="28"
-          className="pr-2"
-        />
-        <span
-          className={`${Typography.size['2xl']} ${Typography.weight.medium} leading-[29px] dark:text-gray-50`}
-        >
-          Registry
+      <div className="py-4 items-center flex px-6 gap-x-2">
+        <span className="w-6 h-6 dark:text-accent-accent">
+          <RegistryIcon />
         </span>
+        <span className="dark:text-text-text-and-icon text-h2">Registry</span>
       </div>
       <div className="mb-4">
-        <p
-          className={`px-6 ${Typography.size.sm} ${Typography.weight.normal} leading-6 text-gray-700 dark:text-gray-400 min-h-[110px]`}
-        >
+        <p className="px-6 text-p4 dark:text-text-text-and-icon min-h-[110px]">
           Connect a registry to scan images for vulnerabilities.
           <br></br>
           &nbsp;
         </p>
-        <div className="flex flex-col">
+        <div className="flex flex-col dark:text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div
-                key={connector.path}
-                className={cx(
-                  'hover:bg-[linear-gradient(270deg,_#EBF5FF_-0.07%,_#FFFFFF_100%)]',
-                  'dark:hover:bg-[linear-gradient(270deg,_#1c2431_-0.07%,_#1f2937_100%)]',
-                )}
-              >
+              <div key={connector.path} className="dark:hover:bg-bg-hover-2">
                 <CardConnect {...connector} />
               </div>
             );
           })}
           {!showAll ? (
-            <Button
-              size="sm"
-              onClick={onShowAll}
-              className="bg-transparent hover:bg-transparent ml-3 mt-2"
-            >
+            <Button size="sm" onClick={onShowAll} className="ml-3 mt-2">
               +6 more
             </Button>
           ) : null}

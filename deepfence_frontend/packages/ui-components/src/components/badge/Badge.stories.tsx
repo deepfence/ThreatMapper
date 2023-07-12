@@ -1,9 +1,6 @@
 import { Meta } from '@storybook/react';
-import { useState } from 'react';
-import { HiInformationCircle } from 'react-icons/hi';
 
-import Badge, { ColorType } from '@/components/badge/Badge';
-import Button from '@/components/button/Button';
+import Badge from '@/components/badge/Badge';
 
 export default {
   title: 'Components/Badge',
@@ -15,119 +12,158 @@ export default {
 
 export const Default = {
   args: {
-    label: 'Badge sm',
+    label: 'Label',
   },
 };
 
-export const Primary = {
+export const Grey = {
   args: {
-    label: 'Badge sm',
-    color: 'primary',
+    label: 'Label',
+    color: 'grey',
+    variant: 'outlined',
   },
 };
 
+export const Purple = {
+  args: {
+    label: 'Label',
+    color: 'purple',
+  },
+};
+export const Blue = {
+  args: {
+    label: 'Label',
+    color: 'blue',
+  },
+};
+export const Orange = {
+  args: {
+    label: 'Label',
+    color: 'orange',
+  },
+};
+export const BlueLight = {
+  args: {
+    label: 'Label',
+    color: 'blueLight',
+  },
+};
+export const Pink = {
+  args: {
+    label: 'Label',
+    color: 'pink',
+  },
+};
 export const Success = {
   args: {
-    label: 'Badge sm',
+    label: 'Label',
     color: 'success',
+    variant: 'filled',
   },
 };
-
-export const Danger = {
+export const Info = {
   args: {
-    label: 'Badge sm',
-    color: 'danger',
+    label: 'Label',
+    color: 'info',
+    variant: 'filled',
   },
 };
-
-export const MediumDanger = {
+export const Warning = {
   args: {
-    label: 'Badge sm',
-    color: 'danger',
-    size: 'lg',
+    label: 'Label',
+    color: 'warning',
+    variant: 'filled',
+  },
+};
+export const Error = {
+  args: {
+    label: 'Label',
+    color: 'error',
+    variant: 'filled',
+  },
+};
+export const GreyBadge = {
+  args: {
+    label: '90+',
+    size: 'small',
+    color: 'grey',
+    variant: 'filled',
   },
 };
 
-export const WithCloseAction = () => {
-  const dummy = [
-    {
-      id: 'default',
-      value: 'default',
-      label: 'Default',
-    },
-    {
-      id: 'primary',
-      value: 'primary',
-      label: 'Primary',
-    },
-    {
-      id: 'success',
-      value: 'success',
-      label: 'Success',
-    },
-    {
-      id: 'danger',
-      value: 'danger',
-      label: 'Danger',
-    },
-  ];
-  const [badges, setBadges] = useState(dummy);
-  return (
-    <>
-      <div className="flex gap-2">
-        {badges.map(({ id, label, value }, i) => (
-          <Badge
-            key={i}
-            label={label}
-            id={id}
-            value={value}
-            color={value as ColorType}
-            size="lg"
-            icon={<HiInformationCircle />}
-            isRemove={true}
-            onRemove={(badge) => {
-              const index = badges.findIndex((_badge) => _badge.id === badge.id);
-              badges.splice(index, 1);
-              setBadges([...badges]);
-            }}
-          />
-        ))}
-      </div>
-      <div className="mt-5">
-        <Button size="xs" outline onClick={() => setBadges(dummy)}>
-          Reset remove
-        </Button>
-      </div>
-    </>
-  );
+export const PurpleBadge = {
+  args: {
+    label: '90+',
+    size: 'small',
+    color: 'purple',
+    variant: 'filled',
+  },
 };
+export const BlueBadge = {
+  args: {
+    label: '90+',
+    size: 'small',
+    color: 'blue',
 
-export const CustomColor = () => {
-  const dummy = [
-    {
-      id: 'default',
-      value: 'default',
-      label: 'Default',
-    },
-  ];
-  const [badges] = useState(dummy);
-  return (
-    <>
-      <div className="flex gap-2">
-        {badges.map(({ id, label, value }, i) => (
-          <Badge
-            key={i}
-            label={label}
-            id={id}
-            value={value}
-            color={value as ColorType}
-            size="lg"
-            icon={<HiInformationCircle />}
-            isRemove={true}
-            className={'bg-lime-700 text-teal-300'}
-          />
-        ))}
-      </div>
-    </>
-  );
+    variant: 'filled',
+  },
+};
+export const OrangeBadge = {
+  args: {
+    label: '90+',
+    size: 'small',
+    color: 'orange',
+
+    variant: 'filled',
+  },
+};
+export const BlueLightBadge = {
+  args: {
+    label: '90+',
+    size: 'small',
+    color: 'blueLight',
+    variant: 'filled',
+  },
+};
+export const PinkBadge = {
+  args: {
+    label: '90+',
+    size: 'small',
+    color: 'pink',
+    variant: 'filled',
+  },
+};
+export const SuccessBadge = {
+  args: {
+    label: '90+',
+    size: 'small',
+    color: 'success',
+    variant: 'filled',
+  },
+};
+export const InfoBadge = {
+  args: {
+    label: '90+',
+    size: 'small',
+    color: 'info',
+
+    variant: 'filled',
+  },
+};
+export const WarningBadge = {
+  args: {
+    label: '90+',
+    size: 'small',
+    color: 'warning',
+    variant: 'filled',
+  },
+};
+export const ErrorBadge = {
+  args: {
+    label: '90+',
+    size: 'small',
+    color: 'error',
+
+    variant: 'filled',
+  },
 };

@@ -24,12 +24,6 @@ export interface IngestersCompliance {
      * @type {string}
      * @memberof IngestersCompliance
      */
-    timestamp?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersCompliance
-     */
     compliance_check_type?: string;
     /**
      * 
@@ -37,12 +31,6 @@ export interface IngestersCompliance {
      * @memberof IngestersCompliance
      */
     description?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof IngestersCompliance
-     */
-    masked?: boolean;
     /**
      * 
      * @type {string}
@@ -148,10 +136,8 @@ export function IngestersComplianceFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
-        'timestamp': !exists(json, '@timestamp') ? undefined : json['@timestamp'],
         'compliance_check_type': !exists(json, 'compliance_check_type') ? undefined : json['compliance_check_type'],
         'description': !exists(json, 'description') ? undefined : json['description'],
-        'masked': !exists(json, 'masked') ? undefined : json['masked'],
         'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
         'node_type': !exists(json, 'node_type') ? undefined : json['node_type'],
         'remediation_ansible': !exists(json, 'remediation_ansible') ? undefined : json['remediation_ansible'],
@@ -178,10 +164,8 @@ export function IngestersComplianceToJSON(value?: IngestersCompliance | null): a
     }
     return {
         
-        '@timestamp': value.timestamp,
         'compliance_check_type': value.compliance_check_type,
         'description': value.description,
-        'masked': value.masked,
         'node_id': value.node_id,
         'node_type': value.node_type,
         'remediation_ansible': value.remediation_ansible,

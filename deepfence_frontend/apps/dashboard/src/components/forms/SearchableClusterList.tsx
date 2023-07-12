@@ -1,93 +1,64 @@
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
-import { useEffect, useState } from 'react';
-import { Combobox, ComboboxOption } from 'ui-components';
+import { useEffect, useMemo, useState } from 'react';
+import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
-import {
-  SearchClustersLoaderDataType,
-  useGetClustersList,
-} from '@/features/common/data-component/searchClustersApiLoader';
+import { queries } from '@/queries';
+
 const PAGE_SIZE = 15;
 export const SearchableClusterList = ({
   onChange,
+  onClearAll,
   defaultSelectedClusters,
-  reset,
-  valueKey = 'clusterId',
+  valueKey = 'nodeId',
   active,
+  triggerVariant,
 }: {
   onChange?: (value: string[]) => void;
+  onClearAll?: () => void;
   defaultSelectedClusters?: string[];
-  reset?: boolean;
-  valueKey?: 'clusterName' | 'clusterId';
+  valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
+  triggerVariant?: 'select' | 'button';
 }) => {
-  const [searchState, setSearchState] = useState<{
-    searchText: string;
-    size: number;
-    clustersList: SearchClustersLoaderDataType['clusters'];
-    hasNext: boolean;
-  }>({
-    searchText: '',
-    size: PAGE_SIZE,
-    clustersList: [],
-    hasNext: false,
-  });
+  const [searchText, setSearchText] = useState('');
 
   const [selectedClusters, setSelectedClusters] = useState<string[]>(
     defaultSelectedClusters ?? [],
   );
 
-  const { clusters, hasNext } = useGetClustersList({
-    searchText: searchState.searchText,
-    size: searchState.size,
-    active,
-  });
+  const isSelectVariantType = useMemo(() => {
+    return triggerVariant === 'select';
+  }, [triggerVariant]);
 
   useEffect(() => {
     setSelectedClusters(defaultSelectedClusters ?? []);
   }, [defaultSelectedClusters]);
 
-  useEffect(() => {
-    if (reset) {
-      setSearchState({
-        searchText: '',
-        size: PAGE_SIZE,
-        clustersList: [],
-        hasNext: false,
-      });
-      setSelectedClusters([]);
-    }
-  }, [reset]);
-
-  useEffect(() => {
-    if (clusters.length > 0) {
-      setSearchState((prev) => {
-        return {
-          ...prev,
-          clustersList: clusters,
-          hasNext,
-        };
-      });
-    }
-  }, [clusters]);
+  // TODO convert to useSuspenseInfiniteQuery, otherwise there will be problems with
+  // error handling
+  const { data, isFetching, hasNextPage, fetchNextPage } = useInfiniteQuery({
+    ...queries.search.clusters({
+      size: PAGE_SIZE,
+      searchText,
+      active,
+    }),
+    keepPreviousData: true,
+    getNextPageParam: (lastPage, allPages) => {
+      return allPages.length * PAGE_SIZE;
+    },
+    getPreviousPageParam: (firstPage, allPages) => {
+      if (!allPages.length) return 0;
+      return (allPages.length - 1) * PAGE_SIZE;
+    },
+  });
 
   const searchCluster = debounce((query) => {
-    setSearchState({
-      searchText: query,
-      size: PAGE_SIZE,
-      clustersList: [],
-      hasNext: false,
-    });
+    setSearchText(query);
   }, 1000);
 
   const onEndReached = () => {
-    if (clusters.length > 0) {
-      setSearchState((prev) => {
-        return {
-          ...prev,
-          size: prev.size + PAGE_SIZE,
-        };
-      });
-    }
+    if (hasNextPage) fetchNextPage();
   };
 
   return (
@@ -100,32 +71,43 @@ export const SearchableClusterList = ({
         value={selectedClusters.length}
       />
       <Combobox
-        multiple
-        sizing="sm"
-        label="Select Cluster"
-        placeholder="Select Cluster"
+        startIcon={
+          isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+        }
         name="clusterFilter"
+        triggerVariant={triggerVariant || 'button'}
+        label={isSelectVariantType ? 'Cluster' : undefined}
+        getDisplayValue={() =>
+          isSelectVariantType && selectedClusters.length > 0
+            ? `${selectedClusters.length} selected`
+            : null
+        }
+        placeholder="Select cluster"
+        multiple
         value={selectedClusters}
-        onChange={(value) => {
-          setSelectedClusters(value);
-          onChange?.(value);
-        }}
-        getDisplayValue={() => {
-          return searchState.searchText;
+        onChange={(values) => {
+          setSelectedClusters(values);
+          onChange?.(values);
         }}
         onQueryChange={searchCluster}
+        clearAllElement="Clear"
+        onClearAll={onClearAll}
         onEndReached={onEndReached}
       >
-        {searchState.clustersList.map((cluster, index) => {
-          return (
-            <ComboboxOption
-              key={`${cluster.clusterId}-${index}`}
-              value={cluster[valueKey]}
-            >
-              {cluster.clusterName}
-            </ComboboxOption>
-          );
-        })}
+        {data?.pages
+          .flatMap((page) => {
+            return page.clusters;
+          })
+          .map((cluster, index) => {
+            return (
+              <ComboboxOption
+                key={`${cluster.nodeId}-${index}`}
+                value={cluster[valueKey]}
+              >
+                {cluster.nodeName}
+              </ComboboxOption>
+            );
+          })}
       </Combobox>
     </>
   );

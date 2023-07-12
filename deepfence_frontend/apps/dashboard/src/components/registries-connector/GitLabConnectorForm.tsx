@@ -1,5 +1,4 @@
-import { HiViewGridAdd } from 'react-icons/hi';
-import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
+import { TextInput } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
@@ -22,89 +21,65 @@ sample json
 export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormProps) => {
   return (
     <>
-      <Stepper>
-        <Step indicator={<HiViewGridAdd />} title="Gitlab Container Registry">
-          <div className={`${Typography.size.sm} dark:text-gray-200`}>
-            Using Certificate based Docker client Authentication? A custom certificate is
-            configured by creating a directory under /etc/docker/certs.d on Deepfence
-            console machine, using the same name as the registry&apos;s hostname provided
-            above. All *.crt files are added to this directory as CA roots &nbsp;
-            <DFLink
-              href={`https://docs.docker.com/engine/security/certificates/`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              reading our documentation
-            </DFLink>
-            .
-          </div>
-        </Step>
-        <Step indicator="1" title="Enter Information">
-          <Card className="w-full relative p-5 mt-2 flex flex-col gap-y-4">
-            <TextInput
-              className="w-3/4 min-[200px] max-w-xs"
-              label="Registry Name"
-              type={'text'}
-              sizing="sm"
-              name="name"
-              placeholder="Registry Name"
-              color={fieldErrors?.['name'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['name']}
-            />
-            <TextInput
-              className="w-3/4 min-[200px] max-w-xs"
-              label="Gitlab Server URL"
-              hint="e.g. https://gitlab.example.com"
-              type={'text'}
-              sizing="sm"
-              name="non_secret.gitlab_server_url"
-              placeholder="Gilab Server URL"
-              color={fieldErrors?.['gitlab_server_url'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['gitlab_server_url']}
-            />
-            <TextInput
-              className="w-3/4 min-[200px] max-w-xs"
-              label="GitLab Registry URL"
-              hint="e.g. registry.gitlab.example.com (for registries configured under its own domain) or gitlab.example.com:5050 (for registries configured under an existing gitlab domain, gitlab.example.com)"
-              type={'text'}
-              sizing="sm"
-              name="non_secret.gitlab_registry_url"
-              placeholder="GitLab Registry URL"
-              color={fieldErrors?.['gitlab_registry_url'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['gitlab_registry_url']}
-            />
-            <TextInput
-              className="w-3/4 min-[200px] max-w-xs"
-              label="Gitlab Access Token"
-              type={'password'}
-              sizing="sm"
-              name="secret.gitlab_access_token"
-              placeholder="Gitlab Access Token"
-              color={fieldErrors?.['gitlab_access_token'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['gitlab_access_token']}
-            />
-            <div className="text-xs">
-              <div className="text-sm">
-                Using Certificate based Docker client Authentication?{' '}
-              </div>
-              <div>
-                A custom certificate is configured by creating a directory under
-                /etc/docker/certs.d on Deepfence console machine, using the same name as
-                the registry&apos;s hostname provided above. All *.crt files are added to
-                this directory as CA roots.
-                <DFLink
-                  href="https://docs.docker.com/engine/security/certificates/"
-                  target="_blank"
-                >
-                  https://docs.docker.com/engine/security/certificates/
-                </DFLink>{' '}
-              </div>
-              <div className="mt-2">Supported Versions: 11.8 and above</div>
-            </div>
-            {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
-          </Card>
-        </Step>
-      </Stepper>
+      <div className="text-p4 dark:text-text-input-value">
+        Using Certificate based Docker client Authentication? A custom certificate is
+        configured by creating a directory under /etc/docker/certs.d on Deepfence console
+        machine, using the same name as the registry&apos;s hostname provided above. All
+        *.crt files are added to this directory as CA roots &nbsp;
+        <DFLink
+          href={`https://docs.docker.com/engine/security/certificates/`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          reading our documentation
+        </DFLink>
+        .
+      </div>
+      <p className="mt-6 text-p1 dark:text-text-input-value">Enter Information</p>
+      <div className="w-full relative mt-4 flex flex-col gap-y-8">
+        <TextInput
+          className="w-3/4 min-[200px] max-w-xs"
+          label="Registry Name"
+          type={'text'}
+          name="name"
+          placeholder="Registry Name"
+          color={fieldErrors?.['name'] ? 'error' : 'default'}
+          helperText={fieldErrors?.['name']}
+        />
+        <TextInput
+          className="w-3/4 min-[200px] max-w-xs"
+          label="Gitlab Server URL"
+          info="e.g. https://gitlab.example.com"
+          type={'text'}
+          name="non_secret.gitlab_server_url"
+          placeholder="Gilab Server URL"
+          color={fieldErrors?.['gitlab_server_url'] ? 'error' : 'default'}
+          helperText={fieldErrors?.['gitlab_server_url']}
+        />
+        <TextInput
+          className="w-3/4 min-[200px] max-w-xs"
+          label="GitLab Registry URL"
+          info="e.g. registry.gitlab.example.com (for registries configured under its own domain) or gitlab.example.com:5050 (for registries configured under an existing gitlab domain, gitlab.example.com)"
+          type={'text'}
+          name="non_secret.gitlab_registry_url"
+          placeholder="GitLab Registry URL"
+          color={fieldErrors?.['gitlab_registry_url'] ? 'error' : 'default'}
+          helperText={fieldErrors?.['gitlab_registry_url']}
+        />
+        <TextInput
+          className="w-3/4 min-[200px] max-w-xs"
+          label="Gitlab Access Token"
+          type={'password'}
+          name="secret.gitlab_access_token"
+          placeholder="Gitlab Access Token"
+          color={fieldErrors?.['gitlab_access_token'] ? 'error' : 'default'}
+          helperText={fieldErrors?.['gitlab_access_token']}
+        />
+        <div className="mt-2 text-p7 dark:text-text-input-value">
+          Supported Versions: 11.8 and above
+        </div>
+        {errorMessage && <p className="dark:text-status-error text-p7">{errorMessage}</p>}
+      </div>
     </>
   );
 };

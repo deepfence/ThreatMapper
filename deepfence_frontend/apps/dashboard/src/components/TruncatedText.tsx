@@ -1,25 +1,26 @@
-import { useEffect, useRef, useState } from 'react';
+import { MouseEventHandler, useState } from 'react';
 import { Tooltip } from 'ui-components';
 
 export const TruncatedText = ({ text }: { text: string }) => {
-  const ref = useRef<HTMLDivElement>(null);
   const [showTooltip, setShowTooltip] = useState(false);
 
-  useEffect(() => {
-    if (ref.current && ref.current.scrollWidth > ref.current.clientWidth) {
+  const handleShouldShow: MouseEventHandler<HTMLDivElement> = ({ currentTarget }) => {
+    if (currentTarget.scrollWidth > currentTarget.clientWidth) {
       setShowTooltip(true);
     }
-  }, [text]);
+  };
 
   return (
-    <div ref={ref} className="w-full truncate">
-      {showTooltip ? (
-        <Tooltip content={text} triggerAsChild>
-          <div className="truncate break-words">{text}</div>
-        </Tooltip>
-      ) : (
-        text
-      )}
-    </div>
+    <Tooltip content={text} triggerAsChild open={showTooltip}>
+      <div
+        className="w-full truncate"
+        onMouseEnter={handleShouldShow}
+        onMouseLeave={() => {
+          setShowTooltip(false);
+        }}
+      >
+        {text}
+      </div>
+    </Tooltip>
   );
 };

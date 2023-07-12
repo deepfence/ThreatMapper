@@ -1,179 +1,339 @@
-import { toNumber } from 'lodash-es';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { useIsFetching } from '@tanstack/react-query';
+import { capitalize } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
-import { IconContext } from 'react-icons';
-import { HiChevronRight } from 'react-icons/hi';
+import { useSearchParams } from 'react-router-dom';
 import {
-  LoaderFunctionArgs,
-  useLoaderData,
-  useNavigation,
-  useSearchParams,
-} from 'react-router-dom';
-import {
+  Badge,
   Breadcrumb,
   BreadcrumbLink,
+  Button,
   CircleSpinner,
+  Combobox,
+  ComboboxOption,
   createColumnHelper,
   SortingState,
   Table,
   TableSkeleton,
 } from 'ui-components';
 
-import { getSearchApiClient } from '@/api/api';
-import { ModelScanInfo, SearchSearchScanReq } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { FilterBadge } from '@/components/filters/FilterBadge';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
+import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
+import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { SearchableImageList } from '@/components/forms/SearchableImageList';
+import { FilterIcon } from '@/components/icons/common/Filter';
+import { ScrollLine } from '@/components/icons/common/ScrollLine';
+import { TimesIcon } from '@/components/icons/common/Times';
+import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { TruncatedText } from '@/components/TruncatedText';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
-import { SbomModal } from '@/features/vulnerabilities/api/sbomApiLoader';
-import { apiWrapper } from '@/utils/api';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
-import { DFAwait } from '@/utils/suspense';
+import { SbomModal } from '@/features/vulnerabilities/components/SBOMModal';
+import { queries } from '@/queries';
+import { ScanTypeEnum } from '@/types/common';
+import { VulnerabilityScanGroupedStatus } from '@/utils/scan';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
-const PAGE_SIZE = 15;
+const DEFAULT_PAGE_SIZE = 10;
 
-async function getScans(searchParams: URLSearchParams): Promise<{
-  scans: ModelScanInfo[];
-  currentPage: number;
-  totalRows: number;
-}> {
-  let page = toNumber(searchParams.get('page') ?? '0');
-  page = isFinite(page) && !isNaN(page) && page > 0 ? page : 0;
-  const requestFilters: SearchSearchScanReq = {
-    node_filters: {
-      filters: {
-        contains_filter: {
-          filter_in: {},
-        },
-        match_filter: { filter_in: {} },
-        order_filter: {
-          order_fields: [],
-        },
-        compare_filter: null,
-      },
-      in_field_filter: null,
-      window: {
-        offset: 0,
-        size: 0,
-      },
-    },
-    scan_filters: {
-      filters: {
-        contains_filter: {
-          filter_in: {
-            status: ['COMPLETE'],
-          },
-        },
-        match_filter: {
-          filter_in: {},
-        },
-        order_filter: {
-          order_fields: [
-            {
-              field_name: 'updated_at',
-              descending: true,
-            },
-          ],
-        },
-        compare_filter: null,
-      },
-      in_field_filter: null,
-      window: {
-        offset: 0,
-        size: 0,
-      },
-    },
-    window: {
-      offset: page * PAGE_SIZE,
-      size: PAGE_SIZE,
-    },
-  };
-  const order = getOrderFromSearchParams(searchParams);
-  if (order) {
-    requestFilters.node_filters.filters.order_filter.order_fields = [
-      {
-        field_name: order.sortBy,
-        descending: order.descending,
-      },
-    ];
-  }
-  const searchVulnerabilityScanApi = apiWrapper({
-    fn: getSearchApiClient().searchVulnerabilityScan,
+function useVulnerabilityScanList() {
+  const [searchParams] = useSearchParams();
+  return useSuspenseQuery({
+    ...queries.vulnerability.scanList({
+      vulnerabilityScanStatus: VulnerabilityScanGroupedStatus.complete,
+      pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
+      clusters: searchParams.getAll('clusters'),
+      containers: searchParams.getAll('containers'),
+      hosts: searchParams.getAll('hosts'),
+      images: searchParams.getAll('containerImages'),
+      languages: [],
+      nodeTypes: searchParams.getAll('nodeType').length
+        ? searchParams.getAll('nodeType')
+        : ['container_image', 'container', 'host'],
+      page: parseInt(searchParams.get('page') ?? '0', 10),
+      order: getOrderFromSearchParams(searchParams),
+    }),
+    keepPreviousData: true,
   });
-  const searchVulnerabilityScanResponse = await searchVulnerabilityScanApi({
-    searchSearchScanReq: requestFilters,
-  });
-  if (!searchVulnerabilityScanResponse.ok) {
-    throw new Error('unknown response');
-  }
-
-  const searchVulnerabilityScanCountApi = apiWrapper({
-    fn: getSearchApiClient().searchVulnerabilityScanCount,
-  });
-  const searchVulnerabilityScanCountResponse = await searchVulnerabilityScanCountApi({
-    searchSearchScanReq: {
-      ...requestFilters,
-      window: {
-        ...requestFilters.window,
-        size: 10 * requestFilters.window.size,
-      },
-    },
-  });
-  if (!searchVulnerabilityScanCountResponse.ok) {
-    throw searchVulnerabilityScanCountResponse.error;
-  }
-
-  return {
-    scans: searchVulnerabilityScanResponse.value,
-    currentPage: page,
-    totalRows: page * PAGE_SIZE + searchVulnerabilityScanCountResponse.value.count,
-  };
 }
 
-type LoaderData = {
-  scans: Awaited<ReturnType<typeof getScans>>;
-};
-
-const loader = async ({
-  request,
-}: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderData>> => {
-  const searchParams = new URL(request.url).searchParams;
-  return typedDefer({
-    scans: getScans(searchParams),
-  });
-};
-
 const RuntimeBom = () => {
-  const loaderData = useLoaderData() as LoaderData;
-  const [_, setSearchParams] = useSearchParams();
-  const navigation = useNavigation();
+  const isFetching = useIsFetching({
+    queryKey: queries.vulnerability.scanList._def,
+  });
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  return (
+    <div>
+      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+        <Breadcrumb>
+          <BreadcrumbLink asChild icon={<VulnerabilityIcon />} isLink>
+            <DFLink to={'/vulnerability'} unstyled>
+              Vulnerabilities
+            </DFLink>
+          </BreadcrumbLink>
+          <BreadcrumbLink icon={<ScrollLine />}>
+            <span className="inherit cursor-auto">Runtime BOM</span>
+          </BreadcrumbLink>
+        </Breadcrumb>
+        <div className="ml-2 flex items-center">
+          {isFetching ? <CircleSpinner size="sm" /> : null}
+        </div>
+      </div>
+
+      <div className="mx-4">
+        <Button
+          variant="flat"
+          className="ml-auto py-2"
+          startIcon={<FilterIcon />}
+          endIcon={
+            getAppliedFiltersCount(searchParams) > 0 ? (
+              <Badge
+                label={String(getAppliedFiltersCount(searchParams))}
+                variant="filled"
+                size="small"
+                color="blue"
+              />
+            ) : null
+          }
+          size="sm"
+          onClick={() => {
+            setFiltersExpanded((prev) => !prev);
+          }}
+        >
+          Filter
+        </Button>
+        {filtersExpanded ? <Filters /> : null}
+        <Suspense fallback={<TableSkeleton columns={11} rows={15} />}>
+          <ScansTable />
+        </Suspense>
+      </div>
+    </div>
+  );
+};
+
+const FILTER_SEARCHPARAMS: Record<string, string> = {
+  nodeType: 'Node Type',
+  containerImages: 'Container image',
+  containers: 'Container',
+  hosts: 'Host',
+  clusters: 'Cluster',
+};
+
+const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
+  return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
+    return prev + searchParams.getAll(curr).length;
+  }, 0);
+};
+const Filters = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [nodeType, setNodeType] = useState('');
+
+  const appliedFilterCount = getAppliedFiltersCount(searchParams);
+  return (
+    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+      <div className="flex gap-2">
+        <Combobox
+          getDisplayValue={() => FILTER_SEARCHPARAMS['nodeType']}
+          multiple
+          value={searchParams.getAll('nodeType')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('nodeType');
+              values.forEach((value) => {
+                prev.append('nodeType', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onQueryChange={(query) => {
+            setNodeType(query);
+          }}
+          clearAllElement="Clear"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('nodeType');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        >
+          {['host', 'container', 'container_image']
+            .filter((item) => {
+              if (!nodeType.length) return true;
+              return item.includes(nodeType.toLowerCase());
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item} value={item}>
+                  {capitalize(item)}
+                </ComboboxOption>
+              );
+            })}
+        </Combobox>
+
+        <SearchableImageList
+          scanType={ScanTypeEnum.VulnerabilityScan}
+          defaultSelectedImages={searchParams.getAll('containerImages')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('containerImages');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('containerImages');
+              value.forEach((containerImage) => {
+                prev.append('containerImages', containerImage);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
+        <SearchableContainerList
+          scanType={ScanTypeEnum.VulnerabilityScan}
+          defaultSelectedContainers={searchParams.getAll('containers')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('containers');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('containers');
+              value.forEach((container) => {
+                prev.append('containers', container);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
+        <SearchableHostList
+          scanType={ScanTypeEnum.VulnerabilityScan}
+          defaultSelectedHosts={searchParams.getAll('hosts')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('hosts');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('hosts');
+              value.forEach((host) => {
+                prev.append('hosts', host);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
+        <SearchableClusterList
+          defaultSelectedClusters={searchParams.getAll('clusters')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              value.forEach((cluster) => {
+                prev.append('clusters', cluster);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
+      </div>
+      {appliedFilterCount > 0 ? (
+        <div className="flex gap-2.5 mt-4 flex-wrap items-center">
+          {Array.from(searchParams)
+            .filter(([key]) => {
+              return Object.keys(FILTER_SEARCHPARAMS).includes(key);
+            })
+            .map(([key, value]) => {
+              return (
+                <FilterBadge
+                  key={`${key}-${value}`}
+                  onRemove={() => {
+                    setSearchParams((prev) => {
+                      const existingValues = prev.getAll(key);
+                      prev.delete(key);
+                      existingValues.forEach((existingValue) => {
+                        if (existingValue !== value) prev.append(key, existingValue);
+                      });
+                      prev.delete('page');
+                      return prev;
+                    });
+                  }}
+                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                />
+              );
+            })}
+          <Button
+            variant="flat"
+            color="default"
+            startIcon={<TimesIcon />}
+            onClick={() => {
+              setSearchParams((prev) => {
+                Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                  prev.delete(key);
+                });
+                prev.delete('page');
+                return prev;
+              });
+            }}
+            size="sm"
+          >
+            Clear all
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
+const ScansTable = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { data } = useVulnerabilityScanList();
+  const [sort, setSort] = useSortingState();
+
   const [selectedNode, setSelectedNode] = useState<{
     nodeName: string;
     scanId: string;
   } | null>(null);
-  const [sort, setSort] = useSortingState();
 
   const columns = useMemo(() => {
-    const columnHelper = createColumnHelper<LoaderData['scans']['scans'][number]>();
+    const columnHelper = createColumnHelper<NonNullable<typeof data>['scans'][number]>();
     const columns = [
       columnHelper.accessor('node_type', {
-        enableSorting: true,
-        sortDescFirst: false,
+        enableSorting: false,
         cell: (info) => {
           return (
-            <div className="flex items-center gap-x-2">
-              <div className="bg-blue-100 dark:bg-blue-500/10 p-1.5 rounded-lg">
-                <IconContext.Provider
-                  value={{ className: 'w-4 h-4 text-blue-500 dark:text-blue-400' }}
-                >
-                  {IconMapForNodeType[info.getValue()]}
-                </IconContext.Provider>
+            <div className="flex items-center gap-x-2 capitalize">
+              <div className="rounded-lg w-4 h-4 shrink-0">
+                {IconMapForNodeType[info.getValue()]}
               </div>
-              <span className="flex-1 truncate capitalize">
-                {info.getValue()?.replaceAll('_', ' ')}
-              </span>
+              <TruncatedText text={info.getValue()?.replaceAll('_', ' ') ?? ''} />
             </div>
           );
         },
-        header: () => 'Type',
+        header: () => <TruncatedText text="Type" />,
         minSize: 50,
         size: 100,
         maxSize: 200,
@@ -188,7 +348,7 @@ const RuntimeBom = () => {
                   e.preventDefault();
                   setSelectedNode({
                     scanId: info.row.original.scan_id,
-                    nodeName: info.row.original.node_id,
+                    nodeName: info.row.original.node_name,
                   });
                 }}
                 href="#"
@@ -207,81 +367,64 @@ const RuntimeBom = () => {
 
     return columns;
   }, []);
-
   return (
-    <div>
-      <div className="flex px-2 items-center w-full shadow bg-white dark:bg-gray-800 h-10">
-        <Breadcrumb separator={<HiChevronRight />} transparent>
-          <BreadcrumbLink>
-            <DFLink to={'/vulnerability'}>Vulnerabilities</DFLink>
-          </BreadcrumbLink>
-          <BreadcrumbLink>
-            <span className="inherit cursor-auto">Runtime BOM</span>
-          </BreadcrumbLink>
-        </Breadcrumb>
-
-        <span className="ml-2">
-          {navigation.state === 'loading' ? <CircleSpinner size="xs" /> : null}
-        </span>
-      </div>
-      <div className="m-2">
-        <Suspense fallback={<TableSkeleton columns={2} rows={15} size={'md'} />}>
-          <DFAwait resolve={loaderData.scans}>
-            {(resolvedData: LoaderData['scans']) => {
-              return (
-                <Table
-                  size="sm"
-                  data={resolvedData.scans}
-                  columns={columns}
-                  enablePagination
-                  manualPagination
-                  enableColumnResizing
-                  totalRows={resolvedData.totalRows}
-                  pageSize={PAGE_SIZE}
-                  pageIndex={resolvedData.currentPage}
-                  onPaginationChange={(updaterOrValue) => {
-                    let newPageIndex = 0;
-                    if (typeof updaterOrValue === 'function') {
-                      newPageIndex = updaterOrValue({
-                        pageIndex: resolvedData.currentPage,
-                        pageSize: PAGE_SIZE,
-                      }).pageIndex;
-                    } else {
-                      newPageIndex = updaterOrValue.pageIndex;
-                    }
-                    setSearchParams((prev) => {
-                      prev.set('page', String(newPageIndex));
-                      return prev;
-                    });
-                  }}
-                  enableSorting
-                  manualSorting
-                  sortingState={sort}
-                  onSortingChange={(updaterOrValue) => {
-                    let newSortState: SortingState = [];
-                    if (typeof updaterOrValue === 'function') {
-                      newSortState = updaterOrValue(sort);
-                    } else {
-                      newSortState = updaterOrValue;
-                    }
-                    setSearchParams((prev) => {
-                      if (!newSortState.length) {
-                        prev.delete('sortby');
-                        prev.delete('desc');
-                      } else {
-                        prev.set('sortby', String(newSortState[0].id));
-                        prev.set('desc', String(newSortState[0].desc));
-                      }
-                      return prev;
-                    });
-                    setSort(newSortState);
-                  }}
-                />
-              );
-            }}
-          </DFAwait>
-        </Suspense>
-      </div>
+    <>
+      <Table
+        data={data.scans}
+        columns={columns}
+        enablePagination
+        manualPagination
+        enableColumnResizing
+        approximatePagination
+        totalRows={data.totalRows}
+        pageSize={parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE))}
+        pageIndex={data.currentPage}
+        onPaginationChange={(updaterOrValue) => {
+          let newPageIndex = 0;
+          if (typeof updaterOrValue === 'function') {
+            newPageIndex = updaterOrValue({
+              pageIndex: data.currentPage,
+              pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
+            }).pageIndex;
+          } else {
+            newPageIndex = updaterOrValue.pageIndex;
+          }
+          setSearchParams((prev) => {
+            prev.set('page', String(newPageIndex));
+            return prev;
+          });
+        }}
+        enableSorting
+        manualSorting
+        sortingState={sort}
+        onSortingChange={(updaterOrValue) => {
+          let newSortState: SortingState = [];
+          if (typeof updaterOrValue === 'function') {
+            newSortState = updaterOrValue(sort);
+          } else {
+            newSortState = updaterOrValue;
+          }
+          setSearchParams((prev) => {
+            if (!newSortState.length) {
+              prev.delete('sortby');
+              prev.delete('desc');
+            } else {
+              prev.set('sortby', String(newSortState[0].id));
+              prev.set('desc', String(newSortState[0].desc));
+            }
+            return prev;
+          });
+          setSort(newSortState);
+        }}
+        enablePageResize
+        onPageResize={(newSize) => {
+          setSearchParams((prev) => {
+            prev.set('size', String(newSize));
+            prev.delete('page');
+            return prev;
+          });
+        }}
+      />
       {selectedNode ? (
         <SbomModal
           scanId={selectedNode.scanId}
@@ -291,11 +434,10 @@ const RuntimeBom = () => {
           }}
         />
       ) : null}
-    </div>
+    </>
   );
 };
 
 export const module = {
-  loader,
   element: <RuntimeBom />,
 };

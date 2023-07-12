@@ -1,15 +1,12 @@
 import * as SeparatorPrimitive from '@radix-ui/react-separator';
-import cx from 'classnames';
 import { FC } from 'react';
-import { twMerge } from 'tailwind-merge';
+import { cn } from 'tailwind-preset';
 
-type SeparatorProps = {
+interface ISeparatorProps extends SeparatorPrimitive.SeparatorProps {
   className?: string;
-};
-const Separator: FC<SeparatorProps> = ({
-  className = 'bg-gray-200 dark:bg-gray-700 h-px',
-}) => (
-  <SeparatorPrimitive.Root className={twMerge(cx(className))}></SeparatorPrimitive.Root>
+}
+const Separator: FC<ISeparatorProps> = ({ className = '' }) => (
+  <SeparatorPrimitive.Root className={cn('dark:bg-bg-left-nav', className)} />
 );
 
 Separator.displayName = 'Separator';

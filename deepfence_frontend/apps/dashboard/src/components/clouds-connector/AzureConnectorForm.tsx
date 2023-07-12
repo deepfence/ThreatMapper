@@ -1,20 +1,29 @@
-import { HiViewGridAdd } from 'react-icons/hi';
-import { Step, Stepper, Typography } from 'ui-components';
+import { Step, Stepper } from 'ui-components';
+
+import { DFLink } from '@/components/DFLink';
+import { InfoIcon } from '@/components/icons/common/Info';
 
 export const AzureConnectorForm = () => {
   return (
     <Stepper>
-      <Step indicator={<HiViewGridAdd />} title="Terraform">
-        <div className={`${Typography.size.sm} dark:text-gray-200`}>
+      <Step
+        indicator={
+          <span className="w-4 h-4">
+            <InfoIcon />
+          </span>
+        }
+        title="Terraform"
+      >
+        <div className="text-p7 dark:text-text-text-and-icon">
           Connect to your Azure Cloud Account via Terraform. Find out more information by{' '}
-          <a
-            href={`https://community.deepfence.io/threatmapper/docs/v2.0/cloudscanner/azure`}
+          <DFLink
+            href={`https://docs.deepfence.io/threatmapper/docs/v2.0/cloudscanner/azure`}
             target="_blank"
             rel="noreferrer"
-            className="text-blue-600 dark:text-blue-500 mt-2"
+            className="mt-2"
           >
             reading our documentation
-          </a>
+          </DFLink>
           .
         </div>
       </Step>
