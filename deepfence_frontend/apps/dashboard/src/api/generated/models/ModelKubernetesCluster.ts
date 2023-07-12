@@ -28,6 +28,12 @@ import {
 export interface ModelKubernetesCluster {
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelKubernetesCluster
+     */
+    agent_running: boolean;
+    /**
+     * 
      * @type {Array<ModelHost>}
      * @memberof ModelKubernetesCluster
      */
@@ -51,6 +57,7 @@ export interface ModelKubernetesCluster {
  */
 export function instanceOfModelKubernetesCluster(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "agent_running" in value;
     isInstance = isInstance && "hosts" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
@@ -68,6 +75,7 @@ export function ModelKubernetesClusterFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
+        'agent_running': json['agent_running'],
         'hosts': (json['hosts'] === null ? null : (json['hosts'] as Array<any>).map(ModelHostFromJSON)),
         'node_id': json['node_id'],
         'node_name': json['node_name'],
@@ -83,6 +91,7 @@ export function ModelKubernetesClusterToJSON(value?: ModelKubernetesCluster | nu
     }
     return {
         
+        'agent_running': value.agent_running,
         'hosts': (value.hosts === null ? null : (value.hosts as Array<any>).map(ModelHostToJSON)),
         'node_id': value.node_id,
         'node_name': value.node_name,

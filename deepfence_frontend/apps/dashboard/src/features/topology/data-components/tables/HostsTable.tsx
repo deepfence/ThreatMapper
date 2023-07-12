@@ -558,7 +558,7 @@ const DataTable = ({
       }),
       columnHelper.accessor('vulnerability_scan_status', {
         cell: (info) => {
-          return <ScanStatusBadge status={''} />;
+          return <ScanStatusBadge status={info.getValue()} />;
         },
         header: () => <TruncatedText text="Vulnerability scan status" />,
         minSize: 100,
