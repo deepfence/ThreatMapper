@@ -406,6 +406,9 @@ func LinkCloudResources(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:CloudResource)
 		WHERE not (n) <-[:HOSTS]- (:CloudRegion)
+		AND NOT n.cloud_provider IS NULL
+		AND NOT n.cloud_region IS NULL
+		AND NOT n.account_id IS NULL
 		WITH n LIMIT 50000
 		MERGE (cp:CloudProvider{node_id: n.cloud_provider})
 		MERGE (cr:CloudRegion{node_id: n.cloud_region})
