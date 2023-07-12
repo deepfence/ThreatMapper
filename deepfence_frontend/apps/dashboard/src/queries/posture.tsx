@@ -227,7 +227,7 @@ export const postureQueries = createQueryKeys('posture', {
         if (benchmarkTypes.length) {
           scanResultsReq.fields_filter.contains_filter.filter_in![
             'compliance_check_type'
-          ] = benchmarkTypes.map((type) => type.toLowerCase());
+          ] = benchmarkTypes;
         }
         if (order) {
           scanResultsReq.fields_filter.order_filter.order_fields?.push({

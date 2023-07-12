@@ -665,8 +665,8 @@ const CurrentUserInfo = ({
   return (
     <div>
       <div className="flex items-center">
-        <div className="flex items-end">
-          <span className="text-2xl dark:text-gray-100 font-semibold min-w-[140px]">
+        <div className="flex items-end gap-x-4">
+          <span className="text-2xl dark:text-gray-100 font-semibold min-w-[124px]">
             {`${currentUser?.first_name || ''} ${currentUser?.last_name || ''}`}
           </span>
           <Button

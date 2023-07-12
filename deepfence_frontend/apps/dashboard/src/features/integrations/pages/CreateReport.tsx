@@ -143,7 +143,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   }
 
   if (clusterIds.length > 0) {
-    advanced_report_filters.pod_name = clusterIds as string[];
+    advanced_report_filters.kubernetes_cluster_name = clusterIds as string[];
   }
 
   if (status.length > 0) {

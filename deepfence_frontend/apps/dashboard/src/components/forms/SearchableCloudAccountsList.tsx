@@ -13,6 +13,7 @@ export type SearchableCloudAccountsListProps = {
   valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
   triggerVariant?: 'select' | 'button';
+  getDisplayValue?: (item: any) => string | null;
 };
 
 const PAGE_SIZE = 15;
@@ -24,6 +25,7 @@ export const SearchableCloudAccountsList = ({
   valueKey = 'nodeId',
   active,
   triggerVariant,
+  ...rest
 }: SearchableCloudAccountsListProps) => {
   const [searchText, setSearchText] = useState('');
 
@@ -88,6 +90,7 @@ export const SearchableCloudAccountsList = ({
         clearAllElement="Clear"
         onClearAll={onClearAll}
         onEndReached={onEndReached}
+        {...rest}
       >
         {data?.pages
           .flatMap((page) => {

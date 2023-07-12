@@ -113,6 +113,12 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
   // status
   const [selectedStatus, setSelectedStatus] = useState([]);
 
+  // to main clear state for combobox
+  const [hosts, setHosts] = useState<string[]>([]);
+  const [images, setImages] = useState<string[]>([]);
+  const [containers, setContainers] = useState<string[]>([]);
+  const [clusters, setClusters] = useState<string[]>([]);
+
   return (
     <div className="col-span-2 mt-6">
       <div className="flex dark:text-text-input-value ">
@@ -122,18 +128,48 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
         <SearchableHostList
           scanType={API_SCAN_TYPE_MAP[notificationType]}
           triggerVariant="select"
+          defaultSelectedHosts={hosts}
+          onChange={(value) => {
+            setHosts(value);
+          }}
+          onClearAll={() => {
+            setHosts([]);
+          }}
         />
 
         <SearchableContainerList
           scanType={API_SCAN_TYPE_MAP[notificationType]}
           triggerVariant="select"
+          defaultSelectedContainers={containers}
+          onChange={(value) => {
+            setContainers(value);
+          }}
+          onClearAll={() => {
+            setContainers([]);
+          }}
         />
         <SearchableImageList
           scanType={API_SCAN_TYPE_MAP[notificationType]}
           triggerVariant="select"
+          defaultSelectedImages={images}
+          onChange={(value) => {
+            setImages(value);
+          }}
+          onClearAll={() => {
+            setImages([]);
+          }}
         />
 
-        <SearchableClusterList triggerVariant="select" />
+        <SearchableClusterList
+          triggerVariant="select"
+          defaultSelectedClusters={clusters}
+          onChange={(value) => {
+            setClusters(value);
+          }}
+          onClearAll={() => {
+            setClusters([]);
+          }}
+        />
 
         {notificationType === 'Compliance' || notificationType === 'CloudCompliance' ? (
           <Listbox
@@ -148,6 +184,9 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
             multiple
             clearAll="Clear all"
             onClearAll={() => setSelectedStatus([])}
+            getDisplayValue={(value) => {
+              return value && value.length ? `${value.length} selected` : '';
+            }}
           >
             <ListboxOption value={'Alarm'}>Alarm</ListboxOption>
             <ListboxOption value={'Info'}>Info</ListboxOption>
@@ -171,6 +210,9 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
             multiple
             clearAll="Clear all"
             onClearAll={() => setSelectedSeverity([])}
+            getDisplayValue={(value) => {
+              return value && value.length ? `${value.length} selected` : '';
+            }}
           >
             <ListboxOption value={'Critical'}>Critical</ListboxOption>
             <ListboxOption value={'High'}>High</ListboxOption>
@@ -213,7 +255,7 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
         getDisplayValue={(item) => {
           return (
             ['Vulnerability', 'Secret', 'Malware', 'Compliance'].find(
-              (person) => person === item,
+              (type) => type === item,
             ) ?? ''
           );
         }}
@@ -448,6 +490,9 @@ export const IntegrationForm = ({
               }}
               onChange={(value) => {
                 setAccounts(value);
+              }}
+              getDisplayValue={(value) => {
+                return value.length ? `${value.length} selected` : 'Account';
               }}
             />
           </>

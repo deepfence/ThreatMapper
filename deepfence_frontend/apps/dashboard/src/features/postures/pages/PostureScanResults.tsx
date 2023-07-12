@@ -248,7 +248,12 @@ const useScanResults = () => {
         sortBy: 'status',
         descending: true,
       },
-      benchmarkTypes: searchParams.getAll('benchmarkType'),
+      benchmarkTypes: searchParams.getAll('benchmarkType').map((type) => {
+        if (type === 'SOC2') {
+          type = 'soc_2';
+        }
+        return type.toLowerCase();
+      }),
       visibility: searchParams.getAll('visibility'),
       status: searchParams.getAll('status'),
     }),
