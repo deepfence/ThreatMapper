@@ -63,7 +63,7 @@ export const CommonForm = ({
           return value && value.length > 0 ? `${value.length} selected` : 'Severity';
         }}
         multiple
-        clearAll="Clear all"
+        clearAll="Clear"
       >
         {severities.map((resource) => {
           return (

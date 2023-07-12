@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
@@ -13,7 +13,6 @@ export type SearchableCloudAccountsListProps = {
   valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
   triggerVariant?: 'select' | 'button';
-  getDisplayValue?: (item: any) => string | null;
 };
 
 const PAGE_SIZE = 15;
@@ -32,6 +31,10 @@ export const SearchableCloudAccountsList = ({
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>(
     defaultSelectedAccounts ?? [],
   );
+
+  const isSelectVariantType = useMemo(() => {
+    return triggerVariant === 'select';
+  }, [triggerVariant]);
 
   useEffect(() => {
     setSelectedAccounts(defaultSelectedAccounts ?? []);
@@ -78,7 +81,11 @@ export const SearchableCloudAccountsList = ({
         }
         name="cloudAccountsFilter"
         getDisplayValue={() =>
-          cloudProvider ? `${cloudProvider} account` : 'Cloud account'
+          isSelectVariantType && selectedAccounts.length > 0
+            ? `${selectedAccounts.length} selected`
+            : cloudProvider
+            ? `${cloudProvider} account`
+            : 'Cloud account'
         }
         multiple
         value={selectedAccounts}

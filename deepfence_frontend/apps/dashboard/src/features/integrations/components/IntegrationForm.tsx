@@ -182,7 +182,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
             placeholder="Select status"
             label="Select status"
             multiple
-            clearAll="Clear all"
+            clearAll="Clear"
             onClearAll={() => setSelectedStatus([])}
             getDisplayValue={(value) => {
               return value && value.length ? `${value.length} selected` : '';
@@ -208,7 +208,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
             placeholder="Select severity"
             label="Select severity"
             multiple
-            clearAll="Clear all"
+            clearAll="Clear"
             onClearAll={() => setSelectedSeverity([])}
             getDisplayValue={(value) => {
               return value && value.length ? `${value.length} selected` : '';
@@ -490,9 +490,6 @@ export const IntegrationForm = ({
               }}
               onChange={(value) => {
                 setAccounts(value);
-              }}
-              getDisplayValue={(value) => {
-                return value.length ? `${value.length} selected` : 'Account';
               }}
             />
           </>
