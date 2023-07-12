@@ -13,10 +13,10 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/sendemail"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
@@ -24,7 +24,6 @@ import (
 
 const (
 	MaxPostRequestSize    = 1000000 // 1 MB
-	DefaultNamespace      = "default"
 	passwordResetResponse = "A password reset email will be sent if a user exists with the provided email id"
 )
 
@@ -40,6 +39,10 @@ var (
 		err:                       errors.New("Key: 'old_password' Error:incorrect old password"),
 		skipOverwriteErrorMessage: true,
 	}
+	deleteLastAdminError           = errors.New("cannot delete last active admin user")
+	passwordResetCodeNotFoundError = NotFoundError{errors.New("code not found")}
+	userInviteInvalidCodeError     = BadDecoding{errors.New("Invalid code")}
+	registrationDoneError          = ForbiddenError{errors.New("Cannot register. Please contact your administrator for an invite")}
 )
 
 func init() {
@@ -60,7 +63,8 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := directory.WithGlobalContext(r.Context())
+	registerRequest.Email = strings.ToLower(registerRequest.Email)
+	ctx := directory.NewContextWithNameSpace(directory.FetchNamespace(registerRequest.Email))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
@@ -87,15 +91,14 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 	users, err := pgClient.CountActiveUsers(ctx)
 	if err != nil || users > 0 {
-		respondError(&ForbiddenError{errors.New("Cannot register. Please contact your administrator for an invite")}, w)
+		respondError(&registrationDoneError, w)
 		return
 	}
-	registerRequest.Email = strings.ToLower(registerRequest.Email)
 	emailDomain, _ := utils.GetEmailDomain(registerRequest.Email)
 	c := model.Company{
 		Name:        registerRequest.Company,
 		EmailDomain: emailDomain,
-		Namespace:   DefaultNamespace, //TODO: SaaS namespace
+		Namespace:   string(directory.NonSaaSDirKey), //TODO: SaaS namespace
 	}
 	company, err := c.Create(ctx, pgClient)
 	if err != nil {
@@ -151,7 +154,8 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, createdUser, true)
+	user.Password = ""
+	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, &user, true)
 	httpext.JSON(w, http.StatusOK, model.LoginResponse{
 		ResponseAccessToken: *accessTokenResponse,
 		OnboardingRequired:  model.IsOnboardingRequired(ctx),
@@ -172,7 +176,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(registerRequest.Namespace))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
@@ -181,7 +185,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 	code, err := utils.UUIDFromString(registerRequest.Code)
 	userInvite, err := pgClient.GetUserInviteByCode(ctx, code)
 	if errors.Is(err, sql.ErrNoRows) {
-		respondError(&BadDecoding{errors.New("Invalid code")}, w)
+		respondError(&userInviteInvalidCodeError, w)
 		return
 	} else if err != nil {
 		respondError(err, w)
@@ -237,8 +241,8 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdUser.PasswordHash = ""
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, createdUser, true)
+	user.Password = ""
+	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, &user, true)
 
 	httpext.JSON(w, http.StatusOK, model.LoginResponse{
 		ResponseAccessToken: *accessTokenResponse,
@@ -260,7 +264,8 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -312,9 +317,9 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	inviteURL := fmt.Sprintf("%s/auth/invite-accept?invite_code=%s", consoleUrl, code)
+	inviteURL := fmt.Sprintf("%s/auth/invite-accept?invite_code=%s&namespace=%s", consoleUrl, code, user.CompanyNamespace)
 	if inviteUserRequest.Action == UserInviteSendEmail {
-		emailSender, err := sendemail.NewEmailSender()
+		emailSender, err := sendemail.NewEmailSender(ctx)
 		if errors.Is(err, sql.ErrNoRows) {
 			respondError(&emailNotConfiguredError, w)
 			return
@@ -355,7 +360,8 @@ func (h *Handler) userModel(pgUser postgresql_db.GetUsersRow) model.User {
 }
 
 func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
-	currentUser, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	currentUser, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -377,7 +383,7 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
-	user, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
+	user, statusCode, _, err := h.GetUserFromJWT(r.Context())
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -391,7 +397,7 @@ func (h *Handler) GetUserByUserID(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 		return
 	}
-	user, statusCode, _, _, err := model.GetUserByID(userId)
+	user, statusCode, _, err := model.GetUserByID(r.Context(), userId)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -418,7 +424,7 @@ func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 	if user.Role != req.Role {
 		activeAdminUsersCount, err := pgClient.CountActiveAdminUsers(ctx)
 		if user.Role == model.AdminRole && activeAdminUsersCount < 2 {
-			respondWithErrorCode(errors.New("cannot delete last active admin user"), w, http.StatusForbidden)
+			respondWithErrorCode(deleteLastAdminError, w, http.StatusForbidden)
 			return
 		}
 		if isCurrentUser {
@@ -446,12 +452,14 @@ func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 	if toLogout {
 		LogoutHandler(ctx)
 	}
+	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_UPDATE, user, true)
 	httpext.JSON(w, http.StatusOK, user)
 }
 
 func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -465,12 +473,13 @@ func (h *Handler) UpdateUserByUserID(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 		return
 	}
-	user, statusCode, ctx, pgClient, err := model.GetUserByID(userId)
+	ctx := r.Context()
+	user, statusCode, pgClient, err := model.GetUserByID(ctx, userId)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
 	}
-	currentUser, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
+	currentUser, statusCode, _, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -491,7 +500,8 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -515,7 +525,7 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-
+	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_RESET_PASSWORD, user, true)
 
 	w.WriteHeader(http.StatusNoContent)
@@ -528,7 +538,7 @@ func (h *Handler) deleteUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 		return
 	}
 	if user.Role == model.AdminRole && activeAdminUsersCount < 2 {
-		respondWithErrorCode(errors.New("cannot delete last active admin user"), w, http.StatusForbidden)
+		respondWithErrorCode(deleteLastAdminError, w, http.StatusForbidden)
 		return
 	}
 	err = user.Delete(ctx, pgClient)
@@ -540,13 +550,15 @@ func (h *Handler) deleteUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 		LogoutHandler(ctx)
 	}
 
+	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_DELETE, user, true)
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -560,12 +572,13 @@ func (h *Handler) DeleteUserByUserID(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 		return
 	}
-	user, statusCode, ctx, pgClient, err := model.GetUserByID(userId)
+	ctx := r.Context()
+	user, statusCode, pgClient, err := model.GetUserByID(ctx, userId)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
 	}
-	currentUser, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
+	currentUser, statusCode, _, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -586,11 +599,13 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
+	resetPasswordRequest.Email = strings.ToLower(resetPasswordRequest.Email)
 	if resetPasswordRequest.Email == constants.DeepfenceCommunityEmailId {
 		httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 		return
 	}
-	user, statusCode, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(resetPasswordRequest.Email))
+	ctx := directory.NewContextWithNameSpace(directory.FetchNamespace(resetPasswordRequest.Email))
+	user, statusCode, pgClient, err := model.GetUserByEmail(ctx, resetPasswordRequest.Email)
 	if errors.Is(err, model.UserNotFoundErr) {
 		httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 		return
@@ -617,13 +632,13 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	emailSender, err := sendemail.NewEmailSender()
+	emailSender, err := sendemail.NewEmailSender(ctx)
 	if err != nil {
 		pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
 		respondError(err, w)
 		return
 	}
-	resetPasswordURL := fmt.Sprintf("%s/auth/reset-password?code=%s", consoleUrl, resetCode)
+	resetPasswordURL := fmt.Sprintf("%s/auth/reset-password?code=%s&namespace=%s", consoleUrl, resetCode, user.CompanyNamespace)
 	err = emailSender.Send(
 		[]string{resetPasswordRequest.Email},
 		"Deepfence - Password Reset",
@@ -655,7 +670,7 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(passwordResetVerifyRequest.Namespace))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
@@ -664,7 +679,7 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 	code, err := utils.UUIDFromString(passwordResetVerifyRequest.Code)
 	passwordReset, err := pgClient.GetPasswordResetByCode(ctx, code)
 	if errors.Is(err, sql.ErrNoRows) {
-		respondError(&NotFoundError{errors.New("code not found")}, w)
+		respondError(&passwordResetCodeNotFoundError, w)
 		return
 	} else if err != nil {
 		respondError(err, w)
@@ -686,12 +701,14 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 		respondError(err, w)
 		return
 	}
+	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_VERIFY_PASSWORD, user, true)
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) GetApiTokens(w http.ResponseWriter, r *http.Request) {
-	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -705,7 +722,7 @@ func (h *Handler) GetApiTokens(w http.ResponseWriter, r *http.Request) {
 	for i, apiToken := range apiTokens {
 		apiTokenResponse[i] = model.ApiTokenResponse{
 			ID:              apiToken.ID,
-			ApiToken:        apiToken.ApiToken.String(),
+			ApiToken:        model.GetApiToken(user.CompanyNamespace, apiToken.ApiToken),
 			Name:            apiToken.Name,
 			CompanyID:       apiToken.CompanyID,
 			CreatedByUserID: apiToken.CreatedByUserID,
@@ -737,7 +754,8 @@ func (h *Handler) createApiToken(ctx context.Context, pgClient *postgresql_db.Qu
 }
 
 func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
-	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -761,45 +779,51 @@ func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
 	for i, apiToken := range apiTokens {
 		apiTokenResponse[i] = model.ApiTokenResponse{
 			ID:              apiToken.ID,
-			ApiToken:        apiToken.ApiToken.String(),
+			ApiToken:        model.GetApiToken(user.CompanyNamespace, apiToken.ApiToken),
 			Name:            apiToken.Name,
 			CompanyID:       apiToken.CompanyID,
 			CreatedByUserID: apiToken.CreatedByUserID,
 			CreatedAt:       apiToken.CreatedAt,
 		}
 	}
+	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_VERIFY_PASSWORD, user, true)
 	httpext.JSON(w, http.StatusOK, apiTokenResponse)
 }
 
-func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, int, context.Context, *postgresql_db.Queries, error) {
+func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, int, *postgresql_db.Queries, error) {
 	_, claims, err := jwtauth.FromContext(requestContext)
 	if err != nil {
-		return nil, http.StatusBadRequest, requestContext, nil, err
+		return nil, http.StatusBadRequest, nil, err
 	}
 	userId, err := utils.GetInt64ValueFromInterfaceMap(claims, "user_id")
 	if err != nil {
-		return nil, http.StatusInternalServerError, requestContext, nil, err
+		return nil, http.StatusInternalServerError, nil, err
 	}
-	user, statusCode, ctx, pgClient, err := model.GetUserByID(userId)
+	user, statusCode, pgClient, err := model.GetUserByID(requestContext, userId)
 	if err != nil {
-		return nil, statusCode, ctx, pgClient, err
+		return nil, statusCode, pgClient, err
 	}
-	return user, http.StatusOK, ctx, pgClient, nil
+	return user, http.StatusOK, pgClient, nil
 }
 
 func (h *Handler) GetApiTokenForConsoleAgent(w http.ResponseWriter, r *http.Request) {
-	// TODO make this local context for saas
-	ctx := directory.NewGlobalContext()
+	var ctx context.Context
+	if directory.IsNonSaaSDeployment() {
+		ctx = directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+	} else {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
-	token, err := pgClient.GetApiTokenByActiveUser(r.Context())
+	token, err := pgClient.GetApiTokenByActiveUser(ctx)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, model.ApiAuthRequest{ApiToken: token.String()})
+	httpext.JSON(w, http.StatusOK, model.ApiAuthRequest{ApiToken: model.GetApiToken(string(directory.NonSaaSDirKey), token)})
 }

@@ -30,7 +30,7 @@ spec:
       securityContext:
         {{- toYaml .Values.ingester.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: ingester
           securityContext:
             {{- toYaml .Values.ingester.securityContext | nindent 12 }}
           image: "{{ .Values.global.imageRepoPrefix }}/{{ .Values.ingester.image.repository }}:{{ default .Values.global.imageTag .Values.ingester.image.tag }}"

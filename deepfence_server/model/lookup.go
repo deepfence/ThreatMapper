@@ -15,9 +15,10 @@ type PresentationContext struct {
 type Metadata map[string]interface{}
 
 type KubernetesCluster struct {
-	ID    string `json:"node_id" required:"true"`
-	Name  string `json:"node_name" required:"true"`
-	Hosts []Host `json:"hosts" required:"true"`
+	ID           string `json:"node_id" required:"true"`
+	Name         string `json:"node_name" required:"true"`
+	AgentRunning bool   `json:"agent_running" required:"true"`
+	Hosts        []Host `json:"hosts" required:"true"`
 }
 
 func (KubernetesCluster) NodeType() string {

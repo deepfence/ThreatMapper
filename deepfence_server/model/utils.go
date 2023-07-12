@@ -4,7 +4,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -14,6 +14,14 @@ func ValidateUserName(fl validator.FieldLevel) bool {
 
 func ValidateCompanyName(fl validator.FieldLevel) bool {
 	return CompanyRegex.MatchString(fl.Field().String())
+}
+
+func ValidateNamespace(fl validator.FieldLevel) bool {
+	return NamespaceRegex.MatchString(fl.Field().String())
+}
+
+func ValidateApiToken(fl validator.FieldLevel) bool {
+	return ApiTokenRegex.MatchString(fl.Field().String())
 }
 
 func ValidatePassword(fl validator.FieldLevel) bool {
@@ -93,6 +101,33 @@ var (
 
 		"api_token": "api_token must be UUID",
 		"email":     "invalid email address",
+
+		"Config.AWSAccountId":   "invalid account id",
+		"Config.AWSAccessKey":   "invalid access key",
+		"Config.AWSSecretKey":   "invalid secret key",
+		"Config.AWSRegion":      "invalid region",
+		"Config.EndpointURL":    "invalid url",
+		"Config.AuthHeader":     "invalid auth header value",
+		"Config.Index":          "invalid",
+		"Config.EmailId":        "invalid email id",
+		"Config.URL":            "invalid url",
+		"Config.AuthKey":        "invalid auth header value",
+		"Config.JiraSiteUrl":    "invalid jira url",
+		"Config.Username":       "invalid",
+		"Config.Password":       "invalid",
+		"Config.JiraProjectKey": "invalid",
+		"Config.JiraAssignee":   "invalid",
+		"Config.IssueType":      "invalid",
+		"Config.IsAuthToken":    "invalid",
+		"Config.APIToken":       "invalid",
+		"Config.ServiceKey":     "invalid",
+		"Config.APIKey":         "invalid",
+		"Config.S3BucketName":   "invalid bucket name",
+		"Config.S3FolderName":   "invalid folder name",
+		"Config.WebhookURL":     "invalid webhook url",
+		"Config.Channel":        "invalid",
+		"Config.Token":          "invalid",
+		"Config.HTTPEndpoint":   "invalid url",
 	}
 )
 
@@ -146,5 +181,9 @@ func DigestToID(digest string) string {
 }
 
 func GetRegistryID(registryType, ns string) string {
-	return registryType + "_" + ns
+	return registryType + "_" + EscapeSlashToUnderscore(ns)
+}
+
+func EscapeSlashToUnderscore(s string) string {
+	return strings.ReplaceAll(s, "/", "_")
 }

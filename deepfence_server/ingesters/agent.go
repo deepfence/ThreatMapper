@@ -12,10 +12,10 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/telemetry"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/db"
 	redis2 "github.com/redis/go-redis/v9"
@@ -93,9 +93,9 @@ type EndpointResolversCache struct {
 	pid_cache sync.Map
 }
 
-func newEndpointResolversCache(ctx context.Context) (EndpointResolversCache, error) {
+func newEndpointResolversCache(ctx context.Context) (*EndpointResolversCache, error) {
 	rdb, err := directory.RedisClient(ctx)
-	return EndpointResolversCache{
+	return &EndpointResolversCache{
 		rdb:       rdb,
 		net_cache: sync.Map{},
 		pid_cache: sync.Map{},
@@ -163,7 +163,7 @@ func (erc *EndpointResolversCache) Close() {
 type neo4jIngester struct {
 	driver           neo4j.Driver
 	ingester         chan report.CompressedReport
-	resolvers        EndpointResolversCache
+	resolvers        *EndpointResolversCache
 	batcher          chan ReportIngestionData
 	resolvers_update chan EndpointResolvers
 	preparers_input  chan report.Report
@@ -666,41 +666,12 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 
 	if _, err := tx.Run(`
 		UNWIND $batch as row
-		MERGE (n:Node{node_id:row.node_id})
-		MERGE (cp:CloudProvider{node_id:row.cloud_provider})
-		MERGE (cr:CloudRegion{node_id:row.cloud_region})
-		MERGE (cp) -[:HOSTS]-> (cr)
-		MERGE (cr) -[:HOSTS]-> (n)
-		SET cp.active = true, cp.pseudo = false, cr.active = true`,
-		map[string]interface{}{"batch": batches.Host_batch}); err != nil {
-		return err
-	}
-
-	if _, err := tx.Run(`
-		UNWIND $batch as row
 		MERGE (n:ContainerImage{node_id:row.node_id})
-		MERGE (s:ImageStub{node_id: row.docker_image_name})
+		MERGE (s:ImageStub{node_id: row.docker_image_name, docker_image_name: row.docker_image_name})
 		MERGE (n) -[:IS]-> (s)
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true`,
+		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true, s.updated_at = TIMESTAMP(), n.docker_image_id=row.node_id,
+		s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`,
 		map[string]interface{}{"batch": batches.Container_image_batch}); err != nil {
-		return err
-	}
-
-	if _, err := tx.Run(`
-		UNWIND $batch as row
-		MERGE (n:Pod{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true`,
-		map[string]interface{}{"batch": batches.Pod_batch}); err != nil {
-		return err
-	}
-
-	if _, err := tx.Run(`
-		UNWIND $batch as row
-		MERGE (n:KubernetesCluster{node_id:row.node_id})
-		MERGE (cp:CloudProvider{node_id:row.cloud_provider})
-		MERGE (cp) -[:HOSTS]-> (n)
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true, n.node_type = 'cluster', cp.active = true, cp.pseudo = false`,
-		map[string]interface{}{"batch": batches.Kubernetes_cluster_batch}); err != nil {
 		return err
 	}
 
@@ -717,34 +688,23 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 
 	if _, err := tx.Run(`
 		UNWIND $batch as row
-		MATCH (n:KubernetesCluster{node_id: row.source})
-		WITH n, row
-		UNWIND row.destinations as dest
-		MATCH (m:Node{node_id: dest})
-		MERGE (n)-[:INSTANCIATE]->(m)`,
-		map[string]interface{}{"batch": batches.Kubernetes_cluster_edge_batch}); err != nil {
-		return err
-	}
-
-	if _, err := tx.Run(`
-		UNWIND $batch as row
-		MATCH (n:KubernetesCluster{node_id: row.source})
-		WITH n, row
-		UNWIND row.destinations as dest
-		MATCH (m:Pod{node_id: dest})
-		MERGE (n)-[:HOSTS]->(m)`,
-		map[string]interface{}{"batch": batches.Pod_edges_batch}); err != nil {
+		MATCH (n:Node{node_id: row.source})
+		MATCH (m:Node{node_id: row.destination})
+		MATCH (n)-[r:CONNECTS]->(m)
+		DELETE r`,
+		map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
 		return err
 	}
 
 	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
-		WITH n, row
-		UNWIND row.destinations as dest
-		MERGE (m:Pod{node_id: dest})
-		MERGE (n)-[:HOSTS]->(m)`,
-		map[string]interface{}{"batch": batches.Pod_host_edges_batch}); err != nil {
+		MATCH (m:Node{node_id: row.destination})
+		MERGE (n)-[r:CONNECTS]->(m)
+		WITH n, r, m, row.pids as rpids
+		UNWIND rpids as pids
+		SET r.left_pids = coalesce(r.left_pids, []) + pids.left,
+		    r.right_pids = coalesce(r.right_pids, []) + pids.right`, map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
 		return err
 	}
 
@@ -832,13 +792,50 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 
 	if _, err := tx.Run(`
 		UNWIND $batch as row
+		MERGE (n:KubernetesCluster{node_id:row.node_id})
+		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true, n.node_type = 'cluster'`,
+		map[string]interface{}{"batch": batches.Kubernetes_cluster_batch}); err != nil {
+		return err
+	}
+
+	if _, err := tx.Run(`
+		UNWIND $batch as row
+		MERGE (n:Pod{node_id:row.node_id})
+		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true`,
+		map[string]interface{}{"batch": batches.Pod_batch}); err != nil {
+		return err
+	}
+
+	if _, err := tx.Run(`
+		UNWIND $batch as row
+		MATCH (n:KubernetesCluster{node_id: row.source})
+		WITH n, row
+		UNWIND row.destinations as dest
+		MATCH (m:Pod{node_id: dest})
+		MERGE (n)-[:HOSTS]->(m)`,
+		map[string]interface{}{"batch": batches.Pod_edges_batch}); err != nil {
+		return err
+	}
+
+	if _, err := tx.Run(`
+		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
-		MATCH (m:Node{node_id: row.destination})
-		MERGE (n)-[r:CONNECTS]->(m)
-		WITH n, r, m, row.pids as rpids
-		UNWIND rpids as pids
-		SET r.left_pids = coalesce(r.left_pids, []) + pids.left,
-		    r.right_pids = coalesce(r.right_pids, []) + pids.right`, map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
+		WITH n, row
+		UNWIND row.destinations as dest
+		MERGE (m:Pod{node_id: dest})
+		MERGE (n)-[:HOSTS]->(m)`,
+		map[string]interface{}{"batch": batches.Pod_host_edges_batch}); err != nil {
+		return err
+	}
+
+	if _, err := tx.Run(`
+		UNWIND $batch as row
+		MATCH (n:KubernetesCluster{node_id: row.source})
+		WITH n, row
+		UNWIND row.destinations as dest
+		MATCH (m:Node{node_id: dest})
+		MERGE (n)-[:INSTANCIATE]->(m)`,
+		map[string]interface{}{"batch": batches.Kubernetes_cluster_edge_batch}); err != nil {
 		return err
 	}
 
@@ -875,7 +872,6 @@ loop:
 			batch[size] = report
 			size += 1
 			send = size == db_batch_size
-			ticker.Reset(db_batch_timeout)
 		case <-ticker.C:
 			send = size > 0
 		}
@@ -886,6 +882,7 @@ loop:
 				db_pusher <- final_batch
 				size = 0
 				batch = [db_batch_size]ReportIngestionData{}
+				ticker.Reset(db_batch_timeout)
 			}
 		}
 	}
@@ -920,14 +917,12 @@ func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_seq, db_pusher_retry c
 					span.EndWithErr(err)
 					break
 				}
-				if db_pusher_retry != nil {
-					select {
-					case db_pusher_retry <- batches:
-					default:
-						log.Error().Msgf("Skip because: %v", err)
-						span.EndWithErr(err)
-						break
-					}
+				select {
+				case db_pusher_retry <- batches:
+				default:
+					log.Error().Msgf("Skip because: %v", err)
+					span.EndWithErr(err)
+					break
 				}
 				continue
 			}
@@ -947,7 +942,7 @@ func (nc *neo4jIngester) runPreparer() {
 	var buf bytes.Buffer
 	for rpt := range nc.preparers_input {
 		r := computeResolvers(&rpt, &buf)
-		data := prepareNeo4jIngestion(&rpt, &nc.resolvers, &buf)
+		data := prepareNeo4jIngestion(&rpt, nc.resolvers, &buf)
 		select {
 		case nc.batcher <- data:
 			nc.resolvers_update <- r
@@ -1007,12 +1002,14 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 		for e := range db_pusher_retry {
 			db_pusher <- e
 		}
+		log.Info().Msgf("nonseq retry ended")
 	}()
 
 	go func() {
 		for e := range db_pusher_seq_retry {
 			db_pusher_seq <- e
 		}
+		log.Info().Msgf("seq retry ended")
 	}()
 
 	for i := 0; i < preparer_workers_num; i++ {
@@ -1058,7 +1055,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 		prev_push_back := Push_back.Load()
 		session, err := driver.Session(neo4j.AccessModeWrite)
 		if err != nil {
-			log.Error().Msgf("Fail to get session for push back", err)
+			log.Error().Msgf("Fail to get session for push back: %v", err)
 			return
 		}
 		defer session.Close()

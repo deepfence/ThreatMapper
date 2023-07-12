@@ -61,7 +61,8 @@ services:
 
   deepfence-neo4j:
     container_name: deepfence-neo4j
-    image: neo4j:4.4.21
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_neo4j_ce:${DF_IMG_TAG:-2.0.0}
+
     ulimits:
       core: 0
     restart: on-failure
@@ -73,6 +74,9 @@ services:
       <<: *common-creds
       NEO4J_dbms_memory_pagecache_size: 2600m
       NEO4JLABS_PLUGINS: '["apoc"]'
+      DF_REMOTE_BACKUP_ROOT: ""
+      AWS_ACCESS_KEY: ""
+      AWS_SECRET_KEY: ""
     ports:
       - "0.0.0.0:7474:7474"
       - "0.0.0.0:7687:7687"
@@ -80,6 +84,7 @@ services:
       - deepfence_neo4j_data:/data:rw
       - deepfence_neo4j_logs:/logs:rw
       - deepfence_neo4j_plugins:/plugins:rw
+      - deepfence_neo4j_backups:/backups:rw
     #depends_on:
     #  - deepfence-init-container
     logging:
@@ -343,6 +348,8 @@ volumes:
   deepfence_neo4j_logs:
     driver: local
   deepfence_neo4j_plugins:
+    driver: local
+  deepfence_neo4j_backups:
     driver: local
   deepfence_kafka_broker:
     driver: local

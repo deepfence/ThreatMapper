@@ -2,14 +2,15 @@ package diagnosis
 
 import (
 	"context"
+	"encoding/xml"
 	"net/url"
 	"path/filepath"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -80,7 +81,13 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 		message := ""
 		urlLink, err := mc.ExposeFile(ctx, obj.Key, false, DiagnosisLinkExpiry, url.Values{})
 		if err != nil {
-			message = err.Error()
+			var minioError utils.MinioError
+			xmlErr := xml.Unmarshal([]byte(err.Error()), &minioError)
+			if xmlErr != nil {
+				message = err.Error()
+			} else {
+				message = minioError.Message
+			}
 		}
 		fileName := filepath.Base(obj.Key)
 		diagnosticLogsResponse[i] = DiagnosticLogsLink{

@@ -16,6 +16,8 @@
 # from deepfence.io.
 #
 
+.PHONY: agent
+
 GOFLAGS += --ldflags
 GOFLAGS += '-extldflags "-static"'
 
@@ -24,21 +26,29 @@ MKDIR = mkdir
 CD = cd
 CP = cp
 
-#all:: prep libs deepfenced install gocode
-all:: gocode
-
 gocode:
-	# go build -o tools/apache/licensegen/licensegen tools/apache/licensegen/licensegen.go
-
 	echo "Building go binary for cloud metadata instance id..."
-	$(CD) tools/apache/deepfence/df-utils/get_cloud_instance_id && env CGO_ENABLED=0 go build -o getCloudInstanceId $(GOFLAGS) .
-
-	echo "Building compliance checker"
-	$(CD) tools/apache/compliance_check/ && go build -o deepfence_compliance_check $(GOFLAGS) *.go
+	($(CD) tools/apache/deepfence/df-utils/get_cloud_instance_id && CGO_ENABLED=0 go build -o getCloudInstanceId $(GOFLAGS) .)
 
 install:
 
+tools/apache/scope/vendor: tools/apache/scope/go.mod $(shell find ../deepfence_utils -path ../deepfence_utils/vendor -prune -o -name '*.go') $(shell find ./tools/apache/scope -path ./tools/apache/scope/vendor -prune -o -name '*.go')
+	($(CD) tools/apache/scope && go mod tidy -v)
+	($(CD) tools/apache/scope && go mod vendor)
+
+agent: tools/apache/scope/vendor
+	($(CD) tools/apache/scope && \
+		env GOGC=off \
+		CGO_ENABLED=1 \
+		go build -buildvcs=false \
+		-ldflags "-X main.version=$GIT_COMMIT -X main.version=$(shell git rev-parse --short HEAD)  -X github.com/weaveworks/scope/probe/host.agentCommitID=$(shell git rev-parse --short HEAD) -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(shell date +"%s%d%m%y") -s -w -extldflags=-static"\
+		-tags 'netgo osusergo unsafe' \
+		-o docker/deepfence_exe \
+		./prog)
+
 clean:
-	$(RM) tools/apache/deepfence/df-utils/getCloudInstanceId
-	cd tools/apache/scope && make realclean
-	(cd plugins && make clean)
+	-$(RM) tools/apache/deepfence/df-utils/getCloudInstanceId
+	-$(RM) tools/apache/compliance_check/deepfence_compliance_check
+	-$(RM) tools/apache/scope/docker/deepfence_exe
+	-(cd plugins && make clean)
+	-$(RM) -rf tools/apache/scope/vendor

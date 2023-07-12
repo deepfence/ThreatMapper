@@ -6,8 +6,8 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill/message"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -49,13 +49,36 @@ func computeThreatExploitability(session neo4j.Session) error {
 	}
 	defer tx.Close()
 
-	// Following cypher queries applies to Vulnerabilities
 	if _, err = tx.Run(`
-		MATCH (v:Vulnerability)
-		WITH v, CASE WHEN v.cve_attack_vector =~ ".*AV:N.*" THEN 2 ELSE CASE WHEN v.cve_severity = 'critical' THEN 1 ELSE 0 END END as score
-		SET v.exploitability_score = score,
-		v.parsed_attack_vector = CASE WHEN score = 2 THEN 'network' ELSE 'local' END,
-		v.has_live_connection = false`,
+		MATCH (n:Secret)
+		WHERE n.exploitability_score IS NULL
+		SET n.exploitability_score = 0`,
+		map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run(`
+		MATCH (n:Malware)
+		WHERE n.exploitability_score IS NULL
+		SET n.exploitability_score = 0`,
+		map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run(`
+		MATCH (n:Compliance)
+		WHERE n.exploitability_score IS NULL
+		SET n.exploitability_score = 0`,
+		map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	//Reset the exploitability_score to its original value
+	if _, err = tx.Run(`
+    MATCH (v:Vulnerability)
+    WHERE v.exploitability_score <> v.init_exploitability_score
+    SET v.exploitability_score = v.init_exploitability_score,
+    v.has_live_connection = false`,
 		map[string]interface{}{}); err != nil {
 		return err
 	}
@@ -137,25 +160,12 @@ func computeThreatGraph(session neo4j.Session) error {
 		return err
 	}
 
+	// Define depths
 	if _, err = session.Run(`
 		MATCH (n)
 		WHERE n:Node OR n:CloudResource
-		SET n.vulnerabilities_count = COALESCE(n.vulnerabilities_count, 0),
-		n.secrets_count = COALESCE(n.secrets_count, 0),
-		n.malwares_count = COALESCE(n.malwares_count, 0),
-		n.compliances_count = COALESCE(n.compliances_count, 0),
-		n.cloud_compliances_count = COALESCE(n.cloud_compliances_count, 0)`, map[string]interface{}{}, txConfig); err != nil {
-		return err
-	}
-
-	if _, err = session.Run(`
-		MATCH (n)
-		WHERE n:Node OR n:CloudResource
-		SET n.sum_cve = COALESCE(n.vulnerabilities_count, 0),
-		n.sum_secrets = COALESCE(n.secrets_count, 0),
-		n.sum_malware = COALESCE(n.malwares_count, 0),
-		n.sum_compliance = COALESCE(n.compliances_count, 0),
-		n.sum_cloud_compliance = COALESCE(n.cloud_compliances_count, 0)`, map[string]interface{}{}, txConfig); err != nil {
+		AND NOT n.depth IS NULL
+		SET n.depth = null`, map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}
 
@@ -167,10 +177,23 @@ func computeThreatGraph(session neo4j.Session) error {
 	}
 
 	if _, err = session.Run(`
-		MATCH (n:Node {node_id:'in-the-internet'})-[d:PUBLIC|IS|HOSTS|SECURED*]->(m:CloudResource)
+		MATCH (n:Node {node_id:'in-the-internet'})-[d:PUBLIC|IS|HOSTS|SECURED*1..3]->(m:CloudResource)
 		WITH SIZE(d) as depth, m
 		WITH min(depth) as min_depth, m
 		SET m.depth = min_depth `, map[string]interface{}{}, txConfig); err != nil {
+		return err
+	}
+
+	// Compute counts & sums
+	if _, err = session.Run(`
+		MATCH (n)
+		WHERE n:Node OR n:CloudResource
+		AND NOT n.depth IS NULL
+		SET n.sum_cve = COALESCE(n.vulnerabilities_count, 0),
+		n.sum_secrets = COALESCE(n.secrets_count, 0),
+		n.sum_malware = COALESCE(n.malwares_count, 0),
+		n.sum_compliance = COALESCE(n.compliances_count, 0),
+		n.sum_cloud_compliance = COALESCE(n.cloud_compliances_count, 0)`, map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}
 

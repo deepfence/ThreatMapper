@@ -27,6 +27,7 @@ func (p *Probe) publishLoop() {
 	var lastFullReport report.Report
 	ticker := time.NewTicker(time.Second * time.Duration(p.publisher.PublishInterval()))
 	for {
+		log.Infof("Report publish interval: %d", p.publisher.PublishInterval())
 		ticker.Reset(time.Second * time.Duration(p.publisher.PublishInterval()))
 		var err error
 		select {

@@ -11,12 +11,12 @@ import (
 	"github.com/deepfence/SecretScanner/output"
 	secretScan "github.com/deepfence/SecretScanner/scan"
 	"github.com/deepfence/SecretScanner/signature"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
-	pb "github.com/deepfence/agent-plugins-grpc/proto"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -43,7 +43,7 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	log.Info().Msgf("message tenant id %s", string(tenantID))
 
 	rh := []kgo.RecordHeader{
-		{Key: "tenant_id", Value: []byte(tenantID)},
+		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tenantID))

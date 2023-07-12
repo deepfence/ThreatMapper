@@ -66,6 +66,7 @@ service:
     ## gcp
     # networking.gke.io/load-balancer-type: "Internal"
     # cloud.google.com/load-balancer-type: "Internal"
+    # cloud.google.com/app-protocols: '{"https-port":"HTTPS","http-port":"HTTP"}'
 
     ## ibm cloud
     # service.kubernetes.io/ibm-load-balancer-cloud-provider-ip-type: "private"
@@ -130,6 +131,7 @@ agentService:
     ## gcp
     # networking.gke.io/load-balancer-type: "Internal"
     # cloud.google.com/load-balancer-type: "Internal"
+    # cloud.google.com/app-protocols: '{"https-port":"HTTPS","http-port":"HTTP"}'
 
     ## ibm cloud
     # service.kubernetes.io/ibm-load-balancer-cloud-provider-ip-type: "private"
@@ -151,6 +153,12 @@ ingress:
     nginx.ingress.kubernetes.io/backend-protocol: HTTPS
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/proxy-body-size: 200m
+
+    ## gke ingress
+    # kubernetes.io/ingress.class: gce
+    ## use the below annotation to attach gke managed certificate
+    ## https://cloud.google.com/kubernetes-engine/docs/how-to/managed-certs#gcloud
+    # networking.gke.io/managed-certificates: <managed certificate name>
 
     ## aws alb annotations
     ## aws load balancer controller needs to be installed on the cluster for these annotations to work

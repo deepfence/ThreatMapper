@@ -5,14 +5,12 @@ import (
 	"strconv"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
 func (h *Handler) GetScheduledTask(w http.ResponseWriter, r *http.Request) {
-	ctx := directory.WithGlobalContext(r.Context())
-	scheduledTasks, err := model.GetScheduledTask(ctx)
+	scheduledTasks, err := model.GetScheduledTask(r.Context())
 	if err != nil {
 		respondError(err, w)
 		return
@@ -26,7 +24,6 @@ func (h *Handler) UpdateScheduledTask(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 		return
 	}
-	ctx := directory.WithGlobalContext(r.Context())
 	defer r.Body.Close()
 	var req model.UpdateScheduledTaskRequest
 	err = httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
@@ -40,7 +37,7 @@ func (h *Handler) UpdateScheduledTask(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	err = model.UpdateScheduledTask(ctx, id, req)
+	err = model.UpdateScheduledTask(r.Context(), id, req)
 	if err != nil {
 		respondError(err, w)
 		return

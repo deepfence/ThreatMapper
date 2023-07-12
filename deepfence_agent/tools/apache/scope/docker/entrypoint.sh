@@ -5,5 +5,5 @@ envsubst '${SCOPE_HOSTNAME}:${PROBE_LOG_LEVEL}:${MGMT_CONSOLE_URL}:${MGMT_CONSOL
 unlink /var/run/supervisor.sock 2>/dev/null
 /usr/bin/supervisord -c /home/deepfence/supervisord.conf
 
-sleep 10
+touch /var/log/supervisor/cluster-agent.log
 tail -f /var/log/supervisor/cluster-agent*

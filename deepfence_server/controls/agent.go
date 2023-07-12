@@ -6,10 +6,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -273,7 +273,7 @@ func ExtractStartingAgentScans(ctx context.Context, nodeId string, max_work int)
 		WHERE s.status = '`+utils.SCAN_STATUS_STARTING+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work
-		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
+		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`', s.updated_at = TIMESTAMP()
 		WITH s
 		RETURN s.trigger_action`,
 		map[string]interface{}{"id": nodeId, "max_work": max_work})

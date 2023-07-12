@@ -2,6 +2,7 @@ package sumologic
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,7 +10,20 @@ import (
 	"time"
 )
 
-func (s SumoLogic) SendNotification(data string) error {
+func New(b []byte) (SumoLogic, error) {
+	var s SumoLogic
+	err := json.Unmarshal(b, &s.Config)
+	if err != nil {
+		return s, err
+	}
+	if s.Config.HTTPEndpoint == "" {
+		return s, errors.New("invalid Sumo Logic configuration")
+	}
+	return s, nil
+}
+
+func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[string]interface{}) error {
+
 	// Create an HTTP client with a timeout
 	client := &http.Client{
 		Timeout: time.Second * 10,

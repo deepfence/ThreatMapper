@@ -5,15 +5,16 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"regexp"
 	"strconv"
 	"time"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -33,6 +34,10 @@ var (
 	RefreshTokenExpiry = time.Hour * 26
 	CompanyRegex       = regexp.MustCompile("^[A-Za-z][a-zA-Z0-9-\\s@\\.#&!]+$")
 	UserNameRegex      = regexp.MustCompile("^[A-Za-z][A-Za-z .'-]+$")
+	MinNamespaceLength = 3
+	MaxNamespaceLength = 32
+	NamespaceRegex     = regexp.MustCompile(fmt.Sprintf("^[a-z][a-z0-9-]{%d,%d}$", MinNamespaceLength-1, MaxNamespaceLength-1))
+	ApiTokenRegex      = regexp.MustCompile(fmt.Sprintf("^[a-z][a-z0-9-]{%d,%d}\\:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", MinNamespaceLength-1, MaxNamespaceLength-1))
 )
 
 func init() {
@@ -54,6 +59,10 @@ type ApiTokenResponse struct {
 	CompanyID       int32     `json:"company_id"`
 	CreatedByUserID int64     `json:"created_by_user_id"`
 	CreatedAt       time.Time `json:"created_at"`
+}
+
+func GetApiToken(namespace string, apiToken uuid.UUID) string {
+	return namespace + ":" + apiToken.String()
 }
 
 type ApiToken struct {
@@ -179,7 +188,7 @@ type LoginRequest struct {
 }
 
 type ApiAuthRequest struct {
-	ApiToken string `json:"api_token" validate:"required,uuid4" required:"true"`
+	ApiToken string `json:"api_token" validate:"required,api_token" required:"true"`
 }
 
 type UserRegisterRequest struct {
@@ -193,6 +202,7 @@ type UserRegisterRequest struct {
 }
 
 type RegisterInvitedUserRequest struct {
+	Namespace           string `json:"namespace" validate:"required,namespace" required:"true"`
 	FirstName           string `json:"first_name" validate:"required,user_name,min=2,max=32" required:"true"`
 	LastName            string `json:"last_name" validate:"required,user_name,min=2,max=32" required:"true"`
 	Password            string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
@@ -217,8 +227,9 @@ type PasswordResetRequest struct {
 }
 
 type PasswordResetVerifyRequest struct {
-	Code     string `json:"code" validate:"required,uuid4" required:"true"`
-	Password string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
+	Namespace string `json:"namespace" validate:"required,namespace" required:"true"`
+	Code      string `json:"code" validate:"required,uuid4" required:"true"`
+	Password  string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
 }
 
 type UserIdRequest struct {
@@ -283,17 +294,16 @@ func (u *User) CompareHashAndPassword(ctx context.Context, pgClient *postgresqlD
 	return true, nil
 }
 
-func GetUserByID(userID int64) (*User, int, context.Context, *postgresqlDb.Queries, error) {
+func GetUserByID(ctx context.Context, userID int64) (*User, int, *postgresqlDb.Queries, error) {
 	user := User{ID: userID}
-	ctx := directory.NewGlobalContext()
 	pgClient, err := directory.PostgresClient(ctx)
 	err = user.LoadFromDbByID(ctx, pgClient)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, http.StatusNotFound, ctx, pgClient, errors.New(utils.ErrorUserNotFound)
+		return nil, http.StatusNotFound, pgClient, errors.New(utils.ErrorUserNotFound)
 	} else if err != nil {
-		return nil, http.StatusInternalServerError, ctx, pgClient, err
+		return nil, http.StatusInternalServerError, pgClient, err
 	}
-	return &user, http.StatusOK, ctx, pgClient, nil
+	return &user, http.StatusOK, pgClient, nil
 }
 
 func (u *User) LoadFromDbByID(ctx context.Context, pgClient *postgresqlDb.Queries) error {
@@ -319,17 +329,19 @@ func (u *User) LoadFromDbByID(ctx context.Context, pgClient *postgresqlDb.Querie
 	return nil
 }
 
-func GetUserByEmail(email string) (*User, int, context.Context, *postgresqlDb.Queries, error) {
+func GetUserByEmail(ctx context.Context, email string) (*User, int, *postgresqlDb.Queries, error) {
 	user := User{Email: email}
-	ctx := directory.NewGlobalContext()
 	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return nil, http.StatusInternalServerError, pgClient, err
+	}
 	err = user.LoadFromDbByEmail(ctx, pgClient)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, http.StatusNotFound, ctx, pgClient, UserNotFoundErr
+		return nil, http.StatusNotFound, pgClient, UserNotFoundErr
 	} else if err != nil {
-		return nil, http.StatusInternalServerError, ctx, pgClient, err
+		return nil, http.StatusInternalServerError, pgClient, err
 	}
-	return &user, http.StatusOK, ctx, pgClient, nil
+	return &user, http.StatusOK, pgClient, nil
 }
 
 func (u *User) LoadFromDbByEmail(ctx context.Context, pgClient *postgresqlDb.Queries) error {

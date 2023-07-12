@@ -12,10 +12,19 @@ import (
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
+)
+
+var (
+	invalidIdError = ValidatorError{
+		err: errors.New("Key: 'SettingUpdateRequest.ID' Error:invalid id"), skipOverwriteErrorMessage: true}
+	invalidUrlError = ValidatorError{
+		err: errors.New("Key: 'SettingUpdateRequest.Value' Error:invalid url"), skipOverwriteErrorMessage: true}
+	invalidIntegerError = ValidatorError{
+		err: errors.New("Key: 'SettingUpdateRequest.Value' Error:must be integer"), skipOverwriteErrorMessage: true}
 )
 
 func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) {
@@ -27,19 +36,19 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 		respondError(&BadDecoding{err}, w)
 		return
 	}
-	user, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	user, statusCode, _, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
 	}
 	req.CreatedByUserID = user.ID
-	ctx := directory.WithGlobalContext(r.Context())
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	err = req.Create(r.Context(), pgClient)
+	err = req.Create(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		respondError(&InternalServerError{err}, w)
@@ -55,7 +64,7 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) GetEmailConfiguration(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
@@ -83,7 +92,7 @@ func (h *Handler) GetEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) DeleteEmailConfiguration(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
@@ -105,7 +114,7 @@ func (h *Handler) DeleteEmailConfiguration(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *Handler) GetGlobalSettings(w http.ResponseWriter, r *http.Request) {
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
@@ -120,7 +129,7 @@ func (h *Handler) GetGlobalSettings(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
@@ -150,8 +159,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if req.ID != currentSettings.ID {
-		respondError(&ValidatorError{
-			err: errors.New("Key: 'SettingUpdateRequest.ID' Error:invalid id"), skipOverwriteErrorMessage: true}, w)
+		respondError(&invalidIdError, w)
 		return
 	}
 	var value interface{}
@@ -159,16 +167,14 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	case model.ConsoleURLSettingKey:
 		var parsedUrl *url.URL
 		if parsedUrl, err = url.ParseRequestURI(strings.TrimSpace(req.Value)); err != nil {
-			respondError(&ValidatorError{
-				err: errors.New("Key: 'SettingUpdateRequest.Value' Error:invalid url"), skipOverwriteErrorMessage: true}, w)
+			respondError(&invalidUrlError, w)
 			return
 		}
 		value = parsedUrl.Scheme + "://" + parsedUrl.Host
 	case model.InactiveNodesDeleteScanResultsKey:
 		value, err = strconv.ParseInt(strings.TrimSpace(req.Value), 10, 64)
 		if err != nil {
-			respondError(&ValidatorError{
-				err: errors.New("Key: 'SettingUpdateRequest.Value' Error:must be integer"), skipOverwriteErrorMessage: true}, w)
+			respondError(&invalidIntegerError, w)
 			return
 		}
 	}

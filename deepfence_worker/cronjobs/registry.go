@@ -6,18 +6,17 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry"
 	sync "github.com/deepfence/ThreatMapper/deepfence_server/pkg/registrysync"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
 func SyncRegistry(msg *message.Message) error {
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 
-	postgresCtx := directory.NewGlobalContext()
-	pgClient, err := directory.PostgresClient(postgresCtx)
+	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("unable to get postgres client: %v", err)
 		return nil
@@ -31,7 +30,7 @@ func SyncRegistry(msg *message.Message) error {
 		err = json.Unmarshal(msg.Payload, &rsp)
 		if err != nil {
 			log.Warn().Msgf("unable to unmarshal payload: %v, error: %v syncing all registries...", msg.Payload, err)
-			registries, err = pgClient.GetContainerRegistries(postgresCtx)
+			registries, err = pgClient.GetContainerRegistries(ctx)
 			if err != nil {
 				log.Error().Msgf("unable to get registries: %v", err)
 				return nil
@@ -39,7 +38,7 @@ func SyncRegistry(msg *message.Message) error {
 		}
 
 		if rsp.PgID != 0 {
-			r, err := pgClient.GetContainerRegistry(postgresCtx, rsp.PgID)
+			r, err := pgClient.GetContainerRegistry(ctx, rsp.PgID)
 			if err != nil {
 				log.Error().Msgf("unable to get registry: %v", err)
 				return nil
@@ -59,7 +58,7 @@ func SyncRegistry(msg *message.Message) error {
 			registries = append(registries, getContainerRegistriesRow)
 		}
 	} else {
-		registries, err = pgClient.GetContainerRegistries(postgresCtx)
+		registries, err = pgClient.GetContainerRegistries(ctx)
 		if err != nil {
 			log.Error().Msgf("unable to get registries: %v", err)
 		}
@@ -74,7 +73,7 @@ func SyncRegistry(msg *message.Message) error {
 
 		err = sync.SyncRegistry(ctx, pgClient, r, row.ID)
 		if err != nil {
-			log.Error().Msgf("unable to sync registry: %s: %v", row.RegistryType, err)
+			log.Error().Msgf("unable to sync registry: %s (%s): %v", row.RegistryType, row.Name, err)
 			continue
 		}
 	}

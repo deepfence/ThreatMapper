@@ -7,9 +7,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+)
+
+const (
+	NodeTypeHost              = "host"
+	NodeTypeKubernetesCluster = "kubernetes_cluster"
+	Ec2DnsSuffix              = ".compute.amazonaws.com"
+	AwsEc2ResourceId          = "aws_ec2_instance"
+	GcpComputeResourceId      = "gcp_compute_instance"
+	AzureComputeResourceId    = "azure_compute_virtual_machine"
+	DeepfenceVersion          = "v2.0.0"
 )
 
 type CloudResource struct {
@@ -43,6 +53,10 @@ type CloudResource struct {
 	IamInstanceProfileArn          string           `json:"iam_instance_profile_arn,omitempty"`
 	IamInstanceProfileId           string           `json:"iam_instance_profile_id,omitempty"`
 	PublicIpAddress                string           `json:"public_ip_address"`
+	PrivateIpAddress               string           `json:"private_ip_address,omitempty"`
+	InstanceType                   string           `json:"instance_type,omitempty"`
+	PrivateDnsName                 string           `json:"private_dns_name,omitempty"`
+	Tags                           *json.RawMessage `json:"tags,omitempty"`
 	PolicyStd                      *json.RawMessage `json:"policy_std,omitempty"`
 	Containers                     *json.RawMessage `json:"containers,omitempty"`
 	TaskDefinition                 *json.RawMessage `json:"task_definition,omitempty"`
@@ -82,6 +96,21 @@ type CloudResource struct {
 	ResourcesVpcConfig             *json.RawMessage `json:"resources_vpc_config"`
 }
 
+var (
+	TopologyCloudResourceTypes = []string{
+		// AWS specific types
+		"aws_ec2_instance", "aws_eks_cluster", "aws_s3_bucket", "aws_lambda_function",
+		"aws_ecs_task", "aws_ecs_cluster", "aws_ecr_repository", "aws_ecrpublic_repository",
+		"aws_ecs_task", "aws_rds_db_instance", "aws_rds_db_cluster", "aws_ec2_application_load_balancer",
+		"aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer",
+		// GCP specific types
+		"gcp_compute_instance", "gcp_sql_database_instance", "gcp_storage_bucket", "gcp_compute_disk",
+		// Azure specific types
+		"azure_compute_virtual_machine", "azure_app_service_function_app", "azure_storage_queue",
+		"azure_storage_table", "azure_storage_container",
+	}
+)
+
 func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
 	driver, err := directory.Neo4jClient(ctx)
@@ -95,122 +124,150 @@ func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 	}
 	defer session.Close()
 
+	batch, hosts, clusters := ResourceToMaps(cs)
+
+	start := time.Now()
+
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
 	defer tx.Close()
 
-	batch := ResourceToMaps(cs)
-
 	// Add everything
 	_, err = tx.Run(`
 		UNWIND $batch as row
-		WITH row, COALESCE(row.region, 'global') as cloud_region
-		MERGE (cp:CloudProvider{node_id:row.cloud_provider})
-		MERGE (cr:CloudRegion{node_id:cloud_region})
-		MERGE (cp) -[:HOSTS]-> (cr)
-		MERGE (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
-		MERGE (cr) -[:HOSTS]-> (n)
-		SET n+=row, n.node_name = n.name, n.node_type = row.resource_id, n.cloud_region = cloud_region, n.updated_at = TIMESTAMP(), cp.active = true, cp.pseudo = false, n.active = true`,
+		WITH row, row.node_type IN $shown_types as show
+		MERGE (n:CloudResource{node_id:row.node_id})
+		SET n+=row, n.updated_at = TIMESTAMP(), n.active = true, n.linked = false, n.is_shown = show`,
 		map[string]interface{}{
-			"batch": batch,
+			"batch":       batch,
+			"shown_types": TopologyCloudResourceTypes,
 		},
 	)
-
 	if err != nil {
-		log.Error().Msgf("error: %+v", err)
 		return err
 	}
 
-	// Handle AWS EC2 & LBs
-	if _, err = tx.Run(`
+	if len(hosts) > 0 {
+		if _, err = tx.Run(`
 		UNWIND $batch as row
-		MATCH (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
-		WHERE n.resource_id IN ['aws_ec2_instance', 'aws_ec2_application_load_balancer','aws_ec2_classic_load_balancer', 'aws_ec2_network_load_balancer']
-		AND n.security_groups IS NOT NULL
-		WITH n, apoc.convert.fromJsonList(n.security_groups) as groups
-		UNWIND groups as group
-		WITH group, CASE WHEN apoc.meta.type(group) = "STRING" THEN group ELSE group.GroupName END as name, CASE WHEN apoc.meta.type(group) = "STRING" THEN group ELSE group.GroupId END as node_id
-		MERGE (m:SecurityGroup{node_id:node_id})
-		MERGE (m)-[:SECURED]->(n)
-		SET m.name = name`,
-		map[string]interface{}{
-			"batch": batch,
-		}); err != nil {
-		log.Error().Msgf("error: %+v", err)
-		return err
+		OPTIONAL MATCH (n:Node{node_id:row.node_id})
+		WITH n, row as row
+		WHERE n IS NULL or n.active=false
+		MERGE (m:Node{node_id:row.node_id})
+		SET m+=row, m.updated_at = TIMESTAMP()`,
+			map[string]interface{}{"batch": hosts}); err != nil {
+			return err
+		}
 	}
 
-	// Handle AWS Lambda
-	if _, err = tx.Run(`
+	if len(clusters) > 0 {
+		if _, err = tx.Run(`
 		UNWIND $batch as row
-		MATCH (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
-		WHERE n.node_type IN ['aws_lambda_function']
-		WITH apoc.convert.fromJsonList(n.vpc_security_group_ids) as sec_group_ids,n
-		UNWIND sec_group_ids as group
-		MERGE (m:SecurityGroup{node_id:group})
-		MERGE (m)-[:SECURED]->(n)`,
-		map[string]interface{}{
-			"batch": batch,
-		}); err != nil {
-		log.Error().Msgf("error: %+v", err)
-		return err
+		OPTIONAL MATCH (n:KubernetesCluster{node_id:row.node_id})
+		WITH n, row as row
+		WHERE n IS NULL or n.active=false
+		MERGE (m:KubernetesCluster{node_id:row.node_id})
+		SET m+=row, m.updated_at = TIMESTAMP()`,
+			map[string]interface{}{"batch": clusters}); err != nil {
+			return err
+		}
+
+		if _, err := session.Run(`
+		MATCH (k:KubernetesCluster)
+		WHERE not (k) -[:INSTANCIATE]-> (:Node)
+		MATCH (n:Node{kubernetes_cluster_id:k.kubernetes_cluster_id})
+		MERGE (k) -[:INSTANCIATE]-> (n)`,
+			map[string]interface{}{}); err != nil {
+			return err
+		}
 	}
 
-	// Handle AWS ECS
-	if _, err = tx.Run(`
-		UNWIND $batch as row
-		MATCH (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
-		WHERE n.node_type IN ['aws_ecs_service']
-		WITH apoc.convert.fromJsonMap(n.network_configuration) as map,n
-		UNWIND map.AwsvpcConfiguration.SecurityGroups as secgroup
-		MERGE (m:SecurityGroup{node_id:secgroup})
-		MERGE (m)-[:SECURED]->(n)`,
-		map[string]interface{}{
-			"batch": batch,
-		}); err != nil {
-		log.Error().Msgf("error: %+v", err)
-		return err
-	}
-
-	if _, err = tx.Run(`
-		UNWIND $batch as row
-		MATCH (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
-		MATCH (m:CloudNode{node_id: n.account_id})
-		SET n.cloud_provider = m.cloud_provider
-		WITH n, m
-		MERGE (m)-[:OWNS]->(n)`,
-		map[string]interface{}{
-			"batch": batch,
-		}); err != nil {
-		log.Error().Msgf("error: %+v", err)
-		return err
-	}
+	log.Debug().Msgf("cloud resource ingest took: %v", time.Until(start))
 
 	return tx.Commit()
 }
 
-func ResourceToMaps(ms []CloudResource) []map[string]interface{} {
-	res := []map[string]interface{}{}
+func ResourceToMaps(ms []CloudResource) ([]map[string]interface{}, []map[string]interface{}, []map[string]interface{}) {
+	res := make([]map[string]interface{}, 0, len(ms))
+	hosts := make([]map[string]interface{}, 0)
+	clusters := make([]map[string]interface{}, 0)
+	timestampNow := time.Now().UTC().Format(time.RFC3339Nano)
 	for _, v := range ms {
-		res = append(res, v.ToMap())
+		newmap, err := v.ToMap()
+		if err != nil {
+			log.Error().Msgf("ToMap err:%v", err)
+			continue
+		}
+		res = append(res, newmap)
+
+		if v.ResourceID == AwsEc2ResourceId || v.ResourceID == GcpComputeResourceId || v.ResourceID == AzureComputeResourceId {
+			var publicIP, privateIP []string
+			if v.PublicIpAddress != "" {
+				publicIP = []string{v.PublicIpAddress}
+			}
+			if v.PrivateIpAddress != "" {
+				privateIP = []string{v.PrivateIpAddress}
+			}
+			var k8sClusterName string
+			var tags map[string]interface{}
+			if v.Tags != nil {
+				err = json.Unmarshal(*v.Tags, &tags)
+				if err == nil {
+					if clusterName, ok := tags["eks:cluster-name"]; ok {
+						k8sClusterName = fmt.Sprintf("%v", clusterName)
+					} else if clusterName, ok = tags["goog-k8s-cluster-name"]; ok {
+						k8sClusterName = fmt.Sprintf("%v", clusterName)
+					}
+				}
+			}
+			// Add hosts as regular `Node`
+			hosts = append(hosts, map[string]interface{}{
+				"public_ip":               publicIP,
+				"cloud_region":            newmap["cloud_region"],
+				"kubernetes_cluster_name": k8sClusterName,
+				"private_ip":              privateIP,
+				"node_type":               NodeTypeHost,
+				"pseudo":                  false,
+				"timestamp":               timestampNow,
+				"kubernetes_cluster_id":   k8sClusterName,
+				"node_name":               v.Name,
+				"active":                  true,
+				"cloud_provider":          v.CloudProvider,
+				"agent_running":           false,
+				"version":                 DeepfenceVersion,
+				"instance_id":             newmap["node_id"],
+				"host_name":               v.Name,
+				"node_id":                 v.Name,
+			})
+			if k8sClusterName != "" {
+				clusters = append(clusters, map[string]interface{}{
+					"timestamp":               timestampNow,
+					"node_id":                 k8sClusterName,
+					"node_name":               k8sClusterName,
+					"node_type":               NodeTypeKubernetesCluster,
+					"kubernetes_cluster_name": k8sClusterName,
+					"kubernetes_cluster_id":   k8sClusterName,
+					"active":                  true,
+					"cloud_provider":          v.CloudProvider,
+					"agent_running":           false,
+				})
+			}
+		}
 	}
-	fmt.Println("check ms size", len(res))
-	return res
+	return res, hosts, clusters
 }
 
-func (c *CloudResource) ToMap() map[string]interface{} {
+func (c *CloudResource) ToMap() (map[string]interface{}, error) {
 	out, err := json.Marshal(*c)
 	if err != nil {
-		fmt.Println("check err", err)
-		return nil
+		return nil, err
 	}
 	bb := map[string]interface{}{}
 	err = json.Unmarshal(out, &bb)
 	if err != nil {
-		fmt.Println("check err 2", err)
-		return nil
+		return nil, err
 	}
 
 	bb = convertStructFieldToJSONString(bb, "task_definition")
@@ -238,24 +295,23 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 	bb = convertStructFieldToJSONString(bb, "user-groups")
 	bb = convertStructFieldToJSONString(bb, "vpc_security_group_ids")
 	bb = convertStructFieldToJSONString(bb, "resources_vpc_config")
+	bb = convertStructFieldToJSONString(bb, "tags")
 
-	if bb["resource_id"] == "aws_ecs_service" {
-		bb["arn"] = bb["service_name"]
-	}
-	if bb["resource_id"] == "aws_lambda_function" {
-		bb["arn"] = bb["name"]
-	}
-	if bb["resource_id"] == "aws_iam_access_key" {
-		bb["arn"] = bb["access_key_id"]
-	}
 	if strings.Contains("azure", bb["resource_id"].(string)) {
-		bb["arn"] = bb["name"]
-	}
-	if strings.Contains("azure", bb["resource_id"].(string)) {
-		bb["arn"] = bb["name"]
 		if bb["resource_id"].(string) == "azure_compute_virtual_machine" {
-
-			bb["arn"] = bb["vm_id"]
+			bb["node_id"] = bb["vm_id"]
+		} else {
+			bb["node_id"] = bb["name"]
+		}
+	} else {
+		if bb["arn"] != nil {
+			bb["node_id"] = bb["arn"]
+		} else if bb["id"] != nil {
+			bb["node_id"] = bb["id"]
+		} else if bb["resource_id"] != nil {
+			bb["node_id"] = bb["resource_id"]
+		} else {
+			bb["node_id"] = "error"
 		}
 	}
 	accountId, present := bb["account_id"]
@@ -266,7 +322,15 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 		}
 	}
 
-	return bb
+	bb["node_type"] = bb["resource_id"]
+	cloud_region := "global"
+	if v, has := bb["region"]; has && v != nil {
+		cloud_region = v.(string)
+	}
+	bb["cloud_region"] = cloud_region
+	bb["node_name"] = bb["name"]
+
+	return bb, nil
 }
 
 // TODO: Call somewhere

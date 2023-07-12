@@ -10,9 +10,9 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/google/uuid"
@@ -25,10 +25,6 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 
 	var req model.ReportReq
 	req.ReportID = chi.URLParam(r, "report_id")
-	if err := h.Validator.Struct(req); err != nil {
-		respondError(&ValidatorError{err: err}, w)
-		return
-	}
 	if err := h.Validator.Struct(req); err != nil {
 		respondError(&ValidatorError{err: err}, w)
 		return
@@ -242,6 +238,10 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(&BadDecoding{err}, w)
+		return
+	}
+	if err := h.Validator.Struct(req); err != nil {
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 

@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	wrkingest "github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
-	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -23,6 +23,14 @@ type AlreadyRunningScanError struct {
 
 func (ve *AlreadyRunningScanError) Error() string {
 	return fmt.Sprintf("Scan of type %s already running for %s, id: %s", ve.ScanType, ve.NodeId, ve.ScanId)
+}
+
+type AgentNotInstalledError struct {
+	NodeId string
+}
+
+func (ve *AgentNotInstalledError) Error() string {
+	return fmt.Sprintf("Agent sensor not installed in %s", ve.NodeId)
 }
 
 type NodeNotFoundError struct {
@@ -79,10 +87,11 @@ func AddNewScan(tx WriteDBTransaction,
 	}
 
 	res, err = tx.Run(fmt.Sprintf(`
-		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:%s{node_id:$node_id})
+		MATCH (m:%s{node_id:$node_id})
+		OPTIONAL MATCH (n:%s)-[:SCANNED]->(m)
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
-		RETURN n.node_id`, scan_type, controls.ResourceTypeToNeo4j(node_type)),
+		RETURN n.node_id, m.agent_running`, controls.ResourceTypeToNeo4j(node_type), scan_type),
 		map[string]interface{}{
 			"node_id":  node_id,
 			"complete": utils.SCAN_STATUS_SUCCESS,
@@ -101,6 +110,13 @@ func AddNewScan(tx WriteDBTransaction,
 			ScanId:   rec.Values[0].(string),
 			NodeId:   node_id,
 			ScanType: string(scan_type),
+		}
+	}
+	if rec.Values[1] != nil {
+		if rec.Values[1].(bool) == false {
+			return &AgentNotInstalledError{
+				NodeId: node_id,
+			}
 		}
 	}
 
@@ -225,11 +241,12 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	}
 
 	res, err = tx.Run(fmt.Sprintf(`
-		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:%s{node_id:$node_id})
+		MATCH (m:%s{node_id:$node_id})
+		OPTIONAL MATCH (n:%s)-[:SCANNED]->(m)
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
 		AND n.benchmark_types = $benchmark_types
-		RETURN n.node_id`, scanType, neo4jNodeType),
+		RETURN n.node_id, m.agent_running`, neo4jNodeType, scanType),
 		map[string]interface{}{
 			"node_id":         nodeId,
 			"complete":        utils.SCAN_STATUS_SUCCESS,
@@ -250,6 +267,13 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 			ScanId:   rec.Values[0].(string),
 			NodeId:   nodeId,
 			ScanType: string(scanType),
+		}
+	}
+	if rec.Values[1] != nil {
+		if rec.Values[1].(bool) == false {
+			return &AgentNotInstalledError{
+				NodeId: nodeId,
+			}
 		}
 	}
 	nt := ctl.KubernetesCluster
@@ -276,6 +300,24 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 			"benchmark_types": benchmarkTypes,
 			"action":          string(action),
 		}); err != nil {
+		return err
+	}
+
+	latestScanIDFieldName := wrkingest.LatestScanIdField[scanType]
+	scanStatusFieldName := wrkingest.ScanStatusField[scanType]
+
+	if _, err = tx.Run(fmt.Sprintf(`
+		MERGE (n:%s{node_id: $scan_id})
+		SET n.status = $status, n.updated_at = TIMESTAMP()
+		WITH n
+		OPTIONAL MATCH (n) -[:DETECTED]- (m)
+		WITH n
+		MATCH (n) -[:SCANNED]- (r)
+		SET r.%s=n.status, r.%s=n.node_id`,
+		scanType, scanStatusFieldName, latestScanIDFieldName),
+		map[string]interface{}{
+			"scan_id": scanId,
+			"status":  utils.SCAN_STATUS_STARTING}); err != nil {
 		return err
 	}
 

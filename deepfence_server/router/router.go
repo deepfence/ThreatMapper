@@ -12,8 +12,8 @@ import (
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
@@ -109,6 +109,14 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 	if err != nil {
 		return err
 	}
+	err = dfHandler.Validator.RegisterValidation("namespace", model.ValidateNamespace)
+	if err != nil {
+		return err
+	}
+	err = dfHandler.Validator.RegisterValidation("api_token", model.ValidateApiToken)
+	if err != nil {
+		return err
+	}
 
 	r.Use(otelchi.Middleware("deepfence-server", otelchi.WithChiRoutes(r)))
 
@@ -200,7 +208,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				})
 				r.Route("/threat", func(r chi.Router) {
 					r.Post("/", dfHandler.GetThreatGraph)
-					r.Post("/vulnerability", dfHandler.GetVulnerabilityThreatGraph)
+					r.Post("/individual", dfHandler.GetIndividualThreatGraph)
 				})
 			})
 
@@ -213,6 +221,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/pods", dfHandler.GetPods)
 				r.Post("/registryaccount", dfHandler.GetRegistryAccount)
 				r.Post("/cloud-resources", dfHandler.GetCloudResources)
+				r.Post("/vulnerabilities", dfHandler.GetVulnerabilities)
+				r.Post("/secrets", dfHandler.GetSecrets)
+				r.Post("/malwares", dfHandler.GetMalwares)
+				r.Post("/compliances", dfHandler.GetCompliances)
+				r.Post("/cloud-compliances", dfHandler.GetCloudCompliances)
 			})
 
 			r.Route("/search", func(r chi.Router) {
@@ -224,6 +237,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/malwares", dfHandler.SearchMalwares)
 				r.Post("/cloud-compliances", dfHandler.SearchCloudCompliances)
 				r.Post("/compliances", dfHandler.SearchCompliances)
+				r.Post("/secret-rules", dfHandler.SearchSecretRules)
+				r.Post("/malware-rules", dfHandler.SearchMalwareRules)
+				r.Post("/compliance-rules", dfHandler.SearchComplianceRules)
+				r.Post("/vulnerability-rules", dfHandler.SearchVulnerabilityRules)
 				r.Post("/cloud-resources", dfHandler.SearchCloudResources)
 				r.Post("/kubernetes-clusters", dfHandler.SearchKubernetesClusters)
 				r.Post("/pods", dfHandler.SearchPods)
@@ -245,6 +262,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Post("/secrets", dfHandler.SearchSecretsCount)
 					r.Post("/malwares", dfHandler.SearchMalwaresCount)
 					r.Post("/cloud-compliances", dfHandler.SearchCloudCompliancesCount)
+					r.Post("/secret-rules", dfHandler.SearchSecretRulesCount)
+					r.Post("/malware-rules", dfHandler.SearchMalwareRulesCount)
+					r.Post("/compliance-rules", dfHandler.SearchComplianceRulesCount)
+					r.Post("/vulnerability-rules", dfHandler.SearchVulnerabilityRulesCount)
 					r.Post("/compliances", dfHandler.SearchCompliancesCount)
 					r.Post("/cloud-resources", dfHandler.SearchCloudResourcesCount)
 					r.Post("/kubernetes-clusters", dfHandler.SearchKubernetesClustersCount)
@@ -264,6 +285,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/kubernetes-cluster", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetKubernetesClusterControls))
 				r.Post("/agent-init", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetAgentInitControls))
 				r.Post("/agent-upgrade", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.ScheduleAgentUpgrade))
+
+				r.Route("/agent-plugins", func(r chi.Router) {
+					r.Post("/enable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.ScheduleAgentPluginsEnable))
+					r.Post("/disable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.ScheduleAgentPluginsDisable))
+				})
 				r.Post("/cloud-node", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetCloudNodeControls))
 				r.Post("/cloud-node/enable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.EnableCloudNodeControls))
 				r.Post("/cloud-node/disable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.DisableCloudNodeControls))
@@ -387,6 +413,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Put("/", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.UpdateRegistry))
 					r.Delete("/", dfHandler.AuthHandler(ResourceRegistry, PermissionDelete, dfHandler.DeleteRegistry))
 					r.Get("/summary", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.RegistrySummary))
+					r.Post("/sync", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.RefreshRegistry))
 				})
 				r.Post("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImages))
 				r.Post("/stubs", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImageStubs))

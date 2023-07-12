@@ -14,3 +14,14 @@ type AgentUpgrade struct {
 	Version string `json:"version" required:"true"`
 	NodeId  string `json:"node_id" required:"true"`
 }
+
+type AgentPluginEnable struct {
+	PluginName string `json:"plugin_name" required:"true"`
+	Version    string `json:"version" required:"true"`
+	NodeId     string `json:"node_id" required:"true"`
+}
+
+type AgentPluginDisable struct {
+	PluginName string `json:"plugin_name" required:"true"`
+	NodeId     string `json:"node_id" required:"true"`
+}

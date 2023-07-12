@@ -8,8 +8,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
@@ -126,6 +126,100 @@ func (h *Handler) ScheduleAgentUpgrade(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = controls.ScheduleAgentUpgrade(ctx, agentUp.Version, []string{agentUp.NodeId}, action)
+	if err != nil {
+		log.Error().Msgf("Cannot schedule agent upgrade: %v", err)
+		respondWith(ctx, w, http.StatusInternalServerError, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) ScheduleAgentPluginsEnable(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	var agentUp model.AgentPluginEnable
+
+	err = json.Unmarshal(data, &agentUp)
+	if err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	url, err := controls.GetAgentPluginVersionTarball(ctx, agentUp.Version, agentUp.PluginName)
+	if err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	internal_req := ctl.EnableAgentPluginRequest{
+		BinUrl:     url,
+		Version:    agentUp.Version,
+		PluginName: agentUp.PluginName,
+	}
+
+	b, err := json.Marshal(internal_req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		respondError(err, w)
+		return
+	}
+
+	action := ctl.Action{
+		ID:             ctl.StartAgentUpgrade,
+		RequestPayload: string(b),
+	}
+
+	err = controls.ScheduleAgentPluginEnable(ctx, agentUp.Version, agentUp.PluginName, []string{agentUp.NodeId}, action)
+	if err != nil {
+		log.Error().Msgf("Cannot schedule agent upgrade: %v", err)
+		respondWith(ctx, w, http.StatusInternalServerError, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) ScheduleAgentPluginsDisable(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	var agentUp model.AgentPluginDisable
+
+	err = json.Unmarshal(data, &agentUp)
+	if err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	internal_req := ctl.DisableAgentPluginRequest{
+		PluginName: agentUp.PluginName,
+	}
+
+	b, err := json.Marshal(internal_req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		respondError(err, w)
+		return
+	}
+
+	action := ctl.Action{
+		ID:             ctl.StartAgentUpgrade,
+		RequestPayload: string(b),
+	}
+
+	err = controls.ScheduleAgentPluginDisable(ctx, agentUp.PluginName, []string{agentUp.NodeId}, action)
 	if err != nil {
 		log.Error().Msgf("Cannot schedule agent upgrade: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)

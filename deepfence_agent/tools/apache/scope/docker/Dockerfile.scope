@@ -1,3 +1,0 @@
-FROM weaveworks/cloud-agent
-LABEL maintainer="Deepfence Inc"
-LABEL deepfence.role=system

@@ -9,12 +9,14 @@ import (
 	"net/http"
 	"sync"
 
+	httpext "github.com/go-playground/pkg/v5/net/http"
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 var agent_report_ingesters sync.Map
@@ -94,7 +96,16 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	res := controls.AgentBeat{
+		BeatRateSec: 30 * ingesters.Push_back.Load(),
+	}
+	err = httpext.JSON(w, http.StatusOK, res)
+
+	if err != nil {
+		log.Error().Msgf("Cannot send beat: %v", err)
+		w.WriteHeader(http.StatusGone)
+		return
+	}
 }
 
 func (h *Handler) IngestSyncAgentReport(w http.ResponseWriter, r *http.Request) {

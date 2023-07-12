@@ -1,7 +1,6 @@
 package supervisor
 
 import (
-	"bufio"
 	"errors"
 	"io"
 	"net/http"
@@ -13,13 +12,14 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/cgroups"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/minio/selfupdate"
 )
 
 const (
-	self_id      = "self"
-	log_root_env = "${DF_INSTALL_DIR}/var/log/deepfenced/"
+	self_id                  = "self"
+	log_root_env             = "${DF_INSTALL_DIR}/var/log/deepfenced/"
+	EXIT_CODE_BASH_NOT_FOUND = 127
 )
 
 var (
@@ -57,7 +57,7 @@ type procHandler struct {
 
 func NewProcHandler(name, path, command, env string, autorestart bool, cgroup string) *procHandler {
 	envs := strings.Split(env, ",")
-	expanded_envs := []string{}
+	expanded_envs := os.Environ()
 	for i := range envs {
 		expanded_envs = append(expanded_envs, os.ExpandEnv(envs[i]))
 	}
@@ -75,37 +75,13 @@ func NewProcHandler(name, path, command, env string, autorestart bool, cgroup st
 }
 
 func startLogging(name string, cmd *exec.Cmd) {
-	outReader, err := cmd.StdoutPipe()
-	if err != nil {
-		log.Error().Msgf("Cannot start logging: %v", err)
-		return
-	}
-	errReader, err := cmd.StderrPipe()
-	if err != nil {
-		log.Error().Msgf("Cannot start logging: %v", err)
-		return
-	}
-	cmdReader := io.MultiReader(outReader, errReader)
 	f, err := os.Create(log_root + name)
 	if err != nil {
 		log.Error().Msgf("Cannot start logging: %v", err)
 		return
 	}
-	scanner := bufio.NewScanner(cmdReader)
-	go func() {
-		defer f.Close()
-		for {
-			for scanner.Scan() {
-				m := scanner.Bytes()
-				_, err := f.Write(m)
-				if err != nil {
-					log.Error().Msgf("Error while logging: %v", err)
-					continue
-				}
-				f.Write([]byte{'\n'})
-			}
-		}
-	}()
+	cmd.Stdout = f
+	cmd.Stderr = f
 }
 
 func (ph *procHandler) start() error {
@@ -114,6 +90,9 @@ func (ph *procHandler) start() error {
 	}
 	cmd := exec.Command("/bin/bash", "-c", ph.command)
 	cmd.Env = ph.env
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Pdeathsig: syscall.SIGKILL,
+	}
 	startLogging(ph.name, cmd)
 	if !ph.autorestart {
 		err := cmd.Start()
@@ -135,7 +114,7 @@ func (ph *procHandler) start() error {
 	} else {
 		stop := make(chan struct{})
 		ackstop := make(chan struct{})
-		done := make(chan struct{})
+		done := make(chan bool)
 
 		go func() {
 		loop:
@@ -154,20 +133,32 @@ func (ph *procHandler) start() error {
 				go func() {
 					err = cmd.Wait()
 					if err != nil {
+						if e, is := err.(*exec.ExitError); is {
+							if e.ExitCode() == EXIT_CODE_BASH_NOT_FOUND {
+								done <- false
+							}
+						}
 						log.Error().Msgf("Done with error: %v", err)
 					}
-					done <- struct{}{}
+					done <- true
 				}()
 
 				select {
 				case <-stop:
 					cmd.Process.Signal(syscall.SIGTERM)
 					break loop
-				case <-done:
+				case restart := <-done:
+					if !restart {
+						log.Info().Msgf("%s defenitively stopped", ph.command)
+						break loop
+					}
 					log.Info().Msgf("%s restarting...", ph.command)
 					time.Sleep(time.Second * 5)
 					cmd = exec.Command("/bin/bash", "-c", ph.command)
 					cmd.Env = ph.env
+					cmd.SysProcAttr = &syscall.SysProcAttr{
+						Pdeathsig: syscall.SIGKILL,
+					}
 					startLogging(ph.name, cmd)
 				}
 			}

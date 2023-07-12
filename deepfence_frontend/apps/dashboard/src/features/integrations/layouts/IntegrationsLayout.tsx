@@ -16,7 +16,7 @@ const IntegrationsLayout = () => {
 
   return (
     <>
-      <div className="pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <div className="px-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<IntegrationsIcon />} isLink>
             <DFLink to={'/integrations'} unstyled>

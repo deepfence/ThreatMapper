@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/armon/go-metrics"
+	"github.com/hashicorp/go-metrics"
 	log "github.com/sirupsen/logrus"
 	"github.com/typetypetype/conntrack"
 )

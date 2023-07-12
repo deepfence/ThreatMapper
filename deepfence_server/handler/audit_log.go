@@ -1,16 +1,16 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/lestrrat-go/jwx/v2/jwt"
@@ -20,7 +20,7 @@ import (
 const (
 	EVENT_COMPLIANCE_SCAN    = string(utils.NEO4J_COMPLIANCE_SCAN)
 	EVENT_VULNERABILITY_SCAN = string(utils.NEO4J_VULNERABILITY_SCAN)
-	EVENT_SECRET_SCAN        = string(utils.SECRET_SCAN)
+	EVENT_SECRET_SCAN        = string(utils.NEO4J_SECRET_SCAN)
 	EVENT_MALWARE_SCAN       = string(utils.NEO4J_MALWARE_SCAN)
 	EVENT_INTEGRATION        = "integration"
 	EVENT_AUTH               = "auth"
@@ -78,27 +78,29 @@ func (h *Handler) AuditUserActivity(
 ) {
 
 	var (
-		user_id     = 0.0
-		role_id     = 0.0
-		userIdValid = false
-		claims      = map[string]interface{}{}
+		userEmail string
+		userRole  string
+		namespace string
+		claims    = map[string]interface{}{}
 	)
 
 	token, err := GetTokenFromRequest(h.TokenAuth, req)
 	if err != nil {
-		log.Error().Msg(err.Error())
+		if !errors.Is(err, jwtauth.ErrNoTokenFound) {
+			log.Error().Msg(err.Error())
+		}
 	} else {
-		claims := token.PrivateClaims()
-		user_id = claims["user_id"].(float64)
-		userIdValid = true
-		role_id = claims["role_id"].(float64)
+		claims = token.PrivateClaims()
+		userEmail = claims["email"].(string)
+		userRole = claims["role"].(string)
+		namespace = claims[directory.NamespaceKey].(string)
 	}
 
-	if event == EVENT_AUTH && action == ACTION_LOGIN {
+	if event == EVENT_AUTH && (action == ACTION_LOGIN || action == ACTION_TOKEN_AUTH || action == ACTION_CREATE) {
 		user := resources.(*model.User)
-		user_id = float64(user.ID)
-		userIdValid = true
-		role_id = float64(user.RoleID)
+		userEmail = user.Email
+		userRole = user.Role
+		namespace = user.CompanyNamespace
 	}
 
 	var resourceStr string = ""
@@ -123,18 +125,20 @@ func (h *Handler) AuditUserActivity(
 		Action:    action,
 		Resources: resourceStr,
 		Success:   success,
-		UserID: sql.NullInt32{
-			Int32: int32(user_id),
-			Valid: userIdValid,
-		},
-		UserRoleID: int32(role_id),
-		CreatedAt:  time.Now(),
+		UserEmail: userEmail,
+		UserRole:  userRole,
+		CreatedAt: time.Now(),
 	}
 
-	go h.AddAuditLog(params)
+	if namespace == "" {
+		log.Error().Msgf("namespace unknown in audit log: %v", params)
+		return
+	}
+
+	go h.AddAuditLog(namespace, params)
 }
 
-func (h *Handler) AddAuditLog(params postgresql_db.CreateAuditLogParams) error {
+func (h *Handler) AddAuditLog(namespace string, params postgresql_db.CreateAuditLogParams) error {
 	data, err := json.Marshal(params)
 	if err != nil {
 		return err
@@ -143,13 +147,16 @@ func (h *Handler) AddAuditLog(params postgresql_db.CreateAuditLogParams) error {
 	h.IngestChan <- &kgo.Record{
 		Topic: utils.AUDIT_LOGS,
 		Value: data,
+		Headers: []kgo.RecordHeader{
+			{Key: "namespace", Value: []byte(namespace)},
+		},
 	}
 
 	return nil
 }
 
 func (h *Handler) GetAuditLogs(w http.ResponseWriter, r *http.Request) {
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get db connection")

@@ -11,8 +11,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/render/detailed"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
 	reporters_graph "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 var (

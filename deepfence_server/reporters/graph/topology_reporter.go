@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/samber/mo"
 )
@@ -52,16 +52,14 @@ type ResourceStub struct {
 func (nc *neo4jTopologyReporter) GetProcessConnections(tx neo4j.Transaction, hosts []string) ([]ConnectionSummary, error) {
 
 	res := []ConnectionSummary{}
-	if len(hosts) == 0 {
-		return res, nil
-	}
+	hosts = append(hosts, "in-the-internet")
 
 	r, err := tx.Run(`
 	MATCH (n:Node) -[r:CONNECTS]-> (m:Node)
 	WHERE n.node_id IN $host_ids
-	WITH CASE WHEN coalesce(n.kubernetes_cluster_id, '') <> '' 
-		THEN n.kubernetes_cluster_id 
-		ELSE n.cloud_region 
+	WITH CASE WHEN coalesce(n.kubernetes_cluster_id, '') <> ''
+		THEN n.kubernetes_cluster_id
+		ELSE n.cloud_region
 	END AS left_region,
 	n, m, r,
 	CASE WHEN coalesce(m.kubernetes_cluster_id, '') <> ''
@@ -116,7 +114,7 @@ func (nc *neo4jTopologyReporter) GetProcessConnections(tx neo4j.Transaction, hos
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) GetHostConnections(tx neo4j.Transaction, region_k8s, not_hosts[]string) ([]ConnectionSummary, error) {
+func (nc *neo4jTopologyReporter) GetHostConnections(tx neo4j.Transaction, region_k8s, not_hosts []string) ([]ConnectionSummary, error) {
 
 	res := []ConnectionSummary{}
 	if len(region_k8s) == 0 {
@@ -146,32 +144,32 @@ func (nc *neo4jTopologyReporter) GetHostConnections(tx neo4j.Transaction, region
 	var buf bytes.Buffer
 	for _, edge := range edges {
 		if edge.Values[2].(string) != edge.Values[5].(string) {
-				buf.Reset()
-				buf.WriteString(edge.Values[0].(string))
-				buf.WriteByte(';')
-				buf.WriteString(edge.Values[1].(string))
-				buf.WriteByte(';')
-				buf.WriteString(edge.Values[2].(string))
-				buf.WriteByte(';')
-				buf.WriteString(strconv.Itoa(0))
-				src := buf.String()
-				buf.Reset()
-				buf.WriteString(edge.Values[3].(string))
-				buf.WriteByte(';')
-				buf.WriteString(edge.Values[4].(string))
-				buf.WriteByte(';')
-				buf.WriteString(edge.Values[5].(string))
-				buf.WriteByte(';')
-				buf.WriteString(strconv.Itoa(0))
-				target := buf.String()
-				res = append(res, ConnectionSummary{Source: src, Target: target})
+			buf.Reset()
+			buf.WriteString(edge.Values[0].(string))
+			buf.WriteByte(';')
+			buf.WriteString(edge.Values[1].(string))
+			buf.WriteByte(';')
+			buf.WriteString(edge.Values[2].(string))
+			buf.WriteByte(';')
+			buf.WriteString(strconv.Itoa(0))
+			src := buf.String()
+			buf.Reset()
+			buf.WriteString(edge.Values[3].(string))
+			buf.WriteByte(';')
+			buf.WriteString(edge.Values[4].(string))
+			buf.WriteByte(';')
+			buf.WriteString(edge.Values[5].(string))
+			buf.WriteByte(';')
+			buf.WriteString(strconv.Itoa(0))
+			target := buf.String()
+			res = append(res, ConnectionSummary{Source: src, Target: target})
 		}
 	}
 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) GetKubernetesClusterConnections(tx neo4j.Transaction, not_hosts[]string) ([]ConnectionSummary, error) {
+func (nc *neo4jTopologyReporter) GetKubernetesClusterConnections(tx neo4j.Transaction, not_hosts []string) ([]ConnectionSummary, error) {
 
 	res := []ConnectionSummary{}
 
@@ -195,25 +193,25 @@ func (nc *neo4jTopologyReporter) GetKubernetesClusterConnections(tx neo4j.Transa
 	var buf bytes.Buffer
 	for _, edge := range edges {
 		if edge.Values[2].(string) != edge.Values[5].(string) {
-				buf.Reset()
-				buf.WriteString(edge.Values[0].(string))
-				buf.WriteByte(';')
-				buf.WriteString(edge.Values[1].(string))
-				buf.WriteByte(';')
-				buf.WriteString(edge.Values[2].(string))
-				buf.WriteByte(';')
-				buf.WriteString(strconv.Itoa(0))
-				src := buf.String()
-				buf.Reset()
-				buf.WriteString(edge.Values[3].(string))
-				buf.WriteByte(';')
-				buf.WriteString(edge.Values[4].(string))
-				buf.WriteByte(';')
-				buf.WriteString(edge.Values[5].(string))
-				buf.WriteByte(';')
-				buf.WriteString(strconv.Itoa(0))
-				target := buf.String()
-				res = append(res, ConnectionSummary{Source: src, Target: target})
+			buf.Reset()
+			buf.WriteString(edge.Values[0].(string))
+			buf.WriteByte(';')
+			buf.WriteString(edge.Values[1].(string))
+			buf.WriteByte(';')
+			buf.WriteString(edge.Values[2].(string))
+			buf.WriteByte(';')
+			buf.WriteString(strconv.Itoa(0))
+			src := buf.String()
+			buf.Reset()
+			buf.WriteString(edge.Values[3].(string))
+			buf.WriteByte(';')
+			buf.WriteString(edge.Values[4].(string))
+			buf.WriteByte(';')
+			buf.WriteString(edge.Values[5].(string))
+			buf.WriteByte(';')
+			buf.WriteString(strconv.Itoa(0))
+			target := buf.String()
+			res = append(res, ConnectionSummary{Source: src, Target: target})
 		}
 	}
 
@@ -286,20 +284,20 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction,
 	if err != nil {
 		return res, err
 	}
-	log.Info().Msgf("Proc: %v / %v", time.Since(start),len(proc_conn))
+	log.Info().Msgf("Proc: %v / %v", time.Since(start), len(proc_conn))
 	res = append(res, proc_conn...)
 	host_conn, err := nc.GetHostConnections(tx, append(cloud_region, k8s_cluster...), hosts)
 	if err != nil {
 		return res, err
 	}
 	res = append(res, host_conn...)
-	log.Info().Msgf("Hosts: %v / %v", time.Since(start),len(host_conn))
+	log.Info().Msgf("Hosts: %v / %v", time.Since(start), len(host_conn))
 	rc_conn, err := nc.GetRegionClusterConnections(tx, cloud_provider, append(cloud_region, k8s_cluster...))
 	if err != nil {
 		return res, err
 	}
 	res = append(res, rc_conn...)
-	log.Info().Msgf("RC: %v / %v", time.Since(start),len(rc_conn))
+	log.Info().Msgf("RC: %v / %v", time.Since(start), len(rc_conn))
 
 	return res, nil
 }
@@ -314,20 +312,20 @@ func (nc *neo4jTopologyReporter) GetKubernetesConnections(tx neo4j.Transaction,
 	if err != nil {
 		return res, err
 	}
-	log.Info().Msgf("Proc: %v / %v", time.Since(start),len(proc_conn))
+	log.Info().Msgf("Proc: %v / %v", time.Since(start), len(proc_conn))
 	res = append(res, proc_conn...)
 	host_conn, err := nc.GetHostConnections(tx, k8s_cluster, hosts)
 	if err != nil {
 		return res, err
 	}
 	res = append(res, host_conn...)
-	log.Info().Msgf("Hosts: %v / %v", time.Since(start),len(host_conn))
+	log.Info().Msgf("Hosts: %v / %v", time.Since(start), len(host_conn))
 	rc_conn, err := nc.GetKubernetesClusterConnections(tx, hosts)
 	if err != nil {
 		return res, err
 	}
 	res = append(res, rc_conn...)
-	log.Info().Msgf("K8s: %v / %v", time.Since(start),len(rc_conn))
+	log.Info().Msgf("K8s: %v / %v", time.Since(start), len(rc_conn))
 
 	return res, nil
 }
@@ -426,7 +424,7 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 		filterNil(map[string]interface{}{
 			"providers":      cloud_provider,
 			"regions":        cloud_regions,
-			"resource_types": model.TopologyCloudResourceTypes,
+			"resource_types": ingesters.TopologyCloudResourceTypes,
 		}))
 
 	if err != nil {

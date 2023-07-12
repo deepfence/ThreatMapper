@@ -3,7 +3,7 @@ package kubernetes
 import (
 	"fmt"
 
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	k8sscanner "github.com/deepfence/kubernetes-scanner/scanner/compliance"
 	k8sscannerutil "github.com/deepfence/kubernetes-scanner/util"
 	log "github.com/sirupsen/logrus"

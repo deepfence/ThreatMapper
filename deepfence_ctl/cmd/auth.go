@@ -9,8 +9,8 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/http"
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/output"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	oahttp "github.com/deepfence/golang_deepfence_sdk/utils/http"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 var authCmd = &cobra.Command{

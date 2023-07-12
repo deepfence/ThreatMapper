@@ -13,9 +13,9 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	pkgConst "github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 	"github.com/rs/zerolog/log"
@@ -50,15 +50,15 @@ type RegistryIDPathReq struct {
 }
 
 type RegistryImagesReq struct {
-	RegistryId  string                   `json:"registry_id" validate:"required" required:"true"`
-	ImageFilter reporters.ContainsFilter `json:"image_filter" required:"true"`
-	Window      FetchWindow              `json:"window" required:"true"`
+	RegistryId  string                  `json:"registry_id" validate:"required" required:"true"`
+	ImageFilter reporters.FieldsFilters `json:"image_filter" required:"true"`
+	Window      FetchWindow             `json:"window" required:"true"`
 }
 
 type RegistryImageStubsReq struct {
-	RegistryId  string                   `json:"registry_id" validate:"required" required:"true"`
-	ImageFilter reporters.ContainsFilter `json:"image_filter" required:"true"`
-	Window      FetchWindow              `json:"window" required:"true"`
+	RegistryId  string                  `json:"registry_id" validate:"required" required:"true"`
+	ImageFilter reporters.FieldsFilters `json:"image_filter" required:"true"`
+	Window      FetchWindow             `json:"window" required:"true"`
 }
 
 type RegistryCountResp struct {
@@ -290,7 +290,7 @@ func (i *ImageStub) AddTags(tags ...string) ImageStub {
 	return *i
 }
 
-func ListImageStubs(ctx context.Context, registryId string, filter reporters.ContainsFilter, fw FetchWindow) ([]ImageStub, error) {
+func ListImageStubs(ctx context.Context, registryId string, filter reporters.FieldsFilters, fw FetchWindow) ([]ImageStub, error) {
 
 	images := []ImageStub{}
 
@@ -314,10 +314,10 @@ func ListImageStubs(ctx context.Context, registryId string, filter reporters.Con
 	}
 
 	query := `
-	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (m:ContainerImage) -[:IS]-> (l:ImageStub)
-	` + reporters.ContainsFilter2CypherWhereConditions("m", filter, true) + `
-	WITH distinct l.node_id as name, collect(m.docker_image_tag) as tags
-	RETURN name, tags
+	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub)
+	` + reporters.ParseFieldFilters2CypherWhereConditions("l", mo.Some(filter), true) + `
+	WITH distinct l.docker_image_name as name, l.tags as tags, l.node_id as id
+	RETURN name, tags, id
 	ORDER BY name
 	` + fw.FetchWindow2CypherQuery()
 	r, err := tx.Run(query, map[string]interface{}{"id": registryId})
@@ -350,7 +350,7 @@ func ListImageStubs(ctx context.Context, registryId string, filter reporters.Con
 	return images, nil
 }
 
-func ListImages(ctx context.Context, registryId string, filter reporters.ContainsFilter, fw FetchWindow) ([]ContainerImage, error) {
+func ListImages(ctx context.Context, registryId string, filter reporters.FieldsFilters, fw FetchWindow) ([]ContainerImage, error) {
 
 	res := []ContainerImage{}
 
@@ -374,10 +374,9 @@ func ListImages(ctx context.Context, registryId string, filter reporters.Contain
 	}
 
 	query := `
-	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (m:ContainerImage)
-	` + reporters.ContainsFilter2CypherWhereConditions("m", filter, true) + `
-	RETURN m
-	ORDER BY m.node_id
+	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub) <-[:IS]- (m:ContainerImage)
+	` + reporters.ParseFieldFilters2CypherWhereConditions("l", mo.Some(filter), true) + `
+	RETURN l, m
 	` + fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("query: %v", query)
 	r, err := tx.Run(query, map[string]interface{}{"id": registryId})
@@ -391,19 +390,47 @@ func ListImages(ctx context.Context, registryId string, filter reporters.Contain
 	}
 
 	for _, rec := range records {
-		data, has := rec.Get("m")
-		if !has {
+		lValue, hasL := rec.Get("l")
+		mValue, hasM := rec.Get("m")
+		if !hasL || !hasM {
 			log.Warn().Msgf("Missing neo4j entry")
 			continue
 		}
-		da, ok := data.(dbtype.Node)
+
+		l, ok := lValue.(dbtype.Node)
 		if !ok {
 			log.Warn().Msgf("Missing neo4j entry")
 			continue
 		}
+
+		m, ok := mValue.(dbtype.Node)
+		if !ok {
+			log.Warn().Msgf("Missing neo4j entry")
+			continue
+		}
+
 		var node ContainerImage
-		utils.FromMap(da.Props, &node)
-		res = append(res, node)
+		utils.FromMap(m.Props, &node)
+
+		// Extract tags from the "l" node
+		tagsValue, hasTags := l.Props["tags"]
+		if hasTags {
+			tags, ok := tagsValue.([]interface{})
+			if ok {
+				for _, tag := range tags {
+					if tagStr, ok := tag.(string); ok {
+						// create individual tag nodes
+						tagNode := node
+						tagNode.Tag = tagStr
+						res = append(res, tagNode)
+					}
+				}
+			}
+		}
+
+		// kludge: breaking here since we don't want to repeat images and duplicate the entries
+		// in the first iteration itself we get all the tags in an array and we use the first image and duplicate
+		break
 	}
 
 	return res, nil

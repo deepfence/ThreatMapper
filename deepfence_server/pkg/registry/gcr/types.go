@@ -14,7 +14,6 @@ type NonSecret struct {
 }
 
 type Secret struct {
-	ProjectId    string `json:"project_id" validate:"required,min=2,max=64"`
 	PrivateKeyId string `json:"private_key_id" validate:"required"`
 }
 
