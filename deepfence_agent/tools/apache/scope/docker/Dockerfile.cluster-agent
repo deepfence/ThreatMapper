@@ -16,7 +16,7 @@ ENV CHECKPOINT_DISABLE=true \
 
 WORKDIR /home/deepfence
 RUN apt-get update
-RUN apt-get install -y --no-install-recommends libpcap0.8 bash conntrack iproute2 util-linux curl grep tar git wget supervisor gettext htop vim ca-certificates
+RUN apt-get install -y --no-install-recommends libpcap0.8 bash conntrack iproute2 util-linux curl grep tar git wget supervisor gettext htop vim ca-certificates sudo cron logrotate
 RUN apt-get -y --allow-unauthenticated install podman
 RUN curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
     && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
@@ -41,6 +41,8 @@ RUN useradd -rm -d /home/deepfence -s /bin/bash -g root -G sudo -u 1001 deepfenc
 RUN mkdir -p /etc/td-agent-bit/
 COPY tools/apache/fluentbit/* /etc/td-agent-bit/
 
+COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
+
 COPY start_agent.sh /usr/local/bin/start_agent
 RUN chmod +x /usr/local/bin/start_agent
 COPY plugins/fluent-bit/build/bin/fluent-bit /opt/td-agent-bit/bin/
@@ -51,7 +53,7 @@ COPY tools/apache/scope/probe/kubernetes/token.sh /home/deepfence/token.sh
 RUN chown -R deepfence /opt/ /home/deepfence /var/log /var/run/ /etc/td-agent-bit/
 
 USER deepfence
-COPY supervisord-cluster.conf /home/deepfence/supervisord.conf
+COPY supervisord-cluster.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/
 COPY tools/apache/scope/docker/entrypoint.sh /home/deepfence/
 RUN steampipe plugin install steampipe \
