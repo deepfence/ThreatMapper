@@ -49,7 +49,10 @@ export const AWSCloudFormation = () => {
           <div className="text-p7 dark:text-text-text-and-icon">
             Connect to your AWS Cloud Account via Cloud Formation. Find out more
             information by{' '}
-            <Link to="/" className="text-blue-600 dark:text-blue-500">
+            <Link
+              to="https://docs.deepfence.io/threatmapper/docs/v2.0/cloudscanner/aws#cloudformation"
+              className="text-blue-600 dark:text-blue-500"
+            >
               reading our documentation
             </Link>
             .
