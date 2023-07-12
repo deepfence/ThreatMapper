@@ -103,7 +103,7 @@ export const DockerConnectorForm = () => {
         <div className="text-p7 dark:text-text-text-and-icon">
           Connect to Docker Container. Find out more information by{' '}
           <DFLink
-            href={`https://docs.deepfence.io/threatstryker/docs/sensors/docker/`}
+            href={`https://community.deepfence.io/threatmapper/docs/v2.0/sensors/docker`}
             target="_blank"
             rel="noreferrer"
             className="mt-2"

@@ -115,17 +115,15 @@ export const AmazonECRConnectorForm = ({
               />
             </>
           )}
-          {!isPublic ? (
-            <TextInput
-              className="w-3/4 min-[200px] max-w-xs"
-              label="AWS Region"
-              type={'text'}
-              name="non_secret.aws_region_name"
-              placeholder="AWS Region"
-              color={fieldErrors?.['aws_region_name'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['aws_region_name']}
-            />
-          ) : null}
+          <TextInput
+            className="w-3/4 min-[200px] max-w-xs"
+            label="AWS Region"
+            type={'text'}
+            name="non_secret.aws_region_name"
+            placeholder="AWS Region"
+            color={fieldErrors?.['aws_region_name'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['aws_region_name']}
+          />
         </div>
         {errorMessage && <p className="dark:text-status-error text-p7">{errorMessage}</p>}
       </div>

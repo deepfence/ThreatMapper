@@ -40,7 +40,7 @@ const PostureCardContent = () => {
   const { data } = usePostureSummary();
 
   return (
-    <div className="h-full w-full grid max-[1536px]:grid-cols-2 grid-cols-3 p-4 gap-4">
+    <div className="h-full w-full grid grid-cols-3 p-4 gap-4">
       {data.providers?.map((provider) => {
         return <PostureCardItem key={provider.name} provider={provider} />;
       })}
@@ -59,8 +59,8 @@ const PostureCardItem = ({ provider }: { provider: ModelPostureProvider }) => {
           </span>
         </div>
       </div>
-      <div className="flex flex-col gap-1">
-        <div className="py-2 text-t5 uppercase dark:text-text-input-value">
+      <div className="flex flex-col gap-1 overflow-hidden">
+        <div className="py-2 text-t5 uppercase dark:text-text-input-value truncate">
           {providersToNameMapping[provider.name ?? '']}
         </div>
         <div
@@ -76,7 +76,7 @@ const PostureCardItem = ({ provider }: { provider: ModelPostureProvider }) => {
               percent={isScanned ? provider.compliance_percentage : null}
             />
           </div>
-          <div className="xl:text-h2 lg:text-h3 ">
+          <div className="text-h2">
             {isScanned
               ? `${formatPercentage(provider.compliance_percentage ?? 0, {
                   maximumFractionDigits: 1,
