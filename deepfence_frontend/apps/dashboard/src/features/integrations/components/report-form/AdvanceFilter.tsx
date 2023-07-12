@@ -122,7 +122,7 @@ export const AdvancedFilter = ({
             {resourceType !== 'CloudCompliance' ? (
               <>
                 <div>
-                  <SearchableClusterList triggerVariant="select" />
+                  <SearchableClusterList triggerVariant="select" valueKey="nodeName" />
                 </div>
               </>
             ) : null}

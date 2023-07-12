@@ -484,7 +484,12 @@ export const postureQueries = createQueryKeys('posture', {
         if (benchmarkTypes.length) {
           scanResultsReq.fields_filter.contains_filter.filter_in![
             'compliance_check_type'
-          ] = benchmarkTypes.map((type) => type.toLowerCase());
+          ] = benchmarkTypes.map((type) => {
+            if (type === 'SOC2') {
+              type = 'soc_2';
+            }
+            return type.toLowerCase();
+          });
         }
 
         if (services.length) {
