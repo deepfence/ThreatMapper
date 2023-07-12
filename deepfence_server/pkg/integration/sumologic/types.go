@@ -14,7 +14,7 @@ type SumoLogic struct {
 }
 
 type Config struct {
-	HTTPEndpoint string `json:"http_endpoint" validate:"required,url" required:"true"`
+	HTTPEndpoint string `json:"endpoint_url" validate:"required,url" required:"true"`
 }
 
 func (s SumoLogic) ValidateConfig(validate *validator.Validate) error {
