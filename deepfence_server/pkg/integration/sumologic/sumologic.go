@@ -5,14 +5,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 func New(b []byte) (SumoLogic, error) {
 	var s SumoLogic
-	err := json.Unmarshal(b, &s.Config)
+	err := json.Unmarshal(b, &s)
 	if err != nil {
 		return s, err
 	}
@@ -22,47 +23,61 @@ func New(b []byte) (SumoLogic, error) {
 	return s, nil
 }
 
-func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[string]interface{}) error {
+func (s SumoLogic) FormatMessage(message []map[string]interface{}) (bytes.Buffer, error) {
+	var buffer bytes.Buffer
+	for _, v := range message {
+		b, err := json.Marshal(v)
+		if err != nil {
+			log.Error().Msgf("%v", err)
+			return buffer, err
+		}
+		buffer.WriteString(string(b))
+		buffer.WriteString("\n")
+	}
+	return buffer, nil
+}
 
+func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[string]interface{}) error {
 	// Create an HTTP client with a timeout
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}
 
-	// Create a new JSON object with the data
-	payload := map[string]string{
-		"message": data,
+	var d []map[string]interface{}
+	err := json.Unmarshal([]byte(data), &d)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		return nil
 	}
 
-	// Marshal the payload to JSON
-	jsonBytes, err := json.Marshal(payload)
+	msg, err := s.FormatMessage(d)
 	if err != nil {
-		fmt.Println("Failed to marshal payload to JSON", err)
-		return err
+		log.Error().Msgf("%v", err)
+		return nil
 	}
 
 	// Create a new request to send the JSON data to Sumo Logic
-	req, err := http.NewRequest("POST", s.Config.HTTPEndpoint, bytes.NewBuffer(jsonBytes))
+	req, err := http.NewRequest("POST", s.Config.HTTPEndpoint, bytes.NewBuffer(msg.Bytes()))
 	if err != nil {
-		fmt.Println("Failed to create HTTP request", err)
-		return err
+		log.Error().Msgf("Failed to create HTTP request: %v", err)
+		return nil
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	// Send the request to Sumo Logic
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Failed to send data to Sumo Logic", err)
-		return err
+		log.Error().Msgf("Failed to send data to Sumo Logic: %v", err)
+		return nil
 	}
 	defer resp.Body.Close()
 
 	// Check the response status code
 	if resp.StatusCode != http.StatusOK {
-		fmt.Println("Failed to send data to Sumo Logic", resp.Status)
-		return errors.New(resp.Status)
+		log.Error().Msgf("Failed to send data to Sumo Logic: %v", resp.Status)
+		return nil
 	}
 
-	fmt.Println("Data sent to Sumo Logic successfully")
+	log.Debug().Msg("Data sent to Sumo Logic successfully")
 	return nil
 }
