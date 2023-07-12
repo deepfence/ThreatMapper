@@ -10,6 +10,7 @@ import {
   RowSelectionState,
   SortingState,
   Table,
+  TableNoDataElement,
   TableSkeleton,
 } from 'ui-components';
 
@@ -48,7 +49,7 @@ export const KubernetesTable = () => {
 
   return (
     <div className="px-4 pb-4">
-      <div className="py-2 flex items-center">
+      <div className="h-12 flex items-center">
         <BulkActions nodeIds={selectedIds} />
       </div>
 
@@ -227,7 +228,7 @@ const DataTable = ({
       <Table
         data={data.clusters ?? []}
         columns={columns}
-        noDataText="No kubernetes clusters are connected"
+        noDataElement={<TableNoDataElement text="No kubernetes clusters are connected" />}
         size="default"
         enableColumnResizing
         enablePagination

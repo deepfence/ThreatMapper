@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"os"
 
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/golang_deepfence_sdk/client"
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/weaveworks/scope/probe/common"
 )
 

@@ -151,7 +151,7 @@ const DeleteConfirmationModal = ({
         !fetcher.data?.deleteSuccess ? (
           <div className={'flex gap-x-4 justify-end'}>
             <Button
-              size="sm"
+              size="md"
               onClick={() => setShowDialog(false)}
               type="button"
               variant="outline"
@@ -159,14 +159,14 @@ const DeleteConfirmationModal = ({
               Cancel
             </Button>
             <Button
-              size="sm"
+              size="md"
               color="error"
               onClick={(e) => {
                 e.preventDefault();
                 onTableAction(row!, ActionEnumType.CONFIRM_DELETE);
               }}
             >
-              Yes, I&apos;m sure
+              Yes, delete
             </Button>
           </div>
         ) : undefined
@@ -191,7 +191,7 @@ const DeleteConfirmationModal = ({
 
 const Header = () => {
   return (
-    <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<IntegrationsIcon />} isLink>
@@ -236,7 +236,7 @@ const DownloadReport = () => {
       <Header />
       <div className="m-4">
         <Button
-          variant="outline"
+          variant="flat"
           startIcon={<PlusIcon />}
           onClick={() => {
             navigate('./create');

@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbLink } from 'ui-components';
 
 import { SettingsIcon } from '@/components/sideNavigation/icons/Settings';
 import { SettingNavigation } from '@/features/settings/components/SettingNavigation';
@@ -6,13 +7,12 @@ import { SettingNavigation } from '@/features/settings/components/SettingNavigat
 const Settings = () => {
   return (
     <>
-      <div className="flex py-2 w-full bg-white dark:bg-bg-breadcrumb-bar">
-        <span className="dark:text-text-input-value pl-6 flex items-center text-sm leading-[30px]">
-          <span className="w-4 h-4 mr-1.5">
-            <SettingsIcon />
-          </span>
-          Settings
-        </span>
+      <div className="dark:bg-bg-breadcrumb-bar py-2 px-4">
+        <Breadcrumb>
+          <BreadcrumbLink icon={<SettingsIcon />} className="dark:text-text-input-value">
+            Settings
+          </BreadcrumbLink>
+        </Breadcrumb>
       </div>
       <div className="flex">
         <div>

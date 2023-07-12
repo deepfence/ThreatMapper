@@ -10,8 +10,8 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/http"
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/output"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	deepfence_server_client "github.com/deepfence/golang_deepfence_sdk/client"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 var graphCmd = &cobra.Command{
@@ -156,12 +156,13 @@ var attackPathsSubCmd = &cobra.Command{
 	Long:  `This subcommand retrieve the attack paths graph`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		req := http.Client().ThreatAPI.GetVulnerabilityThreatGraph(context.Background())
-		req = req.GraphVulnerabilityThreatGraphRequest(
-			deepfence_server_client.GraphVulnerabilityThreatGraphRequest{
+		req := http.Client().ThreatAPI.GetIndividualThreatGraph(context.Background())
+		req = req.GraphIndividualThreatGraphRequest(
+			deepfence_server_client.GraphIndividualThreatGraphRequest{
 				GraphType: "most_vulnerable_attack_paths",
+				IssueType: "vulnerability",
 			})
-		res, rh, err := http.Client().ThreatAPI.GetVulnerabilityThreatGraphExecute(req)
+		res, rh, err := http.Client().ThreatAPI.GetIndividualThreatGraphExecute(req)
 
 		if err != nil {
 			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)

@@ -6,8 +6,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
@@ -37,7 +37,12 @@ func SearchCountHandler[T reporters.CypherableAndCategorizable](w http.ResponseW
 		Filters:       req.NodeFilter.Filters,
 	}
 
-	entries, err := reporters_search.SearchReport[T](r.Context(), dummy_ff, req.Window)
+	dummy_ext_ff := reporters_search.SearchFilter{
+		InFieldFilter: []string{dummy.GetJsonCategory()},
+		Filters:       req.ExtendedNodeFilter.Filters,
+	}
+
+	entries, err := reporters_search.SearchReport[T](r.Context(), dummy_ff, dummy_ext_ff, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
@@ -119,7 +124,7 @@ func SearchHandler[T reporters.Cypherable](w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	entries, err := reporters_search.SearchReport[T](r.Context(), req.NodeFilter, req.Window)
+	entries, err := reporters_search.SearchReport[T](r.Context(), req.NodeFilter, req.ExtendedNodeFilter, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
@@ -174,6 +179,22 @@ func (h *Handler) SearchPods(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) SearchCompliances(w http.ResponseWriter, r *http.Request) {
 	SearchHandler[model.Compliance](w, r)
+}
+
+func (h *Handler) SearchSecretRules(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.SecretRule](w, r)
+}
+
+func (h *Handler) SearchMalwareRules(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.MalwareRule](w, r)
+}
+
+func (h *Handler) SearchComplianceRules(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.ComplianceRule](w, r)
+}
+
+func (h *Handler) SearchVulnerabilityRules(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.VulnerabilityRule](w, r)
 }
 
 func (h *Handler) SearchVulnerabilityScans(w http.ResponseWriter, r *http.Request) {
@@ -250,6 +271,22 @@ func (h *Handler) SearchCloudAccountCount(w http.ResponseWriter, r *http.Request
 
 func (h *Handler) SearchCompliancesCount(w http.ResponseWriter, r *http.Request) {
 	SearchCountHandler[model.Compliance](w, r)
+}
+
+func (h *Handler) SearchSecretRulesCount(w http.ResponseWriter, r *http.Request) {
+	SearchCountHandler[model.SecretRule](w, r)
+}
+
+func (h *Handler) SearchMalwareRulesCount(w http.ResponseWriter, r *http.Request) {
+	SearchCountHandler[model.MalwareRule](w, r)
+}
+
+func (h *Handler) SearchComplianceRulesCount(w http.ResponseWriter, r *http.Request) {
+	SearchCountHandler[model.ComplianceRule](w, r)
+}
+
+func (h *Handler) SearchVulnerabilityRulesCount(w http.ResponseWriter, r *http.Request) {
+	SearchCountHandler[model.VulnerabilityRule](w, r)
 }
 
 func (h *Handler) SearchVulnerabilityScansCount(w http.ResponseWriter, r *http.Request) {

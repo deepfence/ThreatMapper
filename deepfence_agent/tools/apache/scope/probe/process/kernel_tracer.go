@@ -2,14 +2,14 @@ package process
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"math/rand"
 	"os/exec"
 	"time"
-	"fmt"
-	"math/rand"
 
+	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
 	"github.com/sirupsen/logrus"
-	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
 )
 
@@ -31,7 +31,7 @@ func generateSocketString() string {
 	rand.Seed(time.Now().UnixNano())
 	min := 1000
 	max := 9999
-	return fmt.Sprintf(ebpf_socket_format, rand.Intn(max - min + 1) + min)
+	return fmt.Sprintf(ebpf_socket_format, rand.Intn(max-min+1)+min)
 }
 
 func NewInfoTracer() (*InfoTracer, error) {

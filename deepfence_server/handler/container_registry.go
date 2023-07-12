@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -16,19 +17,23 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/gcr"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/samber/mo"
 )
 
+var (
+	unknownInternalServerError = InternalServerError{errors.New("something went wrong")}
+)
+
 func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 	var req model.RegistryListReq
 
-	ctx := directory.NewGlobalContext()
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -107,7 +112,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 
 	// add registry to database
 	// before that check if registry already exists
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
@@ -144,7 +149,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	err = registry.EncryptSecret(aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{errors.New("something went wrong")}, w)
+		respondError(&unknownInternalServerError, w)
 		return
 	}
 	req.Secret = registry.GetSecret()
@@ -198,7 +203,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// before that check if registry exists
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
@@ -257,7 +262,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 		err = registry.DecryptSecret(aes)
 		if err != nil {
 			log.Error().Msgf(err.Error())
-			respondError(&InternalServerError{errors.New("something went wrong")}, w)
+			respondError(&unknownInternalServerError, w)
 			return
 		}
 	}
@@ -273,7 +278,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	err = registry.EncryptSecret(aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{errors.New("something went wrong")}, w)
+		respondError(&unknownInternalServerError, w)
 		return
 	}
 	req.Secret = registry.GetSecret()
@@ -341,7 +346,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	req := model.RegistryAddReq{
 		Name:         registryName,
 		NonSecret:    map[string]interface{}{"registry_url": registryURL, "project_id": sa.ProjectID},
-		Secret:       map[string]interface{}{"project_id_secret": sa.ProjectID, "private_key_id": sa.PrivateKeyID},
+		Secret:       map[string]interface{}{"private_key_id": sa.PrivateKeyID},
 		Extras:       map[string]interface{}{"service_account_json": string(fileBytes)},
 		RegistryType: constants.GCR,
 	}
@@ -377,7 +382,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 
 	// add registry to database
 	// before that check if registry already exists
-	ctx := directory.NewGlobalContext()
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
@@ -415,14 +420,14 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	err = registry.EncryptSecret(aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{errors.New("something went wrong")}, w)
+		respondError(&unknownInternalServerError, w)
 		return
 	}
 
 	err = registry.EncryptExtras(aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{errors.New("something went wrong")}, w)
+		respondError(&unknownInternalServerError, w)
 		return
 	}
 
@@ -458,7 +463,7 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := directory.NewGlobalContext()
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -488,6 +493,29 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 
+}
+
+func (h *Handler) RefreshRegistry(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "registry_id")
+
+	pgIds, err := model.GetRegistryPgIds(r.Context(), id)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&NotFoundError{err}, w)
+		return
+	}
+	syncErrs := []string{}
+	for _, p := range pgIds {
+		if err := h.SyncRegistry(r.Context(), int32(p)); err != nil {
+			syncErrs = append(syncErrs, err.Error())
+		}
+	}
+	if len(syncErrs) > 0 {
+		httpext.JSON(w, http.StatusInternalServerError,
+			model.MessageResponse{Message: strings.Join(syncErrs, ",")})
+	}
+	httpext.JSON(w, http.StatusOK,
+		model.MessageResponse{Message: "started sync registry"})
 }
 
 func (h *Handler) getImages(w http.ResponseWriter, r *http.Request) ([]model.ContainerImage, error) {

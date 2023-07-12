@@ -30,6 +30,7 @@ func (k *kubernetesCluster) GetNode() report.TopologyNode {
 		KubernetesClusterId:   kubernetesClusterId,
 		KubernetesClusterName: kubernetesClusterName,
 		CloudProvider:         k.cloudProvider,
+		AgentRunning:          true,
 	}
 	return report.TopologyNode{
 		Metadata: metadata,

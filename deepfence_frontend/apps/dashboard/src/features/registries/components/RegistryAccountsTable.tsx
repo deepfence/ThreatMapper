@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { useMemo } from 'react';
-import { generatePath, useParams } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { generatePath, useParams, useSearchParams } from 'react-router-dom';
 import {
   createColumnHelper,
   Dropdown,
@@ -21,6 +21,8 @@ import {
 import { queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
+
+const DEFAULT_PAGE_SIZE = 10;
 
 const useListRegistries = () => {
   return useSuspenseQuery({
@@ -109,6 +111,7 @@ export const RegistryAccountsTable = ({
   };
   const registriesOfAccountType =
     data?.accounts.filter((registry) => registry.registry_type === account) ?? [];
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const columnHelper = createColumnHelper<ModelRegistryListResp>();
   const columns = useMemo(
@@ -201,6 +204,12 @@ export const RegistryAccountsTable = ({
         size="default"
         rowSelectionState={rowSelectionState}
         onRowSelectionChange={setRowSelectionState}
+        enablePagination
+        pageSize={pageSize}
+        enablePageResize
+        onPageResize={(newSize) => {
+          setPageSize(newSize);
+        }}
       />
     </div>
   );

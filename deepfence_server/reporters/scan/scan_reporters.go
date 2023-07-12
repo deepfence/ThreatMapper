@@ -8,10 +8,10 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/db"
 	"github.com/samber/mo"
@@ -143,7 +143,7 @@ func GetComplianceScanStatus(ctx context.Context, scanType utils.Neo4jScanType, 
 }
 
 func extractStatusesWithBenchmarks(recs []*db.Record) []model.ComplianceScanInfo {
-	statuses := []model.ComplianceScanInfo{}
+	statuses := make([]model.ComplianceScanInfo, 0, len(recs))
 	for _, rec := range recs {
 		var benchmarkTypes []string
 		for _, rVal := range rec.Values[1].([]interface{}) {
@@ -508,9 +508,9 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 
 	res, err := tx.Run(`
 		MATCH (m:`+string(scanType)+`) -[:SCANNED]-> (n:CloudNode{node_id: $node_id})
-		WHERE NOT m.status = $complete AND NOT m.status = $failed AND NOT m.status = $in_progress
+		WHERE m.status = $starting
 		RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.updated_at, n.node_name ORDER BY m.updated_at`,
-		map[string]interface{}{"node_id": nodeId, "complete": utils.SCAN_STATUS_SUCCESS, "failed": utils.SCAN_STATUS_FAILED, "in_progress": utils.SCAN_STATUS_INPROGRESS})
+		map[string]interface{}{"node_id": nodeId, "starting": utils.SCAN_STATUS_STARTING})
 	if err != nil {
 		return model.CloudComplianceScanListResp{}, err
 	}
@@ -574,7 +574,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		OPTIONAL MATCH (d) -[:IS]-> (e)
 	WITH apoc.map.merge( e{.*}, d{.*, masked: coalesce(d.masked or r.masked, false), name: coalesce(e.name, d.name, '')}) as d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
-		reporters.OrderFilter2CypherCondition("d", ff.OrderFilter) +
+		reporters.OrderFilter2CypherCondition("d", ff.OrderFilter, nil) +
 		` RETURN d ` +
 		fw.FetchWindow2CypherQuery()
 	log.Debug().Msgf("query: %v", query)

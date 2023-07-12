@@ -78,7 +78,7 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
     case IntegrationType.httpEndpoint:
       return {
         url: formBody.apiUrl,
-        auth_header: formBody.authorizationKey,
+        auth_header: formBody.auth_header,
       };
     case IntegrationType.email:
       return {
@@ -391,7 +391,7 @@ const DeleteConfirmationModal = ({
         !fetcher.data?.deleteSuccess ? (
           <div className={'flex gap-x-4 justify-end'}>
             <Button
-              size="sm"
+              size="md"
               onClick={() => setShowDialog(false)}
               type="button"
               variant="outline"
@@ -399,14 +399,14 @@ const DeleteConfirmationModal = ({
               Cancel
             </Button>
             <Button
-              size="sm"
+              size="md"
               color="error"
               onClick={(e) => {
                 e.preventDefault();
                 onTableAction(row!, ActionEnumType.CONFIRM_DELETE);
               }}
             >
-              Yes, I&apos;m sure
+              Yes, delete
             </Button>
           </div>
         ) : undefined
@@ -477,7 +477,7 @@ const IntegrationAdd = () => {
   return (
     <div className="m-4">
       <Button
-        variant="outline"
+        variant="flat"
         startIcon={<PlusIcon />}
         onClick={() => {
           setOpenModal(true);

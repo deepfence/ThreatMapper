@@ -38,6 +38,12 @@ deepfence_agent/tools/apache/scope/vendor/
 deepfence_server/vendor
 deepfence_worker/vendor
 
+deepfence_server/deepfence_server
+deepfence_worker/deepfence_worker
+
+deepfence_bootstrapper/vendor
+deepfence_bootstrapper/deepfence_bootstrapper
+
 openapi.json
 openapi.yaml
 
@@ -47,3 +53,10 @@ deepfence_ctl/vendor
 .pnpm-store
 
 go.work*
+
+pkg/
+deepfence_agent/tools/apache/scope/docker/deepfenceutil
+deepfence_agent/tools/apache/scope/docker/deepfence_exe
+deepfence_agent/tools/apache/scope/docker/deepfence
+deepfence_agent/tools/apache/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId
+deepfence_agent/tools/apache/compliance_check/deepfence_compliance_check

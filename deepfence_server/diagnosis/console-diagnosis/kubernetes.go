@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/minio/minio-go/v7"
 	apiv1 "k8s.io/api/core/v1"
 	coreV1 "k8s.io/api/core/v1"

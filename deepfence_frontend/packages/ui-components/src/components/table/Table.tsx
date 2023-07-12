@@ -30,6 +30,7 @@ import {
   forwardRef,
   Fragment,
   ReactElement,
+  ReactNode,
   Ref,
   useContext,
   useEffect,
@@ -82,7 +83,7 @@ export interface TableProps<TData extends RowData> {
   getTdProps?: (cell: Cell<TData, unknown>) => React.ComponentProps<'td'>;
   getTrProps?: (row: Row<TData>, rowIdx: number) => React.ComponentProps<'tr'>;
   getSubRows?: (originalRow: TData, index: number) => TData[] | undefined;
-  noDataText?: string;
+  noDataElement?: ReactNode;
   approximatePagination?: boolean;
 }
 
@@ -134,7 +135,7 @@ const CustomTable = <TData extends RowData>(
     getTrProps,
     expanded,
     onExpandedChange,
-    noDataText = `Sorry, we couldn't find any data!`,
+    noDataElement = <TableNoDataElement />,
     approximatePagination,
   } = props;
   const TableContext = createTableContext<TData>();
@@ -245,18 +246,7 @@ const CustomTable = <TData extends RowData>(
           ) : (
             <tbody>
               <tr>
-                <td colSpan={table.getVisibleLeafColumns().length}>
-                  <div className="flex items-center justify-center min-h-[384px] w-full gap-3">
-                    <span>
-                      <span className="h-[120px] w-[120px]">
-                        <img src={EmptyBoxImg} alt="No data" height="100%" width="100%" />
-                      </span>
-                    </span>
-                    <span className="text-h3 dark:text-text-text-and-icon">
-                      {noDataText}
-                    </span>
-                  </div>
-                </td>
+                <td colSpan={table.getVisibleLeafColumns().length}>{noDataElement}</td>
               </tr>
             </tbody>
           )}
@@ -462,10 +452,11 @@ function TableBody<TData>({
             <tr
               {...rowProps}
               className={cn(
-                {
-                  '!bg-gray-100 dark:!bg-bg-active-selection': row.getIsSelected(),
-                },
                 `hover:!bg-gray-100 dark:hover:!bg-bg-breadcrumb-bar`,
+                {
+                  '!bg-gray-100 dark:!bg-bg-active-selection dark:hover:!bg-bg-active-selection/90':
+                    row.getIsSelected(),
+                },
                 'transition-colors',
                 rowProps?.className ?? '',
               )}
@@ -600,12 +591,36 @@ export function getRowSelectionColumn<TData extends RowData>(
   });
 }
 
+const TableNoDataElement = ({
+  text = `Sorry, we couldn't find any data!`,
+  className,
+}: {
+  text?: string;
+  className?: string;
+}) => {
+  return (
+    <div
+      className={cn(
+        'flex items-center justify-center min-h-[384px] w-full gap-3',
+        className,
+      )}
+    >
+      <span>
+        <span className="h-[120px] w-[120px]">
+          <img src={EmptyBoxImg} alt="No data" height="100%" width="100%" />
+        </span>
+      </span>
+      <span className="text-h3 dark:text-text-text-and-icon">{text}</span>
+    </div>
+  );
+};
+
 // https://stackoverflow.com/a/58473012
 const CustomTableWithRef = forwardRef(CustomTable) as <TData extends RowData>(
   props: TableProps<TData> & { ref?: Ref<Table<TData>> },
 ) => ReactElement;
 
-export { createColumnHelper, CustomTableWithRef as Table };
+export { createColumnHelper, CustomTableWithRef as Table, TableNoDataElement };
 export type {
   ExpandedState,
   PaginationState,

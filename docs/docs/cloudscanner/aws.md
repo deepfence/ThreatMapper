@@ -69,12 +69,11 @@ module "deepfence-cloud-scanner_example_single-account" {
   mgmt-console-port             = "443"
   deepfence-key                 = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
   name                          = "deepfence-cloud-scanner"
+  image                         = "quay.io/deepfenceio/cloud-scanner:2.0.0"
+  region                        = "<AWS-REGION>; eg. us-east-1"
+  ecs_vpc_region_azs            = ["us-east-1a"]
 }
 
-variable "image" {
-  type        = string
-  default     = "quay.io/deepfenceio/cloud-scanner:2.0.0"
-}
 ```
 Ensure that the `name` parameter is set to some unique string to avoid collision with existing resource names in the account of deployment
 

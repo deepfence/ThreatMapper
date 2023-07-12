@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/ThreeDotsLabs/watermill"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 type zerologWaterMillAdapter struct {

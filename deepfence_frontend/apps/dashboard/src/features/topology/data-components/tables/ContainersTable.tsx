@@ -13,6 +13,7 @@ import {
   RowSelectionState,
   SortingState,
   Table,
+  TableNoDataElement,
   TableSkeleton,
 } from 'ui-components';
 
@@ -65,7 +66,7 @@ export const ContainersTable = () => {
 
   return (
     <div className="px-4 pb-4">
-      <div className="py-2 flex items-center">
+      <div className="h-12 flex items-center">
         <BulkActions nodeIds={selectedIds} />
         <Button
           variant="flat"
@@ -512,7 +513,7 @@ const DataTable = ({
       <Table
         data={data.containers ?? []}
         columns={columns}
-        noDataText="No containers are connected"
+        noDataElement={<TableNoDataElement text="No containers are connected" />}
         size="default"
         enableColumnResizing
         enablePagination

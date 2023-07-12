@@ -6,10 +6,12 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
+
+const SBOM_GENERATED = "SBOM_GENERATED"
 
 type SbomScanStatus struct {
 	utils.SbomParameters
@@ -37,11 +39,11 @@ func SendScanStatus(ingestC chan *kgo.Record, status SbomScanStatus, rh []kgo.Re
 	return nil
 }
 
-func StartStatusReporter(statusChan chan SbomScanStatus, ingestC chan *kgo.Record,
+func StartStatusReporter(title string, statusChan chan SbomScanStatus, ingestC chan *kgo.Record,
 	rh []kgo.RecordHeader, params utils.SbomParameters, wg *sync.WaitGroup) {
 
 	go func() {
-		log.Info().Msgf("StatusReporter started, scanid: %s", params.ScanId)
+		log.Info().Msgf("StatusReporter(%s) started, scanid: %s", title, params.ScanId)
 		defer wg.Done()
 
 		ticker := time.NewTicker(30 * time.Second)
@@ -51,6 +53,11 @@ func StartStatusReporter(statusChan chan SbomScanStatus, ingestC chan *kgo.Recor
 			select {
 			case statusIn := <-statusChan:
 				status := statusIn.ScanStatus
+
+				if status == SBOM_GENERATED {
+					break loop
+				}
+
 				err := SendScanStatus(ingestC, statusIn, rh)
 				if err != nil {
 					log.Error().Msgf("error sending scan status: %s, scanid: %s",
@@ -68,6 +75,6 @@ func StartStatusReporter(statusChan chan SbomScanStatus, ingestC chan *kgo.Recor
 			}
 		}
 
-		log.Info().Msgf("StatusReporter exited, scanid: %s", params.ScanId)
+		log.Info().Msgf("StatusReporter(%s) exited, scanid: %s", title, params.ScanId)
 	}()
 }

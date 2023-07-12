@@ -14,8 +14,8 @@ type HTTPEndpoint struct {
 }
 
 type Config struct {
-	URL     string `json:"url" validate:"required,url" required:"true"`
-	AuthKey string `json:"auth_key"`
+	URL        string `json:"url" validate:"required,url" required:"true"`
+	AuthHeader string `json:"auth_header"`
 }
 
 func (h HTTPEndpoint) ValidateConfig(validate *validator.Validate) error {

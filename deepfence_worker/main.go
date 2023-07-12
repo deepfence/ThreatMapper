@@ -6,10 +6,10 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronscheduler"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel"
@@ -32,7 +32,18 @@ type config struct {
 	KafkaTopicPartitionsTasks int32    `default:"3" split_words:"true"`
 }
 
+// build info
+var (
+	Version   string
+	Commit    string
+	BuildTime string
+)
+
 func main() {
+
+	log.Info().Msgf("\n version: %s\n commit: %s\n build-time: %s\n",
+		Version, Commit, BuildTime)
+
 	var cfg config
 	var err error
 	var wml watermill.LoggerAdapter

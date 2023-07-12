@@ -328,7 +328,7 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
           <div className="text-p7 dark:text-text-text-and-icon">
             Connect via Kubernetes Scanner. Find out more information by{' '}
             <DFLink
-              href={`https://docs.deepfence.io/threatstryker/docs/sensors/kubernetes`}
+              href={`https://community.deepfence.io/threatmapper/docs/v2.0/sensors/kubernetes`}
               target="_blank"
               rel="noreferrer"
               className="mt-2"

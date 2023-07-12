@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 	"crypto/aes"
-	"database/sql"
+	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,20 +16,18 @@ import (
 	"runtime"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
-	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-playground/validator/v10"
@@ -56,6 +53,13 @@ var (
 	enable_debug          bool
 )
 
+// build info
+var (
+	Version   string
+	Commit    string
+	BuildTime string
+)
+
 type Config struct {
 	HttpListenEndpoint     string
 	InternalListenEndpoint string
@@ -72,6 +76,9 @@ func init() {
 }
 
 func main() {
+
+	log.Info().Msgf("\n version: %s\n commit: %s\n build-time: %s\n",
+		Version, Commit, BuildTime)
 
 	if enable_debug {
 		runtime.SetBlockProfileRate(1)
@@ -104,13 +111,22 @@ func main() {
 	if err != nil {
 		log.Fatal().Msg(err.Error())
 	}
-	config.JwtSecret, err = initializeDatabase()
-	if err != nil {
-		log.Fatal().Msg(err.Error())
-	}
+
+	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
+		config.JwtSecret, err = initializeDatabase(ctx)
+		if err != nil {
+			log.Fatal().Msg(err.Error())
+		}
+		return "initializeDatabase", err
+	})
 
 	if *resetPassword == true {
-		err = resetUserPassword()
+		if directory.IsNonSaaSDeployment() {
+			ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+			err = resetUserPassword(ctx)
+		} else {
+			err = errors.New("option available only in self-hosted deployment")
+		}
 		if err != nil {
 			log.Fatal().Msg(err.Error())
 		}
@@ -123,17 +139,15 @@ func main() {
 	}
 
 	log.Info().Msg("generating aes setting")
-	err = initializeAES()
-	if err != nil {
-		log.Fatal().Msg(err.Error())
-	}
+	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
+		err = initializeAES(ctx)
+		if err != nil {
+			log.Fatal().Msg(err.Error())
+		}
+		return "initializeAES", err
+	})
 
 	err = initializeTelemetry()
-	if err != nil {
-		log.Fatal().Msg(err.Error())
-	}
-
-	err = initMinio()
 	if err != nil {
 		log.Fatal().Msg(err.Error())
 	}
@@ -172,8 +186,6 @@ func main() {
 	go utils.StartKafkaProducer(ctx, strings.Split(kafkaBrokers, ","), ingestC)
 
 	wml := watermill.NewStdLogger(false, false)
-
-	rand.Seed(time.Now().Unix())
 
 	// task publisher
 	publisher, err := kafka.NewPublisher(
@@ -282,11 +294,10 @@ func initialize() (*Config, error) {
 	}, nil
 }
 
-func initializeAES() error {
+func initializeAES(ctx context.Context) error {
 	// set aes_secret in setting table, if !exists
 	// TODO
 	// generate aes and aes-iv
-	ctx := directory.NewGlobalContext()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return err
@@ -333,46 +344,19 @@ func initializeAES() error {
 	return nil
 }
 
-func initializeDatabase() ([]byte, error) {
-	ctx := directory.NewGlobalContext()
+func initializeDatabase(ctx context.Context) ([]byte, error) {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return nil, err
 	}
-	roles, err := pgClient.GetRoles(ctx)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, err
-	}
-	rolesConfigured := map[string]bool{model.AdminRole: false, model.StandardUserRole: false, model.ReadOnlyRole: false}
-	for _, role := range roles {
-		if _, ok := rolesConfigured[role.Name]; ok {
-			rolesConfigured[role.Name] = true
-		}
-	}
-	for roleName, configured := range rolesConfigured {
-		if !configured {
-			_, err = pgClient.CreateRole(ctx, roleName)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
 	jwtSecret, err := model.GetJwtSecretSetting(ctx, pgClient)
-	if err != nil {
-		return nil, err
-	}
-	err = model.SetScanResultsDeletionSetting(ctx, pgClient)
-	if err != nil {
-		return nil, err
-	}
-	err = model.InitializeScheduledTasks(ctx, pgClient)
 	if err != nil {
 		return nil, err
 	}
 	return jwtSecret, nil
 }
 
-func resetUserPassword() error {
+func resetUserPassword(ctx context.Context) error {
 	fmt.Println("\nEnter your email id:")
 	var emailId string
 	fmt.Scanln(&emailId)
@@ -401,7 +385,7 @@ func resetUserPassword() error {
 		return err
 	}
 
-	user, statusCode, ctx, pgClient, err := model.GetUserByEmail(emailId)
+	user, statusCode, pgClient, err := model.GetUserByEmail(ctx, emailId)
 	if err != nil {
 		if statusCode == http.StatusNotFound {
 			return errors.New("user not found with provided email id")
@@ -489,24 +473,5 @@ func initializeTelemetry() error {
 	otel.SetTextMapPropagator(
 		propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}),
 	)
-	return nil
-}
-
-func initMinio() error {
-	ctx := directory.NewContextWithNameSpace("database")
-	mc, err := directory.MinioClient(ctx)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return err
-	}
-	if err := mc.CreatePublicBucket(ctx); err != nil {
-		log.Error().Err(err).Msgf("failed to create bucket")
-		return err
-	}
-
-	go func() {
-		handler.PeriodicDownloadDB()
-	}()
-
 	return nil
 }

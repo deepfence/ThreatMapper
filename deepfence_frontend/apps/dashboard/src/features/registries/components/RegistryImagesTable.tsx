@@ -6,6 +6,7 @@ import {
   DropdownItem,
   getRowSelectionColumn,
   RowSelectionState,
+  SortingState,
   Table,
 } from 'ui-components';
 
@@ -18,6 +19,7 @@ import {
   useListImages,
 } from '@/features/registries/pages/RegistryImages';
 import { ScanTypeEnum } from '@/types/common';
+import { useSortingState } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -92,6 +94,7 @@ export const RegistryImagesTable = ({
   };
   const { data } = useListImages();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [sort, setSort] = useSortingState();
 
   const columnHelper = createColumnHelper<ModelImageStub>();
 
@@ -130,6 +133,7 @@ export const RegistryImagesTable = ({
         enableResizing: false,
       }),
       columnHelper.accessor('name', {
+        enableSorting: false,
         header: () => 'Image',
         cell: (info) => {
           return (
@@ -147,6 +151,7 @@ export const RegistryImagesTable = ({
         minSize: 50,
       }),
       columnHelper.accessor('tags', {
+        enableSorting: false,
         header: () => 'Total Tags',
         // count tags
         cell: (info) => info.getValue()?.length,
@@ -196,6 +201,25 @@ export const RegistryImagesTable = ({
             prev.set('page', String(newPageIndex));
             return prev;
           });
+        }}
+        onSortingChange={(updaterOrValue) => {
+          let newSortState: SortingState = [];
+          if (typeof updaterOrValue === 'function') {
+            newSortState = updaterOrValue(sort);
+          } else {
+            newSortState = updaterOrValue;
+          }
+          setSearchParams((prev) => {
+            if (!newSortState.length) {
+              prev.delete('sortby');
+              prev.delete('desc');
+            } else {
+              prev.set('sortby', String(newSortState[0].id));
+              prev.set('desc', String(newSortState[0].desc));
+            }
+            return prev;
+          });
+          setSort(newSortState);
         }}
         enablePageResize
         onPageResize={(newSize) => {

@@ -9,7 +9,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 var (

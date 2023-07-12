@@ -1,9 +1,9 @@
 module github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/deepfence/df-utils
 
-go 1.19
+go 1.20
 
 require (
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.3
 	github.com/weaveworks/scope v1.13.2
 )
 

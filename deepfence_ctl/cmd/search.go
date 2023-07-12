@@ -9,8 +9,8 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/http"
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/output"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	deepfence_server_client "github.com/deepfence/golang_deepfence_sdk/client"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 func type2field(t string) string {

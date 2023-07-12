@@ -356,7 +356,7 @@ const UniqueVulnerabilities = () => {
 
   return (
     <div>
-      <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<VulnerabilityIcon />} isLink>
             <DFLink to={'/vulnerability'} unstyled>
@@ -372,28 +372,30 @@ const UniqueVulnerabilities = () => {
           {isFetching ? <CircleSpinner size="sm" /> : null}
         </div>
       </div>
-      <div className="mx-4 pb-4">
-        <Button
-          variant="flat"
-          className="ml-auto py-2"
-          startIcon={<FilterIcon />}
-          endIcon={
-            getAppliedFiltersCount(searchParams) > 0 ? (
-              <Badge
-                label={String(getAppliedFiltersCount(searchParams))}
-                variant="filled"
-                size="small"
-                color="blue"
-              />
-            ) : null
-          }
-          size="sm"
-          onClick={() => {
-            setFiltersExpanded((prev) => !prev);
-          }}
-        >
-          Filter
-        </Button>
+      <div className="mx-4">
+        <div className="h-12 flex items-center">
+          <Button
+            variant="flat"
+            className="ml-auto py-2"
+            startIcon={<FilterIcon />}
+            endIcon={
+              getAppliedFiltersCount(searchParams) > 0 ? (
+                <Badge
+                  label={String(getAppliedFiltersCount(searchParams))}
+                  variant="filled"
+                  size="small"
+                  color="blue"
+                />
+              ) : null
+            }
+            size="sm"
+            onClick={() => {
+              setFiltersExpanded((prev) => !prev);
+            }}
+          >
+            Filter
+          </Button>
+        </div>
         {filtersExpanded ? <Filters /> : null}
         <Suspense fallback={<TableSkeleton columns={9} rows={10} />}>
           <UniqueTable />

@@ -21,10 +21,10 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/harbor"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/jfrog"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/quay"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/package-scanner/utils"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -61,8 +61,7 @@ func GetConfigFileFromRegistry(ctx context.Context, registryId string) (string, 
 }
 
 func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCreds, error) {
-	// pgCtx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
-	pgClient, err := directory.PostgresClient(directory.NewGlobalContext())
+	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return regCreds{}, err

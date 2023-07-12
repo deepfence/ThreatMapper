@@ -9,7 +9,7 @@ import (
 	"github.com/containerd/cgroups/v3"
 	"github.com/containerd/cgroups/v3/cgroup1"
 	"github.com/containerd/cgroups/v3/cgroup2"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/opencontainers/runtime-spec/specs-go"
 )
 

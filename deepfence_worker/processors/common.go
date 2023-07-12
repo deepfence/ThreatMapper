@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/telemetry"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -106,11 +106,11 @@ func StartKafkaProcessors(ctx context.Context) {
 		telemetryWrapper(utils.CLOUD_COMPLIANCE_SCAN_STATUS,
 			desWrapper(ingesters.CommitFuncStatus[ingesters.CloudComplianceScanStatus](utils.NEO4J_CLOUD_COMPLIANCE_SCAN))),
 	)
-	processors[utils.CLOUD_RESOURCE] = NewBulkProcessor(
+	processors[utils.CLOUD_RESOURCE] = NewBulkProcessorWith(
 		utils.CLOUD_RESOURCE,
 		telemetryWrapper(utils.CLOUD_RESOURCE,
 			desWrapper(ingesters.CommitFuncCloudResource)),
-	)
+		1_000)
 
 	for i := range processors {
 		processors[i].Start(ctx)
@@ -123,9 +123,9 @@ func StopKafkaProcessors() {
 	}
 }
 
-func tenantID(rh []kgo.RecordHeader) string {
+func getNamespace(rh []kgo.RecordHeader) string {
 	for _, h := range rh {
-		if h.Key == "tenant_id" {
+		if h.Key == "namespace" {
 			return string(h.Value)
 		}
 	}
@@ -144,7 +144,7 @@ func processRecord(r *kgo.Record) {
 		}
 
 		// get tenant id from headers
-		tenant := tenantID(r.Headers)
+		tenant := getNamespace(r.Headers)
 
 		err := Process(processor, tenant, r.Value)
 		if err != nil {
@@ -200,7 +200,7 @@ func pollRecords(ctx context.Context, kc *kgo.Client) {
 			log.Info().Msg("stop consuming from kafka")
 			return
 		case <-ticker.C:
-			records := kc.PollRecords(ctx, 10_000)
+			records := kc.PollRecords(ctx, 20_000)
 			records.EachRecord(processRecord)
 			records.EachError(
 				func(s string, i int32, err error) {

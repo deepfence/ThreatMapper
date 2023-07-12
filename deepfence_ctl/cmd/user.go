@@ -10,9 +10,9 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/http"
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/output"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	deepfence_server_client "github.com/deepfence/golang_deepfence_sdk/client"
 	oahttp "github.com/deepfence/golang_deepfence_sdk/utils/http"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 var userCmd = &cobra.Command{

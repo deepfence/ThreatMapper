@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense } from 'react';
-import { Card } from 'ui-components';
+import { cn } from 'tailwind-preset';
+import { Breadcrumb, BreadcrumbLink, Card } from 'ui-components';
 
 import { ModelSummary } from '@/api/generated/models/ModelSummary';
 import { DFLink } from '@/components/DFLink';
@@ -60,40 +61,50 @@ const CardHeader = ({ registry }: { registry: RegistryResponseType }) => {
           registryType={registry.type as unknown as keyof typeof RegistryType}
         />
       </div>
-      <DFLink className="ml-[102px]" to={`/registries/${registry.type}`} unstyled>
-        <span className="flex items-center gap-2 text-t4 uppercase dark:text-text-input-value dark:hover:text-text-link pt-1">
-          {name}
-        </span>
-      </DFLink>
+
+      <span className="ml-[102px] flex items-center gap-2 text-t4 uppercase dark:text-text-input-value pt-1">
+        {name}
+      </span>
     </div>
   );
 };
 
 const Registry = ({ registry }: { registry: RegistryResponseType }) => {
   return (
-    <Card className="p-2 pb-3 flex flex-col dark:bg-bg-card" key={registry.type}>
-      <CardHeader registry={registry} />
-      <div className="flex mt-6 gap-x-[48px] justify-center items-center w-[322px]">
-        <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
-          <span className="text-h1 text-gray-900 dark:text-text-input-value">
-            {abbreviateNumber(registry.registries ?? 0)}
-          </span>
-          Registries
+    <DFLink className="flex flex-col" to={`/registries/${registry.type}`} unstyled>
+      <Card
+        className={cn(
+          'relative group p-2 pb-3 flex flex-col',
+          'dark:bg-bg-card hover:outline outline-2 dark:outline-bg-hover-3',
+          "before:content-none dark:hover:before:content-[''] before:w-[68px] before:h-[68px]",
+          'dark:before:bg-bg-hover-3 before:absolute before:-top-[28px]',
+          'before:left-[18px] before:rounded-full before:-z-10 cursor-pointer',
+        )}
+        key={registry.type}
+      >
+        <CardHeader registry={registry} />
+        <div className="flex mt-6 gap-x-[48px] justify-center items-center w-[322px]">
+          <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
+            <span className="text-h1 text-gray-900 dark:text-text-input-value">
+              {abbreviateNumber(registry.registries ?? 0)}
+            </span>
+            Registries
+          </div>
+          <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
+            <span className="text-h1 text-gray-900 dark:text-text-input-value">
+              {abbreviateNumber(registry.images ?? 0)}
+            </span>
+            Images
+          </div>
+          <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
+            <span className="text-h1 text-gray-900 dark:text-text-input-value">
+              {abbreviateNumber(registry.tags ?? 0)}
+            </span>
+            Tags
+          </div>
         </div>
-        <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
-          <span className="text-h1 text-gray-900 dark:text-text-input-value">
-            {abbreviateNumber(registry.images ?? 0)}
-          </span>
-          Images
-        </div>
-        <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
-          <span className="text-h1 text-gray-900 dark:text-text-input-value">
-            {abbreviateNumber(registry.tags ?? 0)}
-          </span>
-          Tags
-        </div>
-      </div>
-    </Card>
+      </Card>
+    </DFLink>
   );
 };
 
@@ -114,19 +125,24 @@ const RegistryList = () => {
 const Registries = () => {
   return (
     <>
-      <div className="flex py-2 w-full bg-white dark:bg-bg-breadcrumb-bar">
-        <span className="dark:text-text-input-value pl-6 flex items-center text-sm leading-[30px]">
-          <span className="w-4 h-4 mr-1.5">
-            <RegistryIcon />
-          </span>
-          Registries
-        </span>
+      <div className="dark:bg-bg-breadcrumb-bar py-2 px-4">
+        <Breadcrumb>
+          <BreadcrumbLink icon={<RegistryIcon />} className="dark:text-text-input-value">
+            Registries
+          </BreadcrumbLink>
+        </Breadcrumb>
       </div>
-      <div className="mx-4 mt-[66px] flex gap-x-[20px] gap-y-[42px] flex-wrap">
-        <Suspense fallback={<RegistrySkeleton />}>
+      <Suspense
+        fallback={
+          <div className="flex gap-4 mx-4 my-10">
+            <RegistrySkeleton />
+          </div>
+        }
+      >
+        <div className="mx-4 my-10 flex gap-x-4 gap-y-10 flex-wrap">
           <RegistryList />
-        </Suspense>
-      </div>
+        </div>
+      </Suspense>
     </>
   );
 };

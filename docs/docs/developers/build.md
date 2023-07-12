@@ -9,7 +9,6 @@ title: Build from Source
 Build host:
  * 16 Gb RAM, 4 cores to build and run the Deepfence Management Console
  * Packages: build tools, `golang`, `docker`, `docker-compose`
-   * Ubuntu/Debian: `apt install build-essential golang-go docker.io docker-compose`
 
 If necessary, enable docker for the user account that will build the Deepfence containers:
 
@@ -22,7 +21,7 @@ sudo usermod -aG docker $USER # start new shell, or 'su $USER' for group change 
 ```bash
 git clone https://github.com/deepfence/ThreatMapper.git
 cd ThreatMapper
-./build.sh
+make
 ```
 
 The build process will create a number of container images and store these in your local Docker repository.
@@ -44,7 +43,7 @@ docker-compose -f docker-compose.yml down
 
 ## Push the images to a remote repository
 
-If you plan to deploy the Management Console or Sensors (`deepfence_agent_ce` and `deepfence_discovery_ce`) on another host, you should push the images to a suitable, accessible repository:
+If you plan to deploy the Management Console or Sensors (`deepfence_agent_ce` and `deepfence_cluster_agent_ce`) on another host, you should push the images to a suitable, accessible repository:
 
 For example, to push the images to DockerHub:
 
@@ -53,18 +52,20 @@ ACC=myorg             # the name of the dockerhub account
 docker login -u $ACC  # log in to the account
     
 for IMG in \
-    deepfence_agent_ce \
-    deepfence_api_ce \
-    deepfence_diagnosis_ce \
-    deepfence_discovery_ce \
-    deepfence_elastic_ce \
-    deepfence_fetcher_ce \
-    deepfence_init_ce \
-    deepfence_postgres_ce \
     deepfence_redis_ce \
+    deepfence_postgres_ce \
+    deepfence_kafka_broker_ce \
     deepfence_router_ce \
+    deepfence_file_server_ce \
+    deepfence_server_ce \
+    deepfence_worker_ce \
     deepfence_ui_ce \
-    deepfence_vulnerability_mapper_ce
+    deepfence_agent_ce \
+    deepfence_cluster_agent_ce \
+    deepfence_package_scanner_ce \
+    deepfence_malware_scanner_ce \
+    deepfence_secret_scanner_ce \
+    deepfence_neo4j_ce
 do
     docker tag deepfenceio/$IMG $ACC/$IMG:latest
     docker push $ACC/$IMG:latest

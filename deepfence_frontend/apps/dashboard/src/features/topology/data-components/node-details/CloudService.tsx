@@ -7,6 +7,7 @@ import {
   SlidingModalContent,
   SortingState,
   Table,
+  TableNoDataElement,
   Tabs,
 } from 'ui-components';
 
@@ -202,7 +203,7 @@ const TabContent = ({
         manualSorting
         sortingState={sort}
         onSortingChange={setSort}
-        noDataText="No resources"
+        noDataElement={<TableNoDataElement text="No resources" />}
       />
     </div>
   );

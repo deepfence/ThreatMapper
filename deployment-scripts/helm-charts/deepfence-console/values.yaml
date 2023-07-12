@@ -46,14 +46,14 @@ kafka:
     # tag: 2.0.0
   storageUUID: hNQ55qppT5GGybF52ZGlOQ
   storageClass: ""
-  volumeSize: 30G
+  volumeSize: 50G
   resources:
     limits:
-      # cpu: 100m
-      memory: 4000Mi
+      cpu: 4000m
+      memory: 8192Mi
     requests:
-      # cpu: 100m
-      memory: 1000Mi
+      cpu: 500m
+      memory: 1024Mi
   podAnnotations: {}
   podSecurityContext: {}
   securityContext: {}
@@ -79,13 +79,13 @@ postgresql:
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.0.0
   storageClass: ""
-  volumeSize: 10G
+  volumeSize: 50G
   resources:
     limits:
-      # cpu: 100m
-      memory: 2000Mi
+      cpu: 2000m
+      memory: 2048Mi
     requests:
-      # cpu: 100m
+      cpu: 200m
       memory: 512Mi
   podAnnotations: {}
   podSecurityContext: {}
@@ -107,13 +107,13 @@ redis:
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.0.0
   storageClass: ""
-  volumeSize: 5G
+  volumeSize: 10G
   resources:
     limits:
-      # cpu: 100m
-      memory: 1000Mi
+      cpu: 1000m
+      memory: 2048Mi
     requests:
-      # cpu: 100m
+      cpu: 100m
       memory: 128Mi
   podAnnotations: {}
   podSecurityContext: {}
@@ -138,13 +138,13 @@ minio:
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.0.0
   storageClass: ""
-  volumeSize: 30G
+  volumeSize: 50G
   resources:
     limits:
-      # cpu: 100m
-      memory: 1000Mi
+      cpu: 2000m
+      memory: 4096Mi
     requests:
-      # cpu: 100m
+      cpu: 100m
       memory: 128Mi
   podAnnotations: {}
   podSecurityContext: {}
@@ -163,25 +163,25 @@ neo4j:
   secrets:
     # format should be username/password
     NEO4J_AUTH: neo4j/e16908ffa5b9f8e9d4ed
+    AWS_ACCESS_KEY: ""
+    AWS_SECRET_KEY: ""
+    DF_S3_BUCKET_NAME: ""
   config:
     NEO4J_dbms_memory_pagecache_size: 2600m
-    NEO4J_dbms_memory_heap_initial__size: 4000m
-    NEO4J_dbms_memory_heap_max__size: 4000m
     NEO4JLABS_PLUGINS: '["apoc"]'
   image:
-    repository: neo4j
+    repository: deepfenceio/deepfence_neo4j_ce
     pullPolicy: Always
-    tag: 4.4.21
+    # tag: 2.0.0
   storageClass: ""
-  volumeSize: 30G
+  volumeSize: 50G
   resources:
-    {}
-    # limits:
-    #   # cpu: 100m
-    #   memory: 5000Mi
-    # requests:
-    #   # cpu: 100m
-    #   memory: 1000Mi
+    limits:
+      cpu: 4000m
+      memory: 16Gi
+    requests:
+      cpu: 1000m
+      memory: 2048Mi
   podAnnotations: {}
   podSecurityContext: {}
   securityContext: {}
@@ -238,13 +238,12 @@ router:
     httpsPort: 443
     httpPort: 80
   resources:
-    {}
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    limits:
+      cpu: 3000m
+      memory: 4096Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -295,13 +294,12 @@ server:
     port: 8080
     internalPort: 8081
   resources:
-    {}
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    limits:
+      cpu: 3000m
+      memory: 4096Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -326,13 +324,12 @@ worker:
     type: ClusterIP
     port: 8080
   resources:
-    {}
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    limits:
+      cpu: 2000m
+      memory: 8000Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -357,13 +354,12 @@ ingester:
     type: ClusterIP
     port: 8080
   resources:
-    {}
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    limits:
+      cpu: 2000m
+      memory: 4096Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -384,13 +380,12 @@ scheduler:
     type: ClusterIP
     port: 8080
   resources:
-    {}
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
   podAnnotations: {}
   podSecurityContext: {}
   securityContext: {}
@@ -409,13 +404,12 @@ ui:
     type: ClusterIP
     port: 8081
   resources:
-    {}
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -457,12 +451,12 @@ console_agents:
         memory: 512Mi
       limits:
         cpu: 1500m
-        memory: 1536Mi
+        memory: 2048Mi
     podAnnotations: {}
     podSecurityContext: {}
     securityContext: {}
     nodeSelector: {"kubernetes.io/os": "linux"}
-    tolerations:   
+    tolerations:
       - operator: "Exists"
         effect: "NoSchedule"
       - operator: "Exists"
@@ -470,7 +464,7 @@ console_agents:
     affinity: {}
   cluster_agent:
     image:
-      repository: deepfenceio/deepfence_discovery_ce
+      repository: deepfenceio/deepfence_cluster_agent_ce
       pullPolicy: Always
       # Overrides the image tag whose default is .global.imageTag
       # tag: 2.0.0

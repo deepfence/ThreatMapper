@@ -1,7 +1,9 @@
 package integration
 
 import (
+	"context"
 	"errors"
+
 	"github.com/go-playground/validator/v10"
 
 	awssecurityhub "github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/aws-security-hub"
@@ -17,6 +19,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/s3"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/slack"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/splunk"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/sumologic"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/teams"
 )
 
@@ -45,6 +48,8 @@ func GetIntegration(integrationType string, b []byte) (Integration, error) {
 		return email.New(b)
 	case constants.Jira:
 		return jira.New(b)
+	case constants.SumoLogic:
+		return sumologic.New(b)
 	default:
 		return nil, errors.New("invalid integration type")
 	}
@@ -52,6 +57,7 @@ func GetIntegration(integrationType string, b []byte) (Integration, error) {
 
 // Integration is the interface for all integrations
 type Integration interface {
-	SendNotification(message string) error
+	// extras are additional fields that are not part of the message
+	SendNotification(ctx context.Context, message string, extras map[string]interface{}) error
 	ValidateConfig(*validator.Validate) error
 }

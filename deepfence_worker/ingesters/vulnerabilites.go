@@ -1,30 +1,23 @@
 package ingesters
 
 import (
-	"encoding/json"
 	"time"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 type VulnerabilityScanStatus struct {
-	Timestamp   time.Time `json:"@timestamp"`
-	ScanID      string    `json:"scan_id"`
-	ScanStatus  string    `json:"scan_status"`
-	ScanMessage string    `json:"scan_message"`
+	ScanID      string `json:"scan_id"`
+	ScanStatus  string `json:"scan_status"`
+	ScanMessage string `json:"scan_message"`
 }
 
 type Vulnerability struct {
-	Count                      int      `json:"count"`
-	Timestamp                  string   `json:"@timestamp"`
-	Masked                     bool     `json:"masked"`
-	Type                       string   `json:"type"`
-	Scan_id                    string   `json:"scan_id"`
+	ScanId                     string   `json:"scan_id"`
 	Cve_id                     string   `json:"cve_id"`
-	Cve_type                   string   `json:"cve_type"`
 	Cve_severity               string   `json:"cve_severity"`
 	Cve_caused_by_package      string   `json:"cve_caused_by_package"`
 	Cve_caused_by_package_path string   `json:"cve_caused_by_package_path"`
@@ -37,6 +30,36 @@ type Vulnerability struct {
 	Cve_attack_vector          string   `json:"cve_attack_vector"`
 	URLs                       []string `json:"urls"`
 	ExploitPOC                 string   `json:"exploit_poc"`
+	ParsedAttackVector         string   `json:"parsed_attack_vector"`
+	ExploitabilityScore        int      `json:"exploitability_score"`
+	InitExploitabilityScore    int      `json:"init_exploitability_score"`
+	HasLiveConnection          bool     `json:"has_live_connection"`
+}
+
+type vulnerabilityRule struct {
+	Cve_id             string   `json:"cve_id"`
+	Cve_severity       string   `json:"cve_severity"`
+	Cve_fixed_in       string   `json:"cve_fixed_in"`
+	Cve_link           string   `json:"cve_link"`
+	Cve_description    string   `json:"cve_description"`
+	Cve_cvss_score     float64  `json:"cve_cvss_score"`
+	Cve_overall_score  float64  `json:"cve_overall_score"`
+	Cve_attack_vector  string   `json:"cve_attack_vector"`
+	URLs               []string `json:"urls"`
+	ExploitPOC         string   `json:"exploit_poc"`
+	ParsedAttackVector string   `json:"parsed_attack_vector"`
+}
+
+type vulnerabilityData struct {
+	Cve_id                     string `json:"cve_id"`
+	Cve_severity               string `json:"cve_severity"`
+	Cve_caused_by_package      string `json:"cve_caused_by_package"`
+	Cve_caused_by_package_path string `json:"cve_caused_by_package_path"`
+	Cve_container_layer        string `json:"cve_container_layer"`
+	Cve_link                   string `json:"cve_link"`
+	ExploitabilityScore        int    `json:"exploitability_score"`
+	InitExploitabilityScore    int    `json:"init_exploitability_score"`
+	HasLiveConnection          bool   `json:"has_live_connection"`
 }
 
 func CommitFuncVulnerabilities(ns string, data []Vulnerability) error {
@@ -59,12 +82,17 @@ func CommitFuncVulnerabilities(ns string, data []Vulnerability) error {
 	defer tx.Close()
 
 	if _, err = tx.Run(`
-		UNWIND $batch as row
-		MERGE (v:VulnerabilityStub{node_id:row.cve_id})
-		MERGE (n:Vulnerability{node_id:row.cve_caused_by_package+row.cve_id})
+		UNWIND $batch as row WITH row.rule as rule, row.data as data, row.scan_id as scan_id
+		MERGE (v:VulnerabilityStub{node_id:rule.cve_id})
+		MERGE (n:Vulnerability{node_id:data.cve_caused_by_package+rule.cve_id})
 		MERGE (n) -[:IS]-> (v)
-		SET n+= row, v.masked = COALESCE(v.masked, false)
-		WITH n, row.scan_id as scan_id
+		SET v += rule,
+		    v.masked = COALESCE(v.masked, false),
+		    v.updated_at = TIMESTAMP(),
+		    n += data,
+		    n.masked = COALESCE(n.masked, false),
+		    n.updated_at = TIMESTAMP()
+		WITH n, scan_id
 		MATCH (m:VulnerabilityScan{node_id: scan_id})
 		MERGE (m) -[r:DETECTED]-> (n)
 		SET r.masked = false`,
@@ -79,17 +107,38 @@ func CommitFuncVulnerabilities(ns string, data []Vulnerability) error {
 func CVEsToMaps(ms []Vulnerability) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
-		res = append(res, utils.ToMap(v))
+		data, rule := v.split()
+		res = append(res, map[string]interface{}{
+			"rule":    utils.ToMap(rule),
+			"data":    utils.ToMap(data),
+			"scan_id": v.ScanId,
+		})
 	}
 	return res
 }
 
-func (c Vulnerability) ToMap() map[string]interface{} {
-	out, err := json.Marshal(c)
-	if err != nil {
-		return nil
-	}
-	bb := map[string]interface{}{}
-	_ = json.Unmarshal(out, &bb)
-	return bb
+func (c Vulnerability) split() (vulnerabilityData, vulnerabilityRule) {
+	return vulnerabilityData{
+			Cve_id:                     c.Cve_id,
+			Cve_severity:               c.Cve_severity,
+			Cve_caused_by_package:      c.Cve_caused_by_package,
+			Cve_caused_by_package_path: c.Cve_caused_by_package_path,
+			Cve_container_layer:        c.Cve_container_layer,
+			Cve_link:                   c.Cve_link,
+			ExploitabilityScore:        c.ExploitabilityScore,
+			InitExploitabilityScore:    c.InitExploitabilityScore,
+			HasLiveConnection:          c.HasLiveConnection,
+		}, vulnerabilityRule{
+			Cve_id:             c.Cve_id,
+			Cve_severity:       c.Cve_severity,
+			Cve_fixed_in:       c.Cve_fixed_in,
+			Cve_link:           c.Cve_link,
+			Cve_description:    c.Cve_description,
+			Cve_cvss_score:     c.Cve_cvss_score,
+			Cve_overall_score:  c.Cve_overall_score,
+			Cve_attack_vector:  c.Cve_attack_vector,
+			URLs:               c.URLs,
+			ExploitPOC:         c.ExploitPOC,
+			ParsedAttackVector: c.ParsedAttackVector,
+		}
 }

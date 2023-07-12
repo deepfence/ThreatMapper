@@ -60,7 +60,7 @@ export const useListImages = () => {
       page: getPageFromSearchParams(searchParams),
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       order: getOrderFromSearchParams(searchParams) || {
-        sortBy: 'status',
+        sortBy: 'id',
         descending: true,
       },
     }),
@@ -128,7 +128,7 @@ function getScanOptions(
 
 const Header = () => {
   return (
-    <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<RegistryIcon />} isLink>
@@ -250,7 +250,7 @@ const RegistryImagesResults = () => {
 
   return (
     <div className="self-start">
-      <div className="py-2 flex items-center">
+      <div className="h-12 flex items-center">
         <BulkActions ids={Object.keys(rowSelectionState)} onTableAction={onTableAction} />
         <ConfigureScanModal
           open={!!selectedScanType}
@@ -324,7 +324,7 @@ const CountWidget = () => {
 };
 const Widgets = () => {
   return (
-    <Card className="min-h-[140px] px-4 py-1.5 flex">
+    <Card className="min-h-[130px] px-4 flex">
       <Suspense
         fallback={
           <div className="flex m-auto items-center min-h-[100px]">
@@ -341,12 +341,11 @@ const RegistryImages = () => {
   return (
     <>
       <Header />
-      <div className="p-4">
+      <div className="m-4">
         <Widgets />
-      </div>
-
-      <div className="px-4 pb-4">
-        <RegistryImagesResults />
+        <div className="py-4">
+          <RegistryImagesResults />
+        </div>
       </div>
     </>
   );

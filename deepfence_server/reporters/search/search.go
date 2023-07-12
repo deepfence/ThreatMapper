@@ -7,8 +7,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 	"github.com/rs/zerolog/log"
@@ -25,8 +25,9 @@ type SearchFilter struct {
 }
 
 type SearchNodeReq struct {
-	NodeFilter SearchFilter      `json:"node_filter" required:"true"`
-	Window     model.FetchWindow `json:"window" required:"true"`
+	NodeFilter         SearchFilter      `json:"node_filter" required:"true"`
+	ExtendedNodeFilter SearchFilter      `json:"extended_node_filter"`
+	Window             model.FetchWindow `json:"window" required:"true"`
 }
 
 type SearchScanReq struct {
@@ -132,7 +133,7 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 	return res, nil
 }
 
-func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
+func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, extended_filter SearchFilter, fw model.FetchWindow) ([]T, error) {
 	res := []T{}
 	var dummy T
 
@@ -156,11 +157,11 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	query := `
 		MATCH (n:` + dummy.NodeType() + `)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) +
-		` OPTIONAL MATCH (n) -[:IS]-> (e) CALL {
-        WITH n OPTIONAL MATCH (l) -[:DETECTED]-> (n) OPTIONAL MATCH (l) -[:SCANNED]-> (k)
-        WITH distinct k RETURN collect((coalesce(k.node_name, '') + '/' + coalesce(k.node_type, ''))) as resources }
-		RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources ` +
+		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter, nil) +
+		` OPTIONAL MATCH (n) -[:IS]-> (e) ` +
+		reporters.ParseFieldFilters2CypherWhereConditions("e", mo.Some(extended_filter.Filters), true) +
+		reporters.OrderFilter2CypherCondition("e", filter.Filters.OrderFilter, []string{"n"}) +
+		`RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e` +
 		fw.FetchWindow2CypherQuery()
 	log.Debug().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
@@ -205,15 +206,6 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 					node_map[dummy.ExtendedField()] = v
 				}
 			}
-		}
-		resources, isValue := rec.Get("resources")
-		if isValue {
-			resourceList := resources.([]interface{})
-			resourceListString := make([]string, len(resourceList))
-			for i, v := range resourceList {
-				resourceListString[i] = v.(string)
-			}
-			node_map["resources"] = resourceListString
 		}
 		var node T
 		utils.FromMap(node_map, &node)
@@ -273,7 +265,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		}
 		CALL {WITH x MATCH (n:` + dummy.NodeType() + `{node_id: x}) RETURN n.node_name as node_name, n.active as active}
 		RETURN x as node_id, node_name, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
-		reporters.OrderFilter2CypherCondition("", orderFilters) + fw.FetchWindow2CypherQuery()
+		reporters.OrderFilter2CypherCondition("", orderFilters, nil) + fw.FetchWindow2CypherQuery()
 
 	log.Debug().Msgf("search cloud node query: %v", query)
 	r, err := tx.Run(query,
@@ -359,7 +351,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		scan_filter.Window.FetchWindow2CypherQuery() +
 		`}` +
 		` RETURN n.node_id as scan_id, n.status as status, n.status_message as status_message, n.updated_at as updated_at, m.node_id as node_id, COALESCE(m.node_type, m.cloud_provider) as node_type, m.node_name as node_name` +
-		reporters.OrderFilter2CypherCondition("", scan_filter.Filters.OrderFilter) +
+		reporters.OrderFilter2CypherCondition("", scan_filter.Filters.OrderFilter, nil) +
 		fw.FetchWindow2CypherQuery()
 	log.Debug().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
@@ -404,8 +396,8 @@ func SearchCloudNodeReport[T reporters.Cypherable](ctx context.Context, filter S
 	return hosts, nil
 }
 
-func SearchReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
-	hosts, err := searchGenericDirectNodeReport[T](ctx, filter, fw)
+func SearchReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, extended_filter SearchFilter, fw model.FetchWindow) ([]T, error) {
+	hosts, err := searchGenericDirectNodeReport[T](ctx, filter, extended_filter, fw)
 	if err != nil {
 		return nil, err
 	}

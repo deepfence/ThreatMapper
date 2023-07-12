@@ -1,6 +1,6 @@
 module github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/deepfence/procspy
 
-go 1.19
+go 1.20
 
 replace github.com/deepfence/df-utils => ../df-utils/
 
@@ -12,7 +12,7 @@ require (
 )
 
 require (
-	github.com/sirupsen/logrus v1.9.0 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/weaveworks/scope v1.13.2 // indirect
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 )

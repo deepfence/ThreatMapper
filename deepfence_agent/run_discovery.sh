@@ -4,7 +4,21 @@ HOSTNAME=${SCOPE_HOSTNAME:-$(hostname)}
 PROBE_PROCESSES=${DF_ENABLE_PROCESS_REPORT:-"true"}
 PROBE_CONNECTIONS=${DF_ENABLE_CONNECTIONS_REPORT:-"true"}
 PROBE_TRACKDEPLOADS=${DF_ENABLE_TRACKDEPLOADS:-"false"}
-probe_log_level=${LOG_LEVEL:-info}
+PROBE_LOG_LEVEL=${LOG_LEVEL:-info}
+
+if [[ "$DF_CLUSTER_AGENT" == "true" ]]; then
+    /home/deepfence/deepfence_exe \
+        --mode=probe \
+        --probe.kubernetes.role=cluster \
+        --probe.log.level="$PROBE_LOG_LEVEL" \
+        --probe.docker=false \
+        --probe.spy.interval=5s \
+        --probe.publish.interval=10s \
+        --probe.insecure=true \
+        --probe.token="$DEEPFENCE_KEY" \
+        "https://$MGMT_CONSOLE_URL:$MGMT_CONSOLE_PORT"
+    exit 0
+fi
 
 # TL;DR: auto-detects container-runtime
 # Vessel will autodetect the underlying runtime (docker/containerd)
@@ -26,14 +40,14 @@ fi
 
 if [[ "$DF_KUBERNETES_ON" == "Y" ]]; then
   if [[ "$CONTAINER_RUNTIME" == "containerd" ]] || [[ "$CONTAINER_RUNTIME"  = "crio" ]]; then
-    env FILEBEAT_CERT_PATH="$DF_INSTALL_DIR/etc/filebeat/filebeat.crt" CONSOLE_SERVER="https://$mgmtConsoleUrl" SCOPE_HOSTNAME="$HOSTNAME" nice -n -20 $DF_INSTALL_DIR/usr/local/discovery/deepfence-discovery --mode=probe --probe.log.level="$probe_log_level" --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.insecure=true --probe.docker=false --probe.cri=true --probe.cri.endpoint="$CRI_ENDPOINT" --probe.kubernetes="true" --probe.kubernetes.role=host --probe.token="$DEEPFENCE_KEY" --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" --probe.track.deploads="$PROBE_TRACKDEPLOADS" "https://$mgmtConsoleUrl" >>$DF_INSTALL_DIR/var/log/fenced/discovery.logfile 2>&1
+    env FILEBEAT_CERT_PATH="$DF_INSTALL_DIR/etc/filebeat/filebeat.crt" CONSOLE_SERVER="https://$mgmtConsoleUrl" SCOPE_HOSTNAME="$HOSTNAME" nice -n -20 $DF_INSTALL_DIR/usr/local/discovery/deepfence-discovery --mode=probe --probe.log.level="$PROBE_LOG_LEVEL" --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.insecure=true --probe.docker=false --probe.cri=true --probe.cri.endpoint="$CRI_ENDPOINT" --probe.kubernetes="true" --probe.kubernetes.role=host --probe.token="$DEEPFENCE_KEY" --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" --probe.track.deploads="$PROBE_TRACKDEPLOADS" "https://$mgmtConsoleUrl"
   else
-    env FILEBEAT_CERT_PATH="$DF_INSTALL_DIR/etc/filebeat/filebeat.crt" CONSOLE_SERVER="https://$mgmtConsoleUrl" SCOPE_HOSTNAME="$HOSTNAME" nice -n -20 $DF_INSTALL_DIR/usr/local/discovery/deepfence-discovery --mode=probe --probe.log.level="$probe_log_level" --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.insecure=true --probe.docker=true --probe.cri=false --probe.kubernetes="true" --probe.kubernetes.role=host --probe.token="$DEEPFENCE_KEY" --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" --probe.track.deploads="$PROBE_TRACKDEPLOADS" "https://$mgmtConsoleUrl" >>$DF_INSTALL_DIR/var/log/fenced/discovery.logfile 2>&1
+    env FILEBEAT_CERT_PATH="$DF_INSTALL_DIR/etc/filebeat/filebeat.crt" CONSOLE_SERVER="https://$mgmtConsoleUrl" SCOPE_HOSTNAME="$HOSTNAME" nice -n -20 $DF_INSTALL_DIR/usr/local/discovery/deepfence-discovery --mode=probe --probe.log.level="$PROBE_LOG_LEVEL" --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.insecure=true --probe.docker=true --probe.cri=false --probe.kubernetes="true" --probe.kubernetes.role=host --probe.token="$DEEPFENCE_KEY" --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" --probe.track.deploads="$PROBE_TRACKDEPLOADS" "https://$mgmtConsoleUrl"
   fi
 else
   if [[ "$DF_SERVERLESS" == "true" ]]; then
-    env FILEBEAT_CERT_PATH="$DF_INSTALL_DIR/etc/filebeat/filebeat.crt" CONSOLE_SERVER="https://$mgmtConsoleUrl" SCOPE_HOSTNAME="$HOSTNAME" nice -n -20 $DF_INSTALL_DIR/usr/local/discovery/deepfence-discovery --mode=probe --probe.log.level="$probe_log_level" --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.insecure=true --probe.docker=true --probe.cri=false --probe.token="$DEEPFENCE_KEY" --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" --probe.conntrack=false --probe.track.deploads="$PROBE_TRACKDEPLOADS" "https://$mgmtConsoleUrl" >>$DF_INSTALL_DIR/var/log/fenced/discovery.logfile 2>&1
+    env FILEBEAT_CERT_PATH="$DF_INSTALL_DIR/etc/filebeat/filebeat.crt" CONSOLE_SERVER="https://$mgmtConsoleUrl" SCOPE_HOSTNAME="$HOSTNAME" nice -n -20 $DF_INSTALL_DIR/usr/local/discovery/deepfence-discovery --mode=probe --probe.log.level="$PROBE_LOG_LEVEL" --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.insecure=true --probe.docker=true --probe.cri=false --probe.token="$DEEPFENCE_KEY" --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" --probe.conntrack=false --probe.track.deploads="$PROBE_TRACKDEPLOADS" "https://$mgmtConsoleUrl"
   else
-    env FILEBEAT_CERT_PATH="$DF_INSTALL_DIR/etc/filebeat/filebeat.crt" CONSOLE_SERVER="https://$mgmtConsoleUrl" SCOPE_HOSTNAME="$HOSTNAME" nice -n -20 $DF_INSTALL_DIR/usr/local/discovery/deepfence-discovery --mode=probe --probe.log.level="$probe_log_level" --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.insecure=true --probe.docker=true --probe.cri=false --probe.token="$DEEPFENCE_KEY" --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" --probe.track.deploads="$PROBE_TRACKDEPLOADS" "https://$mgmtConsoleUrl" >>$DF_INSTALL_DIR/var/log/fenced/discovery.logfile 2>&1
+    env FILEBEAT_CERT_PATH="$DF_INSTALL_DIR/etc/filebeat/filebeat.crt" CONSOLE_SERVER="https://$mgmtConsoleUrl" SCOPE_HOSTNAME="$HOSTNAME" nice -n -20 $DF_INSTALL_DIR/usr/local/discovery/deepfence-discovery --mode=probe --probe.log.level="$PROBE_LOG_LEVEL" --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.insecure=true --probe.docker=true --probe.cri=false --probe.token="$DEEPFENCE_KEY" --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" --probe.track.deploads="$PROBE_TRACKDEPLOADS" "https://$mgmtConsoleUrl"
   fi
 fi

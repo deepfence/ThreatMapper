@@ -3,7 +3,7 @@ package console_diagnosis
 import (
 	"context"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 const (

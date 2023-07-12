@@ -316,7 +316,7 @@ const DeleteConfirmationModal = ({
         !fetcher.data?.success ? (
           <div className={'flex gap-x-4 justify-end'}>
             <Button
-              size="sm"
+              size="md"
               onClick={() => setShowDialog(false)}
               type="button"
               variant="outline"
@@ -324,14 +324,14 @@ const DeleteConfirmationModal = ({
               Cancel
             </Button>
             <Button
-              size="sm"
+              size="md"
               color="error"
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteAction(ActionEnumType.DELETE);
               }}
             >
-              Yes, I&apos;m sure
+              Yes, delete
             </Button>
           </div>
         ) : undefined
@@ -389,7 +389,7 @@ const DeleteScanConfirmationModal = ({
         !fetcher.data?.success ? (
           <div className={'flex gap-x-4 justify-end'}>
             <Button
-              size="sm"
+              size="md"
               onClick={() => onOpenChange(false)}
               type="button"
               variant="outline"
@@ -397,14 +397,14 @@ const DeleteScanConfirmationModal = ({
               Cancel
             </Button>
             <Button
-              size="sm"
+              size="md"
               color="error"
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteScan();
               }}
             >
-              Yes, I&apos;m sure
+              Yes, delete
             </Button>
           </div>
         ) : undefined
@@ -427,7 +427,7 @@ const DeleteScanConfirmationModal = ({
 
 const ScanHistory = () => {
   return (
-    <div className="mx-4 mt-1.5 min-h-[36px] flex items-center">
+    <div className="flex items-center h-12">
       <span className="h-3.5 w-3.5 dark:text-text-input-value">
         <ClockLineIcon />
       </span>
@@ -443,9 +443,6 @@ const ScanHistory = () => {
       >
         <HistoryControls />
       </Suspense>
-      <Button className="ml-auto" size="md">
-        Start scan
-      </Button>
     </div>
   );
 };
@@ -953,7 +950,7 @@ const CloudPostureResults = () => {
 
   return (
     <div className="self-start">
-      <div className="py-2 flex items-center">
+      <div className="mt-4 h-12 flex items-center">
         <BulkActions
           ids={selectedIds}
           onTableAction={onTableAction}
@@ -1027,9 +1024,9 @@ const CloudPostureTable = ({
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
-        minSize: 20,
-        size: 20,
-        maxSize: 20,
+        minSize: 25,
+        size: 25,
+        maxSize: 25,
       }),
       columnHelper.display({
         id: 'actions',
@@ -1067,10 +1064,8 @@ const CloudPostureTable = ({
               }}
               className="flex items-center gap-x-[6px]"
             >
-              <div className="h-6 w-6 flex items-center justify-center bg-gray-100 shrink-0 dark:bg-[rgba(224,_81,_109,_0.2)] rounded-[5px]">
-                <div className="w-3 h-3 dark:text-status-error">
-                  <PostureIcon />
-                </div>
+              <div className="w-4 h-4 dark:text-text-text-and-icon">
+                <PostureIcon />
               </div>
               <TruncatedText
                 text={info.row.original.control_id ?? info.row.original.node_id}
@@ -1216,7 +1211,7 @@ const CloudPostureTable = ({
 
 const Header = () => {
   return (
-    <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<PostureIcon />} isLink>
@@ -1280,7 +1275,7 @@ const SeverityCountWidget = () => {
 
   return (
     <div className="grid grid-cols-12 px-6 items-center">
-      <div className="col-span-2 h-[140px] w-[140px]">
+      <div className="col-span-2 h-[120px] w-[120px]">
         <PostureScanResultsPieChart data={statusCounts} />
       </div>
       <div className="col-span-2 dark:text-text-text-and-icon">
@@ -1320,7 +1315,7 @@ const SeverityCountWidget = () => {
 
 const Widgets = () => {
   return (
-    <Card className="min-h-[140px] px-4 py-1.5">
+    <Card className="max-h-[130px] px-4 py-1.5">
       <div className="flex-1 pl-4">
         <Suspense
           fallback={
@@ -1339,15 +1334,12 @@ const PostureCloudScanResults = () => {
   return (
     <>
       <Header />
-      <ScanHistory />
-      <div className="px-4 pb-4 pt-1.5">
+      <div className="mx-4">
+        <ScanHistory />
         <Widgets />
-      </div>
-
-      <div className="px-4 pb-4">
         <CloudPostureResults />
+        <Outlet />
       </div>
-      <Outlet />
     </>
   );
 };

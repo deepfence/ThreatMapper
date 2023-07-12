@@ -22,11 +22,11 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
-	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/google/uuid"
@@ -39,6 +39,15 @@ import (
 const (
 	MaxSbomRequestSize      = 500 * 1e6
 	DownloadReportUrlExpiry = 5 * time.Minute
+)
+
+var (
+	noNodesMatchedInNeo4jError = ValidatorError{
+		err:                       errors.New("Key: 'node_ids' Error:Nodes not found with the provided filters"),
+		skipOverwriteErrorMessage: true,
+	}
+	startScanError         = errors.New("unable to spawn any new scans with the given criteria")
+	incorrectScanTypeError = errors.New("unknown scan type")
 )
 
 func scanId(req model.NodeIdentifier) string {
@@ -142,16 +151,8 @@ func GetContainerKubeClusterNameFromId(ctx context.Context, node_id string) (str
 	return clusterID, clusterName, nil
 }
 
-func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
-	var reqs model.VulnerabilityScanTriggerReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
-	if err != nil {
-		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
-		return
-	}
-
-	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
+func StartScanActionBuilder(ctx context.Context, scanType ctl.ActionID, additionalBinArgs map[string]string) func(string, model.NodeIdentifier, int32) (ctl.Action, error) {
+	return func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
 		registryIdStr := ""
 		if registryId != -1 {
 			registryIdStr = strconv.Itoa(int(registryId))
@@ -162,19 +163,14 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 			"node_id":     req.NodeId,
 			"registry_id": registryIdStr,
 		}
-
-		if len(reqs.ScanConfigLanguages) != 0 {
-			languages := []string{}
-			for i := range reqs.ScanConfigLanguages {
-				languages = append(languages, reqs.ScanConfigLanguages[i].Language)
-			}
-			binArgs["scan_type"] = strings.Join(languages, ",")
+		for k, v := range additionalBinArgs {
+			binArgs[k] = v
 		}
 
 		nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
 
 		if nodeTypeInternal == ctl.Image {
-			name, tag, err := GetImageFromId(r.Context(), req.NodeId)
+			name, tag, err := GetImageFromId(ctx, req.NodeId)
 			if err != nil {
 				log.Error().Msgf("image not found %s", err.Error())
 			} else {
@@ -184,7 +180,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		}
 
 		if nodeTypeInternal == ctl.Container {
-			clusterID, clusterName, err := GetContainerKubeClusterNameFromId(r.Context(), req.NodeId)
+			clusterID, clusterName, err := GetContainerKubeClusterNameFromId(ctx, req.NodeId)
 			if err != nil {
 				log.Error().Msgf("container kube cluster name not found %s", err.Error())
 			} else if len(clusterName) > 0 {
@@ -193,10 +189,15 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 			}
 		}
 
-		internal_req := ctl.StartVulnerabilityScanRequest{
-			NodeId:   req.NodeId,
-			NodeType: nodeTypeInternal,
-			BinArgs:  binArgs,
+		var internal_req interface{}
+
+		switch scanType {
+		case ctl.StartVulnerabilityScan:
+			internal_req = ctl.StartVulnerabilityScanRequest{NodeId: req.NodeId, NodeType: nodeTypeInternal, BinArgs: binArgs}
+		case ctl.StartSecretScan:
+			internal_req = ctl.StartSecretScanRequest{NodeId: req.NodeId, NodeType: nodeTypeInternal, BinArgs: binArgs}
+		case ctl.StartMalwareScan:
+			internal_req = ctl.StartMalwareScanRequest{NodeId: req.NodeId, NodeType: nodeTypeInternal, BinArgs: binArgs}
 		}
 
 		b, err := json.Marshal(internal_req)
@@ -204,14 +205,36 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 			return ctl.Action{}, err
 		}
 
-		return ctl.Action{
-			ID:             ctl.StartVulnerabilityScan,
-			RequestPayload: string(b),
-		}, nil
+		return ctl.Action{ID: scanType, RequestPayload: string(b)}, nil
 	}
+}
+
+func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
+	var reqs model.VulnerabilityScanTriggerReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	binArgs := make(map[string]string, 0)
+	if len(reqs.ScanConfigLanguages) != 0 {
+		languages := []string{}
+		for i := range reqs.ScanConfigLanguages {
+			languages = append(languages, reqs.ScanConfigLanguages[i].Language)
+		}
+		binArgs["scan_type"] = strings.Join(languages, ",")
+	}
+
+	actionBuilder := StartScanActionBuilder(r.Context(), ctl.StartVulnerabilityScan, binArgs)
 
 	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_VULNERABILITY_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
+		if err.Error() == "Result contains no more records" {
+			respondError(&noNodesMatchedInNeo4jError, w)
+			return
+		}
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
 		return
@@ -234,49 +257,14 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
-		registryIdStr := ""
-		if registryId != -1 {
-			registryIdStr = strconv.Itoa(int(registryId))
-		}
-		binArgs := map[string]string{
-			"scan_id":     scanId,
-			"node_type":   req.NodeType,
-			"node_id":     req.NodeId,
-			"registry_id": registryIdStr,
-		}
-
-		nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
-
-		if nodeTypeInternal == ctl.Image {
-			name, tag, err := GetImageFromId(r.Context(), req.NodeId)
-			if err != nil {
-				return ctl.Action{}, err
-			}
-			binArgs["image_name"] = name + ":" + tag
-			log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
-		}
-
-		internal_req := ctl.StartSecretScanRequest{
-			NodeId:   req.NodeId,
-			NodeType: ctl.StringToResourceType(req.NodeType),
-			BinArgs:  binArgs,
-		}
-
-		b, err := json.Marshal(internal_req)
-		bstr := string(b)
-		if err != nil {
-			return ctl.Action{}, err
-		}
-
-		return ctl.Action{
-			ID:             ctl.StartSecretScan,
-			RequestPayload: bstr,
-		}, nil
-	}
+	actionBuilder := StartScanActionBuilder(r.Context(), ctl.StartSecretScan, nil)
 
 	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_SECRET_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
+		if err.Error() == "Result contains no more records" {
+			respondError(&noNodesMatchedInNeo4jError, w)
+			return
+		}
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
 		return
@@ -305,7 +293,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	cloudNodeIds, err := reporters_scan.GetCloudAccountIDs(ctx, regular)
 	if err != nil {
-		respondError(errors.New(err.Error()), w)
+		respondError(err, w)
 		return
 	}
 
@@ -333,34 +321,32 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	var scanIds []string
 	var bulkId string
+	var scanStatusType string
 	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.Host) {
 		scanIds, bulkId, err = StartMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
-		if err != nil {
-			for _, i := range scanIds {
-				h.SendScanStatus(r.Context(), utils.CLOUD_COMPLIANCE_SCAN_STATUS,
-					NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
-			}
-		}
+		scanStatusType = utils.CLOUD_COMPLIANCE_SCAN_STATUS
 	} else {
 		scanIds, bulkId, err = startMultiComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
-		if err != nil {
-			for _, i := range scanIds {
-				h.SendScanStatus(r.Context(), utils.COMPLIANCE_SCAN_STATUS,
-					NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
-			}
-		}
+		scanStatusType = utils.COMPLIANCE_SCAN_STATUS
 	}
-
 	if err != nil {
+		if err.Error() == "Result contains no more records" {
+			respondError(&noNodesMatchedInNeo4jError, w)
+			return
+		}
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
 		return
 	}
 
+	for _, i := range scanIds {
+		h.SendScanStatus(r.Context(), scanStatusType, NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
+	}
+
 	if len(scanIds) == 0 {
-		respondError(errors.New("unable to spawn any new scans with the given criteria"), w)
+		respondError(startScanError, w)
 		return
 	}
 
@@ -381,49 +367,14 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
-		registryIdStr := ""
-		if registryId != -1 {
-			registryIdStr = strconv.Itoa(int(registryId))
-		}
-		binArgs := map[string]string{
-			"scan_id":     scanId,
-			"node_type":   req.NodeType,
-			"node_id":     req.NodeId,
-			"registry_id": registryIdStr,
-		}
-
-		nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
-
-		if nodeTypeInternal == ctl.Image {
-			name, tag, err := GetImageFromId(r.Context(), req.NodeId)
-			if err != nil {
-				return ctl.Action{}, err
-			}
-			binArgs["image_name"] = name + ":" + tag
-			log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
-		}
-
-		internal_req := ctl.StartMalwareScanRequest{
-			NodeId:   req.NodeId,
-			NodeType: ctl.StringToResourceType(req.NodeType),
-			BinArgs:  binArgs,
-		}
-
-		b, err := json.Marshal(internal_req)
-		bstr := string(b)
-		if err != nil {
-			return ctl.Action{}, err
-		}
-
-		return ctl.Action{
-			ID:             ctl.StartMalwareScan,
-			RequestPayload: bstr,
-		}, nil
-	}
+	actionBuilder := StartScanActionBuilder(r.Context(), ctl.StartMalwareScan, nil)
 
 	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_MALWARE_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
+		if err.Error() == "Result contains no more records" {
+			respondError(&noNodesMatchedInNeo4jError, w)
+			return
+		}
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
 		return
@@ -454,7 +405,7 @@ func (h *Handler) SendScanStatus(
 	}
 
 	rh := []kgo.RecordHeader{
-		{Key: "tenant_id", Value: []byte(tenantID)},
+		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
 	cb, err := json.Marshal(status)
@@ -560,22 +511,44 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
-	info, err := mc.UploadFile(r.Context(), file, b64,
+	sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
+	info, err := mc.UploadFile(r.Context(), sbomFile, b64,
 		minio.PutObjectOptions{ContentType: "application/gzip"})
-	// TODO: remove this error check, it should not happen
-	// happens only when scan is retried and sbom is re-uploaded
-	if err != nil && strings.Contains(err.Error(), "Already exists here") {
-		log.Warn().Msg(err.Error())
-		httpext.JSON(w, http.StatusOK, info)
-		return
-	} else if err != nil {
-		log.Error().Msg(err.Error())
-		respondError(err, w)
-		return
+
+	if err != nil {
+		logError := true
+		if strings.Contains(err.Error(), "Already exists here") {
+			/*If the file already exists, we will delete the old file and upload the new one
+			  File can exists in 2 conditions:
+			  - When the earlier scan was stuck during the scan phase
+			  - When the service was restarted
+			  - Bug/Race conditon in the worker service
+			*/
+			log.Warn().Msg(err.Error() + ", Will try to overwrite the file: " + sbomFile)
+			err = mc.DeleteFile(r.Context(), sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
+			if err == nil {
+				info, err = mc.UploadFile(r.Context(), sbomFile, b64,
+					minio.PutObjectOptions{ContentType: "application/gzip"})
+
+				if err == nil {
+					log.Info().Msgf("Successfully overwritten the file: %s", sbomFile)
+					logError = false
+				} else {
+					log.Error().Msgf("Failed to upload the file, error is: %v", err)
+				}
+			} else {
+				log.Error().Msgf("Failed to delete the old file, error is: %v", err)
+			}
+		}
+
+		if logError == true {
+			log.Error().Msg(err.Error())
+			respondError(err, w)
+			return
+		}
 	}
 
-	params.SBOMFilePath = file
+	params.SBOMFilePath = sbomFile
 
 	payload, err := json.Marshal(params.SbomParameters)
 	if err != nil {
@@ -1379,7 +1352,7 @@ func getScanResults(ctx context.Context, scanId, scanType string) (model.Downloa
 		return resp, nil
 
 	default:
-		return resp, errors.New("unknown scan type")
+		return resp, incorrectScanTypeError
 	}
 }
 
@@ -1657,9 +1630,9 @@ func GetImagesFromAdvanceFilter(ctx context.Context, ids []model.NodeIdentifier,
 
 	for i := range filter.FieldsValues["docker_image_name"] {
 		rr, err := tx.Run(`
-		MATCH (n:ContainerImage)
+		MATCH (n:ContainerImage)-[:IS]->(m:ImageStub)
 		WHERE n.node_id IN $ids
-		AND n.docker_image_name = $image_name
+		AND m.docker_image_name = $image_name
 		RETURN n.node_id, n.updated_at, n.docker_image_tag
 		`, map[string]interface{}{
 			"ids":        reporters_scan.NodeIdentifierToIdList(ids),
@@ -1874,6 +1847,8 @@ func StartMultiScan(ctx context.Context,
 			if e, is := err.(*ingesters.AlreadyRunningScanError); is {
 				scanIds = append(scanIds, e.ScanId)
 				continue
+			} else if _, is = err.(*ingesters.AgentNotInstalledError); is {
+				continue
 			}
 			log.Error().Err(err)
 			return nil, "", err
@@ -1930,6 +1905,8 @@ func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 		if err != nil {
 			if e, is := err.(*ingesters.AlreadyRunningScanError); is {
 				scanIds = append(scanIds, e.ScanId)
+				continue
+			} else if _, is = err.(*ingesters.AgentNotInstalledError); is {
 				continue
 			}
 			log.Error().Msgf("%v", err)

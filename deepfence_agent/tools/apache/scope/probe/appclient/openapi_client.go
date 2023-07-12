@@ -3,6 +3,7 @@ package appclient
 import (
 	"bytes"
 	"compress/gzip"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
@@ -10,6 +11,7 @@ import (
 	"sync/atomic"
 
 	"github.com/bytedance/sonic"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/client"
 	openapi "github.com/deepfence/golang_deepfence_sdk/utils/http"
 	"github.com/weaveworks/scope/probe/common"
@@ -73,12 +75,22 @@ func (ct *OpenapiClient) Publish(r report.Report) error {
 	if err != nil {
 		return err
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusServiceUnavailable {
 		return PushBackError
 	}
 
-	return err
+	if resp.StatusCode == http.StatusOK {
+		decoder := json.NewDecoder(resp.Body)
+		var data controls.AgentBeat
+		err = decoder.Decode(&data)
+		if err != nil {
+			return err
+		}
+		ct.publishInterval.Store(data.BeatRateSec)
+	}
+
+	return nil
 }
 
 func (ct *OpenapiClient) PublishInterval() int32 {

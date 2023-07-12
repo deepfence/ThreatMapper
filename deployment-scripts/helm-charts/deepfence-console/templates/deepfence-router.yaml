@@ -78,22 +78,26 @@ spec:
             - name: https
               containerPort: 443
               protocol: TCP
-          # livenessProbe:
-          #   httpGet:
-          #     path: /
-          #     port: http
-          #     scheme: HTTPS
-          #   initialDelaySeconds: 60
-          #   periodSeconds: 20
-          #   timeoutSeconds: 10
-          # readinessProbe:
-          #   httpGet:
-          #     path: /
-          #     port: http
-          #     scheme: HTTPS
-          #   initialDelaySeconds: 60
-          #   periodSeconds: 30
-          #   timeoutSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: https
+              scheme: HTTPS
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+            successThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: /
+              port: https
+              scheme: HTTPS
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 10
+            successThreshold: 1
           volumeMounts:
             {{- if or .Values.router.tls.secretName (and .Values.router.tls.cert .Values.router.tls.key) }}
             - name: certs

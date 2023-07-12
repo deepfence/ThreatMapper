@@ -5,7 +5,7 @@ import (
 	"net/rpc"
 
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/supervisor"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 type Server struct{}

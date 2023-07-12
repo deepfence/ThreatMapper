@@ -12,9 +12,9 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/sirupsen/logrus"
 )
@@ -34,11 +34,11 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 
 	monitoredAccountIds := req.MonitoredAccountIds
 	orgAccountId := req.OrgAccountId
-	scanList := make(map[string]model.CloudComplianceScanDetails)
-	cloudtrailTrails := make([]model.CloudNodeCloudtrailTrail, 10)
+	scanList := map[string]model.CloudComplianceScanDetails{}
+	cloudtrailTrails := []model.CloudNodeCloudtrailTrail{}
 	nodeId := req.NodeId
 
-	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+	ctx := r.Context()
 
 	doRefresh := "false"
 
@@ -66,8 +66,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			return
 		}
 		for monitoredAccountId, monitoredNodeId := range monitoredAccountIds {
-			var monitoredNode map[string]interface{}
-			monitoredNode = map[string]interface{}{
+			monitoredNode := map[string]interface{}{
 				"node_id":         monitoredNodeId,
 				"cloud_provider":  req.CloudProvider,
 				"node_name":       monitoredAccountId,

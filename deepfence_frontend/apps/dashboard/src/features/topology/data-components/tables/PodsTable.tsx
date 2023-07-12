@@ -9,6 +9,7 @@ import {
   createColumnHelper,
   SortingState,
   Table,
+  TableNoDataElement,
   TableSkeleton,
 } from 'ui-components';
 
@@ -37,7 +38,7 @@ export const PodsTable = () => {
 
   return (
     <div className="px-4 pb-4">
-      <div className="py-2 flex items-center">
+      <div className="h-12 flex items-center">
         <Button
           variant="flat"
           className="ml-auto"
@@ -321,7 +322,7 @@ const DataTable = () => {
       <Table
         data={data.pods ?? []}
         columns={columns}
-        noDataText="No hosts are connected"
+        noDataElement={<TableNoDataElement text="No pods are connected" />}
         size="default"
         enableColumnResizing
         enablePagination

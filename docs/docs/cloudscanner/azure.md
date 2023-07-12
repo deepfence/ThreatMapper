@@ -22,12 +22,9 @@ module "cloud-scanner_example_single-subscription" {
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
   name                = "deepfence-cloud-scanner"
+  image               = "quay.io/deepfenceio/cloud-scanner:2.0.0"
 }
 
-variable "image" {
-  type        = string
-  default     = "quay.io/deepfenceio/cloud-scanner:2.0.0"
-}
 ```
 Ensure that the `name` parameter is set to some unique string to avoid collision with existing resource names in the subscription
 

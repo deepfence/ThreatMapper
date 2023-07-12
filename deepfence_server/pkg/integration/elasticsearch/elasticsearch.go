@@ -2,6 +2,7 @@ package elasticsearch
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 )
@@ -15,15 +16,27 @@ func New(b []byte) (*ElasticSearch, error) {
 	return &p, nil
 }
 
-func (e ElasticSearch) SendNotification(message string) error {
+func (e ElasticSearch) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
 	var req *http.Request
 	var err error
-
-	payloadBytes := []byte("{\"index\":{\"_index\":\"" + e.Config.Index + "\"}}\n" + message)
+	var msg []map[string]interface{}
+	err = json.Unmarshal([]byte(message), &msg)
+	if err != nil {
+		return err
+	}
+	payloadMsg := ""
+	meta := "{\"index\":{\"_index\":\"" + e.Config.Index + "\"}}\n"
+	for _, payload := range msg {
+		pl, err := json.Marshal(payload)
+		if err != nil {
+			return err
+		}
+		payloadMsg += meta + string(pl) + "\n"
+	}
 
 	// send message to this elasticsearch using http
 	// Set up the HTTP request.
-	req, err = http.NewRequest("POST", e.Config.URL+"/_bulk", bytes.NewBuffer(payloadBytes))
+	req, err = http.NewRequest("POST", e.Config.EndpointURL+"/_bulk", bytes.NewBuffer([]byte(payloadMsg)))
 	if err != nil {
 		return err
 	}

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 var client = &http.Client{Timeout: 10 * time.Second}
@@ -22,40 +22,65 @@ func getImagesList(u, p, ns string) ([]model.IngestedContainerImage, error) {
 		return nil, err
 	}
 
-	url := dockerHubURL + "/repositories/" + ns + "/?page_size=100"
-	req, err := http.NewRequest("GET", url, nil)
+	var allRepoWithTags []model.IngestedContainerImage
+	pageSize := 100
+	page := 1
+
+	for {
+		url := dockerHubURL + "/repositories/" + ns + "/?page_size=" + strconv.Itoa(pageSize) + "&page=" + strconv.Itoa(page)
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range cookies {
+			req.AddCookie(v)
+		}
+
+		req.Header.Add("Authorization", "JWT "+token)
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != 200 {
+			err = errors.New(url +
+				"\nresp.StatusCode: " + strconv.Itoa(resp.StatusCode))
+			return nil, err
+		}
+
+		repo, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		repoWithTags, err := getRepoTags(repo, ns, token, cookies)
+		if err != nil {
+			return nil, err
+		}
+
+		allRepoWithTags = append(allRepoWithTags, repoWithTags...)
+
+		// Check if there are more pages to fetch
+		if !hasNextPage(repo) {
+			break
+		}
+
+		page++
+	}
+
+	return allRepoWithTags, nil
+}
+
+// Function to check if there is a "next" page in the Link header
+func hasNextPage(repoB []byte) bool {
+	var repo model.RegistryImages
+	err := json.Unmarshal(repoB, &repo)
 	if err != nil {
-		return nil, err
+		return false
 	}
-
-	for _, v := range cookies {
-		req.AddCookie(v)
-	}
-
-	req.Header.Add("Authorization", "JWT "+token)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		err = errors.New(url +
-			"\nresp.StatusCode: " + strconv.Itoa(resp.StatusCode))
-		return nil, err
-	}
-
-	repo, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	repoWithTags, err := getRepoTags(repo, ns, token, cookies)
-	if err != nil {
-		return nil, err
-	}
-	return repoWithTags, err
-
+	return repo.Next != ""
 }
 
 func getAuthTokenAndCookies(u, p string) (string, []*http.Cookie, error) {
@@ -89,7 +114,6 @@ func getAuthTokenAndCookies(u, p string) (string, []*http.Cookie, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	// log.Info().Msgf("getauthtoken : %s", string(jsonDataFromHttp))
 
 	var dAuth map[string]string
 
@@ -112,6 +136,7 @@ func getRepoTags(repoB []byte, ns, token string, cookies []*http.Cookie) ([]mode
 		imgTag, err := getRepoTag(r.Name, ns, token, cookies)
 		if err != nil {
 			log.Warn().Msgf("unable to fetch image tag for %s: Error: %v", r.Name, err)
+			continue
 		}
 		imagesWithTag = append(imagesWithTag, getImageWithTags(r.Name, imgTag)...)
 	}

@@ -82,37 +82,43 @@ export const AWSCloudFormation = () => {
               Deploy all modules for Deepfence Posture Scanner for a single account. For
               information on AWS Organizations and account types, see AWS docs.
             </p>
-            <p>
-              <DFLink
-                href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center"
-              >
-                Deploy on one AWS account
-              </DFLink>
-            </p>
-            <p className="mt-4">
-              <DFLink
-                href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacksets/create`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center"
-              >
-                Deploy on multiple AWS accounts
-              </DFLink>
-            </p>
-            <p className="mt-2 underline">
-              <DFLink
-                href={
-                  'https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template'
-                }
-                target="_blank"
-                rel="noreferrer"
-              >
-                You can refer the template from here.
-              </DFLink>
-            </p>
+            <DFLink
+              href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:2.0.0`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center mt-4"
+            >
+              Deploy on one AWS account
+            </DFLink>
+            <DFLink
+              href={
+                'https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template'
+              }
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2"
+            >
+              You can refer the single account template from here
+            </DFLink>
+
+            <DFLink
+              href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:2.0.0`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center mt-4"
+            >
+              Deploy on multiple AWS accounts (Organization Deployment)
+            </DFLink>
+            <DFLink
+              href={
+                'https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template'
+              }
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2"
+            >
+              You can refer the organization account template from here.
+            </DFLink>
           </div>
         </Step>
       </Stepper>

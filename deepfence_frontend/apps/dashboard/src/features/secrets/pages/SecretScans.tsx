@@ -171,7 +171,7 @@ const DeleteConfirmationModal = ({
         !fetcher.data?.success ? (
           <div className={'flex gap-x-3 justify-end'}>
             <Button
-              size="sm"
+              size="md"
               onClick={() => setShowDialog(false)}
               type="button"
               variant="outline"
@@ -179,14 +179,14 @@ const DeleteConfirmationModal = ({
               Cancel
             </Button>
             <Button
-              size="sm"
+              size="md"
               color="error"
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteAction(ActionEnumType.DELETE);
               }}
             >
-              Yes, I&apos;m sure
+              Yes, delete
             </Button>
           </div>
         ) : undefined
@@ -639,9 +639,10 @@ const ScansTable = () => {
         minSize: 100,
         size: 110,
         maxSize: 110,
-        enableResizing: false,
+        enableResizing: true,
       }),
       columnHelper.accessor('total', {
+        enableSorting: false,
         cell: (info) => (
           <div className="flex items-center justify-end tabular-nums">
             <span className="truncate">{info.getValue()}</span>
@@ -657,6 +658,7 @@ const ScansTable = () => {
         maxSize: 80,
       }),
       columnHelper.accessor('critical', {
+        enableSorting: false,
         cell: (info) => {
           const params = new URLSearchParams();
           params.set('severity', 'critical');
@@ -682,9 +684,9 @@ const ScansTable = () => {
         minSize: 80,
         size: 80,
         maxSize: 80,
-        enableResizing: false,
       }),
       columnHelper.accessor('high', {
+        enableSorting: false,
         cell: (info) => {
           const params = new URLSearchParams();
           params.set('severity', 'high');
@@ -710,9 +712,9 @@ const ScansTable = () => {
         minSize: 80,
         size: 80,
         maxSize: 80,
-        enableResizing: false,
       }),
       columnHelper.accessor('medium', {
+        enableSorting: false,
         cell: (info) => {
           const params = new URLSearchParams();
           params.set('severity', 'medium');
@@ -738,9 +740,9 @@ const ScansTable = () => {
         minSize: 80,
         size: 80,
         maxSize: 80,
-        enableResizing: false,
       }),
       columnHelper.accessor('low', {
+        enableSorting: false,
         cell: (info) => {
           const params = new URLSearchParams();
           params.set('severity', 'low');
@@ -766,9 +768,9 @@ const ScansTable = () => {
         minSize: 80,
         size: 80,
         maxSize: 80,
-        enableResizing: false,
       }),
       columnHelper.accessor('unknown', {
+        enableSorting: false,
         cell: (info) => {
           const params = new URLSearchParams();
           params.set('severity', 'unknown');
@@ -794,7 +796,6 @@ const ScansTable = () => {
         minSize: 80,
         size: 80,
         maxSize: 80,
-        enableResizing: false,
       }),
     ];
 
@@ -880,7 +881,7 @@ const SecretScans = () => {
 
   return (
     <div>
-      <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<SecretsIcon />} isLink>
             <DFLink to={'/secret'} unstyled>
@@ -898,27 +899,29 @@ const SecretScans = () => {
       </div>
 
       <div className="mx-4">
-        <Button
-          variant="flat"
-          className="ml-auto py-2"
-          startIcon={<FilterIcon />}
-          endIcon={
-            getAppliedFiltersCount(searchParams) > 0 ? (
-              <Badge
-                label={String(getAppliedFiltersCount(searchParams))}
-                variant="filled"
-                size="small"
-                color="blue"
-              />
-            ) : null
-          }
-          size="sm"
-          onClick={() => {
-            setFiltersExpanded((prev) => !prev);
-          }}
-        >
-          Filter
-        </Button>
+        <div className="h-12 flex items-center">
+          <Button
+            variant="flat"
+            className="ml-auto py-2"
+            startIcon={<FilterIcon />}
+            endIcon={
+              getAppliedFiltersCount(searchParams) > 0 ? (
+                <Badge
+                  label={String(getAppliedFiltersCount(searchParams))}
+                  variant="filled"
+                  size="small"
+                  color="blue"
+                />
+              ) : null
+            }
+            size="sm"
+            onClick={() => {
+              setFiltersExpanded((prev) => !prev);
+            }}
+          >
+            Filter
+          </Button>
+        </div>
         {filtersExpanded ? <Filters /> : null}
         <Suspense fallback={<TableSkeleton columns={7} rows={15} />}>
           <ScansTable />

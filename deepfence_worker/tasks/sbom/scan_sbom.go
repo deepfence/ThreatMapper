@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"regexp"
 	"sync"
 	"time"
 
@@ -15,9 +16,9 @@ import (
 	"github.com/anchore/syft/syft/formats"
 	"github.com/anchore/syft/syft/sbom"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	psOutput "github.com/deepfence/package-scanner/output"
 	ps "github.com/deepfence/package-scanner/scanner"
 	"github.com/deepfence/package-scanner/scanner/grype"
@@ -30,6 +31,12 @@ var (
 	grypeConfig = "/usr/local/bin/grype.yaml"
 	grypeBin    = "grype"
 )
+
+var attackVectorRegex *regexp.Regexp
+
+func init() {
+	attackVectorRegex = regexp.MustCompile(`.*av:n.*`)
+}
 
 type SbomParser struct {
 	ingestC chan *kgo.Record
@@ -86,7 +93,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	log.Info().Msgf("message tenant id %s", string(tenantID))
 
 	rh := []kgo.RecordHeader{
-		{Key: "tenant_id", Value: []byte(tenantID)},
+		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
 	log.Info().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
@@ -102,7 +109,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	statusChan := make(chan SbomScanStatus)
 	var wg sync.WaitGroup
 	wg.Add(1)
-	StartStatusReporter(statusChan, s.ingestC, rh, params, &wg)
+	StartStatusReporter("SCAN_SBOM", statusChan, s.ingestC, rh, params, &wg)
 	defer wg.Wait()
 
 	// send inprogress status
@@ -168,7 +175,6 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	log.Info().Msgf("scan-id=%s vulnerabilities=%d severities=%v", params.ScanId, len(report), details.Severity)
 
 	// write reports and status to kafka ingester will process from there
-
 	for _, c := range report {
 		cb, err := json.Marshal(c)
 		if err != nil {
@@ -270,13 +276,17 @@ func generateRuntimeSBOM(path string, vulnerabilities []ps.VulnerabilityScanRepo
 		return nil, err
 	}
 
-	for item := range sbomIn.Artifacts.PackageCatalog.Enumerate() {
+	for item := range sbomIn.Artifacts.Packages.Enumerate() {
 		cveInfo := vMap[item.Name+":"+item.Version]
+		licenses := []string{}
+		for _, l := range item.Licenses.ToSlice() {
+			licenses = append(licenses, l.Value)
+		}
 		runSBOM = append(runSBOM, model.SbomResponse{
 			PackageName: item.Name,
 			Version:     item.Version,
 			Locations:   item.Locations.CoordinateSet().Paths(),
-			Licenses:    item.Licenses,
+			Licenses:    licenses,
 			CveID:       cveInfo.CveID,
 			Severity:    cveInfo.Severity,
 		})

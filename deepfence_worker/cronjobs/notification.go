@@ -10,19 +10,20 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
 func SendNotifications(msg *message.Message) error {
-	postgresCtx := directory.NewGlobalContext()
-	pgClient, err := directory.PostgresClient(postgresCtx)
+	namespace := msg.Metadata.Get(directory.NamespaceKey)
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
+	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return err
 	}
-	integrations, err := pgClient.GetIntegrations(postgresCtx)
+	integrations, err := pgClient.GetIntegrations(ctx)
 	if err != nil {
 		log.Error().Msgf("Error in getting postgresCtx", err)
 		return err
@@ -71,32 +72,32 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	}
 	filters.NodeIds = []model.NodeIdentifier{}
 	for _, scan := range list.ScansInfo {
-		results, _, err := reporters_scan.GetScanResults[T](ctx, utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId, filters.FieldsFilters, model.FetchWindow{})
+		results, common, err := reporters_scan.GetScanResults[T](ctx, utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId, filters.FieldsFilters, model.FetchWindow{})
 		if len(results) == 0 {
 			log.Info().Msgf("No Results filtered for scan id:%s with filters %+v", scan.ScanId, filters)
 			continue
 		}
 		iByte, err := json.Marshal(integrationRow)
 		if err != nil {
-			log.Error().Msgf("Error Processing for integration json marshall integrationRow: +%v", integrationRow, err)
+			log.Error().Msgf("Error Processing for integration json marshall integrationRow: %+v", integrationRow, err)
 			return err
 		}
 		integrationModel, err := integration.GetIntegration(integrationRow.IntegrationType, iByte)
 		if err != nil {
-			log.Error().Msgf("Error Processing for integration GetIntegration: +%v", integrationRow, err)
+			log.Error().Msgf("Error Processing for integration GetIntegration: %+v", integrationRow, err)
 			return err
 		}
 		messageByte, err := json.Marshal(results)
 		if err != nil {
-			log.Error().Msgf("Error Processing for integration json marshall results: +%v", integrationRow, err)
+			log.Error().Msgf("Error Processing for integration json marshall results: %+v", integrationRow, err)
 			return err
 		}
-		err = integrationModel.SendNotification(string(messageByte))
+		err = integrationModel.SendNotification(ctx, string(messageByte), map[string]interface{}{"node_id": common.ScanID})
 		if err != nil {
-			log.Error().Msgf("Error Sending Notification: +%v", integrationRow, err)
+			log.Error().Msgf("Error Sending Notification: %+v", integrationRow, err)
 			return err
 		}
-		log.Info().Msgf("Sent %d messages in notification", len(results))
+		log.Info().Msgf("Sent %d messages in %s notification", len(results), integrationRow.IntegrationType)
 	}
 	return err
 }

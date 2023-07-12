@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 var client = &http.Client{
@@ -149,6 +149,7 @@ func getImageWithTags(repo Repository, artifacts []Artifact) []model.IngestedCon
 					"last_pushed":   tag.PushTime,
 					"digest":        artifact.Digest,
 					"creation_time": repo.CreationTime,
+					"last_updated":  tag.PushTime,
 				},
 			}
 			imageAndTag = append(imageAndTag, tt)

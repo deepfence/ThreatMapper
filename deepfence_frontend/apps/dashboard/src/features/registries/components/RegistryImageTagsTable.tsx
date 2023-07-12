@@ -6,6 +6,7 @@ import {
   DropdownItem,
   getRowSelectionColumn,
   RowSelectionState,
+  SortingState,
   Table,
 } from 'ui-components';
 
@@ -20,6 +21,7 @@ import {
 import { useScanResults } from '@/features/registries/pages/RegistryImageTags';
 import { ScanTypeEnum } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
+import { useSortingState } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 15;
 
@@ -90,6 +92,7 @@ export const RegistryImageTagsTable = ({
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const columnHelper = createColumnHelper<ModelContainerImage>();
+  const [sort, setSort] = useSortingState();
 
   const { data } = useScanResults();
   const columns = useMemo(
@@ -127,6 +130,7 @@ export const RegistryImageTagsTable = ({
         enableResizing: false,
       }),
       columnHelper.accessor('docker_image_tag', {
+        enableSorting: false,
         header: () => 'Image Tag',
         cell: (info) => {
           return <TruncatedText text={info.getValue()} />;
@@ -135,6 +139,7 @@ export const RegistryImageTagsTable = ({
         minSize: 20,
       }),
       columnHelper.accessor('metadata', {
+        enableSorting: false,
         header: () => 'Pushed at',
         cell: (info) => {
           const metadata = info.row.original.metadata;
@@ -144,21 +149,25 @@ export const RegistryImageTagsTable = ({
         maxSize: 50,
       }),
       columnHelper.accessor('docker_image_size', {
+        enableSorting: false,
         header: () => 'Size',
         cell: (info) => (Number(info.getValue()) / 1000000).toFixed(2) + ' MB',
         maxSize: 50,
       }),
       columnHelper.accessor('vulnerability_scan_status', {
+        enableSorting: false,
         header: () => <TruncatedText text={'Vulnerability Scan Status'} />,
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),
       columnHelper.accessor('secret_scan_status', {
+        enableSorting: false,
         header: () => <TruncatedText text={'Secrets Scan Status'} />,
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),
       columnHelper.accessor('malware_scan_status', {
+        enableSorting: false,
         header: () => <TruncatedText text={'Malware Scan Status'} />,
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
@@ -208,6 +217,25 @@ export const RegistryImageTagsTable = ({
             prev.delete('page');
             return prev;
           });
+        }}
+        onSortingChange={(updaterOrValue) => {
+          let newSortState: SortingState = [];
+          if (typeof updaterOrValue === 'function') {
+            newSortState = updaterOrValue(sort);
+          } else {
+            newSortState = updaterOrValue;
+          }
+          setSearchParams((prev) => {
+            if (!newSortState.length) {
+              prev.delete('sortby');
+              prev.delete('desc');
+            } else {
+              prev.set('sortby', String(newSortState[0].id));
+              prev.set('desc', String(newSortState[0].desc));
+            }
+            return prev;
+          });
+          setSort(newSortState);
         }}
       />
     </div>

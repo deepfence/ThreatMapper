@@ -13,7 +13,7 @@ export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
 
   if (data?.success) return <SuccessModalContent text="Password changed successfully!" />;
   return (
-    <fetcher.Form method="post" className="flex flex-col gap-y-9 mt-4 mx-4">
+    <fetcher.Form method="post" className="flex flex-col gap-y-8 mt-4 mx-4">
       <TextInput
         label="Old Password"
         type={'password'}
@@ -56,7 +56,7 @@ export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
         </div>
       )}
 
-      <div className="flex gap-x-2">
+      <div className="flex gap-x-2 mt-6">
         <Button
           size="md"
           type="submit"

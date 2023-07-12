@@ -10,11 +10,12 @@ import (
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/lookup"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	postgresqldb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/report"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 	ingester "github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
-	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	postgresqldb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
-	"github.com/deepfence/golang_deepfence_sdk/utils/report"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
 func (d *OpenApiDocs) AddUserAuthOperations() {
@@ -117,9 +118,9 @@ func (d *OpenApiDocs) AddGraphOperations() {
 		"Get Threat Graph", "Retrieve the full threat graph associated with the account",
 		http.StatusOK, []string{tagThreat}, bearerToken, new(ThreatFilters), new(ThreatGraph))
 
-	d.AddOperation("getVulnerabilityThreatGraph", http.MethodPost, "/deepfence/graph/threat/vulnerability",
+	d.AddOperation("getIndividualThreatGraph", http.MethodPost, "/deepfence/graph/threat/individual",
 		"Get Vulnerability Threat Graph", "Retrieve threat graph associated with vulnerabilities",
-		http.StatusOK, []string{tagThreat}, bearerToken, new(VulnerabilityThreatGraphRequest), new([]VulnerabilityThreatGraph))
+		http.StatusOK, []string{tagThreat}, bearerToken, new(IndividualThreatGraphRequest), new([]IndividualThreatGraph))
 }
 
 func (d *OpenApiDocs) AddLookupOperations() {
@@ -154,6 +155,26 @@ func (d *OpenApiDocs) AddLookupOperations() {
 	d.AddOperation("getCloudResources", http.MethodPost, "/deepfence/lookup/cloud-resources",
 		"Get Cloud Resources", "Retrieve the cloud resources",
 		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]CloudResource))
+
+	d.AddOperation("getVulnerabilities", http.MethodPost, "/deepfence/lookup/vulnerabilities",
+		"Retrieve Vulnerabilities data", "Retrieve all the data associated with vulnerabilities",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]Vulnerability))
+
+	d.AddOperation("getSecrets", http.MethodPost, "/deepfence/lookup/secrets",
+		"Retrieve Secrets data", "Retrieve all the data associated with secrets",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]Secret))
+
+	d.AddOperation("getMalwares", http.MethodPost, "/deepfence/lookup/malwares",
+		"Retrieve Malwares data", "Retrieve all the data associated with malwares",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]Malware))
+
+	d.AddOperation("getCompliances", http.MethodPost, "/deepfence/lookup/compliances",
+		"Retrieve Compliances data", "Retrieve all the data associated with compliances",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]Compliance))
+
+	d.AddOperation("getCloudCompliances", http.MethodPost, "/deepfence/lookup/cloud-compliances",
+		"Retrieve Cloud Compliances data", "Retrieve all the data associated with cloud-compliances",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]CloudCompliance))
 }
 
 func (d *OpenApiDocs) AddSearchOperations() {
@@ -197,6 +218,22 @@ func (d *OpenApiDocs) AddSearchOperations() {
 	d.AddOperation("searchCompliances", http.MethodPost, "/deepfence/search/compliances",
 		"Search Compliances", "Search across all the data associated with compliances",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Compliance))
+
+	d.AddOperation("searchVulerabilityRules", http.MethodPost, "/deepfence/search/vulnerability-rules",
+		"Search Vulnerability Rules", "Search across all the data associated with vulnerability rules",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]VulnerabilityRule))
+
+	d.AddOperation("searchSecretRules", http.MethodPost, "/deepfence/search/secret-rules",
+		"Search Secret Rules", "Search across all the data associated with secret ruless",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]SecretRule))
+
+	d.AddOperation("searchMalwareRules", http.MethodPost, "/deepfence/search/malware-rules",
+		"Search Malware Rules", "Search across all the data associated with malware rules",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]MalwareRule))
+
+	d.AddOperation("searchComplianceRules", http.MethodPost, "/deepfence/search/compliance-rules",
+		"Search Compliance Rules", "Search across all the data associated with compliance rules",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]ComplianceRule))
 
 	d.AddOperation("searchPods", http.MethodPost, "/deepfence/search/pods",
 		"Search Pods", "Search across all the data associated with pods",
@@ -283,6 +320,22 @@ func (d *OpenApiDocs) AddSearchOperations() {
 		"Count Compliances", "Count across all the data associated with compliances",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 
+	d.AddOperation("countVulnerabilityRules", http.MethodPost, "/deepfence/search/count/vulnerability-rules",
+		"Count Vulnerability Rules", "Count across all the data associated with vulnerability rules",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countSecretRules", http.MethodPost, "/deepfence/search/count/secret-rules",
+		"Count Secret Rules", "Count across all the data associated with secret rules",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countMalwareRules", http.MethodPost, "/deepfence/search/count/malware-rules",
+		"Count Malware Rules", "Count across all the data associated with malware rules",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countComplianceRules", http.MethodPost, "/deepfence/search/count/compliance-rules",
+		"Count Compliance Rules", "Count across all the data associated with compliance rules",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
 	d.AddOperation("countVulnerabilityScans", http.MethodPost, "/deepfence/search/count/vulnerability/scans",
 		"Count Vulnerability Scan results", "Count across all the data associated with vulnerability scans",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
@@ -325,6 +378,14 @@ func (d *OpenApiDocs) AddControlsOperations() {
 		"Schedule new agent version upgrade", "Schedule new agent version upgrade",
 		http.StatusOK, []string{tagControls}, bearerToken, new(AgentUpgrade), nil)
 
+	d.AddOperation("enableAgentPlugin", http.MethodPost, "/deepfence/controls/agent-plugins/enable",
+		"Schedule new agent plugin version enabling", "Schedule agent plugin enable",
+		http.StatusOK, []string{tagControls}, bearerToken, new(AgentPluginEnable), nil)
+
+	d.AddOperation("disableAgentPlugin", http.MethodPost, "/deepfence/controls/agent-plugins/disable",
+		"Schedule new agent plugin version disabling", "Schedule agent plugin disable",
+		http.StatusOK, []string{tagControls}, bearerToken, new(AgentPluginDisable), nil)
+
 	d.AddOperation("getCloudNodeControls", http.MethodPost, "/deepfence/controls/cloud-node",
 		"Fetch Cloud Node Controls", "Fetch controls for a cloud node",
 		http.StatusOK, []string{tagControls}, bearerToken, new(CloudNodeControlReq), new(CloudNodeControlResp))
@@ -355,7 +416,7 @@ func (d *OpenApiDocs) AddCloudNodeOperations() {
 func (d *OpenApiDocs) AddIngestersOperations() {
 	d.AddOperation("ingestAgentReport", http.MethodPost, "/deepfence/ingest/report",
 		"Ingest Topology Data", "Ingest data reported by one Agent",
-		http.StatusOK, []string{tagTopology}, bearerToken, new(report.RawReport), nil)
+		http.StatusOK, []string{tagTopology}, bearerToken, new(report.RawReport), new(controls.AgentBeat))
 
 	d.AddOperation("ingestSyncAgentReport", http.MethodPost, "/deepfence/ingest/sync-report",
 		"Ingest Topology Data", "Ingest data reported by one Agent",
@@ -597,6 +658,9 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 	d.AddOperation("deleteRegistry", http.MethodDelete, "/deepfence/registryaccount/{registry_id}",
 		"Delete Registry", "Delete registry",
 		http.StatusNoContent, []string{tagRegistry}, bearerToken, new(RegistryIDPathReq), nil)
+	d.AddOperation("syncRegistry", http.MethodPost, "/deepfence/registryaccount/{registry_id}/sync",
+		"Sync Registry", "synchronize registry images",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryIDPathReq), new(MessageResponse))
 	d.AddOperation("getSummaryAll", http.MethodGet, "/deepfence/registryaccount/summary",
 		"Get All Registries Summary By Type", "get summary of all registries scans, images and tags by registry type",
 		http.StatusOK, []string{tagRegistry}, bearerToken, nil, new(RegistrySummaryAllResp))
@@ -678,5 +742,5 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 	// Database upload
 	d.AddOperation("uploadVulnerabilityDatabase", http.MethodPut, "/deepfence/database/vulnerability",
 		"Upload Vulnerability Database", "Upload Vulnerability Database for use in vulnerability scans",
-		http.StatusOK, []string{tagSettings}, bearerToken, new(DBUploadRequest), new(MessageResponse))
+		http.StatusOK, []string{tagSettings}, bearerToken, new(vulnerability_db.DBUploadRequest), new(MessageResponse))
 }

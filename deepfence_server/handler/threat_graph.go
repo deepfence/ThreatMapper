@@ -5,8 +5,9 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	reporters_graph "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
@@ -50,8 +51,8 @@ func (h *Handler) GetThreatGraph(w http.ResponseWriter, r *http.Request) {
 	respondWith(ctx, w, http.StatusOK, graph)
 }
 
-func (h *Handler) GetVulnerabilityThreatGraph(w http.ResponseWriter, r *http.Request) {
-	var req reporters_graph.VulnerabilityThreatGraphRequest
+func (h *Handler) GetIndividualThreatGraph(w http.ResponseWriter, r *http.Request) {
+	var req reporters_graph.IndividualThreatGraphRequest
 	defer r.Body.Close()
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
@@ -63,11 +64,39 @@ func (h *Handler) GetVulnerabilityThreatGraph(w http.ResponseWriter, r *http.Req
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	vulnerabilityThreatGraph, err := reporters_graph.GetVulnerabilityThreatGraph(r.Context(), req.GraphType)
+	var individualThreatGraph []reporters_graph.IndividualThreatGraph
+	switch req.IssueType {
+	case "vulnerability":
+		individualThreatGraph, err = reporters_graph.GetIndividualThreatGraph[model.Vulnerability](
+			r.Context(),
+			req.GraphType,
+			req.NodeIds)
+	case "secret":
+		individualThreatGraph, err = reporters_graph.GetIndividualThreatGraph[model.Secret](
+			r.Context(),
+			req.GraphType,
+			req.NodeIds)
+	case "malware":
+		individualThreatGraph, err = reporters_graph.GetIndividualThreatGraph[model.Malware](
+			r.Context(),
+			req.GraphType,
+			req.NodeIds)
+	case "compliance":
+		individualThreatGraph, err = reporters_graph.GetIndividualThreatGraph[model.Compliance](
+			r.Context(),
+			req.GraphType,
+			req.NodeIds)
+	case "cloud_compliance":
+		individualThreatGraph, err = reporters_graph.GetIndividualThreatGraph[model.CloudCompliance](
+			r.Context(),
+			req.GraphType,
+			req.NodeIds)
+	}
+
 	if err != nil {
-		log.Error().Msgf("Error GetVulnerabilityThreatGraph: %v", err)
+		log.Error().Msgf("Error GetIndividualThreatGraph: %v", err)
 		respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, vulnerabilityThreatGraph)
+	httpext.JSON(w, http.StatusOK, individualThreatGraph)
 }

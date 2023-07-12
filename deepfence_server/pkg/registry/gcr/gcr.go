@@ -7,8 +7,8 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
-	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -57,14 +57,12 @@ func (d *RegistryGCR) IsValidCredential() bool {
 
 func (d *RegistryGCR) EncryptSecret(aes encryption.AES) error {
 	var err error
-	d.Secret.ProjectId, err = aes.Encrypt(d.Secret.ProjectId)
 	d.Secret.PrivateKeyId, err = aes.Encrypt(d.Secret.PrivateKeyId)
 	return err
 }
 
 func (d *RegistryGCR) DecryptSecret(aes encryption.AES) error {
 	var err error
-	d.Secret.ProjectId, err = aes.Decrypt(d.Secret.ProjectId)
 	d.Secret.PrivateKeyId, err = aes.Decrypt(d.Secret.PrivateKeyId)
 	return err
 }

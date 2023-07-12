@@ -2,6 +2,7 @@ package sendemail
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
@@ -17,8 +18,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/rs/zerolog/log"
 )
 
@@ -32,8 +33,7 @@ type EmailSender interface {
 	Send(recipients []string, subject string, text string, html string, attachments map[string][]byte) error
 }
 
-func NewEmailSender() (EmailSender, error) {
-	ctx := directory.NewGlobalContext()
+func NewEmailSender(ctx context.Context) (EmailSender, error) {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return nil, err

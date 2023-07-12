@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
 type GenerateReportReq struct {

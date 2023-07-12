@@ -3,10 +3,12 @@ package processors
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j/db"
 )
 
 type BulkRequest struct {
@@ -65,6 +67,17 @@ func NewBulkProcessor(name string, fn commitFn) *BulkProcessor {
 	}
 }
 
+func NewBulkProcessorWith(name string, fn commitFn, size int) *BulkProcessor {
+	return &BulkProcessor{
+		name:          name,
+		commitFn:      fn,
+		numWorkers:    1,
+		bulkActions:   size,
+		flushInterval: 10 * time.Second,
+		requestsC:     make(chan BulkRequest, 2*size),
+	}
+}
+
 func (p *BulkProcessor) Start(ctx context.Context) error {
 
 	log.Info().Msgf("start bulk processor %s", p.name)
@@ -78,32 +91,10 @@ func (p *BulkProcessor) Start(ctx context.Context) error {
 	for i := 0; i < p.numWorkers; i++ {
 		p.workerWg.Add(1)
 		p.workers[i] = newBulkWorker(p, i)
-		go p.workers[i].work(ctx)
-	}
-
-	// Start the ticker for flush
-	if int64(p.flushInterval) > 0 {
-		p.flusherStopC = make(chan struct{})
-		go p.flusher(p.flushInterval)
+		go p.workers[i].work(ctx, p.flushInterval)
 	}
 
 	return nil
-}
-
-func (p *BulkProcessor) flusher(interval time.Duration) {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ticker.C: // Periodic flush
-			p.Flush()
-
-		case <-p.flusherStopC:
-			p.flusherStopC <- struct{}{}
-			return
-		}
-	}
 }
 
 func (p *BulkProcessor) Flush() {
@@ -185,7 +176,7 @@ func newBulkWorker(p *BulkProcessor, i int) *bulkWorker {
 	}
 }
 
-func (w *bulkWorker) work(ctx context.Context) {
+func (w *bulkWorker) work(ctx context.Context, flushInterval time.Duration) {
 	defer func() {
 		w.p.workerWg.Done()
 		close(w.flushAckC)
@@ -194,6 +185,9 @@ func (w *bulkWorker) work(ctx context.Context) {
 
 	log.Info().Str("worker", w.worker_id).Msg("started")
 
+	// Start the ticker for flush
+	ticker := time.NewTicker(flushInterval)
+	defer ticker.Stop()
 	var stop bool
 	for !stop {
 		select {
@@ -205,6 +199,10 @@ func (w *bulkWorker) work(ctx context.Context) {
 					log.Info().Str("worker", w.worker_id).Msg("buffer full commit all")
 					if errs := w.commit(ctx); len(errs) != 0 {
 						log.Error().Str("worker", w.worker_id).Msgf("%v", errs)
+					}
+					ticker.Reset(flushInterval)
+					for len(ticker.C) > 0 {
+						<-ticker.C
 					}
 				}
 
@@ -219,6 +217,14 @@ func (w *bulkWorker) work(ctx context.Context) {
 				}
 			}
 
+		case <-ticker.C:
+			// Commit outstanding requests
+			if w.buffer.Size() > 0 {
+				log.Info().Str("worker", w.worker_id).Msg("ticker called commit all")
+				if errs := w.commit(ctx); len(errs) != 0 {
+					log.Error().Str("worker", w.worker_id).Msgf("%v", errs)
+				}
+			}
 		case <-w.flushC:
 			// Commit outstanding requests
 			if w.buffer.Size() > 0 {
@@ -236,12 +242,33 @@ func (w *bulkWorker) commitRequired() bool {
 	return w.buffer.Size() >= w.bulkActions
 }
 
+func isTransientError(err error) bool {
+	// Check if the error is a deadlock error
+	if neoErr, ok := err.(*db.Neo4jError); ok {
+		return strings.HasPrefix(neoErr.Code, "Neo.TransientError")
+	}
+	return false
+}
+
 func (w *bulkWorker) commit(ctx context.Context) []error {
 	errs := []error{}
 	for k, v := range w.buffer.Read() {
 		log.Info().Str("worker", w.worker_id).Msgf("namespace=%s #data=%d", k, len(v))
-		if err := w.p.commitFn(k, v); err != nil {
-			errs = append(errs, err)
+		retries := 2
+		var err error
+		for {
+			retries -= 1
+			if retries < 0 {
+				errs = append(errs, err)
+				break
+			}
+			if err = w.p.commitFn(k, v); err != nil {
+				if isTransientError(err) {
+					continue
+				}
+				errs = append(errs, err)
+			}
+			break
 		}
 	}
 	// reset buffer after commit

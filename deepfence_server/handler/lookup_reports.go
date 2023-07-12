@@ -1,19 +1,23 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	reporters_lookup "github.com/deepfence/ThreatMapper/deepfence_server/reporters/lookup"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
-func (h *Handler) GetHosts(w http.ResponseWriter, r *http.Request) {
+func getGeneric[T any](h *Handler, w http.ResponseWriter, r *http.Request, getter func(context.Context, reporters_lookup.LookupFilter) ([]T, error)) {
 	defer r.Body.Close()
 	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters_lookup.GetHostsReport(r.Context(), req)
+	hosts, err := getter(r.Context(), req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -21,78 +25,6 @@ func (h *Handler) GetHosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = httpext.JSON(w, http.StatusOK, hosts)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) GetContainers(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters_lookup.LookupFilter
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	containers, err := reporters_lookup.GetContainersReport(r.Context(), req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-		return
-	}
-
-	err = httpext.JSON(w, http.StatusOK, containers)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) GetProcesses(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters_lookup.LookupFilter
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	processes, err := reporters_lookup.GetProcessesReport(r.Context(), req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-		return
-	}
-
-	err = httpext.JSON(w, http.StatusOK, processes)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) GetKubernetesClusters(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters_lookup.LookupFilter
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	clusters, err := reporters_lookup.GetKubernetesClustersReport(r.Context(), req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-		return
-	}
-
-	err = httpext.JSON(w, http.StatusOK, clusters)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) GetContainerImages(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters_lookup.LookupFilter
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	images, err := reporters_lookup.GetContainerImagesReport(r.Context(), req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-		return
-	}
-
-	err = httpext.JSON(w, http.StatusOK, images)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -110,44 +42,76 @@ func (h *Handler) GetPods(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for i := range pods {
+		filter := reporters_search.SearchFilter{
+			Filters: reporters.FieldsFilters{
+				ContainsFilter: reporters.ContainsFilter{
+					FieldsValues: map[string][]interface{}{
+						"pod_name": []interface{}{pods[i].PodName},
+					},
+				},
+			},
+		}
+		eFilter := reporters_search.SearchFilter{}
+		containers, err := reporters_search.SearchReport[model.Container](
+			r.Context(), filter, eFilter, model.FetchWindow{})
+		if err != nil {
+			log.Error().Msg(err.Error())
+			continue
+		}
+		pods[i].Containers = containers
+	}
+
 	err = httpext.JSON(w, http.StatusOK, pods)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
 }
 
+func (h *Handler) GetHosts(w http.ResponseWriter, r *http.Request) {
+	getGeneric[model.Host](h, w, r, reporters_lookup.GetHostsReport)
+}
+
+func (h *Handler) GetContainers(w http.ResponseWriter, r *http.Request) {
+	getGeneric[model.Container](h, w, r, reporters_lookup.GetContainersReport)
+}
+
+func (h *Handler) GetProcesses(w http.ResponseWriter, r *http.Request) {
+	getGeneric[model.Process](h, w, r, reporters_lookup.GetProcessesReport)
+}
+
+func (h *Handler) GetKubernetesClusters(w http.ResponseWriter, r *http.Request) {
+	getGeneric[model.KubernetesCluster](h, w, r, reporters_lookup.GetKubernetesClustersReport)
+}
+
+func (h *Handler) GetContainerImages(w http.ResponseWriter, r *http.Request) {
+	getGeneric[model.ContainerImage](h, w, r, reporters_lookup.GetContainerImagesReport)
+}
+
 func (h *Handler) GetRegistryAccount(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters_lookup.LookupFilter
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	registry, err := reporters_lookup.GetRegistryAccountReport(r.Context(), req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-		return
-	}
-
-	err = httpext.JSON(w, http.StatusOK, registry)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
+	getGeneric[model.RegistryAccount](h, w, r, reporters_lookup.GetRegistryAccountReport)
 }
 
 func (h *Handler) GetCloudResources(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters_lookup.LookupFilter
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	getGeneric[model.CloudResource](h, w, r, reporters_lookup.GetCloudResourcesReport)
+}
 
-	resources, err := reporters_lookup.GetCloudResourcesReport(r.Context(), req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-		return
-	}
+func (h *Handler) GetVulnerabilities(w http.ResponseWriter, r *http.Request) {
+	getGeneric[model.Vulnerability](h, w, r, reporters_lookup.GetVulnerabilitiesReport)
+}
 
-	err = httpext.JSON(w, http.StatusOK, resources)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
+func (h *Handler) GetSecrets(w http.ResponseWriter, r *http.Request) {
+	getGeneric[model.Secret](h, w, r, reporters_lookup.GetSecretsReport)
+}
+
+func (h *Handler) GetMalwares(w http.ResponseWriter, r *http.Request) {
+	getGeneric[model.Malware](h, w, r, reporters_lookup.GetMalwaresReport)
+}
+
+func (h *Handler) GetCompliances(w http.ResponseWriter, r *http.Request) {
+	getGeneric[model.Compliance](h, w, r, reporters_lookup.GetComplianceReport)
+}
+
+func (h *Handler) GetCloudCompliances(w http.ResponseWriter, r *http.Request) {
+	getGeneric[model.CloudCompliance](h, w, r, reporters_lookup.GetCloudComplianceReport)
 }

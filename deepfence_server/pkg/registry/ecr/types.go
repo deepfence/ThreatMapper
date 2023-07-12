@@ -14,7 +14,7 @@ type NonSecret struct {
 	IsPublic             string `json:"is_public" validate:"required,oneof=true false"`
 	AWSAccessKeyID       string `json:"aws_access_key_id" validate:"omitempty,min=16,max=128"`
 	AWSRegionName        string `json:"aws_region_name" validate:"omitempty,oneof=us-east-1 us-east-2 us-west-1 us-west-2 af-south-1 ap-east-1 ap-south-1 ap-northeast-1 ap-northeast-2 ap-northeast-3 ap-southeast-1 ap-southeast-2 ap-southeast-3 ca-central-1 eu-central-1 eu-west-1 eu-west-2 eu-west-3 eu-south-1 eu-north-1 me-south-1 me-central-1 sa-east-1 us-gov-east-1 us-gov-west-1"`
-	AWSAccountID         string `json:"aws_account_id" validate:"omitempty,len=8"` // legacy: registry_id
+	AWSAccountID         string `json:"aws_account_id" validate:"omitempty,min=10,max=12"` // legacy: registry_id
 	TargetAccountRoleARN string `json:"target_account_role_arn" validate:"omitempty,startswith=arn,min=8"`
 }
 
@@ -63,4 +63,8 @@ type Results struct {
 	MediaType           string    `json:"media_type,omitempty"`
 	ContentType         string    `json:"content_type,omitempty"`
 	Digest              string    `json:"digest,omitempty"`
+}
+
+type AWSSelfQuery struct {
+	AccountID string `json:"accountId"`
 }

@@ -15,7 +15,7 @@ type Splunk struct {
 
 type Config struct {
 	EndpointURL string `json:"endpoint_url" validate:"required,url" required:"true"`
-	Token       string `json:"token" validate:"required" required:"true"`
+	Token       string `json:"token" validate:"required,min=1" required:"true"`
 }
 
 func (s Splunk) ValidateConfig(validate *validator.Validate) error {

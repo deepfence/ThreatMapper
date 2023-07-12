@@ -14,7 +14,7 @@ import {
   TopologyLoaderData,
   useTopologyActionDeduplicator,
 } from '@/features/topology/data-components/topologyLoader';
-import { useG6raph } from '@/features/topology/hooks/useG6Graph';
+import { useG6Graph } from '@/features/topology/hooks/useG6Graph';
 import { G6GraphEvent, G6Node, NodeModel } from '@/features/topology/types/graph';
 import {
   focusItem,
@@ -76,7 +76,7 @@ export const TopologyGraph = () => {
 
   // g6 hooks
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
-  const { graph } = useG6raph(container, {}, {});
+  const { graph } = useG6Graph(container, {}, {});
 
   // graph data management hooks
   const { dataDiffWithAction, isRefreshInProgress, ...graphDataManagerFunctions } =
@@ -116,13 +116,45 @@ export const TopologyGraph = () => {
       onNodeHover(e.item as G6Node, true);
       if (e.item) {
         // https://github.com/antvis/G6/blob/master/packages/plugin/src/tooltip/index.ts
-        const itemBBox = e.item.getBBox();
-        const { x, y } = graph.getCanvasByPoint(itemBBox.maxX, itemBBox.maxY);
+        // TODO: this can be much improved, see above file.
+        const width: number = graph.get('width');
+        const height: number = graph.get('height');
+
+        // how far you want to tooltip to open from cursor
+        const offsetX = 10;
+        const offsetY = 10;
+
+        const point = graph.getPointByClient(e.clientX, e.clientY);
+
+        const { x, y } = graph.getCanvasByPoint(point.x, point.y);
+
+        const graphContainer = graph.getContainer();
+
+        const res = {
+          x: x + graphContainer.offsetLeft + offsetX,
+          y: y + graphContainer.offsetTop + offsetY,
+        };
+
+        const tooltipBBox = {
+          width: 200,
+          height: 120,
+        };
+
+        if (x + tooltipBBox.width + offsetX > width) {
+          res.x -= tooltipBBox.width + offsetX;
+        }
+
+        if (y + tooltipBBox.height + offsetY > height) {
+          res.y -= tooltipBBox.height + offsetY;
+          if (res.y < 0) {
+            res.y = 0;
+          }
+        }
         setDebouncedTooltipLoc((prev) => ({ ...prev, show: false }));
         setTooltipLoc({
           show: true,
-          x: x,
-          y: y,
+          x: res.x,
+          y: res.y,
           item: e.item as G6Node,
         });
       }

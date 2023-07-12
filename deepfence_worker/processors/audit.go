@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
@@ -21,11 +21,6 @@ func addAuditLog(record *kgo.Record) {
 func processAuditLog(ctx context.Context, auditC chan *kgo.Record) {
 	defer close(auditC)
 
-	pgClient, err := directory.PostgresClient(directory.WithGlobalContext(ctx))
-	if err != nil {
-		log.Error().Err(err).Msg("failed to get db connection")
-	}
-
 	for {
 		select {
 		case <-ctx.Done():
@@ -34,6 +29,11 @@ func processAuditLog(ctx context.Context, auditC chan *kgo.Record) {
 		case record := <-auditC:
 
 			spanCtx, span := otel.Tracer("audit-log").Start(ctx, "ingest-audit-log")
+
+			pgClient, err := directory.PostgresClient(directory.NewContextWithNameSpace(directory.NamespaceID(getNamespace(record.Headers))))
+			if err != nil {
+				log.Error().Err(err).Msg("failed to get db connection")
+			}
 
 			var params postgresql_db.CreateAuditLogParams
 

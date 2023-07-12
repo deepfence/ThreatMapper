@@ -47,7 +47,7 @@ Refer to the [Kubernetes Installation Instructions](/docs/console/kubernetes) al
     helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 
     # Create the values file
-    helm show values deepfence/deepfence-console > deepfence_console_values.yaml
+    helm show values deepfence/deepfence-console --version 1.5.2 > deepfence_console_values.yaml
     ```
 
     Edit the `deepfence_console_values.yaml` file, replacing the `image: repository:` value to point to your repository, and making any other changes as needed.
@@ -55,7 +55,7 @@ Refer to the [Kubernetes Installation Instructions](/docs/console/kubernetes) al
     Install the management console:
 
     ```bash
-    helm install -f deepfence_console_values.yaml deepfence-console deepfence/deepfence-console
+    helm install -f deepfence_console_values.yaml deepfence-console deepfence/deepfence-console --version 1.5.2
     ```
 
     Full instructions can be found in the [Console helm chart documentation](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-console).
@@ -66,11 +66,11 @@ Refer to the [Kubernetes Installation Instructions](/docs/console/kubernetes) al
    
     ```bash
     # Create the values file
-    helm show values deepfence/deepfence-router > deepfence_router_values.yaml
+    helm show values deepfence/deepfence-router --version 1.5.0 > deepfence_router_values.yaml
     ```
 
     Edit the `deepfence_router_values.yaml` file, replacing the `image: repository:` value to point to your repository, and making any other changes as needed.
 
     ```bash
-    helm install -f deepfence_router_values.yaml deepfence-router deepfence/deepfence-router
+    helm install -f deepfence_router_values.yaml deepfence-router deepfence/deepfence-router --version 1.5.0
     ```

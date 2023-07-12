@@ -30,6 +30,7 @@ const (
 	AwsSecurityHub  = "aws_security_hub"
 	Email           = "email"
 	Jira            = "jira"
+	SumoLogic       = "sumologic"
 )
 
 const (

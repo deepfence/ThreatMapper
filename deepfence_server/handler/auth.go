@@ -8,12 +8,18 @@ import (
 	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
+)
+
+var (
+	parseRefreshTokenError  = errors.New("cannot parse refresh token")
+	accessTokenRevokedError = ForbiddenError{errors.New("access token is revoked")}
+	userInactiveError       = ForbiddenError{errors.New("user is not active")}
 )
 
 func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
@@ -29,13 +35,18 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := directory.WithGlobalContext(r.Context())
+	tokenSplit := strings.Split(apiAuthRequest.ApiToken, ":")
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tokenSplit[0]))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
-	parsedUUID, _ := uuid.Parse(apiAuthRequest.ApiToken)
+	parsedUUID, err := uuid.Parse(tokenSplit[1])
+	if err != nil {
+		respondError(err, w)
+		return
+	}
 	apiToken := &model.ApiToken{ApiToken: parsedUUID}
 	user, err := apiToken.GetUser(ctx, pgClient)
 	if err != nil {
@@ -48,7 +59,8 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_TOKEN_AUTH, apiAuthRequest, true)
+	user.Password = ""
+	h.AuditUserActivity(r, EVENT_AUTH, ACTION_TOKEN_AUTH, user, true)
 
 	httpext.JSON(w, http.StatusOK, accessTokenResponse)
 }
@@ -81,7 +93,7 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 		return nil, "", err
 	}
 	if tokenType != "refresh_token" {
-		return nil, "", errors.New("cannot parse refresh token")
+		return nil, "", parseRefreshTokenError
 	}
 	accessTokenID, err := utils.GetStringValueFromInterfaceMap(claims, "token_id")
 	if err != nil {
@@ -92,18 +104,18 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 		return nil, "", err
 	}
 	if revoked == true {
-		return nil, "", &ForbiddenError{errors.New("access token is revoked")}
+		return nil, "", &accessTokenRevokedError
 	}
 	userId, err := utils.GetInt64ValueFromInterfaceMap(claims, "user")
 	if err != nil {
 		return nil, "", err
 	}
-	user, _, _, _, err := model.GetUserByID(userId)
+	user, _, _, err := model.GetUserByID(requestContext, userId)
 	if err != nil {
 		return nil, "", err
 	}
 	if user.IsActive == false {
-		return nil, "", &ForbiddenError{errors.New("user is not active")}
+		return nil, "", &userInactiveError
 	}
 	grantType, err := utils.GetStringValueFromInterfaceMap(claims, "grant_type")
 	if err != nil {
@@ -125,13 +137,15 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	u, statusCode, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(loginRequest.Email))
+	loginRequest.Email = strings.ToLower(loginRequest.Email)
+	ctx := directory.NewContextWithNameSpace(directory.FetchNamespace(loginRequest.Email))
+	u, statusCode, pgClient, err := model.GetUserByEmail(ctx, loginRequest.Email)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
 	}
 	if u.IsActive == false {
-		respondError(&ForbiddenError{errors.New("user is not active")}, w)
+		respondError(&userInactiveError, w)
 		return
 	}
 	passwordValid, err := u.CompareHashAndPassword(ctx, pgClient, loginRequest.Password)
@@ -145,6 +159,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	u.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_LOGIN, u, true)
 
 	httpext.JSON(w, http.StatusOK, model.LoginResponse{

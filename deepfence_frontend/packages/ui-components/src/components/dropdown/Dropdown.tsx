@@ -134,30 +134,31 @@ export const DropdownItem: React.ForwardRefExoticComponent<
   const { children, className, disabled, selected, icon, ...rest } = props;
   const classes = cn(
     'flex gap-x-2',
-    // paddings
-    'px-6 pt-2 pb-1',
     // text
-    'text-gray-500 dark:text-text-text-and-icon',
-    // hover // focus
-    'focus:outline-none focus:bg-gray-100',
-    'dark:focus:bg-bg-grid-header dark:focus:text-text-text-and-icon',
-    {
-      'cursor-pointer': !disabled,
-      'cursor-auto dark:text-gray-600': disabled,
-      'dark:bg-bg-active-selection dark:text-text-input-value': selected,
-    },
+    'text-p4 text-gray-500 dark:text-text-text-and-icon',
+
     className,
   );
   return (
     <DropdownPrimitive.Item
-      className={classes}
+      className={cn(
+        'px-6 pt-2 pb-1', // hover // focus
+        'focus:outline-none focus:bg-gray-100',
+        'dark:focus:bg-bg-grid-header dark:focus:text-text-text-and-icon',
+        {
+          'cursor-pointer': !disabled,
+          'cursor-auto dark:text-gray-600': disabled,
+          'dark:bg-bg-active-selection dark:text-text-input-value': selected,
+        },
+      )}
       disabled={disabled}
       {...rest}
       ref={forwardedRef}
     >
       {icon && <div className="w-4 h-4 mr-2 shrink-0 self-center">{icon}</div>}
 
-      {children}
+      {/* TODO: fix this classes apply to parent dropdown item */}
+      <div className={classes}>{children}</div>
     </DropdownPrimitive.Item>
   );
 });

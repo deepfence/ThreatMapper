@@ -2,15 +2,14 @@ package cronjobs
 
 import (
 	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 // CleanUpPostgresDB Delete expired user invites and password reset requests
 func CleanUpPostgresDB(msg *message.Message) error {
-	//namespace := msg.Metadata.Get(directory.NamespaceKey)
-	//ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
-	ctx := directory.NewGlobalContext()
+	namespace := msg.Metadata.Get(directory.NamespaceKey)
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return err
