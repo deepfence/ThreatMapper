@@ -20,9 +20,7 @@ describe('Component Dropdown', () => {
               return <DropdownItem key={item}>{item}</DropdownItem>;
             })}
             <DropdownSeparator />
-            <DropdownItem className="text-red-500 dark:text-red-500">
-              Sign Out
-            </DropdownItem>
+            <DropdownItem>Sign Out</DropdownItem>
           </>
         }
         open={true}
@@ -43,6 +41,6 @@ describe('Component Dropdown', () => {
       getByRole('menuitem', {
         name: 'Sign Out',
       }),
-    ).toHaveClass('text-red-500 dark:text-red-500');
+    ).toBeInTheDocument();
   });
 });

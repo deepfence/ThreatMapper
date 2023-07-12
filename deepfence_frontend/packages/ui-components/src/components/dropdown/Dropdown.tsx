@@ -157,6 +157,7 @@ export const DropdownItem: React.ForwardRefExoticComponent<
     >
       {icon && <div className="w-4 h-4 mr-2 shrink-0 self-center">{icon}</div>}
 
+      {/* TODO: fix this classes apply to parent dropdown item */}
       <div className={classes}>{children}</div>
     </DropdownPrimitive.Item>
   );
