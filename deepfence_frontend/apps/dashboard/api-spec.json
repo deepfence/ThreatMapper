@@ -11350,9 +11350,10 @@
         }
       },
       "ModelKubernetesCluster": {
-        "required": ["node_id", "node_name", "hosts"],
+        "required": ["node_id", "node_name", "agent_running", "hosts"],
         "type": "object",
         "properties": {
+          "agent_running": { "type": "boolean" },
           "hosts": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelHost" },

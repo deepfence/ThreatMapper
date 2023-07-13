@@ -37,15 +37,22 @@ export const Header = ({
   onGoBack,
   showBackBtn,
   onStartScanClick,
+  agentRunning,
 }: {
   nodeId: string;
   nodeType: string;
   label?: string;
   onGoBack: () => void;
   showBackBtn: boolean;
+  agentRunning?: boolean;
   onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
 }) => {
   const availableScans = AvailableScansForNodeType[nodeType] ?? [];
+
+  // don't show the start scan button if host or cluster node is not connected
+  // via agent. This means that it is discovered via cloud connector.
+  const showInstallButton =
+    ['host', 'cluster'].includes(nodeType) && agentRunning === false;
   return (
     <SlidingModalHeader>
       <div className="flex pt-5 pl-5 pr-16 pb-1.5 dark:bg-bg-breadcrumb-bar gap-4">
@@ -67,7 +74,7 @@ export const Header = ({
             <TruncatedText text={label?.length ? label : nodeId} />
           </div>
         </div>
-        {availableScans.length ? (
+        {availableScans.length && !showInstallButton ? (
           <Dropdown
             align="end"
             triggerAsChild
@@ -153,6 +160,7 @@ export const Header = ({
             </Button>
           </Dropdown>
         ) : null}
+        {/* TODO: show install agent button here once api is ready */}
       </div>
     </SlidingModalHeader>
   );
