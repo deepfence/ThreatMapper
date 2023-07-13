@@ -35,6 +35,7 @@ type SbomParameters struct {
 	SBOMFilePath          string `json:"sbom_file_path"`
 	Mode                  string `json:"mode,omitempty"`
 	RegistryId            string `json:"registry_id,omitempty"`
+	SkipScan              bool   `json:"skip_scan,omitempty"`
 }
 
 type SbomBody struct {

@@ -548,6 +548,12 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// check if sbom has to be scanned
+	if params.SkipScan {
+		log.Info().Msgf("skip sbom scan for id %s", params.ScanId)
+		httpext.JSON(w, http.StatusOK, info)
+	}
+
 	params.SBOMFilePath = sbomFile
 
 	payload, err := json.Marshal(params.SbomParameters)
