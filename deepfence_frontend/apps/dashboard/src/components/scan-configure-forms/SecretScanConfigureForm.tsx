@@ -8,10 +8,10 @@ import {
   ModelNodeIdentifierNodeTypeEnum,
   ModelSecretScanTriggerReq,
 } from '@/api/generated';
+import { invalidateAllQueries } from '@/queries';
 import { SecretScanNodeTypeEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 import { isNodeTypeARegistryTagType, isNodeTypeARegistryType } from '@/utils/registry';
-import { invalidateAllQueries } from '@/queries';
 
 export type SecretScanConfigureFormProps = {
   showAdvancedOptions: boolean;

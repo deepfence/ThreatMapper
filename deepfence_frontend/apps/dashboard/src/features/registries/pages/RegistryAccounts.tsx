@@ -8,6 +8,7 @@ import {
   useFetcher,
   useParams,
 } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
   Breadcrumb,
   BreadcrumbLink,
@@ -50,7 +51,6 @@ import {
 import { apiWrapper } from '@/utils/api';
 import { abbreviateNumber } from '@/utils/number';
 import { usePageNavigation } from '@/utils/usePageNavigation';
-import { toast } from 'sonner';
 
 export enum ActionEnumType {
   DELETE = 'delete',
@@ -116,7 +116,7 @@ function getScanOptions(
 const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
   const actionType = formData.get('actionType');
-  debugger;
+
   if (actionType === ActionEnumType.DELETE) {
     const id = formData.get('nodeIds')?.toString() ?? '';
     const deleteRegistry = apiWrapper({ fn: getRegistriesApiClient().deleteRegistry });
@@ -147,7 +147,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
     const syncRegistryImagesApi = apiWrapper({
       fn: getRegistriesApiClient().syncRegistryImages,
     });
-    debugger;
+
     const result = await syncRegistryImagesApi({
       registryId,
     });
