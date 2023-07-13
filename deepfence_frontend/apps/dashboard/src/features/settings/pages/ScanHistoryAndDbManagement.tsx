@@ -140,6 +140,7 @@ const DeleteConfirmationModal = ({
   showDialog,
   setShowDialog,
   data,
+  onDeleteSuccess,
 }: {
   showDialog: boolean;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
@@ -147,11 +148,23 @@ const DeleteConfirmationModal = ({
     duration: number;
     selectedResource: string;
   };
+  onDeleteSuccess: () => void;
 }) => {
   const fetcher = useFetcher<{
     deleteSuccess: boolean;
     message: string;
+    action: ActionEnumType;
   }>();
+
+  useEffect(() => {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data?.deleteSuccess &&
+      fetcher.data.action === ActionEnumType.DELETE
+    ) {
+      onDeleteSuccess();
+    }
+  }, [fetcher]);
 
   return (
     <Modal
@@ -204,7 +217,9 @@ const DeleteConfirmationModal = ({
           <span>The selected scan history will be deleted.</span>
           <br />
           <span>Are you sure you want to delete?</span>
-          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
+          {fetcher.data?.message && (
+            <p className="text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+          )}
           <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (
@@ -299,6 +314,9 @@ const ScanHistoryAndDbManagement = () => {
           data={{
             duration,
             selectedResource,
+          }}
+          onDeleteSuccess={() => {
+            setShowDeleteDialog(false);
           }}
         />
       )}

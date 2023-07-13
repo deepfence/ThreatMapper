@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { capitalize } from 'lodash-es';
-import { Suspense, useCallback, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from 'tailwind-preset';
@@ -44,7 +44,8 @@ import { get403Message, getFieldErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 const DEFAULT_PAGE_SIZE = 10;
 
-export type ActionReturnType = {
+export type ActionData = {
+  action: ActionEnumType;
   message?: string;
   fieldErrors?: {
     old_password?: string;
@@ -60,9 +61,9 @@ export type ActionReturnType = {
   invite_url?: string;
   invite_expiry_hours?: number;
   successMessage?: string;
-};
+} | null;
 
-export enum ActionEnumType {
+enum ActionEnumType {
   DELETE = 'delete',
   CHANGE_PASSWORD = 'changePassword',
   INVITE_USER = 'inviteUser',
@@ -88,16 +89,13 @@ const useGetApiToken = () => {
   });
 };
 
-const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType> => {
+const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
 
   const _actionType = formData.get('_actionType')?.toString();
 
   if (!_actionType) {
-    return {
-      message: 'Action Type is required',
-      success: false,
-    };
+    return null;
   }
 
   if (_actionType === ActionEnumType.DELETE) {
@@ -113,12 +111,14 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
         return {
           success: false,
           message: deleteResponse.error.message,
+          action: ActionEnumType.DELETE,
         };
       } else if (deleteResponse.error.response.status === 403) {
         const message = await get403Message(deleteResponse.error);
         return {
           success: false,
           message,
+          action: ActionEnumType.DELETE,
         };
       }
       throw deleteResponse.error;
@@ -132,6 +132,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
       return {
         message: 'Password does not match',
         success: false,
+        action: ActionEnumType.CHANGE_PASSWORD,
       };
     }
 
@@ -154,12 +155,14 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
             new_password: modelResponse.error_fields?.new_password as string,
           },
           success: false,
+          action: ActionEnumType.CHANGE_PASSWORD,
         };
       } else if (updateResponse.error.response.status === 403) {
         const message = await get403Message(updateResponse.error);
         return {
           success: false,
           message,
+          action: ActionEnumType.CHANGE_PASSWORD,
         };
       }
       throw updateResponse.error;
@@ -188,12 +191,14 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           fieldErrors: {
             email: fieldErrors?.email,
           },
+          action: ActionEnumType.INVITE_USER,
         };
       } else if (inviteResponse.error.response.status === 403) {
         const message = await get403Message(inviteResponse.error);
         return {
           success: false,
           message,
+          action: ActionEnumType.INVITE_USER,
         };
       }
       throw inviteResponse.error;
@@ -203,9 +208,17 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
       inviteResponse.value.invite_url &&
         navigator.clipboard.writeText(inviteResponse.value.invite_url);
       toast.success('User invite URL copied !');
-      return { ...inviteResponse.value, success: true };
+      return {
+        ...inviteResponse.value,
+        success: true,
+        action: ActionEnumType.INVITE_USER,
+      };
     } else if (body.intent === ModelInviteUserRequestActionEnum.SendInviteEmail) {
-      return { successMessage: 'User invite sent successfully', success: true };
+      return {
+        successMessage: 'User invite sent successfully',
+        success: true,
+        action: ActionEnumType.INVITE_USER,
+      };
     }
   } else if (_actionType === ActionEnumType.EDIT_USER) {
     const body = Object.fromEntries(formData);
@@ -238,12 +251,14 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
             role: modelResponse.error_fields?.role as string,
           },
           success: false,
+          action: ActionEnumType.EDIT_USER,
         };
       } else if (updateResponse.error.response.status === 403) {
         const message = await get403Message(updateResponse.error);
         return {
           success: false,
           message,
+          action: ActionEnumType.EDIT_USER,
         };
       }
       throw updateResponse.error;
@@ -259,6 +274,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
         return {
           success: false,
           message,
+          action: ActionEnumType.RESET_API_KEY,
         };
       }
       throw resetApiTokensResponse.error;
@@ -267,6 +283,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
   invalidateAllQueries();
   return {
     success: true,
+    action: _actionType as ActionEnumType,
   };
 };
 
@@ -287,6 +304,9 @@ const ActionDropdown = ({
           showDialog={showDeleteDialog}
           userId={user.id}
           setShowDialog={setShowDeleteDialog}
+          onDeleteSuccess={() => {
+            setShowDeleteDialog(false);
+          }}
         />
       )}
       {showEditUserForm && (
@@ -353,7 +373,7 @@ const InviteUserModal = ({
   showDialog: boolean;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const fetcher = useFetcher<ActionReturnType>();
+  const fetcher = useFetcher<ActionData>();
   const { data } = fetcher;
   const [_role, _setRole] = useState('');
 
@@ -466,7 +486,7 @@ const EditUserModal = ({
   user: ModelUser;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const fetcher = useFetcher<ActionReturnType>();
+  const fetcher = useFetcher<ActionData>();
   const { data } = fetcher;
 
   const role = Object.entries(ModelUpdateUserIdRequestRoleEnum).find(
@@ -833,8 +853,8 @@ const UsersTable = () => {
   const { data } = useListUsers();
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
-  if (data.message) {
-    return <p className="dark:text-status-error text-p7">{data.message}</p>;
+  if (data?.error?.message) {
+    return <p className="dark:text-status-error text-p7">{data.error.message}</p>;
   }
   return (
     <div className="mt-2">
@@ -854,6 +874,28 @@ const UsersTable = () => {
     </div>
   );
 };
+const InviteButton = ({
+  setOpenInviteUserForm,
+}: {
+  setOpenInviteUserForm: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const { data } = useListUsers();
+  if (data?.error?.message) {
+    return null;
+  }
+  return (
+    <Button
+      variant="flat"
+      size="sm"
+      startIcon={<PlusIcon />}
+      type="button"
+      className="mt-2"
+      onClick={() => setOpenInviteUserForm(true)}
+    >
+      Invite User
+    </Button>
+  );
+};
 const UserManagement = () => {
   const [openInviteUserForm, setOpenInviteUserForm] = useState(false);
 
@@ -870,16 +912,14 @@ const UserManagement = () => {
         <div className="mt-2">
           <h3 className="text-h6 dark:text-text-input-value">User accounts</h3>
         </div>
-        <Button
-          variant="flat"
-          size="sm"
-          startIcon={<PlusIcon />}
-          type="button"
-          className="mt-2"
-          onClick={() => setOpenInviteUserForm(true)}
+        <Suspense
+          fallback={
+            <div className="animate-pulse h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          }
         >
-          Invite User
-        </Button>
+          <InviteButton setOpenInviteUserForm={setOpenInviteUserForm} />
+        </Suspense>
+
         <Suspense
           fallback={
             <TableSkeleton
@@ -906,12 +946,24 @@ const DeleteUserConfirmationModal = ({
   showDialog,
   userId,
   setShowDialog,
+  onDeleteSuccess,
 }: {
   showDialog: boolean;
   userId: number;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onDeleteSuccess: () => void;
 }) => {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<ActionData>();
+
+  useEffect(() => {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data?.success &&
+      fetcher.data.action === ActionEnumType.DELETE
+    ) {
+      onDeleteSuccess();
+    }
+  }, [fetcher]);
 
   const onDeleteAction = useCallback(() => {
     const formData = new FormData();

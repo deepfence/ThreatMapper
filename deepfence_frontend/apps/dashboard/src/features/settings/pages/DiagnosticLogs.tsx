@@ -194,7 +194,7 @@ const ConsoleDiagnosticLogsTable = () => {
   const { data: _logs, message } = data;
   const consoleLogs = _logs?.console_logs ?? [];
   if (message) {
-    return <p className="dark:text-status-error text-sm">{message}</p>;
+    return <p className="dark:text-status-error text-p7">{message}</p>;
   }
   return (
     <Table
@@ -276,7 +276,7 @@ const AgentDiagnosticLogsTable = () => {
   }, 15000);
 
   if (message) {
-    return <p className="dark:text-status-error text-sm">{message}</p>;
+    return <p className="dark:text-status-error text-p7">{message}</p>;
   }
 
   return (
@@ -297,7 +297,11 @@ const AgentDiagnosticLogsTable = () => {
 };
 const ConsoleDiagnosticLogsComponent = () => {
   const fetcher = useFetcher<string>();
-
+  const { data } = useGetLogs();
+  const { message } = data;
+  if (message) {
+    return null;
+  }
   return (
     <fetcher.Form method="post">
       <input
@@ -413,7 +417,11 @@ const AgentDiagnosticsLogsModal = ({
 const AgentDiagnosticLogsComponent = () => {
   const [showDialog, setShowDialog] = useState(false);
   const [nodeType, setNodeType] = useState<'host' | 'cluster'>('host');
-
+  const { data } = useGetLogs();
+  const { message } = data;
+  if (message) {
+    return null;
+  }
   return (
     <>
       {showDialog ? (
@@ -458,25 +466,25 @@ const DiagnosticLogs = () => {
       <div className="flex flex-col">
         <h6 className="text-h5 dark:text-text-input-value">Console diagnostic logs</h6>
         <div className="mt-2 flex flex-col gap-y-2">
-          <ConsoleDiagnosticLogsComponent />
           <Suspense
             fallback={
               <TableSkeleton columns={4} rows={DEFAULT_PAGE_SIZE} size={'default'} />
             }
           >
+            <ConsoleDiagnosticLogsComponent />
             <ConsoleDiagnosticLogsTable />
           </Suspense>
         </div>
       </div>
       <div className="flex flex-col mt-8">
         <h6 className="text-h5 dark:text-text-input-value">Agent diagnostic logs</h6>
-        <div className="mt-2 gap-y-2 flex flex-col ">
-          <AgentDiagnosticLogsComponent />
+        <div className="mt-2 gap-y-2 flex flex-col">
           <Suspense
             fallback={
               <TableSkeleton columns={4} rows={DEFAULT_PAGE_SIZE} size={'default'} />
             }
           >
+            <AgentDiagnosticLogsComponent />
             <AgentDiagnosticLogsTable />
           </Suspense>
         </div>

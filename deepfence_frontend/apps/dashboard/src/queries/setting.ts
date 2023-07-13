@@ -128,7 +128,9 @@ export const settingQueries = createQueryKeys('setting', {
           if (users.error.response?.status === 403) {
             const message = await get403Message(users.error);
             return {
-              message,
+              error: {
+                message,
+              },
             };
           }
           throw users.error;

@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import {
   Button,
@@ -36,10 +36,11 @@ type AddEmailConfigurationReturnType = {
   smtp?: string;
 };
 
-export type ActionReturnType = {
-  message?: string;
+type ActionData = {
+  action: ActionEnumType;
   success: boolean;
-};
+  message?: string;
+} | null;
 
 const emailProviders: { [key: string]: string } = {
   'Amazon SES': 'amazon_ses',
@@ -58,17 +59,12 @@ const useEmailConfiguration = () => {
     keepPreviousData: true,
   });
 };
-export const action = async ({
-  request,
-}: ActionFunctionArgs): Promise<ActionReturnType> => {
+export const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
-  const _actionType = formData.get('_actionType')?.toString();
+  const _actionType = formData.get('_actionType')?.toString() as ActionEnumType;
 
   if (!_actionType) {
-    return {
-      message: 'Action Type is required',
-      success: false,
-    };
+    return null;
   }
   if (_actionType === ActionEnumType.DELETE) {
     const id = formData.get('id');
@@ -83,6 +79,7 @@ export const action = async ({
         return {
           success: false,
           message: deleteResponse.error.message,
+          action: _actionType,
         };
       }
       throw deleteResponse.error;
@@ -115,6 +112,7 @@ export const action = async ({
         return {
           success: false,
           message: addResponse.error.message,
+          action: _actionType,
         };
       }
       throw addResponse.error;
@@ -123,6 +121,7 @@ export const action = async ({
   invalidateAllQueries();
   return {
     success: true,
+    action: _actionType,
   };
 };
 
@@ -221,7 +220,7 @@ const EmailConfigurationModal = ({
               />
               <TextInput
                 label="Amazon Secret Key"
-                type={'text'}
+                type="password"
                 placeholder="Amazon Secret Key"
                 name="amazon_secret_key"
                 required
@@ -290,7 +289,15 @@ const Configuration = () => {
 
   const { data: configData = [], message } = data;
 
-  const configuration: ModelEmailConfigurationResp = configData[0];
+  const [configuration, setConfiguration] = useState<ModelEmailConfigurationResp | null>(
+    null,
+  );
+  useEffect(() => {
+    if (configData && configData.length) {
+      setConfiguration(configData[0]);
+    }
+  }, [configData]);
+
   if (message) {
     return <p className="text-p7 dark:text-status-error">{message}</p>;
   }
@@ -306,6 +313,10 @@ const Configuration = () => {
           showDialog={showDeleteDialog}
           id={String(configuration?.id || 0)}
           setShowDialog={setShowDeleteDialog}
+          onDeleteSuccess={() => {
+            setShowDeleteDialog(false);
+            setConfiguration(null);
+          }}
         />
       )}
       <Card className="p-4 flex flex-col gap-y-3">
@@ -389,12 +400,24 @@ const DeleteConfirmationModal = ({
   showDialog,
   id,
   setShowDialog,
+  onDeleteSuccess,
 }: {
   showDialog: boolean;
   id: string;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onDeleteSuccess: () => void;
 }) => {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<ActionData>();
+
+  useEffect(() => {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data?.success &&
+      fetcher.data.action === ActionEnumType.DELETE
+    ) {
+      onDeleteSuccess();
+    }
+  }, [fetcher]);
 
   return (
     <Modal
@@ -430,7 +453,13 @@ const DeleteConfirmationModal = ({
                 name="_actionType"
                 value={ActionEnumType.DELETE}
               />
-              <Button color="error" type="submit" size="md">
+              <Button
+                color="error"
+                type="submit"
+                size="md"
+                disabled={fetcher.state !== 'idle'}
+                loading={fetcher.state !== 'idle'}
+              >
                 Yes, delete
               </Button>
             </fetcher.Form>
