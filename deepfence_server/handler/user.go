@@ -613,6 +613,16 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		respondWithErrorCode(err, w, statusCode)
 		return
 	}
+
+	emailSender, err := sendemail.NewEmailSender(ctx)
+	if errors.Is(err, sql.ErrNoRows) {
+		respondError(&emailNotConfiguredError, w)
+		return
+	} else if err != nil {
+		respondError(err, w)
+		return
+	}
+
 	err = pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
 	if err != nil {
 		respondError(err, w)
@@ -629,12 +639,6 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	consoleUrl, err := model.GetManagementConsoleURL(ctx, pgClient)
 	if err != nil {
-		respondError(err, w)
-		return
-	}
-	emailSender, err := sendemail.NewEmailSender(ctx)
-	if err != nil {
-		pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
 		respondError(err, w)
 		return
 	}
