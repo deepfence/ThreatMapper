@@ -59,7 +59,12 @@ export const SettingNavigation = () => {
         <NavigationMenu.List>
           <NavigationMenu.Item>
             <NavigationMenu.Link asChild>
-              <div className={cn(`${linkClass}`, 'text-h6 dark:text-text-input-value')}>
+              <div
+                className={cn(
+                  `${linkClass}`,
+                  'text-h6 dark:text-text-input-value dark:hover:bg-transparent',
+                )}
+              >
                 Setting options
               </div>
             </NavigationMenu.Link>

@@ -1,5 +1,7 @@
-import { Breadcrumb, BreadcrumbLink, Card } from 'ui-components';
+import { Breadcrumb, BreadcrumbLink, Button, Card } from 'ui-components';
 
+import { DFLink } from '@/components/DFLink';
+import { CaretDown } from '@/components/icons/common/CaretDown';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { SeverityLegend } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
@@ -21,14 +23,33 @@ const Secret = () => {
           </BreadcrumbLink>
         </Breadcrumb>
       </div>
-      <div className="mx-4 flex gap-2 h-12 items-center">
-        <span className="text-p6 dark:text-text-text-and-icon self-center">Legends</span>
-        <div className="flex gap-5">
-          <SeverityLegend severity="critical" />
-          <SeverityLegend severity="high" />
-          <SeverityLegend severity="medium" />
-          <SeverityLegend severity="low" />
-          <SeverityLegend severity="unknown" />
+      <div className="mx-4 h-12 flex items-center">
+        <div className="-ml-2.5">
+          <DFLink unstyled to="/secret/scans" className="ml-auto">
+            <Button
+              variant="flat"
+              size="sm"
+              endIcon={
+                <div className="-rotate-90">
+                  <CaretDown />
+                </div>
+              }
+            >
+              View all scans
+            </Button>
+          </DFLink>
+        </div>
+        <div className="flex gap-2 items-center ml-auto">
+          <span className="text-p6 dark:text-text-text-and-icon self-center">
+            Legends
+          </span>
+          <div className="flex gap-5">
+            <SeverityLegend severity="critical" />
+            <SeverityLegend severity="high" />
+            <SeverityLegend severity="medium" />
+            <SeverityLegend severity="low" />
+            <SeverityLegend severity="unknown" />
+          </div>
         </div>
       </div>
       <div className="mx-4 pb-4 grid grid-cols-12 gap-4">
@@ -50,7 +71,7 @@ const Secret = () => {
               <div className="h-6 w-6 shrink-0">
                 <ErrorStandardLineIcon />
               </div>
-              <div className="text-h3">Coming soon.</div>
+              <div className="text-h3">No attack paths found.</div>
             </div>
           </Card>
         </div>
