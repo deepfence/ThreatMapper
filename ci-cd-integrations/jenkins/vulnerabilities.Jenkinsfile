@@ -31,7 +31,4 @@ node {
         }
     }
 
-    stage('Remove unused docker image') {
-        sh "docker rmi ${full_image_name}"
-    }
 }
