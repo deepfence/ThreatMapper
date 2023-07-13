@@ -21,7 +21,7 @@ node {
     stage('Run Deepfence Secret Scanner'){
         DeepfenceAgent = docker.image("deepfenceio/deepfence_secret_scanner_ce:v2")
         try {
-            c = DeepfenceAgent.run("-it --rm --net=host -v /var/run/docker.sock:/var/run/docker.sock:rw", "-image-name $full_image_name")
+            c = DeepfenceAgent.run("-it --net=host -v /var/run/docker.sock:/var/run/docker.sock:rw", "-image-name $full_image_name")
             sh "docker logs -f ${c.id}"
             def out = sh script: "docker inspect ${c.id} --format='{{.State.ExitCode}}'", returnStdout: true
             sh "exit ${out}"
