@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { capitalize } from 'lodash-es';
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useMemo, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from 'tailwind-preset';
@@ -45,7 +45,6 @@ import { apiWrapper } from '@/utils/api';
 const DEFAULT_PAGE_SIZE = 10;
 
 export type ActionData = {
-  action: ActionEnumType;
   message?: string;
   fieldErrors?: {
     old_password?: string;
@@ -61,7 +60,7 @@ export type ActionData = {
   invite_url?: string;
   invite_expiry_hours?: number;
   successMessage?: string;
-} | null;
+};
 
 enum ActionEnumType {
   DELETE = 'delete',
@@ -95,7 +94,10 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const _actionType = formData.get('_actionType')?.toString();
 
   if (!_actionType) {
-    return null;
+    return {
+      message: 'Action Type is required',
+      success: false,
+    };
   }
 
   if (_actionType === ActionEnumType.DELETE) {
@@ -111,14 +113,12 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
         return {
           success: false,
           message: deleteResponse.error.message,
-          action: ActionEnumType.DELETE,
         };
       } else if (deleteResponse.error.response.status === 403) {
         const message = await get403Message(deleteResponse.error);
         return {
           success: false,
           message,
-          action: ActionEnumType.DELETE,
         };
       }
       throw deleteResponse.error;
@@ -132,7 +132,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       return {
         message: 'Password does not match',
         success: false,
-        action: ActionEnumType.CHANGE_PASSWORD,
       };
     }
 
@@ -155,14 +154,12 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
             new_password: modelResponse.error_fields?.new_password as string,
           },
           success: false,
-          action: ActionEnumType.CHANGE_PASSWORD,
         };
       } else if (updateResponse.error.response.status === 403) {
         const message = await get403Message(updateResponse.error);
         return {
           success: false,
           message,
-          action: ActionEnumType.CHANGE_PASSWORD,
         };
       }
       throw updateResponse.error;
@@ -191,14 +188,12 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
           fieldErrors: {
             email: fieldErrors?.email,
           },
-          action: ActionEnumType.INVITE_USER,
         };
       } else if (inviteResponse.error.response.status === 403) {
         const message = await get403Message(inviteResponse.error);
         return {
           success: false,
           message,
-          action: ActionEnumType.INVITE_USER,
         };
       }
       throw inviteResponse.error;
@@ -211,13 +206,11 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       return {
         ...inviteResponse.value,
         success: true,
-        action: ActionEnumType.INVITE_USER,
       };
     } else if (body.intent === ModelInviteUserRequestActionEnum.SendInviteEmail) {
       return {
         successMessage: 'User invite sent successfully',
         success: true,
-        action: ActionEnumType.INVITE_USER,
       };
     }
   } else if (_actionType === ActionEnumType.EDIT_USER) {
@@ -251,14 +244,12 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
             role: modelResponse.error_fields?.role as string,
           },
           success: false,
-          action: ActionEnumType.EDIT_USER,
         };
       } else if (updateResponse.error.response.status === 403) {
         const message = await get403Message(updateResponse.error);
         return {
           success: false,
           message,
-          action: ActionEnumType.EDIT_USER,
         };
       }
       throw updateResponse.error;
@@ -274,7 +265,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
         return {
           success: false,
           message,
-          action: ActionEnumType.RESET_API_KEY,
         };
       }
       throw resetApiTokensResponse.error;
@@ -283,7 +273,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   invalidateAllQueries();
   return {
     success: true,
-    action: _actionType as ActionEnumType,
   };
 };
 
@@ -304,9 +293,6 @@ const ActionDropdown = ({
           showDialog={showDeleteDialog}
           userId={user.id}
           setShowDialog={setShowDeleteDialog}
-          onDeleteSuccess={() => {
-            setShowDeleteDialog(false);
-          }}
         />
       )}
       {showEditUserForm && (
@@ -946,24 +932,12 @@ const DeleteUserConfirmationModal = ({
   showDialog,
   userId,
   setShowDialog,
-  onDeleteSuccess,
 }: {
   showDialog: boolean;
   userId: number;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  onDeleteSuccess: () => void;
 }) => {
   const fetcher = useFetcher<ActionData>();
-
-  useEffect(() => {
-    if (
-      fetcher.state === 'idle' &&
-      fetcher.data?.success &&
-      fetcher.data.action === ActionEnumType.DELETE
-    ) {
-      onDeleteSuccess();
-    }
-  }, [fetcher]);
 
   const onDeleteAction = useCallback(() => {
     const formData = new FormData();

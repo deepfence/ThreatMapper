@@ -140,7 +140,6 @@ const DeleteConfirmationModal = ({
   showDialog,
   setShowDialog,
   data,
-  onDeleteSuccess,
 }: {
   showDialog: boolean;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
@@ -148,23 +147,11 @@ const DeleteConfirmationModal = ({
     duration: number;
     selectedResource: string;
   };
-  onDeleteSuccess: () => void;
 }) => {
   const fetcher = useFetcher<{
     deleteSuccess: boolean;
     message: string;
-    action: ActionEnumType;
   }>();
-
-  useEffect(() => {
-    if (
-      fetcher.state === 'idle' &&
-      fetcher.data?.deleteSuccess &&
-      fetcher.data.action === ActionEnumType.DELETE
-    ) {
-      onDeleteSuccess();
-    }
-  }, [fetcher]);
 
   return (
     <Modal
@@ -291,7 +278,7 @@ const UploadVulnerabilityDatabase = () => {
   );
 };
 const ScanHistoryAndDbManagement = () => {
-  const [severityOrStatus, setSeverityOrResources] = useState('severity');
+  const [, setSeverityOrResources] = useState('severity');
   const [selectedResource, setSelectedResource] = useState<string>(
     ModelBulkDeleteScansRequestScanTypeEnumType.Vulnerability,
   );
@@ -314,9 +301,6 @@ const ScanHistoryAndDbManagement = () => {
           data={{
             duration,
             selectedResource,
-          }}
-          onDeleteSuccess={() => {
-            setShowDeleteDialog(false);
           }}
         />
       )}
