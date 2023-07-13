@@ -24,7 +24,6 @@ export const SearchableCloudAccountsList = ({
   valueKey = 'nodeId',
   active,
   triggerVariant,
-  ...rest
 }: SearchableCloudAccountsListProps) => {
   const [searchText, setSearchText] = useState('');
 
@@ -97,7 +96,6 @@ export const SearchableCloudAccountsList = ({
         clearAllElement="Clear"
         onClearAll={onClearAll}
         onEndReached={onEndReached}
-        {...rest}
       >
         {data?.pages
           .flatMap((page) => {

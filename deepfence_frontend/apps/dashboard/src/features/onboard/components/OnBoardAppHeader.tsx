@@ -3,6 +3,7 @@ import { Dropdown, DropdownItem, Separator } from 'ui-components';
 
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { UserLine } from '@/components/icons/common/UserLine';
+import { DFLink } from '@/components/DFLink';
 
 const DeepfenceLogo = () => {
   return (
@@ -51,6 +52,13 @@ export const OnboardAppHeader = () => {
           <span className="dark:text-text-text-and-icon text-[18px] leading-9">
             deepfence
           </span>
+          <DFLink
+            unstyled
+            className="ml-8 dark:text-accent-accent hover:underline text-p3"
+            to="/dashboard"
+          >
+            Go to main dashboard
+          </DFLink>
         </div>
         <div className="flex items-center gap-4">
           <Dropdown

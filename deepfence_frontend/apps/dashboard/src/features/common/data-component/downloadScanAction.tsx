@@ -130,7 +130,7 @@ export const useDownloadScan = () => {
       formData.append('scanType', scanType);
       formData.append('nodeType', nodeType);
       fetcher.submit(formData, {
-        action: 'data-component/scan/download',
+        action: '/data-component/scan/download',
         method: 'post',
       });
     },

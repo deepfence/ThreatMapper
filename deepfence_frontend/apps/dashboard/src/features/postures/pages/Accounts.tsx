@@ -449,7 +449,7 @@ const ActionDropdown = ({
               onTableAction([nodeId], ActionEnumType.START_SCAN);
             }}
           >
-            Start Scan
+            Start scan
           </DropdownItem>
           <DropdownItem
             disabled={!isScanComplete(scanStatus)}
@@ -459,7 +459,7 @@ const ActionDropdown = ({
               onDownloadAction();
             }}
           >
-            Download Latest Report
+            Download latest report
           </DropdownItem>
           <DropdownItem
             disabled={!scanId || !nodeType}
@@ -470,7 +470,7 @@ const ActionDropdown = ({
             }}
           >
             <span className="flex items-center gap-x-2 text-red-700 dark:text-status-error">
-              Delete Latest Scan
+              Delete latest scan
             </span>
           </DropdownItem>
         </>

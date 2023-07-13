@@ -271,7 +271,7 @@ const ScanStatus = () => {
                     )
                   }
                 >
-                  Go to summary result
+                  Go to result summary
                 </Button>
               )}
             </div>
@@ -287,11 +287,11 @@ const ScanStatus = () => {
                 data.data?.map((data) => data.node_type?.replace('_', ' ')) ?? [],
               ).join(' and ')}${(data?.data?.length ?? 0) > 1 ? 's' : ''}, ${
                 allScanFailed
-                  ? 'All scan got failed.'
+                  ? 'All scans failed.'
                   : 'It will take some times to complete.'
               }`}
 
-            {allScanDone && 'All scan are done'}
+            {allScanDone && 'All scans complete'}
           </p>
         </div>
         {!allScanDone && !allScanFailed && (
