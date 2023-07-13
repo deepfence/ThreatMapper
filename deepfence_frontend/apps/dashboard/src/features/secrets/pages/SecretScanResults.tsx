@@ -1305,7 +1305,7 @@ const Widgets = () => {
           <div className="h-6 w-6 shrink-0">
             <ErrorStandardLineIcon />
           </div>
-          <div className="text-h3">Coming soon.</div>
+          <div className="text-h3">No attack paths found.</div>
         </div>
       </Card>
     </div>
