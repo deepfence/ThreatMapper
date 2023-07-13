@@ -80,7 +80,7 @@ export const SearchableImageList = ({
         }
         name="imageFilter"
         triggerVariant={triggerVariant || 'button'}
-        label={isSelectVariantType ? 'Host' : undefined}
+        label={isSelectVariantType ? 'Container image' : undefined}
         getDisplayValue={() =>
           isSelectVariantType && selectedImages.length > 0
             ? `${selectedImages.length} selected`
