@@ -1,9 +1,9 @@
 import { useFetcher, useRouteLoaderData } from 'react-router-dom';
 import { Dropdown, DropdownItem, Separator } from 'ui-components';
 
+import { DFLink } from '@/components/DFLink';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { UserLine } from '@/components/icons/common/UserLine';
-import { DFLink } from '@/components/DFLink';
 
 const DeepfenceLogo = () => {
   return (
