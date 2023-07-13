@@ -249,7 +249,7 @@ const useScanResults = () => {
         descending: true,
       },
       benchmarkTypes: searchParams.getAll('benchmarkType').map((type) => {
-        if (type === 'SOC2') {
+        if (type.toLowerCase() === 'soc2') {
           type = 'soc_2';
         }
         return type.toLowerCase();
