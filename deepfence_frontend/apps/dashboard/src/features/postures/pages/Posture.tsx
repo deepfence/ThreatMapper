@@ -161,7 +161,9 @@ const CardSectionCount = ({ provider }: { provider: ModelPostureProvider }) => {
   return (
     <div className="flex flex-col">
       <span className={textStyle}>{abbreviateNumber(provider.node_count ?? 0)}</span>
-      <span className={textStyle}>{abbreviateNumber(provider.node_count ?? 0)}</span>
+      <span className={textStyle}>
+        {abbreviateNumber(provider.node_count_inactive ?? 0)}
+      </span>
       <span className={textStyle}>{abbreviateNumber(provider.resource_count ?? 0)}</span>
       {!isNonCloudProvider(provider.name ?? '') ? (
         <span className={textStyle}>{abbreviateNumber(provider.scan_count ?? 0)}</span>
