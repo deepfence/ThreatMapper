@@ -2,6 +2,7 @@ import '@/features/threat-graph/utils/top-attack-paths-custom-node';
 
 import G6, { IEdge, INode, NodeConfig } from '@antv/g6';
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { truncate } from 'lodash-es';
 import { Suspense, useEffect, useState } from 'react';
 import { useMeasure } from 'react-use';
 import { Card, CircleSpinner } from 'ui-components';
@@ -217,6 +218,10 @@ function getGraphData(data: GraphIndividualThreatGraph[], direction: 'LR' | 'TB'
       width: 40,
       height: 40,
     },
+    anchorPoints: [
+      [0.5, 0], // The center of the left border
+      [0.5, 1], // The center of the right border
+    ],
     type: 'circle',
   });
 
@@ -229,7 +234,7 @@ function getGraphData(data: GraphIndividualThreatGraph[], direction: 'LR' | 'TB'
             nodesMap.set(node, {
               type: 'top-attack-paths-graph-node',
               id: node,
-              label: node,
+              label: truncate(node, { length: 20 }),
               icon: {
                 show: true,
                 img: getNodeImage('host')!,
