@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 
 import { DFLink } from '@/components/DFLink';
+import { CaretDown } from '@/components/icons/common/CaretDown';
 
 export const CardHeader = ({
   icon,
@@ -17,9 +18,12 @@ export const CardHeader = ({
         <DFLink
           to={link}
           unstyled
-          className="p-3 flex items-center gap-2 dark:text-text-text-and-icon dark:hover:text-accent-accent border-b dark:border-df-gray-900"
+          className="p-3 flex items-center dark:text-text-text-and-icon dark:hover:text-accent-accent border-b dark:border-df-gray-900"
         >
-          {children}
+          <span className="flex-1 truncate flex items-center gap-2">{children}</span>
+          <div className="h-4 w-4 shrink-0 -rotate-90 justify-self-end">
+            <CaretDown />
+          </div>
         </DFLink>
       );
     }

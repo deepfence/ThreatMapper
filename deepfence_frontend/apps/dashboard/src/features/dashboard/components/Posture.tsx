@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { useMeasure } from 'react-use';
 import { Card, CircleSpinner } from 'ui-components';
 
 import { ModelPostureProvider } from '@/api/generated';
@@ -37,10 +38,26 @@ export const Posture = () => {
 };
 
 const PostureCardContent = () => {
+  const [measureRef, { width }] = useMeasure<HTMLDivElement>();
+  const [columns, setColumns] = useState(3);
   const { data } = usePostureSummary();
 
+  useEffect(() => {
+    if (width >= 630) {
+      setColumns(3);
+    } else {
+      setColumns(2);
+    }
+  }, [width]);
+
   return (
-    <div className="h-full w-full grid grid-cols-3 p-4 gap-4">
+    <div
+      className="h-full w-full grid p-4 gap-4"
+      ref={measureRef}
+      style={{
+        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+      }}
+    >
       {data.providers?.map((provider) => {
         return <PostureCardItem key={provider.name} provider={provider} />;
       })}

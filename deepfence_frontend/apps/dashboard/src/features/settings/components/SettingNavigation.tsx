@@ -59,7 +59,12 @@ export const SettingNavigation = () => {
         <NavigationMenu.List>
           <NavigationMenu.Item>
             <NavigationMenu.Link asChild>
-              <div className={cn(`${linkClass}`, 'text-h6 dark:text-text-input-value')}>
+              <div
+                className={cn(
+                  `${linkClass}`,
+                  'text-h6 dark:text-text-input-value dark:hover:bg-transparent',
+                )}
+              >
                 Setting options
               </div>
             </NavigationMenu.Link>
@@ -84,7 +89,7 @@ export const SettingNavigation = () => {
                         return (
                           <>
                             {isActive && (
-                              <div className="absolute w-1 left-0 top-0 bottom-0 dark:bg-brand-dark-blue" />
+                              <div className="absolute w-1 left-0 top-0 bottom-0 dark:bg-accent-accent" />
                             )}
                             <div className="overflow-wrap">{menuItem.title}</div>
                           </>
