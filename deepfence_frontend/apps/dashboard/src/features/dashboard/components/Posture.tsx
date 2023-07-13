@@ -43,6 +43,7 @@ const PostureCardContent = () => {
   const { data } = usePostureSummary();
 
   useEffect(() => {
+    if (!width) return;
     if (width >= 630) {
       setColumns(3);
     } else {
