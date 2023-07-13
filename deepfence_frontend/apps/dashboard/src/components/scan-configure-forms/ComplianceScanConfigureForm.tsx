@@ -17,7 +17,7 @@ import { ModelNodeIdentifierNodeTypeEnum } from '@/api/generated';
 import { ModelCloudNodeComplianceControl } from '@/api/generated/models/ModelCloudNodeComplianceControl';
 import { TruncatedText } from '@/components/TruncatedText';
 import { ActionEnumType } from '@/features/postures/data-component/toggleControlApiAction';
-import { queries } from '@/queries';
+import { invalidateAllQueries, queries } from '@/queries';
 import { ComplianceScanNodeTypeEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 
@@ -116,7 +116,8 @@ export const scanPostureApiAction = async ({
     }
     throw startComplianceScanResponse.error;
   }
-  toast('Scan has been sucessfully started');
+  toast.success('Scan started sucessfully');
+  invalidateAllQueries();
   return {
     success: true,
     data: {

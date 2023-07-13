@@ -485,7 +485,7 @@ const HistoryControls = () => {
             downloadScan({
               scanId: item.scanId,
               scanType: UtilsReportFiltersScanTypeEnum.Compliance,
-              nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
+              nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
             });
           },
           onScanClick: () => {
