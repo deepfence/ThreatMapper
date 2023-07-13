@@ -23,17 +23,17 @@ jobs:
           name: Run Deepfence Vulnerability Mapper
           command: |
             docker pull deepfenceio/deepfence_package_scanner_ce:v2
-            docker run -i --rm --net=host --privileged=true --cpus=\"0.3\" -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_package_scanner_ce:v2 package-scanner -source"$FULL_IMAGE_NAME" -console-url=${var.DEEPFENCE_CONSOLE_URL} -deepfence-key=${var.DEEPFENCE_KEY} -fail-on-count=$FAIL_CVE_COUNT -fail-on-critical-count=$FAIL_CRITICAL_CVE_COUNT -fail-on-high-count=$FAIL_HIGH_CVE_COUNT -fail-on-medium-count=$FAIL_MEDIUM_CVE_COUNT -fail-on-low-count=$FAIL_LOW_CVE_COUNT -fail-on-score=$FAIL_CVE_SCORE -scan-type="base,java,python,ruby,php,nodejs,js,dotnet"
+            docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_package_scanner_ce:v2 -source"$FULL_IMAGE_NAME" -console-url=${var.DEEPFENCE_CONSOLE_URL} -deepfence-key=${var.DEEPFENCE_KEY} -fail-on-count=$FAIL_CVE_COUNT -fail-on-critical-count=$FAIL_CRITICAL_CVE_COUNT -fail-on-high-count=$FAIL_HIGH_CVE_COUNT -fail-on-medium-count=$FAIL_MEDIUM_CVE_COUNT -fail-on-low-count=$FAIL_LOW_CVE_COUNT -fail-on-score=$FAIL_CVE_SCORE -scan-type="base,java,python,ruby,php,nodejs,js,dotnet"
       - run:
           name: Run Deepfence Secret Scanner
           command: |
             docker pull deepfenceio/deepfence_secret_scanner_ce:v2
-            docker run -i --rm --net=host --privileged=true --cpus=\"0.3\" -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_secret_scanner_ce:v2 -image-name "$FULL_IMAGE_NAME"
+            docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_secret_scanner_ce:v2 -image-name "$FULL_IMAGE_NAME"
       - run:
           name: Run Deepfence Malware Scanner
           command: |
             docker pull deepfenceio/deepfence_malware_scanner_ce:v2
-            docker run -i --rm --net=host --privileged=true --cpus=\"0.3\" -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_malware_scanner_ce:v2 -image-name "$FULL_IMAGE_NAME"
+            docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_malware_scanner_ce:v2 -image-name "$FULL_IMAGE_NAME"
       - run:
           name: Test image
           command: |

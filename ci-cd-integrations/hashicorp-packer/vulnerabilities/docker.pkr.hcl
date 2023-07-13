@@ -34,7 +34,7 @@ build {
   post-processor "shell-local" {
     inline = [
       "docker pull deepfenceio/deepfence_package_scanner_ce:v2",
-      "docker run -i --rm --net=host --privileged=true --cpus=\"0.3\" -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_package_scanner_ce:v2 package-scanner -source ${var.image_name}:${var.image_tag} -console-url=${var.DEEPFENCE_CONSOLE_URL} -deepfence-key=${var.DEEPFENCE_KEY} -fail-on-count=${var.FAIL_CVE_COUNT} -fail-on-score=${var.FAIL_CVE_SCORE} -fail-on-critical-count ${var.FAIL_CRITICAL_CVE_COUNT} -scan-type=\"base,java,python,ruby,php,nodejs,js,dotnet\""
+      "docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_package_scanner_ce:v2 -source ${var.image_name}:${var.image_tag} -console-url=${var.DEEPFENCE_CONSOLE_URL} -deepfence-key=${var.DEEPFENCE_KEY} -fail-on-count=${var.FAIL_CVE_COUNT} -fail-on-score=${var.FAIL_CVE_SCORE} -fail-on-critical-count ${var.FAIL_CRITICAL_CVE_COUNT} -scan-type=\"base,java,python,ruby,php,nodejs,js,dotnet\""
     ]
   }
 }
