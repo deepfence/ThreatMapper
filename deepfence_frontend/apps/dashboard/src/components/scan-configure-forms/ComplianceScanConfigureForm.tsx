@@ -19,6 +19,7 @@ import { TruncatedText } from '@/components/TruncatedText';
 import { ActionEnumType } from '@/features/postures/data-component/toggleControlApiAction';
 import { invalidateAllQueries, queries } from '@/queries';
 import { ComplianceScanNodeTypeEnum } from '@/types/common';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
 export const complianceType: {
@@ -109,9 +110,10 @@ export const scanPostureApiAction = async ({
         message: startComplianceScanResponse.error.message ?? '',
       };
     } else if (startComplianceScanResponse.error.response.status === 403) {
+      const message = await get403Message(startComplianceScanResponse.error);
       return {
         success: false,
-        message: 'You do not have enough permissions to start scan',
+        message,
       };
     }
     throw startComplianceScanResponse.error;

@@ -54,7 +54,7 @@ import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { ScanHistoryDropdown } from '@/components/scan-history/HistoryList';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { ScanStatusInError, ScanStatusInProgress } from '@/components/ScanStatusMessage';
-import { CveCVSSScore, SeverityBadge } from '@/components/SeverityBadge';
+import { SeverityBadge } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { TruncatedText } from '@/components/TruncatedText';
 import { SEVERITY_COLORS } from '@/constants/charts';
@@ -63,6 +63,7 @@ import { SecretScanResultsPieChart } from '@/features/secrets/components/scan-re
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { ScanStatusEnum, ScanTypeEnum, SecretSeverityType } from '@/types/common';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
@@ -137,17 +138,18 @@ const action = async ({
           message: result.error.message ?? '',
         };
       } else if (result.error.response.status === 403) {
+        const message = await get403Message(result.error);
         if (actionType === ActionEnumType.DELETE) {
           return {
             action: actionType,
             success: false,
-            message: 'You do not have enough permissions to delete secret',
+            message,
           };
         } else if (actionType === ActionEnumType.NOTIFY) {
           return {
             action: actionType,
             success: false,
-            message: 'You do not have enough permissions to notify',
+            message,
           };
         }
       }
@@ -176,19 +178,20 @@ const action = async ({
           message: result.error.message ?? '',
         };
       } else if (result.error.response.status === 403) {
+        const message = await get403Message(result.error);
         if (actionType === ActionEnumType.MASK) {
-          toast.error('You do not have enough permissions to mask');
+          toast.error(message);
           return {
             action: actionType,
             success: false,
-            message: 'You do not have enough permissions to mask',
+            message,
           };
         } else if (actionType === ActionEnumType.UNMASK) {
-          toast.error('You do not have enough permissions to unmask');
+          toast.error(message);
           return {
             action: actionType,
             success: false,
-            message: 'You do not have enough permissions to unmask',
+            message,
           };
         }
       }
@@ -205,10 +208,11 @@ const action = async ({
 
     if (!result.ok) {
       if (result.error.response.status === 403) {
+        const message = await get403Message(result.error);
         return {
           action: actionType,
           success: false,
-          message: 'You do not have enough permissions to delete scan',
+          message,
         };
       }
       throw new Error('Error deleting scan');

@@ -29,6 +29,7 @@ import { PlusIcon } from '@/components/icons/common/Plus';
 import { integrationTypeToNameMapping } from '@/features/integrations/pages/Integrations';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
 import { IntegrationForm, IntegrationType } from '../components/IntegrationForm';
@@ -321,8 +322,9 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
           fieldErrors: modelResponse.error_fields ?? {},
         };
       } else if (r.error.response.status === 403) {
+        const message = await get403Message(r.error);
         return {
-          message: 'You do not have enough permissions to add integration',
+          message,
         };
       }
     }

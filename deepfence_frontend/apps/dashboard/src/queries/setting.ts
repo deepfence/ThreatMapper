@@ -1,6 +1,7 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
 
 import { getDiagnosisApiClient, getSettingsApiClient, getUserApiClient } from '@/api/api';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
 export const settingQueries = createQueryKeys('setting', {
@@ -16,8 +17,9 @@ export const settingQueries = createQueryKeys('setting', {
 
         if (!response.ok) {
           if (response.error.response.status === 403) {
+            const message = await get403Message(response.error);
             return {
-              message: 'You do not have enough permissions to view sheduled jobs',
+              message,
             };
           }
           throw response.error;
@@ -42,8 +44,9 @@ export const settingQueries = createQueryKeys('setting', {
               message: userResponse.error.message,
             };
           } else if (userResponse.error.response.status === 403) {
+            const message = await get403Message(userResponse.error);
             return {
-              message: 'You do not have enough permissions to view user audit logs',
+              message,
             };
           }
           throw userResponse.error;
@@ -69,8 +72,9 @@ export const settingQueries = createQueryKeys('setting', {
               message: settingsResponse.error.message,
             };
           } else if (settingsResponse.error.response.status === 403) {
+            const message = await get403Message(settingsResponse.error);
             return {
-              message: 'You do not have enough permissions to view settings',
+              message,
             };
           }
           throw settingsResponse.error;
@@ -99,8 +103,9 @@ export const settingQueries = createQueryKeys('setting', {
               message: emailResponse.error.message,
             };
           } else if (emailResponse.error.response.status === 403) {
+            const message = await get403Message(emailResponse.error);
             return {
-              message: 'You do not have enough permissions to view email configurations',
+              message,
             };
           }
           throw emailResponse.error;
@@ -121,8 +126,9 @@ export const settingQueries = createQueryKeys('setting', {
 
         if (!users.ok) {
           if (users.error.response?.status === 403) {
+            const message = await get403Message(users.error);
             return {
-              message: 'You do not have enough permissions to view users',
+              message,
             };
           }
           throw users.error;
@@ -145,8 +151,9 @@ export const settingQueries = createQueryKeys('setting', {
 
         if (!response.ok) {
           if (response.error.response.status === 403) {
+            const message = await get403Message(response.error);
             return {
-              message: 'You do not have enough permissions to view diagnostic logs',
+              message,
             };
           }
           throw response.error;

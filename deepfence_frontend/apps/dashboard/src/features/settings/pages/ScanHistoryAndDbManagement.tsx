@@ -19,20 +19,9 @@ import {
 } from '@/api/generated';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
-const getStatusesOrSeverityByResource = (
-  resource: ModelBulkDeleteScansRequestScanTypeEnumType,
-): string[] => {
-  const map: { [key in ModelBulkDeleteScansRequestScanTypeEnumType]: string[] } = {
-    Vulnerability: ['critical', 'high', 'medium', 'low', 'all'],
-    Secret: ['critical', 'high', 'medium', 'low', 'all'],
-    Malware: ['high', 'medium', 'low', 'all'],
-    Compliance: ['info', 'note', 'pass', 'warn', 'alarm', 'ok', 'skip', 'all'],
-    CloudCompliance: ['info', 'note', 'pass', 'warn', 'alarm', 'ok', 'skip', 'all'],
-  };
-  return map[resource];
-};
 const DURATION: { [k: string]: number } = {
   'Last 1 Day': 86400000,
   'Last 7 Days': 604800000,
@@ -99,9 +88,10 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           message: modelResponse?.message,
         };
       } else if (deleteScanHistoryResponse.error.response.status === 403) {
+        const message = await get403Message(deleteScanHistoryResponse.error);
         return {
           deleteSuccess: false,
-          message: 'You do not have enough permissions to delete scan history',
+          message,
         };
       }
       throw deleteScanHistoryResponse.error;
@@ -131,9 +121,10 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           message: modelResponse?.message,
         };
       } else if (uploadApiResponse.error.response.status === 403) {
+        const message = await get403Message(uploadApiResponse.error);
         return {
           uploadSuccess: false,
-          message: 'You do not have enough permissions to upload file',
+          message,
         };
       }
       throw uploadApiResponse.error;

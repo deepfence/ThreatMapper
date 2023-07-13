@@ -15,6 +15,7 @@ import { PostgresqlDbScheduler } from '@/api/generated';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { TruncatedText } from '@/components/TruncatedText';
 import { invalidateAllQueries, queries } from '@/queries';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 
@@ -49,9 +50,10 @@ export const action = async ({
         message: updateResponse.error.message,
       };
     } else if (updateResponse.error.response.status === 403) {
+      const message = await get403Message(updateResponse.error);
       return {
         success: false,
-        message: 'You do not have enough permissions to schedule jobs',
+        message,
       };
     }
     throw updateResponse.error;

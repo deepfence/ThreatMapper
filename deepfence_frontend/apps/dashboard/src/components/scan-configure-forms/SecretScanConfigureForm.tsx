@@ -10,6 +10,7 @@ import {
 } from '@/api/generated';
 import { invalidateAllQueries } from '@/queries';
 import { SecretScanNodeTypeEnum } from '@/types/common';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { isNodeTypeARegistryTagType, isNodeTypeARegistryType } from '@/utils/registry';
 
@@ -111,9 +112,10 @@ export const scanSecretApiAction = async ({
         message: startSecretScanResponse.error.message ?? '',
       };
     } else if (startSecretScanResponse.error.response.status === 403) {
+      const message = await get403Message(startSecretScanResponse.error);
       return {
         success: false,
-        message: 'You do not have enough permissions to start scan',
+        message,
       };
     }
     throw startSecretScanResponse.error;

@@ -25,6 +25,7 @@ import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { invalidateAllQueries, queries } from '@/queries';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 
@@ -94,7 +95,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
       if (logsResponse.error.response.status === 400) {
         return logsResponse.error.message;
       } else if (logsResponse.error.response.status === 403) {
-        return 'You do not have enough permissions to view diagnostic logs';
+        const message = await get403Message(logsResponse.error);
+        return message;
       }
       throw logsResponse.error;
     }
@@ -111,7 +113,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
       if (logsResponse.error.response.status === 400) {
         return logsResponse.error.message;
       } else if (logsResponse.error.response.status === 403) {
-        return 'You do not have enough permissions to view diagnostic logs';
+        const message = await get403Message(logsResponse.error);
+        return message;
       }
       throw logsResponse.error;
     }

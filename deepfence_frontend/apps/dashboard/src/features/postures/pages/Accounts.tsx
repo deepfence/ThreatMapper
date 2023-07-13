@@ -55,6 +55,7 @@ import {
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { ComplianceScanNodeTypeEnum, ScanTypeEnum } from '@/types/common';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatPercentage } from '@/utils/number';
 import {
@@ -137,8 +138,9 @@ const action = async ({
           message: result.error.message,
         };
       } else if (result.error.response.status === 403) {
+        const message = await get403Message(result.error);
         return {
-          message: 'You do not have enough permissions to delete scan',
+          message,
         };
       }
     }

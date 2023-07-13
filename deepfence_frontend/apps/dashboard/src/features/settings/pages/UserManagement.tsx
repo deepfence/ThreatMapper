@@ -40,6 +40,7 @@ import { RefreshIcon } from '@/components/icons/common/Refresh';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { get403Message, getFieldErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -114,9 +115,10 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           message: deleteResponse.error.message,
         };
       } else if (deleteResponse.error.response.status === 403) {
+        const message = await get403Message(deleteResponse.error);
         return {
           success: false,
-          message: 'You do not have enough permissions to delete user',
+          message,
         };
       }
       throw deleteResponse.error;
@@ -154,9 +156,10 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           success: false,
         };
       } else if (updateResponse.error.response.status === 403) {
+        const message = await get403Message(updateResponse.error);
         return {
           success: false,
-          message: 'You do not have enough permissions to update password',
+          message,
         };
       }
       throw updateResponse.error;
@@ -179,14 +182,18 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
     });
     if (!inviteResponse.ok) {
       if (inviteResponse.error.response.status === 400) {
+        const fieldErrors = await getFieldErrors(inviteResponse.error);
         return {
           success: false,
-          message: inviteResponse.error.message,
+          fieldErrors: {
+            email: fieldErrors?.email,
+          },
         };
       } else if (inviteResponse.error.response.status === 403) {
+        const message = await get403Message(inviteResponse.error);
         return {
           success: false,
-          message: 'You do not have enough permissions to invite user',
+          message,
         };
       }
       throw inviteResponse.error;
@@ -233,9 +240,10 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           success: false,
         };
       } else if (updateResponse.error.response.status === 403) {
+        const message = await get403Message(updateResponse.error);
         return {
           success: false,
-          message: 'You do not have enough permissions to update user',
+          message,
         };
       }
       throw updateResponse.error;
@@ -247,9 +255,10 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
     const resetApiTokensResponse = await resetApiTokens();
     if (!resetApiTokensResponse.ok) {
       if (resetApiTokensResponse.error.response.status === 403) {
+        const message = await get403Message(resetApiTokensResponse.error);
         return {
           success: false,
-          message: 'You do not have enough permissions to reset API tokens',
+          message,
         };
       }
       throw resetApiTokensResponse.error;
@@ -345,7 +354,7 @@ const InviteUserModal = ({
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher<ActionReturnType>();
-  const { data, state } = fetcher;
+  const { data } = fetcher;
   const [_role, _setRole] = useState('');
 
   return (
@@ -461,11 +470,11 @@ const EditUserModal = ({
   const { data } = fetcher;
 
   const role = Object.entries(ModelUpdateUserIdRequestRoleEnum).find(
-    ([_, val]) => val === user.role,
+    ([, val]) => val === user.role,
   )?.[0];
   const [_role, _setRole] = useState(role);
   const [_status, _setStatus] = useState(() => (user.is_active ? 'Active' : 'Inactive'));
-  console.log('data', data);
+
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>

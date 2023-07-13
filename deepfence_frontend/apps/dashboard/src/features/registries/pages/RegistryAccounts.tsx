@@ -48,6 +48,7 @@ import {
   SecretScanNodeTypeEnum,
   VulnerabilityScanNodeTypeEnum,
 } from '@/types/common';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { abbreviateNumber } from '@/utils/number';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -132,8 +133,9 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           success: false,
         };
       } else if (r.error.response.status === 403) {
+        const message = await get403Message(r.error);
         return {
-          message: 'You do not have enough permissions to delete registry',
+          message,
           success: false,
         };
       }

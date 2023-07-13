@@ -12,6 +12,7 @@ import { Button, Checkbox, TextInput } from 'ui-components';
 import { getUserApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import storage from '@/utils/storage';
 
@@ -68,10 +69,9 @@ const action = async ({
         },
       };
     } else if (registerInvitedUserResponse.error.response.status === 403) {
-      const resp =
-        (await registerInvitedUserResponse.error.response.json()) as ApiDocsBadRequestResponse;
+      const message = await get403Message(registerInvitedUserResponse.error);
       return {
-        error: resp.message ?? 'You do not have enough permissions to invite user',
+        error: message,
       };
     }
     throw registerInvitedUserResponse.error;

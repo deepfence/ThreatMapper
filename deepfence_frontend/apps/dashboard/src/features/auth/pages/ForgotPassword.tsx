@@ -4,6 +4,7 @@ import { Button, TextInput } from 'ui-components';
 import { getUserApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
 export type actionReturnType = {
@@ -40,9 +41,10 @@ export const forgotPasswordAction = async ({
         },
       };
     } else if (resetPasswordResponse.error.response.status === 403) {
+      const message = await get403Message(resetPasswordResponse.error);
       return {
         success: false,
-        error: 'You do not have enough permissions to reset password',
+        error: message,
       };
     }
     throw resetPasswordResponse.error;
