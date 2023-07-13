@@ -130,7 +130,7 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
 
   return (
     <div className="flex w-fit p-3 pt-0 items-center mb-8">
-      <span className="mr-6 w-8 h-8 dark:text-text-text-and-icon">
+      <span className="mr-6 w-8 h-8 dark:text-accent-accent">
         {logoAndTextMap(state.length, mode)[nodeType].logo}
       </span>
       <div className="flex flex-col mr-20">
@@ -235,7 +235,7 @@ const ScanHeader = ({ state }: { state: OnboardConnectionNode[] }) => {
                 </p>
 
                 <Button
-                  size="sm"
+                  size="md"
                   className="mt-2 w-full"
                   endIcon={
                     <span className="w-4 h-4">
@@ -282,15 +282,17 @@ const ChooseScan = () => {
       />
       <SelectedAccount state={state} />
       <ScanHeader state={state} />
-      <Button
-        onClick={goBack}
-        color="default"
-        className="mt-12"
-        type="button"
-        variant="outline"
-      >
-        cancel
-      </Button>
+      <div className="mt-8 flex items-center sticky bottom-0 py-4 dark:bg-bg-page gap-x-4">
+        <Button
+          onClick={goBack}
+          color="default"
+          type="button"
+          variant="outline"
+          size="md"
+        >
+          cancel
+        </Button>
+      </div>
     </>
   );
 };

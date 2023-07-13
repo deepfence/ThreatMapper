@@ -3,8 +3,6 @@ import { useLocation } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 import { Breadcrumb, BreadcrumbLink } from 'ui-components';
 
-import { DFLink } from '@/components/DFLink';
-
 type ConnectorHeaderProps = {
   title: string;
   description: string;
@@ -51,15 +49,13 @@ export const ConnectorHeader = ({
             >
               1
             </span>
-            <DFLink
-              unstyled
-              className={cx('flex items-center ml-2', {
+            <span
+              className={cx('flex items-center ml-2 cursor-default', {
                 ['dark:text-text-text-and-icon']: !isAddConnectorRoutePath(),
               })}
-              to={'/onboard/connectors/add-connectors'}
             >
               Add a connector
-            </DFLink>
+            </span>
           </BreadcrumbLink>
           <BreadcrumbLink className="cursor-auto">
             <span
@@ -104,7 +100,7 @@ export const ConnectorHeader = ({
       </div>
       <div className="flex items-center">
         <div>
-          <h1 className={`text-h1 dark:text-text-input-value`}>{title}</h1>
+          <h1 className={`text-h2 dark:text-text-input-value`}>{title}</h1>
           {description && (
             <p
               className={`text-p4 mt-1.5 mb-4 dark:text-text-text-and-icon text-gray-900`}

@@ -171,17 +171,17 @@ export const SecretScanConfigureForm = ({
           )}
         {!wantAdvanceOptions && (
           <p className="text-gray-900 dark:text-text-text-and-icon text-p4 pr-3">
-            You can start scanning to find secrets
+            Click on start scan to find secrets
           </p>
         )}
         {wantAdvanceOptions && isNodeTypeARegistryTagType(data.nodeType) && (
           <p className="text-gray-900 dark:text-text-text-and-icon text-p4 pr-3">
-            You can start scanning to find secrets
+            Click on start scan to find secrets
           </p>
         )}
         {wantAdvanceOptions && !isNodeTypeARegistryType(data.nodeType) && (
           <p className="text-gray-900 dark:text-text-text-and-icon text-p4 pr-3">
-            You can start scanning to find secrets
+            Click on start scan to find secrets
           </p>
         )}
       </div>

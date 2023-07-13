@@ -198,8 +198,8 @@ const ScanConfigureForm = () => {
         )}
       </Card>
 
-      <div className="flex">
-        <Button onClick={goBack} className="mt-12" type="button" variant="outline">
+      <div className="mt-8 flex items-center sticky bottom-0 py-4 dark:bg-bg-page">
+        <Button onClick={goBack} type="button" variant="outline" size="md">
           Cancel
         </Button>
       </div>

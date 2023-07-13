@@ -449,6 +449,11 @@ export const ComplianceScanConfigureForm = ({
             />
           </Suspense>
         )}
+        {nodeIds.length > 1 ? (
+          <span className="text-p4 dark:text-text-text-and-icon">
+            Click on start scan to find compliance issues
+          </span>
+        ) : null}
         <div className="flex gap-3 mt-10">
           <Button
             disabled={selectedCheckTypes.length === 0 || state !== 'idle'}

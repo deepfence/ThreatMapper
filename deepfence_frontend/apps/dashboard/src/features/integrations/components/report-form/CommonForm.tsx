@@ -59,11 +59,11 @@ export const CommonForm = ({
           setSeverity(value);
         }}
         placeholder="Select severity"
-        getDisplayValue={() => {
-          return 'Severity';
+        getDisplayValue={(value) => {
+          return value && value.length > 0 ? `${value.length} selected` : 'Severity';
         }}
         multiple
-        clearAll="Clear all"
+        clearAll="Clear"
       >
         {severities.map((resource) => {
           return (

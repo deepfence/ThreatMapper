@@ -58,6 +58,12 @@ export const AdvancedFilter = ({
     nodeType: nodeType as CloudNodeType,
   });
 
+  // to main clear state for combobox
+  const [hosts, setHosts] = useState<string[]>([]);
+  const [clusters, setClusters] = useState<string[]>([]);
+  const [images, setImages] = useState<string[]>([]);
+  const [containers, setContainers] = useState<string[]>([]);
+
   return (
     <>
       {resourceType && provider ? (
@@ -76,6 +82,11 @@ export const AdvancedFilter = ({
                 }}
                 placeholder="Select accounts"
                 label="Select Account (Optional)"
+                getDisplayValue={(item) => {
+                  return (
+                    cloudAccounts.find((acc) => acc.node_id === item)?.node_name ?? ''
+                  );
+                }}
               >
                 {cloudAccounts.map((account) => {
                   return (
@@ -92,6 +103,13 @@ export const AdvancedFilter = ({
                   <SearchableHostList
                     scanType={API_SCAN_TYPE_MAP[resourceType]}
                     triggerVariant="select"
+                    defaultSelectedHosts={hosts}
+                    onChange={(value) => {
+                      setHosts(value);
+                    }}
+                    onClearAll={() => {
+                      setHosts([]);
+                    }}
                   />
                 </div>
               </>
@@ -103,6 +121,13 @@ export const AdvancedFilter = ({
                   <SearchableImageList
                     scanType={API_SCAN_TYPE_MAP[resourceType]}
                     triggerVariant="select"
+                    defaultSelectedImages={images}
+                    onChange={(value) => {
+                      setImages(value);
+                    }}
+                    onClearAll={() => {
+                      setImages([]);
+                    }}
                   />
                 </div>
               </>
@@ -114,6 +139,13 @@ export const AdvancedFilter = ({
                   <SearchableContainerList
                     scanType={API_SCAN_TYPE_MAP[resourceType]}
                     triggerVariant="select"
+                    defaultSelectedContainers={containers}
+                    onChange={(value) => {
+                      setContainers(value);
+                    }}
+                    onClearAll={() => {
+                      setContainers([]);
+                    }}
                   />
                 </div>
               </>
@@ -122,7 +154,17 @@ export const AdvancedFilter = ({
             {resourceType !== 'CloudCompliance' ? (
               <>
                 <div>
-                  <SearchableClusterList triggerVariant="select" />
+                  <SearchableClusterList
+                    valueKey="nodeName"
+                    triggerVariant="select"
+                    defaultSelectedClusters={clusters}
+                    onChange={(value) => {
+                      setClusters(value);
+                    }}
+                    onClearAll={() => {
+                      setClusters([]);
+                    }}
+                  />
                 </div>
               </>
             ) : null}
@@ -137,6 +179,9 @@ export const AdvancedFilter = ({
                 }}
                 placeholder="Select mask type"
                 label="Select Mask/Unmask"
+                getDisplayValue={() => {
+                  return maskedType.toString();
+                }}
               >
                 {['Masked', 'Unmasked']?.map((provider) => {
                   return (
@@ -157,6 +202,9 @@ export const AdvancedFilter = ({
                 }}
                 placeholder="Select status"
                 label="Select Status"
+                getDisplayValue={() => {
+                  return status.toString();
+                }}
               >
                 {['COMPLETE', 'ERROR']?.map((provider) => {
                   return (

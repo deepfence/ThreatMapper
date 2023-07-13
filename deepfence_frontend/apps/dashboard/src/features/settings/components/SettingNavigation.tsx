@@ -84,7 +84,7 @@ export const SettingNavigation = () => {
                         return (
                           <>
                             {isActive && (
-                              <div className="absolute w-1 left-0 top-0 bottom-0 dark:bg-brand-dark-blue" />
+                              <div className="absolute w-1 left-0 top-0 bottom-0 dark:bg-accent-accent" />
                             )}
                             <div className="overflow-wrap">{menuItem.title}</div>
                           </>

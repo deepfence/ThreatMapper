@@ -226,7 +226,7 @@ const ScanStatus = () => {
   return (
     <>
       <section className="flex flex-col justify-center items-center">
-        {!allScanDone ? (
+        {!allScanDone && !allScanFailed ? (
           <ScanLoader text={''} />
         ) : (
           <>
@@ -239,8 +239,8 @@ const ScanStatus = () => {
                 <SuccessIcon />
               </span>
             )}
-            <h3 className="text-h2 pt-1 dark:text-df-gray-200">
-              Scan {allScanFailed ? 'Failed' : 'Done'}
+            <h3 className="text-h2 pt-1 dark:text-text-text-and-icon">
+              Scan {allScanFailed ? 'failed' : 'done'}
             </h3>
             <div className="mt-2">
               {allScanFailed ? (
@@ -258,11 +258,7 @@ const ScanStatus = () => {
                 <Button
                   variant="flat"
                   size="sm"
-                  endIcon={
-                    <span className="block -rotate-90">
-                      <CaretDown />
-                    </span>
-                  }
+                  endIcon={<ArrowLine className="rotate-90" />}
                   onClick={() =>
                     navigate(
                       generatePath(
@@ -275,26 +271,73 @@ const ScanStatus = () => {
                     )
                   }
                 >
-                  Go to scan results
+                  Go to result summary
                 </Button>
               )}
             </div>
           </>
         )}
 
-        <div className="flex justify-center items-center mt-10">
-          <p className="text-p7 text-gray-700 dark:text-text-text-and-icon">
-            {!allScanDone
-              ? `${
-                  scanType.charAt(0).toUpperCase() + scanType.slice(1)
-                } scan started for ${data?.data?.length} ${uniq(
-                  data.data?.map((data) => data.node_type?.replace('_', ' ')) ?? [],
-                ).join(' and ')}${(data?.data?.length ?? 0) > 1 ? 's' : ''}`
-              : 'All scan are done'}
+        <div className="flex justify-center items-center mt-6">
+          <p className="text-p4 text-gray-700 dark:text-text-text-and-icon">
+            {!allScanDone &&
+              `${scanType.charAt(0).toUpperCase() + scanType.slice(1)} scan started for ${
+                data?.data?.length
+              } ${uniq(
+                data.data?.map((data) => data.node_type?.replace('_', ' ')) ?? [],
+              ).join(' and ')}${(data?.data?.length ?? 0) > 1 ? 's' : ''}, ${
+                allScanFailed
+                  ? 'All scans failed.'
+                  : 'It will take some times to complete.'
+              }`}
+
+            {allScanDone && 'All scans complete'}
           </p>
         </div>
+        {!allScanDone && !allScanFailed && (
+          <div className="text-p4 dark:text-text-text-and-icon mt-4 flex items-center flex-col">
+            <span>
+              You can either wait for the scan to complete to see summary of scan result
+              or go to main dashbord to see details of your scan.
+            </span>
+            <span>
+              If you wish to start a new scan you can click on &quot;Go to add
+              connectors&quot;
+            </span>
+            <div className="flex mt-4 gap-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/onboard/connectors/add-connectors')}
+              >
+                go to add connectors
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}>
+                go to main dashboard
+              </Button>
+            </div>
+          </div>
+        )}
+        {allScanDone && (
+          <div className="text-p4 dark:text-text-text-and-icon mt-4 flex items-center flex-col">
+            <span>
+              If you wish to start a new scan you can click on &quot;Go to add
+              connectors&quot;
+            </span>
+            <div className="flex mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/onboard/connectors/add-connectors')}
+              >
+                go to add connectors
+              </Button>
+            </div>
+          </div>
+        )}
         <Button
           size="sm"
+          variant="flat"
           color={allScanFailed ? 'error' : 'default'}
           endIcon={
             expand ? (
@@ -311,7 +354,7 @@ const ScanStatus = () => {
           outline={expand ? false : true}
           className="mt-4"
         >
-          {expand ? 'Less' : 'More'} details
+          {expand ? 'Less' : 'scan status'} details
         </Button>
       </section>
       {expand ? (

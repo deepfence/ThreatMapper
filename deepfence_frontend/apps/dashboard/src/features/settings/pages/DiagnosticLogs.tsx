@@ -243,8 +243,17 @@ const AgentDiagnosticLogsTable = () => {
             return 'No logs';
           }
           return (
-            <DFLink href={cell.row.original.url_link ?? ''} download target={'_blank'}>
-              Click to download
+            <DFLink
+              href={cell.row.original.url_link ?? ''}
+              download
+              target={'_blank'}
+              className="flex items-center gap-x-1 dark:text-accent-accent dark:hover:text-bg-hover-1"
+              unstyled
+            >
+              <span className="h-3 w-3">
+                <DownloadLineIcon />
+              </span>
+              Download
             </DFLink>
           );
         },
@@ -311,13 +320,17 @@ const ConsoleDiagnosticLogsComponent = () => {
 const AgentDiagnosticsLogsModal = ({
   showDialog,
   setShowDialog,
+  nodeType,
 }: {
   showDialog: boolean;
+  nodeType: 'host' | 'cluster';
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const { data } = useGetLogs();
   const { message } = data;
   const fetcher = useFetcher<string>();
+  const [hosts, setHosts] = useState<string[]>([]);
+  const [clusters, setClusters] = useState<string[]>([]);
 
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
@@ -330,7 +343,7 @@ const AgentDiagnosticsLogsModal = ({
       <SlidingModalContent>
         <div className="m-4">
           <span className="text-sm text-gray-500 dark:text-gray-300">
-            Generate a link to download pdf for your host/cluster agent
+            Generate a link to download pdf for your {nodeType} agent
           </span>
           <fetcher.Form method="post" className="mt-4 flex flex-col gap-y-3">
             {message ? (
@@ -343,10 +356,34 @@ const AgentDiagnosticsLogsModal = ({
               hidden
               value={ACTION_TYPE.AGENT_LOGS}
             />
-            <div className="flex flex-col gap-y-8">
-              <SearchableHostList scanType="none" active={true} triggerVariant="select" />
-              <SearchableClusterList active={true} triggerVariant="select" />
-            </div>
+            {nodeType === 'host' && (
+              <SearchableHostList
+                scanType="none"
+                active={true}
+                triggerVariant="select"
+                defaultSelectedHosts={hosts}
+                onChange={(value) => {
+                  setHosts(value);
+                }}
+                onClearAll={() => {
+                  setHosts([]);
+                }}
+              />
+            )}
+            {nodeType === 'cluster' && (
+              <SearchableClusterList
+                active={true}
+                triggerVariant="select"
+                defaultSelectedClusters={clusters}
+                onChange={(value) => {
+                  setClusters(value);
+                }}
+                onClearAll={() => {
+                  setClusters([]);
+                }}
+              />
+            )}
+
             <div className="flex gap-x-2 mt-8">
               <Button
                 type="submit"
@@ -372,6 +409,7 @@ const AgentDiagnosticsLogsModal = ({
 
 const AgentDiagnosticLogsComponent = () => {
   const [showDialog, setShowDialog] = useState(false);
+  const [nodeType, setNodeType] = useState<'host' | 'cluster'>('host');
 
   return (
     <>
@@ -379,17 +417,35 @@ const AgentDiagnosticLogsComponent = () => {
         <AgentDiagnosticsLogsModal
           showDialog={showDialog}
           setShowDialog={setShowDialog}
+          nodeType={nodeType}
         />
       ) : null}
-      <Button
-        variant="flat"
-        onClick={() => setShowDialog(true)}
-        className="w-fit"
-        size="sm"
-        startIcon={<PlusIcon />}
-      >
-        Generate agent diagnostic logs
-      </Button>
+      <div className="flex">
+        <Button
+          variant="flat"
+          onClick={() => {
+            setNodeType('host');
+            setShowDialog(true);
+          }}
+          className="w-fit"
+          size="sm"
+          startIcon={<PlusIcon />}
+        >
+          Generate host agent diagnostic logs
+        </Button>
+        <Button
+          variant="flat"
+          onClick={() => {
+            setNodeType('cluster');
+            setShowDialog(true);
+          }}
+          className="w-fit"
+          size="sm"
+          startIcon={<PlusIcon />}
+        >
+          Generate cluster agent diagnostic logs
+        </Button>
+      </div>
     </>
   );
 };

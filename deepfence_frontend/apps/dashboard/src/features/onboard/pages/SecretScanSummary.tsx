@@ -184,7 +184,7 @@ const SecretScanSummary = () => {
   return (
     <div className="flex flex-col">
       <ConnectorHeader
-        title={'Secret Scan Results Summary'}
+        title={'Secret Scan Result Summary'}
         description={'Summary of secret scan result'}
       />
 

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button, Card } from 'ui-components';
 
@@ -9,6 +10,7 @@ export const RegistriesConnector = () => {
     connectorType: string;
   };
   const { goBack, navigate } = usePageNavigation();
+  const [state, setState] = useState<'submitting' | 'idle' | 'loading'>('idle');
 
   return (
     <div className="w-full">
@@ -18,22 +20,25 @@ export const RegistriesConnector = () => {
             navigate('/onboard/connectors/my-connectors');
           }}
           registryType={connectorType}
-          renderButton={(state) => (
-            <div className="flex mt-4 gap-x-2">
-              <Button
-                type="submit"
-                disabled={state !== 'idle'}
-                loading={state !== 'idle'}
-              >
-                Save and go to connectors
-              </Button>
-              <Button onClick={goBack} type="button" variant="outline">
-                Cancel
-              </Button>
-            </div>
-          )}
+          renderButton={(state) => {
+            setState(state);
+            return <></>;
+          }}
         />
       </Card>
+      <div className="mt-8 flex items-center sticky bottom-0 py-4 dark:bg-bg-page gap-x-2">
+        <Button
+          size="md"
+          type="submit"
+          disabled={state !== 'idle'}
+          loading={state !== 'idle'}
+        >
+          Save and go to connectors
+        </Button>
+        <Button onClick={goBack} type="button" variant="outline" size="md">
+          Cancel
+        </Button>
+      </div>
     </div>
   );
 };
