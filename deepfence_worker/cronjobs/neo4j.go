@@ -319,7 +319,7 @@ func CleanUpDB(msg *message.Message) error {
 		WITH n LIMIT 10000
 		SET n.active = false`,
 		map[string]interface{}{
-			"time_ms": dbCloudResourceCleanupTimeout.Milliseconds(),
+			"time_ms": dbScanTimeoutBase.Milliseconds(),
 		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
