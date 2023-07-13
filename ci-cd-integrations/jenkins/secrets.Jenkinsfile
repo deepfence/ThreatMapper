@@ -2,13 +2,12 @@ node {
     def app
     def full_image_name = 'deepfenceio/jenkins-example:latest'
     def deepfence_mgmt_console_url = '127.0.0.1' // URL address of Deepfence management console Note - Please do not mention port 
-    def fail_cve_count = 100 // Fail jenkins build if number of vulnerabilities found is >= this number. Set -1 to pass regardless of vulnerabilities.
-    def fail_critical_cve_count = 1 // Fail jenkins build if number of critical vulnerabilities found is >= this number. Set -1 to pass regardless of critical vulnerabilities.
-    def fail_high_cve_count = 5 // Fail jenkins build if number of high vulnerabilities found is >= this number. Set -1 to pass regardless of high vulnerabilities.
-    def fail_medium_cve_count = 10 // Fail jenkins build if number of medium vulnerabilities found is >= this number. Set -1 to pass regardless of medium vulnerabilities.
-    def fail_low_cve_count = 20 // Fail jenkins build if number of low vulnerabilities found is >= this number. Set -1 to pass regardless of low vulnerabilities.            
-    def fail_cve_score = 8 // Fail jenkins build if cumulative CVE score is >= this value. Set -1 to pass regardless of cve score.
-    def mask_cve_ids = "" // Comma separated. Example: "CVE-2019-9168,CVE-2019-9169"
+    def fail_secret_count = 100 // Fail jenkins build if number of vulnerabilities found is >= this number. Set -1 to pass regardless of vulnerabilities.
+    def fail_critical_secret_count = 1 // Fail jenkins build if number of critical vulnerabilities found is >= this number. Set -1 to pass regardless of critical vulnerabilities.
+    def fail_high_secret_count = 5 // Fail jenkins build if number of high vulnerabilities found is >= this number. Set -1 to pass regardless of high vulnerabilities.
+    def fail_medium_secret_count = 10 // Fail jenkins build if number of medium vulnerabilities found is >= this number. Set -1 to pass regardless of medium vulnerabilities.
+    def fail_low_secret_count = 20 // Fail jenkins build if number of low vulnerabilities found is >= this number. Set -1 to pass regardless of low vulnerabilities.            
+    def fail_secret_score = 8 // Fail jenkins build if cumulative CVE score is >= this value. Set -1 to pass regardless of cve score.
     def deepfence_key = "" // API key can be found on settings page of the deepfence 
 
     stage('Clone repository') {
