@@ -8,6 +8,7 @@ import {
   ModelNodeIdentifierNodeTypeEnum,
   ModelSecretScanTriggerReq,
 } from '@/api/generated';
+import { invalidateAllQueries } from '@/queries';
 import { SecretScanNodeTypeEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 import { isNodeTypeARegistryTagType, isNodeTypeARegistryType } from '@/utils/registry';
@@ -118,7 +119,8 @@ export const scanSecretApiAction = async ({
     throw startSecretScanResponse.error;
   }
 
-  toast('Scan has been sucessfully started');
+  toast.success('Scan started sucessfully');
+  invalidateAllQueries();
   return {
     success: true,
     data: {

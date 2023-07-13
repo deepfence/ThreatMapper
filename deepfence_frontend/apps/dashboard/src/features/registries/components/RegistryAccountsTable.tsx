@@ -76,6 +76,14 @@ const ActionDropdown = ({
             Start Malware Scan
           </DropdownItem>
           <DropdownItem
+            onClick={(e) => {
+              e.preventDefault();
+              onTableAction([id], '' as RegistryScanType, ActionEnumType.SYNC_IMAGES);
+            }}
+          >
+            Sync Images
+          </DropdownItem>
+          <DropdownItem
             onClick={() => {
               setIdsToDelete(id);
               setShowDeleteDialog(true);

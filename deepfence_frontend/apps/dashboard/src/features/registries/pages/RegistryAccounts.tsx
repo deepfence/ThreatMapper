@@ -8,6 +8,7 @@ import {
   useFetcher,
   useParams,
 } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
   Breadcrumb,
   BreadcrumbLink,
@@ -54,6 +55,7 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 export enum ActionEnumType {
   DELETE = 'delete',
   START_SCAN = 'start_scan',
+  SYNC_IMAGES = 'sync_images',
 }
 type ActionData = {
   action: ActionEnumType;
@@ -113,26 +115,46 @@ function getScanOptions(
 
 const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
-  const id = formData.get('nodeIds')?.toString() ?? '';
-  const deleteRegistry = apiWrapper({ fn: getRegistriesApiClient().deleteRegistry });
-  const r = await deleteRegistry({
-    registryId: id,
-  });
+  const actionType = formData.get('actionType');
 
-  if (!r.ok) {
-    if (r.error.response.status === 400 || r.error.response.status === 404) {
-      const modelResponse: ApiDocsBadRequestResponse = await r.error.response.json();
-      return {
-        message: modelResponse.message ?? '',
-        success: false,
-      };
-    } else if (r.error.response.status === 403) {
-      return {
-        message: 'You do not have enough permissions to delete registry',
-        success: false,
-      };
+  if (actionType === ActionEnumType.DELETE) {
+    const id = formData.get('nodeIds')?.toString() ?? '';
+    const deleteRegistry = apiWrapper({ fn: getRegistriesApiClient().deleteRegistry });
+    const r = await deleteRegistry({
+      registryId: id,
+    });
+
+    if (!r.ok) {
+      if (r.error.response.status === 400 || r.error.response.status === 404) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.error.response.json();
+        return {
+          message: modelResponse.message ?? '',
+          success: false,
+        };
+      } else if (r.error.response.status === 403) {
+        return {
+          message: 'You do not have enough permissions to delete registry',
+          success: false,
+        };
+      }
+      throw r.error;
     }
-    throw r.error;
+  } else if (actionType === ActionEnumType.SYNC_IMAGES) {
+    const registryId = formData.get('nodeIds')?.toString() ?? '';
+    if (!registryId) {
+      throw new Error('Registry id is required to sync images');
+    }
+    const syncRegistryImagesApi = apiWrapper({
+      fn: getRegistriesApiClient().syncRegistryImages,
+    });
+
+    const result = await syncRegistryImagesApi({
+      registryId,
+    });
+    if (!result.ok) {
+      throw result.error;
+    }
+    toast.success('Sync registry images started successfully, please wait for sometime');
   }
 
   invalidateAllQueries();
@@ -421,14 +443,22 @@ const RegistryAccountsResults = () => {
         setNodeIdsToScan(id);
         setSelectedScanType(scanType);
         return;
-      }
-      const formData = new FormData();
-      formData.append('actionType', actionType);
-      formData.append('nodeIds', id[0]);
+      } else if (actionType === ActionEnumType.DELETE) {
+        const formData = new FormData();
+        formData.append('actionType', actionType);
+        formData.append('nodeIds', id[0]);
 
-      fetcher.submit(formData, {
-        method: 'post',
-      });
+        fetcher.submit(formData, {
+          method: 'post',
+        });
+      } else if (actionType === ActionEnumType.SYNC_IMAGES) {
+        const formData = new FormData();
+        formData.append('actionType', actionType);
+        formData.append('nodeIds', id[0]);
+        fetcher.submit(formData, {
+          method: 'post',
+        });
+      }
     },
     [fetcher],
   );
