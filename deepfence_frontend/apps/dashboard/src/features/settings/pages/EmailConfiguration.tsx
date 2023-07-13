@@ -37,11 +37,10 @@ type AddEmailConfigurationReturnType = {
   smtp?: string;
 };
 
-type ActionData = {
-  action: ActionEnumType;
+type ActionReturnType = {
   success: boolean;
   message?: string;
-} | null;
+};
 
 const emailProviders: { [key: string]: string } = {
   'Amazon SES': 'amazon_ses',
@@ -60,12 +59,17 @@ const useEmailConfiguration = () => {
     keepPreviousData: true,
   });
 };
-export const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
+export const action = async ({
+  request,
+}: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
   const _actionType = formData.get('_actionType')?.toString() as ActionEnumType;
 
   if (!_actionType) {
-    return null;
+    return {
+      message: 'Action Type is required',
+      success: false,
+    };
   }
   if (_actionType === ActionEnumType.DELETE) {
     const id = formData.get('id');
@@ -80,7 +84,6 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<ActionDat
         return {
           success: false,
           message: deleteResponse.error.message,
-          action: _actionType,
         };
       }
       throw deleteResponse.error;
@@ -113,7 +116,6 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<ActionDat
         return {
           success: false,
           message: addResponse.error.message,
-          action: _actionType,
         };
       }
       throw addResponse.error;
@@ -122,7 +124,6 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<ActionDat
   invalidateAllQueries();
   return {
     success: true,
-    action: _actionType,
   };
 };
 
@@ -304,7 +305,6 @@ const Configuration = () => {
     return <p className="text-p7 dark:text-status-error">{message}</p>;
   }
 
-  console.log('showDeleteDialog', showDeleteDialog);
   return (
     <>
       {showDeleteDialog && (
@@ -413,14 +413,10 @@ const DeleteConfirmationModal = ({
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
   onDeleteSuccess: () => void;
 }) => {
-  const fetcher = useFetcher<ActionData>();
+  const fetcher = useFetcher<ActionReturnType>();
 
   useEffect(() => {
-    if (
-      fetcher.state === 'idle' &&
-      fetcher.data?.success &&
-      fetcher.data.action === ActionEnumType.DELETE
-    ) {
+    if (fetcher.state === 'idle' && fetcher.data?.success) {
       onDeleteSuccess();
     }
   }, [fetcher]);
