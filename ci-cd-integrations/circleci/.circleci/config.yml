@@ -11,74 +11,111 @@ jobs:
           command: |
             go build -o demo-app src/main.go
       - run:
-          name: Setup common environment variables
-          command: |
-            echo 'export ECR_REPOSITORY_NAME="${AWS_RESOURCE_NAME_PREFIX}"' >> $BASH_ENV
-            echo 'export FULL_IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}:${CIRCLE_SHA1}"' >> $BASH_ENV
-      - run:
           name: Build image
           command: |
             docker build -t $FULL_IMAGE_NAME .
-      - run:
-          name: Run Deepfence Vulnerability Mapper
-          command: |
-            docker run -it --rm --net=host -v /var/run/docker.sock:/var/run/docker.sock deepfenceio/deepfence_package_scanner_ce:1.3.1 -mgmt-console-url=$DEEPFENCE_CONSOLE_URL -deepfence-key="$DEEPFENCE_KEY" -vulnerability-scan=true -output=table -mode=local -source="$FULL_IMAGE_NAME" -fail-on-count=$FAIL_CVE_COUNT -fail-on-critical-count=$FAIL_CRITICAL_CVE_COUNT -fail-on-high-count=$FAIL_HIGH_CVE_COUNT -fail-on-medium-count=$FAIL_MEDIUM_CVE_COUNT -fail-on-low-count=$FAIL_LOW_CVE_COUNT -fail-on-score=$FAIL_CVE_SCORE
-      - run:
-          name: Test image
-          command: |
-            docker run -d -p 8080:8080 --name built-image $FULL_IMAGE_NAME
-            sleep 10
-            docker run --network container:built-image appropriate/curl --retry 10 --retry-connrefused http://localhost:8080 | grep "Hello World!"
+          environment:
+            FULL_IMAGE_NAME: "go-server:1.0"
       - run:
           name: Save image to an archive
           command: |
-            mkdir docker-image
-            docker save -o docker-image/image.tar $FULL_IMAGE_NAME
+            mkdir images
+            docker save -o images/image.tar $FULL_IMAGE_NAME
+          environment:
+            FULL_IMAGE_NAME: "go-server:1.0"
       - persist_to_workspace:
           root: .
           paths:
-            - docker-image
-  deploy:
+            - images
+
+  vulnerability:
     docker:
-      - image: circleci/python:3.6.1
-    environment:
-      AWS_DEFAULT_OUTPUT: json
+      - image: cimg/base:stable
     steps:
-      - checkout
-      - setup_remote_docker
       - attach_workspace:
-          at: workspace
-      - restore_cache:
-          key: v1-{{ checksum "requirements.txt" }}
-      - run:
-          name: Install awscli
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
-      - save_cache:
-          key: v1-{{ checksum "requirements.txt" }}
-          paths:
-            - "venv"
+          at: .
+      - setup_remote_docker
       - run:
           name: Load image
           command: |
-            docker load --input workspace/docker-image/image.tar
+            docker load < images/image.tar
       - run:
-          name: Setup common environment variables
+          name: Run Deepfence Vulnerability Mapper
           command: |
-            echo 'export ECR_REPOSITORY_NAME="${AWS_RESOURCE_NAME_PREFIX}"' >> $BASH_ENV
+            docker pull deepfenceio/deepfence_package_scanner_ce:v2
+            docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_package_scanner_ce:v2 -source "$FULL_IMAGE_NAME" -console-url=$DEEPFENCE_CONSOLE_URL -deepfence-key=$DEEPFENCE_KEY -fail-on-count=$FAIL_CVE_COUNT -fail-on-critical-count=$FAIL_CRITICAL_CVE_COUNT -fail-on-high-count=$FAIL_HIGH_CVE_COUNT -fail-on-medium-count=$FAIL_MEDIUM_CVE_COUNT -fail-on-low-count=$FAIL_LOW_CVE_COUNT -fail-on-score=$FAIL_CVE_SCORE -scan-type="base,java,python,ruby,php,nodejs,js,dotnet"
+          environment:
+            DEEPFENCE_KEY: ""
+            DEEPFENCE_CONSOLE_URL: ""
+            FAIL_CVE_COUNT: 100
+            FAIL_CRITICAL_CVE_COUNT: 10
+            FAIL_HIGH_CVE_COUNT: 100
+            FAIL_MEDIUM_CVE_COUNT: 100
+            FAIL_LOW_CVE_COUNT: 100
+            FAIL_CVE_SCORE: 10
+            FULL_IMAGE_NAME: "go-server:1.0"
+
+  secret:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - attach_workspace:
+          at: .
+      - setup_remote_docker
       - run:
-          name: Push image
+          name: Load image
           command: |
-            . venv/bin/activate
-            eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
-            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:$CIRCLE_SHA1
+            docker load < images/image.tar
+      - run:
+          name: Run Deepfence Secret Scanner
+          command: |
+            docker pull deepfenceio/deepfence_secret_scanner_ce:v2
+            docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_secret_scanner_ce:v2 -image-name "$FULL_IMAGE_NAME"  -fail-on-count=$FAIL_SECRET_COUNT -fail-on-high-count=$FAIL_HIGH_SECRET_COUNT -fail-on-medium-count=$FAIL_MEDIUM_SECRET_COUNT -fail-on-low-count=$FAIL_LOW_SECRET_COUNT
+          environment:
+            DEEPFENCE_KEY: ""
+            DEEPFENCE_CONSOLE_URL: ""
+            FAIL_SECRET_COUNT: 100
+            FAIL_HIGH_SECRET_COUNT: 100
+            FAIL_MEDIUM_SECRET_COUNT: 100
+            FAIL_LOW_SECRET_COUNT: 100
+            FULL_IMAGE_NAME: "go-server:1.0"
+
+  malware:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - attach_workspace:
+          at: .
+      - setup_remote_docker
+      - run:
+          name: Load image
+          command: |
+            docker load < images/image.tar
+      - run:
+          name: Run Deepfence Malware Scanner
+          command: |
+            docker pull deepfenceio/deepfence_malware_scanner_ce:v2
+            docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_malware_scanner_ce:v2 -image-name "$FULL_IMAGE_NAME"  -fail-on-count=$FAIL_MALWARE_COUNT -fail-on-high-count=$FAIL_HIGH_MALWARE_COUNT -fail-on-medium-count=$FAIL_MEDIUM_MALWARE_COUNT -fail-on-low-count=$FAIL_LOW_MALWARE_COUNT
+          environment:
+            DEEPFENCE_KEY: ""
+            DEEPFENCE_CONSOLE_URL: ""
+            FAIL_MALWARE_COUNT: 100
+            FAIL_HIGH_MALWARE_COUNT: 100
+            FAIL_MEDIUM_MALWARE_COUNT: 100
+            FAIL_LOW_MALWARE_COUNT: 100
+            FULL_IMAGE_NAME: "go-server:1.0"
+
 workflows:
   version: 2
-  build-deploy:
+  build-test:
     jobs:
       - build
-      - deploy:
+      - vulnerability:
+          requires:
+            - build
+      - secret:
+          requires:
+            - build
+      - malware:
           requires:
             - build

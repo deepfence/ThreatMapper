@@ -1,0 +1,54 @@
+name: vulnerabilites-scanner
+
+on:
+  push:
+    branches:
+    - "*" 
+  pull_request:
+    branches:
+    - "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GROUP: deepfence
+      COMMIT: ${{ github.sha }}
+      REPO: demo-app
+      DEEPFENCE_CONSOLE_URL: 127.0.0.1
+      DEEPFENCE_KEY: key
+    steps:
+    - uses: actions/checkout@v2
+
+    # Build docker image for service
+    - name: Build docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: false
+        tags: ${{ env.GROUP }}/${{ env.REPO }}:${{ github.sha }}
+
+    # Run Deepfence Vulnerability Mapper to check for vulnerabilities in image
+    - name: Run Deepfence Vulnerability Mapper
+      env:
+        DEEPFENCE_CONSOLE_URL: ${{ env.DEEPFENCE_CONSOLE_URL }}
+        DEEPFENCE_KEY: ${{ env.DEEPFENCE_KEY }}
+        FULL_IMAGE_NAME: ${{ env.GROUP }}/${{ env.REPO }}:${{ github.sha }}
+        FAIL_CVE_COUNT: 100 # Fail build if number of vulnerabilities found is >= this number. Set -1 to pass regardless of vulnerabilities.
+        FAIL_CRITICAL_CVE_COUNT: 10 # Fail build if number of critical vulnerabilities found is >= this number. Set -1 to pass regardless of critical vulnerabilities.
+        FAIL_HIGH_CVE_COUNT: 100 # Fail build if number of high vulnerabilities found is >= this number. Set -1 to pass regardless of high vulnerabilities.
+        FAIL_MEDIUM_CVE_COUNT: 100 # Fail build if number of medium vulnerabilities found is >= this number. Set -1 to pass regardless of medium vulnerabilities.
+        FAIL_LOW_CVE_COUNT: 100 # Fail build if number of low vulnerabilities found is >= this number. Set -1 to pass regardless of low vulnerabilities.
+        FAIL_CVE_SCORE: 10 # Fail build if cumulative CVE score is >= this value. Set -1 to pass regardless of cve score.
+      run: |
+        docker pull deepfenceio/deepfence_package_scanner_ce:v2
+        docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_package_scanner_ce:v2 -source "$FULL_IMAGE_NAME" -console-url=$DEEPFENCE_CONSOLE_URL -deepfence-key=$DEEPFENCE_KEY -fail-on-count=$FAIL_CVE_COUNT -fail-on-critical-count=$FAIL_CRITICAL_CVE_COUNT -fail-on-high-count=$FAIL_HIGH_CVE_COUNT -fail-on-medium-count=$FAIL_MEDIUM_CVE_COUNT -fail-on-low-count=$FAIL_LOW_CVE_COUNT -fail-on-score=$FAIL_CVE_SCORE -scan-type="base,java,python,ruby,php,nodejs,js,dotnet"
+
+    # Push to dockerhub
+    - name: Push to Docker Hub
+      uses: docker/build-push-action@v4
+      if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master'
+      with:
+        username: ${{ secrets.DOCKER_USER }}
+        password: ${{ secrets.DOCKER_PASS }}
+        tags: ${{ env.GROUP }}/${{ env.REPO }}:${{ github.sha }}
