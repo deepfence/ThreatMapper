@@ -104,6 +104,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
           success: false,
         };
       }
+      throw r.error;
     }
     invalidateAllQueries();
     return {
@@ -143,7 +144,6 @@ const DeleteConfirmationModal = ({
       size="s"
       open={showDialog}
       onOpenChange={() => {
-        console.log('is it closed');
         setShowDialog(false);
       }}
       title={

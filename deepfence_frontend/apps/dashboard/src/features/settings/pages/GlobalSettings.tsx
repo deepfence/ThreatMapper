@@ -64,6 +64,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
         message,
       };
     }
+    throw updateResponse.error;
   }
 
   invalidateAllQueries();

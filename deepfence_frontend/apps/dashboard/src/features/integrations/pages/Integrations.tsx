@@ -227,12 +227,6 @@ const Skeleton = ({ count }: { count: number }) => {
     </section>
   );
 };
-const skeletonCardCount: { [key: number]: number } = {
-  0: 5,
-  1: 5,
-  3: 1,
-  4: 1,
-};
 
 const Integrations = () => {
   return (
@@ -254,7 +248,9 @@ const Integrations = () => {
               <h2 className="uppercase text-t3 dark:text-text-input-value">
                 {integration.name}
               </h2>
-              <Suspense fallback={<Skeleton count={skeletonCardCount[index]} />}>
+              <Suspense
+                fallback={<Skeleton count={IntegrationsData[index].types.length} />}
+              >
                 <IntegrationTypes integration={integration} />
               </Suspense>
             </section>

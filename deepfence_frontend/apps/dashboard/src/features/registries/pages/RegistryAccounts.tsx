@@ -135,6 +135,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
       }
       throw r.error;
     }
+    toast.success('Deleted successfully');
   } else if (actionType === ActionEnumType.SYNC_IMAGES) {
     const registryId = formData.get('nodeIds')?.toString() ?? '';
     if (!registryId) {
@@ -156,6 +157,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           message,
         };
       }
+      throw result.error;
     }
     toast.success('Sync registry images started successfully, please wait for sometime');
   }

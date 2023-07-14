@@ -153,6 +153,7 @@ const action = async ({
           };
         }
       }
+      throw result.error;
     }
   } else if (actionType === ActionEnumType.MASK || actionType === ActionEnumType.UNMASK) {
     apiFunction =
@@ -195,6 +196,7 @@ const action = async ({
           };
         }
       }
+      throw result.error;
     }
   } else if (actionType === ActionEnumType.DELETE_SCAN) {
     const deleteScan = apiWrapper({
@@ -215,6 +217,7 @@ const action = async ({
           message,
         };
       }
+      throw result.error;
     }
   }
 

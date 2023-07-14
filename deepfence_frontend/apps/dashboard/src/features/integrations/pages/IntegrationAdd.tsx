@@ -327,6 +327,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
           message,
         };
       }
+      throw r.error;
     }
     toast.success('Integration added successfully');
     invalidateAllQueries();

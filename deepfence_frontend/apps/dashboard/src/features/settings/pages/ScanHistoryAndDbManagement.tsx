@@ -95,6 +95,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           message,
         };
       }
+      throw deleteScanHistoryResponse.error;
     }
 
     invalidateAllQueries();
@@ -128,6 +129,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           message,
         };
       }
+      throw uploadApiResponse.error;
     }
     invalidateAllQueries();
     return {

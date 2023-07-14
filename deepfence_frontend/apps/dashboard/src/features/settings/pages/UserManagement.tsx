@@ -121,6 +121,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
           message,
         };
       }
+      throw deleteResponse.error;
     }
     invalidateAllQueries();
   } else if (_actionType === ActionEnumType.CHANGE_PASSWORD) {
@@ -162,7 +163,9 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
           message,
         };
       }
+      throw updateResponse.error;
     }
+    invalidateAllQueries();
   } else if (_actionType === ActionEnumType.INVITE_USER) {
     const body = Object.fromEntries(formData);
     const role = body.role as keyof typeof ModelUpdateUserIdRequestRoleEnum;
@@ -251,6 +254,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
           message,
         };
       }
+      throw updateResponse.error;
     }
     invalidateAllQueries();
   } else if (_actionType === ActionEnumType.RESET_API_KEY) {
@@ -268,8 +272,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       }
       throw resetApiTokensResponse.error;
     }
+    invalidateAllQueries();
   }
-  invalidateAllQueries();
   return {
     success: true,
   };

@@ -143,6 +143,7 @@ const action = async ({
           message,
         };
       }
+      throw result.error;
     }
   }
   invalidateAllQueries();
