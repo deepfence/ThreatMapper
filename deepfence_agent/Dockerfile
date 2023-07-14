@@ -49,8 +49,7 @@ COPY start_agent.sh /usr/local/bin/start_agent
 COPY tools/apache/scope/docker/deepfence_exe /usr/local/discovery/deepfence-discovery
 COPY plugins/compliance/scripts /usr/local/bin/compliance_check/scripts
 COPY plugins/compliance/config.json /usr/local/bin/compliance_check/config.json
-COPY tools/apache/scope/docker/agent_check.sh /home/deepfence/
-COPY supervisord.conf /home/deepfence/supervisord-temp.conf
+COPY supervisord.conf /home/deepfence/supervisord.conf
 COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
 RUN mkdir -p /home/deepfence/bin && mkdir -p /home/deepfence/bin/secret-scanner && mkdir -p /home/deepfence/bin/yara-hunter

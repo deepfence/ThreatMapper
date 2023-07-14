@@ -16,8 +16,8 @@ func StartComplianceScan(req ctl.StartComplianceScanRequest) error {
 			ScanId:                    req.BinArgs["scan_id"],
 			NodeId:                    req.NodeId,
 			NodeName:                  req.NodeId,
-			ComplianceResultsFilePath: fmt.Sprintf("/var/log/compliance/compliance-scan/%s.log", req.BinArgs["scan_id"]),
-			ComplianceStatusFilePath:  "/var/log/compliance/compliance-status/status.log",
+			ComplianceResultsFilePath: fmt.Sprintf("/var/log/fenced/compliance/%s.log", req.BinArgs["scan_id"]),
+			ComplianceStatusFilePath:  "/var/log/fenced/compliance-scan-logs/status.log",
 		})
 	if err != nil {
 		return err

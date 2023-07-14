@@ -24,6 +24,9 @@ var authCheckPeriod = time.Second * 10
 //go:embed assets/config.ini
 var config_file []byte
 
+//go:embed assets/config-cluster.ini
+var config_cluster_file []byte
+
 var enable_cluster_discovery bool
 
 var enable_debug bool
@@ -53,7 +56,14 @@ func init() {
 func main() {
 	log.Info().Msgf("version: %s", Version)
 	log.Info().Msg("Starting bootstrapper")
-	cfg, err := config.NewIniConfig(config_file)
+
+	var cfg config.Config
+	var err error
+	if enable_cluster_discovery {
+		cfg, err = config.NewIniConfig(config_cluster_file)
+	} else {
+		cfg, err = config.NewIniConfig(config_file)
+	}
 	if err != nil {
 		log.Fatal().Msgf("%v", err)
 	}

@@ -4,5 +4,3 @@
 ./client/.config/yarn/*
 ./docker/weave
 ./tools/*
-# Extra programs that aren't really part of Scope
-./extras/*

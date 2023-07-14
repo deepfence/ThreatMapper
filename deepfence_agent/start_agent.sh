@@ -71,11 +71,20 @@ launch_deepfenced() {
     # echo "App security : Active Mode, Listening on port $DF_LISTEN_PORT "
     DOCKER_API_VERSION=$DOCKER_API_VERSION run_dind.sh -a $MGMT_CONSOLE_PORT -s 0
   fi
-  envsubst '${DEEPFENCE_KEY}:${MGMT_CONSOLE_URL}:${MGMT_CONSOLE_PORT}:${MGMT_CONSOLE_URL_SCHEMA}:${SCOPE_HOSTNAME}' </etc/td-agent-bit/td-agent-bit.conf >/etc/td-agent-bit/td-agent-bit-new.conf
-  mv /etc/td-agent-bit/td-agent-bit-new.conf /etc/td-agent-bit/td-agent-bit.conf && chmod 600 /etc/td-agent-bit/*
-  envsubst '${SCOPE_HOSTNAME}:${MGMT_CONSOLE_URL}:${MGMT_CONSOLE_PORT}' </home/deepfence/supervisord-temp.conf >/home/deepfence/supervisord.conf
+
+  export PROBE_LOG_LEVEL=${LOG_LEVEL:-info}
+
+  envsubst '${DEEPFENCE_KEY}:${MGMT_CONSOLE_URL}:${MGMT_CONSOLE_PORT}:${MGMT_CONSOLE_URL_SCHEMA}:${SCOPE_HOSTNAME}' </etc/td-agent-bit/fluentbit-agent.conf >/etc/td-agent-bit/fluentbit-agent-new.conf
+  mv /etc/td-agent-bit/fluentbit-agent-new.conf /etc/td-agent-bit/fluentbit-agent.conf
+
+  envsubst '${DEEPFENCE_KEY}:${MGMT_CONSOLE_URL}:${MGMT_CONSOLE_PORT}:${MGMT_CONSOLE_URL_SCHEMA}:${SCOPE_HOSTNAME}' </etc/td-agent-bit/fluentbit-cluster-agent.conf >/etc/td-agent-bit/fluentbit-cluster-agent-new.conf
+  mv /etc/td-agent-bit/fluentbit-cluster-agent-new.conf /etc/td-agent-bit/fluentbit-cluster-agent.conf
+
+  chmod 600 /etc/td-agent-bit/*
+
   unlink /var/run/supervisor.sock 2>/dev/null
   /usr/bin/supervisord -c /home/deepfence/supervisord.conf
+
   echo "Starting agent"
   until [ -f /var/log/fenced/discovery.logfile ]; do
     sleep 5

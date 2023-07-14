@@ -71,7 +71,7 @@ building_image(){
     fi
 
     echo "Building Cluster Agent Image"
-    docker build --network host --rm=true --tag=$IMAGE_REPOSITORY/deepfence_cluster_agent_ce:$DF_IMG_TAG -f tools/apache/scope/docker/Dockerfile.cluster-agent .
+    docker build --network host --rm=true --tag=$IMAGE_REPOSITORY/deepfence_cluster_agent_ce:$DF_IMG_TAG -f Dockerfile.cluster-agent .
     build_result=$?
     if [ $build_result -ne 0 ]
     then
