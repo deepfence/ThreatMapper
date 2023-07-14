@@ -11,10 +11,6 @@ export const ScanResultChart = ({
   theme: Mode;
   data: Array<{ value: number; name: string; color: string }>;
 }) => {
-  if (!data.length) {
-    return null;
-  }
-
   const totalValue = data.reduce((prev, record) => prev + record.value, 0);
 
   return (
