@@ -15,6 +15,7 @@ import { JfrogConnectorForm } from '@/components/registries-connector/JfrogConne
 import { QuayConnectorForm } from '@/components/registries-connector/QuayConnectorForm';
 import { invalidateAllQueries } from '@/queries';
 import { RegistryType } from '@/types/common';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
 type ActionReturnType = {
@@ -98,6 +99,12 @@ export const registryConnectorActionApi = async ({
           message: modelResponse.message ?? '',
           fieldErrors: modelResponse.error_fields ?? {},
         };
+      } else if (response.error.response.status === 403) {
+        const message = await get403Message(response.error);
+        return {
+          success: false,
+          message,
+        };
       }
     }
   } else {
@@ -115,6 +122,12 @@ export const registryConnectorActionApi = async ({
           success: false,
           message: modelResponse.message ?? '',
           fieldErrors: modelResponse.error_fields ?? {},
+        };
+      } else if (response.error.response.status === 403) {
+        const message = await get403Message(response.error);
+        return {
+          success: false,
+          message,
         };
       }
     }

@@ -60,8 +60,10 @@ export const GoogleCRConnectorForm = ({
           name="service_account_json"
           helperText={fieldErrors?.['service_account_json']}
         />
-        {errorMessage && <p className="dark:text-status-error text-p7">{errorMessage}</p>}
       </div>
+      {errorMessage && (
+        <p className="mt-4 dark:text-status-error text-p7">{errorMessage}</p>
+      )}
     </>
   );
 };

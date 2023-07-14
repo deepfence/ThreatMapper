@@ -164,9 +164,7 @@ export const SecretScanConfigureForm = ({
       {data.nodeType === SecretScanNodeTypeEnum.image && data.images && (
         <input type="text" name="_images" hidden readOnly value={data.images.join(',')} />
       )}
-      {fetcherData?.message && (
-        <p className="dark:text-status-error text-p7 pb-3">{fetcherData.message}</p>
-      )}
+
       <div className="flex">
         {wantAdvanceOptions &&
           isNodeTypeARegistryType(data.nodeType) &&
@@ -208,6 +206,11 @@ export const SecretScanConfigureForm = ({
             )}
         </div>
       ) : null}
+
+      {fetcherData?.message && (
+        <p className="dark:text-status-error text-p7 mt-4">{fetcherData.message}</p>
+      )}
+
       <div className="flex gap-3 mt-14">
         <Button disabled={state !== 'idle'} loading={state !== 'idle'} type="submit">
           Start Scan

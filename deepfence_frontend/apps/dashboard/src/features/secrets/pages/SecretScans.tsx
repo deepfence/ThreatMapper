@@ -199,7 +199,9 @@ const DeleteConfirmationModal = ({
           Selected scan will be deleted.
           <br />
           <span>Are you sure you want to delete?</span>
-          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
+          {fetcher.data?.message && (
+            <p className="text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+          )}
           <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (

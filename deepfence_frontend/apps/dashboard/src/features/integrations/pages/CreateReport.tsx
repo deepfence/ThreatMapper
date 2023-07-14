@@ -27,6 +27,7 @@ import { CommonForm } from '@/features/integrations/components/report-form/Commo
 import { ComplianceForm } from '@/features/integrations/components/report-form/ComplianceForm';
 import { ActionEnumType } from '@/features/integrations/pages/IntegrationAdd';
 import { invalidateAllQueries } from '@/queries';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -180,6 +181,12 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
         success: false,
         message: modelResponse.message ?? '',
         fieldErrors: modelResponse.error_fields ?? {},
+      };
+    } else if (r.error.response.status === 403) {
+      const message = await get403Message(r.error);
+      return {
+        success: false,
+        message,
       };
     }
   }
@@ -340,6 +347,10 @@ const ReportForm = () => {
       </div>
 
       <AdvancedFilter provider={provider} resourceType={resource} />
+
+      {data?.message ? (
+        <p className="mt-4 text-p7 dark:text-status-error">{data?.message}</p>
+      ) : null}
 
       <div className="mt-14 flex gap-x-2">
         <Button size="md" color="default" type="submit">

@@ -125,8 +125,10 @@ export const AmazonECRConnectorForm = ({
             helperText={fieldErrors?.['aws_region_name']}
           />
         </div>
-        {errorMessage && <p className="dark:text-status-error text-p7">{errorMessage}</p>}
       </div>
+      {errorMessage && (
+        <p className="mt-4 dark:text-status-error text-p7">{errorMessage}</p>
+      )}
     </>
   );
 };
