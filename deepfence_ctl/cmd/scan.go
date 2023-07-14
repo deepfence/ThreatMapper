@@ -397,6 +397,51 @@ var scanResultsSubCmd = &cobra.Command{
 	},
 }
 
+var scanStopSubCmd = &cobra.Command{
+	Use:   "stop",
+	Short: "Stop Scan",
+	Long:  `This subcommand stops a scan`,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		log.Info().Msgf("Command: %v", *cmd)
+		scan_type, _ := cmd.Flags().GetString("type")
+		if scan_type == "" {
+			log.Fatal().Msg("Please provide an type")
+		}
+
+		scan_id, _ := cmd.Flags().GetString("scan-id")
+		if scan_id == "" {
+			log.Fatal().Msg("Please provide a scan id")
+		}
+
+		var err error
+		var res interface{}
+		switch scan_type {
+		case "secret":
+			req := http.Client().SecretScanAPI.StopSecretScan(context.Background())
+			req = req.ModelStopScanRequest(deepfence_server_client.ModelStopScanRequest{
+				ScanId:   scan_id,
+				ScanType: "SecretScan",
+			})
+			res, err = http.Client().SecretScanAPI.StopSecretScanExecute(req)
+		case "malware":
+			req := http.Client().MalwareScanAPI.StopMalwareScan(context.Background())
+			req = req.ModelStopScanRequest(deepfence_server_client.ModelStopScanRequest{
+				ScanId:   scan_id,
+				ScanType: "MalwareScan",
+			})
+			res, err = http.Client().MalwareScanAPI.StopMalwareScanExecute(req)
+		default:
+			log.Fatal().Msg("Unsupported")
+		}
+
+		if err != nil {
+			log.Fatal().Msgf("Fail to execute: %v", err)
+		}
+		output.Out(res)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(scanCmd)
 	scanCmd.AddCommand(scanStartSubCmd)
@@ -404,6 +449,7 @@ func init() {
 	scanCmd.AddCommand(scanListSubCmd)
 	scanCmd.AddCommand(scanResultsSubCmd)
 	scanCmd.AddCommand(scanSearchSubCmd)
+	scanCmd.AddCommand(scanStopSubCmd)
 
 	scanCmd.PersistentFlags().String("type", "", "Scan type")
 
@@ -420,5 +466,7 @@ func init() {
 	scanSearchSubCmd.PersistentFlags().String("node-filter", "", "Node filter")
 
 	scanResultsSubCmd.PersistentFlags().String("scan-id", "", "Scan id")
+
+	scanStopSubCmd.PersistentFlags().String("scan-id", "", "Scan id")
 
 }

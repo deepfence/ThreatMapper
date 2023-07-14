@@ -1,14 +1,17 @@
 package secretscan
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"sync"
 
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/SecretScanner/core"
 	"github.com/deepfence/SecretScanner/output"
+	"github.com/deepfence/SecretScanner/scan"
 	secretScan "github.com/deepfence/SecretScanner/scan"
 	"github.com/deepfence/SecretScanner/signature"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -20,6 +23,8 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
+var ScanMap sync.Map
+
 func init() {
 	initSecretScanner()
 }
@@ -30,6 +35,31 @@ type SecretScan struct {
 
 func NewSecretScanner(ingest chan *kgo.Record) SecretScan {
 	return SecretScan{ingestC: ingest}
+}
+
+func (s SecretScan) StopSecretScan(msg *message.Message) error {
+	var params utils.SecretScanParameters
+
+	log.Info().Msgf("StopSecretScan, uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
+
+	if err := json.Unmarshal(msg.Payload, &params); err != nil {
+		log.Error().Msgf("StopSecretScan, error in Unmarshal: %s", err.Error())
+		return nil
+	}
+
+	scanID := params.ScanId
+
+	obj, found := ScanMap.Load(scanID)
+	if !found {
+		log.Error().Msgf("SecretScanner::Failed to Stop scan, may have already completed or errored out, ScanID: %s", scanID)
+		return nil
+	}
+
+	scanCtx := obj.(*scan.ScanContext)
+	scanCtx.Stopped.Store(true)
+	log.Error().Msgf("SecretScanner::Stop request submitted, ScanID: %s", scanID)
+
+	return nil
 }
 
 func (s SecretScan) StartSecretScan(msg *message.Message) error {
@@ -61,16 +91,32 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 		return nil
 	}
 
+	//Set this "hardErr" variable to appropriate error if
+	//an error has caused used to abort/return from this function
+	var hardErr error
+	scanCtx := scan.NewScanContext(params.ScanId)
+	res := StartStatusReporter(context.Background(), scanCtx, params, s.ingestC, rh)
+
+	ScanMap.Store(params.ScanId, scanCtx)
+
+	defer func() {
+		log.Info().Msgf("Removing from scan map, scan_id: %s", params.ScanId)
+		ScanMap.Delete(params.ScanId)
+		res <- hardErr
+		close(res)
+	}()
+
 	// send inprogress status
-	SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_INPROGRESS, ""), rh)
+	scanCtx.ScanStatusChan <- true
 
 	// get registry credentials
 	authDir, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		hardErr = err
 		return nil
 	}
+
 	defer func() {
 		log.Info().Msgf("remove auth directory %s", authDir)
 		if err := os.RemoveAll(authDir); err != nil {
@@ -99,24 +145,26 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 
 	authFile := authDir + "/config.json"
 	imgTar := dir + "/save-output.tar"
+
 	cmd := exec.Command("skopeo", []string{"copy", "--insecure-policy", "--src-tls-verify=false",
 		"--authfile", authFile, "docker://" + imageName, "docker-archive:" + imgTar}...)
+
 	log.Info().Msgf("command: %s", cmd.String())
+
 	if out, err := workerUtils.RunCommand(cmd); err != nil {
 		log.Error().Err(err).Msg(cmd.String())
 		log.Error().Msgf("output: %s", out.String())
-		SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		hardErr = err
 		return nil
 	}
 
 	// init secret scan
-	SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_INPROGRESS, ""), rh)
+	scanCtx.ScanStatusChan <- true
 
-	scanResult, err := secretScan.ExtractAndScanFromTar(dir, imageName)
-	// secretScan.ExtractAndScanFromTar(tarPath,)
+	scanResult, err := secretScan.ExtractAndScanFromTar(dir, imageName, scanCtx)
 	if err != nil {
-		SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
 		log.Error().Msg(err.Error())
+		hardErr = err
 		return nil
 	}
 
@@ -139,10 +187,6 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 				Headers: rh,
 			}
 		}
-	}
-	// scan status
-	if err := SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_SUCCESS, ""), rh); err != nil {
-		log.Error().Msgf("error sending scan status: %s", err.Error())
 	}
 
 	return nil

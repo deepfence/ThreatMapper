@@ -200,8 +200,10 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	worker.AddNoPublisherHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry)
 
 	worker.AddNoPublisherHandler(utils.SecretScanTask, secretscan.NewSecretScanner(ingestC).StartSecretScan)
+	worker.AddNoPublisherHandler(utils.StopSecretScanTask, secretscan.NewSecretScanner(ingestC).StopSecretScan)
 
 	worker.AddNoPublisherHandler(utils.MalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StartMalwareScan)
+	worker.AddNoPublisherHandler(utils.StopMalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StopMalwareScan)
 
 	worker.AddNoPublisherHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
 

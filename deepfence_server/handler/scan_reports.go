@@ -427,7 +427,7 @@ func (h *Handler) StopVulnerabilityScanHandler(w http.ResponseWriter, r *http.Re
 }
 
 func (h *Handler) StopSecretScanHandler(w http.ResponseWriter, r *http.Request) {
-	stopScan(w, r, ctl.StartSecretScan)
+	h.stopSecretScan(w, r)
 }
 
 func (h *Handler) StopComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -435,7 +435,7 @@ func (h *Handler) StopComplianceScanHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *Handler) StopMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
-	stopScan(w, r, ctl.StartMalwareScan)
+	h.stopMalwareScan(w, r)
 }
 
 func (h *Handler) IngestCloudResourcesReportHandler(w http.ResponseWriter, r *http.Request) {
@@ -680,7 +680,72 @@ func ingest_scan_report_kafka[T any](
 }
 
 func stopScan(w http.ResponseWriter, r *http.Request, action ctl.ActionID) {
+
+}
+
+func (h *Handler) stopSecretScan(w http.ResponseWriter, r *http.Request) {
 	//	Stopping scan is on best-effort basis, not guaranteed
+
+	defer r.Body.Close()
+	var req model.StopScanRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("Failed to DecodeJSON: %v", err)
+		respondError(err, w)
+		return
+	}
+
+	err = h.Validator.Struct(req)
+	if err != nil {
+		log.Error().Msgf("Failed to validate the request: %v", err)
+		respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	log.Info().Msgf("StopSecretScan request, type: %s, scanid: %s", req.ScanType, req.ScanID)
+
+	err = reporters_scan.StopScan(r.Context(), req.ScanType, req.ScanID)
+	if err != nil {
+		log.Error().Msgf("Error in StopScan: %v", err)
+		respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	h.AuditUserActivity(r, req.ScanType, ACTION_STOP, req, true)
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) stopMalwareScan(w http.ResponseWriter, r *http.Request) {
+	//	Stopping scan is on best-effort basis, not guaranteed
+	defer r.Body.Close()
+	var req model.StopScanRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("StopMalwareScan Failed to DecodeJSON: %v", err)
+		respondError(err, w)
+		return
+	}
+
+	err = h.Validator.Struct(req)
+	if err != nil {
+		log.Error().Msgf("Failed to validate the request: %v", err)
+		respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	log.Info().Msgf("StopMalwareScan request, type: %s, scanid: %s", req.ScanType, req.ScanID)
+
+	err = reporters_scan.StopScan(r.Context(), req.ScanType, req.ScanID)
+	if err != nil {
+		log.Error().Msgf("Error in StopScan: %v", err)
+		respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	h.AuditUserActivity(r, req.ScanType, ACTION_STOP, req, true)
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) StatusVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {

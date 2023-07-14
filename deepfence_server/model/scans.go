@@ -138,6 +138,11 @@ type BulkDeleteScansRequest struct {
 	Filters  reporters.FieldsFilters `json:"filters" required:"true"`
 }
 
+type StopScanRequest struct {
+	ScanID   string `json:"scan_id" validate:"required" required:"true"`
+	ScanType string `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
+}
+
 type ScanActionRequest struct {
 	ScanID   string `path:"scan_id" validate:"required" required:"true"`
 	ScanType string `path:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`

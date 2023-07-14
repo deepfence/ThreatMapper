@@ -14,20 +14,35 @@ import (
 )
 
 var (
+	MaxStops    = 5
 	MissingNode = errors.New("Missing node_id")
 )
 
-func GetAgentActions(ctx context.Context, nodeId string, work_num_to_extract int) ([]controls.Action, []error) {
+func GetAgentActions(ctx context.Context, nodeId string,
+	work_num_to_extract int) ([]controls.Action, []error) {
+
 	// Append more actions here
 	actions := []controls.Action{}
 
-	if work_num_to_extract == 0 {
+	// early return to avoid unnecessary checks
+	if err := CheckNodeExist(ctx, nodeId); err != nil {
+		log.Info().Msgf("Missing node: %s.... Skipping all actions", nodeId)
+		actions = []controls.Action{}
 		return actions, []error{}
 	}
 
-	// early return to avoid unnecessary checks
-	if err := CheckNodeExist(ctx, nodeId); err != nil {
-		return actions, []error{}
+	//Extract the stop scans requests
+	stop_actions, stop_actions_err := ExtractStoppingAgentScans(ctx, nodeId, MaxStops)
+	if stop_actions_err == nil {
+		actions = append(actions, stop_actions...)
+	}
+
+	if work_num_to_extract == 0 {
+		if stop_actions_err != nil {
+			return actions, []error{stop_actions_err}
+		} else {
+			return actions, []error{}
+		}
 	}
 
 	upgrade_actions, upgrade_err := ExtractPendingAgentUpgrade(ctx, nodeId, work_num_to_extract)
@@ -242,7 +257,9 @@ func hasPendingAgentScans(client neo4j.Driver, nodeId string, max_work int) (boo
 	return len(records) != 0, err
 }
 
-func ExtractStartingAgentScans(ctx context.Context, nodeId string, max_work int) ([]controls.Action, error) {
+func ExtractStartingAgentScans(ctx context.Context, nodeId string,
+	max_work int) ([]controls.Action, error) {
+
 	res := []controls.Action{}
 	if len(nodeId) == 0 {
 		return res, MissingNode
@@ -297,6 +314,80 @@ func ExtractStartingAgentScans(ctx context.Context, nodeId string, max_work int)
 		err := json.Unmarshal([]byte(record.Values[0].(string)), &action)
 		if err != nil {
 			log.Error().Msgf("Unmarshal of action failed: %v", err)
+			continue
+		}
+		res = append(res, action)
+	}
+
+	if len(res) != 0 {
+		err = tx.Commit()
+	}
+
+	return res, err
+
+}
+
+func ExtractStoppingAgentScans(ctx context.Context, nodeId string,
+	max_work int) ([]controls.Action, error) {
+
+	res := []controls.Action{}
+	if len(nodeId) == 0 {
+		return res, MissingNode
+	}
+
+	client, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session, err := client.Session(neo4j.AccessModeWrite)
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
+		WHERE s.status = '`+utils.SCAN_STATUS_CANCEL_PENDING+`'
+		WITH s LIMIT $max_work
+        SET s.status = '`+utils.SCAN_STATUS_CANCELLING+`', s.updated_at = TIMESTAMP()
+		WITH s
+		RETURN s.trigger_action`,
+		map[string]interface{}{"id": nodeId, "max_work": max_work})
+
+	if err != nil {
+		return res, err
+	}
+
+	records, err := r.Collect()
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		var action controls.Action
+		if record.Values[0] == nil {
+			log.Error().Msgf("Invalid neo4j trigger_action result, skipping")
+			continue
+		}
+		err := json.Unmarshal([]byte(record.Values[0].(string)), &action)
+		if err != nil {
+			log.Error().Msgf("ExtractStoppingAgentScans Unmarshal of action failed: %v", err)
+			continue
+		}
+		switch action.ID {
+		case controls.StartSecretScan:
+			action.ID = controls.StopSecretScan
+		case controls.StartMalwareScan:
+			action.ID = controls.StopMalwareScan
+		default:
+			log.Info().Msgf("Stop functionality not implemented for action: %d", action.ID)
 			continue
 		}
 		res = append(res, action)

@@ -16,8 +16,10 @@ import (
 var controls map[ctl.ActionID]func(namespace string, req []byte) error
 var controls_guard sync.RWMutex
 
-func RegisterControl[T ctl.StartVulnerabilityScanRequest | ctl.StartSecretScanRequest | ctl.StartComplianceScanRequest |
-	ctl.StartMalwareScanRequest | ctl.StartAgentUpgradeRequest](id ctl.ActionID, callback func(namespace string, req T) error) error {
+func RegisterControl[T ctl.StartVulnerabilityScanRequest | ctl.StartSecretScanRequest |
+	ctl.StartComplianceScanRequest | ctl.StartMalwareScanRequest |
+	ctl.StartAgentUpgradeRequest | ctl.StopSecretScanRequest |
+	ctl.StopMalwareScanRequest](id ctl.ActionID, callback func(namespace string, req T) error) error {
 
 	controls_guard.Lock()
 	defer controls_guard.Unlock()
@@ -90,6 +92,25 @@ func ConsoleActionSetup(pub *kafka.Publisher) error {
 		return err
 	}
 
+	err = RegisterControl(ctl.StopSecretScan,
+		func(namespace string, req ctl.StopSecretScanRequest) error {
+			metadata := map[string]string{directory.NamespaceKey: namespace}
+			log.Info().Msgf("StopSecretScan payload: %+v", req.BinArgs)
+			data, err := json.Marshal(req.BinArgs)
+			if err != nil {
+				log.Error().Msg(err.Error())
+				return err
+			}
+			if err := utils.PublishNewJob(pub, metadata, sdkUtils.StopSecretScanTask, data); err != nil {
+				log.Error().Msg(err.Error())
+				return err
+			}
+			return nil
+		})
+	if err != nil {
+		return err
+	}
+
 	// for malware scan
 	err = RegisterControl(ctl.StartMalwareScan,
 		func(namespace string, req ctl.StartMalwareScanRequest) error {
@@ -109,5 +130,25 @@ func ConsoleActionSetup(pub *kafka.Publisher) error {
 	if err != nil {
 		return err
 	}
+
+	err = RegisterControl(ctl.StopMalwareScan,
+		func(namespace string, req ctl.StopMalwareScanRequest) error {
+			metadata := map[string]string{directory.NamespaceKey: namespace}
+			log.Info().Msgf("StopMalwareScan payload: %+v", req.BinArgs)
+			data, err := json.Marshal(req.BinArgs)
+			if err != nil {
+				log.Error().Msg(err.Error())
+				return err
+			}
+			if err := utils.PublishNewJob(pub, metadata, sdkUtils.StopMalwareScanTask, data); err != nil {
+				log.Error().Msg(err.Error())
+				return err
+			}
+			return nil
+		})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

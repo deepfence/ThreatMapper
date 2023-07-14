@@ -50,7 +50,7 @@ var imagesSubCmd = &cobra.Command{
 		req := http.Client().RegistryAPI.ListImageStubs(context.Background())
 		req = req.ModelRegistryImageStubsReq(
 			deepfence_server_client.ModelRegistryImageStubsReq{
-				ImageFilter: filters,
+				ImageFilter: deepfence_server_client.ReportersFieldsFilters{ContainsFilter: filters},
 				RegistryId:  registry_id,
 				Window:      deepfence_server_client.ModelFetchWindow{},
 			},
