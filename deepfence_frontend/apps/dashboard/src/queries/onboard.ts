@@ -7,8 +7,8 @@ import {
   getComplianceApiClient,
   getMalwareApiClient,
   getRegistriesApiClient,
+  getSearchApiClient,
   getSecretApiClient,
-  getTopologyApiClient,
   getVulnerabilityApiClient,
 } from '@/api/api';
 import {
@@ -102,50 +102,89 @@ export const onboardQueries = createQueryKeys('onboard', {
             },
           },
         });
-
-        const getHostsTopologyGraphApi = apiWrapper({
-          fn: getTopologyApiClient().getHostsTopologyGraph,
-        });
-        const hostsResultsPromise = getHostsTopologyGraphApi({
-          graphTopologyFilters: {
-            skip_connections: true,
-            cloud_filter: [],
-            field_filters: {
-              contains_filter: { filter_in: null },
-              order_filter: { order_fields: [] },
-              match_filter: {
-                filter_in: {},
-              },
-              compare_filter: null,
+        const gcpResultsPromise = listCloudNodeAccountApi({
+          modelCloudNodeAccountsListReq: {
+            cloud_provider: 'gcp',
+            window: {
+              offset: 0,
+              size: 1000000,
             },
-            host_filter: [],
-            kubernetes_filter: [],
-            pod_filter: [],
-            region_filter: [],
-            container_filter: [],
+          },
+        });
+        const azureResultsPromise = listCloudNodeAccountApi({
+          modelCloudNodeAccountsListReq: {
+            cloud_provider: 'azure',
+            window: {
+              offset: 0,
+              size: 1000000,
+            },
+          },
+        });
+        const awsOrgResultsPromise = listCloudNodeAccountApi({
+          modelCloudNodeAccountsListReq: {
+            cloud_provider: 'aws_org',
+            window: {
+              offset: 0,
+              size: 1000000,
+            },
+          },
+        });
+        const gcpOrgResultsPromise = listCloudNodeAccountApi({
+          modelCloudNodeAccountsListReq: {
+            cloud_provider: 'gcp_org',
+            window: {
+              offset: 0,
+              size: 1000000,
+            },
           },
         });
 
-        const getKubernetesTopologyGraphApi = apiWrapper({
-          fn: getTopologyApiClient().getKubernetesTopologyGraph,
+        const searchHostsApi = apiWrapper({
+          fn: getSearchApiClient().searchHosts,
         });
-        const kubernetesResultsPromise = getKubernetesTopologyGraphApi({
-          graphTopologyFilters: {
-            skip_connections: true,
-            cloud_filter: [],
-            field_filters: {
-              contains_filter: { filter_in: null },
-              order_filter: { order_fields: [] },
-              match_filter: {
-                filter_in: {},
+        const hostsResultsPromise = searchHostsApi({
+          searchSearchNodeReq: {
+            node_filter: {
+              filters: {
+                compare_filter: null,
+                contains_filter: {
+                  filter_in: { pseudo: [false], active: [true], agent_running: [true] },
+                },
+                match_filter: { filter_in: {} },
+                order_filter: { order_fields: [] },
               },
-              compare_filter: null,
+              in_field_filter: null,
+              window: { offset: 0, size: 0 },
             },
-            host_filter: [],
-            kubernetes_filter: [],
-            pod_filter: [],
-            region_filter: [],
-            container_filter: [],
+            window: {
+              offset: 0,
+              size: Number.MAX_SAFE_INTEGER,
+            },
+          },
+        });
+
+        const searchKubernetesClustersApi = apiWrapper({
+          fn: getSearchApiClient().searchKubernetesClusters,
+        });
+        const kubernetesResultsPromise = searchKubernetesClustersApi({
+          searchSearchNodeReq: {
+            node_filter: {
+              filters: {
+                compare_filter: null,
+                contains_filter: { filter_in: { active: [true] } },
+                match_filter: { filter_in: {} },
+                order_filter: { order_fields: null },
+              },
+              in_field_filter: null,
+              window: {
+                offset: 0,
+                size: 0,
+              },
+            },
+            window: {
+              offset: 0,
+              size: Number.MAX_SAFE_INTEGER,
+            },
           },
         });
 
@@ -154,19 +193,35 @@ export const onboardQueries = createQueryKeys('onboard', {
         });
         const registriesResultsPromise = listRegistriesApi();
 
-        const [awsResults, hostsResults, kubernetesResults, registriesResults] =
-          await Promise.all([
-            awsResultsPromise,
-            hostsResultsPromise,
-            kubernetesResultsPromise,
-            registriesResultsPromise,
-          ]);
+        const [
+          awsResults,
+          hostsResults,
+          kubernetesResults,
+          registriesResults,
+          gcpResults,
+          azureResults,
+          awsOrgResults,
+          gcpOrgResults,
+        ] = await Promise.all([
+          awsResultsPromise,
+          hostsResultsPromise,
+          kubernetesResultsPromise,
+          registriesResultsPromise,
+          gcpResultsPromise,
+          azureResultsPromise,
+          awsOrgResultsPromise,
+          gcpOrgResultsPromise,
+        ]);
 
         if (
           !awsResults.ok ||
           !hostsResults.ok ||
           !kubernetesResults.ok ||
-          !registriesResults.ok
+          !registriesResults.ok ||
+          !gcpResults.ok ||
+          !azureResults.ok ||
+          !awsOrgResults.ok ||
+          !gcpOrgResults.ok
         ) {
           // TODO(manan) handle error cases
           return [];
@@ -186,7 +241,29 @@ export const onboardQueries = createQueryKeys('onboard', {
                 urlId: result.node_id ?? '',
                 accountType: 'AWS',
                 urlType: 'aws',
-                connectionMethod: 'Terraform',
+                connectionMethod: 'Cloud connector',
+                accountId: result.node_name ?? '-',
+                active: !!result.active,
+              })) ?? []
+            ).sort((a, b) => {
+              return (a.accountId ?? '').localeCompare(b.accountId ?? '');
+            }),
+          });
+        }
+        if (awsOrgResults.value.total) {
+          data.push({
+            id: 'aws_org',
+            urlId: 'aws_org',
+            urlType: 'aws_org',
+            accountType: 'AWS Organizations',
+            count: awsOrgResults.value.total,
+            connections: (
+              awsOrgResults.value.cloud_node_accounts_info?.map((result) => ({
+                id: `aws_org-${result.node_id}`,
+                urlId: result.node_id ?? '',
+                accountType: 'AWS Organizations',
+                urlType: 'aws_org',
+                connectionMethod: 'Cloud connector',
                 accountId: result.node_name ?? '-',
                 active: !!result.active,
               })) ?? []
@@ -196,61 +273,109 @@ export const onboardQueries = createQueryKeys('onboard', {
           });
         }
 
-        if (hostsResults.value.nodes) {
-          const hosts = Object.keys(hostsResults.value.nodes)
-            .map((key) => hostsResults.value.nodes[key])
-            .filter((node) => {
-              return node.type === 'host';
-            })
-            .sort((a, b) => {
-              return (a.label ?? a.id ?? '').localeCompare(b.label ?? b.id ?? '');
-            });
-          if (hosts.length) {
-            data.push({
-              id: 'hosts',
-              urlId: 'hosts',
-              urlType: 'host',
-              accountType: 'Linux Hosts',
-              count: hosts.length,
-              connections: hosts.map((host) => ({
-                id: `hosts-${host.id}`,
-                urlId: host.id ?? '',
-                urlType: 'host',
-                accountType: 'Host',
-                connectionMethod: 'Agent',
-                accountId: host.label ?? host.id ?? '-',
-                active: true,
-              })),
-            });
-          }
+        if (gcpResults.value.total) {
+          data.push({
+            id: 'gcp',
+            urlId: 'gcp',
+            urlType: 'gcp',
+            accountType: 'GCP',
+            count: gcpResults.value.total,
+            connections: (
+              gcpResults.value.cloud_node_accounts_info?.map((result) => ({
+                id: `gcp-${result.node_id}`,
+                urlId: result.node_id ?? '',
+                accountType: 'GCP',
+                urlType: 'gcp',
+                connectionMethod: 'Cloud connector',
+                accountId: result.node_name ?? '-',
+                active: !!result.active,
+              })) ?? []
+            ).sort((a, b) => {
+              return (a.accountId ?? '').localeCompare(b.accountId ?? '');
+            }),
+          });
         }
-        if (kubernetesResults.value.nodes) {
-          const clusters = Object.keys(kubernetesResults.value.nodes)
-            .map((key) => kubernetesResults.value.nodes[key])
-            .filter((node) => {
-              return node.type === 'kubernetes_cluster';
-            })
-            .sort((a, b) => {
-              return (a.label ?? a.id ?? '').localeCompare(b.label ?? b.id ?? '');
-            });
-          if (clusters.length) {
-            data.push({
-              id: 'kubernetesCluster',
-              urlId: 'kubernetes_cluster',
+        if (gcpOrgResults.value.total) {
+          data.push({
+            id: 'gcp_org',
+            urlId: 'gcp_org',
+            urlType: 'gcp_org',
+            accountType: 'GCP Organizations',
+            count: gcpOrgResults.value.total,
+            connections: (
+              gcpOrgResults.value.cloud_node_accounts_info?.map((result) => ({
+                id: `gcp_org-${result.node_id}`,
+                urlId: result.node_id ?? '',
+                accountType: 'GCP Organizations',
+                urlType: 'gcp_org',
+                connectionMethod: 'Cloud connector',
+                accountId: result.node_name ?? '-',
+                active: !!result.active,
+              })) ?? []
+            ).sort((a, b) => {
+              return (a.accountId ?? '').localeCompare(b.accountId ?? '');
+            }),
+          });
+        }
+
+        if (azureResults.value.total) {
+          data.push({
+            id: 'azure',
+            urlId: 'azure',
+            urlType: 'azure',
+            accountType: 'Azure',
+            count: azureResults.value.total,
+            connections: (
+              azureResults.value.cloud_node_accounts_info?.map((result) => ({
+                id: `gcp-${result.node_id}`,
+                urlId: result.node_id ?? '',
+                accountType: 'Azure',
+                urlType: 'azure',
+                connectionMethod: 'Cloud connector',
+                accountId: result.node_name ?? '-',
+                active: !!result.active,
+              })) ?? []
+            ).sort((a, b) => {
+              return (a.accountId ?? '').localeCompare(b.accountId ?? '');
+            }),
+          });
+        }
+
+        if (hostsResults.value.length) {
+          data.push({
+            id: 'hosts',
+            urlId: 'hosts',
+            urlType: 'host',
+            accountType: 'Linux Hosts',
+            count: hostsResults.value.length,
+            connections: hostsResults.value.map((host) => ({
+              id: `hosts-${host.node_id}`,
+              urlId: host.node_id ?? '',
+              urlType: 'host',
+              accountType: 'Host',
+              connectionMethod: 'Agent',
+              accountId: host.node_name ?? host.node_id ?? '-',
+              active: true,
+            })),
+          });
+        }
+        if (kubernetesResults.value.length) {
+          data.push({
+            id: 'kubernetesCluster',
+            urlId: 'kubernetes_cluster',
+            urlType: 'kubernetes_cluster',
+            accountType: 'Kubernetes Clusters',
+            count: kubernetesResults.value.length,
+            connections: kubernetesResults.value.map((cluster) => ({
+              id: `kubernetesCluster-${cluster.node_id}`,
+              urlId: cluster.node_id ?? '',
               urlType: 'kubernetes_cluster',
               accountType: 'Kubernetes Clusters',
-              count: clusters.length,
-              connections: clusters.map((cluster) => ({
-                id: `kubernetesCluster-${cluster.id}`,
-                urlId: cluster.id ?? '',
-                urlType: 'kubernetes_cluster',
-                accountType: 'Kubernetes Clusters',
-                connectionMethod: 'Agent',
-                accountId: cluster.label ?? cluster.id ?? '-',
-                active: true,
-              })),
-            });
-          }
+              connectionMethod: 'Agent',
+              accountId: cluster.node_name ?? cluster.node_id ?? '-',
+              active: true,
+            })),
+          });
         }
 
         if (registriesResults.value.length) {

@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { useIsFetching } from '@tanstack/react-query';
 import { Suspense, useMemo, useRef, useState } from 'react';
-import { useRevalidator } from 'react-router-dom';
 import { useInterval } from 'react-use';
 import {
   Button,
@@ -125,7 +125,7 @@ function MyConnectorsTable() {
       columnHelper.accessor('accountType', {
         cell: (info) => {
           if (!info.row.original.count) {
-            return info.getValue();
+            return <div className="pl-4">{info.getValue()}</div>;
           }
           let nodeText = '';
           switch (info.row.original.id) {
@@ -144,12 +144,12 @@ function MyConnectorsTable() {
             default:
               nodeText = 'items';
           }
-          const selectedNodesOfSameType = findSelectedNodesOfType(
+          const selectedActiveNodesOfSameType = findSelectedActiveNodesOfType(
             rowSelectionState,
             info.row.original,
           );
           return (
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-center">
               <div className="font-semibold">
                 {info.getValue()} ({info.row.original.count ?? 0} {nodeText})
               </div>
@@ -166,25 +166,25 @@ function MyConnectorsTable() {
                   unstyled
                 >
                   <Button variant="flat" size="md">
-                    Configure Scan on all {nodeText}
+                    Configure Scan on all active {nodeText}
                   </Button>
                 </DFLink>
               ) : null}
               {!rowSelectionState[info.row.original.id] &&
-              selectedNodesOfSameType.length ? (
+              selectedActiveNodesOfSameType.length ? (
                 <DFLink
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
                     navigate('/onboard/scan/choose', {
-                      state: selectedNodesOfSameType,
+                      state: selectedActiveNodesOfSameType,
                     });
                   }}
                   className="flex items-center"
                   unstyled
                 >
                   <Button variant="flat" size="md">
-                    Configure Scan on {selectedNodesOfSameType.length} {nodeText}
+                    Configure Scan on {selectedActiveNodesOfSameType.length} {nodeText}
                   </Button>
                 </DFLink>
               ) : null}
@@ -226,6 +226,9 @@ function MyConnectorsTable() {
         maxSize: 200,
         id: 'actions',
         cell: (info) => {
+          if (!info.row.original.active) {
+            return '';
+          }
           return (
             <DFLink
               href="#"
@@ -252,6 +255,7 @@ function MyConnectorsTable() {
   if (!data?.length) {
     return <NoConnectors />;
   }
+
   return (
     <>
       <RefreshButton />
@@ -299,21 +303,21 @@ function MyConnectorsTable() {
 }
 
 function RefreshButton() {
-  const { revalidate, state } = useRevalidator();
+  const numFetching = useIsFetching();
 
   return (
     <div className="flex gap-2 mb-2 items-center justify-end">
       <Button
         size="sm"
         variant="flat"
-        loading={state === 'loading'}
+        loading={!!numFetching}
         startIcon={
           <span className="w-4 h-4">
             <RefreshIcon />
           </span>
         }
         onClick={() => {
-          revalidate();
+          invalidateAllQueries();
         }}
       >
         Refresh
@@ -326,13 +330,13 @@ export const module = {
   element: <MyConnectors />,
 };
 
-function findSelectedNodesOfType(
+function findSelectedActiveNodesOfType(
   selectionState: RowSelectionState,
   data: OnboardConnectionNode,
 ): OnboardConnectionNode[] {
   const selectedNodes: OnboardConnectionNode[] = [];
   data.connections?.forEach((node) => {
-    if (node.id in selectionState) {
+    if (node.id in selectionState && node.active) {
       selectedNodes.push(node);
     }
   });

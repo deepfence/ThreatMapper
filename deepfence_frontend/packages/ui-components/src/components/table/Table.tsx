@@ -474,7 +474,7 @@ function TableBody<TData>({
                 );
               })}
             </tr>
-            {row.getIsExpanded() && (
+            {row.getCanExpand() && row.getIsExpanded() && (
               <tr>
                 <td
                   colSpan={row.getVisibleCells().length}
