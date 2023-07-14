@@ -221,11 +221,10 @@ const action = async ({
           success: false,
         };
       }
-      throw new Error('Error deleting scan');
     }
   }
-  invalidateAllQueries();
 
+  invalidateAllQueries();
   if (actionType === ActionEnumType.DELETE || actionType === ActionEnumType.DELETE_SCAN) {
     return {
       action: actionType,

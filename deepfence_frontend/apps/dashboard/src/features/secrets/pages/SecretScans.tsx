@@ -49,7 +49,7 @@ import { SEVERITY_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { queries } from '@/queries';
+import { invalidateAllQueries, queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -120,12 +120,11 @@ const action = async ({
         };
       }
     }
-
-    return {
-      success: true,
-    };
   }
-  return null;
+  invalidateAllQueries();
+  return {
+    success: true,
+  };
 };
 
 const DeleteConfirmationModal = ({

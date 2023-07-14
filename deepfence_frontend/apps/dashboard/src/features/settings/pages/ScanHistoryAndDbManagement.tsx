@@ -19,6 +19,7 @@ import {
 } from '@/api/generated';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { invalidateAllQueries } from '@/queries';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
@@ -94,9 +95,9 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           message,
         };
       }
-      throw deleteScanHistoryResponse.error;
     }
 
+    invalidateAllQueries();
     return {
       deleteSuccess: true,
     };
@@ -127,8 +128,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           message,
         };
       }
-      throw uploadApiResponse.error;
     }
+    invalidateAllQueries();
     return {
       uploadSuccess: true,
     };

@@ -93,7 +93,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     if (!id) {
       return {
         deleteSuccess: false,
-        message: 'An id is required to delete an integration',
+        message: 'Id is required to delete an integration',
       };
     }
     const deleteReportApi = apiWrapper({

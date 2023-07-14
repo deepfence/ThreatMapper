@@ -144,13 +144,11 @@ const action = async ({
         };
       }
     }
-
-    invalidateAllQueries();
-    return {
-      success: true,
-    };
   }
-  return null;
+  invalidateAllQueries();
+  return {
+    success: true,
+  };
 };
 
 const usePostureAccounts = () => {

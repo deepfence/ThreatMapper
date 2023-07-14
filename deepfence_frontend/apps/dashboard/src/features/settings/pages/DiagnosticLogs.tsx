@@ -98,7 +98,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
         const message = await get403Message(logsResponse.error);
         return message;
       }
-      throw logsResponse.error;
     }
   } else if (actionType === ACTION_TYPE.CONSOLE_LOGS) {
     const logsApi = apiWrapper({
@@ -116,11 +115,10 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
         const message = await get403Message(logsResponse.error);
         return message;
       }
-      throw logsResponse.error;
     }
   }
 
-  toast.success('You have successfully generated the logs');
+  toast.success('Logs successfully generated');
   invalidateAllQueries();
   return null;
 };

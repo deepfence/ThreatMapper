@@ -121,8 +121,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
           message,
         };
       }
-      throw deleteResponse.error;
     }
+    invalidateAllQueries();
   } else if (_actionType === ActionEnumType.CHANGE_PASSWORD) {
     // add console_url which is the origin of request
     formData.append('consoleUrl', window.location.origin);
@@ -162,7 +162,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
           message,
         };
       }
-      throw updateResponse.error;
     }
   } else if (_actionType === ActionEnumType.INVITE_USER) {
     const body = Object.fromEntries(formData);
@@ -198,7 +197,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       }
       throw inviteResponse.error;
     }
-
+    invalidateAllQueries();
     if (body.intent == ModelInviteUserRequestActionEnum.GetInviteLink) {
       inviteResponse.value.invite_url &&
         navigator.clipboard.writeText(inviteResponse.value.invite_url);
@@ -252,8 +251,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
           message,
         };
       }
-      throw updateResponse.error;
     }
+    invalidateAllQueries();
   } else if (_actionType === ActionEnumType.RESET_API_KEY) {
     const resetApiTokens = apiWrapper({
       fn: getUserApiClient().resetApiTokens,

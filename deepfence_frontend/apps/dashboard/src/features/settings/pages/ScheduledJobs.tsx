@@ -56,10 +56,9 @@ export const action = async ({
         message,
       };
     }
-    throw updateResponse.error;
   }
 
-  toast.success('Scheduled job status updated sucessfully');
+  toast.success('Scheduled job status sucessfully updated');
   invalidateAllQueries();
   return {
     success: true,

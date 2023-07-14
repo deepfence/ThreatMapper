@@ -86,7 +86,6 @@ export const action = async ({
           message: deleteResponse.error.message,
         };
       }
-      throw deleteResponse.error;
     }
   } else if (_actionType === ActionEnumType.ADD_CONFIGURATION) {
     const body = Object.fromEntries(formData);
@@ -118,7 +117,6 @@ export const action = async ({
           message: addResponse.error.message,
         };
       }
-      throw addResponse.error;
     }
   }
   invalidateAllQueries();

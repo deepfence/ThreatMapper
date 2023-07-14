@@ -215,7 +215,6 @@ const action = async ({
           message,
         };
       }
-      throw new Error('Error deleting scan');
     }
   }
 
