@@ -94,11 +94,17 @@ export const ThreatGraphComponent = ({
     <div className="h-full w-full relative select-none" ref={measureRef}>
       <div className="absolute inset-0" ref={setContainer} />
       {isGraphEmpty(data) ? (
-        <div className="absolute inset-0 flex gap-2 flex-col items-center justify-center p-6 bg-white dark:bg-gray-800">
+        <div
+          className="absolute inset-0 flex gap-2 flex-col items-center justify-center p-6"
+          style={{
+            background:
+              'radial-gradient(48.55% 48.55% at 50.04% 51.45%, #16253B 0%, #0B121E 100%)',
+          }}
+        >
           <div className="w-8 h-8 text-blue-600 dark:text-status-info">
             <ErrorStandardSolidIcon />
           </div>
-          <div className="text-gray-600 dark:text-gray-400 text-lg text-center">
+          <div className="text-gray-600 dark:text-text-text-and-icon text-lg text-center">
             No attack paths found, please run some scans to discover attack paths.
           </div>
         </div>

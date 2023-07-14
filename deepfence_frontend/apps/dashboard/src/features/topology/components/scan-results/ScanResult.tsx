@@ -209,6 +209,9 @@ const ScanResultComponent = ({
                   </div>
                 );
               })}
+              {!Object.keys(scanSummary.counts).length ? (
+                <div className="dark:text-text-text-and-icon pr-3">No issues found</div>
+              ) : null}
             </div>
           </div>
         )}

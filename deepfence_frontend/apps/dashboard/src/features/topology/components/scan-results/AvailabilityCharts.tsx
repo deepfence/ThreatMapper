@@ -2,6 +2,7 @@ import { EChartsOption } from 'echarts';
 import { preset } from 'tailwind-preset';
 import { Card } from 'ui-components';
 
+import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { ReactECharts } from '@/components/ReactEcharts';
 import { formatMemory, formatPercentage } from '@/utils/number';
 
@@ -115,7 +116,19 @@ export const AvailabilityCharts = ({
       <div className="grid grid-cols-2">
         <div className="flex flex-col justify-center">
           <div className="h-[220px]">
-            <ReactECharts theme="dark" option={getChartOption(cpuUsage, cpuMax, 'cpu')} />
+            {cpuMax ? (
+              <ReactECharts
+                theme="dark"
+                option={getChartOption(cpuUsage, cpuMax, 'cpu')}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full w-full gap-2">
+                <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">
+                  <ErrorStandardLineIcon />
+                </div>
+                <p className="dark:text-text-text-and-icon text-h3">Not available</p>
+              </div>
+            )}
           </div>
           <div className="text-p6 dark:text-text-input-value text-center mb-4 -mt-10">
             CPU
@@ -123,10 +136,19 @@ export const AvailabilityCharts = ({
         </div>
         <div className="flex flex-col justify-center">
           <div className="h-[220px]">
-            <ReactECharts
-              theme="dark"
-              option={getChartOption(memoryUsage, memoryMax, 'memory')}
-            />
+            {memoryMax ? (
+              <ReactECharts
+                theme="dark"
+                option={getChartOption(memoryUsage, memoryMax, 'memory')}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full w-full gap-2">
+                <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">
+                  <ErrorStandardLineIcon />
+                </div>
+                <p className="dark:text-text-text-and-icon text-h3">Not available</p>
+              </div>
+            )}
           </div>
           <div className="text-p6 dark:text-text-input-value text-center mb-4 -mt-10">
             Memory
