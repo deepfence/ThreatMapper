@@ -47,13 +47,18 @@ const (
 	ReportCleanUpTask         = "tasks_cleanup_reports"
 	LinkCloudResourceTask     = "link_cloud_resource"
 	LinkNodesTask             = "link_nodes"
+	StopSecretScanTask        = "task_stop_secret_scan"
+	StopMalwareScanTask       = "task_stop_malware_scan"
 )
 
 const (
-	SCAN_STATUS_SUCCESS    = "COMPLETE"
-	SCAN_STATUS_STARTING   = "STARTING"
-	SCAN_STATUS_INPROGRESS = "IN_PROGRESS"
-	SCAN_STATUS_FAILED     = "ERROR"
+	SCAN_STATUS_SUCCESS        = "COMPLETE"
+	SCAN_STATUS_STARTING       = "STARTING"
+	SCAN_STATUS_INPROGRESS     = "IN_PROGRESS"
+	SCAN_STATUS_FAILED         = "ERROR"
+	SCAN_STATUS_CANCEL_PENDING = "CANCEL_PENDING"
+	SCAN_STATUS_CANCELLING     = "CANCELLING"
+	SCAN_STATUS_CANCELLED      = "CANCELLED"
 )
 
 // Neo4j Node Labels

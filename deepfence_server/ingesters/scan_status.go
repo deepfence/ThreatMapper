@@ -91,11 +91,13 @@ func AddNewScan(tx WriteDBTransaction,
 		OPTIONAL MATCH (n:%s)-[:SCANNED]->(m)
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
+		AND not n.status = $cancelled
 		RETURN n.node_id, m.agent_running`, controls.ResourceTypeToNeo4j(node_type), scan_type),
 		map[string]interface{}{
-			"node_id":  node_id,
-			"complete": utils.SCAN_STATUS_SUCCESS,
-			"failed":   utils.SCAN_STATUS_FAILED})
+			"node_id":   node_id,
+			"complete":  utils.SCAN_STATUS_SUCCESS,
+			"failed":    utils.SCAN_STATUS_FAILED,
+			"cancelled": utils.SCAN_STATUS_CANCELLED})
 	if err != nil {
 		return err
 	}

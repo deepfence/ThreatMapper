@@ -59,6 +59,7 @@ func SetAgentControls() {
 	if err != nil {
 		log.Error().Msgf("set controls: %v", err)
 	}
+
 	err = router.RegisterControl(ctl.StartSecretScan,
 		func(req ctl.StartSecretScanRequest) error {
 			return router.StartSecretsScan(req)
@@ -134,4 +135,24 @@ func SetAgentControls() {
 	if err != nil {
 		log.Error().Msgf("set controls: %v", err)
 	}
+
+	//Register the stop scan controls
+	err = router.RegisterControl(ctl.StopSecretScan,
+		func(req ctl.StopSecretScanRequest) error {
+			log.Info().Msg("StopSecretScanRequest called")
+			return router.StopSecretScan(req)
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+
+	err = router.RegisterControl(ctl.StopMalwareScan,
+		func(req ctl.StopMalwareScanRequest) error {
+			log.Info().Msg("StopMalwareScanRequest called")
+			return router.StopMalwareScan(req)
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+
 }

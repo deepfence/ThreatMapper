@@ -486,15 +486,15 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("stopVulnerabilityScan", http.MethodPost, "/deepfence/scan/stop/vulnerability",
 		"Stop Vulnerability Scan", "Stop Vulnerability Scan on agent or registry",
 		http.StatusAccepted, []string{tagVulnerability}, bearerToken, new(VulnerabilityScanTriggerReq), nil)
-	d.AddOperation("stopSecretScan", http.MethodPost, "/deepfence/scan/stop/secret",
-		"Stop Secret Scan", "Stop Secret Scan on agent or registry",
-		http.StatusAccepted, []string{tagSecretScan}, bearerToken, new(SecretScanTriggerReq), nil)
 	d.AddOperation("stopComplianceScan", http.MethodPost, "/deepfence/scan/stop/compliance",
 		"Stop Compliance Scan", "Stop Compliance Scan on agent or registry",
 		http.StatusAccepted, []string{tagCompliance}, bearerToken, new(ComplianceScanTriggerReq), nil)
 	d.AddOperation("stopMalwareScan", http.MethodPost, "/deepfence/scan/stop/malware",
 		"Stop Malware Scan", "Stop Malware Scan on agent or registry",
-		http.StatusAccepted, []string{tagMalwareScan}, bearerToken, new(MalwareScanTriggerReq), nil)
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(StopScanRequest), nil)
+	d.AddOperation("stopSecretScan", http.MethodPost, "/deepfence/scan/stop/secret",
+		"Stop Secret Scan", "Stop Secret Scan on agent or registry",
+		http.StatusOK, []string{tagSecretScan}, bearerToken, new(StopScanRequest), nil)
 
 	// Status scan
 	d.AddOperation("statusVulnerabilityScan", http.MethodPost, "/deepfence/scan/status/vulnerability",

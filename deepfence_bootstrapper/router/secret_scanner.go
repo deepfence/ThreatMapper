@@ -111,3 +111,26 @@ func GetSecretScannerJobCount() int32 {
 	}
 	return jobReport.RunningJobs
 }
+
+func StopSecretScan(req ctl.StopSecretScanRequest) error {
+	fmt.Printf("Stop Secret Scan : %v\n", req)
+	conn, err := grpc.Dial("unix://"+ebpfSocketPath, grpc.WithAuthority("dummy"),
+		grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("error in creating secret scanner client: %s\n", err.Error())
+		return err
+	}
+
+	defer conn.Close()
+	client := pb.NewScannersClient(conn)
+
+	var greq pb.StopScanRequest
+	greq.ScanId = req.BinArgs["scan_id"]
+
+	_, err = client.StopScan(context.Background(), &greq)
+	if err != nil {
+		fmt.Printf("StopSecretScan::error in client.StopScan: %s\n", err.Error())
+	}
+
+	return err
+}
