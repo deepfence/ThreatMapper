@@ -54,7 +54,7 @@ const defaultUnderlineStyle = cn(
   // disabled text color
   'disabled:text-gray-600 dark:disabled:text-gray-600',
 );
-const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[7px] px-3'], {
+const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[5px] px-3'], {
   variants: {
     color: {
       default: [defaultStyle],

@@ -10,10 +10,12 @@ export const CloudComplianceForm = ({
   setProvider: React.Dispatch<React.SetStateAction<string>>;
   provider: string;
 }) => {
-  const [benchmarkType, setBenchmarkType] = useState('');
+  const [benchmarkType, setBenchmarkType] = useState<string[]>([]);
+
   useEffect(() => {
-    setBenchmarkType('');
+    setBenchmarkType([]);
   }, [provider]);
+
   return (
     <>
       <Listbox
@@ -44,21 +46,29 @@ export const CloudComplianceForm = ({
 
       {provider && (
         <>
+          <input
+            type="text"
+            name="selectedSeveritiesOrCheckTypeLength"
+            hidden
+            readOnly
+            value={benchmarkType.length}
+          />
           <Listbox
             variant="underline"
             value={benchmarkType}
-            name="severity[]"
+            name="severityOrCheckType"
             onChange={(value) => {
               setBenchmarkType(value);
             }}
             placeholder="Select check type"
             label="Select Check Type"
-            getDisplayValue={() => {
-              return (
-                getReportBenchmarkList(provider).find((_benchmarkType) => {
-                  return _benchmarkType === benchmarkType;
-                }) ?? ''
-              );
+            getDisplayValue={(value) => {
+              return value && value.length > 0 ? `${value.length} selected` : 'Severity';
+            }}
+            multiple
+            clearAll="Clear"
+            onClearAll={() => {
+              setBenchmarkType([]);
             }}
           >
             {getReportBenchmarkList(provider)?.map((provider) => {

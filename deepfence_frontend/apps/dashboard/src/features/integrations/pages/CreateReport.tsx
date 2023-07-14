@@ -47,7 +47,6 @@ export type ActionData = {
 } | null;
 const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
-  const severity = formData.getAll('severity[]');
   const body = Object.fromEntries(formData);
 
   const duration = body.duration as keyof typeof DURATION;
@@ -72,6 +71,17 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const status = formData.getAll('status[]');
   const accountIds = formData.getAll('accountIds[]');
   const interval = formData.get('interval'); // send this when backend is ready to support
+
+  // severities or benchmark types
+  const selectedSeveritiesOrCheckTypeLength = Number(
+    formData.get('selectedSeveritiesOrCheckTypeLength'),
+  );
+  const severitiesOrCheckTypes = [];
+  if (selectedSeveritiesOrCheckTypeLength > 0) {
+    for (let i = 0; i < selectedSeveritiesOrCheckTypeLength; i++) {
+      severitiesOrCheckTypes.push(formData.get(`severityOrCheckType[${i}]`) as string);
+    }
+  }
 
   // host filter
   const selectedHostLength = Number(formData.get('selectedHostLength'));
@@ -158,6 +168,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const generateReportApi = apiWrapper({
     fn: getReportsApiClient().generateReport,
   });
+
   const r = await generateReportApi({
     modelGenerateReportReq: {
       duration: DURATION[duration],
@@ -166,7 +177,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
         include_dead_nodes: body.deadNodes === 'on',
         node_type: _nodeType,
         scan_type: _resource,
-        severity_or_check_type: (severity as string[]).map((sev) =>
+        severity_or_check_type: (severitiesOrCheckTypes as string[]).map((sev) =>
           sev.toLowerCase(),
         ) as UtilsReportFiltersSeverityOrCheckTypeEnum,
       },
@@ -302,7 +313,7 @@ const ReportForm = () => {
           type={'text'}
           sizing="md"
           name={'interval'}
-          placeholder={'interval'}
+          placeholder={'Interval'}
           helperText="Maximum upto 180 days supported"
         />
 
