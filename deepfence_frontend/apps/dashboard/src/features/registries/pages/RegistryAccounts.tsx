@@ -2,12 +2,7 @@ import { useSuspenseQuery } from '@suspensive/react-query';
 import { useIsFetching } from '@tanstack/react-query';
 import { isEmpty } from 'lodash-es';
 import { Suspense, useCallback, useState } from 'react';
-import {
-  ActionFunctionArgs,
-  FetcherWithComponents,
-  useFetcher,
-  useParams,
-} from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   Breadcrumb,
@@ -51,7 +46,6 @@ import {
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { abbreviateNumber } from '@/utils/number';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export enum ActionEnumType {
   DELETE = 'delete',
@@ -189,15 +183,25 @@ const DeleteConfirmationModal = ({
   id,
   showDialog,
   setShowDialog,
-  fetcher,
-  onTableAction,
 }: {
   showDialog: boolean;
   id: string;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  onTableAction: (id: string[], scanType: RegistryScanType, actionType: string) => void;
-  fetcher: FetcherWithComponents<ActionData>;
 }) => {
+  const fetcher = useFetcher<ActionData>();
+
+  const onDeleteAction = useCallback(
+    (actionType: string) => {
+      const formData = new FormData();
+      formData.append('actionType', actionType);
+      formData.append('nodeIds', id);
+
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [fetcher, id],
+  );
   return (
     <Modal
       size="s"
@@ -229,7 +233,7 @@ const DeleteConfirmationModal = ({
               color="error"
               onClick={(e) => {
                 e.preventDefault();
-                onTableAction([id], '' as RegistryScanType, ActionEnumType.DELETE);
+                onDeleteAction(ActionEnumType.DELETE);
               }}
             >
               Delete
@@ -255,7 +259,6 @@ const DeleteConfirmationModal = ({
 };
 
 const Header = () => {
-  const { navigate } = usePageNavigation();
   const params = useParams() as {
     account: string;
   };
@@ -453,14 +456,6 @@ const RegistryAccountsResults = () => {
         setNodeIdsToScan(id);
         setSelectedScanType(scanType);
         return;
-      } else if (actionType === ActionEnumType.DELETE) {
-        const formData = new FormData();
-        formData.append('actionType', actionType);
-        formData.append('nodeIds', id[0]);
-
-        fetcher.submit(formData, {
-          method: 'post',
-        });
       } else if (actionType === ActionEnumType.SYNC_IMAGES) {
         const formData = new FormData();
         formData.append('actionType', actionType);
@@ -503,8 +498,6 @@ const RegistryAccountsResults = () => {
           showDialog={showDeleteDialog}
           id={idsToDelete}
           setShowDialog={setShowDeleteDialog}
-          fetcher={fetcher}
-          onTableAction={onTableAction}
         />
       )}
       {

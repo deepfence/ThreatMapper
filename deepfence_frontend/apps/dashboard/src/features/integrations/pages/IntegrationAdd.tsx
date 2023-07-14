@@ -365,15 +365,25 @@ const DeleteConfirmationModal = ({
   showDialog,
   row,
   setShowDialog,
-  fetcher,
-  onTableAction,
 }: {
   showDialog: boolean;
   row: ModelIntegrationListResp | undefined;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  fetcher: FetcherWithComponents<ActionData>;
-  onTableAction: (row: ModelIntegrationListResp, actionType: ActionEnumType) => void;
 }) => {
+  const fetcher = useFetcher<ActionData>();
+
+  const onDeleteAction = useCallback(
+    (actionType: string) => {
+      const formData = new FormData();
+      formData.append('_actionType', actionType);
+      formData.append('id', row?.id?.toString() ?? '');
+
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [fetcher, row],
+  );
   return (
     <Modal
       size="s"
@@ -405,7 +415,7 @@ const DeleteConfirmationModal = ({
               color="error"
               onClick={(e) => {
                 e.preventDefault();
-                onTableAction(row!, ActionEnumType.CONFIRM_DELETE);
+                onDeleteAction(ActionEnumType.DELETE);
               }}
             >
               Delete
@@ -446,7 +456,6 @@ const IntegrationAdd = () => {
   };
   const [modelRow, setModelRow] = useState<ModelIntegrationListResp>();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const fetcher = useFetcher<ActionData>();
   const [openModal, setOpenModal] = useState(false);
 
   const params = useParams() as {
@@ -458,14 +467,6 @@ const IntegrationAdd = () => {
       if (actionType === ActionEnumType.DELETE) {
         setModelRow(row);
         setShowDeleteDialog(true);
-      } else if (actionType === ActionEnumType.CONFIRM_DELETE) {
-        const formData = new FormData();
-        formData.append('_actionType', ActionEnumType.DELETE);
-        formData.append('id', row.id?.toString() ?? '');
-
-        fetcher.submit(formData, {
-          method: 'post',
-        });
       }
     },
     [],
@@ -503,13 +504,13 @@ const IntegrationAdd = () => {
           <IntegrationTable onTableAction={onTableAction} />
         </Suspense>
       </div>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        row={modelRow}
-        setShowDialog={setShowDeleteDialog}
-        onTableAction={onTableAction}
-        fetcher={fetcher}
-      />
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          row={modelRow}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
     </div>
   );
 };

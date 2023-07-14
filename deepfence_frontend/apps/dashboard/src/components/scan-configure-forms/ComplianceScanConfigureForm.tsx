@@ -433,7 +433,7 @@ export const ComplianceScanConfigureForm = ({
         <input type="text" name="_nodeType" readOnly hidden value={nodeType} />
 
         {fetcherData?.message && (
-          <p className="text-red-500 text-sm py-3">{fetcherData.message}</p>
+          <p className="dark:text-status-error text-p7 py-3">{fetcherData.message}</p>
         )}
         {showAdvancedOptions && (
           <Suspense

@@ -1,11 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useCallback, useState } from 'react';
-import {
-  ActionFunctionArgs,
-  FetcherWithComponents,
-  Outlet,
-  useFetcher,
-} from 'react-router-dom';
+import { ActionFunctionArgs, Outlet, useFetcher } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbLink, Button, Modal, TableSkeleton } from 'ui-components';
 
 import { getReportsApiClient } from '@/api/api';
@@ -123,20 +118,34 @@ const DeleteConfirmationModal = ({
   showDialog,
   row,
   setShowDialog,
-  fetcher,
-  onTableAction,
 }: {
   showDialog: boolean;
   row: ModelExportReport | undefined;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  fetcher: FetcherWithComponents<ActionData>;
-  onTableAction: (row: ModelExportReport, actionType: ActionEnumType) => void;
 }) => {
+  const fetcher = useFetcher<ActionData>();
+
+  const onDeleteAction = useCallback(
+    (actionType: string) => {
+      const formData = new FormData();
+      formData.append('_actionType', actionType);
+      formData.append('id', row?.report_id ?? '');
+
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [fetcher, row],
+  );
+
   return (
     <Modal
       size="s"
       open={showDialog}
-      onOpenChange={() => setShowDialog(false)}
+      onOpenChange={() => {
+        console.log('is it closed');
+        setShowDialog(false);
+      }}
       title={
         !fetcher.data?.deleteSuccess ? (
           <div className="flex gap-3 items-center dark:text-status-error">
@@ -163,7 +172,7 @@ const DeleteConfirmationModal = ({
               color="error"
               onClick={(e) => {
                 e.preventDefault();
-                onTableAction(row!, ActionEnumType.CONFIRM_DELETE);
+                onDeleteAction(ActionEnumType.DELETE);
               }}
             >
               Delete
@@ -211,20 +220,11 @@ const DownloadReport = () => {
   const { navigate } = usePageNavigation();
   const [modelRow, setModelRow] = useState<ModelExportReport>();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const fetcher = useFetcher<ActionData>();
 
   const onTableAction = useCallback((row: ModelExportReport, actionType: string) => {
     if (actionType === ActionEnumType.DELETE) {
       setModelRow(row);
       setShowDeleteDialog(true);
-    } else if (actionType === ActionEnumType.CONFIRM_DELETE) {
-      const formData = new FormData();
-      formData.append('_actionType', ActionEnumType.DELETE);
-      formData.append('id', row.report_id ?? '');
-
-      fetcher.submit(formData, {
-        method: 'post',
-      });
     } else if (actionType === ActionEnumType.DOWNLOAD) {
       download(row.url ?? '');
     }
@@ -247,13 +247,13 @@ const DownloadReport = () => {
         <Suspense fallback={<TableSkeleton columns={5} rows={10} />}>
           <ReportTable onTableAction={onTableAction} />
         </Suspense>
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          row={modelRow}
-          setShowDialog={setShowDeleteDialog}
-          onTableAction={onTableAction}
-          fetcher={fetcher}
-        />
+        {showDeleteDialog && (
+          <DeleteConfirmationModal
+            showDialog={showDeleteDialog}
+            row={modelRow}
+            setShowDialog={setShowDeleteDialog}
+          />
+        )}
       </div>
       <Outlet />
     </>
