@@ -29,7 +29,8 @@ ENV ENABLE_AUTH=true \
     FETCHER_SERVICE_HOST=deepfence-fetcher \
     FETCHER_SERVICE_PORT=8006 \
     CUSTOMER_UNIQUE_ID="" \
-    KAFKA_REST_PROXY=deepfence-rest-proxy:8082 \
+    KAFKA_REST_PROXY_PORT=8082 \
+    KAFKA_REST_PROXY=deepfence-rest-proxy:$KAFKA_REST_PROXY_PORT \
     FORCE_HTTPS_REDIRECT="true"
 
 COPY --from=minica-builder /go/minica.pem /usr/local/etc/haproxy/deepfence.crt

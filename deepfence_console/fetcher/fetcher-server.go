@@ -1491,6 +1491,11 @@ func main() {
 	httpMux.HandleFunc("/vulnerability-db/listing.json", vulnerabilityDbListing)
 	httpMux.HandleFunc("/df-api/upload-vulnerability-db", handleVulnerabilityFeedTarUpload)
 
+	// Health Check
+	httpMux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("{\"status\":\"Healthy\"}"))
+	})
 	fmt.Println("fetcher server is starting")
 
 	logger := log.New(os.Stdout, "fetcher-server: ", log.LstdFlags)
