@@ -9,7 +9,7 @@ services:
       core: 0
     network_mode: "host"
     pid: "host"
-    restart: "no"
+    restart: "always"
     logging:
       driver: "json-file"
       options:
@@ -20,7 +20,7 @@ services:
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_postgres_ce:${DF_IMG_TAG:-1.5.0}
     ulimits:
       core: 0
-    restart: on-failure
+    restart: always
     networks:
       - deepfence_net
     volumes:
@@ -37,7 +37,7 @@ services:
       INITIALIZE_REDIS: "Y"
     ulimits:
       core: 0
-    restart: on-failure
+    restart: always
     networks:
       - deepfence_net
     depends_on:
@@ -56,7 +56,7 @@ services:
       - deepfence-postgres
     networks:
       - deepfence_net
-    restart: on-failure
+    restart: always
     volumes:
       - deepfence_data:/data:rw
     logging:
@@ -73,7 +73,7 @@ services:
       - deepfence_net
     ports:
       - "127.0.0.1:8004:8004"
-    restart: on-failure
+    restart: always
     command: topology
     logging:
       driver: "json-file"
@@ -89,7 +89,7 @@ services:
       resources:
         limits:
           cpus: ".2"
-    restart: on-failure
+    restart: always
     environment:
     - MGMT_CONSOLE_URL=127.0.0.1
     - MGMT_CONSOLE_PORT=8443
@@ -110,7 +110,7 @@ services:
   deepfence-es:
     container_name: deepfence-es-master
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-1.5.0}
-    restart: on-failure
+    restart: always
     networks:
       - deepfence_net
     volumes:
@@ -260,6 +260,7 @@ services:
       core: 0
     tmpfs:
       - /tmp
+    restart: always
     environment:
       ELASTICSEARCH_SCHEME: "http"
     networks:
@@ -284,7 +285,7 @@ services:
     ulimits:
       core: 0
     entrypoint: /app/code/dockerify/celery/entrypoint.sh
-    restart: on-failure
+    restart: always
     networks:
       - deepfence_net
     depends_on:
@@ -303,7 +304,7 @@ services:
     ulimits:
       core: 0
     entrypoint: /app/code/dockerify/backend/entrypoint.sh
-    restart: on-failure
+    restart: always
     environment:
       - DEBUG=false
       - KAFKA_BROKERS=deepfence-kafka-broker:9092
@@ -328,7 +329,7 @@ services:
       core: 0
     networks:
       - deepfence_net
-    restart: on-failure
+    restart: always
     depends_on:
       - deepfence-topology
     logging:
@@ -417,6 +418,7 @@ services:
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_broker_ce:${DF_IMG_TAG:-1.5.0}
     hostname: deepfence-kafka-broker
     container_name: deepfence-kafka-broker
+    restart: always
     ports:
       - "127.0.0.1:9092:9092"
       - "127.0.0.1:9101:9101"
@@ -437,6 +439,7 @@ services:
       - "127.0.0.1:8082:8082"
     hostname: deepfence-rest-proxy
     container_name: deepfence-rest-proxy
+    restart: always
     environment:
       - KAFKA_REST_BOOTSTRAP_SERVERS=deepfence-kafka-broker:9092
     networks:

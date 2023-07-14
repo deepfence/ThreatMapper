@@ -35,6 +35,11 @@ backendProxy.on('error', err => console.error('Proxy error', err));
 app.all('/api*', backendProxy.web.bind(backendProxy));
 app.all('/ws*', backendProxy.web.bind(backendProxy));
 
+// Set health check url
+app.get('/health', (req, res) => {
+  res.writeHead(200, {'Content-Type': 'application/json'});
+  return res.end('{"status":"Healthy"}');
+})
 /**
  *
  * Production env serves precompiled content from build/
