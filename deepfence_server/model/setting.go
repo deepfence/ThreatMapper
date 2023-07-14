@@ -16,6 +16,8 @@ const (
 	ConsoleURLSettingKey              = "console_url"
 	JwtSecretSettingKey               = "jwt_secret"
 	EmailConfigurationKey             = "email_configuration"
+	EmailSettingSES                   = "amazon_ses"
+	EmailSettingSMTP                  = "smtp"
 	InactiveNodesDeleteScanResultsKey = "inactive_delete_scan_results"
 )
 

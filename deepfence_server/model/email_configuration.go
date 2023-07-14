@@ -11,6 +11,20 @@ import (
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 )
 
+type EmailConfigurationSMTP struct {
+	EmailID  string `json:"email_id" validate:"required,email"`
+	Smtp     string `json:"smtp" validate:"required,min=3,max=128"`
+	Port     string `json:"port" validate:"required,min=1,max=5,number"`
+	Password string `json:"password" validate:"required,min=3,max=128"`
+}
+
+type EmailConfigurationSES struct {
+	EmailID         string `json:"email_id" validate:"required,email"`
+	AmazonAccessKey string `json:"amazon_access_key" validate:"required,min=16,max=128"`
+	AmazonSecretKey string `json:"amazon_secret_key" validate:"required,min=16,max=128"`
+	SesRegion       string `json:"ses_region" validate:"required,oneof=us-east-1 us-east-2 us-west-1 us-west-2 af-south-1 ap-east-1 ap-south-1 ap-northeast-1 ap-northeast-2 ap-northeast-3 ap-southeast-1 ap-southeast-2 ap-southeast-3 ca-central-1 eu-central-1 eu-west-1 eu-west-2 eu-west-3 eu-south-1 eu-north-1 me-south-1 me-central-1 sa-east-1 us-gov-east-1 us-gov-west-1"`
+}
+
 type EmailConfigurationAdd struct {
 	EmailProvider   string `json:"email_provider"`
 	CreatedByUserID int64  `json:"created_by_user_id"`

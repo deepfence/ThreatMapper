@@ -56,7 +56,7 @@ func NewEmailSender(ctx context.Context) (EmailSender, error) {
 	if err != nil {
 		return nil, err
 	}
-	if emailConfig.EmailProvider == "smtp" {
+	if emailConfig.EmailProvider == model.EmailSettingSMTP {
 		return newEmailSenderSMTP(encryptionKey, emailConfig)
 	} else {
 		return newEmailSenderSES(encryptionKey, emailConfig)

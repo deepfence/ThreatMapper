@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -25,6 +26,8 @@ var (
 		err: errors.New("Key: 'SettingUpdateRequest.Value' Error:invalid url"), skipOverwriteErrorMessage: true}
 	invalidIntegerError = ValidatorError{
 		err: errors.New("Key: 'SettingUpdateRequest.Value' Error:must be integer"), skipOverwriteErrorMessage: true}
+	invalidEmailConfigTypeError = ValidatorError{
+		err: errors.New(fmt.Sprintf("Key: 'EmailConfigurationAdd.EmailProvider' Error:must be %s or %s", model.EmailSettingSMTP, model.EmailSettingSES)), skipOverwriteErrorMessage: true}
 )
 
 func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) {
@@ -34,6 +37,28 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&BadDecoding{err}, w)
+		return
+	}
+	if req.EmailProvider == model.EmailSettingSMTP {
+		err = h.Validator.Struct(model.EmailConfigurationSMTP{
+			EmailID:  req.EmailID,
+			Smtp:     req.Smtp,
+			Port:     req.Port,
+			Password: req.Password,
+		})
+	} else if req.EmailProvider == model.EmailSettingSES {
+		err = h.Validator.Struct(model.EmailConfigurationSES{
+			EmailID:         req.EmailID,
+			AmazonAccessKey: req.AmazonAccessKey,
+			AmazonSecretKey: req.AmazonSecretKey,
+			SesRegion:       req.SesRegion,
+		})
+	} else {
+		respondError(&invalidEmailConfigTypeError, w)
+		return
+	}
+	if err != nil {
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	ctx := r.Context()
