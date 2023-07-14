@@ -120,7 +120,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
     }
   }
 
-  toast('You have successfully generated the logs');
+  toast.success('You have successfully generated the logs');
   invalidateAllQueries();
   return null;
 };

@@ -373,7 +373,7 @@ const DeleteConfirmationModal = ({
                 onDeleteAction(ActionEnumType.DELETE);
               }}
             >
-              Yes, delete
+              Delete
             </Button>
           </div>
         ) : undefined
@@ -384,8 +384,9 @@ const DeleteConfirmationModal = ({
           <span>The selected account will be deleted.</span>
           <br />
           <span>Are you sure you want to delete?</span>
-          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
-          <div className="flex items-center justify-right gap-4"></div>
+          {fetcher.data?.message && (
+            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+          )}
         </div>
       ) : (
         <SuccessModalContent text="Deleted successfully!" />

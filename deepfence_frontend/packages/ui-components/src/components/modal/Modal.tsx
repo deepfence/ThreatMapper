@@ -100,7 +100,7 @@ const contentCva = cva(
       // text
       'text-p1 dark:text-text-text-and-icon',
       // padding
-      'px-6',
+      'px-5',
       {
         'animate-modal-slide-in': open,
         // 'animate-pop-out': !open,

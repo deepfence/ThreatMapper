@@ -337,7 +337,7 @@ const DeleteConfirmationModal = ({
                 onDeleteAction(ActionEnumType.DELETE);
               }}
             >
-              Yes, delete
+              Delete
             </Button>
           </div>
         ) : undefined
@@ -412,7 +412,7 @@ const DeleteScanConfirmationModal = ({
                 onDeleteScan();
               }}
             >
-              Yes, delete
+              Delete
             </Button>
           </div>
         ) : undefined
@@ -424,9 +424,8 @@ const DeleteScanConfirmationModal = ({
             Are you sure you want to delete this scan? This action cannot be undone.
           </span>
           {fetcher.data?.message && (
-            <p className="text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
           )}
-          <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (
         <SuccessModalContent text="Scan deleted successfully!" />

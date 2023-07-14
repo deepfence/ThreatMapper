@@ -462,7 +462,7 @@ const DeleteConfirmationModal = ({
                 disabled={fetcher.state !== 'idle'}
                 loading={fetcher.state !== 'idle'}
               >
-                Yes, delete
+                Delete
               </Button>
             </fetcher.Form>
           </div>
@@ -476,8 +476,9 @@ const DeleteConfirmationModal = ({
           <span>The configuration will be deleted.</span>
           <br />
           <span>Are you sure you want to delete?</span>
-          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
-          <div className="flex items-center justify-right gap-4"></div>
+          {fetcher.data?.message && (
+            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+          )}
         </div>
       ) : undefined}
     </Modal>

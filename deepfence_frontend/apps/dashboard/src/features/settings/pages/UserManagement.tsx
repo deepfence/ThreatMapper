@@ -202,7 +202,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     if (body.intent == ModelInviteUserRequestActionEnum.GetInviteLink) {
       inviteResponse.value.invite_url &&
         navigator.clipboard.writeText(inviteResponse.value.invite_url);
-      toast.success('User invite URL copied !');
+      toast.message('User invite URL copied !');
       return {
         ...inviteResponse.value,
         success: true,
@@ -984,7 +984,7 @@ const DeleteUserConfirmationModal = ({
                 onDeleteAction();
               }}
             >
-              Yes, Delete
+              Delete
             </Button>
           </div>
         ) : undefined
@@ -996,8 +996,9 @@ const DeleteUserConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           <br />
-          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
-          <div className="flex items-center justify-right gap-4"></div>
+          {fetcher.data?.message && (
+            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+          )}
         </div>
       ) : (
         <SuccessModalContent text="Deleted successfully" />
@@ -1060,7 +1061,7 @@ const ResetAPIKeyConfirmationModal = ({
                 onResetAction();
               }}
             >
-              Yes, Reset
+              Reset
             </Button>
           </div>
         ) : undefined
@@ -1072,7 +1073,9 @@ const ResetAPIKeyConfirmationModal = ({
           <br />
           <span>Are you sure you want to reset?</span>
           <br />
-          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
+          {fetcher.data?.message && (
+            <p className="text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+          )}
           <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (

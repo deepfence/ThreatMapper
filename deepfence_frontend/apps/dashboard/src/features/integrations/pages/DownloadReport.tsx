@@ -166,7 +166,7 @@ const DeleteConfirmationModal = ({
                 onTableAction(row!, ActionEnumType.CONFIRM_DELETE);
               }}
             >
-              Yes, delete
+              Delete
             </Button>
           </div>
         ) : undefined
@@ -178,9 +178,8 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message ? (
-            <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
+            <p className="mt-2 dark:text-status-error text-p7">{fetcher.data?.message}</p>
           ) : null}
-          <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (
         <SuccessModalContent text="Deleted successfully!" />

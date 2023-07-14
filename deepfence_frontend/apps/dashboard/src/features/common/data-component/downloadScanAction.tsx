@@ -82,7 +82,7 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<null> => 
         }
         const url = response.value.url;
         if (!url) {
-          toast.success(
+          toast.message(
             'Download in progress, it may take some time however you can always find it on Integrations > Report Downloads',
           );
         }

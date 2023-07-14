@@ -191,7 +191,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     }
   }
 
-  toast('Generate Report has started');
+  toast.success('Started to generate report');
   invalidateAllQueries();
   return {
     success: true,
