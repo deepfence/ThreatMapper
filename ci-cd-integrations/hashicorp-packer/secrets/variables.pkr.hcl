@@ -19,13 +19,6 @@ variable "FAIL_SECRET_COUNT" {
   sensitive = false
 }
 
-# FAIL_CRITICAL_SECRET_COUNT variable can be overidden in variables.pkrvars.hcl
-variable "FAIL_CRITICAL_SECRET_COUNT" {
-  type      = string
-  default   = "1"
-  sensitive = false
-}
-
 # FAIL_HIGH_SECRET_COUNT variable can be overidden in variables.pkrvars.hcl
 variable "FAIL_HIGH_SECRET_COUNT" {
   type      = string
@@ -44,13 +37,6 @@ variable "FAIL_MEDIUM_SECRET_COUNT" {
 variable "FAIL_LOW_SECRET_COUNT" {
   type      = string
   default   = "20"
-  sensitive = false
-}
-
-# FAIL_SECRET_SCORE variable can be overidden in variables.pkrvars.hcl
-variable "FAIL_SECRET_SCORE" {
-  type      = string
-  default   = "9"
   sensitive = false
 }
 

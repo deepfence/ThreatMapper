@@ -34,18 +34,18 @@ test-docker-build-and-vulnerabilities:
     - docker:dind
   variables:
     IMAGE_NAME: go-server-test:latest
-    DEEPFENCE_KEY: key
+    DEEPFENCE_KEY: ""
     DEEPFENCE_CONSOLE_URL: 127.0.0.1
-    FAIL_CVE_COUNT: 1000
+    FAIL_CVE_COUNT: 100
     FAIL_CRITICAL_CVE_COUNT: 1000
-    FAIL_HIGH_CVE_COUNT: 11
+    FAIL_HIGH_CVE_COUNT: 10
     FAIL_MEDIUM_CVE_COUNT: 1000
     FAIL_LOW_CVE_COUNT: 1000
     FAIL_CVE_SCORE: -1
   script:
     - docker build -t $IMAGE_NAME .
     - docker pull deepfenceio/deepfence_package_scanner_ce:v2
-    - docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_package_scanner_ce:v2 -source"$IMAGE_NAME" -console-url=${var.DEEPFENCE_CONSOLE_URL} -deepfence-key=${var.DEEPFENCE_KEY} -fail-on-count=$FAIL_CVE_COUNT -fail-on-critical-count=$FAIL_CRITICAL_CVE_COUNT -fail-on-high-count=$FAIL_HIGH_CVE_COUNT -fail-on-medium-count=$FAIL_MEDIUM_CVE_COUNT -fail-on-low-count=$FAIL_LOW_CVE_COUNT -fail-on-score=$FAIL_CVE_SCORE -scan-type="base,java,python,ruby,php,nodejs,js,dotnet"
+    - docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_package_scanner_ce:v2 -source"$IMAGE_NAME" -console-url=$DEEPFENCE_CONSOLE_URL -deepfence-key=$DEEPFENCE_KEY -fail-on-count=$FAIL_CVE_COUNT -fail-on-critical-count=$FAIL_CRITICAL_CVE_COUNT -fail-on-high-count=$FAIL_HIGH_CVE_COUNT -fail-on-medium-count=$FAIL_MEDIUM_CVE_COUNT -fail-on-low-count=$FAIL_LOW_CVE_COUNT -fail-on-score=$FAIL_CVE_SCORE -scan-type="base,java,python,ruby,php,nodejs,js,dotnet"
 
 test-docker-build-and-secrets:
   image: docker:latest
@@ -54,18 +54,16 @@ test-docker-build-and-secrets:
     - docker:dind
   variables:
     IMAGE_NAME: go-server-test:latest
-    DEEPFENCE_KEY: key
+    DEEPFENCE_KEY: ""
     DEEPFENCE_CONSOLE_URL: 127.0.0.1
-    FAIL_SECRET_COUNT: 253 
-    FAIL_CRITICAL_SECRET_COUNT: 34
-    FAIL_HIGH_SECRET_COUNT: 93
-    FAIL_MEDIUM_SECRET_COUNT: 110
-    FAIL_LOW_SECRET_COUNT: 19
-    FAIL_SECRET_SCORE: 11 
+    FAIL_SECRET_COUNT: 100 
+    FAIL_HIGH_SECRET_COUNT: 10
+    FAIL_MEDIUM_SECRET_COUNT: 20
+    FAIL_LOW_SECRET_COUNT: 50
   script:
     - docker build -t $IMAGE_NAME .
     - docker pull deepfenceio/deepfence_secret_scanner_ce:v2
-    - docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_secret_scanner_ce:v2 -image-name "$IMAGE_NAME"
+    - docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_secret_scanner_ce:v2 -image-name "$IMAGE_NAME" -fail-on-count=$FAIL_SECRET_COUNT -fail-on-high-count=$FAIL_HIGH_SECRET_COUNT -fail-on-medium-count=$FAIL_MEDIUM_SECRET_COUNT -fail-on-low-count=$FAIL_LOW_SECRET_COUNT
 
 test-docker-build-and-malwares:
   image: docker:latest
@@ -74,15 +72,13 @@ test-docker-build-and-malwares:
     - docker:dind
   variables:
     IMAGE_NAME: go-server-test:latest
-    DEEPFENCE_KEY: key
+    DEEPFENCE_KEY: ""
     DEEPFENCE_CONSOLE_URL: 127.0.0.1
-    FAIL_MALWARE_COUNT: 253
-    FAIL_CRITICAL_MALWARE_COUNT: 34
-    FAIL_HIGH_MALWARE_COUNT: 93
-    FAIL_MEDIUM_MALWARE_COUNT: 110
-    FAIL_LOW_MALWARE_COUNT: 19
-    FAIL_MALWARE_SCORE: 11
+    FAIL_MALWARE_COUNT: 100
+    FAIL_HIGH_MALWARE_COUNT: 10
+    FAIL_MEDIUM_MALWARE_COUNT: 20
+    FAIL_LOW_MALWARE_COUNT: 50
   script:
     - docker build -t $IMAGE_NAME .
     - docker pull deepfenceio/deepfence_malware_scanner_ce:v2
-    - docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_malware_scanner_ce:v2 -image-name "$IMAGE_NAME"
+    - docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_malware_scanner_ce:v2 -image-name "$IMAGE_NAME" -fail-on-count=$FAIL_MALWARE_COUNT -fail-on-high-count=$FAIL_HIGH_MALWARE_COUNT -fail-on-medium-count=$FAIL_MEDIUM_MALWARE_COUNT -fail-on-low-count=$FAIL_LOW_MALWARE_COUNT
