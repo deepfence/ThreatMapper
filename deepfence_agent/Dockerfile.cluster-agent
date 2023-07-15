@@ -38,7 +38,7 @@ RUN /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/
 RUN useradd -rm -d /home/deepfence -s /bin/bash -g root -G sudo -u 1001 deepfence
 
 # Installing FluentBit
-RUN mkdir -p /etc/td-agent-bit/
+RUN mkdir -p /etc/td-agent-bit/ /root/fluentbit
 COPY tools/apache/fluentbit/* /etc/td-agent-bit/
 
 COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
@@ -50,7 +50,8 @@ COPY plugins/fluent-bit/build/bin/fluent-bit /opt/td-agent-bit/bin/
 WORKDIR /opt/steampipe
 COPY tools/apache/scope/probe/kubernetes/kubeconfig /home/deepfence/.kube/config
 COPY tools/apache/scope/probe/kubernetes/token.sh /home/deepfence/token.sh
-RUN chown -R deepfence /opt/ /home/deepfence /var/log /var/run/ /etc/td-agent-bit/
+RUN chown -R deepfence:root /opt/ /home/deepfence /var/log /var/run/ \
+    && chown -R root:root /etc/td-agent-bit/ /root/fluentbit
 
 USER deepfence
 COPY supervisord-cluster.conf /home/deepfence/supervisord.conf
