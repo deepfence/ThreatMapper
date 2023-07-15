@@ -77,7 +77,9 @@ export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPro
           helperText={fieldErrors?.['quay_access_token']}
         />
 
-        {errorMessage && <p className="dark:text-status-error text-p7">{errorMessage}</p>}
+        {errorMessage && (
+          <p className="mt-4 dark:text-status-error text-p7">{errorMessage}</p>
+        )}
       </div>
     </>
   );

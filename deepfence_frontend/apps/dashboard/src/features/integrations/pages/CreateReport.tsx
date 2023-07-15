@@ -27,6 +27,7 @@ import { CommonForm } from '@/features/integrations/components/report-form/Commo
 import { ComplianceForm } from '@/features/integrations/components/report-form/ComplianceForm';
 import { ActionEnumType } from '@/features/integrations/pages/IntegrationAdd';
 import { invalidateAllQueries } from '@/queries';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -46,7 +47,6 @@ export type ActionData = {
 } | null;
 const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
-  const severity = formData.getAll('severity[]');
   const body = Object.fromEntries(formData);
 
   const duration = body.duration as keyof typeof DURATION;
@@ -71,6 +71,17 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const status = formData.getAll('status[]');
   const accountIds = formData.getAll('accountIds[]');
   const interval = formData.get('interval'); // send this when backend is ready to support
+
+  // severities or benchmark types
+  const selectedSeveritiesOrCheckTypeLength = Number(
+    formData.get('selectedSeveritiesOrCheckTypeLength'),
+  );
+  const severitiesOrCheckTypes = [];
+  if (selectedSeveritiesOrCheckTypeLength > 0) {
+    for (let i = 0; i < selectedSeveritiesOrCheckTypeLength; i++) {
+      severitiesOrCheckTypes.push(formData.get(`severityOrCheckType[${i}]`) as string);
+    }
+  }
 
   // host filter
   const selectedHostLength = Number(formData.get('selectedHostLength'));
@@ -157,6 +168,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const generateReportApi = apiWrapper({
     fn: getReportsApiClient().generateReport,
   });
+
   const r = await generateReportApi({
     modelGenerateReportReq: {
       duration: DURATION[duration],
@@ -165,7 +177,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
         include_dead_nodes: body.deadNodes === 'on',
         node_type: _nodeType,
         scan_type: _resource,
-        severity_or_check_type: (severity as string[]).map((sev) =>
+        severity_or_check_type: (severitiesOrCheckTypes as string[]).map((sev) =>
           sev.toLowerCase(),
         ) as UtilsReportFiltersSeverityOrCheckTypeEnum,
       },
@@ -181,10 +193,17 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
         message: modelResponse.message ?? '',
         fieldErrors: modelResponse.error_fields ?? {},
       };
+    } else if (r.error.response.status === 403) {
+      const message = await get403Message(r.error);
+      return {
+        success: false,
+        message,
+      };
     }
+    throw r.error;
   }
 
-  toast('Generate Report has started');
+  toast.success('Started generating report');
   invalidateAllQueries();
   return {
     success: true,
@@ -294,7 +313,7 @@ const ReportForm = () => {
           type={'text'}
           sizing="md"
           name={'interval'}
-          placeholder={'interval'}
+          placeholder={'Interval'}
           helperText="Maximum upto 180 days supported"
         />
 
@@ -340,6 +359,10 @@ const ReportForm = () => {
       </div>
 
       <AdvancedFilter provider={provider} resourceType={resource} />
+
+      {data?.message ? (
+        <p className="mt-4 text-p7 dark:text-status-error">{data?.message}</p>
+      ) : null}
 
       <div className="mt-14 flex gap-x-2">
         <Button size="md" color="default" type="submit">

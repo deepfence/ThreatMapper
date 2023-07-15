@@ -81,10 +81,10 @@ export const DockerPriavateConnectorForm = ({
           <div className="mt-2 text-p7 dark:text-text-input-value">
             Supported Versions: API version v2
           </div>
-          {errorMessage && (
-            <p className="dark:text-status-error text-p7">{errorMessage}</p>
-          )}
         </div>
+        {errorMessage && (
+          <p className="mt-4 dark:text-status-error text-p7">{errorMessage}</p>
+        )}
       </>
     </>
   );

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useInterval } from 'react-use';
 import { createColumnHelper, Dropdown, DropdownItem, Table } from 'ui-components';
 
@@ -14,6 +14,8 @@ enum ActionEnumType {
   DELETE = 'delete',
   DOWNLOAD = 'download',
 }
+
+const DEFAULT_PAGE_SIZE = 10;
 
 const ActionDropdown = ({
   row,
@@ -57,6 +59,8 @@ export const ReportTable = ({
     message: '',
     data: [],
   };
+
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   useInterval(() => {
     invalidateAllQueries();
@@ -146,7 +150,7 @@ export const ReportTable = ({
   }, []);
 
   if (message) {
-    return <p className="text-red-500 text-sm">{message}</p>;
+    return <p className="dark:text-status-error text-p7">{message}</p>;
   }
   return (
     <div className="mt-2">
@@ -156,6 +160,11 @@ export const ReportTable = ({
         columns={columns}
         enablePagination
         enableSorting
+        enablePageResize
+        pageSize={pageSize}
+        onPageResize={(newSize) => {
+          setPageSize(newSize);
+        }}
       />
     </div>
   );

@@ -50,11 +50,18 @@ export const CommonForm = ({
           );
         })}
       </Listbox>
+      <input
+        type="text"
+        name="selectedSeveritiesOrCheckTypeLength"
+        hidden
+        readOnly
+        value={severity.length}
+      />
       <Listbox
         variant="underline"
         label="Select Severity"
         value={severity}
-        name="severity[]"
+        name="severityOrCheckType"
         onChange={(value) => {
           setSeverity(value);
         }}
@@ -64,6 +71,9 @@ export const CommonForm = ({
         }}
         multiple
         clearAll="Clear"
+        onClearAll={() => {
+          setSeverity([]);
+        }}
       >
         {severities.map((resource) => {
           return (

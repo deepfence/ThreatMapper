@@ -388,13 +388,6 @@ export const useIntegrationTableColumn = (
 
   const columns = useMemo(() => {
     const columns = [
-      columnHelper.accessor('id', {
-        cell: (cell) => cell.getValue(),
-        header: () => 'ID',
-        minSize: 35,
-        size: 40,
-        maxSize: 45,
-      }),
       columnHelper.display({
         id: 'actions',
         enableSorting: false,
@@ -423,6 +416,14 @@ export const useIntegrationTableColumn = (
         maxSize: 35,
         enableResizing: false,
       }),
+      columnHelper.accessor('id', {
+        cell: (cell) => cell.getValue(),
+        header: () => 'ID',
+        minSize: 35,
+        size: 40,
+        maxSize: 45,
+      }),
+
       columnHelper.accessor('integration_type', {
         cell: (cell) => cell.getValue(),
         header: () => 'Integration Type',

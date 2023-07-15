@@ -2,13 +2,13 @@ import { useFetcher } from 'react-router-dom';
 import { Button, TextInput } from 'ui-components';
 
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import {
-  ActionEnumType,
-  ActionReturnType,
-} from '@/features/settings/pages/UserManagement';
+import { ActionData } from '@/features/settings/pages/UserManagement';
 
+enum ActionEnumType {
+  CHANGE_PASSWORD = 'changePassword',
+}
 export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
-  const fetcher = useFetcher<ActionReturnType>();
+  const fetcher = useFetcher<ActionData>();
   const { data, state } = fetcher;
 
   if (data?.success) return <SuccessModalContent text="Password changed successfully!" />;

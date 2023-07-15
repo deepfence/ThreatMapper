@@ -5,7 +5,6 @@ import {
   getCloudNodesApiClient,
   getComplianceApiClient,
   getControlsApiClient,
-  getLookupApiClient,
   getSearchApiClient,
 } from '@/api/api';
 import {
@@ -15,6 +14,7 @@ import {
   SearchSearchNodeReq,
 } from '@/api/generated';
 import { ScanStatusEnum, ScanTypeEnum } from '@/types/common';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { ComplianceScanGroupedStatus } from '@/utils/scan';
 import { COMPLIANCE_SCAN_STATUS_GROUPS } from '@/utils/scan';
@@ -607,8 +607,9 @@ export const postureQueries = createQueryKeys('posture', {
             };
           }
           if (result.error.response.status === 403) {
+            const message = await get403Message(result.error);
             return {
-              message: 'You do not have enough permissions to view controls',
+              message,
               controls: [],
             };
           }

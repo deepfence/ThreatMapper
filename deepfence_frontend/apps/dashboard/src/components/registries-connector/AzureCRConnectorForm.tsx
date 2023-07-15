@@ -73,8 +73,10 @@ export const AzureCRConnectorForm = ({
           color={fieldErrors?.['azure_registry_password'] ? 'error' : 'default'}
           helperText={fieldErrors?.['azure_registry_password']}
         />
-        {errorMessage && <p className="dark:text-status-error text-p7">{errorMessage}</p>}
       </div>
+      {errorMessage && (
+        <p className="mt-4 dark:text-status-error text-p7">{errorMessage}</p>
+      )}
     </>
   );
 };

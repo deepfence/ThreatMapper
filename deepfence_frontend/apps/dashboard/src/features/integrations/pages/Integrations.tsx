@@ -1,7 +1,8 @@
-import { Suspense, useState } from 'react';
+import { Suspense } from 'react';
 import { cn } from 'tailwind-preset';
 import { Breadcrumb, BreadcrumbLink, Button, Card, Separator } from 'ui-components';
 
+import { ModelIntegrationListResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { DownloadReportIcon } from '@/components/icons/integration/DownloadReport';
 import { ElasticsearchIcon } from '@/components/icons/integration/Elasticsearch';
@@ -43,6 +44,11 @@ type Type = {
   id: string;
   icon: JSX.Element;
   path: string;
+};
+
+type IIntegrationType = {
+  name: string;
+  types: Type[];
 };
 
 const IntegrationsData = [
@@ -142,58 +148,87 @@ const IntegrationsData = [
 
 const Count = ({
   type,
-  setError,
+  data,
 }: {
   type: Type;
-  setError: React.Dispatch<React.SetStateAction<string | undefined>>;
+  data: ModelIntegrationListResp[] | undefined;
 }) => {
-  const { data: list } = useListIntegrations();
-  const { data = [], message } = list ?? {};
-
-  if (message && message.length) {
-    setError(message);
-    throw new Error();
-  }
-
-  const len = data.filter(
+  const len = data?.filter(
     (integration) => integration.integration_type === type.id,
   ).length;
   return (
     <div className="flex items-center gap-x-2 mt-2">
       <span className="text-h1 dark:text-text-input-value">{len}</span>
       <span className="text-p4 dark:text-text-text-and-icon">
-        {`Connection${len > 1 ? 's' : ''}`}
+        {`Connection${len && len > 1 ? 's' : ''}`}
       </span>
     </div>
   );
 };
-const Type = ({
+const CardContent = ({
   type,
-  setError,
+  data,
 }: {
   type: Type;
-  setError: React.Dispatch<React.SetStateAction<string | undefined>>;
+  data: ModelIntegrationListResp[] | undefined;
 }) => {
   return (
     <div className="flex flex-col">
       <h4 className="text-t4 uppercase dark:text-text-input-value">{type.name}</h4>
 
-      <Suspense
-        fallback={
-          <div className="flex items-center gap-x-2 mt-2">
-            <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            <div className="h-2 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
-          </div>
-        }
-      >
-        <Count type={type} setError={setError} />
-      </Suspense>
+      <Count type={type} data={data} />
     </div>
   );
 };
-const Integrations = () => {
-  const [error, setError] = useState<string>();
+const IntegrationTypes = ({ integration }: { integration: IIntegrationType }) => {
+  const { data: list } = useListIntegrations();
+  const { message, data } = list ?? {};
+  if (message && message.length) {
+    return <p className="text-p7 dark:text-status-error">{message}</p>;
+  }
+  return (
+    <div className="mt-2 flex flex-wrap gap-4">
+      {integration?.types?.map((type) => {
+        return (
+          <DFLink to={type.path} unstyled key={type.name}>
+            <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-2 dark:focus:ring-bg-hover-3 dark:focus:ring-2 cursor-pointer">
+              <div className="flex items-center gap-x-6">
+                <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
+                  <span className="h-9 w-9">{type.icon}</span>
+                </div>
+                <CardContent type={type} data={data} />
+              </div>
+            </Card>
+          </DFLink>
+        );
+      })}
+    </div>
+  );
+};
+const Skeleton = ({ count }: { count: number }) => {
+  return (
+    <section className="flex flex-row gap-4 mt-2">
+      {Array.from(Array(count).keys()).map((k) => (
+        <Card key={k} className="p-3 flex flex-col shrink-0 min-w-[208px] w-fit">
+          <div className="flex items-center gap-x-6">
+            <div className="dark:bg-bg-grid-border rounded-full p-3 flex justify-center items-center">
+              <span className="h-9 w-9"></span>
+            </div>
+            <div className="flex flex-col">
+              <div className="h-3 w-16 bg-gray-200 dark:bg-bg-grid-border rounded"></div>
+              <div className="flex items-center gap-x-2 mt-4">
+                <div className="h-6 w-6 bg-gray-200 dark:bg-bg-grid-border rounded"></div>
+                <div className="h-2 w-16 bg-gray-200 dark:bg-bg-grid-border rounded"></div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      ))}
+    </section>
+  );
+};
 
+const Integrations = () => {
   return (
     <>
       <div className="dark:bg-bg-breadcrumb-bar py-2 px-4">
@@ -207,28 +242,17 @@ const Integrations = () => {
         </Breadcrumb>
       </div>
       <div className="m-4 gap-y-6 flex flex-col">
-        {IntegrationsData.map((integration) => {
+        {IntegrationsData.map((integration, index) => {
           return (
             <section key={integration.name} className="flex flex-col">
               <h2 className="uppercase text-t3 dark:text-text-input-value">
                 {integration.name}
               </h2>
-              <div className="mt-2 flex flex-wrap gap-4">
-                {integration?.types?.map((type) => {
-                  return (
-                    <DFLink to={type.path} unstyled key={type.name}>
-                      <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-2 dark:focus:ring-bg-hover-3 dark:focus:ring-2 cursor-pointer">
-                        <div className="flex items-center gap-x-6">
-                          <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
-                            <span className="h-9 w-9">{type.icon}</span>
-                          </div>
-                          <Type setError={setError} type={type} />
-                        </div>
-                      </Card>
-                    </DFLink>
-                  );
-                })}
-              </div>
+              <Suspense
+                fallback={<Skeleton count={IntegrationsData[index].types.length} />}
+              >
+                <IntegrationTypes integration={integration} />
+              </Suspense>
             </section>
           );
         })}
@@ -251,18 +275,7 @@ const ReportCount = () => {
     </div>
   );
 };
-const ReportCountSkeleton = () => {
-  return (
-    <div className="animate-pulse flex gap-x-2 items-center">
-      <div className="dark:bg-bg-grid-default rounded-md">
-        <div className="w-4 h-6"></div>
-      </div>
-      <div className="dark:bg-bg-grid-default rounded-md">
-        <div className="w-16 h-2"></div>
-      </div>
-    </div>
-  );
-};
+
 const DownloadReport = () => {
   const { navigate } = usePageNavigation();
 
@@ -283,7 +296,19 @@ const DownloadReport = () => {
               <span className="h-9 w-9 ">
                 <DownloadReportIcon />
               </span>
-              <Suspense fallback={<ReportCountSkeleton />}>
+
+              <Suspense
+                fallback={
+                  <div className="animate-pulse flex gap-x-2 items-center">
+                    <div className="dark:bg-bg-grid-border rounded-md">
+                      <div className="w-4 h-6"></div>
+                    </div>
+                    <div className="dark:bg-bg-grid-border rounded-md">
+                      <div className="w-16 h-2"></div>
+                    </div>
+                  </div>
+                }
+              >
                 <ReportCount />
               </Suspense>
             </Card>

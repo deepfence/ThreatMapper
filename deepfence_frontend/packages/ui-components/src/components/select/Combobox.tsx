@@ -192,7 +192,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
       >
         {({ open }) => {
           return (
-            <div className="relative flex flex-col gap-1">
+            <div className="relative flex flex-col">
               {label?.length && (
                 <HUICombobox.Label
                   htmlFor={inputBtnId}

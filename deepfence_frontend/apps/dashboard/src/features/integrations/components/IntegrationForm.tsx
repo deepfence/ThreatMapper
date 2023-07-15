@@ -63,19 +63,23 @@ const TextInputType = ({
   name,
   helperText,
   color,
+  type,
+  placeholder,
 }: {
   label: string;
   name: string;
   helperText: string;
   color: 'error' | 'default';
+  type?: 'text' | 'password';
+  placeholder?: string;
 }) => {
   return (
     <TextInput
       className="w-full"
       label={label}
-      type={'text'}
+      type={type ?? 'text'}
       name={name}
-      placeholder={label}
+      placeholder={placeholder ? placeholder : label}
       helperText={helperText}
       color={color}
     />
@@ -251,7 +255,7 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
           }
         }}
         placeholder="Select notification type"
-        label="Select notification type"
+        label="Notification Type"
         getDisplayValue={(item) => {
           return (
             ['Vulnerability', 'Secret', 'Malware', 'Compliance'].find(
@@ -323,12 +327,17 @@ export const IntegrationForm = ({
             <TextInputType
               name="url"
               label="Webhook Url"
-              helperText={fieldErrors?.webhook_url}
+              placeholder="Slack webhook url"
+              helperText={
+                fieldErrors?.webhook_url ??
+                'Ex. https://hooks.slack.com/services/T0000/B00000/XXXXXXXXX'
+              }
               color={fieldErrors?.webhook_url ? 'error' : 'default'}
             />
             <TextInputType
               name="channelName"
               label="Channel Name"
+              placeholder="Slack channel"
               helperText={fieldErrors?.channel}
               color={fieldErrors?.channel ? 'error' : 'default'}
             />
@@ -338,13 +347,15 @@ export const IntegrationForm = ({
           <>
             <TextInputType
               name="integrationKey"
-              label="Integration key"
+              label="Integration Key"
+              placeholder="Integration key"
               helperText={fieldErrors?.service_key}
               color={fieldErrors?.service_key ? 'error' : 'default'}
             />
             <TextInputType
               name="apiKey"
-              label="Api key"
+              label="Api Key"
+              placeholder="Api key"
               helperText={fieldErrors?.api_key}
               color={fieldErrors?.api_key ? 'error' : 'default'}
             />
@@ -354,7 +365,8 @@ export const IntegrationForm = ({
           <>
             <TextInputType
               name="email"
-              label="Email id"
+              label="Email Id"
+              placeholder="Email id"
               helperText={fieldErrors?.email_id}
               color={fieldErrors?.email_id ? 'error' : 'default'}
             />
@@ -364,13 +376,15 @@ export const IntegrationForm = ({
           <>
             <TextInputType
               name="apiUrl"
-              label="API url"
+              label="API Url"
+              placeholder="API url"
               helperText={fieldErrors?.url}
               color={fieldErrors?.url ? 'error' : 'default'}
             />
             <TextInputType
               name="auth_header"
-              label="Authorization header"
+              label="Authorization Header"
+              placeholder="Authorization header"
               helperText={fieldErrors?.auth_key}
               color={fieldErrors?.auth_key ? 'error' : 'default'}
             />
@@ -381,7 +395,11 @@ export const IntegrationForm = ({
             <TextInputType
               name="url"
               label="Webhook Url"
-              helperText={fieldErrors?.webhook_url}
+              placeholder="Webhook url"
+              helperText={
+                fieldErrors?.webhook_url ??
+                'Ex. https://myteam.webhook.office.com/webhookb2/a1b1c1d1/XXX/XXXX'
+              }
               color={fieldErrors?.webhook_url ? 'error' : 'default'}
             />
           </>
@@ -392,12 +410,17 @@ export const IntegrationForm = ({
             <TextInputType
               name="url"
               label="Endpoint Url"
-              helperText={fieldErrors?.url}
+              placeholder="Endpoint url"
+              helperText={
+                fieldErrors?.url ??
+                'Ex. https://[splunkEndpoint]:8089/services/receivers/simpleVersion: 7.1'
+              }
               color={fieldErrors?.url ? 'error' : 'default'}
             />
             <TextInputType
               name="token"
               label="Receiver Token"
+              placeholder="Receiver token"
               helperText={fieldErrors?.token}
               color={fieldErrors?.token ? 'error' : 'default'}
             />
@@ -409,7 +432,11 @@ export const IntegrationForm = ({
             <TextInputType
               name="url"
               label="Endpoint Url"
-              helperText={fieldErrors?.url}
+              placeholder="Endpoint url"
+              helperText={
+                fieldErrors?.url ??
+                'Ex. https://[SumoEndpoint]/receiver/v1/http/[UniqueHTTPCollectorCode]'
+              }
               color={fieldErrors?.url ? 'error' : 'default'}
             />
           </>
@@ -420,24 +447,28 @@ export const IntegrationForm = ({
             <TextInputType
               name="url"
               label="Endpoint Url"
-              helperText={fieldErrors?.url}
+              placeholder="Elasticsearch endpoint url"
+              helperText={fieldErrors?.url ?? 'Version: 5.x and above'}
               color={fieldErrors?.url ? 'error' : 'default'}
             />
             <TextInputType
               name="index"
               label="Index"
+              placeholder="Elasticsearch index"
               helperText={fieldErrors?.index}
               color={fieldErrors?.index ? 'error' : 'default'}
             />
             <TextInputType
               name="docType"
               label="Doc Type"
+              placeholder="Elasticsearch doc type"
               helperText={fieldErrors?.doc_type}
               color={fieldErrors?.doc_type ? 'error' : 'default'}
             />
             <TextInputType
               name="authKey"
               label="Auth Key"
+              placeholder="Auth key"
               helperText={fieldErrors?.auth_key}
               color={fieldErrors?.auth_key ? 'error' : 'default'}
             />
@@ -449,12 +480,14 @@ export const IntegrationForm = ({
             <TextInputType
               name="url"
               label="Api Url"
+              placeholder="Api url"
               helperText={fieldErrors?.url}
               color={fieldErrors?.url ? 'error' : 'default'}
             />
             <TextInputType
               name="authKey"
               label="Auth Key"
+              placeholder="Auth key"
               helperText={fieldErrors?.auth_key}
               color={fieldErrors?.auth_key ? 'error' : 'default'}
             />
@@ -466,22 +499,26 @@ export const IntegrationForm = ({
             <TextInputType
               name="accessKey"
               label="Access Key"
+              placeholder="AWS access key"
               helperText={fieldErrors?.aws_access_key}
               color={fieldErrors?.aws_access_key ? 'error' : 'default'}
             />
             <TextInputType
               name="secretKey"
               label="Secret Key"
+              placeholder="AWS secret key"
               helperText={fieldErrors?.aws_secret_key}
               color={fieldErrors?.aws_secret_key ? 'error' : 'default'}
             />
             <TextInputType
               name="region"
               label="Region"
+              placeholder="AWS region"
               helperText={fieldErrors?.aws_region}
               color={fieldErrors?.aws_region ? 'error' : 'default'}
             />
             <SearchableCloudAccountsList
+              label="AWS Account"
               triggerVariant="select"
               defaultSelectedAccounts={awsAccounts}
               cloudProvider="aws"
@@ -499,8 +536,12 @@ export const IntegrationForm = ({
           <>
             <TextInputType
               name="url"
-              label="Endpoint Url"
-              helperText={fieldErrors?.url}
+              label="Jira Url"
+              placeholder="Jira site url"
+              helperText={
+                fieldErrors?.url ??
+                'Ex. https://[organization].atlassian.net/Version: 7.13'
+              }
               color={fieldErrors?.url ? 'error' : 'default'}
             />
             <Radio
@@ -523,13 +564,15 @@ export const IntegrationForm = ({
             />
             <TextInputType
               name="authType"
-              label={authType === 'password' ? 'Password' : 'Token'}
+              label={authType === 'password' ? 'Password' : 'Api Token'}
               helperText={
                 authType === 'password' ? fieldErrors?.password : fieldErrors?.api_token
               }
               color={
                 fieldErrors?.password || fieldErrors?.api_token ? 'error' : 'default'
               }
+              type={authType === 'password' ? 'password' : 'text'}
+              placeholder={authType === 'password' ? 'password' : 'Api token'}
             />
             <TextInputType
               name="email"
@@ -540,18 +583,21 @@ export const IntegrationForm = ({
             <TextInputType
               name="accessKey"
               label="Project Key"
+              placeholder="Jira project key"
               helperText={fieldErrors?.jira_project_key}
               color={fieldErrors?.jira_project_key ? 'error' : 'default'}
             />
             <TextInputType
               name="task"
               label="Task Name"
-              helperText={fieldErrors?.issue_type}
+              placeholder="Bugs, task, etc"
+              helperText={fieldErrors?.issue_type ?? 'Case sensitive'}
               color={fieldErrors?.issue_type ? 'error' : 'default'}
             />
             <TextInputType
               name="assigne"
               label="Assignee"
+              placeholder="Jira assigne"
               helperText={fieldErrors?.jira_assignee}
               color={fieldErrors?.jira_assignee ? 'error' : 'default'}
             />
@@ -563,30 +609,35 @@ export const IntegrationForm = ({
             <TextInputType
               name="name"
               label="Bucket Name"
+              placeholder="S3 bukcket name"
               helperText={fieldErrors?.s3_bucket_name}
               color={fieldErrors?.s3_bucket_name ? 'error' : 'default'}
             />
             <TextInputType
               name="folder"
               label={'Folder'}
+              placeholder="S3 folder"
               helperText={fieldErrors?.aws_access_key}
               color={fieldErrors?.s3_folaws_access_keyder_name ? 'error' : 'default'}
             />
             <TextInputType
               name="accessKey"
               label="Access Key"
+              placeholder="AWS access key"
               helperText={fieldErrors?.jira_assignee}
               color={fieldErrors?.jira_assignee ? 'error' : 'default'}
             />
             <TextInputType
               name="secretKey"
               label="Secret Key"
+              placeholder="AWS secret key"
               helperText={fieldErrors?.aws_secret_key}
               color={fieldErrors?.aws_secret_key ? 'error' : 'default'}
             />
             <TextInputType
               name="region"
               label="Region"
+              placeholder="AWS region"
               helperText={fieldErrors?.aws_region}
               color={fieldErrors?.aws_region ? 'error' : 'default'}
             />

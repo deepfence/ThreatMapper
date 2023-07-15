@@ -9,6 +9,7 @@ import {
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
+import { get403Message } from '@/utils/403';
 import { apiWrapper, retryUntilResponseHasValue } from '@/utils/api';
 import { download } from '@/utils/download';
 
@@ -51,7 +52,8 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<null> => 
         return null;
       }
     } else if (getReportIdApiResponse.error.response.status === 403) {
-      toast.error('You do not have enough permissions to download');
+      const message = await get403Message(getReportIdApiResponse.error);
+      toast.error(message);
       return null;
     }
     throw getReportIdApiResponse.error;
@@ -80,7 +82,7 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<null> => 
         }
         const url = response.value.url;
         if (!url) {
-          toast.success(
+          toast.message(
             'Download in progress, it may take some time however you can always find it on Integrations > Report Downloads',
           );
         }
