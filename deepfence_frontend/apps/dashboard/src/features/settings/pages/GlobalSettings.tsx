@@ -20,6 +20,7 @@ import { ModelSettingsResponse, ModelSettingUpdateRequestKeyEnum } from '@/api/g
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -57,9 +58,10 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
         message: updateResponse.error.message,
       };
     } else if (updateResponse.error.response.status === 403) {
+      const message = await get403Message(updateResponse.error);
       return {
         success: false,
-        message: 'You do not have enough permissions to update settings',
+        message,
       };
     }
     throw updateResponse.error;
@@ -222,7 +224,7 @@ const SettingTable = () => {
   return (
     <div className="mt-2">
       {data.message ? (
-        <p className="dark:text-status-error text-sm">{data.message}</p>
+        <p className="dark:text-status-error text-p7">{data.message}</p>
       ) : (
         <Table
           size="default"

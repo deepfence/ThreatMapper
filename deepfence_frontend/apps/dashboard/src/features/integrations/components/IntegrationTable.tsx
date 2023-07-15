@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Table } from 'ui-components';
 
@@ -8,6 +9,8 @@ import {
 } from '@/features/integrations/pages/IntegrationAdd';
 
 import { useIntegrationTableColumn } from './useIntegrationTableColumn';
+
+const DEFAULT_PAGE_SIZE = 10;
 
 export const IntegrationTable = ({
   onTableAction,
@@ -22,12 +25,25 @@ export const IntegrationTable = ({
     integrationType: string;
   };
 
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
   if (message) {
-    return <p className="text-red-500 text-sm">{message}</p>;
+    return <p className="dark:text-status-error text-p7">{message}</p>;
   }
   const tableData = data.filter(
     (integration) => params.integrationType === integration.integration_type,
   );
 
-  return <Table data={tableData} columns={columns} enablePagination />;
+  return (
+    <Table
+      data={tableData}
+      columns={columns}
+      enablePagination
+      enablePageResize
+      pageSize={pageSize}
+      onPageResize={(newSize) => {
+        setPageSize(newSize);
+      }}
+    />
+  );
 };

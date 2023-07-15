@@ -40,10 +40,11 @@ import { RefreshIcon } from '@/components/icons/common/Refresh';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { get403Message, getFieldErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 const DEFAULT_PAGE_SIZE = 10;
 
-export type ActionReturnType = {
+export type ActionData = {
   message?: string;
   fieldErrors?: {
     old_password?: string;
@@ -61,7 +62,7 @@ export type ActionReturnType = {
   successMessage?: string;
 };
 
-export enum ActionEnumType {
+enum ActionEnumType {
   DELETE = 'delete',
   CHANGE_PASSWORD = 'changePassword',
   INVITE_USER = 'inviteUser',
@@ -87,7 +88,7 @@ const useGetApiToken = () => {
   });
 };
 
-const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType> => {
+const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
 
   const _actionType = formData.get('_actionType')?.toString();
@@ -114,13 +115,15 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           message: deleteResponse.error.message,
         };
       } else if (deleteResponse.error.response.status === 403) {
+        const message = await get403Message(deleteResponse.error);
         return {
           success: false,
-          message: 'You do not have enough permissions to delete user',
+          message,
         };
       }
       throw deleteResponse.error;
     }
+    invalidateAllQueries();
   } else if (_actionType === ActionEnumType.CHANGE_PASSWORD) {
     // add console_url which is the origin of request
     formData.append('consoleUrl', window.location.origin);
@@ -154,13 +157,15 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           success: false,
         };
       } else if (updateResponse.error.response.status === 403) {
+        const message = await get403Message(updateResponse.error);
         return {
           success: false,
-          message: 'You do not have enough permissions to update password',
+          message,
         };
       }
       throw updateResponse.error;
     }
+    invalidateAllQueries();
   } else if (_actionType === ActionEnumType.INVITE_USER) {
     const body = Object.fromEntries(formData);
     const role = body.role as keyof typeof ModelUpdateUserIdRequestRoleEnum;
@@ -179,26 +184,36 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
     });
     if (!inviteResponse.ok) {
       if (inviteResponse.error.response.status === 400) {
+        const fieldErrors = await getFieldErrors(inviteResponse.error);
         return {
           success: false,
-          message: inviteResponse.error.message,
+          fieldErrors: {
+            email: fieldErrors?.email,
+          },
         };
       } else if (inviteResponse.error.response.status === 403) {
+        const message = await get403Message(inviteResponse.error);
         return {
           success: false,
-          message: 'You do not have enough permissions to invite user',
+          message,
         };
       }
       throw inviteResponse.error;
     }
-
+    invalidateAllQueries();
     if (body.intent == ModelInviteUserRequestActionEnum.GetInviteLink) {
       inviteResponse.value.invite_url &&
         navigator.clipboard.writeText(inviteResponse.value.invite_url);
-      toast.success('User invite URL copied !');
-      return { ...inviteResponse.value, success: true };
+      toast.message('User invite URL copied !');
+      return {
+        ...inviteResponse.value,
+        success: true,
+      };
     } else if (body.intent === ModelInviteUserRequestActionEnum.SendInviteEmail) {
-      return { successMessage: 'User invite sent successfully', success: true };
+      return {
+        successMessage: 'User invite sent successfully',
+        success: true,
+      };
     }
   } else if (_actionType === ActionEnumType.EDIT_USER) {
     const body = Object.fromEntries(formData);
@@ -233,13 +248,15 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           success: false,
         };
       } else if (updateResponse.error.response.status === 403) {
+        const message = await get403Message(updateResponse.error);
         return {
           success: false,
-          message: 'You do not have enough permissions to update user',
+          message,
         };
       }
       throw updateResponse.error;
     }
+    invalidateAllQueries();
   } else if (_actionType === ActionEnumType.RESET_API_KEY) {
     const resetApiTokens = apiWrapper({
       fn: getUserApiClient().resetApiTokens,
@@ -247,15 +264,16 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
     const resetApiTokensResponse = await resetApiTokens();
     if (!resetApiTokensResponse.ok) {
       if (resetApiTokensResponse.error.response.status === 403) {
+        const message = await get403Message(resetApiTokensResponse.error);
         return {
           success: false,
-          message: 'You do not have enough permissions to reset API tokens',
+          message,
         };
       }
       throw resetApiTokensResponse.error;
     }
+    invalidateAllQueries();
   }
-  invalidateAllQueries();
   return {
     success: true,
   };
@@ -344,8 +362,8 @@ const InviteUserModal = ({
   showDialog: boolean;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const fetcher = useFetcher<ActionReturnType>();
-  const { data, state } = fetcher;
+  const fetcher = useFetcher<ActionData>();
+  const { data } = fetcher;
   const [_role, _setRole] = useState('');
 
   return (
@@ -457,15 +475,15 @@ const EditUserModal = ({
   user: ModelUser;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const fetcher = useFetcher<ActionReturnType>();
+  const fetcher = useFetcher<ActionData>();
   const { data } = fetcher;
 
   const role = Object.entries(ModelUpdateUserIdRequestRoleEnum).find(
-    ([_, val]) => val === user.role,
+    ([, val]) => val === user.role,
   )?.[0];
   const [_role, _setRole] = useState(role);
   const [_status, _setStatus] = useState(() => (user.is_active ? 'Active' : 'Inactive'));
-  console.log('data', data);
+
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
@@ -585,22 +603,22 @@ const EditUserModal = ({
 const APITokenSkeletonComponent = () => {
   return (
     <div className="flex flex-col gap-y-4 animate-pulse min-w-[400px]">
-      <div className="h-10 w-72 bg-gray-200 dark:bg-gray-700 py-4 rounded-md"></div>
+      <div className="h-10 w-72 bg-gray-200 dark:bg-bg-grid-border py-4 rounded-md"></div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-        <div className="h-5 w-56 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+        <div className="h-5 w-16 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-56 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-        <div className="h-5 w-56 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+        <div className="h-5 w-16 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-56 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-        <div className="h-5 w-56 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+        <div className="h-5 w-16 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-56 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-        <div className="h-5 w-56 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+        <div className="h-5 w-16 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-56 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
       </div>
     </div>
   );
@@ -824,8 +842,8 @@ const UsersTable = () => {
   const { data } = useListUsers();
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
-  if (data.message) {
-    return <p className="dark:text-status-error text-p7">{data.message}</p>;
+  if (data?.error?.message) {
+    return <p className="dark:text-status-error text-p7">{data.error.message}</p>;
   }
   return (
     <div className="mt-2">
@@ -845,6 +863,28 @@ const UsersTable = () => {
     </div>
   );
 };
+const InviteButton = ({
+  setOpenInviteUserForm,
+}: {
+  setOpenInviteUserForm: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const { data } = useListUsers();
+  if (data?.error?.message) {
+    return null;
+  }
+  return (
+    <Button
+      variant="flat"
+      size="sm"
+      startIcon={<PlusIcon />}
+      type="button"
+      className="mt-2"
+      onClick={() => setOpenInviteUserForm(true)}
+    >
+      Invite User
+    </Button>
+  );
+};
 const UserManagement = () => {
   const [openInviteUserForm, setOpenInviteUserForm] = useState(false);
 
@@ -861,16 +901,14 @@ const UserManagement = () => {
         <div className="mt-2">
           <h3 className="text-h6 dark:text-text-input-value">User accounts</h3>
         </div>
-        <Button
-          variant="flat"
-          size="sm"
-          startIcon={<PlusIcon />}
-          type="button"
-          className="mt-2"
-          onClick={() => setOpenInviteUserForm(true)}
+        <Suspense
+          fallback={
+            <div className="animate-pulse h-6 w-32 bg-gray-200 dark:bg-bg-grid-border rounded"></div>
+          }
         >
-          Invite User
-        </Button>
+          <InviteButton setOpenInviteUserForm={setOpenInviteUserForm} />
+        </Suspense>
+
         <Suspense
           fallback={
             <TableSkeleton
@@ -902,7 +940,7 @@ const DeleteUserConfirmationModal = ({
   userId: number;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<ActionData>();
 
   const onDeleteAction = useCallback(() => {
     const formData = new FormData();
@@ -949,7 +987,7 @@ const DeleteUserConfirmationModal = ({
                 onDeleteAction();
               }}
             >
-              Yes, Delete
+              Delete
             </Button>
           </div>
         ) : undefined
@@ -961,8 +999,9 @@ const DeleteUserConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           <br />
-          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
-          <div className="flex items-center justify-right gap-4"></div>
+          {fetcher.data?.message && (
+            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+          )}
         </div>
       ) : (
         <SuccessModalContent text="Deleted successfully" />
@@ -1025,7 +1064,7 @@ const ResetAPIKeyConfirmationModal = ({
                 onResetAction();
               }}
             >
-              Yes, Reset
+              Reset
             </Button>
           </div>
         ) : undefined
@@ -1037,7 +1076,9 @@ const ResetAPIKeyConfirmationModal = ({
           <br />
           <span>Are you sure you want to reset?</span>
           <br />
-          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
+          {fetcher.data?.message && (
+            <p className="text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+          )}
           <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (

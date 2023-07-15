@@ -15,10 +15,12 @@ export const ComplianceForm = ({
   resource: string;
   provider: string;
 }) => {
-  const [benchmarkType, setBenchmarkType] = useState('');
+  const [benchmarkType, setBenchmarkType] = useState<string[]>([]);
+
   useEffect(() => {
-    setBenchmarkType('');
+    setBenchmarkType([]);
   }, [resource, provider]);
+
   return (
     <>
       <Listbox
@@ -47,31 +49,41 @@ export const ComplianceForm = ({
         })}
       </Listbox>
       {provider && (
-        <Listbox
-          variant="underline"
-          value={benchmarkType}
-          name="severity[]"
-          onChange={(value) => {
-            setBenchmarkType(value);
-          }}
-          placeholder="Select check type"
-          label="Select Check Type"
-          getDisplayValue={() => {
-            return (
-              getReportBenchmarkList(provider).find((_benchmarkType) => {
-                return _benchmarkType === benchmarkType;
-              }) ?? ''
-            );
-          }}
-        >
-          {getReportBenchmarkList(provider)?.map((provider) => {
-            return (
-              <ListboxOption value={provider} key={provider}>
-                {provider}
-              </ListboxOption>
-            );
-          })}
-        </Listbox>
+        <>
+          <input
+            type="text"
+            name="selectedSeveritiesOrCheckTypeLength"
+            hidden
+            readOnly
+            value={benchmarkType.length}
+          />
+          <Listbox
+            variant="underline"
+            value={benchmarkType}
+            name="severityOrCheckType"
+            onChange={(value) => {
+              setBenchmarkType(value);
+            }}
+            placeholder="Select check type"
+            label="Select Check Type"
+            getDisplayValue={(value) => {
+              return value && value.length > 0 ? `${value.length} selected` : 'Severity';
+            }}
+            multiple
+            clearAll="Clear"
+            onClearAll={() => {
+              setBenchmarkType([]);
+            }}
+          >
+            {getReportBenchmarkList(provider)?.map((provider) => {
+              return (
+                <ListboxOption value={provider} key={provider}>
+                  {provider}
+                </ListboxOption>
+              );
+            })}
+          </Listbox>
+        </>
       )}
     </>
   );

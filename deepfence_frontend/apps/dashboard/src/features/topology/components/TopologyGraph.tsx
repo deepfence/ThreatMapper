@@ -393,7 +393,7 @@ function useGraphDataManager() {
       const diff = storageManager.getDiff();
       setDataDiffWithAction({ action, diff });
     } else {
-      toast(
+      toast.message(
         'There are too many nodes to display on the Graph view. Please use the Table view to see all nodes.',
       );
     }

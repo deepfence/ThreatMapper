@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import {
   Button,
@@ -18,6 +18,7 @@ import {
 import { getSettingsApiClient } from '@/api/api';
 import { ModelEmailConfigurationAdd, ModelEmailConfigurationResp } from '@/api/generated';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 
@@ -36,9 +37,9 @@ type AddEmailConfigurationReturnType = {
   smtp?: string;
 };
 
-export type ActionReturnType = {
-  message?: string;
+type ActionReturnType = {
   success: boolean;
+  message?: string;
 };
 
 const emailProviders: { [key: string]: string } = {
@@ -62,7 +63,7 @@ export const action = async ({
   request,
 }: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
-  const _actionType = formData.get('_actionType')?.toString();
+  const _actionType = formData.get('_actionType')?.toString() as ActionEnumType;
 
   if (!_actionType) {
     return {
@@ -221,7 +222,7 @@ const EmailConfigurationModal = ({
               />
               <TextInput
                 label="Amazon Secret Key"
-                type={'text'}
+                type="password"
                 placeholder="Amazon Secret Key"
                 name="amazon_secret_key"
                 required
@@ -290,13 +291,18 @@ const Configuration = () => {
 
   const { data: configData = [], message } = data;
 
-  const configuration: ModelEmailConfigurationResp = configData[0];
+  const [configuration, setConfiguration] = useState<ModelEmailConfigurationResp | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (configData && configData.length) {
+      setConfiguration(configData[0]);
+    }
+  }, [configData]);
+
   if (message) {
     return <p className="text-p7 dark:text-status-error">{message}</p>;
-  }
-
-  if (!configuration) {
-    return <AddEmailConfigurationComponent show={!configuration} />;
   }
 
   return (
@@ -306,62 +312,73 @@ const Configuration = () => {
           showDialog={showDeleteDialog}
           id={String(configuration?.id || 0)}
           setShowDialog={setShowDeleteDialog}
+          onDeleteSuccess={() => {
+            setConfiguration(null);
+          }}
         />
       )}
-      <Card className="p-4 flex flex-col gap-y-3">
-        <div className="flex">
-          <div className="flex flex-col">
-            <span className="text-h4 dark:text-text-text-and-icon">Configuration</span>
+      {!configuration ? (
+        <AddEmailConfigurationComponent show={!configuration} />
+      ) : (
+        <Card className="p-4 flex flex-col gap-y-3">
+          <div className="flex">
+            <div className="flex flex-col">
+              <span className="text-h4 dark:text-text-text-and-icon">Configuration</span>
+            </div>
           </div>
-        </div>
-        <div className="flex mt-2">
-          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-            Email Provider
-          </span>
-          <span className="text-p4 dark:text-text-input-value">
-            {configuration?.email_provider || '-'}
-          </span>
-        </div>
-        <div className="flex">
-          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-            Email Id
-          </span>
-          <span className="text-p4 dark:text-text-input-value">
-            {configuration?.email_id || '-'}
-          </span>
-        </div>
-        <div className="flex">
-          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-            Region
-          </span>
-          <span className="text-p4 dark:text-text-input-value">
-            {configuration?.ses_region || '-'}
-          </span>
-        </div>
-        <div className="flex">
-          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">Port</span>
-          <span className="text-p4 dark:text-text-input-value">
-            {configuration.port || '-'}
-          </span>
-        </div>
-        <div className="flex">
-          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">SMTP</span>
-          <span className="text-p4 dark:text-text-input-value">
-            {configuration.smtp || '-'}
-          </span>
-        </div>
-        <Button
-          size="sm"
-          color="error"
-          className="mt-4 w-fit"
-          type="button"
-          onClick={() => {
-            setShowDeleteDialog(true);
-          }}
-        >
-          Delete configuration
-        </Button>
-      </Card>
+          <div className="flex mt-2">
+            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
+              Email Provider
+            </span>
+            <span className="text-p4 dark:text-text-input-value">
+              {configuration?.email_provider || '-'}
+            </span>
+          </div>
+          <div className="flex">
+            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
+              Email Id
+            </span>
+            <span className="text-p4 dark:text-text-input-value">
+              {configuration?.email_id || '-'}
+            </span>
+          </div>
+          <div className="flex">
+            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
+              Region
+            </span>
+            <span className="text-p4 dark:text-text-input-value">
+              {configuration?.ses_region || '-'}
+            </span>
+          </div>
+          <div className="flex">
+            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
+              Port
+            </span>
+            <span className="text-p4 dark:text-text-input-value">
+              {configuration.port || '-'}
+            </span>
+          </div>
+          <div className="flex">
+            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
+              SMTP
+            </span>
+            <span className="text-p4 dark:text-text-input-value">
+              {configuration.smtp || '-'}
+            </span>
+          </div>
+          <Button
+            size="sm"
+            color="error"
+            className="mt-4 w-fit"
+            type="button"
+            onClick={() => {
+              setShowDeleteDialog(true);
+            }}
+          >
+            Delete configuration
+          </Button>
+        </Card>
+      )}
     </>
   );
 };
@@ -389,12 +406,20 @@ const DeleteConfirmationModal = ({
   showDialog,
   id,
   setShowDialog,
+  onDeleteSuccess,
 }: {
   showDialog: boolean;
   id: string;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onDeleteSuccess: () => void;
 }) => {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<ActionReturnType>();
+
+  useEffect(() => {
+    if (fetcher.state === 'idle' && fetcher.data?.success) {
+      onDeleteSuccess();
+    }
+  }, [fetcher]);
 
   return (
     <Modal
@@ -430,12 +455,20 @@ const DeleteConfirmationModal = ({
                 name="_actionType"
                 value={ActionEnumType.DELETE}
               />
-              <Button color="error" type="submit" size="md">
-                Yes, delete
+              <Button
+                color="error"
+                type="submit"
+                size="md"
+                disabled={fetcher.state !== 'idle'}
+                loading={fetcher.state !== 'idle'}
+              >
+                Delete
               </Button>
             </fetcher.Form>
           </div>
-        ) : undefined
+        ) : (
+          <SuccessModalContent text="Successfully deleted" />
+        )
       }
     >
       {!fetcher.data?.success ? (
@@ -443,8 +476,9 @@ const DeleteConfirmationModal = ({
           <span>The configuration will be deleted.</span>
           <br />
           <span>Are you sure you want to delete?</span>
-          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
-          <div className="flex items-center justify-right gap-4"></div>
+          {fetcher.data?.message && (
+            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+          )}
         </div>
       ) : undefined}
     </Modal>

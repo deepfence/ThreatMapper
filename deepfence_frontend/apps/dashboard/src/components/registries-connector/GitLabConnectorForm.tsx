@@ -78,8 +78,10 @@ export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
         <div className="mt-2 text-p7 dark:text-text-input-value">
           Supported Versions: 11.8 and above
         </div>
-        {errorMessage && <p className="dark:text-status-error text-p7">{errorMessage}</p>}
       </div>
+      {errorMessage && (
+        <p className="mt-4 dark:text-status-error text-p7">{errorMessage}</p>
+      )}
     </>
   );
 };

@@ -29,6 +29,7 @@ import { PlusIcon } from '@/components/icons/common/Plus';
 import { integrationTypeToNameMapping } from '@/features/integrations/pages/Integrations';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
 import { IntegrationForm, IntegrationType } from '../components/IntegrationForm';
@@ -321,12 +322,14 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
           fieldErrors: modelResponse.error_fields ?? {},
         };
       } else if (r.error.response.status === 403) {
+        const message = await get403Message(r.error);
         return {
-          message: 'You do not have enough permissions to add integration',
+          message,
         };
       }
+      throw r.error;
     }
-    toast('Integration added successfully');
+    toast.success('Integration added successfully');
     invalidateAllQueries();
   } else if (_actionType === ActionEnumType.DELETE) {
     const id = formData.get('id')?.toString();
@@ -349,7 +352,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
         };
       }
     }
-    toast('Integration deleted successfully');
+    toast.success('Integration deleted successfully');
     invalidateAllQueries();
     return {
       deleteSuccess: true,
@@ -363,15 +366,25 @@ const DeleteConfirmationModal = ({
   showDialog,
   row,
   setShowDialog,
-  fetcher,
-  onTableAction,
 }: {
   showDialog: boolean;
   row: ModelIntegrationListResp | undefined;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  fetcher: FetcherWithComponents<ActionData>;
-  onTableAction: (row: ModelIntegrationListResp, actionType: ActionEnumType) => void;
 }) => {
+  const fetcher = useFetcher<ActionData>();
+
+  const onDeleteAction = useCallback(
+    (actionType: string) => {
+      const formData = new FormData();
+      formData.append('_actionType', actionType);
+      formData.append('id', row?.id?.toString() ?? '');
+
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [fetcher, row],
+  );
   return (
     <Modal
       size="s"
@@ -403,10 +416,10 @@ const DeleteConfirmationModal = ({
               color="error"
               onClick={(e) => {
                 e.preventDefault();
-                onTableAction(row!, ActionEnumType.CONFIRM_DELETE);
+                onDeleteAction(ActionEnumType.DELETE);
               }}
             >
-              Yes, delete
+              Delete
             </Button>
           </div>
         ) : undefined
@@ -418,9 +431,8 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message ? (
-            <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
+            <p className="mt-2 dark:text-status-error text-p7">{fetcher.data?.message}</p>
           ) : null}
-          <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (
         <SuccessModalContent text="Deleted successfully!" />
@@ -445,7 +457,6 @@ const IntegrationAdd = () => {
   };
   const [modelRow, setModelRow] = useState<ModelIntegrationListResp>();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const fetcher = useFetcher<ActionData>();
   const [openModal, setOpenModal] = useState(false);
 
   const params = useParams() as {
@@ -457,14 +468,6 @@ const IntegrationAdd = () => {
       if (actionType === ActionEnumType.DELETE) {
         setModelRow(row);
         setShowDeleteDialog(true);
-      } else if (actionType === ActionEnumType.CONFIRM_DELETE) {
-        const formData = new FormData();
-        formData.append('_actionType', ActionEnumType.DELETE);
-        formData.append('id', row.id?.toString() ?? '');
-
-        fetcher.submit(formData, {
-          method: 'post',
-        });
       }
     },
     [],
@@ -502,13 +505,13 @@ const IntegrationAdd = () => {
           <IntegrationTable onTableAction={onTableAction} />
         </Suspense>
       </div>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        row={modelRow}
-        setShowDialog={setShowDeleteDialog}
-        onTableAction={onTableAction}
-        fetcher={fetcher}
-      />
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          row={modelRow}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
     </div>
   );
 };

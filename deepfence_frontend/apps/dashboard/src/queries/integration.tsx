@@ -1,6 +1,7 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
 
 import { getIntegrationApiClient, getReportsApiClient } from '@/api/api';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
 export const integrationQueries = createQueryKeys('integration', {
@@ -14,8 +15,9 @@ export const integrationQueries = createQueryKeys('integration', {
         const integrationResponse = await listIntegrationApi();
         if (!integrationResponse.ok) {
           if (integrationResponse.error.response.status === 403) {
+            const message = await get403Message(integrationResponse.error);
             return {
-              message: 'You do not have enough permissions to view integrations',
+              message,
             };
           } else {
             return {

@@ -1,11 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useCallback, useState } from 'react';
-import {
-  ActionFunctionArgs,
-  FetcherWithComponents,
-  Outlet,
-  useFetcher,
-} from 'react-router-dom';
+import { ActionFunctionArgs, Outlet, useFetcher } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbLink, Button, Modal, TableSkeleton } from 'ui-components';
 
 import { getReportsApiClient } from '@/api/api';
@@ -93,7 +88,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     if (!id) {
       return {
         deleteSuccess: false,
-        message: 'An id is required to delete an integration',
+        message: 'Id is required to delete an integration',
       };
     }
     const deleteReportApi = apiWrapper({
@@ -109,6 +104,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
           success: false,
         };
       }
+      throw r.error;
     }
     invalidateAllQueries();
     return {
@@ -123,20 +119,33 @@ const DeleteConfirmationModal = ({
   showDialog,
   row,
   setShowDialog,
-  fetcher,
-  onTableAction,
 }: {
   showDialog: boolean;
   row: ModelExportReport | undefined;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  fetcher: FetcherWithComponents<ActionData>;
-  onTableAction: (row: ModelExportReport, actionType: ActionEnumType) => void;
 }) => {
+  const fetcher = useFetcher<ActionData>();
+
+  const onDeleteAction = useCallback(
+    (actionType: string) => {
+      const formData = new FormData();
+      formData.append('_actionType', actionType);
+      formData.append('id', row?.report_id ?? '');
+
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [fetcher, row],
+  );
+
   return (
     <Modal
       size="s"
       open={showDialog}
-      onOpenChange={() => setShowDialog(false)}
+      onOpenChange={() => {
+        setShowDialog(false);
+      }}
       title={
         !fetcher.data?.deleteSuccess ? (
           <div className="flex gap-3 items-center dark:text-status-error">
@@ -163,10 +172,10 @@ const DeleteConfirmationModal = ({
               color="error"
               onClick={(e) => {
                 e.preventDefault();
-                onTableAction(row!, ActionEnumType.CONFIRM_DELETE);
+                onDeleteAction(ActionEnumType.DELETE);
               }}
             >
-              Yes, delete
+              Delete
             </Button>
           </div>
         ) : undefined
@@ -178,9 +187,8 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message ? (
-            <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
+            <p className="mt-2 dark:text-status-error text-p7">{fetcher.data?.message}</p>
           ) : null}
-          <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (
         <SuccessModalContent text="Deleted successfully!" />
@@ -212,20 +220,11 @@ const DownloadReport = () => {
   const { navigate } = usePageNavigation();
   const [modelRow, setModelRow] = useState<ModelExportReport>();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const fetcher = useFetcher<ActionData>();
 
   const onTableAction = useCallback((row: ModelExportReport, actionType: string) => {
     if (actionType === ActionEnumType.DELETE) {
       setModelRow(row);
       setShowDeleteDialog(true);
-    } else if (actionType === ActionEnumType.CONFIRM_DELETE) {
-      const formData = new FormData();
-      formData.append('_actionType', ActionEnumType.DELETE);
-      formData.append('id', row.report_id ?? '');
-
-      fetcher.submit(formData, {
-        method: 'post',
-      });
     } else if (actionType === ActionEnumType.DOWNLOAD) {
       download(row.url ?? '');
     }
@@ -248,13 +247,13 @@ const DownloadReport = () => {
         <Suspense fallback={<TableSkeleton columns={5} rows={10} />}>
           <ReportTable onTableAction={onTableAction} />
         </Suspense>
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          row={modelRow}
-          setShowDialog={setShowDeleteDialog}
-          onTableAction={onTableAction}
-          fetcher={fetcher}
-        />
+        {showDeleteDialog && (
+          <DeleteConfirmationModal
+            showDialog={showDeleteDialog}
+            row={modelRow}
+            setShowDialog={setShowDeleteDialog}
+          />
+        )}
       </div>
       <Outlet />
     </>

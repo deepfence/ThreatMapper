@@ -49,8 +49,9 @@ import { SEVERITY_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { queries } from '@/queries';
+import { invalidateAllQueries, queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
+import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import {
@@ -112,18 +113,19 @@ const action = async ({
           message: result.error.message ?? '',
         };
       } else if (result.error.response.status === 403) {
+        const message = await get403Message(result.error);
         return {
           success: false,
-          message: 'You do not have enough permissions to delete scan',
+          message,
         };
       }
+      throw result.error;
     }
-
-    return {
-      success: true,
-    };
   }
-  return null;
+  invalidateAllQueries();
+  return {
+    success: true,
+  };
 };
 
 const DeleteConfirmationModal = ({
@@ -186,7 +188,7 @@ const DeleteConfirmationModal = ({
                 onDeleteAction(ActionEnumType.DELETE);
               }}
             >
-              Yes, delete
+              Delete
             </Button>
           </div>
         ) : undefined
@@ -197,8 +199,9 @@ const DeleteConfirmationModal = ({
           Selected scan will be deleted.
           <br />
           <span>Are you sure you want to delete?</span>
-          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
-          <div className="flex items-center justify-right gap-4"></div>
+          {fetcher.data?.message && (
+            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+          )}
         </div>
       ) : (
         <SuccessModalContent text="Scan deleted successfully!" />
