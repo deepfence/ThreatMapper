@@ -76,6 +76,7 @@ import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
+import { isScanInProgress } from '@/utils/scan';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -227,7 +228,10 @@ const action = async ({
     }
   }
 
-  invalidateAllQueries();
+  if (actionType !== ActionEnumType.DELETE_SCAN) {
+    invalidateAllQueries();
+  }
+
   if (actionType === ActionEnumType.DELETE || actionType === ActionEnumType.DELETE_SCAN) {
     return {
       action: actionType,
@@ -369,8 +373,9 @@ const DeleteScanConfirmationModal = ({
 }: {
   scanId: string;
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (open: boolean, deleteSuccessful: boolean) => void;
 }) => {
+  const [deleteSuccessful, setDeleteSuccessful] = useState(false);
   const fetcher = useFetcher<ActionData>();
   const onDeleteScan = () => {
     const formData = new FormData();
@@ -380,10 +385,18 @@ const DeleteScanConfirmationModal = ({
       method: 'post',
     });
   };
+
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      setDeleteSuccessful(true);
+    }
+  }, [fetcher]);
   return (
     <Modal
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(open) => {
+        onOpenChange(open, deleteSuccessful);
+      }}
       size="s"
       title={
         !fetcher.data?.success ? (
@@ -400,7 +413,7 @@ const DeleteScanConfirmationModal = ({
           <div className={'flex gap-x-4 justify-end'}>
             <Button
               size="md"
-              onClick={() => onOpenChange(false)}
+              onClick={() => onOpenChange(false, deleteSuccessful)}
               type="button"
               variant="outline"
             >
@@ -462,7 +475,7 @@ const HistoryControls = () => {
   const { nodeType } = useParams();
   const { scanStatusResult } = data;
   const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
-  const { navigate } = usePageNavigation();
+  const { navigate, goBack } = usePageNavigation();
   const { downloadScan } = useDownloadScan();
 
   const [scanIdToDelete, setScanIdToDelete] = useState<string | null>(null);
@@ -518,41 +531,62 @@ const HistoryControls = () => {
         <DeleteScanConfirmationModal
           scanId={scanIdToDelete}
           open={!!scanIdToDelete}
-          onOpenChange={(open) => {
-            if (!open) setScanIdToDelete(null);
+          onOpenChange={(open, deleteSuccessful) => {
+            if (!open) {
+              if (deleteSuccessful && scanIdToDelete === scan_id) {
+                const latestScan = [...historyData.data].reverse().find((scan) => {
+                  return scan.scanId !== scanIdToDelete;
+                });
+                if (latestScan) {
+                  navigate(
+                    generatePath('./../:scanId', {
+                      scanId: latestScan.scanId,
+                    }),
+                  );
+                } else {
+                  goBack();
+                }
+              }
+              if (deleteSuccessful) invalidateAllQueries();
+              setScanIdToDelete(null);
+            }
           }}
         />
       )}
       <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
       <ScanStatusBadge status={status ?? ''} />
-      <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
-      <div className="pl-1.5 flex">
-        <IconButton
-          variant="flat"
-          icon={
-            <span className="h-3 w-3">
-              <DownloadLineIcon />
-            </span>
-          }
-          size="md"
-          onClick={() => {
-            downloadScan({
-              scanId: scan_id,
-              scanType: UtilsReportFiltersScanTypeEnum.Vulnerability,
-              nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
-            });
-          }}
-        />
-        <IconButton
-          variant="flat"
-          icon={
-            <span className="h-3 w-3">
-              <TrashLineIcon />
-            </span>
-          }
-          onClick={() => setScanIdToDelete(scan_id)}
-        />
-      </div>
+      {!isScanInProgress(status ?? '') && (
+        <>
+          <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
+          <div className="pl-1.5 flex">
+            <IconButton
+              variant="flat"
+              icon={
+                <span className="h-3 w-3">
+                  <DownloadLineIcon />
+                </span>
+              }
+              size="md"
+              onClick={() => {
+                downloadScan({
+                  scanId: scan_id,
+                  scanType: UtilsReportFiltersScanTypeEnum.Vulnerability,
+                  nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
+                });
+              }}
+            />
+            <IconButton
+              variant="flat"
+              icon={
+                <span className="h-3 w-3">
+                  <TrashLineIcon />
+                </span>
+              }
+              onClick={() => setScanIdToDelete(scan_id)}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 };

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { cn } from 'tailwind-preset';
 import { Dropdown, DropdownItem, IconButton } from 'ui-components';
 
@@ -22,15 +23,23 @@ export const ScanHistoryDropdown = ({
   }>;
   currentTimeStamp: string;
 }) => {
+  const [open, setOpen] = useState(false);
   return (
     <Dropdown
+      open={open}
+      onOpenChange={(open) => {
+        setOpen(open);
+      }}
       content={
         <>
           {scans.map((scan) => {
             return (
               <DropdownItem
                 key={scan.timestamp}
-                onClick={() => scan.onScanClick(scan.id)}
+                onClick={() => {
+                  setOpen(false);
+                  scan.onScanClick(scan.id);
+                }}
               >
                 <div className="flex items-center gap-1.5" key={scan.id}>
                   <ScanStatusBadge
@@ -57,8 +66,11 @@ export const ScanHistoryDropdown = ({
                             <DownloadLineIcon />
                           </span>
                         }
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           scan.onDownloadClick(scan.id);
+                          setOpen(false);
                         }}
                       />
                     ) : null}
@@ -70,8 +82,11 @@ export const ScanHistoryDropdown = ({
                             <TrashLineIcon />
                           </span>
                         }
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           scan.onDeleteClick(scan.id);
+                          setOpen(false);
                         }}
                       />
                     ) : null}
