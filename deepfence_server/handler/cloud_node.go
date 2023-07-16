@@ -59,6 +59,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			"node_id":        orgNodeId,
 			"cloud_provider": orgCloudProvider,
 			"node_name":      orgAccountId,
+			"version":        req.Version,
 		}
 		err = model.UpsertCloudComplianceNode(ctx, node, "")
 		if err != nil {
@@ -71,6 +72,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 				"cloud_provider":  req.CloudProvider,
 				"node_name":       monitoredAccountId,
 				"organization_id": orgNodeId,
+				"version":         req.Version,
 			}
 			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeId)
 			if err != nil {
@@ -101,6 +103,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			"node_id":        nodeId,
 			"cloud_provider": req.CloudProvider,
 			"node_name":      req.CloudAccount,
+			"version":        req.Version,
 		}
 		logrus.Debugf("Node for upsert: %+v", node)
 		err = model.UpsertCloudComplianceNode(ctx, node, "")

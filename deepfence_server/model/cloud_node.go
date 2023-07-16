@@ -30,6 +30,7 @@ type CloudNodeAccountRegisterReq struct {
 	CloudProvider       string            `json:"cloud_provider" required:"true"  enum:"aws,gcp,azure"`
 	MonitoredAccountIds map[string]string `json:"monitored_account_ids"`
 	OrgAccountId        string            `json:"org_acc_id"`
+	Version             string            `json:"version"`
 }
 
 type CloudNodeAccountRegisterResp struct {
@@ -66,6 +67,7 @@ type CloudNodeAccountInfo struct {
 	Active               bool    `json:"active"`
 	LastScanId           string  `json:"last_scan_id"`
 	LastScanStatus       string  `json:"last_scan_status"`
+	Version              string  `json:"version"`
 }
 
 func (v CloudNodeAccountInfo) NodeType() string {
@@ -201,7 +203,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 		if _, err := tx.Run(`
 			WITH $param as row
 			MERGE (n:CloudNode{node_id:row.node_id})
-			SET n+= row, n.active = true, n.updated_at = TIMESTAMP()`,
+			SET n+= row, n.active = true, n.updated_at = TIMESTAMP(), n.version = row.version`,
 			map[string]interface{}{
 				"param": nodeDetails,
 			}); err != nil {
@@ -213,7 +215,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			WITH $param as row, m
 			MERGE (n:CloudNode{node_id:row.node_id})
 			MERGE (m) -[:IS_CHILD]-> (n)
-			SET n+= row, n.active = true, n.updated_at = TIMESTAMP()`,
+			SET n+= row, n.active = true, n.updated_at = TIMESTAMP(), n.version = row.version`,
 			map[string]interface{}{
 				"param":          nodeDetails,
 				"parent_node_id": parentNodeId,
