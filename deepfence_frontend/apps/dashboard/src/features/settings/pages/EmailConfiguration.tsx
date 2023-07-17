@@ -290,7 +290,7 @@ const AddEmailConfigurationComponent = ({ show }: { show: boolean }) => {
         />
       )}
       {show && (
-        <div className="p-4 max-w-sm shadow-lg dark:bg-gray-800 rounded-md">
+        <Card className="p-4 max-w-sm dark:bg-bg-card">
           <h4 className="text-p2 pb-2 dark:text-text-text-and-icon">Setup</h4>
           <p className="text-p7 dark:text-text-text-and-icon">
             Please connect an email provider in order to configure email, you can click on
@@ -304,7 +304,7 @@ const AddEmailConfigurationComponent = ({ show }: { show: boolean }) => {
           >
             Add configuration
           </Button>
-        </div>
+        </Card>
       )}
     </>
   );
