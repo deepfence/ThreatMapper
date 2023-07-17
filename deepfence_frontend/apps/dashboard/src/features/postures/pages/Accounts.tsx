@@ -16,6 +16,7 @@ import {
   BreadcrumbLink,
   Button,
   CircleSpinner,
+  ColumnDef,
   Combobox,
   ComboboxOption,
   createColumnHelper,
@@ -46,6 +47,7 @@ import { TimesIcon } from '@/components/icons/common/Times';
 import { CLOUDS } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
+import { TruncatedText } from '@/components/TruncatedText';
 import { getColorForCompliancePercent } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import {
@@ -54,7 +56,12 @@ import {
 } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
-import { ComplianceScanNodeTypeEnum, ScanTypeEnum } from '@/types/common';
+import {
+  ComplianceScanNodeTypeEnum,
+  isCloudNode,
+  isCloudOrgNode,
+  ScanTypeEnum,
+} from '@/types/common';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatPercentage } from '@/utils/number';
@@ -534,7 +541,9 @@ const AccountTable = ({
   scanType,
   setShowDeleteDialog,
   setScanIdToDelete,
+  nodeType,
 }: {
+  nodeType?: ComplianceScanNodeTypeEnum;
   scanType: 'ComplianceScan' | 'CloudComplianceScan';
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
   rowSelectionState: RowSelectionState;
@@ -550,12 +559,9 @@ const AccountTable = ({
   const columnHelper = createColumnHelper<ModelCloudNodeAccountInfo>();
 
   const accounts = data?.accounts ?? [];
-  const cloudProvider = accounts[0]?.cloud_provider ?? '';
 
-  const nodeType = getNodeTypeByProviderName(cloudProvider);
-
-  const columns = useMemo(
-    () => [
+  const columns = useMemo(() => {
+    const columns: ColumnDef<ModelCloudNodeAccountInfo, any>[] = [
       getRowSelectionColumn(columnHelper, {
         minSize: 10,
         size: 10,
@@ -673,9 +679,24 @@ const AccountTable = ({
         size: 70,
         maxSize: 80,
       }),
-    ],
-    [rowSelectionState, searchParams, data],
-  );
+    ];
+
+    if (isCloudNode(nodeType) || isCloudOrgNode(nodeType)) {
+      columns.push(
+        columnHelper.accessor('version', {
+          cell: (info) => {
+            return <TruncatedText text={info.getValue() ?? ''} />;
+          },
+          header: () => 'Version',
+          minSize: 50,
+          size: 70,
+          maxSize: 80,
+        }),
+      );
+    }
+
+    return columns;
+  }, [rowSelectionState, searchParams, data, nodeType]);
 
   return (
     <>
@@ -881,6 +902,7 @@ const Accounts = () => {
             rowSelectionState={rowSelectionState}
             onTableAction={onTableAction}
             scanType={scanType}
+            nodeType={nodeType}
           />
         </Suspense>
       </div>

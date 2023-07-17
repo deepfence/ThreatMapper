@@ -72,7 +72,7 @@ export const AdvancedFilter = ({
             <div className="text-h5">Advanced Filter (Optional)</div>
           </div>
           <div className="grid grid-cols-2 gap-x-8 gap-y-6 pt-4">
-            {isCloudNode(nodeType as CloudNodeType) && (
+            {isCloudNode(nodeType) && (
               <Listbox
                 variant="underline"
                 value={selectedCloudAccounts}

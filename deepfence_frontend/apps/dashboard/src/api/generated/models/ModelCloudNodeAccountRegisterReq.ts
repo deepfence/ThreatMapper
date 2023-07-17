@@ -49,6 +49,12 @@ export interface ModelCloudNodeAccountRegisterReq {
      * @memberof ModelCloudNodeAccountRegisterReq
      */
     org_acc_id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudNodeAccountRegisterReq
+     */
+    version?: string;
 }
 
 
@@ -90,6 +96,7 @@ export function ModelCloudNodeAccountRegisterReqFromJSONTyped(json: any, ignoreD
         'monitored_account_ids': !exists(json, 'monitored_account_ids') ? undefined : json['monitored_account_ids'],
         'node_id': json['node_id'],
         'org_acc_id': !exists(json, 'org_acc_id') ? undefined : json['org_acc_id'],
+        'version': !exists(json, 'version') ? undefined : json['version'],
     };
 }
 
@@ -107,6 +114,7 @@ export function ModelCloudNodeAccountRegisterReqToJSON(value?: ModelCloudNodeAcc
         'monitored_account_ids': value.monitored_account_ids,
         'node_id': value.node_id,
         'org_acc_id': value.org_acc_id,
+        'version': value.version,
     };
 }
 

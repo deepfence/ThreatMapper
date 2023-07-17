@@ -5950,12 +5950,12 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelMalwareScanTriggerReq" }
+              "schema": { "$ref": "#/components/schemas/ModelStopScanRequest" }
             }
           }
         },
         "responses": {
-          "202": { "description": "Accepted" },
+          "200": { "description": "OK" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -5995,12 +5995,12 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelSecretScanTriggerReq" }
+              "schema": { "$ref": "#/components/schemas/ModelStopScanRequest" }
             }
           }
         },
         "responses": {
-          "202": { "description": "Accepted" },
+          "200": { "description": "OK" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -10615,7 +10615,8 @@
           "last_scan_id": { "type": "string" },
           "last_scan_status": { "type": "string" },
           "node_id": { "type": "string" },
-          "node_name": { "type": "string" }
+          "node_name": { "type": "string" },
+          "version": { "type": "string" }
         }
       },
       "ModelCloudNodeAccountRegisterReq": {
@@ -10630,7 +10631,8 @@
             "nullable": true
           },
           "node_id": { "type": "string" },
-          "org_acc_id": { "type": "string" }
+          "org_acc_id": { "type": "string" },
+          "version": { "type": "string" }
         }
       },
       "ModelCloudNodeAccountRegisterResp": {
@@ -12099,6 +12101,23 @@
           "value": {}
         }
       },
+      "ModelStopScanRequest": {
+        "required": ["scan_id", "scan_type"],
+        "type": "object",
+        "properties": {
+          "scan_id": { "type": "string" },
+          "scan_type": {
+            "enum": [
+              "SecretScan",
+              "VulnerabilityScan",
+              "MalwareScan",
+              "ComplianceScan",
+              "CloudComplianceScan"
+            ],
+            "type": "string"
+          }
+        }
+      },
       "ModelSummary": {
         "type": "object",
         "properties": {
@@ -12703,7 +12722,8 @@
           "sbom": { "type": "string" },
           "sbom_file_path": { "type": "string" },
           "scan_id": { "type": "string" },
-          "scan_type": { "type": "string" }
+          "scan_type": { "type": "string" },
+          "skip_scan": { "type": "boolean" }
         }
       }
     },

@@ -139,6 +139,7 @@ export * from './ModelSecretScanResultRules';
 export * from './ModelSecretScanTriggerReq';
 export * from './ModelSettingUpdateRequest';
 export * from './ModelSettingsResponse';
+export * from './ModelStopScanRequest';
 export * from './ModelSummary';
 export * from './ModelUpdateScheduledTaskRequest';
 export * from './ModelUpdateUserIdRequest';

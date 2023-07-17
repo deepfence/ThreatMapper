@@ -28,6 +28,7 @@ import type {
   ModelSecretScanResult,
   ModelSecretScanResultRules,
   ModelSecretScanTriggerReq,
+  ModelStopScanRequest,
   SearchResultGroupResp,
   SearchSearchCountResp,
 } from '../models';
@@ -58,6 +59,8 @@ import {
     ModelSecretScanResultRulesToJSON,
     ModelSecretScanTriggerReqFromJSON,
     ModelSecretScanTriggerReqToJSON,
+    ModelStopScanRequestFromJSON,
+    ModelStopScanRequestToJSON,
     SearchResultGroupRespFromJSON,
     SearchResultGroupRespToJSON,
     SearchSearchCountRespFromJSON,
@@ -97,7 +100,7 @@ export interface StatusSecretScanRequest {
 }
 
 export interface StopSecretScanRequest {
-    modelSecretScanTriggerReq?: ModelSecretScanTriggerReq;
+    modelStopScanRequest?: ModelStopScanRequest;
 }
 
 /**
@@ -253,7 +256,7 @@ export interface SecretScanApiInterface {
     /**
      * Stop Secret Scan on agent or registry
      * @summary Stop Secret Scan
-     * @param {ModelSecretScanTriggerReq} [modelSecretScanTriggerReq] 
+     * @param {ModelStopScanRequest} [modelStopScanRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SecretScanApiInterface
@@ -643,7 +646,7 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelSecretScanTriggerReqToJSON(requestParameters.modelSecretScanTriggerReq),
+            body: ModelStopScanRequestToJSON(requestParameters.modelStopScanRequest),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);

@@ -97,6 +97,12 @@ export interface UtilsScanSbomRequest {
      * @memberof UtilsScanSbomRequest
      */
     scan_type?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UtilsScanSbomRequest
+     */
+    skip_scan?: boolean;
 }
 
 /**
@@ -133,6 +139,7 @@ export function UtilsScanSbomRequestFromJSONTyped(json: any, ignoreDiscriminator
         'sbom_file_path': !exists(json, 'sbom_file_path') ? undefined : json['sbom_file_path'],
         'scan_id': json['scan_id'],
         'scan_type': !exists(json, 'scan_type') ? undefined : json['scan_type'],
+        'skip_scan': !exists(json, 'skip_scan') ? undefined : json['skip_scan'],
     };
 }
 
@@ -158,6 +165,7 @@ export function UtilsScanSbomRequestToJSON(value?: UtilsScanSbomRequest | null):
         'sbom_file_path': value.sbom_file_path,
         'scan_id': value.scan_id,
         'scan_type': value.scan_type,
+        'skip_scan': value.skip_scan,
     };
 }
 
