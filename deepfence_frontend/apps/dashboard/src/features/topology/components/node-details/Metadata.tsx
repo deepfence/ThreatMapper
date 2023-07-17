@@ -12,7 +12,7 @@ export const Metadata = ({
   return (
     <div>
       {title?.length ? <div className="text-h5 dark:text-white mb-3">{title}</div> : null}
-      <div className="mt-2 flex flex-wrap justify-between gap-x-2 gap-y-[30px] max-w-full">
+      <div className="flex flex-wrap justify-between gap-x-2 gap-y-[30px] max-w-full">
         {keys.map((key) => (
           <div
             key={key}
