@@ -85,17 +85,11 @@ enum ActionEnumType {
 
 const DEFAULT_PAGE_SIZE = 10;
 
-type ActionFunctionType =
-  | ReturnType<typeof getScanResultsApiClient>['deleteScanResult']
-  | ReturnType<typeof getScanResultsApiClient>['maskScanResult']
-  | ReturnType<typeof getScanResultsApiClient>['notifyScanResult']
-  | ReturnType<typeof getScanResultsApiClient>['unmaskScanResult'];
-
 type ActionData = {
   action: ActionEnumType;
   success: boolean;
   message?: string;
-} | null;
+};
 
 const action = async ({
   params: { scanId = '' },
@@ -109,14 +103,9 @@ const action = async ({
   if (!_scanId) {
     throw new Error('Scan ID is required');
   }
-  if (!actionType) {
-    return null;
-  }
 
-  let result = null;
-  let apiFunction: ActionFunctionType | null = null;
   if (actionType === ActionEnumType.DELETE || actionType === ActionEnumType.NOTIFY) {
-    apiFunction =
+    const apiFunction =
       actionType === ActionEnumType.DELETE
         ? getScanResultsApiClient().deleteScanResult
         : getScanResultsApiClient().notifyScanResult;
@@ -124,7 +113,7 @@ const action = async ({
     const apiFunctionApi = apiWrapper({
       fn: apiFunction,
     });
-    result = await apiFunctionApi({
+    const result = await apiFunctionApi({
       modelScanResultsActionRequest: {
         result_ids: [...ids],
         scan_id: _scanId,
@@ -156,15 +145,23 @@ const action = async ({
       }
       throw result.error;
     }
+    if (actionType === ActionEnumType.NOTIFY) {
+      toast.success('Notified successfully');
+    }
+    invalidateAllQueries();
+    return {
+      action: actionType,
+      success: true,
+    };
   } else if (actionType === ActionEnumType.MASK || actionType === ActionEnumType.UNMASK) {
-    apiFunction =
+    const apiFunction =
       actionType === ActionEnumType.MASK
         ? getScanResultsApiClient().maskScanResult
         : getScanResultsApiClient().unmaskScanResult;
     const apiFunctionApi = apiWrapper({
       fn: apiFunction,
     });
-    result = await apiFunctionApi({
+    const result = await apiFunctionApi({
       modelScanResultsMaskRequest: {
         mask_across_hosts_and_images: mask === 'maskHostAndImages',
         result_ids: [...ids],
@@ -199,6 +196,16 @@ const action = async ({
       }
       throw result.error;
     }
+    if (actionType === ActionEnumType.MASK) {
+      toast.success('Masked successfully');
+    } else if (actionType === ActionEnumType.UNMASK) {
+      toast.success('Unmasked successfully');
+    }
+    invalidateAllQueries();
+    return {
+      action: actionType,
+      success: true,
+    };
   } else if (actionType === ActionEnumType.DELETE_SCAN) {
     const deleteScan = apiWrapper({
       fn: getScanResultsApiClient().deleteScanResultsForScanID,
@@ -220,25 +227,13 @@ const action = async ({
       }
       throw result.error;
     }
-  }
-
-  if (actionType !== ActionEnumType.DELETE_SCAN) {
-    invalidateAllQueries();
-  }
-
-  if (actionType === ActionEnumType.DELETE || actionType === ActionEnumType.DELETE_SCAN) {
     return {
       action: actionType,
       success: true,
     };
-  } else if (actionType === ActionEnumType.NOTIFY) {
-    toast.success('Notified successfully');
-  } else if (actionType === ActionEnumType.MASK) {
-    toast.success('Masked successfully');
-  } else if (actionType === ActionEnumType.UNMASK) {
-    toast.success('Unmasked successfully');
+  } else {
+    throw new Error('Unknown action type.');
   }
-  return null;
 };
 
 const FILTER_SEARCHPARAMS: Record<string, string> = {
@@ -488,12 +483,16 @@ const HistoryControls = () => {
 
   const [scanIdToDelete, setScanIdToDelete] = useState<string | null>(null);
 
-  const { data: historyData } = useSuspenseQuery({
+  const { data: historyData, refetch } = useSuspenseQuery({
     ...queries.secret.scanHistories({
       nodeId: node_id ?? '',
       nodeType: node_type ?? '',
     }),
   });
+
+  useEffect(() => {
+    refetch();
+  }, [scan_id]);
 
   if (!scan_id || !node_id || !node_type) {
     throw new Error('Scan Type, Node Type and Node Id are required');
@@ -548,12 +547,12 @@ const HistoryControls = () => {
                     generatePath('/secret/scan-results/:scanId', {
                       scanId: latestScan.scanId,
                     }),
+                    { replace: true },
                   );
                 } else {
                   goBack();
                 }
               }
-              if (deleteSuccessful) invalidateAllQueries();
               setScanIdToDelete(null);
             }
           }}

@@ -98,17 +98,11 @@ enum ActionEnumType {
 
 const DEFAULT_PAGE_SIZE = 10;
 
-type ActionFunctionType =
-  | ReturnType<typeof getScanResultsApiClient>['deleteScanResult']
-  | ReturnType<typeof getScanResultsApiClient>['maskScanResult']
-  | ReturnType<typeof getScanResultsApiClient>['notifyScanResult']
-  | ReturnType<typeof getScanResultsApiClient>['unmaskScanResult'];
-
 type ActionData = {
   action: ActionEnumType;
   success: boolean;
   message?: string;
-} | null;
+};
 
 const action = async ({
   params: { scanId = '' },
@@ -121,14 +115,9 @@ const action = async ({
   if (!_scanId) {
     throw new Error('Scan ID is required');
   }
-  if (!actionType) {
-    return null;
-  }
 
-  let result = null;
-  let apiFunction: ActionFunctionType | null = null;
   if (actionType === ActionEnumType.DELETE || actionType === ActionEnumType.NOTIFY) {
-    apiFunction =
+    const apiFunction =
       actionType === ActionEnumType.DELETE
         ? getScanResultsApiClient().deleteScanResult
         : getScanResultsApiClient().notifyScanResult;
@@ -136,7 +125,7 @@ const action = async ({
       fn: apiFunction,
     });
 
-    result = await resultApi({
+    const result = await resultApi({
       modelScanResultsActionRequest: {
         result_ids: [...ids],
         scan_id: _scanId,
@@ -169,15 +158,23 @@ const action = async ({
       }
       throw result.error;
     }
+    invalidateAllQueries();
+    if (actionType === ActionEnumType.NOTIFY) {
+      toast.success('Notified successfully');
+    }
+    return {
+      action: actionType,
+      success: true,
+    };
   } else if (actionType === ActionEnumType.MASK || actionType === ActionEnumType.UNMASK) {
-    apiFunction =
+    const apiFunction =
       actionType === ActionEnumType.MASK
         ? getScanResultsApiClient().maskScanResult
         : getScanResultsApiClient().unmaskScanResult;
     const resultApi = apiWrapper({
       fn: apiFunction,
     });
-    result = await resultApi({
+    const result = await resultApi({
       modelScanResultsMaskRequest: {
         result_ids: [...ids],
         scan_id: _scanId,
@@ -205,6 +202,16 @@ const action = async ({
       }
       throw result.error;
     }
+    invalidateAllQueries();
+    if (actionType === ActionEnumType.MASK) {
+      toast.success('Masked successfully');
+    } else if (actionType === ActionEnumType.UNMASK) {
+      toast.success('Unmasked successfully');
+    }
+    return {
+      action: actionType,
+      success: true,
+    };
   } else if (actionType === ActionEnumType.DELETE_SCAN) {
     const deleteScan = apiWrapper({
       fn: getScanResultsApiClient().deleteScanResultsForScanID,
@@ -226,25 +233,13 @@ const action = async ({
       }
       throw result.error;
     }
-  }
-
-  if (actionType !== ActionEnumType.DELETE_SCAN) {
-    invalidateAllQueries();
-  }
-
-  if (actionType === ActionEnumType.DELETE || actionType === ActionEnumType.DELETE_SCAN) {
     return {
       action: actionType,
       success: true,
     };
-  } else if (actionType === ActionEnumType.NOTIFY) {
-    toast.success('Notified successfully');
-  } else if (actionType === ActionEnumType.MASK) {
-    toast.success('Masked successfully');
-  } else if (actionType === ActionEnumType.UNMASK) {
-    toast.success('Unmasked successfully');
+  } else {
+    throw new Error('Unknown action type.');
   }
-  return null;
 };
 
 const useScanResults = () => {
@@ -480,13 +475,17 @@ const HistoryControls = () => {
 
   const [scanIdToDelete, setScanIdToDelete] = useState<string | null>(null);
 
-  const { data: historyData } = useSuspenseQuery({
+  const { data: historyData, refetch } = useSuspenseQuery({
     ...queries.posture.scanHistories({
       scanType: ScanTypeEnum.CloudComplianceScan,
       nodeId: node_id ?? '',
       nodeType: 'cloud_account',
     }),
   });
+
+  useEffect(() => {
+    refetch();
+  }, [scan_id]);
 
   if (!scan_id || !node_id || !node_type || !nodeType) {
     throw new Error('Scan Type, Node Type and Node Id are required');
@@ -542,12 +541,12 @@ const HistoryControls = () => {
                     generatePath('./../:scanId', {
                       scanId: latestScan.scanId,
                     }),
+                    { replace: true },
                   );
                 } else {
                   goBack();
                 }
               }
-              if (deleteSuccessful) invalidateAllQueries();
               setScanIdToDelete(null);
             }
           }}
