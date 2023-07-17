@@ -1,8 +1,4 @@
 import { upperCase } from 'lodash-es';
-import { Button } from 'ui-components';
-
-import { useCopyToClipboardState } from '@/components/CopyToClipboard';
-import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 
 export const Metadata = ({
   data,
@@ -12,23 +8,10 @@ export const Metadata = ({
   title?: string;
 }) => {
   const keys = Object.keys(data);
-  const { copy, isCopied } = useCopyToClipboardState();
   if (!keys.length) return null;
   return (
-    <div className="relative">
+    <div>
       {title?.length ? <div className="text-h5 dark:text-white mb-3">{title}</div> : null}
-      <Button
-        variant="flat"
-        size="sm"
-        className="absolute right-0 -top-4"
-        onClick={() => {
-          copy(JSON.stringify(data ?? {}));
-        }}
-        startIcon={<CopyLineIcon />}
-      >
-        {isCopied ? 'Copied JSON' : 'Copy JSON'}
-      </Button>
-
       <div className="mt-2 flex flex-wrap justify-between gap-x-2 gap-y-[30px] max-w-full">
         {keys.map((key) => (
           <div

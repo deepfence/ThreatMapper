@@ -148,11 +148,14 @@ const ActionDropdown = ({
 
   return (
     <>
-      <EditGlobalSettingModal
-        showDialog={openEditSetting}
-        setShowDialog={setOpenEditSetting}
-        setting={setting}
-      />
+      {openEditSetting && (
+        <EditGlobalSettingModal
+          showDialog={openEditSetting}
+          setShowDialog={setOpenEditSetting}
+          setting={setting}
+        />
+      )}
+
       <Dropdown
         triggerAsChild={true}
         align="start"
