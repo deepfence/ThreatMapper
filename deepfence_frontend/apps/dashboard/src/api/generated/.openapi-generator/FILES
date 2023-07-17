@@ -162,6 +162,7 @@ models/ModelSecretScanResultRules.ts
 models/ModelSecretScanTriggerReq.ts
 models/ModelSettingUpdateRequest.ts
 models/ModelSettingsResponse.ts
+models/ModelStopScanRequest.ts
 models/ModelSummary.ts
 models/ModelUpdateScheduledTaskRequest.ts
 models/ModelUpdateUserIdRequest.ts

@@ -54,7 +54,7 @@ import { Dropdown, DropdownItem } from '@/main';
 import EmptyBoxImg from './empty-box.png';
 
 type SizeOf = 'compact' | 'medium' | 'default' | 'relaxed';
-export interface TableProps<TData extends RowData> {
+interface TableProps<TData extends RowData> {
   data: TData[];
   columns: ColumnDef<TData, any>[]; // eslint-disable-line @typescript-eslint/no-explicit-any
   renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement;
@@ -526,7 +526,7 @@ function Td<TData>({
   );
 }
 
-export function getRowExpanderColumn<TData extends RowData>(
+function getRowExpanderColumn<TData extends RowData>(
   columnHelper?: ColumnHelper<TData>,
   options?: Omit<DisplayColumnDef<TData, unknown>, 'id' | 'enableResizing'>,
 ): ColumnDef<TData, unknown> {
@@ -549,7 +549,7 @@ export function getRowExpanderColumn<TData extends RowData>(
   });
 }
 
-export function getRowSelectionColumn<TData extends RowData>(
+function getRowSelectionColumn<TData extends RowData>(
   columnHelper?: ColumnHelper<TData>,
   options?: Omit<DisplayColumnDef<TData, unknown>, 'id' | 'enableResizing'>,
 ): ColumnDef<TData, unknown> {
@@ -620,11 +620,19 @@ const CustomTableWithRef = forwardRef(CustomTable) as <TData extends RowData>(
   props: TableProps<TData> & { ref?: Ref<Table<TData>> },
 ) => ReactElement;
 
-export { createColumnHelper, CustomTableWithRef as Table, TableNoDataElement };
+export {
+  createColumnHelper,
+  getRowExpanderColumn,
+  getRowSelectionColumn,
+  CustomTableWithRef as Table,
+  TableNoDataElement,
+};
 export type {
+  ColumnDef,
   ExpandedState,
   PaginationState,
   RowSelectionState,
   SortingState,
   Table as TableInstance,
+  TableProps,
 };

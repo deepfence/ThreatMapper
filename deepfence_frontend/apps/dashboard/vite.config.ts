@@ -15,7 +15,12 @@ const root = path.dirname(current);
 export default defineConfig(({ mode }) => {
   const viteEnv = loadEnv(mode, '.');
   return {
-    plugins: [react(), ...(mode === 'production' ? [visualizer()] : [])],
+    plugins: [
+      react({
+        fastRefresh: false,
+      }),
+      ...(mode === 'production' ? [visualizer()] : []),
+    ],
     test: {
       includeSource: ['src/**/*.test.{ts, tsx}'],
       exclude: [...configDefaults.exclude, 'e2e/**'],

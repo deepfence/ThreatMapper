@@ -78,5 +78,7 @@ export const registryTypeToNameMapping: { [key: string]: string } = {
 } as const;
 
 export type CloudNodeType = 'aws' | 'azure' | 'gcp';
-export const isCloudNode = (nodeType: CloudNodeType) =>
+export const isCloudNode = (nodeType?: string) =>
   nodeType === 'aws' || nodeType === 'azure' || nodeType === 'gcp';
+export const isCloudOrgNode = (nodeType?: string) =>
+  nodeType === 'aws_org' || nodeType === 'gcp_org';

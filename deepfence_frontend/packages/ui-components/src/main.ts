@@ -42,6 +42,7 @@ export { CircleSpinner } from '@/components/spinner/CircleSpinner';
 export { Step, Stepper } from '@/components/stepper/Stepper';
 export { default as Switch } from '@/components/switch/Switch';
 export type {
+  ColumnDef,
   ExpandedState,
   PaginationState,
   RowSelectionState,
