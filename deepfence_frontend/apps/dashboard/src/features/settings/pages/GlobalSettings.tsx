@@ -130,7 +130,7 @@ const EditGlobalSettingModal = ({
             </div>
           </fetcher.Form>
         ) : (
-          <SuccessModalContent text="Global Settings successfully updated!" />
+          <SuccessModalContent text="Updated successfully" />
         )}
       </SlidingModalContent>
     </SlidingModal>
@@ -148,11 +148,14 @@ const ActionDropdown = ({
 
   return (
     <>
-      <EditGlobalSettingModal
-        showDialog={openEditSetting}
-        setShowDialog={setOpenEditSetting}
-        setting={setting}
-      />
+      {openEditSetting && (
+        <EditGlobalSettingModal
+          showDialog={openEditSetting}
+          setShowDialog={setOpenEditSetting}
+          setting={setting}
+        />
+      )}
+
       <Dropdown
         triggerAsChild={true}
         align="start"

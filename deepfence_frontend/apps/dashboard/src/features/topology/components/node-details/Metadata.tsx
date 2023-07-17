@@ -12,11 +12,11 @@ export const Metadata = ({
   return (
     <div>
       {title?.length ? <div className="text-h5 dark:text-white mb-3">{title}</div> : null}
-      <div className="flex flex-wrap justify-between gap-x-2 gap-y-4 max-w-full">
+      <div className="flex flex-wrap justify-between gap-x-2 gap-y-[30px] max-w-full">
         {keys.map((key) => (
           <div
             key={key}
-            className="flex flex-1 basis-[48%] min-w-[48%] max-w-full flex-col gap-1/2"
+            className="flex flex-1 basis-[48%] min-w-[48%] max-w-full flex-col gap-y-2"
           >
             <div className="text-p3  dark:text-text-text-and-icon capitalize">
               {toTopologyMetadataKey(key)}

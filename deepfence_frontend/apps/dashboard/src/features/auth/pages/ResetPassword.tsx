@@ -115,7 +115,7 @@ const ResetPassword = () => {
   ) : (
     <div className={`mt-1.5 flex flex-col`}>
       <h1 className="dark:text-status-success text-p4 text-center">
-        Password successfully updated!!!{' '}
+        Password updated successfully
       </h1>
       <DFLink
         to="/auth/login"
