@@ -435,7 +435,7 @@ const DeleteScanConfirmationModal = ({
           )}
         </div>
       ) : (
-        <SuccessModalContent text="Scan deleted successfully!" />
+        <SuccessModalContent text="Deleted successfully!" />
       )}
     </Modal>
   );
@@ -1127,7 +1127,9 @@ const PostureTable = ({
         size: 150,
         maxSize: 160,
         header: () => 'Description',
-        cell: (info) => <TruncatedText text={info.getValue()} />,
+        cell: (info) => (
+          <TruncatedText text={info.getValue() || 'No description available'} />
+        ),
       }),
     ];
 

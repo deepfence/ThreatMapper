@@ -130,7 +130,7 @@ const EditGlobalSettingModal = ({
             </div>
           </fetcher.Form>
         ) : (
-          <SuccessModalContent text="Global Settings successfully updated!" />
+          <SuccessModalContent text="Updated successfully" />
         )}
       </SlidingModalContent>
     </SlidingModal>

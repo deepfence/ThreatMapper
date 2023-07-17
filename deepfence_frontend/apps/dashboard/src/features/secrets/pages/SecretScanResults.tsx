@@ -446,7 +446,7 @@ const DeleteScanConfirmationModal = ({
           <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (
-        <SuccessModalContent text="Scan deleted successfully!" />
+        <SuccessModalContent text="Deleted successfully!" />
       )}
     </Modal>
   );
@@ -1004,7 +1004,9 @@ const SecretTable = ({
       columnHelper.accessor('name', {
         enableSorting: false,
         enableResizing: true,
-        cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
+        cell: (info) => (
+          <TruncatedText text={info.getValue() || 'No description available'} />
+        ),
         header: () => <TruncatedText text="Description" />,
         minSize: 100,
         size: 120,

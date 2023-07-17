@@ -329,7 +329,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       }
       throw r.error;
     }
-    toast.success('Integration added successfully');
+    toast.success('Added successfully');
     invalidateAllQueries();
   } else if (_actionType === ActionEnumType.DELETE) {
     const id = formData.get('id')?.toString();
@@ -352,7 +352,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
         };
       }
     }
-    toast.success('Integration deleted successfully');
+    toast.success('Deleted successfully');
     invalidateAllQueries();
     return {
       deleteSuccess: true,

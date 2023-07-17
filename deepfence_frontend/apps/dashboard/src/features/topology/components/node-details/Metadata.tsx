@@ -1,4 +1,8 @@
 import { upperCase } from 'lodash-es';
+import { Button } from 'ui-components';
+
+import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 
 export const Metadata = ({
   data,
@@ -8,15 +12,28 @@ export const Metadata = ({
   title?: string;
 }) => {
   const keys = Object.keys(data);
+  const { copy, isCopied } = useCopyToClipboardState();
   if (!keys.length) return null;
   return (
-    <div>
+    <div className="relative">
       {title?.length ? <div className="text-h5 dark:text-white mb-3">{title}</div> : null}
-      <div className="flex flex-wrap justify-between gap-x-2 gap-y-4 max-w-full">
+      <Button
+        variant="flat"
+        size="sm"
+        className="absolute right-0 -top-4"
+        onClick={() => {
+          copy(JSON.stringify(data ?? {}));
+        }}
+        startIcon={<CopyLineIcon />}
+      >
+        {isCopied ? 'Copied JSON' : 'Copy JSON'}
+      </Button>
+
+      <div className="mt-2 flex flex-wrap justify-between gap-x-2 gap-y-[30px] max-w-full">
         {keys.map((key) => (
           <div
             key={key}
-            className="flex flex-1 basis-[48%] min-w-[48%] max-w-full flex-col gap-1/2"
+            className="flex flex-1 basis-[48%] min-w-[48%] max-w-full flex-col gap-y-2"
           >
             <div className="text-p3  dark:text-text-text-and-icon capitalize">
               {toTopologyMetadataKey(key)}

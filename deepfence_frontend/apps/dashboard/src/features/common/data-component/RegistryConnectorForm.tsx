@@ -133,7 +133,7 @@ export const registryConnectorActionApi = async ({
     }
   }
   invalidateAllQueries();
-  toast.success('Registry added successfully');
+  toast.success('Added successfully');
   return {
     success: true,
   };

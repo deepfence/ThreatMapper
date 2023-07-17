@@ -20,26 +20,24 @@ import { ModelEmailConfigurationAdd, ModelEmailConfigurationResp } from '@/api/g
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { getFieldErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
-type AddEmailConfigurationReturnType = {
+type ActionReturnType = {
   error?: string;
   message?: string;
   success?: boolean;
-  amazon_access_key?: string;
-  amazon_secret_key?: string;
-  created_by_user_id?: string;
-  email_id?: string;
-  email_provider?: string;
-  password?: string;
-  port?: string;
-  ses_region?: string;
-  smtp?: string;
-};
-
-type ActionReturnType = {
-  success: boolean;
-  message?: string;
+  fieldErrors?: {
+    amazon_access_key?: string;
+    amazon_secret_key?: string;
+    created_by_user_id?: string;
+    email_id?: string;
+    email_provider?: string;
+    password?: string;
+    port?: string;
+    ses_region?: string;
+    smtp?: string;
+  };
 };
 
 const emailProviders: { [key: string]: string } = {
@@ -113,9 +111,22 @@ export const action = async ({
     });
     if (!addResponse.ok) {
       if (addResponse.error.response.status === 400) {
+        const fieldErrors = await getFieldErrors(addResponse.error);
         return {
           success: false,
           message: addResponse.error.message,
+          fieldErrors: {
+            email_id: fieldErrors?.email_id,
+            password: fieldErrors?.password,
+            port: fieldErrors?.port,
+            smtp: fieldErrors?.smtp,
+
+            ses_region: fieldErrors?.ses_region,
+            amazon_access_key: fieldErrors?.amazon_access_key,
+            amazon_secret_key: fieldErrors?.amazon_secret_key,
+            created_by_user_id: fieldErrors?.created_by_user_id,
+            email_provider: fieldErrors?.email_provider,
+          },
         };
       }
       throw addResponse.error;
@@ -134,7 +145,7 @@ const EmailConfigurationModal = ({
   showDialog: boolean;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const fetcher = useFetcher<AddEmailConfigurationReturnType>();
+  const fetcher = useFetcher<ActionReturnType>();
   const { data, state } = fetcher;
   const [emailProvider, setEmailProvider] = useState<string>('Google SMTP');
 
@@ -177,6 +188,8 @@ const EmailConfigurationModal = ({
             placeholder="Email"
             name="email_id"
             required
+            color={data?.fieldErrors?.email_id ? 'error' : 'default'}
+            helperText={data?.fieldErrors?.email_id}
           />
           {emailProvider !== 'Amazon SES' ? (
             <>
@@ -186,6 +199,8 @@ const EmailConfigurationModal = ({
                 placeholder="Password"
                 name="password"
                 required
+                color={data?.fieldErrors?.password ? 'error' : 'default'}
+                helperText={data?.fieldErrors?.password}
               />
               <TextInput
                 label="Port"
@@ -195,6 +210,8 @@ const EmailConfigurationModal = ({
                 }
                 name="port"
                 required
+                color={data?.fieldErrors?.port ? 'error' : 'default'}
+                helperText={data?.fieldErrors?.port}
               />
               <TextInput
                 label="SMTP"
@@ -202,6 +219,8 @@ const EmailConfigurationModal = ({
                 placeholder="SMTP server"
                 name="smtp"
                 required
+                color={data?.fieldErrors?.smtp ? 'error' : 'default'}
+                helperText={data?.fieldErrors?.smtp}
               />
             </>
           ) : (
@@ -212,6 +231,8 @@ const EmailConfigurationModal = ({
                 placeholder="SES Region"
                 name="ses_region"
                 required
+                color={data?.fieldErrors?.ses_region ? 'error' : 'default'}
+                helperText={data?.fieldErrors?.ses_region}
               />
               <TextInput
                 label="Amazon Access Key"
@@ -219,6 +240,8 @@ const EmailConfigurationModal = ({
                 placeholder="Amazon Access Key"
                 name="amazon_access_key"
                 required
+                color={data?.fieldErrors?.amazon_access_key ? 'error' : 'default'}
+                helperText={data?.fieldErrors?.amazon_access_key}
               />
               <TextInput
                 label="Amazon Secret Key"
@@ -226,6 +249,8 @@ const EmailConfigurationModal = ({
                 placeholder="Amazon Secret Key"
                 name="amazon_secret_key"
                 required
+                color={data?.fieldErrors?.amazon_secret_key ? 'error' : 'default'}
+                helperText={data?.fieldErrors?.amazon_secret_key}
               />
             </>
           )}
@@ -467,7 +492,7 @@ const DeleteConfirmationModal = ({
             </fetcher.Form>
           </div>
         ) : (
-          <SuccessModalContent text="Successfully deleted" />
+          <SuccessModalContent text="Deleted successfully" />
         )
       }
     >

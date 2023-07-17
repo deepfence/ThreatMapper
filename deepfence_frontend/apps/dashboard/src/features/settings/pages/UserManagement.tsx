@@ -593,7 +593,7 @@ const EditUserModal = ({
             </div>
           </fetcher.Form>
         ) : (
-          <SuccessModalContent text="User details successfully updated!" />
+          <SuccessModalContent text="Updated successfully" />
         )}
       </SlidingModalContent>
     </SlidingModal>
