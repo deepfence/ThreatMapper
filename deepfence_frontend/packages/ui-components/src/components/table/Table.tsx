@@ -150,9 +150,7 @@ const CustomTable = <TData extends RowData>(
   // react to change in page size
   useEffect(() => {
     if (enablePagination && !manualPagination) {
-      setInternalPaginationState((prev) => {
-        return { ...prev, pageSize };
-      });
+      setInternalPaginationState({ pageSize, pageIndex: 0 });
     }
   }, [manualPagination, enablePagination, pageSize]);
 
