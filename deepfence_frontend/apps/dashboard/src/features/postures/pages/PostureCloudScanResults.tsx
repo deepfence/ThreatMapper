@@ -507,7 +507,7 @@ const HistoryControls = () => {
           onDownloadClick: () => {
             downloadScan({
               scanId: item.scanId,
-              scanType: UtilsReportFiltersScanTypeEnum.Compliance,
+              scanType: UtilsReportFiltersScanTypeEnum.CloudCompliance,
               nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
             });
           },
@@ -569,7 +569,7 @@ const HistoryControls = () => {
               onClick={() => {
                 downloadScan({
                   scanId: scan_id,
-                  scanType: UtilsReportFiltersScanTypeEnum.Vulnerability,
+                  scanType: UtilsReportFiltersScanTypeEnum.CloudCompliance,
                   nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
                 });
               }}
