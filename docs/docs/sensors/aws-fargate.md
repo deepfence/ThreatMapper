@@ -18,7 +18,7 @@ See also the Deepfence ThreatStryker instructions.
 
 Grant IAM permissions for ECS task execution role to access this secret as outlined [here](https://aws.amazon.com/blogs/compute/introducing-private-registry-authentication-support-for-aws-fargate/).
 
-  * Create an AWS secret that contains the user credentials needed to pull the Deepfence sensor container image from a private repository.  Once the secret is created, it can be linked to an IAM policy and added to an IAM role. You can also create secrets and policies for any other container images that are hosted in private repositories and need to be deployed as part of the Fargate task definition.
+  * Create an AWS secret that contains the user credentials needed to pull the Deepfence sensor container image from a private repository.  Once the secret is created, it can be linked to an IAM policy and added to an IAM role. You can also create secrets and policies for any other container images that are hosted in private repositories and need to be deployed as part of the Fargate task definition.(**Only required if using private registry to pull container images**)
   * Create one or more IAM roles that contain the ```AmazonECSTaskExecutionRolePolicy``` policy, along with the policy that references the AWS secrets.
 
 ## Create New Task Definition
@@ -34,7 +34,7 @@ Grant IAM permissions for ECS task execution role to access this secret as outli
    * Define the sidecar containers - 
       * Name - deepfence-agent
       * Image - ```docker.io/deepfenceio/deepfence_fargate_agent_ce:1.5.0```
-      * Select the checkbox for "Private registry authentication" and provide the Secrets Manager ARN or name
+      * Select the checkbox for "Private registry authentication" and provide the Secrets Manager ARN or name(**Only required if using private registry to pull container images**)
       * Unselect the checkbox for "Essential" - the sidecar container is transient and exits once the sensor is installed
    * Define your application containers
    * Entry Point -

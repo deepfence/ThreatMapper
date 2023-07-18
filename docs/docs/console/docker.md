@@ -17,7 +17,7 @@ The following instructions explain how to get started with a docker-based instal
     ```bash
     sudo sysctl -w vm.max_map_count=262144
     ```
-  
+   To set this value permanently, update the `vm.max_map_count` setting in `/etc/sysctl.conf`
 2. Download the file [docker-compose.yml](https://github.com/deepfence/ThreatMapper/blob/release-1.5/deployment-scripts/docker-compose.yml) to the system that will host the Console
 
     ```bash

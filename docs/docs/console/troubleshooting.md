@@ -12,13 +12,13 @@ $ cat /etc/sysconfig/docker
 # used by the systemd service unit.
 DAEMON_MAXFILES=1048576
 # Additional startup options for the Docker daemon, for example:
-# OPTIONS=” — ip-forward=true — iptables=true”
+# OPTIONS="--ip-forward=true --iptables=true"
 # By default we limit the number of open files per container
-OPTIONS=" — default-ulimit nofile=1024:4096"
+OPTIONS="--default-ulimit nofile=1024:4096"
 ```
 You can change the desired value as below.
 ```shell
-OPTIONS=" — default-ulimit nofile=1024000:1024000"
+OPTIONS="--default-ulimit nofile=1024000:1024000"
 ```
 Restart Docker daemon
 
