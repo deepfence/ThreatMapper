@@ -1,6 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useIsFetching } from '@tanstack/react-query';
-import cx from 'classnames';
 import { capitalize } from 'lodash-es';
 import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -32,6 +31,10 @@ import {
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
+import {
+  ConfigureScanModal,
+  ConfigureScanModalProps,
+} from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
@@ -57,6 +60,7 @@ import { formatMilliseconds } from '@/utils/date';
 import {
   isNeverScanned,
   isScanComplete,
+  isScanInProgress,
   SCAN_STATUS_GROUPS,
   SecretScanGroupedStatus,
 } from '@/utils/scan';
@@ -219,6 +223,7 @@ const ActionDropdown = ({
   setShowDeleteDialog,
   setScanIdToDelete,
   setNodeIdToDelete,
+  setStartScanInfo,
 }: {
   trigger: React.ReactNode;
   scanId: string;
@@ -228,6 +233,13 @@ const ActionDropdown = ({
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   setScanIdToDelete: React.Dispatch<React.SetStateAction<string>>;
   setNodeIdToDelete: React.Dispatch<React.SetStateAction<string>>;
+  setStartScanInfo: React.Dispatch<
+    React.SetStateAction<{
+      start: boolean;
+      nodeId: string;
+      nodeType: string;
+    }>
+  >;
 }) => {
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
@@ -259,30 +271,23 @@ const ActionDropdown = ({
               e.preventDefault();
               onDownloadAction();
             }}
+            disabled={!isScanComplete(scanStatus)}
           >
-            <span
-              className={cx('flex items-center gap-x-2', {
-                'opacity-60 dark:opacity-30 cursor-default': !isScanComplete(scanStatus),
-              })}
-            >
-              Download Report
-            </span>
+            <span>Download report</span>
           </DropdownItem>
           <DropdownItem
             onClick={(e) => {
-              if (!isScanComplete(scanStatus)) return;
               e.preventDefault();
-              onDownloadAction();
+              if (isScanInProgress(scanStatus)) return;
+              setStartScanInfo({
+                start: true,
+                nodeId,
+                nodeType,
+              });
             }}
-            disabled
+            disabled={isScanInProgress(scanStatus)}
           >
-            <span
-              className={cx('flex items-center gap-x-2', {
-                'opacity-60 dark:opacity-30 cursor-default': !isScanComplete(scanStatus),
-              })}
-            >
-              Start scan
-            </span>
+            <span>Start scan</span>
           </DropdownItem>
           <DropdownItem
             className="text-sm"
@@ -557,6 +562,11 @@ const ScansTable = () => {
   const [sort, setSort] = useSortingState();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [scanIdToDelete, setScanIdToDelete] = useState('');
+  const [startScanInfo, setStartScanInfo] = useState({
+    start: false,
+    nodeId: '',
+    nodeType: '',
+  });
   const [nodeIdToDelete, setNodeIdToDelete] = useState('');
 
   const columnHelper = createColumnHelper<ScanResult>();
@@ -575,6 +585,7 @@ const ScansTable = () => {
             setScanIdToDelete={setScanIdToDelete}
             setNodeIdToDelete={setNodeIdToDelete}
             setShowDeleteDialog={setShowDeleteDialog}
+            setStartScanInfo={setStartScanInfo}
             trigger={
               <button className="p-1 flex">
                 <span className="block h-4 w-4 dark:text-text-text-and-icon rotate-90 shrink-0">
@@ -813,6 +824,28 @@ const ScansTable = () => {
           scanId={scanIdToDelete}
           nodeId={nodeIdToDelete}
           setShowDialog={setShowDeleteDialog}
+        />
+      )}
+      {startScanInfo.start && (
+        <ConfigureScanModal
+          open={true}
+          onOpenChange={() =>
+            setStartScanInfo({
+              start: false,
+              nodeId: '',
+              nodeType: '',
+            })
+          }
+          scanOptions={
+            {
+              showAdvancedOptions: true,
+              scanType: ScanTypeEnum.SecretScan,
+              data: {
+                nodeIds: [startScanInfo.nodeId],
+                nodeType: startScanInfo.nodeType,
+              },
+            } as ConfigureScanModalProps['scanOptions']
+          }
         />
       )}
       <Table

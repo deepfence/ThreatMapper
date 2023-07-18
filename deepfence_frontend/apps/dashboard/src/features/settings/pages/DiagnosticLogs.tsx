@@ -269,10 +269,8 @@ const AgentDiagnosticLogsTable = () => {
     return columns;
   }, []);
 
-  const revalidator = useRevalidator();
-
   useInterval(() => {
-    revalidator.revalidate();
+    invalidateAllQueries();
   }, 15000);
 
   if (message) {

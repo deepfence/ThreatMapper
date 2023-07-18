@@ -563,9 +563,9 @@ const AccountTable = ({
   const columns = useMemo(() => {
     const columns: ColumnDef<ModelCloudNodeAccountInfo, any>[] = [
       getRowSelectionColumn(columnHelper, {
-        minSize: 10,
-        size: 10,
-        maxSize: 10,
+        minSize: 15,
+        size: 15,
+        maxSize: 15,
       }),
       columnHelper.display({
         id: 'actions',
