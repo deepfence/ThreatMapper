@@ -69,7 +69,7 @@ const Header = () => {
 };
 
 function processLabel(labelKey: string) {
-  return labelKey.replaceAll('_', ' ').replaceAll('id', 'ID');
+  return labelKey.replaceAll('_', ' ').replace(new RegExp('\\bid', 'g'), 'ID');
 }
 
 const DetailsComponent = () => {

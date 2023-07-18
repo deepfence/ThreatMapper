@@ -380,6 +380,16 @@ export const useIntegrationTableColumn = (
             },
           ),
         ];
+      case IntegrationType.email:
+        return [
+          {
+            accessorKey: 'config.email_id',
+            header: () => <TruncatedText text={'Email id'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          },
+        ];
       default:
         console.warn('Dynamic columns valid integration type');
         return [];

@@ -1297,7 +1297,7 @@ const DynamicBreadcrumbs = () => {
           })}
           unstyled
         >
-          {capitalize(providersToNameMapping[params.nodeType])}
+          {providersToNameMapping[params.nodeType]}
         </DFLink>
       </BreadcrumbLink>
       <BreadcrumbLink icon={<PostureIcon />} isLast>
