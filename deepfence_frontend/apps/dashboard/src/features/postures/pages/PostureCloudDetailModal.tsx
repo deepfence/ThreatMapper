@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { upperCase } from 'lodash-es';
 import { Suspense } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -68,8 +69,19 @@ const Header = () => {
   );
 };
 
+const UPPERCASE_WORDS = ['id'];
+function replacebyUppercaseCharacters(key: string) {
+  return key
+    .split('_')
+    .map((word) => {
+      if (UPPERCASE_WORDS.includes(word)) return upperCase(word);
+      return word;
+    })
+    .join(' ');
+}
+
 function processLabel(labelKey: string) {
-  return labelKey.replaceAll('_', ' ').replace(new RegExp('\\bid', 'g'), 'ID');
+  return replacebyUppercaseCharacters(labelKey);
 }
 
 const DetailsComponent = () => {
