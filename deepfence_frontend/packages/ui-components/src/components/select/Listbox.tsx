@@ -150,6 +150,7 @@ interface ListboxProps<TType, TActualType>
   required?: boolean;
   id?: string;
   helperText?: string;
+  noPortal?: boolean;
 }
 export function Listbox<TType, TActualType>({
   color,
@@ -166,6 +167,7 @@ export function Listbox<TType, TActualType>({
   helperText,
   disabled,
   multiple,
+  noPortal = false,
   ...props
 }: ListboxProps<TType, TActualType>) {
   const internalId = useId();
@@ -248,7 +250,7 @@ export function Listbox<TType, TActualType>({
               <HelperText color={color} text={helperText} />
             </div>
           )}
-          <Portal>
+          <ContentWrapper noPortal={noPortal}>
             <Transition
               className="pointer-events-auto"
               as={'div'}
@@ -308,7 +310,7 @@ export function Listbox<TType, TActualType>({
                 </>
               ) : null}
             </Transition>
-          </Portal>
+          </ContentWrapper>
         </div>
       </HUIListbox>
     </ListboxContext.Provider>
@@ -377,3 +379,16 @@ function Portal(props: { children: ReactNode }) {
   if (!mounted) return null;
   return createPortal(children, document.body);
 }
+
+const ContentWrapper = ({
+  noPortal,
+  children,
+}: {
+  noPortal: boolean;
+  children: ReactNode;
+}) => {
+  if (noPortal) {
+    return <div>{children}</div>;
+  }
+  return <Portal>{children}</Portal>;
+};

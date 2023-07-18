@@ -98,6 +98,9 @@ type ComboboxProps<
   loading?: boolean;
   getDisplayValue?: (item: TValue) => string | null;
   onQueryChange: (query: string) => void;
+  // radix dialog doesn't play well with focusable stuff outside of its own portal
+  // so not using portal kind of fixes it.
+  noPortal?: boolean;
 };
 
 let DEFAULT_COMBOBOX_TAG: React.ExoticComponent<{
@@ -134,6 +137,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
   placeholder,
   helperText,
   color = 'default',
+  noPortal = false,
   ...props
 }: ComboboxProps<TValue, boolean | undefined, boolean | undefined, TTag>) {
   const intersectionRef = useRef<RefObject<HTMLElement> | null>(null);
@@ -293,7 +297,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                   )}
                 </>
               )}
-              <Portal>
+              <ContentWrapper noPortal={noPortal}>
                 <Transition
                   className="pointer-events-auto"
                   as={'div'}
@@ -385,7 +389,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                     ) : null}
                   </div>
                 </Transition>
-              </Portal>
+              </ContentWrapper>
             </div>
           );
         }}
@@ -437,6 +441,19 @@ function Portal(props: { children: ReactNode }) {
   if (!mounted) return null;
   return createPortal(children, document.body);
 }
+
+const ContentWrapper = ({
+  noPortal,
+  children,
+}: {
+  noPortal: boolean;
+  children: ReactNode;
+}) => {
+  if (noPortal) {
+    return <div>{children}</div>;
+  }
+  return <Portal>{children}</Portal>;
+};
 
 const CaretDownIcon = () => {
   return (

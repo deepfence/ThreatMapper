@@ -2,6 +2,12 @@ import { Meta, StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
 import { Combobox, ComboboxOption } from '@/components/select/Combobox';
+import {
+  Button,
+  SlidingModal,
+  SlidingModalCloseButton,
+  SlidingModalContent,
+} from '@/main';
 
 export default {
   title: 'Components/Combobox',
@@ -353,5 +359,69 @@ const MultiSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
 
 export const MultiSelectNonNullable = {
   render: MultiSelectNonNullableTemplate,
+  args: {},
+};
+
+const MultiSelectNonNullableTemplateInsideDialog: StoryFn<typeof Combobox> = () => {
+  const [selected, setSelected] = useState<typeof OPTIONS>([]);
+  const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
+  const [loading, setLoading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [query, setQuery] = useState('');
+
+  function fetchMoreData() {
+    // we can use query here as well
+    setLoading(true);
+    setTimeout(() => {
+      setOptions([...options, ...OPTIONS]);
+      setLoading(false);
+    }, 1000);
+  }
+
+  return (
+    <>
+      <Button onClick={() => setDialogOpen(true)}>Open Modal</Button>
+      <SlidingModal open={dialogOpen} onOpenChange={setDialogOpen}>
+        <SlidingModalCloseButton />
+        <SlidingModalContent>
+          <div className="p-2">
+            <Combobox
+              value={selected}
+              onQueryChange={(query) => {
+                setQuery(query);
+              }}
+              label="Select your value"
+              clearAllElement="Clear filters"
+              onChange={(value) => {
+                setSelected(value);
+              }}
+              multiple
+              getDisplayValue={() => {
+                return 'PropertyName';
+              }}
+              onEndReached={() => {
+                fetchMoreData();
+              }}
+              loading={loading}
+              noPortal
+            >
+              {options.map((person, index) => {
+                return (
+                  <ComboboxOption key={`${person.id}-${index}`} value={person}>
+                    {person.name}
+                  </ComboboxOption>
+                );
+              })}
+            </Combobox>
+          </div>
+        </SlidingModalContent>
+      </SlidingModal>
+    </>
+  );
+};
+
+export const MultiSelectNonNullableInsideDialog = {
+  render: MultiSelectNonNullableTemplateInsideDialog,
   args: {},
 };
