@@ -721,7 +721,7 @@ class CveScanGoogleRegistryImages(CveScanDockerPrivateRegistryImages):
         tags_resp_obj = requests.get("{0}/v2/{1}/tags/list".format(self.docker_pvt_registry_url, repo_name),
                                         verify=verify, cert=cert, auth=auth)
         if tags_resp_obj.status_code != 200:
-            continue
+            return images_list
         tags_resp = tags_resp_obj.json()
 
         for child in tags_resp.get("child", []):

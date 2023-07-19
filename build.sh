@@ -28,8 +28,7 @@ else
 fi
 
 echo "Building init container image"
-cd $DEEPFENCE_CONSOLE_DIR/init-container
-docker build -f $DEEPFENCE_CONSOLE_DIR/init-container/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_init_ce:${DF_IMG_TAG:-latest} .
+docker build -f $DEEPFENCE_CONSOLE_DIR/init-container/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_init_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_CONSOLE_DIR/init-container
 
 if [ ! $? -eq 0 ]; then
    echo "Building init container image failed. Exiting"

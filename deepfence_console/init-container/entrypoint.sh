@@ -14,3 +14,5 @@ sysctl -w fs.file-max=1048576
 
 # Required for deepfence-es-master
 sysctl -w vm.max_map_count=262144
+
+tail -f /dev/null
