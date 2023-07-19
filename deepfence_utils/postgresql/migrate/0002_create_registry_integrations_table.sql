@@ -1,5 +1,6 @@
-START TRANSACTION;
+-- +goose Up
 
+-- +goose StatementBegin
 CREATE TABLE container_registry
 (
     id               SERIAL PRIMARY KEY,
@@ -109,5 +110,10 @@ CREATE TABLE public.audit_log
     user_role  character varying(32)                              NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
+-- +goose StatementEnd
 
-COMMIT;
+-- +goose Down
+
+-- +goose StatementBegin
+DROP TABLE IF EXISTS container_registry, integration, password_reset, audit_log, user_invite;
+-- +goose StatementEnd

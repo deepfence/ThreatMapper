@@ -1,5 +1,6 @@
-START TRANSACTION;
+-- +goose Up
 
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION update_modified_column()
     RETURNS TRIGGER AS
 $$
@@ -137,5 +138,10 @@ CREATE TRIGGER setting_updated_at
     ON setting
     FOR EACH ROW
 EXECUTE PROCEDURE update_modified_column();
+-- +goose StatementEnd
 
-COMMIT;
+-- +goose Down
+
+-- +goose StatementBegin
+DROP TABLE IF EXISTS api_token, role, user_group, users, company, setting;
+-- +goose StatementEnd
