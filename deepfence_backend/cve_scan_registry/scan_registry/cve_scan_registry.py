@@ -725,7 +725,13 @@ class CveScanGoogleRegistryImages(CveScanDockerPrivateRegistryImages):
         tags_resp = tags_resp_obj.json()
 
         for child in tags_resp.get("child", []):
-            images_list.extend(self.get_images_list(repo_name + '/' + child))
+            child_repo_name = repo_name + '/' + child
+            child_images = self.get_images_list(
+                filter_image_name=filter_image_name, filter_image_tag=filter_image_tag,
+                filter_image_name_with_tag=filter_image_name_with_tag, filter_past_days=filter_past_days,
+                repo_name=child_repo_name
+            )
+            images_list.extend(child_images)
 
         if tags_resp.get("manifest"):
             for digest, manifest in tags_resp["manifest"].items():
