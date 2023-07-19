@@ -1,5 +1,4 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { upperCase } from 'lodash-es';
 import { Suspense } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -18,6 +17,7 @@ import { PostureStatusBadge } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { queries } from '@/queries';
 import { PostureSeverityType } from '@/types/common';
+import { replacebyUppercaseCharacters } from '@/utils/label';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 function useGetComplianceDetails() {
@@ -69,17 +69,6 @@ const Header = () => {
   );
 };
 
-const UPPERCASE_WORDS = ['id'];
-function replacebyUppercaseCharacters(key: string) {
-  return key
-    .split('_')
-    .map((word) => {
-      if (UPPERCASE_WORDS.includes(word)) return upperCase(word);
-      return word;
-    })
-    .join(' ');
-}
-
 function processLabel(labelKey: string) {
   return replacebyUppercaseCharacters(labelKey);
 }
@@ -129,6 +118,8 @@ const DetailsComponent = () => {
             valueAsStr = value.length ? value.join(', ') : '-';
           } else if (typeof value === 'string') {
             valueAsStr = value?.length ? value : '-';
+          } else if (value === undefined) {
+            valueAsStr = '-';
           } else {
             valueAsStr = String(value);
           }
