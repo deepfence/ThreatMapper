@@ -96,24 +96,22 @@ const CardHeader = ({ name }: { name: string }) => {
         </span>
       </div>
 
-      <span className="ml-[114px] flex items-center gap-2 text-t4 uppercase dark:text-text-input-value pt-1">
+      <span className="ml-[122px] flex items-center gap-2 text-t4 uppercase dark:text-text-input-value pt-1">
         {providersToNameMapping[name]}
       </span>
     </div>
   );
 };
-const CardSectionIcon = ({ provider }: { provider: ModelPostureProvider }) => {
+const CardIconSection = ({ provider }: { provider: ModelPostureProvider }) => {
   const isScanned = provider.scan_count && provider.scan_count >= 0;
 
   return (
     <div
-      className={cn('flex flex-col self-start', {
+      className={cn('flex flex-col self-start w-fit ml-[15px]', {
         'items-center': isScanned,
       })}
     >
-      <span className="font-normal text-xs leading-6 dark:text-text-text-and-icon">
-        Compliance
-      </span>
+      <span className="text-p7 leading-6 dark:text-text-text-and-icon">Compliance</span>
       <div
         style={{
           color: getColorForCompliancePercent(provider.compliance_percentage),
@@ -137,7 +135,7 @@ const CardSectionIcon = ({ provider }: { provider: ModelPostureProvider }) => {
             maximumFractionDigits: 1,
           })}`
         ) : (
-          <span className="font-normal text-xs leading-6 dark:text-text-input-value">
+          <span className="text-p7 leading-6 dark:text-text-input-value">
             Not scanned
           </span>
         )}
@@ -145,28 +143,36 @@ const CardSectionIcon = ({ provider }: { provider: ModelPostureProvider }) => {
     </div>
   );
 };
-const CardSectionText = ({ name }: { name: string }) => {
-  const textStyle = 'font-normal text-xs leading-6';
+
+const CardCountSection = ({ provider }: { provider: ModelPostureProvider }) => {
+  const textStyle = 'text-p7 leading-6 dark:text-text-text-and-icon min-w-[120px]';
+  const countStyle = 'text-h3 dark:text-text-input-value';
   return (
-    <div className="flex flex-col dark:text-text-text-and-icon">
-      <span className={textStyle}>Active accounts</span>
-      <span className={textStyle}>Inactive accounts</span>
-      <span className={textStyle}>Scans</span>
-      {!isNonCloudProvider(name) ? <span className={textStyle}>Resources</span> : null}
-    </div>
-  );
-};
-const CardSectionCount = ({ provider }: { provider: ModelPostureProvider }) => {
-  const textStyle = 'text-h3 dark:text-text-input-value';
-  return (
-    <div className="flex flex-col">
-      <span className={textStyle}>{abbreviateNumber(provider.node_count ?? 0)}</span>
-      <span className={textStyle}>
-        {abbreviateNumber(provider.node_count_inactive ?? 0)}
-      </span>
-      <span className={textStyle}>{abbreviateNumber(provider.resource_count ?? 0)}</span>
+    <div className="ml-[42px]">
+      <div className="flex gap-x-6">
+        <span className={textStyle}>Active accounts</span>
+        <span className={countStyle}>{abbreviateNumber(provider.node_count ?? 0)}</span>
+      </div>
+
+      <div className="flex gap-x-6">
+        <span className={textStyle}>Inactive accounts</span>
+        <span className={countStyle}>
+          {abbreviateNumber(provider.node_count_inactive ?? 0)}
+        </span>
+      </div>
+
+      <div className="flex gap-x-6">
+        <span className={textStyle}>Scans</span>
+        <span className={countStyle}>{abbreviateNumber(provider.scan_count ?? 0)}</span>
+      </div>
+
       {!isNonCloudProvider(provider.name ?? '') ? (
-        <span className={textStyle}>{abbreviateNumber(provider.scan_count ?? 0)}</span>
+        <div className="flex gap-x-6">
+          <span className={textStyle}>Resources</span>
+          <span className={countStyle}>
+            {abbreviateNumber(provider.resource_count ?? 0)}
+          </span>
+        </div>
       ) : null}
     </div>
   );
@@ -175,19 +181,18 @@ const PostureCard = ({ provider }: { provider: ModelPostureProvider }) => {
   return (
     <Card
       className={cn(
-        'relative group p-2 pb-3 flex flex-col dark:bg-bg-card',
+        'relative group pt-2 pb-3 flex flex-col dark:bg-bg-card',
         'hover:outline outline-2 dark:outline-bg-hover-3',
         "before:content-none hover:before:content-[''] before:w-[68px] before:h-[68px]",
         'dark:before:bg-bg-hover-3 before:absolute before:-top-[28px]',
-        'before:left-[18px] before:rounded-full before:-z-10 cursor-pointer',
+        'before:left-[10px] before:rounded-full before:-z-10 cursor-pointer',
       )}
     >
       <DFLink to={`/posture/accounts/${provider.name}`} unstyled>
         <CardHeader name={provider.name || ''} />
-        <div className="mt-6 mb-2 grid grid-cols-3 place-items-center min-w-[322px]">
-          <CardSectionIcon provider={provider} />
-          <CardSectionText name={provider.name ?? ''} />
-          <CardSectionCount provider={provider} />
+        <div className="mt-6 mb-2 flex w-[322px]">
+          <CardIconSection provider={provider} />
+          <CardCountSection provider={provider} />
         </div>
       </DFLink>
     </Card>

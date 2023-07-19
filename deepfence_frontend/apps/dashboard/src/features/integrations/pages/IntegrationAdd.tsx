@@ -1,11 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useCallback, useState } from 'react';
-import {
-  ActionFunctionArgs,
-  FetcherWithComponents,
-  useFetcher,
-  useParams,
-} from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   Button,
@@ -352,7 +347,6 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
         };
       }
     }
-    toast.success('Deleted successfully');
     invalidateAllQueries();
     return {
       deleteSuccess: true,
@@ -396,7 +390,7 @@ const DeleteConfirmationModal = ({
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
-            Delete report
+            Delete integration
           </div>
         ) : undefined
       }

@@ -195,6 +195,7 @@ const UniqueTable = () => {
         maxSize: 145,
       }),
       columnHelper.accessor('name', {
+        enableSorting: false,
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
         header: () => <TruncatedText text="Description" />,
         minSize: 100,

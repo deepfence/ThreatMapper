@@ -16,6 +16,7 @@ import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { queries } from '@/queries';
+import { replacebyUppercaseCharacters } from '@/utils/label';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 function useGetSecretDetails() {
@@ -74,7 +75,7 @@ const Header = () => {
 };
 
 function processLabel(labelKey: string) {
-  return labelKey.replaceAll('_', ' ').replaceAll('id', 'ID');
+  return replacebyUppercaseCharacters(labelKey);
 }
 
 const DetailsComponent = () => {
@@ -109,6 +110,8 @@ const DetailsComponent = () => {
             valueAsStr = value.length ? value.join(', ') : '-';
           } else if (typeof value === 'string') {
             valueAsStr = value?.length ? value : '-';
+          } else if (value === undefined) {
+            valueAsStr = '-';
           } else {
             valueAsStr = String(value);
           }

@@ -17,6 +17,7 @@ import { PostureStatusBadge } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { queries } from '@/queries';
 import { PostureSeverityType } from '@/types/common';
+import { replacebyUppercaseCharacters } from '@/utils/label';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 function useGetComplianceDetails() {
@@ -69,7 +70,7 @@ const Header = () => {
 };
 
 function processLabel(labelKey: string) {
-  return labelKey.replaceAll('_', ' ').replaceAll('id', 'ID');
+  return replacebyUppercaseCharacters(labelKey);
 }
 
 const DetailsComponent = () => {
@@ -117,6 +118,8 @@ const DetailsComponent = () => {
             valueAsStr = value.length ? value.join(', ') : '-';
           } else if (typeof value === 'string') {
             valueAsStr = value?.length ? value : '-';
+          } else if (value === undefined) {
+            valueAsStr = '-';
           } else {
             valueAsStr = String(value);
           }

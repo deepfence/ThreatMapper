@@ -567,7 +567,7 @@ const HistoryControls = () => {
               onClick={() => {
                 downloadScan({
                   scanId: scan_id,
-                  scanType: UtilsReportFiltersScanTypeEnum.Vulnerability,
+                  scanType: UtilsReportFiltersScanTypeEnum.Compliance,
                   nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
                 });
               }}
