@@ -27,7 +27,6 @@ docker run --rm -v $(pwd):/src -w /src kjconroy/sqlc generate
 
 ## Migrate
 
-- Migration is done using [golang-migrate/migrate](https://github.com/golang-migrate/migrate)
-- Changes should have `*.up.sql` and `*.down.sql` files
+- Migration is done using [goose](https://github.com/pressly/goose)
 - File prefix should be in order - 0001, 0002, etc
-- Example: https://github.com/golang-migrate/migrate/tree/master/database/postgres/examples/migrations
+- Example: https://github.com/pressly/goose/tree/master/examples/sql-migrations

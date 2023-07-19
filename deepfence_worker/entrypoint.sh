@@ -11,17 +11,17 @@ do
 done
 
 # Database migration run if worker mode is scheduler
-databaseURL="postgres://${DEEPFENCE_POSTGRES_USER_DB_USER}:${DEEPFENCE_POSTGRES_USER_DB_PASSWORD}@${DEEPFENCE_POSTGRES_USER_DB_HOST}:${DEEPFENCE_POSTGRES_USER_DB_PORT}/${DEEPFENCE_POSTGRES_USER_DB_NAME}?sslmode=${DEEPFENCE_POSTGRES_USER_DB_SSLMODE}"
 if [ "$DEEPFENCE_MODE" == "scheduler" ]; then
   echo "run database migrations"
-  /usr/local/bin/migrate -verbose -source file:///usr/local/postgresql-migrate -database $databaseURL up
+
+  dbConnectionString="host=${DEEPFENCE_POSTGRES_USER_DB_HOST} port=${DEEPFENCE_POSTGRES_USER_DB_PORT} dbname=${DEEPFENCE_POSTGRES_USER_DB_NAME} user=${DEEPFENCE_POSTGRES_USER_DB_USER} password=${DEEPFENCE_POSTGRES_USER_DB_PASSWORD} sslmode=${DEEPFENCE_POSTGRES_USER_DB_SSLMODE}"
+
+  /usr/local/bin/goose -dir /usr/local/postgresql-migrate -allow-missing postgres "$dbConnectionString" up
   if [ ! $? -eq 0 ]; then
       echo "postgres database migration failed, exiting"
       exit 1
   fi
   echo "run database migrations, complete"
-else
-  echo "$DEEPFENCE_MODE is not scheduler skip database migrations"
 fi
 
 # wait for neo4j to start

@@ -1,5 +1,6 @@
-START TRANSACTION;
+-- +goose Up
 
+-- +goose StatementBegin
 CREATE TABLE scheduler
 (
     id          BIGSERIAL PRIMARY KEY,
@@ -20,6 +21,10 @@ CREATE TRIGGER scheduler_updated_at
     ON scheduler
     FOR EACH ROW
 EXECUTE PROCEDURE update_modified_column();
+-- +goose StatementEnd
 
+-- +goose Down
 
-COMMIT;
+-- +goose StatementBegin
+DROP TABLE IF EXISTS scheduler;
+-- +goose StatementEnd
