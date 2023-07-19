@@ -81,11 +81,11 @@ const (
 )
 
 var (
-	TopologyIdNodeTypeMap map[string]string
-	AllNodeTypes          []string
-	statusMap             map[string]string
-	cveScanLogsEsIndex    = "cve-scan"
-	secretScanLogsEsIndex = "secret-scan-logs"
+	TopologyIdNodeTypeMap  map[string]string
+	AllNodeTypes           []string
+	statusMap              map[string]string
+	cveScanLogsEsIndex     = "cve-scan"
+	secretScanLogsEsIndex  = "secret-scan-logs"
 	malwareScanLogsEsIndex = "malware-scan-logs"
 )
 
@@ -441,8 +441,8 @@ type DeepfenceTopology struct {
 	VulnerabilityScanStatusTime  string              `json:"vulnerability_scan_status_time,omitempty"`
 	SecretScanStatus             string              `json:"secret_scan_status,omitempty"`
 	SecretScanStatusTime         string              `json:"secret_scan_status_time,omitempty"`
-	MalwareScanStatus             string             `json:"malware_scan_status,omitempty"`
-	MalwareScanStatusTime         string             `json:"malware_scan_status_time,omitempty"`
+	MalwareScanStatus            string              `json:"malware_scan_status,omitempty"`
+	MalwareScanStatusTime        string              `json:"malware_scan_status_time,omitempty"`
 }
 
 type TopologyFilterNumberOption struct {
@@ -490,6 +490,11 @@ func NewRedisPool() (*redis.Pool, int) {
 				return nil, err
 			}
 			return c, err
+		},
+		IdleTimeout: 240 * time.Second,
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			_, err := c.Do("PING")
+			return err
 		},
 	}, dbNumInt
 }

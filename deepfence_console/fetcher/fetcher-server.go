@@ -34,7 +34,6 @@ const (
 var (
 	postgresDb                   *sql.DB
 	psqlInfo                     string
-	redisPool                    *redis.Pool
 	esClient                     *elastic.Client
 	vulnerabilityDbUpdater       *VulnerabilityDbUpdater
 	cveIndexName                 = convertRootESIndexToCustomerSpecificESIndex("cve")
@@ -1390,6 +1389,11 @@ func newRedisPool() *redis.Pool {
 			}
 			return c, err
 		},
+		IdleTimeout: 240 * time.Second,
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			_, err := c.Do("PING")
+			return err
+		},
 	}
 }
 
@@ -1421,7 +1425,7 @@ func logging(logger *log.Logger) func(http.Handler) http.Handler {
 
 func main() {
 	var err error
-	redisPool = newRedisPool()
+	//redisPool = newRedisPool()
 	postgresPort := 5432
 	postgresPortStr := os.Getenv("POSTGRES_USER_DB_PORT")
 	if postgresPortStr != "" {

@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/gomodule/redigo/redis"
 	"github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/render/detailed"
-	"os"
-	"strings"
-	"time"
 )
 
 type RedisCache struct {
@@ -33,7 +34,6 @@ func NewRedisCache(topologyID string) *RedisCache {
 		topologyOptionsDf:    TopologyOptions{NodeType: nodeType, Params: TopologyParams{Format: TopologyFormatDeepfence}},
 		filterRedisKey:       TopologyFilterPrefix + strings.ToUpper(nodeType),
 		nodeStatus:           NodeStatus{VulnerabilityScanStatus: make(map[string]string), SecretScanStatus: make(map[string]string), MalwareScanStatus: make(map[string]string)},
-
 	}
 	r.redisPool, r.redisDbNum = NewRedisPool()
 	r.topologyOptionsScope.TopologyOptionsValidate()
@@ -62,10 +62,10 @@ func (r *RedisCache) Update(nodeSummaries detailed.NodeSummaries) {
 	if err != nil {
 		log.Printf("Error: %v\n", err)
 	}
-	redisConn := r.redisPool.Get()
-	defer redisConn.Close()
 	topologyScopeJson, _ := CodecEncode(nodeSummaries)
+	redisConn := r.redisPool.Get()
 	_, err = redisConn.Do("SETEX", r.topologyOptionsScope.Key, RedisExpiryTime, string(topologyScopeJson))
+	redisConn.Close()
 	if err != nil {
 		log.Printf("Error: SETEX %s: %v\n", r.topologyOptionsScope.Key, err)
 	}
@@ -99,6 +99,8 @@ func (r *RedisCache) Update(nodeSummaries detailed.NodeSummaries) {
 	// Set current df format data
 	//
 	topologyDfJson, _ := CodecEncode(topologyDf)
+	redisConn = r.redisPool.Get()
+	defer redisConn.Close()
 	_, err = redisConn.Do("SETEX", r.topologyOptionsDf.Key, RedisExpiryTime, string(topologyDfJson))
 	if err != nil {
 		log.Println(fmt.Sprintf("Error: SETEX %s:", r.topologyOptionsDf.Key), err)
@@ -140,8 +142,8 @@ func (r *RedisCache) scopeTopologyFixes(nodeSummaries *detailed.NodeSummaries) e
 		topologyOptions := TopologyOptions{NodeType: NodeTypePod, Params: TopologyParams{Format: TopologyFormatScope, Stopped: "both", Pseudo: "show", Unconnected: "show", Namespace: ""}}
 		topologyOptions.TopologyOptionsValidate()
 		redisConn := r.redisPool.Get()
-		defer redisConn.Close()
 		topologyPodsJson, err := FetchTopologyData(redisConn, topologyOptions.Key)
+		redisConn.Close()
 		if err != nil {
 			return err
 		}
@@ -355,7 +357,7 @@ func (r *RedisCache) updateScanStatusData(esClient *elastic.Client) error {
 	r.nodeStatus.SecretScanStatus = nodeIdSecretStatusMap
 	r.nodeStatus.SecretScanStatusTime = nodeIdSecretStatusTimeMap
 	r.nodeStatus.Unlock()
-	
+
 	nodeIdMalwareStatusMap := make(map[string]string)
 	nodeIdMalwareStatusTimeMap := make(map[string]string)
 	malwareResp := mSearchResult.Responses[2]

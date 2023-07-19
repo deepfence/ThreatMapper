@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
-	"github.com/olivere/elastic/v7"
-	"github.com/sirupsen/logrus"
-	redisCache "github.com/weaveworks/scope/cache"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gomodule/redigo/redis"
+	"github.com/olivere/elastic/v7"
+	"github.com/sirupsen/logrus"
+	redisCache "github.com/weaveworks/scope/cache"
 )
 
 const (
@@ -22,12 +23,12 @@ const (
 )
 
 var (
-	cveScanLogsEsIndex    = "cve-scan"
-	complianceLogsEsIndex = "compliance-scan-logs"
-	secretScanLogsEsIndex = "secret-scan-logs"
+	cveScanLogsEsIndex     = "cve-scan"
+	complianceLogsEsIndex  = "compliance-scan-logs"
+	secretScanLogsEsIndex  = "secret-scan-logs"
 	malwareScanLogsEsIndex = "malware-scan-logs"
-	statusMap             map[string]string
-	nStatus               *Status
+	statusMap              map[string]string
+	nStatus                *Status
 )
 
 type Status struct {
@@ -73,10 +74,10 @@ func (st *Status) getNodeStatus() (map[string]string, map[string]string, map[str
 func (st *Status) getNodeSeverity() (map[string]string, error) {
 	nodeSeverity := make(map[string]string)
 	redisConn := st.redisPool.Get()
-	defer redisConn.Close()
 
 	var nodeSeverityData map[string]NodeSeverityData
 	nodeSeverityBytes, err := redisConn.Do("GET", nodeSeverityRedisKey)
+	redisConn.Close()
 	if err != nil || nodeSeverityBytes == nil {
 		return nodeSeverity, err
 	}
@@ -98,13 +99,13 @@ func (st *Status) getNodeSeverity() (map[string]string, error) {
 func (st *Status) updateScanStatusData() error {
 	var err error
 	// Node severity
-	nodeSeverity, err := st.getNodeSeverity()
-	if err != nil {
-		logrus.Error(err.Error())
-	}
-	st.nodeStatus.Lock()
-	st.nodeStatus.NodeSeverity = nodeSeverity
-	st.nodeStatus.Unlock()
+	//nodeSeverity, err := st.getNodeSeverity()
+	//if err != nil {
+	//	logrus.Error(err.Error())
+	//}
+	//st.nodeStatus.Lock()
+	//st.nodeStatus.NodeSeverity = nodeSeverity
+	//st.nodeStatus.Unlock()
 
 	var ok bool
 	mSearch := elastic.NewMultiSearchService(st.esClient)
