@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
-import { toast } from 'sonner';
 
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelRegistryAddReq } from '@/api/generated';
@@ -133,7 +132,6 @@ export const registryConnectorActionApi = async ({
     }
   }
   invalidateAllQueries();
-  toast.success('Added successfully');
   return {
     success: true,
   };
@@ -162,6 +160,7 @@ export const RegistryConnectorForm = ({
       method="post"
       action={'/data-component/registries/add-connector'}
       encType="multipart/form-data"
+      id="registryConnectorForm"
     >
       {registryType === RegistryType.docker_hub && (
         <DockerRegistryConnectorForm

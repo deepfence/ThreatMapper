@@ -13,6 +13,8 @@ export const SearchableClusterList = ({
   valueKey = 'nodeId',
   active,
   triggerVariant,
+  helperText,
+  color,
 }: {
   onChange?: (value: string[]) => void;
   onClearAll?: () => void;
@@ -20,6 +22,8 @@ export const SearchableClusterList = ({
   valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
   triggerVariant?: 'select' | 'button';
+  helperText?: string;
+  color?: 'error' | 'default';
 }) => {
   const [searchText, setSearchText] = useState('');
 
@@ -94,6 +98,8 @@ export const SearchableClusterList = ({
         clearAllElement="Clear"
         onClearAll={onClearAll}
         onEndReached={onEndReached}
+        helperText={helperText}
+        color={color}
       >
         {data?.pages
           .flatMap((page) => {

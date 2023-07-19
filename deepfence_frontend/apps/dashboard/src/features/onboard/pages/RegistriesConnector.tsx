@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Button, Card } from 'ui-components';
 
 import { RegistryConnectorForm } from '@/features/common/data-component/RegistryConnectorForm';
@@ -17,6 +18,7 @@ export const RegistriesConnector = () => {
       <Card className="p-4">
         <RegistryConnectorForm
           onSuccess={() => {
+            toast.success('Added successfully');
             navigate('/onboard/connectors/my-connectors');
           }}
           registryType={connectorType}
@@ -32,6 +34,7 @@ export const RegistriesConnector = () => {
           type="submit"
           disabled={state !== 'idle'}
           loading={state !== 'idle'}
+          form="registryConnectorForm"
         >
           Save and go to connectors
         </Button>

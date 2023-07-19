@@ -1,6 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useInterval } from 'react-use';
-import { createColumnHelper, Dropdown, DropdownItem, Table } from 'ui-components';
+import {
+  createColumnHelper,
+  Dropdown,
+  DropdownItem,
+  SortingState,
+  Table,
+} from 'ui-components';
 
 import { ModelExportReport } from '@/api/generated';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
@@ -61,6 +67,13 @@ export const ReportTable = ({
   };
 
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
+  const [sort, setSort] = useState<SortingState>([
+    {
+      id: 'created_at',
+      desc: true,
+    },
+  ]);
 
   useInterval(() => {
     invalidateAllQueries();
@@ -160,6 +173,8 @@ export const ReportTable = ({
         columns={columns}
         enablePagination
         enableSorting
+        sortingState={sort}
+        onSortingChange={setSort}
         enablePageResize
         pageSize={pageSize}
         onPageResize={(newSize) => {

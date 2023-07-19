@@ -135,7 +135,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
       }
       throw r.error;
     }
-    toast.success('Deleted successfully');
   } else if (actionType === ActionEnumType.SYNC_IMAGES) {
     const registryId = formData.get('nodeIds')?.toString() ?? '';
     if (!registryId) {

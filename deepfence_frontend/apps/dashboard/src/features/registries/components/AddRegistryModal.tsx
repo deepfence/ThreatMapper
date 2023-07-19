@@ -1,4 +1,5 @@
-import { generatePath, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   Button,
   SlidingModal,
@@ -7,8 +8,8 @@ import {
 } from 'ui-components';
 
 import { RegistryConnectorForm } from '@/features/common/data-component/RegistryConnectorForm';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { registryTypeToNameMapping } from '@/types/common';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 const Header = ({ title }: { title: string }) => {
   return (
@@ -26,7 +27,7 @@ export const AddRegistryModal = ({
   open: boolean;
   setAddRegistryModal: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const { navigate } = usePageNavigation();
+  const [isAddSuccess, sestIsAddSuccess] = useState(false);
   const { account } = useParams() as {
     account: string;
   };
@@ -40,6 +41,7 @@ export const AddRegistryModal = ({
       <SlidingModal
         open={open}
         onOpenChange={() => {
+          sestIsAddSuccess(false);
           setAddRegistryModal(false);
         }}
         size="s"
@@ -47,38 +49,41 @@ export const AddRegistryModal = ({
         <SlidingModalCloseButton />
         <Header title={account} />
         <div className="m-4 overflow-auto">
-          <RegistryConnectorForm
-            onSuccess={() => {
-              navigate(
-                generatePath('/registries/:account', {
-                  account: encodeURIComponent(account),
-                }),
-              );
-            }}
-            registryType={account}
-            renderButton={(state) => (
-              <div className="mt-8 flex gap-x-2">
-                <Button
-                  size="md"
-                  color="default"
-                  type="submit"
-                  disabled={state !== 'idle'}
-                  loading={state !== 'idle'}
-                >
-                  Add registry
-                </Button>
-                <Button
-                  type="button"
-                  size="md"
-                  color="default"
-                  variant="outline"
-                  onClick={() => setAddRegistryModal(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            )}
-          />
+          {isAddSuccess ? (
+            <SuccessModalContent text="Added successfully" />
+          ) : (
+            <RegistryConnectorForm
+              onSuccess={() => {
+                sestIsAddSuccess(true);
+              }}
+              registryType={account}
+              renderButton={(state) => (
+                <div className="mt-8 flex gap-x-2">
+                  <Button
+                    size="md"
+                    color="default"
+                    type="submit"
+                    disabled={state !== 'idle'}
+                    loading={state !== 'idle'}
+                  >
+                    Add registry
+                  </Button>
+                  <Button
+                    type="button"
+                    size="md"
+                    color="default"
+                    variant="outline"
+                    onClick={() => {
+                      sestIsAddSuccess(false);
+                      setAddRegistryModal(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            />
+          )}
         </div>
       </SlidingModal>
     </>
