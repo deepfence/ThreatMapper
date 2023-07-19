@@ -702,7 +702,103 @@ class CveScanAzureRegistryImages(CveScanDockerPrivateRegistryImages):
 
 class CveScanGoogleRegistryImages(CveScanDockerPrivateRegistryImages):
     def __init__(self, registry_hostname, service_account_json, project_id):
-        super().__init__(registry_hostname, "_json_key", service_account_json, repository_prefix=project_id + "/")
+        self.project_id = project_id
+        super().__init__(registry_hostname, "_json_key", service_account_json)
+
+
+    def get_images_list(self, filter_image_name="", filter_image_tag="", filter_image_name_with_tag="",
+                        filter_past_days=max_days, repo_name=None):
+        images_list = []
+        verify, cert = self.get_self_signed_certs()
+        auth = None
+        if self.docker_pvt_registry_username:
+            auth = (self.docker_pvt_registry_username, self.docker_pvt_registry_password)
+        image_from_date = datetime.now() - timedelta(days=filter_past_days)
+        image_from_date = image_from_date.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        if not repo_name:
+            repo_name = self.project_id
+        tags_resp_obj = requests.get("{0}/v2/{1}/tags/list".format(self.docker_pvt_registry_url, repo_name),
+                                        verify=verify, cert=cert, auth=auth)
+        if tags_resp_obj.status_code != 200:
+            continue
+        tags_resp = tags_resp_obj.json()
+
+        for child in tags_resp.get("child", []):
+            images_list.extend(self.get_images_list(repo_name + '/' + child))
+
+        if tags_resp.get("manifest"):
+            for digest, manifest in tags_resp["manifest"].items():
+                try:
+                    image_size = manifest.get("imageSizeBytes", "")
+                    if image_size:
+                        image_size = bytes_to_str(image_size, "m")
+                    else:
+                        image_size = ""
+                    pushed_at = int(manifest.get("timeUploadedMs", ""))
+                    pushed_at_dt = datetime.fromtimestamp(pushed_at / 1000.0)
+                    if filter_past_days and filter_past_days != max_days and filter_past_days > 0:
+                        if pushed_at:
+                            if image_from_date > pushed_at_dt:
+                                continue
+                        else:
+                            print("past_days filter not available for {0}".format(repo_name))
+                    for tag in manifest.get("tag", []):
+                        image_name_with_tag = "{0}/{1}:{2}".format(self.docker_registry_name, repo_name, tag)
+                        if filter_image_name_with_tag:
+                            if filter_image_name_with_tag != image_name_with_tag:
+                                continue
+                        if filter_image_name:
+                            if filter_image_name != repo_name:
+                                continue
+                        if filter_image_tag:
+                            if filter_image_tag != tag:
+                                continue
+                        image_details = {"image_name": repo_name, "image_tag": tag, "image_os": "",
+                                            "image_name_with_tag": image_name_with_tag,
+                                            "docker_image_size": image_size,
+                                            "pushed_at": pushed_at_dt.strftime("%Y-%m-%dT%H:%M:%S")}
+                        images_list.append(image_details)
+                except:
+                    pass
+        else:
+            for tag in tags_resp.get("tags", []):
+                try:
+                    image_name_with_tag = "{0}/{1}:{2}".format(self.docker_registry_name, repo_name, tag)
+                    if filter_image_name_with_tag:
+                        if filter_image_name_with_tag != image_name_with_tag:
+                            continue
+                    if filter_image_name:
+                        if filter_image_name != repo_name:
+                            continue
+                    if filter_image_tag:
+                        if filter_image_tag != tag:
+                            continue
+                    pushed_at = ""
+                    image_os = ""
+                    m_resp = requests.get(
+                        "{0}/v2/{1}/manifests/{2}".format(self.docker_pvt_registry_url, repo_name, tag),
+                        verify=verify, cert=cert, auth=auth)
+                    if m_resp.status_code == 200:
+                        history = m_resp.json().get("history", [])
+                        if history and history[0].get("v1Compatibility", {}):
+                            v1_compatibility = json.loads(history[0]["v1Compatibility"])
+                            pushed_at = v1_compatibility["created"]
+                            image_os = v1_compatibility["os"]
+                    if filter_past_days and filter_past_days != max_days and filter_past_days > 0:
+                        if pushed_at:
+                            created_at = datetime.strptime(pushed_at.split(".")[0], "%Y-%m-%dT%H:%M:%S")
+                            if image_from_date > created_at:
+                                continue
+                        else:
+                            print("past_days filter not available for {0}".format(image_name_with_tag))
+                    image_details = {"image_name": repo_name, "image_tag": tag, "image_os": image_os,
+                                        "image_name_with_tag": image_name_with_tag, "pushed_at": pushed_at,
+                                        "docker_image_size": ""}
+                    images_list.append(image_details)
+                except:
+                    pass
+        return images_list
 
 
 class CveScanHarborRegistryImages(CveScanRegistryImages):
