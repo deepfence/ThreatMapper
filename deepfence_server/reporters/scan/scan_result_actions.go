@@ -142,7 +142,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 		defer tx3.Close()
 		_, err = tx3.Run(`
 			MATCH (n:`+reporters.ScanResultMaskNode[scanType]+`)
-			WHERE not (n)<-[:IS]-(:`+string(scanType)+`)
+			WHERE not (n)<-[:IS]-(:`+utils.ScanTypeDetectedNode[scanType]+`)
 			DETACH DELETE (n)`, map[string]interface{}{})
 		if err != nil {
 			return err
