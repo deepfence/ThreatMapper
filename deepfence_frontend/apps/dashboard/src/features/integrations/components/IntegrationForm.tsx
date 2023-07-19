@@ -539,10 +539,10 @@ export const IntegrationForm = ({
               label="Jira Url"
               placeholder="Jira site url"
               helperText={
-                fieldErrors?.url ??
+                fieldErrors?.jira_site_url ??
                 'Ex. https://[organization].atlassian.net/Version: 7.13'
               }
-              color={fieldErrors?.url ? 'error' : 'default'}
+              color={fieldErrors?.jira_site_url ? 'error' : 'default'}
             />
             <Radio
               name="authTypeRadio"
@@ -566,10 +566,12 @@ export const IntegrationForm = ({
               name="authType"
               label={authType === 'password' ? 'Password' : 'Api Token'}
               helperText={
-                authType === 'password' ? fieldErrors?.password : fieldErrors?.api_token
+                authType === 'password'
+                  ? fieldErrors?.password
+                  : fieldErrors?.is_auth_token
               }
               color={
-                fieldErrors?.password || fieldErrors?.api_token ? 'error' : 'default'
+                fieldErrors?.password || fieldErrors?.is_auth_token ? 'error' : 'default'
               }
               type={authType === 'password' ? 'password' : 'text'}
               placeholder={authType === 'password' ? 'password' : 'Api token'}
@@ -617,15 +619,15 @@ export const IntegrationForm = ({
               name="folder"
               label={'Folder'}
               placeholder="S3 folder"
-              helperText={fieldErrors?.aws_access_key}
-              color={fieldErrors?.s3_folaws_access_keyder_name ? 'error' : 'default'}
+              helperText={fieldErrors?.s3_folder_name}
+              color={fieldErrors?.s3_folder_name ? 'error' : 'default'}
             />
             <TextInputType
               name="accessKey"
               label="Access Key"
               placeholder="AWS access key"
-              helperText={fieldErrors?.jira_assignee}
-              color={fieldErrors?.jira_assignee ? 'error' : 'default'}
+              helperText={fieldErrors?.aws_access_key}
+              color={fieldErrors?.aws_access_key ? 'error' : 'default'}
             />
             <TextInputType
               name="secretKey"
