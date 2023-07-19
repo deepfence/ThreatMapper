@@ -84,9 +84,9 @@ def migrate_sbom_es_index():
         while True:
             try:
                 print('Elasticsearch Health check in progress')
-                health = ESConn.health(index=SBOM_INDEX, wait_for_status='green', timeout='180s')
-                if health.get('status') == 'green':
-                    print('Elasticsearch health green')
+                health = ESConn.health(index=SBOM_INDEX, wait_for_status='yellow', timeout='180s')
+                if health.get('status') in ['green', 'yellow']:
+                    print('Elasticsearch health green/yellow')
                     break
             except Exception:
                 pass
