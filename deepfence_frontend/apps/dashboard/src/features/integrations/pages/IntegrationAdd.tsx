@@ -153,6 +153,7 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
 };
 type ActionData = {
   message?: string;
+  success?: boolean;
   deleteSuccess?: boolean;
   fieldErrors?: Record<string, string>;
 } | null;
@@ -324,8 +325,10 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       }
       throw r.error;
     }
-    toast.success('Added successfully');
     invalidateAllQueries();
+    return {
+      success: true,
+    };
   } else if (_actionType === ActionEnumType.DELETE) {
     const id = formData.get('id')?.toString();
     if (!id) {

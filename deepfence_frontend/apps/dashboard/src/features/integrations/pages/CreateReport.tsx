@@ -26,6 +26,7 @@ import { CloudComplianceForm } from '@/features/integrations/components/report-f
 import { CommonForm } from '@/features/integrations/components/report-form/CommonForm';
 import { ComplianceForm } from '@/features/integrations/components/report-form/ComplianceForm';
 import { ActionEnumType } from '@/features/integrations/pages/IntegrationAdd';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries } from '@/queries';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -202,8 +203,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     }
     throw r.error;
   }
-
-  toast.success('Started generating report');
   invalidateAllQueries();
   return {
     success: true,
@@ -232,153 +231,165 @@ const ReportForm = () => {
   const fieldErrors = data?.fieldErrors ?? {};
 
   return (
-    <fetcher.Form method="post" className="m-4">
-      <input type="text" name="_actionType" readOnly hidden value={ActionEnumType.ADD} />
-      <div className="gap-y-8 grid grid-cols-2 auto-rows-auto gap-x-8">
-        <Listbox
-          helperText={fieldErrors?.scan_type}
-          color={fieldErrors?.scan_type ? 'error' : 'default'}
-          variant="underline"
-          label="Select Resource"
-          value={resource}
-          name="resource"
-          onChange={(value) => {
-            setResource(value);
-            setProvider('');
-          }}
-          getDisplayValue={(item) => {
-            return (
-              Object.keys(UtilsReportFiltersScanTypeEnum).find(
-                (person) => person === item,
-              ) ?? ''
-            );
-          }}
-          placeholder="Select resource"
-        >
-          {Object.keys(UtilsReportFiltersScanTypeEnum).map((resource) => {
-            return (
-              <ListboxOption value={resource} key={resource}>
-                {resource}
-              </ListboxOption>
-            );
-          })}
-        </Listbox>
-
-        {resource === 'Compliance' ? (
-          <ComplianceForm
-            setProvider={setProvider}
-            provider={provider}
-            resource={resource}
+    <>
+      {!data?.success ? (
+        <fetcher.Form method="post" className="m-4">
+          <input
+            type="text"
+            name="_actionType"
+            readOnly
+            hidden
+            value={ActionEnumType.ADD}
           />
-        ) : null}
+          <div className="gap-y-8 grid grid-cols-2 auto-rows-auto gap-x-8">
+            <Listbox
+              helperText={fieldErrors?.scan_type}
+              color={fieldErrors?.scan_type ? 'error' : 'default'}
+              variant="underline"
+              label="Select Resource"
+              value={resource}
+              name="resource"
+              onChange={(value) => {
+                setResource(value);
+                setProvider('');
+              }}
+              getDisplayValue={(item) => {
+                return (
+                  Object.keys(UtilsReportFiltersScanTypeEnum).find(
+                    (person) => person === item,
+                  ) ?? ''
+                );
+              }}
+              placeholder="Select resource"
+            >
+              {Object.keys(UtilsReportFiltersScanTypeEnum).map((resource) => {
+                return (
+                  <ListboxOption value={resource} key={resource}>
+                    {resource}
+                  </ListboxOption>
+                );
+              })}
+            </Listbox>
 
-        {resource === 'CloudCompliance' ? (
-          <CloudComplianceForm setProvider={setProvider} provider={provider} />
-        ) : null}
+            {resource === 'Compliance' ? (
+              <ComplianceForm
+                setProvider={setProvider}
+                provider={provider}
+                resource={resource}
+              />
+            ) : null}
 
-        {resource !== 'CloudCompliance' && resource !== 'Compliance' ? (
-          <CommonForm
-            setProvider={setProvider}
-            resource={resource}
-            provider={provider}
-            fieldErrors={fieldErrors}
-          />
-        ) : null}
+            {resource === 'CloudCompliance' ? (
+              <CloudComplianceForm setProvider={setProvider} provider={provider} />
+            ) : null}
 
-        <Listbox
-          variant="underline"
-          label="Select Duration"
-          value={duration}
-          name="duration"
-          onChange={(value) => {
-            setDuration(value);
-          }}
-          placeholder="Select duration"
-          getDisplayValue={(item) => {
-            return Object.keys(DURATION).find((person) => person === item) ?? '';
-          }}
-        >
-          {Object.keys(DURATION).map((resource) => {
-            return (
-              <ListboxOption value={resource} key={resource}>
-                {resource}
-              </ListboxOption>
-            );
-          })}
-        </Listbox>
+            {resource !== 'CloudCompliance' && resource !== 'Compliance' ? (
+              <CommonForm
+                setProvider={setProvider}
+                resource={resource}
+                provider={provider}
+                fieldErrors={fieldErrors}
+              />
+            ) : null}
 
-        <TextInput
-          className="w-full"
-          label={'Schedule Interval In Days'}
-          type={'text'}
-          sizing="md"
-          name={'interval'}
-          placeholder={'Interval'}
-          helperText="Maximum upto 180 days supported"
-        />
+            <Listbox
+              variant="underline"
+              label="Select Duration"
+              value={duration}
+              name="duration"
+              onChange={(value) => {
+                setDuration(value);
+              }}
+              placeholder="Select duration"
+              getDisplayValue={(item) => {
+                return Object.keys(DURATION).find((person) => person === item) ?? '';
+              }}
+            >
+              {Object.keys(DURATION).map((resource) => {
+                return (
+                  <ListboxOption value={resource} key={resource}>
+                    {resource}
+                  </ListboxOption>
+                );
+              })}
+            </Listbox>
 
-        <Listbox
-          helperText={fieldErrors?.report_type}
-          color={fieldErrors?.report_type ? 'error' : 'default'}
-          variant="underline"
-          label="Select Download Type"
-          value={downloadType}
-          name="downloadType"
-          onChange={(value) => {
-            setDownloadType(value);
-          }}
-          placeholder="Download type"
-          getDisplayValue={(item) => {
-            return (
-              Object.keys(ModelGenerateReportReqReportTypeEnum).find(
-                (person) => person === item,
-              ) ?? ''
-            );
-          }}
-        >
-          {Object.keys(ModelGenerateReportReqReportTypeEnum).map((resource) => {
-            return (
-              <ListboxOption value={resource} key={resource}>
-                {resource}
-              </ListboxOption>
-            );
-          })}
-        </Listbox>
+            <TextInput
+              className="w-full"
+              label={'Schedule Interval In Days'}
+              type={'text'}
+              sizing="md"
+              name={'interval'}
+              placeholder={'Interval'}
+              helperText="Maximum upto 180 days supported"
+            />
 
-        <div className="col-span-2 my-5">
-          <Checkbox
-            label="Include Dead Nodes"
-            key="deadNodes"
-            name="deadNodes"
-            checked={deadNodes}
-            onCheckedChange={(checked: boolean) => {
-              setIncludeDeadNodes(checked);
-            }}
-          />
-        </div>
-      </div>
+            <Listbox
+              helperText={fieldErrors?.report_type}
+              color={fieldErrors?.report_type ? 'error' : 'default'}
+              variant="underline"
+              label="Select Download Type"
+              value={downloadType}
+              name="downloadType"
+              onChange={(value) => {
+                setDownloadType(value);
+              }}
+              placeholder="Download type"
+              getDisplayValue={(item) => {
+                return (
+                  Object.keys(ModelGenerateReportReqReportTypeEnum).find(
+                    (person) => person === item,
+                  ) ?? ''
+                );
+              }}
+            >
+              {Object.keys(ModelGenerateReportReqReportTypeEnum).map((resource) => {
+                return (
+                  <ListboxOption value={resource} key={resource}>
+                    {resource}
+                  </ListboxOption>
+                );
+              })}
+            </Listbox>
 
-      <AdvancedFilter provider={provider} resourceType={resource} />
+            <div className="col-span-2 my-5">
+              <Checkbox
+                label="Include Dead Nodes"
+                key="deadNodes"
+                name="deadNodes"
+                checked={deadNodes}
+                onCheckedChange={(checked: boolean) => {
+                  setIncludeDeadNodes(checked);
+                }}
+              />
+            </div>
+          </div>
 
-      {data?.message ? (
-        <p className="mt-4 text-p7 dark:text-status-error">{data?.message}</p>
-      ) : null}
+          <AdvancedFilter provider={provider} resourceType={resource} />
 
-      <div className="mt-14 flex gap-x-2">
-        <Button size="md" color="default" type="submit">
-          Create
-        </Button>
-        <Button
-          type="button"
-          size="md"
-          color="default"
-          variant="outline"
-          onClick={() => navigate('../')}
-        >
-          Cancel
-        </Button>
-      </div>
-    </fetcher.Form>
+          {data?.message ? (
+            <p className="mt-4 text-p7 dark:text-status-error">{data?.message}</p>
+          ) : null}
+
+          <div className="mt-14 flex gap-x-2">
+            <Button size="md" color="default" type="submit">
+              Create
+            </Button>
+            <Button
+              type="button"
+              size="md"
+              color="default"
+              variant="outline"
+              onClick={() => navigate('../')}
+            >
+              Cancel
+            </Button>
+          </div>
+        </fetcher.Form>
+      ) : (
+        <SuccessModalContent text="Created successfully" />
+      )}
+    </>
   );
 };
 const CreateReport = () => {

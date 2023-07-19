@@ -14,6 +14,8 @@ export type SearchableHostListProps = {
   valueKey?: 'nodeId' | 'hostName' | 'nodeName';
   active?: boolean;
   triggerVariant?: 'select' | 'button';
+  helperText?: string;
+  color?: 'error' | 'default';
 };
 
 const PAGE_SIZE = 15;
@@ -25,6 +27,8 @@ export const SearchableHostList = ({
   valueKey = 'nodeId',
   active,
   triggerVariant,
+  helperText,
+  color,
 }: SearchableHostListProps) => {
   const [searchText, setSearchText] = useState('');
 
@@ -98,6 +102,8 @@ export const SearchableHostList = ({
         clearAllElement="Clear"
         onClearAll={onClearAll}
         onEndReached={onEndReached}
+        helperText={helperText}
+        color={color}
       >
         {data?.pages
           .flatMap((page) => {

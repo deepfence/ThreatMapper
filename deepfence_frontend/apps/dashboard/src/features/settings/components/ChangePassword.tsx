@@ -11,7 +11,7 @@ export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
   const fetcher = useFetcher<ActionData>();
   const { data, state } = fetcher;
 
-  if (data?.success) return <SuccessModalContent text="Password changed successfully!" />;
+  if (data?.success) return <SuccessModalContent text="Password changed successfully" />;
   return (
     <fetcher.Form method="post" className="flex flex-col gap-y-8 mt-4 mx-4">
       <TextInput

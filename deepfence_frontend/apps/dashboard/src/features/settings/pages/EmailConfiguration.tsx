@@ -158,137 +158,144 @@ const EmailConfigurationModal = ({
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>
-        <fetcher.Form method="post" className="flex flex-col gap-y-8 mt-2 mx-4">
-          <input
-            readOnly
-            type="hidden"
-            name="_actionType"
-            value={ActionEnumType.ADD_CONFIGURATION}
-          />
-          <Listbox
-            variant="underline"
-            name="email_provider"
-            label={'Email Provider'}
-            placeholder="Email Provider"
-            onChange={(value) => setEmailProvider(value)}
-            getDisplayValue={(item) => {
-              return ['Google SMTP', 'Amazon SES', 'SMTP'].filter(
-                (value) => value === item,
-              )[0];
-            }}
-            value={emailProvider}
-          >
-            <ListboxOption value={'Google SMTP'}>Google SMTP</ListboxOption>
-            <ListboxOption value={'Amazon SES'}>Amazon SES</ListboxOption>
-            <ListboxOption value={'SMTP'}>SMTP</ListboxOption>
-          </Listbox>
-          <TextInput
-            label="Email"
-            type={'email'}
-            placeholder="Email"
-            name="email_id"
-            required
-            color={data?.fieldErrors?.email_id ? 'error' : 'default'}
-            helperText={data?.fieldErrors?.email_id}
-          />
-          {emailProvider !== 'Amazon SES' ? (
-            <>
-              <TextInput
-                label="Password"
-                type={'password'}
-                placeholder="Password"
-                name="password"
-                required
-                color={data?.fieldErrors?.password ? 'error' : 'default'}
-                helperText={data?.fieldErrors?.password}
-              />
-              <TextInput
-                label="Port"
-                type={'number'}
-                placeholder={
-                  emailProvider === 'SMTP' ? 'SMTP port (SSL)' : 'Gmail SMTP port (SSL)'
-                }
-                name="port"
-                required
-                color={data?.fieldErrors?.port ? 'error' : 'default'}
-                helperText={data?.fieldErrors?.port}
-              />
-              <TextInput
-                label="SMTP"
-                type={'text'}
-                placeholder="SMTP server"
-                name="smtp"
-                required
-                color={data?.fieldErrors?.smtp ? 'error' : 'default'}
-                helperText={data?.fieldErrors?.smtp}
-              />
-            </>
-          ) : (
-            <>
-              <TextInput
-                label="SES Region"
-                type={'text'}
-                placeholder="SES Region"
-                name="ses_region"
-                required
-                color={data?.fieldErrors?.ses_region ? 'error' : 'default'}
-                helperText={data?.fieldErrors?.ses_region}
-              />
-              <TextInput
-                label="Amazon Access Key"
-                type={'text'}
-                placeholder="Amazon Access Key"
-                name="amazon_access_key"
-                required
-                color={data?.fieldErrors?.amazon_access_key ? 'error' : 'default'}
-                helperText={data?.fieldErrors?.amazon_access_key}
-              />
-              <TextInput
-                label="Amazon Secret Key"
-                type="password"
-                placeholder="Amazon Secret Key"
-                name="amazon_secret_key"
-                required
-                color={data?.fieldErrors?.amazon_secret_key ? 'error' : 'default'}
-                helperText={data?.fieldErrors?.amazon_secret_key}
-              />
-            </>
-          )}
-          {!data?.success ? (
-            <div className={`text-red-600 dark:text-status-error text-p7`}>
-              <span>{data?.message}</span>
-            </div>
-          ) : null}
-
-          <div className="flex gap-x-2">
-            <Button
-              size="sm"
-              type="submit"
-              disabled={state !== 'idle'}
-              loading={state !== 'idle'}
+        {fetcher?.data?.success ? (
+          <SuccessModalContent text="Configured successfully" />
+        ) : (
+          <fetcher.Form method="post" className="flex flex-col gap-y-8 mt-2 mx-4">
+            <input
+              readOnly
+              type="hidden"
+              name="_actionType"
+              value={ActionEnumType.ADD_CONFIGURATION}
+            />
+            <Listbox
+              variant="underline"
+              name="email_provider"
+              label={'Email Provider'}
+              placeholder="Email Provider"
+              onChange={(value) => setEmailProvider(value)}
+              getDisplayValue={(item) => {
+                return ['Google SMTP', 'Amazon SES', 'SMTP'].filter(
+                  (value) => value === item,
+                )[0];
+              }}
+              value={emailProvider}
             >
-              Submit
-            </Button>
-            <Button variant="outline" type="button" onClick={() => setShowDialog(false)}>
-              Cancel
-            </Button>
-          </div>
-        </fetcher.Form>
+              <ListboxOption value={'Google SMTP'}>Google SMTP</ListboxOption>
+              <ListboxOption value={'Amazon SES'}>Amazon SES</ListboxOption>
+              <ListboxOption value={'SMTP'}>SMTP</ListboxOption>
+            </Listbox>
+            <TextInput
+              label="Email"
+              type={'email'}
+              placeholder="Email"
+              name="email_id"
+              required
+              color={data?.fieldErrors?.email_id ? 'error' : 'default'}
+              helperText={data?.fieldErrors?.email_id}
+            />
+            {emailProvider !== 'Amazon SES' ? (
+              <>
+                <TextInput
+                  label="Password"
+                  type={'password'}
+                  placeholder="Password"
+                  name="password"
+                  required
+                  color={data?.fieldErrors?.password ? 'error' : 'default'}
+                  helperText={data?.fieldErrors?.password}
+                />
+                <TextInput
+                  label="Port"
+                  type={'number'}
+                  placeholder={
+                    emailProvider === 'SMTP' ? 'SMTP port (SSL)' : 'Gmail SMTP port (SSL)'
+                  }
+                  name="port"
+                  required
+                  color={data?.fieldErrors?.port ? 'error' : 'default'}
+                  helperText={data?.fieldErrors?.port}
+                />
+                <TextInput
+                  label="SMTP"
+                  type={'text'}
+                  placeholder="SMTP server"
+                  name="smtp"
+                  required
+                  color={data?.fieldErrors?.smtp ? 'error' : 'default'}
+                  helperText={data?.fieldErrors?.smtp}
+                />
+              </>
+            ) : (
+              <>
+                <TextInput
+                  label="SES Region"
+                  type={'text'}
+                  placeholder="SES Region"
+                  name="ses_region"
+                  required
+                  color={data?.fieldErrors?.ses_region ? 'error' : 'default'}
+                  helperText={data?.fieldErrors?.ses_region}
+                />
+                <TextInput
+                  label="Amazon Access Key"
+                  type={'text'}
+                  placeholder="Amazon Access Key"
+                  name="amazon_access_key"
+                  required
+                  color={data?.fieldErrors?.amazon_access_key ? 'error' : 'default'}
+                  helperText={data?.fieldErrors?.amazon_access_key}
+                />
+                <TextInput
+                  label="Amazon Secret Key"
+                  type="password"
+                  placeholder="Amazon Secret Key"
+                  name="amazon_secret_key"
+                  required
+                  color={data?.fieldErrors?.amazon_secret_key ? 'error' : 'default'}
+                  helperText={data?.fieldErrors?.amazon_secret_key}
+                />
+              </>
+            )}
+            {!data?.success ? (
+              <div className={`text-red-600 dark:text-status-error text-p7`}>
+                <span>{data?.message}</span>
+              </div>
+            ) : null}
+
+            <div className="flex gap-x-2">
+              <Button
+                size="sm"
+                type="submit"
+                disabled={state !== 'idle'}
+                loading={state !== 'idle'}
+              >
+                Submit
+              </Button>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setShowDialog(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </fetcher.Form>
+        )}
       </SlidingModalContent>
     </SlidingModal>
   );
 };
 
-const AddEmailConfigurationComponent = ({ show }: { show: boolean }) => {
-  const [openEmailConfiguration, setOpenEmailConfiguration] = useState(false);
+const AddEmailConfigurationComponent = ({
+  show,
+  setOpenEmailConfiguration,
+}: {
+  show: boolean;
+  setOpenEmailConfiguration: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   return (
     <>
-      {openEmailConfiguration && (
-        <EmailConfigurationModal
-          showDialog={openEmailConfiguration}
-          setShowDialog={setOpenEmailConfiguration}
-        />
-      )}
       {show && (
         <Card className="p-4 max-w-sm dark:bg-bg-card">
           <h4 className="text-p2 pb-2 dark:text-text-text-and-icon">Setup</h4>
@@ -320,6 +327,8 @@ const Configuration = () => {
     null,
   );
 
+  const [openEmailConfiguration, setOpenEmailConfiguration] = useState(false);
+
   useEffect(() => {
     if (configData && configData.length) {
       setConfiguration(configData[0]);
@@ -343,7 +352,10 @@ const Configuration = () => {
         />
       )}
       {!configuration ? (
-        <AddEmailConfigurationComponent show={!configuration} />
+        <AddEmailConfigurationComponent
+          show={!configuration}
+          setOpenEmailConfiguration={setOpenEmailConfiguration}
+        />
       ) : (
         <Card className="p-4 flex flex-col gap-y-3">
           <div className="flex">
@@ -403,6 +415,12 @@ const Configuration = () => {
             Delete configuration
           </Button>
         </Card>
+      )}
+      {openEmailConfiguration && (
+        <EmailConfigurationModal
+          showDialog={openEmailConfiguration}
+          setShowDialog={setOpenEmailConfiguration}
+        />
       )}
     </>
   );

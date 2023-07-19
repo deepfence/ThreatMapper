@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useMemo, useState } from 'react';
-import { ActionFunctionArgs, useFetcher, useRevalidator } from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { useInterval } from 'react-use';
 import { toast } from 'sonner';
 import {
@@ -24,8 +24,9 @@ import { SearchableClusterList } from '@/components/forms/SearchableClusterList'
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
 import { PlusIcon } from '@/components/icons/common/Plus';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
-import { get403Message } from '@/utils/403';
+import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 
@@ -35,7 +36,15 @@ const ACTION_TYPE = {
   AGENT_LOGS: 'agentLogs',
 };
 
-const action = async ({ request }: ActionFunctionArgs): Promise<string | null> => {
+type ActionData = {
+  success: boolean;
+  message: string;
+  fieldErrors?: {
+    node_ids: string;
+  };
+} | null;
+
+const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
   const actionType = formData.getAll('actionType')?.toString();
 
@@ -57,15 +66,11 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
     }
   }
 
-  if (
-    actionType === ACTION_TYPE.AGENT_LOGS &&
-    nodeIds.length === 0 &&
-    clusterIds.length === 0
-  ) {
-    return 'Please select at least one host/cluster';
-  }
   if (!actionType) {
-    return 'You have not triggered any action';
+    return {
+      success: false,
+      message: 'You have not triggered any action',
+    };
   }
   if (actionType === ACTION_TYPE.AGENT_LOGS) {
     const _hosts = nodeIds.map((node) => {
@@ -85,21 +90,38 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
     const logsApi = apiWrapper({
       fn: getDiagnosisApiClient().generateAgentDiagnosticLogs,
     });
+
     const logsResponse = await logsApi({
       diagnosisGenerateAgentDiagnosticLogsRequest: {
         node_ids: [..._hosts, ..._clusters],
         tail: 10000,
       },
     });
+
     if (!logsResponse.ok) {
       if (logsResponse.error.response.status === 400) {
-        return logsResponse.error.message;
+        const { message, fieldErrors } = await getResponseErrors(logsResponse.error);
+
+        return {
+          success: false,
+          message,
+          fieldErrors: {
+            node_ids: fieldErrors?.node_ids ?? '',
+          },
+        };
       } else if (logsResponse.error.response.status === 403) {
         const message = await get403Message(logsResponse.error);
-        return message;
+        return {
+          success: false,
+          message,
+        };
       }
       throw logsResponse.error;
     }
+    return {
+      success: true,
+      message: '',
+    };
   } else if (actionType === ACTION_TYPE.CONSOLE_LOGS) {
     const logsApi = apiWrapper({
       fn: getDiagnosisApiClient().generateConsoleDiagnosticLogs,
@@ -111,16 +133,15 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
     });
     if (!logsResponse.ok) {
       if (logsResponse.error.response.status === 400) {
-        return logsResponse.error.message;
+        toast.error(logsResponse.error.message);
       } else if (logsResponse.error.response.status === 403) {
         const message = await get403Message(logsResponse.error);
-        return message;
+        toast.error(message);
       }
       throw logsResponse.error;
     }
+    toast.success('Logs generated successfully');
   }
-
-  toast.success('Logs generated successfully');
   invalidateAllQueries();
   return null;
 };
@@ -271,7 +292,7 @@ const AgentDiagnosticLogsTable = () => {
 
   useInterval(() => {
     invalidateAllQueries();
-  }, 15000);
+  }, 20000);
 
   if (message) {
     return <p className="dark:text-status-error text-p7">{message}</p>;
@@ -331,9 +352,7 @@ const AgentDiagnosticsLogsModal = ({
   nodeType: 'host' | 'cluster';
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const { data } = useGetLogs();
-  const { message } = data;
-  const fetcher = useFetcher<string>();
+  const fetcher = useFetcher<ActionData>();
   const [hosts, setHosts] = useState<string[]>([]);
   const [clusters, setClusters] = useState<string[]>([]);
 
@@ -346,67 +365,78 @@ const AgentDiagnosticsLogsModal = ({
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>
-        <div className="m-4">
-          <span className="text-sm text-gray-500 dark:text-gray-300">
-            Generate a link to download pdf for your {nodeType} agent
-          </span>
-          <fetcher.Form method="post" className="mt-4 flex flex-col gap-y-3">
-            {message ? (
-              <p className="text-p7 dark:text-status-error pt-2">{message}</p>
-            ) : null}
-            <input
-              type="text"
-              name="actionType"
-              readOnly
-              hidden
-              value={ACTION_TYPE.AGENT_LOGS}
-            />
-            {nodeType === 'host' && (
-              <SearchableHostList
-                scanType="none"
-                active={true}
-                triggerVariant="select"
-                defaultSelectedHosts={hosts}
-                onChange={(value) => {
-                  setHosts(value);
-                }}
-                onClearAll={() => {
-                  setHosts([]);
-                }}
+        {fetcher?.data?.success ? (
+          <SuccessModalContent text="Logs generated successfully" />
+        ) : (
+          <div className="m-4">
+            <span className="text-sm text-gray-500 dark:text-gray-300">
+              Generate a link to download pdf for your {nodeType} agent
+            </span>
+            <fetcher.Form method="post" className="mt-4 flex flex-col gap-y-3">
+              <input
+                type="text"
+                name="actionType"
+                readOnly
+                hidden
+                value={ACTION_TYPE.AGENT_LOGS}
               />
-            )}
-            {nodeType === 'cluster' && (
-              <SearchableClusterList
-                active={true}
-                triggerVariant="select"
-                defaultSelectedClusters={clusters}
-                onChange={(value) => {
-                  setClusters(value);
-                }}
-                onClearAll={() => {
-                  setClusters([]);
-                }}
-              />
-            )}
+              {nodeType === 'host' && (
+                <SearchableHostList
+                  scanType="none"
+                  active={true}
+                  triggerVariant="select"
+                  defaultSelectedHosts={hosts}
+                  onChange={(value) => {
+                    setHosts(value);
+                  }}
+                  onClearAll={() => {
+                    setHosts([]);
+                  }}
+                  helperText={fetcher?.data?.fieldErrors?.node_ids}
+                  color={fetcher?.data?.fieldErrors?.node_ids ? 'error' : 'default'}
+                />
+              )}
+              {nodeType === 'cluster' && (
+                <SearchableClusterList
+                  active={true}
+                  triggerVariant="select"
+                  defaultSelectedClusters={clusters}
+                  onChange={(value) => {
+                    setClusters(value);
+                  }}
+                  onClearAll={() => {
+                    setClusters([]);
+                  }}
+                  helperText={fetcher?.data?.fieldErrors?.node_ids}
+                  color={fetcher?.data?.fieldErrors?.node_ids ? 'error' : 'default'}
+                />
+              )}
 
-            <div className="flex gap-x-2 mt-8">
-              <Button
-                type="submit"
-                disabled={fetcher.state !== 'idle'}
-                loading={fetcher.state !== 'idle'}
-              >
-                Generate
-              </Button>
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => setShowDialog(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </fetcher.Form>
-        </div>
+              {fetcher?.data?.message ? (
+                <p className="text-p7 dark:text-status-error pt-2">
+                  {fetcher.data.message}
+                </p>
+              ) : null}
+
+              <div className="flex gap-x-2 mt-8">
+                <Button
+                  type="submit"
+                  disabled={fetcher.state !== 'idle'}
+                  loading={fetcher.state !== 'idle'}
+                >
+                  Generate
+                </Button>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => setShowDialog(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </fetcher.Form>
+          </div>
+        )}
       </SlidingModalContent>
     </SlidingModal>
   );

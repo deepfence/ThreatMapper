@@ -13,3 +13,18 @@ export const getFieldErrors = async (error: ResponseError) => {
   const response = (await error.response.json()) as ApiDocsBadRequestResponse;
   return response.error_fields;
 };
+
+export const getResponseErrors = async (error: ResponseError) => {
+  try {
+    const response = (await error.response.json()) as ApiDocsBadRequestResponse;
+    return {
+      message: response.message ?? 'An unknown error has occured',
+      fieldErrors: response.error_fields,
+    };
+  } catch {
+    return Promise.resolve({
+      message: 'An unknown error has occured',
+      fieldErrors: undefined,
+    });
+  }
+};
