@@ -570,7 +570,7 @@ const HistoryControls = () => {
                 downloadScan({
                   scanId: scan_id,
                   scanType: UtilsReportFiltersScanTypeEnum.CloudCompliance,
-                  nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
+                  nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
                 });
               }}
             />
