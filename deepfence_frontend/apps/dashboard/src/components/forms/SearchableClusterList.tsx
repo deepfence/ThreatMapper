@@ -47,6 +47,10 @@ export const SearchableClusterList = ({
       searchText,
       active,
       agentRunning: true,
+      order: {
+        sortBy: 'node_name',
+        descending: false,
+      },
     }),
     keepPreviousData: true,
     getNextPageParam: (lastPage, allPages) => {

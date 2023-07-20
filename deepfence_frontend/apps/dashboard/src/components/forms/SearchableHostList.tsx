@@ -51,6 +51,10 @@ export const SearchableHostList = ({
       searchText,
       active,
       agentRunning: true,
+      order: {
+        sortBy: 'host_name',
+        descending: false,
+      },
     }),
     keepPreviousData: true,
     getNextPageParam: (lastPage, allPages) => {
