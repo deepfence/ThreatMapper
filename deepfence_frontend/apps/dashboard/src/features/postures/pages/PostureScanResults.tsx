@@ -1261,7 +1261,7 @@ const DynamicBreadcrumbs = () => {
   };
   return (
     <>
-      <BreadcrumbLink isLink icon={<PostureIcon />} asChild>
+      <BreadcrumbLink isLink asChild>
         <DFLink
           to={generatePath('/posture/accounts/:nodeType', {
             nodeType: params.nodeType,
@@ -1270,7 +1270,7 @@ const DynamicBreadcrumbs = () => {
           {providersToNameMapping[params.nodeType]}
         </DFLink>
       </BreadcrumbLink>
-      <BreadcrumbLink icon={<PostureIcon />} isLast>
+      <BreadcrumbLink isLast>
         <span className="inherit cursor-auto">{node_name}</span>
       </BreadcrumbLink>
     </>

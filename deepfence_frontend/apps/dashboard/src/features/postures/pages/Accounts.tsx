@@ -783,7 +783,7 @@ const Header = () => {
             Posture
           </DFLink>
         </BreadcrumbLink>
-        <BreadcrumbLink icon={<PostureIcon />}>
+        <BreadcrumbLink>
           <span className="inherit cursor-auto">
             {providersToNameMapping[routeParams.nodeType]}
           </span>

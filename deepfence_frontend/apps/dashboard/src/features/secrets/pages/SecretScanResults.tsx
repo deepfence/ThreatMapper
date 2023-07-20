@@ -1137,12 +1137,12 @@ const DynamicBreadcrumbs = () => {
 
   return (
     <>
-      <BreadcrumbLink isLink icon={<SecretsIcon />} asChild>
+      <BreadcrumbLink isLink asChild>
         <DFLink to={`/secret/scans?nodeType=${node_type}`} unstyled>
           {capitalize(node_type ?? '')}
         </DFLink>
       </BreadcrumbLink>
-      <BreadcrumbLink icon={<SecretsIcon />} isLast>
+      <BreadcrumbLink isLast>
         <span className="inherit cursor-auto">{node_name}</span>
       </BreadcrumbLink>
     </>
