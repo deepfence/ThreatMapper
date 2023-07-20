@@ -26,6 +26,13 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+
 	// identify integration and interface it
 	b, err := json.Marshal(req)
 	if err != nil {
@@ -33,7 +40,7 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 		return
 	}
-	obj, err := integration.GetIntegration(req.IntegrationType, b)
+	obj, err := integration.GetIntegration(ctx, req.IntegrationType, b)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&BadDecoding{err}, w)
@@ -47,12 +54,6 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 
 	// add integration to database
 	// before that check if integration already exists
-	ctx := r.Context()
-	pgClient, err := directory.PostgresClient(ctx)
-	if err != nil {
-		respondError(&InternalServerError{err}, w)
-		return
-	}
 	integrationExists, err := req.IntegrationExists(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())

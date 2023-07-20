@@ -39,7 +39,7 @@ var compStatusAsff = map[string]string{
 	"warn":  "WARNING",
 }
 
-func New(b []byte) (*AwsSecurityHub, error) {
+func New(ctx context.Context, b []byte) (*AwsSecurityHub, error) {
 	s := AwsSecurityHub{}
 	err := json.Unmarshal(b, &s)
 	if err != nil {

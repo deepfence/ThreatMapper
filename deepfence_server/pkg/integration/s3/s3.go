@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-func New(b []byte) (*S3, error) {
+func New(ctx context.Context, b []byte) (*S3, error) {
 	s := S3{}
 	err := json.Unmarshal(b, &s)
 	if err != nil {

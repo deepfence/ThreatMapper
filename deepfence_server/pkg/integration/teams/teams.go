@@ -11,7 +11,7 @@ import (
 // todo: add support for batch size
 const BatchSize = 100
 
-func New(b []byte) (*Teams, error) {
+func New(ctx context.Context, b []byte) (*Teams, error) {
 	t := Teams{}
 	err := json.Unmarshal(b, &t)
 	if err != nil {

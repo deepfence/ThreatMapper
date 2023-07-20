@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func New(b []byte) (*ElasticSearch, error) {
+func New(ctx context.Context, b []byte) (*ElasticSearch, error) {
 	p := ElasticSearch{}
 	err := json.Unmarshal(b, &p)
 	if err != nil {

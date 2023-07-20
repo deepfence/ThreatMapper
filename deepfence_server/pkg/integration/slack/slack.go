@@ -11,7 +11,7 @@ import (
 // todo: add support for batch size
 const BatchSize = 100
 
-func New(b []byte) (*Slack, error) {
+func New(ctx context.Context, b []byte) (*Slack, error) {
 	s := Slack{}
 	err := json.Unmarshal(b, &s)
 	if err != nil {

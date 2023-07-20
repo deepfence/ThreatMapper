@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func New(b []byte) (*GoogleChronicle, error) {
+func New(ctx context.Context, b []byte) (*GoogleChronicle, error) {
 	p := GoogleChronicle{}
 	err := json.Unmarshal(b, &p)
 	if err != nil {

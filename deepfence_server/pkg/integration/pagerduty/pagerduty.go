@@ -25,7 +25,7 @@ var pagerdutySeverityMapping = map[string]string{
 	"info":     "info",
 }
 
-func New(b []byte) (*PagerDuty, error) {
+func New(ctx context.Context, b []byte) (*PagerDuty, error) {
 	p := PagerDuty{}
 	err := json.Unmarshal(b, &p)
 	if err != nil {
