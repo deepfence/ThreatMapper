@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useIsFetching } from '@tanstack/react-query';
 import { isEmpty } from 'lodash-es';
-import { Suspense, useCallback, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { ActionFunctionArgs, useFetcher, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
@@ -58,11 +58,6 @@ type ActionData = {
   message?: string;
 } | null;
 
-type ActionReturnType = {
-  message?: string;
-  success: boolean;
-};
-
 export type RegistryScanType =
   | typeof ScanTypeEnum.VulnerabilityScan
   | typeof ScanTypeEnum.SecretScan
@@ -108,7 +103,7 @@ function getScanOptions(
   throw new Error('invalid scan type');
 }
 
-const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType> => {
+const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
   const actionType = formData.get('actionType');
 
@@ -125,16 +120,23 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
         return {
           message: modelResponse.message ?? '',
           success: false,
+          action: actionType,
         };
       } else if (r.error.response.status === 403) {
         const message = await get403Message(r.error);
         return {
           message,
           success: false,
+          action: actionType,
         };
       }
       throw r.error;
     }
+    invalidateAllQueries();
+    return {
+      success: true,
+      action: ActionEnumType.DELETE,
+    };
   } else if (actionType === ActionEnumType.SYNC_IMAGES) {
     const registryId = formData.get('nodeIds')?.toString() ?? '';
     if (!registryId) {
@@ -154,17 +156,15 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
         return {
           success: false,
           message,
+          action: actionType,
         };
       }
       throw result.error;
     }
+    invalidateAllQueries();
     toast.success('Sync registry images started successfully, please wait for sometime');
   }
-
-  invalidateAllQueries();
-  return {
-    success: true,
-  };
+  return null;
 };
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -184,10 +184,12 @@ const DeleteConfirmationModal = ({
   id,
   showDialog,
   setShowDialog,
+  onDeleteSuccess,
 }: {
   showDialog: boolean;
   id: string;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onDeleteSuccess: () => void;
 }) => {
   const fetcher = useFetcher<ActionData>();
 
@@ -203,6 +205,17 @@ const DeleteConfirmationModal = ({
     },
     [fetcher, id],
   );
+
+  useEffect(() => {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data?.success &&
+      fetcher.data.action === ActionEnumType.DELETE
+    ) {
+      onDeleteSuccess();
+    }
+  }, [fetcher]);
+
   return (
     <Modal
       size="s"
@@ -499,6 +512,9 @@ const RegistryAccountsResults = () => {
           showDialog={showDeleteDialog}
           id={idsToDelete}
           setShowDialog={setShowDeleteDialog}
+          onDeleteSuccess={() => {
+            setRowSelectionState({});
+          }}
         />
       )}
       {
