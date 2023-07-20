@@ -450,7 +450,7 @@ const ContentWrapper = ({
   children: ReactNode;
 }) => {
   if (noPortal) {
-    return <div>{children}</div>;
+    return <div className="isolate z-10">{children}</div>;
   }
   return <Portal>{children}</Portal>;
 };
