@@ -10,7 +10,7 @@ export const ScanStatusInProgress = () => {
     <div className={cx('flex items-center justify-center gap-x-2')}>
       <CircleSpinner size="md" />
       <span className="text-h3 font-medium dark:text-text-text-and-icon">
-        Loading data...
+        Scan is in progress, please wait...
       </span>
     </div>
   );
@@ -38,13 +38,13 @@ export const ScanStatusInError = ({ errorMessage }: { errorMessage: string }) =>
   );
 };
 
-export const ScanStatusNoData = () => {
+export const ScanStatusNoData = ({ message }: { message?: string }) => {
   return (
     <div className="flex-1 flex gap-2 items-center justify-center p-6 dark:text-text-text-and-icon">
       <div className="h-6 w-6 shrink-0">
         <ErrorStandardLineIcon />
       </div>
-      <div className="text-h3">No data available</div>
+      <div className="text-h3">{message ?? 'No data available'}</div>
     </div>
   );
 };
