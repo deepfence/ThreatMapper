@@ -42,6 +42,22 @@ func getNeo4jCountField(v interface{}) string {
 	return "error_thread_graph_nodes"
 }
 
+func getNeo4jNodeIDField(v interface{}) string {
+	switch v.(type) {
+	case model.Vulnerability:
+		return "cve_id"
+	case model.Secret:
+		return "node_id"
+	case model.Malware:
+		return "node_id"
+	case model.Compliance:
+		return "node_id"
+	case model.CloudCompliance:
+		return "node_id"
+	}
+	return "error_thread_graph_nodes"
+}
+
 func GetIndividualThreatGraph[T reporters.Cypherable](ctx context.Context, graphType string, selected_node_ids []string) ([]IndividualThreatGraph, error) {
 	individualThreatGraph := []IndividualThreatGraph{}
 
@@ -118,8 +134,8 @@ func GetIndividualThreatGraph[T reporters.Cypherable](ctx context.Context, graph
 		    RETURN v
 		    ORDER by v.exploitability_score DESC
 		}
-		RETURN n.node_id, collect(v.node_id)
-	`, dummy.NodeType())
+		RETURN n.node_id, collect(v.%s)
+	`, dummy.NodeType(), getNeo4jNodeIDField(dummy))
 
 	log.Debug().Msgf("q: %s", query)
 	res, err = tx.Run(query, map[string]interface{}{"node_ids": node_ids})
