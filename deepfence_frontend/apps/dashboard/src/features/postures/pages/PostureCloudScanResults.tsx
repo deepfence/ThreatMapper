@@ -1097,6 +1097,7 @@ const CloudPostureTable = ({
         enableResizing: false,
       }),
       columnHelper.accessor('node_id', {
+        id: 'control_id',
         enableSorting: true,
         enableResizing: false,
         cell: (info) => {

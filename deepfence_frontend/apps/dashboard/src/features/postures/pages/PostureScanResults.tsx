@@ -1068,6 +1068,7 @@ const PostureTable = ({
         enableResizing: false,
       }),
       columnHelper.accessor('node_id', {
+        id: 'test_number',
         enableSorting: true,
         enableResizing: false,
         cell: (info) => (
