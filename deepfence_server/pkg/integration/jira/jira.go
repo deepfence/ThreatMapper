@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func New(b []byte) (*Jira, error) {
+func New(ctx context.Context, b []byte) (*Jira, error) {
 	h := Jira{}
 	err := json.Unmarshal(b, &h)
 	if err != nil {

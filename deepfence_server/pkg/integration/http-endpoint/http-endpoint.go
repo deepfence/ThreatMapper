@@ -10,7 +10,7 @@ import (
 // todo: add support for batch size
 const BatchSize = 100
 
-func New(b []byte) (*HTTPEndpoint, error) {
+func New(ctx context.Context, b []byte) (*HTTPEndpoint, error) {
 	h := HTTPEndpoint{}
 	err := json.Unmarshal(b, &h)
 	if err != nil {

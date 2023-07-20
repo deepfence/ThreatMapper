@@ -24,32 +24,32 @@ import (
 )
 
 // GetIntegration returns an integration object based on the integration type
-func GetIntegration(integrationType string, b []byte) (Integration, error) {
+func GetIntegration(ctx context.Context, integrationType string, b []byte) (Integration, error) {
 	switch integrationType {
 	case constants.Slack:
-		return slack.New(b)
+		return slack.New(ctx, b)
 	case constants.HTTP:
-		return httpendpoint.New(b)
+		return httpendpoint.New(ctx, b)
 	case constants.Teams:
-		return teams.New(b)
+		return teams.New(ctx, b)
 	case constants.PagerDuty:
-		return pagerduty.New(b)
+		return pagerduty.New(ctx, b)
 	case constants.S3:
-		return s3.New(b)
+		return s3.New(ctx, b)
 	case constants.Splunk:
-		return splunk.New(b)
+		return splunk.New(ctx, b)
 	case constants.ElasticSearch:
-		return elasticsearch.New(b)
+		return elasticsearch.New(ctx, b)
 	case constants.GoogleChronicle:
-		return googlechronicle.New(b)
+		return googlechronicle.New(ctx, b)
 	case constants.AwsSecurityHub:
-		return awssecurityhub.New(b)
+		return awssecurityhub.New(ctx, b)
 	case constants.Email:
-		return email.New(b)
+		return email.New(ctx, b)
 	case constants.Jira:
-		return jira.New(b)
+		return jira.New(ctx, b)
 	case constants.SumoLogic:
-		return sumologic.New(b)
+		return sumologic.New(ctx, b)
 	default:
 		return nil, errors.New("invalid integration type")
 	}

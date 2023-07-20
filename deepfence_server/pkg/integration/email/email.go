@@ -2,22 +2,33 @@ package email
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/sendemail"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 // BatchSize todo: add support for batch size
 const BatchSize = 100
 
-func New(b []byte) (*Email, error) {
+func New(ctx context.Context, b []byte) (*Email, error) {
 	h := Email{}
 	err := json.Unmarshal(b, &h)
 	if err != nil {
 		return &h, err
 	}
+
+	// check if email is configured, donot allow if not
+	if !h.IsEmailConfigured(ctx) {
+		return nil, fmt.Errorf("email is not configured")
+	}
+
 	return &h, nil
 }
 
@@ -78,4 +89,27 @@ func (e Email) SendNotification(ctx context.Context, message string, extras map[
 		return err
 	}
 	return emailSender.Send([]string{e.Config.EmailId}, "Deepfence Subscription", m, "", nil)
+}
+
+func (e Email) IsEmailConfigured(ctx context.Context) bool {
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		log.Error().Msgf("unable to get postgres client: %v", err)
+		return false
+	}
+	setting, err := pgClient.GetSetting(ctx, model.EmailConfigurationKey)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false
+	} else if err != nil {
+		log.Error().Msgf("unable to get email configuration: %v", err)
+		return false
+	}
+	var emailConfig model.EmailConfigurationResp
+	err = json.Unmarshal(setting.Value, &emailConfig)
+	if err != nil {
+		log.Error().Msgf("unable to unmarshal email configuration: %v", err)
+		return false
+	}
+
+	return true
 }

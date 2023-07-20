@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func New(b []byte) (Splunk, error) {
+func New(ctx context.Context, b []byte) (Splunk, error) {
 	var s Splunk
 	err := json.Unmarshal(b, &s.Config)
 	if err != nil {
