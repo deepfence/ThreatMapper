@@ -1,22 +1,16 @@
 import cx from 'classnames';
-import { Tooltip } from 'ui-components';
+import { CircleSpinner, Tooltip } from 'ui-components';
 
+import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
 import { ScanTypeEnum } from '@/types/common';
 
-export const ScanStatusInProgress = ({ LogoIcon }: { LogoIcon: () => JSX.Element }) => {
+export const ScanStatusInProgress = () => {
   return (
-    <div className={cx('flex flex-col items-center justify-center mt-40')}>
-      <div className="bg-red-100 dark:bg-status-success rounded-lg flex items-center justify-center p-4">
-        <div className="w-14 h-14 text-red-500 dark:text-red-400">
-          <LogoIcon />
-        </div>
-      </div>
-      <span className="text-2xl font-medium text-gray-700 dark:text-white">
-        Scan In Progress
-      </span>
-      <span className="text-sm text-gray-500 dark:text-gray-400">
-        Scan is running, please check back later
+    <div className={cx('flex items-center justify-center gap-x-2')}>
+      <CircleSpinner size="md" />
+      <span className="text-h3 font-medium dark:text-text-text-and-icon">
+        Loading data...
       </span>
     </div>
   );
@@ -24,7 +18,7 @@ export const ScanStatusInProgress = ({ LogoIcon }: { LogoIcon: () => JSX.Element
 
 export const ScanStatusInError = ({ errorMessage }: { errorMessage: string }) => {
   return (
-    <div className={cx('flex items-center justify-center mt-40 gap-x-4')}>
+    <div className={cx('flex items-center justify-center gap-x-2')}>
       {errorMessage ? (
         <Tooltip content={<span>{errorMessage}</span>}>
           <div className="w-6 h-6 dark:text-status-error  rounded-full">
@@ -38,10 +32,19 @@ export const ScanStatusInError = ({ errorMessage }: { errorMessage: string }) =>
       )}
 
       <div className="flex flex-col text-h3 dark:text-text-text-and-icon">
-        Scan failed.
-        <br />
-        You can run the scan again.
+        Scan failed
       </div>
+    </div>
+  );
+};
+
+export const ScanStatusNoData = () => {
+  return (
+    <div className="flex-1 flex gap-2 items-center justify-center p-6 dark:text-text-text-and-icon">
+      <div className="h-6 w-6 shrink-0">
+        <ErrorStandardLineIcon />
+      </div>
+      <div className="text-h3">No data available</div>
     </div>
   );
 };
