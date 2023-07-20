@@ -1369,9 +1369,17 @@ const SeverityCountWidget = () => {
           <ScanStatusInError errorMessage={scanStatusResult?.status_message ?? ''} />
         </div>
       ) : (
-        <div className="col-span-2 h-[120px] w-[120px]">
-          <PostureScanResultsPieChart data={statusCounts} />
-        </div>
+        <>
+          {isScanInProgress(scanStatusResult?.status ?? '') ? (
+            <div className="h-full col-span-4 flex items-center justify-center">
+              <ScanStatusInProgress />
+            </div>
+          ) : (
+            <div className="col-span-2 h-[120px] w-[120px]">
+              <PostureScanResultsPieChart data={statusCounts} />
+            </div>
+          )}
+        </>
       )}
       {isScanComplete(scanStatusResult?.status ?? '') ? (
         <div className="col-span-2 dark:text-text-text-and-icon">
@@ -1389,15 +1397,7 @@ const SeverityCountWidget = () => {
             )}
           </div>
         </div>
-      ) : (
-        <>
-          {isScanInProgress(scanStatusResult?.status ?? '') ? (
-            <div className="col-span-2 flex items-center justify-center">
-              <ScanStatusInProgress />
-            </div>
-          ) : null}
-        </>
-      )}
+      ) : null}
 
       <div className="w-px min-h-[120px] dark:bg-bg-grid-border" />
 

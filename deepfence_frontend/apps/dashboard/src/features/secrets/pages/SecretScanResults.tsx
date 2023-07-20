@@ -894,11 +894,18 @@ const Filters = () => {
     </div>
   );
 };
-const TablePlaceholder = ({ isError }: { isError: boolean }) => {
-  if (isError) {
+const TablePlaceholder = ({ scanStatus }: { scanStatus: string }) => {
+  if (isScanFailed(scanStatus)) {
     return (
       <div className="flex items-center justify-center min-h-[384px]">
         <ScanStatusInError errorMessage="" />
+      </div>
+    );
+  }
+  if (isScanInProgress(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center min-h-[384px]">
+        <ScanStatusInProgress />
       </div>
     );
   }
@@ -1102,9 +1109,7 @@ const SecretTable = ({
           return prev;
         });
       }}
-      noDataElement={
-        <TablePlaceholder isError={scanStatusResult?.status === ScanStatusEnum.error} />
-      }
+      noDataElement={<TablePlaceholder scanStatus={scanStatusResult?.status ?? ''} />}
     />
   );
 };
@@ -1284,6 +1289,14 @@ const SeverityCountWidget = () => {
     );
   }
 
+  if (isScanInProgress(scanStatusResult?.status ?? '')) {
+    return (
+      <div className="flex items-center justify-center h-[140px]">
+        <ScanStatusInProgress />
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center">
       <div className="h-[140px] w-[140px]">
@@ -1291,16 +1304,14 @@ const SeverityCountWidget = () => {
       </div>
       <div className="flex flex-1 justify-center">
         <div className="flex flex-col flex-1 max-w-[160px] gap-1">
-          {isScanInProgress(scanStatusResult?.status ?? '') ? (
-            <ScanStatusInProgress />
+          {keys(severityCounts).length === 0 ? (
+            <div className="flex flex-col flex-1 gap-1">
+              <ScanStatusNoData />
+            </div>
           ) : (
-            <>
-              {keys(severityCounts).length === 0 ? (
-                <ScanStatusNoData />
-              ) : (
-                <SeverityCounts severityCounts={severityCounts} />
-              )}
-            </>
+            <div className="flex flex-col flex-1 max-w-[160px] gap-1">
+              <SeverityCounts severityCounts={severityCounts} />
+            </div>
           )}
         </div>
       </div>
@@ -1319,6 +1330,14 @@ const Top5Widget = () => {
     return (
       <div className="flex items-center justify-center h-[140px]">
         <ScanStatusInError errorMessage={scanStatusResult?.status_message ?? ''} />
+      </div>
+    );
+  }
+
+  if (isScanInProgress(scanStatusResult?.status ?? '')) {
+    return (
+      <div className="flex items-center justify-center h-[140px]">
+        <ScanStatusInProgress />
       </div>
     );
   }
@@ -1373,6 +1392,14 @@ const TopAttackPath = () => {
     return (
       <div className="flex items-center justify-center h-[140px]">
         <ScanStatusInError errorMessage={scanStatusResult?.status_message ?? ''} />
+      </div>
+    );
+  }
+
+  if (isScanInProgress(scanStatusResult?.status ?? '')) {
+    return (
+      <div className="flex items-center justify-center h-[140px]">
+        <ScanStatusInProgress />
       </div>
     );
   }
