@@ -55,23 +55,46 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &registerRequest)
 	if err != nil {
+		log.Error().Msgf(err.Error())
 		respondError(&BadDecoding{err}, w)
 		return
 	}
 	err = h.Validator.Struct(registerRequest)
 	if err != nil {
+		log.Error().Msgf(err.Error())
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	registerRequest.Email = strings.ToLower(registerRequest.Email)
-	ctx := directory.NewContextWithNameSpace(directory.FetchNamespace(registerRequest.Email))
+	namespace := directory.FetchNamespace(registerRequest.Email)
+	ctx := directory.NewContextWithNameSpace(namespace)
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
+		log.Error().Msgf(err.Error())
 		respondError(err, w)
 		return
 	}
+
+	users, err := pgClient.CountActiveUsers(ctx)
+	if err != nil || users > 0 {
+		if err != nil {
+			log.Error().Msgf(err.Error())
+		}
+		u := model.User{
+			FirstName:        registerRequest.FirstName,
+			LastName:         registerRequest.LastName,
+			Email:            registerRequest.Email,
+			Company:          registerRequest.Company,
+			CompanyNamespace: string(namespace),
+		}
+		h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, &u, false)
+		respondError(&registrationDoneError, w)
+		return
+	}
+
 	consoleUrl, err := utils.RemoveURLPath(registerRequest.ConsoleURL)
 	if err != nil {
+		log.Error().Msgf(err.Error())
 		respondError(err, w)
 		return
 	}
@@ -86,14 +109,11 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err = consoleUrlSetting.Create(ctx, pgClient)
 	if err != nil {
+		log.Error().Msgf(err.Error())
 		respondError(err, w)
 		return
 	}
-	users, err := pgClient.CountActiveUsers(ctx)
-	if err != nil || users > 0 {
-		respondError(&registrationDoneError, w)
-		return
-	}
+
 	emailDomain, _ := utils.GetEmailDomain(registerRequest.Email)
 	c := model.Company{
 		Name:        registerRequest.Company,
@@ -102,12 +122,14 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 	company, err := c.Create(ctx, pgClient)
 	if err != nil {
+		log.Error().Msgf(err.Error())
 		respondError(err, w)
 		return
 	}
 	c.ID = company.ID
 	role, err := pgClient.GetRoleByName(ctx, model.AdminRole)
 	if err != nil {
+		log.Error().Msgf(err.Error())
 		respondError(err, w)
 		return
 	}
