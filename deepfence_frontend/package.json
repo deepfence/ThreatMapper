@@ -16,7 +16,7 @@
     "format:fix": "prettier  --loglevel warn --write \"./**/*.{js,jsx,ts,tsx,css,md,json}\""
   },
   "devDependencies": {
-    "prettier": "latest",
+    "prettier": "^2.8.8",
     "turbo": "latest",
     "typescript": "^4.9.5"
   },

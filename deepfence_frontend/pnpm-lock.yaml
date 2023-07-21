@@ -4,11 +4,11 @@ importers:
 
   .:
     specifiers:
-      prettier: latest
+      prettier: ^2.8.8
       turbo: latest
       typescript: ^4.9.5
     devDependencies:
-      prettier: 3.0.0
+      prettier: 2.8.8
       turbo: 1.10.9
       typescript: 4.9.5
 
