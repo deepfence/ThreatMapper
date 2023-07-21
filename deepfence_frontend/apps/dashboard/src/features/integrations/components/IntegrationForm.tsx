@@ -177,53 +177,71 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
         />
 
         {notificationType === 'Compliance' || notificationType === 'CloudCompliance' ? (
-          <Listbox
-            variant="underline"
-            value={selectedStatus}
-            name="statusFilter"
-            onChange={(value) => {
-              setSelectedStatus(value);
-            }}
-            placeholder="Select status"
-            label="Select status"
-            multiple
-            clearAll="Clear"
-            onClearAll={() => setSelectedStatus([])}
-            getDisplayValue={(value) => {
-              return value && value.length ? `${value.length} selected` : '';
-            }}
-          >
-            <ListboxOption value={'Alarm'}>Alarm</ListboxOption>
-            <ListboxOption value={'Info'}>Info</ListboxOption>
-            <ListboxOption value={'Ok'}>Ok</ListboxOption>
-            <ListboxOption value={'Skip'}>Skip</ListboxOption>
-          </Listbox>
+          <>
+            <input
+              type="text"
+              name="selectedStatusesLength"
+              hidden
+              readOnly
+              value={selectedStatus.length}
+            />
+            <Listbox
+              variant="underline"
+              value={selectedStatus}
+              name="statusFilter"
+              onChange={(value) => {
+                setSelectedStatus(value);
+              }}
+              placeholder="Select status"
+              label="Select status"
+              multiple
+              clearAll="Clear"
+              onClearAll={() => setSelectedStatus([])}
+              getDisplayValue={(value) => {
+                return value && value.length ? `${value.length} selected` : '';
+              }}
+            >
+              <ListboxOption value={'Alarm'}>Alarm</ListboxOption>
+              <ListboxOption value={'Info'}>Info</ListboxOption>
+              <ListboxOption value={'Ok'}>Ok</ListboxOption>
+              <ListboxOption value={'Skip'}>Skip</ListboxOption>
+            </Listbox>
+          </>
         ) : null}
 
         {['Secret', 'Vulnerability', 'Malware'].includes(
           notificationType as ScanTypeEnum,
         ) ? (
-          <Listbox
-            variant="underline"
-            value={selectedSeverity}
-            name="severityFilter"
-            onChange={(value) => {
-              setSelectedSeverity(value);
-            }}
-            placeholder="Select severity"
-            label="Select severity"
-            multiple
-            clearAll="Clear"
-            onClearAll={() => setSelectedSeverity([])}
-            getDisplayValue={(value) => {
-              return value && value.length ? `${value.length} selected` : '';
-            }}
-          >
-            <ListboxOption value={'Critical'}>Critical</ListboxOption>
-            <ListboxOption value={'High'}>High</ListboxOption>
-            <ListboxOption value={'Medium'}>Medium</ListboxOption>
-            <ListboxOption value={'Low'}>Low</ListboxOption>
-          </Listbox>
+          <>
+            <input
+              type="text"
+              name="selectedSeveritiesLength"
+              hidden
+              readOnly
+              value={selectedSeverity.length}
+            />
+            <Listbox
+              variant="underline"
+              value={selectedSeverity}
+              name="severityFilter"
+              onChange={(value) => {
+                setSelectedSeverity(value);
+              }}
+              placeholder="Select severity"
+              label="Select severity"
+              multiple
+              clearAll="Clear"
+              onClearAll={() => setSelectedSeverity([])}
+              getDisplayValue={(value) => {
+                return value && value.length ? `${value.length} selected` : '';
+              }}
+            >
+              <ListboxOption value={'Critical'}>Critical</ListboxOption>
+              <ListboxOption value={'High'}>High</ListboxOption>
+              <ListboxOption value={'Medium'}>Medium</ListboxOption>
+              <ListboxOption value={'Low'}>Low</ListboxOption>
+            </Listbox>
+          </>
         ) : null}
       </div>
     </div>

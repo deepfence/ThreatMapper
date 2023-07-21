@@ -178,8 +178,22 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
     }
 
     // filters
-    const statusFilter = formData.getAll('statusFilter') as string[];
-    const severityFilter = formData.getAll('severityFilter') as string[];
+    // statuses filter
+    const selectedStatusesLength = Number(formData.get('selectedStatusesLength'));
+    const statusFilter = [];
+    if (selectedStatusesLength > 0) {
+      for (let i = 0; i < selectedStatusesLength; i++) {
+        statusFilter.push(formData.get(`statusFilter[${i}]`) as string);
+      }
+    }
+    // statuses filter
+    const selectedSeveritiesLength = Number(formData.get('selectedSeveritiesLength'));
+    const severityFilter = [];
+    if (selectedSeveritiesLength > 0) {
+      for (let i = 0; i < selectedSeveritiesLength; i++) {
+        severityFilter.push(formData.get(`severityFilter[${i}]`) as string);
+      }
+    }
     const intervalFilter = formData.get('interval')?.toString();
 
     // host filter
