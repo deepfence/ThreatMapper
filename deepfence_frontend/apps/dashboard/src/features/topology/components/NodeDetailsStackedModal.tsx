@@ -23,6 +23,7 @@ export const NodeDetailsStackedModal = ({
   node: {
     nodeId: string;
     nodeType: string;
+    lastVisitedTab?: string;
     parentId?: string; // in case of cloud service node, this is the region
   };
 }) => {
@@ -39,6 +40,13 @@ export const NodeDetailsStackedModal = ({
     });
   }, [stack]);
 
+  const updateNodeInStack = (lastVisitedTab: string) => {
+    setStack((prevStack) => {
+      prevStack[prevStack.length - 1].lastVisitedTab = lastVisitedTab;
+      return prevStack;
+    });
+  };
+
   const [scanOptions, setScanOptions] =
     useState<ConfigureScanModalProps['scanOptions']>();
   return (
@@ -53,6 +61,8 @@ export const NodeDetailsStackedModal = ({
             nodeId={lastNode.nodeId}
             showBackBtn={showBackBtn}
             onGoBack={onGoBack}
+            updateNodeInStack={updateNodeInStack}
+            lastVisitedTab={lastNode.lastVisitedTab}
             onNodeClick={(nodeId, nodeType) => {
               setStack((prevStack) => [...prevStack, { nodeId, nodeType }]);
             }}
@@ -66,6 +76,8 @@ export const NodeDetailsStackedModal = ({
             nodeId={lastNode.nodeId}
             showBackBtn={showBackBtn}
             onGoBack={onGoBack}
+            updateNodeInStack={updateNodeInStack}
+            lastVisitedTab={lastNode.lastVisitedTab}
             onNodeClick={(nodeId, nodeType) => {
               setStack((prevStack) => [...prevStack, { nodeId, nodeType }]);
             }}
@@ -79,6 +91,8 @@ export const NodeDetailsStackedModal = ({
             nodeId={lastNode.nodeId}
             showBackBtn={showBackBtn}
             onGoBack={onGoBack}
+            updateNodeInStack={updateNodeInStack}
+            lastVisitedTab={lastNode.lastVisitedTab}
             onNodeClick={(nodeId, nodeType) => {
               setStack((prevStack) => [...prevStack, { nodeId, nodeType }]);
             }}
@@ -92,6 +106,8 @@ export const NodeDetailsStackedModal = ({
             nodeId={lastNode.nodeId}
             showBackBtn={showBackBtn}
             onGoBack={onGoBack}
+            updateNodeInStack={updateNodeInStack}
+            lastVisitedTab={lastNode.lastVisitedTab}
             onNodeClick={(nodeId, nodeType) => {
               setStack((prevStack) => [...prevStack, { nodeId, nodeType }]);
             }}
@@ -105,6 +121,8 @@ export const NodeDetailsStackedModal = ({
             nodeId={lastNode.nodeId}
             showBackBtn={showBackBtn}
             onGoBack={onGoBack}
+            updateNodeInStack={updateNodeInStack}
+            lastVisitedTab={lastNode.lastVisitedTab}
             onNodeClick={(nodeId, nodeType) => {
               setStack((prevStack) => [...prevStack, { nodeId, nodeType }]);
             }}

@@ -25,11 +25,21 @@ interface ContainerModalProps {
   showBackBtn: boolean;
   onNodeClick: (nodeId: string, nodeType: string) => void;
   onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
+  updateNodeInStack: (lastVisitedTab: string) => void;
+  lastVisitedTab?: string;
 }
 
 export const Container = (props: ContainerModalProps) => {
-  const { nodeId, onGoBack, showBackBtn, onNodeClick, onStartScanClick } = props;
-  const [tab, setTab] = useState('metadata');
+  const {
+    nodeId,
+    lastVisitedTab,
+    onGoBack,
+    showBackBtn,
+    onNodeClick,
+    onStartScanClick,
+    updateNodeInStack,
+  } = props;
+  const [tab, setTab] = useState(lastVisitedTab ?? 'metadata');
 
   const tabs = [
     {
@@ -68,7 +78,10 @@ export const Container = (props: ContainerModalProps) => {
             value={tab}
             defaultValue={tab}
             tabs={tabs}
-            onValueChange={(v) => setTab(v)}
+            onValueChange={(v) => {
+              updateNodeInStack(v);
+              setTab(v);
+            }}
           >
             <Suspense
               fallback={
