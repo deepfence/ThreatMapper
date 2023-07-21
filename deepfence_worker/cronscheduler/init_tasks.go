@@ -25,6 +25,11 @@ func initDatabase(ctx context.Context) {
 	if err != nil {
 		log.Error().Err(err).Msg("failed to update settings")
 	}
+
+	err = model.SetConsoleIDSetting(ctx, pgClient)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to initialize console id")
+	}
 }
 
 func initMinio() error {

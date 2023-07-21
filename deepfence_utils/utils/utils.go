@@ -3,6 +3,7 @@ package utils
 import (
 	"archive/zip"
 	"bytes"
+	"crypto/rand"
 	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
@@ -11,6 +12,8 @@ import (
 	"fmt"
 	"hash/fnv"
 	"io"
+	"math"
+	"math/big"
 	"net"
 	"net/http"
 	"net/mail"
@@ -447,7 +450,7 @@ func NewHTTPClient() (*http.Client, error) {
 			DisableKeepAlives:   false,
 			MaxIdleConnsPerHost: 1024,
 			DialContext: (&net.Dialer{
-				Timeout:   15 * time.Minute,
+				Timeout:   10 * time.Second,
 				KeepAlive: 15 * time.Minute,
 			}).DialContext,
 			TLSHandshakeTimeout:   10 * time.Second,
@@ -456,6 +459,28 @@ func NewHTTPClient() (*http.Client, error) {
 		Timeout: 15 * time.Minute,
 	}
 	return client, nil
+}
+
+func GenerateRandomNumber(numberOfDigits int) (int64, error) {
+	maxLimit := int64(math.Pow10(numberOfDigits)) - 1
+	lowLimit := int64(math.Pow10(numberOfDigits - 1))
+
+	randomNumber, err := rand.Int(rand.Reader, big.NewInt(maxLimit))
+	if err != nil {
+		return 0, err
+	}
+	randomNumberInt := randomNumber.Int64()
+
+	// Handling integers between 0, 10^(n-1) .. for n=4, handling cases between (0, 999)
+	if randomNumberInt <= lowLimit {
+		randomNumberInt += lowLimit
+	}
+
+	// Never likely to occur, kust for safe side.
+	if randomNumberInt > maxLimit {
+		randomNumberInt = maxLimit
+	}
+	return randomNumberInt, nil
 }
 
 func StringArrayToInterfaceArray(a []string) []interface{} {

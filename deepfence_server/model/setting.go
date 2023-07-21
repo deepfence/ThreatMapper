@@ -19,6 +19,7 @@ const (
 	EmailSettingSES                   = "amazon_ses"
 	EmailSettingSMTP                  = "smtp"
 	InactiveNodesDeleteScanResultsKey = "inactive_delete_scan_results"
+	ConsoleIDKey                      = "console_id"
 )
 
 type GetAuditLogsRow struct {
@@ -181,6 +182,33 @@ func SetScanResultsDeletionSetting(ctx context.Context, pgClient *postgresqlDb.Q
 				Description: "Scan results deletion interval (in days) for nodes that are not active",
 			},
 			IsVisibleOnUi: true,
+		}
+		_, err = s.Create(ctx, pgClient)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else if err != nil {
+		return err
+	}
+	return nil
+}
+
+func SetConsoleIDSetting(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	_, err := pgClient.GetSetting(ctx, ConsoleIDKey)
+	if errors.Is(err, sql.ErrNoRows) {
+		randomInt, err := utils.GenerateRandomNumber(13)
+		if err != nil {
+			return err
+		}
+		s := Setting{
+			Key: ConsoleIDKey,
+			Value: &SettingValue{
+				Label:       "Console ID",
+				Value:       randomInt,
+				Description: "Unique ID for console",
+			},
+			IsVisibleOnUi: false,
 		}
 		_, err = s.Create(ctx, pgClient)
 		if err != nil {
