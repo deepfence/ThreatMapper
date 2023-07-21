@@ -281,9 +281,9 @@ const ScanStatus = () => {
         <div className="flex justify-center items-center mt-6">
           <p className="text-p4 text-gray-700 dark:text-text-text-and-icon">
             {!allScanDone &&
-              `${scanType.charAt(0).toUpperCase() + scanType.slice(1)} scan started for ${
-                data?.data?.length
-              } ${uniq(
+              `${
+                scanType.charAt(0).toUpperCase() + scanType.slice(1)
+              } scan started for ${data?.data?.length} ${uniq(
                 data.data?.map((data) => data.node_type?.replace('_', ' ')) ?? [],
               ).join(' and ')}${(data?.data?.length ?? 0) > 1 ? 's' : ''}, ${
                 allScanFailed
