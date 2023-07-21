@@ -23,6 +23,7 @@ export const NodeDetailsStackedModal = ({
   node: {
     nodeId: string;
     nodeType: string;
+    defaultTab?: string;
     parentId?: string; // in case of cloud service node, this is the region
   };
 }) => {
@@ -39,6 +40,13 @@ export const NodeDetailsStackedModal = ({
     });
   }, [stack]);
 
+  const setCurrentTab = (defaultTab: string) => {
+    setStack((prevStack) => {
+      prevStack[prevStack.length - 1].defaultTab = defaultTab;
+      return prevStack;
+    });
+  };
+
   const [scanOptions, setScanOptions] =
     useState<ConfigureScanModalProps['scanOptions']>();
   return (
@@ -53,6 +61,8 @@ export const NodeDetailsStackedModal = ({
             nodeId={lastNode.nodeId}
             showBackBtn={showBackBtn}
             onGoBack={onGoBack}
+            onTabChange={setCurrentTab}
+            defaultTab={lastNode.defaultTab}
             onNodeClick={(nodeId, nodeType) => {
               setStack((prevStack) => [...prevStack, { nodeId, nodeType }]);
             }}
@@ -66,6 +76,8 @@ export const NodeDetailsStackedModal = ({
             nodeId={lastNode.nodeId}
             showBackBtn={showBackBtn}
             onGoBack={onGoBack}
+            onTabChange={setCurrentTab}
+            defaultTab={lastNode.defaultTab}
             onNodeClick={(nodeId, nodeType) => {
               setStack((prevStack) => [...prevStack, { nodeId, nodeType }]);
             }}
@@ -79,6 +91,8 @@ export const NodeDetailsStackedModal = ({
             nodeId={lastNode.nodeId}
             showBackBtn={showBackBtn}
             onGoBack={onGoBack}
+            onTabChange={setCurrentTab}
+            defaultTab={lastNode.defaultTab}
             onNodeClick={(nodeId, nodeType) => {
               setStack((prevStack) => [...prevStack, { nodeId, nodeType }]);
             }}
@@ -92,6 +106,8 @@ export const NodeDetailsStackedModal = ({
             nodeId={lastNode.nodeId}
             showBackBtn={showBackBtn}
             onGoBack={onGoBack}
+            onTabChange={setCurrentTab}
+            defaultTab={lastNode.defaultTab}
             onNodeClick={(nodeId, nodeType) => {
               setStack((prevStack) => [...prevStack, { nodeId, nodeType }]);
             }}
@@ -105,6 +121,8 @@ export const NodeDetailsStackedModal = ({
             nodeId={lastNode.nodeId}
             showBackBtn={showBackBtn}
             onGoBack={onGoBack}
+            onTabChange={setCurrentTab}
+            defaultTab={lastNode.defaultTab}
             onNodeClick={(nodeId, nodeType) => {
               setStack((prevStack) => [...prevStack, { nodeId, nodeType }]);
             }}
