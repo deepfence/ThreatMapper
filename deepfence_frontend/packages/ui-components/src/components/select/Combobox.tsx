@@ -93,9 +93,6 @@ type ComboboxProps<
   loading?: boolean;
   getDisplayValue?: (item: TValue) => string | null;
   onQueryChange: (query: string) => void;
-  // radix dialog doesn't play well with focusable stuff outside of its own portal
-  // so not using portal kind of fixes it.
-  noPortal?: boolean;
 };
 
 let DEFAULT_COMBOBOX_TAG: React.ExoticComponent<{
@@ -322,7 +319,6 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                         <UnmountDetectionElement
                           onUnmount={() => {
                             onQueryChange?.('');
-                            console.log('query reset');
                           }}
                         />
                       </div>
