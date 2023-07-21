@@ -23,21 +23,21 @@ interface PodModalProps {
   showBackBtn: boolean;
   onNodeClick: (nodeId: string, nodeType: string) => void;
   onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
-  updateNodeInStack: (lastVisitedTab: string) => void;
-  lastVisitedTab?: string;
+  onTabChange: (defaultTab: string) => void;
+  defaultTab?: string;
 }
 
 export const Pod = (props: PodModalProps) => {
   const {
     nodeId,
-    lastVisitedTab,
+    defaultTab,
     onGoBack,
     showBackBtn,
     onStartScanClick,
     onNodeClick,
-    updateNodeInStack,
+    onTabChange,
   } = props;
-  const [tab, setTab] = useState(lastVisitedTab ?? 'metadata');
+  const [tab, setTab] = useState(defaultTab ?? 'metadata');
 
   const tabs = [
     {
@@ -73,7 +73,7 @@ export const Pod = (props: PodModalProps) => {
             defaultValue={tab}
             tabs={tabs}
             onValueChange={(v) => {
-              updateNodeInStack(v);
+              onTabChange(v);
               setTab(v);
             }}
           >
