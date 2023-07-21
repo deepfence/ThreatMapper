@@ -229,7 +229,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 
 	actionBuilder := StartScanActionBuilder(r.Context(), ctl.StartVulnerabilityScan, binArgs)
 
-	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_VULNERABILITY_SCAN, reqs.ScanTriggerCommon, actionBuilder)
+	scan_ids, bulkId, skipped, err := StartMultiScan(r.Context(), true, utils.NEO4J_VULNERABILITY_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
 		if err.Error() == "Result contains no more records" {
 			respondError(&noNodesMatchedInNeo4jError, w)
@@ -240,9 +240,14 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	if len(skipped) > 0 {
+		log.Info().Msgf("vulnerability scans skipped nodes: %v", skipped)
+	}
+
 	h.AuditUserActivity(r, EVENT_VULNERABILITY_SCAN, ACTION_START, reqs, true)
 
-	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
+	err = httpext.JSON(w, http.StatusOK,
+		model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId, SkippedNodes: skipped})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -259,7 +264,7 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 
 	actionBuilder := StartScanActionBuilder(r.Context(), ctl.StartSecretScan, nil)
 
-	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_SECRET_SCAN, reqs.ScanTriggerCommon, actionBuilder)
+	scan_ids, bulkId, skipped, err := StartMultiScan(r.Context(), true, utils.NEO4J_SECRET_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
 		if err.Error() == "Result contains no more records" {
 			respondError(&noNodesMatchedInNeo4jError, w)
@@ -270,9 +275,14 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	if len(skipped) > 0 {
+		log.Info().Msgf("secret scans skipped nodes: %v", skipped)
+	}
+
 	h.AuditUserActivity(r, EVENT_SECRET_SCAN, ACTION_START, reqs, true)
 
-	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
+	err = httpext.JSON(w, http.StatusOK,
+		model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId, SkippedNodes: skipped})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -314,23 +324,10 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 		nodes = reqs.NodeIds
 	}
 
-	var scanTrigger model.NodeIdentifier
-	if len(nodes) > 0 {
-		scanTrigger = nodes[0]
-	}
-
 	var scanIds []string
 	var bulkId string
-	var scanStatusType string
-	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) ||
-		scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) ||
-		scanTrigger.NodeType == controls.ResourceTypeToString(controls.Host) {
-		scanIds, bulkId, err = StartMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
-		scanStatusType = utils.CLOUD_COMPLIANCE_SCAN_STATUS
-	} else {
-		scanIds, bulkId, err = startMultiComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
-		scanStatusType = utils.COMPLIANCE_SCAN_STATUS
-	}
+
+	scanIds, bulkId, skipped, err := StartMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
 	if err != nil {
 		if err.Error() == "Result contains no more records" {
 			respondError(&noNodesMatchedInNeo4jError, w)
@@ -341,18 +338,14 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	for _, i := range scanIds {
-		h.SendScanStatus(r.Context(), scanStatusType, NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
-	}
-
-	if len(scanIds) == 0 {
-		respondError(startScanError, w)
-		return
+	if len(skipped) > 0 {
+		log.Info().Msgf("compliances scans skipped nodes: %v", skipped)
 	}
 
 	h.AuditUserActivity(r, EVENT_COMPLIANCE_SCAN, ACTION_START, reqs, true)
 
-	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scanIds, BulkScanId: bulkId})
+	err = httpext.JSON(w, http.StatusOK,
+		model.ScanTriggerResp{ScanIds: scanIds, BulkScanId: bulkId, SkippedNodes: skipped})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -369,7 +362,7 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 
 	actionBuilder := StartScanActionBuilder(r.Context(), ctl.StartMalwareScan, nil)
 
-	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_MALWARE_SCAN, reqs.ScanTriggerCommon, actionBuilder)
+	scan_ids, bulkId, skipped, err := StartMultiScan(r.Context(), true, utils.NEO4J_MALWARE_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
 		if err.Error() == "Result contains no more records" {
 			respondError(&noNodesMatchedInNeo4jError, w)
@@ -380,9 +373,14 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	if len(skipped) > 0 {
+		log.Info().Msgf("malware scans skipped nodes: %v", skipped)
+	}
+
 	h.AuditUserActivity(r, EVENT_MALWARE_SCAN, ACTION_START, reqs, true)
 
-	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
+	err = httpext.JSON(w, http.StatusOK,
+		model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId, SkippedNodes: skipped})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -522,7 +520,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 			  File can exists in 2 conditions:
 			  - When the earlier scan was stuck during the scan phase
 			  - When the service was restarted
-			  - Bug/Race conditon in the worker service
+			  - Bug/Race condition in the worker service
 			*/
 			log.Warn().Msg(err.Error() + ", Will try to overwrite the file: " + sbomFile)
 			err = mc.DeleteFile(r.Context(), sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
@@ -1822,49 +1820,96 @@ func extractBulksNodes(nodes []model.NodeIdentifier) (regularNodes []model.NodeI
 	return regularNodes, clusterNodes, registryNodes
 }
 
-func StartMultiScan(ctx context.Context,
-	gen_bulk_id bool,
-	scan_type utils.Neo4jScanType,
-	req model.ScanTriggerCommon,
-	actionBuilder func(string, model.NodeIdentifier, int32) (ctl.Action, error)) ([]string, string, error) {
-
+func IsScanInProgress(ctx context.Context, scan_type utils.Neo4jScanType, node model.NodeIdentifier) bool {
 	driver, err := directory.Neo4jClient(ctx)
-
 	if err != nil {
-		return nil, "", err
+		return false
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
-		return nil, "", err
+		return false
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
-		return nil, "", err
+		return false
+	}
+	defer tx.Close()
+
+	query := fmt.Sprintf(`Match (n:%s{node_id:$node_id}) return n.%s as status`,
+		utils.NEO4J_NODE_TYPE[node.NodeType], utils.ScanStatusField[scan_type])
+
+	resp, err := tx.Run(query, map[string]interface{}{"node_id": node.NodeId})
+	if err != nil {
+		return false
+	}
+
+	record, err := resp.Single()
+	if err != nil {
+		return false
+	}
+
+	val, found := record.Get("status")
+	if !found {
+		return false
+	}
+
+	status := val.(string)
+	if status == utils.SCAN_STATUS_STARTING || status == utils.SCAN_STATUS_INPROGRESS ||
+		status == utils.SCAN_STATUS_CANCELLING || status == utils.SCAN_STATUS_CANCEL_PENDING {
+		return true
+	}
+
+	return false
+}
+
+func StartMultiScan(ctx context.Context,
+	gen_bulk_id bool,
+	scan_type utils.Neo4jScanType,
+	req model.ScanTriggerCommon,
+	actionBuilder func(string, model.NodeIdentifier, int32) (ctl.Action, error)) ([]string, string, []model.NodeIdentifier, error) {
+
+	skip_node_ids := []model.NodeIdentifier{}
+	scan_node_ids := []model.NodeIdentifier{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return nil, "", skip_node_ids, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		return nil, "", skip_node_ids, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return nil, "", skip_node_ids, err
 	}
 
 	regular, k8s, registry := extractBulksNodes(req.NodeIds)
 
 	image_nodes, err := reporters_scan.GetRegistriesImageIDs(ctx, registry)
 	if err != nil {
-		return nil, "", err
+		return nil, "", skip_node_ids, err
 	}
 
 	k8s_host_nodes, err := reporters_scan.GetKubernetesHostsIDs(ctx, k8s)
 	if err != nil {
-		return nil, "", err
+		return nil, "", skip_node_ids, err
 	}
 
 	k8s_image_nodes, err := reporters_scan.GetKubernetesImageIDs(ctx, k8s)
 	if err != nil {
-		return nil, "", err
+		return nil, "", skip_node_ids, err
 	}
 
 	k8s_container_nodes, err := reporters_scan.GetKubernetesContainerIDs(ctx, k8s)
 	if err != nil {
-		return nil, "", err
+		return nil, "", skip_node_ids, err
 	}
 
 	reqs := regular
@@ -1877,23 +1922,32 @@ func StartMultiScan(ctx context.Context,
 			[]model.NodeIdentifier{},
 			req.Filters)
 		if err != nil {
-			return nil, "", err
+			return nil, "", skip_node_ids, err
 		}
 		reqs = append(reqs, reqs_extra...)
 	} else {
 		reqs = req.NodeIds
 	}
 
+	// check and skip if scan are already running or scheduled
+	for _, n := range reqs {
+		if IsScanInProgress(ctx, scan_type, n) {
+			skip_node_ids = append(skip_node_ids, n)
+		} else {
+			scan_node_ids = append(scan_node_ids, n)
+		}
+	}
+
 	defer tx.Close()
 	scanIds := []string{}
-	for _, req := range reqs {
+	for _, req := range scan_node_ids {
 		scanId := scanId(req)
 
 		registryId := int32(-1)
 		if req.NodeType == ctl.ResourceTypeToString(controls.Image) {
 			registryIds, err := FindImageRegistryIds(ctx, req.NodeId)
 			if err != nil {
-				return nil, "", err
+				return nil, "", skip_node_ids, err
 			}
 
 			if len(registryIds) != 0 {
@@ -1904,7 +1958,7 @@ func StartMultiScan(ctx context.Context,
 		action, err := actionBuilder(scanId, req, registryId)
 		if err != nil {
 			log.Error().Err(err)
-			return nil, "", err
+			return nil, "", skip_node_ids, err
 		}
 
 		err = ingesters.AddNewScan(ingesters.WriteDBTransaction{Tx: tx},
@@ -1922,13 +1976,13 @@ func StartMultiScan(ctx context.Context,
 				continue
 			}
 			log.Error().Err(err)
-			return nil, "", err
+			return nil, "", skip_node_ids, err
 		}
 		scanIds = append(scanIds, scanId)
 	}
 
 	if len(scanIds) == 0 {
-		return []string{}, "", nil
+		return []string{}, "", skip_node_ids, nil
 	}
 
 	var bulkId string
@@ -1937,41 +1991,58 @@ func StartMultiScan(ctx context.Context,
 		err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, scan_type, bulkId, scanIds)
 		if err != nil {
 			log.Error().Msgf("%v", err)
-			return nil, "", err
+			return nil, "", skip_node_ids, err
 		}
 	}
-	return scanIds, bulkId, tx.Commit()
+	return scanIds, bulkId, skip_node_ids, tx.Commit()
 }
 
-func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, benchmarkTypes []string) ([]string, string, error) {
-	driver, err := directory.Neo4jClient(ctx)
+func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, benchmarkTypes []string) ([]string, string, []model.NodeIdentifier, error) {
 
+	skip_node_ids := []model.NodeIdentifier{}
+	scan_node_ids := []model.NodeIdentifier{}
+
+	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return nil, "", err
+		return nil, "", skip_node_ids, err
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
-		return nil, "", err
+		return nil, "", skip_node_ids, err
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
-		return nil, "", err
+		return nil, "", skip_node_ids, err
+	}
+	defer tx.Close()
+
+	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
+	if reqs[0].NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) ||
+		reqs[0].NodeType == controls.ResourceTypeToString(controls.Host) {
+		scanType = utils.NEO4J_COMPLIANCE_SCAN
 	}
 
-	defer tx.Close()
+	for _, n := range reqs {
+		if IsScanInProgress(ctx, scanType, n) {
+			skip_node_ids = append(skip_node_ids, n)
+		} else {
+			scan_node_ids = append(scan_node_ids, n)
+		}
+	}
+
 	scanIds := []string{}
 
-	for _, req := range reqs {
+	for _, req := range scan_node_ids {
 		scanId := cloudComplianceScanId(req.NodeId)
 
 		err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
 			scanId,
 			benchmarkTypes,
 			req.NodeId,
-			reqs[0].NodeType)
+			scan_node_ids[0].NodeType)
 
 		if err != nil {
 			if e, is := err.(*ingesters.AlreadyRunningScanError); is {
@@ -1981,37 +2052,22 @@ func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 				continue
 			}
 			log.Error().Msgf("%v", err)
-			return nil, "", err
+			return nil, "", skip_node_ids, err
 		}
 		scanIds = append(scanIds, scanId)
 	}
 
 	if len(scanIds) == 0 {
-		return []string{}, "", nil
+		return []string{}, "", skip_node_ids, nil
 	}
 
 	var bulkId string
-
 	bulkId = bulkScanId()
-	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
-	if reqs[0].NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || reqs[0].NodeType == controls.ResourceTypeToString(controls.Host) {
-		scanType = utils.NEO4J_COMPLIANCE_SCAN
-	}
 	err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, scanType, bulkId, scanIds)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		return nil, "", err
+		return nil, "", skip_node_ids, err
 	}
 
-	return scanIds, bulkId, tx.Commit()
-}
-
-func startMultiComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, benchmarkTypes []string) ([]string, string, error) {
-	scanIds := []string{}
-	bulkId := bulkScanId()
-	for _, req := range reqs {
-		scanId := cloudComplianceScanId(req.NodeId)
-		scanIds = append(scanIds, scanId)
-	}
-	return scanIds, bulkId, nil
+	return scanIds, bulkId, skip_node_ids, tx.Commit()
 }

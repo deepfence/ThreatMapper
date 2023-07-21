@@ -79,8 +79,9 @@ const (
 )
 
 type ScanTriggerResp struct {
-	ScanIds    []string `json:"scan_ids" required:"true"`
-	BulkScanId string   `json:"bulk_scan_id" required:"true"`
+	ScanIds      []string         `json:"scan_ids" required:"true"`
+	BulkScanId   string           `json:"bulk_scan_id" required:"true"`
+	SkippedNodes []NodeIdentifier `json:"skipped_nodes" required:"true"`
 }
 
 type ScanStatusReq struct {

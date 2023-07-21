@@ -163,7 +163,7 @@ func (s *Scheduler) addJobs(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, sdkUtils.SendNotificationTask))
+	_, err = s.cron.AddFunc("@every 60s", s.enqueueTask(namespace, sdkUtils.SendNotificationTask))
 	if err != nil {
 		return err
 	}

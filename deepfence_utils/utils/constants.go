@@ -118,6 +118,35 @@ var (
 		"Compliance":      NEO4J_COMPLIANCE_SCAN,
 		"CloudCompliance": NEO4J_CLOUD_COMPLIANCE_SCAN,
 	}
+	ScanStatusField = map[Neo4jScanType]string{
+		NEO4J_SECRET_SCAN:           "secret_scan_status",
+		NEO4J_VULNERABILITY_SCAN:    "vulnerability_scan_status",
+		NEO4J_MALWARE_SCAN:          "malware_scan_status",
+		NEO4J_COMPLIANCE_SCAN:       "compliance_scan_status",
+		NEO4J_CLOUD_COMPLIANCE_SCAN: "cloud_compliance_scan_status",
+	}
+	LatestScanIdField = map[Neo4jScanType]string{
+		NEO4J_SECRET_SCAN:           "secret_latest_scan_id",
+		NEO4J_VULNERABILITY_SCAN:    "vulnerability_latest_scan_id",
+		NEO4J_MALWARE_SCAN:          "malware_latest_scan_id",
+		NEO4J_COMPLIANCE_SCAN:       "compliance_latest_scan_id",
+		NEO4J_CLOUD_COMPLIANCE_SCAN: "cloud_compliance_latest_scan_id",
+	}
+	ScanCountField = map[Neo4jScanType]string{
+		NEO4J_SECRET_SCAN:           "secrets_count",
+		NEO4J_VULNERABILITY_SCAN:    "vulnerabilities_count",
+		NEO4J_MALWARE_SCAN:          "malwares_count",
+		NEO4J_COMPLIANCE_SCAN:       "compliances_count",
+		NEO4J_CLOUD_COMPLIANCE_SCAN: "cloud_compliances_count",
+	}
+	NEO4J_NODE_TYPE = map[string]string{
+		"image":         NodeTypeContainerImage,
+		"host":          NodeTypeHost,
+		"container":     NodeTypeContainer,
+		"cluster":       NodeTypeKubernetesCluster,
+		"cloud_account": NodeTypeCloudProvider,
+		"registry":      NodeTypeRegistryAccount,
+	}
 )
 
 type CloudProvider int

@@ -10,32 +10,6 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-var (
-	ScanStatusField = map[utils.Neo4jScanType]string{
-		utils.NEO4J_SECRET_SCAN:           "secret_scan_status",
-		utils.NEO4J_VULNERABILITY_SCAN:    "vulnerability_scan_status",
-		utils.NEO4J_MALWARE_SCAN:          "malware_scan_status",
-		utils.NEO4J_COMPLIANCE_SCAN:       "compliance_scan_status",
-		utils.NEO4J_CLOUD_COMPLIANCE_SCAN: "cloud_compliance_scan_status",
-	}
-
-	LatestScanIdField = map[utils.Neo4jScanType]string{
-		utils.NEO4J_SECRET_SCAN:           "secret_latest_scan_id",
-		utils.NEO4J_VULNERABILITY_SCAN:    "vulnerability_latest_scan_id",
-		utils.NEO4J_MALWARE_SCAN:          "malware_latest_scan_id",
-		utils.NEO4J_COMPLIANCE_SCAN:       "compliance_latest_scan_id",
-		utils.NEO4J_CLOUD_COMPLIANCE_SCAN: "cloud_compliance_latest_scan_id",
-	}
-
-	ScanCountField = map[utils.Neo4jScanType]string{
-		utils.NEO4J_SECRET_SCAN:           "secrets_count",
-		utils.NEO4J_VULNERABILITY_SCAN:    "vulnerabilities_count",
-		utils.NEO4J_MALWARE_SCAN:          "malwares_count",
-		utils.NEO4J_COMPLIANCE_SCAN:       "compliances_count",
-		utils.NEO4J_CLOUD_COMPLIANCE_SCAN: "cloud_compliances_count",
-	}
-)
-
 func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data []Status) error {
 	return func(ns string, data []Status) error {
 		ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
@@ -72,7 +46,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			OPTIONAL MATCH (n) -[:DETECTED]- (m)
 			WITH n, count(m) as count
 			MATCH (n) -[:SCANNED]- (r)
-			SET r.` + ScanCountField[ts] + `=count, r.` + ScanStatusField[ts] + `=n.status, r.` + LatestScanIdField[ts] + `=n.node_id`
+			SET r.` + utils.ScanCountField[ts] + `=count, r.` + utils.ScanStatusField[ts] + `=n.status, r.` + utils.LatestScanIdField[ts] + `=n.node_id`
 		case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
 			query = `
 			UNWIND $batch as row
@@ -84,8 +58,8 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			OPTIONAL MATCH (n) -[:DETECTED]- (m)
 			WITH  n, total_count, m.resource as arn, count(m) as count
 			OPTIONAL MATCH (n) -[:SCANNED]- (cn) -[:OWNS]- (cr:CloudResource{arn: arn})
-			SET cn.` + ScanCountField[ts] + `=total_count, cn.` + ScanStatusField[ts] + `=n.status, cn.` + LatestScanIdField[ts] + `=n.node_id
-			SET cr.` + ScanCountField[ts] + `=count, cr.` + ScanStatusField[ts] + `=n.status, cr.` + LatestScanIdField[ts] + `=n.node_id`
+			SET cn.` + utils.ScanCountField[ts] + `=total_count, cn.` + utils.ScanStatusField[ts] + `=n.status, cn.` + utils.LatestScanIdField[ts] + `=n.node_id
+			SET cr.` + utils.ScanCountField[ts] + `=count, cr.` + utils.ScanStatusField[ts] + `=n.status, cr.` + utils.LatestScanIdField[ts] + `=n.node_id`
 		}
 
 		if _, err = tx.Run(query, map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {

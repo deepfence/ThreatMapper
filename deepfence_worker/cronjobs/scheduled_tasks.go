@@ -112,19 +112,19 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 	switch messagePayload["action"].(string) {
 	case utils.VULNERABILITY_SCAN:
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartVulnerabilityScan, map[string]string{"scan_type": "all"})
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_VULNERABILITY_SCAN, scanTrigger, actionBuilder)
+		_, _, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_VULNERABILITY_SCAN, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
 	case utils.SECRET_SCAN:
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartSecretScan, nil)
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_SECRET_SCAN, scanTrigger, actionBuilder)
+		_, _, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_SECRET_SCAN, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
 	case utils.MALWARE_SCAN:
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartMalwareScan, nil)
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_MALWARE_SCAN, scanTrigger, actionBuilder)
+		_, _, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_MALWARE_SCAN, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
@@ -134,7 +134,7 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 			log.Warn().Msgf("Unknown node type %s for compliance scan", nodeType)
 			return nil
 		}
-		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, benchmarkTypes)
+		_, _, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, benchmarkTypes)
 		if err != nil {
 			return err
 		}
