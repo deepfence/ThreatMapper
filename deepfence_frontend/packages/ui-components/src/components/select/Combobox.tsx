@@ -1,25 +1,20 @@
-import { autoUpdate, flip, offset, size, useFloating } from '@floating-ui/react-dom';
 import {
   Combobox as HUICombobox,
   ComboboxOptionProps as HUIComboboxOptionProps,
   ComboboxProps as HUIComboboxProps,
-  Transition,
 } from '@headlessui/react';
+import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Slot } from '@radix-ui/react-slot';
 import { isEmpty } from 'lodash-es';
-import {
+import React, {
   createContext,
   ElementType,
-  ReactNode,
-  RefObject,
   useContext,
   useEffect,
   useId,
   useRef,
-  useState,
 } from 'react';
-import { createPortal } from 'react-dom';
-import { useIntersection } from 'react-use';
+import { useIntersection, useUnmount } from 'react-use';
 import { cn } from 'tailwind-preset';
 
 import HelperText from '@/components/input/HelperText';
@@ -137,49 +132,8 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
   placeholder,
   helperText,
   color = 'default',
-  noPortal = false,
   ...props
 }: ComboboxProps<TValue, boolean | undefined, boolean | undefined, TTag>) {
-  const intersectionRef = useRef<RefObject<HTMLElement> | null>(null);
-  const { x, y, strategy, refs } = useFloating({
-    strategy: 'fixed',
-    placement: 'bottom-start',
-    whileElementsMounted: autoUpdate,
-    middleware: [
-      flip(),
-      offset({
-        mainAxis: 2,
-      }),
-      size({
-        apply({ availableHeight, elements }) {
-          Object.assign(elements.floating.style, {
-            maxWidth:
-              triggerVariant === 'button'
-                ? `max(${elements.reference.getBoundingClientRect().width}px, 260px)`
-                : undefined,
-            width:
-              triggerVariant === 'select'
-                ? `${elements.reference.getBoundingClientRect().width}px`
-                : undefined,
-            maxHeight: `min(${availableHeight}px, 350px)`,
-          });
-        },
-      }),
-    ],
-  });
-
-  const intersection = useIntersection(intersectionRef as RefObject<HTMLElement>, {
-    root: null,
-    rootMargin: '0px',
-    threshold: 1,
-  });
-
-  useEffect(() => {
-    if (intersection?.isIntersecting && intersection?.intersectionRatio > 0) {
-      onEndReached?.();
-    }
-  }, [intersection]);
-
   const inputBtnId = useId();
 
   return (
@@ -210,186 +164,186 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                   {label}
                 </HUICombobox.Label>
               )}
-              {triggerVariant === 'button' ? (
-                <HUICombobox.Button
-                  id={inputBtnId}
-                  as={Slot}
-                  ref={(ele) => refs.setReference(ele)}
-                  className={cn(
-                    // display
-                    'flex items-center gap-1.5 w-fit',
-                    // border
-                    'border dark:border-bg-grid-border rounded-[5px]',
-                    // bg
-                    'dark:bg-bg-card dark:hover:bg-bg-active-selection',
-                    'text-p7 dark:text-text-text-and-icon',
-                    'py-[7px] px-3',
-                    {
-                      'dark:border-bg-hover-3 dark:bg-bg-active-selection dark:text-text-input-value':
-                        Array.isArray(value) ? !!value.length : !!value,
-                    },
-                  )}
-                >
-                  <button tabIndex={0}>
-                    {startIcon ?? <ButtonStartIcon />}
-                    {getDisplayValue?.(value as unknown as any) ?? placeholder}
-                    {endIcon}
-                    {multiple && Array.isArray(value) && value.length > 0 ? (
-                      <div className="relative flex items-center">
-                        <Badge
-                          color="blue"
-                          variant="filled"
-                          size="small"
-                          label={value?.length}
-                        />
-                      </div>
-                    ) : null}
-                  </button>
-                </HUICombobox.Button>
-              ) : (
-                <>
-                  <div className="flex items-center">
-                    <HUICombobox.Button
-                      id={inputBtnId}
-                      as={Slot}
-                      ref={(ele) => refs.setReference(ele)}
-                      className={cn(
-                        comboboxInputCva({
-                          color,
-                          sizing: 'md',
-                          isPlaceholder: Array.isArray(value) ? !value.length : !value,
-                          isOpen: open,
-                        }),
-                      )}
-                    >
-                      <button tabIndex={0}>
-                        {startIcon ? (
-                          <div className="w-4 h-4 shrink-0">{startIcon}</div>
-                        ) : null}
-                        <div
-                          className={cn('pl-1.5', {
-                            'dark:text-df-gray-600': !getDisplayValue?.(
-                              value as unknown as any,
-                            ),
-                          })}
-                        >
+              <div className="flex items-center">
+                <PopoverPrimitive.Root open={open}>
+                  <PopoverPrimitive.Trigger asChild>
+                    {triggerVariant === 'button' ? (
+                      <HUICombobox.Button
+                        id={inputBtnId}
+                        as={Slot}
+                        className={cn(
+                          // display
+                          'flex items-center gap-1.5 w-fit',
+                          // border
+                          'border dark:border-bg-grid-border rounded-[5px]',
+                          // bg
+                          'dark:bg-bg-card dark:hover:bg-bg-active-selection',
+                          'text-p7 dark:text-text-text-and-icon',
+                          'py-[7px] px-3',
+                          {
+                            'dark:border-bg-hover-3 dark:bg-bg-active-selection dark:text-text-input-value':
+                              Array.isArray(value) ? !!value.length : !!value,
+                          },
+                        )}
+                      >
+                        <button tabIndex={0}>
+                          {startIcon ?? <ButtonStartIcon />}
                           {getDisplayValue?.(value as unknown as any) ?? placeholder}
-                        </div>
-                        <div className="h-2.5 w-2.5 shrink-0 dark:text-text-text-and-icon ml-auto mr-1.5">
-                          <CaretDownIcon />
-                        </div>
-                      </button>
-                    </HUICombobox.Button>
-                    {color === 'error' && (
-                      <div
-                        className={cn('text-chart-red', {
-                          'cursor-not-allowed': disabled,
-                        })}
+                          {endIcon}
+                          {multiple && Array.isArray(value) && value.length > 0 ? (
+                            <div className="relative flex items-center">
+                              <Badge
+                                color="blue"
+                                variant="filled"
+                                size="small"
+                                label={value?.length}
+                              />
+                            </div>
+                          ) : null}
+                        </button>
+                      </HUICombobox.Button>
+                    ) : (
+                      <HUICombobox.Button
+                        id={inputBtnId}
+                        as={Slot}
+                        className={cn(
+                          comboboxInputCva({
+                            color,
+                            sizing: 'md',
+                            isPlaceholder: Array.isArray(value) ? !value.length : !value,
+                            isOpen: open,
+                          }),
+                        )}
                       >
-                        <ErrorIcon />
-                      </div>
+                        <button tabIndex={0}>
+                          {startIcon ? (
+                            <div className="w-4 h-4 shrink-0">{startIcon}</div>
+                          ) : null}
+                          <div
+                            className={cn('pl-1.5', {
+                              'dark:text-df-gray-600': !getDisplayValue?.(
+                                value as unknown as any,
+                              ),
+                            })}
+                          >
+                            {getDisplayValue?.(value as unknown as any) ?? placeholder}
+                          </div>
+                          <div className="h-2.5 w-2.5 shrink-0 dark:text-text-text-and-icon ml-auto mr-1.5">
+                            <CaretDownIcon />
+                          </div>
+                        </button>
+                      </HUICombobox.Button>
                     )}
-                  </div>
-                  {helperText && (
-                    <div className="pt-1.5">
-                      <HelperText color={color} text={helperText} />
-                    </div>
-                  )}
-                </>
-              )}
-              <ContentWrapper noPortal={noPortal}>
-                <Transition
-                  className="pointer-events-auto"
-                  as={'div'}
-                  enter="transition ease-out duration-1200"
-                  enterFrom="opacity-0 -translate-y-1"
-                  enterTo="opacity-100 translate-y-0"
-                  leave="transition ease-in duration-1200"
-                  leaveFrom="opacity-100 translate-y-0"
-                  leaveTo="opacity-0 -translate-y-1"
-                  ref={(ele) => refs.setFloating(ele)}
-                  style={{
-                    position: strategy,
-                    top: y ?? 0,
-                    left: x ?? 0,
-                  }}
-                  afterLeave={() => {
-                    onQueryChange('');
-                  }}
-                >
-                  <div
-                    className={`dark:bg-bg-card dark:border dark:border-bg-grid-border rounded-[5px] overflow-hidden`}
-                  >
-                    <div className={cn('flex items-center px-3 py-2')}>
-                      <span
-                        className={cn(
-                          'pointer-events-none dark:text-df-gray-600 h-[16px] w-[16px] shrink-0',
-                        )}
-                        data-testid={`search-icon`}
-                      >
-                        <SearchIcon />
-                      </span>
-                      <HUICombobox.Input
-                        placeholder="Search"
-                        className={cn(
-                          'pl-[6px] text-p6 dark:text-text-input-value',
-                          'dark:focus-visible:outline-none dark:bg-bg-card',
-                          'dark:placeholder:text-df-gray-600',
-                          'min-w-0',
-                        )}
-                        onChange={(event) => {
-                          onQueryChange(event.target.value);
-                        }}
-                        displayValue={() => ''}
-                      />
-                    </div>
+                  </PopoverPrimitive.Trigger>
 
-                    <Separator />
-                    <HUICombobox.Options
-                      className={cn(
-                        'max-h-60 w-full select-none',
-                        'text-p7',
-                        'overflow-auto',
-                        'focus:visible:outline-none',
-                        'dark:text-text-text-and-icon',
-                      )}
-                    >
-                      <OptionsWrapper>{children}</OptionsWrapper>
-                      {loading ? (
-                        <div className="pt-2 pb-1 px-3 flex items-center">
-                          <CircleSpinner size="sm" />
+                  <PopoverPrimitive.Portal>
+                    <PopoverPrimitive.Content asChild align="start" sideOffset={2}>
+                      <div
+                        className={cn(
+                          `dark:bg-bg-card dark:border dark:border-bg-grid-border rounded-[5px] overflow-hidden data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down`,
+                          {
+                            'w-[var(--radix-popper-anchor-width)]':
+                              triggerVariant === 'select',
+                            'max-w-[250px]': triggerVariant === 'button',
+                          },
+                        )}
+                      >
+                        <div className={cn('flex items-center px-3 py-2')}>
+                          <span
+                            className={cn(
+                              'pointer-events-none dark:text-df-gray-600 h-[16px] w-[16px] shrink-0',
+                            )}
+                            data-testid={`search-icon`}
+                          >
+                            <SearchIcon />
+                          </span>
+                          <HUICombobox.Input
+                            placeholder="Search"
+                            className={cn(
+                              'pl-[6px] text-p6 dark:text-text-input-value',
+                              'dark:focus-visible:outline-none dark:bg-bg-card',
+                              'dark:placeholder:text-df-gray-600',
+                              'min-w-0',
+                            )}
+                            onChange={(event) => {
+                              onQueryChange(event.target.value);
+                            }}
+                            displayValue={() => ''}
+                          />
                         </div>
-                      ) : (
-                        <span ref={intersectionRef as RefObject<HTMLElement>}></span>
-                      )}
-                    </HUICombobox.Options>
-                    {multiple ? (
-                      <>
+
                         <Separator />
-                        <div
+                        <HUICombobox.Options
                           className={cn(
-                            // focus visible
-                            'dark:focus-visible:outline-none',
+                            'max-h-60 w-full select-none',
+                            'text-p7',
+                            'overflow-auto',
+                            'focus:visible:outline-none',
+                            'dark:text-text-text-and-icon',
                           )}
                         >
-                          <div className="flex items-center justify-center py-[6px]">
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                onClearAll?.();
+                          <OptionsWrapper>{children}</OptionsWrapper>
+                          {loading ? (
+                            <div className="pt-2 pb-1 px-3 flex items-center">
+                              <CircleSpinner size="sm" />
+                            </div>
+                          ) : (
+                            <InfiniteLoadingObserverElement
+                              onVisible={() => {
+                                onEndReached?.();
                               }}
-                              className="dark:text-accent-accent items-center text-p6"
+                            />
+                          )}
+                        </HUICombobox.Options>
+                        {multiple ? (
+                          <>
+                            <Separator />
+                            <div
+                              className={cn(
+                                // focus visible
+                                'dark:focus-visible:outline-none',
+                              )}
                             >
-                              {clearAllElement}
-                            </button>
-                          </div>
-                        </div>
-                      </>
-                    ) : null}
+                              <div className="flex items-center justify-center py-[6px]">
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    onClearAll?.();
+                                  }}
+                                  className="dark:text-accent-accent items-center text-p6"
+                                >
+                                  {clearAllElement}
+                                </button>
+                              </div>
+                            </div>
+                          </>
+                        ) : null}
+                        <UnmountDetectionElement
+                          onUnmount={() => {
+                            onQueryChange?.('');
+                            console.log('query reset');
+                          }}
+                        />
+                      </div>
+                    </PopoverPrimitive.Content>
+                  </PopoverPrimitive.Portal>
+                </PopoverPrimitive.Root>
+                {color === 'error' && triggerVariant === 'select' && (
+                  <div
+                    className={cn('text-chart-red', {
+                      'cursor-not-allowed': disabled,
+                    })}
+                  >
+                    <ErrorIcon />
                   </div>
-                </Transition>
-              </ContentWrapper>
+                )}
+              </div>
+              {helperText && triggerVariant === 'select' && (
+                <div className="pt-1.5">
+                  <HelperText color={color} text={helperText} />
+                </div>
+              )}
             </div>
           );
         }}
@@ -432,27 +386,29 @@ export function ComboboxOption<TType>({
   );
 }
 
-function Portal(props: { children: ReactNode }) {
-  const { children } = props;
-  const [mounted, setMounted] = useState(false);
+const InfiniteLoadingObserverElement = ({ onVisible }: { onVisible: () => void }) => {
+  const intersectionRef = useRef<HTMLDivElement>(null);
+  const intersection = useIntersection(intersectionRef, {
+    root: null,
+    rootMargin: '0px',
+    threshold: 1,
+  });
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    if (intersection?.isIntersecting && intersection?.intersectionRatio > 0) {
+      onVisible();
+    }
+  }, [intersection]);
 
-  if (!mounted) return null;
-  return createPortal(children, document.body);
-}
+  return <div ref={intersectionRef}></div>;
+};
 
-const ContentWrapper = ({
-  noPortal,
-  children,
-}: {
-  noPortal: boolean;
-  children: ReactNode;
-}) => {
-  if (noPortal) {
-    return <div className="isolate z-10">{children}</div>;
-  }
-  return <Portal>{children}</Portal>;
+const UnmountDetectionElement = ({ onUnmount }: { onUnmount: () => void }) => {
+  useUnmount(() => {
+    onUnmount();
+  });
+
+  return <React.Fragment />;
 };
 
 const CaretDownIcon = () => {

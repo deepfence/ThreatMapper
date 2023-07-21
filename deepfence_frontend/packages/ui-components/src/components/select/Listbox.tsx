@@ -1,16 +1,14 @@
 import './../input/input.css';
 
-import { autoUpdate, flip, offset, size, useFloating } from '@floating-ui/react-dom';
 import {
   Listbox as HUIListbox,
   ListboxOptionProps as HUIListboxOptionProps,
   ListboxProps as HUIListboxProps,
-  Transition,
 } from '@headlessui/react';
+import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { cva } from 'cva';
 import { isEmpty, isNil } from 'lodash-es';
-import { createContext, ReactNode, useContext, useEffect, useId, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { createContext, useContext, useId } from 'react';
 import { cn } from 'tailwind-preset';
 
 import HelperText from '@/components/input/HelperText';
@@ -150,7 +148,6 @@ interface ListboxProps<TType, TActualType>
   required?: boolean;
   id?: string;
   helperText?: string;
-  noPortal?: boolean;
 }
 export function Listbox<TType, TActualType>({
   color,
@@ -167,30 +164,10 @@ export function Listbox<TType, TActualType>({
   helperText,
   disabled,
   multiple,
-  noPortal = false,
   ...props
 }: ListboxProps<TType, TActualType>) {
   const internalId = useId();
   const _id = id ? id : internalId;
-  const { x, y, strategy, refs } = useFloating({
-    strategy: 'fixed',
-    placement: 'bottom-start',
-    whileElementsMounted: autoUpdate,
-    middleware: [
-      flip(),
-      offset({
-        mainAxis: 2,
-      }),
-      size({
-        apply({ availableHeight, elements }) {
-          Object.assign(elements.floating.style, {
-            width: `${elements.reference.getBoundingClientRect().width}px`,
-            maxHeight: `min(${availableHeight}px, 350px)`,
-          });
-        },
-      }),
-    ],
-  });
   return (
     <ListboxContext.Provider
       value={{
@@ -198,120 +175,114 @@ export function Listbox<TType, TActualType>({
       }}
     >
       <HUIListbox {...props} value={value} disabled={disabled} multiple={multiple}>
-        <div className="flex flex-col w-full">
-          {label && (
-            <HUIListbox.Label
-              htmlFor={_id}
-              className={cn(
-                'text-p3 text-text-text-and-icon dark:text-text-text-and-icon pb-[10px]',
-                {
-                  'text-gray-600 dark:text-gray-600': disabled,
-                },
+        {({ open }) => {
+          return (
+            <div className="flex flex-col w-full">
+              {label && (
+                <HUIListbox.Label
+                  htmlFor={_id}
+                  className={cn(
+                    'text-p3 text-text-text-and-icon dark:text-text-text-and-icon pb-[10px]',
+                    {
+                      'text-gray-600 dark:text-gray-600': disabled,
+                    },
+                  )}
+                >
+                  {required && <span>*</span>}
+                  {label}
+                </HUIListbox.Label>
               )}
-            >
-              {required && <span>*</span>}
-              {label}
-            </HUIListbox.Label>
-          )}
 
-          <HUIListbox.Button
-            id={_id}
-            ref={(ele) => refs.setReference(ele)}
-            className={cn(
-              buttonCva({
-                color,
-                variant,
-              }),
-            )}
-          >
-            <span className="truncate text-start block text-p4">
-              {getPlaceholderValue(value, getDisplayValue, placeholder)}
-            </span>
-            <div
-              className={cn('absolute inset-y-0 right-0 flex pr-3', {
-                'gap-[18px]': multiple,
-              })}
-            >
-              <SelectArrow />
-              {multiple && Array.isArray(value) && value.length > 0 ? (
-                <div className="relative flex items-center">
-                  <Badge
-                    color="blueLight"
-                    variant="filled"
-                    size="small"
-                    label={value?.length}
-                  />
-                </div>
-              ) : null}
-            </div>
-          </HUIListbox.Button>
-          {helperText && (
-            <div className="pt-1.5">
-              <HelperText color={color} text={helperText} />
-            </div>
-          )}
-          <ContentWrapper noPortal={noPortal}>
-            <Transition
-              className="pointer-events-auto"
-              as={'div'}
-              enter="transition ease-out duration-1200"
-              enterFrom="opacity-0 -translate-y-1"
-              enterTo="opacity-100 translate-y-0"
-              leave="transition ease-in duration-1200"
-              leaveFrom="opacity-100 translate-y-0"
-              leaveTo="opacity-0 -translate-y-1"
-              ref={(ele) => refs.setFloating(ele)}
-              style={{
-                position: strategy,
-                top: y ?? 0,
-                left: x ?? 0,
-              }}
-            >
-              <HUIListbox.Options
-                className={cn(
-                  // bg
-                  'bg-bg-card dark:bg-bg-card',
-                  'text-p7',
-                  // border
-                  'border-x border-t border-bg-grid-border dark:border-bg-grid-border',
-                  'rounded-t-[5px]',
-                  'relative select-none',
-                  'max-h-60 overflow-y-auto',
-                  // text
-                  'text-text-text-and-icon dark:text-text-text-and-icon',
-                )}
-              >
-                {children}
-              </HUIListbox.Options>
-              {multiple ? (
-                <>
-                  <Separator />
-                  <div
+              <PopoverPrimitive.Root open={open}>
+                <PopoverPrimitive.Trigger asChild>
+                  <HUIListbox.Button
+                    id={_id}
                     className={cn(
-                      // border
-                      'dark:bg-bg-card border-x border-b rounded-b-[5px] dark:border-bg-grid-border',
-                      // focus visible
-                      'dark:focus-visible:outline-none',
+                      buttonCva({
+                        color,
+                        variant,
+                      }),
                     )}
                   >
-                    <div className="flex items-center justify-center py-[6px]">
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          onClearAll?.();
-                        }}
-                        className="flex gap-1.5 dark:text-accent-accent items-center text-p6"
-                      >
-                        {clearAll}
-                      </button>
+                    <span className="truncate text-start block text-p4">
+                      {getPlaceholderValue(value, getDisplayValue, placeholder)}
+                    </span>
+                    <div
+                      className={cn('absolute inset-y-0 right-0 flex pr-3', {
+                        'gap-[18px]': multiple,
+                      })}
+                    >
+                      <SelectArrow />
+                      {multiple && Array.isArray(value) && value.length > 0 ? (
+                        <div className="relative flex items-center">
+                          <Badge
+                            color="blueLight"
+                            variant="filled"
+                            size="small"
+                            label={value?.length}
+                          />
+                        </div>
+                      ) : null}
                     </div>
-                  </div>
-                </>
-              ) : null}
-            </Transition>
-          </ContentWrapper>
-        </div>
+                  </HUIListbox.Button>
+                </PopoverPrimitive.Trigger>
+                <PopoverPrimitive.Portal>
+                  <PopoverPrimitive.Content align="start" sideOffset={2} asChild>
+                    <div className="data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down w-[var(--radix-popper-anchor-width)]">
+                      <HUIListbox.Options
+                        className={cn(
+                          // bg
+                          'bg-bg-card dark:bg-bg-card',
+                          'text-p7',
+                          // border
+                          'border-x border-t border-bg-grid-border dark:border-bg-grid-border',
+                          'rounded-t-[5px]',
+                          'relative select-none',
+                          'max-h-60 overflow-y-auto',
+                          // text
+                          'text-text-text-and-icon dark:text-text-text-and-icon outline-none focus:outline-none',
+                        )}
+                      >
+                        {children}
+                      </HUIListbox.Options>
+                      {multiple ? (
+                        <>
+                          <Separator />
+                          <div
+                            className={cn(
+                              // border
+                              'dark:bg-bg-card border-x border-b rounded-b-[5px] dark:border-bg-grid-border',
+                              // focus visible
+                              'dark:focus-visible:outline-none',
+                            )}
+                          >
+                            <div className="flex items-center justify-center py-[6px]">
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  onClearAll?.();
+                                }}
+                                className="flex gap-1.5 dark:text-accent-accent items-center text-p6"
+                              >
+                                {clearAll}
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      ) : null}
+                    </div>
+                  </PopoverPrimitive.Content>
+                </PopoverPrimitive.Portal>
+              </PopoverPrimitive.Root>
+              {helperText && (
+                <div className="pt-1.5">
+                  <HelperText color={color} text={helperText} />
+                </div>
+              )}
+            </div>
+          );
+        }}
       </HUIListbox>
     </ListboxContext.Provider>
   );
@@ -336,6 +307,7 @@ export function ListboxOption<TType>({
             'dark:bg-bg-grid-header': active,
             'dark:bg-bg-active-selection dark:text-text-input-value': selected,
           },
+          'outline-none focus:outline-none',
         );
       }}
       {...props}
@@ -369,26 +341,3 @@ function getPlaceholderValue<T extends unknown | unknown[]>(
   }
   return 'Select...';
 }
-
-function Portal(props: { children: ReactNode }) {
-  const { children } = props;
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) return null;
-  return createPortal(children, document.body);
-}
-
-const ContentWrapper = ({
-  noPortal,
-  children,
-}: {
-  noPortal: boolean;
-  children: ReactNode;
-}) => {
-  if (noPortal) {
-    return <div className="isolate z-10">{children}</div>;
-  }
-  return <Portal>{children}</Portal>;
-};
