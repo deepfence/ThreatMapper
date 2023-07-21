@@ -77,7 +77,7 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
           'relative group p-2 pb-3 flex flex-col',
           'dark:bg-bg-card hover:outline outline-2 dark:outline-bg-hover-3',
           "before:content-none dark:hover:before:content-[''] before:w-[68px] before:h-[68px]",
-          'dark:before:bg-bg-hover-3 before:absolute before:-top-[28px]',
+          'dark:before:bg-bg-hover-3 dark:before:shadow-[0px_0px_6px_1px_#044AFF] before:absolute before:-top-[28px]',
           'before:left-[18px] before:rounded-full before:-z-10 cursor-pointer',
         )}
         key={registry.type}

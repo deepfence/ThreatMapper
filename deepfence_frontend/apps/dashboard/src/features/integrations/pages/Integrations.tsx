@@ -153,8 +153,9 @@ const Count = ({
   type: Type;
   data: ModelIntegrationListResp[] | undefined;
 }) => {
-  const len = data?.filter((integration) => integration.integration_type === type.id)
-    .length;
+  const len = data?.filter(
+    (integration) => integration.integration_type === type.id,
+  ).length;
   return (
     <div className="flex items-center gap-x-2 mt-2">
       <span className="text-h1 dark:text-text-input-value">{len}</span>
@@ -190,7 +191,7 @@ const IntegrationTypes = ({ integration }: { integration: IIntegrationType }) =>
       {integration?.types?.map((type) => {
         return (
           <DFLink to={type.path} unstyled key={type.name}>
-            <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-2 dark:focus:ring-bg-hover-3 dark:focus:ring-2 cursor-pointer">
+            <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-bg-hover-3 dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:ring-1 cursor-pointer">
               <div className="flex items-center gap-x-6">
                 <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
                   <span className="h-9 w-9">{type.icon}</span>
@@ -288,8 +289,9 @@ const DownloadReport = () => {
               className={cn(
                 'p-3 flex shrink-0 items-center h-full gap-x-4',
                 'dark:text-text-text-and-icon',
-                'hover:outline dark:hover:outline-bg-hover-3 dark:hover:outline-2',
-                'dark:focus:outline-bg-hover-3 dark:focus:outline-2 cursor-pointer',
+                'hover:ring dark:hover:ring-bg-hover-3 dark:hover:ring-1',
+                'dark:focus:ring-bg-hover-3 dark:focus:ring-1 cursor-pointer',
+                'dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF]',
               )}
             >
               <span className="h-9 w-9 ">
