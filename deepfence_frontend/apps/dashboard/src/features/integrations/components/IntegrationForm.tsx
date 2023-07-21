@@ -268,7 +268,7 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
         <ListboxOption value={'Vulnerability'}>Vulnerability</ListboxOption>
         <ListboxOption value={'Secret'}>Secret</ListboxOption>
         <ListboxOption value={'Malware'}>Malware</ListboxOption>
-        <ListboxOption value={'Compliance'}>Posture</ListboxOption>
+        <ListboxOption value={'Compliance'}>Compliance</ListboxOption>
 
         {/* {CloudTrailIntegration.includes(integrationType) && (
           <SelectItem value={CLOUD_TRAIL_ALERT}>CloudTrail Alert</SelectItem>
