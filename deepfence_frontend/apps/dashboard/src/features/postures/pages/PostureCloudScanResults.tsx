@@ -615,9 +615,6 @@ const ActionDropdown = ({
             Un-mask
           </DropdownItem>
           <DropdownSeparator />
-          <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.NOTIFY)}>
-            Notify
-          </DropdownItem>
           <DropdownSeparator />
           <DropdownItem
             onClick={() => {
@@ -694,18 +691,6 @@ const BulkActions = ({
           Unmask
         </Button>
       </Dropdown>
-      <Button
-        color="default"
-        variant="flat"
-        size="sm"
-        startIcon={<BellLineIcon />}
-        disabled={!ids.length}
-        onClick={() => {
-          onTableAction(ids, ActionEnumType.NOTIFY);
-        }}
-      >
-        Notify
-      </Button>
       <Button
         color="error"
         variant="flat"
@@ -1116,6 +1101,7 @@ const CloudPostureTable = ({
         enableResizing: false,
       }),
       columnHelper.accessor('node_id', {
+        id: 'control_id',
         enableSorting: true,
         enableResizing: false,
         cell: (info) => {
@@ -1298,7 +1284,7 @@ const DynamicBreadcrumbs = () => {
 
   return (
     <>
-      <BreadcrumbLink isLink icon={<PostureIcon />} asChild>
+      <BreadcrumbLink isLink asChild>
         <DFLink
           to={generatePath('/posture/accounts/:nodeType', {
             nodeType: params.nodeType,
@@ -1308,7 +1294,7 @@ const DynamicBreadcrumbs = () => {
           {providersToNameMapping[params.nodeType]}
         </DFLink>
       </BreadcrumbLink>
-      <BreadcrumbLink icon={<PostureIcon />} isLast>
+      <BreadcrumbLink isLast>
         <span className="inherit cursor-auto">{node_name}</span>
       </BreadcrumbLink>
     </>

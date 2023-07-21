@@ -924,7 +924,7 @@ const SecretScans = () => {
               Secrets
             </DFLink>
           </BreadcrumbLink>
-          <BreadcrumbLink icon={<SecretsIcon />}>
+          <BreadcrumbLink>
             <span className="inherit cursor-auto">Secret Scans</span>
           </BreadcrumbLink>
         </Breadcrumb>

@@ -22,6 +22,10 @@ export const searchQueries = createQueryKeys('search', {
     size: number;
     active?: boolean;
     agentRunning?: boolean;
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
   }) => {
     return {
       queryKey: [{ filters }],
@@ -34,7 +38,7 @@ export const searchQueries = createQueryKeys('search', {
           nodeName: string;
         }[];
       }> => {
-        const { searchText, size, active, agentRunning } = filters;
+        const { searchText, size, active, agentRunning, order } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
             filters: {
@@ -66,6 +70,14 @@ export const searchQueries = createQueryKeys('search', {
             size,
           },
         };
+        if (order) {
+          searchSearchNodeReq.node_filter.filters.order_filter.order_fields = [
+            {
+              field_name: order.sortBy,
+              descending: order.descending,
+            },
+          ];
+        }
         if (searchText?.length) {
           searchSearchNodeReq.node_filter.filters.match_filter.filter_in = {
             node_name: [searchText],
@@ -107,6 +119,10 @@ export const searchQueries = createQueryKeys('search', {
     searchText?: string;
     size: number;
     active?: boolean;
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
   }) => {
     return {
       queryKey: [{ filters }],
@@ -118,7 +134,7 @@ export const searchQueries = createQueryKeys('search', {
           hostName: string;
         }[];
       }> => {
-        const { searchText, size, active } = filters;
+        const { searchText, size, active, order } = filters;
         const matchFilter = { filter_in: {} };
         if (searchText?.length) {
           matchFilter.filter_in = {
@@ -129,38 +145,48 @@ export const searchQueries = createQueryKeys('search', {
         const searchContainersApi = apiWrapper({
           fn: getSearchApiClient().searchContainers,
         });
-        const searchContainersResponse = await searchContainersApi({
-          searchSearchNodeReq: {
-            node_filter: {
-              filters: {
-                contains_filter: {
-                  filter_in: {
-                    pseudo: [false],
-                    ...(active !== undefined && { active: [active === true] }),
+
+        const scanRequestParams: SearchSearchNodeReq = {
+          node_filter: {
+            filters: {
+              contains_filter: {
+                filter_in: {
+                  pseudo: [false],
+                  ...(active !== undefined && { active: [active === true] }),
+                },
+              },
+              order_filter: {
+                order_fields: [
+                  {
+                    field_name: 'updated_at',
+                    descending: true,
                   },
-                },
-                order_filter: {
-                  order_fields: [
-                    {
-                      field_name: 'updated_at',
-                      descending: true,
-                    },
-                  ],
-                },
-                match_filter: matchFilter,
-                compare_filter: null,
+                ],
               },
-              in_field_filter: null,
-              window: {
-                offset: 0,
-                size: 0,
-              },
+              match_filter: matchFilter,
+              compare_filter: null,
             },
+            in_field_filter: null,
             window: {
-              offset: pageParam,
-              size,
+              offset: 0,
+              size: 0,
             },
           },
+          window: {
+            offset: pageParam,
+            size,
+          },
+        };
+        if (order) {
+          scanRequestParams.node_filter.filters.order_filter.order_fields = [
+            {
+              field_name: order.sortBy,
+              descending: order.descending,
+            },
+          ];
+        }
+        const searchContainersResponse = await searchContainersApi({
+          searchSearchNodeReq: scanRequestParams,
         });
         if (!searchContainersResponse.ok) {
           throw searchContainersResponse.error;
@@ -187,6 +213,10 @@ export const searchQueries = createQueryKeys('search', {
     searchText?: string;
     size: number;
     active?: boolean;
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
   }) => {
     return {
       queryKey: [{ filters }],
@@ -198,7 +228,7 @@ export const searchQueries = createQueryKeys('search', {
           imageName: string;
         }[];
       }> => {
-        const { searchText, size, active } = filters;
+        const { searchText, size, active, order } = filters;
         const matchFilter = { filter_in: {} };
         if (searchText?.length) {
           matchFilter.filter_in = {
@@ -209,38 +239,49 @@ export const searchQueries = createQueryKeys('search', {
         const searchContainerImagesApi = apiWrapper({
           fn: getSearchApiClient().searchContainerImages,
         });
-        const searchContainerImagesResponse = await searchContainerImagesApi({
-          searchSearchNodeReq: {
-            node_filter: {
-              filters: {
-                contains_filter: {
-                  filter_in: {
-                    pseudo: [false],
-                    ...(active !== undefined && { active: [active === true] }),
+
+        const scanRequestParams: SearchSearchNodeReq = {
+          node_filter: {
+            filters: {
+              contains_filter: {
+                filter_in: {
+                  pseudo: [false],
+                  ...(active !== undefined && { active: [active === true] }),
+                },
+              },
+              order_filter: {
+                order_fields: [
+                  {
+                    field_name: 'updated_at',
+                    descending: true,
                   },
-                },
-                order_filter: {
-                  order_fields: [
-                    {
-                      field_name: 'updated_at',
-                      descending: true,
-                    },
-                  ],
-                },
-                match_filter: matchFilter,
-                compare_filter: null,
+                ],
               },
-              in_field_filter: ['node_id', 'docker_image_name', 'docker_image_tag'],
-              window: {
-                offset: 0,
-                size: 0,
-              },
+              match_filter: matchFilter,
+              compare_filter: null,
             },
+            in_field_filter: ['node_id', 'docker_image_name', 'docker_image_tag'],
             window: {
-              offset: pageParam,
-              size,
+              offset: 0,
+              size: 0,
             },
           },
+          window: {
+            offset: pageParam,
+            size,
+          },
+        };
+
+        if (order) {
+          scanRequestParams.node_filter.filters.order_filter.order_fields = [
+            {
+              field_name: order.sortBy,
+              descending: order.descending,
+            },
+          ];
+        }
+        const searchContainerImagesResponse = await searchContainerImagesApi({
+          searchSearchNodeReq: scanRequestParams,
         });
 
         if (!searchContainerImagesResponse.ok) {
@@ -270,6 +311,10 @@ export const searchQueries = createQueryKeys('search', {
     size: number;
     active?: boolean;
     agentRunning?: boolean;
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
   }) => {
     return {
       queryKey: [{ filters }],
@@ -281,7 +326,7 @@ export const searchQueries = createQueryKeys('search', {
           nodeName: string;
         }[];
       }> => {
-        const { searchText, size, active, agentRunning } = filters;
+        const { searchText, size, active, agentRunning, order } = filters;
 
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
@@ -311,6 +356,15 @@ export const searchQueries = createQueryKeys('search', {
             size,
           },
         };
+
+        if (order) {
+          searchSearchNodeReq.node_filter.filters.order_filter.order_fields = [
+            {
+              field_name: order.sortBy,
+              descending: order.descending,
+            },
+          ];
+        }
 
         if (searchText?.length) {
           searchSearchNodeReq.node_filter.filters.match_filter.filter_in = {

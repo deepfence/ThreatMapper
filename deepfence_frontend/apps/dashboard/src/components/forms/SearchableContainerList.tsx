@@ -45,6 +45,10 @@ export const SearchableContainerList = ({
       size: PAGE_SIZE,
       searchText,
       active,
+      order: {
+        sortBy: 'node_name',
+        descending: false,
+      },
     }),
     keepPreviousData: true,
     getNextPageParam: (lastPage, allPages) => {
