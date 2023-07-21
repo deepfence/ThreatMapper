@@ -522,6 +522,7 @@ func LinkNodes(msg *message.Message) error {
 		WHERE not (n) <-[:HOSTS]- (:CloudRegion)
 		AND NOT n.cloud_provider IS NULL
 		AND NOT n.cloud_region IS NULL
+		AND NOT n.node_id IN ["in-the-internet", "out-the-internet", "`+ConsoleAgentId+`"]
 		WITH n LIMIT 50000
 		MERGE (cp:CloudProvider{node_id: n.cloud_provider})
 		MERGE (cr:CloudRegion{node_id: n.cloud_region})

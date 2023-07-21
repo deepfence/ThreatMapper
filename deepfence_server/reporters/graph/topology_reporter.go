@@ -516,7 +516,7 @@ func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]Node
 	res := []NodeStub{}
 	r, err := tx.Run(`
 		MATCH (n:CloudProvider)
-		WHERE n.active = true AND n.node_id <> "internet"
+		WHERE n.active = true
 		RETURN n.node_id`, nil)
 
 	if err != nil {
