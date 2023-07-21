@@ -90,30 +90,31 @@ export const SlidingModal: FC<ModalProps> = ({
             },
           )}
           data-testid="sliding-modal-overlay"
-        />
-        <DialogPrimitive.Content
-          className={cn(
-            'flex flex-col fixed top-0 bottom-0',
-            'overflow-hidden focus:outline-none',
-            'bg-white text-gray-900',
-            'dark:bg-bg-side-panel dark:text-text-text-and-icon',
-            'dark:border-bg-grid-border isolate',
-            {
-              '-left-[100%] border-r': direction === 'left',
-              '-right-[100%] border-l': direction === 'right',
-              [inAnimation]: wasOpen,
-              [outAnimation]: !wasOpen,
-              'w-[480px]': size === 's',
-              'w-[560px]': size === 'm',
-              'w-[640px]': size === 'l',
-              'w-[720px]': size === 'xl',
-              'w-[800px]': size === 'xxl',
-            },
-          )}
-          onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
         >
-          {children}
-        </DialogPrimitive.Content>
+          <DialogPrimitive.Content
+            className={cn(
+              'flex flex-col fixed top-0 bottom-0',
+              'overflow-hidden focus:outline-none',
+              'bg-white text-gray-900',
+              'dark:bg-bg-side-panel dark:text-text-text-and-icon',
+              'dark:border-bg-grid-border isolate',
+              {
+                '-left-[100%] border-r': direction === 'left',
+                '-right-[100%] border-l': direction === 'right',
+                [inAnimation]: wasOpen,
+                [outAnimation]: !wasOpen,
+                'w-[480px]': size === 's',
+                'w-[560px]': size === 'm',
+                'w-[640px]': size === 'l',
+                'w-[720px]': size === 'xl',
+                'w-[800px]': size === 'xxl',
+              },
+            )}
+            onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
+          >
+            {children}
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Overlay>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
   );

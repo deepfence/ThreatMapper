@@ -404,7 +404,6 @@ const MultiSelectNonNullableTemplateInsideDialog: StoryFn<typeof Combobox> = () 
                 fetchMoreData();
               }}
               loading={loading}
-              noPortal
             >
               {options.map((person, index) => {
                 return (
