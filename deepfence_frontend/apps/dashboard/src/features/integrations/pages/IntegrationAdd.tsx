@@ -1,7 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useCallback, useState } from 'react';
 import { ActionFunctionArgs, useFetcher, useParams } from 'react-router-dom';
-import { toast } from 'sonner';
 import {
   Button,
   Modal,
@@ -178,8 +177,22 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
     }
 
     // filters
-    const statusFilter = formData.getAll('statusFilter') as string[];
-    const severityFilter = formData.getAll('severityFilter') as string[];
+    // statuses filter
+    const selectedStatusesLength = Number(formData.get('selectedStatusesLength'));
+    const statusFilter = [];
+    if (selectedStatusesLength > 0) {
+      for (let i = 0; i < selectedStatusesLength; i++) {
+        statusFilter.push(formData.get(`statusFilter[${i}]`) as string);
+      }
+    }
+    // severities filter
+    const selectedSeveritiesLength = Number(formData.get('selectedSeveritiesLength'));
+    const severityFilter = [];
+    if (selectedSeveritiesLength > 0) {
+      for (let i = 0; i < selectedSeveritiesLength; i++) {
+        severityFilter.push(formData.get(`severityFilter[${i}]`) as string);
+      }
+    }
     const intervalFilter = formData.get('interval')?.toString();
 
     // host filter
