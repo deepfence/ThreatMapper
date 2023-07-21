@@ -188,9 +188,10 @@ var Tasks = []string{
 	CheckAgentUpgradeTask,
 	SyncRegistryTask,
 	TriggerConsoleActionsTask,
-	ReportGeneratorTask,
+	ScheduledTasks,
 	SecretScanTask,
 	MalwareScanTask,
+	ReportGeneratorTask,
 	ComputeThreatTask,
 	SendNotificationTask,
 	CloudComplianceTask,
@@ -198,6 +199,8 @@ var Tasks = []string{
 	ReportCleanUpTask,
 	LinkCloudResourceTask,
 	LinkNodesTask,
+	StopSecretScanTask,
+	StopMalwareScanTask,
 }
 
 type ReportType string
