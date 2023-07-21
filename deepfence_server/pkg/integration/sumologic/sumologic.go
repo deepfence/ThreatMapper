@@ -11,7 +11,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
-func New(b []byte) (SumoLogic, error) {
+func New(ctx context.Context, b []byte) (SumoLogic, error) {
 	var s SumoLogic
 	err := json.Unmarshal(b, &s)
 	if err != nil {

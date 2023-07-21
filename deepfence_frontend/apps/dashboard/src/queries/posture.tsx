@@ -334,7 +334,7 @@ export const postureQueries = createQueryKeys('posture', {
     return {
       queryKey: [{ filters }],
       queryFn: async () => {
-        if (!nodeId || !nodeType || !scanType) {
+        if (!nodeType || !scanType) {
           throw new Error('Scan Type, Node Type and Node Id are required');
         }
 
@@ -443,11 +443,7 @@ export const postureQueries = createQueryKeys('posture', {
         }
         const statuses = statusResult.value?.statuses?.[0];
 
-        if (!statusResult || !statuses || !statuses.scan_id) {
-          throw new Error('Scan status not found');
-        }
-
-        const scanStatus = statuses.status;
+        const scanStatus = statuses?.status;
 
         const isScanRunning =
           scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;

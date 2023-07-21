@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { capitalize } from 'lodash-es';
+import { capitalize, keys } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
@@ -29,6 +29,7 @@ import {
   RowSelectionState,
   SortingState,
   Table,
+  TableNoDataElement,
   TableSkeleton,
 } from 'ui-components';
 
@@ -55,7 +56,11 @@ import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { ScanHistoryDropdown } from '@/components/scan-history/HistoryList';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
-import { ScanStatusInError, ScanStatusInProgress } from '@/components/ScanStatusMessage';
+import {
+  ScanStatusInError,
+  ScanStatusInProgress,
+  ScanStatusNoData,
+} from '@/components/ScanStatusMessage';
 import { PostureStatusBadge } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { TruncatedText } from '@/components/TruncatedText';
@@ -69,14 +74,13 @@ import { invalidateAllQueries, queries } from '@/queries';
 import {
   ComplianceScanNodeTypeEnum,
   PostureSeverityType,
-  ScanStatusEnum,
   ScanTypeEnum,
 } from '@/types/common';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
-import { isScanInProgress } from '@/utils/scan';
+import { isScanComplete, isScanFailed, isScanInProgress } from '@/utils/scan';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -467,9 +471,9 @@ const ScanHistory = () => {
 };
 const HistoryControls = () => {
   const { data } = useScanResults();
-  const { nodeType } = useParams();
+  const { nodeType = '' } = useParams();
   const { scanStatusResult } = data;
-  const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
+  const { scan_id, node_id, updated_at, status } = scanStatusResult ?? {};
   const { navigate, goBack } = usePageNavigation();
   const { downloadScan } = useDownloadScan();
 
@@ -487,12 +491,6 @@ const HistoryControls = () => {
     refetch();
   }, [scan_id]);
 
-  if (!scan_id || !node_id || !node_type || !nodeType) {
-    throw new Error('Scan Type, Node Type and Node Id are required');
-  }
-  if (!updated_at) {
-    return null;
-  }
   return (
     <div className="flex items-center gap-x-3">
       <ScanHistoryDropdown
@@ -523,7 +521,7 @@ const HistoryControls = () => {
             );
           },
         }))}
-        currentTimeStamp={formatMilliseconds(updated_at)}
+        currentTimeStamp={formatMilliseconds(updated_at ?? '')}
       />
 
       {scanIdToDelete && (
@@ -568,7 +566,7 @@ const HistoryControls = () => {
               size="md"
               onClick={() => {
                 downloadScan({
-                  scanId: scan_id,
+                  scanId: scan_id ?? '',
                   scanType: UtilsReportFiltersScanTypeEnum.CloudCompliance,
                   nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
                 });
@@ -581,7 +579,7 @@ const HistoryControls = () => {
                   <TrashLineIcon />
                 </span>
               }
-              onClick={() => setScanIdToDelete(scan_id)}
+              onClick={() => setScanIdToDelete(scan_id ?? '')}
             />
           </div>
         </>
@@ -1032,6 +1030,27 @@ const CloudPostureResults = () => {
     </div>
   );
 };
+
+const TablePlaceholder = ({ scanStatus = '' }: { scanStatus: string | undefined }) => {
+  if (isScanFailed(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center min-h-[384px]">
+        <ScanStatusInError errorMessage="" />
+      </div>
+    );
+  }
+
+  if (isScanInProgress(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center min-h-[384px]">
+        <ScanStatusInProgress />
+      </div>
+    );
+  }
+
+  return <TableNoDataElement text="No data available" />;
+};
+
 const CloudPostureTable = ({
   onTableAction,
   setIdsToDelete,
@@ -1154,22 +1173,10 @@ const CloudPostureTable = ({
 
   const { data: scanResultData, scanStatusResult } = data;
 
-  if (scanStatusResult?.status === ScanStatusEnum.error) {
-    return <ScanStatusInError errorMessage={scanStatusResult.status_message} />;
-  } else if (
-    scanStatusResult?.status !== ScanStatusEnum.error &&
-    scanStatusResult?.status !== ScanStatusEnum.complete
-  ) {
-    return <ScanStatusInProgress LogoIcon={PostureIcon} />;
-  }
-  if (!scanResultData) {
-    return null;
-  }
-
   return (
     <Table
       size="default"
-      data={scanResultData.compliances}
+      data={scanResultData?.compliances ?? []}
       columns={columns}
       enableRowSelection
       rowSelectionState={rowSelectionState}
@@ -1178,9 +1185,9 @@ const CloudPostureTable = ({
       manualPagination
       approximatePagination
       enableColumnResizing
-      totalRows={scanResultData.pagination.totalRows}
+      totalRows={scanResultData?.pagination?.totalRows}
       pageSize={parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE))}
-      pageIndex={scanResultData.pagination.currentPage}
+      pageIndex={scanResultData?.pagination?.currentPage}
       enableSorting
       manualSorting
       sortingState={sort}
@@ -1191,7 +1198,7 @@ const CloudPostureTable = ({
         let newPageIndex = 0;
         if (typeof updaterOrValue === 'function') {
           newPageIndex = updaterOrValue({
-            pageIndex: scanResultData.pagination.currentPage,
+            pageIndex: scanResultData?.pagination.currentPage ?? 0,
             pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
           }).pageIndex;
         } else {
@@ -1237,6 +1244,7 @@ const CloudPostureTable = ({
           return prev;
         });
       }}
+      noDataElement={<TablePlaceholder scanStatus={scanStatusResult?.status} />}
     />
   );
 };
@@ -1292,14 +1300,49 @@ const DynamicBreadcrumbs = () => {
     </>
   );
 };
+const StatusesCount = ({
+  statusCounts,
+}: {
+  statusCounts: {
+    [k: string]: number;
+  };
+}) => {
+  return (
+    <div className="col-span-6">
+      <div className="gap-24 flex justify-center">
+        {Object.keys(statusCounts)?.map((key: string) => {
+          return (
+            <div key={key} className="col-span-2 dark:text-text-text-and-icon">
+              <span className="text-p1">{capitalize(key)}</span>
+              <div className="flex flex-1 max-w-[160px] gap-1 items-center">
+                <div
+                  className="h-4 w-4 rounded-full"
+                  style={{
+                    backgroundColor:
+                      POSTURE_STATUS_COLORS[key.toLowerCase() as PostureSeverityType],
+                  }}
+                ></div>
+                <span className="text-h1 dark:text-text-input-value">
+                  {abbreviateNumber(statusCounts?.[key])}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 const SeverityCountWidget = () => {
   const {
-    data: { data },
+    data: { data, scanStatusResult },
   } = useScanResults();
+
   const statusCounts: {
     [k: string]: number;
   } = data?.statusCounts ?? {};
+
   const total = Object.values(statusCounts).reduce((acc, v) => {
     acc = acc + v;
     return acc;
@@ -1307,40 +1350,64 @@ const SeverityCountWidget = () => {
 
   return (
     <div className="grid grid-cols-12 px-6 items-center">
-      <div className="col-span-2 h-[120px] w-[120px]">
-        <PostureScanResultsPieChart data={statusCounts} />
-      </div>
-      <div className="col-span-2 dark:text-text-text-and-icon">
-        <span className="text-p1">Total compliances</span>
-        <div className="flex flex-1 max-w-[160px] gap-1 items-center">
-          <TaskIcon />
-          <span className="text-h1 dark:text-text-input">{abbreviateNumber(total)}</span>
+      {isScanFailed(scanStatusResult?.status ?? '') ? (
+        <div className="h-full col-span-4 flex items-center justify-center">
+          <ScanStatusInError errorMessage={scanStatusResult?.status_message ?? ''} />
         </div>
-      </div>
+      ) : (
+        <>
+          {isScanInProgress(scanStatusResult?.status ?? '') ? (
+            <div className="h-full col-span-4 flex items-center justify-center">
+              <ScanStatusInProgress />
+            </div>
+          ) : (
+            <div className="col-span-2 h-[120px] w-[120px]">
+              <PostureScanResultsPieChart data={statusCounts} />
+            </div>
+          )}
+        </>
+      )}
+      {isScanComplete(scanStatusResult?.status ?? '') ? (
+        <div className="col-span-2 dark:text-text-text-and-icon">
+          <span className="text-p1">Total compliances</span>
+          <div className="flex flex-1 max-w-[160px] gap-1 items-center">
+            {keys(statusCounts).length > 0 ? (
+              <>
+                <TaskIcon />
+                <span className="text-h1 dark:text-text-input">
+                  {abbreviateNumber(total)}
+                </span>
+              </>
+            ) : (
+              <ScanStatusNoData />
+            )}
+          </div>
+        </div>
+      ) : null}
+
       <div className="w-px min-h-[120px] dark:bg-bg-grid-border" />
-      <div className="col-span-6">
-        <div className="gap-24 flex justify-center">
-          {Object.keys(statusCounts)?.map((key: string) => {
-            return (
-              <div key={key} className="col-span-2 dark:text-text-text-and-icon">
-                <span className="text-p1">{capitalize(key)}</span>
-                <div className="flex flex-1 max-w-[160px] gap-1 items-center">
-                  <div
-                    className="h-4 w-4 rounded-full"
-                    style={{
-                      backgroundColor:
-                        POSTURE_STATUS_COLORS[key.toLowerCase() as PostureSeverityType],
-                    }}
-                  ></div>
-                  <span className="text-h1 dark:text-text-input-value">
-                    {abbreviateNumber(statusCounts?.[key])}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+
+      {isScanComplete(scanStatusResult?.status ?? '') ? (
+        <>
+          {keys(statusCounts).length === 0 ? (
+            <div className="col-span-6 flex items-center justify-center">
+              <ScanStatusNoData />
+            </div>
+          ) : (
+            <StatusesCount statusCounts={statusCounts} />
+          )}
+        </>
+      ) : (
+        <div className="col-span-6 flex items-center justify-center">
+          {isScanInProgress(scanStatusResult?.status ?? '') ? (
+            <ScanStatusInProgress />
+          ) : (
+            isScanFailed(scanStatusResult?.status ?? '') && (
+              <ScanStatusInError errorMessage="" />
+            )
+          )}
         </div>
-      </div>
+      )}
     </div>
   );
 };

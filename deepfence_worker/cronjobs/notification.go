@@ -82,7 +82,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 			log.Error().Msgf("Error Processing for integration json marshall integrationRow: %+v", integrationRow, err)
 			return err
 		}
-		integrationModel, err := integration.GetIntegration(integrationRow.IntegrationType, iByte)
+		integrationModel, err := integration.GetIntegration(ctx, integrationRow.IntegrationType, iByte)
 		if err != nil {
 			log.Error().Msgf("Error Processing for integration GetIntegration: %+v", integrationRow, err)
 			return err
