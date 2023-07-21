@@ -516,7 +516,7 @@ func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]Node
 	res := []NodeStub{}
 	r, err := tx.Run(`
 		MATCH (n:CloudProvider)
-		WHERE n.active = true
+		WHERE n.active = true AND n.node_id <> "internet"
 		RETURN n.node_id`, nil)
 
 	if err != nil {
@@ -529,7 +529,8 @@ func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]Node
 	}
 
 	for _, record := range records {
-		res = append(res, NodeStub{NodeID(record.Values[0].(string)), record.Values[0].(string)})
+		name := record.Values[0].(string)
+		res = append(res, NodeStub{NodeID(name), name})
 	}
 
 	return res, nil

@@ -108,7 +108,7 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 		}
 		CALL {
 			MATCH (n:CloudProvider)
-			WHERE n.pseudo = false AND n.active = true
+			WHERE n.pseudo = false AND n.active = true AND n.node_id <> "internet"
 			return count(n) as n6
 		}
 		return n1, n2, n3, n4, n5, nn5, n6`
