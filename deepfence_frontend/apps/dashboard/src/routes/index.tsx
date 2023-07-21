@@ -1,23 +1,15 @@
 import { useEffect } from 'react';
 import { createBrowserRouter, Outlet, useNavigate } from 'react-router-dom';
 
-import { FourZeroFour } from '@/components/error/404';
 import { privateRoutes } from '@/routes/private';
 import { publicRoutes } from '@/routes/public';
 import { historyHelper } from '@/utils/router';
-
-const notFoundRoute = [
-  {
-    path: '*',
-    element: <FourZeroFour />,
-  },
-];
 
 export const router = createBrowserRouter([
   {
     path: '/',
     Component: SetupGlobalNavigateComponent,
-    children: [...privateRoutes, ...publicRoutes, ...notFoundRoute],
+    children: [...privateRoutes, ...publicRoutes],
   },
 ]);
 
