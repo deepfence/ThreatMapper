@@ -153,9 +153,8 @@ const Count = ({
   type: Type;
   data: ModelIntegrationListResp[] | undefined;
 }) => {
-  const len = data?.filter(
-    (integration) => integration.integration_type === type.id,
-  ).length;
+  const len = data?.filter((integration) => integration.integration_type === type.id)
+    .length;
   return (
     <div className="flex items-center gap-x-2 mt-2">
       <span className="text-h1 dark:text-text-input-value">{len}</span>
