@@ -615,9 +615,6 @@ const ActionDropdown = ({
             Un-mask
           </DropdownItem>
           <DropdownSeparator />
-          <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.NOTIFY)}>
-            Notify
-          </DropdownItem>
           <DropdownSeparator />
           <DropdownItem
             onClick={() => {
@@ -695,18 +692,6 @@ const BulkActions = ({
           Unmask
         </Button>
       </Dropdown>
-      <Button
-        color="default"
-        variant="flat"
-        size="sm"
-        startIcon={<BellLineIcon />}
-        disabled={!ids.length}
-        onClick={() => {
-          onTableAction(ids, ActionEnumType.NOTIFY);
-        }}
-      >
-        Notify
-      </Button>
       <Button
         color="error"
         variant="flat"
