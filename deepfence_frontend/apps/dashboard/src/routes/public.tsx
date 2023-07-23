@@ -1,3 +1,4 @@
+import { FourZeroFourPublic } from '@/components/error/404';
 import { FiveZeroZero } from '@/components/error/500';
 import { loginAction } from '@/features/auth/actions/loginAction';
 import { registerAction } from '@/features/auth/actions/registerAction';
@@ -50,6 +51,10 @@ export const publicRoutes: CustomRouteObject[] = [
         path: 'reset-password',
         ...resetPassword,
         meta: { title: 'Reset Password' },
+      },
+      {
+        path: '*',
+        element: <FourZeroFourPublic />,
       },
     ],
   },

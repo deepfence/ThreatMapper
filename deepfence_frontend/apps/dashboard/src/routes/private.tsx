@@ -1,5 +1,6 @@
 import { Outlet, redirect } from 'react-router-dom';
 
+import { FourZeroFourAuthenticated } from '@/components/error/404';
 import { FiveZeroZero } from '@/components/error/500';
 import { scanPostureApiAction } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
@@ -166,6 +167,10 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Scan Summary' },
           },
         ],
+      },
+      {
+        path: '*',
+        element: <FourZeroFourAuthenticated />,
       },
     ],
   },
@@ -548,6 +553,10 @@ export const privateRoutes: CustomRouteObject[] = [
             ...connectorInstructions,
           },
         ],
+      },
+      {
+        path: '*',
+        element: <FourZeroFourAuthenticated />,
       },
     ],
   },
