@@ -24,6 +24,7 @@ import { SearchableClusterList } from '@/components/forms/SearchableClusterList'
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
 import { PlusIcon } from '@/components/icons/common/Plus';
+import { TruncatedText } from '@/components/TruncatedText';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getResponseErrors } from '@/utils/403';
@@ -158,7 +159,7 @@ const ConsoleDiagnosticLogsTable = () => {
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('label', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
         header: () => 'Label',
         minSize: 75,
         size: 80,
@@ -241,7 +242,7 @@ const AgentDiagnosticLogsTable = () => {
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('label', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
         header: () => 'Label',
         minSize: 75,
         size: 80,
