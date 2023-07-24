@@ -1,6 +1,6 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useSuspenseInfiniteQuery } from '@suspensive/react-query';
 import { debounce } from 'lodash-es';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
@@ -17,7 +17,7 @@ export type Props = {
 };
 
 const PAGE_SIZE = 15;
-export const SearchableImageList = ({
+const SearchableImage = ({
   scanType,
   onChange,
   onClearAll,
@@ -40,26 +40,27 @@ export const SearchableImageList = ({
     setSelectedImages(defaultSelectedImages ?? []);
   }, [defaultSelectedImages]);
 
-  const { data, isFetching, hasNextPage, fetchNextPage } = useInfiniteQuery({
-    ...queries.search.containerImages({
-      scanType,
-      size: PAGE_SIZE,
-      searchText,
-      active,
-      order: {
-        sortBy: 'node_name',
-        descending: false,
+  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useSuspenseInfiniteQuery({
+      ...queries.search.containerImages({
+        scanType,
+        size: PAGE_SIZE,
+        searchText,
+        active,
+        order: {
+          sortBy: 'node_name',
+          descending: false,
+        },
+      }),
+      keepPreviousData: true,
+      getNextPageParam: (lastPage, allPages) => {
+        return allPages.length * PAGE_SIZE;
       },
-    }),
-    keepPreviousData: true,
-    getNextPageParam: (lastPage, allPages) => {
-      return allPages.length * PAGE_SIZE;
-    },
-    getPreviousPageParam: (firstPage, allPages) => {
-      if (!allPages.length) return 0;
-      return (allPages.length - 1) * PAGE_SIZE;
-    },
-  });
+      getPreviousPageParam: (firstPage, allPages) => {
+        if (!allPages.length) return 0;
+        return (allPages.length - 1) * PAGE_SIZE;
+      },
+    });
 
   const searchContainerImage = debounce((query) => {
     setSearchText(query);
@@ -80,7 +81,7 @@ export const SearchableImageList = ({
       />
       <Combobox
         startIcon={
-          isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="imageFilter"
         triggerVariant={triggerVariant || 'button'}
@@ -115,5 +116,31 @@ export const SearchableImageList = ({
           })}
       </Combobox>
     </>
+  );
+};
+
+export const SearchableImageList = (props: Props) => {
+  const { triggerVariant } = props;
+  const isSelectVariantType = useMemo(() => {
+    return triggerVariant === 'select';
+  }, [triggerVariant]);
+
+  return (
+    <Suspense
+      fallback={
+        <Combobox
+          label={isSelectVariantType ? 'Container image' : undefined}
+          triggerVariant={triggerVariant || 'button'}
+          startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+          placeholder="Select container image"
+          multiple
+          onQueryChange={() => {
+            // no operation
+          }}
+        />
+      }
+    >
+      <SearchableImage {...props} />
+    </Suspense>
   );
 };

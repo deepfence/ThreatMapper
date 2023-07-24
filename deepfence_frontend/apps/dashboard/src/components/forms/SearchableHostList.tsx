@@ -1,6 +1,6 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useSuspenseInfiniteQuery } from '@suspensive/react-query';
 import { debounce } from 'lodash-es';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
@@ -19,7 +19,7 @@ export type SearchableHostListProps = {
 };
 
 const PAGE_SIZE = 15;
-export const SearchableHostList = ({
+const SearchableHost = ({
   scanType,
   onChange,
   onClearAll,
@@ -44,27 +44,28 @@ export const SearchableHostList = ({
     setSelectedHosts(defaultSelectedHosts ?? []);
   }, [defaultSelectedHosts]);
 
-  const { data, isFetching, hasNextPage, fetchNextPage } = useInfiniteQuery({
-    ...queries.search.hosts({
-      scanType,
-      size: PAGE_SIZE,
-      searchText,
-      active,
-      agentRunning: true,
-      order: {
-        sortBy: 'host_name',
-        descending: false,
+  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useSuspenseInfiniteQuery({
+      ...queries.search.hosts({
+        scanType,
+        size: PAGE_SIZE,
+        searchText,
+        active,
+        agentRunning: true,
+        order: {
+          sortBy: 'host_name',
+          descending: false,
+        },
+      }),
+      keepPreviousData: true,
+      getNextPageParam: (lastPage, allPages) => {
+        return allPages.length * PAGE_SIZE;
       },
-    }),
-    keepPreviousData: true,
-    getNextPageParam: (lastPage, allPages) => {
-      return allPages.length * PAGE_SIZE;
-    },
-    getPreviousPageParam: (firstPage, allPages) => {
-      if (!allPages.length) return 0;
-      return (allPages.length - 1) * PAGE_SIZE;
-    },
-  });
+      getPreviousPageParam: (firstPage, allPages) => {
+        if (!allPages.length) return 0;
+        return (allPages.length - 1) * PAGE_SIZE;
+      },
+    });
 
   const searchHost = debounce((query: string) => {
     setSearchText(query);
@@ -85,7 +86,7 @@ export const SearchableHostList = ({
       />
       <Combobox
         startIcon={
-          isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="hostFilter"
         triggerVariant={triggerVariant || 'button'}
@@ -122,5 +123,31 @@ export const SearchableHostList = ({
           })}
       </Combobox>
     </>
+  );
+};
+
+export const SearchableHostList = (props: SearchableHostListProps) => {
+  const { triggerVariant } = props;
+  const isSelectVariantType = useMemo(() => {
+    return triggerVariant === 'select';
+  }, [triggerVariant]);
+
+  return (
+    <Suspense
+      fallback={
+        <Combobox
+          label={isSelectVariantType ? 'Host' : undefined}
+          triggerVariant={triggerVariant || 'button'}
+          startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+          placeholder="Select host"
+          multiple
+          onQueryChange={() => {
+            // no operation
+          }}
+        />
+      }
+    >
+      <SearchableHost {...props} />
+    </Suspense>
   );
 };

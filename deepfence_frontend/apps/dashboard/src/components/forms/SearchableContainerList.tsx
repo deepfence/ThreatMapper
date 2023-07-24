@@ -1,6 +1,6 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useSuspenseInfiniteQuery } from '@suspensive/react-query';
 import { debounce } from 'lodash-es';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
@@ -16,7 +16,7 @@ export type Props = {
   triggerVariant?: 'select' | 'button';
 };
 const PAGE_SIZE = 15;
-export const SearchableContainerList = ({
+const SearchableContainer = ({
   scanType,
   onChange,
   onClearAll,
@@ -39,26 +39,27 @@ export const SearchableContainerList = ({
     setSelectedContainers(defaultSelectedContainers ?? []);
   }, [defaultSelectedContainers]);
 
-  const { data, isFetching, hasNextPage, fetchNextPage } = useInfiniteQuery({
-    ...queries.search.containers({
-      scanType,
-      size: PAGE_SIZE,
-      searchText,
-      active,
-      order: {
-        sortBy: 'node_name',
-        descending: false,
+  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useSuspenseInfiniteQuery({
+      ...queries.search.containers({
+        scanType,
+        size: PAGE_SIZE,
+        searchText,
+        active,
+        order: {
+          sortBy: 'node_name',
+          descending: false,
+        },
+      }),
+      keepPreviousData: true,
+      getNextPageParam: (lastPage, allPages) => {
+        return allPages.length * PAGE_SIZE;
       },
-    }),
-    keepPreviousData: true,
-    getNextPageParam: (lastPage, allPages) => {
-      return allPages.length * PAGE_SIZE;
-    },
-    getPreviousPageParam: (firstPage, allPages) => {
-      if (!allPages.length) return 0;
-      return (allPages.length - 1) * PAGE_SIZE;
-    },
-  });
+      getPreviousPageParam: (firstPage, allPages) => {
+        if (!allPages.length) return 0;
+        return (allPages.length - 1) * PAGE_SIZE;
+      },
+    });
 
   const searchContainer = debounce((query) => {
     setSearchText(query);
@@ -79,7 +80,7 @@ export const SearchableContainerList = ({
       />
       <Combobox
         startIcon={
-          isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="containerFilter"
         triggerVariant={triggerVariant || 'button'}
@@ -117,5 +118,31 @@ export const SearchableContainerList = ({
           })}
       </Combobox>
     </>
+  );
+};
+
+export const SearchableContainerList = (props: Props) => {
+  const { triggerVariant } = props;
+  const isSelectVariantType = useMemo(() => {
+    return triggerVariant === 'select';
+  }, [triggerVariant]);
+
+  return (
+    <Suspense
+      fallback={
+        <Combobox
+          label={isSelectVariantType ? 'Container' : undefined}
+          triggerVariant={triggerVariant}
+          startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+          placeholder="Select container"
+          multiple
+          onQueryChange={() => {
+            // no operation
+          }}
+        />
+      }
+    >
+      <SearchableContainer {...props} />
+    </Suspense>
   );
 };

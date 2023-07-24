@@ -1,21 +1,12 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useSuspenseInfiniteQuery } from '@suspensive/react-query';
 import { debounce } from 'lodash-es';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
 
 const PAGE_SIZE = 15;
-export const SearchableClusterList = ({
-  onChange,
-  onClearAll,
-  defaultSelectedClusters,
-  valueKey = 'nodeId',
-  active,
-  triggerVariant,
-  helperText,
-  color,
-}: {
+type SearchableClusterListProps = {
   onChange?: (value: string[]) => void;
   onClearAll?: () => void;
   defaultSelectedClusters?: string[];
@@ -24,7 +15,18 @@ export const SearchableClusterList = ({
   triggerVariant?: 'select' | 'button';
   helperText?: string;
   color?: 'error' | 'default';
-}) => {
+};
+
+const SearchableCluster = ({
+  onChange,
+  onClearAll,
+  defaultSelectedClusters,
+  valueKey = 'nodeId',
+  active,
+  triggerVariant,
+  helperText,
+  color,
+}: SearchableClusterListProps) => {
   const [searchText, setSearchText] = useState('');
 
   const [selectedClusters, setSelectedClusters] = useState<string[]>(
@@ -39,28 +41,27 @@ export const SearchableClusterList = ({
     setSelectedClusters(defaultSelectedClusters ?? []);
   }, [defaultSelectedClusters]);
 
-  // TODO convert to useSuspenseInfiniteQuery, otherwise there will be problems with
-  // error handling
-  const { data, isFetching, hasNextPage, fetchNextPage } = useInfiniteQuery({
-    ...queries.search.clusters({
-      size: PAGE_SIZE,
-      searchText,
-      active,
-      agentRunning: true,
-      order: {
-        sortBy: 'node_name',
-        descending: false,
+  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useSuspenseInfiniteQuery({
+      ...queries.search.clusters({
+        size: PAGE_SIZE,
+        searchText,
+        active,
+        agentRunning: true,
+        order: {
+          sortBy: 'node_name',
+          descending: false,
+        },
+      }),
+      keepPreviousData: true,
+      getNextPageParam: (lastPage, allPages) => {
+        return allPages.length * PAGE_SIZE;
       },
-    }),
-    keepPreviousData: true,
-    getNextPageParam: (lastPage, allPages) => {
-      return allPages.length * PAGE_SIZE;
-    },
-    getPreviousPageParam: (firstPage, allPages) => {
-      if (!allPages.length) return 0;
-      return (allPages.length - 1) * PAGE_SIZE;
-    },
-  });
+      getPreviousPageParam: (firstPage, allPages) => {
+        if (!allPages.length) return 0;
+        return (allPages.length - 1) * PAGE_SIZE;
+      },
+    });
 
   const searchCluster = debounce((query) => {
     setSearchText(query);
@@ -81,7 +82,7 @@ export const SearchableClusterList = ({
       />
       <Combobox
         startIcon={
-          isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="clusterFilter"
         triggerVariant={triggerVariant || 'button'}
@@ -121,5 +122,31 @@ export const SearchableClusterList = ({
           })}
       </Combobox>
     </>
+  );
+};
+
+export const SearchableClusterList = (props: SearchableClusterListProps) => {
+  const { triggerVariant } = props;
+  const isSelectVariantType = useMemo(() => {
+    return triggerVariant === 'select';
+  }, [triggerVariant]);
+
+  return (
+    <Suspense
+      fallback={
+        <Combobox
+          label={isSelectVariantType ? 'Cluster' : undefined}
+          triggerVariant={triggerVariant || 'button'}
+          startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+          placeholder="Select cluster"
+          multiple
+          onQueryChange={() => {
+            // no operation
+          }}
+        />
+      }
+    >
+      <SearchableCluster {...props} />
+    </Suspense>
   );
 };
