@@ -44,7 +44,6 @@ export interface OnboardConnectionNode {
 const useGetConnectors = () => {
   return useSuspenseQuery({
     ...queries.onboard.listConnectors(),
-    keepPreviousData: true,
   });
 };
 

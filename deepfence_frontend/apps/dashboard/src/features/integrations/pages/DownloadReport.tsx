@@ -64,7 +64,6 @@ export const getReportNodeType = (resourceType: string) => {
 export const useGetReports = () => {
   return useSuspenseQuery({
     ...queries.integration.getReports(),
-    keepPreviousData: true,
   });
 };
 export type ActionData = {

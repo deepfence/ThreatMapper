@@ -20,11 +20,17 @@ import { containsWhiteSpace } from '@/utils/validator';
 const useGetApiToken = () => {
   return useSuspenseQuery({
     ...queries.auth.apiToken(),
-    keepPreviousData: true,
+  });
+};
+
+const useGetVersion = () => {
+  return useSuspenseQuery({
+    ...queries.setting.productVersion(),
   });
 };
 
 const PLACEHOLDER_API_KEY = '---DEEPFENCE-API-KEY--';
+const PLACEHOLDER_VERSION = '---PRODUCT_TAG_VERSION--';
 
 const containerRuntimeDropdown = [
   {
@@ -132,8 +138,8 @@ const InformationForm = ({
     const installCommand = `helm install deepfence-agent deepfence/deepfence-agent \\
 --set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
 --set deepfenceKey=${dfApiKey} \\
---set image.tag=${''} \\
---set image.clusterAgentImageTag=${''} \\
+--set image.tag=${PLACEHOLDER_VERSION} \\
+--set image.clusterAgentImageTag=${PLACEHOLDER_VERSION} \\
 --set clusterName=${_clusterName} \\
 ${runtimeCommand} \\
 ${sockCommand}="${_socketPath}" \\
@@ -249,6 +255,8 @@ const SecondCommand = () => {
 
 const ThirdCommand = ({ command }: { command: string }) => {
   const { status, data } = useGetApiToken();
+  const { data: dataVersion } = useGetVersion();
+  const version = dataVersion.version || PLACEHOLDER_VERSION;
   const apiToken = data?.apiToken?.api_token;
   const dfApiKey =
     status !== 'success'
@@ -261,7 +269,9 @@ const ThirdCommand = ({ command }: { command: string }) => {
   return (
     <div className="relative flex items-center">
       <pre className="h-fit text-p7 dark:text-text-text-and-icon">
-        {command.replace(PLACEHOLDER_API_KEY, dfApiKey)}
+        {command
+          .replace(PLACEHOLDER_API_KEY, dfApiKey)
+          .replaceAll(PLACEHOLDER_VERSION, version)}
       </pre>
       <div className="flex items-center ml-auto self-start">
         {isCopied ? 'copied' : null}
@@ -270,7 +280,11 @@ const ThirdCommand = ({ command }: { command: string }) => {
           icon={<CopyLineIcon />}
           variant="flat"
           onClick={() => {
-            copy(command.replace(PLACEHOLDER_API_KEY, dfApiKey));
+            copy(
+              command
+                .replace(PLACEHOLDER_API_KEY, dfApiKey)
+                .replaceAll(PLACEHOLDER_VERSION, version),
+            );
           }}
         />
       </div>

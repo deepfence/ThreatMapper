@@ -202,7 +202,6 @@ const PostureCard = ({ provider }: { provider: ModelPostureProvider }) => {
 const PostureCloudList = () => {
   const { data } = useSuspenseQuery({
     ...queries.posture.postureSummary(),
-    keepPreviousData: true,
   });
   const providers = data.providers;
   if (!providers) {
@@ -222,7 +221,6 @@ const PostureCloudList = () => {
 const PosturenNonCloudList = () => {
   const { data } = useSuspenseQuery({
     ...queries.posture.postureSummary(),
-    keepPreviousData: true,
   });
   const providers = data.providers;
   if (!providers) {
