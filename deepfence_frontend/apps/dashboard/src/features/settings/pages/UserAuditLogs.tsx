@@ -21,7 +21,6 @@ const DEFAULT_PAGE_SIZE = 10;
 const useUserActivityLogs = () => {
   return useSuspenseQuery({
     ...queries.setting.listUserActivityLogs(),
-    keepPreviousData: true,
   });
 };
 const AuditTable = () => {

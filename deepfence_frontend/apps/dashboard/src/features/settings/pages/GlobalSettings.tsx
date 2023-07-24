@@ -34,7 +34,6 @@ type ActionReturnType = {
 const useGlobalSettings = () => {
   return useSuspenseQuery({
     ...queries.setting.listGlobalSettings(),
-    keepPreviousData: true,
   });
 };
 const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType> => {

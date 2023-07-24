@@ -78,7 +78,6 @@ const useImageSummary = () => {
     ...queries.registry.getImageSummary({
       registryId: nodeId,
     }),
-    keepPreviousData: true,
   });
 };
 

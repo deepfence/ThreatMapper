@@ -11,7 +11,6 @@ import { queries } from '@/queries';
 const useGetApiToken = () => {
   return useSuspenseQuery({
     ...queries.auth.apiToken(),
-    keepPreviousData: true,
   });
 };
 const PLACEHOLDER_API_KEY = '---DEEPFENCE-API-KEY--';

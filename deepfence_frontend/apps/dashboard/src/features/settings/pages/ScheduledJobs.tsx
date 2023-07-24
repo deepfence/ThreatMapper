@@ -68,7 +68,6 @@ export const action = async ({
 const useJobs = () => {
   return useSuspenseQuery({
     ...queries.setting.listScheduledJobs(),
-    keepPreviousData: true,
   });
 };
 const ActionDropdown = ({

@@ -54,7 +54,6 @@ enum ActionEnumType {
 const useEmailConfiguration = () => {
   return useSuspenseQuery({
     ...queries.setting.getEmailConfiguration(),
-    keepPreviousData: true,
   });
 };
 export const action = async ({

@@ -111,7 +111,6 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
 const RegistryList = () => {
   const { data } = useSuspenseQuery({
     ...queries.registry.registrySummary(),
-    keepPreviousData: true,
   });
   return (
     <>

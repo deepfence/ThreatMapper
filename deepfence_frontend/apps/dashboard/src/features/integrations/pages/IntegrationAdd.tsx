@@ -49,7 +49,6 @@ const severityMap: {
 export const useListIntegrations = () => {
   return useSuspenseQuery({
     ...queries.integration.listIntegrations(),
-    keepPreviousData: true,
   });
 };
 const getConfigBodyNotificationType = (formData: FormData, integrationType: string) => {

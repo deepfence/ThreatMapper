@@ -20,14 +20,12 @@ import { containsWhiteSpace } from '@/utils/validator';
 const useGetApiToken = () => {
   return useSuspenseQuery({
     ...queries.auth.apiToken(),
-    keepPreviousData: true,
   });
 };
 
 const useGetVersion = () => {
   return useSuspenseQuery({
     ...queries.setting.productVersion(),
-    keepPreviousData: true,
   });
 };
 
