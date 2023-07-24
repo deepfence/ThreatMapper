@@ -177,7 +177,6 @@ const useCounts = () => {
     ...queries.registry.registrySummaryByType({
       registryType: params.account,
     }),
-    keepPreviousData: true,
   });
 };
 const DeleteConfirmationModal = ({

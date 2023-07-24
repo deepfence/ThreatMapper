@@ -221,7 +221,6 @@ const PostureCloudList = () => {
 const PosturenNonCloudList = () => {
   const { data } = useSuspenseQuery({
     ...queries.posture.postureSummary(),
-    keepPreviousData: true,
   });
   const providers = data.providers;
   if (!providers) {

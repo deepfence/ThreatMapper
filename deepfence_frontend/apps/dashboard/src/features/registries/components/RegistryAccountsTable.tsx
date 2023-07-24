@@ -27,7 +27,6 @@ const DEFAULT_PAGE_SIZE = 10;
 const useListRegistries = () => {
   return useSuspenseQuery({
     ...queries.registry.listRegistryAccounts(),
-    keepPreviousData: true,
   });
 };
 
