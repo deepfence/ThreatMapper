@@ -45,6 +45,33 @@ func SendNotifications(msg *message.Message) error {
 	return nil
 }
 
+func injectNodeData[T any](results []T, common model.ScanResultsCommon) []map[string]interface{} {
+	data := []map[string]interface{}{}
+
+	for _, r := range results {
+		m := utils.ToMap[T](r)
+		m["node_id"] = common.NodeID
+		m["scan_id"] = common.ScanID
+		m["node_name"] = common.NodeName
+		m["node_type"] = common.NodeType
+		if common.ContainerName != "" {
+			m["docker_container_name"] = common.ContainerName
+		}
+		if common.ImageName != "" {
+			m["docker_image_name"] = common.ImageName
+		}
+		if common.HostName != "" {
+			m["host_name"] = common.HostName
+		}
+		if common.KubernetesClusterName != "" {
+			m["kubernetes_cluster_name"] = common.KubernetesClusterName
+		}
+		data = append(data, m)
+	}
+
+	return data
+}
+
 func processIntegration[T any](msg *message.Message, integrationRow postgresql_db.Integration) {
 	var filters model.IntegrationFilters
 	err := json.Unmarshal(integrationRow.Filters, &filters)
@@ -110,21 +137,27 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 			log.Info().Msgf("No Results filtered for scan id: %s with filters %+v", scan.ScanId, filters)
 			continue
 		}
+
 		iByte, err := json.Marshal(integrationRow)
 		if err != nil {
 			log.Error().Msgf("Error marshall integrationRow: %+v", integrationRow, err)
 			return
 		}
+
 		integrationModel, err := integration.GetIntegration(ctx, integrationRow.IntegrationType, iByte)
 		if err != nil {
 			log.Error().Msgf("Error GetIntegration: %+v", integrationRow, err)
 			return
 		}
-		messageByte, err := json.Marshal(results)
+
+		// inject node details to results
+		updatedResults := injectNodeData[T](results, common)
+		messageByte, err := json.Marshal(updatedResults)
 		if err != nil {
 			log.Error().Msgf("Error marshall results: %+v", integrationRow, err)
 			return
 		}
+
 		extras := map[string]interface{}{"node_id": common.ScanID}
 		err = integrationModel.SendNotification(ctx, string(messageByte), extras)
 		if err != nil {
