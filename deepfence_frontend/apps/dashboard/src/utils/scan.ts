@@ -46,13 +46,11 @@ export const getScanLink = ({
   } else if (scanType === ScanTypeEnum.MalwareScan) {
     return generatePath('/malware/scan-results/:scanId', { scanId });
   } else if (scanType === ScanTypeEnum.ComplianceScan) {
-    // TODO fix compliance scan link
     return generatePath('/posture/scan-results/:nodeType/:scanId', {
       scanId,
       nodeType: nodeType === 'host' ? 'linux' : nodeType,
     });
   } else if (scanType === ScanTypeEnum.CloudComplianceScan) {
-    // TODO fix compliance scan link
     return generatePath('/posture/cloud/scan-results/:nodeType/:scanId', {
       scanId,
       nodeType,
