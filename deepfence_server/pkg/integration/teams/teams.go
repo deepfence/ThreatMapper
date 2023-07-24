@@ -40,7 +40,10 @@ func (t Teams) SendNotification(ctx context.Context, message string, extras map[
 	}
 	m := t.FormatMessage(msg)
 	payload := Payload{
-		Text: m,
+		Text:       m,
+		CardType:   "MessageCard",
+		Context:    "http://schema.org/extensions",
+		ThemeColor: "007FFF",
 	}
 
 	payloadBytes, err := json.Marshal(payload)
@@ -71,5 +74,3 @@ func (t Teams) SendNotification(ctx context.Context, message string, extras map[
 
 	return nil
 }
-
-// func (s Slack) FormatMessage
