@@ -87,11 +87,11 @@ export const Header = ({
                       onStartScanClick({
                         data: {
                           nodeIds: [nodeId],
-                          nodeType: nodeType as any, // TODO
+                          nodeType,
                         },
                         showAdvancedOptions: true,
                         scanType: ScanTypeEnum.VulnerabilityScan,
-                      });
+                      } as ConfigureScanModalProps['scanOptions']);
                     }}
                     icon={<VulnerabilityIcon />}
                   >
@@ -105,11 +105,11 @@ export const Header = ({
                       onStartScanClick({
                         data: {
                           nodeIds: [nodeId],
-                          nodeType: nodeType as any, // TODO
+                          nodeType,
                         },
                         scanType: ScanTypeEnum.SecretScan,
                         showAdvancedOptions: true,
-                      });
+                      } as ConfigureScanModalProps['scanOptions']);
                     }}
                     icon={<SecretsIcon />}
                   >
@@ -123,11 +123,11 @@ export const Header = ({
                       onStartScanClick({
                         data: {
                           nodeIds: [nodeId],
-                          nodeType: nodeType as any,
+                          nodeType,
                         },
                         scanType: ScanTypeEnum.MalwareScan,
                         showAdvancedOptions: true,
-                      });
+                      } as ConfigureScanModalProps['scanOptions']);
                     }}
                     icon={<MalwareIcon />}
                   >
@@ -142,10 +142,10 @@ export const Header = ({
                         scanType: ScanTypeEnum.ComplianceScan,
                         data: {
                           nodeIds: [nodeId],
-                          nodeType: nodeType as any,
+                          nodeType,
                         },
                         showAdvancedOptions: true,
-                      });
+                      } as ConfigureScanModalProps['scanOptions']);
                     }}
                     icon={<PostureIcon />}
                   >
