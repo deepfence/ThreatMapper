@@ -991,7 +991,7 @@ const SecretTable = ({
         cell: (info) => {
           return <TruncatedText text={info.getValue()} />;
         },
-        header: () => 'Signature to match',
+        header: () => <TruncatedText text="Signature to match" />,
         minSize: 70,
         size: 80,
         maxSize: 100,
