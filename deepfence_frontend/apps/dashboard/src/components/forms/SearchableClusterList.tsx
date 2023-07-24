@@ -41,8 +41,6 @@ const SearchableCluster = ({
     setSelectedClusters(defaultSelectedClusters ?? []);
   }, [defaultSelectedClusters]);
 
-  // TODO convert to useSuspenseInfiniteQuery, otherwise there will be problems with
-  // error handling
   const { data, isLoading, hasNextPage, fetchNextPage } = useSuspenseInfiniteQuery({
     ...queries.search.clusters({
       size: PAGE_SIZE,
