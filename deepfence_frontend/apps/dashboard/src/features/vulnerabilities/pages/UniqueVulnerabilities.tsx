@@ -221,7 +221,8 @@ const UniqueTable = () => {
         maxSize: 100,
       }),
       columnHelper.accessor('cve_cvss_score', {
-        enableResizing: true,
+        enableResizing: false,
+        enableSorting: false,
         cell: (info) => <CveCVSSScore score={info.getValue()} />,
         header: () => <TruncatedText text="Score" />,
         minSize: 70,
@@ -229,6 +230,7 @@ const UniqueTable = () => {
         maxSize: 85,
       }),
       columnHelper.accessor('cve_attack_vector', {
+        enableSorting: false,
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
         header: () => <TruncatedText text="Attack Vector" />,
         minSize: 100,

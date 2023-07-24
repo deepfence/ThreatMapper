@@ -684,6 +684,7 @@ const AccountTable = ({
     if (isCloudNode(nodeType) || isCloudOrgNode(nodeType)) {
       columns.push(
         columnHelper.accessor('version', {
+          enableSorting: false,
           cell: (info) => {
             return <TruncatedText text={info.getValue() ?? ''} />;
           },
