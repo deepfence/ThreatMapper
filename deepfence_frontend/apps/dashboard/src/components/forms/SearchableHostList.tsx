@@ -44,27 +44,28 @@ const SearchableHost = ({
     setSelectedHosts(defaultSelectedHosts ?? []);
   }, [defaultSelectedHosts]);
 
-  const { data, isLoading, hasNextPage, fetchNextPage } = useSuspenseInfiniteQuery({
-    ...queries.search.hosts({
-      scanType,
-      size: PAGE_SIZE,
-      searchText,
-      active,
-      agentRunning: true,
-      order: {
-        sortBy: 'host_name',
-        descending: false,
+  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useSuspenseInfiniteQuery({
+      ...queries.search.hosts({
+        scanType,
+        size: PAGE_SIZE,
+        searchText,
+        active,
+        agentRunning: true,
+        order: {
+          sortBy: 'host_name',
+          descending: false,
+        },
+      }),
+      keepPreviousData: true,
+      getNextPageParam: (lastPage, allPages) => {
+        return allPages.length * PAGE_SIZE;
       },
-    }),
-    keepPreviousData: true,
-    getNextPageParam: (lastPage, allPages) => {
-      return allPages.length * PAGE_SIZE;
-    },
-    getPreviousPageParam: (firstPage, allPages) => {
-      if (!allPages.length) return 0;
-      return (allPages.length - 1) * PAGE_SIZE;
-    },
-  });
+      getPreviousPageParam: (firstPage, allPages) => {
+        if (!allPages.length) return 0;
+        return (allPages.length - 1) * PAGE_SIZE;
+      },
+    });
 
   const searchHost = debounce((query: string) => {
     setSearchText(query);
@@ -85,7 +86,7 @@ const SearchableHost = ({
       />
       <Combobox
         startIcon={
-          isLoading ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="hostFilter"
         triggerVariant={triggerVariant || 'button'}
@@ -126,8 +127,26 @@ const SearchableHost = ({
 };
 
 export const SearchableHostList = (props: SearchableHostListProps) => {
+  const { triggerVariant } = props;
+  const isSelectVariantType = useMemo(() => {
+    return triggerVariant === 'select';
+  }, [triggerVariant]);
+
   return (
-    <Suspense fallback={<CircleSpinner size="sm" />}>
+    <Suspense
+      fallback={
+        <Combobox
+          label={isSelectVariantType ? 'Host' : undefined}
+          triggerVariant={triggerVariant || 'button'}
+          startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+          placeholder="Select host"
+          multiple
+          onQueryChange={() => {
+            // no operation
+          }}
+        />
+      }
+    >
       <SearchableHost {...props} />
     </Suspense>
   );

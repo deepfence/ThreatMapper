@@ -41,26 +41,27 @@ const SearchableCluster = ({
     setSelectedClusters(defaultSelectedClusters ?? []);
   }, [defaultSelectedClusters]);
 
-  const { data, isLoading, hasNextPage, fetchNextPage } = useSuspenseInfiniteQuery({
-    ...queries.search.clusters({
-      size: PAGE_SIZE,
-      searchText,
-      active,
-      agentRunning: true,
-      order: {
-        sortBy: 'node_name',
-        descending: false,
+  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useSuspenseInfiniteQuery({
+      ...queries.search.clusters({
+        size: PAGE_SIZE,
+        searchText,
+        active,
+        agentRunning: true,
+        order: {
+          sortBy: 'node_name',
+          descending: false,
+        },
+      }),
+      keepPreviousData: true,
+      getNextPageParam: (lastPage, allPages) => {
+        return allPages.length * PAGE_SIZE;
       },
-    }),
-    keepPreviousData: true,
-    getNextPageParam: (lastPage, allPages) => {
-      return allPages.length * PAGE_SIZE;
-    },
-    getPreviousPageParam: (firstPage, allPages) => {
-      if (!allPages.length) return 0;
-      return (allPages.length - 1) * PAGE_SIZE;
-    },
-  });
+      getPreviousPageParam: (firstPage, allPages) => {
+        if (!allPages.length) return 0;
+        return (allPages.length - 1) * PAGE_SIZE;
+      },
+    });
 
   const searchCluster = debounce((query) => {
     setSearchText(query);
@@ -81,7 +82,7 @@ const SearchableCluster = ({
       />
       <Combobox
         startIcon={
-          isLoading ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="clusterFilter"
         triggerVariant={triggerVariant || 'button'}
@@ -125,8 +126,26 @@ const SearchableCluster = ({
 };
 
 export const SearchableClusterList = (props: SearchableClusterListProps) => {
+  const { triggerVariant } = props;
+  const isSelectVariantType = useMemo(() => {
+    return triggerVariant === 'select';
+  }, [triggerVariant]);
+
   return (
-    <Suspense fallback={<CircleSpinner size="sm" />}>
+    <Suspense
+      fallback={
+        <Combobox
+          label={isSelectVariantType ? 'Cluster' : undefined}
+          triggerVariant={triggerVariant || 'button'}
+          startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+          placeholder="Select cluster"
+          multiple
+          onQueryChange={() => {
+            // no operation
+          }}
+        />
+      }
+    >
       <SearchableCluster {...props} />
     </Suspense>
   );

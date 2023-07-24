@@ -41,22 +41,23 @@ const SearchableCloudAccounts = ({
     setSelectedAccounts(defaultSelectedAccounts ?? []);
   }, [defaultSelectedAccounts]);
 
-  const { data, isLoading, hasNextPage, fetchNextPage } = useSuspenseInfiniteQuery({
-    ...queries.search.cloudAccounts({
-      cloudProvider,
-      size: PAGE_SIZE,
-      searchText,
-      active,
-    }),
-    keepPreviousData: true,
-    getNextPageParam: (lastPage, allPages) => {
-      return allPages.length * PAGE_SIZE;
-    },
-    getPreviousPageParam: (firstPage, allPages) => {
-      if (!allPages.length) return 0;
-      return (allPages.length - 1) * PAGE_SIZE;
-    },
-  });
+  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useSuspenseInfiniteQuery({
+      ...queries.search.cloudAccounts({
+        cloudProvider,
+        size: PAGE_SIZE,
+        searchText,
+        active,
+      }),
+      keepPreviousData: true,
+      getNextPageParam: (lastPage, allPages) => {
+        return allPages.length * PAGE_SIZE;
+      },
+      getPreviousPageParam: (firstPage, allPages) => {
+        if (!allPages.length) return 0;
+        return (allPages.length - 1) * PAGE_SIZE;
+      },
+    });
 
   const searchAccount = debounce((query: string) => {
     setSearchText(query);
@@ -79,7 +80,7 @@ const SearchableCloudAccounts = ({
         label={label}
         triggerVariant={triggerVariant}
         startIcon={
-          isLoading ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="cloudAccountsFilter"
         getDisplayValue={() =>
@@ -120,8 +121,24 @@ const SearchableCloudAccounts = ({
 };
 
 export const SearchableCloudAccountsList = (props: SearchableCloudAccountsListProps) => {
+  const { cloudProvider, label, triggerVariant } = props;
   return (
-    <Suspense fallback={<CircleSpinner size="sm" />}>
+    <Suspense
+      fallback={
+        <Combobox
+          label={label}
+          triggerVariant={triggerVariant}
+          startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+          getDisplayValue={() =>
+            cloudProvider ? `${cloudProvider} account` : 'Cloud account'
+          }
+          multiple
+          onQueryChange={() => {
+            // no operation
+          }}
+        />
+      }
+    >
       <SearchableCloudAccounts {...props} />
     </Suspense>
   );

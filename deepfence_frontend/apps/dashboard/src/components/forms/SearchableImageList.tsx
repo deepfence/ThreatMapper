@@ -40,26 +40,27 @@ const SearchableImage = ({
     setSelectedImages(defaultSelectedImages ?? []);
   }, [defaultSelectedImages]);
 
-  const { data, isLoading, hasNextPage, fetchNextPage } = useSuspenseInfiniteQuery({
-    ...queries.search.containerImages({
-      scanType,
-      size: PAGE_SIZE,
-      searchText,
-      active,
-      order: {
-        sortBy: 'node_name',
-        descending: false,
+  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useSuspenseInfiniteQuery({
+      ...queries.search.containerImages({
+        scanType,
+        size: PAGE_SIZE,
+        searchText,
+        active,
+        order: {
+          sortBy: 'node_name',
+          descending: false,
+        },
+      }),
+      keepPreviousData: true,
+      getNextPageParam: (lastPage, allPages) => {
+        return allPages.length * PAGE_SIZE;
       },
-    }),
-    keepPreviousData: true,
-    getNextPageParam: (lastPage, allPages) => {
-      return allPages.length * PAGE_SIZE;
-    },
-    getPreviousPageParam: (firstPage, allPages) => {
-      if (!allPages.length) return 0;
-      return (allPages.length - 1) * PAGE_SIZE;
-    },
-  });
+      getPreviousPageParam: (firstPage, allPages) => {
+        if (!allPages.length) return 0;
+        return (allPages.length - 1) * PAGE_SIZE;
+      },
+    });
 
   const searchContainerImage = debounce((query) => {
     setSearchText(query);
@@ -80,7 +81,7 @@ const SearchableImage = ({
       />
       <Combobox
         startIcon={
-          isLoading ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="imageFilter"
         triggerVariant={triggerVariant || 'button'}
@@ -119,8 +120,26 @@ const SearchableImage = ({
 };
 
 export const SearchableImageList = (props: Props) => {
+  const { triggerVariant } = props;
+  const isSelectVariantType = useMemo(() => {
+    return triggerVariant === 'select';
+  }, [triggerVariant]);
+
   return (
-    <Suspense fallback={<CircleSpinner size="sm" />}>
+    <Suspense
+      fallback={
+        <Combobox
+          label={isSelectVariantType ? 'Container image' : undefined}
+          triggerVariant={triggerVariant || 'button'}
+          startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+          placeholder="Select container image"
+          multiple
+          onQueryChange={() => {
+            // no operation
+          }}
+        />
+      }
+    >
       <SearchableImage {...props} />
     </Suspense>
   );
