@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/deepfence/SecretScanner/core"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -43,7 +44,8 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 	svc := s3.New(sess)
 	_, err = svc.PutObject(&s3.PutObjectInput{
 		Body:   bytes.NewReader(jsonBytes),
-		Bucket: aws.String(s.Config.S3FolderName + "example.json"),
+		Bucket: aws.String(s.Config.S3BucketName),
+		Key:    aws.String(s.Config.S3FolderName + "/" + core.GetCurrentTime() + ".json"),
 	})
 	if err != nil {
 		fmt.Println("Failed to upload JSON data to S3", err)
