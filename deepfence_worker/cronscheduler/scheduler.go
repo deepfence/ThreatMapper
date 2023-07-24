@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	stdLogger "log"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -33,7 +34,11 @@ type Scheduler struct {
 func NewScheduler(tasksPublisher *kafka.Publisher) (*Scheduler, error) {
 	logger := stdLogger.New(os.Stdout, "cron: ", stdLogger.LstdFlags)
 	scheduler := &Scheduler{
-		cron:           cron.New(cron.WithSeconds(), cron.WithLocation(time.UTC), cron.WithLogger(cron.VerbosePrintfLogger(logger))),
+		cron: cron.New(
+			cron.WithSeconds(),
+			cron.WithLocation(time.UTC),
+			cron.WithLogger(cron.VerbosePrintfLogger(logger)),
+		),
 		tasksPublisher: tasksPublisher,
 		scheduledJobs: ScheduledJobs{
 			jobHashToId: make(map[string]cron.EntryID),
@@ -218,9 +223,15 @@ func (s *Scheduler) Run() {
 func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID, schedule postgresqlDb.Scheduler, payload map[string]string) func() {
 	log.Info().Msgf("Registering task: %s, %s for namespace %s", schedule.Description, schedule.CronExpr, namespace)
 	return func() {
-		log.Info().Msgf("Enqueuing task: %s, %s for namespace %s", schedule.Description, schedule.CronExpr, namespace)
+		log.Info().Msgf("Enqueuing task: %s, %s for namespace %s",
+			schedule.Description, schedule.CronExpr, namespace)
 		metadata := map[string]string{directory.NamespaceKey: string(namespace)}
-		message := map[string]interface{}{"action": schedule.Action, "id": schedule.ID, "payload": payload, "description": schedule.Description}
+		message := map[string]interface{}{
+			"action":      schedule.Action,
+			"id":          schedule.ID,
+			"payload":     payload,
+			"description": schedule.Description,
+		}
 		messageJson, _ := json.Marshal(message)
 		err := utils.PublishNewJob(s.tasksPublisher, metadata, sdkUtils.ScheduledTasks, messageJson)
 		if err != nil {
@@ -234,7 +245,8 @@ func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string) fu
 	return func() {
 		log.Info().Msgf("Enqueuing task: %s for namespace %s", task, namespace)
 		metadata := map[string]string{directory.NamespaceKey: string(namespace)}
-		err := utils.PublishNewJob(s.tasksPublisher, metadata, task, []byte(sdkUtils.GetDatetimeNow()))
+		err := utils.PublishNewJob(s.tasksPublisher, metadata, task,
+			[]byte(strconv.FormatInt(sdkUtils.GetTimestamp(), 10)))
 		if err != nil {
 			log.Error().Msg(err.Error())
 		}
