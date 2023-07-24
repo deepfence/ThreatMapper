@@ -1,6 +1,6 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useSuspenseInfiniteQuery } from '@suspensive/react-query';
 import { debounce } from 'lodash-es';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
@@ -17,7 +17,7 @@ export type SearchableCloudAccountsListProps = {
 };
 
 const PAGE_SIZE = 15;
-export const SearchableCloudAccountsList = ({
+const SearchableCloudAccounts = ({
   cloudProvider,
   onChange,
   onClearAll,
@@ -41,7 +41,7 @@ export const SearchableCloudAccountsList = ({
     setSelectedAccounts(defaultSelectedAccounts ?? []);
   }, [defaultSelectedAccounts]);
 
-  const { data, isFetching, hasNextPage, fetchNextPage } = useInfiniteQuery({
+  const { data, isLoading, hasNextPage, fetchNextPage } = useSuspenseInfiniteQuery({
     ...queries.search.cloudAccounts({
       cloudProvider,
       size: PAGE_SIZE,
@@ -79,7 +79,7 @@ export const SearchableCloudAccountsList = ({
         label={label}
         triggerVariant={triggerVariant}
         startIcon={
-          isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+          isLoading ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="cloudAccountsFilter"
         getDisplayValue={() =>
@@ -116,5 +116,13 @@ export const SearchableCloudAccountsList = ({
           })}
       </Combobox>
     </>
+  );
+};
+
+export const SearchableCloudAccountsList = (props: SearchableCloudAccountsListProps) => {
+  return (
+    <Suspense fallback={<CircleSpinner size="sm" />}>
+      <SearchableCloudAccounts {...props} />
+    </Suspense>
   );
 };
