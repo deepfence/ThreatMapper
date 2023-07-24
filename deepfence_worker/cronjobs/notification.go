@@ -131,7 +131,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 			log.Error().Msgf("Error Sending Notification: %+v", integrationRow, err)
 			return
 		}
-		log.Info().Msgf("Notification sent %d messages using %s id %d",
-			len(results), integrationRow.IntegrationType, integrationRow.ID)
+		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d",
+			integrationRow.Resource, len(results), integrationRow.IntegrationType, integrationRow.ID)
 	}
 }
