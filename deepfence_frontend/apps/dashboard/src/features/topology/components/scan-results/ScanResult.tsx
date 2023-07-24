@@ -101,7 +101,7 @@ const ScanResultHeading = ({
             type === ScanTypeEnum.ComplianceScan
               ? generatePath('/posture/scan-results/:nodeType/:scanId', {
                   scanId,
-                  nodeType: 'host',
+                  nodeType: 'linux',
                 })
               : generatePath(`${scanResultPath}/:scanId`, {
                   scanId,
