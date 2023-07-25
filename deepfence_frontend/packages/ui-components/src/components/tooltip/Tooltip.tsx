@@ -1,8 +1,6 @@
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { cn } from 'tailwind-preset';
 
-import { Typography } from '@/components/typography/Typography';
-
 export interface TooltipProps
   extends Pick<TooltipPrimitive.TooltipProps, 'defaultOpen' | 'open' | 'onOpenChange'> {
   placement?: 'top' | 'right' | 'bottom' | 'left';
@@ -11,6 +9,8 @@ export interface TooltipProps
   content: string | React.ReactNode;
   delayDuration?: number;
   label?: string;
+  className?: string;
+  arrowClassName?: string;
 }
 
 export const Tooltip = (props: TooltipProps) => {
@@ -24,6 +24,8 @@ export const Tooltip = (props: TooltipProps) => {
     defaultOpen,
     delayDuration,
     label,
+    className,
+    arrowClassName,
   } = props;
   return (
     <TooltipPrimitive.Provider delayDuration={delayDuration ?? 0}>
@@ -45,15 +47,15 @@ export const Tooltip = (props: TooltipProps) => {
               'data-[side=right]:animate-slide-left-fade',
               'data-[side=bottom]:animate-slide-up-fade',
               'data-[side=left]:animate-slide-right-fade',
-              'rounded-md px-3 py-2 shadow-sm max-w-[400px]',
+              'rounded-md px-2.5 py-1.5 max-w-[400px]',
               'bg-bg-tooltip dark:bg-bg-tooltip',
-              Typography.leading.normal,
+              className,
             )}
           >
             <TooltipPrimitive.Arrow
               height={9}
               width={16}
-              className="fill-bg-tooltip dark:fill-bg-tooltip"
+              className={cn('fill-bg-tooltip dark:fill-bg-tooltip', arrowClassName)}
             />
             <>
               {label && (

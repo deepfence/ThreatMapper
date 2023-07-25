@@ -1,3 +1,4 @@
+// TODO: remove this components and its usages
 export const Typography = {
   weight: {
     thin: 'font-thin',
