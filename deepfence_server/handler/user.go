@@ -164,7 +164,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.ID = createdUser.ID
-	err = h.createApiToken(ctx, pgClient, &user, user.RoleID)
+	err = user.CreateApiToken(ctx, pgClient, user.RoleID, &c)
 	if err != nil {
 		log.Error().Msg("createApiToken: " + err.Error())
 		respondError(err, w)
@@ -213,7 +213,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	company, err := pgClient.GetCompany(ctx, userInvite.CompanyID)
+	company, err := model.GetCompany(ctx, pgClient, userInvite.CompanyID)
 	if err != nil {
 		respondError(err, w)
 		return
@@ -250,7 +250,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.ID = createdUser.ID
-	err = h.createApiToken(ctx, pgClient, &user, user.RoleID)
+	err = user.CreateApiToken(ctx, pgClient, user.RoleID, company)
 	if err != nil {
 		log.Error().Msg("createApiToken: " + err.Error())
 		respondError(err, w)
@@ -758,27 +758,6 @@ func (h *Handler) GetApiTokens(w http.ResponseWriter, r *http.Request) {
 	httpext.JSON(w, http.StatusOK, apiTokenResponse)
 }
 
-func (h *Handler) createApiToken(ctx context.Context, pgClient *postgresql_db.Queries, user *model.User, roleID int32) error {
-	apiToken := model.ApiToken{
-		ApiToken:        utils.NewUUID(),
-		Name:            user.Email,
-		CompanyID:       user.CompanyID,
-		RoleID:          roleID,
-		CreatedByUserID: user.ID,
-	}
-	company := &model.Company{ID: user.CompanyID, Name: user.Company}
-	defaultGroup, err := company.GetDefaultUserGroup(ctx, pgClient)
-	if err != nil {
-		return err
-	}
-	apiToken.GroupID = defaultGroup.ID
-	_, err = apiToken.Create(ctx, pgClient)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
@@ -791,7 +770,12 @@ func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	err = h.createApiToken(ctx, pgClient, user, user.RoleID)
+	company, err := model.GetCompany(ctx, pgClient, user.CompanyID)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	err = user.CreateApiToken(ctx, pgClient, user.RoleID, company)
 	if err != nil {
 		respondError(err, w)
 		return

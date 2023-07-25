@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -538,4 +539,53 @@ func GetEnvOrDefault(envVar string, defaultValue string) string {
 		return defaultValue
 	}
 	return envValue
+}
+
+func URLEncode(s string) string {
+	return url.QueryEscape(s)
+}
+
+func GetErrorRedirectUrl(consoleUrl, errorMessage string) string {
+	return consoleUrl + "/?errorMessage=" + URLEncode(errorMessage)
+}
+
+func GetInfoRedirectUrl(consoleUrl, message string) string {
+	return consoleUrl + "/auth/sso?message=" + URLEncode(message)
+}
+
+func RandomString(nByte int) (string, error) {
+	b := make([]byte, nByte)
+	if _, err := io.ReadFull(rand.Reader, b); err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(b), nil
+}
+
+func SetCookie(w http.ResponseWriter, r *http.Request, name, value, path string) {
+	c := &http.Cookie{
+		Name:     name,
+		Value:    value,
+		MaxAge:   int(time.Hour.Seconds()),
+		Secure:   r.TLS != nil,
+		HttpOnly: true,
+		Path:     path,
+	}
+	http.SetCookie(w, c)
+}
+
+func SplitFullName(name string) (string, string) {
+	var (
+		firstName string
+		lastName  string
+	)
+	names := strings.Split(name, " ")
+	switch len(names) {
+	case 1:
+		firstName = names[0]
+		lastName = names[0]
+	default:
+		firstName = names[0]
+		lastName = names[len(names)-1]
+	}
+	return firstName, lastName
 }

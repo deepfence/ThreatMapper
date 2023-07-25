@@ -119,6 +119,19 @@ type Company struct {
 	Namespace   string `json:"namespace" required:"true"`
 }
 
+func GetCompany(ctx context.Context, pgClient *postgresqlDb.Queries, companyID int32) (*Company, error) {
+	company, err := pgClient.GetCompany(ctx, companyID)
+	if err != nil {
+		return nil, err
+	}
+	return &Company{
+		ID:          company.ID,
+		Name:        company.Name,
+		EmailDomain: company.EmailDomain,
+		Namespace:   company.Namespace,
+	}, err
+}
+
 func (c *Company) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.Company, error) {
 	company, err := pgClient.CreateCompany(ctx, postgresqlDb.CreateCompanyParams{Name: c.Name, EmailDomain: c.EmailDomain, Namespace: c.Namespace})
 	if err != nil {
@@ -476,4 +489,24 @@ func (u *User) CreateRefreshToken(tokenAuth *jwtauth.JWTAuth, accessTokenID stri
 		return "", err
 	}
 	return refreshToken, nil
+}
+
+func (u *User) CreateApiToken(ctx context.Context, pgClient *postgresqlDb.Queries, roleID int32, company *Company) error {
+	apiToken := ApiToken{
+		ApiToken:        utils.NewUUID(),
+		Name:            u.Email,
+		CompanyID:       u.CompanyID,
+		RoleID:          roleID,
+		CreatedByUserID: u.ID,
+	}
+	defaultGroup, err := company.GetDefaultUserGroup(ctx, pgClient)
+	if err != nil {
+		return err
+	}
+	apiToken.GroupID = defaultGroup.ID
+	_, err = apiToken.Create(ctx, pgClient)
+	if err != nil {
+		return err
+	}
+	return nil
 }
