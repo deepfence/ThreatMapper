@@ -56,6 +56,9 @@ func CleanUpReports(msg *message.Message) error {
 
 	cleanup(minioReportsPrefix)
 
+	// delete the reports which are in failed state
+	deleteFailedReports(ctx, session)
+
 	log.Info().Msg("Complete reports cleanup")
 
 	return nil
@@ -71,6 +74,29 @@ func deleteReport(ctx context.Context, session neo4j.Session, path string) error
 
 	query := `MATCH (n:Report{storage_path:$path}) DELETE n`
 	vars := map[string]interface{}{"path": path}
+	_, err = tx.Run(query, vars)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func deleteFailedReports(ctx context.Context, session neo4j.Session) error {
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return err
+	}
+	defer tx.Close()
+
+	duration := utils.ReportRetentionTime.Milliseconds()
+
+	query := `MATCH (n:Report) where TIMESTAMP()-n.created_at > $duration DELETE n`
+	vars := map[string]interface{}{
+		"duration": duration,
+	}
 	_, err = tx.Run(query, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())

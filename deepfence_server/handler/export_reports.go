@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -89,10 +90,13 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = mc.DeleteFile(r.Context(), report.StoragePath, false, minio.RemoveObjectOptions{ForceDelete: true})
-	if err != nil {
-		respondError(err, w)
-		return
+	// skip report file delete, in case of error we don't save the file
+	if report.Status != utils.SCAN_STATUS_FAILED {
+		err = mc.DeleteFile(r.Context(), report.StoragePath, false, minio.RemoveObjectOptions{ForceDelete: true})
+		if err != nil {
+			respondError(err, w)
+			return
+		}
 	}
 
 	deleteQuery := `MATCH (n:Report{report_id:$uid}) DELETE n`
@@ -227,6 +231,11 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 		utils.FromMap(da.Props, &report)
 		reports = append(reports, report)
 	}
+
+	// sort reports
+	sort.Slice(reports[:], func(i, j int) bool {
+		return reports[i].CreatedAt > reports[j].CreatedAt
+	})
 
 	httpext.JSON(w, http.StatusOK, reports)
 }
