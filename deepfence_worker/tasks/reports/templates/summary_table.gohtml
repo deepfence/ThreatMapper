@@ -7,7 +7,7 @@
             <th style="background: #db2547; color: white;">Critical</th>
             <th style="background: #e08a25; color: white;">High</th>
             <th style="background: #e7d135; color: white;">Medium</th>
-            <th style="background: #0576c9; color: white;">low</th>
+            <th style="background: #0576c9; color: white;">Low</th>
             <th>Total</th>
         </tr>
         {{ range $key, $value := .NodeWiseData.SeverityCount }}
@@ -16,7 +16,7 @@
             {{ continue }}
         {{ end }}
         <tr>
-            <td style="width: 400px;"><a href="#{{$key}}">{{$key}}</a></td>
+            <td style="width: 400px;"><a href="#{{ $key | sha256sum }}">{{$key}}</a></td>
             <td>{{ default 0 $value.critical }}</td>
             <td>{{ default 0 $value.high }}</td>
             <td>{{ default 0 $value.medium }}</td>

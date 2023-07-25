@@ -4,11 +4,15 @@
     <table style="table-layout: fixed; word-break: break-word;">
         <tr>
             <th>Scan Type</th>
-            <td> {{ .AppliedFilters.ScanType }}</th>
+            <td> {{ .AppliedFilters.ScanType }}</td>
         </tr>
         <tr>
             <th>Node Type</th>
-            <td> {{ .AppliedFilters.NodeType }}</th>
+            <td> {{ .AppliedFilters.NodeType }}</td>
+        </tr>
+        <tr>
+            <th>Time Range</th>
+            <th>{{.StartTime}} - {{.EndTime}}</th>
         </tr>
         <tr>
             {{ $scan_types := list "vulnerability" "secret" "malware" }}
@@ -17,11 +21,11 @@
             {{ else }}
             <th>Check Type</th>
             {{ end }}
-            <td> {{ .AppliedFilters.SeverityOrCheckType }}</th>
+            <td> {{ .AppliedFilters.SeverityOrCheckType | join "," }}</td>
         </tr>
         <tr>
             <th>Advanced Filters</th>
-            <td> {{ .AppliedFilters.AdvancedReportFilters }}</th>
+            <td> {{ .AppliedFilters.AdvancedReportFilters | toJson }}</td>
         </tr>
     </table>
 </div>
