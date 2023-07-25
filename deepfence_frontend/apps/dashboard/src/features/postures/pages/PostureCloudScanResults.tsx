@@ -1031,11 +1031,17 @@ const CloudPostureResults = () => {
   );
 };
 
-const TablePlaceholder = ({ scanStatus = '' }: { scanStatus: string | undefined }) => {
+const TablePlaceholder = ({
+  scanStatus,
+  message,
+}: {
+  scanStatus: string;
+  message: string;
+}) => {
   if (isScanFailed(scanStatus)) {
     return (
       <div className="flex items-center justify-center min-h-[384px]">
-        <ScanStatusInError errorMessage="" />
+        <ScanStatusInError errorMessage={message} />
       </div>
     );
   }
@@ -1244,7 +1250,12 @@ const CloudPostureTable = ({
           return prev;
         });
       }}
-      noDataElement={<TablePlaceholder scanStatus={scanStatusResult?.status} />}
+      noDataElement={
+        <TablePlaceholder
+          scanStatus={scanStatusResult?.status ?? ''}
+          message={scanStatusResult?.status_message ?? ''}
+        />
+      }
     />
   );
 };
@@ -1403,7 +1414,7 @@ const SeverityCountWidget = () => {
             <ScanStatusInProgress />
           ) : (
             isScanFailed(scanStatusResult?.status ?? '') && (
-              <ScanStatusInError errorMessage="" />
+              <ScanStatusInError errorMessage={scanStatusResult?.status_message ?? ''} />
             )
           )}
         </div>

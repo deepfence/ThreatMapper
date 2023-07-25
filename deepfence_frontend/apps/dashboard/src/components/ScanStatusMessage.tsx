@@ -20,7 +20,7 @@ export const ScanStatusInError = ({ errorMessage }: { errorMessage: string }) =>
   return (
     <div className={cx('flex items-center justify-center gap-x-2')}>
       {errorMessage ? (
-        <Tooltip content={<span>{errorMessage}</span>}>
+        <Tooltip content={errorMessage}>
           <div className="w-6 h-6 dark:text-status-error  rounded-full">
             <ErrorStandardSolidIcon />
           </div>
