@@ -15,9 +15,9 @@ export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
   return (
     <fetcher.Form method="post" className="flex flex-col gap-y-8 mt-4 mx-4">
       <TextInput
-        label="Old Password"
+        label="Current Password"
         type={'password'}
-        placeholder="Old Password"
+        placeholder="Current Password"
         name="old_password"
         color={data?.fieldErrors?.old_password ? 'error' : 'default'}
         helperText={data?.fieldErrors?.old_password}
@@ -33,9 +33,9 @@ export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
         required
       />
       <TextInput
-        label="Confirm Password"
+        label="Confirm new Password"
         type={'password'}
-        placeholder="Confirm Password"
+        placeholder="Confirm new Password"
         name="confirm_password"
         color={data?.fieldErrors?.confirm_password ? 'error' : 'default'}
         helperText={data?.fieldErrors?.confirm_password}
