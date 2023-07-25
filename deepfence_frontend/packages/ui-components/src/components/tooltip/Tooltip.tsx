@@ -10,6 +10,7 @@ export interface TooltipProps
   delayDuration?: number;
   label?: string;
   className?: string;
+  arrowClassName?: string;
 }
 
 export const Tooltip = (props: TooltipProps) => {
@@ -24,6 +25,7 @@ export const Tooltip = (props: TooltipProps) => {
     delayDuration,
     label,
     className,
+    arrowClassName,
   } = props;
   return (
     <TooltipPrimitive.Provider delayDuration={delayDuration ?? 0}>
@@ -53,7 +55,7 @@ export const Tooltip = (props: TooltipProps) => {
             <TooltipPrimitive.Arrow
               height={9}
               width={16}
-              className="fill-bg-tooltip dark:fill-bg-tooltip"
+              className={cn('fill-bg-tooltip dark:fill-bg-tooltip', arrowClassName)}
             />
             <>
               {label && (
