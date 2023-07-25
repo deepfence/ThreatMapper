@@ -82,9 +82,11 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r
 		m.registry_type=$registry_type,
 		n.pseudo=false,
 		n.active=true,
+        n.docker_image_tag_list = REDUCE(distinctElements = [], element IN COALESCE(n.docker_image_tag_list, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
+        n.docker_image_name_list = REDUCE(distinctElements = [], element IN COALESCE(n.docker_image_name_list, []) + row.docker_image_name | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
 		n.node_name=n.docker_image_name+":"+n.docker_image_tag,
 		s.updated_at = TIMESTAMP(),
-		s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`,
+		s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + n.docker_image_tag_list | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`,
 		map[string]interface{}{
 			"batch": imageMap, "node_id": registryId,
 			"pgId": pgId, "registry_type": r.GetRegistryType(),
