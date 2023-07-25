@@ -85,6 +85,14 @@ func UUIDFromString(uuidStr string) (uuid.UUID, error) {
 	return uuid.Parse(uuidStr)
 }
 
+func IsUUIDValid(uuidStr string) bool {
+	_, err := UUIDFromString(uuidStr)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 func NewUUID() uuid.UUID {
 	return uuid.New()
 }
