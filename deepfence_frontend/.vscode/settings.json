@@ -13,7 +13,7 @@
     ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
   ],
   "typescript.tsdk": "node_modules/typescript/lib",
-  "prettier.prettierPath": "./node_modules/prettier",
+  "prettier.prettierPath": "./node_modules/prettier/index.cjs",
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   }

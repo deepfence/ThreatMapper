@@ -4,6 +4,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import {
   Button,
   CircleSpinner,
+  IconButton,
   SlidingModal,
   SlidingModalCloseButton,
   SlidingModalContent,
@@ -12,6 +13,7 @@ import {
 
 import { ModelCompliance } from '@/api/generated';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { CheckIcon } from '@/components/icons/common/Check';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { PostureStatusBadge } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
@@ -74,6 +76,38 @@ function processLabel(labelKey: string) {
   return replacebyUppercaseCharacters(labelKey);
 }
 
+const CopyField = ({ value }: { value: string }) => {
+  const { copy, isCopied } = useCopyToClipboardState();
+
+  return (
+    <div className="absolute right-0 top-0 hidden group-hover:block">
+      {isCopied ? (
+        <IconButton
+          size="sm"
+          variant="flat"
+          color="success"
+          icon={
+            <span className="w-3 h-3 block">
+              <CheckIcon />
+            </span>
+          }
+        />
+      ) : (
+        <IconButton
+          size="sm"
+          variant="flat"
+          onClick={() => copy(value)}
+          icon={
+            <span className="w-3 h-3 block">
+              <CopyLineIcon />
+            </span>
+          }
+        />
+      )}
+    </div>
+  );
+};
+
 const DetailsComponent = () => {
   const {
     data: { data: postures },
@@ -119,9 +153,15 @@ const DetailsComponent = () => {
             valueAsStr = String(value);
           }
           return (
-            <div key={key} className="flex flex-col grow basis-[45%] max-w-full gap-1">
-              <div className="text-p3 dark:text-text-text-and-icon first-letter:capitalize">
-                {label}
+            <div
+              key={key}
+              className="flex flex-col grow basis-[45%] max-w-full gap-1 group"
+            >
+              <div className="flex relative">
+                <div className="text-p3 dark:text-text-text-and-icon first-letter:capitalize">
+                  {label}
+                </div>
+                <CopyField value={valueAsStr} />
               </div>
               <div className="text-p1 dark:text-text-input-value">{valueAsStr}</div>
             </div>
