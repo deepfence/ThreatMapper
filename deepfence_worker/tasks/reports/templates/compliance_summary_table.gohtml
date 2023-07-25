@@ -17,7 +17,7 @@
             {{ continue }}
         {{ end }}
         <tr>
-            <td style="width: 400px;"><a style="text-decoration : none;" href="#{{ $key }}">{{ $key }}</a></td>
+            <td style="width: 400px;"><a style="text-decoration : none;" href="#{{ $key | sha256sum }}">{{ $key }}</a></td>
             <td>{{ default 0 $value.pass }}</td>
             <td>{{ default 0 $value.fail }}</td>
             <td>{{ default 0 $value.info }}</td>

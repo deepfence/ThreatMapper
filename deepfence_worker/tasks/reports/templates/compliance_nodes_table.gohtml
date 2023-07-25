@@ -3,7 +3,7 @@
 {{ if not $value.ScanResults }}
     {{ continue }}
 {{ end }}
-<div id="{{ $key }}">
+<div id="{{ $key | sha256sum }}">
     <h3> {{ $key }} - Details</h3>
     <br>
 </div>

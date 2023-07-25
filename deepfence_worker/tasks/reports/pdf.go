@@ -6,6 +6,7 @@ import (
 	"embed"
 	"html/template"
 	"os"
+	"time"
 
 	"github.com/Masterminds/sprig/v3"
 	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
@@ -60,6 +61,7 @@ func generatePDF(ctx context.Context, session neo4j.Session, params utils.Report
 	// new page
 	page := wkhtmltopdf.NewPageReader(bytes.NewReader(buffer.Bytes()))
 	page.FooterRight.Set("[page]")
+	page.HeaderRight.Set(time.Now().Format(time.RFC3339))
 
 	pdfGen.AddPage(page)
 	err = pdfGen.Create()

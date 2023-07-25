@@ -2,7 +2,6 @@ package reports
 
 import (
 	"context"
-	"math"
 	"sort"
 	"time"
 
@@ -127,7 +126,7 @@ func getVulnerabilityData(ctx context.Context, session neo4j.Session, params sdk
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
-		start := end.AddDate(0, 0, int(math.Copysign(float64(params.Duration), -1)))
+		start = end.AddDate(0, 0, -params.Duration)
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
@@ -160,8 +159,8 @@ func getVulnerabilityData(ctx context.Context, session neo4j.Session, params sdk
 		sort.Slice(result[:], func(i, j int) bool {
 			return result[i].Cve_severity < result[j].Cve_severity
 		})
-		nodeWiseData.SeverityCount[s.NodeId] = s.SeverityCounts
-		nodeWiseData.ScanData[s.NodeId] = ScanData[model.Vulnerability]{
+		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
+		nodeWiseData.ScanData[s.NodeName] = ScanData[model.Vulnerability]{
 			ScanInfo:    common,
 			ScanResults: result,
 		}
@@ -170,8 +169,8 @@ func getVulnerabilityData(ctx context.Context, session neo4j.Session, params sdk
 	data := Info[model.Vulnerability]{
 		ScanType:       VULNERABILITY,
 		Title:          "Vulnerability Scan Report",
-		StartTime:      start.Format(time.RFC822Z),
-		EndTime:        end.Format(time.RFC822Z),
+		StartTime:      start.Format(time.RFC3339),
+		EndTime:        end.Format(time.RFC3339),
 		AppliedFilters: params.Filters,
 		NodeWiseData:   nodeWiseData,
 	}
@@ -189,7 +188,7 @@ func getSecretData(ctx context.Context, session neo4j.Session, params sdkUtils.R
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
-		start = end.AddDate(0, 0, int(math.Copysign(float64(params.Duration), -1)))
+		start = end.AddDate(0, 0, -params.Duration)
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
@@ -222,8 +221,8 @@ func getSecretData(ctx context.Context, session neo4j.Session, params sdkUtils.R
 		sort.Slice(result[:], func(i, j int) bool {
 			return result[i].Level < result[j].Level
 		})
-		nodeWiseData.SeverityCount[s.NodeId] = s.SeverityCounts
-		nodeWiseData.ScanData[s.NodeId] = ScanData[model.Secret]{
+		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
+		nodeWiseData.ScanData[s.NodeName] = ScanData[model.Secret]{
 			ScanInfo:    common,
 			ScanResults: result,
 		}
@@ -232,8 +231,8 @@ func getSecretData(ctx context.Context, session neo4j.Session, params sdkUtils.R
 	data := Info[model.Secret]{
 		ScanType:       SECRET,
 		Title:          "Secrets Scan Report",
-		StartTime:      start.Format(time.RFC822Z),
-		EndTime:        end.Format(time.RFC822Z),
+		StartTime:      start.Format(time.RFC3339),
+		EndTime:        end.Format(time.RFC3339),
 		AppliedFilters: params.Filters,
 		NodeWiseData:   nodeWiseData,
 	}
@@ -251,7 +250,7 @@ func getMalwareData(ctx context.Context, session neo4j.Session, params sdkUtils.
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
-		start = end.AddDate(0, 0, int(math.Copysign(float64(params.Duration), -1)))
+		start = end.AddDate(0, 0, -params.Duration)
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
@@ -283,8 +282,8 @@ func getMalwareData(ctx context.Context, session neo4j.Session, params sdkUtils.
 		sort.Slice(result[:], func(i, j int) bool {
 			return result[i].FileSeverity < result[j].FileSeverity
 		})
-		nodeWiseData.SeverityCount[s.NodeId] = s.SeverityCounts
-		nodeWiseData.ScanData[s.NodeId] = ScanData[model.Malware]{
+		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
+		nodeWiseData.ScanData[s.NodeName] = ScanData[model.Malware]{
 			ScanInfo:    common,
 			ScanResults: result,
 		}
@@ -293,8 +292,8 @@ func getMalwareData(ctx context.Context, session neo4j.Session, params sdkUtils.
 	data := Info[model.Malware]{
 		ScanType:       MALWARE,
 		Title:          "Malware Scan Report",
-		StartTime:      start.Format(time.RFC822Z),
-		EndTime:        end.Format(time.RFC822Z),
+		StartTime:      start.Format(time.RFC3339),
+		EndTime:        end.Format(time.RFC3339),
 		AppliedFilters: params.Filters,
 		NodeWiseData:   nodeWiseData,
 	}
@@ -312,8 +311,7 @@ func getComplianceData(ctx context.Context, session neo4j.Session, params sdkUti
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
-		end = time.Now()
-		start = end.AddDate(0, 0, int(math.Copysign(float64(params.Duration), -1)))
+		start = end.AddDate(0, 0, -params.Duration)
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
@@ -345,8 +343,8 @@ func getComplianceData(ctx context.Context, session neo4j.Session, params sdkUti
 		sort.Slice(result[:], func(i, j int) bool {
 			return result[i].ComplianceCheckType < result[j].ComplianceCheckType
 		})
-		nodeWiseData.SeverityCount[s.NodeId] = s.SeverityCounts
-		nodeWiseData.ScanData[s.NodeId] = ScanData[model.Compliance]{
+		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
+		nodeWiseData.ScanData[s.NodeName] = ScanData[model.Compliance]{
 			ScanInfo:    common,
 			ScanResults: result,
 		}
@@ -355,8 +353,8 @@ func getComplianceData(ctx context.Context, session neo4j.Session, params sdkUti
 	data := Info[model.Compliance]{
 		ScanType:       COMPLIANCE,
 		Title:          "Compliance Scan Report",
-		StartTime:      start.Format(time.RFC822Z),
-		EndTime:        end.Format(time.RFC822Z),
+		StartTime:      start.Format(time.RFC3339),
+		EndTime:        end.Format(time.RFC3339),
 		AppliedFilters: params.Filters,
 		NodeWiseData:   nodeWiseData,
 	}
@@ -374,7 +372,7 @@ func getCloudComplianceData(ctx context.Context, session neo4j.Session, params s
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
-		start = end.AddDate(0, 0, int(math.Copysign(float64(params.Duration), -1)))
+		start = end.AddDate(0, 0, -params.Duration)
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
@@ -407,8 +405,8 @@ func getCloudComplianceData(ctx context.Context, session neo4j.Session, params s
 		sort.Slice(result[:], func(i, j int) bool {
 			return result[i].ComplianceCheckType < result[j].ComplianceCheckType
 		})
-		nodeWiseData.SeverityCount[s.NodeId] = s.SeverityCounts
-		nodeWiseData.ScanData[s.NodeId] = ScanData[model.CloudCompliance]{
+		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
+		nodeWiseData.ScanData[s.NodeName] = ScanData[model.CloudCompliance]{
 			ScanInfo:    common,
 			ScanResults: result,
 		}
@@ -417,8 +415,8 @@ func getCloudComplianceData(ctx context.Context, session neo4j.Session, params s
 	data := Info[model.CloudCompliance]{
 		ScanType:       CLOUD_COMPLIANCE,
 		Title:          "Cloud Compliance Scan Report",
-		StartTime:      start.Format(time.RFC822Z),
-		EndTime:        end.Format(time.RFC822Z),
+		StartTime:      start.Format(time.RFC3339),
+		EndTime:        end.Format(time.RFC3339),
 		AppliedFilters: params.Filters,
 		NodeWiseData:   nodeWiseData,
 	}
