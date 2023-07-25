@@ -405,16 +405,10 @@ export const onboardQueries = createQueryKeys('onboard', {
     bulkScanId: string;
     scanType: keyof typeof statusScanApiFunctionMap;
   }) => {
-    const { bulkScanId, scanType: _scanType } = filters;
-    let scanType = _scanType;
+    const { bulkScanId, scanType } = filters;
     return {
       queryKey: ['scanStatus'],
       queryFn: async () => {
-        // TODO: Backend wants compliance status api for cloud to use cloud-compliance api
-        if (scanType === ScanTypeEnum.CloudComplianceScan) {
-          scanType = ScanTypeEnum.CloudComplianceScan;
-        }
-
         const statusScanApi = apiWrapper({
           fn: statusScanApiFunctionMap[scanType],
         });

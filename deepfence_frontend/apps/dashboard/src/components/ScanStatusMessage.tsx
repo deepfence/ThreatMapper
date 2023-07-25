@@ -3,7 +3,6 @@ import { CircleSpinner, Tooltip } from 'ui-components';
 
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
-import { ScanTypeEnum } from '@/types/common';
 
 export const ScanStatusInProgress = () => {
   return (
@@ -45,39 +44,6 @@ export const ScanStatusNoData = ({ message }: { message?: string }) => {
         <ErrorStandardLineIcon />
       </div>
       <div className="text-h3">{message ?? 'No data available'}</div>
-    </div>
-  );
-};
-
-export const NoIssueFound = ({
-  LogoIcon,
-  scanType,
-}: {
-  LogoIcon: () => JSX.Element;
-  scanType: ScanTypeEnum;
-}) => {
-  return (
-    <div className="flex flex-col items-center justify-center mt-40">
-      <div className="h-16 w-16">
-        <LogoIcon />
-      </div>
-      <span className="text-2xl font-medium text-gray-700 dark:text-white">
-        {scanType === ScanTypeEnum.VulnerabilityScan && 'Vulnerability Scan'}
-        {scanType === ScanTypeEnum.SecretScan && 'Secret Scan'}
-        {scanType === ScanTypeEnum.MalwareScan && 'Malware Scan'}
-        {scanType === ScanTypeEnum.ComplianceScan && 'Posture Scan'}
-        {scanType === ScanTypeEnum.CloudComplianceScan && 'Cloud Posture Scan'}
-      </span>
-      <span className="text-sm text-gray-500 dark:text-gray-400">
-        You have no
-        {scanType === ScanTypeEnum.VulnerabilityScan &&
-          ' vulnerabilities for vulnerability scan'}
-        {scanType === ScanTypeEnum.SecretScan && ' secrets for secret scan'}
-        {scanType === ScanTypeEnum.MalwareScan && ' malwares for malware scan'}
-        {scanType === ScanTypeEnum.ComplianceScan && ' compliances for posture scan'}
-        {scanType === ScanTypeEnum.CloudComplianceScan &&
-          ' compliances for cloud posture Scan'}
-      </span>
     </div>
   );
 };
