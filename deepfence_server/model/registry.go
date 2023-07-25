@@ -397,7 +397,7 @@ func ListImages(ctx context.Context, registryId string, filter reporters.FieldsF
 			continue
 		}
 
-		l, ok := lValue.(dbtype.Node)
+		_, ok := lValue.(dbtype.Node)
 		if !ok {
 			log.Warn().Msgf("Missing neo4j entry")
 			continue
@@ -411,26 +411,7 @@ func ListImages(ctx context.Context, registryId string, filter reporters.FieldsF
 
 		var node ContainerImage
 		utils.FromMap(m.Props, &node)
-
-		// Extract tags from the "l" node
-		tagsValue, hasTags := l.Props["tags"]
-		if hasTags {
-			tags, ok := tagsValue.([]interface{})
-			if ok {
-				for _, tag := range tags {
-					if tagStr, ok := tag.(string); ok {
-						// create individual tag nodes
-						tagNode := node
-						tagNode.Tag = tagStr
-						res = append(res, tagNode)
-					}
-				}
-			}
-		}
-
-		// kludge: breaking here since we don't want to repeat images and duplicate the entries
-		// in the first iteration itself we get all the tags in an array and we use the first image and duplicate
-		break
+		res = append(res, node)
 	}
 
 	return res, nil

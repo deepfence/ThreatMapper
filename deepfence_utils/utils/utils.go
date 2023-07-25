@@ -266,8 +266,21 @@ func FromMap(bb map[string]interface{}, c interface{}) {
 		if t.Field(i).Type.Kind() == reflect.Slice {
 			slice, ok := data.([]map[string]interface{})
 			if !ok {
-				vv := reflect.ValueOf(data).Convert(t.Field(i).Type)
-				v.Field(i).Set(vv)
+				if t.Field(i).Type.Elem().Kind() == reflect.String {
+					//We are not able to convert the []interface{} to []string
+					//Hence we need to have this special handling
+					var outStr []string
+					rv := reflect.ValueOf(data)
+					for i := 0; i < rv.Len(); i++ {
+						outStr = append(outStr, rv.Index(i).Interface().(string))
+					}
+					vv := reflect.ValueOf(outStr).Convert(t.Field(i).Type)
+					v.Field(i).Set(vv)
+				} else {
+					vv := reflect.ValueOf(data).Convert(t.Field(i).Type)
+					v.Field(i).Set(vv)
+				}
+
 				continue
 			}
 			tmp := reflect.MakeSlice(t.Field(i).Type, 0, len(slice))

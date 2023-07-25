@@ -94,21 +94,12 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 		}
 
 		return tx.Commit()
-
 	}
 }
 
-// handles status deduplication
-// and maintains the order of the messages
+// also handles status deduplication
 func statusesToMaps[T any](data []T) []map[string]interface{} {
-	type Entry struct {
-		Posn int
-		Data map[string]interface{}
-	}
-
-	statusBuff := map[string]Entry{}
-
-	index := 0
+	statusBuff := map[string]map[string]interface{}{}
 	for _, i := range data {
 		new := ToMap(i)
 		scan_id := new["scan_id"].(string)
@@ -116,23 +107,21 @@ func statusesToMaps[T any](data []T) []map[string]interface{} {
 
 		old, found := statusBuff[scan_id]
 		if !found {
-			statusBuff[scan_id] = Entry{index, new}
-			index++
+			statusBuff[scan_id] = new
 		} else {
-			old_status := old.Data["scan_status"].(string)
+			old_status := old["scan_status"].(string)
 			if new_status != old_status {
 				if new_status == utils.SCAN_STATUS_SUCCESS || new_status == utils.SCAN_STATUS_FAILED {
-					statusBuff[scan_id] = Entry{old.Posn, new}
+					statusBuff[scan_id] = new
 				}
 			}
 		}
 	}
 
-	statuses := make([]map[string]interface{}, len(statusBuff))
+	statuses := []map[string]interface{}{}
 	for _, v := range statusBuff {
-		statuses[v.Posn] = v.Data
+		statuses = append(statuses, v)
 	}
-
 	return statuses
 }
 
