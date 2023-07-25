@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { useFetcher, useParams } from 'react-router-dom';
-import { Button, Listbox, ListboxOption, Radio, TextInput } from 'ui-components';
+import {
+  Button,
+  Listbox,
+  ListboxOption,
+  Radio,
+  Separator,
+  TextInput,
+} from 'ui-components';
 
 import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudAccountsList';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
@@ -201,10 +208,22 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
                 return value && value.length ? `${value.length} selected` : '';
               }}
             >
+              <div className="px-3 pt-2 text-p3 text-gray-900 dark:text-text-text-and-icon">
+                Host
+              </div>
               <ListboxOption value={'Alarm'}>Alarm</ListboxOption>
-              <ListboxOption value={'Info'}>Info</ListboxOption>
+              <ListboxOption value={'Note'}>Note</ListboxOption>
               <ListboxOption value={'Ok'}>Ok</ListboxOption>
+              <div className="px-3 pt-4 text-p3 text-gray-900 dark:text-text-text-and-icon">
+                Cloud / Kubernetes
+              </div>
+              <ListboxOption value={'Pass'}>Pass</ListboxOption>
               <ListboxOption value={'Skip'}>Skip</ListboxOption>
+              <ListboxOption value={'Warn'}>Warn</ListboxOption>
+              <div className="px-3 pt-4 text-p3 text-gray-900 dark:text-text-text-and-icon">
+                Common
+              </div>
+              <ListboxOption value={'Info'}>Info</ListboxOption>
             </Listbox>
           </>
         ) : null}
