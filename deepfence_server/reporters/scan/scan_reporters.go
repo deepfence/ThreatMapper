@@ -569,13 +569,23 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		}
 	}
 
+	ffCondition := reporters.OrderFilter2CypherCondition("d", ff.OrderFilter, nil)
+
+	fname := scanResultId_field(scan_type)
+	if len(fname) > 0 {
+		str := "d." + fname + " ASC"
+		if len(ffCondition) > 0 {
+			ffCondition = ffCondition + ","
+		}
+		ffCondition = ffCondition + str
+	}
+
 	query = `
 		MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
 		OPTIONAL MATCH (d) -[:IS]-> (e)
 	WITH apoc.map.merge( e{.*}, d{.*, masked: coalesce(d.masked or r.masked, false), name: coalesce(e.name, d.name, '')}) as d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
-		reporters.OrderFilter2CypherCondition("d", ff.OrderFilter, nil) +
-		` RETURN d ` +
+		ffCondition + ` RETURN d ` +
 		fw.FetchWindow2CypherQuery()
 	log.Debug().Msgf("query: %v", query)
 	nres, err := tx.Run(query,
@@ -662,6 +672,22 @@ func GetFilters(ctx context.Context, having map[string]interface{}, detectedType
 		}
 	}
 	return res, nil
+}
+
+func scanResultId_field(scan_type utils.Neo4jScanType) string {
+	switch scan_type {
+	case utils.NEO4J_VULNERABILITY_SCAN:
+		return "cve_id"
+	case utils.NEO4J_SECRET_SCAN:
+		return "node_id"
+	case utils.NEO4J_MALWARE_SCAN:
+		return "node_id"
+	case utils.NEO4J_COMPLIANCE_SCAN:
+		return "test_number"
+	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
+		return "control_id"
+	}
+	return ""
 }
 
 func type2sev_field(scan_type utils.Neo4jScanType) string {
