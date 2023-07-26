@@ -158,10 +158,12 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 			return
 		}
 
-		extras := map[string]interface{}{"node_id": common.ScanID}
+		extras := utils.ToMap[any](common)
+		extras["scan_type"] = integrationRow.Resource
 		err = integrationModel.SendNotification(ctx, string(messageByte), extras)
 		if err != nil {
-			log.Error().Msgf("Error Sending Notification: %+v", integrationRow, err)
+			log.Error().Msgf("Error Sending Notification id %d, resource %s, type %s error: %s",
+				integrationRow.ID, integrationRow.Resource, integrationRow.IntegrationType, err)
 			return
 		}
 		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d",
