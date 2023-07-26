@@ -1,4 +1,3 @@
-import cx from 'classnames';
 import { useFetcher } from 'react-router-dom';
 import { Button, TextInput } from 'ui-components';
 
@@ -41,9 +40,7 @@ export const Login = () => {
           <DFLink
             unstyled
             to="/auth/forgot-password"
-            className={cx(
-              'ml-auto text-p5 underline text-blue-600 dark:text-accent-accent',
-            )}
+            className="ml-auto text-p5 underline text-blue-600 dark:text-accent-accent"
           >
             Forgot password?
           </DFLink>

@@ -1,7 +1,7 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
 import * as SwitchPrimitive from '@radix-ui/react-switch';
-import cx from 'classnames';
 import { useId } from 'react';
+import { cn } from 'tailwind-preset';
 
 type SizeType = 'md';
 
@@ -15,11 +15,11 @@ const Switch = (props: SwitchProps) => {
   const internalId = useId();
   const _id = id ? id : internalId;
   return (
-    <div className={cx('flex items-center')}>
+    <div className="flex items-center">
       <SwitchPrimitive.Root
         id={_id}
         disabled={disabled}
-        className={cx(
+        className={cn(
           'group peer items-center disabled:cursor-not-allowed',
           'dark:data-[state=checked]:bg-[#60B515]',
           'dark:disabled:data-[state=checked]:bg-gray-600',
@@ -38,7 +38,7 @@ const Switch = (props: SwitchProps) => {
         {...rest}
       >
         <SwitchPrimitive.Thumb
-          className={cx(
+          className={cn(
             'translate-x-[2px] dark:bg-bg-left-nav',
             'pointer-events-none inline-block transform rounded-full',
             'transition duration-200 ease-in-out',
@@ -54,7 +54,7 @@ const Switch = (props: SwitchProps) => {
       {label?.length && (
         <LabelPrimitive.Label
           htmlFor={_id}
-          className={cx(
+          className={cn(
             'pl-2 text-p4 dark:text-text-text-and-icon cursor-default',
             'dark:peer-disabled:text-gray-600 dark:peer-disabled:cursor-not-allowed',
           )}

@@ -1,7 +1,7 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import cx from 'classnames';
 import { cva, VariantProps } from 'cva';
 import React, { FC, useEffect } from 'react';
+import { cn } from 'tailwind-preset';
 
 import { useUpdateStateIfMounted } from '@/components/hooks/useUpdateStateIfMounted';
 import { ObjectWithNonNullableValues } from '@/types/utils';
@@ -27,13 +27,13 @@ const ModalHeader: FC<{ title?: React.ReactNode }> = ({ title }) => {
   return (
     <>
       <div
-        className={cx('pt-5', {
+        className={cn('pt-5', {
           'pb-[32px]': !title,
           'pb-[22px]': title,
         })}
       >
         <DialogPrimitive.Title
-          className={cx('text-h2 dark:text-text-input-value')}
+          className="text-h2 dark:text-text-input-value"
           data-testid="modal-title"
         >
           {title}
@@ -42,7 +42,7 @@ const ModalHeader: FC<{ title?: React.ReactNode }> = ({ title }) => {
 
       <DialogPrimitive.Close
         aria-label="Close"
-        className={cx(
+        className={cn(
           'absolute top-[30px] right-6 cursor-pointer',
           // text
           'text-gray-400 dark:text-[#ADBBC4]',
@@ -91,7 +91,7 @@ const CloseIcon = () => {
 };
 const contentCva = cva(
   [
-    cx(
+    cn(
       'max-h-[90vh] relative flex flex-col overflow-x-hidden focus:outline-none',
       // border
       'border rounded dark:border-bg-grid-border',
@@ -146,7 +146,7 @@ export const Modal: FC<ModalProps> = ({
     <DialogPrimitive.Root open={wasOpen} {...rest}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
-          className={cx(
+          className={cn(
             'fixed inset-0 bg-black/50 dark:bg-bg-left-nav/80 flex justify-center items-center',
           )}
         >
@@ -159,7 +159,7 @@ export const Modal: FC<ModalProps> = ({
           >
             <ModalHeader title={title} />
             <div
-              className={cx('overflow-y-auto h-full', {
+              className={cn('overflow-y-auto h-full', {
                 'pb-3': footer,
                 'pb-[24px]': !footer,
               })}

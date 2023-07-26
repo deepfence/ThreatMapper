@@ -1,6 +1,5 @@
-import cx from 'classnames';
 import { useLocation } from 'react-router-dom';
-import { twMerge } from 'tailwind-merge';
+import { cn } from 'tailwind-preset';
 import { Breadcrumb, BreadcrumbLink } from 'ui-components';
 
 type ConnectorHeaderProps = {
@@ -40,17 +39,15 @@ export const ConnectorHeader = ({
         <Breadcrumb>
           <BreadcrumbLink isLink>
             <span
-              className={twMerge(
-                cx(
-                  'w-6 h-6 rounded-full dark:bg-df-gray-200 text-p7 flex items-center justify-center',
-                  'dark:bg-gray-700 dark:text-df-gray-100 cursor-default',
-                ),
+              className={cn(
+                'w-6 h-6 rounded-full dark:bg-df-gray-200 text-p7 flex items-center justify-center',
+                'dark:bg-gray-700 dark:text-df-gray-100 cursor-default',
               )}
             >
               1
             </span>
             <span
-              className={cx('flex items-center ml-2 cursor-default', {
+              className={cn('flex items-center ml-2 cursor-default', {
                 ['dark:text-text-text-and-icon']: !isAddConnectorRoutePath(),
               })}
             >
@@ -59,18 +56,16 @@ export const ConnectorHeader = ({
           </BreadcrumbLink>
           <BreadcrumbLink className="cursor-auto">
             <span
-              className={twMerge(
-                cx(
-                  'w-6 h-6 rounded-full dark:bg-df-gray-200 text-p7 flex items-center justify-center',
-                  'dark:bg-gray-700 dark:text-df-gray-100 cursor-default',
-                ),
+              className={cn(
+                'w-6 h-6 rounded-full dark:bg-df-gray-200 text-p7 flex items-center justify-center',
+                'dark:bg-gray-700 dark:text-df-gray-100 cursor-default',
               )}
             >
               2
             </span>
 
             <span
-              className={cx('cursor-auto ml-2', {
+              className={cn('cursor-auto ml-2', {
                 ['dark:text-text-link']: isScanRoutePath(),
               })}
             >
@@ -79,17 +74,15 @@ export const ConnectorHeader = ({
           </BreadcrumbLink>
           <BreadcrumbLink>
             <span
-              className={twMerge(
-                cx(
-                  'w-6 h-6 rounded-full dark:bg-df-gray-200 text-p7 flex items-center justify-center',
-                  'dark:bg-gray-700 dark:text-df-gray-100 cursor-default',
-                ),
+              className={cn(
+                'w-6 h-6 rounded-full dark:bg-df-gray-200 text-p7 flex items-center justify-center',
+                'dark:bg-gray-700 dark:text-df-gray-100 cursor-default',
               )}
             >
               3
             </span>
             <span
-              className={cx('cursor-auto ml-2', {
+              className={cn('cursor-auto ml-2', {
                 ['dark:text-text-link']: isViewScanSummaryRoutePath(),
               })}
             >

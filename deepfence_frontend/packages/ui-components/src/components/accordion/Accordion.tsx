@@ -1,22 +1,19 @@
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
-import cx from 'classnames';
 import React from 'react';
 import { HiOutlineChevronDown } from 'react-icons/hi';
-import { twMerge } from 'tailwind-merge';
+import { cn } from 'tailwind-preset';
 
 export const Accordion = React.forwardRef<
   HTMLDivElement,
   AccordionPrimitive.AccordionSingleProps | AccordionPrimitive.AccordionMultipleProps
 >(({ children, className, ...rest }, forwardedRef) => (
   <AccordionPrimitive.Root
-    className={twMerge(
-      cx(
-        'w-full overflow-hidden',
-        'rounded-b-lg rounded-t-lg',
-        'border border-gray-200 dark:border-gray-700 dark:border-opacity-50', // border of container
-        'drop-shadow-[0px_1px_2px_rgba(0,_0,_0,_0.8),_0px_1px_2px_-1px_rgba(0,_0,_0,_0.1)]',
-        className,
-      ),
+    className={cn(
+      'w-full overflow-hidden',
+      'rounded-b-lg rounded-t-lg',
+      'border border-gray-200 dark:border-gray-700 dark:border-opacity-50', // border of container
+      'drop-shadow-[0px_1px_2px_rgba(0,_0,_0,_0.8),_0px_1px_2px_-1px_rgba(0,_0,_0,_0.1)]',
+      className,
     )}
     ref={forwardedRef}
     {...rest}
@@ -35,12 +32,10 @@ export const AccordionItem = (props: AccordionItemProps) => {
   return (
     <AccordionPrimitive.Item
       value={value}
-      className={twMerge(
-        cx(
-          'w-full overflow-hidden text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 border-b last:border-b-0', // border bottom on each header trigger except last
-          'border-gray-200 dark:border-gray-700 dark:border-opacity-50',
-          className,
-        ),
+      className={cn(
+        'w-full overflow-hidden text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 border-b last:border-b-0', // border bottom on each header trigger except last
+        'border-gray-200 dark:border-gray-700 dark:border-opacity-50',
+        className,
       )}
       {...rest}
     >
@@ -55,7 +50,7 @@ export const AccordionTrigger = React.forwardRef<
 >(({ children, className, ...props }, forwardedRef) => (
   <AccordionPrimitive.Header>
     <AccordionPrimitive.Trigger
-      className={cx(
+      className={cn(
         'flex outline-none p-5 place-items-center',
         'w-full group',
         'text-p2',
@@ -84,7 +79,7 @@ export const AccordionContent = React.forwardRef<
   AccordionPrimitive.AccordionContentProps
 >(({ children, className, ...props }, forwardedRef) => (
   <AccordionPrimitive.Content
-    className={cx(
+    className={cn(
       'bg-white dark:bg-gray-900 w-full text-gray-500 dark:text-gray-400 leading-6',
       'data-[state=open:border-t dark:data-[state=open]:border-gray-700 dark:data-[state=open]:border-opacity-50', // border top of its content
       'data-[state=open]:animate-accordion-open',

@@ -1,7 +1,7 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { cva, VariantProps } from 'cva';
 import React, { ComponentProps, forwardRef, useId } from 'react';
-import { twMerge } from 'tailwind-merge';
+import { cn } from 'tailwind-preset';
 
 import { ObjectWithNonNullableValues } from '@/types/utils';
 
@@ -163,7 +163,7 @@ export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
     return (
       <>
         <LabelPrimitive.Label
-          className={twMerge(badgeCVA({ color, variant, size }), className)}
+          className={cn(badgeCVA({ color, variant, size }), className)}
           id={_id}
           data-testid={`badge-${_id}`}
           ref={ref}
