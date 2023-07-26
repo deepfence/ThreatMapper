@@ -20,15 +20,16 @@ func New(ctx context.Context, b []byte) (*Teams, error) {
 	return &t, nil
 }
 
-func (t Teams) FormatMessage(message []map[string]interface{}) string {
-	entiremsg := "*" + t.NotificationType + "*\n\n"
-	for k, v := range message {
-		entiremsg = entiremsg + fmt.Sprintf("#%d\n", k+1)
-		for key, val := range v {
-			entiremsg = fmt.Sprintf("%s:%s\n", key, val)
-		}
-		entiremsg = entiremsg + "\n"
+func (t Teams) FormatMessage(message map[string]interface{}, position int) string {
+	entiremsg := ""
+	if position == 1 {
+		entiremsg = "**" + t.Resource + "**<br><br>"
 	}
+	entiremsg = entiremsg + fmt.Sprintf("**#%d**<br>", position)
+	for key, val := range message {
+		entiremsg += fmt.Sprintf("**%s**:%s<br>", key, val)
+	}
+	entiremsg = entiremsg + "<br>"
 	return entiremsg
 }
 
@@ -38,39 +39,38 @@ func (t Teams) SendNotification(ctx context.Context, message string, extras map[
 	if err != nil {
 		return err
 	}
-	m := t.FormatMessage(msg)
-	payload := Payload{
-		Text:       m,
-		CardType:   "MessageCard",
-		Context:    "http://schema.org/extensions",
-		ThemeColor: "007FFF",
-	}
+	for index, msgMap := range msg {
+		payload := Payload{
+			Text:       t.FormatMessage(msgMap, index+1),
+			CardType:   "MessageCard",
+			Context:    "http://schema.org/extensions",
+			ThemeColor: "007FFF",
+		}
 
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
+		payloadBytes, err := json.Marshal(payload)
+		if err != nil {
+			return err
+		}
 
-	// send message to this webhookURL using http
-	// Set up the HTTP request.
-	req, err := http.NewRequest("POST", t.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
+		// send message to this webhookURL using http
+		// Set up the HTTP request.
+		req, err := http.NewRequest("POST", t.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
+		if err != nil {
+			return err
+		}
+		req.Header.Set("Content-Type", "application/json")
 
-	// Make the HTTP request.
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
+		// Make the HTTP request.
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		resp.Body.Close()
+		// Check the response status code.
+		if resp.StatusCode != http.StatusOK {
+			return err
+		}
 	}
-	defer resp.Body.Close()
-
-	// Check the response status code.
-	if resp.StatusCode != http.StatusOK {
-		return err
-	}
-
 	return nil
 }

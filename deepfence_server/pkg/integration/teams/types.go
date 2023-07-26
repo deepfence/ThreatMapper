@@ -11,6 +11,7 @@ type Teams struct {
 	NotificationType string                  `json:"notification_type"`
 	Filters          reporters.FieldsFilters `json:"filters"`
 	Message          string                  `json:"message"`
+	Resource         string                  `json:"resource"`
 }
 
 type Config struct {
