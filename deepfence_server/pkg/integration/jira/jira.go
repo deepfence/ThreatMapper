@@ -1,11 +1,14 @@
 package jira
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"io"
+	"strings"
+
+	jira "github.com/andygrunwald/go-jira"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 func New(ctx context.Context, b []byte) (*Jira, error) {
@@ -18,54 +21,85 @@ func New(ctx context.Context, b []byte) (*Jira, error) {
 }
 
 func (j Jira) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
-	payload := map[string]interface{}{
-		"fields": map[string]interface{}{
-			"project": map[string]interface{}{
-				"key": j.Config.JiraProjectKey,
-			},
-			"summary":     "Issue summary",
-			"description": message,
-			"issuetype": map[string]interface{}{
-				"name": j.Config.IssueType,
-			},
-		},
-	}
 
-	// Convert the payload to a JSON string
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		panic(err)
-	}
+	auth := jira.BasicAuthTransport{}
 
-	// Create a new HTTP request with the JSON payload
-	req, err := http.NewRequest("POST", j.Config.JiraSiteUrl, bytes.NewBuffer(payloadBytes))
-	if err != nil {
-		panic(err)
-	}
-
-	// Set the content type of the request to JSON
-	req.Header.Set("Content-Type", "application/json")
-
-	// Add your Jira credentials to the request header
 	if j.Config.IsAuthToken {
-		req.Header.Set("Authorization", "Basic "+j.Config.APIToken)
+		auth = jira.BasicAuthTransport{
+			Username: strings.TrimSpace(j.Config.Username),
+			Password: strings.TrimSpace(j.Config.APIToken),
+		}
 	} else {
-		req.SetBasicAuth(j.Config.Username, j.Config.Password)
+		auth = jira.BasicAuthTransport{
+			Username: strings.TrimSpace(j.Config.Username),
+			Password: strings.TrimSpace(j.Config.Password),
+		}
 	}
 
-	// Create a new HTTP client and send the request
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	client, err := jira.NewClient(auth.Client(), strings.TrimSpace(j.Config.JiraSiteUrl))
 	if err != nil {
+		log.Error().Msgf(err.Error())
 		return err
 	}
 
-	// Check the response status code
-	if resp.StatusCode != http.StatusCreated {
-		return fmt.Errorf("Failed to create issue: %d", resp.StatusCode)
+	extraStr := []string{}
+	for k, v := range extras {
+		if v != "" {
+			extraStr = append(extraStr, fmt.Sprintf("%s: %v", k, v))
+		}
 	}
 
-	// Print the response body
-	fmt.Println("Issue created successfully!")
+	i := jira.Issue{
+		Fields: &jira.IssueFields{
+			Assignee: &jira.User{
+				Name: j.Config.Username,
+			},
+			Description: fmt.Sprintf("Scan Details:\n\n%s", strings.Join(extraStr, "\n")),
+			Type: jira.IssueType{
+				Name: j.Config.IssueType,
+			},
+			Project: jira.Project{
+				Key: j.Config.JiraProjectKey,
+			},
+			Summary: fmt.Sprintf("Deepfence %v Scan Issues for %s - %s",
+				extras["scan_type"], extras["node_type"], extras["node_name"]),
+		},
+	}
+
+	issue, resp, err := client.Issue.Create(&i)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Error().Msgf(err.Error())
+		}
+		log.Error().Msgf("jira error reponse: %s", string(body))
+		return err
+	}
+	log.Info().Msgf("jira issue created id %s link %s", issue.ID, issue.Self)
+
+	attachment, resp, err := client.Issue.PostAttachment(issue.ID, strings.NewReader(message), "scan-results.json")
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Error().Msgf(err.Error())
+		}
+		log.Error().Msgf("jira attachment error reponse: %s", string(body))
+		return err
+	}
+
+	log.Info().Msgf(
+		"jira issue id %s attchment added %+v",
+		issue.ID,
+		func(as *[]jira.Attachment) string {
+			a := []string{}
+			for _, i := range *as {
+				a = append(a, i.Self)
+			}
+			return strings.Join(a, ",")
+		}(attachment),
+	)
+
 	return nil
 }
