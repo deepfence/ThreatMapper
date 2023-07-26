@@ -16,20 +16,19 @@ import { VulnerabilitySeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
 
 function useSummary(type: 'vulnerability' | 'secret' | 'malware') {
-  return {
-    vulnerability: useSuspenseQuery({
+  if (type === 'vulnerability') {
+    return useSuspenseQuery({
       ...queries.vulnerability.uniqueVulnerabilitiesCount(),
       enabled: type === 'vulnerability',
-    }),
-    secret: useSuspenseQuery({
+    });
+  } else if (type === 'secret') {
+    return useSuspenseQuery({
       ...queries.secret.uniqueSecretsCount(),
-      enabled: type === 'secret',
-    }),
-    malware: useSuspenseQuery({
-      ...queries.malware.uniqueMalwaresCount(),
-      enabled: type === 'malware',
-    }),
-  }[type];
+    });
+  }
+  return useSuspenseQuery({
+    ...queries.malware.uniqueMalwaresCount(),
+  });
 }
 
 const RISK_TYPES: {

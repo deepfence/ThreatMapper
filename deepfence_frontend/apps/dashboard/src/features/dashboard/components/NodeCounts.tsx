@@ -71,15 +71,15 @@ const ITEMS: Array<{
     link: '/topology/graph/kubernetes_cluster',
   },
   {
-    title: 'Container Images',
-    icon: <ImageIcon />,
-    key: 'container_image',
-    link: '/registries',
-  },
-  {
     title: 'Registries',
     icon: <RegistryIcon />,
     key: 'registry',
+    link: '/registries',
+  },
+  {
+    title: 'Container Images',
+    icon: <ImageIcon />,
+    key: 'container_image',
     link: '/registries',
   },
 ];
@@ -88,7 +88,7 @@ export const NodeCounts = () => {
   return (
     <Card className="rounded-[5px]">
       <CardHeader icon={<BlocksGroupLineIcon />} title="Inventory" />
-      <div className="py-5 px-10 flex items-center justify-between flex-wrap gap-6">
+      <div className="py-5 px-10 grid grid-cols-4 lg:grid-cols-8 gap-6">
         <Suspense
           fallback={ITEMS.map((item) => {
             return <CountCardSkeleton {...item} key={item.key} />;
@@ -142,11 +142,13 @@ const CountCard = ({
   link: string;
 }) => {
   return (
-    <DFLink to={link} unstyled className="flex flex-col gap-1 cursor-pointer">
-      <div className="text-p1 dark:text-text-text-and-icon">{title}</div>
+    <DFLink to={link} unstyled className="group flex flex-col gap-1 cursor-pointer">
+      <div className="text-p1 dark:text-text-text-and-icon truncate">{title}</div>
       <div className="flex gap-3 items-center">
         <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">{icon}</div>
-        <div className="text-h1 dark:text-accent-accent">{abbreviateNumber(count)}</div>
+        <div className="text-h1 dark:text-accent-accent group-hover:underline">
+          {abbreviateNumber(count)}
+        </div>
       </div>
     </DFLink>
   );
@@ -166,7 +168,7 @@ const CountCardSkeleton = ({
       <div className="text-p1 dark:text-text-text-and-icon">{title}</div>
       <div className="flex gap-3 items-center">
         <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">{icon}</div>
-        <div className="h-8 w-12 dark:bg-accent-accent/30 rounded" />
+        <div className="h-9 w-12 dark:bg-accent-accent/30 rounded" />
       </div>
     </DFLink>
   );
