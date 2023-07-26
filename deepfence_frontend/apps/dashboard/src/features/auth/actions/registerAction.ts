@@ -1,10 +1,10 @@
-import { ActionFunction, redirect } from 'react-router-dom';
+import { ActionFunction } from 'react-router-dom';
 
 import { getUserApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
-import storage from '@/utils/storage';
+import { handleLoginAndRedirect } from '@/utils/auth';
 
 export type RegisterActionReturnType = {
   error?: string;
@@ -72,9 +72,5 @@ export const registerAction: ActionFunction = async ({
     throw registerUserResponse.error;
   }
 
-  storage.setAuth({
-    accessToken: registerUserResponse.value.access_token,
-    refreshToken: registerUserResponse.value.refresh_token,
-  });
-  throw redirect('/onboard', 302);
+  handleLoginAndRedirect(registerUserResponse.value);
 };
