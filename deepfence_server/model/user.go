@@ -491,7 +491,7 @@ func (u *User) CreateRefreshToken(tokenAuth *jwtauth.JWTAuth, accessTokenID stri
 	return refreshToken, nil
 }
 
-func (u *User) CreateApiToken(ctx context.Context, pgClient *postgresqlDb.Queries, roleID int32, company *Company) error {
+func (u *User) CreateApiToken(ctx context.Context, pgClient *postgresqlDb.Queries, roleID int32, company *Company) (*postgresqlDb.ApiToken, error) {
 	apiToken := ApiToken{
 		ApiToken:        utils.NewUUID(),
 		Name:            u.Email,
@@ -501,12 +501,12 @@ func (u *User) CreateApiToken(ctx context.Context, pgClient *postgresqlDb.Querie
 	}
 	defaultGroup, err := company.GetDefaultUserGroup(ctx, pgClient)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	apiToken.GroupID = defaultGroup.ID
-	_, err = apiToken.Create(ctx, pgClient)
+	token, err := apiToken.Create(ctx, pgClient)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return token, nil
 }

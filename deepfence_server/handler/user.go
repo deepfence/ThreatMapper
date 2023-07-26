@@ -164,7 +164,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.ID = createdUser.ID
-	err = user.CreateApiToken(ctx, pgClient, user.RoleID, &c)
+	_, err = user.CreateApiToken(ctx, pgClient, user.RoleID, &c)
 	if err != nil {
 		log.Error().Msg("createApiToken: " + err.Error())
 		respondError(err, w)
@@ -250,7 +250,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.ID = createdUser.ID
-	err = user.CreateApiToken(ctx, pgClient, user.RoleID, company)
+	_, err = user.CreateApiToken(ctx, pgClient, user.RoleID, company)
 	if err != nil {
 		log.Error().Msg("createApiToken: " + err.Error())
 		respondError(err, w)
@@ -775,7 +775,7 @@ func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	err = user.CreateApiToken(ctx, pgClient, user.RoleID, company)
+	_, err = user.CreateApiToken(ctx, pgClient, user.RoleID, company)
 	if err != nil {
 		respondError(err, w)
 		return
