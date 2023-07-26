@@ -1,9 +1,9 @@
-import { ActionFunction, redirect } from 'react-router-dom';
+import { ActionFunction } from 'react-router-dom';
 
 import { getAuthenticationApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
-import { apiWrapper, validateRedirectToUrl } from '@/utils/api';
-import storage from '@/utils/storage';
+import { apiWrapper } from '@/utils/api';
+import { handleLoginAndRedirect } from '@/utils/auth';
 
 export type LoginActionReturnType = {
   error?: string;
@@ -53,19 +53,5 @@ export const loginAction: ActionFunction = async ({
     throw loginResponse.error;
   }
 
-  storage.setAuth({
-    accessToken: loginResponse.value.access_token,
-    refreshToken: loginResponse.value.refresh_token,
-  });
-
-  const redirectTo = url.searchParams.get('redirectTo');
-  if (redirectTo && validateRedirectToUrl(redirectTo)) {
-    throw redirect(url.searchParams.get('redirectTo') as string, 302);
-  }
-
-  if (!loginResponse.value.onboarding_required) {
-    throw redirect('/dashboard', 302);
-  }
-
-  throw redirect('/onboard', 302);
+  handleLoginAndRedirect(loginResponse.value, url.searchParams);
 };

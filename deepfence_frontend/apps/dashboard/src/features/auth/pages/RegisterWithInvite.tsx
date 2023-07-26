@@ -1,11 +1,5 @@
 import { useState } from 'react';
-import {
-  ActionFunctionArgs,
-  Link,
-  redirect,
-  useFetcher,
-  useSearchParams,
-} from 'react-router-dom';
+import { ActionFunctionArgs, Link, useFetcher, useSearchParams } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 import { Button, Checkbox, TextInput } from 'ui-components';
 
@@ -14,7 +8,7 @@ import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
-import storage from '@/utils/storage';
+import { handleLoginAndRedirect } from '@/utils/auth';
 
 export type RegisterWithInviteActionReturnType = {
   error?: string;
@@ -76,17 +70,7 @@ const action = async ({
     }
     throw registerInvitedUserResponse.error;
   }
-
-  storage.setAuth({
-    accessToken: registerInvitedUserResponse.value.access_token,
-    refreshToken: registerInvitedUserResponse.value.refresh_token,
-  });
-
-  if (!registerInvitedUserResponse.value.onboarding_required) {
-    throw redirect('/dashboard', 302);
-  }
-
-  throw redirect('/onboard', 302);
+  handleLoginAndRedirect(registerInvitedUserResponse.value);
 };
 
 const RegisterWithInvite = () => {
