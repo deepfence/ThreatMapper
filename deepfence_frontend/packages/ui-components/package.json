@@ -39,7 +39,6 @@
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-tooltip": "^1.0.6",
     "@tanstack/react-table": "^8.9.3",
-    "ariakit": "2.0.0-next.43",
     "classnames": "^2.3.2",
     "cva": "npm:class-variance-authority@^0.6.0",
     "lodash-es": "^4.17.21",
