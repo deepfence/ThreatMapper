@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import { cn } from 'tailwind-preset';
 
 export interface CountIndicatorProps {
   count: number;
@@ -8,7 +8,7 @@ export interface CountIndicatorProps {
 export const CountIndicator = ({ count, color = 'default' }: CountIndicatorProps) => {
   return (
     <span
-      className={classNames(
+      className={cn(
         'leading-none py-[0.3125rem] px-2.5 rounded-full text-sm font-medium',
         {
           ['bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200']:

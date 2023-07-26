@@ -1,5 +1,5 @@
-import classNames from 'classnames';
 import { useFetcher, useRouteLoaderData } from 'react-router-dom';
+import { cn } from 'tailwind-preset';
 import { Dropdown, DropdownItem } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
@@ -12,12 +12,12 @@ export function AppHeader() {
   const { email } = useRouteLoaderData('root') as { email: string };
   return (
     <header
-      className={classNames(
+      className={cn(
         'fixed z-10 top-0 bg-white dark:bg-bg-left-nav h-[56px] w-full border-b border-gray-200 dark:border-bg-top-header',
       )}
     >
       <div className="h-full flex items-center">
-        <div className={classNames('mr-auto ml-3')}>
+        <div className="mr-auto ml-3">
           <DFLink
             to="/"
             style={{

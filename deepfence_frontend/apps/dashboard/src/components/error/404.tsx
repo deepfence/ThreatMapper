@@ -1,4 +1,3 @@
-import classNames from 'classnames';
 import { useLocation, useRouteError } from 'react-router-dom';
 
 const SVG404 = () => {
@@ -435,7 +434,7 @@ export const FourZeroFourAuthenticated = () => {
   }
 
   return (
-    <main className={classNames('pt-[64px] h-screen')}>
+    <main className="pt-[64px] h-screen">
       <PageNotFoundComponent />
     </main>
   );
