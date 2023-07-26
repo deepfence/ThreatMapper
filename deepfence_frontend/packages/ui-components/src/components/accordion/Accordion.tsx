@@ -4,8 +4,6 @@ import React from 'react';
 import { HiOutlineChevronDown } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
-import { Typography } from '@/components/typography/Typography';
-
 export const Accordion = React.forwardRef<
   HTMLDivElement,
   AccordionPrimitive.AccordionSingleProps | AccordionPrimitive.AccordionMultipleProps
@@ -60,7 +58,7 @@ export const AccordionTrigger = React.forwardRef<
       className={cx(
         'flex outline-none p-5 place-items-center',
         'w-full group',
-        `leading-4 ${Typography.size.base} ${Typography.weight.medium} `,
+        'text-p2',
         'data-[state=open]:text-gray-900',
         'data-[state=closed]:text-gray-500',
         'dark:data-[state=open]:text-white',

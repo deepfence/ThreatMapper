@@ -5,7 +5,6 @@ import { isNil } from 'lodash-es';
 import { ComponentProps, forwardRef, useId } from 'react';
 
 import HelperText from '@/components/input/HelperText';
-import { Typography } from '@/components/typography/Typography';
 import { ObjectWithNonNullableValues } from '@/types/utils';
 
 export interface TextInputAreaProps
@@ -85,7 +84,7 @@ export const TextInputArea = forwardRef<HTMLTextAreaElement, TextInputAreaProps>
         {label && (
           <LabelPrimitive.Root
             htmlFor={_id}
-            className={cx(`${Typography.weight.medium} text-gray-900 dark:text-white`)}
+            className="font-medium text-gray-900 dark:text-white"
           >
             {label}
           </LabelPrimitive.Root>
