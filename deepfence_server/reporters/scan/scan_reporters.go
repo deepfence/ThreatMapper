@@ -575,9 +575,8 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 	if len(fname) > 0 {
 		str := "d." + fname + " ASC"
 		if len(ffCondition) > 0 {
-			ffCondition = ffCondition + ","
+			ffCondition = ffCondition + "," + str
 		}
-		ffCondition = ffCondition + str
 	}
 
 	query = `
