@@ -1341,7 +1341,7 @@ const Top5Widget = () => {
   if (!data.data || data.data?.length === 0) {
     return (
       <div className="flex items-center justify-center h-[140px]">
-        <ScanStatusNoData message="No attack paths found" />
+        <ScanStatusNoData />
       </div>
     );
   }

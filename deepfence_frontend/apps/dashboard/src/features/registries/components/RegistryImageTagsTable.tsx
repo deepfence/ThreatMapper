@@ -23,7 +23,7 @@ import { ScanTypeEnum } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
 import { useSortingState } from '@/utils/table';
 
-const DEFAULT_PAGE_SIZE = 15;
+const DEFAULT_PAGE_SIZE = 10;
 
 const ActionDropdown = ({
   id,
