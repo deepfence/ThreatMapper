@@ -21,79 +21,85 @@ func New(ctx context.Context, b []byte) (*Slack, error) {
 }
 
 func (s Slack) FormatMessage(message []map[string]interface{}) []map[string]interface{} {
-	cardAttachments := []map[string]interface{}{}
+	blocks := []map[string]interface{}{
+		{
+			"type": "section",
+			"text": map[string]interface{}{
+				"type": "mrkdwn",
+				"text": fmt.Sprintf("*%s*\n", s.Resource),
+			},
+		},
+	}
 
-	for k, v := range message {
-		attachmentColor := "#36a64f" // Default color (green)
+	index := 1
+	for _, v := range message {
+		emojiColor := ":large_blue_square:" // Default color (green)
 
 		switch s.Resource {
 		case "Malware":
 			fileSeverity, ok := v["file_severity"].(string)
 			if ok {
-				if fileSeverity == "high" {
-					attachmentColor = "#ff0000" // Red color for high severity
+				if fileSeverity == "critical" {
+					emojiColor = ":large_red_square:" // Red color for high severity
+				} else if fileSeverity == "high" {
+					emojiColor = ":large_orange_square:" // Orange color for medium severity
 				} else if fileSeverity == "medium" {
-					attachmentColor = "#ffcc00" // Orange color for medium severity
+					emojiColor = ":large_yellow_square:" // Dark green color for low severity
 				} else if fileSeverity == "low" {
-					attachmentColor = "#008000" // Dark green color for low severity
+					emojiColor = ":large_blue_square:" // Dark green color for low severity
 				}
 			}
 		case "Secret":
 			level, ok := v["level"].(string)
 			if ok {
-				if level == "high" {
-					attachmentColor = "#ff0000" // Red color for high level
+				if level == "critical" {
+					emojiColor = ":large_red_square:" // Red color for high level
+				} else if level == "high" {
+					emojiColor = ":large_orange_square:" // Orange color for medium level
 				} else if level == "medium" {
-					attachmentColor = "#ffcc00" // Orange color for medium level
+					emojiColor = ":large_yellow_square:" // Dark green color for low level
 				} else if level == "low" {
-					attachmentColor = "#008000" // Dark green color for low level
+					emojiColor = ":large_blue_square:" // Dark green color for low level
 				}
 			}
 		case "Vulnerability":
 			cveSeverity, ok := v["cve_severity"].(string)
 			if ok {
-				if cveSeverity == "high" {
-					attachmentColor = "#ff0000" // Red color for high CVE severity
+				if cveSeverity == "critical" {
+					emojiColor = ":large_red_square:" // Red color for high CVE severity
+				} else if cveSeverity == "high" {
+					emojiColor = ":large_orange_square:" // Orange color for medium CVE severity
 				} else if cveSeverity == "medium" {
-					attachmentColor = "#ffcc00" // Orange color for medium CVE severity
+					emojiColor = ":large_yellow_square:" // Dark green color for low CVE severity
 				} else if cveSeverity == "low" {
-					attachmentColor = "#008000" // Dark green color for low CVE severity
+					emojiColor = ":large_blue_square:" // Dark green color for low CVE severity
 				}
 			}
 		default:
-			attachmentColor = "#808080" // Grey color for unknown type
+			emojiColor = ":white_square:" // Grey color for unknown type
 		}
 
-		cardAttachments = append(cardAttachments, map[string]interface{}{
-			"color": attachmentColor,
-			"blocks": []map[string]interface{}{
-				{
-					"type": "section",
-					"fields": []map[string]interface{}{
-						{
-							"type": "mrkdwn",
-							"text": fmt.Sprintf("*#%d*", k+1),
-						},
-					},
-				},
-			},
-		})
+		text := fmt.Sprintf("*%s #%d*\n", s.Resource, index)
 
 		for key, val := range v {
-			cardAttachments[len(cardAttachments)-1]["blocks"] = append(cardAttachments[len(cardAttachments)-1]["blocks"].([]map[string]interface{}), map[string]interface{}{
-				"type": "section",
-				"fields": []map[string]interface{}{
-					{
-						"type": "mrkdwn",
-						"text": fmt.Sprintf("*%s*: %v", key, val),
-					},
-				},
-			})
+			if key == "file_severity" || key == "level" || key == "cve_severity" {
+				text = fmt.Sprintf("%s\n*%s*: %s %v", text, key, emojiColor, val)
+			} else {
+				text = fmt.Sprintf("%s\n*%s*: %v", text, key, val)
+			}
 		}
+
+		blocks = append(blocks, map[string]interface{}{
+			"type": "section",
+			"text": map[string]interface{}{
+				"type": "mrkdwn",
+				"text": text,
+			},
+		})
+		index++
 	}
 
-	// cardJSON, _ := json.Marshal(card)
-	return cardAttachments
+	return blocks
 }
 
 func (s Slack) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
@@ -105,8 +111,8 @@ func (s Slack) SendNotification(ctx context.Context, message string, extras map[
 	}
 	m := s.FormatMessage(msg)
 	payload := map[string]interface{}{
-		"text":        s.Resource,
-		"attachments": m,
+		"text":   s.Resource,
+		"blocks": m,
 	}
 
 	payloadBytes, err := json.Marshal(payload)
