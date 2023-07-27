@@ -235,42 +235,32 @@ export function Listbox<TType, TActualType>({
                           'bg-bg-card dark:bg-bg-card',
                           'text-p7',
                           // border
-                          'border-x border-t border-bg-grid-border dark:border-bg-grid-border',
-                          'rounded-t-[5px]',
-                          'relative select-none',
-                          'max-h-60 overflow-y-auto',
+                          'border border-bg-grid-border dark:border-bg-grid-border',
+                          'rounded-[5px]',
+                          'select-none',
                           // text
                           'text-text-text-and-icon dark:text-text-text-and-icon outline-none focus:outline-none',
                         )}
                       >
-                        {children}
+                        <div className={cn('max-h-60 overflow-y-auto')}>{children}</div>
+                        {multiple ? (
+                          <>
+                            <Separator />
+                            <HUIListbox.Option disabled value="listbox-clearall-option">
+                              <div className="flex items-center justify-center py-[6px]">
+                                <button
+                                  onClick={() => {
+                                    onClearAll?.();
+                                  }}
+                                  className="flex gap-1.5 dark:text-accent-accent items-center text-p6"
+                                >
+                                  {clearAll}
+                                </button>
+                              </div>
+                            </HUIListbox.Option>
+                          </>
+                        ) : null}
                       </HUIListbox.Options>
-                      {multiple ? (
-                        <>
-                          <Separator />
-                          <div
-                            className={cn(
-                              // border
-                              'dark:bg-bg-card border-x border-b rounded-b-[5px] dark:border-bg-grid-border',
-                              // focus visible
-                              'dark:focus-visible:outline-none',
-                            )}
-                          >
-                            <div className="flex items-center justify-center py-[6px]">
-                              <button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  onClearAll?.();
-                                }}
-                                className="flex gap-1.5 dark:text-accent-accent items-center text-p6"
-                              >
-                                {clearAll}
-                              </button>
-                            </div>
-                          </div>
-                        </>
-                      ) : null}
                     </div>
                   </PopoverPrimitive.Content>
                 </PopoverPrimitive.Portal>

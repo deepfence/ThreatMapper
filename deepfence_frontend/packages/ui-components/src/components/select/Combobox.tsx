@@ -270,52 +270,51 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                         </div>
 
                         <Separator />
-                        <HUICombobox.Options
-                          className={cn(
-                            'max-h-60 w-full select-none',
-                            'text-p7',
-                            'overflow-auto',
-                            'focus:visible:outline-none',
-                            'dark:text-text-text-and-icon',
-                          )}
-                        >
-                          <OptionsWrapper>{children}</OptionsWrapper>
-                          {loading ? (
-                            <div className="pt-2 pb-1 px-3 flex items-center">
-                              <CircleSpinner size="sm" />
-                            </div>
-                          ) : (
-                            <InfiniteLoadingObserverElement
-                              onVisible={() => {
-                                onEndReached?.();
-                              }}
-                            />
-                          )}
-                        </HUICombobox.Options>
-                        {multiple ? (
-                          <>
-                            <Separator />
-                            <div
-                              className={cn(
-                                // focus visible
-                                'dark:focus-visible:outline-none',
-                              )}
-                            >
-                              <div className="flex items-center justify-center py-[6px]">
-                                <button
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    onClearAll?.();
-                                  }}
-                                  className="dark:text-accent-accent items-center text-p6"
-                                >
-                                  {clearAllElement}
-                                </button>
+                        <HUICombobox.Options>
+                          <div
+                            className={cn(
+                              'max-h-60 w-full select-none',
+                              'text-p7',
+                              'overflow-auto',
+                              'focus:visible:outline-none',
+                              'dark:text-text-text-and-icon',
+                            )}
+                          >
+                            <OptionsWrapper>{children}</OptionsWrapper>
+                            {loading ? (
+                              <div className="pt-2 pb-1 px-3 flex items-center">
+                                <CircleSpinner size="sm" />
                               </div>
-                            </div>
-                          </>
-                        ) : null}
+                            ) : (
+                              <InfiniteLoadingObserverElement
+                                onVisible={() => {
+                                  onEndReached?.();
+                                }}
+                              />
+                            )}
+                          </div>
+                          {multiple ? (
+                            <>
+                              <Separator />
+                              <HUICombobox.Option
+                                disabled
+                                value="combobox-clearall-option"
+                              >
+                                <div className="flex items-center justify-center py-[6px]">
+                                  <button
+                                    className="dark:text-accent-accent items-center text-p6"
+                                    onClick={() => {
+                                      onClearAll?.();
+                                    }}
+                                  >
+                                    {clearAllElement}
+                                  </button>
+                                </div>
+                              </HUICombobox.Option>
+                            </>
+                          ) : null}
+                        </HUICombobox.Options>
+
                         <UnmountDetectionElement
                           onUnmount={() => {
                             onQueryChange?.('');
