@@ -52,7 +52,7 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 	i := jira.Issue{
 		Fields: &jira.IssueFields{
 			Assignee: &jira.User{
-				Name: j.Config.Username,
+				Name: j.Config.JiraAssignee,
 			},
 			Description: fmt.Sprintf("Scan Details:\n\n%s", strings.Join(extraStr, "\n")),
 			Type: jira.IssueType{
