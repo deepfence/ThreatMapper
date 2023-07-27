@@ -1,4 +1,3 @@
-import cx from 'classnames';
 import { CircleSpinner, Tooltip } from 'ui-components';
 
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
@@ -6,7 +5,7 @@ import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardS
 
 export const ScanStatusInProgress = () => {
   return (
-    <div className={cx('flex items-center justify-center gap-x-2')}>
+    <div className="flex items-center justify-center gap-x-2">
       <CircleSpinner size="md" />
       <span className="text-h3 font-medium dark:text-text-text-and-icon">
         Scan is in progress, please wait...
@@ -17,7 +16,7 @@ export const ScanStatusInProgress = () => {
 
 export const ScanStatusInError = ({ errorMessage }: { errorMessage: string }) => {
   return (
-    <div className={cx('flex items-center justify-center gap-x-2')}>
+    <div className="flex items-center justify-center gap-x-2">
       {errorMessage ? (
         <Tooltip content={errorMessage}>
           <div className="w-6 h-6 dark:text-status-error  rounded-full">

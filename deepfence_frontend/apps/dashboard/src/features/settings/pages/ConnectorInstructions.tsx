@@ -1,6 +1,6 @@
-import cx from 'classnames';
 import { startCase } from 'lodash-es';
 import { generatePath, useParams } from 'react-router-dom';
+import { cn } from 'tailwind-preset';
 import { Card } from 'ui-components';
 
 import { AWSCloudFormation } from '@/components/clouds-connector/AWSCloudFormation';
@@ -52,7 +52,7 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
   return (
     <div className="px-6">
       <button
-        className={cx(
+        className={cn(
           'text-sm text-left flex items-center w-full gap-5',
           'border-b dark:border-gray-700 border-gray-200 h-[72px] dark:text-gray-300 dark:bg-transparent',
         )}
@@ -103,16 +103,10 @@ const Cloud = () => {
           Connect an AWS, GCP, or Azure cloud account to check for compliance
           misconfigurations.
         </p>
-        <div className="flex flex-col">
+        <div className="flex flex-col dark:text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div
-                key={connector.label}
-                className={cx(
-                  'hover:bg-[linear-gradient(270deg,_#EBF5FF_-0.07%,_#FFFFFF_100%)]',
-                  'dark:hover:bg-[linear-gradient(270deg,_#1c2431_-0.07%,_#1f2937_100%)]',
-                )}
-              >
+              <div key={connector.label} className="dark:hover:bg-bg-hover-2">
                 <CardConnect {...connector} />
               </div>
             );
@@ -158,16 +152,10 @@ const Host = () => {
           Connect a K8s cluster, Docker container, or Linux host to check for
           vulnerabilities, secrets, malware, and compliance misconfigurations.
         </p>
-        <div className="flex flex-col">
+        <div className="flex flex-col dark:text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div
-                key={connector.label}
-                className={cx(
-                  'hover:bg-[linear-gradient(270deg,_#EBF5FF_-0.07%,_#FFFFFF_100%)]',
-                  'dark:hover:bg-[linear-gradient(270deg,_#1c2431_-0.07%,_#1f2937_100%)]',
-                )}
-              >
+              <div key={connector.label} className="dark:hover:bg-bg-hover-2">
                 <CardConnect {...connector} />
               </div>
             );

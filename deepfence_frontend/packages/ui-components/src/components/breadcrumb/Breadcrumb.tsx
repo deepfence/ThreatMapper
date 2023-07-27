@@ -1,7 +1,6 @@
 import { Slot, Slottable } from '@radix-ui/react-slot';
-import cx from 'classnames';
 import React from 'react';
-import { twMerge } from 'tailwind-merge';
+import { cn } from 'tailwind-preset';
 
 type BreadcrumbLinkType = {
   children: React.ReactNode;
@@ -42,15 +41,13 @@ export const BreadcrumbLink = React.forwardRef<
     <>
       <Comp
         {...props}
-        className={twMerge(
-          cx(
-            `inline-flex items-center`,
-            'text-gray-700 dark:text-text-text-and-icon text-[14px] font-normal leading-[30px]',
-            {
-              'dark:text-text-link': isLink,
-            },
-            className,
-          ),
+        className={cn(
+          `inline-flex items-center`,
+          'text-gray-700 dark:text-text-text-and-icon text-[14px] font-normal leading-[30px]',
+          {
+            'dark:text-text-link': isLink,
+          },
+          className,
         )}
         ref={forwardedRef}
       >
@@ -90,5 +87,5 @@ export const Breadcrumb = ({ children }: BreadCrumbProps) => {
     },
   );
 
-  return <div className={cx('flex w-fit items-center bg-transparent')}>{childrenEl}</div>;
+  return <div className="flex w-fit items-center bg-transparent">{childrenEl}</div>;
 };

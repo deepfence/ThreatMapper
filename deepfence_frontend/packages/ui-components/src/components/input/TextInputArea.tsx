@@ -1,5 +1,4 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
-import cx from 'classnames';
 import { cva, VariantProps } from 'cva';
 import { isNil } from 'lodash-es';
 import { ComponentProps, forwardRef, useId } from 'react';
@@ -80,7 +79,7 @@ export const TextInputArea = forwardRef<HTMLTextAreaElement, TextInputAreaProps>
     const _id = id ? id : internalId;
 
     return (
-      <div className={cx('flex flex-col gap-2')}>
+      <div className="flex flex-col gap-2">
         {label && (
           <LabelPrimitive.Root
             htmlFor={_id}

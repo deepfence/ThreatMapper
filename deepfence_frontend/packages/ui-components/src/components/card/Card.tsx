@@ -1,5 +1,4 @@
-import cx from 'classnames';
-import { twMerge } from 'tailwind-merge';
+import { cn } from 'tailwind-preset';
 
 type CardType = {
   children: React.ReactNode;
@@ -8,8 +7,6 @@ type CardType = {
 export const Card = (props: CardType) => {
   const { className = '' } = props;
   return (
-    <div className={twMerge(cx(`rounded-[5px] dark:bg-bg-card`), className)}>
-      {props.children}
-    </div>
+    <div className={cn('rounded-[5px] dark:bg-bg-card', className)}>{props.children}</div>
   );
 };

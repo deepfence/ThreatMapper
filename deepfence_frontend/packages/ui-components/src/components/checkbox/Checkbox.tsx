@@ -1,8 +1,8 @@
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import * as LabelPrimitive from '@radix-ui/react-label';
-import cx from 'classnames';
 import { isNil } from 'lodash-es';
 import React, { useEffect, useId } from 'react';
+import { cn } from 'tailwind-preset';
 
 export type CheckboxProps = CheckboxPrimitive.CheckboxProps & {
   label?: React.ReactNode;
@@ -27,7 +27,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
     <div className="flex items-center">
       <CheckboxPrimitive.Root
         id={_id}
-        className={cx(
+        className={cn(
           'flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] peer group',
           'data-[state=unchecked]:bg-gray-50 data-[state=unchecked]:dark:bg-transparent data-[state=unchecked]:border border-gray-300 dark:border-text-text-and-icon',
           'data-[state=checked]:dark:bg-accent-accent',
@@ -69,7 +69,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
       {!isNil(label) ? (
         <LabelPrimitive.Label
           htmlFor={_id}
-          className={cx(
+          className={cn(
             'pl-1.5 text-p4 dark:text-text-input-value dark:peer-disabled:text-gray-600 peer-disabled:cursor-not-allowed',
           )}
         >

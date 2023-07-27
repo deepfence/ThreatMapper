@@ -1,8 +1,8 @@
-import cx from 'classnames';
 import { useRef } from 'react';
 import { useState } from 'react';
 import { useMemo } from 'react';
 import { generatePath } from 'react-router-dom';
+import { cn } from 'tailwind-preset';
 import { Button, Card, Tabs } from 'ui-components';
 
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
@@ -42,7 +42,7 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
   return (
     <div className="px-6">
       <button
-        className={cx(
+        className={cn(
           'text-sm text-left flex items-center w-full gap-5',
           'border-b dark:border-bg-grid-border border-gray-200 h-[72px]  dark:hover:text-text-input-value dark:bg-transparent',
         )}
