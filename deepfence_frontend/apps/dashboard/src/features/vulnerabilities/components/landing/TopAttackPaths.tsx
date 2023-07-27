@@ -218,10 +218,16 @@ function getGraphData(data: GraphIndividualThreatGraph[], direction: 'LR' | 'TB'
       width: 40,
       height: 40,
     },
-    anchorPoints: [
-      [0.5, 0], // The center of the left border
-      [0.5, 1], // The center of the right border
-    ],
+    anchorPoints:
+      direction === 'LR'
+        ? [
+            [0, 0.5],
+            [1, 0.5],
+          ]
+        : [
+            [0.5, 0], // The center of the left border
+            [0.5, 1], // The center of the right border
+          ],
     type: 'circle',
   });
 
