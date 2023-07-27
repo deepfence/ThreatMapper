@@ -177,6 +177,9 @@ func StartScanActionBuilder(ctx context.Context, scanType ctl.ActionID, addition
 				binArgs["image_name"] = name + ":" + tag
 				log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
 			}
+			if tag == "" || tag == "<none>" {
+				return ctl.Action{}, errors.New("image tag not found")
+			}
 		}
 
 		if nodeTypeInternal == ctl.Container {
