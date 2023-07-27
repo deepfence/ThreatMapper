@@ -117,6 +117,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 	if err != nil {
 		return err
 	}
+	err = dfHandler.Validator.RegisterValidation("jira_auth_key", model.ValidateJiraConfig)
+	if err != nil {
+		return err
+	}
 
 	r.Use(otelchi.Middleware("deepfence-server", otelchi.WithChiRoutes(r)))
 
