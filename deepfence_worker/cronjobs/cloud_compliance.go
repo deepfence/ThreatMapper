@@ -213,8 +213,10 @@ func CachePostureProviders(msg *message.Message) error {
 			postureProvider.NodeLabel = nodeLabel
 			scanType = utils.NEO4J_COMPLIANCE_SCAN
 			nonKubeFilter := ""
+			passStatus := []string{"ok", "info", "skip"}
 			if postureProviderName == model.PostureProviderLinux {
 				nonKubeFilter = "{kubernetes_cluster_id:''}"
+				passStatus = []string{"warn", "pass"}
 			}
 			query := fmt.Sprintf(`
 			MATCH (m:%s%s)
@@ -225,10 +227,10 @@ func CachePostureProviders(msg *message.Message) error {
 			OPTIONAL MATCH (m:%s)<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:Compliance)
 			WITH account_count, scan_count, COUNT(c) AS total_compliance_count
 			OPTIONAL MATCH (m:%s)<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:Compliance)
-			WHERE c1.status IN ['ok', 'info', 'skip']
+			WHERE c1.status IN $passStatus
 			RETURN account_count, scan_count, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage`,
 				neo4jNodeType, nonKubeFilter, scanType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType)
-			nodeRes, err := tx.Run(query, map[string]interface{}{})
+			nodeRes, err := tx.Run(query, map[string]interface{}{"passStatus": passStatus})
 			if err == nil {
 				nodeRec, err := nodeRes.Single()
 				if err != nil {
