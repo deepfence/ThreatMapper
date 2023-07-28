@@ -81,6 +81,10 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 				conditions = append(conditions, fmt.Sprintf("(%s)", strings.Join(labels, " AND ")))
 			}
 		} else {
+			queryNodeName := ""
+			if cypherNodeName != "" {
+				queryNodeName = cypherNodeName + "."
+			}
 			var values []string
 			for i := range vs {
 				if str, ok := vs[i].(string); ok {
@@ -91,9 +95,9 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 			}
 
 			if in {
-				conditions = append(conditions, fmt.Sprintf("%s.%s IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
+				conditions = append(conditions, fmt.Sprintf("%s%s IN [%s]", queryNodeName, k, strings.Join(values, ",")))
 			} else {
-				conditions = append(conditions, fmt.Sprintf(" NOT coalesce(%s.%s, '') IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
+				conditions = append(conditions, fmt.Sprintf(" NOT coalesce(%s%s, '') IN [%s]", queryNodeName, k, strings.Join(values, ",")))
 			}
 		}
 	}

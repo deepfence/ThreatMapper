@@ -247,6 +247,14 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 	}
 	orderFilters := filter.Filters.OrderFilter
 	filter.Filters.OrderFilter = reporters.OrderFilter{}
+	statusKey := "last_scan_status"
+	scanStatusFilterValue, present := filter.Filters.ContainsFilter.FieldsValues[statusKey]
+	scanFilter := reporters.FieldsFilters{}
+	if present {
+		scanFilter.ContainsFilter.FieldsValues = make(map[string][]interface{})
+		scanFilter.ContainsFilter.FieldsValues[statusKey] = scanStatusFilterValue
+		delete(filter.Filters.ContainsFilter.FieldsValues, statusKey)
+	}
 
 	query := `
 		MATCH (n:` + dummy.NodeType() + nonKubeFilter + `)` +
@@ -264,7 +272,9 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 			ORDER BY s1.updated_at DESC LIMIT 1
 		}
 		CALL {WITH x MATCH (n:` + dummy.NodeType() + `{node_id: x}) RETURN n.node_name as node_name, n.active as active, n.version as version}
-		RETURN x as node_id, node_name, COALESCE(version, 'unknown') as version, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
+		WITH x, node_name, version, compliance_percentage, last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` +
+		reporters.ParseFieldFilters2CypherWhereConditions("", mo.Some(scanFilter), true) +
+		`RETURN x as node_id, node_name, COALESCE(version, 'unknown') as version, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
 		reporters.OrderFilter2CypherCondition("", orderFilters, nil) + fw.FetchWindow2CypherQuery()
 
 	log.Debug().Msgf("search cloud node query: %v", query)
