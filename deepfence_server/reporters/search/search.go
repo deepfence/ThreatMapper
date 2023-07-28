@@ -251,6 +251,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 	scanStatusFilterValue, present := filter.Filters.ContainsFilter.FieldsValues[statusKey]
 	scanFilter := reporters.FieldsFilters{}
 	if present {
+		scanFilter.ContainsFilter.FieldsValues = make(map[string][]interface{})
 		scanFilter.ContainsFilter.FieldsValues["last_scan_status"] = scanStatusFilterValue
 		delete(filter.Filters.ContainsFilter.FieldsValues, statusKey)
 	}
