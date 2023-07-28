@@ -2,13 +2,16 @@ package reports
 
 import (
 	"context"
+	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	rptScans "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	rptSearch "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
@@ -116,7 +119,7 @@ func scanResultFilter(levelKey string, levelValues []string, masked []bool) repo
 	return filter
 }
 
-func getVulnerabilityData(ctx context.Context, session neo4j.Session, params sdkUtils.ReportParams) (*Info[model.Vulnerability], error) {
+func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Vulnerability], error) {
 
 	searchFilter := searchScansFilter(params)
 
@@ -171,14 +174,14 @@ func getVulnerabilityData(ctx context.Context, session neo4j.Session, params sdk
 		Title:          "Vulnerability Scan Report",
 		StartTime:      start.Format(time.RFC3339),
 		EndTime:        end.Format(time.RFC3339),
-		AppliedFilters: params.Filters,
+		AppliedFilters: updateFilters(ctx, params.Filters),
 		NodeWiseData:   nodeWiseData,
 	}
 
 	return &data, nil
 }
 
-func getSecretData(ctx context.Context, session neo4j.Session, params sdkUtils.ReportParams) (*Info[model.Secret], error) {
+func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Secret], error) {
 
 	searchFilter := searchScansFilter(params)
 
@@ -233,14 +236,14 @@ func getSecretData(ctx context.Context, session neo4j.Session, params sdkUtils.R
 		Title:          "Secrets Scan Report",
 		StartTime:      start.Format(time.RFC3339),
 		EndTime:        end.Format(time.RFC3339),
-		AppliedFilters: params.Filters,
+		AppliedFilters: updateFilters(ctx, params.Filters),
 		NodeWiseData:   nodeWiseData,
 	}
 
 	return &data, nil
 }
 
-func getMalwareData(ctx context.Context, session neo4j.Session, params sdkUtils.ReportParams) (*Info[model.Malware], error) {
+func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Malware], error) {
 
 	searchFilter := searchScansFilter(params)
 
@@ -294,14 +297,14 @@ func getMalwareData(ctx context.Context, session neo4j.Session, params sdkUtils.
 		Title:          "Malware Scan Report",
 		StartTime:      start.Format(time.RFC3339),
 		EndTime:        end.Format(time.RFC3339),
-		AppliedFilters: params.Filters,
+		AppliedFilters: updateFilters(ctx, params.Filters),
 		NodeWiseData:   nodeWiseData,
 	}
 
 	return &data, nil
 }
 
-func getComplianceData(ctx context.Context, session neo4j.Session, params sdkUtils.ReportParams) (*Info[model.Compliance], error) {
+func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Compliance], error) {
 
 	searchFilter := searchScansFilter(params)
 
@@ -355,14 +358,14 @@ func getComplianceData(ctx context.Context, session neo4j.Session, params sdkUti
 		Title:          "Compliance Scan Report",
 		StartTime:      start.Format(time.RFC3339),
 		EndTime:        end.Format(time.RFC3339),
-		AppliedFilters: params.Filters,
+		AppliedFilters: updateFilters(ctx, params.Filters),
 		NodeWiseData:   nodeWiseData,
 	}
 
 	return &data, nil
 }
 
-func getCloudComplianceData(ctx context.Context, session neo4j.Session, params sdkUtils.ReportParams) (*Info[model.CloudCompliance], error) {
+func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.CloudCompliance], error) {
 
 	searchFilter := searchScansFilter(params)
 
@@ -417,9 +420,83 @@ func getCloudComplianceData(ctx context.Context, session neo4j.Session, params s
 		Title:          "Cloud Compliance Scan Report",
 		StartTime:      start.Format(time.RFC3339),
 		EndTime:        end.Format(time.RFC3339),
-		AppliedFilters: params.Filters,
+		AppliedFilters: updateFilters(ctx, params.Filters),
 		NodeWiseData:   nodeWiseData,
 	}
 
 	return &data, nil
+}
+
+func updateFilters(ctx context.Context, original sdkUtils.ReportFilters) sdkUtils.ReportFilters {
+	if len(original.AdvancedReportFilters.ImageName) > 0 {
+		original.AdvancedReportFilters.ImageName = NodeIdToNodeName(ctx, original.AdvancedReportFilters.ImageName, "container_image")
+	}
+	if len(original.AdvancedReportFilters.ContainerName) > 0 {
+		original.AdvancedReportFilters.ContainerName = NodeIdToNodeName(ctx, original.AdvancedReportFilters.ContainerName, "container")
+	}
+	return original
+}
+
+func NodeIdToNodeName(ctx context.Context, nodeIds []string, node_type string) []string {
+	nodes := []string{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return nodes
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return nodes
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return nodes
+	}
+	defer tx.Close()
+
+	query := ""
+	nodeStr := strings.Join(nodeIds, "\", \"")
+
+	switch node_type {
+	case "container_image":
+		query = `
+		MATCH (n:ContainerImage)
+		WHERE n.node_id in ["%s"]
+		RETURN n.docker_image_name + ':' + n.docker_image_tag as name
+		`
+	case "container":
+		query = `
+		MATCH (n:Container)
+		WHERE n.node_id in ["%s"]
+		RETURN n.node_name as name
+		`
+	}
+
+	result, err := tx.Run(fmt.Sprintf(query, nodeStr), map[string]interface{}{})
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return nodes
+	}
+
+	records, err := result.Collect()
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return nodes
+	}
+
+	for _, rec := range records {
+		name, ok := rec.Get("name")
+		if !ok {
+			continue
+		}
+		nodes = append(nodes, name.(string))
+	}
+
+	return nodes
 }

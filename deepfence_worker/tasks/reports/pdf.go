@@ -12,7 +12,6 @@ import (
 	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 var (
@@ -25,7 +24,7 @@ var (
 		template.New("").Funcs(sprig.FuncMap()).ParseFS(content, templateFiles...))
 )
 
-func generatePDF(ctx context.Context, session neo4j.Session, params utils.ReportParams) (string, error) {
+func generatePDF(ctx context.Context, params utils.ReportParams) (string, error) {
 
 	var (
 		buffer *bytes.Buffer
@@ -34,15 +33,15 @@ func generatePDF(ctx context.Context, session neo4j.Session, params utils.Report
 
 	switch params.Filters.ScanType {
 	case VULNERABILITY:
-		buffer, err = vulnerabilityPDF(ctx, session, params)
+		buffer, err = vulnerabilityPDF(ctx, params)
 	case SECRET:
-		buffer, err = secretPDF(ctx, session, params)
+		buffer, err = secretPDF(ctx, params)
 	case MALWARE:
-		buffer, err = malwarePDF(ctx, session, params)
+		buffer, err = malwarePDF(ctx, params)
 	case COMPLIANCE:
-		buffer, err = compliancePDF(ctx, session, params)
+		buffer, err = compliancePDF(ctx, params)
 	case CLOUD_COMPLIANCE:
-		buffer, err = cloudCompliancePDF(ctx, session, params)
+		buffer, err = cloudCompliancePDF(ctx, params)
 	default:
 		return "", ErrUnknownScanType
 	}
@@ -86,9 +85,9 @@ func generatePDF(ctx context.Context, session neo4j.Session, params utils.Report
 	return temp.Name(), nil
 }
 
-func vulnerabilityPDF(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
+func vulnerabilityPDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffer, error) {
 
-	data, err := getVulnerabilityData(ctx, session, params)
+	data, err := getVulnerabilityData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get vulnerabilities info")
 		return nil, err
@@ -105,9 +104,9 @@ func vulnerabilityPDF(ctx context.Context, session neo4j.Session, params utils.R
 	return &rendered, nil
 }
 
-func secretPDF(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
+func secretPDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffer, error) {
 
-	data, err := getSecretData(ctx, session, params)
+	data, err := getSecretData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get secret info")
 		return nil, err
@@ -124,9 +123,9 @@ func secretPDF(ctx context.Context, session neo4j.Session, params utils.ReportPa
 	return &rendered, nil
 }
 
-func malwarePDF(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
+func malwarePDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffer, error) {
 
-	data, err := getMalwareData(ctx, session, params)
+	data, err := getMalwareData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get malware info")
 		return nil, err
@@ -142,9 +141,9 @@ func malwarePDF(ctx context.Context, session neo4j.Session, params utils.ReportP
 	return &rendered, nil
 }
 
-func compliancePDF(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
+func compliancePDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffer, error) {
 
-	data, err := getComplianceData(ctx, session, params)
+	data, err := getComplianceData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get compliance info")
 		return nil, err
@@ -160,9 +159,9 @@ func compliancePDF(ctx context.Context, session neo4j.Session, params utils.Repo
 	return &rendered, nil
 }
 
-func cloudCompliancePDF(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
+func cloudCompliancePDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffer, error) {
 
-	data, err := getCloudComplianceData(ctx, session, params)
+	data, err := getCloudComplianceData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get cloud compliance info")
 		return nil, err

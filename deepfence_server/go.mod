@@ -22,6 +22,7 @@ require (
 	github.com/PagerDuty/go-pagerduty v1.7.0
 	github.com/ThreeDotsLabs/watermill v1.2.0
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.3.0
+	github.com/andygrunwald/go-jira v1.16.0
 	github.com/aws/aws-sdk-go v1.44.285
 	github.com/casbin/casbin/v2 v2.70.0
 	github.com/deepfence/SecretScanner v0.0.0-00010101000000-000000000000
@@ -79,6 +80,7 @@ require (
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.10.2 // indirect
 	github.com/fatih/color v1.15.0 // indirect
+	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
@@ -92,6 +94,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/gnostic v0.6.9 // indirect
@@ -139,6 +142,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/swaggest/jsonschema-go v0.3.50 // indirect
 	github.com/swaggest/refl v1.1.0 // indirect
+	github.com/trivago/tgo v1.0.7 // indirect
 	github.com/twmb/franz-go/pkg/kadm v1.8.1 // indirect
 	github.com/twmb/franz-go/pkg/kmsg v1.5.0 // indirect
 	go.opentelemetry.io/contrib v1.0.0 // indirect

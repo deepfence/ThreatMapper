@@ -48,12 +48,12 @@ func putOpts(reportType sdkUtils.ReportType) minio.PutObjectOptions {
 	return minio.PutObjectOptions{}
 }
 
-func generateReport(ctx context.Context, session neo4j.Session, params sdkUtils.ReportParams) (string, error) {
+func generateReport(ctx context.Context, params sdkUtils.ReportParams) (string, error) {
 	switch sdkUtils.ReportType(params.ReportType) {
 	case sdkUtils.ReportPDF:
-		return generatePDF(ctx, session, params)
+		return generatePDF(ctx, params)
 	case sdkUtils.ReportXLSX:
-		return generateXLSX(ctx, session, params)
+		return generateXLSX(ctx, params)
 	}
 	return "", ErrUnknownReportType
 }
@@ -93,7 +93,7 @@ func GenerateReport(msg *message.Message) error {
 	updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.SCAN_STATUS_INPROGRESS)
 
 	// generate reportName
-	localReportPath, err := generateReport(ctx, session, params)
+	localReportPath, err := generateReport(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to generate report with params %+v", params)
 		updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.SCAN_STATUS_FAILED)

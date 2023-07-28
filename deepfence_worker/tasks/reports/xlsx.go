@@ -6,7 +6,6 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -73,7 +72,7 @@ var (
 	}
 )
 
-func generateXLSX(ctx context.Context, session neo4j.Session, params utils.ReportParams) (string, error) {
+func generateXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
 
 	var (
 		xlsxFile string
@@ -82,15 +81,15 @@ func generateXLSX(ctx context.Context, session neo4j.Session, params utils.Repor
 
 	switch params.Filters.ScanType {
 	case VULNERABILITY:
-		xlsxFile, err = vulnerabilityXLSX(ctx, session, params)
+		xlsxFile, err = vulnerabilityXLSX(ctx, params)
 	case SECRET:
-		xlsxFile, err = secretXLSX(ctx, session, params)
+		xlsxFile, err = secretXLSX(ctx, params)
 	case MALWARE:
-		xlsxFile, err = malwareXLSX(ctx, session, params)
+		xlsxFile, err = malwareXLSX(ctx, params)
 	case COMPLIANCE:
-		xlsxFile, err = complianceXLSX(ctx, session, params)
+		xlsxFile, err = complianceXLSX(ctx, params)
 	case CLOUD_COMPLIANCE:
-		xlsxFile, err = cloudComplianceXLSX(ctx, session, params)
+		xlsxFile, err = cloudComplianceXLSX(ctx, params)
 	default:
 		return "", ErrUnknownScanType
 	}
@@ -124,8 +123,8 @@ func xlsxSetHeader(xlsx *excelize.File, sheet string, headers map[string]string)
 	}
 }
 
-func vulnerabilityXLSX(ctx context.Context, session neo4j.Session, params utils.ReportParams) (string, error) {
-	data, err := getVulnerabilityData(ctx, session, params)
+func vulnerabilityXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
+	data, err := getVulnerabilityData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get vulnerabilities info")
 		return "", err
@@ -174,8 +173,8 @@ func vulnerabilityXLSX(ctx context.Context, session neo4j.Session, params utils.
 	return xlsxSave(xlsx, params)
 }
 
-func secretXLSX(ctx context.Context, session neo4j.Session, params utils.ReportParams) (string, error) {
-	data, err := getSecretData(ctx, session, params)
+func secretXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
+	data, err := getSecretData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get secrets info")
 		return "", err
@@ -216,8 +215,8 @@ func secretXLSX(ctx context.Context, session neo4j.Session, params utils.ReportP
 	return xlsxSave(xlsx, params)
 }
 
-func malwareXLSX(ctx context.Context, session neo4j.Session, params utils.ReportParams) (string, error) {
-	data, err := getMalwareData(ctx, session, params)
+func malwareXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
+	data, err := getMalwareData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get malwares info")
 		return "", err
@@ -260,8 +259,8 @@ func malwareXLSX(ctx context.Context, session neo4j.Session, params utils.Report
 	return xlsxSave(xlsx, params)
 }
 
-func complianceXLSX(ctx context.Context, session neo4j.Session, params utils.ReportParams) (string, error) {
-	data, err := getComplianceData(ctx, session, params)
+func complianceXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
+	data, err := getComplianceData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get compliance info")
 		return "", err
@@ -308,8 +307,8 @@ func complianceXLSX(ctx context.Context, session neo4j.Session, params utils.Rep
 	return xlsxSave(xlsx, params)
 }
 
-func cloudComplianceXLSX(ctx context.Context, session neo4j.Session, params utils.ReportParams) (string, error) {
-	data, err := getCloudComplianceData(ctx, session, params)
+func cloudComplianceXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
+	data, err := getCloudComplianceData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get cloud compliance info")
 		return "", err
