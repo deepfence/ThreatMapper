@@ -88,19 +88,14 @@ export const postureQueries = createQueryKeys('posture', {
 
         if (complianceScanStatus) {
           if (complianceScanStatus === ComplianceScanGroupedStatus.neverScanned) {
-            searchReq.node_filter.filters.not_contains_filter!.filter_in = {
-              ...searchReq.node_filter.filters.not_contains_filter!.filter_in,
-              compliance_scan_status: [
-                ...COMPLIANCE_SCAN_STATUS_GROUPS.complete,
-                ...COMPLIANCE_SCAN_STATUS_GROUPS.error,
-                ...COMPLIANCE_SCAN_STATUS_GROUPS.inProgress,
-                ...COMPLIANCE_SCAN_STATUS_GROUPS.starting,
-              ],
+            searchReq.node_filter.filters.contains_filter!.filter_in = {
+              ...searchReq.node_filter.filters.contains_filter!.filter_in,
+              last_scan_status: [''],
             };
           } else {
             searchReq.node_filter.filters.contains_filter.filter_in = {
               ...searchReq.node_filter.filters.contains_filter.filter_in,
-              compliance_scan_status: COMPLIANCE_SCAN_STATUS_GROUPS[complianceScanStatus],
+              last_scan_status: COMPLIANCE_SCAN_STATUS_GROUPS[complianceScanStatus],
             };
           }
         }
