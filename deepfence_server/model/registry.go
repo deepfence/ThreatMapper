@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"mime/multipart"
+	"strings"
 	"time"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
@@ -389,28 +390,116 @@ func ListImages(ctx context.Context, registryId string, filter reporters.FieldsF
 		return res, err
 	}
 
+	/*
+		Logic to prepare the image list for a repository:
+		Step1: Prepare a map "stubTags" of all the valid tags for this repository.
+		For this, we take the "tags" from the ImageStub and use that to populate
+		the map. Also get the name of the image from the ImageStub as "dockerImageName"
+
+		Step2: Iterate through the matched ContainerImage records.
+		If the name of image on this ContainerImage match dockerImageName:
+			Iterate through the tags for this ContainerImage and only keep one's
+			which are in the "stubTags". After adding, delete the tag from the stubTags.
+			Add this ContainerImage to the final list
+		If the name of the image on this ContainerImage does not match dockerImageName:
+			Add this to the exclusion list "nodeListEx"
+
+		Step3: Iterate the ContainerImage nodes in nodeListEx.
+		Iterate through the tags for this ContainerImage and only keep one's
+		which are in the "stubTags". After adding, delete the tag from the stubTags.
+		Add this ContainerImage to the final list
+	*/
+
+	//Step1: Prepare a map "stubTags" of all the valid tags for this repository.
+	stubTags := make(map[string]bool)
+	dockerImageName := ""
 	for _, rec := range records {
 		lValue, hasL := rec.Get("l")
-		mValue, hasM := rec.Get("m")
-		if !hasL || !hasM {
+		if !hasL {
 			log.Warn().Msgf("Missing neo4j entry")
 			continue
 		}
 
-		_, ok := lValue.(dbtype.Node)
+		l, ok := lValue.(dbtype.Node)
 		if !ok {
+			log.Warn().Msgf("Missing neo4j entry")
+			continue
+		}
+
+		if len(stubTags) == 0 {
+			tagsValue, hasTags := l.Props["tags"]
+			if hasTags {
+				tags, ok := tagsValue.([]interface{})
+				if ok {
+					for _, tag := range tags {
+						if tagStr, ok := tag.(string); ok {
+							// create individual tag nodes
+							stubTags[tagStr] = true
+						}
+					}
+				}
+			}
+		}
+
+		if len(dockerImageName) == 0 {
+			dockerImageNameVal, exists := l.Props["docker_image_name"]
+			if exists {
+				dockerImageName, _ = dockerImageNameVal.(string)
+			}
+		}
+
+		if len(stubTags) > 0 && len(dockerImageName) > 0 {
+			break
+		}
+	}
+
+	if len(stubTags) == 0 || len(dockerImageName) == 0 {
+		log.Error().Msg("ListImages failed::Missing tags or docker_image_name in ImageStub")
+		return res, fmt.Errorf("Missing tags or docker_image_name in ImageStub")
+	}
+
+	filterTag := func(node ContainerImage) []string {
+		var tagList []string
+		for _, tag := range node.DockerImageTagList {
+			if _, ok := stubTags[tag]; ok {
+				delete(stubTags, tag)
+				tagList = append(tagList, tag)
+			}
+		}
+		return tagList
+	}
+
+	var nodeListEx []ContainerImage
+
+	//Step2: Iterate through the matched ContainerImage records.
+	for _, rec := range records {
+		mValue, hasM := rec.Get("m")
+		if !hasM {
 			log.Warn().Msgf("Missing neo4j entry")
 			continue
 		}
 
 		m, ok := mValue.(dbtype.Node)
 		if !ok {
-			log.Warn().Msgf("Missing neo4j entry")
+			log.Warn().Msgf("Missing neo4j entry(2)")
 			continue
 		}
 
 		var node ContainerImage
 		utils.FromMap(m.Props, &node)
+		if node.Name == dockerImageName {
+			node.DockerImageTagList = filterTag(node)
+			node.Tag = strings.Join(node.DockerImageTagList, ", ")
+			res = append(res, node)
+		} else {
+			nodeListEx = append(nodeListEx, node)
+		}
+	}
+
+	//Step3: Iterate the ContainerImage nodes in nodeListEx.
+	for _, node := range nodeListEx {
+		node.DockerImageTagList = filterTag(node)
+		node.Tag = strings.Join(node.DockerImageTagList, ", ")
 		res = append(res, node)
 	}
 
