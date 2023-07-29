@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Listbox, ListboxOption, Step, Stepper } from 'ui-components';
+import {
+  Listbox,
+  ListboxOption,
+  Step,
+  StepIndicator,
+  StepLine,
+  Stepper,
+} from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { InfoIcon } from '@/components/icons/common/Info';
@@ -40,9 +47,14 @@ export const AWSCloudFormation = () => {
       <Stepper>
         <Step
           indicator={
-            <span className="w-4 h-4">
-              <InfoIcon />
-            </span>
+            <StepIndicator className="rounded-full">
+              <div className="w-6 h-6 flex items-center justify-center">
+                <span className="w-4 h-4">
+                  <InfoIcon />
+                </span>
+              </div>
+              <StepLine />
+            </StepIndicator>
           }
           title="Cloud Formation"
         >
@@ -58,7 +70,15 @@ export const AWSCloudFormation = () => {
             .
           </div>
         </Step>
-        <Step indicator="1" title="Region Selection">
+        <Step
+          indicator={
+            <StepIndicator className="rounded-full">
+              <span className="w-6 h-6 flex items-center justify-center">1</span>
+              <StepLine />
+            </StepIndicator>
+          }
+          title="Region Selection"
+        >
           <div className="w-1/2">
             <Listbox
               value={region}
@@ -79,7 +99,14 @@ export const AWSCloudFormation = () => {
             </Listbox>
           </div>
         </Step>
-        <Step indicator="2" title="Deploy">
+        <Step
+          indicator={
+            <StepIndicator className="rounded-full">
+              <span className="w-6 h-6 flex items-center justify-center">2</span>
+            </StepIndicator>
+          }
+          title="Deploy"
+        >
           <div className="text-p7 dark:text-text-text-and-icon">
             <p>
               Deploy all modules for Deepfence Posture Scanner for a single account. For

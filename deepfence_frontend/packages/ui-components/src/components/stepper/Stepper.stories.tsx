@@ -2,7 +2,7 @@ import { Meta, StoryFn } from '@storybook/react';
 import { IconContext } from 'react-icons';
 import { HiBookOpen } from 'react-icons/hi';
 
-import { Step, Stepper } from '@/components/stepper/Stepper';
+import { Step, StepIndicator, StepLine, Stepper } from '@/components/stepper/Stepper';
 
 export default {
   title: 'Components/Stepper',
@@ -22,10 +22,26 @@ const Icon = () => (
 
 const Template: StoryFn<typeof Stepper> = (args) => (
   <Stepper>
-    <Step indicator={<Icon />} title="Ordered">
+    <Step
+      indicator={
+        <StepIndicator>
+          <Icon />
+          <StepLine />
+        </StepIndicator>
+      }
+      title="Ordered"
+    >
       <div>A Laptop</div>
     </Step>
-    <Step indicator="1" title="Shipped">
+    <Step
+      indicator={
+        <StepIndicator>
+          <span className="w-6 h-6 flex items-center justify-center">1</span>
+          <StepLine />
+        </StepIndicator>
+      }
+      title="Shipped"
+    >
       <div className="dark:text-gray-400 text-sm">
         Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem
         Ipsum has been the industrys standard dummy text ever since the 1500s, when an
@@ -37,7 +53,10 @@ const Template: StoryFn<typeof Stepper> = (args) => (
         Ipsum.
       </div>
     </Step>
-    <Step indicator="2" title="Delivered">
+    <Step
+      indicator={<span className="w-6 h-6 flex items-center justify-center">2</span>}
+      title="Delivered"
+    >
       <div className="dark:text-gray-400 text-lg">Successfully delivered</div>
     </Step>
   </Stepper>

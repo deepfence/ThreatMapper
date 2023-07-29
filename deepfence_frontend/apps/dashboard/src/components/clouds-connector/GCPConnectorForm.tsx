@@ -1,4 +1,4 @@
-import { Step, Stepper } from 'ui-components';
+import { Step, StepIndicator, Stepper } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { InfoIcon } from '@/components/icons/common/Info';
@@ -8,9 +8,13 @@ export const GCPConnectorForm = () => {
     <Stepper>
       <Step
         indicator={
-          <span className="w-4 h-4">
-            <InfoIcon />
-          </span>
+          <StepIndicator className="rounded-full">
+            <div className="w-6 h-6 flex items-center justify-center">
+              <span className="w-4 h-4">
+                <InfoIcon />
+              </span>
+            </div>
+          </StepIndicator>
         }
         title="Terraform"
       >
