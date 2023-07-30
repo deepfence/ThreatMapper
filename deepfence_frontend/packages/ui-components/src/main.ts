@@ -38,7 +38,7 @@ export { Combobox, ComboboxOption } from '@/components/select/Combobox';
 export { Listbox, ListboxOption } from '@/components/select/Listbox';
 export { default as Separator } from '@/components/separator/Separator';
 export { CircleSpinner } from '@/components/spinner/CircleSpinner';
-export { Step, Stepper } from '@/components/stepper/Stepper';
+export { Step, StepIndicator, StepLine, Stepper } from '@/components/stepper/Stepper';
 export { default as Switch } from '@/components/switch/Switch';
 export type {
   ColumnDef,

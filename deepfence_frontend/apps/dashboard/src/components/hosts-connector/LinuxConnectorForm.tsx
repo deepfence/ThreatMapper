@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense } from 'react';
-import { Card, IconButton, Step, Stepper } from 'ui-components';
+import { Card, IconButton, Step, StepIndicator, StepLine, Stepper } from 'ui-components';
 
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
 import { DFLink } from '@/components/DFLink';
@@ -88,9 +88,14 @@ export const LinuxConnectorForm = () => {
     <Stepper>
       <Step
         indicator={
-          <span className="w-4 h-4">
-            <InfoIcon />
-          </span>
+          <StepIndicator className="rounded-full">
+            <div className="w-6 h-6 flex items-center justify-center">
+              <span className="w-4 h-4">
+                <InfoIcon />
+              </span>
+            </div>
+            <StepLine />
+          </StepIndicator>
         }
         title="Connect Linux VM"
       >
@@ -107,7 +112,14 @@ export const LinuxConnectorForm = () => {
           .
         </div>
       </Step>
-      <Step indicator="1" title="Deploy">
+      <Step
+        indicator={
+          <StepIndicator className="rounded-full">
+            <span className="w-6 h-6 flex items-center justify-center">1</span>
+          </StepIndicator>
+        }
+        title="Deploy"
+      >
         <div className="text-p7 dark:text-text-text-and-icon">
           <p className="mb-2.5">
             Copy the following commands and paste them into your shell.

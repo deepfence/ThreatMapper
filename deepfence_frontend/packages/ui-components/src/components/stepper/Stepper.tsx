@@ -1,38 +1,87 @@
+import { createContext, useContext } from 'react';
+import { useMeasure } from 'react-use';
 import { cn } from 'tailwind-preset';
 
 type StepProps = {
   indicator: React.ReactNode;
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
 };
 
-export const Step = ({ indicator, title, children }: StepProps) => {
+export const StepLine = ({ className }: { className?: string }) => {
+  const { contentHeight, indicatorHeight } = useContext(StepHeightContext);
   return (
     <div
-      className={cn(
-        'relative p-1 flex flex-col dark:text-text-text-and-icon',
-        `after:content-[' '] after:absolute after:left-5 after:top-10 after:bottom-0 after:w-0 after:h-auto after:border-l after:border-gray-200 dark:after:border-gray-700`,
-        'last:after:hidden',
-      )}
+      className={cn('absolute border-l left-[50%] dark:border-df-gray-600', className)}
+      style={{
+        top: indicatorHeight + 2,
+        height: contentHeight - indicatorHeight - 4,
+      }}
+    ></div>
+  );
+};
+
+export const StepIndicator = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  const [measureRef, { height }] = useMeasure<HTMLDivElement>();
+  const { contentHeight } = useContext(StepHeightContext);
+  return (
+    <StepHeightContext.Provider
+      value={{
+        contentHeight: contentHeight,
+        indicatorHeight: height,
+      }}
     >
-      <div className="inline relative">
-        <div
-          className={cn(
-            'absolute flex items-center justify-center w-8 h-8 border rounded-full text-h4',
-            'border-gray-100 dark:border-bg-card bg-gray-100 dark:bg-bg-card',
-          )}
-        >
-          {indicator}
+      <div
+        className={cn(
+          'min-w-4 min-h-4 flex items-center justify-center relative dark:bg-bg-card dark:text-text-text-and-icon text-h4',
+          className,
+        )}
+        ref={measureRef}
+      >
+        {children}
+      </div>
+    </StepHeightContext.Provider>
+  );
+};
+
+export const Step = ({ indicator, title, children }: StepProps) => {
+  const [measureRef, { height }] = useMeasure<HTMLDivElement>();
+  return (
+    <StepHeightContext.Provider
+      value={{
+        contentHeight: height,
+        indicatorHeight: 0,
+      }}
+    >
+      <div className="flex">
+        <div className="flex flex-col">{indicator}</div>
+        <div ref={measureRef} className="w-full">
+          <h4 className="ml-4 relative mx-0 text-h4 dark:text-text-text-and-icon">
+            {title}
+          </h4>
+          <div className="ml-4 mb-6">{children}</div>
         </div>
       </div>
-      <h4 className="ml-12 relative mx-0 text-h4">{title}</h4>
-      <div className="ml-12 mb-6">{children}</div>
-    </div>
+    </StepHeightContext.Provider>
   );
 };
 type StepperProps = {
   children: React.ReactNode;
 };
+
+const StepHeightContext = createContext<{
+  contentHeight: number;
+  indicatorHeight: number;
+}>({
+  contentHeight: 0,
+  indicatorHeight: 0,
+});
 
 export const Stepper = ({ children }: StepperProps) => {
   return <div className="relative">{children}</div>;

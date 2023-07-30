@@ -6,6 +6,8 @@ import {
   Listbox,
   ListboxOption,
   Step,
+  StepIndicator,
+  StepLine,
   Stepper,
   TextInput,
 } from 'ui-components';
@@ -333,9 +335,14 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
       <Stepper>
         <Step
           indicator={
-            <span className="w-4 h-4">
-              <InfoIcon />
-            </span>
+            <StepIndicator className="rounded-full">
+              <div className="w-6 h-6 flex items-center justify-center">
+                <span className="w-4 h-4">
+                  <InfoIcon />
+                </span>
+              </div>
+              <StepLine />
+            </StepIndicator>
           }
           title="Connect Kubernetes Cluster"
         >
@@ -352,7 +359,15 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
             .
           </div>
         </Step>
-        <Step indicator="1" title="Enter Information">
+        <Step
+          indicator={
+            <StepIndicator className="rounded-full">
+              <span className="w-6 h-6 flex items-center justify-center">1</span>
+              <StepLine />
+            </StepIndicator>
+          }
+          title="Enter Information"
+        >
           <div>
             <p className="mb-2.5 text-p7 dark:text-text-text-and-icon">
               Fill the following details:
@@ -365,7 +380,14 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
             </Card>
           </div>
         </Step>
-        <Step indicator="2" title="Copy Code">
+        <Step
+          indicator={
+            <StepIndicator className="rounded-full">
+              <span className="w-6 h-6 flex items-center justify-center">2</span>
+            </StepIndicator>
+          }
+          title="Copy Code"
+        >
           <div className="text-p7 dark:text-text-text-and-icon">
             <p className="mb-2.5">
               Copy the following commands and paste them into your shell.
