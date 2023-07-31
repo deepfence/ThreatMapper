@@ -534,6 +534,16 @@ func LinkNodes(msg *message.Message) error {
 	}
 
 	if _, err := session.Run(`
+		MATCH (n:Node) <-[:INSTANCIATE]- (k:KubernetesCluster)
+		WHERE not (k) <-[:HOSTS]- (:CloudRegion)
+		AND NOT n.cloud_region IS NULL
+		MERGE (cr:CloudRegion{node_id:n.cloud_region})
+		SET cr.active = true`,
+		map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err := session.Run(`
 		MATCH (n:KubernetesCluster)
 		WHERE not (n) <-[:HOSTS]- (:CloudProvider)
 		AND NOT n.cloud_provider IS NULL
