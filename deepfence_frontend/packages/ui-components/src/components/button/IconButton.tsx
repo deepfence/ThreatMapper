@@ -31,7 +31,7 @@ export const iconButtonCVA = cva(
           // focus styles
           'focus:outline-[2px] focus:outline-gray-200  dark:focus:outline-offset-1 dark:focus:outline-offset-transparent dark:focus:outline-bg-hover-3',
           // disabled styles
-          'dark:disabled:bg-df-gray-600 disabled:dark:text-df-gray-900',
+          'dark:disabled:bg-df-gray-600 dark:disabled:text-df-gray-900',
         ],
         error: [
           // bg styles
@@ -41,7 +41,7 @@ export const iconButtonCVA = cva(
           // focus styles
           'focus:outline-[2px] focus:outline-red-300 dark:focus:outline-offset-1 dark:focus:outline-offset-transparent dark:focus:outline-[#ffffffb3]',
           // disabled styles
-          'dark:disabled:bg-df-gray-600 disabled:dark:text-df-gray-900',
+          'dark:disabled:bg-df-gray-600 dark:disabled::text-df-gray-900',
         ],
         success: [
           // bg styles
@@ -51,7 +51,7 @@ export const iconButtonCVA = cva(
           // focus styles
           'focus:outline-[2px] focus:outline-green-300 dark:focus:outline-offset-1 dark:focus:outline-offset-transparent dark:focus:outline-[#ffffffb3]',
           // disabled styles
-          'dark:disabled:bg-df-gray-600 disabled:dark:text-df-gray-900',
+          'dark:disabled:bg-df-gray-600 dark:disabled::text-df-gray-900',
         ],
       },
       variant: {
