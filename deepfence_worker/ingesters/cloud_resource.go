@@ -174,7 +174,7 @@ func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 			return err
 		}
 
-		if _, err := session.Run(`
+		if _, err := tx.Run(`
 		MATCH (k:KubernetesCluster)
 		WHERE not (k) -[:INSTANCIATE]-> (:Node)
 		MATCH (n:Node{kubernetes_cluster_id:k.kubernetes_cluster_id})
