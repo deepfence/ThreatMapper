@@ -21,6 +21,7 @@ import {
 import { useScanResults } from '@/features/registries/pages/RegistryImageTags';
 import { ScanTypeEnum } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
+import { formatMemory } from '@/utils/number';
 import { useSortingState } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -151,7 +152,10 @@ export const RegistryImageTagsTable = ({
       columnHelper.accessor('docker_image_size', {
         enableSorting: false,
         header: () => 'Size',
-        cell: (info) => (Number(info.getValue()) / 1000000).toFixed(2) + ' MB',
+        cell: (info) => {
+          if (!info.getValue().trim().length) return '-';
+          return <TruncatedText text={formatMemory(parseInt(info.getValue(), 10))} />;
+        },
         maxSize: 50,
       }),
       columnHelper.accessor('vulnerability_scan_status', {
