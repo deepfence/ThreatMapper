@@ -273,7 +273,7 @@ const ThirdCommand = ({ command }: { command: string }) => {
       <pre className="h-fit text-p7 dark:text-text-text-and-icon">
         {command
           .replace(PLACEHOLDER_API_KEY, dfApiKey)
-          .replaceAll(PLACEHOLDER_VERSION, version)}
+          .replaceAll(PLACEHOLDER_VERSION, version.trim())}
       </pre>
       <div className="flex items-center ml-auto self-start">
         {isCopied ? 'copied' : null}
@@ -285,7 +285,7 @@ const ThirdCommand = ({ command }: { command: string }) => {
             copy(
               command
                 .replace(PLACEHOLDER_API_KEY, dfApiKey)
-                .replaceAll(PLACEHOLDER_VERSION, version),
+                .replaceAll(PLACEHOLDER_VERSION, version.trim()),
             );
           }}
         />
