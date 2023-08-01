@@ -309,18 +309,15 @@ func (IngestedContainerImage) GetJsonCategory() string {
 }
 
 type ContainerImage struct {
-	ID       string `json:"node_id" required:"true"`
-	NodeName string `json:"node_name" required:"true"`
-	//Deprecated: Please use DockerImageNameList
-	Name string `json:"docker_image_name" required:"true"`
-	//Deprecated: Please use DockerImageTagList
+	ID                        string      `json:"node_id" required:"true"`
+	NodeName                  string      `json:"node_name" required:"true"`
+	Name                      string      `json:"docker_image_name" required:"true"`
 	Tag                       string      `json:"docker_image_tag" required:"true"`
 	Size                      string      `json:"docker_image_size" required:"true"`
 	DockerImageCreatedAt      string      `json:"docker_image_created_at" required:"true"`
 	DockerImageVirtualSize    string      `json:"docker_image_virtual_size" required:"true"`
 	DockerImageID             string      `json:"docker_image_id" required:"true"`
 	DockerImageTagList        []string    `json:"docker_image_tag_list" required:"true"`
-	DockerImageNameList       []string    `json:"docker_image_name_list" required:"true"`
 	Metadata                  Metadata    `json:"metadata" required:"true" nested_json:"true"`
 	VulnerabilitiesCount      int64       `json:"vulnerabilities_count" required:"true"`
 	VulnerabilityScanStatus   string      `json:"vulnerability_scan_status" required:"true"`

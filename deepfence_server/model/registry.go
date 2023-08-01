@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"mime/multipart"
+	"strings"
 	"time"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
@@ -397,12 +398,11 @@ func ListImages(ctx context.Context, registryId string, filter reporters.FieldsF
 			continue
 		}
 
-		_, ok := lValue.(dbtype.Node)
+		l, ok := lValue.(dbtype.Node)
 		if !ok {
 			log.Warn().Msgf("Missing neo4j entry")
 			continue
 		}
-
 		m, ok := mValue.(dbtype.Node)
 		if !ok {
 			log.Warn().Msgf("Missing neo4j entry")
@@ -411,6 +411,23 @@ func ListImages(ctx context.Context, registryId string, filter reporters.FieldsF
 
 		var node ContainerImage
 		utils.FromMap(m.Props, &node)
+		dockerImageNameVal, exists := l.Props["docker_image_name"]
+		if exists {
+			var tagList []string
+			dockerImageName, _ := dockerImageNameVal.(string)
+			for _, imageTag := range node.DockerImageTagList {
+				tokens := strings.Split(imageTag, ":")
+				if len(tokens) > 1 {
+					if tokens[0] == dockerImageName {
+						tagList = append(tagList, tokens[1])
+					}
+				} else {
+					tagList = append(tagList, imageTag)
+				}
+			}
+			node.DockerImageTagList = tagList
+		}
+		node.Tag = strings.Join(node.DockerImageTagList, ", ")
 		res = append(res, node)
 	}
 
