@@ -18,7 +18,7 @@ export const RootLayout = () => {
       />
       <main
         className={cn('pt-[56px] h-screen overflow-auto transition-[margin-left]', {
-          'ml-[60px]': !sideNavExpanded,
+          'ml-[61px]': !sideNavExpanded,
           'ml-[240px]': sideNavExpanded,
         })}
       >
