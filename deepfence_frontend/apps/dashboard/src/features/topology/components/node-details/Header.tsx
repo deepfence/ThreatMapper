@@ -156,7 +156,7 @@ export const Header = ({
             }
           >
             <Button size="md" className="ml-auto" endIcon={<CaretDown />}>
-              Scan
+              Actions
             </Button>
           </Dropdown>
         ) : null}

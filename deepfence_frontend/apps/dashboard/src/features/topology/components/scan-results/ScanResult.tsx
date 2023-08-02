@@ -182,7 +182,7 @@ const ScanResultComponent = ({
         {/* TODO: check below condition */}
         {isScanComplete(scanStatus) && scanSummary && (
           <div className="h-full w-full grid grid-cols-2 items-stretch justify-between">
-            <div className="flex items-center pl-3">
+            <div className="flex items-center justify-center">
               <div className="h-[100px] w-[100px]">
                 <ScanResultChart
                   data={getSeriesOption(scanSummary.counts)}
@@ -190,7 +190,7 @@ const ScanResultComponent = ({
                 />
               </div>
             </div>
-            <div className="flex flex-col gap-1 self-center min-w-[130px] ml-auto pr-4">
+            <div className="flex flex-col gap-1 self-center min-w-[150px] ml-auto pr-8">
               {getSeriesOption(scanSummary.counts).map((count) => {
                 return (
                   <div className="flex gap-2 w-full items-center" key={count.name}>
