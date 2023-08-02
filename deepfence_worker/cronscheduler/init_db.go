@@ -7,13 +7,47 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
+	"github.com/pressly/goose/v3"
 )
 
-func initDatabase(ctx context.Context) {
+const migrationsPath = "/usr/local/postgresql-migrate"
+
+func applyDatabaseMigrations(ctx context.Context) error {
+
+	log.Info().Msg("apply database migrations")
+	defer log.Info().Msg("complete database migrations")
+
+	conn, err := directory.NewSqlConnection(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	if err := goose.SetDialect("postgres"); err != nil {
+		return err
+	}
+
+	goose.SetVerbose(true)
+
+	if err := goose.Up(conn, migrationsPath, goose.WithAllowMissing()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func initSqlDatabase(ctx context.Context) error {
+	// apply database migrations first
+	err := applyDatabaseMigrations(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to apply db migrations")
+		return err
+	}
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get db client")
-		return
+		return err
 	}
 
 	err = model.InitializeScheduledTasks(ctx, pgClient)
@@ -30,9 +64,11 @@ func initDatabase(ctx context.Context) {
 	if err != nil {
 		log.Error().Err(err).Msg("failed to initialize console id")
 	}
+
+	return nil
 }
 
-func initMinio() error {
+func InitMinioDatabase() error {
 	ctx := directory.NewContextWithNameSpace("database")
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
@@ -44,7 +80,7 @@ func initMinio() error {
 		return err
 	}
 
-	// download database once on init
+	// download vulnerability database once on init
 	vulnerability_db.DownloadDatabase()
 
 	return nil

@@ -45,14 +45,17 @@ func NewScheduler(tasksPublisher *kafka.Publisher) (*Scheduler, error) {
 			jobHashes:   []string{},
 		},
 	}
-	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
-		return "scheduler addJobs", scheduler.addJobs(ctx)
-	})
-	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
-		return "scheduler startImmediately", scheduler.startImmediately(ctx)
-	})
-	go scheduler.updateScheduledJobs()
 	return scheduler, nil
+}
+
+func (s *Scheduler) Init() {
+	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
+		return "scheduler addJobs", s.addJobs(ctx)
+	})
+	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
+		return "scheduler startImmediately", StartInitJobs(ctx, s.tasksPublisher)
+	})
+	go s.updateScheduledJobs()
 }
 
 func (s *Scheduler) updateScheduledJobs() {
@@ -127,64 +130,64 @@ func (s *Scheduler) addJobs(ctx context.Context) error {
 	}
 	log.Info().Msg("Register cronjobs")
 	// Documentation: https://pkg.go.dev/github.com/robfig/cron#hdr-Usage
-	_, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, sdkUtils.TriggerConsoleActionsTask))
+	_, err = s.cron.AddFunc("@every 30s", enqueueTask(s.tasksPublisher, namespace, sdkUtils.TriggerConsoleActionsTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, sdkUtils.CleanUpGraphDBTask))
+	_, err = s.cron.AddFunc("@every 120s", enqueueTask(s.tasksPublisher, namespace, sdkUtils.CleanUpGraphDBTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, sdkUtils.ComputeThreatTask))
+	_, err = s.cron.AddFunc("@every 120s", enqueueTask(s.tasksPublisher, namespace, sdkUtils.ComputeThreatTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, sdkUtils.RetryFailedScansTask))
+	_, err = s.cron.AddFunc("@every 120s", enqueueTask(s.tasksPublisher, namespace, sdkUtils.RetryFailedScansTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 10m", s.enqueueTask(namespace, sdkUtils.RetryFailedUpgradesTask))
+	_, err = s.cron.AddFunc("@every 10m", enqueueTask(s.tasksPublisher, namespace, sdkUtils.RetryFailedUpgradesTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 5m", s.enqueueTask(namespace, sdkUtils.CleanUpPostgresqlTask))
+	_, err = s.cron.AddFunc("@every 5m", enqueueTask(s.tasksPublisher, namespace, sdkUtils.CleanUpPostgresqlTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.CleanupDiagnosisLogs))
+	_, err = s.cron.AddFunc("@every 60m", enqueueTask(s.tasksPublisher, namespace, sdkUtils.CleanupDiagnosisLogs))
 	if err != nil {
 		return err
 	}
 	// Adding CloudComplianceTask only to ensure data is ingested if task fails on startup, Retry to be handled by watermill
-	_, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.CloudComplianceTask))
+	_, err = s.cron.AddFunc("@every 60m", enqueueTask(s.tasksPublisher, namespace, sdkUtils.CloudComplianceTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.CheckAgentUpgradeTask))
+	_, err = s.cron.AddFunc("@every 60m", enqueueTask(s.tasksPublisher, namespace, sdkUtils.CheckAgentUpgradeTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 12h", s.enqueueTask(namespace, sdkUtils.SyncRegistryTask))
+	_, err = s.cron.AddFunc("@every 12h", enqueueTask(s.tasksPublisher, namespace, sdkUtils.SyncRegistryTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, sdkUtils.SendNotificationTask))
+	_, err = s.cron.AddFunc("@every 30s", enqueueTask(s.tasksPublisher, namespace, sdkUtils.SendNotificationTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.ReportCleanUpTask))
+	_, err = s.cron.AddFunc("@every 60m", enqueueTask(s.tasksPublisher, namespace, sdkUtils.ReportCleanUpTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.CachePostureProviders))
+	_, err = s.cron.AddFunc("@every 60m", enqueueTask(s.tasksPublisher, namespace, sdkUtils.CachePostureProviders))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, sdkUtils.LinkCloudResourceTask))
+	_, err = s.cron.AddFunc("@every 30s", enqueueTask(s.tasksPublisher, namespace, sdkUtils.LinkCloudResourceTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, sdkUtils.LinkNodesTask))
+	_, err = s.cron.AddFunc("@every 30s", enqueueTask(s.tasksPublisher, namespace, sdkUtils.LinkNodesTask))
 	if err != nil {
 		return err
 	}
@@ -196,22 +199,24 @@ func (s *Scheduler) addJobs(ctx context.Context) error {
 	return nil
 }
 
-func (s *Scheduler) startImmediately(ctx context.Context) error {
+func StartInitJobs(ctx context.Context, taskPub *kafka.Publisher) error {
 	namespace, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
 	}
-	// initialize database
-	go initDatabase(ctx)
-	go initMinio()
+
+	// initialize sql database
+	if err := initSqlDatabase(ctx); err != nil {
+		log.Error().Err(err).Msgf("failed to initialize database for namespace %s", namespace)
+	}
 
 	log.Info().Msgf("Start immediate cronjobs for namespace %s", namespace)
-	s.enqueueTask(namespace, sdkUtils.SetUpGraphDBTask)()
-	s.enqueueTask(namespace, sdkUtils.CheckAgentUpgradeTask)()
-	s.enqueueTask(namespace, sdkUtils.SyncRegistryTask)()
-	s.enqueueTask(namespace, sdkUtils.CloudComplianceTask)()
-	s.enqueueTask(namespace, sdkUtils.ReportCleanUpTask)()
-	s.enqueueTask(namespace, sdkUtils.CachePostureProviders)()
+	enqueueTask(taskPub, namespace, sdkUtils.SetUpGraphDBTask)()
+	enqueueTask(taskPub, namespace, sdkUtils.CheckAgentUpgradeTask)()
+	enqueueTask(taskPub, namespace, sdkUtils.SyncRegistryTask)()
+	enqueueTask(taskPub, namespace, sdkUtils.CloudComplianceTask)()
+	enqueueTask(taskPub, namespace, sdkUtils.ReportCleanUpTask)()
+	enqueueTask(taskPub, namespace, sdkUtils.CachePostureProviders)()
 
 	return nil
 }
@@ -240,12 +245,12 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID, schedu
 	}
 }
 
-func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string) func() {
+func enqueueTask(taskPub *kafka.Publisher, namespace directory.NamespaceID, task string) func() {
 	log.Info().Msgf("Registering task: %s for namespace %s", task, namespace)
 	return func() {
 		log.Info().Msgf("Enqueuing task: %s for namespace %s", task, namespace)
 		metadata := map[string]string{directory.NamespaceKey: string(namespace)}
-		err := utils.PublishNewJob(s.tasksPublisher, metadata, task,
+		err := utils.PublishNewJob(taskPub, metadata, task,
 			[]byte(strconv.FormatInt(sdkUtils.GetTimestamp(), 10)))
 		if err != nil {
 			log.Error().Msg(err.Error())
