@@ -9,7 +9,7 @@ import (
 )
 
 // todo: add support for batch size
-const BatchSize = 100
+const BatchSize = 5
 
 func New(ctx context.Context, b []byte) (*Slack, error) {
 	s := Slack{}
@@ -20,7 +20,7 @@ func New(ctx context.Context, b []byte) (*Slack, error) {
 	return &s, nil
 }
 
-func (s Slack) FormatMessage(message []map[string]interface{}) []map[string]interface{} {
+func (s Slack) FormatMessage(message []map[string]interface{}, index int) []map[string]interface{} {
 	blocks := []map[string]interface{}{
 		{
 			"type": "section",
@@ -31,7 +31,7 @@ func (s Slack) FormatMessage(message []map[string]interface{}) []map[string]inte
 		},
 	}
 
-	index := 1
+	// index := 1
 	for _, v := range message {
 		emojiColor := ":large_blue_square:" // Default color (green)
 
@@ -82,11 +82,25 @@ func (s Slack) FormatMessage(message []map[string]interface{}) []map[string]inte
 		text := fmt.Sprintf("*%s #%d*\n", s.Resource, index)
 
 		for key, val := range v {
+			// text shouldn't be more than 3000 characters
 			if key == "file_severity" || key == "level" || key == "cve_severity" {
 				text = fmt.Sprintf("%s\n*%s*: %s %v", text, key, emojiColor, val)
+			} else if key == "urls" {
+				// check if urls is a list
+				urls, ok := val.([]interface{})
+				if ok {
+					// truncate urls to 3
+					if len(urls) > 3 {
+						urls = urls[:3]
+					}
+					text = fmt.Sprintf("%s\n*%s*: %v", text, key, urls)
+				} else {
+					text = fmt.Sprintf("%s\n*%s*: %v", text, key, val)
+				}
 			} else {
 				text = fmt.Sprintf("%s\n*%s*: %v", text, key, val)
 			}
+
 		}
 
 		blocks = append(blocks, map[string]interface{}{
@@ -103,42 +117,62 @@ func (s Slack) FormatMessage(message []map[string]interface{}) []map[string]inte
 }
 
 func (s Slack) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
-	// formatting : unmarshal into payload
+	// formatting: unmarshal into payload
 	var msg []map[string]interface{}
 	err := json.Unmarshal([]byte(message), &msg)
 	if err != nil {
 		return err
 	}
-	m := s.FormatMessage(msg)
-	payload := map[string]interface{}{
-		"text":   s.Resource,
-		"blocks": m,
-	}
 
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
+	totalMessages := len(msg)
+	numBatches := (totalMessages + BatchSize - 1) / BatchSize
 
-	// send message to this webhookURL using http
-	// Set up the HTTP request.
-	req, err := http.NewRequest("POST", s.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
+	for i := 0; i < numBatches; i++ {
+		startIdx := i * BatchSize
+		endIdx := (i + 1) * BatchSize
+		if endIdx > totalMessages {
+			endIdx = totalMessages
+		}
 
-	// Make the HTTP request.
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+		batchMsg := msg[startIdx:endIdx]
 
-	// Check the response status code.
-	if resp.StatusCode != http.StatusOK {
-		return err
+		m := s.FormatMessage(batchMsg, startIdx+1)
+		payload := map[string]interface{}{
+			"blocks": m,
+		}
+
+		payloadBytes, err := json.Marshal(payload)
+		if err != nil {
+			return err
+		}
+
+		// send message to this webhookURL using http
+		// Set up the HTTP request.
+		req, err := http.NewRequest("POST", s.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
+		if err != nil {
+			return err
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		// Make the HTTP request.
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		// Check the response status code.
+		if resp.StatusCode != http.StatusOK {
+			// get error message from body
+			errorMsg := ""
+			if resp.Body != nil {
+				buf := new(bytes.Buffer)
+				buf.ReadFrom(resp.Body)
+				errorMsg = buf.String()
+			}
+			return fmt.Errorf("failed to send notification batch %d, status code: %d , error: %s", i+1, resp.StatusCode, errorMsg)
+		}
 	}
 
 	return nil
