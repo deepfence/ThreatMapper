@@ -24,9 +24,11 @@ export const StepLine = ({ className }: { className?: string }) => {
 export const StepIndicator = ({
   children,
   className,
+  rounded = true,
 }: {
   children: React.ReactNode;
   className?: string;
+  rounded?: boolean;
 }) => {
   const [measureRef, { height }] = useMeasure<HTMLDivElement>();
   const { contentHeight } = useContext(StepHeightContext);
@@ -39,12 +41,20 @@ export const StepIndicator = ({
     >
       <div
         className={cn(
-          'min-w-4 min-h-4 flex items-center justify-center relative dark:bg-bg-card dark:text-text-text-and-icon text-h4',
+          'flex items-center justify-center relative dark:bg-transparent dark:text-text-text-and-icon text-h4',
           className,
         )}
         ref={measureRef}
       >
-        {children}
+        <div className="overflow-hidden">
+          <div
+            className={cn('dark:bg-bg-card', {
+              'rounded-full': rounded,
+            })}
+          >
+            {children}
+          </div>
+        </div>
       </div>
     </StepHeightContext.Provider>
   );

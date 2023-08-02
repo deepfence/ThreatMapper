@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useCallback, useState } from 'react';
+import { Suspense, useCallback, useMemo, useState } from 'react';
 import { ActionFunctionArgs, useFetcher, useParams } from 'react-router-dom';
 import {
   Button,
@@ -371,6 +371,12 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
   return null;
 };
 
+const useEmailConfiguration = () => {
+  return useSuspenseQuery({
+    ...queries.setting.getEmailConfiguration(),
+  });
+};
+
 const DeleteConfirmationModal = ({
   showDialog,
   row,
@@ -460,6 +466,20 @@ const Header = ({ title }: { title: string }) => {
   );
 };
 
+const CheckMailConfiguration = () => {
+  const { data } = useEmailConfiguration();
+
+  return (
+    <>
+      {data?.data && data?.data?.length === 0 && (
+        <span className="dark:text-status-error text-p7 flex items-center">
+          Not configured to send emails. Please configure it in Settings-&gt;Email
+          Configuration
+        </span>
+      )}
+    </>
+  );
+};
 const IntegrationAdd = () => {
   const { integrationType } = useParams() as {
     integrationType: string;
@@ -482,22 +502,33 @@ const IntegrationAdd = () => {
     [],
   );
 
+  const isEmailIntegration = useMemo(() => {
+    return integrationType === 'email';
+  }, [integrationType]);
+
   if (!integrationType) {
     throw new Error('Integration Type is required');
   }
 
   return (
     <div className="m-4">
-      <Button
-        variant="flat"
-        startIcon={<PlusIcon />}
-        onClick={() => {
-          setOpenModal(true);
-        }}
-        size="sm"
-      >
-        Add new integration
-      </Button>
+      <div className="flex gapx-8">
+        <Button
+          variant="flat"
+          startIcon={<PlusIcon />}
+          onClick={() => {
+            setOpenModal(true);
+          }}
+          size="sm"
+        >
+          Add new integration
+        </Button>
+        {isEmailIntegration && (
+          <Suspense>
+            <CheckMailConfiguration />
+          </Suspense>
+        )}
+      </div>
       <SlidingModal
         open={openModal}
         onOpenChange={() => {
