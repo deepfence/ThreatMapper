@@ -9,7 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/controls"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/cronscheduler"
+	cs "github.com/deepfence/ThreatMapper/deepfence_worker/cronscheduler"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel"
@@ -108,12 +108,14 @@ func main() {
 		}
 	case "scheduler":
 		log.Info().Msg("Starting scheduler")
+		go cs.InitMinioDatabase()
 		time.Sleep(10 * time.Second)
-		scheduler, err := cronscheduler.NewScheduler(tasksPublisher)
+		scheduler, err := cs.NewScheduler(tasksPublisher)
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return
 		}
+		scheduler.Init()
 		scheduler.Run()
 	default:
 		log.Fatal().Msgf("unknown mode %s", cfg.Mode)

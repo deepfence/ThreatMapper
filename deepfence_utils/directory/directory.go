@@ -101,12 +101,28 @@ func GetAllNamespaces() []NamespaceID {
 	directory.RLock()
 	defer directory.RUnlock()
 	var namespaces []NamespaceID
-	for k, _ := range directory.Directory {
+	for k := range directory.Directory {
 		if k != GlobalDirKey {
 			namespaces = append(namespaces, k)
 		}
 	}
 	return namespaces
+}
+
+func GetDatabaseConfig(ctx context.Context) (*DBConfigs, error) {
+	ns, err := ExtractNamespace(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	directory.RLock()
+	defer directory.RUnlock()
+
+	cfg, found := directory.Directory[ns]
+	if !found {
+		return nil, ErrNamespaceNotFound
+	}
+	return &cfg, nil
 }
 
 func ForEachNamespace(applyFn func(ctx context.Context) (string, error)) {
