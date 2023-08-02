@@ -39,16 +39,17 @@ type OrderFilter struct {
 }
 
 type FieldsFilters struct {
-	ContainsFilter    ContainsFilter  `json:"contains_filter" required:"true"`
-	NotContainsFilter ContainsFilter  `json:"not_contains_filter"`
-	MatchFilter       MatchFilter     `json:"match_filter" required:"true"`
-	OrderFilter       OrderFilter     `json:"order_filter" required:"true"`
-	CompareFilters    []CompareFilter `json:"compare_filter" required:"true"`
+	ContainsFilter        ContainsFilter  `json:"contains_filter" required:"true"`
+	NotContainsFilter     ContainsFilter  `json:"not_contains_filter"`
+	ContainsInArrayFilter ContainsFilter  `json:"contains_in_array_filter"`
+	MatchFilter           MatchFilter     `json:"match_filter" required:"true"`
+	OrderFilter           OrderFilter     `json:"order_filter" required:"true"`
+	CompareFilters        []CompareFilter `json:"compare_filter" required:"true"`
 }
 
 var severity_fields = map[string]struct{}{"cve_severity": {}, "file_severity": {}, "level": {}}
 
-func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilter, in bool) []string {
+func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilter, in bool, isArrayProperty bool) []string {
 	conditions := []string{}
 
 	reverse_operator := ""
@@ -95,7 +96,11 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 			}
 
 			if in {
-				conditions = append(conditions, fmt.Sprintf("%s%s IN [%s]", queryNodeName, k, strings.Join(values, ",")))
+				if isArrayProperty {
+					conditions = append(conditions, fmt.Sprintf("any(prop in %s%s WHERE prop IN [%s])", queryNodeName, k, strings.Join(values, ",")))
+				} else {
+					conditions = append(conditions, fmt.Sprintf("%s%s IN [%s]", queryNodeName, k, strings.Join(values, ",")))
+				}
 			} else {
 				conditions = append(conditions, fmt.Sprintf(" NOT coalesce(%s%s, '') IN [%s]", queryNodeName, k, strings.Join(values, ",")))
 			}
@@ -209,9 +214,11 @@ func ParseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.O
 		return ""
 	}
 
-	conditions := containsFilter2CypherConditions(cypherNodeName, f.ContainsFilter, true)
+	conditions := containsFilter2CypherConditions(cypherNodeName, f.ContainsFilter, true, false)
 
-	conditions = append(conditions, containsFilter2CypherConditions(cypherNodeName, f.NotContainsFilter, false)...)
+	conditions = append(conditions, containsFilter2CypherConditions(cypherNodeName, f.NotContainsFilter, false, false)...)
+
+	conditions = append(conditions, containsFilter2CypherConditions(cypherNodeName, f.ContainsInArrayFilter, true, true)...)
 
 	conditions = append(conditions, matchFilter2CypherConditions(cypherNodeName, f.MatchFilter)...)
 
@@ -236,7 +243,7 @@ func ContainsFilter2CypherWhereConditions(cypherNodeName string, filter Contains
 		return ""
 	}
 
-	conditions := containsFilter2CypherConditions(cypherNodeName, filter, true)
+	conditions := containsFilter2CypherConditions(cypherNodeName, filter, true, false)
 
 	if len(conditions) == 0 {
 		return ""

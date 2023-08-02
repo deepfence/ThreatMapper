@@ -39,7 +39,7 @@ var (
 		err:                       errors.New("Key: 'old_password' Error:incorrect old password"),
 		skipOverwriteErrorMessage: true,
 	}
-	deleteLastAdminError           = errors.New("cannot delete last active admin user")
+	deleteLastAdminError           = errors.New("at least one active admin user required")
 	passwordResetCodeNotFoundError = NotFoundError{errors.New("code not found")}
 	userInviteInvalidCodeError     = BadDecoding{errors.New("Invalid code")}
 	registrationDoneError          = ForbiddenError{errors.New("Cannot register. Please contact your administrator for an invite")}

@@ -92,6 +92,7 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 			nodeIds = append(nodeIds, model.NodeIdentifier{NodeId: node.ID, NodeType: controls.ResourceTypeToString(controls.Image)})
 		}
 	case utils.NodeTypeKubernetesCluster:
+		searchFilter.Filters.ContainsFilter.FieldsValues["agent_running"] = []interface{}{true}
 		nodes, err := reporters_search.SearchReport[model.KubernetesCluster](ctx, searchFilter, extSearchFilter, fetchWindow)
 		if err != nil {
 			return err
