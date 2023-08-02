@@ -195,14 +195,20 @@ const MenuItemButton = ({
   }, [location]);
 
   const btnClass = cn(
-    'text-h4 dark:text-text-text-and-icon py-3 px-5',
+    'text-h4 dark:text-text-text-and-icon py-3 pl-5 pr-3',
     'dark:hover:bg-bg-breadcrumb-bar',
-    'flex items-center gap-5 whitespace-nowrap',
-    'h-12 w-full text-left',
+    'flex items-center whitespace-nowrap',
+    'h-12 w-full text-left relative',
     {
       'dark:bg-bg-breadcrumb-bar': hasActiveChildren,
     },
   );
+
+  useEffect(() => {
+    if (expanded && hasActiveChildren) {
+      setShowSubmenu(true);
+    }
+  }, [expanded, hasActiveChildren]);
 
   return (
     <>
@@ -219,16 +225,19 @@ const MenuItemButton = ({
             if (expanded) setShowSubmenu((prev) => !prev);
           }}
         >
+          {hasActiveChildren && !expanded && (
+            <div className="absolute w-1 left-0 top-0 bottom-0 dark:bg-brand-dark-blue" />
+          )}
           <div className={cn('w-5 h-5 dark:text-text-text-and-icon shrink-0')}>
             {Icon ? <Icon /> : null}
           </div>
-          {expanded && <div className="overflow-hidden flex-1">{title}</div>}
+          {expanded && <div className="overflow-hidden flex-1 ml-5">{title}</div>}
           {expanded && (
             <div
               className={cn(
-                'h-4 w-4 dark:text-text-text-and-icon shrink-0 transition-all transform',
+                'h-4 w-4 dark:text-text-text-and-icon shrink-0 transition-all transform -rotate-90 ml-auto',
                 {
-                  '-rotate-180': showSubMenu,
+                  'rotate-0': showSubMenu,
                 },
               )}
             >
@@ -237,26 +246,35 @@ const MenuItemButton = ({
           )}
         </button>
         {!expanded && showFlyout ? (
-          <ul
-            className="fixed min-w-[200px] dark:bg-bg-left-nav border-y-2 border-r-2 dark:border-bg-top-header"
+          <div
+            className="fixed"
             style={{
               left: liRef.current?.getBoundingClientRect().width,
               top: liRef.current?.getBoundingClientRect().y,
             }}
           >
-            {subItems.map((subItem) => {
-              return (
-                <MenuSubItemLink
-                  key={subItem.to}
-                  title={subItem.title}
-                  link={subItem.to}
-                  onLinkClick={() => {
-                    setShowFlyout(false);
-                  }}
-                />
-              );
-            })}
-          </ul>
+            <ul
+              className="min-w-[200px] dark:bg-bg-card border-y border-r dark:border-bg-left-nav rounded-[5px] py-2 ml-1"
+              style={{
+                boxShadow: '0px 1px 3px 0px rgba(0, 0, 0, 0.25)',
+              }}
+            >
+              <li className="px-4 py-1.5 text-h4 dark:text-df-gray-500">{title}</li>
+              {subItems.map((subItem) => {
+                return (
+                  <MenuSubItemLink
+                    key={subItem.to}
+                    title={subItem.title}
+                    link={subItem.to}
+                    onLinkClick={() => {
+                      setShowFlyout(false);
+                    }}
+                    flyout
+                  />
+                );
+              })}
+            </ul>
+          </div>
         ) : null}
       </li>
       {expanded && showSubMenu ? (
@@ -328,10 +346,12 @@ const MenuSubItemLink = ({
   title,
   link,
   onLinkClick,
+  flyout,
 }: {
   title: string;
   link: string;
   onLinkClick?: MouseEventHandler<HTMLAnchorElement>;
+  flyout?: boolean;
 }) => {
   const linkClass = cn(
     'text-h4 dark:text-text-text-and-icon py-3 px-5',
@@ -357,7 +377,13 @@ const MenuSubItemLink = ({
               {isActive && (
                 <div className="absolute w-1 left-0 top-0 bottom-0 dark:bg-brand-dark-blue" />
               )}
-              <div className="overflow-hidden flex-1 pl-10">{title}</div>
+              <div
+                className={cn('overflow-hidden flex-1 pl-10', {
+                  'pl-3': flyout,
+                })}
+              >
+                {title}
+              </div>
             </>
           );
         }}

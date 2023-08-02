@@ -23,8 +23,8 @@ import { SearchableClusterList } from '@/components/forms/SearchableClusterList'
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
+import { FileLineIcon } from '@/components/icons/common/FileLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
-import { ScrollLine } from '@/components/icons/common/ScrollLine';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
@@ -74,7 +74,7 @@ const RuntimeBom = () => {
               Vulnerabilities
             </DFLink>
           </BreadcrumbLink>
-          <BreadcrumbLink icon={<ScrollLine />}>
+          <BreadcrumbLink icon={<FileLineIcon />}>
             <span className="inherit cursor-auto">Runtime BOM</span>
           </BreadcrumbLink>
         </Breadcrumb>
