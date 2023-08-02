@@ -14,7 +14,7 @@ import {
 
 import { ModelSbomResponse } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { ScrollLine } from '@/components/icons/common/ScrollLine';
+import { FileLineIcon } from '@/components/icons/common/FileLine';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
@@ -46,7 +46,7 @@ export const SbomModal = ({
       <SlidingModalHeader>
         <div className="flex items-center gap-2 dark:text-text-text-and-icon dark:bg-bg-breadcrumb-bar p-5 text-h3">
           <div className="h-5 w-5 shrink-0">
-            <ScrollLine />
+            <FileLineIcon />
           </div>
           <div>SBOM for {nodeName}</div>
         </div>
