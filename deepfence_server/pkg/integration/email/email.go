@@ -26,7 +26,7 @@ func New(ctx context.Context, b []byte) (*Email, error) {
 
 	// check if email is configured, donot allow if not
 	if !h.IsEmailConfigured(ctx) {
-		return nil, fmt.Errorf("email is not configured")
+		return nil, fmt.Errorf("not configured to send emails. Please configure it in Settings->Email Configuration")
 	}
 
 	return &h, nil
