@@ -249,6 +249,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		nonKubeFilter = "{kubernetes_cluster_id:'', node_type:'host'}"
 	}
 	if cloudProvider == model.PostureProviderLinux || cloudProvider == model.PostureProviderKubernetes {
+		filter.Filters.ContainsFilter.FieldsValues["agent_running"] = append(make([]interface{}, 0), true)
 		delete(filter.Filters.ContainsFilter.FieldsValues, "cloud_provider")
 	}
 	orderFilters := filter.Filters.OrderFilter
