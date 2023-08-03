@@ -86,10 +86,10 @@ launch_deepfenced() {
   /usr/bin/supervisord -c /home/deepfence/supervisord.conf
 
   echo "Starting agent"
-  until [ -f /var/log/fenced/discovery.logfile ]; do
+  until [ -f /var/log/deepfenced/discovery ]; do
     sleep 5
   done
-  tail -f /var/log/fenced/discovery.logfile
+  tail -f /var/log/deepfenced/discovery
 }
 
 create_cgroups() {

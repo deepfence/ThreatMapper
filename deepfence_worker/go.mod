@@ -34,6 +34,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/minio/minio-go/v7 v7.0.58
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.7
+	github.com/pressly/goose/v3 v3.14.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/zerolog v1.29.1
@@ -192,7 +193,6 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pressly/goose/v3 v3.14.0
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.39.0 // indirect
 	github.com/prometheus/procfs v0.11.0 // indirect
