@@ -73,14 +73,16 @@ func main() {
 	cc := make(chan struct{})
 	server.StartRPCServer("/tmp/deepfence_boot.sock", cc)
 
-	for _, entry := range cfg.Cgroups {
-		err := cgroups.LoadCgroup(entry.Name, int64(entry.MaxCPU), int64(entry.MaxMem))
-		if err == cgroups.FailUpdateError {
-			log.Error().Msgf("Failed to update %s", entry.Name)
-		} else if err == cgroups.FailCreateError {
-			log.Fatal().Msgf("Failed to create %s", entry.Name)
-		} else if err != nil {
-			log.Error().Err(err).Msg("Error on cgroup")
+	if !enable_cluster_discovery {
+		for _, entry := range cfg.Cgroups {
+			err := cgroups.LoadCgroup(entry.Name, int64(entry.MaxCPU), int64(entry.MaxMem))
+			if err == cgroups.FailUpdateError {
+				log.Error().Msgf("Failed to update %s", entry.Name)
+			} else if err == cgroups.FailCreateError {
+				log.Fatal().Msgf("Failed to create %s", entry.Name)
+			} else if err != nil {
+				log.Error().Err(err).Msg("Error on cgroup")
+			}
 		}
 	}
 
