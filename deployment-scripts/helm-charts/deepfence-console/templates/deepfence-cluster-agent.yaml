@@ -40,7 +40,7 @@ spec:
             - name: MGMT_CONSOLE_PORT
               value: "443"
             - name: "DEEPFENCE_KEY"
-              value: ""
+              value: "\"\""
             - name: DF_CLUSTER_NAME
               value: "{{ .Values.console_agents.cluster_name }}"
             - name: AGENT_HOSTNAME
