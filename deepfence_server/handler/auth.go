@@ -19,7 +19,10 @@ import (
 var (
 	parseRefreshTokenError  = errors.New("cannot parse refresh token")
 	accessTokenRevokedError = ForbiddenError{errors.New("access token is revoked")}
-	userInactiveError       = ForbiddenError{errors.New("user is not active")}
+	userInactiveError       = ValidatorError{
+		err:                       errors.New("Key: 'email' Error:user is not active"),
+		skipOverwriteErrorMessage: true,
+	}
 )
 
 func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
