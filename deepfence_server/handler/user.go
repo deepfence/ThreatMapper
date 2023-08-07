@@ -118,7 +118,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	c := model.Company{
 		Name:        registerRequest.Company,
 		EmailDomain: emailDomain,
-		Namespace:   string(directory.NonSaaSDirKey), //TODO: SaaS namespace
+		Namespace:   string(namespace),
 	}
 	company, err := c.Create(ctx, pgClient)
 	if err != nil {
