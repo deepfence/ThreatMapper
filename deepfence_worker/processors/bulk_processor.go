@@ -271,6 +271,12 @@ func (w *bulkWorker) commit(ctx context.Context) []error {
 			break
 		}
 	}
+	// metrics
+	if len(errs) > 0 {
+		commitNeo4jRecordsCounts.WithLabelValues(w.worker_id, "error").Add(float64(w.buffer.size))
+	} else {
+		commitNeo4jRecordsCounts.WithLabelValues(w.worker_id, "success").Add(float64(w.buffer.size))
+	}
 	// reset buffer after commit
 	w.buffer.Reset()
 	return errs

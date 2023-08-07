@@ -13,70 +13,14 @@ import (
 )
 
 var (
-	publishElasticSearch = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "publish_es_total",
-		Help: "Total number of records sent successfully to elasticsearch",
-	}, []string{"status"})
+	commitNeo4jRecordsCounts = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "neo4j_commit_records_total",
+		Help: "Total number of records committed to neo4j",
+	}, []string{"worker", "status"})
 	topicLag = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "consumer_group_lag",
 		Help: "Consumer group lag per topic",
 	}, []string{"topic"})
-	vulnerabilitiesMasked = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "cve_masked_total",
-		Help: "Total number of cve records masked",
-	})
-	vulnerabilitiesProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "cve_scan_total",
-		Help: "Total number of cve records processed",
-	})
-	vulnerabilityLogsProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "cve_scan_logs_total",
-		Help: "Total number of cve log records processed",
-	})
-	secretProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "secret_scan_total",
-		Help: "Total number of secret scan records processed",
-	})
-	secretLogsProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "secret_scan_logs_total",
-		Help: "Total number of secret scan log records processed",
-	})
-	malwareProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "malware_scan_total",
-		Help: "Total number of malware scan records processed",
-	})
-	malwareLogsProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "malware_scan_logs_total",
-		Help: "Total number of malware scan log records processed",
-	})
-	sbomArtifactsProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sbom_artifacts_total",
-		Help: "Total number of sbom artifacts processed",
-	})
-	sbomCveProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sbom_cve_total",
-		Help: "Total number of sbom cve records processed",
-	})
-	cloudComplianceProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "cloud_compliance_scan_total",
-		Help: "Total number of cloud compliance scan records processed",
-	})
-	cloudComplianceLogsProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "cloud_compliance_scan_logs_total",
-		Help: "Total number of cloud compliance scan log records processed",
-	})
-	complianceProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "compliance_scan_total",
-		Help: "Total number of compliance scan records processed",
-	})
-	complianceLogsProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "compliance_scan_logs_total",
-		Help: "Total number of compliance scan log records processed",
-	})
-	cloudTrailAlertsProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "cloud_trail_alerts_total",
-		Help: "Total number of cloud trail alert records processed",
-	})
 )
 
 func StartGetLagByTopic(ctx context.Context, kafkaBrokers []string, groupID string, kgoLogger kgo.Logger) error {
