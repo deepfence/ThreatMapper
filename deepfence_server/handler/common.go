@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
@@ -82,6 +83,7 @@ func (i *InternalServerError) Error() string {
 type ValidatorError struct {
 	err                       error
 	skipOverwriteErrorMessage bool
+	errorIndex                map[string]int
 }
 
 func (bd *ValidatorError) Error() string {
@@ -119,6 +121,8 @@ func respondWithErrorCode(err error, w http.ResponseWriter, code int) error {
 func respondError(err error, w http.ResponseWriter) error {
 	var code int
 	var errorFields map[string]string
+	// array index for the error field
+	var errorIndex map[string]int
 	switch err.(type) {
 	case *reporters_scan.NodeNotFoundError:
 		code = http.StatusNotFound
@@ -130,7 +134,10 @@ func respondError(err error, w http.ResponseWriter) error {
 		code = http.StatusBadRequest
 	case *ValidatorError:
 		code = http.StatusBadRequest
-		errorFields = model.ParseValidatorError(err.Error(), err.(*ValidatorError).skipOverwriteErrorMessage)
+		var validatorError *ValidatorError
+		errors.As(err, &validatorError)
+		errorFields = model.ParseValidatorError(validatorError.Error(), validatorError.skipOverwriteErrorMessage)
+		errorIndex = validatorError.errorIndex
 	case *ForbiddenError:
 		code = http.StatusForbidden
 	case *NotFoundError:
@@ -140,8 +147,8 @@ func respondError(err error, w http.ResponseWriter) error {
 	}
 
 	if len(errorFields) > 0 {
-		return httpext.JSON(w, code, model.ErrorResponse{Message: "", ErrorFields: errorFields})
+		return httpext.JSON(w, code, model.ErrorResponse{Message: "", ErrorFields: errorFields, ErrorIndex: errorIndex})
 	} else {
-		return httpext.JSON(w, code, model.ErrorResponse{Message: err.Error(), ErrorFields: errorFields})
+		return httpext.JSON(w, code, model.ErrorResponse{Message: err.Error(), ErrorFields: errorFields, ErrorIndex: errorIndex})
 	}
 }
