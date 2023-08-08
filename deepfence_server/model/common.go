@@ -28,7 +28,7 @@ type MessageResponse struct {
 type ErrorResponse struct {
 	Message     string            `json:"message" required:"true"`
 	ErrorFields map[string]string `json:"error_fields"`
-	ErrorIndex  map[string]int    `json:"error_index"`
+	ErrorIndex  map[string][]int  `json:"error_index"`
 }
 
 type LoginResponse struct {

@@ -83,7 +83,7 @@ func (i *InternalServerError) Error() string {
 type ValidatorError struct {
 	err                       error
 	skipOverwriteErrorMessage bool
-	errorIndex                map[string]int
+	errorIndex                map[string][]int
 }
 
 func (bd *ValidatorError) Error() string {
@@ -122,7 +122,7 @@ func respondError(err error, w http.ResponseWriter) error {
 	var code int
 	var errorFields map[string]string
 	// array index for the error field
-	var errorIndex map[string]int
+	var errorIndex map[string][]int
 	switch err.(type) {
 	case *reporters_scan.NodeNotFoundError:
 		code = http.StatusNotFound
