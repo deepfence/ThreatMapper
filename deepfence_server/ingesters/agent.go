@@ -597,6 +597,9 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		if n.Metadata.HostName == "" {
 			continue
 		}
+		if n.Metadata.ImageName == "<none>" || n.Metadata.ImageTag == "<none>" {
+			continue
+		}
 		res.Container_image_batch = append(res.Container_image_batch, metadataToMap(n.Metadata))
 		container_image_edges_batch[n.Metadata.HostName] = append(container_image_edges_batch[n.Metadata.HostName], n.Metadata.NodeID)
 	}
