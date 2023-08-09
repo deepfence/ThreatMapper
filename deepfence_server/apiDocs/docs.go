@@ -48,6 +48,7 @@ type BadRequestResponse struct {
 	Success     bool               `json:"success" example:"false"`
 	Message     string             `json:"message"`
 	ErrorFields *map[string]string `json:"error_fields"`
+	ErrorIndex  *map[string][]int  `json:"error_index"`
 }
 
 type OpenApiDocs struct {
