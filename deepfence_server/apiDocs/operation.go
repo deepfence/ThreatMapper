@@ -738,6 +738,9 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 	d.AddOperation("updateScheduledTask", http.MethodPatch, "/deepfence/scheduled-task/{id}",
 		"Update scheduled task", "Update scheduled task",
 		http.StatusNoContent, []string{tagSettings}, bearerToken, new(UpdateScheduledTaskRequest), nil)
+	d.AddOperation("addScheduledTask", http.MethodPost, "/deepfence/scheduled-task",
+		"Add scheduled task", "Add scheduled task",
+		http.StatusNoContent, []string{tagSettings}, bearerToken, new(AddScheduledTaskRequest), nil)
 
 	// Database upload
 	d.AddOperation("uploadVulnerabilityDatabase", http.MethodPut, "/deepfence/database/vulnerability",

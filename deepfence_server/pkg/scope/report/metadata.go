@@ -37,6 +37,7 @@ type Metadata struct {
 	KernelId         string   `json:"kernel_id,omitempty"`
 	CloudRegion      string   `json:"cloud_region,omitempty"`
 	ResourceGroup    string   `json:"resource_group,omitempty"`
+	Tags             []string `json:"tags,omitempty"`
 
 	// common
 	Uptime          int      `json:"uptime,omitempty"`

@@ -55,6 +55,16 @@ type CloudMeta struct {
 	mtx           sync.RWMutex
 }
 
+func GetUserDefinedTags() []string {
+	var agentTags []string
+	// User defined tags can be set from agent side also
+	agentTagsStr := os.Getenv("USER_DEFINED_TAGS")
+	if agentTagsStr != "" {
+		agentTags = strings.Split(agentTagsStr, ",")
+	}
+	return agentTags
+}
+
 func getCloudMetadata(cloudProvider string) (string, cloud_metadata.CloudMetadata) {
 	var cloudMetadata cloud_metadata.CloudMetadata
 	if cloudProvider == "aws" {
@@ -95,16 +105,6 @@ func (r *Reporter) updateCloudMetadata(cloudProvider string) {
 	r.cloudMeta.cloudProvider = cloudProvider
 	r.cloudMeta.cloudMetadata = cloudMetadata
 	r.cloudMeta.mtx.Unlock()
-}
-
-func getAgentTags() []string {
-	var agentTags []string
-	// User defined tags can be set from agent side also
-	agentTagsStr := os.Getenv("USER_DEFINED_TAGS")
-	if agentTagsStr != "" {
-		agentTags = strings.Split(agentTagsStr, ",")
-	}
-	return agentTags
 }
 
 type UserDefinedTags struct {
@@ -211,7 +211,7 @@ type Reporter struct {
 	KernelVersion      string
 	AgentVersion       string
 	IsConsoleVm        bool
-	userDefinedTags    UserDefinedTags
+	UserDefinedTags    []string
 }
 
 // NewReporter returns a Reporter which produces a report containing host
@@ -224,21 +224,21 @@ func NewReporter(hostName, probeID, version string) (*Reporter, string, string) 
 		isConsoleVm = true
 	}
 	r := &Reporter{
-		hostName:       hostName,
-		probeID:        probeID,
-		version:        version,
-		pipeIDToTTY:    map[string]uintptr{},
-		k8sClusterId:   os.Getenv(report.KubernetesClusterId),
-		k8sClusterName: os.Getenv(report.KubernetesClusterName),
-		OSVersion:      runtime.GOOS,
-		KernelVersion:  kernel,
-		AgentVersion:   AgentVersionNo + "-" + agentCommitID + "-" + agentBuildTime,
-		IsConsoleVm:    isConsoleVm,
-		userDefinedTags: UserDefinedTags{
-			tags: make([]string, 0),
-		},
+		hostName:          hostName,
+		probeID:           probeID,
+		version:           version,
+		pipeIDToTTY:       map[string]uintptr{},
+		k8sClusterId:      os.Getenv(report.KubernetesClusterId),
+		k8sClusterName:    os.Getenv(report.KubernetesClusterName),
+		OSVersion:         runtime.GOOS,
+		KernelVersion:     kernel,
+		AgentVersion:      AgentVersionNo + "-" + agentCommitID + "-" + agentBuildTime,
+		IsConsoleVm:       isConsoleVm,
 		hostDetailsMinute: HostDetailsEveryMinute{},
 	}
+
+	r.UserDefinedTags = GetUserDefinedTags()
+
 	cloudProvider := cloud_metadata.DetectCloudServiceProvider()
 	r.updateCloudMetadata(cloudProvider)
 	r.cloudMeta.mtx.RLock()
@@ -314,10 +314,6 @@ func (r *Reporter) Report() (report.Report, error) {
 	cloudProvider := r.cloudMeta.cloudProvider
 	r.cloudMeta.mtx.RUnlock()
 
-	r.userDefinedTags.RLock()
-	userDefinedTags := r.userDefinedTags.tags
-	r.userDefinedTags.RUnlock()
-
 	r.hostDetailsMinute.RLock()
 	uptime := r.hostDetailsMinute.Uptime
 	localCIDRs := r.hostDetailsMinute.LocalCIDRs
@@ -332,6 +328,12 @@ func (r *Reporter) Report() (report.Report, error) {
 	memoryMax := r.hostDetailsMetrics.MemoryMax
 	memoryUsage := r.hostDetailsMetrics.MemoryUsage
 	r.hostDetailsMetrics.RUnlock()
+
+	if len(cloudMetadata.Tags) > 0 {
+		cloudMetadata.Tags = append(cloudMetadata.Tags, r.UserDefinedTags...)
+	} else {
+		cloudMetadata.Tags = r.UserDefinedTags
+	}
 
 	rep.CloudProvider.AddNode(
 		report.TopologyNode{
@@ -373,7 +375,6 @@ func (r *Reporter) Report() (report.Report, error) {
 				InterfaceNames:      interfaceNames,
 				InterfaceIps:        interfaceIPs,
 				InterfaceIpMap:      interfaceIPMap,
-				UserDefinedTags:     userDefinedTags,
 				Version:             r.AgentVersion,
 				IsConsoleVm:         r.IsConsoleVm,
 				AgentRunning:        true,
@@ -392,6 +393,7 @@ func (r *Reporter) Report() (report.Report, error) {
 				MemoryMax:           memoryMax,
 				MemoryUsage:         memoryUsage,
 				KubernetesClusterId: r.k8sClusterId,
+				Tags:                cloudMetadata.Tags,
 			},
 			Parents: &report.Parent{
 				CloudProvider:     cloudProvider,

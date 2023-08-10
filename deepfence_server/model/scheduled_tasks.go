@@ -30,6 +30,19 @@ var (
 	}
 )
 
+type AddScheduledTaskRequest struct {
+	NodeType    string `json:"node_type"`
+	Action      string `json:"action"`
+	Description string `json:"description"`
+	CronExpr    string `json:"cron_expr"`
+	Filters     string `json:"filters"`
+}
+
+type UpdateScheduledTaskRequest struct {
+	ID        int64 `path:"id" validate:"required" required:"true"`
+	IsEnabled bool  `json:"is_enabled" required:"true"`
+}
+
 func GetScheduledTask(ctx context.Context) ([]postgresqlDb.Scheduler, error) {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
@@ -42,11 +55,6 @@ func GetScheduledTask(ctx context.Context) ([]postgresqlDb.Scheduler, error) {
 		return nil, err
 	}
 	return schedules, nil
-}
-
-type UpdateScheduledTaskRequest struct {
-	ID        int64 `path:"id" validate:"required" required:"true"`
-	IsEnabled bool  `json:"is_enabled" required:"true"`
 }
 
 func UpdateScheduledTask(ctx context.Context, id int64, updateScheduledTask UpdateScheduledTaskRequest) error {
@@ -66,6 +74,28 @@ func UpdateScheduledTask(ctx context.Context, id int64, updateScheduledTask Upda
 		Status:      schedule.Status,
 		ID:          id,
 	})
+}
+
+func AddScheduledTask(ctx context.Context, req AddScheduledTaskRequest) error {
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return err
+	}
+	payload := make(map[string]string)
+	payload["node_type"] = req.NodeType
+	payload["filters"] = req.Filters
+	payloadJson, _ := json.Marshal(payload)
+
+	params := postgresqlDb.CreateScheduleParams{}
+	params.Action = req.Action
+	params.CronExpr = req.CronExpr
+	params.Description = req.Description
+	params.IsEnabled = true
+	params.IsSystem = false
+	params.Payload = payloadJson
+
+	_, err = pgClient.CreateSchedule(ctx, params)
+	return err
 }
 
 func InitializeScheduledTasks(ctx context.Context, pgClient *postgresqlDb.Queries) error {
