@@ -190,6 +190,23 @@ func GetAWSMetadata(onlyValidate bool) (CloudMetadata, error) {
 		ips = append(ips, httpResp)
 		awsMetadata.PrivateIP = ips
 	}
+
+	var tags []string
+
+	httpResp, err = GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", awsMetadataBaseUrl, "tags/instance"), nil, headers)
+	if err == nil {
+		tagKeys := strings.Split(httpResp, "\n")
+		baseUrl := awsMetadataBaseUrl + "/tags/instance"
+		for _, tagKey := range tagKeys {
+			val, err := GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", baseUrl, tagKey), nil, headers)
+			if err == nil {
+				tags = append(tags, tagKey+"="+val)
+			}
+		}
+	}
+
+	awsMetadata.Tags = tags
+
 	return awsMetadata, nil
 }
 
@@ -246,6 +263,7 @@ func GetGoogleCloudMetadata(onlyValidate bool) (CloudMetadata, error) {
 	}
 	gcpMetadata.PrivateIP = privateIP
 	gcpMetadata.PublicIP = publicIP
+
 	return gcpMetadata, nil
 }
 
@@ -286,6 +304,23 @@ func GetAzureMetadata(onlyValidate bool) (CloudMetadata, error) {
 	}
 	azureMetadata.PublicIP = publicIP
 	azureMetadata.PrivateIP = privateIP
+
+	//Get the tags...
+	var tags []string
+	for _, val := range azureMetadataAll.Compute.TagsList {
+		tagName, tagValue := "", ""
+		for key, value := range val.(map[string]interface{}) {
+			if key == "name" {
+				tagName = value.(string)
+			} else {
+				tagValue = value.(string)
+			}
+		}
+		tags = append(tags, tagName+"="+tagValue)
+	}
+
+	azureMetadata.Tags = tags
+
 	return azureMetadata, nil
 }
 
@@ -301,6 +336,7 @@ func GetDigitalOceanMetadata(onlyValidate bool) (CloudMetadata, error) {
 	if err != nil {
 		return digitalOceanMetadata, err
 	}
+
 	verifyIfDigitalOcean := func(dropletID int) error {
 		if dropletID == 0 {
 			return incorrectMetadataError
@@ -329,6 +365,7 @@ func GetDigitalOceanMetadata(onlyValidate bool) (CloudMetadata, error) {
 	}
 	digitalOceanMetadata.PublicIP = publicIP
 	digitalOceanMetadata.PrivateIP = privateIP
+
 	return digitalOceanMetadata, nil
 }
 
@@ -441,6 +478,7 @@ type CloudMetadata struct {
 	OsType            string   `json:"os_type,omitempty"`
 	SKU               string   `json:"sku,omitempty"`
 	ResourceGroupName string   `json:"resource_group_name,omitempty"`
+	Tags              []string `json:"tags,omitempty"`
 }
 
 type AWSFargateMetadata struct {

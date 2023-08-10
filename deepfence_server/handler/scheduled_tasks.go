@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
@@ -42,5 +43,33 @@ func (h *Handler) UpdateScheduledTask(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) AddScheduledTask(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	var req model.AddScheduledTaskRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("Failed to DecodeJSON: %v", err)
+		respondError(err, w)
+		return
+	}
+
+	err = h.Validator.Struct(req)
+	if err != nil {
+		log.Info().Msgf("Error(AddScheduledTask) in struct validation: %v", err)
+		respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	err = model.AddScheduledTask(r.Context(), req)
+	if err != nil {
+		log.Error().Msgf("Error(AddScheduledTask) adding task to postgres..: %v", err)
+		respondError(err, w)
+		return
+	}
+
 	w.WriteHeader(http.StatusNoContent)
 }

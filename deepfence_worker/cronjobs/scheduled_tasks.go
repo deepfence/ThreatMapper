@@ -54,14 +54,42 @@ var (
 func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{}) error {
 	payload := messagePayload["payload"].(map[string]interface{})
 	nodeType := payload["node_type"].(string)
-	searchFilter := reporters_search.SearchFilter{
-		InFieldFilter: []string{"node_id"},
-		Filters: reporters.FieldsFilters{
-			ContainsFilter: reporters.ContainsFilter{
-				FieldsValues: map[string][]interface{}{"pseudo": {false}, "active": {true}},
+
+	var searchFilter reporters_search.SearchFilter
+	_, ok := payload["filters"]
+	if ok {
+		filters := payload["filters"].(string)
+		err := json.Unmarshal([]byte(filters), &searchFilter)
+		if err != nil {
+			log.Error().Msgf("Error Unmarshaling filter: %v", err)
+			return err
+		}
+
+		fieldsValues := searchFilter.Filters.ContainsFilter.FieldsValues
+		if fieldsValues == nil {
+			fieldsValues = make(map[string][]interface{})
+		}
+
+		if _, ok := fieldsValues["pseudo"]; !ok {
+			fieldsValues["pseudo"] = append(make([]interface{}, 0), false)
+		}
+
+		if _, ok := fieldsValues["active"]; !ok {
+			fieldsValues["active"] = append(make([]interface{}, 0), true)
+		}
+
+		searchFilter.Filters.ContainsFilter.FieldsValues = fieldsValues
+	} else {
+		searchFilter = reporters_search.SearchFilter{
+			InFieldFilter: []string{"node_id"},
+			Filters: reporters.FieldsFilters{
+				ContainsFilter: reporters.ContainsFilter{
+					FieldsValues: map[string][]interface{}{"pseudo": {false}, "active": {true}},
+				},
 			},
-		},
+		}
 	}
+
 	extSearchFilter := reporters_search.SearchFilter{}
 	fetchWindow := model.FetchWindow{Offset: 0, Size: 10000}
 	nodeIds := []model.NodeIdentifier{}
