@@ -102,14 +102,6 @@ const isUserActivityNotification = (notificationType: string) => {
   return notificationType && notificationType === 'User Activities';
 };
 
-const isTicketingIntegration = (integrationType: string) => {
-  return integrationType && integrationType === IntegrationType.jira;
-};
-
-const isArchivalIntegration = (integrationType: string) => {
-  return integrationType && integrationType === IntegrationType.s3;
-};
-
 const API_SCAN_TYPE_MAP: {
   [key: string]: ScanTypeEnum;
 } = {
@@ -331,9 +323,7 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
 
       {notificationType &&
       !isCloudTrailNotification(notificationType) &&
-      !isUserActivityNotification(notificationType) &&
-      !isTicketingIntegration(integrationType) &&
-      !isArchivalIntegration(integrationType) ? (
+      !isUserActivityNotification(notificationType) ? (
         <AdvancedFilters notificationType={notificationType} />
       ) : null}
     </>
@@ -609,12 +599,10 @@ export const IntegrationForm = ({
                   helperText={
                     authType === 'password'
                       ? fieldErrors?.password
-                      : fieldErrors?.is_auth_token
+                      : fieldErrors?.api_token
                   }
                   color={
-                    fieldErrors?.password || fieldErrors?.is_auth_token
-                      ? 'error'
-                      : 'default'
+                    fieldErrors?.password || fieldErrors?.api_token ? 'error' : 'default'
                   }
                   type={authType === 'password' ? 'password' : 'text'}
                   placeholder={authType === 'password' ? 'password' : 'Api token'}
