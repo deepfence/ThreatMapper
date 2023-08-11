@@ -41,23 +41,31 @@ export const getReportBenchmarkList = (nodeType: string) => {
       return [];
   }
 };
+export const NODE_TYPES: { [k: string]: UtilsReportFiltersNodeTypeEnum } = {
+  AWS: UtilsReportFiltersNodeTypeEnum.Aws,
+  AZURE: UtilsReportFiltersNodeTypeEnum.Azure,
+  GCP: UtilsReportFiltersNodeTypeEnum.Gcp,
+  Host: UtilsReportFiltersNodeTypeEnum.Host,
+  Cluster: UtilsReportFiltersNodeTypeEnum.Cluster,
+  'Container Image': UtilsReportFiltersNodeTypeEnum.ContainerImage,
+};
 export const getReportNodeType = (resourceType: string) => {
-  if (resourceType === 'CloudCompliance') {
+  if (resourceType === 'Cloud Compliance') {
     return {
-      Aws: UtilsReportFiltersNodeTypeEnum.Aws,
-      Azure: UtilsReportFiltersNodeTypeEnum.Azure,
-      Gcp: UtilsReportFiltersNodeTypeEnum.Gcp,
+      AWS: NODE_TYPES.AWS,
+      AZURE: NODE_TYPES.AZURE,
+      GCP: NODE_TYPES.GCP,
     };
   } else if (resourceType === 'Compliance') {
     return {
-      Host: UtilsReportFiltersNodeTypeEnum.Host,
-      Kubernetes: UtilsReportFiltersNodeTypeEnum.Cluster,
+      Host: NODE_TYPES.Host,
+      Kubernetes: NODE_TYPES.Cluster,
     };
   }
   return {
-    Host: UtilsReportFiltersNodeTypeEnum.Host,
-    Container: UtilsReportFiltersNodeTypeEnum.Container,
-    ContainerImage: UtilsReportFiltersNodeTypeEnum.ContainerImage,
+    Host: NODE_TYPES.Host,
+    Container: NODE_TYPES.Container,
+    'Container Image': NODE_TYPES['Container Image'],
   };
 };
 
