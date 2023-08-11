@@ -118,6 +118,8 @@ const API_SCAN_TYPE_MAP: {
   Malware: ScanTypeEnum.MalwareScan,
   Compliance: ScanTypeEnum.ComplianceScan,
 };
+
+const scanTypes = ['Secret', 'Vulnerability', 'Malware'];
 const AdvancedFilters = ({ notificationType }: { notificationType: string }) => {
   // severity
   const [selectedSeverity, setSelectedSeverity] = useState([]);
@@ -160,6 +162,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
             setContainers([]);
           }}
         />
+
         <SearchableImageList
           scanType={API_SCAN_TYPE_MAP[notificationType]}
           triggerVariant="select"
@@ -228,9 +231,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
           </>
         ) : null}
 
-        {['Secret', 'Vulnerability', 'Malware'].includes(
-          notificationType as ScanTypeEnum,
-        ) ? (
+        {scanTypes.includes(notificationType as ScanTypeEnum) ? (
           <>
             <input
               type="text"

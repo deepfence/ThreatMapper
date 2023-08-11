@@ -279,6 +279,31 @@ const UploadVulnerabilityDatabase = () => {
     </>
   );
 };
+const resources: {
+  label: string;
+  value: ModelBulkDeleteScansRequestScanTypeEnum;
+}[] = [
+  {
+    label: 'Vulnerability',
+    value: ModelBulkDeleteScansRequestScanTypeEnum.Vulnerability,
+  },
+  {
+    label: 'Secret',
+    value: ModelBulkDeleteScansRequestScanTypeEnum.Secret,
+  },
+  {
+    label: 'Malware',
+    value: ModelBulkDeleteScansRequestScanTypeEnum.Malware,
+  },
+  {
+    label: 'Compliance',
+    value: ModelBulkDeleteScansRequestScanTypeEnum.Compliance,
+  },
+  {
+    label: 'Cloud Compliance',
+    value: ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance,
+  },
+];
 const ScanHistoryAndDbManagement = () => {
   const [, setSeverityOrResources] = useState('severity');
   const [selectedResource, setSelectedResource] = useState<string>(
@@ -322,28 +347,7 @@ const ScanHistoryAndDbManagement = () => {
           direction="row"
           name="severityOrStatus"
           value={selectedResource}
-          options={[
-            {
-              label: 'Vulnerability',
-              value: ModelBulkDeleteScansRequestScanTypeEnum.Vulnerability,
-            },
-            {
-              label: 'Secret',
-              value: ModelBulkDeleteScansRequestScanTypeEnum.Secret,
-            },
-            {
-              label: 'Malware',
-              value: ModelBulkDeleteScansRequestScanTypeEnum.Malware,
-            },
-            {
-              label: 'Compliance',
-              value: ModelBulkDeleteScansRequestScanTypeEnum.Compliance,
-            },
-            {
-              label: 'Cloud Compliance',
-              value: ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance,
-            },
-          ]}
+          options={resources}
           onValueChange={(value) => {
             setSelectedResource(value);
             setSeverityOrResources('severity');
