@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/PagerDuty/go-pagerduty"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -45,9 +46,11 @@ func (p PagerDuty) SendNotification(ctx context.Context, message string, extras 
 		return nil
 	}
 
+	var err error
 	var msg []map[string]interface{}
-	err := json.Unmarshal([]byte(message), &msg)
-	if err != nil {
+	d := json.NewDecoder(strings.NewReader(message))
+	d.UseNumber()
+	if err = d.Decode(&msg); err != nil {
 		return err
 	}
 	m := p.FormatMessage(msg)

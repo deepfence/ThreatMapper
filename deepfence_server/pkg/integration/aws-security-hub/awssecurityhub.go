@@ -85,8 +85,9 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 
 	svc := securityhub.New(sess)
 	var msg []map[string]interface{}
-	err = json.Unmarshal([]byte(message), &msg)
-	if err != nil {
+	d := json.NewDecoder(strings.NewReader(message))
+	d.UseNumber()
+	if err := d.Decode(&msg); err != nil {
 		fmt.Println("Failed to marshal JSON data", err)
 		return nil
 	}

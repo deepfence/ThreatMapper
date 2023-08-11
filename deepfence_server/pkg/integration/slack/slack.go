@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 // todo: add support for batch size
@@ -119,8 +120,10 @@ func (s Slack) FormatMessage(message []map[string]interface{}, index int) []map[
 func (s Slack) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
 	// formatting: unmarshal into payload
 	var msg []map[string]interface{}
-	err := json.Unmarshal([]byte(message), &msg)
-	if err != nil {
+
+	d := json.NewDecoder(strings.NewReader(message))
+	d.UseNumber()
+	if err := d.Decode(&msg); err != nil {
 		return err
 	}
 
