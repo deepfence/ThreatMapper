@@ -110,6 +110,8 @@ const API_SCAN_TYPE_MAP: {
   Malware: ScanTypeEnum.MalwareScan,
   Compliance: ScanTypeEnum.ComplianceScan,
 };
+
+const scanTypes = ['Secret', 'Vulnerability', 'Malware'];
 const AdvancedFilters = ({ notificationType }: { notificationType: string }) => {
   // severity
   const [selectedSeverity, setSelectedSeverity] = useState([]);
@@ -152,6 +154,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
             setContainers([]);
           }}
         />
+
         <SearchableImageList
           scanType={API_SCAN_TYPE_MAP[notificationType]}
           triggerVariant="select"
@@ -220,9 +223,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
           </>
         ) : null}
 
-        {['Secret', 'Vulnerability', 'Malware'].includes(
-          notificationType as ScanTypeEnum,
-        ) ? (
+        {scanTypes.includes(notificationType as ScanTypeEnum) ? (
           <>
             <input
               type="text"
@@ -259,6 +260,8 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
   );
 };
 
+const notificationTypeList = ['Vulnerability', 'Secret', 'Malware', 'Compliance'];
+
 const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string> }) => {
   const [notificationType, setNotificationType] = useState<ScanTypeEnum | string>('');
 
@@ -287,17 +290,16 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
         placeholder="Select notification type"
         label="Notification Type"
         getDisplayValue={(item) => {
-          return (
-            ['Vulnerability', 'Secret', 'Malware', 'Compliance'].find(
-              (type) => type === item,
-            ) ?? ''
-          );
+          return notificationType;
         }}
       >
-        <ListboxOption value={'Vulnerability'}>Vulnerability</ListboxOption>
-        <ListboxOption value={'Secret'}>Secret</ListboxOption>
-        <ListboxOption value={'Malware'}>Malware</ListboxOption>
-        <ListboxOption value={'Compliance'}>Compliance</ListboxOption>
+        {notificationTypeList.map((notification) => {
+          return (
+            <ListboxOption key={notification} value={notification}>
+              {notification}
+            </ListboxOption>
+          );
+        })}
 
         {/* {CloudTrailIntegration.includes(integrationType) && (
           <SelectItem value={CLOUD_TRAIL_ALERT}>CloudTrail Alert</SelectItem>

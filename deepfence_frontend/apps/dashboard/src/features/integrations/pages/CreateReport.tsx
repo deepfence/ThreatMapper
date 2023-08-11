@@ -256,19 +256,23 @@ const ReportForm = () => {
               getDisplayValue={(item) => {
                 return (
                   Object.keys(UtilsReportFiltersScanTypeEnum).find(
-                    (person) => person === item,
+                    (node) => node === item,
                   ) ?? ''
                 );
               }}
               placeholder="Select resource"
             >
-              {Object.keys(UtilsReportFiltersScanTypeEnum).map((resource) => {
-                return (
-                  <ListboxOption value={resource} key={resource}>
-                    {resource}
-                  </ListboxOption>
-                );
-              })}
+              {Object.keys(UtilsReportFiltersScanTypeEnum)
+                .sort((a, b) => {
+                  return a.localeCompare(b);
+                })
+                .map((resource) => {
+                  return (
+                    <ListboxOption value={resource} key={resource}>
+                      {resource}
+                    </ListboxOption>
+                  );
+                })}
             </Listbox>
 
             {resource === 'Compliance' ? (
