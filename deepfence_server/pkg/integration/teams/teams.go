@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 // todo: add support for batch size
@@ -35,10 +36,12 @@ func (t Teams) FormatMessage(message map[string]interface{}, position int) strin
 
 func (t Teams) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
 	var msg []map[string]interface{}
-	err := json.Unmarshal([]byte(message), &msg)
-	if err != nil {
+	d := json.NewDecoder(strings.NewReader(message))
+	d.UseNumber()
+	if err := d.Decode(&msg); err != nil {
 		return err
 	}
+
 	for index, msgMap := range msg {
 		payload := Payload{
 			Text:       t.FormatMessage(msgMap, index+1),

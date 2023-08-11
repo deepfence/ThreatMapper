@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 func New(ctx context.Context, b []byte) (*ElasticSearch, error) {
@@ -20,10 +21,12 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message string, ext
 	var req *http.Request
 	var err error
 	var msg []map[string]interface{}
-	err = json.Unmarshal([]byte(message), &msg)
-	if err != nil {
+	d := json.NewDecoder(strings.NewReader(message))
+	d.UseNumber()
+	if err := d.Decode(&msg); err != nil {
 		return err
 	}
+
 	payloadMsg := ""
 	meta := "{\"index\":{\"_index\":\"" + e.Config.Index + "\"}}\n"
 	for _, payload := range msg {

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/sendemail"
@@ -79,10 +80,13 @@ func (e Email) FormatMessage(message []map[string]interface{}) string {
 func (e Email) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
 	// formatting : unmarshal into payload
 	var msg []map[string]interface{}
-	err := json.Unmarshal([]byte(message), &msg)
-	if err != nil {
+
+	d := json.NewDecoder(strings.NewReader(message))
+	d.UseNumber()
+	if err := d.Decode(&msg); err != nil {
 		return err
 	}
+
 	m := e.FormatMessage(msg)
 	emailSender, err := sendemail.NewEmailSender(ctx)
 	if err != nil {

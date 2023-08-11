@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -44,8 +45,9 @@ func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[
 	}
 
 	var d []map[string]interface{}
-	err := json.Unmarshal([]byte(data), &d)
-	if err != nil {
+	dec := json.NewDecoder(strings.NewReader(data))
+	dec.UseNumber()
+	if err := dec.Decode(&d); err != nil {
 		log.Error().Msgf("%v", err)
 		return nil
 	}
