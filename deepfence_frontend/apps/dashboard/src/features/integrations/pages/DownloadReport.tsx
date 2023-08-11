@@ -50,7 +50,7 @@ export const NODE_TYPES: { [k: string]: UtilsReportFiltersNodeTypeEnum } = {
   'Container Image': UtilsReportFiltersNodeTypeEnum.ContainerImage,
 };
 export const getReportNodeType = (resourceType: string) => {
-  if (resourceType === 'CloudCompliance') {
+  if (resourceType === 'Cloud Compliance') {
     return {
       AWS: NODE_TYPES.AWS,
       AZURE: NODE_TYPES.AZURE,
