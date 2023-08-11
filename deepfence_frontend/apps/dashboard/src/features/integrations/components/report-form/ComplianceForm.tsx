@@ -33,11 +33,7 @@ export const ComplianceForm = ({
         }}
         placeholder="Select node type"
         getDisplayValue={() => {
-          return (
-            Object.keys(getReportNodeType(resource)).find((_provider) => {
-              return _provider === provider;
-            }) ?? ''
-          );
+          return provider;
         }}
       >
         {Object.keys(getReportNodeType(resource)).map((resource) => {

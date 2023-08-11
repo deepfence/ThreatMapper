@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
-import { toast } from 'sonner';
 import {
   Button,
   Checkbox,
@@ -25,6 +24,7 @@ import { AdvancedFilter } from '@/features/integrations/components/report-form/A
 import { CloudComplianceForm } from '@/features/integrations/components/report-form/CloudComplianceForm';
 import { CommonForm } from '@/features/integrations/components/report-form/CommonForm';
 import { ComplianceForm } from '@/features/integrations/components/report-form/ComplianceForm';
+import { NODE_TYPES } from '@/features/integrations/pages/DownloadReport';
 import { ActionEnumType } from '@/features/integrations/pages/IntegrationAdd';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries } from '@/queries';
@@ -41,6 +41,17 @@ export const DURATION: { [k: string]: ModelGenerateReportReqDurationEnum } = {
   'Last 180 Days': ModelGenerateReportReqDurationEnum.NUMBER_180,
   'All Documents': 0 as ModelGenerateReportReqDurationEnum,
 };
+const RESOURCES: { [k: string]: UtilsReportFiltersScanTypeEnum } = {
+  Vulnerability: UtilsReportFiltersScanTypeEnum.Vulnerability,
+  Secret: UtilsReportFiltersScanTypeEnum.Secret,
+  Malware: UtilsReportFiltersScanTypeEnum.Malware,
+  Compliance: UtilsReportFiltersScanTypeEnum.Compliance,
+  'Cloud Compliance': UtilsReportFiltersScanTypeEnum.CloudCompliance,
+};
+const REPORT_TYPES: { [k: string]: ModelGenerateReportReqReportTypeEnum } = {
+  PDF: ModelGenerateReportReqReportTypeEnum.Pdf,
+  XLSX: ModelGenerateReportReqReportTypeEnum.Xlsx,
+};
 export type ActionData = {
   message?: string;
   success?: boolean;
@@ -52,21 +63,17 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 
   const duration = body.duration as keyof typeof DURATION;
 
-  const reportType =
-    body.downloadType as keyof typeof ModelGenerateReportReqReportTypeEnum;
-  const _reportType: ModelGenerateReportReqReportTypeEnum =
-    ModelGenerateReportReqReportTypeEnum[reportType];
+  const reportType = body.downloadType.toString();
+  const _reportType: ModelGenerateReportReqReportTypeEnum = REPORT_TYPES[reportType];
 
-  const resource = body.resource as keyof typeof UtilsReportFiltersScanTypeEnum;
-  const _resource: UtilsReportFiltersScanTypeEnum =
-    UtilsReportFiltersScanTypeEnum[resource];
+  const resource = body.resource.toString();
+  const _resource: UtilsReportFiltersScanTypeEnum = RESOURCES[resource];
 
-  let nodeType = body.nodeType as keyof typeof UtilsReportFiltersNodeTypeEnum;
+  let nodeType = body.nodeType.toString();
   if (nodeType.toString() === 'Kubernetes') {
     nodeType = 'Cluster';
   }
-  const _nodeType: UtilsReportFiltersNodeTypeEnum =
-    UtilsReportFiltersNodeTypeEnum[nodeType];
+  const _nodeType: UtilsReportFiltersNodeTypeEnum = NODE_TYPES[nodeType];
 
   const masked = formData.getAll('mask[]');
   const status = formData.getAll('status[]');
@@ -254,25 +261,17 @@ const ReportForm = () => {
                 setProvider('');
               }}
               getDisplayValue={(item) => {
-                return (
-                  Object.keys(UtilsReportFiltersScanTypeEnum).find(
-                    (node) => node === item,
-                  ) ?? ''
-                );
+                return Object.keys(RESOURCES).find((resource) => resource === item) ?? '';
               }}
               placeholder="Select resource"
             >
-              {Object.keys(UtilsReportFiltersScanTypeEnum)
-                .sort((a, b) => {
-                  return a.localeCompare(b);
-                })
-                .map((resource) => {
-                  return (
-                    <ListboxOption value={resource} key={resource}>
-                      {resource}
-                    </ListboxOption>
-                  );
-                })}
+              {Object.keys(RESOURCES).map((resource) => {
+                return (
+                  <ListboxOption value={resource} key={resource}>
+                    {resource}
+                  </ListboxOption>
+                );
+              })}
             </Listbox>
 
             {resource === 'Compliance' ? (
@@ -340,14 +339,10 @@ const ReportForm = () => {
               }}
               placeholder="Download type"
               getDisplayValue={(item) => {
-                return (
-                  Object.keys(ModelGenerateReportReqReportTypeEnum).find(
-                    (person) => person === item,
-                  ) ?? ''
-                );
+                return downloadType;
               }}
             >
-              {Object.keys(ModelGenerateReportReqReportTypeEnum).map((resource) => {
+              {Object.keys(REPORT_TYPES).map((resource) => {
                 return (
                   <ListboxOption value={resource} key={resource}>
                     {resource}
