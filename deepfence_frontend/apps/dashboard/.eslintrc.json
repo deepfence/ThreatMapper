@@ -2,6 +2,7 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
+    "project": true,
     "ecmaVersion": 2020,
     "sourceType": "module",
     "ecmaFeatures": {
@@ -27,6 +28,7 @@
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/stylistic",
     "plugin:react/recommended",
     "plugin:jsx-a11y/recommended",
     "plugin:prettier/recommended"
@@ -40,6 +42,12 @@
     "@typescript-eslint/explicit-function-return-type": "off",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
-    "react/display-name": "off"
+    "react/display-name": "off",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/consistent-type-definitions": "warn",
+    "@typescript-eslint/array-type": "off",
+    "@typescript-eslint/consistent-indexed-object-style": "warn",
+    "@typescript-eslint/ban-tslint-comment": "off"
   }
 }

@@ -7,7 +7,7 @@ import { Breadcrumb, BreadcrumbLink } from '@/components/breadcrumb/Breadcrumb';
 export default {
   title: 'Components/BreadCrumb',
   component: Breadcrumb,
-} as Meta<typeof Breadcrumb>;
+} satisfies Meta<typeof Breadcrumb>;
 
 const Link = forwardRef<
   HTMLAnchorElement,
@@ -37,7 +37,7 @@ const Template: StoryFn<typeof Breadcrumb> = () => (
   </Breadcrumb>
 );
 
-export const BreadCrumbComponent = {
+export const BreadCrumbComponent: Meta<typeof Breadcrumb> = {
   render: Template,
 
   args: {},

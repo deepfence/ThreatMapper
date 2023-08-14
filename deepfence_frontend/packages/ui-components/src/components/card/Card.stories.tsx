@@ -1,11 +1,11 @@
-import { Meta } from '@storybook/react';
+import { Meta, StoryObj } from '@storybook/react';
 
 import { Card } from '@/components/card/Card';
 
 export default {
   title: 'Components/Card',
   component: Card,
-} as Meta<typeof Card>;
+} satisfies Meta<typeof Card>;
 
 const Content = () => (
   <div className="w-[300px] p-4">
@@ -17,7 +17,7 @@ const Content = () => (
   </div>
 );
 
-export const Default = {
+export const Default: StoryObj<typeof Card> = {
   args: {
     children: <Content />,
   },

@@ -1,25 +1,25 @@
-import { Meta } from '@storybook/react';
+import { Meta, StoryObj } from '@storybook/react';
 
 import { CircleSpinner } from '@/components/spinner/CircleSpinner';
 
 export default {
   title: 'Components/CircleSpinner',
   component: CircleSpinner,
-} as Meta<typeof CircleSpinner>;
+} satisfies Meta<typeof CircleSpinner>;
 
-export const SM = {
+export const SM: StoryObj<typeof CircleSpinner> = {
   args: {
     size: 'sm',
   },
 };
 
-export const MD = {
+export const MD: StoryObj<typeof CircleSpinner> = {
   args: {
     size: 'md',
   },
 };
 
-export const LG = {
+export const LG: StoryObj<typeof CircleSpinner> = {
   args: {
     size: 'lg',
   },

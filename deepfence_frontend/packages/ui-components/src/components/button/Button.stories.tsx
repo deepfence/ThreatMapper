@@ -27,28 +27,28 @@ export default {
   argTypes: {
     onClick: { action: 'onClick' },
   },
-} as Meta<typeof Button>;
+} satisfies Meta<typeof Button>;
 
-export const Large = {
+export const Large: Meta<typeof Button> = {
   args: {
     children: 'button',
     size: 'lg',
   },
 };
-export const Medium = {
+export const Medium: Meta<typeof Button> = {
   args: {
     children: 'Medium',
     size: 'md',
   },
 };
-export const Small = {
+export const Small: Meta<typeof Button> = {
   args: {
     children: 'Small',
     size: 'sm',
   },
 };
 
-export const MediumSuccess = {
+export const MediumSuccess: Meta<typeof Button> = {
   args: {
     children: 'Medium',
     size: 'md',
@@ -56,7 +56,7 @@ export const MediumSuccess = {
   },
 };
 
-export const MediumError = {
+export const MediumError: Meta<typeof Button> = {
   args: {
     children: 'Medium',
     size: 'md',
@@ -64,7 +64,7 @@ export const MediumError = {
   },
 };
 
-export const MediumOutline = {
+export const MediumOutline: Meta<typeof Button> = {
   args: {
     children: 'Medium',
     size: 'md',
@@ -72,7 +72,7 @@ export const MediumOutline = {
   },
 };
 
-export const MediumOutlineSuccess = {
+export const MediumOutlineSuccess: Meta<typeof Button> = {
   args: {
     children: 'Medium',
     size: 'md',
@@ -80,7 +80,7 @@ export const MediumOutlineSuccess = {
     color: 'success',
   },
 };
-export const MediumOutlineError = {
+export const MediumOutlineError: Meta<typeof Button> = {
   args: {
     children: 'Medium',
     size: 'md',
@@ -89,7 +89,7 @@ export const MediumOutlineError = {
   },
 };
 
-export const MediumFlatVariant = {
+export const MediumFlatVariant: Meta<typeof Button> = {
   args: {
     children: 'Medium',
     size: 'md',
@@ -98,7 +98,7 @@ export const MediumFlatVariant = {
   },
 };
 
-export const MediumWithStartIcon = {
+export const MediumWithStartIcon: Meta<typeof Button> = {
   args: {
     children: 'Refresh',
     startIcon: <HiMenu />,
@@ -106,7 +106,7 @@ export const MediumWithStartIcon = {
   },
 };
 
-export const MediumWithStartAndEndIcon = {
+export const MediumWithStartAndEndIcon: Meta<typeof Button> = {
   args: {
     children: 'Both icon',
     startIcon: <HiMenu />,
@@ -115,7 +115,7 @@ export const MediumWithStartAndEndIcon = {
   },
 };
 
-export const MediumOutlineWithStartIcon = {
+export const MediumOutlineWithStartIcon: Meta<typeof Button> = {
   args: {
     children: 'Refresh',
     startIcon: <HiMenu />,
@@ -124,7 +124,7 @@ export const MediumOutlineWithStartIcon = {
   },
 };
 
-export const MediumWithLoading = {
+export const MediumWithLoading: Meta<typeof Button> = {
   args: {
     children: 'Loading',
     size: 'md',
@@ -132,21 +132,21 @@ export const MediumWithLoading = {
     color: 'error',
   },
 };
-export const SmallWithLoading = {
+export const SmallWithLoading: Meta<typeof Button> = {
   args: {
     children: 'Loading',
     size: 'sm',
     loading: true,
   },
 };
-export const LargeWithLoading = {
+export const LargeWithLoading: Meta<typeof Button> = {
   args: {
     children: 'Loading',
     size: 'lg',
     loading: true,
   },
 };
-export const LargeErrorWithLoading = {
+export const LargeErrorWithLoading: Meta<typeof Button> = {
   args: {
     children: 'Loading',
     size: 'lg',
@@ -154,7 +154,7 @@ export const LargeErrorWithLoading = {
     color: 'error',
   },
 };
-export const LargeSuccessWithLoading = {
+export const LargeSuccessWithLoading: Meta<typeof Button> = {
   args: {
     children: 'Loading',
     size: 'lg',
@@ -163,7 +163,7 @@ export const LargeSuccessWithLoading = {
   },
 };
 
-export const LargeOutlineWithLoading = {
+export const LargeOutlineWithLoading: Meta<typeof Button> = {
   args: {
     children: 'Loading',
     size: 'lg',
@@ -171,7 +171,7 @@ export const LargeOutlineWithLoading = {
     variant: 'outline',
   },
 };
-export const LargeFlatButtonWithLoading = {
+export const LargeFlatButtonWithLoading: Meta<typeof Button> = {
   args: {
     children: 'Loading',
     size: 'lg',

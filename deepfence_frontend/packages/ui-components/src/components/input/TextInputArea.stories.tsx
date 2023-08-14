@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/react';
+import { Meta, StoryObj } from '@storybook/react';
 
 import TextInputArea from '@/components/input/TextInputArea';
 
@@ -8,33 +8,33 @@ export default {
   argTypes: {
     onChange: { action: 'onChange' },
   },
-} as Meta<typeof TextInputArea>;
+} satisfies Meta<typeof TextInputArea>;
 
-export const Default = {
+export const Default: StoryObj<typeof TextInputArea> = {
   args: {},
 };
 
-export const WithPlaceholder = {
+export const WithPlaceholder: StoryObj<typeof TextInputArea> = {
   args: {
     placeholder: 'Hello Deepfence',
   },
 };
 
-export const Disabled = {
+export const Disabled: StoryObj<typeof TextInputArea> = {
   args: {
     placeholder: 'Disabled...',
     disabled: true,
   },
 };
 
-export const WithLabel = {
+export const WithLabel: StoryObj<typeof TextInputArea> = {
   args: {
     placeholder: 'Hello Deepfence',
     label: 'Comment',
   },
 };
 
-export const WithRowsAndColumnn = {
+export const WithRowsAndColumnn: StoryObj<typeof TextInputArea> = {
   args: {
     placeholder: 'Hello Deepfence',
     label: 'Comment',

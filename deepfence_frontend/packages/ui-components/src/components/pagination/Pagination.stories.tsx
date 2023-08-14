@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/react';
+import { Meta, StoryFn, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 
 import { Pagination } from '@/components/pagination/Pagination';
@@ -9,9 +9,9 @@ export default {
   argTypes: {
     onPageChange: { action: 'onPageChange' },
   },
-} as Meta<typeof Pagination>;
+} satisfies Meta<typeof Pagination>;
 
-export const NoDots = {
+export const NoDots: StoryObj<typeof Pagination> = {
   args: {
     currentPage: 1,
     onPageChange: (page: number) => {
@@ -21,7 +21,7 @@ export const NoDots = {
   },
 };
 
-export const LeftDots = {
+export const LeftDots: StoryObj<typeof Pagination> = {
   args: {
     currentPage: 5,
     onPageChange: (page: number) => {
@@ -31,7 +31,7 @@ export const LeftDots = {
   },
 };
 
-export const RightDots = {
+export const RightDots: StoryObj<typeof Pagination> = {
   args: {
     currentPage: 2,
     onPageChange: (page: number) => {
@@ -41,7 +41,7 @@ export const RightDots = {
   },
 };
 
-export const ApproximatePagination = {
+export const ApproximatePagination: StoryObj<typeof Pagination> = {
   args: {
     currentPage: 15,
     onPageChange: (page: number) => {
@@ -52,7 +52,7 @@ export const ApproximatePagination = {
   },
 };
 
-export const LeftRightDots = {
+export const LeftRightDots: StoryObj<typeof Pagination> = {
   args: {
     currentPage: 15,
     onPageChange: (page: number) => {
@@ -62,7 +62,7 @@ export const LeftRightDots = {
   },
 };
 
-export const TwoDigits = {
+export const TwoDigits: StoryObj<typeof Pagination> = {
   args: {
     currentPage: 100,
     onPageChange: (page: number) => {
@@ -73,7 +73,7 @@ export const TwoDigits = {
   },
 };
 
-export const ExactPageData = () => {
+export const ExactPageData: StoryFn<typeof Pagination> = () => {
   const [currentPage, setCurrentPage] = useState(1);
   return (
     <Pagination
@@ -86,7 +86,7 @@ export const ExactPageData = () => {
   );
 };
 
-export const SinglePageData = () => {
+export const SinglePageData: StoryFn<typeof Pagination> = () => {
   const [currentPage, setCurrentPage] = useState(1);
   return (
     <Pagination

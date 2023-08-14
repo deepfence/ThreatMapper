@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/react';
+import { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 import { FaAdn, FaAffiliatetheme, FaAirbnb } from 'react-icons/fa';
 
@@ -10,7 +10,7 @@ export default {
   argTypes: {
     onValueChange: { action: 'onValueChange' },
   },
-} as Meta<typeof Tab>;
+} satisfies Meta<typeof Tab>;
 
 const tabs = [
   {
@@ -32,7 +32,7 @@ const tabs = [
   },
 ];
 
-export const Default = {
+export const Default: StoryObj<typeof Tab> = {
   args: {
     tabs,
   },
@@ -66,6 +66,6 @@ const WithContent = () => {
   );
 };
 
-export const TabWithContent = {
+export const TabWithContent: StoryObj<typeof Tab> = {
   render: WithContent,
 };

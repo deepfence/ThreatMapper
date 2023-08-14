@@ -8,15 +8,15 @@ export default {
   argTypes: {
     onClick: { action: 'onClick' },
   },
-} as Meta<typeof Badge>;
+} satisfies Meta<typeof Badge>;
 
-export const Default = {
+export const Default: Meta<typeof Badge> = {
   args: {
     label: 'Label',
   },
 };
 
-export const Grey = {
+export const Grey: Meta<typeof Badge> = {
   args: {
     label: 'Label',
     color: 'grey',
@@ -24,65 +24,65 @@ export const Grey = {
   },
 };
 
-export const Purple = {
+export const Purple: Meta<typeof Badge> = {
   args: {
     label: 'Label',
     color: 'purple',
   },
 };
-export const Blue = {
+export const Blue: Meta<typeof Badge> = {
   args: {
     label: 'Label',
     color: 'blue',
   },
 };
-export const Orange = {
+export const Orange: Meta<typeof Badge> = {
   args: {
     label: 'Label',
     color: 'orange',
   },
 };
-export const BlueLight = {
+export const BlueLight: Meta<typeof Badge> = {
   args: {
     label: 'Label',
     color: 'blueLight',
   },
 };
-export const Pink = {
+export const Pink: Meta<typeof Badge> = {
   args: {
     label: 'Label',
     color: 'pink',
   },
 };
-export const Success = {
+export const Success: Meta<typeof Badge> = {
   args: {
     label: 'Label',
     color: 'success',
     variant: 'filled',
   },
 };
-export const Info = {
+export const Info: Meta<typeof Badge> = {
   args: {
     label: 'Label',
     color: 'info',
     variant: 'filled',
   },
 };
-export const Warning = {
+export const Warning: Meta<typeof Badge> = {
   args: {
     label: 'Label',
     color: 'warning',
     variant: 'filled',
   },
 };
-export const Error = {
+export const Error: Meta<typeof Badge> = {
   args: {
     label: 'Label',
     color: 'error',
     variant: 'filled',
   },
 };
-export const GreyBadge = {
+export const GreyBadge: Meta<typeof Badge> = {
   args: {
     label: '90+',
     size: 'small',
@@ -91,7 +91,7 @@ export const GreyBadge = {
   },
 };
 
-export const PurpleBadge = {
+export const PurpleBadge: Meta<typeof Badge> = {
   args: {
     label: '90+',
     size: 'small',
@@ -99,7 +99,7 @@ export const PurpleBadge = {
     variant: 'filled',
   },
 };
-export const BlueBadge = {
+export const BlueBadge: Meta<typeof Badge> = {
   args: {
     label: '90+',
     size: 'small',
@@ -108,7 +108,7 @@ export const BlueBadge = {
     variant: 'filled',
   },
 };
-export const OrangeBadge = {
+export const OrangeBadge: Meta<typeof Badge> = {
   args: {
     label: '90+',
     size: 'small',
@@ -117,7 +117,7 @@ export const OrangeBadge = {
     variant: 'filled',
   },
 };
-export const BlueLightBadge = {
+export const BlueLightBadge: Meta<typeof Badge> = {
   args: {
     label: '90+',
     size: 'small',
@@ -125,7 +125,7 @@ export const BlueLightBadge = {
     variant: 'filled',
   },
 };
-export const PinkBadge = {
+export const PinkBadge: Meta<typeof Badge> = {
   args: {
     label: '90+',
     size: 'small',
@@ -133,7 +133,7 @@ export const PinkBadge = {
     variant: 'filled',
   },
 };
-export const SuccessBadge = {
+export const SuccessBadge: Meta<typeof Badge> = {
   args: {
     label: '90+',
     size: 'small',
@@ -141,7 +141,7 @@ export const SuccessBadge = {
     variant: 'filled',
   },
 };
-export const InfoBadge = {
+export const InfoBadge: Meta<typeof Badge> = {
   args: {
     label: '90+',
     size: 'small',
@@ -150,7 +150,7 @@ export const InfoBadge = {
     variant: 'filled',
   },
 };
-export const WarningBadge = {
+export const WarningBadge: Meta<typeof Badge> = {
   args: {
     label: '90+',
     size: 'small',
@@ -158,7 +158,7 @@ export const WarningBadge = {
     variant: 'filled',
   },
 };
-export const ErrorBadge = {
+export const ErrorBadge: Meta<typeof Badge> = {
   args: {
     label: '90+',
     size: 'small',

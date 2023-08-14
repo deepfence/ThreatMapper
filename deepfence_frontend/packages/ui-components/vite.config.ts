@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { defineConfig, PluginOption } from 'vite';
+import { defineConfig, PluginOption, UserConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import { configDefaults } from 'vitest/config';
 
@@ -18,9 +18,7 @@ const root = path.dirname(current);
 export default defineConfig(({ mode }) => {
   return {
     plugins: [
-      react({
-        jsxRuntime: 'classic',
-      }),
+      react(),
       dts({
         insertTypesEntry: true,
       }),
@@ -33,6 +31,7 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: ['./src/tests/setup.ts'], // to do prior task before all of your tests run
       coverage: {
+        provider: 'v8',
         reporter: ['text', 'json', 'html'],
         lines: 100,
         functions: 100,
@@ -44,6 +43,7 @@ export default defineConfig(({ mode }) => {
       include: ['tailwind-preset'],
     },
     build: {
+      sourcemap: true,
       lib: {
         entry: path.resolve(root, 'src/main.ts'),
         formats: ['es'],
@@ -58,11 +58,10 @@ export default defineConfig(({ mode }) => {
         include: [/tailwind-preset/, /node_modules/],
       },
     },
-    sourcemap: true,
     resolve: {
       alias: {
         '@': path.resolve(root, './src'),
       },
     },
-  };
+  } satisfies UserConfig;
 });

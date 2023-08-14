@@ -7,7 +7,13 @@ import { cn } from 'tailwind-preset';
 type Direction = 'col' | 'row';
 type Props = RadioGroupProps & {
   direction?: Direction;
-  options: { value: string; label: string; disabled?: boolean; id?: string | number }[];
+  options: {
+    value: string;
+    label: string;
+    disabled?: boolean;
+    id?: string | number;
+    checked?: boolean;
+  }[];
 };
 
 const isRow = (direction: Direction) => direction === 'row';

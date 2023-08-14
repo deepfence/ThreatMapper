@@ -10,7 +10,7 @@ import {
 export default {
   title: 'Components/Accordion',
   component: Accordion,
-} as Meta<typeof Accordion>;
+} satisfies Meta<typeof Accordion>;
 
 const Items = [
   `Lorem Ipsum is simply dummy text of the printing and typesetting industry.`,
@@ -36,7 +36,7 @@ const DefaultTemplate: StoryFn<typeof Accordion> = (args) => {
   );
 };
 
-export const Default = {
+export const Default: Meta<typeof Accordion> = {
   render: DefaultTemplate,
 
   args: {

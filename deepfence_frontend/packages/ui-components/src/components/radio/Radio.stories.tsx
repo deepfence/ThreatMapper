@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/react';
+import { Meta, StoryObj } from '@storybook/react';
 
 import Radio from '@/components/radio/Radio';
 
@@ -8,9 +8,9 @@ export default {
   argTypes: {
     onValueChange: { action: 'onValueChange' },
   },
-} as Meta<typeof Radio>;
+} satisfies Meta<typeof Radio>;
 
-export const Default = {
+export const Default: StoryObj<typeof Radio> = {
   args: {
     name: 'Fruits',
     options: [
@@ -30,7 +30,7 @@ export const Default = {
   },
 };
 
-export const Disabled = {
+export const Disabled: StoryObj<typeof Radio> = {
   args: {
     name: 'Fruits',
     options: [
@@ -52,7 +52,7 @@ export const Disabled = {
   },
 };
 
-export const DefaultSelected = {
+export const DefaultSelected: StoryObj<typeof Radio> = {
   args: {
     name: 'Fruits',
     defaultValue: 'apple',
@@ -73,7 +73,7 @@ export const DefaultSelected = {
   },
 };
 
-export const RowRadio = {
+export const RowRadio: StoryObj<typeof Radio> = {
   args: {
     name: 'Fruits',
     direction: 'row',

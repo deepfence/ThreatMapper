@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react';
+import { Meta, StoryFn, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 
 import Button from '@/components/button/Button';
@@ -7,7 +7,7 @@ import { Listbox, ListboxOption } from '@/components/select/Listbox';
 export default {
   title: 'Components/Listbox',
   component: Listbox,
-} as Meta<typeof Listbox>;
+} satisfies Meta<typeof Listbox>;
 
 const people = [
   {
@@ -69,7 +69,7 @@ const MultiSelectTemplate: StoryFn<typeof Listbox> = () => {
   );
 };
 
-export const MultiSelect = {
+export const MultiSelect: StoryObj<typeof Listbox> = {
   render: MultiSelectTemplate,
   args: {},
 };
@@ -110,7 +110,7 @@ const SingleSelectTemplate: StoryFn<typeof Listbox> = () => {
   );
 };
 
-export const SingleSelect = {
+export const SingleSelect: StoryObj<typeof Listbox> = {
   render: SingleSelectTemplate,
   args: {},
 };
@@ -152,7 +152,7 @@ const SingleSelectOutlineTemplate: StoryFn<typeof Listbox> = () => {
   );
 };
 
-export const SingleSelectOutline = {
+export const SingleSelectOutline: StoryObj<typeof Listbox> = {
   render: SingleSelectOutlineTemplate,
   args: {},
 };

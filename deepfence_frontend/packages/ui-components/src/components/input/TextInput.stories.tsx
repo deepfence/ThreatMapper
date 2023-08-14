@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/react';
+import { Meta, StoryObj } from '@storybook/react';
 import { AiOutlineMail } from 'react-icons/ai';
 
 import TextInput from '@/components/input/TextInput';
@@ -9,29 +9,29 @@ export default {
   argTypes: {
     onChange: { action: 'onChange' },
   },
-} as Meta<typeof TextInput>;
+} satisfies Meta<typeof TextInput>;
 
-export const Default = {
+export const Default: StoryObj<typeof TextInput> = {
   args: {
     disabled: true,
   },
 };
 
-export const WithPlaceholder = {
+export const WithPlaceholder: StoryObj<typeof TextInput> = {
   args: {
     placeholder: 'test@deepfence.io',
     color: 'error',
   },
 };
 
-export const Disabled = {
+export const Disabled: StoryObj<typeof TextInput> = {
   args: {
     placeholder: 'test@deepfence.io',
     disabled: true,
   },
 };
 
-export const WithStartIcon = {
+export const WithStartIcon: StoryObj<typeof TextInput> = {
   args: {
     placeholder: 'test@deepfence.io',
     startIcon: <AiOutlineMail />,
@@ -40,7 +40,7 @@ export const WithStartIcon = {
   },
 };
 
-export const WithLabel = {
+export const WithLabel: StoryObj<typeof TextInput> = {
   args: {
     placeholder: 'test@deepfence.io',
     startIcon: <AiOutlineMail />,
@@ -48,7 +48,7 @@ export const WithLabel = {
   },
 };
 
-export const ErrorWithCaption = {
+export const ErrorWithCaption: StoryObj<typeof TextInput> = {
   args: {
     placeholder: 'test@deepfence.io',
     label: 'Username',
