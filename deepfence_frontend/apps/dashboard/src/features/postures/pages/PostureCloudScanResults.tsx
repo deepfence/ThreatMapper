@@ -610,12 +610,9 @@ const ActionDropdown = ({
           <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.MASK)}>
             Mask
           </DropdownItem>
-          <DropdownSeparator />
           <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK)}>
             Un-mask
           </DropdownItem>
-          <DropdownSeparator />
-          <DropdownSeparator />
           <DropdownItem
             onClick={() => {
               setIdsToDelete(ids);

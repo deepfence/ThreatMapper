@@ -293,8 +293,7 @@ export const secretQueries = createQueryKeys('secret', {
         };
 
         if (severity.length) {
-          scanResultsReq.fields_filter.contains_filter.filter_in!['cve_severity'] =
-            severity;
+          scanResultsReq.fields_filter.contains_filter.filter_in!['level'] = severity;
         }
 
         if (rules.length) {
