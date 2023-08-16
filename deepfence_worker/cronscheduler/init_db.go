@@ -65,6 +65,11 @@ func initSqlDatabase(ctx context.Context) error {
 		log.Error().Err(err).Msg("failed to initialize console id")
 	}
 
+	err = model.InitializeAESSetting(ctx, pgClient)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to initialize aes")
+	}
+
 	return nil
 }
 

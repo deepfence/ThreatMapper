@@ -2,12 +2,16 @@ package model
 
 import (
 	"context"
+	"crypto/aes"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
@@ -143,34 +147,6 @@ func GetSettingByKey(ctx context.Context, pgClient *postgresqlDb.Queries, key st
 	}, nil
 }
 
-func GetJwtSecretSetting(ctx context.Context, pgClient *postgresqlDb.Queries) ([]byte, error) {
-	setting, err := pgClient.GetSetting(ctx, JwtSecretSettingKey)
-	if errors.Is(err, sql.ErrNoRows) {
-		s := Setting{
-			Key: JwtSecretSettingKey,
-			Value: &SettingValue{
-				Label:       "JWT Secret",
-				Value:       utils.NewUUIDString(),
-				Description: "Used for encrypting JWT",
-			},
-			IsVisibleOnUi: false,
-		}
-		_, err := s.Create(ctx, pgClient)
-		if err != nil {
-			return nil, err
-		}
-		return []byte(fmt.Sprintf("%v", s.Value.Value)), nil
-	} else if err != nil {
-		return nil, err
-	}
-	var sVal *SettingValue
-	err = json.Unmarshal(setting.Value, &sVal)
-	if err != nil {
-		return nil, err
-	}
-	return []byte(fmt.Sprintf("%v", sVal.Value)), nil
-}
-
 func SetScanResultsDeletionSetting(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	_, err := pgClient.GetSetting(ctx, InactiveNodesDeleteScanResultsKey)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -217,6 +193,51 @@ func SetConsoleIDSetting(ctx context.Context, pgClient *postgresqlDb.Queries) er
 		return nil
 	} else if err != nil {
 		return err
+	}
+	return nil
+}
+
+func InitializeAESSetting(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	// set aes_secret in setting table, if !exists
+	// TODO
+	// generate aes and aes-iv
+	_, err := pgClient.GetSetting(ctx, common.AES_SECRET)
+	if err != nil {
+		key := make([]byte, 32) // 32 bytes for AES-256
+		iv := make([]byte, aes.BlockSize)
+		_, err = rand.Read(key)
+		if err != nil {
+			return err
+		}
+
+		_, err = rand.Read(iv)
+		if err != nil {
+			return err
+		}
+
+		aesValue := &SettingValue{
+			Label:       "AES Encryption Setting",
+			Description: "AES Encryption Key-IV pair",
+			Value: map[string]string{
+				"aes_iv":  hex.EncodeToString(iv),
+				"aes_key": hex.EncodeToString(key),
+			},
+		}
+
+		rawAES, err := json.Marshal(aesValue)
+		if err != nil {
+			return err
+		}
+		rawMessageAES := json.RawMessage(rawAES)
+
+		_, err = pgClient.CreateSetting(ctx, postgresqlDb.CreateSettingParams{
+			Key:           common.AES_SECRET,
+			Value:         rawMessageAES,
+			IsVisibleOnUi: false,
+		})
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

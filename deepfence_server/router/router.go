@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/casbin/casbin/v2"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
@@ -70,10 +71,10 @@ func init() {
 	enable_debug = enable_debug_str != ""
 }
 
-func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool,
-	ingestC chan *kgo.Record, taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
+func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC chan *kgo.Record,
+	taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
 	// JWT
-	tokenAuth := jwtauth.New("HS256", jwtSecret, nil)
+	tokenAuth := jwtauth.New("HS256", utils.NewUUIDString(), nil)
 
 	// authorization
 	authEnforcer, err := newAuthorizationHandler()

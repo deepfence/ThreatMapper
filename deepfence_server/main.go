@@ -2,10 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/aes"
-	"crypto/rand"
-	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -20,13 +16,11 @@ import (
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
-	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -63,7 +57,6 @@ var (
 type Config struct {
 	HttpListenEndpoint     string
 	InternalListenEndpoint string
-	JwtSecret              []byte
 	Orchestrator           string
 }
 
@@ -112,14 +105,6 @@ func main() {
 		log.Fatal().Msg(err.Error())
 	}
 
-	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
-		config.JwtSecret, err = initializeDatabase(ctx)
-		if err != nil {
-			log.Fatal().Msg(err.Error())
-		}
-		return "initializeDatabase", err
-	})
-
 	if *resetPassword == true {
 		if directory.IsNonSaaSDeployment() {
 			ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
@@ -137,15 +122,6 @@ func main() {
 	if err != nil {
 		log.Fatal().Msg(err.Error())
 	}
-
-	log.Info().Msg("generating aes setting")
-	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
-		err = initializeAES(ctx)
-		if err != nil {
-			log.Fatal().Msg(err.Error())
-		}
-		return "initializeAES", err
-	})
 
 	err = initializeTelemetry()
 	if err != nil {
@@ -201,17 +177,14 @@ func main() {
 	defer publisher.Close()
 
 	err = router.SetupRoutes(mux,
-		config.HttpListenEndpoint, config.JwtSecret,
-		*serveOpenapiDocs, ingestC, publisher, openApiDocs, config.Orchestrator,
+		config.HttpListenEndpoint, *serveOpenapiDocs, ingestC, publisher, openApiDocs, config.Orchestrator,
 	)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return
 	}
 
-	err = router.InternalRoutes(internalMux,
-		config.InternalListenEndpoint, config.JwtSecret, ingestC, publisher,
-	)
+	err = router.InternalRoutes(internalMux, ingestC, publisher)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return
@@ -292,68 +265,6 @@ func initialize() (*Config, error) {
 		InternalListenEndpoint: ":8081",
 		Orchestrator:           orchestrator,
 	}, nil
-}
-
-func initializeAES(ctx context.Context) error {
-	// set aes_secret in setting table, if !exists
-	// TODO
-	// generate aes and aes-iv
-	pgClient, err := directory.PostgresClient(ctx)
-	if err != nil {
-		return err
-	}
-
-	_, err = pgClient.GetSetting(ctx, common.AES_SECRET)
-	if err != nil {
-		key := make([]byte, 32) // 32 bytes for AES-256
-		iv := make([]byte, aes.BlockSize)
-		_, err = rand.Read(key)
-		if err != nil {
-			return err
-		}
-
-		_, err = rand.Read(iv)
-		if err != nil {
-			return err
-		}
-
-		aesValue := &model.SettingValue{
-			Label:       "AES Encryption Setting",
-			Description: "AES Encryption Key-IV pair",
-			Value: map[string]string{
-				"aes_iv":  hex.EncodeToString(iv),
-				"aes_key": hex.EncodeToString(key),
-			},
-		}
-
-		rawAES, err := json.Marshal(aesValue)
-		if err != nil {
-			return err
-		}
-		rawMessageAES := json.RawMessage(rawAES)
-
-		_, err = pgClient.CreateSetting(ctx, postgresql_db.CreateSettingParams{
-			Key:           common.AES_SECRET,
-			Value:         rawMessageAES,
-			IsVisibleOnUi: false,
-		})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func initializeDatabase(ctx context.Context) ([]byte, error) {
-	pgClient, err := directory.PostgresClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-	jwtSecret, err := model.GetJwtSecretSetting(ctx, pgClient)
-	if err != nil {
-		return nil, err
-	}
-	return jwtSecret, nil
 }
 
 func resetUserPassword(ctx context.Context) error {
