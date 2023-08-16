@@ -18,7 +18,6 @@ import (
 
 const (
 	ConsoleURLSettingKey              = "console_url"
-	JwtSecretSettingKey               = "jwt_secret"
 	EmailConfigurationKey             = "email_configuration"
 	EmailSettingSES                   = "amazon_ses"
 	EmailSettingSMTP                  = "smtp"

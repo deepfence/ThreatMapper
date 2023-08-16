@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -74,7 +75,7 @@ func init() {
 func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC chan *kgo.Record,
 	taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
 	// JWT
-	tokenAuth := jwtauth.New("HS256", utils.NewUUIDString(), nil)
+	tokenAuth := jwtauth.New("HS256", []byte(fmt.Sprintf("%v", utils.NewUUIDString())), nil)
 
 	// authorization
 	authEnforcer, err := newAuthorizationHandler()
