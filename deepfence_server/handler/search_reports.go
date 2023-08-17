@@ -146,12 +146,6 @@ func SearchCloudResourcesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if val, ok := req.NodeFilter.Filters.NotContainsFilter.FieldsValues["account_id"]; ok {
-		val = append(val, "")
-		req.NodeFilter.Filters.NotContainsFilter.FieldsValues["account_id"] = val
-	} else {
-		req.NodeFilter.Filters.NotContainsFilter.FieldsValues["account_id"] = []interface{}{""}
-	}
 	entries, err := reporters_search.SearchReport[model.CloudResource](r.Context(), req.NodeFilter, req.ExtendedNodeFilter, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -161,6 +155,9 @@ func SearchCloudResourcesHandler(w http.ResponseWriter, r *http.Request) {
 
 	accountIDs := make(map[string]model.CloudNode)
 	for _, entry := range entries {
+		if entry.AccountId == "" {
+			continue
+		}
 		if _, ok := accountIDs[entry.AccountId]; !ok {
 			accountIDs[entry.AccountId] = model.CloudNode{}
 		}
@@ -184,6 +181,9 @@ func SearchCloudResourcesHandler(w http.ResponseWriter, r *http.Request) {
 		accountIDs[accountIdEntry.ID] = accountIdEntry
 	}
 	for i, entry := range entries {
+		if entry.AccountId == "" {
+			continue
+		}
 		entries[i].CloudComplianceLatestScanId = accountIDs[entry.AccountId].CloudComplianceLatestScanId
 		entries[i].CloudCompliancesCount = accountIDs[entry.AccountId].CloudCompliancesCount
 		entries[i].CloudComplianceScanStatus = accountIDs[entry.AccountId].CloudComplianceScanStatus
