@@ -355,8 +355,8 @@ type CloudResource struct {
 	ID                          string `json:"node_id" required:"true"`
 	Name                        string `json:"node_name" required:"true"`
 	Type                        string `json:"node_type" required:"true"`
-	TypeLabel                   string `json:"type_label" required:"true"`
 	AccountId                   string `json:"account_id" required:"true"`
+	CloudProvider               string `json:"cloud_provider" required:"true"`
 	CloudRegion                 string `json:"cloud_region" required:"true"`
 	CloudCompliancesCount       int64  `json:"cloud_compliances_count" required:"true"`
 	CloudComplianceScanStatus   string `json:"cloud_compliance_scan_status" required:"true"`
@@ -383,10 +383,31 @@ func (cr CloudResource) id() string {
 	return cr.ID
 }
 
-func ExtractNodeIDs[T Identifiable](entries []T) []string {
-	res := []string{}
-	for i := range entries {
-		res = append(res, entries[i].id())
-	}
-	return res
+type CloudNode struct {
+	ID                          string `json:"node_id" required:"true"`
+	Name                        string `json:"node_name" required:"true"`
+	CloudProvider               string `json:"cloud_provider" required:"true"`
+	CloudCompliancesCount       int64  `json:"cloud_compliances_count" required:"true"`
+	CloudComplianceScanStatus   string `json:"cloud_compliance_scan_status" required:"true"`
+	CloudComplianceLatestScanId string `json:"cloud_compliance_latest_scan_id" required:"true"`
+}
+
+func (CloudNode) NodeType() string {
+	return "CloudNode"
+}
+
+func (CloudNode) GetCategory() string {
+	return ""
+}
+
+func (CloudNode) GetJsonCategory() string {
+	return ""
+}
+
+func (CloudNode) ExtendedField() string {
+	return ""
+}
+
+func (cr CloudNode) id() string {
+	return cr.ID
 }
