@@ -7,19 +7,19 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
+	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type CloudResourceIngester struct{}
 
-func NewCloudResourceIngester() KafkaIngester[[]ingesters.CloudResource] {
+func NewCloudResourceIngester() KafkaIngester[[]ingestersUtil.CloudResource] {
 	return &CloudResourceIngester{}
 }
 
 func (tc *CloudResourceIngester) Ingest(
 	ctx context.Context,
-	cs []ingesters.CloudResource,
+	cs []ingestersUtil.CloudResource,
 	ingestC chan *kgo.Record,
 ) error {
 

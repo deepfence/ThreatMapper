@@ -7,19 +7,19 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
+	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type ComplianceIngester struct{}
 
-func NewComplianceIngester() KafkaIngester[[]ingesters.Compliance] {
+func NewComplianceIngester() KafkaIngester[[]ingestersUtil.Compliance] {
 	return &ComplianceIngester{}
 }
 
 func (tc *ComplianceIngester) Ingest(
 	ctx context.Context,
-	cs []ingesters.Compliance,
+	cs []ingestersUtil.Compliance,
 	ingestC chan *kgo.Record,
 ) error {
 	tenantID, err := directory.ExtractNamespace(ctx)
@@ -49,13 +49,13 @@ func (tc *ComplianceIngester) Ingest(
 
 type ComplianceScanStatusIngester struct{}
 
-func NewComplianceScanStatusIngester() KafkaIngester[[]ingesters.ComplianceScanStatus] {
+func NewComplianceScanStatusIngester() KafkaIngester[[]ingestersUtil.ComplianceScanStatus] {
 	return &ComplianceScanStatusIngester{}
 }
 
 func (tc *ComplianceScanStatusIngester) Ingest(
 	ctx context.Context,
-	cs []ingesters.ComplianceScanStatus,
+	cs []ingestersUtil.ComplianceScanStatus,
 	ingestC chan *kgo.Record,
 ) error {
 	tenantID, err := directory.ExtractNamespace(ctx)

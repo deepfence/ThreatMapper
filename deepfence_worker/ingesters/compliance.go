@@ -5,57 +5,11 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-type ComplianceScanStatus struct {
-	ScanID      string `json:"scan_id"`
-	ScanStatus  string `json:"scan_status"`
-	ScanMessage string `json:"scan_message"`
-}
-
-type Compliance struct {
-	Type                string `json:"type"`
-	TestCategory        string `json:"test_category"`
-	TestNumber          string `json:"test_number"`
-	TestInfo            string `json:"description"`
-	RemediationScript   string `json:"remediation_script,omitempty"`
-	RemediationAnsible  string `json:"remediation_ansible,omitempty"`
-	RemediationPuppet   string `json:"remediation_puppet,omitempty"`
-	Resource            string `json:"resource"`
-	TestRationale       string `json:"test_rationale"`
-	TestSeverity        string `json:"test_severity"`
-	TestDesc            string `json:"test_desc"`
-	Status              string `json:"status"`
-	ComplianceCheckType string `json:"compliance_check_type"`
-	ScanId              string `json:"scan_id"`
-	NodeId              string `json:"node_id"`
-	NodeType            string `json:"node_type"`
-}
-
-type complianceData struct {
-	Type                string `json:"type"`
-	RemediationScript   string `json:"remediation_script,omitempty"`
-	RemediationAnsible  string `json:"remediation_ansible,omitempty"`
-	RemediationPuppet   string `json:"remediation_puppet,omitempty"`
-	Resource            string `json:"resource"`
-	TestSeverity        string `json:"test_severity"`
-	Status              string `json:"status"`
-	ComplianceCheckType string `json:"compliance_check_type"`
-	NodeId              string `json:"node_id"`
-	NodeType            string `json:"node_type"`
-}
-
-type complianceRule struct {
-	TestCategory  string `json:"test_category"`
-	TestNumber    string `json:"test_number"`
-	TestInfo      string `json:"description"`
-	TestRationale string `json:"test_rationale"`
-	TestSeverity  string `json:"test_severity"`
-	TestDesc      string `json:"test_desc"`
-}
-
-func CommitFuncCompliance(ns string, data []Compliance) error {
+func CommitFuncCompliance(ns string, data []ingestersUtil.Compliance) error {
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -96,10 +50,10 @@ func CommitFuncCompliance(ns string, data []Compliance) error {
 	return tx.Commit()
 }
 
-func CompliancesToMaps(ms []Compliance) []map[string]interface{} {
+func CompliancesToMaps(ms []ingestersUtil.Compliance) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
-		data, rule := v.split()
+		data, rule := v.Split()
 		res = append(res, map[string]interface{}{
 			"rule":    utils.ToMap(rule),
 			"data":    utils.ToMap(data),
@@ -107,26 +61,4 @@ func CompliancesToMaps(ms []Compliance) []map[string]interface{} {
 		})
 	}
 	return res
-}
-
-func (c Compliance) split() (complianceData, complianceRule) {
-	return complianceData{
-			Type:                c.Type,
-			RemediationScript:   c.RemediationScript,
-			RemediationAnsible:  c.RemediationAnsible,
-			RemediationPuppet:   c.RemediationPuppet,
-			Resource:            c.Resource,
-			TestSeverity:        c.TestSeverity,
-			Status:              c.Status,
-			ComplianceCheckType: c.ComplianceCheckType,
-			NodeId:              c.NodeId,
-			NodeType:            c.NodeType,
-		}, complianceRule{
-			TestCategory:  c.TestCategory,
-			TestNumber:    c.TestNumber,
-			TestInfo:      c.TestInfo,
-			TestRationale: c.TestRationale,
-			TestSeverity:  c.TestSeverity,
-			TestDesc:      c.TestDesc,
-		}
 }
