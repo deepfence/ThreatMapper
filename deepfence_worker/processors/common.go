@@ -8,6 +8,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -84,27 +85,27 @@ func StartKafkaProcessors(ctx context.Context) {
 	processors[utils.VULNERABILITY_SCAN_STATUS] = NewBulkProcessor(
 		utils.VULNERABILITY_SCAN_STATUS,
 		telemetryWrapper(utils.VULNERABILITY_SCAN_STATUS,
-			desWrapper(ingesters.CommitFuncStatus[ingesters.VulnerabilityScanStatus](utils.NEO4J_VULNERABILITY_SCAN))),
+			desWrapper(ingesters.CommitFuncStatus[ingestersUtil.VulnerabilityScanStatus](utils.NEO4J_VULNERABILITY_SCAN))),
 	)
 	processors[utils.COMPLIANCE_SCAN_STATUS] = NewBulkProcessor(
 		utils.COMPLIANCE_SCAN_STATUS,
 		telemetryWrapper(utils.COMPLIANCE_SCAN_STATUS,
-			desWrapper(ingesters.CommitFuncStatus[ingesters.ComplianceScanStatus](utils.NEO4J_COMPLIANCE_SCAN))),
+			desWrapper(ingesters.CommitFuncStatus[ingestersUtil.ComplianceScanStatus](utils.NEO4J_COMPLIANCE_SCAN))),
 	)
 	processors[utils.SECRET_SCAN_STATUS] = NewBulkProcessor(
 		utils.SECRET_SCAN_STATUS,
 		telemetryWrapper(utils.SECRET_SCAN_STATUS,
-			desWrapper(ingesters.CommitFuncStatus[ingesters.SecretScanStatus](utils.NEO4J_SECRET_SCAN))),
+			desWrapper(ingesters.CommitFuncStatus[ingestersUtil.SecretScanStatus](utils.NEO4J_SECRET_SCAN))),
 	)
 	processors[utils.MALWARE_SCAN_STATUS] = NewBulkProcessor(
 		utils.MALWARE_SCAN_STATUS,
 		telemetryWrapper(utils.MALWARE_SCAN_STATUS,
-			desWrapper(ingesters.CommitFuncStatus[ingesters.MalwareScanStatus](utils.NEO4J_MALWARE_SCAN))),
+			desWrapper(ingesters.CommitFuncStatus[ingestersUtil.MalwareScanStatus](utils.NEO4J_MALWARE_SCAN))),
 	)
 	processors[utils.CLOUD_COMPLIANCE_SCAN_STATUS] = NewBulkProcessor(
 		utils.CLOUD_COMPLIANCE_SCAN_STATUS,
 		telemetryWrapper(utils.CLOUD_COMPLIANCE_SCAN_STATUS,
-			desWrapper(ingesters.CommitFuncStatus[ingesters.CloudComplianceScanStatus](utils.NEO4J_CLOUD_COMPLIANCE_SCAN))),
+			desWrapper(ingesters.CommitFuncStatus[ingestersUtil.CloudComplianceScanStatus](utils.NEO4J_CLOUD_COMPLIANCE_SCAN))),
 	)
 	processors[utils.CLOUD_RESOURCE] = NewBulkProcessorWith(
 		utils.CLOUD_RESOURCE,
