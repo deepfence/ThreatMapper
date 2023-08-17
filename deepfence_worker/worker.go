@@ -92,6 +92,10 @@ func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAd
 	subscriberConf := kafka.DefaultSaramaSubscriberConfig()
 	subscriberConf.Consumer.Offsets.AutoCommit.Enable = true
 
+	subscriberConf.Consumer.Group.Session.Timeout = 20 * time.Second
+	subscriberConf.Consumer.Group.Heartbeat.Interval = 6 * time.Second
+	subscriberConf.Consumer.MaxProcessingTime = 500 * time.Millisecond
+
 	sub, err := kafka.NewSubscriber(
 		kafka.SubscriberConfig{
 			Brokers:               brokers,
