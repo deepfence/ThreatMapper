@@ -1,0 +1,5 @@
+# out dir, dev generated files
+.react-email
+node_modules
+out
+
