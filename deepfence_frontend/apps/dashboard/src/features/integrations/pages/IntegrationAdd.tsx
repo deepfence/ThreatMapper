@@ -111,7 +111,7 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
         aws_access_key: formBody.accessKey,
         aws_secret_key: formBody.secretKey,
         aws_region: formBody.region,
-        aws_account_ids: accounts,
+        aws_account_id: accounts,
       };
     }
     case IntegrationType.jira: {

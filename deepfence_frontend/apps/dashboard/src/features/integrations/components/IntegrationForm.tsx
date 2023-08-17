@@ -542,6 +542,7 @@ export const IntegrationForm = ({
                   placeholder="AWS secret key"
                   helperText={fieldErrors?.aws_secret_key}
                   color={fieldErrors?.aws_secret_key ? 'error' : 'default'}
+                  type="password"
                 />
                 <TextInputType
                   name="region"
@@ -555,12 +556,15 @@ export const IntegrationForm = ({
                   triggerVariant="select"
                   defaultSelectedAccounts={awsAccounts}
                   cloudProvider="aws"
+                  valueKey="nodeName"
                   onClearAll={() => {
                     setAccounts([]);
                   }}
                   onChange={(value) => {
                     setAccounts(value);
                   }}
+                  helperText={fieldErrors?.aws_account_id}
+                  color={fieldErrors?.aws_account_id ? 'error' : 'default'}
                 />
               </>
             )}
