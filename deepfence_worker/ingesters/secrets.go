@@ -6,39 +6,11 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-type SecretScanStatus struct {
-	ScanID      string `json:"scan_id"`
-	ScanStatus  string `json:"scan_status"`
-	ScanMessage string `json:"scan_message"`
-}
-
-type Secret struct {
-	ImageLayerID string `json:"ImageLayerId"`
-	Match        struct {
-		StartingIndex         int    `json:"starting_index"`
-		RelativeStartingIndex int    `json:"relative_starting_index"`
-		RelativeEndingIndex   int    `json:"relative_ending_index"`
-		FullFilename          string `json:"full_filename"`
-		MatchedContent        string `json:"matched_content"`
-	} `json:"Match"`
-	Rule struct {
-		ID               int    `json:"id"`
-		Name             string `json:"name"`
-		Part             string `json:"part"`
-		SignatureToMatch string `json:"signature_to_match"`
-	} `json:"Rule"`
-	Severity struct {
-		Level string  `json:"level"`
-		Score float64 `json:"score"`
-	} `json:"Severity"`
-	Masked bool   `json:"masked"`
-	ScanID string `json:"scan_id"`
-}
-
-func CommitFuncSecrets(ns string, data []Secret) error {
+func CommitFuncSecrets(ns string, data []ingestersUtil.Secret) error {
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -81,7 +53,7 @@ func CommitFuncSecrets(ns string, data []Secret) error {
 	return tx.Commit()
 }
 
-func secretsToMaps(data []Secret) []map[string]map[string]interface{} {
+func secretsToMaps(data []ingestersUtil.Secret) []map[string]map[string]interface{} {
 	var secrets []map[string]map[string]interface{}
 	for _, i := range data {
 		secret := utils.ToMap(i)

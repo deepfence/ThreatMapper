@@ -13,7 +13,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
+	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/samber/mo"
 )
@@ -424,7 +424,7 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 		filterNil(map[string]interface{}{
 			"providers":      cloud_provider,
 			"regions":        cloud_regions,
-			"resource_types": ingesters.TopologyCloudResourceTypes,
+			"resource_types": ingestersUtil.TopologyCloudResourceTypes,
 		}))
 
 	if err != nil {

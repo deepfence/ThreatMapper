@@ -1,6 +1,6 @@
 VERSION=`git describe --tags`
 GIT_COMMIT=`git rev-parse HEAD`
-BUILD_TIME=`date --utc +%FT%TZ`
+BUILD_TIME=`date -u +%FT%TZ`
 
 all: deepfence_worker
 

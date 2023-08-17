@@ -7,7 +7,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
+	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -49,13 +49,13 @@ func (tc *SecretIngester) Ingest(
 
 type SecretScanStatusIngester struct{}
 
-func NewSecretScanStatusIngester() KafkaIngester[[]ingesters.SecretScanStatus] {
+func NewSecretScanStatusIngester() KafkaIngester[[]ingestersUtil.SecretScanStatus] {
 	return &SecretScanStatusIngester{}
 }
 
 func (tc *SecretScanStatusIngester) Ingest(
 	ctx context.Context,
-	statuses []ingesters.SecretScanStatus,
+	statuses []ingestersUtil.SecretScanStatus,
 	ingestC chan *kgo.Record,
 ) error {
 	tenantID, err := directory.ExtractNamespace(ctx)
