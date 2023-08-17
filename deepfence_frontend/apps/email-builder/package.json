@@ -1,17 +1,34 @@
 {
   "name": "email-builder",
-  "version": "0.0.18",
-  "private": true,
-  "workspaces": [
-    ".react-email"
-  ],
+  "version": "1.0.0",
+  "private": "true",
+  "description": "Email builder for deepfence products",
+  "main": "index.js",
   "scripts": {
-    "dev": "email dev",
-    "export": "email export"
+    "email:dev": "email dev",
+    "email:export": "email export"
   },
+  "keywords": [],
+  "author": "Deepfence Inc",
   "dependencies": {
-    "@react-email/components": "0.0.6",
-    "react-email": "1.9.3",
+    "@react-email/body": "0.0.3",
+    "@react-email/button": "0.0.10",
+    "@react-email/column": "0.0.7",
+    "@react-email/container": "0.0.8",
+    "@react-email/font": "0.0.3",
+    "@react-email/head": "0.0.5",
+    "@react-email/heading": "0.0.8",
+    "@react-email/hr": "0.0.5",
+    "@react-email/html": "0.0.4",
+    "@react-email/img": "0.0.5",
+    "@react-email/link": "0.0.5",
+    "@react-email/markdown": "0.0.2",
+    "@react-email/preview": "0.0.6",
+    "@react-email/section": "0.0.9",
+    "@react-email/tailwind": "0.0.8",
+    "@react-email/text": "0.0.5",
+    "react": "18.2.0",
+    "react-email": "1.9.4",
     "tailwind-preset": "workspace:*"
   }
 }
