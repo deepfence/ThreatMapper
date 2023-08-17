@@ -355,6 +355,7 @@ type CloudResource struct {
 	ID                          string `json:"node_id" required:"true"`
 	Name                        string `json:"node_name" required:"true"`
 	Type                        string `json:"node_type" required:"true"`
+	TypeLabel                   string `json:"type_label" required:"true"`
 	AccountId                   string `json:"account_id" required:"true"`
 	CloudProvider               string `json:"cloud_provider" required:"true"`
 	CloudRegion                 string `json:"cloud_region" required:"true"`
