@@ -38,21 +38,11 @@ func NewReporter(registry Registry, hostID string, probeID string, probe *probe.
 		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
 		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
 	}
-	registry.WatchContainerUpdates(reporter.ContainerUpdated)
 	return reporter
 }
 
 // Name of this reporter, for metrics gathering
 func (Reporter) Name() string { return "Docker" }
-
-// ContainerUpdated should be called whenever a container is updated.
-func (r *Reporter) ContainerUpdated(n report.TopologyNode) {
-	// Publish a 'short cut' report container just this container
-	rpt := report.MakeReport()
-	rpt.Shortcut = true
-	rpt.Container.AddNode(n)
-	r.probe.Publish(rpt)
-}
 
 // Report generates a Report containing Container and ContainerImage topologies
 func (r *Reporter) Report() (report.Report, error) {
@@ -88,8 +78,8 @@ func (r *Reporter) containerTopology(localAddrs []net.IP) report.Topology {
 	nodes := []report.TopologyNode{}
 	r.registry.WalkContainers(func(c Container) {
 		node := c.GetNode()
-		if node.Metadata.DockerContainerState != "exited" && node.Metadata.DockerContainerState != "created" {
-			nodes = append(nodes, node)
+		if node != nil {
+			nodes = append(nodes, *node)
 		}
 	})
 
@@ -156,6 +146,7 @@ func (r *Reporter) containerImageTopology() report.Topology {
 	imageTagsMap := r.registry.GetImageTags()
 	r.registry.WalkImages(func(image docker_client.APIImages) {
 		imageID := trimImageID(image.ID)
+		shortImageID := getShortImageID(imageID)
 		metadata := report.Metadata{
 			Timestamp:              time.Now().UTC().Format(time.RFC3339Nano),
 			NodeID:                 imageID,
@@ -170,7 +161,7 @@ func (r *Reporter) containerImageTopology() report.Topology {
 
 		if len(image.RepoTags) > 0 {
 			imageFullName := image.RepoTags[0]
-			metadata.NodeName = imageFullName
+			metadata.NodeName = imageFullName + " (" + shortImageID + ")"
 			metadata.ImageNameWithTag = imageFullName
 			metadata.ImageName = ImageNameWithoutTag(imageFullName)
 			metadata.ImageTag = ImageNameTag(imageFullName)
@@ -234,4 +225,8 @@ func (r *Reporter) overlayTopology() report.Topology {
 // ugly and isn't necessary, so we should strip it off
 func trimImageID(id string) string {
 	return strings.TrimPrefix(id, "sha256:")
+}
+
+func getShortImageID(id string) string {
+	return id[:12]
 }

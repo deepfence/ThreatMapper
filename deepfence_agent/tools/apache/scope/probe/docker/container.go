@@ -36,7 +36,7 @@ type Container interface {
 	Image() string
 	PID() int
 	Hostname() string
-	GetNode() report.TopologyNode
+	GetNode() *report.TopologyNode
 	GetParent() *report.Parent
 	State() string
 	StateString() string
@@ -354,6 +354,9 @@ func (c *container) getSanitizedCommand() string {
 
 func (c *container) getBaseNode() (report.Metadata, report.Parent) {
 	containerName := strings.TrimPrefix(c.container.Name, "/")
+	if containerName == "" {
+		containerName = c.ID()
+	}
 	var dockerLabels string
 	podName := c.container.Config.Labels["io.kubernetes.pod.name"]
 	podUid := c.container.Config.Labels["io.kubernetes.pod.uid"]
@@ -392,12 +395,15 @@ func (c *container) GetParent() *report.Parent {
 	return &c.baseParent
 }
 
-func (c *container) GetNode() report.TopologyNode {
+func (c *container) GetNode() *report.TopologyNode {
 	c.RLock()
 	defer c.RUnlock()
-	c.baseNode.Timestamp = time.Now().UTC().Format(time.RFC3339Nano)
 	c.baseNode.DockerContainerState = c.StateString()
+	if report.SkipReportContainerState[c.baseNode.DockerContainerState] {
+		return nil
+	}
 	c.baseNode.DockerContainerStateHuman = c.State()
+	c.baseNode.Timestamp = time.Now().UTC().Format(time.RFC3339Nano)
 
 	if !c.container.State.Paused && c.container.State.Running {
 		uptimeSeconds := int(time.Now().Sub(c.container.State.StartedAt) / time.Second)
@@ -409,7 +415,7 @@ func (c *container) GetNode() report.TopologyNode {
 		c.baseNode.DockerContainerNetworkMode = networkMode
 	}
 	c.baseNode.MemoryUsage, c.baseNode.MemoryMax, c.baseNode.CpuUsage, c.baseNode.CpuMax = c.metrics()
-	return report.TopologyNode{
+	return &report.TopologyNode{
 		Metadata: c.baseNode,
 		Parents:  c.GetParent(),
 	}
