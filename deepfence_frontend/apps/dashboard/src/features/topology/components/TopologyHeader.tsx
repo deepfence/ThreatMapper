@@ -128,6 +128,16 @@ export const TopologyHeader = () => {
           </Suspense>
         }
       />
+      <SummaryTab
+        icon={<PodIcon />}
+        name="Cloud Resources"
+        type={'cloud_resource' as any}
+        count={
+          <Suspense fallback={0}>
+            <NodeCount type="container" />
+          </Suspense>
+        }
+      />
       <div className="ml-auto">
         <ViewSwitcher />
       </div>
