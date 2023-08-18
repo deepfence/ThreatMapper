@@ -1,13 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Listbox, ListboxOption } from 'ui-components';
 
+import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudAccountsList';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
-import { CaretDown } from '@/components/icons/common/CaretDown';
-import { useGetCloudAccountsList } from '@/features/common/data-component/searchCloudAccountsApiLoader';
-import { CloudNodeType, isCloudNode, ScanTypeEnum } from '@/types/common';
+import { isCloudNode, ScanTypeEnum } from '@/types/common';
 
 const getNodeTypeByProviderName = (providerName: string): string | undefined => {
   switch (providerName) {
@@ -45,7 +44,7 @@ export const AdvancedFilter = ({
   resourceType: string;
   provider: string;
 }) => {
-  const [selectedCloudAccounts, setSelectedCloudAccounts] = useState([]);
+  const [selectedCloudAccounts, setSelectedCloudAccounts] = useState<string[]>([]);
 
   const [maskedType, setMaskedType] = useState([]);
   const [status, setStatus] = useState([]);
@@ -53,10 +52,6 @@ export const AdvancedFilter = ({
     () => getNodeTypeByProviderName(provider.toLowerCase()),
     [provider],
   );
-
-  const { accounts: cloudAccounts } = useGetCloudAccountsList({
-    nodeType: nodeType as CloudNodeType,
-  });
 
   // to main clear state for combobox
   const [hosts, setHosts] = useState<string[]>([]);
@@ -73,29 +68,18 @@ export const AdvancedFilter = ({
           </div>
           <div className="grid grid-cols-2 gap-x-8 gap-y-6 pt-4">
             {isCloudNode(nodeType) && (
-              <Listbox
-                variant="underline"
-                value={selectedCloudAccounts}
-                name="accountIds[]"
+              <SearchableCloudAccountsList
+                label={`${provider} Account`}
+                triggerVariant="select"
+                defaultSelectedAccounts={selectedCloudAccounts}
+                cloudProvider={provider.toLowerCase() as 'aws' | 'gcp' | 'azure'}
+                onClearAll={() => {
+                  setSelectedCloudAccounts([]);
+                }}
                 onChange={(value) => {
                   setSelectedCloudAccounts(value);
                 }}
-                placeholder="Select accounts"
-                label="Select Account (Optional)"
-                getDisplayValue={(item) => {
-                  return (
-                    cloudAccounts.find((acc) => acc.node_id === item)?.node_name ?? ''
-                  );
-                }}
-              >
-                {cloudAccounts.map((account) => {
-                  return (
-                    <ListboxOption value={account.node_id} key={account.node_id}>
-                      {account.node_name}
-                    </ListboxOption>
-                  );
-                })}
-              </Listbox>
+              />
             )}
             {nodeType === 'host' ? (
               <>
