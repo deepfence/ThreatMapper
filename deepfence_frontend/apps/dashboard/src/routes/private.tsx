@@ -10,7 +10,6 @@ import { module as logoutAction } from '@/features/auth/data-components/logoutAc
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
 import { action as downloadScanAction } from '@/features/common/data-component/downloadScanAction';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
-import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { RootLayout } from '@/features/common/RootLayout';
 import { module as dashboard } from '@/features/dashboard/pages/Dashboard';
@@ -559,10 +558,6 @@ export const privateRoutes: CustomRouteObject[] = [
   {
     path: '/data-component',
     children: [
-      {
-        path: 'scan-history/:scanType/:nodeType/:nodeId',
-        loader: scanHistoryApiLoader,
-      },
       {
         path: 'scan/vulnerability',
         action: scanVulnerabilityApiAction,
