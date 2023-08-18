@@ -11,7 +11,7 @@ export type Props = {
   onChange?: (value: string[]) => void;
   onClearAll?: () => void;
   defaultSelectedContainers?: string[];
-  valueKey?: 'nodeId' | 'hostName';
+  valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
   triggerVariant?: 'select' | 'button';
 };
@@ -112,7 +112,7 @@ const SearchableContainer = ({
                 key={`${container.nodeId}-${index}`}
                 value={container[valueKey]}
               >
-                {container.hostName}
+                {container.nodeName}
               </ComboboxOption>
             );
           })}

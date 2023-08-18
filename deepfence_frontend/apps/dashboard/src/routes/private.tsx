@@ -11,11 +11,7 @@ import { authenticatedRootLoader } from '@/features/common/data-component/authen
 import { action as downloadScanAction } from '@/features/common/data-component/downloadScanAction';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
-import { searchCloudAccountsApiLoader } from '@/features/common/data-component/searchCloudAccountsApiLoader';
 import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
-import { searchClustersApiLoader } from '@/features/common/data-component/searchClustersApiLoader';
-import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
-import { searchContainersApiLoader } from '@/features/common/data-component/searchContainersApiLoader';
 import { RootLayout } from '@/features/common/RootLayout';
 import { module as dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrationsLayout } from '@/features/integrations/layouts/IntegrationsLayout';
@@ -566,38 +562,6 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'scan-history/:scanType/:nodeType/:nodeId',
         loader: scanHistoryApiLoader,
-      },
-      {
-        path: 'search/containers/:scanType',
-        loader: searchContainersApiLoader,
-        shouldRevalidate: ({ formAction }) => {
-          if (formAction) return false;
-          return true;
-        },
-      },
-      {
-        path: 'search/containerImages/:scanType',
-        loader: searchContainerImagesApiLoader,
-        shouldRevalidate: ({ formAction }) => {
-          if (formAction) return false;
-          return true;
-        },
-      },
-      {
-        path: 'search/clusters',
-        loader: searchClustersApiLoader,
-        shouldRevalidate: ({ formAction }) => {
-          if (formAction) return false;
-          return true;
-        },
-      },
-      {
-        path: 'search/cloud-accounts/:nodeType',
-        loader: searchCloudAccountsApiLoader,
-        shouldRevalidate: ({ formAction }) => {
-          if (formAction) return false;
-          return true;
-        },
       },
       {
         path: 'scan/vulnerability',
