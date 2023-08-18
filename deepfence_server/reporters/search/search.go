@@ -83,7 +83,7 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 	query := `
 		CALL {
 			MATCH (n:Node)
-			WHERE n.pseudo = false AND n.active = true AND n.agent_running = true
+			WHERE n.active = true AND n.cloud_provider <> 'internet'
 			return count(n) as n1
 		}
 		CALL {
@@ -98,7 +98,7 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 		}
 		CALL {
 			MATCH (n:KubernetesCluster)
-			WHERE n.pseudo = false AND n.active = true AND n.agent_running = true
+			WHERE n.active = true
 			return count(n) as n4
 		}
 		CALL {
