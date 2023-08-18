@@ -149,9 +149,11 @@ func getImageWithTags(repo Repositories, tags Tags) []model.IngestedContainerIma
 			log.Error().Msg(err.Error())
 		}
 
+		imageID, shortImageID := model.DigestToID(data.ManifestDigest)
 		tt := model.IngestedContainerImage{
-			ID:            model.DigestToID(data.ManifestDigest),
-			DockerImageID: model.DigestToID(data.ManifestDigest),
+			ID:            imageID,
+			DockerImageID: imageID,
+			ShortImageID:  shortImageID,
 			Name:          repo.Name,
 			Tag:           tag,
 			Size:          fmt.Sprint(data.Size),

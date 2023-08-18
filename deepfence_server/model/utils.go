@@ -172,12 +172,9 @@ func ParseValidatorError(errMsg string, skipOverwriteErrorMessage bool) map[stri
 	return fields
 }
 
-func DigestToID(digest string) string {
-	splits := strings.Split(digest, ":")
-	if len(splits) >= 2 {
-		return splits[1]
-	}
-	return digest
+func DigestToID(digest string) (string, string) {
+	imageID := strings.TrimPrefix(digest, "sha256:")
+	return imageID, imageID[:12]
 }
 
 func GetRegistryID(registryType, ns string) string {

@@ -289,6 +289,7 @@ type IngestedContainerImage struct {
 	DockerImageCreatedAt   string   `json:"docker_image_created_at" required:"true"`
 	DockerImageVirtualSize string   `json:"docker_image_virtual_size" required:"true"`
 	DockerImageID          string   `json:"docker_image_id" required:"true"`
+	ShortImageID           string   `json:"short_image_id"`
 	Metadata               Metadata `json:"metadata" required:"true" nested_json:"true"`
 }
 

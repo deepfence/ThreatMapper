@@ -69,16 +69,19 @@ func listImages(gitlabServerURL, gitlabRegistryURL, accessToken string) ([]model
 				return nil, err
 			}
 
-			var containerImage model.IngestedContainerImage
-			containerImage.Name = project.PathWithNamespace
-			containerImage.ID = model.DigestToID(tagDetail.Digest)
-			containerImage.Tag = tag.Name
-			containerImage.DockerImageID = tagDetail.Digest
-			containerImage.Size = strconv.Itoa(tagDetail.Totalsize)
-			containerImage.Metadata = model.Metadata{
-				"digest":       tagDetail.Digest,
-				"last_updated": time.Now().Unix(),
-				"created_at":   tagDetail.CreatedAt,
+			imageID, shortImageID := model.DigestToID(tagDetail.Digest)
+			containerImage := model.IngestedContainerImage{
+				ID:            imageID,
+				DockerImageID: imageID,
+				ShortImageID:  shortImageID,
+				Name:          project.PathWithNamespace,
+				Tag:           tag.Name,
+				Size:          strconv.Itoa(tagDetail.Totalsize),
+				Metadata: model.Metadata{
+					"digest":       tagDetail.Digest,
+					"last_updated": time.Now().Unix(),
+					"created_at":   tagDetail.CreatedAt,
+				},
 			}
 			containerImages = append(containerImages, containerImage)
 		}

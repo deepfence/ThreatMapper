@@ -83,7 +83,7 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r
 		n.pseudo=false,
 		n.active=true,
 		n.docker_image_tag_list = REDUCE(distinctElements = [], element IN COALESCE(n.docker_image_tag_list, []) + (row.docker_image_name+":"+row.docker_image_tag) | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
-		n.node_name=n.docker_image_name+":"+n.docker_image_tag,
+		n.node_name=n.docker_image_name+":"+n.docker_image_tag+" ("+n.short_image_id+")",
 		s.updated_at = TIMESTAMP(),
 		s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`,
 		map[string]interface{}{
