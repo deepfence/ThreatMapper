@@ -1,10 +1,13 @@
 package model
 
 import (
+	//"errors"
 	"strings"
 	"unicode"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	//ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -131,8 +134,10 @@ var (
 	}
 )
 
-func ParseValidatorError(errMsg string, skipOverwriteErrorMessage bool) map[string]string {
+func ParseValidatorError(err error, skipOverwriteErrorMessage bool, errMessages map[string]string) map[string]string {
+	errMsg := err.Error()
 	fields := make(map[string]string)
+	log.Info().Msgf("errMessages: %+v", errMessages)
 	validate := func(errMsg string) (string, string, string) {
 		s := strings.SplitN(errMsg, "'", 3)
 		sLen := len(s)
@@ -142,6 +147,9 @@ func ParseValidatorError(errMsg string, skipOverwriteErrorMessage bool) map[stri
 		}
 		if sLen == 3 {
 			structKey := strings.Split(s[1], ".")
+			if _, ok := errMessages[s[1]]; ok {
+				errMessage = errMessages[s[1]]
+			}
 			if len(structKey) == 2 {
 				return utils.ToSnakeCase(structKey[1]), s[1], errMessage
 			} else if len(structKey) == 3 {

@@ -9,6 +9,7 @@ import (
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	httpext "github.com/go-playground/pkg/v5/net/http"
+	//ut "github.com/go-playground/universal-translator"
 	"github.com/opentracing/opentracing-go"
 	"github.com/ugorji/go/codec"
 )
@@ -82,6 +83,7 @@ func (i *InternalServerError) Error() string {
 type ValidatorError struct {
 	err                       error
 	skipOverwriteErrorMessage bool
+	messages                  map[string]string
 }
 
 func (bd *ValidatorError) Error() string {
@@ -107,7 +109,7 @@ func (bd *NotFoundError) Error() string {
 func respondWithErrorCode(err error, w http.ResponseWriter, code int) error {
 	var errorFields map[string]string
 	if code == http.StatusBadRequest {
-		errorFields = model.ParseValidatorError(err.Error(), false)
+		errorFields = model.ParseValidatorError(err, false, map[string]string{})
 	}
 	if len(errorFields) > 0 {
 		return httpext.JSON(w, code, model.ErrorResponse{Message: "", ErrorFields: errorFields})
@@ -130,7 +132,7 @@ func respondError(err error, w http.ResponseWriter) error {
 		code = http.StatusBadRequest
 	case *ValidatorError:
 		code = http.StatusBadRequest
-		errorFields = model.ParseValidatorError(err.Error(), err.(*ValidatorError).skipOverwriteErrorMessage)
+		errorFields = model.ParseValidatorError(err, err.(*ValidatorError).skipOverwriteErrorMessage, err.(*ValidatorError).messages)
 	case *ForbiddenError:
 		code = http.StatusForbidden
 	case *NotFoundError:

@@ -31,7 +31,9 @@ require (
 	github.com/docker/docker v24.0.2+incompatible
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/jwtauth/v5 v5.1.0
+	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/pkg/v5 v5.18.0
+	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.14.1
 	github.com/google/uuid v1.3.0
 	github.com/json-iterator/go v1.1.12
@@ -90,8 +92,6 @@ require (
 	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/go-playground/assert/v2 v2.2.0 // indirect
 	github.com/go-playground/form/v4 v4.2.0 // indirect
-	github.com/go-playground/locales v0.14.1 // indirect
-	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect

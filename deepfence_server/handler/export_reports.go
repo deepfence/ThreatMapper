@@ -16,6 +16,10 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
+	"github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
+	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -249,8 +253,41 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 		return
 	}
+
+	en := en.New()
+	uni := ut.New(en, en)
+	// this is usually know or extracted from http 'Accept-Language' header
+	// also see uni.FindTranslator(...)
+	trans, _ := uni.GetTranslator("en")
+	en_translations.RegisterDefaultTranslations(h.Validator, trans)
+	log.Info().Msg("Translating Required validator")
+	h.Validator.RegisterTranslation("required", trans, func(ut ut.Translator) error {
+		log.Info().Msg("Reached Required override")
+		return ut.Add("required", "{0} is required", true)
+	}, func(ut ut.Translator, fe validator.FieldError) string {
+		log.Info().Msgf("Reached Required translate for %s", fe.Field())
+		t, _ := ut.T("required", fe.Field())
+		return t
+	})
+	log.Info().Msg("Translating Enum validator")
+	h.Validator.RegisterTranslation("enum", trans, func(ut ut.Translator) error {
+		log.Info().Msg("Reached Enum override")
+		return ut.Add("enum", "{0} must be one of {1}", true)
+	}, func(ut ut.Translator, fe validator.FieldError) string {
+		log.Info().Msgf("Reached Enum translate for %s with values %s", fe.Field(), fe.ActualTag())
+		t, _ := ut.T("enum", fe.Field(), fe.ActualTag())
+		return t
+	})
+
 	if err := h.Validator.Struct(req); err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		log.Error().Msgf("Validation Error: %+v", err)
+		errs := err.(validator.ValidationErrors)
+		log.Info().Msgf("Translations %+v", errs.Translate(trans))
+		for _, e := range errs {
+			// can translate each error one at a time.
+			log.Info().Msg(e.Translate(trans))
+		}
+		respondError(&ValidatorError{err: err, messages: errs.Translate(trans)}, w)
 		return
 	}
 
