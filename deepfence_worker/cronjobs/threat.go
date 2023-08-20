@@ -8,6 +8,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -15,6 +16,8 @@ var threatGraphRunning atomic.Bool
 var exploitabilityRunning atomic.Bool
 
 func ComputeThreat(msg *message.Message) error {
+	RecordOffsets(utils.ComputeThreatTask, msg)
+
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	nc, err := directory.Neo4jClient(ctx)

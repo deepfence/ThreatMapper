@@ -4,10 +4,13 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
 // CleanUpPostgresDB Delete expired user invites and password reset requests
 func CleanUpPostgresDB(msg *message.Message) error {
+	RecordOffsets(utils.CleanUpPostgresqlTask, msg)
+
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	pgClient, err := directory.PostgresClient(ctx)

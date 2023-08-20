@@ -29,6 +29,19 @@ type worker struct {
 	mux *message.Router
 }
 
+type NoPublisherTask struct {
+	Task            string
+	TaskCallback    func(*message.Message) error
+	Handler         *message.Handler
+	Subscriber      message.Subscriber
+	InactiveCounter int
+}
+
+// For thread safety, Below map should only be accessed:
+// - From the main() during the initial startup
+// - From the pollHandlers() during runtime
+var HandlerMap map[string]*NoPublisherTask
+
 func NewWorker(wml watermill.LoggerAdapter, cfg config, mux *message.Router) worker {
 	return worker{wml: wml, cfg: cfg, mux: mux}
 }
@@ -49,20 +62,24 @@ func telemetryCallbackWrapper(task string, taskCallback func(*message.Message) e
 	}
 }
 
-func (w *worker) AddNoPublisherHandler(
-	task string,
+func (w *worker) AddNoPublisherHandler(task string,
 	taskCallback func(*message.Message) error,
-) error {
+	shouldPoll bool) error {
+
 	subscriber, err := subscribe(task, w.cfg.KafkaBrokers, w.wml)
 	if err != nil {
 		return err
 	}
-	w.mux.AddNoPublisherHandler(
+	hdlr := w.mux.AddNoPublisherHandler(
 		task,
 		task,
 		subscriber,
 		telemetryCallbackWrapper(task, taskCallback),
 	)
+	if shouldPoll {
+		HandlerMap[task] = &NoPublisherTask{task, taskCallback, hdlr, subscriber, 0}
+	}
+
 	return nil
 }
 
@@ -108,8 +125,81 @@ func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAd
 	if err != nil {
 		return nil, err
 	}
-
 	return sub, nil
+}
+
+// Routine to poll the liveliness of the Handlers for topics regsitered with
+// HandlerMap
+func (w *worker) pollHandlers() {
+	ticker := time.NewTicker(30 * time.Second)
+	flag := true
+	threshold := 10
+	for {
+		select {
+		case <-ticker.C:
+			cronjobData := cronjobs.GetTopicData()
+			var resetTopicList []*NoPublisherTask
+			for topic, task := range HandlerMap {
+				var sub *kafka.Subscriber
+				sub = task.Subscriber.(*kafka.Subscriber)
+				svrOffset, err := sub.PartitionOffset(task.Task)
+				if err != nil {
+					log.Info().Msgf("PartitionOffset error: %v", err)
+					continue
+				}
+
+				msgOffset, found := cronjobData[topic]
+				if !found {
+					continue
+				}
+
+				maxDelta := int64(1)
+				inactiveFlag := false
+				for id, _ := range svrOffset {
+					if _, ok := msgOffset[id]; ok {
+						delta := svrOffset[id] - msgOffset[id]
+						if delta > maxDelta {
+							inactiveFlag = true
+							break
+						}
+					}
+				}
+
+				if inactiveFlag == true {
+					task.InactiveCounter++
+					log.Info().Msgf("Increasing InactiveCounter for topic: %s, counter: %d",
+						topic, task.InactiveCounter)
+				} else {
+					task.InactiveCounter = 0
+				}
+
+				if task.InactiveCounter < threshold {
+					continue
+				}
+
+				if flag == true {
+					resetTopicList = append(resetTopicList, task)
+				}
+			}
+
+			for _, task := range resetTopicList {
+				log.Info().Msgf("Initiating restart of inactive handler for topic: %s", task.Task)
+				task.Handler.Stop()
+				//This select is to make sure the handler has actually stopped
+				select {
+				case _, ok := <-task.Handler.Stopped():
+					if !ok {
+						log.Info().Msgf("Successfully stopped handler for topic: %s", task.Task)
+						break
+					}
+				}
+
+				w.AddNoPublisherHandler(task.Task, task.TaskCallback, true)
+				w.mux.RunHandlers(context.Background())
+				log.Info().Msgf("Restarted handler for topic: %s", task.Task)
+			}
+		}
+	}
 }
 
 func startWorker(wml watermill.LoggerAdapter, cfg config) error {
@@ -174,54 +264,64 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 		middleware.CorrelationID,
 	)
 
+	HandlerMap = make(map[string]*NoPublisherTask)
+
+	cronjobs.TopicData = make(map[string]kafka.PartitionOffset)
+
 	worker := NewWorker(wml, cfg, mux)
 
 	// sbom
-	worker.AddNoPublisherHandler(utils.ScanSBOMTask, sbom.NewSBOMScanner(ingestC).ScanSBOM)
+	worker.AddNoPublisherHandler(utils.ScanSBOMTask, sbom.NewSBOMScanner(ingestC).ScanSBOM, false)
 	worker.AddHandler(utils.GenerateSBOMTask, sbom.NewSbomGenerator(ingestC).GenerateSbom,
 		utils.ScanSBOMTask, publisher)
 
-	worker.AddNoPublisherHandler(utils.SetUpGraphDBTask, cronjobs.ApplyGraphDBStartup)
+	worker.AddNoPublisherHandler(utils.SetUpGraphDBTask, cronjobs.ApplyGraphDBStartup, false)
 
-	worker.AddNoPublisherHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)
+	worker.AddNoPublisherHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB, true)
 
-	worker.AddNoPublisherHandler(utils.ComputeThreatTask, cronjobs.ComputeThreat)
+	worker.AddNoPublisherHandler(utils.ComputeThreatTask, cronjobs.ComputeThreat, true)
 
-	worker.AddNoPublisherHandler(utils.RetryFailedScansTask, cronjobs.RetryScansDB)
+	worker.AddNoPublisherHandler(utils.RetryFailedScansTask, cronjobs.RetryScansDB, true)
 
-	worker.AddNoPublisherHandler(utils.RetryFailedUpgradesTask, cronjobs.RetryUpgradeAgent)
+	worker.AddNoPublisherHandler(utils.RetryFailedUpgradesTask, cronjobs.RetryUpgradeAgent, false)
 
-	worker.AddNoPublisherHandler(utils.CleanUpPostgresqlTask, cronjobs.CleanUpPostgresDB)
+	worker.AddNoPublisherHandler(utils.CleanUpPostgresqlTask, cronjobs.CleanUpPostgresDB, true)
 
-	worker.AddNoPublisherHandler(utils.CleanupDiagnosisLogs, cronjobs.CleanUpDiagnosisLogs)
+	worker.AddNoPublisherHandler(utils.CleanupDiagnosisLogs, cronjobs.CleanUpDiagnosisLogs, false)
 
-	worker.AddNoPublisherHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade)
+	worker.AddNoPublisherHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade, true)
 
-	worker.AddNoPublisherHandler(utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls)
+	worker.AddNoPublisherHandler(utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls, true)
 
-	worker.AddNoPublisherHandler(utils.ScheduledTasks, cronjobs.RunScheduledTasks)
+	worker.AddNoPublisherHandler(utils.ScheduledTasks, cronjobs.RunScheduledTasks, false)
 
-	worker.AddNoPublisherHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry)
+	worker.AddNoPublisherHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry, false)
 
-	worker.AddNoPublisherHandler(utils.SecretScanTask, secretscan.NewSecretScanner(ingestC).StartSecretScan)
-	worker.AddNoPublisherHandler(utils.StopSecretScanTask, secretscan.NewSecretScanner(ingestC).StopSecretScan)
+	worker.AddNoPublisherHandler(utils.SecretScanTask,
+		secretscan.NewSecretScanner(ingestC).StartSecretScan, false)
+	worker.AddNoPublisherHandler(utils.StopSecretScanTask,
+		secretscan.NewSecretScanner(ingestC).StopSecretScan, false)
 
-	worker.AddNoPublisherHandler(utils.MalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StartMalwareScan)
-	worker.AddNoPublisherHandler(utils.StopMalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StopMalwareScan)
+	worker.AddNoPublisherHandler(utils.MalwareScanTask,
+		malwarescan.NewMalwareScanner(ingestC).StartMalwareScan, false)
+	worker.AddNoPublisherHandler(utils.StopMalwareScanTask,
+		malwarescan.NewMalwareScanner(ingestC).StopMalwareScan, false)
 
-	worker.AddNoPublisherHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
+	worker.AddNoPublisherHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls, true)
 
-	worker.AddNoPublisherHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders)
+	worker.AddNoPublisherHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders, true)
 
-	worker.AddNoPublisherHandler(utils.SendNotificationTask, cronjobs.SendNotifications)
+	worker.AddNoPublisherHandler(utils.SendNotificationTask, cronjobs.SendNotifications, true)
 
-	worker.AddNoPublisherHandler(utils.ReportGeneratorTask, reports.GenerateReport)
+	worker.AddNoPublisherHandler(utils.ReportGeneratorTask, reports.GenerateReport, false)
 
-	worker.AddNoPublisherHandler(utils.ReportCleanUpTask, cronjobs.CleanUpReports)
+	worker.AddNoPublisherHandler(utils.ReportCleanUpTask, cronjobs.CleanUpReports, true)
 
-	worker.AddNoPublisherHandler(utils.LinkCloudResourceTask, cronjobs.LinkCloudResources)
+	worker.AddNoPublisherHandler(utils.LinkCloudResourceTask, cronjobs.LinkCloudResources, true)
 
-	worker.AddNoPublisherHandler(utils.LinkNodesTask, cronjobs.LinkNodes)
+	worker.AddNoPublisherHandler(utils.LinkNodesTask, cronjobs.LinkNodes, true)
+
+	go worker.pollHandlers()
 
 	log.Info().Msg("Starting the consumer")
 	if err = worker.Run(context.Background()); err != nil {

@@ -6,6 +6,7 @@ import (
 	utils_ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_worker/controls"
 )
 
@@ -23,6 +24,7 @@ While this functon is a cron job, it is running on the worker's address space
 Hence Allocator can be shared across tasks
 */
 func TriggerConsoleControls(msg *message.Message) error {
+	RecordOffsets(utils.TriggerConsoleActionsTask, msg)
 
 	log.Debug().Msgf("Trigger console actions #capacity: %v", ScanWorkloadAllocator.MaxAllocable())
 

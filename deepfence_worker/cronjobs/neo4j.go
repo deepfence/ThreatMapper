@@ -65,6 +65,8 @@ func getPushBackValue(session neo4j.Session) int32 {
 var cleanUpRunning = atomic.Bool{}
 
 func CleanUpDB(msg *message.Message) error {
+	RecordOffsets(utils.CleanUpGraphDBTask, msg)
+
 	if cleanUpRunning.Swap(true) {
 		return nil
 	}
@@ -380,6 +382,7 @@ func CleanUpDB(msg *message.Message) error {
 var linkCloudResourcesRunning = atomic.Bool{}
 
 func LinkCloudResources(msg *message.Message) error {
+	RecordOffsets(utils.LinkCloudResourceTask, msg)
 
 	if linkCloudResourcesRunning.Swap(true) {
 		return nil
@@ -494,6 +497,7 @@ func LinkCloudResources(msg *message.Message) error {
 var linkNodesRunning = atomic.Bool{}
 
 func LinkNodes(msg *message.Message) error {
+	RecordOffsets(utils.LinkNodesTask, msg)
 
 	if linkNodesRunning.Swap(true) {
 		return nil
@@ -550,6 +554,8 @@ func LinkNodes(msg *message.Message) error {
 }
 
 func RetryScansDB(msg *message.Message) error {
+	RecordOffsets(utils.RetryFailedScansTask, msg)
+
 	log.Info().Msgf("Retry scan DB Starting")
 	defer log.Info().Msgf("Retry scan DB Done")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
@@ -604,6 +610,8 @@ func RetryScansDB(msg *message.Message) error {
 }
 
 func RetryUpgradeAgent(msg *message.Message) error {
+	RecordOffsets(utils.RetryFailedUpgradesTask, msg)
+
 	log.Info().Msgf("Retry upgrade DB Starting")
 	defer log.Info().Msgf("Retry upgrade DB Done")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
