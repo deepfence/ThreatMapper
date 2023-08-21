@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 import { Card } from 'ui-components';
 
-import AuthBg from '@/assets/auth-bg.png';
+import AuthBg from '@/assets/auth-bg.svg';
 
 const DeepfenceLogo = () => {
   return (
@@ -105,7 +105,7 @@ export const AuthLayout = () => {
     <div
       className="grid h-screen place-items-center overflow-auto"
       style={{
-        background: `url(${AuthBg}) no-repeat center center`,
+        background: `url("${AuthBg}") no-repeat center center`,
         backgroundSize: 'cover',
       }}
     >
