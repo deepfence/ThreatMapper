@@ -1,13 +1,12 @@
-import { EChartsOption } from 'echarts';
 import { preset } from 'tailwind-preset';
 
-import { ReactECharts } from '@/components/ReactEcharts';
+import { ECOption, ReactECharts } from '@/components/ReactEcharts';
 import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { PostureSeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
 
 function getChartOptions({ data }: { data: { [key: string]: number } }) {
-  const option: EChartsOption = {
+  const option: ECOption = {
     backgroundColor: 'transparent',
     tooltip: {
       show: false,

@@ -1,10 +1,9 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { EChartsOption } from 'echarts';
 import { Suspense } from 'react';
 import { preset } from 'tailwind-preset';
 import { Card, CircleSpinner } from 'ui-components';
 
-import { ReactECharts } from '@/components/ReactEcharts';
+import { ECOption, ReactECharts } from '@/components/ReactEcharts';
 import { SeverityLegend } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
@@ -20,7 +19,7 @@ function getChartOptions({
   data: { [key: string]: number };
   total: number;
 }) {
-  const option: EChartsOption = {
+  const option: ECOption = {
     backgroundColor: 'transparent',
     tooltip: {
       show: false,
