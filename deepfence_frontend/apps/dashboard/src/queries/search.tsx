@@ -152,7 +152,7 @@ export const searchQueries = createQueryKeys('search', {
               contains_filter: {
                 filter_in: {
                   pseudo: [false],
-                  ...(active !== undefined && { active: [active === true] }),
+                  ...(active && { active: [active === true] }),
                 },
               },
               order_filter: {

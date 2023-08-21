@@ -135,6 +135,7 @@ export const AdvancedFilter = ({
                     onClearAll={() => {
                       setContainers([]);
                     }}
+                    active={!deadNodes}
                   />
                 </div>
               </>
