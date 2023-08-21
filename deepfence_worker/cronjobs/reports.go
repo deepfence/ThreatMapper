@@ -7,7 +7,6 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -16,7 +15,7 @@ import (
 const minioReportsPrefix = "/report/"
 
 func CleanUpReports(msg *message.Message) error {
-	RecordOffsets(sdkUtils.ReportCleanUpTask, msg)
+	RecordOffsets(msg)
 
 	log.Info().Msg("Start reports cleanup")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)

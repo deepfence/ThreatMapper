@@ -15,7 +15,6 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	m "github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -39,7 +38,7 @@ func getVersionMetadata(url string, result *[]map[string]interface{}) error {
 }
 
 func CheckAgentUpgrade(msg *message.Message) error {
-	RecordOffsets(utils.CheckAgentUpgradeTask, msg)
+	RecordOffsets(msg)
 
 	log.Info().Msg("Start agent version check")
 

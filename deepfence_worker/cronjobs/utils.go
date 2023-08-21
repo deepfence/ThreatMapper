@@ -23,8 +23,14 @@ func GetTopicData() map[string]kafka.PartitionOffset {
 	return retVal
 }
 
-func RecordOffsets(topic string, msg *message.Message) {
-	if msg == nil || len(topic) == 0 {
+func RecordOffsets(msg *message.Message) {
+	if msg == nil {
+		return
+	}
+
+	topic := message.SubscribeTopicFromCtx(msg.Context())
+	if len(topic) == 0 {
+		log.Debug().Msgf("Failed to get the topic from message Context")
 		return
 	}
 
