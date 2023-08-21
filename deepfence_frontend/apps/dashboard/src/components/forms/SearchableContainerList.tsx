@@ -22,7 +22,7 @@ const SearchableContainer = ({
   onClearAll,
   defaultSelectedContainers,
   valueKey = 'nodeId',
-  active,
+  active = true,
   triggerVariant,
 }: Props) => {
   const [searchText, setSearchText] = useState('');
