@@ -15,6 +15,8 @@ var threatGraphRunning atomic.Bool
 var exploitabilityRunning atomic.Bool
 
 func ComputeThreat(msg *message.Message) error {
+	RecordOffsets(msg)
+
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	nc, err := directory.Neo4jClient(ctx)

@@ -46,6 +46,8 @@ type Control struct {
 }
 
 func AddCloudControls(msg *message.Message) error {
+	RecordOffsets(msg)
+
 	log.Info().Msgf("Starting Cloud Compliance Population")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
@@ -165,6 +167,7 @@ func AddCloudControls(msg *message.Message) error {
 }
 
 func CachePostureProviders(msg *message.Message) error {
+	RecordOffsets(msg)
 	log.Info().Msgf("Caching Posture Providers")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
