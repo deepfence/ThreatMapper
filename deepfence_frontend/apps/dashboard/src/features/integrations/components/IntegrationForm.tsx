@@ -141,6 +141,8 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
           onClearAll={() => {
             setHosts([]);
           }}
+          agentRunning={false}
+          active={false}
         />
 
         <SearchableContainerList
@@ -153,6 +155,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
           onClearAll={() => {
             setContainers([]);
           }}
+          active={false}
         />
 
         <SearchableImageList
@@ -176,6 +179,8 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
           onClearAll={() => {
             setClusters([]);
           }}
+          agentRunning={false}
+          active={false}
         />
 
         {notificationType === 'Compliance' || notificationType === 'CloudCompliance' ? (

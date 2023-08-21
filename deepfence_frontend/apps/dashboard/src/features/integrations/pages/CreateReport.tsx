@@ -366,7 +366,11 @@ const ReportForm = () => {
             </div>
           </div>
 
-          <AdvancedFilter provider={provider} resourceType={resource} />
+          <AdvancedFilter
+            provider={provider}
+            resourceType={resource}
+            deadNodes={deadNodes}
+          />
 
           {data?.message ? (
             <p className="mt-4 text-p7 dark:text-status-error">{data?.message}</p>

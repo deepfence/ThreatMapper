@@ -45,7 +45,7 @@ export const searchQueries = createQueryKeys('search', {
               contains_filter: {
                 filter_in: {
                   pseudo: [false],
-                  ...(active !== undefined && { active: [active === true] }),
+                  ...(active && { active: [active === true] }),
                 },
               },
               order_filter: {
@@ -83,7 +83,7 @@ export const searchQueries = createQueryKeys('search', {
             node_name: [searchText],
           };
         }
-        if (!isNil(agentRunning)) {
+        if (!isNil(agentRunning) && agentRunning) {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
             'agent_running'
           ] = [agentRunning];
@@ -335,7 +335,7 @@ export const searchQueries = createQueryKeys('search', {
               contains_filter: {
                 filter_in: {
                   pseudo: [false],
-                  ...(active !== undefined && { active: [active === true] }),
+                  ...(active && { active: [active === true] }),
                 },
               },
               match_filter: {
@@ -371,7 +371,7 @@ export const searchQueries = createQueryKeys('search', {
             node_name: [searchText],
           };
         }
-        if (!isNil(agentRunning)) {
+        if (!isNil(agentRunning) && agentRunning) {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
             'agent_running'
           ] = [agentRunning];
