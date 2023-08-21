@@ -134,10 +134,11 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		}
 		logrus.Debugf("Pending scans for node: %+v", scanList)
 	}
-	logrus.Debugf("Returning response: Scan List %+v cloudtrailTrails %+v Refresh %s", scanList, cloudtrailTrails, doRefresh)
+	agentDeploymentList, err := model.GetPendingAgentsList(ctx, nodeId)
+	logrus.Debugf("Returning response: Scan List %+v cloudtrailTrails %+v Agent List %+v Refresh %s", scanList, cloudtrailTrails, agentDeploymentList, doRefresh)
 	httpext.JSON(w, http.StatusOK,
 		model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
-			CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh}})
+			CloudtrailTrails: cloudtrailTrails, DeployInstances: agentDeploymentList, Refresh: doRefresh}})
 	return
 }
 

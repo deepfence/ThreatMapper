@@ -40,7 +40,14 @@ type CloudNodeAccountRegisterResp struct {
 type CloudNodeAccountRegisterRespData struct {
 	Scans            map[string]CloudComplianceScanDetails `json:"scans"`
 	CloudtrailTrails []CloudNodeCloudtrailTrail            `json:"cloudtrail_trails"`
+	DeployInstances  []CloudInstanceDeployment             `json:"deploy_instances"`
 	Refresh          string                                `json:"refresh"`
+}
+
+type CloudInstanceDeployment struct {
+	InstanceId string `json:"instance_id"`
+	Region     string `json:"region"`
+	AccountId  string `json:"account_id"`
 }
 
 type CloudNodeAccountsListReq struct {
@@ -550,4 +557,51 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 	}
 
 	return benchmarks, nil
+}
+
+func GetPendingAgentsList(ctx context.Context, nodeId string) ([]CloudInstanceDeployment, error) {
+	var pendingAgentInstances []CloudInstanceDeployment
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return pendingAgentInstances, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return pendingAgentInstances, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return pendingAgentInstances, err
+	}
+	defer tx.Close()
+
+	var res neo4j.Result
+	res, err = tx.Run(`
+		MATCH (n:CloudResource{agent_deployment: "PENDING", node_id: $node_id})
+		RETURN  n.instance_id, n.region, n.account_id`,
+		map[string]interface{}{
+			"node_id": nodeId,
+		})
+	if err != nil {
+		return pendingAgentInstances, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return pendingAgentInstances, err
+	}
+
+	for _, rec := range recs {
+		benchmark := CloudInstanceDeployment{
+			InstanceId: rec.Values[0].(string),
+			Region:     rec.Values[1].(string),
+			AccountId:  rec.Values[2].(string),
+		}
+		pendingAgentInstances = append(pendingAgentInstances, benchmark)
+	}
+
+	return pendingAgentInstances, nil
 }
