@@ -590,22 +590,53 @@ const DataTable = () => {
           if (info.row.original.cloud_compliance_scan_status === 'COMPLETE') {
             return (
               <div className="flex items-center gap-2">
-                <div className="h-4 w-4 text-chart-red">
+                <div className="h-4 w-4">
                   <ErrorStandardSolidIcon />
                 </div>
-                <TruncatedText text={`${info.getValue()} issues`} />
+                <DFLink
+                  to={{
+                    pathname: generatePath(
+                      `/posture/cloud/scan-results/:cloudProvider/:scanId`,
+                      {
+                        scanId: info.row.original.cloud_compliance_latest_scan_id,
+                        cloudProvider: info.row.original.cloud_provider,
+                      },
+                    ),
+                  }}
+                  target="_blank"
+                >
+                  <TruncatedText text={`${info.getValue()} results`} />
+                </DFLink>
               </div>
             );
           }
           return '-';
         },
-        header: () => <TruncatedText text="Issues" />,
+        header: () => <TruncatedText text="Scan results" />,
         minSize: 60,
         size: 100,
         maxSize: 300,
       }),
       columnHelper.accessor('account_id', {
         cell: (info) => {
+          if (isScanComplete(info.row.original.cloud_compliance_scan_status)) {
+            return (
+              <DFLink
+                to={{
+                  pathname: generatePath(
+                    `/posture/cloud/scan-results/:cloudProvider/:scanId`,
+                    {
+                      scanId: info.row.original.cloud_compliance_latest_scan_id,
+                      cloudProvider: info.row.original.cloud_provider,
+                    },
+                  ),
+                }}
+                target="_blank"
+              >
+                <TruncatedText text={info.getValue()} />
+              </DFLink>
+            );
+          }
           return <TruncatedText text={info.getValue()} />;
         },
         header: () => <TruncatedText text="account id" />,
