@@ -15,12 +15,7 @@ const root = path.dirname(current);
 export default defineConfig(({ mode }) => {
   const viteEnv = loadEnv(mode, '.');
   return {
-    plugins: [
-      react({
-        fastRefresh: false,
-      }),
-      ...(mode === 'production' ? [visualizer()] : []),
-    ],
+    plugins: [react(), ...(mode === 'production' ? [visualizer()] : [])],
     test: {
       includeSource: ['src/**/*.test.{ts, tsx}'],
       exclude: [...configDefaults.exclude, 'e2e/**'],
@@ -28,6 +23,7 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: ['./src/tests/setup.ts'], // to do prior task before all of your tests run
       coverage: {
+        provider: 'v8',
         reporter: ['text', 'json', 'html'],
         lines: 100,
         functions: 100,

@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
+  ModelAddScheduledTaskRequest,
   ModelEmailConfigurationAdd,
   ModelEmailConfigurationResp,
   ModelMessageResponse,
@@ -31,6 +32,8 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
+    ModelAddScheduledTaskRequestFromJSON,
+    ModelAddScheduledTaskRequestToJSON,
     ModelEmailConfigurationAddFromJSON,
     ModelEmailConfigurationAddToJSON,
     ModelEmailConfigurationRespFromJSON,
@@ -51,6 +54,10 @@ import {
 
 export interface AddEmailConfigurationRequest {
     modelEmailConfigurationAdd?: ModelEmailConfigurationAdd;
+}
+
+export interface AddScheduledTaskRequest {
+    modelAddScheduledTaskRequest?: ModelAddScheduledTaskRequest;
 }
 
 export interface DeleteEmailConfigurationRequest {
@@ -93,6 +100,22 @@ export interface SettingsApiInterface {
      * Add Email Configuration
      */
     addEmailConfiguration(requestParameters: AddEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
+
+    /**
+     * Add scheduled task
+     * @summary Add scheduled task
+     * @param {ModelAddScheduledTaskRequest} [modelAddScheduledTaskRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    addScheduledTaskRaw(requestParameters: AddScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Add scheduled task
+     * Add scheduled task
+     */
+    addScheduledTask(requestParameters: AddScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Delete Email Smtp / ses Configurations in system
@@ -264,6 +287,44 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
     async addEmailConfiguration(requestParameters: AddEmailConfigurationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
         const response = await this.addEmailConfigurationRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Add scheduled task
+     * Add scheduled task
+     */
+    async addScheduledTaskRaw(requestParameters: AddScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scheduled-task`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelAddScheduledTaskRequestToJSON(requestParameters.modelAddScheduledTaskRequest),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Add scheduled task
+     * Add scheduled task
+     */
+    async addScheduledTask(requestParameters: AddScheduledTaskRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.addScheduledTaskRaw(requestParameters, initOverrides);
     }
 
     /**

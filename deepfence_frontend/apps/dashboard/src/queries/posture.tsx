@@ -399,6 +399,7 @@ export const postureQueries = createQueryKeys('posture', {
     visibility: string[];
     benchmarkTypes: string[];
     services: string[];
+    resources: string[];
     nodeType: string;
     order?: {
       sortBy: string;
@@ -415,6 +416,7 @@ export const postureQueries = createQueryKeys('posture', {
           services,
           benchmarkTypes,
           order,
+          resources,
           page = 1,
           pageSize,
         } = filters;
@@ -480,6 +482,9 @@ export const postureQueries = createQueryKeys('posture', {
 
         if (services.length) {
           scanResultsReq.fields_filter.contains_filter.filter_in!['service'] = services;
+        }
+        if (resources.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['resource'] = resources;
         }
         if (order) {
           scanResultsReq.fields_filter.order_filter.order_fields?.push({

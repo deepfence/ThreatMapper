@@ -20,7 +20,7 @@ import { Header } from '@/features/topology/components/node-details/Header';
 import { queries } from '@/queries';
 
 function useSearchCloudResources(params: {
-  nodeType: string;
+  resourceId: string;
   page: number;
   pageSize: number;
   cloudRegion: string;
@@ -99,7 +99,7 @@ const TabContent = ({
   const [sort, setSort] = useState<SortingState>([]);
   const { data } = useSearchCloudResources({
     cloudRegion,
-    nodeType,
+    resourceId: nodeType,
     page,
     pageSize,
     order: sort.length

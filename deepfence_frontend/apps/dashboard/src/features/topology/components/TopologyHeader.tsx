@@ -6,6 +6,7 @@ import { Tooltip } from 'ui-components';
 
 import { SearchNodeCountResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { CloudServicesIcon } from '@/components/icons/cloudService';
 import { CloudLine } from '@/components/icons/common/CloudLine';
 import { NodesLineIcon } from '@/components/icons/common/NodesLine';
 import { OrganizationLineIcon } from '@/components/icons/common/OrganizationLine';
@@ -13,7 +14,6 @@ import { ContainerIcon } from '@/components/icons/container';
 import { HostIcon } from '@/components/icons/host';
 import { PodIcon } from '@/components/icons/pod';
 import { TableIcon } from '@/components/icons/table';
-import { TopologyViewTypes } from '@/features/topology/data-components/topologyLoader';
 import { NodeType } from '@/features/topology/utils/topology-data';
 import { queries } from '@/queries';
 
@@ -26,7 +26,7 @@ const SummaryTab = ({
   icon: ReactNode;
   name: string;
   count: ReactNode;
-  type?: (typeof TopologyViewTypes)[number];
+  type?: string;
 }) => {
   const matches = useMatches();
   const currentPathName = matches[matches.length - 1]?.pathname ?? '';
@@ -69,13 +69,23 @@ const SummaryTab = ({
 function useNodeCounts() {
   return useSuspenseQuery({ ...queries.search.nodeCounts() });
 }
+function useCloudResourcesCount() {
+  return useSuspenseQuery({ ...queries.search.cloudResourcesCount() });
+}
 
 const NodeCount = ({ type }: { type: keyof SearchNodeCountResp }) => {
   const { data } = useNodeCounts();
   return <>{data[type]}</>;
 };
 
+const CloudResourceCount = () => {
+  const { data: cloudResourceCount } = useCloudResourcesCount();
+  return <>{cloudResourceCount}</>;
+};
+
 export const TopologyHeader = () => {
+  const params = useParams();
+  const viewType = params.viewType;
   return (
     <div className="flex items-center dark:text-text-text-and-icon text-p1 px-3 dark:bg-bg-breadcrumb-bar">
       <SummaryTab
@@ -129,18 +139,20 @@ export const TopologyHeader = () => {
         }
       />
       <SummaryTab
-        icon={<PodIcon />}
+        icon={<CloudServicesIcon />}
         name="Cloud Resources"
-        type={'cloud_resource' as any}
+        type={'cloud_resource'}
         count={
           <Suspense fallback={0}>
-            <NodeCount type="container" />
+            <CloudResourceCount />
           </Suspense>
         }
       />
-      <div className="ml-auto">
-        <ViewSwitcher />
-      </div>
+      {viewType !== 'cloud_resource' ? (
+        <div className="ml-auto">
+          <ViewSwitcher />
+        </div>
+      ) : null}
     </div>
   );
 };

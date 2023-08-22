@@ -41,7 +41,6 @@ import {
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
-import { BellLineIcon } from '@/components/icons/common/BellLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { ClockLineIcon } from '@/components/icons/common/ClockLine';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
@@ -268,6 +267,7 @@ const useScanResults = () => {
       visibility: searchParams.getAll('visibility'),
       status: searchParams.getAll('status'),
       services: searchParams.getAll('services'),
+      resources: searchParams.getAll('resources'),
     }),
     keepPreviousData: true,
   });
@@ -712,6 +712,7 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   status: 'Status',
   benchmarkType: 'Benchmark',
   services: 'Service',
+  resources: 'Resource',
 };
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {

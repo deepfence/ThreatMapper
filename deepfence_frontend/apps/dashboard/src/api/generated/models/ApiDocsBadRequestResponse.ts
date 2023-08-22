@@ -27,6 +27,12 @@ export interface ApiDocsBadRequestResponse {
     error_fields?: { [key: string]: string; } | null;
     /**
      * 
+     * @type {{ [key: string]: Array<number>; }}
+     * @memberof ApiDocsBadRequestResponse
+     */
+    error_index?: { [key: string]: Array<number>; } | null;
+    /**
+     * 
      * @type {string}
      * @memberof ApiDocsBadRequestResponse
      */
@@ -59,6 +65,7 @@ export function ApiDocsBadRequestResponseFromJSONTyped(json: any, ignoreDiscrimi
     return {
         
         'error_fields': !exists(json, 'error_fields') ? undefined : json['error_fields'],
+        'error_index': !exists(json, 'error_index') ? undefined : json['error_index'],
         'message': !exists(json, 'message') ? undefined : json['message'],
         'success': !exists(json, 'success') ? undefined : json['success'],
     };
@@ -74,6 +81,7 @@ export function ApiDocsBadRequestResponseToJSON(value?: ApiDocsBadRequestRespons
     return {
         
         'error_fields': value.error_fields,
+        'error_index': value.error_index,
         'message': value.message,
         'success': value.success,
     };
