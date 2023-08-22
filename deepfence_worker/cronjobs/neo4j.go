@@ -22,7 +22,7 @@ const (
 	dbRegistryCleanUpTimeout               = time.Hour * 24
 	dbUpgradeTimeout                       = time.Minute * 30
 	defaultDBScannedResourceCleanUpTimeout = time.Hour * 24 * 30
-	dbCloudResourceCleanupTimeout          = time.Hour * 13
+	dbCloudResourceCleanupTimeout          = time.Hour * 25
 )
 
 var (

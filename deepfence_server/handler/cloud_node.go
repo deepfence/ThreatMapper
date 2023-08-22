@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"net/http"
 	"net/http/httputil"
 
@@ -35,6 +36,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 	monitoredAccountIds := req.MonitoredAccountIds
 	orgAccountId := req.OrgAccountId
 	scanList := map[string]model.CloudComplianceScanDetails{}
+	agentDeploymentList := []model.CloudInstanceDeployment{}
 	cloudtrailTrails := []model.CloudNodeCloudtrailTrail{}
 	nodeId := req.NodeId
 
@@ -114,9 +116,11 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, nodeId)
 		if err != nil || len(pendingScansList.ScansInfo) == 0 {
 			logrus.Debugf("No pending scans found for node id: %s", nodeId)
+			agentDeploymentList, err = model.GetPendingAgentsList(ctx, nodeId)
+			logrus.Debugf("Returning response: Scan List %+v cloudtrailTrails %+v Agent List %+v Refresh %s", scanList, cloudtrailTrails, agentDeploymentList, doRefresh)
 			httpext.JSON(w, http.StatusOK,
 				model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
-					CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh}})
+					CloudtrailTrails: cloudtrailTrails, DeployInstances: agentDeploymentList, Refresh: doRefresh}})
 			return
 		}
 		for _, scan := range pendingScansList.ScansInfo {
@@ -134,7 +138,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		}
 		logrus.Debugf("Pending scans for node: %+v", scanList)
 	}
-	agentDeploymentList, err := model.GetPendingAgentsList(ctx, nodeId)
+	agentDeploymentList, err = model.GetPendingAgentsList(ctx, nodeId)
 	logrus.Debugf("Returning response: Scan List %+v cloudtrailTrails %+v Agent List %+v Refresh %s", scanList, cloudtrailTrails, agentDeploymentList, doRefresh)
 	httpext.JSON(w, http.StatusOK,
 		model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
@@ -181,6 +185,27 @@ func (h *Handler) ListCloudNodeProvidersHandler(w http.ResponseWriter, r *http.R
 	}
 
 	httpext.JSON(w, http.StatusOK, model.CloudNodeProvidersListResp{Providers: providers})
+}
+
+func (h *Handler) ActivateCloudResourceAgentHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.CloudResourceActivateAgentReq
+
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	err = model.ActivateCloudResourceAgents(r.Context(), req.NodeIds)
+	if err != nil {
+		log.Error().Msgf("Error activating agent for cloud resource %v", err)
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessCloudResourceAgentScheduled})
 }
 
 func complianceError(w http.ResponseWriter, errorString string) {

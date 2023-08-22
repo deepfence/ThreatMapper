@@ -321,6 +321,12 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Get("/list/providers", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeProvidersHandler))
 			})
 
+			r.Route("/cloud-resource", func(r chi.Router) {
+				r.Route("/{resource_id}", func(r chi.Router) {
+					r.Post("/activate_agent", dfHandler.AuthHandler(ResourceCloudNode, PermissionUpdate, dfHandler.ActivateCloudResourceAgentHandler))
+				})
+			})
+
 			r.Route("/scan/start", func(r chi.Router) {
 				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartVulnerabilityScanHandler))
 				r.Post("/secret", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartSecretScanHandler))

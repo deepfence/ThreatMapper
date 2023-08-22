@@ -57,6 +57,10 @@ type CloudNodeAccountsListReq struct {
 
 type CloudNodeProvidersListReq struct{}
 
+type CloudResourceActivateAgentReq struct {
+	NodeIds []string `json:"node_ids" required:"true"`
+}
+
 type CloudNodeProvidersListResp struct {
 	Providers []PostureProvider `json:"providers" required:"true"`
 }
@@ -580,7 +584,8 @@ func GetPendingAgentsList(ctx context.Context, nodeId string) ([]CloudInstanceDe
 
 	var res neo4j.Result
 	res, err = tx.Run(`
-		MATCH (n:CloudResource{agent_deployment: "PENDING", node_id: $node_id})
+		MATCH (n:CloudResource{agent_deployment: "PENDING", account_id: $node_id})
+		MATCH (m:Node{instance_id: n.arn, agent_running: false})
 		RETURN  n.instance_id, n.region, n.account_id`,
 		map[string]interface{}{
 			"node_id": nodeId,
@@ -604,4 +609,37 @@ func GetPendingAgentsList(ctx context.Context, nodeId string) ([]CloudInstanceDe
 	}
 
 	return pendingAgentInstances, nil
+}
+
+func ActivateCloudResourceAgents(ctx context.Context, nodeIds []string) error {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	_, err = tx.Run(`
+		MATCH (n:CloudResource)
+		WHERE (n.agent_deployment IS NULL OR n.agent_deployment <> "PENDING") AND n.account_id IN $node_ids
+		MATCH (m:Node{instance_id: n.arn, agent_running: false})
+		SET n.agent_deployment = "PENDING"`,
+		map[string]interface{}{
+			"node_ids": nodeIds,
+		})
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
