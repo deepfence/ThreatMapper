@@ -40,9 +40,11 @@ const API_SCAN_TYPE_MAP: {
 export const AdvancedFilter = ({
   resourceType,
   provider,
+  deadNodes,
 }: {
   resourceType: string;
   provider: string;
+  deadNodes: boolean;
 }) => {
   const [selectedCloudAccounts, setSelectedCloudAccounts] = useState<string[]>([]);
 
@@ -94,6 +96,8 @@ export const AdvancedFilter = ({
                     onClearAll={() => {
                       setHosts([]);
                     }}
+                    agentRunning={false}
+                    active={!deadNodes}
                   />
                 </div>
               </>
@@ -112,6 +116,7 @@ export const AdvancedFilter = ({
                     onClearAll={() => {
                       setImages([]);
                     }}
+                    active={false}
                   />
                 </div>
               </>
@@ -130,6 +135,7 @@ export const AdvancedFilter = ({
                     onClearAll={() => {
                       setContainers([]);
                     }}
+                    active={!deadNodes}
                   />
                 </div>
               </>
@@ -148,6 +154,8 @@ export const AdvancedFilter = ({
                     onClearAll={() => {
                       setClusters([]);
                     }}
+                    agentRunning={false}
+                    active={!deadNodes}
                   />
                 </div>
               </>

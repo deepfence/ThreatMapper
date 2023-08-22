@@ -12,6 +12,7 @@ type SearchableClusterListProps = {
   defaultSelectedClusters?: string[];
   valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
+  agentRunning?: boolean;
   triggerVariant?: 'select' | 'button';
   helperText?: string;
   color?: 'error' | 'default';
@@ -23,6 +24,7 @@ const SearchableCluster = ({
   defaultSelectedClusters,
   valueKey = 'nodeId',
   active,
+  agentRunning = true,
   triggerVariant,
   helperText,
   color,
@@ -47,7 +49,7 @@ const SearchableCluster = ({
         size: PAGE_SIZE,
         searchText,
         active,
-        agentRunning: true,
+        agentRunning,
         order: {
           sortBy: 'node_name',
           descending: false,
