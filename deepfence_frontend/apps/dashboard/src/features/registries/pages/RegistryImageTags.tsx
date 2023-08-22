@@ -161,7 +161,7 @@ const DynamicBreadcrumbs = () => {
   };
   return (
     <>
-      <BreadcrumbLink icon={<RegistryIcon />}>
+      <BreadcrumbLink>
         <DFLink
           to={generatePath('/registries/:account', {
             account: encodeURIComponent(account),
@@ -170,7 +170,7 @@ const DynamicBreadcrumbs = () => {
           {account}
         </DFLink>
       </BreadcrumbLink>
-      <BreadcrumbLink icon={<RegistryIcon />}>
+      <BreadcrumbLink>
         <DFLink
           to={generatePath('/registries/images/:account/:nodeId', {
             account: encodeURIComponent(account),
@@ -180,7 +180,7 @@ const DynamicBreadcrumbs = () => {
           {nodeId}
         </DFLink>
       </BreadcrumbLink>
-      <BreadcrumbLink icon={<RegistryIcon />} isLast>
+      <BreadcrumbLink isLast>
         <span className="inherit cursor-auto">{imageId}</span>
       </BreadcrumbLink>
     </>
