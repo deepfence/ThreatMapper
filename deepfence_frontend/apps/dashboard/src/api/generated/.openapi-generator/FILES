@@ -50,6 +50,7 @@ models/IngestersCloudCompliance.ts
 models/IngestersCloudComplianceScanStatus.ts
 models/IngestersCloudResource.ts
 models/IngestersCompliance.ts
+models/IngestersComplianceScanStatus.ts
 models/IngestersComplianceStats.ts
 models/IngestersMalware.ts
 models/IngestersMalwareScanStatus.ts
@@ -63,6 +64,7 @@ models/IngestersSecretSeverity.ts
 models/IngestersVulnerability.ts
 models/IngestersVulnerabilityScanStatus.ts
 models/LookupLookupFilter.ts
+models/ModelAddScheduledTaskRequest.ts
 models/ModelAgentId.ts
 models/ModelAgentPluginDisable.ts
 models/ModelAgentPluginEnable.ts
@@ -75,6 +77,7 @@ models/ModelCloudCompliance.ts
 models/ModelCloudComplianceBenchmark.ts
 models/ModelCloudComplianceScanDetails.ts
 models/ModelCloudComplianceScanResult.ts
+models/ModelCloudInstanceDeployment.ts
 models/ModelCloudNodeAccountInfo.ts
 models/ModelCloudNodeAccountRegisterReq.ts
 models/ModelCloudNodeAccountRegisterResp.ts
@@ -88,6 +91,7 @@ models/ModelCloudNodeControlResp.ts
 models/ModelCloudNodeEnableDisableReq.ts
 models/ModelCloudNodeProvidersListResp.ts
 models/ModelCloudResource.ts
+models/ModelCloudResourceDeployAgentReq.ts
 models/ModelCompliance.ts
 models/ModelComplianceRule.ts
 models/ModelComplianceScanInfo.ts

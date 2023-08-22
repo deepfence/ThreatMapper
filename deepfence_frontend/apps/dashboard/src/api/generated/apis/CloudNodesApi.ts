@@ -22,6 +22,8 @@ import type {
   ModelCloudNodeAccountsListReq,
   ModelCloudNodeAccountsListResp,
   ModelCloudNodeProvidersListResp,
+  ModelCloudResourceDeployAgentReq,
+  ModelMessageResponse,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -38,7 +40,15 @@ import {
     ModelCloudNodeAccountsListRespToJSON,
     ModelCloudNodeProvidersListRespFromJSON,
     ModelCloudNodeProvidersListRespToJSON,
+    ModelCloudResourceDeployAgentReqFromJSON,
+    ModelCloudResourceDeployAgentReqToJSON,
+    ModelMessageResponseFromJSON,
+    ModelMessageResponseToJSON,
 } from '../models';
+
+export interface DeployCloudResourceAgentRequest {
+    modelCloudResourceDeployAgentReq?: ModelCloudResourceDeployAgentReq;
+}
 
 export interface ListCloudNodeAccountRequest {
     modelCloudNodeAccountsListReq?: ModelCloudNodeAccountsListReq;
@@ -55,6 +65,22 @@ export interface RegisterCloudNodeAccountRequest {
  * @interface CloudNodesApiInterface
  */
 export interface CloudNodesApiInterface {
+    /**
+     * Deploy Agent on Cloud Resource eligible for agent deployment
+     * @summary Deploy Agent on Cloud Resource
+     * @param {ModelCloudResourceDeployAgentReq} [modelCloudResourceDeployAgentReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CloudNodesApiInterface
+     */
+    deployCloudResourceAgentRaw(requestParameters: DeployCloudResourceAgentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
+
+    /**
+     * Deploy Agent on Cloud Resource eligible for agent deployment
+     * Deploy Agent on Cloud Resource
+     */
+    deployCloudResourceAgent(requestParameters: DeployCloudResourceAgentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
+
     /**
      * List Cloud Node Accounts registered with the console
      * @summary List Cloud Node Accounts
@@ -108,6 +134,45 @@ export interface CloudNodesApiInterface {
  * 
  */
 export class CloudNodesApi extends runtime.BaseAPI implements CloudNodesApiInterface {
+
+    /**
+     * Deploy Agent on Cloud Resource eligible for agent deployment
+     * Deploy Agent on Cloud Resource
+     */
+    async deployCloudResourceAgentRaw(requestParameters: DeployCloudResourceAgentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/cloud-resource/deploy-agent`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelCloudResourceDeployAgentReqToJSON(requestParameters.modelCloudResourceDeployAgentReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Deploy Agent on Cloud Resource eligible for agent deployment
+     * Deploy Agent on Cloud Resource
+     */
+    async deployCloudResourceAgent(requestParameters: DeployCloudResourceAgentRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.deployCloudResourceAgentRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * List Cloud Node Accounts registered with the console

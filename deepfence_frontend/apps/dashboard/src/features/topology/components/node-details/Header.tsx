@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { useFetcher } from 'react-router-dom';
 import { Button, Dropdown, DropdownItem, SlidingModalHeader } from 'ui-components';
 
 import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
@@ -47,12 +49,15 @@ export const Header = ({
   agentRunning?: boolean;
   onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
 }) => {
+  const fetcher = useFetcher();
+  const [startedEbpf, setStartedEbpf] = useState<boolean>(false);
   const availableScans = AvailableScansForNodeType[nodeType] ?? [];
 
   // don't show the start scan button if host or cluster node is not connected
   // via agent. This means that it is discovered via cloud connector.
   const showInstallButton =
-    ['host', 'cluster'].includes(nodeType) && agentRunning === false;
+    ['host', 'cluster'].includes(nodeType) && agentRunning !== true;
+
   return (
     <SlidingModalHeader>
       <div className="flex pt-5 pl-5 pr-16 pb-1.5 dark:bg-bg-breadcrumb-bar gap-4">
@@ -159,8 +164,26 @@ export const Header = ({
               Actions
             </Button>
           </Dropdown>
-        ) : null}
-        {/* TODO: show install agent button here once api is ready */}
+        ) : agentRunning === undefined ? null : (
+          <Button
+            className="ml-auto normal-case"
+            type="button"
+            size="md"
+            loading={fetcher.state !== 'idle' || startedEbpf}
+            onClick={() => {
+              const formData = new FormData();
+              formData.append('nodeIds[]', nodeId);
+              fetcher.submit(formData, {
+                method: 'post',
+                action: '/data-component/host/start/eBPFProbe',
+              });
+              setStartedEbpf(true);
+            }}
+            disabled={fetcher.state !== 'idle' || startedEbpf}
+          >
+            Start eBPF probe
+          </Button>
+        )}
       </div>
     </SlidingModalHeader>
   );

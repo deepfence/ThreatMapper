@@ -378,6 +378,60 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/cloud-resource/deploy-agent": {
+      "post": {
+        "tags": ["Cloud Nodes"],
+        "summary": "Deploy Agent on Cloud Resource",
+        "description": "Deploy Agent on Cloud Resource eligible for agent deployment",
+        "operationId": "deployCloudResourceAgent",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelCloudResourceDeployAgentReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelMessageResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/controls/agent": {
       "post": {
         "tags": ["Controls"],
@@ -1787,6 +1841,55 @@
               "schema": {
                 "type": "array",
                 "items": { "$ref": "#/components/schemas/IngestersCompliance" },
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/ingest/compliance-scan-logs": {
+      "post": {
+        "tags": ["Compliance"],
+        "summary": "Ingest Compliance Scan Status",
+        "description": "Ingest compliance issues found while scanning the agent",
+        "operationId": "ingestComplianceScanStatus",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/IngestersComplianceScanStatus" },
                 "nullable": true
               }
             }
@@ -6300,6 +6403,49 @@
           }
         },
         "security": [{ "bearer_token": [] }]
+      },
+      "post": {
+        "tags": ["Settings"],
+        "summary": "Add scheduled task",
+        "description": "Add scheduled task",
+        "operationId": "addScheduledTask",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelAddScheduledTaskRequest" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
       }
     },
     "/deepfence/scheduled-task/{id}": {
@@ -9668,6 +9814,11 @@
             "additionalProperties": { "type": "string" },
             "nullable": true
           },
+          "error_index": {
+            "type": "object",
+            "additionalProperties": { "type": "array", "items": { "type": "integer" } },
+            "nullable": true
+          },
           "message": { "type": "string" },
           "success": { "type": "boolean", "example": false }
         }
@@ -9691,11 +9842,10 @@
         "required": ["id", "request_payload"],
         "type": "object",
         "properties": {
-          "id": { "$ref": "#/components/schemas/ControlsActionID" },
+          "id": { "type": "integer" },
           "request_payload": { "type": "string" }
         }
       },
-      "ControlsActionID": { "type": "integer" },
       "ControlsAgentBeat": {
         "required": ["beatrate"],
         "type": "object",
@@ -10163,6 +10313,14 @@
           "type": { "type": "string" }
         }
       },
+      "IngestersComplianceScanStatus": {
+        "type": "object",
+        "properties": {
+          "scan_id": { "type": "string" },
+          "scan_message": { "type": "string" },
+          "scan_status": { "type": "string" }
+        }
+      },
       "IngestersComplianceStats": {
         "type": "object",
         "properties": {
@@ -10407,6 +10565,16 @@
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
+      "ModelAddScheduledTaskRequest": {
+        "type": "object",
+        "properties": {
+          "action": { "type": "string" },
+          "cron_expr": { "type": "string" },
+          "description": { "type": "string" },
+          "filters": { "type": "string" },
+          "node_type": { "type": "string" }
+        }
+      },
       "ModelAgentId": {
         "required": ["node_id", "available_workload"],
         "type": "object",
@@ -10606,6 +10774,14 @@
           "updated_at": { "type": "integer", "format": "int64" }
         }
       },
+      "ModelCloudInstanceDeployment": {
+        "type": "object",
+        "properties": {
+          "account_id": { "type": "string" },
+          "instance_id": { "type": "string" },
+          "region": { "type": "string" }
+        }
+      },
       "ModelCloudNodeAccountInfo": {
         "type": "object",
         "properties": {
@@ -10647,6 +10823,11 @@
           "cloudtrail_trails": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelCloudNodeCloudtrailTrail" },
+            "nullable": true
+          },
+          "deploy_instances": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelCloudInstanceDeployment" },
             "nullable": true
           },
           "refresh": { "type": "string" },
@@ -10765,6 +10946,13 @@
           "node_name": { "type": "string" },
           "node_type": { "type": "string" },
           "type_label": { "type": "string" }
+        }
+      },
+      "ModelCloudResourceDeployAgentReq": {
+        "required": ["node_ids"],
+        "type": "object",
+        "properties": {
+          "node_ids": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
       },
       "ModelCompliance": {
@@ -11035,6 +11223,7 @@
           "docker_image_created_at",
           "docker_image_virtual_size",
           "docker_image_id",
+          "docker_image_tag_list",
           "metadata",
           "vulnerabilities_count",
           "vulnerability_scan_status",
@@ -11059,6 +11248,11 @@
           "docker_image_name": { "type": "string" },
           "docker_image_size": { "type": "string" },
           "docker_image_tag": { "type": "string" },
+          "docker_image_tag_list": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "docker_image_virtual_size": { "type": "string" },
           "malware_latest_scan_id": { "type": "string" },
           "malware_scan_status": { "type": "string" },
@@ -12479,6 +12673,7 @@
           "pseudo": { "type": "boolean" },
           "public_ip": { "type": "array", "items": { "type": "string" } },
           "resource_group": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "string" } },
           "threads": { "type": "integer" },
           "timestamp": { "type": "string" },
           "uptime": { "type": "integer" },
@@ -12521,6 +12716,9 @@
             "nullable": true
           },
           "contains_filter": { "$ref": "#/components/schemas/ReportersContainsFilter" },
+          "contains_in_array_filter": {
+            "$ref": "#/components/schemas/ReportersContainsFilter"
+          },
           "match_filter": { "$ref": "#/components/schemas/ReportersMatchFilter" },
           "not_contains_filter": {
             "$ref": "#/components/schemas/ReportersContainsFilter"

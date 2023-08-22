@@ -1,5 +1,6 @@
 import { Outlet, redirect } from 'react-router-dom';
 
+import { starteBPFApiAction } from '@/components/eBPF/start';
 import { FourZeroFourAuthenticated } from '@/components/error/404';
 import { FiveZeroZero } from '@/components/error/500';
 import { scanPostureApiAction } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
@@ -609,6 +610,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'malware/classes/scan/:scanId',
         ...malwareClassesForScan,
+      },
+      {
+        path: 'host/start/eBPFProbe',
+        action: starteBPFApiAction,
       },
     ],
   },

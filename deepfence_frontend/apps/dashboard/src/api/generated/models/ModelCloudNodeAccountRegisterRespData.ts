@@ -19,6 +19,12 @@ import {
     ModelCloudComplianceScanDetailsFromJSONTyped,
     ModelCloudComplianceScanDetailsToJSON,
 } from './ModelCloudComplianceScanDetails';
+import type { ModelCloudInstanceDeployment } from './ModelCloudInstanceDeployment';
+import {
+    ModelCloudInstanceDeploymentFromJSON,
+    ModelCloudInstanceDeploymentFromJSONTyped,
+    ModelCloudInstanceDeploymentToJSON,
+} from './ModelCloudInstanceDeployment';
 import type { ModelCloudNodeCloudtrailTrail } from './ModelCloudNodeCloudtrailTrail';
 import {
     ModelCloudNodeCloudtrailTrailFromJSON,
@@ -38,6 +44,12 @@ export interface ModelCloudNodeAccountRegisterRespData {
      * @memberof ModelCloudNodeAccountRegisterRespData
      */
     cloudtrail_trails?: Array<ModelCloudNodeCloudtrailTrail> | null;
+    /**
+     * 
+     * @type {Array<ModelCloudInstanceDeployment>}
+     * @memberof ModelCloudNodeAccountRegisterRespData
+     */
+    deploy_instances?: Array<ModelCloudInstanceDeployment> | null;
     /**
      * 
      * @type {string}
@@ -72,6 +84,7 @@ export function ModelCloudNodeAccountRegisterRespDataFromJSONTyped(json: any, ig
     return {
         
         'cloudtrail_trails': !exists(json, 'cloudtrail_trails') ? undefined : (json['cloudtrail_trails'] === null ? null : (json['cloudtrail_trails'] as Array<any>).map(ModelCloudNodeCloudtrailTrailFromJSON)),
+        'deploy_instances': !exists(json, 'deploy_instances') ? undefined : (json['deploy_instances'] === null ? null : (json['deploy_instances'] as Array<any>).map(ModelCloudInstanceDeploymentFromJSON)),
         'refresh': !exists(json, 'refresh') ? undefined : json['refresh'],
         'scans': !exists(json, 'scans') ? undefined : (json['scans'] === null ? null : mapValues(json['scans'], ModelCloudComplianceScanDetailsFromJSON)),
     };
@@ -87,6 +100,7 @@ export function ModelCloudNodeAccountRegisterRespDataToJSON(value?: ModelCloudNo
     return {
         
         'cloudtrail_trails': value.cloudtrail_trails === undefined ? undefined : (value.cloudtrail_trails === null ? null : (value.cloudtrail_trails as Array<any>).map(ModelCloudNodeCloudtrailTrailToJSON)),
+        'deploy_instances': value.deploy_instances === undefined ? undefined : (value.deploy_instances === null ? null : (value.deploy_instances as Array<any>).map(ModelCloudInstanceDeploymentToJSON)),
         'refresh': value.refresh,
         'scans': value.scans === undefined ? undefined : (value.scans === null ? null : mapValues(value.scans, ModelCloudComplianceScanDetailsToJSON)),
     };

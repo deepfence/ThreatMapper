@@ -75,7 +75,7 @@ export const Host = (props: HostModalProps) => {
             nodeType="host"
             onGoBack={onGoBack}
             showBackBtn={showBackBtn}
-            agentRunning={false}
+            agentRunning={undefined}
           />
         }
       >

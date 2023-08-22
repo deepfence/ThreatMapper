@@ -243,6 +243,7 @@ export function getCloudNodesApiClient() {
   return {
     listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
     listCloudProviders: cloudNodesApi.listCloudProviders.bind(cloudNodesApi),
+    deployCloudResourceAgent: cloudNodesApi.deployCloudResourceAgent.bind(cloudNodesApi),
   };
 }
 

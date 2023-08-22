@@ -58,6 +58,12 @@ export interface ReportersFieldsFilters {
     contains_filter: ReportersContainsFilter;
     /**
      * 
+     * @type {ReportersContainsFilter}
+     * @memberof ReportersFieldsFilters
+     */
+    contains_in_array_filter?: ReportersContainsFilter;
+    /**
+     * 
      * @type {ReportersMatchFilter}
      * @memberof ReportersFieldsFilters
      */
@@ -101,6 +107,7 @@ export function ReportersFieldsFiltersFromJSONTyped(json: any, ignoreDiscriminat
         
         'compare_filter': (json['compare_filter'] === null ? null : (json['compare_filter'] as Array<any>).map(ReportersCompareFilterFromJSON)),
         'contains_filter': ReportersContainsFilterFromJSON(json['contains_filter']),
+        'contains_in_array_filter': !exists(json, 'contains_in_array_filter') ? undefined : ReportersContainsFilterFromJSON(json['contains_in_array_filter']),
         'match_filter': ReportersMatchFilterFromJSON(json['match_filter']),
         'not_contains_filter': !exists(json, 'not_contains_filter') ? undefined : ReportersContainsFilterFromJSON(json['not_contains_filter']),
         'order_filter': ReportersOrderFilterFromJSON(json['order_filter']),
@@ -118,6 +125,7 @@ export function ReportersFieldsFiltersToJSON(value?: ReportersFieldsFilters | nu
         
         'compare_filter': (value.compare_filter === null ? null : (value.compare_filter as Array<any>).map(ReportersCompareFilterToJSON)),
         'contains_filter': ReportersContainsFilterToJSON(value.contains_filter),
+        'contains_in_array_filter': ReportersContainsFilterToJSON(value.contains_in_array_filter),
         'match_filter': ReportersMatchFilterToJSON(value.match_filter),
         'not_contains_filter': ReportersContainsFilterToJSON(value.not_contains_filter),
         'order_filter': ReportersOrderFilterToJSON(value.order_filter),
