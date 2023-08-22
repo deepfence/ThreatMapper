@@ -36,6 +36,7 @@ const EULA = () => {
       style={{
         background: `url("${AuthBg}") no-repeat center center`,
         backgroundSize: 'cover',
+        backgroundColor: '#150C58',
       }}
     >
       <div className="relative">
