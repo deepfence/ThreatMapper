@@ -302,7 +302,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		}
 
 		if flags.kubernetesEnabled && flags.kubernetesRole != kubernetesRoleHost {
-			if client, err := kubernetes.NewClient(flags.kubernetesClientConfig, hostName); err == nil {
+			if client, err := kubernetes.NewClient(flags.kubernetesClientConfig); err == nil {
 				defer client.Stop()
 				reporter := kubernetes.NewReporter(client, probeID, hostName, p, flags.kubernetesNodeName)
 				defer reporter.Stop()

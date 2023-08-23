@@ -23,18 +23,16 @@ type Pod interface {
 type pod struct {
 	*apiv1.Pod
 	Meta
-	parents  report.Sets
-	Node     *apiv1.Node
-	HostName string
+	parents report.Sets
+	Node    *apiv1.Node
 }
 
 // NewPod creates a new Pod
-func NewPod(p *apiv1.Pod, hostName string) Pod {
+func NewPod(p *apiv1.Pod) Pod {
 	return &pod{
-		Pod:      p,
-		Meta:     meta{p.ObjectMeta},
-		parents:  report.MakeSets(),
-		HostName: hostName,
+		Pod:     p,
+		Meta:    meta{p.ObjectMeta},
+		parents: report.MakeSets(),
 	}
 }
 
@@ -88,6 +86,7 @@ func (p *pod) GetNode() report.TopologyNode {
 	if err == nil {
 		labelsStr = string(labels)
 	}
+	hostname := kubernetesClusterName + "-" + p.Pod.Spec.NodeName
 	metadata := report.Metadata{
 		Timestamp:                 time.Now().UTC().Format(time.RFC3339Nano),
 		NodeID:                    p.UID(),
@@ -100,7 +99,7 @@ func (p *pod) GetNode() report.TopologyNode {
 		KubernetesIP:              p.Status.PodIP,
 		KubernetesIsInHostNetwork: p.Pod.Spec.HostNetwork,
 		KubernetesNamespace:       p.Namespace(),
-		HostName:                  p.HostName,
+		HostName:                  hostname,
 		KubernetesCreated:         p.Created(),
 		KubernetesLabels:          labelsStr,
 	}
@@ -109,7 +108,7 @@ func (p *pod) GetNode() report.TopologyNode {
 		Parents: &report.Parent{
 			CloudProvider:     cloudProviderNodeId,
 			KubernetesCluster: kubernetesClusterId,
-			Host:              p.HostName,
+			Host:              hostname,
 			Namespace:         kubernetesClusterId + "-" + p.GetNamespace(),
 		},
 	}
