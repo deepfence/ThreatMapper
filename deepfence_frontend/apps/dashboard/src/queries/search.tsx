@@ -22,6 +22,7 @@ export const searchQueries = createQueryKeys('search', {
     size: number;
     active?: boolean;
     agentRunning?: boolean;
+    showOnlyKubernetesHosts?: boolean;
     order?: {
       sortBy: string;
       descending: boolean;
@@ -38,7 +39,8 @@ export const searchQueries = createQueryKeys('search', {
           nodeName: string;
         }[];
       }> => {
-        const { searchText, size, active, agentRunning, order } = filters;
+        const { searchText, size, active, agentRunning, showOnlyKubernetesHosts, order } =
+          filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
             filters: {
@@ -47,6 +49,9 @@ export const searchQueries = createQueryKeys('search', {
                   pseudo: [false],
                   ...(active && { active: [active === true] }),
                 },
+              },
+              not_contains_filter: {
+                filter_in: {},
               },
               order_filter: {
                 order_fields: [
@@ -87,6 +92,11 @@ export const searchQueries = createQueryKeys('search', {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
             'agent_running'
           ] = [agentRunning];
+        }
+        if (showOnlyKubernetesHosts) {
+          searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in![
+            'kubernetes_cluster_id'
+          ] = [''];
         }
         const searchHostsApi = apiWrapper({
           fn: getSearchApiClient().searchHosts,
