@@ -25,13 +25,15 @@ func (h *Handler) RegisterCloudNodeAccountCount(w http.ResponseWriter, r *http.R
 }
 
 func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
+	log.Debug().Msgf("Inside RegisterCloudNodeAccountHandler")
 	req, err := extractCloudNodeDetails(w, r)
 	if err != nil {
+		log.Error().Msgf("Errored out extracting cloud node details error")
 		complianceError(w, "Extract cloud node details error")
 		return
 	}
 
-	logrus.Debugf("Register Cloud Node Account Request: %+v", req)
+	log.Debug().Msgf("Register Cloud Node Account Request: %+v", req)
 
 	monitoredAccountIds := req.MonitoredAccountIds
 	orgAccountId := req.OrgAccountId
@@ -44,7 +46,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 
 	doRefresh := "false"
 
-	logrus.Debugf("Monitored account ids count: %d", len(monitoredAccountIds))
+	log.Debug().Msgf("Monitored account ids count: %d", len(monitoredAccountIds))
 	if len(monitoredAccountIds) != 0 {
 		logrus.Debugf("More than 1 account to be monitored: %+v", monitoredAccountIds)
 		if orgAccountId == "" {
@@ -100,24 +102,27 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			}
 		}
 	} else {
-		logrus.Debugf("Single account monitoring for node: %s", nodeId)
+		log.Debug().Msgf("Single account monitoring for node: %s", nodeId)
 		node := map[string]interface{}{
 			"node_id":        nodeId,
 			"cloud_provider": req.CloudProvider,
 			"node_name":      req.CloudAccount,
 			"version":        req.Version,
 		}
-		logrus.Debugf("Node for upsert: %+v", node)
+		log.Debug().Msgf("Node for upsert: %+v", node)
 		err = model.UpsertCloudComplianceNode(ctx, node, "")
 		if err != nil {
-			logrus.Infof("Error while upserting node: %+v", err)
+			log.Error().Msgf("Error while upserting node: %+v", err)
 			complianceError(w, err.Error())
 		}
 		pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, nodeId)
 		if err != nil || len(pendingScansList.ScansInfo) == 0 {
-			logrus.Debugf("No pending scans found for node id: %s", nodeId)
+			log.Debug().Msgf("No pending scans found for node id: %s", nodeId)
 			agentDeploymentList, err = model.GetPendingAgentsList(ctx, nodeId)
-			logrus.Debugf("Returning response: Scan List %+v cloudtrailTrails %+v Agent List %+v Refresh %s", scanList, cloudtrailTrails, agentDeploymentList, doRefresh)
+			if err != nil {
+				log.Error().Msgf("Error extracting pending agents for node: %+v", agentDeploymentList)
+			}
+			log.Debug().Msgf("Returning response: Scan List %+v cloudtrailTrails %+v Agent List %+v Refresh %s", scanList, cloudtrailTrails, agentDeploymentList, doRefresh)
 			httpext.JSON(w, http.StatusOK,
 				model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
 					CloudtrailTrails: cloudtrailTrails, DeployInstances: agentDeploymentList, Refresh: doRefresh}})
@@ -136,10 +141,13 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			}
 			scanList[scan.ScanId] = scanDetail
 		}
-		logrus.Debugf("Pending scans for node: %+v", scanList)
+		log.Debug().Msgf("Pending scans for node: %+v", scanList)
 	}
 	agentDeploymentList, err = model.GetPendingAgentsList(ctx, nodeId)
-	logrus.Debugf("Returning response: Scan List %+v cloudtrailTrails %+v Agent List %+v Refresh %s", scanList, cloudtrailTrails, agentDeploymentList, doRefresh)
+	if err != nil {
+		log.Error().Msgf("Error extracting pending agents for node: %+v", agentDeploymentList)
+	}
+	log.Debug().Msgf("Returning response: Scan List %+v cloudtrailTrails %+v Agent List %+v Refresh %s", scanList, cloudtrailTrails, agentDeploymentList, doRefresh)
 	httpext.JSON(w, http.StatusOK,
 		model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
 			CloudtrailTrails: cloudtrailTrails, DeployInstances: agentDeploymentList, Refresh: doRefresh}})
@@ -189,7 +197,7 @@ func (h *Handler) ListCloudNodeProvidersHandler(w http.ResponseWriter, r *http.R
 
 func (h *Handler) ActivateCloudResourceAgentHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req model.CloudResourceActivateAgentReq
+	var req model.CloudResourceDeployAgentReq
 
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {

@@ -35,6 +35,7 @@ p, standard-user, cloud-report, ingest
 
 p, admin, cloud-node, register
 p, admin, cloud-node, read
+p, admin, cloud-node, update
 p, standard-user, cloud-node, register
 p, standard-user, cloud-node, read
 p, read-only-user, cloud-node, read

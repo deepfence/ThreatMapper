@@ -411,6 +411,10 @@ func (d *OpenApiDocs) AddCloudNodeOperations() {
 	d.AddOperation("listCloudProviders", http.MethodGet, "/deepfence/cloud-node/list/providers",
 		"List Cloud Node Providers", "List Cloud Node Providers registered with the console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeProvidersListReq), new(CloudNodeProvidersListResp))
+
+	d.AddOperation("deployCloudResourceAgent", http.MethodPost, "/deepfence/cloud-resource/deploy-agent",
+		"Deploy Agent on Cloud Resource", "Deploy Agent on Cloud Resource eligible for agent deployment",
+		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudResourceDeployAgentReq), new(MessageResponse))
 }
 
 func (d *OpenApiDocs) AddIngestersOperations() {

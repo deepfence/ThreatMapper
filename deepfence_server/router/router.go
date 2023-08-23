@@ -322,9 +322,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			})
 
 			r.Route("/cloud-resource", func(r chi.Router) {
-				r.Route("/{resource_id}", func(r chi.Router) {
-					r.Post("/activate_agent", dfHandler.AuthHandler(ResourceCloudNode, PermissionUpdate, dfHandler.ActivateCloudResourceAgentHandler))
-				})
+				r.Post("/deploy-agent", dfHandler.AuthHandler(ResourceCloudNode, PermissionUpdate, dfHandler.ActivateCloudResourceAgentHandler))
 			})
 
 			r.Route("/scan/start", func(r chi.Router) {

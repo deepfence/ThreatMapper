@@ -48,6 +48,7 @@ type CloudInstanceDeployment struct {
 	InstanceId string `json:"instance_id"`
 	Region     string `json:"region"`
 	AccountId  string `json:"account_id"`
+	Hostname   string `json:"hostname"`
 }
 
 type CloudNodeAccountsListReq struct {
@@ -57,7 +58,7 @@ type CloudNodeAccountsListReq struct {
 
 type CloudNodeProvidersListReq struct{}
 
-type CloudResourceActivateAgentReq struct {
+type CloudResourceDeployAgentReq struct {
 	NodeIds []string `json:"node_ids" required:"true"`
 }
 
@@ -586,7 +587,7 @@ func GetPendingAgentsList(ctx context.Context, nodeId string) ([]CloudInstanceDe
 	res, err = tx.Run(`
 		MATCH (n:CloudResource{agent_deployment: "PENDING", account_id: $node_id})
 		MATCH (m:Node{instance_id: n.arn, agent_running: false})
-		RETURN  n.instance_id, n.region, n.account_id`,
+		RETURN n.instance_id, n.region, n.account_id, m.node_name`,
 		map[string]interface{}{
 			"node_id": nodeId,
 		})
@@ -604,6 +605,7 @@ func GetPendingAgentsList(ctx context.Context, nodeId string) ([]CloudInstanceDe
 			InstanceId: rec.Values[0].(string),
 			Region:     rec.Values[1].(string),
 			AccountId:  rec.Values[2].(string),
+			Hostname:   rec.Values[3].(string),
 		}
 		pendingAgentInstances = append(pendingAgentInstances, benchmark)
 	}
@@ -617,7 +619,7 @@ func ActivateCloudResourceAgents(ctx context.Context, nodeIds []string) error {
 		return err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return err
 	}
@@ -631,8 +633,9 @@ func ActivateCloudResourceAgents(ctx context.Context, nodeIds []string) error {
 
 	_, err = tx.Run(`
 		MATCH (n:CloudResource)
-		WHERE (n.agent_deployment IS NULL OR n.agent_deployment <> "PENDING") AND n.account_id IN $node_ids
+		WHERE (n.agent_deployment IS NULL OR n.agent_deployment <> "PENDING")
 		MATCH (m:Node{instance_id: n.arn, agent_running: false})
+		WHERE m.node_id IN $node_ids
 		SET n.agent_deployment = "PENDING"`,
 		map[string]interface{}{
 			"node_ids": nodeIds,

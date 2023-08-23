@@ -133,6 +133,10 @@ func ResourceToMaps(ms []ingestersUtil.CloudResource) ([]map[string]interface{},
 					}
 				}
 			}
+			nodeName := v.Name
+			if _, ok := tags["Name"]; ok {
+				nodeName = tags["Name"].(string)
+			}
 			// Add hosts as regular `Node`
 			hosts = append(hosts, map[string]interface{}{
 				"public_ip":               publicIP,
@@ -143,7 +147,7 @@ func ResourceToMaps(ms []ingestersUtil.CloudResource) ([]map[string]interface{},
 				"pseudo":                  false,
 				"timestamp":               timestampNow,
 				"kubernetes_cluster_id":   k8sClusterName,
-				"node_name":               v.Name,
+				"node_name":               nodeName,
 				"active":                  true,
 				"cloud_provider":          v.CloudProvider,
 				"agent_running":           false,
