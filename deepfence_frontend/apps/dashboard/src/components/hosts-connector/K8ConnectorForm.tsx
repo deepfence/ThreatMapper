@@ -38,20 +38,20 @@ const containerRuntimeDropdown = [
   {
     name: 'containerd',
     value: `--set mountContainerRuntimeSocket.containerdSock=true \\ 
---set mountContainerRuntimeSocket.dockerSock=false \\ 
---set mountContainerRuntimeSocket.crioSock=false`,
+  --set mountContainerRuntimeSocket.dockerSock=false \\ 
+  --set mountContainerRuntimeSocket.crioSock=false`,
   },
   {
     name: 'docker',
     value: `--set mountContainerRuntimeSocket.containerdSock=false \\ 
---set mountContainerRuntimeSocket.dockerSock=true \\ 
---set mountContainerRuntimeSocket.crioSock=false`,
+  --set mountContainerRuntimeSocket.dockerSock=true \\ 
+  --set mountContainerRuntimeSocket.crioSock=false`,
   },
   {
     name: 'cri-o',
-    value: `--set mountContainerRuntimeSocket.containerdSock=false 
-\\ --set mountContainerRuntimeSocket.dockerSock=false 
-\\ --set mountContainerRuntimeSocket.crioSock=true`,
+    value: `--set mountContainerRuntimeSocket.containerdSock=false \\ 
+  --set mountContainerRuntimeSocket.dockerSock=false \\
+  --set mountContainerRuntimeSocket.crioSock=true`,
   },
 ];
 
@@ -138,15 +138,15 @@ const InformationForm = ({
     const sockCommand = socketMap[containerRuntime].command || '';
 
     const installCommand = `helm install deepfence-agent deepfence/deepfence-agent \\
---set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
---set deepfenceKey=${dfApiKey} \\
---set image.tag=${PLACEHOLDER_VERSION} \\
---set image.clusterAgentImageTag=${PLACEHOLDER_VERSION} \\
---set clusterName=${_clusterName} \\
-${runtimeCommand} \\
-${sockCommand}="${_socketPath}" \\
---namespace ${_namespace} \\
---create-namespace`;
+  --set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
+  --set deepfenceKey=${dfApiKey} \\
+  --set image.tag=${PLACEHOLDER_VERSION} \\
+  --set image.clusterAgentImageTag=${PLACEHOLDER_VERSION} \\
+  --set clusterName=${_clusterName} \\
+  ${runtimeCommand} \\
+  ${sockCommand}="${_socketPath}" \\
+  --namespace ${_namespace} \\
+  --create-namespace`;
 
     setCommand(installCommand);
   }, [clusterName, namespace, socketPath, containerRuntime, dfApiKey]);
@@ -216,8 +216,7 @@ const FirstCommand = () => {
   return (
     <div className="relative flex items-center">
       <pre className="h-fit text-p7 dark:text-text-text-and-icon">
-        helm repo add deepfence
-        https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+        helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
       </pre>
       <div className="flex items-center ml-auto self-start">
         {isCopied ? 'copied' : null}
@@ -320,15 +319,15 @@ export const K8ConnectorForm = () => {
 helm repo update
 
 helm install deepfence-agent deepfence/deepfence-agent \\
---set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
---set deepfenceKey=${PLACEHOLDER_API_KEY} \\
---set image.tag=${''} \\
---set image.clusterAgentImageTag=${''} \\
---set clusterName=${defaultCluster} \\
-${containerRuntimeDropdown[0].value} \\
-${socketMap.containerd.command}="${defaultSocketPath}" \\
---namespace ${defaultNamespace} \\
---create-namespace`);
+  --set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
+  --set deepfenceKey=${PLACEHOLDER_API_KEY} \\
+  --set image.tag=${''} \\
+  --set image.clusterAgentImageTag=${''} \\
+  --set clusterName=${defaultCluster} \\
+  ${containerRuntimeDropdown[0].value} \\
+  ${socketMap.containerd.command}="${defaultSocketPath}" \\
+  --namespace ${defaultNamespace} \\
+  --create-namespace`);
 
   return (
     <div className="w-full">
