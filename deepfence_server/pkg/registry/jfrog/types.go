@@ -39,6 +39,13 @@ type Manifest struct {
 	History       []History    `json:"history"`
 	Signatures    []Signatures `json:"signatures"`
 }
+
+type TagInfo struct {
+	Created      string `json:"created"`
+	LastModified string `json:"lastModified"`
+	LastUpdated  string `json:"lastUpdated"`
+}
+
 type FsLayers struct {
 	BlobSum string `json:"blobSum"`
 }
