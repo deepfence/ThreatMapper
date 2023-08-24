@@ -18,6 +18,7 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   IngestersCompliance,
+  IngestersComplianceScanStatus,
   ModelComplianceScanResult,
   ModelComplianceScanTriggerReq,
   ModelScanListReq,
@@ -35,6 +36,8 @@ import {
     ApiDocsFailureResponseToJSON,
     IngestersComplianceFromJSON,
     IngestersComplianceToJSON,
+    IngestersComplianceScanStatusFromJSON,
+    IngestersComplianceScanStatusToJSON,
     ModelComplianceScanResultFromJSON,
     ModelComplianceScanResultToJSON,
     ModelComplianceScanTriggerReqFromJSON,
@@ -57,6 +60,10 @@ import {
 
 export interface CountResultsComplianceScanRequest {
     modelScanResultsReq?: ModelScanResultsReq;
+}
+
+export interface IngestComplianceScanStatusRequest {
+    ingestersComplianceScanStatus?: Array<IngestersComplianceScanStatus> | null;
 }
 
 export interface IngestCompliancesRequest {
@@ -105,6 +112,22 @@ export interface ComplianceApiInterface {
      * Get Compliance Scans Results
      */
     countResultsComplianceScan(requestParameters: CountResultsComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Ingest compliance issues found while scanning the agent
+     * @summary Ingest Compliance Scan Status
+     * @param {Array<IngestersComplianceScanStatus>} [ingestersComplianceScanStatus] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ComplianceApiInterface
+     */
+    ingestComplianceScanStatusRaw(requestParameters: IngestComplianceScanStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Ingest compliance issues found while scanning the agent
+     * Ingest Compliance Scan Status
+     */
+    ingestComplianceScanStatus(requestParameters: IngestComplianceScanStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Ingest compliance issues found while scanning the agent
@@ -246,6 +269,44 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
     async countResultsComplianceScan(requestParameters: CountResultsComplianceScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countResultsComplianceScanRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Ingest compliance issues found while scanning the agent
+     * Ingest Compliance Scan Status
+     */
+    async ingestComplianceScanStatusRaw(requestParameters: IngestComplianceScanStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/ingest/compliance-scan-logs`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: requestParameters.ingestersComplianceScanStatus?.map(IngestersComplianceScanStatusToJSON),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Ingest compliance issues found while scanning the agent
+     * Ingest Compliance Scan Status
+     */
+    async ingestComplianceScanStatus(requestParameters: IngestComplianceScanStatusRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.ingestComplianceScanStatusRaw(requestParameters, initOverrides);
     }
 
     /**

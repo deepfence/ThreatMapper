@@ -411,6 +411,12 @@ export interface ReportMetadata {
     resource_group?: string;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof ReportMetadata
+     */
+    tags?: Array<string>;
+    /**
+     * 
      * @type {number}
      * @memberof ReportMetadata
      */
@@ -525,6 +531,7 @@ export function ReportMetadataFromJSONTyped(json: any, ignoreDiscriminator: bool
         'pseudo': !exists(json, 'pseudo') ? undefined : json['pseudo'],
         'public_ip': !exists(json, 'public_ip') ? undefined : json['public_ip'],
         'resource_group': !exists(json, 'resource_group') ? undefined : json['resource_group'],
+        'tags': !exists(json, 'tags') ? undefined : json['tags'],
         'threads': !exists(json, 'threads') ? undefined : json['threads'],
         'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
         'uptime': !exists(json, 'uptime') ? undefined : json['uptime'],
@@ -607,6 +614,7 @@ export function ReportMetadataToJSON(value?: ReportMetadata | null): any {
         'pseudo': value.pseudo,
         'public_ip': value.public_ip,
         'resource_group': value.resource_group,
+        'tags': value.tags,
         'threads': value.threads,
         'timestamp': value.timestamp,
         'uptime': value.uptime,
