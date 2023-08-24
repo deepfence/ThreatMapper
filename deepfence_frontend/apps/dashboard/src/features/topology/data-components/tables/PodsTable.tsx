@@ -137,6 +137,7 @@ function Filters() {
         </Combobox>
         <SearchableHostList
           valueKey="hostName"
+          showOnlyKubernetesHosts
           scanType={ScanTypeEnum.VulnerabilityScan}
           defaultSelectedHosts={searchParams.getAll('hosts')}
           onClearAll={() => {
