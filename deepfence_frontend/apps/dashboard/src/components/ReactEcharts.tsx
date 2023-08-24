@@ -1,17 +1,69 @@
-import type { ECharts, EChartsOption, SetOptionOpts } from 'echarts';
-import { getInstanceByDom, init } from 'echarts';
+import type {
+  BarSeriesOption,
+  GaugeSeriesOption,
+  LineSeriesOption,
+  PieSeriesOption,
+} from 'echarts/charts';
+import { BarChart, GaugeChart, LineChart, PieChart } from 'echarts/charts';
+import type {
+  DatasetComponentOption,
+  GridComponentOption,
+  LegendComponentOption,
+  TitleComponentOption,
+  TooltipComponentOption,
+} from 'echarts/components';
+import {
+  DatasetComponent,
+  GridComponent,
+  LegendComponent,
+  TitleComponent,
+  TooltipComponent,
+  TransformComponent,
+} from 'echarts/components';
+import type { ECharts, SetOptionOpts } from 'echarts/core';
+import type { ComposeOption } from 'echarts/core';
+import { getInstanceByDom, init, use } from 'echarts/core';
+import { LabelLayout, UniversalTransition } from 'echarts/features';
+import { SVGRenderer } from 'echarts/renderers';
 import type { CSSProperties } from 'react';
 import { useEffect, useRef } from 'react';
 import { useMeasure } from 'react-use';
 
+export type ECOption = ComposeOption<
+  | BarSeriesOption
+  | GaugeSeriesOption
+  | PieSeriesOption
+  | LineSeriesOption
+  | GridComponentOption
+  | TitleComponentOption
+  | LegendComponentOption
+  | TooltipComponentOption
+  | DatasetComponentOption
+>;
+
 export interface ReactEChartsProps {
-  option: EChartsOption;
+  option: ECOption;
   style?: CSSProperties;
   settings?: SetOptionOpts;
   loading?: boolean;
   theme?: 'light' | 'dark';
 }
 
+use([
+  TitleComponent,
+  LegendComponent,
+  TooltipComponent,
+  DatasetComponent,
+  GridComponent,
+  TransformComponent,
+  BarChart,
+  LineChart,
+  PieChart,
+  GaugeChart,
+  LabelLayout,
+  UniversalTransition,
+  SVGRenderer,
+]);
 export function ReactECharts({
   option,
   style,
