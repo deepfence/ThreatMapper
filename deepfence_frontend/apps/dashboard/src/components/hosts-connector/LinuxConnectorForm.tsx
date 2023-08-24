@@ -13,7 +13,13 @@ const useGetApiToken = () => {
     ...queries.auth.apiToken(),
   });
 };
+const useGetVersion = () => {
+  return useSuspenseQuery({
+    ...queries.setting.productVersion(),
+  });
+};
 const PLACEHOLDER_API_KEY = '---DEEPFENCE-API-KEY--';
+const PLACEHOLDER_VERSION = '---PRODUCT_TAG_VERSION--';
 
 const Command = () => {
   const { copy, isCopied } = useCopyToClipboardState();
@@ -25,6 +31,8 @@ const Command = () => {
       : apiToken === undefined
       ? PLACEHOLDER_API_KEY
       : apiToken;
+  const { data: dataVersion } = useGetVersion();
+  const version = dataVersion.version || PLACEHOLDER_VERSION;
 
   const code = `docker run -dit \\
   --cpus=".2" \\
@@ -41,7 +49,7 @@ const Command = () => {
   -e MGMT_CONSOLE_URL="${window.location.host ?? '---CONSOLE-IP---'}" \\
   -e MGMT_CONSOLE_PORT="443" \\
   -e DEEPFENCE_KEY="${dfApiKey}" \\
-  deepfenceio/deepfence_agent_ce:2.0.0`;
+  deepfenceio/deepfence_agent_ce:${version}`;
   return (
     <>
       <pre className="h-fit text-p7 dark:text-text-text-and-icon">{code}</pre>
