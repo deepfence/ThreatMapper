@@ -103,25 +103,47 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.aws_access_key : '-'),
+            (cell) => (!isEmpty(cell.config) ? cell.config.use_iam_role : '-'),
             {
-              id: 'aws_access_key',
-              header: () => <TruncatedText text={'Access key'} />,
+              id: 'use_iam_role',
+              header: () => <TruncatedText text={'IAM Role'} />,
               minSize: 50,
               size: 55,
               maxSize: 60,
             },
           ),
-          columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.aws_secret_key : '-'),
-            {
-              id: 'aws_secret_key',
-              header: () => <TruncatedText text={'Secret key'} />,
-              minSize: 50,
-              size: 55,
-              maxSize: 60,
-            },
-          ),
+          columnHelper.accessor('aws_access_key', {
+            enableSorting: false,
+            cell: (cell) => (
+              <TruncatedText text={cell.row.original.config?.aws_access_key || '-'} />
+            ),
+            header: () => <TruncatedText text="AWS Access Key" />,
+            minSize: 50,
+            size: 55,
+            maxSize: 60,
+          }),
+          columnHelper.accessor('aws_account_id', {
+            enableSorting: false,
+            cell: (cell) => (
+              <TruncatedText text={cell.row.original.config?.aws_account_id || '-'} />
+            ),
+            header: () => <TruncatedText text="AWS Account ID" />,
+            minSize: 50,
+            size: 55,
+            maxSize: 60,
+          }),
+          columnHelper.accessor('target_account_role_arn', {
+            enableSorting: false,
+            cell: (cell) => (
+              <TruncatedText
+                text={cell.row.original.config?.target_account_role_arn || '-'}
+              />
+            ),
+            header: () => <TruncatedText text="Account Role ARN" />,
+            minSize: 50,
+            size: 55,
+            maxSize: 60,
+          }),
         ];
       case IntegrationType.jira:
         return [

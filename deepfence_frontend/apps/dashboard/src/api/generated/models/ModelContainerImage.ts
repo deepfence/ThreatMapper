@@ -64,6 +64,12 @@ export interface ModelContainerImage {
     docker_image_tag: string;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof ModelContainerImage
+     */
+    docker_image_tag_list: Array<string> | null;
+    /**
+     * 
      * @type {string}
      * @memberof ModelContainerImage
      */
@@ -153,6 +159,7 @@ export function instanceOfModelContainerImage(value: object): boolean {
     isInstance = isInstance && "docker_image_name" in value;
     isInstance = isInstance && "docker_image_size" in value;
     isInstance = isInstance && "docker_image_tag" in value;
+    isInstance = isInstance && "docker_image_tag_list" in value;
     isInstance = isInstance && "docker_image_virtual_size" in value;
     isInstance = isInstance && "malware_latest_scan_id" in value;
     isInstance = isInstance && "malware_scan_status" in value;
@@ -186,6 +193,7 @@ export function ModelContainerImageFromJSONTyped(json: any, ignoreDiscriminator:
         'docker_image_name': json['docker_image_name'],
         'docker_image_size': json['docker_image_size'],
         'docker_image_tag': json['docker_image_tag'],
+        'docker_image_tag_list': json['docker_image_tag_list'],
         'docker_image_virtual_size': json['docker_image_virtual_size'],
         'malware_latest_scan_id': json['malware_latest_scan_id'],
         'malware_scan_status': json['malware_scan_status'],
@@ -217,6 +225,7 @@ export function ModelContainerImageToJSON(value?: ModelContainerImage | null): a
         'docker_image_name': value.docker_image_name,
         'docker_image_size': value.docker_image_size,
         'docker_image_tag': value.docker_image_tag,
+        'docker_image_tag_list': value.docker_image_tag_list,
         'docker_image_virtual_size': value.docker_image_virtual_size,
         'malware_latest_scan_id': value.malware_latest_scan_id,
         'malware_scan_status': value.malware_scan_status,

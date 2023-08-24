@@ -48,6 +48,12 @@ export interface ModelCloudResource {
      * @type {string}
      * @memberof ModelCloudResource
      */
+    cloud_provider: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudResource
+     */
     cloud_region: string;
     /**
      * 
@@ -84,6 +90,7 @@ export function instanceOfModelCloudResource(value: object): boolean {
     isInstance = isInstance && "cloud_compliance_latest_scan_id" in value;
     isInstance = isInstance && "cloud_compliance_scan_status" in value;
     isInstance = isInstance && "cloud_compliances_count" in value;
+    isInstance = isInstance && "cloud_provider" in value;
     isInstance = isInstance && "cloud_region" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
@@ -107,6 +114,7 @@ export function ModelCloudResourceFromJSONTyped(json: any, ignoreDiscriminator: 
         'cloud_compliance_latest_scan_id': json['cloud_compliance_latest_scan_id'],
         'cloud_compliance_scan_status': json['cloud_compliance_scan_status'],
         'cloud_compliances_count': json['cloud_compliances_count'],
+        'cloud_provider': json['cloud_provider'],
         'cloud_region': json['cloud_region'],
         'node_id': json['node_id'],
         'node_name': json['node_name'],
@@ -128,6 +136,7 @@ export function ModelCloudResourceToJSON(value?: ModelCloudResource | null): any
         'cloud_compliance_latest_scan_id': value.cloud_compliance_latest_scan_id,
         'cloud_compliance_scan_status': value.cloud_compliance_scan_status,
         'cloud_compliances_count': value.cloud_compliances_count,
+        'cloud_provider': value.cloud_provider,
         'cloud_region': value.cloud_region,
         'node_id': value.node_id,
         'node_name': value.node_name,

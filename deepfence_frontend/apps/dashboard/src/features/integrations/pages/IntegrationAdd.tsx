@@ -137,14 +137,32 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
         jiraAssignee: formBody.assigne,
       };
     }
-    case IntegrationType.s3:
-      return {
+    case IntegrationType.s3: {
+      const s3Object: {
+        s3_bucket_name: FormDataEntryValue;
+        aws_access_key: FormDataEntryValue;
+        aws_secret_key: FormDataEntryValue;
+        s3_folder_name: FormDataEntryValue;
+        aws_region: FormDataEntryValue;
+        use_iam_role: 'true' | 'false';
+        aws_account_id?: FormDataEntryValue;
+        target_account_role_arn?: FormDataEntryValue;
+      } = {
         s3_bucket_name: formBody.name,
         aws_access_key: formBody.accessKey,
         aws_secret_key: formBody.secretKey,
         s3_folder_name: formBody.folder,
         aws_region: formBody.region,
+        use_iam_role: formBody.useIAMRole === 'on' ? 'true' : 'false',
       };
+      if (formBody.awsAccount && formBody.awsAccount.toString().trim()) {
+        s3Object.aws_account_id = formBody.awsAccount;
+      }
+      if (formBody.awsARN && formBody.awsARN.toString().trim()) {
+        s3Object.target_account_role_arn = formBody.awsARN;
+      }
+      return s3Object;
+    }
     default:
       break;
   }
