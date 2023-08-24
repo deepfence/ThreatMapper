@@ -30,7 +30,8 @@ const Command = () => {
 --cpus=".2" \\
 --name=deepfence-agent \\
 --restart on-failure \\
---pid=host --net=host \\
+--pid=host \\
+--net=host \\
 --privileged=true \\
 -v /sys/kernel/debug:/sys/kernel/debug:rw \\
 -v /var/log/fenced \\
@@ -40,7 +41,7 @@ const Command = () => {
 -e MGMT_CONSOLE_URL="${window.location.host ?? '---CONSOLE-IP---'}" \\
 -e MGMT_CONSOLE_PORT="443" \\
 -e DEEPFENCE_KEY="${dfApiKey}" \\
-deepfenceio/deepfence_agent_ce:latest`;
+deepfenceio/deepfence_agent_ce:2.0.0`;
   return (
     <>
       <pre className="h-fit text-p7 dark:text-text-text-and-icon">{code}</pre>
