@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -32,6 +33,28 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 	if err != nil {
 		fmt.Println("Failed to create AWS session", err)
 		return err
+	}
+	if s.Config.UseIAMRole {
+		sess, err := session.NewSession(&aws.Config{
+			Region: aws.String(s.Config.AWSRegion),
+		})
+		if err != nil {
+			return fmt.Errorf("error creating session: %v", err)
+		}
+
+		awsConfig := aws.Config{
+			Region: aws.String(s.Config.AWSRegion),
+		}
+
+		// if targetRoleARN is empty, that means
+		// it is not a crossaccount ecr, no need to use stscreds
+		if s.Config.TargetAccountRoleARN != "" {
+			if s.Config.AWSAccountID == "" {
+				return fmt.Errorf("for cross account ECR, account ID is mandatory")
+			}
+			creds := stscreds.NewCredentials(sess, s.Config.TargetAccountRoleARN)
+			awsConfig.Credentials = creds
+		}
 	}
 
 	// Marshal your JSON data into a byte slice
