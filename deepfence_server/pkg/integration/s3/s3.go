@@ -34,7 +34,7 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 		fmt.Println("Failed to create AWS session", err)
 		return err
 	}
-	if s.Config.UseIAMRole {
+	if s.Config.UseIAMRole == "true" {
 		sess, err := session.NewSession(&aws.Config{
 			Region: aws.String(s.Config.AWSRegion),
 		})
