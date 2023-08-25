@@ -194,6 +194,20 @@ func (w *worker) pollHandlers() {
 					}
 				}
 
+				//Below check is required as the handler is supposed to be stopped and
+				//cleaned up from the list when we this channel is closed.
+				//But actully the channel is first closed and than the handler is removed from the routers list
+				//and that could result in a condition where we might start the new handler while the old
+				//one is not yet removed from the routers list
+				for true {
+					snapshot := w.mux.Handlers()
+					if _, ok := snapshot[task.Task]; !ok {
+						log.Info().Msgf("Successfully deleted handler from router for topic: %s", task.Task)
+						break
+					}
+					time.Sleep(1 * time.Second)
+				}
+
 				w.AddNoPublisherHandler(task.Task, task.TaskCallback, true)
 				w.mux.RunHandlers(context.Background())
 				log.Info().Msgf("Restarted handler for topic: %s", task.Task)
