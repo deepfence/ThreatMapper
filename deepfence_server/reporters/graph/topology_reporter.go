@@ -1055,6 +1055,9 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 
 	if !filters.SkipConnections {
 		connTx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
+		if err != nil {
+			return res, err
+		}
 		res.Connections, err = nc.GetConnections(connTx, cloud_filter, region_filter, kubernetes_filter, host_filter)
 		if err != nil {
 			log.Error().Msgf("Topology get connections: %v", err)

@@ -245,7 +245,7 @@ func CleanUpDB(msg *message.Message) error {
 		MATCH (n:KubernetesCluster)
 		WHERE n.active = false
 		AND (NOT exists((n) <-[:SCANNED]-())
-		OR n.updated_at < TIMESTAMP()-$old_time_ms
+		OR n.updated_at < TIMESTAMP()-$old_time_ms)
 		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{

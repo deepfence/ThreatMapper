@@ -121,5 +121,9 @@ func Neo4jClient(ctx context.Context) (neo4j.Driver, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = driver.VerifyConnectivity()
+	if err != nil {
+		return nil, err
+	}
 	return *driver, err
 }
