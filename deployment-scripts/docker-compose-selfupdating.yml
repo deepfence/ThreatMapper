@@ -46,15 +46,13 @@ services:
   deepfence-redis:
     container_name: deepfence-redis
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_redis_ce:${DF_IMG_TAG:-2.0.0}
-    environment:
-      INITIALIZE_REDIS: "Y"
     ulimits:
       core: 0
     restart: on-failure
     networks:
       - deepfence_net
-      #depends_on:
-      #  - deepfence-init-container
+    volumes:
+      - deepfence_redis_data:/data:rw
     logging:
       driver: "json-file"
       options:
@@ -81,8 +79,6 @@ services:
       - deepfence_neo4j_data:/data:rw
       - deepfence_neo4j_logs:/logs:rw
       - deepfence_neo4j_plugins:/plugins:rw
-    #depends_on:
-    #  - deepfence-init-container
     logging:
       driver: "json-file"
       options:
@@ -302,6 +298,8 @@ services:
 
 volumes:
   deepfence_data:
+    driver: local
+  deepfence_redis_data:
     driver: local
   deepfence_neo4j_data:
     driver: local

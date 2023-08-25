@@ -55,7 +55,7 @@ deepfenced: alpine_builder bootstrap bootstrap-agent-plugins
 
 .PHONY: redis
 redis:
-	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_redis_ce:$(DF_IMG_TAG) -f deepfence_redis/redis-Dockerfile ./deepfence_redis
+	(cd deepfence_redis && docker build --tag=$(IMAGE_REPOSITORY)/deepfence_redis_ce:$(DF_IMG_TAG) .)
 
 .PHONY: postgres
 postgres:

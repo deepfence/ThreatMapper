@@ -13,6 +13,10 @@ const (
 	QUAY           = "quay"
 )
 
+const (
+	REDIS_JWT_SIGN_KEY = "SERVER_JWT_SIGN_KEY"
+)
+
 var RegistryTypes = []string{
 	ACR, DOCKER_HUB, DOCKER_PRIVATE, ECR, GCR, GITLAB, HARBOR, JFROG, QUAY,
 }
