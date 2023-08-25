@@ -13,6 +13,7 @@ import (
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -20,6 +21,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-playground/validator/v10"
+	"github.com/redis/go-redis/v9"
 	"github.com/riandyrn/otelchi"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -76,27 +78,28 @@ func init() {
 
 func getJWTAuthSignKey() (string, error) {
 	signKey := fmt.Sprintf("%v", utils.NewUUIDString())
-	return signKey, nil
-	//if directory.IsNonSaaSDeployment() {
-	//	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
-	//	redisClient, err := directory.RedisClient(ctx)
-	//	if err != nil {
-	//		return "", err
-	//	}
-	//	err = redisClient.SetArgs(ctx, constants.REDIS_JWT_SIGN_KEY, signKey, redis.SetArgs{Mode: "NX"}).Err()
-	//	if err != nil {
-	//		return "", err
-	//	}
-	//	val, err := redisClient.Get(ctx, constants.REDIS_JWT_SIGN_KEY).Result()
-	//	if err == redis.Nil {
-	//		return "", JwtSignKeyNotFoundError
-	//	} else if err != nil {
-	//		return "", err
-	//	}
-	//	return val, nil
-	//} else {
-	//	return signKey, nil
-	//}
+	if directory.IsNonSaaSDeployment() {
+		ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+		redisClient, err := directory.RedisClient(ctx)
+		if err != nil {
+			return "", err
+		}
+		err = redisClient.SetArgs(ctx, constants.REDIS_JWT_SIGN_KEY, signKey, redis.SetArgs{Mode: "NX"}).Err()
+		if err == redis.Nil {
+			// Key already exists, nothing to do
+		} else if err != nil {
+			return "", err
+		}
+		val, err := redisClient.Get(ctx, constants.REDIS_JWT_SIGN_KEY).Result()
+		if err == redis.Nil {
+			return "", JwtSignKeyNotFoundError
+		} else if err != nil {
+			return "", err
+		}
+		return val, nil
+	} else {
+		return signKey, nil
+	}
 }
 
 func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC chan *kgo.Record,
