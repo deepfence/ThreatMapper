@@ -7,23 +7,23 @@ import { getSideNavigationState, SideNavigation } from '@/components/SideNavigat
 import { OnboardAppHeader } from '@/features/onboard/components/OnBoardAppHeader';
 import storage from '@/utils/storage';
 
-const ErrorComponent = ({ maintainance }: { maintainance: boolean }) => {
+const ErrorComponent = ({ maintenance }: { maintenance: boolean }) => {
   return (
     <div className="flex flex-col h-full items-center pt-20">
-      {!maintainance ? (
+      {!maintenance ? (
         <h1 className="text-[140px] text-chart-orange dark:text-chart-orange font-black leading-[190px]">
           500
         </h1>
       ) : null}
       <h4 className="text-3xl font-semibold text-text-text-and-icon dark:text-text-text-and-icon flex flex-col text-center">
         <span>
-          {maintainance ? 'Maintainance in progress...' : 'Internal server error.'}
+          {maintenance ? 'Maintenance in progress...' : 'Internal server error.'}
         </span>
         <span>
-          {maintainance ? 'Please try again after some time.' : 'Contact support.'}
+          {maintenance ? 'Please try again after some time.' : 'Contact support.'}
         </span>
       </h4>
-      {!maintainance ? (
+      {!maintenance ? (
         <div className="mt-12 w-[455px]">
           <SVG500 />
         </div>
@@ -44,7 +44,7 @@ export const FiveZeroZero = () => {
       <div className="min-h-screen isolate dark:bg-bg-page">
         <div className="pt-[56px] h-screen">
           <ErrorComponent
-            maintainance={((error as Error)?.cause as any)?.status === 503}
+            maintenance={((error as Error)?.cause as any)?.status === 503}
           />
         </div>
         <OnboardAppHeader />
@@ -68,14 +68,14 @@ export const FiveZeroZero = () => {
             })}
           >
             <ErrorComponent
-              maintainance={((error as Error)?.cause as any)?.status === 503}
+              maintenance={((error as Error)?.cause as any)?.status === 503}
             />
           </main>
         </>
       ) : (
         <div className="h-screen">
           <ErrorComponent
-            maintainance={((error as Error)?.cause as any)?.status === 503}
+            maintenance={((error as Error)?.cause as any)?.status === 503}
           />
         </div>
       )}
