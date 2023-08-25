@@ -120,7 +120,7 @@ func computeThreatGraph(session neo4j.Session) error {
 
 	if _, err = session.Run(`
 		MATCH (s:VulnerabilityScan) -[:SCANNED]-> (m)
-		WHERE s.status = `+utils.SCAN_STATUS_SUCCESS+`
+		WHERE s.status = "`+utils.SCAN_STATUS_SUCCESS+`"
 		WITH distinct m, max(s.updated_at) as most_recent
 		OPTIONAL MATCH (m) <-[:SCANNED]- (s:VulnerabilityScan{updated_at: most_recent})-[:DETECTED]->(c:Vulnerability)
 		WITH s, m, count(distinct c.node_id) as vulnerabilities_count
@@ -130,7 +130,7 @@ func computeThreatGraph(session neo4j.Session) error {
 
 	if _, err = session.Run(`
 		MATCH (s:SecretScan) -[:SCANNED]-> (m)
-		WHERE s.status = `+utils.SCAN_STATUS_SUCCESS+`
+		WHERE s.status = "`+utils.SCAN_STATUS_SUCCESS+`"
 		WITH distinct m, max(s.updated_at) as most_recent
 		MATCH (m) <-[:SCANNED]- (s:SecretScan{updated_at: most_recent})-[:DETECTED]->(c:Secret)
 		WITH s, m, count(distinct c) as secrets_count
@@ -140,7 +140,7 @@ func computeThreatGraph(session neo4j.Session) error {
 
 	if _, err = session.Run(`
 		MATCH (s:MalwareScan) -[:SCANNED]-> (m)
-		WHERE s.status = `+utils.SCAN_STATUS_SUCCESS+`
+		WHERE s.status = "`+utils.SCAN_STATUS_SUCCESS+`"
 		WITH distinct m, max(s.updated_at) as most_recent
 		MATCH (m) <-[:SCANNED]- (s:MalwareScan{updated_at: most_recent})-[:DETECTED]->(c:Malware)
 		WITH s, m, count(distinct c) as malwares_count
@@ -150,7 +150,7 @@ func computeThreatGraph(session neo4j.Session) error {
 
 	if _, err = session.Run(`
 		MATCH (s:ComplianceScan) -[:SCANNED]-> (m)
-		WHERE s.status = `+utils.SCAN_STATUS_SUCCESS+`
+		WHERE s.status = "`+utils.SCAN_STATUS_SUCCESS+`"
 		WITH distinct m, max(s.updated_at) as most_recent
 		MATCH (m) <-[:SCANNED]- (s:ComplianceScan{updated_at: most_recent})-[:DETECTED]->(c:Compliance)
 		WITH s, m, count(distinct c) as compliances_count
@@ -160,7 +160,7 @@ func computeThreatGraph(session neo4j.Session) error {
 
 	if _, err = session.Run(`
 		MATCH (s:CloudComplianceScan) -[:SCANNED]-> (p:CloudNode)
-		WHERE s.status = `+utils.SCAN_STATUS_SUCCESS+`
+		WHERE s.status = "`+utils.SCAN_STATUS_SUCCESS+`"
 		WITH distinct p, max(s.updated_at) as most_recent
 		MATCH (s:CloudComplianceScan{updated_at: most_recent})-[:DETECTED]->(c:CloudCompliance) -[:SCANNED]->(m:CloudResource)
 		WITH s, m, count(distinct c) as cloud_compliances_count
