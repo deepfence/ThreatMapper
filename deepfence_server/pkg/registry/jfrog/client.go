@@ -176,8 +176,50 @@ func getManifestsV2(url, repository, userName, password, repoName, tag string) (
 	return digest, manifests, err
 }
 
+func getTagInfo(url, repository, userName, password, repoName, tag string) (TagInfo, error) {
+	var info TagInfo
+
+	infoUrl := "%s/artifactory/api/storage/%s/%s/%s"
+	queryUrl := fmt.Sprintf(infoUrl, url, repository, repoName, tag)
+
+	req, err := http.NewRequest(http.MethodGet, queryUrl, nil)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return info, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.SetBasicAuth(userName, password)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return info, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return info, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("error bad status code %d", resp.StatusCode)
+		log.Error().Msg(err.Error())
+		return info, err
+	}
+
+	if err := json.Unmarshal(body, &info); err != nil {
+		log.Error().Msg(err.Error())
+		return info, err
+	}
+
+	return info, err
+}
+
 func getImageWithTags(url, repository, userName, password, repoName string, repoTags RepoTagsResp) []model.IngestedContainerImage {
 	var imageAndTag []model.IngestedContainerImage
+	//ISO8601 format
+	dateFormat := "2006-01-02T15:04:05.000Z"
 
 	for _, tag := range repoTags.Tags {
 		digest, manifest, err := getManifestsV2(url, repository, userName, password, repoName, tag)
@@ -192,6 +234,33 @@ func getImageWithTags(url, repository, userName, password, repoName string, repo
 			}
 		}
 
+		tagDateInfo, err := getTagInfo(url, repository, userName, password, repoName, tag)
+		if err != nil {
+			continue
+		}
+
+		var createdDateTS, lastModifiedTS, lastUpdatedTS int64
+		createdDate, err := time.Parse(dateFormat, tagDateInfo.Created)
+		if err != nil {
+			log.Error().Msgf("Error in parsing Created timestamp: %v", err)
+		} else {
+			createdDateTS = createdDate.Unix()
+		}
+
+		lastModified, err := time.Parse(dateFormat, tagDateInfo.LastModified)
+		if err != nil {
+			log.Error().Msgf("Error in parsing LastModified timestamp: %v", err)
+		} else {
+			lastModifiedTS = lastModified.Unix()
+		}
+
+		lastUpdated, err := time.Parse(dateFormat, tagDateInfo.LastUpdated)
+		if err != nil {
+			log.Error().Msgf("Error in parsing LastUpdated timestamp: %v", err)
+		} else {
+			lastUpdatedTS = lastUpdated.Unix()
+		}
+
 		imageID, shortImageID := model.DigestToID(digest)
 		tt := model.IngestedContainerImage{
 			ID:            imageID,
@@ -201,8 +270,10 @@ func getImageWithTags(url, repository, userName, password, repoName string, repo
 			Tag:           tag,
 			Size:          "",
 			Metadata: model.Metadata{
-				"created": comp.Created,
-				"digest":  digest,
+				"created":      createdDateTS,
+				"digest":       digest,
+				"last_updated": lastUpdatedTS,
+				"last_pushed":  lastModifiedTS,
 			},
 		}
 		imageAndTag = append(imageAndTag, tt)
