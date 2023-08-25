@@ -43,7 +43,7 @@ func respondWith(ctx context.Context, w http.ResponseWriter, code int, response 
 	if err, ok := response.(error); ok {
 		switch response.(type) {
 		case *neo4j.ConnectivityError:
-			code = 503
+			code = http.StatusServiceUnavailable
 		default:
 		}
 		log.Error().Msgf("Error %d: %v", code, err)
