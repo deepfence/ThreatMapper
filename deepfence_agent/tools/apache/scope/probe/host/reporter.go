@@ -47,6 +47,10 @@ const (
 const (
 	ProcStat    = "/proc/stat"
 	ProcMemInfo = "/proc/meminfo"
+
+	DefaultCloud      = "private_cloud"
+	DefaultCloudLabel = "Private Cloud"
+	DefaultRegion     = "Zone"
 )
 
 type CloudMeta struct {
@@ -88,13 +92,16 @@ func getCloudMetadata(cloudProvider string) (string, cloud_metadata.CloudMetadat
 			cloudMetadata.Region = report.CloudProviderServerless
 		}
 		if cloudProvider == "" {
-			cloudProvider = "private_cloud"
+			cloudProvider = DefaultCloud
 			cloudMetadata = cloud_metadata.CloudMetadata{
 				CloudProvider: cloudProvider,
-				Label:         "Private Cloud",
-				Region:        "Zone",
+				Label:         DefaultCloudLabel,
+				Region:        DefaultRegion,
 			}
 		}
+	}
+	if cloudMetadata.Region == "" {
+		cloudMetadata.Region = DefaultRegion
 	}
 	return cloudProvider, cloudMetadata
 }
