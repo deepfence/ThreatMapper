@@ -19,6 +19,8 @@ import (
 var BenchmarksAvailableMap = map[string][]string{
 	"aws":        {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2"},
 	"gcp":        {"cis"},
+	"aws_org":    {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2"},
+	"gcp_org":    {"cis"},
 	"azure":      {"cis", "nist", "pci", "hipaa"},
 	"kubernetes": {"nsa-cisa"},
 	"linux":      {"hipaa", "nist", "pci", "gdpr"}}
@@ -68,6 +70,9 @@ func AddCloudControls(msg *message.Message) error {
 
 	for cloud, benchmarksAvailable := range BenchmarksAvailableMap {
 		cwd := "/cloud_controls/" + cloud
+		if strings.Contains(cwd, "_org") {
+			cwd = strings.Replace(cwd, "_org", "", -1)
+		}
 		for _, benchmark := range benchmarksAvailable {
 			controlFilePath := fmt.Sprintf("%s/%s.json", cwd, benchmark)
 			controlsJson, err := os.ReadFile(controlFilePath)
