@@ -52,6 +52,11 @@ export type ScanActionReturnType = {
   };
 };
 
+type ControlActionDta = {
+  message?: string;
+  success: boolean;
+};
+
 type TabsType = {
   label: string;
   value: string;
@@ -140,7 +145,7 @@ const toggleControls = ({
   nodeId: string;
   checked: boolean;
   controlIds: string[] | undefined;
-  fetcher: FetcherWithComponents<any>;
+  fetcher: FetcherWithComponents<ControlActionDta>;
   checkType: string;
   nodeType: string;
 }) => {
@@ -188,7 +193,7 @@ const ToggleControl = ({
   nodeId: string;
   nodeType: string;
   checkType: string;
-  fetcher: FetcherWithComponents<any>;
+  fetcher: FetcherWithComponents<ControlActionDta>;
 }) => {
   // TODO: should show loader indicator here
   if (fetcher.state !== 'idle') {
@@ -228,6 +233,11 @@ const ControlTable = ({
         return 'linux';
       case ComplianceScanNodeTypeEnum.kubernetes_cluster:
         return 'kubernetes';
+      case ComplianceScanNodeTypeEnum.aws_org:
+        return ComplianceScanNodeTypeEnum.aws;
+      case ComplianceScanNodeTypeEnum.gcp_org:
+        return ComplianceScanNodeTypeEnum.gcp;
+
       default:
         return nodeType;
     }
