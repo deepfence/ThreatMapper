@@ -17,9 +17,6 @@ func New(ctx context.Context, b []byte) (Splunk, error) {
 	if err != nil {
 		return s, err
 	}
-	if s.Config.EndpointURL == "" || s.Config.Token == "" {
-		return s, errors.New("invalid Splunk configuration")
-	}
 	return s, nil
 }
 
