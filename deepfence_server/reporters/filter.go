@@ -43,6 +43,7 @@ type FieldsFilters struct {
 	NotContainsFilter     ContainsFilter  `json:"not_contains_filter"`
 	ContainsInArrayFilter ContainsFilter  `json:"contains_in_array_filter"`
 	MatchFilter           MatchFilter     `json:"match_filter" required:"true"`
+	MatchInArrayFilter    MatchFilter     `json:"match_in_array_filter"`
 	OrderFilter           OrderFilter     `json:"order_filter" required:"true"`
 	CompareFilters        []CompareFilter `json:"compare_filter" required:"true"`
 }
@@ -220,7 +221,9 @@ func ParseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.O
 
 	conditions = append(conditions, containsFilter2CypherConditions(cypherNodeName, f.ContainsInArrayFilter, true, true)...)
 
-	conditions = append(conditions, matchFilter2CypherConditions(cypherNodeName, f.MatchFilter)...)
+	conditions = append(conditions, matchFilter2CypherConditions(cypherNodeName, f.MatchFilter, false)...)
+
+	conditions = append(conditions, matchFilter2CypherConditions(cypherNodeName, f.MatchInArrayFilter, true)...)
 
 	conditions = append(conditions, orderFilter2CypherWhere(cypherNodeName, f.OrderFilter)...)
 
@@ -291,15 +294,21 @@ func FieldFilterCypherWithAlias(nodeName string, fields []string) string {
 	return nodeName
 }
 
-func matchFilter2CypherConditions(cypherNodeName string, filter MatchFilter) []string {
+func matchFilter2CypherConditions(cypherNodeName string, filter MatchFilter, isArrayProperty bool) []string {
 	conditions := []string{}
+	arrCond := "any(prop in %s.%s WHERE prop =~ '(%s)')"
+	nonArrCond := "%s.%s =~ '(%s)'"
 	for k, vs := range filter.FieldsValues {
 		var values []string
 		for i := range vs {
 			values = append(values, fmt.Sprintf(".*%v.*", vs[i]))
 		}
 
-		conditions = append(conditions, fmt.Sprintf("%s.%s =~ '(%s)'", cypherNodeName, k, strings.Join(values, "|")))
+		if isArrayProperty {
+			conditions = append(conditions, fmt.Sprintf(arrCond, cypherNodeName, k, strings.Join(values, "|")))
+		} else {
+			conditions = append(conditions, fmt.Sprintf(nonArrCond, cypherNodeName, k, strings.Join(values, "|")))
+		}
 	}
 	return conditions
 }
