@@ -116,36 +116,43 @@ const ModalContent = ({
   const nodesData = useMemo(() => {
     if (!data) return null;
     if (!data.length) return [];
-    return Object.keys(nodes ?? {}).map((nodeId) => {
-      const node = nodes![nodeId];
-      const nodeData = data.find((item) => item.node_id === node.node_id);
-      if (nodeType === 'host') {
+
+    return Object.keys(nodes ?? {})
+      .map((nodeId) => {
+        const node = nodes![nodeId];
+        const nodeData = data.find((item) => item.node_id === node.node_id);
+        if (!nodeData) return null;
+        if (nodeType === 'host') {
+          return {
+            ...node,
+            latest_vulnerability_scan_id: (nodeData as ModelHost)
+              ?.vulnerability_latest_scan_id,
+            vulnerability_count: (nodeData as ModelHost)?.vulnerabilities_count,
+            latest_secret_scan_id: (nodeData as ModelHost)?.secret_latest_scan_id,
+            secrets_count: (nodeData as ModelHost)?.secrets_count,
+            latest_compliance_scan_id: (nodeData as ModelHost)?.compliance_latest_scan_id,
+            compliance_count: (nodeData as ModelHost)?.compliances_count,
+            latest_cloud_compliance_scan_id: undefined,
+          };
+        }
+
         return {
           ...node,
-          latest_vulnerability_scan_id: (nodeData as ModelHost)
-            ?.vulnerability_latest_scan_id,
-          latest_secret_scan_id: (nodeData as ModelHost)?.secret_latest_scan_id,
-          latest_malware_scan_id: (nodeData as ModelHost)?.malware_latest_scan_id,
-          latest_compliance_scan_id: (nodeData as ModelHost)?.compliance_latest_scan_id,
-          latest_cloud_compliance_scan_id: undefined,
+          latest_cloud_compliance_scan_id: (nodeData as ModelCloudResource)
+            ?.cloud_compliance_latest_scan_id,
+          cloud_compliance_count: (nodeData as ModelCloudResource)
+            ?.cloud_compliances_count,
+          latest_vulnerability_scan_id: undefined,
+          latest_secret_scan_id: undefined,
+          latest_compliance_scan_id: undefined,
         };
-      }
-
-      return {
-        ...node,
-        latest_cloud_compliance_scan_id: (nodeData as ModelCloudResource)
-          ?.cloud_compliance_latest_scan_id,
-        latest_vulnerability_scan_id: undefined,
-        latest_secret_scan_id: undefined,
-        latest_malware_scan_id: undefined,
-        latest_compliance_scan_id: undefined,
-      };
-    });
+      })
+      .filter((data) => !!data);
   }, [data]);
   return (
     <div className="py-7 px-5 flex flex-col gap-5">
       {nodesData?.map((item) => (
-        <div key={item.node_id} className="mb-4">
+        <div key={item?.node_id} className="mb-4">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 shrink-0">
               <img
@@ -155,10 +162,10 @@ const ModalContent = ({
                 height="100%"
               />
             </div>
-            <div className="text-h5 dark:text-text-text-and-icon">{item.node_id}</div>
+            <div className="text-h5 dark:text-text-text-and-icon">{item?.node_id}</div>
           </div>
           <div className="flex items-center justify-start gap-4 py-3">
-            {item.vulnerability_count ? (
+            {item?.vulnerability_count ? (
               <CountCard
                 count={item.vulnerability_count}
                 nodeType={nodeType}
@@ -166,7 +173,7 @@ const ModalContent = ({
                 scanId={item.latest_vulnerability_scan_id}
               />
             ) : null}
-            {item.secrets_count ? (
+            {item?.secrets_count ? (
               <CountCard
                 count={item.secrets_count}
                 nodeType={nodeType}
@@ -174,7 +181,7 @@ const ModalContent = ({
                 scanId={item.latest_secret_scan_id}
               />
             ) : null}
-            {item.compliance_count ? (
+            {item?.compliance_count ? (
               <CountCard
                 count={item.compliance_count}
                 nodeType={nodeType}
@@ -182,7 +189,7 @@ const ModalContent = ({
                 scanId={item.latest_compliance_scan_id}
               />
             ) : null}
-            {item.cloud_compliance_count ? (
+            {item?.cloud_compliance_count ? (
               <CountCard
                 count={item.cloud_compliance_count}
                 nodeType={nodeType}

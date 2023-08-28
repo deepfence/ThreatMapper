@@ -216,7 +216,8 @@ const FirstCommand = () => {
   return (
     <div className="relative flex items-center">
       <pre className="h-fit text-p7 dark:text-text-text-and-icon">
-        helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+        helm repo add deepfence
+        https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
       </pre>
       <div className="flex items-center ml-auto self-start">
         {isCopied ? 'copied' : null}
