@@ -13,7 +13,7 @@ import (
 
 func New(ctx context.Context, b []byte) (Splunk, error) {
 	var s Splunk
-	err := json.Unmarshal(b, &s.Config)
+	err := json.Unmarshal(b, &s)
 	if err != nil {
 		return s, err
 	}
