@@ -235,6 +235,9 @@ const ControlTable = ({
         return 'kubernetes';
       case ComplianceScanNodeTypeEnum.aws_org:
         return ComplianceScanNodeTypeEnum.aws;
+      case ComplianceScanNodeTypeEnum.gcp_org:
+        return ComplianceScanNodeTypeEnum.gcp;
+
       default:
         return nodeType;
     }
