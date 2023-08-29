@@ -517,10 +517,9 @@ def validateJiraCredentials(siteurl, username, password, api_token, projectkey, 
             if not api_token:
                 body = {'username': username, 'password': password}
                 apiurl = '{0}/rest/auth/1/session'.format(siteurl.strip('/'))
-                response = requests.post(apiurl, json=body)
+                response = requests.post(apiurl, json=body, verify=False)
             else:
-                response = requests.post(siteurl.strip(
-                    '/'), auth=(username, api_token))
+                response = requests.post(siteurl.strip('/'), auth=(username, api_token), verify=False)
         except requests.exceptions.ConnectionError as e:
             raise JIRAError(text='Invalid Site URL')
 
@@ -538,10 +537,9 @@ def validateJiraCredentials(siteurl, username, password, api_token, projectkey, 
                 raise JIRAError(text="Invalid Credentials")
 
         if not api_token:
-            jclient = JIRA(siteurl, auth=(username, password,), max_retries=0)
+            jclient = JIRA(siteurl, auth=(username, password,), max_retries=0, options={"verify": False})
         else:
-            jclient = JIRA(siteurl, basic_auth=(
-                username, api_token), max_retries=0)
+            jclient = JIRA(siteurl, basic_auth=(username, api_token), max_retries=0, options={"verify": False})
 
         # validating project key
         jclient.project(projectkey)
