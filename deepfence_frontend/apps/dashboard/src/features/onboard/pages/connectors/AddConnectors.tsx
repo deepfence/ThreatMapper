@@ -9,6 +9,7 @@ import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { CloudLine } from '@/components/icons/common/CloudLine';
 import { HostIcon } from '@/components/icons/host';
+import { AWSECSIcon } from '@/components/icons/hosts/AWSECS';
 import { AwsIcon } from '@/components/icons/posture/Aws';
 import { AzureIcon } from '@/components/icons/posture/Azure';
 import { GoogleIcon } from '@/components/icons/posture/Google';
@@ -103,7 +104,9 @@ const Cloud = () => {
   );
 };
 const Host = () => {
-  const connectors = [
+  const [showAll, setShowAll] = useState(false);
+
+  const hostConnectors = [
     {
       icon: <KubernetesIcon />,
       label: 'Kubernetes Clusters',
@@ -119,7 +122,30 @@ const Host = () => {
       label: 'Linux Bare-Metal/VM',
       path: ACCOUNT_CONNECTOR.LINUX,
     },
+    {
+      icon: (
+        <div className="dark:text-[#F4B849]">
+          <AWSECSIcon />
+        </div>
+      ),
+      label: 'AWS Fargate',
+      path: ACCOUNT_CONNECTOR.AWS_Fargate,
+    },
   ];
+
+  const onShowAll = () => {
+    setShowAll((state) => {
+      return !state;
+    });
+  };
+
+  const connectors = useMemo(() => {
+    if (showAll) {
+      return [...hostConnectors];
+    } else {
+      return [...hostConnectors.slice(0, 3)];
+    }
+  }, [showAll]);
 
   return (
     <>
@@ -142,6 +168,11 @@ const Host = () => {
               </div>
             );
           })}
+          {!showAll ? (
+            <Button size="sm" onClick={onShowAll} className="ml-3 mt-2">
+              +1 more
+            </Button>
+          ) : null}
         </div>
       </div>
     </>

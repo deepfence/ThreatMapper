@@ -10,6 +10,7 @@ export const ACCOUNT_CONNECTOR = {
   HOST: 'host',
   KUBERNETES: 'kubernetes',
   CLUSTER: 'cluster',
+  AWS_Fargate: 'aws_fargate',
 } as const;
 
 export const NoConnectors = () => {

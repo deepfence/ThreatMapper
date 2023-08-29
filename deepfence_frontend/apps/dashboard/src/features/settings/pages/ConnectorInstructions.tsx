@@ -1,19 +1,22 @@
-import { startCase } from 'lodash-es';
+import { useMemo, useState } from 'react';
 import { generatePath, useParams } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
-import { Card } from 'ui-components';
+import { Button, Card } from 'ui-components';
 
 import { AWSCloudFormation } from '@/components/clouds-connector/AWSCloudFormation';
 import { AWSTerraform } from '@/components/clouds-connector/AWSTerraform';
 import { AzureConnectorForm } from '@/components/clouds-connector/AzureConnectorForm';
 import { GCPConnectorForm } from '@/components/clouds-connector/GCPConnectorForm';
 import { DFLink } from '@/components/DFLink';
+import { AWSFargateConnectorForm } from '@/components/hosts-connector/AWSFargateConnectorForm';
 import { DockerConnectorForm } from '@/components/hosts-connector/DockerConnectorForm';
 import { K8ConnectorForm } from '@/components/hosts-connector/K8ConnectorForm';
 import { LinuxConnectorForm } from '@/components/hosts-connector/LinuxConnectorForm';
+import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { CloudLine } from '@/components/icons/common/CloudLine';
 import { HostIcon } from '@/components/icons/host';
+import { AWSECSIcon } from '@/components/icons/hosts/AWSECS';
 import { AwsIcon } from '@/components/icons/posture/Aws';
 import { AzureIcon } from '@/components/icons/posture/Azure';
 import { GoogleIcon } from '@/components/icons/posture/Google';
@@ -28,15 +31,17 @@ interface CardConnectProps {
   icon: React.ReactNode;
 }
 
-const ACCOUNT_CONNECTOR = {
-  DOCKER: 'docker container',
-  AWS: 'amazon web services',
-  GCP: 'google cloud platform',
-  AZURE: 'microsoft azure',
-  LINUX: 'linux bare-metal vm',
-  HOST: 'host',
-  KUBERNETES: 'kubernetes cluster',
-  CLUSTER: 'cluster',
+const ACCOUNT_CONNECTOR_TITLE: { [k: string]: string } = {
+  docker: 'Docker container',
+  aws: 'Amazon web services',
+  gcp: 'Google cloud platform',
+  azure: 'Microsoft azure',
+  linux: 'Linux bare-metal/vm',
+  host: 'Host',
+  kubernetes: 'Kubernetes cluster',
+  cluster: 'Cluster',
+  aws_ecs: 'AWS ECS (EC2 Provider)',
+  aws_fargate: 'AWS Fargate',
 } as const;
 
 const CardConnect = ({ label, path, icon }: CardConnectProps) => {
@@ -117,7 +122,8 @@ const Cloud = () => {
   );
 };
 const Host = () => {
-  const connectors = [
+  const [showAll, setShowAll] = useState(false);
+  const hostConnectors = [
     {
       icon: <KubernetesIcon />,
       label: 'Kubernetes Clusters',
@@ -133,7 +139,30 @@ const Host = () => {
       label: 'Linux Bare-Metal/VM',
       path: ACCOUNT_CONNECTOR.LINUX,
     },
+    {
+      icon: (
+        <div className="dark:text-[#F4B849]">
+          <AWSECSIcon />
+        </div>
+      ),
+      label: 'AWS Fargate',
+      path: ACCOUNT_CONNECTOR.AWS_Fargate,
+    },
   ];
+
+  const onShowAll = () => {
+    setShowAll((state) => {
+      return !state;
+    });
+  };
+
+  const connectors = useMemo(() => {
+    if (showAll) {
+      return [...hostConnectors];
+    } else {
+      return [...hostConnectors.slice(0, 3)];
+    }
+  }, [showAll]);
 
   return (
     <>
@@ -160,6 +189,11 @@ const Host = () => {
               </div>
             );
           })}
+          {!showAll ? (
+            <Button size="sm" onClick={onShowAll} className="ml-3 mt-2">
+              +1 more
+            </Button>
+          ) : null}
         </div>
       </div>
     </>
@@ -175,7 +209,7 @@ const Instructions = ({ connectorType }: { connectorType: string }) => {
           </div>
         </DFLink>
         <h3 className="font-medium text-gray-900 dark:text-white text-base">
-          {startCase(connectorType)}
+          {ACCOUNT_CONNECTOR_TITLE[connectorType]}
         </h3>
       </div>
       <div className="pt-2">
@@ -190,6 +224,7 @@ const Instructions = ({ connectorType }: { connectorType: string }) => {
         )}
         {ACCOUNT_CONNECTOR.AZURE === connectorType && <AzureConnectorForm />}
         {ACCOUNT_CONNECTOR.GCP === connectorType && <GCPConnectorForm />}
+        {ACCOUNT_CONNECTOR.AWS_Fargate === connectorType && <AWSFargateConnectorForm />}
       </div>
     </>
   );
