@@ -10,6 +10,7 @@ export const ACCOUNT_CONNECTOR = {
   HOST: 'host',
   KUBERNETES: 'kubernetes',
   CLUSTER: 'cluster',
+  AWS_ECS: 'aws_ecs',
 } as const;
 
 export const NoConnectors = () => {
