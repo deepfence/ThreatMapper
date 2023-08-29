@@ -3,7 +3,7 @@ import { Step, StepIndicator, Stepper } from 'ui-components';
 import { DFLink } from '@/components/DFLink';
 import { InfoIcon } from '@/components/icons/common/Info';
 
-export const AWSEC2ConnectorForm = () => {
+export const AWSECSEC2ConnectorForm = () => {
   return (
     <Stepper>
       <Step

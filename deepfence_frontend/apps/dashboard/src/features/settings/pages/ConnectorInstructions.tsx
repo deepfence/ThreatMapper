@@ -8,7 +8,7 @@ import { AWSTerraform } from '@/components/clouds-connector/AWSTerraform';
 import { AzureConnectorForm } from '@/components/clouds-connector/AzureConnectorForm';
 import { GCPConnectorForm } from '@/components/clouds-connector/GCPConnectorForm';
 import { DFLink } from '@/components/DFLink';
-import { AWSEC2ConnectorForm } from '@/components/hosts-connector/AWSEC2ConnectorForm';
+import { AWSECSEC2ConnectorForm } from '@/components/hosts-connector/AWSECSEC2ConnectorForm';
 import { DockerConnectorForm } from '@/components/hosts-connector/DockerConnectorForm';
 import { K8ConnectorForm } from '@/components/hosts-connector/K8ConnectorForm';
 import { LinuxConnectorForm } from '@/components/hosts-connector/LinuxConnectorForm';
@@ -16,7 +16,7 @@ import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { CloudLine } from '@/components/icons/common/CloudLine';
 import { HostIcon } from '@/components/icons/host';
-import { AWSEC2Icon } from '@/components/icons/hosts/AWSEC2';
+import { AWSECSEC2Icon } from '@/components/icons/hosts/AWSECSEC2';
 import { AwsIcon } from '@/components/icons/posture/Aws';
 import { AzureIcon } from '@/components/icons/posture/Azure';
 import { GoogleIcon } from '@/components/icons/posture/Google';
@@ -142,7 +142,7 @@ const Host = () => {
     {
       icon: (
         <div className="dark:text-[#F68633]">
-          <AWSEC2Icon />
+          <AWSECSEC2Icon />
         </div>
       ),
       label: 'AWS ECS (EC2 Provider)',
@@ -224,7 +224,7 @@ const Instructions = ({ connectorType }: { connectorType: string }) => {
         )}
         {ACCOUNT_CONNECTOR.AZURE === connectorType && <AzureConnectorForm />}
         {ACCOUNT_CONNECTOR.GCP === connectorType && <GCPConnectorForm />}
-        {ACCOUNT_CONNECTOR.AWS_ECS === connectorType && <AWSEC2ConnectorForm />}
+        {ACCOUNT_CONNECTOR.AWS_ECS === connectorType && <AWSECSEC2ConnectorForm />}
       </div>
     </>
   );

@@ -9,7 +9,7 @@ import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { CloudLine } from '@/components/icons/common/CloudLine';
 import { HostIcon } from '@/components/icons/host';
-import { AWSEC2Icon } from '@/components/icons/hosts/AWSEC2';
+import { AWSECSEC2Icon } from '@/components/icons/hosts/AWSECSEC2';
 import { AwsIcon } from '@/components/icons/posture/Aws';
 import { AzureIcon } from '@/components/icons/posture/Azure';
 import { GoogleIcon } from '@/components/icons/posture/Google';
@@ -125,7 +125,7 @@ const Host = () => {
     {
       icon: (
         <div className="dark:text-[#F68633]">
-          <AWSEC2Icon />
+          <AWSECSEC2Icon />
         </div>
       ),
       label: 'AWS ECS (EC2 Provider)',

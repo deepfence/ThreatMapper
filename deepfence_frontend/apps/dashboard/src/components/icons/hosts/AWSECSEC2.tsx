@@ -1,4 +1,4 @@
-export const AWSEC2Icon = () => {
+export const AWSECSEC2Icon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

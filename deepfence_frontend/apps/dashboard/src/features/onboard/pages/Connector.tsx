@@ -7,7 +7,7 @@ import { AWSCloudFormation } from '@/components/clouds-connector/AWSCloudFormati
 import { AWSTerraform } from '@/components/clouds-connector/AWSTerraform';
 import { AzureConnectorForm } from '@/components/clouds-connector/AzureConnectorForm';
 import { GCPConnectorForm } from '@/components/clouds-connector/GCPConnectorForm';
-import { AWSEC2ConnectorForm } from '@/components/hosts-connector/AWSEC2ConnectorForm';
+import { AWSECSEC2ConnectorForm } from '@/components/hosts-connector/AWSECSEC2ConnectorForm';
 import { DockerConnectorForm } from '@/components/hosts-connector/DockerConnectorForm';
 import { K8ConnectorForm } from '@/components/hosts-connector/K8ConnectorForm';
 import { LinuxConnectorForm } from '@/components/hosts-connector/LinuxConnectorForm';
@@ -98,7 +98,7 @@ const Connector = () => {
       {ACCOUNT_CONNECTOR.AZURE === connectorType && <AzureConnectorForm />}
       {ACCOUNT_CONNECTOR.GCP === connectorType && <GCPConnectorForm />}
 
-      {ACCOUNT_CONNECTOR.AWS_ECS === connectorType && <AWSEC2ConnectorForm />}
+      {ACCOUNT_CONNECTOR.AWS_ECS === connectorType && <AWSECSEC2ConnectorForm />}
 
       {isRegistryConnector ? (
         <RegistriesConnector />
