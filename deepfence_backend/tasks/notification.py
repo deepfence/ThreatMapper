@@ -509,10 +509,11 @@ def send_jira_notification(self, config, payloads, notification_id, resource_typ
     with app.app_context():
         try:
             if not config.get('api_token'):
-                jclient = JIRA(config.get('jira_site_url'), auth=(config.get('username'), config.get('password')))
+                jclient = JIRA(config.get('jira_site_url'), auth=(config.get('username'), config.get('password')),
+                               options={"verify": False})
             else:
                 jclient = JIRA(config.get('jira_site_url'),
-                               basic_auth=(config.get('username'), config.get('api_token')))
+                               basic_auth=(config.get('username'), config.get('api_token')), options={"verify": False})
             index = 1
             gmt = time.gmtime()
             ts = calendar.timegm(gmt)
