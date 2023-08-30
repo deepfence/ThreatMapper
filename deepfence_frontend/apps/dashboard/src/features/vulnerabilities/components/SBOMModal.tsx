@@ -97,6 +97,15 @@ const ModalContent = ({ scanId }: { scanId: string }) => {
         size: 90,
         maxSize: 100,
       }),
+      columnHelper.accessor('licenses', {
+        cell: (info) => {
+          return <TruncatedText text={info.getValue()?.join(', ') ?? ''} />;
+        },
+        header: () => <TruncatedText text="License" />,
+        minSize: 70,
+        size: 90,
+        maxSize: 100,
+      }),
       columnHelper.accessor('cve_id', {
         cell: (info) => {
           const _package = info.row.original.package_name ?? '';
