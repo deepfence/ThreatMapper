@@ -2,9 +2,12 @@ package jira
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 
 	jira "github.com/andygrunwald/go-jira"
@@ -21,19 +24,17 @@ func New(ctx context.Context, b []byte) (*Jira, error) {
 }
 
 func (j Jira) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
-
-	auth := jira.BasicAuthTransport{}
-
+	auth := jira.BasicAuthTransport{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true},
+		},
+	}
 	if j.Config.IsAuthToken {
-		auth = jira.BasicAuthTransport{
-			Username: strings.TrimSpace(j.Config.Username),
-			Password: strings.TrimSpace(j.Config.APIToken),
-		}
+		auth.Username = strings.TrimSpace(j.Config.Username)
+		auth.Password = strings.TrimSpace(j.Config.APIToken)
 	} else {
-		auth = jira.BasicAuthTransport{
-			Username: strings.TrimSpace(j.Config.Username),
-			Password: strings.TrimSpace(j.Config.Password),
-		}
+		auth.Username = strings.TrimSpace(j.Config.Username)
+		auth.Password = strings.TrimSpace(j.Config.Password)
 	}
 
 	client, err := jira.NewClient(auth.Client(), strings.TrimSpace(j.Config.JiraSiteUrl))
