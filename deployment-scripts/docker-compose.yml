@@ -200,6 +200,7 @@ services:
     depends_on:
       - deepfence-redis
       - deepfence-postgres
+      - deepfence-file-server
     logging:
       driver: "json-file"
       options:
@@ -268,6 +269,7 @@ services:
       - deepfence-postgres
       - deepfence-worker
       - deepfence-neo4j
+      - deepfence-file-server
     logging:
       driver: "json-file"
       options:

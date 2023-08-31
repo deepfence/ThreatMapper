@@ -80,9 +80,17 @@ func InitMinioDatabase() error {
 		log.Error().Msg(err.Error())
 		return err
 	}
-	if err := mc.CreatePublicBucket(ctx); err != nil {
-		log.Error().Err(err).Msgf("failed to create bucket")
-		return err
+	retries := 3
+	for {
+		if err := mc.CreatePublicBucket(ctx); err != nil {
+			log.Error().Err(err).Msgf("failed to create bucket")
+			retries -= 1
+			if retries != 0 {
+				continue
+			}
+			return err
+		}
+		break
 	}
 
 	// download vulnerability database once on init

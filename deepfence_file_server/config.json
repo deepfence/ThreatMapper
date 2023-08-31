@@ -1,6 +1,12 @@
 {
   "identities": [
     {
+        "name": "anonymous",
+        "actions": [
+            "Read:database"
+        ]
+    },
+    {
       "name": "admin",
       "credentials": [
         {
