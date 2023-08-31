@@ -60,7 +60,7 @@ export const PodsTable = () => {
   }, [rowSelectionState]);
 
   return (
-    <div className="px-4 pb-4 bbb">
+    <div className="px-4 pb-4">
       <div className="h-12 flex items-center">
         <BulkActions nodes={selectedIds} />
         <Button
@@ -481,7 +481,7 @@ const DataTable = ({
         rowSelectionState={rowSelectionState}
         onRowSelectionChange={setRowSelectionState}
         approximatePagination
-        getRowId={(row) => row.node_id}
+        getRowId={(row) => row.pod_name}
         totalRows={data.totalRows}
         pageIndex={data.currentPage}
         onPaginationChange={(updaterOrValue) => {
