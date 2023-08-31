@@ -218,6 +218,7 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   malwareScanStatus: 'Malware scan status',
   complianceScanStatus: 'Posture scan status',
   cloudProvider: 'Cloud provider',
+  agentRunning: 'Agent running',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -235,6 +236,7 @@ function Filters() {
   const [complianceScanStatusSearchText, setComplianceScanStatusSearchText] =
     useState('');
   const [cloudProvidersSearchText, setCloudProvidersSearchText] = useState('');
+  const [agentRunningSearchText, setAgentRunningSearchText] = useState('');
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   return (
@@ -407,6 +409,37 @@ function Filters() {
             );
           })}
         </Combobox>
+        <Combobox
+          value={searchParams.getAll('agentRunning')}
+          multiple
+          onQueryChange={(query) => {
+            setAgentRunningSearchText(query);
+          }}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('agentRunning');
+              values.forEach((value) => {
+                prev.append('agentRunning', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          getDisplayValue={() => FILTER_SEARCHPARAMS['agentRunning']}
+        >
+          {['On', 'Off']
+            .filter((item) => {
+              if (!agentRunningSearchText.length) return true;
+              return item.toLowerCase().includes(agentRunningSearchText.toLowerCase());
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item} value={item}>
+                  {item}
+                </ComboboxOption>
+              );
+            })}
+        </Combobox>
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -476,6 +509,9 @@ function useSearchHostsWithPagination() {
         | MalwareScanGroupedStatus
         | undefined,
       order: getOrderFromSearchParams(searchParams),
+      agentRunning: searchParams
+        .getAll('agentRunning')
+        .map((value) => (value === 'On' ? true : false)),
     }),
     keepPreviousData: true,
   });

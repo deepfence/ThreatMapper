@@ -46,6 +46,7 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
           placeholder="Registry Name"
           color={fieldErrors?.['name'] ? 'error' : 'default'}
           helperText={fieldErrors?.['name']}
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"
@@ -56,6 +57,7 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
           placeholder="Registry URL"
           color={fieldErrors?.['jfrog_registry_url'] ? 'error' : 'default'}
           helperText={fieldErrors?.['jfrog_registry_url']}
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"
@@ -66,6 +68,7 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
           placeholder="Repository"
           color={fieldErrors?.['jfrog_repository'] ? 'error' : 'default'}
           helperText={fieldErrors?.['jfrog_repository']}
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"

@@ -2,7 +2,10 @@ import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
+  Badge,
   Button,
+  Combobox,
+  ComboboxOption,
   createColumnHelper,
   Dropdown,
   DropdownItem,
@@ -19,7 +22,10 @@ import {
   ConfigureScanModal,
   ConfigureScanModalProps,
 } from '@/components/ConfigureScanModal';
+import { FilterBadge } from '@/components/filters/FilterBadge';
 import { CaretDown } from '@/components/icons/common/CaretDown';
+import { FilterIcon } from '@/components/icons/common/Filter';
+import { TimesIcon } from '@/components/icons/common/Times';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
@@ -41,8 +47,109 @@ import {
 
 const DEFAULT_PAGE_SIZE = 25;
 
+const FILTER_SEARCHPARAMS: Record<string, string> = {
+  agentRunning: 'Agent running',
+};
+
+const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
+  return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
+    return prev + searchParams.getAll(curr).length;
+  }, 0);
+};
+
+function Filters() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [agentRunningSearchText, setAgentRunningSearchText] = useState('');
+  const appliedFilterCount = getAppliedFiltersCount(searchParams);
+
+  return (
+    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+      <div className="flex gap-2">
+        <Combobox
+          value={searchParams.getAll('agentRunning')}
+          multiple
+          onQueryChange={(query) => {
+            setAgentRunningSearchText(query);
+          }}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('agentRunning');
+              values.forEach((value) => {
+                prev.append('agentRunning', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          getDisplayValue={() => FILTER_SEARCHPARAMS['agentRunning']}
+        >
+          {['On', 'Off']
+            .filter((item) => {
+              if (!agentRunningSearchText.length) return true;
+              return item.toLowerCase().includes(agentRunningSearchText.toLowerCase());
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item} value={item}>
+                  {item}
+                </ComboboxOption>
+              );
+            })}
+        </Combobox>
+      </div>
+      {appliedFilterCount > 0 ? (
+        <div className="flex gap-2.5 mt-4 flex-wrap items-center">
+          {Array.from(searchParams)
+            .filter(([key]) => {
+              return Object.keys(FILTER_SEARCHPARAMS).includes(key);
+            })
+            .map(([key, value]) => {
+              return (
+                <FilterBadge
+                  key={`${key}-${value}`}
+                  onRemove={() => {
+                    setSearchParams((prev) => {
+                      const existingValues = prev.getAll(key);
+                      prev.delete(key);
+                      existingValues.forEach((existingValue) => {
+                        if (existingValue !== value) prev.append(key, existingValue);
+                      });
+                      prev.delete('page');
+                      return prev;
+                    });
+                  }}
+                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                />
+              );
+            })}
+          <Button
+            variant="flat"
+            color="default"
+            startIcon={<TimesIcon />}
+            onClick={() => {
+              setSearchParams((prev) => {
+                Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                  prev.delete(key);
+                });
+                prev.delete('page');
+                return prev;
+              });
+            }}
+            size="sm"
+          >
+            Clear all
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export const KubernetesTable = () => {
   const [selectedNodes, setSelectedNodes] = useState<ModelKubernetesCluster[]>([]);
+  const [searchParams] = useSearchParams();
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
 
   return (
     <div className="px-4 pb-4">
@@ -53,8 +160,29 @@ export const KubernetesTable = () => {
             agentRunning: cluster.agent_running,
           }))}
         />
+        <Button
+          variant="flat"
+          className="ml-auto"
+          startIcon={<FilterIcon />}
+          endIcon={
+            getAppliedFiltersCount(searchParams) > 0 ? (
+              <Badge
+                label={String(getAppliedFiltersCount(searchParams))}
+                variant="filled"
+                size="small"
+                color="blue"
+              />
+            ) : null
+          }
+          size="sm"
+          onClick={() => {
+            setFiltersExpanded((prev) => !prev);
+          }}
+        >
+          Filter
+        </Button>
       </div>
-
+      {filtersExpanded ? <Filters /> : null}
       <Suspense
         fallback={<TableSkeleton rows={DEFAULT_PAGE_SIZE} columns={3} size="default" />}
       >
@@ -179,6 +307,9 @@ function useSearchClustersWithPagination() {
       page: getPageFromSearchParams(searchParams),
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       order: getOrderFromSearchParams(searchParams),
+      agentRunning: searchParams
+        .getAll('agentRunning')
+        .map((value) => (value === 'On' ? true : false)),
     }),
     keepPreviousData: true,
   });

@@ -41,6 +41,7 @@ export const GoogleCRConnectorForm = ({
           placeholder="Registry Name" //TODO: double check this form
           color={fieldErrors?.['name'] ? 'error' : 'default'}
           helperText={fieldErrors?.['name']}
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"
@@ -51,6 +52,7 @@ export const GoogleCRConnectorForm = ({
           info="e.g.: https://us.gcr.io"
           color={fieldErrors?.['registry_url'] ? 'error' : 'default'}
           helperText={fieldErrors?.['registry_url']}
+          required
         />
         <FileInput
           className="w-3/4 min-[200px] max-w-xs"
