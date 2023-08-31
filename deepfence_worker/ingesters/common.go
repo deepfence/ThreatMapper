@@ -2,6 +2,7 @@ package ingesters
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -63,13 +64,59 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			SET cr.` + ingestersUtil.ScanCountField[ts] + `=count, cr.` + ingestersUtil.ScanStatusField[ts] + `=n.status, cr.` + ingestersUtil.LatestScanIdField[ts] + `=n.node_id`
 		}
 
+		recordMap := statusesToMaps(data)
 		if _, err = tx.Run(query, map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {
 			log.Error().Msgf("Error while updating scan status: %+v", err)
 			return err
 		}
 
-		return tx.Commit()
+		err = tx.Commit()
+		if err != nil {
+			return err
+		}
+
+		if ts != utils.NEO4J_CLOUD_COMPLIANCE_SCAN && ts != utils.NEO4J_COMPLIANCE_SCAN {
+			updatePodScanStatus(ts, recordMap, session)
+		}
+
+		return nil
 	}
+}
+
+func updatePodScanStatus(ts utils.Neo4jScanType,
+	recordMap []map[string]interface{}, session neo4j.Session) error {
+
+	query := `UNWIND $batch as row
+		MATCH (n:Pod) 
+		CALL { 
+			WITH row
+			MATCH (p)-[r:SCANNED]->(c:Container)
+			WHERE p.node_id = row.scan_id AND c.pod_name IS NOT NULL
+			RETURN c.pod_name AS pod_name
+		}
+		WITH n, row
+		WHERE n.pod_name = pod_name
+		SET n.%s = row.scan_status`
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Run(fmt.Sprintf(query, ingestersUtil.ScanStatusField[ts]),
+		map[string]interface{}{"batch": recordMap})
+
+	if err != nil {
+		log.Error().Msgf("Error in pod status update query: %+v", err)
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Info().Msgf("Error in commit for pod status update query: %v", err)
+		return err
+	}
+	return nil
 }
 
 // also handles status deduplication

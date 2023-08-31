@@ -376,6 +376,7 @@ func (c *container) getBaseNode() (report.Metadata, report.Parent) {
 		DockerImageID:          c.Image(),
 		DockerLabels:           dockerLabels,
 		PodName:                podName,
+		PodID:                  podUid,
 	}
 	parents := report.Parent{
 		Host:           c.hostID,

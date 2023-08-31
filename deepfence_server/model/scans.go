@@ -46,7 +46,7 @@ type ScanTriggerCommon struct {
 
 type NodeIdentifier struct {
 	NodeId   string `json:"node_id" required:"true"`
-	NodeType string `json:"node_type" required:"true" enum:"image,host,container,cloud_account,cluster,registry"`
+	NodeType string `json:"node_type" required:"true" enum:"image,host,container,cloud_account,cluster,registry,pod"`
 }
 
 type ComplianceBenchmarkTypes struct {

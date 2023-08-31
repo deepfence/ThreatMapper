@@ -292,7 +292,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	ctx := r.Context()
 
-	regular, k8s, _ := extractBulksNodes(reqs.NodeIds)
+	regular, k8s, _, _ := extractBulksNodes(reqs.NodeIds)
 
 	cloudNodeIds, err := reporters_scan.GetCloudAccountIDs(ctx, regular)
 	if err != nil {
@@ -1807,22 +1807,27 @@ func FindImageRegistryIds(ctx context.Context, image_id string) ([]int32, error)
 	return res, nil
 }
 
-func extractBulksNodes(nodes []model.NodeIdentifier) (regularNodes []model.NodeIdentifier, clusterNodes []model.NodeIdentifier, registryNodes []model.NodeIdentifier) {
-	regularNodes = []model.NodeIdentifier{}
-	clusterNodes = []model.NodeIdentifier{}
-	registryNodes = []model.NodeIdentifier{}
+func extractBulksNodes(nodes []model.NodeIdentifier) ([]model.NodeIdentifier,
+	[]model.NodeIdentifier, []model.NodeIdentifier, []model.NodeIdentifier) {
+
+	regularNodes := []model.NodeIdentifier{}
+	clusterNodes := []model.NodeIdentifier{}
+	registryNodes := []model.NodeIdentifier{}
+	podNodes := []model.NodeIdentifier{}
 
 	for i := range nodes {
 		if nodes[i].NodeType == controls.ResourceTypeToString(ctl.KubernetesCluster) {
 			clusterNodes = append(clusterNodes, nodes[i])
 		} else if nodes[i].NodeType == controls.ResourceTypeToString(ctl.RegistryAccount) {
 			registryNodes = append(registryNodes, nodes[i])
+		} else if nodes[i].NodeType == controls.ResourceTypeToString(ctl.Pod) {
+			podNodes = append(podNodes, nodes[i])
 		} else {
 			regularNodes = append(regularNodes, nodes[i])
 		}
 	}
 
-	return regularNodes, clusterNodes, registryNodes
+	return regularNodes, clusterNodes, registryNodes, podNodes
 }
 
 func StartMultiScan(ctx context.Context,
@@ -1848,7 +1853,7 @@ func StartMultiScan(ctx context.Context,
 		return nil, "", err
 	}
 
-	regular, k8s, registry := extractBulksNodes(req.NodeIds)
+	regular, k8s, registry, pods := extractBulksNodes(req.NodeIds)
 
 	image_nodes, err := reporters_scan.GetRegistriesImageIDs(ctx, registry)
 	if err != nil {
@@ -1870,6 +1875,12 @@ func StartMultiScan(ctx context.Context,
 		return nil, "", err
 	}
 
+	pod_container_nodes, err := reporters_scan.GetPodContainerIDs(ctx, pods)
+	if err != nil {
+		log.Info().Msgf("Error in reporters_scan.GetPodContainerIDs:%v", err)
+		return nil, "", err
+	}
+
 	reqs := regular
 	if len(k8s) != 0 || len(registry) != 0 {
 		reqs_extra, err := FindNodesMatching(ctx,
@@ -1887,9 +1898,17 @@ func StartMultiScan(ctx context.Context,
 		reqs = req.NodeIds
 	}
 
+	if len(pod_container_nodes) > 0 {
+		reqs = append(reqs, pod_container_nodes...)
+	}
+
 	defer tx.Close()
 	scanIds := []string{}
 	for _, req := range reqs {
+		if req.NodeType == ctl.ResourceTypeToString(controls.Pod) {
+			continue
+		}
+
 		scanId := scanId(req)
 
 		registryId := int32(-1)

@@ -96,6 +96,7 @@ type Metadata struct {
 
 	// kubernetes
 	PodName                   string   `json:"pod_name,omitempty"`
+	PodID                     string   `json:"pod_id,omitempty"`
 	KubernetesLabels          string   `json:"kubernetes_labels,omitempty"`
 	KubernetesState           string   `json:"kubernetes_state,omitempty"`
 	KubernetesIP              string   `json:"kubernetes_ip,omitempty"`
