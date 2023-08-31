@@ -180,6 +180,23 @@ func AddNewScan(tx WriteDBTransaction,
 			}); err != nil {
 			return err
 		}
+
+		podQuery := `MATCH (n:Pod) 
+			CALL { 
+				MATCH (c:Container) 
+				WHERE c.node_id=$node_id 
+				RETURN c.pod_id AS pod_id
+			}
+			WITH n
+			WHERE pod_id IS NOT NULL AND n.node_id=pod_id
+			SET n.%s=$status`
+
+		if _, err = tx.Run(fmt.Sprintf(podQuery, scanStatusFieldName),
+			map[string]interface{}{
+				"node_id": node_id,
+				"status":  utils.SCAN_STATUS_STARTING}); err != nil {
+			return err
+		}
 	case controls.Image:
 		if _, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})

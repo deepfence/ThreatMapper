@@ -352,6 +352,49 @@ func GetKubernetesContainerIDs(ctx context.Context, k8sIds []model.NodeIdentifie
 	return res, nil
 }
 
+func GetPodContainerIDs(ctx context.Context, podIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+	res := []model.NodeIdentifier{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	nres, err := tx.Run(`
+		MATCH (m:Container)
+		WHERE m.pod_id IN $pod_ids
+		RETURN m.node_id`,
+		map[string]interface{}{"pod_ids": NodeIdentifierToIdList(podIds)})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := nres.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for _, rec := range recs {
+		res = append(res, model.NodeIdentifier{
+			NodeId:   rec.Values[0].(string),
+			NodeType: "container",
+		})
+	}
+
+	return res, nil
+}
+
 func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
 	res := []model.NodeIdentifier{}
 	driver, err := directory.Neo4jClient(ctx)
