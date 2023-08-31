@@ -7,6 +7,10 @@ import {
   Combobox,
   ComboboxOption,
   createColumnHelper,
+  Dropdown,
+  DropdownItem,
+  getRowSelectionColumn,
+  RowSelectionState,
   SortingState,
   Table,
   TableNoDataElement,
@@ -14,16 +18,30 @@ import {
 } from 'ui-components';
 
 import { ModelPod } from '@/api/generated';
+import {
+  ConfigureScanModal,
+  ConfigureScanModalProps,
+} from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
+import { ScanStatusBadge } from '@/components/ScanStatusBadge';
+import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
+import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
+import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { queries } from '@/queries';
-import { ScanTypeEnum } from '@/types/common';
+import {
+  MalwareScanNodeTypeEnum,
+  ScanTypeEnum,
+  SecretScanNodeTypeEnum,
+  VulnerabilityScanNodeTypeEnum,
+} from '@/types/common';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -35,10 +53,16 @@ const DEFAULT_PAGE_SIZE = 25;
 export const PodsTable = () => {
   const [searchParams] = useSearchParams();
   const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+
+  const selectedIds = useMemo(() => {
+    return Object.keys(rowSelectionState);
+  }, [rowSelectionState]);
 
   return (
-    <div className="px-4 pb-4">
+    <div className="px-4 pb-4 bbb">
       <div className="h-12 flex items-center">
+        <BulkActions nodes={selectedIds} />
         <Button
           variant="flat"
           className="ml-auto"
@@ -66,7 +90,10 @@ export const PodsTable = () => {
       <Suspense
         fallback={<TableSkeleton rows={DEFAULT_PAGE_SIZE} columns={4} size="default" />}
       >
-        <DataTable />
+        <DataTable
+          rowSelectionState={rowSelectionState}
+          setRowSelectionState={setRowSelectionState}
+        />
       </Suspense>
     </div>
   );
@@ -243,9 +270,99 @@ function useSearchPodsWithPagination() {
   });
 }
 
-const DataTable = () => {
+const BulkActions = ({ nodes }: { nodes: string[] }) => {
+  const [scanOptions, setScanOptions] =
+    useState<ConfigureScanModalProps['scanOptions']>();
+
+  return (
+    <>
+      <Dropdown
+        triggerAsChild
+        align={'start'}
+        content={
+          <>
+            <DropdownItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setScanOptions({
+                  showAdvancedOptions: nodes.length === 1,
+                  scanType: ScanTypeEnum.VulnerabilityScan,
+                  data: {
+                    nodeIds: nodes,
+                    nodeType: VulnerabilityScanNodeTypeEnum.pod,
+                  },
+                });
+              }}
+              icon={<VulnerabilityIcon />}
+            >
+              Start Vulnerability Scan
+            </DropdownItem>
+            <DropdownItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setScanOptions({
+                  showAdvancedOptions: nodes.length === 1,
+                  scanType: ScanTypeEnum.SecretScan,
+                  data: {
+                    nodeIds: nodes,
+                    nodeType: SecretScanNodeTypeEnum.host,
+                  },
+                });
+              }}
+              icon={<SecretsIcon />}
+            >
+              Start Secret Scan
+            </DropdownItem>
+            <DropdownItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setScanOptions({
+                  showAdvancedOptions: nodes.length === 1,
+                  scanType: ScanTypeEnum.MalwareScan,
+                  data: {
+                    nodeIds: nodes,
+                    nodeType: MalwareScanNodeTypeEnum.host,
+                  },
+                });
+              }}
+              icon={<MalwareIcon />}
+            >
+              Start Malware Scan
+            </DropdownItem>
+          </>
+        }
+      >
+        <Button
+          color="default"
+          variant="flat"
+          size="sm"
+          endIcon={<CaretDown />}
+          disabled={!nodes.length}
+        >
+          Actions
+        </Button>
+      </Dropdown>
+      {!!scanOptions && (
+        <ConfigureScanModal
+          open
+          onOpenChange={() => setScanOptions(undefined)}
+          scanOptions={scanOptions}
+        />
+      )}
+    </>
+  );
+};
+
+const DataTable = ({
+  rowSelectionState,
+  setRowSelectionState,
+}: {
+  rowSelectionState: RowSelectionState;
+  setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
+}) => {
   const { data } = useSearchPodsWithPagination();
   const columnHelper = createColumnHelper<ModelPod>();
+
   const [clickedItem, setClickedItem] = useState<{
     nodeId: string;
     nodeType: string;
@@ -255,6 +372,11 @@ const DataTable = () => {
 
   const columns = useMemo(
     () => [
+      getRowSelectionColumn(columnHelper, {
+        minSize: 50,
+        size: 50,
+        maxSize: 80,
+      }),
       columnHelper.accessor('pod_name', {
         cell: (info) => {
           return (
@@ -314,6 +436,33 @@ const DataTable = () => {
         size: 80,
         maxSize: 90,
       }),
+      columnHelper.accessor('vulnerability_scan_status', {
+        cell: (info) => {
+          return <ScanStatusBadge status={info.getValue() || ''} />;
+        },
+        header: () => <TruncatedText text="Vulnerability scan status" />,
+        minSize: 100,
+        size: 150,
+        maxSize: 300,
+      }),
+      columnHelper.accessor('secret_scan_status', {
+        cell: (info) => {
+          return <ScanStatusBadge status={info.getValue() || ''} />;
+        },
+        header: () => <TruncatedText text="Secret scan status" />,
+        minSize: 100,
+        size: 150,
+        maxSize: 300,
+      }),
+      columnHelper.accessor('malware_scan_status', {
+        cell: (info) => {
+          return <ScanStatusBadge status={info.getValue() || ''} />;
+        },
+        header: () => <TruncatedText text="Malware scan status" />,
+        minSize: 100,
+        size: 150,
+        maxSize: 300,
+      }),
     ],
     [],
   );
@@ -328,6 +477,9 @@ const DataTable = () => {
         enableColumnResizing
         enablePagination
         manualPagination
+        enableRowSelection
+        rowSelectionState={rowSelectionState}
+        onRowSelectionChange={setRowSelectionState}
         approximatePagination
         getRowId={(row) => row.node_id}
         totalRows={data.totalRows}

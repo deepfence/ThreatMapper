@@ -12648,6 +12648,9 @@
             "$ref": "#/components/schemas/ReportersContainsFilter"
           },
           "match_filter": { "$ref": "#/components/schemas/ReportersMatchFilter" },
+          "match_in_array_filter": {
+            "$ref": "#/components/schemas/ReportersMatchFilter"
+          },
           "not_contains_filter": {
             "$ref": "#/components/schemas/ReportersContainsFilter"
           },
