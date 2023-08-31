@@ -43,7 +43,8 @@ export const ModelNodeIdentifierNodeTypeEnum = {
     Container: 'container',
     CloudAccount: 'cloud_account',
     Cluster: 'cluster',
-    Registry: 'registry'
+    Registry: 'registry',
+    Pod: 'pod'
 } as const;
 export type ModelNodeIdentifierNodeTypeEnum = typeof ModelNodeIdentifierNodeTypeEnum[keyof typeof ModelNodeIdentifierNodeTypeEnum];
 
