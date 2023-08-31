@@ -54,7 +54,7 @@ func (h *Handler) GetPods(w http.ResponseWriter, r *http.Request) {
 		}
 		eFilter := reporters_search.SearchFilter{}
 		containers, err := reporters_search.SearchReport[model.Container](
-			r.Context(), filter, eFilter, model.FetchWindow{})
+			r.Context(), filter, eFilter, nil, model.FetchWindow{})
 		if err != nil {
 			log.Error().Msg(err.Error())
 			continue

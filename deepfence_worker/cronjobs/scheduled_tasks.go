@@ -96,7 +96,7 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 	switch nodeType {
 	case utils.NodeTypeHost:
 		searchFilter.Filters.ContainsFilter.FieldsValues["agent_running"] = []interface{}{true}
-		nodes, err := reporters_search.SearchReport[model.Host](ctx, searchFilter, extSearchFilter, fetchWindow)
+		nodes, err := reporters_search.SearchReport[model.Host](ctx, searchFilter, extSearchFilter, nil, fetchWindow)
 		if err != nil {
 			return err
 		}
@@ -104,7 +104,7 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 			nodeIds = append(nodeIds, model.NodeIdentifier{NodeId: node.ID, NodeType: controls.ResourceTypeToString(controls.Host)})
 		}
 	case utils.NodeTypeContainer:
-		nodes, err := reporters_search.SearchReport[model.Container](ctx, searchFilter, extSearchFilter, fetchWindow)
+		nodes, err := reporters_search.SearchReport[model.Container](ctx, searchFilter, extSearchFilter, nil, fetchWindow)
 		if err != nil {
 			return err
 		}
@@ -112,7 +112,7 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 			nodeIds = append(nodeIds, model.NodeIdentifier{NodeId: node.ID, NodeType: controls.ResourceTypeToString(controls.Container)})
 		}
 	case utils.NodeTypeContainerImage:
-		nodes, err := reporters_search.SearchReport[model.ContainerImage](ctx, searchFilter, extSearchFilter, fetchWindow)
+		nodes, err := reporters_search.SearchReport[model.ContainerImage](ctx, searchFilter, extSearchFilter, nil, fetchWindow)
 		if err != nil {
 			return err
 		}
@@ -121,7 +121,7 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 		}
 	case utils.NodeTypeKubernetesCluster:
 		searchFilter.Filters.ContainsFilter.FieldsValues["agent_running"] = []interface{}{true}
-		nodes, err := reporters_search.SearchReport[model.KubernetesCluster](ctx, searchFilter, extSearchFilter, fetchWindow)
+		nodes, err := reporters_search.SearchReport[model.KubernetesCluster](ctx, searchFilter, extSearchFilter, nil, fetchWindow)
 		if err != nil {
 			return err
 		}
