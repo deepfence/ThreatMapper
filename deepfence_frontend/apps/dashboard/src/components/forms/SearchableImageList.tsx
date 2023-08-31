@@ -110,7 +110,21 @@ const SearchableImage = ({
           .map((image, index) => {
             return (
               <ComboboxOption key={`${image.nodeId}-${index}`} value={image[valueKey]}>
-                {image.nodeName}
+                <div>
+                  {image.nodeName}
+                  {image.tagList.length > 1 ? (
+                    <div className="text-p8 dark:text-df-gray-500 ">
+                      <div className="pt-1">All Tags:</div>
+                      {image.tagList.map((tag) => {
+                        return (
+                          <div key={tag} className="pl-2">
+                            {tag}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+                </div>
               </ComboboxOption>
             );
           })}

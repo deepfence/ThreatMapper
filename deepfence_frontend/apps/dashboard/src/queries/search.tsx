@@ -236,16 +236,10 @@ export const searchQueries = createQueryKeys('search', {
         containerImages: {
           nodeId: string;
           nodeName: string;
+          tagList: string[];
         }[];
       }> => {
         const { searchText, size, active, order } = filters;
-        const matchFilter = { filter_in: {} };
-        if (searchText?.length) {
-          matchFilter.filter_in = {
-            node_name: [searchText],
-          };
-        }
-
         const searchContainerImagesApi = apiWrapper({
           fn: getSearchApiClient().searchContainerImages,
         });
@@ -267,10 +261,15 @@ export const searchQueries = createQueryKeys('search', {
                   },
                 ],
               },
-              match_filter: matchFilter,
+              match_in_array_filter: {
+                filter_in: {},
+              },
+              match_filter: {
+                filter_in: {},
+              },
               compare_filter: null,
             },
-            in_field_filter: ['node_id', 'node_name'],
+            in_field_filter: ['node_id', 'node_name', 'docker_image_tag_list'],
             window: {
               offset: 0,
               size: 0,
@@ -281,6 +280,12 @@ export const searchQueries = createQueryKeys('search', {
             size,
           },
         };
+
+        if (searchText?.trim()?.length) {
+          scanRequestParams.node_filter.filters!.match_in_array_filter!.filter_in![
+            'docker_image_tag_list'
+          ] = [searchText];
+        }
 
         if (order) {
           scanRequestParams.node_filter.filters.order_filter.order_fields = [
@@ -310,6 +315,7 @@ export const searchQueries = createQueryKeys('search', {
               return {
                 nodeId: res.node_id,
                 nodeName: res.node_name,
+                tagList: res.docker_image_tag_list ?? [],
               };
             }),
         };
