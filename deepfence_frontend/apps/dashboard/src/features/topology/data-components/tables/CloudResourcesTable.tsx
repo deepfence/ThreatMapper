@@ -574,7 +574,7 @@ const DataTable = () => {
     <Table
       data={data.resources ?? []}
       columns={columns}
-      noDataElement={<TableNoDataElement text="No hosts are connected" />}
+      noDataElement={<TableNoDataElement text="No cloud resources are connected" />}
       size="default"
       enableColumnResizing
       enablePagination

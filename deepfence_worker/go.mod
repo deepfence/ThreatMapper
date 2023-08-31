@@ -82,8 +82,8 @@ require (
 	github.com/cyphar/filepath-securejoin v0.2.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
-	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230713115411-07b0df478c6b // indirect
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230713115411-07b0df478c6b // indirect
+	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230817093436-faaacc23dfd8 // indirect
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230817093436-faaacc23dfd8 // indirect
 	github.com/deepfence/vessel v0.11.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/cli v24.0.2+incompatible // indirect
@@ -247,8 +247,9 @@ require (
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.10.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
-	google.golang.org/grpc v1.56.1 // indirect
+	google.golang.org/genproto v0.0.0-20230526161137-0005af68ea54 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
+	google.golang.org/grpc v1.57.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
