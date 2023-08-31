@@ -139,9 +139,11 @@ func getImageWithTags(repo Repository, artifacts []Artifact) []model.IngestedCon
 			continue
 		}
 		for _, tag := range artifact.Tags {
+			imageID, shortImageID := model.DigestToID(artifact.Digest)
 			tt := model.IngestedContainerImage{
-				ID:            model.DigestToID(artifact.Digest),
-				DockerImageID: model.DigestToID(artifact.Digest),
+				ID:            imageID,
+				DockerImageID: imageID,
+				ShortImageID:  shortImageID,
 				Name:          repo.Name,
 				Tag:           tag.Name,
 				Size:          fmt.Sprint(artifact.Size),

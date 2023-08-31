@@ -7,19 +7,19 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
+	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type CloudComplianceIngester struct{}
 
-func NewCloudComplianceIngester() KafkaIngester[[]ingesters.CloudCompliance] {
+func NewCloudComplianceIngester() KafkaIngester[[]ingestersUtil.CloudCompliance] {
 	return &CloudComplianceIngester{}
 }
 
 func (tc *CloudComplianceIngester) Ingest(
 	ctx context.Context,
-	cs []ingesters.CloudCompliance,
+	cs []ingestersUtil.CloudCompliance,
 	ingestC chan *kgo.Record,
 ) error {
 
@@ -50,13 +50,13 @@ func (tc *CloudComplianceIngester) Ingest(
 
 type CloudComplianceScanStatusIngester struct{}
 
-func NewCloudComplianceScanStatusIngester() KafkaIngester[[]ingesters.CloudComplianceScanStatus] {
+func NewCloudComplianceScanStatusIngester() KafkaIngester[[]ingestersUtil.CloudComplianceScanStatus] {
 	return &CloudComplianceScanStatusIngester{}
 }
 
 func (tc *CloudComplianceScanStatusIngester) Ingest(
 	ctx context.Context,
-	cs []ingesters.CloudComplianceScanStatus,
+	cs []ingestersUtil.CloudComplianceScanStatus,
 	ingestC chan *kgo.Record,
 ) error {
 

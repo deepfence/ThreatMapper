@@ -22,7 +22,6 @@ import {
   createColumnHelper,
   Dropdown,
   DropdownItem,
-  DropdownSeparator,
   getRowSelectionColumn,
   IconButton,
   Modal,
@@ -41,7 +40,6 @@ import {
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
-import { BellLineIcon } from '@/components/icons/common/BellLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { ClockLineIcon } from '@/components/icons/common/ClockLine';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
@@ -608,12 +606,9 @@ const ActionDropdown = ({
           <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.MASK)}>
             Mask
           </DropdownItem>
-          <DropdownSeparator />
           <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK)}>
             Un-mask
           </DropdownItem>
-          <DropdownSeparator />
-          <DropdownSeparator />
           <DropdownItem
             onClick={() => {
               setIdsToDelete(ids);
@@ -1302,7 +1297,7 @@ const StatusesCount = ({
                       POSTURE_STATUS_COLORS[key.toLowerCase() as PostureSeverityType],
                   }}
                 ></div>
-                <span className="text-h1 dark:text-text-input-value">
+                <span className="text-h1 dark:text-text-input-value pl-1.5">
                   {abbreviateNumber(statusCounts?.[key])}
                 </span>
               </div>
@@ -1350,11 +1345,11 @@ const SeverityCountWidget = () => {
       {isScanComplete(scanStatusResult?.status ?? '') ? (
         <div className="col-span-2 dark:text-text-text-and-icon">
           <span className="text-p1">Total compliances</span>
-          <div className="flex flex-1 max-w-[160px] gap-1 items-center">
+          <div className="flex flex-1 max-w-[160px] gap-1 items-center  dark:text-text-input-value">
             {keys(statusCounts).length > 0 ? (
               <>
                 <TaskIcon />
-                <span className="text-h1 dark:text-text-input">
+                <span className="text-h1 dark:text-text-input pl-1.5">
                   {abbreviateNumber(total)}
                 </span>
               </>
@@ -1364,7 +1359,7 @@ const SeverityCountWidget = () => {
           </div>
         </div>
       ) : null}
-      <div className="w-px min-h-[120px] dark:bg-bg-grid-border" />
+      <div className="w-px h-[60%] dark:bg-bg-grid-border" />
 
       {isScanComplete(scanStatusResult?.status ?? '') ? (
         <>
@@ -1393,11 +1388,11 @@ const SeverityCountWidget = () => {
 
 const Widgets = () => {
   return (
-    <Card className="max-h-[130px] px-4 py-1.5">
+    <Card className="max-h-[130px] px-4 py-2.5 flex items-center">
       <div className="flex-1 pl-4">
         <Suspense
           fallback={
-            <div className="flex items-center justify-center min-h-[100px]">
+            <div className="flex items-center justify-center min-h-[120px]">
               <CircleSpinner size="md" />
             </div>
           }

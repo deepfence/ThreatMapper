@@ -191,10 +191,11 @@ func getImageWithTags(url, userName, password, repoName string, repoTags RepoTag
 				log.Error().Msg(err.Error())
 			}
 		}
-
+		imageID, shortImageID := model.DigestToID(digest)
 		tt := model.IngestedContainerImage{
-			ID:            model.DigestToID(digest),
-			DockerImageID: model.DigestToID(digest),
+			ID:            imageID,
+			DockerImageID: imageID,
+			ShortImageID:  shortImageID,
 			Name:          repoName,
 			Tag:           tag,
 			Size:          "",

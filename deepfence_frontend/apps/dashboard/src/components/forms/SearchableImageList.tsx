@@ -11,7 +11,7 @@ export type Props = {
   onChange?: (value: string[]) => void;
   onClearAll?: () => void;
   defaultSelectedImages?: string[];
-  valueKey?: 'nodeId' | 'imageName';
+  valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
   triggerVariant?: 'select' | 'button';
 };
@@ -110,7 +110,7 @@ const SearchableImage = ({
           .map((image, index) => {
             return (
               <ComboboxOption key={`${image.nodeId}-${index}`} value={image[valueKey]}>
-                {image.imageName}
+                {image.nodeName}
               </ComboboxOption>
             );
           })}

@@ -4,16 +4,11 @@ import (
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-func InternalRoutes(r *chi.Mux, serverPort string, jwtSecret []byte,
-	ingestC chan *kgo.Record, taskPublisher *kafka.Publisher) error {
-	// JWT
-	tokenAuth := jwtauth.New("HS256", jwtSecret, nil)
-
+func InternalRoutes(r *chi.Mux, ingestC chan *kgo.Record, taskPublisher *kafka.Publisher) error {
 	// authorization
 	authEnforcer, err := newAuthorizationHandler()
 	if err != nil {
@@ -21,7 +16,6 @@ func InternalRoutes(r *chi.Mux, serverPort string, jwtSecret []byte,
 	}
 
 	dfHandler := &handler.Handler{
-		TokenAuth:      tokenAuth,
 		AuthEnforcer:   authEnforcer,
 		SaasDeployment: IsSaasDeployment(),
 		Validator:      validator.New(),

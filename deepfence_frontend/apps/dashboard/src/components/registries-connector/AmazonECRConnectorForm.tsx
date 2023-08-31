@@ -69,11 +69,11 @@ export const AmazonECRConnectorForm = ({
             }}
           />
         </div>
-        <div className="flex flex-row gap-4">
+        <div className="flex flex-row gap-8 flex-wrap">
           {!useIAMRole ? (
             <>
               <TextInput
-                className="w-3/4 min-[200px] max-w-xs"
+                className="grow min-[200px] max-w-xs"
                 label="AWS Access Key"
                 type={'text'}
                 name="non_secret.aws_access_key_id"
@@ -82,7 +82,7 @@ export const AmazonECRConnectorForm = ({
                 helperText={fieldErrors?.['aws_access_key_id']}
               />
               <TextInput
-                className="w-3/4 min-[200px] max-w-xs"
+                className="grow min-[200px] max-w-xs"
                 label="AWS Secret Key"
                 type={'password'}
                 name="secret.aws_secret_access_key"
@@ -94,7 +94,7 @@ export const AmazonECRConnectorForm = ({
           ) : (
             <>
               <TextInput
-                className="w-3/4 min-[200px] max-w-xs"
+                className="grow min-[200px] max-w-xs"
                 label="AWS Account ID"
                 type={'text'}
                 name="non_secret.aws_account_id"
@@ -104,7 +104,7 @@ export const AmazonECRConnectorForm = ({
                 helperText={fieldErrors?.['aws_account_id']}
               />
               <TextInput
-                className="w-3/4 min-[200px] max-w-xs"
+                className="grow min-[200px] max-w-xs"
                 label="Target Account Role ARN"
                 type={'text'}
                 name="non_secret.target_account_role_arn"

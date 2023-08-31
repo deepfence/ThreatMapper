@@ -22,13 +22,23 @@ import (
 type ScheduledJobs struct {
 	jobHashToId map[string]cron.EntryID
 	jobHashes   []string
-	sync.Mutex
+}
+
+type CronJobs struct {
+	jobIDs []cron.EntryID
+}
+
+type Jobs struct {
+	CronJobs           map[directory.NamespaceID]CronJobs
+	CronJobsMutex      sync.Mutex
+	ScheduledJobs      map[directory.NamespaceID]ScheduledJobs
+	ScheduledJobsMutex sync.Mutex
 }
 
 type Scheduler struct {
 	cron           *cron.Cron
 	tasksPublisher *kafka.Publisher
-	scheduledJobs  ScheduledJobs
+	jobs           Jobs
 }
 
 func NewScheduler(tasksPublisher *kafka.Publisher) (*Scheduler, error) {
@@ -40,35 +50,78 @@ func NewScheduler(tasksPublisher *kafka.Publisher) (*Scheduler, error) {
 			cron.WithLogger(cron.VerbosePrintfLogger(logger)),
 		),
 		tasksPublisher: tasksPublisher,
-		scheduledJobs: ScheduledJobs{
-			jobHashToId: make(map[string]cron.EntryID),
-			jobHashes:   []string{},
+		jobs: Jobs{
+			CronJobs:      make(map[directory.NamespaceID]CronJobs),
+			ScheduledJobs: make(map[directory.NamespaceID]ScheduledJobs),
 		},
 	}
 	return scheduler, nil
 }
 
 func (s *Scheduler) Init() {
+	// download updated vulnerability database
+	_, err := s.cron.AddFunc("@every 120m", vulnerability_db.DownloadDatabase)
+	if err != nil {
+		return
+	}
+
 	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
-		return "scheduler addJobs", s.addJobs(ctx)
+		return "scheduler addJobs", s.AddJobs(ctx)
 	})
-	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
-		return "scheduler startImmediately", StartInitJobs(ctx, s.tasksPublisher)
-	})
+
+	// Periodically update scheduled jobs for each tenant from postgresql
 	go s.updateScheduledJobs()
 }
 
-func (s *Scheduler) updateScheduledJobs() {
-	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
-		return "Add scheduled jobs", s.addScheduledJobs(ctx)
-	})
+func (s *Scheduler) AddJobs(ctx context.Context) error {
+	err := s.addCronJobs(ctx)
+	if err != nil {
+		return err
+	}
+	err = s.startInitJobs(ctx)
+	if err != nil {
+		return err
+	}
+	err = s.addScheduledJobs(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
+func (s *Scheduler) RemoveJobs(ctx context.Context) error {
+	namespace, err := directory.ExtractNamespace(ctx)
+	if err != nil {
+		return err
+	}
+
+	s.jobs.CronJobsMutex.Lock()
+	if cronJobs, ok := s.jobs.CronJobs[namespace]; ok {
+		for _, jobID := range cronJobs.jobIDs {
+			s.cron.Remove(jobID)
+		}
+		delete(s.jobs.CronJobs, namespace)
+	}
+	s.jobs.CronJobsMutex.Unlock()
+
+	s.jobs.ScheduledJobsMutex.Lock()
+	if scheduledJobs, ok := s.jobs.ScheduledJobs[namespace]; ok {
+		for _, jobID := range scheduledJobs.jobHashToId {
+			s.cron.Remove(jobID)
+		}
+		delete(s.jobs.ScheduledJobs, namespace)
+	}
+	s.jobs.ScheduledJobsMutex.Unlock()
+	return nil
+}
+
+func (s *Scheduler) updateScheduledJobs() {
 	ticker := time.NewTicker(15 * time.Minute)
 	defer ticker.Stop()
 
 	for range ticker.C {
 		directory.ForEachNamespace(func(ctx context.Context) (string, error) {
-			return "Add scheduled jobs", s.addScheduledJobs(ctx)
+			return "Update scheduled jobs", s.addScheduledJobs(ctx)
 		})
 	}
 }
@@ -84,20 +137,29 @@ func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
 		return err
 	}
 
-	s.scheduledJobs.Lock()
-	defer s.scheduledJobs.Unlock()
+	s.jobs.ScheduledJobsMutex.Lock()
+	defer s.jobs.ScheduledJobsMutex.Unlock()
 
 	namespace, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
 	}
+
+	scheduledJobs, ok := s.jobs.ScheduledJobs[namespace]
+	if !ok {
+		scheduledJobs = ScheduledJobs{
+			jobHashToId: make(map[string]cron.EntryID),
+			jobHashes:   []string{},
+		}
+	}
+
 	var newHashes []string
 	newJobHashToId := make(map[string]cron.EntryID)
 	for _, schedule := range schedules {
 		jobHash := sdkUtils.GetScheduledJobHash(schedule)
-		if sdkUtils.InSlice(jobHash, s.scheduledJobs.jobHashes) {
+		if sdkUtils.InSlice(jobHash, scheduledJobs.jobHashes) {
 			newHashes = append(newHashes, jobHash)
-			newJobHashToId[jobHash] = s.scheduledJobs.jobHashToId[jobHash]
+			newJobHashToId[jobHash] = scheduledJobs.jobHashToId[jobHash]
 			continue
 		}
 		var payload map[string]string
@@ -113,93 +175,128 @@ func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
 		newHashes = append(newHashes, jobHash)
 		newJobHashToId[jobHash] = jobId
 	}
-	for _, oldJobHash := range s.scheduledJobs.jobHashes {
-		if !sdkUtils.InSlice(oldJobHash, s.scheduledJobs.jobHashes) {
-			s.cron.Remove(s.scheduledJobs.jobHashToId[oldJobHash])
+	for _, oldJobHash := range scheduledJobs.jobHashes {
+		if !sdkUtils.InSlice(oldJobHash, scheduledJobs.jobHashes) {
+			s.cron.Remove(scheduledJobs.jobHashToId[oldJobHash])
 		}
 	}
-	s.scheduledJobs.jobHashes = newHashes
-	s.scheduledJobs.jobHashToId = newJobHashToId
+
+	scheduledJobs.jobHashes = newHashes
+	scheduledJobs.jobHashToId = newJobHashToId
+	s.jobs.ScheduledJobs[namespace] = scheduledJobs
 	return nil
 }
 
-func (s *Scheduler) addJobs(ctx context.Context) error {
+func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	namespace, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
 	}
-	log.Info().Msg("Register cronjobs")
+	log.Info().Msgf("Register cronjobs for namespace %v", namespace)
+
+	s.jobs.CronJobsMutex.Lock()
+	defer s.jobs.CronJobsMutex.Unlock()
+	var jobIDs []cron.EntryID
+
 	// Documentation: https://pkg.go.dev/github.com/robfig/cron#hdr-Usage
-	_, err = s.cron.AddFunc("@every 30s", enqueueTask(s.tasksPublisher, namespace, sdkUtils.TriggerConsoleActionsTask))
+	var jobID cron.EntryID
+	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, sdkUtils.TriggerConsoleActionsTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 120s", enqueueTask(s.tasksPublisher, namespace, sdkUtils.CleanUpGraphDBTask))
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, sdkUtils.CleanUpGraphDBTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 120s", enqueueTask(s.tasksPublisher, namespace, sdkUtils.ComputeThreatTask))
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, sdkUtils.ComputeThreatTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 120s", enqueueTask(s.tasksPublisher, namespace, sdkUtils.RetryFailedScansTask))
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, sdkUtils.RetryFailedScansTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 10m", enqueueTask(s.tasksPublisher, namespace, sdkUtils.RetryFailedUpgradesTask))
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 10m", s.enqueueTask(namespace, sdkUtils.RetryFailedUpgradesTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 5m", enqueueTask(s.tasksPublisher, namespace, sdkUtils.CleanUpPostgresqlTask))
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 5m", s.enqueueTask(namespace, sdkUtils.CleanUpPostgresqlTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 60m", enqueueTask(s.tasksPublisher, namespace, sdkUtils.CleanupDiagnosisLogs))
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.CleanupDiagnosisLogs))
 	if err != nil {
 		return err
 	}
 	// Adding CloudComplianceTask only to ensure data is ingested if task fails on startup, Retry to be handled by watermill
-	_, err = s.cron.AddFunc("@every 60m", enqueueTask(s.tasksPublisher, namespace, sdkUtils.CloudComplianceTask))
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.CloudComplianceTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 60m", enqueueTask(s.tasksPublisher, namespace, sdkUtils.CheckAgentUpgradeTask))
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.CheckAgentUpgradeTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 12h", enqueueTask(s.tasksPublisher, namespace, sdkUtils.SyncRegistryTask))
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 12h", s.enqueueTask(namespace, sdkUtils.SyncRegistryTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 30s", enqueueTask(s.tasksPublisher, namespace, sdkUtils.SendNotificationTask))
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, sdkUtils.SendNotificationTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 60m", enqueueTask(s.tasksPublisher, namespace, sdkUtils.ReportCleanUpTask))
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.ReportCleanUpTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 60m", enqueueTask(s.tasksPublisher, namespace, sdkUtils.CachePostureProviders))
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.CachePostureProviders))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 30s", enqueueTask(s.tasksPublisher, namespace, sdkUtils.LinkCloudResourceTask))
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, sdkUtils.LinkCloudResourceTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 30s", enqueueTask(s.tasksPublisher, namespace, sdkUtils.LinkNodesTask))
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, sdkUtils.LinkNodesTask))
 	if err != nil {
 		return err
 	}
-	// download updated vulnerability database
-	_, err = s.cron.AddFunc("@every 120m", vulnerability_db.DownloadDatabase)
-	if err != nil {
-		return err
-	}
+	jobIDs = append(jobIDs, jobID)
+
+	s.jobs.CronJobs[namespace] = CronJobs{jobIDs: jobIDs}
+
 	return nil
 }
 
-func StartInitJobs(ctx context.Context, taskPub *kafka.Publisher) error {
+func (s *Scheduler) startInitJobs(ctx context.Context) error {
 	namespace, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
@@ -211,12 +308,12 @@ func StartInitJobs(ctx context.Context, taskPub *kafka.Publisher) error {
 	}
 
 	log.Info().Msgf("Start immediate cronjobs for namespace %s", namespace)
-	enqueueTask(taskPub, namespace, sdkUtils.SetUpGraphDBTask)()
-	enqueueTask(taskPub, namespace, sdkUtils.CheckAgentUpgradeTask)()
-	enqueueTask(taskPub, namespace, sdkUtils.SyncRegistryTask)()
-	enqueueTask(taskPub, namespace, sdkUtils.CloudComplianceTask)()
-	enqueueTask(taskPub, namespace, sdkUtils.ReportCleanUpTask)()
-	enqueueTask(taskPub, namespace, sdkUtils.CachePostureProviders)()
+	s.enqueueTask(namespace, sdkUtils.SetUpGraphDBTask)()
+	s.enqueueTask(namespace, sdkUtils.CheckAgentUpgradeTask)()
+	s.enqueueTask(namespace, sdkUtils.SyncRegistryTask)()
+	s.enqueueTask(namespace, sdkUtils.CloudComplianceTask)()
+	s.enqueueTask(namespace, sdkUtils.ReportCleanUpTask)()
+	s.enqueueTask(namespace, sdkUtils.CachePostureProviders)()
 
 	return nil
 }
@@ -245,12 +342,12 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID, schedu
 	}
 }
 
-func enqueueTask(taskPub *kafka.Publisher, namespace directory.NamespaceID, task string) func() {
+func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string) func() {
 	log.Info().Msgf("Registering task: %s for namespace %s", task, namespace)
 	return func() {
 		log.Info().Msgf("Enqueuing task: %s for namespace %s", task, namespace)
 		metadata := map[string]string{directory.NamespaceKey: string(namespace)}
-		err := utils.PublishNewJob(taskPub, metadata, task,
+		err := utils.PublishNewJob(s.tasksPublisher, metadata, task,
 			[]byte(strconv.FormatInt(sdkUtils.GetTimestamp(), 10)))
 		if err != nil {
 			log.Error().Msg(err.Error())

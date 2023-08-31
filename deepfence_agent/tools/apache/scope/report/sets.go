@@ -12,12 +12,9 @@ type Sets struct {
 	PsMap *ps.Tree `json:"ps_map,omitempty"`
 }
 
-// EmptySets is an empty Sets.  Starts with this.
-var emptySets = Sets{ps.NewMap()}
-
 // MakeSets returns EmptySets
 func MakeSets() Sets {
-	return emptySets
+	return Sets{ps.NewMap()}
 }
 
 // Keys returns the keys for this set
@@ -31,7 +28,7 @@ func (s Sets) Keys() []string {
 // Add the given value to the Sets.
 func (s Sets) Add(key string, value StringSet) Sets {
 	if s.PsMap == nil {
-		s = emptySets
+		s = MakeSets()
 	}
 	if existingValue, ok := s.PsMap.Lookup(key); ok {
 		var unchanged bool
@@ -48,7 +45,7 @@ func (s Sets) Add(key string, value StringSet) Sets {
 // AddString adds a single string under a key, creating a new StringSet if necessary.
 func (s Sets) AddString(key string, str string) Sets {
 	if s.PsMap == nil {
-		s = emptySets
+		s = MakeSets()
 	}
 	value, found := s.Lookup(key)
 	if found && value.Contains(str) {
@@ -63,11 +60,11 @@ func (s Sets) AddString(key string, str string) Sets {
 // Delete the given set from the Sets.
 func (s Sets) Delete(key string) Sets {
 	if s.PsMap == nil {
-		return emptySets
+		return MakeSets()
 	}
 	PsMap := s.PsMap.Delete(key)
 	if PsMap.IsNil() {
-		return emptySets
+		return MakeSets()
 	}
 	return Sets{PsMap: PsMap}
 }

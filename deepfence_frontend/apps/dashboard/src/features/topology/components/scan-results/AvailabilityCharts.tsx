@@ -1,16 +1,11 @@
-import { EChartsOption } from 'echarts';
 import { preset } from 'tailwind-preset';
 import { Card } from 'ui-components';
 
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
-import { ReactECharts } from '@/components/ReactEcharts';
+import { ECOption, ReactECharts } from '@/components/ReactEcharts';
 import { formatMemory, formatPercentage } from '@/utils/number';
 
-function getChartOption(
-  usage: number,
-  max: number,
-  type: 'cpu' | 'memory',
-): EChartsOption {
+function getChartOption(usage: number, max: number, type: 'cpu' | 'memory'): ECOption {
   return {
     backgroundColor: 'transparent',
     series: [

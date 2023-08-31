@@ -1,23 +1,27 @@
 package router
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
 
-	"github.com/casbin/casbin/v2"
-
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-playground/validator/v10"
+	"github.com/redis/go-redis/v9"
 	"github.com/riandyrn/otelchi"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -63,6 +67,8 @@ const (
 
 var (
 	enable_debug bool
+
+	JwtSignKeyNotFoundError = errors.New("jwt sign key not found")
 )
 
 func init() {
@@ -70,10 +76,42 @@ func init() {
 	enable_debug = enable_debug_str != ""
 }
 
-func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool,
-	ingestC chan *kgo.Record, taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
-	// JWT
-	tokenAuth := jwtauth.New("HS256", jwtSecret, nil)
+func getJWTAuthSignKey() (string, error) {
+	signKey := fmt.Sprintf("%v", utils.NewUUIDString())
+	if directory.IsNonSaaSDeployment() {
+		ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+		redisClient, err := directory.RedisClient(ctx)
+		if err != nil {
+			return "", err
+		}
+		err = redisClient.SetArgs(ctx, constants.REDIS_JWT_SIGN_KEY, signKey, redis.SetArgs{Mode: "NX"}).Err()
+		if err == redis.Nil {
+			// Key already exists, nothing to do
+		} else if err != nil {
+			return "", err
+		}
+		val, err := redisClient.Get(ctx, constants.REDIS_JWT_SIGN_KEY).Result()
+		if err == redis.Nil {
+			return "", JwtSignKeyNotFoundError
+		} else if err != nil {
+			return "", err
+		}
+		return val, nil
+	} else {
+		return signKey, nil
+	}
+}
+
+func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC chan *kgo.Record,
+	taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
+
+	var tokenAuth *jwtauth.JWTAuth
+
+	signKey, err := getJWTAuthSignKey()
+	if err != nil {
+		return err
+	}
+	tokenAuth = jwtauth.New("HS256", []byte(signKey), nil)
 
 	// authorization
 	authEnforcer, err := newAuthorizationHandler()
@@ -114,6 +152,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 		return err
 	}
 	err = dfHandler.Validator.RegisterValidation("api_token", model.ValidateApiToken)
+	if err != nil {
+		return err
+	}
+	err = dfHandler.Validator.RegisterValidation("jira_auth_key", model.ValidateJiraConfig)
 	if err != nil {
 		return err
 	}

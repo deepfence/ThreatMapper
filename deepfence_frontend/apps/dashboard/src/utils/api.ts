@@ -113,6 +113,10 @@ export function apiWrapper<F extends Func<any[], any>>({
           if (await refreshAccessTokenIfPossible()) {
             return apiWrapper({ fn, options })(...args);
           }
+        } else if (error.response.status === 503) {
+          throw new Error('Service unavailable', {
+            cause: { status: 503 },
+          });
         }
         return { ok: false, error };
       }

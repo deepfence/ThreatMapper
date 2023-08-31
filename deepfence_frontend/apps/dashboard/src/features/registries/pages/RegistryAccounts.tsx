@@ -323,7 +323,7 @@ const CountWidget = () => {
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input">
+          <span className="text-h1 dark:text-text-input-value">
             {abbreviateNumber(registries)}
           </span>
           <span className="text-p1">Total registries</span>
@@ -335,7 +335,9 @@ const CountWidget = () => {
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input">{abbreviateNumber(images)}</span>
+          <span className="text-h1 dark:text-text-input-value">
+            {abbreviateNumber(images)}
+          </span>
           <span className="text-p1">Total images</span>
         </div>
       </div>
@@ -345,7 +347,9 @@ const CountWidget = () => {
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input">{abbreviateNumber(tags)}</span>
+          <span className="text-h1 dark:text-text-input-value">
+            {abbreviateNumber(tags)}
+          </span>
           <span className="text-p1">Total tags</span>
         </div>
       </div>
@@ -355,7 +359,7 @@ const CountWidget = () => {
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input">
+          <span className="text-h1 dark:text-text-input-value">
             {abbreviateNumber(scans_in_progress)}
           </span>
           <span className="text-p1">In Progress</span>

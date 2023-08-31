@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useFetcher, useParams } from 'react-router-dom';
 import {
   Button,
+  Checkbox,
   Listbox,
   ListboxOption,
   Radio,
-  Separator,
   TextInput,
 } from 'ui-components';
 
@@ -141,6 +141,8 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
           onClearAll={() => {
             setHosts([]);
           }}
+          agentRunning={false}
+          active={false}
         />
 
         <SearchableContainerList
@@ -153,6 +155,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
           onClearAll={() => {
             setContainers([]);
           }}
+          active={false}
         />
 
         <SearchableImageList
@@ -176,6 +179,8 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
           onClearAll={() => {
             setClusters([]);
           }}
+          agentRunning={false}
+          active={false}
         />
 
         {notificationType === 'Compliance' || notificationType === 'CloudCompliance' ? (
@@ -289,7 +294,7 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
         }}
         placeholder="Select notification type"
         label="Notification Type"
-        getDisplayValue={(item) => {
+        getDisplayValue={() => {
           return notificationType;
         }}
       >
@@ -349,6 +354,9 @@ export const IntegrationForm = ({
 
   // for aws security hub
   const [awsAccounts, setAccounts] = useState<string[]>([]);
+
+  // for s3
+  const [useIAMRole, setUseIAMRole] = useState<boolean>(false);
 
   return (
     <>
@@ -542,6 +550,7 @@ export const IntegrationForm = ({
                   placeholder="AWS secret key"
                   helperText={fieldErrors?.aws_secret_key}
                   color={fieldErrors?.aws_secret_key ? 'error' : 'default'}
+                  type="password"
                 />
                 <TextInputType
                   name="region"
@@ -555,12 +564,15 @@ export const IntegrationForm = ({
                   triggerVariant="select"
                   defaultSelectedAccounts={awsAccounts}
                   cloudProvider="aws"
+                  valueKey="nodeName"
                   onClearAll={() => {
                     setAccounts([]);
                   }}
                   onChange={(value) => {
                     setAccounts(value);
                   }}
+                  helperText={fieldErrors?.aws_account_id}
+                  color={fieldErrors?.aws_account_id ? 'error' : 'default'}
                 />
               </>
             )}
@@ -655,20 +667,55 @@ export const IntegrationForm = ({
                   helperText={fieldErrors?.s3_folder_name}
                   color={fieldErrors?.s3_folder_name ? 'error' : 'default'}
                 />
-                <TextInputType
-                  name="accessKey"
-                  label="Access Key"
-                  placeholder="AWS access key"
-                  helperText={fieldErrors?.aws_access_key}
-                  color={fieldErrors?.aws_access_key ? 'error' : 'default'}
-                />
-                <TextInputType
-                  name="secretKey"
-                  label="Secret Key"
-                  placeholder="AWS secret key"
-                  helperText={fieldErrors?.aws_secret_key}
-                  color={fieldErrors?.aws_secret_key ? 'error' : 'default'}
-                />
+                <div className="col-span-2">
+                  <Checkbox
+                    label="Use AWS IAM Role"
+                    key="useIAMRole"
+                    name="useIAMRole"
+                    checked={useIAMRole}
+                    onCheckedChange={(checked: boolean) => {
+                      setUseIAMRole(checked);
+                    }}
+                  />
+                </div>
+                {useIAMRole ? (
+                  <>
+                    <TextInput
+                      name="awsAccount"
+                      label="AWS Account ID"
+                      placeholder="AWS account id"
+                      info="(Optional) S3 belonging to other AWS Accounts"
+                      helperText={fieldErrors?.aws_account_id}
+                      color={fieldErrors?.aws_account_id ? 'error' : 'default'}
+                    />
+                    <TextInput
+                      name="awsARN"
+                      label="Target Account Role ARN"
+                      placeholder="Target account role arn"
+                      info="(Optional) S3 belonging to other AWS Accounts"
+                      helperText={fieldErrors?.target_account_role_arn}
+                      color={fieldErrors?.target_account_role_arn ? 'error' : 'default'}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <TextInputType
+                      name="accessKey"
+                      label="Access Key"
+                      placeholder="AWS access key"
+                      helperText={fieldErrors?.aws_access_key}
+                      color={fieldErrors?.aws_access_key ? 'error' : 'default'}
+                    />
+                    <TextInputType
+                      name="secretKey"
+                      label="Secret Key"
+                      placeholder="AWS secret key"
+                      helperText={fieldErrors?.aws_secret_key}
+                      color={fieldErrors?.aws_secret_key ? 'error' : 'default'}
+                    />
+                  </>
+                )}
+
                 <TextInputType
                   name="region"
                   label="Region"

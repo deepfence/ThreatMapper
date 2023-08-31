@@ -14,6 +14,8 @@ export type SearchableCloudAccountsListProps = {
   active?: boolean;
   triggerVariant?: 'select' | 'button';
   label?: string;
+  helperText?: string;
+  color?: 'error' | 'default';
 };
 
 const PAGE_SIZE = 15;
@@ -26,6 +28,8 @@ const SearchableCloudAccounts = ({
   active,
   triggerVariant,
   label,
+  helperText,
+  color,
 }: SearchableCloudAccountsListProps) => {
   const [searchText, setSearchText] = useState('');
 
@@ -100,6 +104,8 @@ const SearchableCloudAccounts = ({
         clearAllElement="Clear"
         onClearAll={onClearAll}
         onEndReached={onEndReached}
+        helperText={helperText}
+        color={color}
       >
         {data?.pages
           .flatMap((page) => {

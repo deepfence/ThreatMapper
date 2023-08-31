@@ -16,6 +16,9 @@ import (
 )
 
 func SendNotifications(msg *message.Message) error {
+	RecordOffsets(msg)
+
+	log.Info().Msgf("SendNotifications task starting")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	pgClient, err := directory.PostgresClient(ctx)

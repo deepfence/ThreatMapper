@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useMemo, useState } from 'react';
-import { generatePath, useParams, useSearchParams } from 'react-router-dom';
+import { generatePath, useParams } from 'react-router-dom';
 import {
   createColumnHelper,
   Dropdown,

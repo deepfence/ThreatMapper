@@ -13,7 +13,13 @@ const useGetApiToken = () => {
     ...queries.auth.apiToken(),
   });
 };
+const useGetVersion = () => {
+  return useSuspenseQuery({
+    ...queries.setting.productVersion(),
+  });
+};
 const PLACEHOLDER_API_KEY = '---DEEPFENCE-API-KEY--';
+const PLACEHOLDER_VERSION = '---PRODUCT_TAG_VERSION--';
 
 const Command = () => {
   const { copy, isCopied } = useCopyToClipboardState();
@@ -25,23 +31,25 @@ const Command = () => {
       : apiToken === undefined
       ? PLACEHOLDER_API_KEY
       : apiToken;
+  const { data: dataVersion } = useGetVersion();
+  const version = dataVersion.version || PLACEHOLDER_VERSION;
 
   const code = `docker run -dit \\
---cpus=".2" \\
---name=deepfence-agent \\
---restart on-failure \\
---pid=host \\
---net=host \\
---privileged=true \\
--v /sys/kernel/debug:/sys/kernel/debug:rw \\
--v /var/log/fenced \\
--v /var/run/docker.sock:/var/run/docker.sock \\
--v /:/fenced/mnt/host/:ro \\
--e USER_DEFINED_TAGS="" \\
--e MGMT_CONSOLE_URL="${window.location.host ?? '---CONSOLE-IP---'}" \\
--e MGMT_CONSOLE_PORT="443" \\
--e DEEPFENCE_KEY="${dfApiKey}" \\
-deepfenceio/deepfence_agent_ce:2.0.0`;
+  --cpus=".2" \\
+  --name=deepfence-agent \\
+  --restart on-failure \\
+  --pid=host \\
+  --net=host \\
+  --privileged=true \\
+  -v /sys/kernel/debug:/sys/kernel/debug:rw \\
+  -v /var/log/fenced \\
+  -v /var/run/docker.sock:/var/run/docker.sock \\
+  -v /:/fenced/mnt/host/:ro \\
+  -e USER_DEFINED_TAGS="" \\
+  -e MGMT_CONSOLE_URL="${window.location.host ?? '---CONSOLE-IP---'}" \\
+  -e MGMT_CONSOLE_PORT="443" \\
+  -e DEEPFENCE_KEY="${dfApiKey}" \\
+  deepfenceio/deepfence_agent_ce:${version}`;
 
   return (
     <>

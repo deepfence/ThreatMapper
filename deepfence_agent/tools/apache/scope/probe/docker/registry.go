@@ -152,9 +152,9 @@ func (r *registry) Stop() {
 // WatchContainerUpdates registers a callback to be called
 // whenever a container is updated.
 func (r *registry) WatchContainerUpdates(f ContainerUpdateWatcher) {
-	r.Lock()
-	defer r.Unlock()
-	r.watchers = append(r.watchers, f)
+	//r.Lock()
+	//defer r.Unlock()
+	//r.watchers = append(r.watchers, f)
 }
 
 func (r *registry) loop() {
@@ -315,7 +315,6 @@ func (r *registry) handleEvent(event *docker_client.APIEvents) {
 		r.Lock()
 		r.deleteContainer(event.ID)
 		r.Unlock()
-		r.sendDeletedUpdate(event.ID)
 	}
 }
 
@@ -353,9 +352,11 @@ func (r *registry) updateContainerState(containerID string) {
 	}
 
 	// Trigger anyone watching for updates
-	node := c.GetNode()
-	for _, f := range r.watchers {
-		f(node)
+	if len(r.watchers) > 0 {
+		node := c.GetNode()
+		for _, f := range r.watchers {
+			f(*node)
+		}
 	}
 
 	// And finally, ensure we gather stats for it
@@ -383,36 +384,6 @@ func (r *registry) deleteContainer(containerID string) {
 	delete(r.containersByPID, container.PID())
 	if r.collectStats {
 		container.StopGatheringStats()
-	}
-}
-
-func (r *registry) sendDeletedUpdate(containerID string) {
-	containerImageTags := r.GetContainerTags()
-	tags, ok := containerImageTags[containerID]
-	if !ok {
-		tags = []string{}
-	}
-	node := report.TopologyNode{
-		Metadata: report.Metadata{
-			Timestamp:             time.Now().UTC().Format(time.RFC3339Nano),
-			NodeID:                containerID,
-			NodeName:              containerID,
-			NodeType:              report.Container,
-			DockerContainerState:  report.StateDeleted,
-			UserDefinedTags:       tags,
-			IsConsoleVm:           r.isConsoleVm,
-			KubernetesClusterName: r.kubernetesClusterName,
-			KubernetesClusterId:   r.kubernetesClusterId,
-			HostName:              r.hostID,
-		},
-		Parents: &report.Parent{
-			KubernetesCluster: r.kubernetesClusterId,
-			Host:              r.hostID,
-		},
-	}
-	// Trigger anyone watching for updates
-	for _, f := range r.watchers {
-		f(node)
 	}
 }
 

@@ -1,10 +1,9 @@
-import { EChartsOption } from 'echarts';
 import { preset } from 'tailwind-preset';
 import { Button, Card } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
-import { ReactECharts } from '@/components/ReactEcharts';
+import { ECOption, ReactECharts } from '@/components/ReactEcharts';
 import { AlertIcon } from '@/components/sideNavigation/icons/Alert';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { CardHeader } from '@/features/dashboard/components/CardHeader';
@@ -52,7 +51,7 @@ const DummyDonutChart = () => {
     low: 12,
     unknown: 0,
   };
-  const option: EChartsOption = {
+  const option: ECOption = {
     backgroundColor: 'transparent',
     tooltip: {
       show: false,

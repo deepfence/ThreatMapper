@@ -4,8 +4,10 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/jira"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-playground/validator/v10"
+	"github.com/rs/zerolog/log"
 )
 
 func ValidateUserName(fl validator.FieldLevel) bool {
@@ -46,6 +48,18 @@ func ValidatePassword(fl validator.FieldLevel) bool {
 		}
 	}
 	if !isUpper || !isLower || !isSpecialChar || !isDigit {
+		return false
+	}
+	return true
+}
+
+func ValidateJiraConfig(fl validator.FieldLevel) bool {
+	log.Info().Msgf("validateConfig: %v", fl.Field().String())
+	config := fl.Parent().Interface().(jira.Config)
+	if config.IsAuthToken && config.APIToken == "" {
+		return false
+	}
+	if !config.IsAuthToken && config.Password == "" {
 		return false
 	}
 	return true
@@ -172,12 +186,9 @@ func ParseValidatorError(errMsg string, skipOverwriteErrorMessage bool) map[stri
 	return fields
 }
 
-func DigestToID(digest string) string {
-	splits := strings.Split(digest, ":")
-	if len(splits) >= 2 {
-		return splits[1]
-	}
-	return digest
+func DigestToID(digest string) (string, string) {
+	imageID := strings.TrimPrefix(digest, "sha256:")
+	return imageID, imageID[:12]
 }
 
 func GetRegistryID(registryType, ns string) string {

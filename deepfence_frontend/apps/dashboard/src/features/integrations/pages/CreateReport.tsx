@@ -30,6 +30,7 @@ import { SuccessModalContent } from '@/features/settings/components/SuccessModal
 import { invalidateAllQueries } from '@/queries';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
+import { getArrayTypeValuesFromFormData } from '@/utils/formData';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const DURATION: { [k: string]: ModelGenerateReportReqDurationEnum } = {
@@ -77,7 +78,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 
   const masked = formData.getAll('mask[]');
   const status = formData.getAll('status[]');
-  const accountIds = formData.getAll('accountIds[]');
+
+  const accountIds = getArrayTypeValuesFromFormData(formData, 'cloudAccountsFilter');
   const interval = formData.get('interval'); // send this when backend is ready to support
 
   // severities or benchmark types
@@ -364,7 +366,11 @@ const ReportForm = () => {
             </div>
           </div>
 
-          <AdvancedFilter provider={provider} resourceType={resource} />
+          <AdvancedFilter
+            provider={provider}
+            resourceType={resource}
+            deadNodes={deadNodes}
+          />
 
           {data?.message ? (
             <p className="mt-4 text-p7 dark:text-status-error">{data?.message}</p>

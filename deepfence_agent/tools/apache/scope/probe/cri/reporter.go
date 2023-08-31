@@ -69,16 +69,20 @@ func (r *Reporter) containerTopology(imageMetadataMap map[string]ImageMetadata) 
 
 	for _, c := range resp.Containers {
 		node := r.getNode(c, imageMetadataMap)
-		if node.Metadata.DockerContainerState == report.StateCreated || node.Metadata.DockerContainerState == report.StateExited {
+		if node == nil {
 			continue
 		}
-		result.AddNode(node)
+		result.AddNode(*node)
 	}
 
 	return result, nil
 }
 
-func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]ImageMetadata) report.TopologyNode {
+func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]ImageMetadata) *report.TopologyNode {
+	containerState := getState(c)
+	if report.SkipReportContainerState[containerState] {
+		return nil
+	}
 	imageMetadata, ok := imageMetadataMap[c.ImageRef]
 	var imageID, imageName, imageTag string
 	if ok {
@@ -96,15 +100,21 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 	if err == nil {
 		dockerLabels = string(dockerLabelsJson)
 	}
+
+	containerName := c.Metadata.Name
+	if containerName == "" {
+		containerName = c.Id
+	}
+
 	metadata := report.Metadata{
 		Timestamp:                 time.Now().UTC().Format(time.RFC3339Nano),
 		NodeType:                  report.Container,
 		NodeID:                    c.Id,
-		NodeName:                  c.Metadata.Name + " / " + r.hostID,
+		NodeName:                  containerName + " / " + r.hostID,
 		HostName:                  r.hostID,
-		DockerContainerName:       c.Metadata.Name,
-		DockerContainerState:      getState(c),
-		DockerContainerStateHuman: getState(c),
+		DockerContainerName:       containerName,
+		DockerContainerState:      containerState,
+		DockerContainerStateHuman: containerState,
 		ImageName:                 imageName,
 		ImageTag:                  imageTag,
 		DockerImageID:             imageID,
@@ -115,7 +125,7 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		DockerLabels:              dockerLabels,
 		PodName:                   podName,
 	}
-	return report.TopologyNode{
+	return &report.TopologyNode{
 		Metadata: metadata,
 		Parents: &report.Parent{
 			KubernetesCluster: r.kubernetesClusterId,
@@ -173,6 +183,7 @@ func (r *Reporter) getImage(image *client.Image) (report.TopologyNode, ImageMeta
 	// logrus.Infof("images: %v", image)
 	// image format: sha256:ab21abc2d2c34c2b2d2c23bbcf23gg23f23
 	imageID := trimImageID(image.Id)
+	shortImageID := getShortImageID(imageID)
 	metadata := report.Metadata{
 		Timestamp:            time.Now().UTC().Format(time.RFC3339Nano),
 		NodeType:             report.ContainerImage,
@@ -189,12 +200,12 @@ func (r *Reporter) getImage(image *client.Image) (report.TopologyNode, ImageMeta
 		imageFullName := image.RepoTags[0]
 		metadata.ImageName = docker.ImageNameWithoutTag(imageFullName)
 		metadata.ImageTag = docker.ImageNameTag(imageFullName)
-		metadata.NodeName = metadata.ImageName + ":" + metadata.ImageTag
-		metadata.ImageNameWithTag = metadata.NodeName
+		metadata.ImageNameWithTag = metadata.ImageName + ":" + metadata.ImageTag
+		metadata.NodeName = metadata.ImageNameWithTag + " (" + shortImageID + ")"
 	} else if len(image.RepoDigests) > 0 {
 		metadata.ImageName, metadata.ImageTag = docker.ParseImageDigest(image.RepoDigests[0])
-		metadata.NodeName = metadata.ImageName + ":" + metadata.ImageTag
-		metadata.ImageNameWithTag = metadata.NodeName
+		metadata.ImageNameWithTag = metadata.ImageName + ":" + metadata.ImageTag
+		metadata.NodeName = metadata.ImageNameWithTag + " (" + shortImageID + ")"
 	} else {
 		metadata.ImageName = ""
 		metadata.ImageTag = ""
@@ -216,4 +227,8 @@ func (r *Reporter) getImage(image *client.Image) (report.TopologyNode, ImageMeta
 // ugly and isn't necessary, so we should strip it off
 func trimImageID(id string) string {
 	return strings.TrimPrefix(id, "sha256:")
+}
+
+func getShortImageID(id string) string {
+	return id[:12]
 }

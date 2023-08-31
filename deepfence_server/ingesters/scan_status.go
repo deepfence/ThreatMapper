@@ -11,7 +11,7 @@ import (
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	wrkingest "github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
+	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -139,8 +139,8 @@ func AddNewScan(tx WriteDBTransaction,
 		return err
 	}
 
-	latestScanIDFieldName := wrkingest.LatestScanIdField[scan_type]
-	scanStatusFieldName := wrkingest.ScanStatusField[scan_type]
+	latestScanIDFieldName := ingestersUtil.LatestScanIdField[scan_type]
+	scanStatusFieldName := ingestersUtil.ScanStatusField[scan_type]
 
 	if _, err = tx.Run(fmt.Sprintf(`
 		MERGE (n:%s{node_id: $scan_id})
@@ -305,8 +305,8 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		return err
 	}
 
-	latestScanIDFieldName := wrkingest.LatestScanIdField[scanType]
-	scanStatusFieldName := wrkingest.ScanStatusField[scanType]
+	latestScanIDFieldName := ingestersUtil.LatestScanIdField[scanType]
+	scanStatusFieldName := ingestersUtil.ScanStatusField[scanType]
 
 	if _, err = tx.Run(fmt.Sprintf(`
 		MERGE (n:%s{node_id: $scan_id})

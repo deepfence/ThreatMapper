@@ -11,7 +11,7 @@ import (
 )
 
 type Handler struct {
-	TokenAuth        *jwtauth.JWTAuth // TODO: move to global postgres / customer postgres
+	TokenAuth        *jwtauth.JWTAuth
 	AuthEnforcer     *casbin.Enforcer
 	OpenApiDocs      *apiDocs.OpenApiDocs
 	SaasDeployment   bool

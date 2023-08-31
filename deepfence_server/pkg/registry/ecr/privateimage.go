@@ -25,14 +25,18 @@ func listPrivateImagesWithTags(result *ecr.DescribeRepositoriesOutput, svc *ecr.
 
 		for _, image := range result.ImageIds {
 			if image.ImageTag != nil {
-				var containerImage model.IngestedContainerImage
-				containerImage.Name = *repo.RepositoryUri
-				containerImage.ID = model.DigestToID(*image.ImageDigest)
-				containerImage.Tag = *image.ImageTag
-				containerImage.DockerImageID = *image.ImageDigest
-				containerImage.Metadata = model.Metadata{
-					"digest":       *image.ImageDigest,
-					"last_updated": time.Now().Unix(),
+				imageID, shortImageID := model.DigestToID(*image.ImageDigest)
+				containerImage := model.IngestedContainerImage{
+					ID:            imageID,
+					DockerImageID: imageID,
+					ShortImageID:  shortImageID,
+					Name:          *repo.RepositoryUri,
+					Tag:           *image.ImageTag,
+					Size:          "",
+					Metadata: model.Metadata{
+						"digest":       *image.ImageDigest,
+						"last_updated": time.Now().Unix(),
+					},
 				}
 				containerImages = append(containerImages, containerImage)
 			}

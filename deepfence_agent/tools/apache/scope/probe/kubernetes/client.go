@@ -54,7 +54,6 @@ type client struct {
 	namespaceStore cache.Store
 	//calicoAPIClient            *calico_helper.CalicoAPIClient
 	cniPlugin       string
-	hostName        string
 	podWatchesMutex sync.Mutex
 	podWatches      []func(Event, Pod)
 }
@@ -76,7 +75,7 @@ type ClientConfig struct {
 }
 
 // NewClient returns a usable Client. Don't forget to Stop it.
-func NewClient(config ClientConfig, hostName string) (Client, error) {
+func NewClient(config ClientConfig) (Client, error) {
 	var restConfig *rest.Config
 	if config.Server == "" && config.Kubeconfig == "" {
 		// If no API server address or kubeconfig was provided, assume we are running
@@ -123,9 +122,8 @@ func NewClient(config ClientConfig, hostName string) (Client, error) {
 	}
 
 	result := &client{
-		quit:     make(chan struct{}),
-		client:   c,
-		hostName: hostName,
+		quit:   make(chan struct{}),
+		client: c,
 	}
 
 	result.podStore = NewEventStore(result.triggerPodWatches, cache.MetaNamespaceKeyFunc)
@@ -270,14 +268,14 @@ func (c *client) triggerPodWatches(e Event, pod interface{}) {
 	c.podWatchesMutex.Lock()
 	defer c.podWatchesMutex.Unlock()
 	for _, watch := range c.podWatches {
-		watch(e, NewPod(pod.(*apiv1.Pod), c.hostName))
+		watch(e, NewPod(pod.(*apiv1.Pod)))
 	}
 }
 
 func (c *client) WalkPods(f func(Pod) error) error {
 	for _, m := range c.podStore.List() {
 		pod := m.(*apiv1.Pod)
-		if err := f(NewPod(pod, c.hostName)); err != nil {
+		if err := f(NewPod(pod)); err != nil {
 			return err
 		}
 	}

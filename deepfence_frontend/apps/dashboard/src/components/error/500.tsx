@@ -7,6 +7,82 @@ import { getSideNavigationState, SideNavigation } from '@/components/SideNavigat
 import { OnboardAppHeader } from '@/features/onboard/components/OnBoardAppHeader';
 import storage from '@/utils/storage';
 
+const ErrorComponent = ({ maintenance }: { maintenance: boolean }) => {
+  return (
+    <div className="flex flex-col h-full items-center pt-20">
+      {!maintenance ? (
+        <h1 className="text-[140px] text-chart-orange dark:text-chart-orange font-black leading-[190px]">
+          500
+        </h1>
+      ) : null}
+      <h4 className="text-3xl font-semibold text-text-text-and-icon dark:text-text-text-and-icon flex flex-col text-center">
+        <span>
+          {maintenance ? 'Maintenance in progress...' : 'Internal server error.'}
+        </span>
+        <span>
+          {maintenance ? 'Please try again after some time.' : 'Contact support.'}
+        </span>
+      </h4>
+      {!maintenance ? (
+        <div className="mt-12 w-[455px]">
+          <SVG500 />
+        </div>
+      ) : null}
+    </div>
+  );
+};
+export const FiveZeroZero = () => {
+  const [sideNavExpanded, setSideNavExpanded] = useState(
+    getSideNavigationState() === 'open' ? true : false,
+  );
+  const isAuth = useMemo(() => storage.getAuth(), []);
+  const location = useLocation();
+  const error = useRouteError();
+  console.error(error);
+  if (location.pathname.startsWith('/onboard')) {
+    return (
+      <div className="min-h-screen isolate dark:bg-bg-page">
+        <div className="pt-[56px] h-screen">
+          <ErrorComponent
+            maintenance={((error as Error)?.cause as any)?.status === 503}
+          />
+        </div>
+        <OnboardAppHeader />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen isolate dark:bg-bg-page">
+      {isAuth ? (
+        <>
+          <AppHeader />
+          <SideNavigation
+            expanded={sideNavExpanded}
+            onExpandedChange={(state) => setSideNavExpanded(state)}
+          />
+          <main
+            className={cn('pt-[56px] h-screen overflow-auto transition-[margin-left]', {
+              'ml-[61px]': !sideNavExpanded,
+              'ml-[240px]': sideNavExpanded,
+            })}
+          >
+            <ErrorComponent
+              maintenance={((error as Error)?.cause as any)?.status === 503}
+            />
+          </main>
+        </>
+      ) : (
+        <div className="h-screen">
+          <ErrorComponent
+            maintenance={((error as Error)?.cause as any)?.status === 503}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
 const SVG500 = () => {
   return (
     <svg
@@ -1319,67 +1395,5 @@ const SVG500 = () => {
         fill="#489CFF"
       />
     </svg>
-  );
-};
-
-const ErrorComponent = () => {
-  return (
-    <div className="flex flex-col h-full items-center pt-20">
-      <h1 className="text-[140px] text-chart-orange dark:text-chart-orange font-black leading-[190px]">
-        500
-      </h1>
-      <h4 className="text-3xl font-semibold text-text-text-and-icon dark:text-text-text-and-icon flex flex-col text-center">
-        <span>Internal server error.</span>
-        <span>Contact support.</span>
-      </h4>
-      <div className="mt-12 w-[455px]">
-        <SVG500 />
-      </div>
-    </div>
-  );
-};
-export const FiveZeroZero = () => {
-  const [sideNavExpanded, setSideNavExpanded] = useState(
-    getSideNavigationState() === 'open' ? true : false,
-  );
-  const isAuth = useMemo(() => storage.getAuth(), []);
-  const location = useLocation();
-  const error = useRouteError();
-  console.error(error);
-  if (location.pathname.startsWith('/onboard')) {
-    return (
-      <div className="min-h-screen isolate dark:bg-bg-page">
-        <div className="pt-[56px] h-screen">
-          <ErrorComponent />
-        </div>
-        <OnboardAppHeader />
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen isolate dark:bg-bg-page">
-      {isAuth ? (
-        <>
-          <AppHeader />
-          <SideNavigation
-            expanded={sideNavExpanded}
-            onExpandedChange={(state) => setSideNavExpanded(state)}
-          />
-          <main
-            className={cn('pt-[56px] h-screen overflow-auto transition-[margin-left]', {
-              'ml-[61px]': !sideNavExpanded,
-              'ml-[240px]': sideNavExpanded,
-            })}
-          >
-            <ErrorComponent />
-          </main>
-        </>
-      ) : (
-        <div className="h-screen">
-          <ErrorComponent />
-        </div>
-      )}
-    </div>
   );
 };

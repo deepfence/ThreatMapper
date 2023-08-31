@@ -7,6 +7,7 @@ import { AWSCloudFormation } from '@/components/clouds-connector/AWSCloudFormati
 import { AWSTerraform } from '@/components/clouds-connector/AWSTerraform';
 import { AzureConnectorForm } from '@/components/clouds-connector/AzureConnectorForm';
 import { GCPConnectorForm } from '@/components/clouds-connector/GCPConnectorForm';
+import { AWSECSEC2ConnectorForm } from '@/components/hosts-connector/AWSECSEC2ConnectorForm';
 import { DockerConnectorForm } from '@/components/hosts-connector/DockerConnectorForm';
 import { K8ConnectorForm } from '@/components/hosts-connector/K8ConnectorForm';
 import { LinuxConnectorForm } from '@/components/hosts-connector/LinuxConnectorForm';
@@ -38,6 +39,9 @@ const Connector = () => {
   } else if (ACCOUNT_CONNECTOR.AWS === connectorType) {
     title = 'Connect to Amazon Web Services';
     description = 'Deploy all modules for Deepfence Scanner at your aws cloud.';
+  } else if (ACCOUNT_CONNECTOR.AWS_ECS === connectorType) {
+    title = 'Connect AWS ECS (EC2 Provider)';
+    description = '';
   } else if (ACCOUNT_CONNECTOR.AZURE === connectorType) {
     title = 'Connect to Azure Cloud';
     description = 'Deploy all modules for Deepfence Scanner at your azure cloud.';
@@ -93,6 +97,8 @@ const Connector = () => {
       )}
       {ACCOUNT_CONNECTOR.AZURE === connectorType && <AzureConnectorForm />}
       {ACCOUNT_CONNECTOR.GCP === connectorType && <GCPConnectorForm />}
+
+      {ACCOUNT_CONNECTOR.AWS_ECS === connectorType && <AWSECSEC2ConnectorForm />}
 
       {isRegistryConnector ? (
         <RegistriesConnector />

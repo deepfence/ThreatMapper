@@ -2,7 +2,7 @@ import { useLoaderData } from 'react-router-dom';
 import { Card } from 'ui-components';
 
 import { getCommonApiClient } from '@/api/api';
-import LoginBackground from '@/assets/auth-bg.png';
+import AuthBg from '@/assets/auth-bg.svg';
 import { apiWrapper } from '@/utils/api';
 
 type LoaderData = {
@@ -34,7 +34,9 @@ const EULA = () => {
     <div
       className="grid h-screen place-items-center overflow-auto dark:bg-bg-card dark:text-text-text-and-icon"
       style={{
-        backgroundImage: `url("${LoginBackground}")`,
+        background: `url("${AuthBg}") no-repeat center center`,
+        backgroundSize: 'cover',
+        backgroundColor: '#150C58',
       }}
     >
       <div className="relative">

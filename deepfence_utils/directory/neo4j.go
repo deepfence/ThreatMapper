@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"go.opentelemetry.io/otel"
@@ -109,7 +110,12 @@ func new_neo4j_client(endpoints DBConfigs) (*CypherDriver, error) {
 	if endpoints.Neo4j == nil {
 		return nil, errors.New("No defined Neo4j config")
 	}
-	driver, err := neo4j.NewDriver(endpoints.Neo4j.Endpoint, neo4j.BasicAuth(endpoints.Neo4j.Username, endpoints.Neo4j.Password, ""))
+	driver, err := neo4j.NewDriver(endpoints.Neo4j.Endpoint,
+		neo4j.BasicAuth(endpoints.Neo4j.Username, endpoints.Neo4j.Password, ""),
+		func(cfg *neo4j.Config) {
+			cfg.ConnectionAcquisitionTimeout = time.Second * 5
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -118,6 +124,10 @@ func new_neo4j_client(endpoints DBConfigs) (*CypherDriver, error) {
 
 func Neo4jClient(ctx context.Context) (neo4j.Driver, error) {
 	driver, err := getClient(ctx, &neo4j_clients_pool, new_neo4j_client)
+	if err != nil {
+		return nil, err
+	}
+	err = driver.VerifyConnectivity()
 	if err != nil {
 		return nil, err
 	}

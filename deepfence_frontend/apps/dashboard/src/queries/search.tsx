@@ -22,6 +22,7 @@ export const searchQueries = createQueryKeys('search', {
     size: number;
     active?: boolean;
     agentRunning?: boolean;
+    showOnlyKubernetesHosts?: boolean;
     order?: {
       sortBy: string;
       descending: boolean;
@@ -38,15 +39,19 @@ export const searchQueries = createQueryKeys('search', {
           nodeName: string;
         }[];
       }> => {
-        const { searchText, size, active, agentRunning, order } = filters;
+        const { searchText, size, active, agentRunning, showOnlyKubernetesHosts, order } =
+          filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
             filters: {
               contains_filter: {
                 filter_in: {
                   pseudo: [false],
-                  ...(active !== undefined && { active: [active === true] }),
+                  ...(active && { active: [active === true] }),
                 },
+              },
+              not_contains_filter: {
+                filter_in: {},
               },
               order_filter: {
                 order_fields: [
@@ -83,10 +88,15 @@ export const searchQueries = createQueryKeys('search', {
             node_name: [searchText],
           };
         }
-        if (!isNil(agentRunning)) {
+        if (!isNil(agentRunning) && agentRunning) {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
             'agent_running'
           ] = [agentRunning];
+        }
+        if (showOnlyKubernetesHosts) {
+          searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in![
+            'kubernetes_cluster_id'
+          ] = [''];
         }
         const searchHostsApi = apiWrapper({
           fn: getSearchApiClient().searchHosts,
@@ -131,7 +141,7 @@ export const searchQueries = createQueryKeys('search', {
       }): Promise<{
         containers: {
           nodeId: string;
-          hostName: string;
+          nodeName: string;
         }[];
       }> => {
         const { searchText, size, active, order } = filters;
@@ -152,7 +162,7 @@ export const searchQueries = createQueryKeys('search', {
               contains_filter: {
                 filter_in: {
                   pseudo: [false],
-                  ...(active !== undefined && { active: [active === true] }),
+                  ...(active && { active: [active === true] }),
                 },
               },
               order_filter: {
@@ -201,7 +211,7 @@ export const searchQueries = createQueryKeys('search', {
           containers: searchContainersResponse.value.slice(0, size).map((res) => {
             return {
               nodeId: res.node_id,
-              hostName: res.docker_container_name,
+              nodeName: res.node_name,
             };
           }),
         };
@@ -225,7 +235,7 @@ export const searchQueries = createQueryKeys('search', {
       }): Promise<{
         containerImages: {
           nodeId: string;
-          imageName: string;
+          nodeName: string;
         }[];
       }> => {
         const { searchText, size, active, order } = filters;
@@ -260,7 +270,7 @@ export const searchQueries = createQueryKeys('search', {
               match_filter: matchFilter,
               compare_filter: null,
             },
-            in_field_filter: ['node_id', 'docker_image_name', 'docker_image_tag'],
+            in_field_filter: ['node_id', 'node_name'],
             window: {
               offset: 0,
               size: 0,
@@ -299,7 +309,7 @@ export const searchQueries = createQueryKeys('search', {
             .map((res) => {
               return {
                 nodeId: res.node_id,
-                imageName: `${res.docker_image_name}:${res.docker_image_tag}`,
+                nodeName: res.node_name,
               };
             }),
         };
@@ -335,7 +345,7 @@ export const searchQueries = createQueryKeys('search', {
               contains_filter: {
                 filter_in: {
                   pseudo: [false],
-                  ...(active !== undefined && { active: [active === true] }),
+                  ...(active && { active: [active === true] }),
                 },
               },
               match_filter: {
@@ -371,7 +381,7 @@ export const searchQueries = createQueryKeys('search', {
             node_name: [searchText],
           };
         }
-        if (!isNil(agentRunning)) {
+        if (!isNil(agentRunning) && agentRunning) {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
             'agent_running'
           ] = [agentRunning];

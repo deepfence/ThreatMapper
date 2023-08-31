@@ -13,6 +13,8 @@ export type SearchableHostListProps = {
   defaultSelectedHosts?: string[];
   valueKey?: 'nodeId' | 'hostName' | 'nodeName';
   active?: boolean;
+  agentRunning?: boolean;
+  showOnlyKubernetesHosts?: boolean;
   triggerVariant?: 'select' | 'button';
   helperText?: string;
   color?: 'error' | 'default';
@@ -26,6 +28,8 @@ const SearchableHost = ({
   defaultSelectedHosts,
   valueKey = 'nodeId',
   active,
+  agentRunning = true,
+  showOnlyKubernetesHosts,
   triggerVariant,
   helperText,
   color,
@@ -51,7 +55,8 @@ const SearchableHost = ({
         size: PAGE_SIZE,
         searchText,
         active,
-        agentRunning: true,
+        agentRunning,
+        showOnlyKubernetesHosts,
         order: {
           sortBy: 'host_name',
           descending: false,

@@ -10,6 +10,7 @@ import (
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	httpext "github.com/go-playground/pkg/v5/net/http"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/opentracing/opentracing-go"
 	"github.com/ugorji/go/codec"
 )
@@ -40,6 +41,11 @@ func (h *Handler) OpenApiDocsHandler(w http.ResponseWriter, r *http.Request) {
 
 func respondWith(ctx context.Context, w http.ResponseWriter, code int, response interface{}) {
 	if err, ok := response.(error); ok {
+		switch response.(type) {
+		case *neo4j.ConnectivityError:
+			code = http.StatusServiceUnavailable
+		default:
+		}
 		log.Error().Msgf("Error %d: %v", code, err)
 		response = err.Error()
 	} else if 500 <= code && code < 600 {
@@ -142,6 +148,8 @@ func respondError(err error, w http.ResponseWriter) error {
 		code = http.StatusForbidden
 	case *NotFoundError:
 		code = http.StatusNotFound
+	case *neo4j.ConnectivityError:
+		code = http.StatusServiceUnavailable
 	default:
 		code = http.StatusInternalServerError
 	}

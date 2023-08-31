@@ -67,7 +67,7 @@ import { useDownloadScan } from '@/features/common/data-component/downloadScanAc
 import { SecretScanResultsPieChart } from '@/features/secrets/components/scan-results/SecretScanResultsPieChart';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
-import { ScanStatusEnum, ScanTypeEnum, SecretSeverityType } from '@/types/common';
+import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
@@ -637,7 +637,6 @@ const ActionDropdown = ({
           >
             Un-mask secret across hosts and images
           </DropdownItem>
-          <DropdownSeparator />
           <DropdownSeparator />
           <DropdownItem
             onClick={() => {

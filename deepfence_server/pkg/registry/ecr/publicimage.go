@@ -19,17 +19,20 @@ func listPublicImagesWithTags(result *ecrpublic.DescribeRepositoriesOutput, svc 
 		}
 
 		for _, tag := range tags.ImageTagDetails {
-			var containerImage model.IngestedContainerImage
-			containerImage.Name = *repo.RepositoryUri
-			containerImage.ID = model.DigestToID(*tag.ImageDetail.ImageDigest)
-			containerImage.Tag = *tag.ImageTag
-			containerImage.DockerImageID = *tag.ImageDetail.ImageDigest
-			containerImage.Size = fmt.Sprint(*tag.ImageDetail.ImageSizeInBytes)
-			containerImage.Metadata = model.Metadata{
-				"created_time": *repo.CreatedAt,
-				"digest":       *tag.ImageDetail.ImageDigest,
-				"last_updated": tag.ImageDetail.ImagePushedAt.Unix(),
-				"last_pushed":  tag.ImageDetail.ImagePushedAt.Unix(),
+			imageID, shortImageID := model.DigestToID(*tag.ImageDetail.ImageDigest)
+			containerImage := model.IngestedContainerImage{
+				ID:            imageID,
+				DockerImageID: imageID,
+				ShortImageID:  shortImageID,
+				Name:          *repo.RepositoryUri,
+				Tag:           *tag.ImageTag,
+				Size:          fmt.Sprint(*tag.ImageDetail.ImageSizeInBytes),
+				Metadata: model.Metadata{
+					"created_time": *repo.CreatedAt,
+					"digest":       *tag.ImageDetail.ImageDigest,
+					"last_updated": tag.ImageDetail.ImagePushedAt.Unix(),
+					"last_pushed":  tag.ImageDetail.ImagePushedAt.Unix(),
+				},
 			}
 			containerImages = append(containerImages, containerImage)
 		}
