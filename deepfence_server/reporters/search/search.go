@@ -27,6 +27,7 @@ type SearchFilter struct {
 type SearchNodeReq struct {
 	NodeFilter         SearchFilter      `json:"node_filter" required:"true"`
 	ExtendedNodeFilter SearchFilter      `json:"extended_node_filter"`
+	RelatedNodeFilter  SearchFilter      `json:"related_node_filter"`
 	Window             model.FetchWindow `json:"window" required:"true"`
 }
 
@@ -154,15 +155,25 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	}
 	defer tx.Close()
 
-	query := `
-		MATCH (n:` + dummy.NodeType() + `)` +
-		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter, nil) +
-		` OPTIONAL MATCH (n) -[:IS]-> (e) ` +
-		reporters.ParseFieldFilters2CypherWhereConditions("e", mo.Some(extended_filter.Filters), true) +
-		reporters.OrderFilter2CypherCondition("e", filter.Filters.OrderFilter, []string{"n"}) +
-		`RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e` +
-		fw.FetchWindow2CypherQuery()
+	var query string
+	if dummy.ExtendedField() != "" {
+		query = `
+			MATCH (n:` + dummy.NodeType() + `)` +
+			reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
+			reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter, nil) +
+			` MATCH (n) -[:IS]-> (e) ` +
+			reporters.ParseFieldFilters2CypherWhereConditions("e", mo.Some(extended_filter.Filters), true) +
+			reporters.OrderFilter2CypherCondition("e", extended_filter.Filters.OrderFilter, []string{"n"}) +
+			`RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e` +
+			fw.FetchWindow2CypherQuery()
+	} else {
+		query = `
+			MATCH (n:` + dummy.NodeType() + `)` +
+			reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
+			reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter, nil) +
+			`RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) +
+			fw.FetchWindow2CypherQuery()
+	}
 	log.Debug().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{})
