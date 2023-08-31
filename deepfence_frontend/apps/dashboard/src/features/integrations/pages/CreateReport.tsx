@@ -266,6 +266,7 @@ const ReportForm = () => {
                 return Object.keys(RESOURCES).find((resource) => resource === item) ?? '';
               }}
               placeholder="Select resource"
+              required
             >
               {Object.keys(RESOURCES).map((resource) => {
                 return (
@@ -343,6 +344,7 @@ const ReportForm = () => {
               getDisplayValue={(item) => {
                 return downloadType;
               }}
+              required
             >
               {Object.keys(REPORT_TYPES).map((resource) => {
                 return (

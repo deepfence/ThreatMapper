@@ -46,6 +46,7 @@ export const HarborConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           placeholder="Registry Name"
           color={fieldErrors?.['name'] ? 'error' : 'default'}
           helperText={fieldErrors?.['name']}
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"
@@ -55,6 +56,7 @@ export const HarborConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           placeholder="Registry URL"
           color={fieldErrors?.['harbor_registry_url'] ? 'error' : 'default'}
           helperText={fieldErrors?.['harbor_registry_url']}
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"
@@ -64,6 +66,7 @@ export const HarborConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           placeholder="Project Name"
           color={fieldErrors?.['harbor_project_name'] ? 'error' : 'default'}
           helperText={fieldErrors?.['harbor_project_name']}
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"

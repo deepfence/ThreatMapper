@@ -133,7 +133,7 @@ const Registries = () => {
       </div>
       <Suspense
         fallback={
-          <div className="flex gap-4 mx-4 my-10">
+          <div className="mx-4 my-10 flex gap-x-4 gap-y-10 flex-wrap">
             <RegistrySkeleton />
           </div>
         }

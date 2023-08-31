@@ -45,6 +45,7 @@ export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPro
           placeholder="Registry Name"
           color={fieldErrors?.['name'] ? 'error' : 'default'}
           helperText={fieldErrors?.['name']}
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"
@@ -55,6 +56,7 @@ export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPro
           placeholder="Registry URL"
           color={fieldErrors?.['quay_registry_url'] ? 'error' : 'default'}
           helperText={fieldErrors?.['quay_registry_url']}
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"
@@ -65,6 +67,7 @@ export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPro
           placeholder="Namespace"
           color={fieldErrors?.['quay_namespace'] ? 'error' : 'default'}
           helperText={fieldErrors?.['quay_namespace']}
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"

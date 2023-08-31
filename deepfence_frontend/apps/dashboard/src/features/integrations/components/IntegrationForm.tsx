@@ -73,6 +73,7 @@ const TextInputType = ({
   color,
   type,
   placeholder,
+  required,
 }: {
   label: string;
   name: string;
@@ -80,6 +81,7 @@ const TextInputType = ({
   color: 'error' | 'default';
   type?: 'text' | 'password';
   placeholder?: string;
+  required?: boolean;
 }) => {
   return (
     <TextInput
@@ -90,6 +92,7 @@ const TextInputType = ({
       placeholder={placeholder ? placeholder : label}
       helperText={helperText}
       color={color}
+      required={required}
     />
   );
 };
@@ -297,6 +300,7 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
         getDisplayValue={() => {
           return notificationType;
         }}
+        required
       >
         {notificationTypeList.map((notification) => {
           return (
@@ -374,6 +378,7 @@ export const IntegrationForm = ({
                     'Ex. https://hooks.slack.com/services/T0000/B00000/XXXXXXXXX'
                   }
                   color={fieldErrors?.webhook_url ? 'error' : 'default'}
+                  required
                 />
                 <TextInputType
                   name="channelName"
@@ -381,6 +386,7 @@ export const IntegrationForm = ({
                   placeholder="Slack channel"
                   helperText={fieldErrors?.channel}
                   color={fieldErrors?.channel ? 'error' : 'default'}
+                  required
                 />
               </>
             )}
@@ -392,6 +398,7 @@ export const IntegrationForm = ({
                   placeholder="Integration key"
                   helperText={fieldErrors?.service_key}
                   color={fieldErrors?.service_key ? 'error' : 'default'}
+                  required
                 />
                 <TextInputType
                   name="apiKey"
@@ -399,6 +406,7 @@ export const IntegrationForm = ({
                   placeholder="Api key"
                   helperText={fieldErrors?.api_key}
                   color={fieldErrors?.api_key ? 'error' : 'default'}
+                  required
                 />
               </>
             )}
@@ -410,6 +418,7 @@ export const IntegrationForm = ({
                   placeholder="Email id"
                   helperText={fieldErrors?.email_id}
                   color={fieldErrors?.email_id ? 'error' : 'default'}
+                  required
                 />
               </>
             )}
@@ -421,6 +430,7 @@ export const IntegrationForm = ({
                   placeholder="API url"
                   helperText={fieldErrors?.url}
                   color={fieldErrors?.url ? 'error' : 'default'}
+                  required
                 />
                 <TextInputType
                   name="auth_header"
@@ -442,6 +452,7 @@ export const IntegrationForm = ({
                     'Ex. https://myteam.webhook.office.com/webhookb2/a1b1c1d1/XXX/XXXX'
                   }
                   color={fieldErrors?.webhook_url ? 'error' : 'default'}
+                  required
                 />
               </>
             )}
@@ -453,10 +464,11 @@ export const IntegrationForm = ({
                   label="Endpoint Url"
                   placeholder="Endpoint url"
                   helperText={
-                    fieldErrors?.url ??
+                    fieldErrors?.endpoint_url ??
                     'Ex. https://[splunkEndpoint]:8089/services/receivers/simpleVersion: 7.1'
                   }
-                  color={fieldErrors?.url ? 'error' : 'default'}
+                  color={fieldErrors?.endpoint_url ? 'error' : 'default'}
+                  required
                 />
                 <TextInputType
                   name="token"
@@ -464,6 +476,7 @@ export const IntegrationForm = ({
                   placeholder="Receiver token"
                   helperText={fieldErrors?.token}
                   color={fieldErrors?.token ? 'error' : 'default'}
+                  required
                 />
               </>
             )}
@@ -479,6 +492,7 @@ export const IntegrationForm = ({
                     'Ex. https://[SumoEndpoint]/receiver/v1/http/[UniqueHTTPCollectorCode]'
                   }
                   color={fieldErrors?.url ? 'error' : 'default'}
+                  required
                 />
               </>
             )}
@@ -489,8 +503,9 @@ export const IntegrationForm = ({
                   name="url"
                   label="Endpoint Url"
                   placeholder="Elasticsearch endpoint url"
-                  helperText={fieldErrors?.url ?? 'Version: 5.x and above'}
-                  color={fieldErrors?.url ? 'error' : 'default'}
+                  helperText={fieldErrors?.endpoint_url ?? 'Version: 5.x and above'}
+                  color={fieldErrors?.endpoint_url ? 'error' : 'default'}
+                  required
                 />
                 <TextInputType
                   name="index"
@@ -498,6 +513,7 @@ export const IntegrationForm = ({
                   placeholder="Elasticsearch index"
                   helperText={fieldErrors?.index}
                   color={fieldErrors?.index ? 'error' : 'default'}
+                  required
                 />
                 <TextInputType
                   name="docType"
@@ -524,6 +540,7 @@ export const IntegrationForm = ({
                   placeholder="Api url"
                   helperText={fieldErrors?.url}
                   color={fieldErrors?.url ? 'error' : 'default'}
+                  required
                 />
                 <TextInputType
                   name="authKey"
@@ -588,6 +605,7 @@ export const IntegrationForm = ({
                     'Ex. https://[organization].atlassian.net/Version: 7.13'
                   }
                   color={fieldErrors?.jira_site_url ? 'error' : 'default'}
+                  required
                 />
                 <Radio
                   name="authTypeRadio"
@@ -626,6 +644,7 @@ export const IntegrationForm = ({
                   label="Email"
                   helperText={fieldErrors?.username}
                   color={fieldErrors?.username ? 'error' : 'default'}
+                  required
                 />
                 <TextInputType
                   name="accessKey"
@@ -633,6 +652,7 @@ export const IntegrationForm = ({
                   placeholder="Jira project key"
                   helperText={fieldErrors?.jira_project_key}
                   color={fieldErrors?.jira_project_key ? 'error' : 'default'}
+                  required
                 />
                 <TextInputType
                   name="task"
@@ -640,6 +660,7 @@ export const IntegrationForm = ({
                   placeholder="Bugs, task, etc"
                   helperText={fieldErrors?.issue_type ?? 'Case sensitive'}
                   color={fieldErrors?.issue_type ? 'error' : 'default'}
+                  required
                 />
                 <TextInputType
                   name="assigne"
@@ -659,6 +680,7 @@ export const IntegrationForm = ({
                   placeholder="S3 bukcket name"
                   helperText={fieldErrors?.s3_bucket_name}
                   color={fieldErrors?.s3_bucket_name ? 'error' : 'default'}
+                  required
                 />
                 <TextInputType
                   name="folder"
@@ -666,6 +688,7 @@ export const IntegrationForm = ({
                   placeholder="S3 folder"
                   helperText={fieldErrors?.s3_folder_name}
                   color={fieldErrors?.s3_folder_name ? 'error' : 'default'}
+                  required
                 />
                 <div className="col-span-2">
                   <Checkbox
@@ -722,6 +745,7 @@ export const IntegrationForm = ({
                   placeholder="AWS region"
                   helperText={fieldErrors?.aws_region}
                   color={fieldErrors?.aws_region ? 'error' : 'default'}
+                  required
                 />
               </>
             )}
@@ -739,7 +763,7 @@ export const IntegrationForm = ({
               <p className="dark:text-status-error text-p7">{data.message}</p>
             )}
           </div>
-          <div className="mt-14 flex gap-x-2">
+          <div className="mt-14 flex gap-x-2 p-1">
             <Button size="md" color="default" type="submit">
               Add
             </Button>

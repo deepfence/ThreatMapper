@@ -49,6 +49,7 @@ export const DockerPriavateConnectorForm = ({
             placeholder="Registry Name"
             color={fieldErrors?.['name'] ? 'error' : 'default'}
             helperText={fieldErrors?.['name']}
+            required
           />
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
@@ -58,6 +59,7 @@ export const DockerPriavateConnectorForm = ({
             placeholder="Registry URL"
             color={fieldErrors?.['docker_registry_url'] ? 'error' : 'default'}
             helperText={fieldErrors?.['docker_registry_url']}
+            required
           />
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
@@ -67,6 +69,7 @@ export const DockerPriavateConnectorForm = ({
             placeholder="Username"
             color={fieldErrors?.['docker_username'] ? 'error' : 'default'}
             helperText={fieldErrors?.['docker_username']}
+            required
           />
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"

@@ -50,6 +50,7 @@ export const AmazonECRConnectorForm = ({
           placeholder="Registry Name"
           color={fieldErrors?.['name'] ? 'error' : 'default'}
           helperText={fieldErrors?.['name']}
+          required
         />
         <div className="flex flex-col gap-y-4">
           <input hidden value={String(isPublic)} name="non_secret.is_public" />

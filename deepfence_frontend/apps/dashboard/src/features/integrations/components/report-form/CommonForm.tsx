@@ -38,9 +38,10 @@ export const CommonForm = ({
           setProvider(value);
         }}
         placeholder="Select node type"
-        getDisplayValue={(item) => {
+        getDisplayValue={() => {
           return provider;
         }}
+        required
       >
         {Object.keys(nodeType).map((resource) => {
           return (

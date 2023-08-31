@@ -45,6 +45,7 @@ export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           placeholder="Registry Name"
           color={fieldErrors?.['name'] ? 'error' : 'default'}
           helperText={fieldErrors?.['name']}
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"
@@ -55,6 +56,7 @@ export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           placeholder="Gilab Server URL"
           color={fieldErrors?.['gitlab_server_url'] ? 'error' : 'default'}
           helperText={fieldErrors?.['gitlab_server_url']}
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"
@@ -65,6 +67,7 @@ export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           placeholder="GitLab Registry URL"
           color={fieldErrors?.['gitlab_registry_url'] ? 'error' : 'default'}
           helperText={fieldErrors?.['gitlab_registry_url']}
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"

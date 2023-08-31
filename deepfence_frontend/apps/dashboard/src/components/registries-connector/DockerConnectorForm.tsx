@@ -42,6 +42,7 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           placeholder="Registry Name"
           helperText={fieldErrors?.name}
           color={fieldErrors?.name ? 'error' : 'default'}
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"
@@ -52,6 +53,7 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           color={fieldErrors?.['docker_hub_namespace'] ? 'error' : 'default'}
           helperText={fieldErrors?.['docker_hub_namespace']}
           placeholder="Namespace"
+          required
         />
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"
@@ -60,6 +62,7 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           name="non_secret.docker_hub_username"
           color={fieldErrors?.['docker_hub_username'] ? 'error' : 'default'}
           helperText={fieldErrors?.['docker_hub_username']}
+          required
           placeholder="Username"
         />
         <TextInput
