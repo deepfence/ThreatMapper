@@ -481,7 +481,7 @@ const DataTable = ({
         rowSelectionState={rowSelectionState}
         onRowSelectionChange={setRowSelectionState}
         approximatePagination
-        getRowId={(row) => row.pod_name}
+        getRowId={(row) => row.node_id}
         totalRows={data.totalRows}
         pageIndex={data.currentPage}
         onPaginationChange={(updaterOrValue) => {

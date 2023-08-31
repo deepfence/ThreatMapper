@@ -97,6 +97,12 @@ export interface ModelPod {
      * @type {string}
      * @memberof ModelPod
      */
+    malware_scan_status: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelPod
+     */
     node_id: string;
     /**
      * 
@@ -116,6 +122,18 @@ export interface ModelPod {
      * @memberof ModelPod
      */
     processes: Array<ModelProcess> | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelPod
+     */
+    secret_scan_status: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelPod
+     */
+    vulnerability_scan_status: string;
 }
 
 /**
@@ -133,10 +151,13 @@ export function instanceOfModelPod(value: object): boolean {
     isInstance = isInstance && "kubernetes_labels" in value;
     isInstance = isInstance && "kubernetes_namespace" in value;
     isInstance = isInstance && "kubernetes_state" in value;
+    isInstance = isInstance && "malware_scan_status" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "pod_name" in value;
     isInstance = isInstance && "processes" in value;
+    isInstance = isInstance && "secret_scan_status" in value;
+    isInstance = isInstance && "vulnerability_scan_status" in value;
 
     return isInstance;
 }
@@ -161,10 +182,13 @@ export function ModelPodFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'kubernetes_labels': json['kubernetes_labels'],
         'kubernetes_namespace': json['kubernetes_namespace'],
         'kubernetes_state': json['kubernetes_state'],
+        'malware_scan_status': json['malware_scan_status'],
         'node_id': json['node_id'],
         'node_name': json['node_name'],
         'pod_name': json['pod_name'],
         'processes': (json['processes'] === null ? null : (json['processes'] as Array<any>).map(ModelProcessFromJSON)),
+        'secret_scan_status': json['secret_scan_status'],
+        'vulnerability_scan_status': json['vulnerability_scan_status'],
     };
 }
 
@@ -187,10 +211,13 @@ export function ModelPodToJSON(value?: ModelPod | null): any {
         'kubernetes_labels': value.kubernetes_labels,
         'kubernetes_namespace': value.kubernetes_namespace,
         'kubernetes_state': value.kubernetes_state,
+        'malware_scan_status': value.malware_scan_status,
         'node_id': value.node_id,
         'node_name': value.node_name,
         'pod_name': value.pod_name,
         'processes': (value.processes === null ? null : (value.processes as Array<any>).map(ModelProcessToJSON)),
+        'secret_scan_status': value.secret_scan_status,
+        'vulnerability_scan_status': value.vulnerability_scan_status,
     };
 }
 

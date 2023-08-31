@@ -11647,7 +11647,8 @@
               "container",
               "cloud_account",
               "cluster",
-              "registry"
+              "registry",
+              "pod"
             ],
             "type": "string"
           }
@@ -11703,7 +11704,10 @@
           "kubernetes_ip",
           "kubernetes_is_in_host_network",
           "kubernetes_labels",
-          "kubernetes_created"
+          "kubernetes_created",
+          "malware_scan_status",
+          "secret_scan_status",
+          "vulnerability_scan_status"
         ],
         "type": "object",
         "properties": {
@@ -11725,6 +11729,7 @@
           },
           "kubernetes_namespace": { "type": "string" },
           "kubernetes_state": { "type": "string" },
+          "malware_scan_status": { "type": "string" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "pod_name": { "type": "string" },
@@ -11732,7 +11737,9 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelProcess" },
             "nullable": true
-          }
+          },
+          "secret_scan_status": { "type": "string" },
+          "vulnerability_scan_status": { "type": "string" }
         }
       },
       "ModelPostureProvider": {
@@ -12595,6 +12602,7 @@
           "open_files_count": { "type": "integer" },
           "os": { "type": "string" },
           "pid": { "type": "integer" },
+          "pod_id": { "type": "string" },
           "pod_name": { "type": "string" },
           "ppid": { "type": "integer" },
           "private_ip": { "type": "array", "items": { "type": "string" } },

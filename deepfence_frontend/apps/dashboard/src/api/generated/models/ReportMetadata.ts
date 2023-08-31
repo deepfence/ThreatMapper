@@ -378,6 +378,12 @@ export interface ReportMetadata {
      * @type {string}
      * @memberof ReportMetadata
      */
+    pod_id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ReportMetadata
+     */
     pod_name?: string;
     /**
      * 
@@ -525,6 +531,7 @@ export function ReportMetadataFromJSONTyped(json: any, ignoreDiscriminator: bool
         'open_files_count': !exists(json, 'open_files_count') ? undefined : json['open_files_count'],
         'os': !exists(json, 'os') ? undefined : json['os'],
         'pid': !exists(json, 'pid') ? undefined : json['pid'],
+        'pod_id': !exists(json, 'pod_id') ? undefined : json['pod_id'],
         'pod_name': !exists(json, 'pod_name') ? undefined : json['pod_name'],
         'ppid': !exists(json, 'ppid') ? undefined : json['ppid'],
         'private_ip': !exists(json, 'private_ip') ? undefined : json['private_ip'],
@@ -608,6 +615,7 @@ export function ReportMetadataToJSON(value?: ReportMetadata | null): any {
         'open_files_count': value.open_files_count,
         'os': value.os,
         'pid': value.pid,
+        'pod_id': value.pod_id,
         'pod_name': value.pod_name,
         'ppid': value.ppid,
         'private_ip': value.private_ip,
