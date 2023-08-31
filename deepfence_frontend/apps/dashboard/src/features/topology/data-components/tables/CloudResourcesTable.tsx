@@ -16,18 +16,13 @@ import {
 import { ModelCloudResource } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
-import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { TruncatedText } from '@/components/TruncatedText';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
 import { queries } from '@/queries';
-import {
-  ComplianceScanGroupedStatus,
-  isScanComplete,
-  SCAN_STATUS_GROUPS,
-} from '@/utils/scan';
+import { isScanComplete } from '@/utils/scan';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -539,39 +534,6 @@ const DataTable = () => {
           return <ScanStatusBadge status={info.getValue()} />;
         },
         header: () => <TruncatedText text="Posture scan status" />,
-        minSize: 60,
-        size: 100,
-        maxSize: 300,
-        enableSorting: false,
-      }),
-      columnHelper.accessor('cloud_compliances_count', {
-        cell: (info) => {
-          if (info.row.original.cloud_compliance_scan_status === 'COMPLETE') {
-            return (
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-4">
-                  <ErrorStandardSolidIcon />
-                </div>
-                <DFLink
-                  to={{
-                    pathname: generatePath(
-                      `/posture/cloud/scan-results/:cloudProvider/:scanId`,
-                      {
-                        scanId: info.row.original.cloud_compliance_latest_scan_id,
-                        cloudProvider: info.row.original.cloud_provider,
-                      },
-                    ),
-                  }}
-                  target="_blank"
-                >
-                  <TruncatedText text={`${info.getValue()} results`} />
-                </DFLink>
-              </div>
-            );
-          }
-          return '-';
-        },
-        header: () => <TruncatedText text="Scan results" />,
         minSize: 60,
         size: 100,
         maxSize: 300,
