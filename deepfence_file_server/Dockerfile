@@ -8,13 +8,10 @@ ENV MINIO_ROOT_USER=deepfence \
 
 WORKDIR /usr/local/bin
 COPY entrypoint.sh /entrypoint.sh
-COPY config.json /etc/seaweed.json
-RUN apk update --no-cache && apk upgrade --no-cache
-RUN wget https://github.com/seaweedfs/seaweedfs/releases/download/3.55/linux_amd64_full.tar.gz
-RUN tar xvf ./linux_amd64_full.tar.gz
-RUN chmod +x /usr/local/bin/weed /entrypoint.sh
-RUN rm ./linux_amd64_full.tar.gz
-RUN mkdir -p /data
+RUN apk update --no-cache && apk upgrade --no-cache \
+    && wget https://dl.min.io/server/minio/release/linux-amd64/minio \
+    && chmod +x /usr/local/bin/minio /entrypoint.sh \
+    && mkdir -p /data
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["weed", "server", "-ip=0.0.0.0", "-dir=/data", "-s3", "-s3.port=9000", "-s3.config=/etc/seaweed.json"]
+CMD ["minio", "server", "/data", "--address", "0.0.0.0:9000", "--console-address", "0.0.0.0:9090", "--anonymous", "--json"]

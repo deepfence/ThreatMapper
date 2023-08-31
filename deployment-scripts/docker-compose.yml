@@ -151,7 +151,7 @@ services:
     restart: always
     ports:
       - "127.0.0.1:9000:9000"
-      - "127.0.0.1:9333:9333"
+      - "127.0.0.1:9090:9090"
     volumes:
       - deepfence_file_server:/data:rw
     logging:

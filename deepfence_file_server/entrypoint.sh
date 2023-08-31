@@ -1,9 +1,9 @@
 #!/bin/sh
 
-# If command starts with an option, prepend weed.
-if [ "${1}" != "weed" ]; then
+# If command starts with an option, prepend minio.
+if [ "${1}" != "minio" ]; then
     if [ -n "${1}" ]; then
-        set -- weed "$@"
+        set -- minio "$@"
     fi
 fi
 
