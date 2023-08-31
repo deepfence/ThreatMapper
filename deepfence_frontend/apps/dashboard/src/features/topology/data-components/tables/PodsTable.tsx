@@ -26,6 +26,7 @@ import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { SearchablePodList } from '@/components/forms/SearchablePodList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
@@ -103,6 +104,7 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   hosts: 'Host',
   clusters: 'Cluster',
   kubernetesStatus: 'Kubernetes status',
+  pods: 'Pod',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -206,6 +208,26 @@ function Filters() {
             });
           }}
         />
+        <SearchablePodList
+          defaultSelectedPods={searchParams.getAll('pods')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('pods');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('pods');
+              value.forEach((pod) => {
+                prev.append('pods', pod);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -264,6 +286,7 @@ function useSearchPodsWithPagination() {
       order: getOrderFromSearchParams(searchParams),
       hosts: searchParams.getAll('hosts'),
       clusters: searchParams.getAll('clusters'),
+      pods: searchParams.getAll('pods'),
       kubernetesStatus: searchParams.get('kubernetesStatus') ?? undefined,
     }),
     keepPreviousData: true,
