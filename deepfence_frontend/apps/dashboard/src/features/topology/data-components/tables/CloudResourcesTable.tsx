@@ -45,9 +45,6 @@ function useSearchCloudResourcesWithPagination() {
       order: getOrderFromSearchParams(searchParams),
       cloudProvider: searchParams.getAll('cloudProvider'),
       serviceType: searchParams.getAll('serviceType'),
-      complianceScanStatus: searchParams.get('complianceScanStatus') as
-        | ComplianceScanGroupedStatus
-        | undefined,
     }),
     keepPreviousData: true,
   });
@@ -308,7 +305,6 @@ export const CloudResourcesTable = () => {
 };
 
 const FILTER_SEARCHPARAMS: Record<string, string> = {
-  complianceScanStatus: 'Posture scan status',
   cloudProvider: 'Cloud provider',
   serviceType: 'Service type',
 };
@@ -336,8 +332,6 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
 
 function Filters() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [complianceScanStatusSearchText, setComplianceScanStatusSearchText] =
-    useState('');
   const [serviceTypeSearchText, setServiceTypeSearchText] = useState('');
   const [cloudProvidersSearchText, setCloudProvidersSearchText] = useState('');
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
@@ -345,40 +339,6 @@ function Filters() {
   return (
     <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
       <div className="flex gap-2">
-        <Combobox
-          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
-            return groupStatus.value === searchParams.get('complianceScanStatus');
-          })}
-          nullable
-          onQueryChange={(query) => {
-            setComplianceScanStatusSearchText(query);
-          }}
-          onChange={(value) => {
-            setSearchParams((prev) => {
-              if (value) {
-                prev.set('complianceScanStatus', value.value);
-              } else {
-                prev.delete('complianceScanStatus');
-              }
-              prev.delete('page');
-              return prev;
-            });
-          }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['complianceScanStatus']}
-        >
-          {SCAN_STATUS_GROUPS.filter((item) => {
-            if (!complianceScanStatusSearchText.length) return true;
-            return item.label
-              .toLowerCase()
-              .includes(complianceScanStatusSearchText.toLowerCase());
-          }).map((item) => {
-            return (
-              <ComboboxOption key={item.value} value={item}>
-                {item.label}
-              </ComboboxOption>
-            );
-          })}
-        </Combobox>
         <Combobox
           value={searchParams.getAll('cloudProvider')}
           multiple
@@ -411,20 +371,18 @@ function Filters() {
           })}
         </Combobox>
         <Combobox
-          value={SERVICE_TYPES.find((serviceType) => {
-            return serviceType === searchParams.get('serviceType');
-          })}
+          value={searchParams.getAll('serviceType')}
           nullable
+          multiple
           onQueryChange={(query) => {
             setServiceTypeSearchText(query);
           }}
-          onChange={(value) => {
+          onChange={(values) => {
             setSearchParams((prev) => {
-              if (value) {
-                prev.set('serviceType', value);
-              } else {
-                prev.delete('serviceType');
-              }
+              prev.delete('serviceType');
+              values.forEach((value) => {
+                prev.append('serviceType', value);
+              });
               prev.delete('page');
               return prev;
             });
@@ -584,6 +542,7 @@ const DataTable = () => {
         minSize: 60,
         size: 100,
         maxSize: 300,
+        enableSorting: false,
       }),
       columnHelper.accessor('cloud_compliances_count', {
         cell: (info) => {
@@ -616,6 +575,7 @@ const DataTable = () => {
         minSize: 60,
         size: 100,
         maxSize: 300,
+        enableSorting: false,
       }),
       columnHelper.accessor('account_id', {
         cell: (info) => {

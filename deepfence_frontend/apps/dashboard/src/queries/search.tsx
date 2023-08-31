@@ -1014,7 +1014,6 @@ export const searchQueries = createQueryKeys('search', {
     page: number;
     pageSize: number;
     cloudRegion?: string;
-    complianceScanStatus?: ComplianceScanGroupedStatus;
     cloudProvider?: string[];
     serviceType?: string[];
     order?: {
@@ -1031,7 +1030,6 @@ export const searchQueries = createQueryKeys('search', {
           pageSize,
           cloudRegion,
           order,
-          complianceScanStatus,
           cloudProvider,
           serviceType,
         } = filters;
@@ -1066,34 +1064,16 @@ export const searchQueries = createQueryKeys('search', {
             'cloud_region'
           ] = [cloudRegion];
         }
-        if (complianceScanStatus) {
-          if (complianceScanStatus === ComplianceScanGroupedStatus.neverScanned) {
-            searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
-              ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
-              cloud_compliance_scan_status: [
-                ...COMPLIANCE_SCAN_STATUS_GROUPS.complete,
-                ...COMPLIANCE_SCAN_STATUS_GROUPS.error,
-                ...COMPLIANCE_SCAN_STATUS_GROUPS.inProgress,
-                ...COMPLIANCE_SCAN_STATUS_GROUPS.starting,
-              ],
-            };
-          } else {
-            searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-              ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-              cloud_compliance_scan_status:
-                COMPLIANCE_SCAN_STATUS_GROUPS[complianceScanStatus],
-            };
-          }
-        }
+
         if (cloudProvider?.length) {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
             'cloud_provider'
-          ] = [cloudProvider];
+          ] = cloudProvider;
         }
         if (serviceType?.length) {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
             'node_type'
-          ] = [serviceType];
+          ] = serviceType;
         }
         if (order) {
           searchSearchNodeReq.node_filter.filters.order_filter.order_fields?.push({
