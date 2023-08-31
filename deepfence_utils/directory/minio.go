@@ -309,16 +309,6 @@ func (mfm *MinioFileManager) CreatePublicBucket(ctx context.Context) error {
 		return err
 	}
 
-	public := fmt.Sprintf(
-		`{"Statement":[{"Action":["s3:ListBucketMultipartUploads","s3:GetBucketLocation","s3:ListBucket"],"Effect":"Allow","Principal":{"AWS":["*"]},"Resource":["arn:aws:s3:::%s"]},{"Action":["s3:AbortMultipartUpload","s3:DeleteObject","s3:GetObject","s3:ListMultipartUploadParts","s3:PutObject"],"Effect":"Allow","Principal":{"AWS":["*"]},"Resource":["arn:aws:s3:::%s/*"]}],"Version":"2012-10-17"}`,
-		mfm.namespace,
-		mfm.namespace,
-	)
-
-	if err = mfm.client.SetBucketPolicy(ctx, mfm.namespace, public); err != nil {
-		return err
-	}
-
 	return nil
 }
 
