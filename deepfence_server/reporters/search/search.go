@@ -2,6 +2,7 @@ package reporters_search
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -24,11 +25,17 @@ type SearchFilter struct {
 	Window        model.FetchWindow       `json:"window" required:"true"`
 }
 
+type ChainedSearchFilter struct {
+	NodeFilter   SearchFilter         `json:"node_filter" required:"true"`
+	RelationShip string               `json:"relation_ship" required:"true"`
+	NextFilter   *ChainedSearchFilter `json:"next_filter"`
+}
+
 type SearchNodeReq struct {
-	NodeFilter         SearchFilter      `json:"node_filter" required:"true"`
-	ExtendedNodeFilter SearchFilter      `json:"extended_node_filter"`
-	RelatedNodeFilter  SearchFilter      `json:"related_node_filter"`
-	Window             model.FetchWindow `json:"window" required:"true"`
+	NodeFilter         SearchFilter         `json:"node_filter" required:"true"`
+	ExtendedNodeFilter SearchFilter         `json:"extended_node_filter"`
+	IndirectFilters    *ChainedSearchFilter `json:"related_node_filter"`
+	Window             model.FetchWindow    `json:"window" required:"true"`
 }
 
 type SearchScanReq struct {
@@ -134,7 +141,58 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 	return res, nil
 }
 
-func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, extended_filter SearchFilter, fw model.FetchWindow) ([]T, error) {
+func constructIndirectMatchInit[T reporters.Cypherable](
+	filter SearchFilter,
+	extended_filter SearchFilter,
+	indirect_filter *ChainedSearchFilter,
+	fw model.FetchWindow) string {
+	var dummy T
+	query, prevs := constructIndirectMatch(indirect_filter, 0)
+	if len(prevs) == 0 {
+		query += `MATCH (n:` + dummy.NodeType() + `)` +
+			reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
+			reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter, prevs)
+	} else {
+		query += `MATCH (n:` + dummy.NodeType() + `) -[:` + indirect_filter.RelationShip + `]- (` + prevs[len(prevs)-1] + `)` +
+			reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
+			reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter, prevs)
+	}
+
+	if dummy.ExtendedField() != "" {
+		query += `
+			MATCH (n) -[:IS]-> (e) ` +
+			reporters.ParseFieldFilters2CypherWhereConditions("e", mo.Some(extended_filter.Filters), true) +
+			reporters.OrderFilter2CypherCondition("e", extended_filter.Filters.OrderFilter, []string{"n"}) +
+			` RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e` +
+			fw.FetchWindow2CypherQuery()
+	} else {
+		query += ` RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) +
+			fw.FetchWindow2CypherQuery()
+	}
+	return query
+}
+
+func constructIndirectMatch(indirect_filter *ChainedSearchFilter, count int) (string, []string) {
+	if indirect_filter == nil {
+		return "", []string{}
+	}
+
+	name := fmt.Sprintf("n%d", count)
+	query, prevs := constructIndirectMatch(indirect_filter.NextFilter, count+1)
+	if len(prevs) == 0 {
+		return query + `MATCH (` + name + `)` +
+				reporters.ParseFieldFilters2CypherWhereConditions(name, mo.Some(indirect_filter.NodeFilter.Filters), true) +
+				reporters.OrderFilter2CypherCondition(name, indirect_filter.NodeFilter.Filters.OrderFilter, prevs) + "\n",
+			append(prevs, name)
+	} else {
+		return query + `MATCH (` + name + `)-[:` + indirect_filter.NextFilter.RelationShip + `]- (` + prevs[len(prevs)-1] + `)` +
+				reporters.ParseFieldFilters2CypherWhereConditions(name, mo.Some(indirect_filter.NodeFilter.Filters), true) +
+				reporters.OrderFilter2CypherCondition(name, indirect_filter.NodeFilter.Filters.OrderFilter, prevs) + "\n",
+			append(prevs, name)
+	}
+}
+
+func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, extended_filter SearchFilter, indriect_filters *ChainedSearchFilter, fw model.FetchWindow) ([]T, error) {
 	res := []T{}
 	var dummy T
 
@@ -155,25 +213,7 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	}
 	defer tx.Close()
 
-	var query string
-	if dummy.ExtendedField() != "" {
-		query = `
-			MATCH (n:` + dummy.NodeType() + `)` +
-			reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-			reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter, nil) +
-			` MATCH (n) -[:IS]-> (e) ` +
-			reporters.ParseFieldFilters2CypherWhereConditions("e", mo.Some(extended_filter.Filters), true) +
-			reporters.OrderFilter2CypherCondition("e", extended_filter.Filters.OrderFilter, []string{"n"}) +
-			`RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e` +
-			fw.FetchWindow2CypherQuery()
-	} else {
-		query = `
-			MATCH (n:` + dummy.NodeType() + `)` +
-			reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-			reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter, nil) +
-			`RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) +
-			fw.FetchWindow2CypherQuery()
-	}
+	query := constructIndirectMatchInit[T](filter, extended_filter, indriect_filters, fw)
 	log.Debug().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{})
@@ -424,8 +464,8 @@ func SearchCloudNodeReport[T reporters.Cypherable](ctx context.Context, filter S
 	return hosts, nil
 }
 
-func SearchReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, extended_filter SearchFilter, fw model.FetchWindow) ([]T, error) {
-	hosts, err := searchGenericDirectNodeReport[T](ctx, filter, extended_filter, fw)
+func SearchReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, extended_filter SearchFilter, indirect_filter *ChainedSearchFilter, fw model.FetchWindow) ([]T, error) {
+	hosts, err := searchGenericDirectNodeReport[T](ctx, filter, extended_filter, indirect_filter, fw)
 	if err != nil {
 		return nil, err
 	}

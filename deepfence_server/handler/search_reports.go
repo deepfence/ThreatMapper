@@ -42,7 +42,7 @@ func SearchCountHandler[T reporters.CypherableAndCategorizable](w http.ResponseW
 		Filters:       req.ExtendedNodeFilter.Filters,
 	}
 
-	entries, err := reporters_search.SearchReport[T](r.Context(), dummy_ff, dummy_ext_ff, req.Window)
+	entries, err := reporters_search.SearchReport[T](r.Context(), dummy_ff, dummy_ext_ff, req.IndirectFilters, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
@@ -124,7 +124,7 @@ func SearchHandler[T reporters.Cypherable](w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	entries, err := reporters_search.SearchReport[T](r.Context(), req.NodeFilter, req.ExtendedNodeFilter, req.Window)
+	entries, err := reporters_search.SearchReport[T](r.Context(), req.NodeFilter, req.ExtendedNodeFilter, req.IndirectFilters, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
@@ -146,7 +146,7 @@ func SearchCloudResourcesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	entries, err := reporters_search.SearchReport[model.CloudResource](r.Context(), req.NodeFilter, req.ExtendedNodeFilter, req.Window)
+	entries, err := reporters_search.SearchReport[model.CloudResource](r.Context(), req.NodeFilter, req.ExtendedNodeFilter, req.IndirectFilters, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
@@ -171,7 +171,7 @@ func SearchCloudResourcesHandler(w http.ResponseWriter, r *http.Request) {
 	for accountId := range accountIDs {
 		searchFilter.Filters.ContainsFilter.FieldsValues["node_id"] = append(searchFilter.Filters.ContainsFilter.FieldsValues["node_id"], accountId)
 	}
-	accountIdEntries, err := reporters_search.SearchReport[model.CloudNode](r.Context(), searchFilter, reporters_search.SearchFilter{}, model.FetchWindow{})
+	accountIdEntries, err := reporters_search.SearchReport[model.CloudNode](r.Context(), searchFilter, reporters_search.SearchFilter{}, nil, model.FetchWindow{})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
