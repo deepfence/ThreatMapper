@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/react';
+import { Meta, StoryObj } from '@storybook/react';
 
 import Switch from '@/components/switch/Switch';
 
@@ -8,22 +8,22 @@ export default {
   argTypes: {
     onCheckedChange: { action: 'onCheckedChange' },
   },
-} as Meta<typeof Switch>;
+} satisfies Meta<typeof Switch>;
 
-export const Default = {
+export const Default: StoryObj<typeof Switch> = {
   args: {
     label: 'Toggle',
   },
 };
 
-export const Disabled = {
+export const Disabled: StoryObj<typeof Switch> = {
   args: {
     label: 'Disabled',
     disabled: true,
   },
 };
 
-export const DefaultOn = {
+export const DefaultOn: StoryObj<typeof Switch> = {
   args: {
     label: 'Toggle',
     defaultChecked: true,

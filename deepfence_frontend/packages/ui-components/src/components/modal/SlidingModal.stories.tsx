@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { useRef, useState } from 'react';
 
 import Button from '@/components/button/Button';
@@ -15,9 +15,9 @@ export default {
   argTypes: {
     onOpenChange: { action: 'onOpenChange' },
   },
-} as Meta<typeof SlidingModal>;
+} satisfies Meta<typeof SlidingModal>;
 
-export const ModalWithTrigger = () => {
+export const ModalWithTrigger: StoryFn<typeof SlidingModal> = () => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -44,7 +44,7 @@ export const ModalWithTrigger = () => {
   );
 };
 
-export const TriggerFromLeft = () => {
+export const TriggerFromLeft: StoryFn<typeof SlidingModal> = () => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -75,7 +75,7 @@ export const TriggerFromLeft = () => {
   );
 };
 
-export const WithoutTitle = () => {
+export const WithoutTitle: StoryFn<typeof SlidingModal> = () => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -97,7 +97,7 @@ export const WithoutTitle = () => {
   );
 };
 
-export const LongContent = () => {
+export const LongContent: StoryFn<typeof SlidingModal> = () => {
   const [open, setOpen] = useState(false);
   return (
     <>

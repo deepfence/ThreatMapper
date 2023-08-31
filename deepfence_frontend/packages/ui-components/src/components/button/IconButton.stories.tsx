@@ -9,23 +9,23 @@ export default {
   argTypes: {
     onClick: { action: 'onClick' },
   },
-} as Meta<typeof IconButton>;
+} satisfies Meta<typeof IconButton>;
 
-export const Large = {
+export const Large: Meta<typeof IconButton> = {
   args: {
     children: 'Large',
     size: 'lg',
     icon: <HiMenu />,
   },
 };
-export const Medium = {
+export const Medium: Meta<typeof IconButton> = {
   args: {
     children: 'Medium',
     size: 'md',
     icon: <HiMenu />,
   },
 };
-export const Small = {
+export const Small: Meta<typeof IconButton> = {
   args: {
     children: 'Small',
     size: 'sm',
@@ -33,7 +33,7 @@ export const Small = {
   },
 };
 
-export const MediumSuccess = {
+export const MediumSuccess: Meta<typeof IconButton> = {
   args: {
     children: 'Medium',
     size: 'md',
@@ -42,7 +42,7 @@ export const MediumSuccess = {
   },
 };
 
-export const MediumError = {
+export const MediumError: Meta<typeof IconButton> = {
   args: {
     children: 'Medium',
     size: 'md',
@@ -51,7 +51,7 @@ export const MediumError = {
   },
 };
 
-export const MediumOutline = {
+export const MediumOutline: Meta<typeof IconButton> = {
   args: {
     children: 'Medium',
     size: 'md',
@@ -60,7 +60,7 @@ export const MediumOutline = {
   },
 };
 
-export const MediumOutlineSuccess = {
+export const MediumOutlineSuccess: Meta<typeof IconButton> = {
   args: {
     children: 'Medium',
     size: 'md',
@@ -69,7 +69,7 @@ export const MediumOutlineSuccess = {
     icon: <HiMenu />,
   },
 };
-export const MediumOutlineError = {
+export const MediumOutlineError: Meta<typeof IconButton> = {
   args: {
     children: 'Medium',
     size: 'md',
@@ -79,7 +79,7 @@ export const MediumOutlineError = {
   },
 };
 
-export const MediumFlatVariant = {
+export const MediumFlatVariant: Meta<typeof IconButton> = {
   args: {
     children: 'Medium',
     size: 'md',
@@ -88,21 +88,21 @@ export const MediumFlatVariant = {
   },
 };
 
-export const MediumWithLoading = {
+export const MediumWithLoading: Meta<typeof IconButton> = {
   args: {
     children: 'Loading',
     size: 'md',
     loading: true,
   },
 };
-export const SmallWithLoading = {
+export const SmallWithLoading: Meta<typeof IconButton> = {
   args: {
     children: 'Loading',
     size: 'sm',
     loading: true,
   },
 };
-export const LargeWithLoading = {
+export const LargeWithLoading: Meta<typeof IconButton> = {
   args: {
     children: 'Loading',
     size: 'lg',

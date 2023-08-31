@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react';
+import { Meta, StoryFn, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 
 import { Combobox, ComboboxOption } from '@/components/select/Combobox';
@@ -12,7 +12,7 @@ import {
 export default {
   title: 'Components/Combobox',
   component: Combobox,
-} as Meta<typeof Combobox>;
+} satisfies Meta<typeof Combobox>;
 
 const OPTIONS = [
   {
@@ -98,7 +98,7 @@ const SingleSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
   );
 };
 
-export const SingleSelectNullable = {
+export const SingleSelectNullable: StoryObj<typeof Combobox> = {
   render: SingleSelectNullableTemplate,
   args: {},
 };
@@ -144,10 +144,11 @@ const SingleSelectNullableWithStringValuesTemplate: StoryFn<typeof Combobox> = (
   );
 };
 
-export const SingleSelectNullableStringValuesAndSelectTrigger = {
-  render: SingleSelectNullableWithStringValuesTemplate,
-  args: {},
-};
+export const SingleSelectNullableStringValuesAndSelectTrigger: StoryObj<typeof Combobox> =
+  {
+    render: SingleSelectNullableWithStringValuesTemplate,
+    args: {},
+  };
 
 const SingleSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
   const [selected, setSelected] = useState<(typeof OPTIONS)[number]>(OPTIONS[0]);
@@ -194,7 +195,7 @@ const SingleSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
   );
 };
 
-export const SingleSelectNonNullable = {
+export const SingleSelectNonNullable: StoryObj<typeof Combobox> = {
   render: SingleSelectNonNullableTemplate,
   args: {},
 };
@@ -247,7 +248,7 @@ const MultiSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
   );
 };
 
-export const MultiSelectNullable = {
+export const MultiSelectNullable: StoryObj<typeof Combobox> = {
   render: MultiSelectNullableTemplate,
   args: {},
 };
@@ -305,7 +306,7 @@ const MultiSelectNullableWithSelectVariantTemplate: StoryFn<typeof Combobox> = (
   );
 };
 
-export const MultiSelectNullableWithSelectVariant = {
+export const MultiSelectNullableWithSelectVariant: StoryObj<typeof Combobox> = {
   render: MultiSelectNullableWithSelectVariantTemplate,
   args: {},
 };
@@ -357,7 +358,7 @@ const MultiSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
   );
 };
 
-export const MultiSelectNonNullable = {
+export const MultiSelectNonNullable: StoryObj<typeof Combobox> = {
   render: MultiSelectNonNullableTemplate,
   args: {},
 };
@@ -420,7 +421,7 @@ const MultiSelectNonNullableTemplateInsideDialog: StoryFn<typeof Combobox> = () 
   );
 };
 
-export const MultiSelectNonNullableInsideDialog = {
+export const MultiSelectNonNullableInsideDialog: StoryObj<typeof Combobox> = {
   render: MultiSelectNonNullableTemplateInsideDialog,
   args: {},
 };

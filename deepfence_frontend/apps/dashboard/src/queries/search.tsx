@@ -1032,10 +1032,12 @@ export const searchQueries = createQueryKeys('search', {
     };
   },
   cloudResourcesWithPagination: (filters: {
-    nodeType: string;
+    resourceId?: string;
     page: number;
     pageSize: number;
-    cloudRegion: string;
+    cloudRegion?: string;
+    cloudProvider?: string[];
+    serviceType?: string[];
     order?: {
       sortBy: string;
       descending: boolean;
@@ -1044,19 +1046,26 @@ export const searchQueries = createQueryKeys('search', {
     return {
       queryKey: [filters],
       queryFn: async () => {
-        const { nodeType, page, pageSize, cloudRegion, order } = filters;
+        const {
+          resourceId,
+          page,
+          pageSize,
+          cloudRegion,
+          order,
+          cloudProvider,
+          serviceType,
+        } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
             filters: {
               compare_filter: [],
               match_filter: {
-                filter_in: {
-                  resource_id: [nodeType], // node type filter works with resource_id key somehow
-                  cloud_region: [cloudRegion],
-                },
+                filter_in: {},
               },
               contains_filter: { filter_in: {} },
               order_filter: { order_fields: [] },
+              not_contains_filter: { filter_in: {} },
+              contains_in_array_filter: { filter_in: {} },
             },
             in_field_filter: [],
             window: {
@@ -1067,6 +1076,27 @@ export const searchQueries = createQueryKeys('search', {
           window: { offset: page * pageSize, size: pageSize },
         };
 
+        if (resourceId) {
+          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
+            'resource_id'
+          ] = [resourceId];
+        }
+        if (cloudRegion) {
+          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
+            'cloud_region'
+          ] = [cloudRegion];
+        }
+
+        if (cloudProvider?.length) {
+          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
+            'cloud_provider'
+          ] = cloudProvider;
+        }
+        if (serviceType?.length) {
+          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
+            'node_type'
+          ] = serviceType;
+        }
         if (order) {
           searchSearchNodeReq.node_filter.filters.order_filter.order_fields?.push({
             field_name: order.sortBy,
@@ -1081,7 +1111,7 @@ export const searchQueries = createQueryKeys('search', {
           searchSearchNodeReq,
         });
         if (!resourcesResults.ok) {
-          throw new Error(`Failed to load cloud resoures : ${nodeType}`);
+          throw new Error(`Failed to load cloud resoures : ${resourceId}`);
         }
 
         const searchCloudResourcesCountApi = apiWrapper({
@@ -1098,7 +1128,7 @@ export const searchQueries = createQueryKeys('search', {
         });
 
         if (!resourcesCountResults.ok) {
-          throw new Error(`Failed to load cloud resoures count : ${nodeType}`);
+          throw new Error(`Failed to load cloud resoures count : ${resourceId}`);
         }
 
         return {
@@ -1122,6 +1152,42 @@ export const searchQueries = createQueryKeys('search', {
           throw new Error('Node counts failed');
         }
         return nodeCounts.value;
+      },
+    };
+  },
+  cloudResourcesCount: () => {
+    return {
+      queryKey: ['cloudResourcesCount'],
+      queryFn: async () => {
+        const searchCloudResourcesCountApi = apiWrapper({
+          fn: getSearchApiClient().searchCloudResourcesCount,
+        });
+        const resourcesCountResults = await searchCloudResourcesCountApi({
+          searchSearchNodeReq: {
+            node_filter: {
+              filters: {
+                compare_filter: [],
+                contains_filter: { filter_in: {} },
+                match_filter: { filter_in: {} },
+                order_filter: { order_fields: [] },
+              },
+              in_field_filter: [],
+              window: {
+                offset: 0,
+                size: 0,
+              },
+            },
+            window: {
+              offset: 0,
+              size: Number.MAX_SAFE_INTEGER,
+            },
+          },
+        });
+
+        if (!resourcesCountResults.ok) {
+          throw new Error('Node counts failed');
+        }
+        return resourcesCountResults.value.count;
       },
     };
   },

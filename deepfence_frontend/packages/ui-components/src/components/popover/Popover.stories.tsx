@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react';
+import { Meta, StoryFn, StoryObj } from '@storybook/react';
 
 import Button from '@/components/button/Button';
 import { Popover } from '@/components/popover/Popover';
@@ -13,7 +13,7 @@ export default {
       options: [undefined, 'start', 'center', 'end'],
     },
   },
-} as Meta<typeof Popover>;
+} satisfies Meta<typeof Popover>;
 
 const DefaultTemplate: StoryFn<typeof Popover> = (args) => {
   return (
@@ -31,7 +31,7 @@ const DefaultTemplate: StoryFn<typeof Popover> = (args) => {
   );
 };
 
-export const Default = {
+export const Default: StoryObj<typeof Popover> = {
   render: DefaultTemplate,
 
   args: {

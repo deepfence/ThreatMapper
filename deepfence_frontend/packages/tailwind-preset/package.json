@@ -19,14 +19,14 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
-    "tailwindcss": "^3.1.8",
-    "typescript": "^4.9.5"
+    "tailwindcss": "^3.3.3",
+    "typescript": "^5.1.6"
   },
   "peerDependencies": {
     "tailwindcss": "^3.1.8"
   },
   "dependencies": {
     "classnames": "^2.3.2",
-    "tailwind-merge": "^1.9.0"
+    "tailwind-merge": "^1.14.0"
   }
 }

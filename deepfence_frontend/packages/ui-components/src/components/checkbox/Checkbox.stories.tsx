@@ -1,5 +1,5 @@
 import { CheckedState } from '@radix-ui/react-checkbox';
-import { Meta, StoryFn } from '@storybook/react';
+import { Meta, StoryFn, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 
 import { Checkbox } from '@/components/checkbox/Checkbox';
@@ -7,9 +7,9 @@ import { Checkbox } from '@/components/checkbox/Checkbox';
 export default {
   title: 'Components/Checkbox',
   component: Checkbox,
-} as Meta<typeof Checkbox>;
+} satisfies Meta<typeof Checkbox>;
 
-export const Default = {
+export const Default: StoryObj<typeof Checkbox> = {
   args: {
     label: 'Default checkbox',
   },
@@ -28,7 +28,7 @@ const ControlledCheckboxTemplate: StoryFn<typeof Checkbox> = (args) => {
   );
 };
 
-export const ControlledCheckbox = {
+export const ControlledCheckbox: StoryObj<typeof Checkbox> = {
   render: ControlledCheckboxTemplate,
 
   args: {
@@ -51,7 +51,7 @@ const IndeterminateCheckboxTemplate: StoryFn<typeof Checkbox> = (args) => {
   );
 };
 
-export const IndeterminateCheckbox = {
+export const IndeterminateCheckbox: StoryObj<typeof Checkbox> = {
   render: IndeterminateCheckboxTemplate,
 
   args: {

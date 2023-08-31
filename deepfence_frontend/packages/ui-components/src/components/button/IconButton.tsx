@@ -167,7 +167,7 @@ export const iconButtonCVA = cva(
   },
 );
 
-interface IconButtonProps
+export interface IconButtonProps
   extends Omit<ComponentProps<'button'>, 'color'>,
     ObjectWithNonNullableValues<Omit<VariantProps<typeof iconButtonCVA>, 'withOutline'>> {
   icon?: React.ReactNode;

@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react';
+import { Meta, StoryFn, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 
 import Button from '@/components/button/Button';
@@ -13,7 +13,7 @@ export default {
       control: { type: 'radio' },
     },
   },
-} as Meta<typeof Tooltip>;
+} satisfies Meta<typeof Tooltip>;
 
 const Template: StoryFn<typeof Tooltip> = (args) => (
   <Tooltip {...args}>
@@ -40,7 +40,7 @@ const ControlledTemplate: StoryFn<typeof Tooltip> = (args) => {
   );
 };
 
-export const Default = {
+export const Default: StoryObj<typeof Tooltip> = {
   render: Template,
 
   args: {
@@ -50,7 +50,7 @@ export const Default = {
   },
 };
 
-export const Top = {
+export const Top: StoryObj<typeof Tooltip> = {
   render: Template,
 
   args: {
@@ -59,7 +59,8 @@ export const Top = {
     content: 'Your message here.',
   },
 };
-export const TopMultiLine = {
+
+export const TopMultiLine: StoryObj<typeof Tooltip> = {
   render: Template,
 
   args: {
@@ -70,7 +71,7 @@ export const TopMultiLine = {
   },
 };
 
-export const WithLable = {
+export const WithLable: StoryObj<typeof Tooltip> = {
   render: Template,
 
   args: {
@@ -81,7 +82,7 @@ export const WithLable = {
   },
 };
 
-export const Controlled = {
+export const Controlled: StoryObj<typeof Tooltip> = {
   render: ControlledTemplate,
 
   args: {

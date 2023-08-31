@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { useRef, useState } from 'react';
 
 import Button from '@/components/button/Button';
@@ -10,9 +10,9 @@ export default {
   argTypes: {
     onOpenChange: { action: 'onOpenChange' },
   },
-} as Meta<typeof Modal>;
+} satisfies Meta<typeof Modal>;
 
-export const DefaultOpenModalS = () => {
+export const DefaultOpenModalS: StoryFn<typeof Modal> = () => {
   const [, setOpen] = useState(false);
   return (
     <Modal defaultOpen={true} onOpenChange={() => setOpen(false)} size="s">
@@ -20,7 +20,7 @@ export const DefaultOpenModalS = () => {
     </Modal>
   );
 };
-export const DefaultOpenModalM = () => {
+export const DefaultOpenModalM: StoryFn<typeof Modal> = () => {
   const [, setOpen] = useState(false);
   return (
     <Modal defaultOpen={true} onOpenChange={() => setOpen(false)} size="m">
@@ -28,7 +28,7 @@ export const DefaultOpenModalM = () => {
     </Modal>
   );
 };
-export const DefaultOpenModalL = () => {
+export const DefaultOpenModalL: StoryFn<typeof Modal> = () => {
   const [, setOpen] = useState(false);
   return (
     <Modal defaultOpen={true} onOpenChange={() => setOpen(false)} size="l">
@@ -36,7 +36,7 @@ export const DefaultOpenModalL = () => {
     </Modal>
   );
 };
-export const DefaultOpenModalXL = () => {
+export const DefaultOpenModalXL: StoryFn<typeof Modal> = () => {
   const [, setOpen] = useState(false);
   return (
     <Modal defaultOpen={true} onOpenChange={() => setOpen(false)} size="xl">
@@ -44,7 +44,7 @@ export const DefaultOpenModalXL = () => {
     </Modal>
   );
 };
-export const DefaultOpenModalXXL = () => {
+export const DefaultOpenModalXXL: StoryFn<typeof Modal> = () => {
   const [, setOpen] = useState(false);
   return (
     <Modal defaultOpen={true} onOpenChange={() => setOpen(false)} size="xxl">
@@ -53,7 +53,7 @@ export const DefaultOpenModalXXL = () => {
   );
 };
 
-export const ModalWithTrigger = () => {
+export const ModalWithTrigger: StoryFn<typeof Modal> = () => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -85,7 +85,7 @@ export const ModalWithTrigger = () => {
   );
 };
 
-export const WithoutTitleWithFooter = () => {
+export const WithoutTitleWithFooter: StoryFn<typeof Modal> = () => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -120,7 +120,7 @@ export const WithoutTitleWithFooter = () => {
   );
 };
 
-export const WithoutFooter = () => {
+export const WithoutFooter: StoryFn<typeof Modal> = () => {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -141,7 +141,7 @@ export const WithoutFooter = () => {
   );
 };
 
-export const WithoutHeaderFooter = () => {
+export const WithoutHeaderFooter: StoryFn<typeof Modal> = () => {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -162,7 +162,7 @@ export const WithoutHeaderFooter = () => {
   );
 };
 
-export const LongContent = () => {
+export const LongContent: StoryFn<typeof Modal> = () => {
   const [open, setOpen] = useState(false);
   return (
     <>

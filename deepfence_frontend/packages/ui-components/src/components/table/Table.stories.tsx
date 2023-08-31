@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react';
+import { Meta, StoryFn, StoryObj } from '@storybook/react';
 import { RowSelectionState, SortingState } from '@tanstack/react-table';
 import { sortBy } from 'lodash-es';
 import { useMemo, useRef, useState } from 'react';
@@ -15,7 +15,7 @@ import { TableSkeleton } from '@/components/table/TableSkeleton';
 export default {
   title: 'Components/Table',
   component: Table,
-} as Meta<typeof Table>;
+} satisfies Meta<typeof Table>;
 
 type Fruit = {
   id: number;
@@ -97,12 +97,12 @@ const Template: StoryFn<typeof Table<Fruit>> = (args) => {
   );
 };
 
-export const DefaultTable = {
+export const DefaultTable: StoryObj<typeof Table<Fruit>> = {
   render: Template,
   args: {},
 };
 
-export const CompactTable = {
+export const CompactTable: StoryObj<typeof Table<Fruit>> = {
   render: Template,
 
   args: {
@@ -110,7 +110,7 @@ export const CompactTable = {
   },
 };
 
-export const MediumTable = {
+export const MediumTable: StoryObj<typeof Table<Fruit>> = {
   render: Template,
 
   args: {
@@ -118,7 +118,7 @@ export const MediumTable = {
   },
 };
 
-export const RelaxedTable = {
+export const RelaxedTable: StoryObj<typeof Table<Fruit>> = {
   render: Template,
 
   args: {
@@ -187,7 +187,7 @@ const TemplateWithSubcomponent: StoryFn<typeof Table<Fruit>> = (args) => {
   );
 };
 
-export const DefaultWithSubcomponent = {
+export const DefaultWithSubcomponent: StoryObj<typeof Table<Fruit>> = {
   render: TemplateWithSubcomponent,
   args: {},
 };
@@ -244,7 +244,7 @@ const TemplateWithAutoPagination: StoryFn<typeof Table<Fruit>> = (args) => {
   );
 };
 
-export const DefaultWithAutoPagination = {
+export const DefaultWithAutoPagination: StoryObj<typeof Table<Fruit>> = {
   render: TemplateWithAutoPagination,
   args: {},
 };
@@ -302,12 +302,12 @@ const TemplateWithManualPagination: StoryFn<typeof Table<Fruit>> = (args) => {
   );
 };
 
-export const DefaultWithManualPagination = {
+export const DefaultWithManualPagination: StoryObj<typeof Table<Fruit>> = {
   render: TemplateWithManualPagination,
   args: {},
 };
 
-export const WithColumnResizing = {
+export const WithColumnResizing: StoryObj<typeof Table<Fruit>> = {
   render: TemplateWithManualPagination,
   args: { enableColumnResizing: true, enableSorting: true },
 };
@@ -349,7 +349,7 @@ const TemplateWithAutoSorting: StoryFn<typeof Table<Fruit>> = (args) => {
   return <Table {...args} data={data} columns={columns} enablePagination enableSorting />;
 };
 
-export const DefaultWithAutoSorting = {
+export const DefaultWithAutoSorting: StoryObj<typeof Table<Fruit>> = {
   render: TemplateWithAutoSorting,
   args: {},
 };
@@ -421,7 +421,7 @@ const TemplateWithManualSorting: StoryFn<typeof Table<Fruit>> = (args) => {
   );
 };
 
-export const DefaultWithManualSorting = {
+export const DefaultWithManualSorting: StoryObj<typeof Table<Fruit>> = {
   render: TemplateWithManualSorting,
   args: {},
 };
@@ -499,7 +499,7 @@ const TemplateWithRowSelection: StoryFn<typeof Table<Fruit>> = (args) => {
   );
 };
 
-export const DefaultWithRowSelection = {
+export const DefaultWithRowSelection: StoryObj<typeof Table<Fruit>> = {
   render: TemplateWithRowSelection,
   args: {},
 };
@@ -581,7 +581,7 @@ const TemplateWithSubRows: StoryFn<typeof Table<NestedFruit>> = (args) => {
   );
 };
 
-export const DefaultWithSubRows = {
+export const DefaultWithSubRows: StoryObj<typeof Table<Fruit>> = {
   render: TemplateWithSubRows,
   args: {},
 };
@@ -648,7 +648,7 @@ const TemplateWithNoData: StoryFn<typeof Table<Fruit>> = (args) => {
   );
 };
 
-export const DefaultWithNoData = {
+export const DefaultWithNoData: StoryObj<typeof Table<Fruit>> = {
   render: TemplateWithNoData,
   args: {},
 };
@@ -657,7 +657,7 @@ const SkeletonTemplate: StoryFn<typeof TableSkeleton> = (args) => {
   return <TableSkeleton {...args} />;
 };
 
-export const DefaultTableSkeleton = {
+export const DefaultTableSkeleton: StoryObj<typeof TableSkeleton> = {
   render: SkeletonTemplate,
 
   args: {

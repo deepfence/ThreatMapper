@@ -5,19 +5,19 @@ import { Avatar } from '@/components/avatar/Avatar';
 export default {
   title: 'Components/Avatar',
   component: Avatar,
-} as Meta<typeof Avatar>;
+} satisfies Meta<typeof Avatar>;
 
-export const AvatarAsLetter = {
+export const AvatarAsLetter: Meta<typeof Avatar> = {
   args: {
     children: 'MR',
   },
 };
 
-export const AvatarAsDefault = {
+export const AvatarAsDefault: Meta<typeof Avatar> = {
   args: {},
 };
 
-export const AvatarByImgSrc = {
+export const AvatarByImgSrc: Meta<typeof Avatar> = {
   args: {
     src: '/public/vite.svg',
     alt: 'Placeholder',

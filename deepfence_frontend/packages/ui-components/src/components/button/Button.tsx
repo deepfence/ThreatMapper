@@ -242,7 +242,7 @@ export const buttonCva = cva(
   },
 );
 
-interface ButtonProps
+export interface ButtonProps
   extends Omit<ComponentProps<'button'>, 'color'>,
     ObjectWithNonNullableValues<VariantProps<typeof buttonCva>> {
   size?: SizeType;

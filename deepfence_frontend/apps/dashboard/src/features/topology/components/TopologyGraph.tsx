@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useFetcher, useParams } from 'react-router-dom';
 import { useDebounce, useEffectOnce, useHoverDirty, useMeasure } from 'react-use';
-import { toast } from 'sonner';
 import { cn } from 'tailwind-preset';
 import { CircleSpinner } from 'ui-components';
 
@@ -31,12 +30,12 @@ import {
 
 const MAX_NODES_COUNT_THRESHOLD = 200;
 
-type TooltipState = {
+interface TooltipState {
   x: number;
   y: number;
   show: boolean;
   item: G6Node | null;
-};
+}
 
 export const TopologyGraph = () => {
   // measures parent of the graph, so we can set the graph width and height
@@ -79,8 +78,12 @@ export const TopologyGraph = () => {
   const { graph } = useG6Graph(container, {}, {});
 
   // graph data management hooks
-  const { dataDiffWithAction, isRefreshInProgress, ...graphDataManagerFunctions } =
-    useGraphDataManager();
+  const {
+    dataDiffWithAction,
+    isRefreshInProgress,
+    nodeCountLimitExceeded,
+    ...graphDataManagerFunctions
+  } = useGraphDataManager();
   const graphDataManagerFunctionsRef = useRef(graphDataManagerFunctions);
   graphDataManagerFunctionsRef.current = graphDataManagerFunctions;
   useEffectOnce(() => {
@@ -249,9 +252,16 @@ export const TopologyGraph = () => {
             <CircleSpinner size="sm" />
           </div>
         ) : null}
-        {!isRefreshInProgress && graphDataManagerFunctions.isEmpty() ? (
+        {!isRefreshInProgress &&
+        graphDataManagerFunctions.isEmpty() &&
+        !nodeCountLimitExceeded ? (
           <div className="absolute inset-0">
             <NoData />
+          </div>
+        ) : null}
+        {!isRefreshInProgress && nodeCountLimitExceeded ? (
+          <div className="absolute inset-0">
+            <NodeLimitExceeded />
           </div>
         ) : null}
       </div>
@@ -351,6 +361,22 @@ const NoData = () => {
   );
 };
 
+const NodeLimitExceeded = () => {
+  const params = useParams();
+  const type = params.viewType ?? 'cloud_provider';
+  return (
+    <div className="h-full flex gap-2 flex-col items-center justify-center p-6 dark:bg-bg-hover-2/50">
+      <div className="w-8 h-8 text-blue-600 dark:text-status-info">
+        <ErrorStandardSolidIcon />
+      </div>
+      <div className="text-gray-600 dark:text-gray-400 text-lg text-center">
+        There are too many nodes to display on the Graph view. Please use the{' '}
+        <DFLink to={`/topology/table/${type}`}>Table view</DFLink> to see all nodes..
+      </div>
+    </div>
+  );
+};
+
 function useGraphDataManager() {
   const params = useParams();
   const type = params.viewType ?? 'cloud_provider';
@@ -358,6 +384,7 @@ function useGraphDataManager() {
     diff?: ReturnType<typeof getTopologyDiff>;
     action?: TopologyLoaderData['action'];
   }>({});
+  const [nodeCountLimitExceeded, setNodeCountLimitExceeded] = useState(false);
   useTopologyActionDeduplicator();
   const [storageManager] = useState(new GraphStorageManager());
 
@@ -392,10 +419,9 @@ function useGraphDataManager() {
       storageManager.setGraphData(fetcher.data.data);
       const diff = storageManager.getDiff();
       setDataDiffWithAction({ action, diff });
+      setNodeCountLimitExceeded(false);
     } else {
-      toast.message(
-        'There are too many nodes to display on the Graph view. Please use the Table view to see all nodes.',
-      );
+      setNodeCountLimitExceeded(true);
     }
   }, [fetcher.data]);
 
@@ -405,5 +431,6 @@ function useGraphDataManager() {
     isNodeExpanded: storageManager.isNodeExpanded,
     isEmpty: storageManager.isEmpty,
     isRefreshInProgress: fetcher.state !== 'idle',
+    nodeCountLimitExceeded,
   };
 }

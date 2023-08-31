@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react';
+import { Meta, StoryFn, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
@@ -28,7 +28,7 @@ export default {
       control: { type: 'radio' },
     },
   },
-} as Meta<typeof Dropdown>;
+} satisfies Meta<typeof Dropdown>;
 
 const DefaultTemplate: StoryFn<typeof Dropdown> = (args) => {
   return (
@@ -52,7 +52,7 @@ const DefaultTemplate: StoryFn<typeof Dropdown> = (args) => {
   );
 };
 
-export const Default = {
+export const Default: StoryObj<typeof Dropdown> = {
   render: DefaultTemplate,
 
   args: {
@@ -108,7 +108,7 @@ const TemplateForIcons: StoryFn<typeof Dropdown> = (args) => {
   );
 };
 
-export const WithIcons = {
+export const WithIcons: StoryObj<typeof Dropdown> = {
   render: TemplateForIcons,
 
   args: {
@@ -153,7 +153,7 @@ const ControlledTemplate: StoryFn<typeof Dropdown> = (args) => {
   );
 };
 
-export const Controlled = {
+export const Controlled: StoryObj<typeof Dropdown> = {
   render: ControlledTemplate,
 
   args: {
