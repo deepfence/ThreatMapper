@@ -305,7 +305,7 @@ const BulkActions = ({ nodes }: { nodes: string[] }) => {
                   scanType: ScanTypeEnum.SecretScan,
                   data: {
                     nodeIds: nodes,
-                    nodeType: SecretScanNodeTypeEnum.host,
+                    nodeType: SecretScanNodeTypeEnum.pod,
                   },
                 });
               }}
@@ -321,7 +321,7 @@ const BulkActions = ({ nodes }: { nodes: string[] }) => {
                   scanType: ScanTypeEnum.MalwareScan,
                   data: {
                     nodeIds: nodes,
-                    nodeType: MalwareScanNodeTypeEnum.host,
+                    nodeType: MalwareScanNodeTypeEnum.pod,
                   },
                 });
               }}
@@ -441,27 +441,27 @@ const DataTable = ({
           return <ScanStatusBadge status={info.getValue() || ''} />;
         },
         header: () => <TruncatedText text="Vulnerability scan status" />,
-        minSize: 100,
-        size: 150,
-        maxSize: 300,
+        minSize: 80,
+        size: 80,
+        maxSize: 90,
       }),
       columnHelper.accessor('secret_scan_status', {
         cell: (info) => {
           return <ScanStatusBadge status={info.getValue() || ''} />;
         },
         header: () => <TruncatedText text="Secret scan status" />,
-        minSize: 100,
-        size: 150,
-        maxSize: 300,
+        minSize: 80,
+        size: 80,
+        maxSize: 90,
       }),
       columnHelper.accessor('malware_scan_status', {
         cell: (info) => {
           return <ScanStatusBadge status={info.getValue() || ''} />;
         },
         header: () => <TruncatedText text="Malware scan status" />,
-        minSize: 100,
-        size: 150,
-        maxSize: 300,
+        minSize: 80,
+        size: 80,
+        maxSize: 90,
       }),
     ],
     [],
