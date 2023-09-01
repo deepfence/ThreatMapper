@@ -32,6 +32,7 @@ export enum VulnerabilityScanNodeTypeEnum {
   image = 'image',
   imageTag = 'imageTag',
   container = 'container',
+  pod = 'pod',
 }
 
 export { VulnerabilityScanNodeTypeEnum as MalwareScanNodeTypeEnum };

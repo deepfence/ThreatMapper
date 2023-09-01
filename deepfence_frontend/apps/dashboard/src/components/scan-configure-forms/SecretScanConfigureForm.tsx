@@ -24,7 +24,8 @@ export type SecretScanConfigureFormProps = {
           | SecretScanNodeTypeEnum.kubernetes_cluster
           | SecretScanNodeTypeEnum.registry
           | SecretScanNodeTypeEnum.container
-          | SecretScanNodeTypeEnum.imageTag;
+          | SecretScanNodeTypeEnum.imageTag
+          | SecretScanNodeTypeEnum.pod;
       }
     | {
         nodeIds: string[];
