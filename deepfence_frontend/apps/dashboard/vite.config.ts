@@ -7,6 +7,7 @@ import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig, loadEnv } from 'vite';
 import { configDefaults } from 'vitest/config';
+import webfontDownload from 'vite-plugin-webfont-dl';
 
 const current = fileURLToPath(import.meta.url);
 const root = path.dirname(current);
@@ -15,7 +16,11 @@ const root = path.dirname(current);
 export default defineConfig(({ mode }) => {
   const viteEnv = loadEnv(mode, '.');
   return {
-    plugins: [react(), ...(mode === 'production' ? [visualizer()] : [])],
+    plugins: [
+      react(),
+      webfontDownload(),
+      ...(mode === 'production' ? [visualizer()] : []),
+    ],
     test: {
       includeSource: ['src/**/*.test.{ts, tsx}'],
       exclude: [...configDefaults.exclude, 'e2e/**'],
