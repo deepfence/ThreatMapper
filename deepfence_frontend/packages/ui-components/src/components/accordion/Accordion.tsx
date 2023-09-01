@@ -1,7 +1,8 @@
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import React from 'react';
-import { HiOutlineChevronDown } from 'react-icons/hi';
 import { cn } from 'tailwind-preset';
+
+import { CaretDown } from '@/components/icons/CaretDown';
 
 export const Accordion = React.forwardRef<
   HTMLDivElement,
@@ -63,13 +64,13 @@ export const AccordionTrigger = React.forwardRef<
       {...props}
       ref={forwardedRef}
     >
-      <span className="mr-auto text-left">{children}</span>
-      <span>
-        <HiOutlineChevronDown
-          aria-hidden
-          className="group-data-[state=open]:first:rotate-180 transition duration-550 ease-out"
-        />
+      <span
+        aria-hidden
+        className="group-data-[state=closed]:first:-rotate-90 transition duration-550 ease-out h-4 w-4 inline-block"
+      >
+        <CaretDown />
       </span>
+      <span className="ml-[6px] text-left">{children}</span>
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));

@@ -3,7 +3,6 @@ import './input.css';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { cva, VariantProps } from 'cva';
 import React, { ComponentProps, forwardRef, useId, useState } from 'react';
-import { IconContext } from 'react-icons';
 import { cn } from 'tailwind-preset';
 
 import HelperText from '@/components/input/HelperText';
@@ -211,17 +210,15 @@ export const LeftIcon = ({ icon, id, color, sizing, disabled }: IconProps) => {
       className={cn('pointer-events-none absolute inset-y-0 left-0 flex items-center')}
       data-testid={`textinput-start-icon-${id}`}
     >
-      <IconContext.Provider
-        value={{
-          className: iconContextCva({
-            color,
-            sizing,
-            disabled,
-          }),
-        }}
+      <span
+        className={iconContextCva({
+          color,
+          sizing,
+          disabled,
+        })}
       >
         {icon}
-      </IconContext.Provider>
+      </span>
     </span>
   );
 };

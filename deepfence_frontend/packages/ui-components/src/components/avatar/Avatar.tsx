@@ -1,28 +1,18 @@
 import { forwardRef } from 'react';
-import { IconContext } from 'react-icons';
-import { HiOutlineUser } from 'react-icons/hi';
 import { cn } from 'tailwind-preset';
 
-type AvatarType = {
+import { UserLineIcon } from '@/components/icons/UserLine';
+
+interface AvatarType {
   alt?: string;
   src?: string;
   className?: string;
   children?: React.ReactNode;
   onClick?: () => void;
-};
-
-const DefaultIcon = () => (
-  <IconContext.Provider
-    value={{
-      className: 'w-6 h-6',
-    }}
-  >
-    <HiOutlineUser />
-  </IconContext.Provider>
-);
+}
 
 export const Avatar = forwardRef<HTMLButtonElement, AvatarType>(
-  ({ children = <DefaultIcon />, src = '', alt = '', className = '', onClick }, ref) => {
+  ({ children = <UserLineIcon />, src = '', alt = '', className = '', onClick }, ref) => {
     return (
       <button
         ref={ref}
@@ -35,7 +25,7 @@ export const Avatar = forwardRef<HTMLButtonElement, AvatarType>(
         )}
       >
         {!src || src.trim().length === 0 ? (
-          <>{children}</>
+          <span className="w-6 h-6">{children}</span>
         ) : (
           <img src={src} alt={alt} className="p-2" />
         )}

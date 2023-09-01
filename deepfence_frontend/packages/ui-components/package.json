@@ -46,8 +46,7 @@
   },
   "peerDependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-icons": "^4.7.1"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^7.2.3",
@@ -84,7 +83,6 @@
     "postcss": "^8.4.27",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-icons": "^4.10.1",
     "resize-observer-polyfill": "^1.5.1",
     "rollup-plugin-visualizer": "^5.9.2",
     "storybook": "^7.2.3",
