@@ -1,19 +1,19 @@
 [submodule "deepfence_agent/plugins/agent-plugins-grpc"]
 	path = deepfence_agent/plugins/agent-plugins-grpc
 	url = https://github.com/deepfence/agent-plugins-grpc
-	branch = v2
+	branch = main
 [submodule "deepfence_agent/plugins/package-scanner"]
 	path = deepfence_agent/plugins/package-scanner
 	url = https://github.com/deepfence/package-scanner
-	branch = v2
+	branch = main
 [submodule "deepfence_agent/plugins/SecretScanner"]
 	path = deepfence_agent/plugins/SecretScanner
 	url = https://github.com/deepfence/SecretScanner
-	branch = v2
+	branch = main
 [submodule "deepfence_agent/plugins/compliance"]
 	path = deepfence_agent/plugins/compliance
 	url = https://github.com/deepfence/compliance
-	branch = v2
+	branch = main
 [submodule "golang_deepfence_sdk"]
 	path = golang_deepfence_sdk
 	url = https://github.com/deepfence/golang_deepfence_sdk.git
@@ -21,7 +21,7 @@
 [submodule "deepfence_agent/plugins/YaraHunter"]
 	path = deepfence_agent/plugins/YaraHunter
 	url = https://github.com/deepfence/YaraHunter.git
-	branch = v2
+	branch = main
 [submodule "deepfence_agent/plugins/yara-rules"]
 	path = deepfence_agent/plugins/yara-rules
 	url = https://github.com/deepfence/yara-rules
