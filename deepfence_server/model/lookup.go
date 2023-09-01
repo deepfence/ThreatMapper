@@ -172,6 +172,9 @@ type Pod struct {
 	KubernetesIsInHostNetwork bool                   `json:"kubernetes_is_in_host_network" required:"true"`
 	KubernetesLabels          map[string]interface{} `json:"kubernetes_labels" required:"true" nested_json:"true"`
 	KubernetesCreated         string                 `json:"kubernetes_created" required:"true"`
+	MalwareScanStatus         string                 `json:"malware_scan_status" required:"true"`
+	SecretScanStatus          string                 `json:"secret_scan_status" required:"true"`
+	VulnerabilityScanStatus   string                 `json:"vulnerability_scan_status" required:"true"`
 }
 
 func (Pod) NodeType() string {

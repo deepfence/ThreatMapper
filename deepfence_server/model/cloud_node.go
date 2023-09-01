@@ -13,13 +13,15 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-const PostureProviderAWS = "aws"
-const PostureProviderAWSOrg = "aws_org"
-const PostureProviderGCP = "gcp"
-const PostureProviderGCPOrg = "gcp_org"
-const PostureProviderAzure = "azure"
-const PostureProviderLinux = "linux"
-const PostureProviderKubernetes = "kubernetes"
+const (
+	PostureProviderAWS        = "aws"
+	PostureProviderAWSOrg     = "aws_org"
+	PostureProviderGCP        = "gcp"
+	PostureProviderGCPOrg     = "gcp_org"
+	PostureProviderAzure      = "azure"
+	PostureProviderLinux      = "linux"
+	PostureProviderKubernetes = "kubernetes"
+)
 
 var SupportedPostureProviders = []string{PostureProviderAWS, PostureProviderAWSOrg, PostureProviderGCP, PostureProviderGCPOrg,
 	PostureProviderAzure, PostureProviderLinux, PostureProviderKubernetes}
@@ -152,7 +154,7 @@ type PendingCloudComplianceScan struct {
 
 type CloudNodeControlReq struct {
 	NodeId         string `json:"node_id"`
-	CloudProvider  string `json:"cloud_provider" required:"true" enum:"aws,gcp,azure"`
+	CloudProvider  string `json:"cloud_provider" required:"true" enum:"aws,gcp,azure,linux,kubernetes"`
 	ComplianceType string `json:"compliance_type" required:"true"`
 }
 

@@ -652,13 +652,13 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryListReq), new([]RegistryListResp))
 	d.AddOperation("addRegistry", http.MethodPost, "/deepfence/registryaccount",
 		"Add Registry", "Add a new supported registry",
-		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryAddReq), nil)
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryAddReq), new(MessageResponse))
 	d.AddOperation("addRegistryGCR", http.MethodPost, "/deepfence/registryaccount/gcr",
 		"Add Google Container Registry", "Add a Google Container registry",
-		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryGCRAddReq), nil)
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryGCRAddReq), new(MessageResponse))
 	d.AddOperation("updateRegistry", http.MethodPut, "/deepfence/registryaccount/{registry_id}",
 		"Update Registry", "Update registry",
-		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryUpdateReq), nil)
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryUpdateReq), new(MessageResponse))
 	d.AddOperation("deleteRegistry", http.MethodDelete, "/deepfence/registryaccount/{registry_id}",
 		"Delete Registry", "Delete registry",
 		http.StatusNoContent, []string{tagRegistry}, bearerToken, new(RegistryIDPathReq), nil)

@@ -28,6 +28,11 @@ const AvailableScansForNodeType: Record<string, ScanTypeEnum[]> = {
     ScanTypeEnum.SecretScan,
     ScanTypeEnum.MalwareScan,
   ],
+  pod: [
+    ScanTypeEnum.VulnerabilityScan,
+    ScanTypeEnum.SecretScan,
+    ScanTypeEnum.MalwareScan,
+  ],
 };
 
 export const Header = ({

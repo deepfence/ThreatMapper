@@ -124,6 +124,7 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		KubernetesClusterId:       r.kubernetesClusterId,
 		DockerLabels:              dockerLabels,
 		PodName:                   podName,
+		PodID:                     podUid,
 	}
 	return &report.TopologyNode{
 		Metadata: metadata,
