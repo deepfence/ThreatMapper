@@ -130,7 +130,19 @@ const sidebars = {
             'registries/aws-ecr',
           ],
         },
-        'operations/scanning-ci',
+        {
+          type: 'category',
+          label: 'Scanning in CI',
+          link: {
+            type: 'doc',
+            id: 'ci-cd/index'
+          },
+          items: [
+            'ci-cd/circle-ci',
+            'ci-cd/gitlab',
+            'ci-cd/jenkins',
+          ],
+        },
         'operations/support',
       ],
     },

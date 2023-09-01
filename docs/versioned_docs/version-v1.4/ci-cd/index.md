@@ -12,8 +12,11 @@ The ThreatMapper CI action supports several CI pipelines, including CircleCI, Gi
 
 If a build is not blocked, ThreatMapper silently allows it to proceed.
 
-For configuration details, refer to the appropriate [CI/CD Integrations](https://github.com/deepfence/ThreatMapper/tree/master/ci-cd-integrations), including:
+For configuration details, refer to the appropriate [CI/CD Integrations](https://github.com/deepfence/ThreatMapper/tree/master/ci-cd-integrations) in the repo or refer any of the below guides:
 
- * [CircleCI](https://github.com/deepfence/ThreatMapper/tree/master/ci-cd-integrations/circleci)
- * [GitLab](https://github.com/deepfence/ThreatMapper/tree/master/ci-cd-integrations/gitlab)
- * [Jenkins](https://github.com/deepfence/ThreatMapper/tree/master/ci-cd-integrations/jenkins)
+```mdx-code-block
+import DocCardList from '@theme/DocCardList';
+import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
+
+<DocCardList items={useCurrentSidebarCategory().items}/>
+```
