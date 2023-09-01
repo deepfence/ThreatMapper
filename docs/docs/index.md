@@ -9,7 +9,7 @@ import ReactPlayer from 'react-player'
 
 Deepfence ThreatMapper hunts for hidden threats in your production platforms, and ranks these threats based on their risk-of-exploit. You can then prioritize the issues that present the greatest risk to the security of your applications.
 
-<ReactPlayer controls url='/img/threatmapper-intro.mp4'></ReactPlayer>
+[//]: # (<ReactPlayer controls url='/img/threatmapper-intro.mp4'></ReactPlayer>)
 
 ### Extends Security into Production 
 

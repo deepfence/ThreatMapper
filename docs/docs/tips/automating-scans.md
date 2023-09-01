@@ -32,6 +32,7 @@ ThreatMapper can scan registries, looking for vulnerabilities in containers.  Sc
 
 #### UI
 Schedule is set by default in ThreatMapper to scan all containers and hosts once a week. They can be enabled if needed.
+
 ![Scheduled Jobs](../img/scheduled-jobs.png)
 
 #### API

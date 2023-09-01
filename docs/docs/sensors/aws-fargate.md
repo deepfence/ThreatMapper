@@ -6,7 +6,7 @@ title: AWS Fargate
 
 On AWS Fargate, the ThreatMapper sensor agents are deployed as a sidecar container, using a task definition. 
 
-:::danger
+:::info
 
 These instructions are draft, untested, and need technical review.
 

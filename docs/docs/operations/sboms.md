@@ -16,7 +16,7 @@ ThreatMapper caches runtime SBOMs for scanned workloads, and makes these availab
 
 SBOMs are associated with vulnerability scans.
 
-Navigate to the **Vulnerabilities** > **Vulnerability Scan** results page, and locate the scan for which you would like to obtain the SBOM:
+Navigate to the **Vulnerabilities** > **View All Scans** results page, and locate the scan for which you would like to obtain the SBOM:
 
 ![Vulnerability Scan results](../img/sbom-1.png)
 

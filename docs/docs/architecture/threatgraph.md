@@ -18,25 +18,25 @@ The complete threat landscape is rendered as an interactive and actionable graph
 
 View the Cloud or Platform nodes to gain a summary of the number of significant vulnerabilities, secret and compliance issues within each cloud or platform.
 
-### Example: Cloud Compliance Issues
+### Example: Compliance Issues
 
-Select a cloud asset type, such as an S3 bucket, to view the instances of that asset.
+Select a asset to view the instances of that asset.
 
-| ![Threat Graph - view assets](../img/threat-graph-2.jpg) |
-| :--: |
-| Threat Graph - View Assets |
+| ![Threat Graph - view assets](../img/threat-graph-2.png) |
+|:--------------------------------------------------------:|
+|                Threat Graph - View Assets                |
 
 Select an instance of that asset type to list the issues detected against instance:
 
-| ![Threat Graph](../img/threat-graph-3.jpg) |
-| :--: |
+|  ![Threat Graph](../img/threat-graph-3.png)  |
+|:--------------------------------------------:|
 | Threat Graph - Investigate Compliance Issues |
 
 Select an issue to understand the full nature of the compliance deviation:
 
-| ![Threat Graph](../img/threat-graph-4.jpg) |
-| :--: |
-| Threat Graph - View Compliance Issue |
+| ![Threat Graph](../img/threat-graph-4.png) |
+|:------------------------------------------:|
+|    Threat Graph - View Compliance Issue    |
 
 You can quickly narrow down from potentially thousands of alerts to a refined and accurate set of issues and attack paths that you can fix.
 
@@ -44,19 +44,19 @@ You can quickly narrow down from potentially thousands of alerts to a refined an
 
 Select a runtime workload, such as a host, to list the issues detected against that asset:
 
-| ![Threat Graph](../img/threat-graph-5.png) |
-| :--: |
+| ![Threat Graph](../img/threat-graph-2.png) |
+|:------------------------------------------:|
 | Threat Graph - Investigate Workload Issues |
 
 You can then review the issues detected against that workload.
 
 | ![Threat Graph](../img/threat-graph-6.png) |
-| :--: |
-| Threat Graph - View Vulnerabilities |
+|:------------------------------------------:|
+|    Threat Graph - View Vulnerabilities     |
 
 If needed, you can drill down to the vulnerability specifics:
 
-|  ![Threat Graph](../img/threat-graph-7.png)   |
+| ![Threat Graph](../img/threat-graph-7.png)  |
 |:-------------------------------------------:|
 | Threat Graph - View Vulnerability Specifics |
 

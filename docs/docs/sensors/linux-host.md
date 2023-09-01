@@ -14,35 +14,22 @@ Run the following command to start the Sensor Agent on the host. You can find th
  `Setting>User Management>API Key`.
 
 ```bash
-docker run -dit --cpus=".2" --name=deepfence-agent \
-  --restart on-failure --pid=host --net=host --privileged=true \
-  -v /sys/kernel/debug:/sys/kernel/debug:rw -v /var/log/fenced \
-  -v /var/run/docker.sock:/var/run/docker.sock -v /:/fenced/mnt/host/:ro \
-  -e MGMT_CONSOLE_URL="---CONSOLE-IP---" -e MGMT_CONSOLE_PORT="443" \
-  -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
+docker run -dit \
+  --cpus=".2" \
+  --name=deepfence-agent \
+  --restart on-failure \
+  --pid=host \
+  --net=host \
+  --privileged=true \
+  -v /sys/kernel/debug:/sys/kernel/debug:rw \
+  -v /var/log/fenced \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /:/fenced/mnt/host/:ro \
   -e USER_DEFINED_TAGS="" \
-  deepfenceio/deepfence_agent_ce:latest
-```
-
-Optionally the sensor container can be tagged using ```USER_DEFINED_TAGS=""``` in the above command. Tags should be comma separated, for example, ```"dev,front-end"```.
-
-## Install a named version of the ThreatMapper Sensor
-
-You should seek to ensure that the version number of the sensors matches the version of your Management Console as closely as possible, for best compatibility.
-
-To start a named [tagged release](https://github.com/deepfence/ThreatMapper/releases) of the ThreatMapper sensor, tag the container appropriately:
-
-```bash
-# Install tagged release 2.0.0
-docker run -dit --cpus=".2" --name=deepfence-agent \
-  --restart on-failure --pid=host --net=host --privileged=true \
-  -v /sys/kernel/debug:/sys/kernel/debug:rw -v /var/log/fenced \
-  -v /var/run/docker.sock:/var/run/docker.sock -v /:/fenced/mnt/host/:ro \
-  -e MGMT_CONSOLE_URL="---CONSOLE-IP---" -e MGMT_CONSOLE_PORT="443" \
+  -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
+  -e MGMT_CONSOLE_PORT="443" \
   -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-  -e USER_DEFINED_TAGS="" \
   deepfenceio/deepfence_agent_ce:2.0.0
 ```
 
-
-
+Optionally the sensor container can be tagged using ```USER_DEFINED_TAGS=""``` in the above command. Tags should be comma separated, for example, ```"dev,front-end"```.

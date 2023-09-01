@@ -15,7 +15,7 @@ The first thing you may want to do is to start a Vulnerability scan of some of y
 
 1. Using the Topology view, select a workload or infrastructure component to scan.  For example, you can select a Kubernetes hosts or a running container:
    * ThreatMapper excludes some resources from the Scan. It will not scan system containers, and some resources are placeholders for the elements in the topology graph
-   * Select the 'Scan' button for the selected object
+   * Click the 'Actions' button for the selected node and then click 'Start Vulnerability Scan'
 
    ![Vulnerability Scan - select an object](../img/scan-1.png)
 

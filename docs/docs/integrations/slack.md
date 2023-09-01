@@ -21,3 +21,5 @@ ThreatMapper raises notifications to Slack Workspaces using Slack webhooks.
    ![Slack](../img/integrations-slack-3.jpeg)
 
 4. Paste the webhook URL and the corresponding channel name into Deepfence Slack integration page.
+
+   ![Slack](../img/integrations-slack.png)
