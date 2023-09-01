@@ -48,6 +48,7 @@ export const NODE_TYPES: { [k: string]: UtilsReportFiltersNodeTypeEnum } = {
   Host: UtilsReportFiltersNodeTypeEnum.Host,
   Cluster: UtilsReportFiltersNodeTypeEnum.Cluster,
   'Container Image': UtilsReportFiltersNodeTypeEnum.ContainerImage,
+  Container: UtilsReportFiltersNodeTypeEnum.Container,
 };
 export const getReportNodeType = (resourceType: string) => {
   if (resourceType === 'Cloud Compliance') {
