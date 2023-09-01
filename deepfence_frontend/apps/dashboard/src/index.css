@@ -1,2 +1,11 @@
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: 'Nunito Sans';
+  src: url('../src/assets/NunitoSans-Italic.ttf');
+}
+@font-face {
+  font-family: 'Nunito Sans';
+  src: url('../src/assets/NunitoSans-Wght.ttf');
+}
