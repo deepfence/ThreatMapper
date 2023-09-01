@@ -322,6 +322,12 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 		scanTrigger = nodes[0]
 	}
 
+	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.Image) ||
+		scanTrigger.NodeType == controls.ResourceTypeToString(controls.Container) {
+		respondError(&BadDecoding{fmt.Errorf("Not supported")}, w)
+		return
+	}
+
 	var scanIds []string
 	var bulkId string
 	var scanStatusType string
