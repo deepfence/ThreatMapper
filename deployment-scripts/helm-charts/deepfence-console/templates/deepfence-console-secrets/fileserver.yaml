@@ -1,10 +1,10 @@
-{{- if .Values.minio.create }}
+{{- if .Values.fileserver.create }}
 ---
 kind: Secret
 apiVersion: v1
 type: Opaque
 metadata:
-  name: "deepfence-console-secrets-minio"
+  name: "deepfence-console-secrets-fileserver"
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: file-server
@@ -13,7 +13,7 @@ stringData:
   DEEPFENCE_MINIO_PORT: "9000"
   DEEPFENCE_MINIO_SECURE: "false"
   DEEPFENCE_MINIO_BUCKET: deepfence
-  DEEPFENCE_MINIO_PASSWORD: {{ .Values.minio.secrets.MINIO_ROOT_PASSWORD | quote }}
-  DEEPFENCE_MINIO_USER: {{ .Values.minio.secrets.MINIO_ROOT_USER | quote }}
+  DEEPFENCE_MINIO_PASSWORD: {{ .Values.fileserver.secrets.MINIO_ROOT_PASSWORD | quote }}
+  DEEPFENCE_MINIO_USER: {{ .Values.fileserver.secrets.MINIO_ROOT_USER | quote }}
 {{- end }}
 
