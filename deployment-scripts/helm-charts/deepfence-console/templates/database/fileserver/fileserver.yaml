@@ -1,4 +1,4 @@
-{{- if .Values.minio.create }}
+{{- if .Values.fileserver.create }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -6,7 +6,7 @@ metadata:
   name: deepfence-file-server
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: minio
+    component: fileserver
     name: deepfence-file-server
 spec:
   serviceName: deepfence-file-server
@@ -14,28 +14,28 @@ spec:
   selector:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
-      component: minio
+      component: fileserver
       name: deepfence-file-server
   template:
     metadata:
-      {{- with .Values.minio.podAnnotations }}
+      {{- with .Values.fileserver.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
-        component: minio
+        component: fileserver
         name: deepfence-file-server
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.minio.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.fileserver.podSecurityContext | nindent 8 }}
       containers:
-        - name: minio
+        - name: fileserver
           securityContext:
-            {{- toYaml .Values.minio.securityContext | nindent 12 }}
-          image: "{{ .Values.global.imageRepoPrefix }}/{{ .Values.minio.image.repository }}:{{ default .Values.global.imageTag .Values.minio.image.tag }}"
-          imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
+            {{- toYaml .Values.fileserver.securityContext | nindent 12 }}
+          image: "{{ .Values.global.imageRepoPrefix }}/{{ .Values.fileserver.image.repository }}:{{ default .Values.global.imageTag .Values.fileserver.image.tag }}"
+          imagePullPolicy: {{ .Values.fileserver.image.pullPolicy }}
           envFrom:
             - secretRef:
                 name: "deepfence-file-server"
@@ -48,36 +48,36 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /minio/health/live
+              path: /status
               port: http
-            initialDelaySeconds: 120
+            initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 5
             successThreshold: 1
           readinessProbe:
             httpGet:
-              path: /minio/health/live
+              path: /status
               port: http
             initialDelaySeconds: 60
-            periodSeconds: 20
+            periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 5
             successThreshold: 1
           resources:
-            {{- toYaml .Values.minio.resources | nindent 12 }}
+            {{- toYaml .Values.fileserver.resources | nindent 12 }}
           volumeMounts:
             - mountPath: /data
               name: "file-server-{{ .Release.Name }}"
-      {{- with .Values.minio.nodeSelector }}
+      {{- with .Values.fileserver.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.minio.affinity }}
+      {{- with .Values.fileserver.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.minio.tolerations }}
+      {{- with .Values.fileserver.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -89,8 +89,8 @@ spec:
           - "ReadWriteOnce"
         resources:
           requests:
-            storage: "{{ .Values.minio.volumeSize }}"
-        storageClassName: {{ default .Values.global.storageClass .Values.minio.storageClass }}
+            storage: "{{ .Values.fileserver.volumeSize }}"
+        storageClassName: {{ default .Values.global.storageClass .Values.fileserver.storageClass }}
 ---
 apiVersion: v1
 kind: Service
@@ -98,7 +98,7 @@ metadata:
   name: deepfence-file-server
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: minio
+    component: fileserver
     name: deepfence-file-server
 spec:
   type: ClusterIP
@@ -113,6 +113,6 @@ spec:
       protocol: TCP
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
-    component: minio
+    component: fileserver
     name: deepfence-file-server
 {{- end }}

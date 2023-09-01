@@ -55,8 +55,8 @@ spec:
                 name: {{ .Values.redis.secretName }}
                 {{- end }}
             - secretRef:
-                {{- if .Values.minio.create }}
-                name: "deepfence-console-secrets-minio"
+                {{- if .Values.fileserver.create }}
+                name: "deepfence-console-secrets-fileserver"
                 {{- else }}
                 name: {{ .Values.minio.secretName }}
                 {{- end }}
@@ -89,14 +89,20 @@ spec:
             httpGet:
               path: /deepfence/ping
               port: http
-            initialDelaySeconds: 120
-            periodSeconds: 20
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+            successThreshold: 1
           readinessProbe:
             httpGet:
               path: /deepfence/ping
               port: http
-            initialDelaySeconds: 120
-            periodSeconds: 20
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+            successThreshold: 1
           resources:
             {{- toYaml .Values.server.resources | nindent 12 }}
       {{- with .Values.server.nodeSelector }}

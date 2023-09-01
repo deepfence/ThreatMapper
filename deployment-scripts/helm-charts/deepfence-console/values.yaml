@@ -122,8 +122,8 @@ redis:
   tolerations: []
   affinity: {}
 
-minio:
-  # Specifies whether a postgres database instance should be created
+fileserver:
+  # Specifies whether a file server instance should be created
   create: true
   # if create false provide name of the existing secret
   # secret format refer templates/console-secrets/minio.yaml
