@@ -4,8 +4,8 @@
 [![GitHub stars](https://img.shields.io/github/stars/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/stargazers)
 [![Hacktoberfest](https://img.shields.io/github/hacktoberfest/2022/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues)
 [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues)
-[![Documentation](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/docs/v2.0/threatmapper)
-[![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://community.deepfence.io/docs/v2.0/threatmapper/demo)
+[![Documentation](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/threatmapper/docs/v2.0/)
+[![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://community.deepfence.io/threatmapper/docs/v2.0/demo)
 [![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce)
 [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
 [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
@@ -20,9 +20,9 @@ Deepfence ThreatMapper hunts for threats in your production platforms, and ranks
 
 With ThreatMapper's **ThreatGraph** visualization, you can then identify the issues that present the greatest risk to the security of your applications, and prioritize these for planned protection or remediation.
 
-* [Learn more about ThreatMapper](https://community.deepfence.io/docs/v2.0/threatmapper/) in the product documentation.
+* [Learn more about ThreatMapper](https://community.deepfence.io/threatmapper/docs/v2.0/) in the product documentation.
 
-* [See ThreatMapper running](https://community.deepfence.io/docs/v2.0/threatmapper/demo) in the live demo sandbox.
+* [See ThreatMapper running](https://community.deepfence.io/threatmapper/docs/v2.0/demo) in the live demo sandbox.
 
 ## When to use ThreatMapper
 
@@ -31,11 +31,9 @@ ThreatMapper carries on the good 'shift left' security practices that you alread
 Use ThreatMapper to provide security observability for your production workloads and infrastructure, across cloud, kubernetes, serverless (Fargate) and on-prem platforms.
 
 
-# Getting Started with ThreatMapper
+<!--- # (# Getting Started with ThreatMapper) --->
 
-
-
-https://user-images.githubusercontent.com/3711627/183735806-7afc0dd3-a3ee-4486-a241-06541025a3d4.mp4
+<!--- # (https://user-images.githubusercontent.com/3711627/183735806-7afc0dd3-a3ee-4486-a241-06541025a3d4.mp4) --->
 
 
 ## Planning your Deployment
@@ -47,49 +45,61 @@ ThreatMapper consists of two components:
 
 ### The Management Console
 
-You [deploy the Management Console first](https://community.deepfence.io/docs/v2.0/threatmapper/console/), on a suitable docker host or Kubernetes cluster.  For example, on Docker:
+You [deploy the Management Console first](https://community.deepfence.io/threatmapper/docs/v2.0/console/), on a suitable docker host or Kubernetes cluster.  For example, on Docker:
 
 ```shell script
 # Docker installation process for ThreatMapper Management Console
 
-wget https://github.com/deepfence/ThreatMapper/raw/main/deployment-scripts/docker-compose.yml
+wget https://github.com/deepfence/ThreatMapper/raw/release-2.0/deployment-scripts/docker-compose.yml
 docker-compose -f docker-compose.yml up --detach
 ```
 
-Once the Management Console is up and running, you can [register an admin account and obtain an API key](https://community.deepfence.io/docs/v2.0/threatmapper/console/initial-configuration).
+Once the Management Console is up and running, you can [register an admin account and obtain an API key](https://community.deepfence.io/threatmapper/docs/v2.0/console/initial-configuration).
 
 ### Cloud Scanner tasks
 
-ThreatMapper [Cloud Scanner tasks](https://community.deepfence.io/docs/v2.0/threatmapper/cloudscanner/) are responsible for querying the cloud provider APIs to gather configuration and identify deviations from compliance benchmarks.
+ThreatMapper [Cloud Scanner tasks](https://community.deepfence.io/threatmapper/docs/v2.0/cloudscanner/) are responsible for querying the cloud provider APIs to gather configuration and identify deviations from compliance benchmarks.
 
 The task is deployed using a Terraform module. The ThreatMapper Management Console will present a basic configuration that may be deployed with Terraform, or you can refer to the expert configurations to fine-tune the deployment ([AWS](https://github.com/deepfence/terraform-aws-cloud-scanner), [Azure](https://github.com/deepfence/terraform-azure-cloud-scanner), [GCP](https://github.com/deepfence/terraform-gcp-cloud-scanner).
 
 ### Sensor Agents
 
-Install the [sensor agents](https://community.deepfence.io/docs/v2.0/threatmapper/sensors/) on your production or development platforms. The sensors report to the Management Console; they tell it what services they discover, provide telemetry and generate manifests of software dependencies.
+Install the [sensor agents](https://community.deepfence.io/threatmapper/docs/v2.0/sensors/) on your production or development platforms. The sensors report to the Management Console; they tell it what services they discover, provide telemetry and generate manifests of software dependencies.
 
 The following production platforms are supported by ThreatMapper sensor agents:
 
-* [Kubernetes](https://community.deepfence.io/docs/v2.0/threatmapper/sensors/kubernetes/): ThreatMapper sensors are deployed as a daemonset in the Kubernetes cluster, using a helm chart.
-* [Docker](https://community.deepfence.io/docs/v2.0/threatmapper/sensors/docker/): ThreatMapper sensors are deployed as a lightweight container.
-* [Amazon ECS](https://community.deepfence.io/docs/v2.0/threatmapper/sensors/aws-ecs): ThreatMapper sensors are deployed as a daemon service using a task definition.
-* [AWS Fargate](https://community.deepfence.io/docs/v2.0/threatmapper/sensors/aws-fargate): ThreatMapper sensors are deployed as a sidecar container, using a task definition.
-* [Bare-Metal or Virtual Machines](https://community.deepfence.io/docs/v2.0/threatmapper/sensors/linux-host/): ThreatMapper sensors are deployed within a lightweight Docker runtime.
+* [Kubernetes](https://community.deepfence.io/threatmapper/docs/v2.0/sensors/kubernetes/): ThreatMapper sensors are deployed as a daemonset in the Kubernetes cluster, using a helm chart.
+* [Docker](https://community.deepfence.io/threatmapper/docs/v2.0/sensors/docker/): ThreatMapper sensors are deployed as a lightweight container.
+* [Amazon ECS](https://community.deepfence.io/threatmapper/docs/v2.0/sensors/aws-ecs): ThreatMapper sensors are deployed as a daemon service using a task definition.
+* [AWS Fargate](https://community.deepfence.io/threatmapper/docs/v2.0/sensors/aws-fargate): ThreatMapper sensors are deployed as a sidecar container, using a task definition.
+* [Bare-Metal or Virtual Machines](https://community.deepfence.io/threatmapper/docs/v2.0/sensors/linux-host/): ThreatMapper sensors are deployed within a lightweight Docker runtime.
 
 For example, run the following command to start the ThreatMapper sensor on a Docker host:
 
 ```shell script
-docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=host --net=host --privileged=true \
-  -v /sys/kernel/debug:/sys/kernel/debug:rw -v /var/log/fenced -v /var/run/docker.sock:/var/run/docker.sock -v /:/fenced/mnt/host/:ro \
-  -e MGMT_CONSOLE_URL="---CONSOLE-IP---" -e MGMT_CONSOLE_PORT="443" -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" -e USER_DEFINED_TAGS="" \
+docker run -dit \
+  --cpus=".2" \
+  --name=deepfence-agent \
+  --restart on-failure \
+  --pid=host \
+  --net=host \
+  --privileged=true \
+  -v /sys/kernel/debug:/sys/kernel/debug:rw \
+  -v /var/log/fenced \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /:/fenced/mnt/host/:ro \
+  -e USER_DEFINED_TAGS="" \
+  -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
+  -e MGMT_CONSOLE_PORT="443" \
+  -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
   deepfenceio/deepfence_agent_ce:2.0.0
 ```
 
-On a Kubernetes platform, the sensors are installed using [helm chart](https://community.deepfence.io/docs/v2.0/threatmapper/sensors/kubernetes/)
+On a Kubernetes platform, the sensors are installed using [helm chart](https://community.deepfence.io/threatmapper/docs/v2.0/sensors/kubernetes/)
 
 ### Next Steps
 
-Visit the [Deepfence ThreatMapper Documentation](https://community.deepfence.io/docs/v2.0/threatmapper/), to learn how to get started and how to use ThreatMapper.
+Visit the [Deepfence ThreatMapper Documentation](https://community.deepfence.io/threatmapper/docs/v2.0/), to learn how to get started and how to use ThreatMapper.
 
 
 # Get in touch
@@ -99,7 +109,7 @@ Thank you for using ThreatMapper.  Please feel welcome to participate in the [Th
 * [Deepfence Community Website](https://community.deepfence.io)
 * [<img src="https://img.shields.io/badge/slack-@deepfence-brightgreen.svg?logo=slack">](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ) Got a question, need some help?  Find the Deepfence team on Slack
 * [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues) Got a feature request or found a bug?  Raise an issue
-* [![Documentation](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/docs/v2.0/threatmapper/) Read the documentation in the [Deepfence ThreatMapper Documentation](https://community.deepfence.io/docs/v2.0/threatmapper/)
+* [![Documentation](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/threatmapper/docs/v2.0/) Read the documentation in the [Deepfence ThreatMapper Documentation](https://community.deepfence.io/threatmapper/docs/v2.0/)
 * [productsecurity at deepfence dot io](SECURITY.md): Found a security issue?  Share it in confidence
 * Find out more at [deepfence.io](https://deepfence.io/)
 
