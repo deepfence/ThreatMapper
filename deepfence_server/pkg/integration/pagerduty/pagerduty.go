@@ -5,13 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/PagerDuty/go-pagerduty"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"net/http"
 	"strings"
-	"time"
-
-	"github.com/PagerDuty/go-pagerduty"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 const (
@@ -96,7 +94,7 @@ func createPagerDutyEvent(pagerDutyAPIToken string, event pagerduty.V2Event) err
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Token token="+pagerDutyAPIToken)
 
-	client := &http.Client{Timeout: time.Second * 30}
+	client := utils.GetHttpClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
