@@ -251,6 +251,43 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 	}
 }
 
+// /scan/results/vulnerability/compare?scanIds=scanId1,scanId2
+func (h *Handler) GetVulnerabilitiesScanComparisionReport(w http.ResponseWriter, r *http.Request) {
+	// Get the scan ids from the params
+	scanIds := r.URL.Query().Get("scanIds")
+	scanIdsArr := strings.Split(scanIds, ",")
+	if len(scanIdsArr) != 2 {
+		log.Error().Msgf("invalid scan ids: %s", scanIds)
+		respondError(errors.New("could not compare, invalid scan ids"), w)
+		return
+	}
+
+	currentScanId := scanIdsArr[0]
+	previousScanId := scanIdsArr[1]
+
+	// Get the scan results for the scan ids
+	currentScanResults, err := GetVulnerabilitiesScanResults(r.Context(), currentScanId)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	previousScanResults, err := GetVulnerabilitiesScanResults(r.Context(), previousScanId)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	// Compare the scan results
+	comparedScanResults, err := CompareVulnerabilitiesScanResults(currentScanResults, previousScanResults)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, comparedScanResults)
+}
+
 func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
 	var reqs model.SecretScanTriggerReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
@@ -2042,4 +2079,44 @@ func startMultiComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, 
 		scanIds = append(scanIds, scanId)
 	}
 	return scanIds, bulkId, nil
+}
+
+func GetVulnerabilitiesScanResults(ctx context.Context, scanId string) ([]model.Vulnerability, error) {
+	entries, _, err := reporters_scan.GetScanResults[model.Vulnerability](ctx, utils.NEO4J_VULNERABILITY_SCAN, scanId, reporters.FieldsFilters{}, model.FetchWindow{})
+	if err != nil {
+		return nil, err
+	}
+	return entries, nil
+}
+
+func CompareVulnerabilitiesScanResults(r1, r2 []model.Vulnerability) (model.VulnerabilityComparison, error) {
+	res := model.VulnerabilityComparison{
+		New:     []model.Vulnerability{},
+		Deleted: []model.Vulnerability{},
+	}
+
+	r1Map := make(map[string]model.Vulnerability)
+	r2Map := make(map[string]model.Vulnerability)
+
+	for i := range r1 {
+		r1Map[r1[i].Cve_id] = r1[i]
+	}
+
+	for i := range r2 {
+		r2Map[r2[i].Cve_id] = r2[i]
+	}
+
+	for k, v := range r1Map {
+		if _, ok := r2Map[k]; !ok {
+			res.Deleted = append(res.Deleted, v)
+		}
+	}
+
+	for k, v := range r2Map {
+		if _, ok := r1Map[k]; !ok {
+			res.New = append(res.New, v)
+		}
+	}
+
+	return res, nil
 }
