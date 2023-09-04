@@ -46,7 +46,9 @@ export interface ModelCloudNodeControlReq {
 export const ModelCloudNodeControlReqCloudProviderEnum = {
     Aws: 'aws',
     Gcp: 'gcp',
-    Azure: 'azure'
+    Azure: 'azure',
+    Linux: 'linux',
+    Kubernetes: 'kubernetes'
 } as const;
 export type ModelCloudNodeControlReqCloudProviderEnum = typeof ModelCloudNodeControlReqCloudProviderEnum[keyof typeof ModelCloudNodeControlReqCloudProviderEnum];
 

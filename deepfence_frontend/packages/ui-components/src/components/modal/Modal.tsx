@@ -101,10 +101,6 @@ const contentCva = cva(
       'text-p1 dark:text-text-text-and-icon',
       // padding
       'px-5',
-      {
-        'animate-modal-slide-in': open,
-        // 'animate-pop-out': !open,
-      },
     ),
   ],
   {
@@ -117,7 +113,8 @@ const contentCva = cva(
         xxl: 'w-[800px]',
       },
       open: {
-        true: '',
+        true: 'animate-modal-slide-in',
+        // false: 'animate-pop-out',
       },
     },
     defaultVariants: {

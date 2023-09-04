@@ -2,6 +2,7 @@ import { useSuspenseQuery } from '@suspensive/react-query';
 import { useMemo, useState } from 'react';
 import { generatePath, useParams } from 'react-router-dom';
 import {
+  CircleSpinner,
   createColumnHelper,
   Dropdown,
   DropdownItem,
@@ -170,6 +171,24 @@ export const RegistryAccountsTable = ({
               {info.getValue()}
             </DFLink>
           </div>
+        ),
+        minSize: 100,
+        size: 110,
+        maxSize: 120,
+      }),
+      columnHelper.accessor('is_syncing', {
+        header: () => 'Sync Images',
+        cell: (info) => (
+          <>
+            {info.getValue() === true ? (
+              <span className="flex items-center gap-1.5 dark:text-text-text-and-icon text-p4">
+                <CircleSpinner size="sm" />
+                Syncing
+              </span>
+            ) : (
+              'Ready'
+            )}
+          </>
         ),
         minSize: 100,
         size: 110,

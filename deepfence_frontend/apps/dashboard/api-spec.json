@@ -3274,7 +3274,14 @@
           }
         },
         "responses": {
-          "200": { "description": "OK" },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelMessageResponse" }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -3423,7 +3430,14 @@
           }
         },
         "responses": {
-          "200": { "description": "OK" },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelMessageResponse" }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -3675,7 +3689,14 @@
           }
         },
         "responses": {
-          "200": { "description": "OK" },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelMessageResponse" }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -10819,7 +10840,10 @@
         "required": ["cloud_provider", "compliance_type"],
         "type": "object",
         "properties": {
-          "cloud_provider": { "enum": ["aws", "gcp", "azure"], "type": "string" },
+          "cloud_provider": {
+            "enum": ["aws", "gcp", "azure", "linux", "kubernetes"],
+            "type": "string"
+          },
           "compliance_type": { "type": "string" },
           "node_id": { "type": "string" }
         }
@@ -11850,6 +11874,7 @@
         "properties": {
           "created_at": { "type": "integer" },
           "id": { "type": "integer" },
+          "is_syncing": { "type": "boolean" },
           "name": { "type": "string" },
           "node_id": { "type": "string" },
           "non_secret": {},
@@ -12696,6 +12721,15 @@
           "size": { "type": "integer" }
         }
       },
+      "SearchChainedSearchFilter": {
+        "required": ["node_filter", "relation_ship"],
+        "type": "object",
+        "properties": {
+          "next_filter": { "nullable": true },
+          "node_filter": { "$ref": "#/components/schemas/SearchSearchFilter" },
+          "relation_ship": { "type": "string" }
+        }
+      },
       "SearchNodeCountResp": {
         "required": [
           "cloud_provider",
@@ -12766,6 +12800,9 @@
         "properties": {
           "extended_node_filter": { "$ref": "#/components/schemas/SearchSearchFilter" },
           "node_filter": { "$ref": "#/components/schemas/SearchSearchFilter" },
+          "related_node_filter": {
+            "$ref": "#/components/schemas/SearchChainedSearchFilter"
+          },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
