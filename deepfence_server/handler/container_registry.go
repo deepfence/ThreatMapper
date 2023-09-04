@@ -60,6 +60,7 @@ func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 			NodeID:       registryId,
 			Name:         r.Name,
 			RegistryType: r.RegistryType,
+			IsSyncing:    req.IsRegistrySyncing(ctx, registryId),
 			NonSecret:    r.NonSecret,
 			CreatedAt:    r.CreatedAt.Unix(),
 			UpdatedAt:    r.UpdatedAt.Unix(),

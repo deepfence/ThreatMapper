@@ -107,6 +107,7 @@ type RegistryListResp struct {
 	NodeID       string          `json:"node_id"`
 	Name         string          `json:"name"`
 	RegistryType string          `json:"registry_type"`
+	IsSyncing    bool            `json:"is_syncing"`
 	NonSecret    json.RawMessage `json:"non_secret"`
 	CreatedAt    int64           `json:"created_at"`
 	UpdatedAt    int64           `json:"updated_at"`
@@ -126,6 +127,49 @@ type Summary struct {
 // ListRegistriesSafe doesnot get secret field from DB
 func (rl *RegistryListReq) ListRegistriesSafe(ctx context.Context, pgClient *postgresqlDb.Queries) ([]postgresqlDb.GetContainerRegistriesSafeRow, error) {
 	return pgClient.GetContainerRegistriesSafe(ctx)
+}
+
+func (rl *RegistryListReq) IsRegistrySyncing(ctx context.Context, rid string) bool {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return false
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return false
+	}
+	defer tx.Close()
+
+	query := `
+	MATCH (n:RegistryAccount{node_id: $id})
+	RETURN n.syncing`
+
+	r, err := tx.Run(query, map[string]interface{}{"id": rid})
+	if err != nil {
+		return false
+	}
+
+	record, err := r.Single()
+	if err != nil {
+		return false
+	}
+
+	if record.Values[0] == nil {
+		log.Warn().Msgf("syncing not found in query result: record: %+v", record)
+		return false
+	}
+
+	isSyncing, has := record.Values[0].(bool)
+	if !has {
+		log.Warn().Msgf("boolean assertion failed: record: %+v", record)
+		return false
+	}
+
+	return isSyncing
 }
 
 // DeleteRegistry from DB
@@ -193,8 +237,12 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 	query := `
 		MERGE (m:RegistryAccount{node_id: $node_id })
 		SET m.registry_type = $registry_type,
+		m.syncing = false,
 		m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`
 	_, err = tx.Run(query, map[string]interface{}{"node_id": registryID, "registry_type": ra.RegistryType, "pgId": cr.ID})
+	if err != nil {
+		return 0, err
+	}
 
 	return cr.ID, tx.Commit()
 }
