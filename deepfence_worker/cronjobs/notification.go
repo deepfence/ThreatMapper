@@ -36,7 +36,7 @@ func SendNotifications(msg *message.Message) error {
 		go processIntegrationRow(wg, integrationRow, msg)
 	}
 	wg.Wait()
-	log.Info().Msgf("SendNotifications task ended for timestamp " + string(msg.Payload))
+	log.Info().Msgf("SendNotifications task ended for timestamp %s", string(msg.Payload))
 	return nil
 }
 
