@@ -33,7 +33,7 @@ func SendNotifications(msg *message.Message) error {
 	wg := new(sync.WaitGroup)
 	wg.Add(len(integrations))
 	for _, integrationRow := range integrations {
-		processIntegrationRow(wg, integrationRow, msg)
+		go processIntegrationRow(wg, integrationRow, msg)
 	}
 	wg.Wait()
 	log.Info().Msgf("SendNotifications task ended for timestamp " + string(msg.Payload))
