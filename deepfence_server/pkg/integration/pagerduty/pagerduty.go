@@ -5,8 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/PagerDuty/go-pagerduty"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -94,7 +96,7 @@ func createPagerDutyEvent(pagerDutyAPIToken string, event pagerduty.V2Event) err
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Token token="+pagerDutyAPIToken)
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: time.Second * 30}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -139,7 +141,7 @@ func IsValidCreds(p PagerDuty) (bool, error) {
 	req.Header.Set("Content-Type", "application/json")
 
 	// Make the HTTP request.
-	client := &http.Client{}
+	client := utils.GetHttpClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		return false, err

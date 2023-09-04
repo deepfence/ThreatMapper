@@ -5,11 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"net/http"
 	"strings"
-	"time"
-
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 func New(ctx context.Context, b []byte) (SumoLogic, error) {
@@ -40,9 +39,7 @@ func (s SumoLogic) FormatMessage(message []map[string]interface{}) (bytes.Buffer
 
 func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[string]interface{}) error {
 	// Create an HTTP client with a timeout
-	client := &http.Client{
-		Timeout: time.Second * 10,
-	}
+	client := utils.GetHttpClient()
 
 	var d []map[string]interface{}
 	dec := json.NewDecoder(strings.NewReader(data))

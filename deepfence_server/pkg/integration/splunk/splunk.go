@@ -3,10 +3,9 @@ package splunk
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"net/http"
 	"strings"
 	"time"
@@ -22,14 +21,7 @@ func New(ctx context.Context, b []byte) (Splunk, error) {
 }
 
 func (s Splunk) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
-	// Create an HTTP client with a timeout
-	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
-	client := &http.Client{
-		Timeout: time.Second * 10,
-		Transport: &http.Transport{
-			TLSClientConfig: tlsConfig,
-		},
-	}
+	client := utils.GetInsecureHttpClient()
 
 	var msg []map[string]interface{}
 	d := json.NewDecoder(strings.NewReader(message))

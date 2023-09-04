@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"net/http"
 	"strings"
 )
@@ -158,7 +159,7 @@ func (s Slack) SendNotification(ctx context.Context, message string, extras map[
 		req.Header.Set("Content-Type", "application/json")
 
 		// Make the HTTP request.
-		client := &http.Client{}
+		client := utils.GetHttpClient()
 		resp, err := client.Do(req)
 		if err != nil {
 			return err
