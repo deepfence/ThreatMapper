@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const BatchSize = 100
+const BatchSize = 5
 
 func New(ctx context.Context, b []byte) (*Teams, error) {
 	t := Teams{}

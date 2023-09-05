@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+var MaxContentLength = 10000
+
 func New(ctx context.Context, b []byte) (Splunk, error) {
 	var s Splunk
 	err := json.Unmarshal(b, &s)
@@ -21,14 +23,13 @@ func New(ctx context.Context, b []byte) (Splunk, error) {
 }
 
 func (s Splunk) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
-	client := utils.GetInsecureHttpClient()
-
 	var msg []map[string]interface{}
 	d := json.NewDecoder(strings.NewReader(message))
 	if err := d.Decode(&msg); err != nil {
 		fmt.Println("Failed to unmarshal message for splunk", err)
 		return err
 	}
+	var buffer bytes.Buffer
 	for _, payload := range msg {
 		currentMicro := time.Now().UnixMicro()
 		payload["timestamp"] = currentMicro
@@ -41,29 +42,13 @@ func (s Splunk) SendNotification(ctx context.Context, message string, extras map
 			fmt.Println("Failed to marshal HEC event to JSON", err)
 			continue
 		}
-
-		// Create a new request to send the JSON data to Splunk
-		req, err := http.NewRequest("POST", s.Config.EndpointURL, bytes.NewBuffer(jsonBytes))
-		if err != nil {
-			fmt.Println("Failed to create HTTP request", err)
-			continue
+		// Send out bytes in buffer immediately if the limit exceeded after adding this event
+		if buffer.Len()+len(jsonBytes) > MaxContentLength {
+			s.sendRequest(buffer)
 		}
-		req.Header.Set("Authorization", "Splunk "+s.Config.Token)
-		req.Header.Set("Content-Type", "application/json")
-
-		// Send the request to Splunk
-		resp, err := client.Do(req)
-		if err != nil {
-			fmt.Println("Failed to send data to Splunk", err)
-			continue
-		}
-
-		// Check the response status code
-		if resp.StatusCode != http.StatusOK {
-			fmt.Println("Failed to send data to Splunk", resp.Status)
-			continue
-		}
-		resp.Body.Close()
+	}
+	if buffer.Len() > 0 {
+		s.sendRequest(buffer)
 	}
 
 	fmt.Println("Data sent to Splunk successfully")
@@ -73,4 +58,27 @@ func (s Splunk) SendNotification(ctx context.Context, message string, extras map
 // HECEvent represents an event for the Splunk HTTP Event Collector (HEC) API
 type HECEvent struct {
 	Event map[string]interface{} `json:"event"`
+}
+
+func (s Splunk) sendRequest(buffer bytes.Buffer) {
+	client := utils.GetInsecureHttpClient()
+	// Create a new request to send the JSON data to Splunk
+	req, err := http.NewRequest("POST", s.Config.EndpointURL, bytes.NewReader(buffer.Bytes()))
+	if err != nil {
+		fmt.Println("Failed to create HTTP request", err)
+	}
+	req.Header.Set("Authorization", "Splunk "+s.Config.Token)
+	// req.Header.Set("Content-Type", "application/json")
+
+	// Send the request to Splunk
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Failed to send data to Splunk", err)
+	}
+
+	// Check the response status code
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("Failed to send data to Splunk", resp.Status)
+	}
+	resp.Body.Close()
 }
