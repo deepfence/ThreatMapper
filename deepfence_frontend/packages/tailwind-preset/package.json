@@ -1,7 +1,6 @@
 {
-  "name": "tailwind-preset",
-  "private": true,
-  "version": "0.0.1",
+  "name": "@deepfence/tailwind-preset",
+  "version": "0.0.3",
   "description": "tailwind preset and other utilities for deepfence ui",
   "type": "commonjs",
   "main": "dist/src/index.js",

@@ -1,7 +1,6 @@
 {
-  "name": "ui-components",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@deepfence/ui-components",
+  "version": "0.0.3",
   "type": "module",
   "module": "dist/index.es.js",
   "types": "dist/index.es.d.ts",
@@ -42,7 +41,7 @@
     "cva": "npm:class-variance-authority@^0.7.0",
     "lodash-es": "^4.17.21",
     "react-use": "^17.4.0",
-    "tailwind-preset": "workspace:*"
+    "tailwind-preset": "workspace:@deepfence/tailwind-preset@*"
   },
   "peerDependencies": {
     "react": "^18.2.0",

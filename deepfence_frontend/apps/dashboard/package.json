@@ -33,8 +33,8 @@
     "react-router-dom": "^6.15.0",
     "react-use": "^17.4.0",
     "sonner": "^0.6.2",
-    "tailwind-preset": "workspace:*",
-    "ui-components": "workspace:*"
+    "tailwind-preset": "workspace:@deepfence/tailwind-preset@*",
+    "ui-components": "workspace:@deepfence/ui-components@*"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.7.0",
