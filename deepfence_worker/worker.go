@@ -273,9 +273,9 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	//}
 
 	mux.AddMiddleware(
-		middleware.Recoverer,
-		middleware.NewThrottle(10, time.Second).Middleware,
 		middleware.CorrelationID,
+		middleware.NewThrottle(10, time.Second).Middleware,
+		middleware.Recoverer,
 	)
 
 	HandlerMap = make(map[string]*NoPublisherTask)
