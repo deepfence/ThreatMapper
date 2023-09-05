@@ -51,7 +51,6 @@ importers:
       postcss: ^8.4.27
       react: ^18.2.0
       react-dom: ^18.2.0
-      react-icons: ^4.10.1
       react-router-dom: ^6.15.0
       react-use: ^17.4.0
       resize-observer-polyfill: ^1.5.1
@@ -79,7 +78,6 @@ importers:
       lodash-es: 4.17.21
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
-      react-icons: 4.10.1_react@18.2.0
       react-router-dom: 6.15.0_biqbaboplfbrettd7655fr4n2y
       react-use: 17.4.0_biqbaboplfbrettd7655fr4n2y
       sonner: 0.6.2_biqbaboplfbrettd7655fr4n2y
@@ -184,7 +182,6 @@ importers:
       postcss: ^8.4.27
       react: ^18.2.0
       react-dom: ^18.2.0
-      react-icons: ^4.10.1
       react-use: ^17.4.0
       resize-observer-polyfill: ^1.5.1
       rollup-plugin-visualizer: ^5.9.2
@@ -249,7 +246,6 @@ importers:
       postcss: 8.4.27
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
-      react-icons: 4.10.1_react@18.2.0
       resize-observer-polyfill: 1.5.1
       rollup-plugin-visualizer: 5.9.2
       storybook: 7.2.3
@@ -10475,13 +10471,6 @@ packages:
       react-dom: 18.2.0_react@18.2.0
       react-is: 18.1.0
     dev: true
-
-  /react-icons/4.10.1_react@18.2.0:
-    resolution: {integrity: sha512-/ngzDP/77tlCfqthiiGNZeYFACw85fUjZtLbedmJ5DTlNDIwETxhwBzdOJ21zj4iJdvc0J3y7yOsX3PpxAJzrw==}
-    peerDependencies:
-      react: '*'
-    dependencies:
-      react: 18.2.0
 
   /react-inspector/6.0.2_react@18.2.0:
     resolution: {integrity: sha512-x+b7LxhmHXjHoU/VrFAzw5iutsILRoYyDq97EDYdFpPLcvqtEzk4ZSZSQjnFPbr5T57tLXnHcqFYoN1pI6u8uQ==}

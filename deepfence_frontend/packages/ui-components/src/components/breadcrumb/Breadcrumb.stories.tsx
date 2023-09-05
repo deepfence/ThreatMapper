@@ -1,8 +1,8 @@
 import { Meta, StoryFn } from '@storybook/react';
 import { forwardRef } from 'react';
-import { HiHome } from 'react-icons/hi';
 
 import { Breadcrumb, BreadcrumbLink } from '@/components/breadcrumb/Breadcrumb';
+import { PlusIcon } from '@/components/icons/Plus';
 
 export default {
   title: 'Components/BreadCrumb',
@@ -25,7 +25,15 @@ const Link = forwardRef<
 
 const Template: StoryFn<typeof Breadcrumb> = () => (
   <Breadcrumb>
-    <BreadcrumbLink asChild icon={<HiHome />} isLink>
+    <BreadcrumbLink
+      asChild
+      icon={
+        <span className="h-4 w-4">
+          <PlusIcon />
+        </span>
+      }
+      isLink
+    >
       <Link>Link One</Link>
     </BreadcrumbLink>
     <BreadcrumbLink asChild>

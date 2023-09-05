@@ -1,12 +1,17 @@
 import '@testing-library/jest-dom';
 
 import { fireEvent } from '@testing-library/react';
-import { FaPlus } from 'react-icons/fa';
 import { describe, expect, it, vi } from 'vitest';
 
 import Button from '@/components/button/Button';
+import { PlusIcon } from '@/components/icons/Plus';
 import { renderUI } from '@/tests/utils';
 
+const Plus = () => (
+  <span className="h-4 w-4">
+    <PlusIcon />
+  </span>
+);
 describe(`Component Button`, () => {
   it(`render with label, color, startIcon, endIcon, onClick`, () => {
     const onClick = vi.fn();
@@ -14,8 +19,8 @@ describe(`Component Button`, () => {
       <Button
         id="id"
         color="default"
-        startIcon={<FaPlus />}
-        endIcon={<FaPlus />}
+        startIcon={<Plus />}
+        endIcon={<Plus />}
         onClick={onClick}
       >
         Test button
