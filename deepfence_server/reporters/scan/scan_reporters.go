@@ -568,6 +568,79 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 	}, nil
 }
 
+func GetScanResultDiff[T any](ctx context.Context, scan_type utils.Neo4jScanType, baseScanID, compareToScanID string, ff reporters.FieldsFilters, fw model.FetchWindow) ([]T, error) {
+	res := []T{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	query := fmt.Sprintf(`
+		OPTIONAL MATCH (n:%s{node_id:$base_scan_id})
+		RETURN n IS NOT NULL AS Exists`,
+		scan_type)
+	log.Debug().Msgf("query: %v", query)
+	r, err := tx.Run(query,
+		map[string]interface{}{
+			"base_scan_id": baseScanID,
+		})
+	if err != nil {
+		return res, err
+	}
+
+	rec, err := r.Single()
+	if err != nil {
+		return res, err
+	}
+
+	if !rec.Values[0].(bool) {
+		return res, &NodeNotFoundError{
+			node_id: baseScanID,
+		}
+	}
+
+	query = `
+	match (n:` + string(scan_type) + `{node_id: $base_scan_id}) -[:DETECTED]-> (d)
+	where not exists {match (m:` + string(scan_type) + `{node_id: $compare_to_scan_id}) -[:DETECTED]-> (d)}
+	with apoc.map.merge( d{.*}, {masked: true}) as d
+	return d{.*}
+	`
+	log.Debug().Msgf("query: %v", query)
+	nres, err := tx.Run(query,
+		map[string]interface{}{
+			"base_scan_id":       baseScanID,
+			"compare_to_scan_id": compareToScanID,
+		})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := nres.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for _, rec := range recs {
+		var tmp T
+		utils.FromMap(rec.Values[0].(map[string]interface{}), &tmp)
+		res = append(res, tmp)
+	}
+
+	return res, nil
+}
+
 func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, scan_id string, ff reporters.FieldsFilters, fw model.FetchWindow) ([]T, model.ScanResultsCommon, error) {
 	res := []T{}
 	common := model.ScanResultsCommon{}

@@ -276,27 +276,24 @@ func (h *Handler) GetVulnerabilitiesScanComparisionReport(w http.ResponseWriter,
 	currentScanId := scanIdsArr[0]
 	previousScanId := scanIdsArr[1]
 
-	// Get the scan results for the scan ids
-	currentScanResults, err := GetVulnerabilitiesScanResults(r.Context(), currentScanId)
+	// added vulnerabilities
+	added, err := GetDifferenceBetweenVulnerabilitiesScanResults(r.Context(), currentScanId, previousScanId)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
 
-	previousScanResults, err := GetVulnerabilitiesScanResults(r.Context(), previousScanId)
+	// removed vulnerabilities
+	removed, err := GetDifferenceBetweenVulnerabilitiesScanResults(r.Context(), previousScanId, currentScanId)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
 
-	// Compare the scan results
-	comparedScanResults, err := CompareVulnerabilitiesScanResults(currentScanResults, previousScanResults)
-	if err != nil {
-		respondError(err, w)
-		return
-	}
-
-	httpext.JSON(w, http.StatusOK, comparedScanResults)
+	httpext.JSON(w, http.StatusOK, model.VulnerabilityComparison{
+		New:     added,
+		Deleted: removed,
+	})
 }
 
 func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -2130,4 +2127,18 @@ func CompareVulnerabilitiesScanResults(r1, r2 []model.Vulnerability) (model.Vuln
 	}
 
 	return res, nil
+}
+
+// (A-B)
+// use this function to compare between two scan results, A and B
+// to get new vulnerabilities GetDifferenceBetweenVulnerabilitiesScanResults(ctx, A, B)
+// to get deleted vulnerabilities GetDifferenceBetweenVulnerabilitiesScanResults(ctx, B, A)
+// where A and B are scan IDs
+func GetDifferenceBetweenVulnerabilitiesScanResults(ctx context.Context, a, b string) ([]model.Vulnerability, error) {
+	entries, err := reporters_scan.GetScanResultDiff[model.Vulnerability](ctx, utils.NEO4J_VULNERABILITY_SCAN, a, b, reporters.FieldsFilters{}, model.FetchWindow{})
+	if err != nil {
+		return []model.Vulnerability{}, err
+	}
+
+	return entries, nil
 }
