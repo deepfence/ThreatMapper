@@ -107,7 +107,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 		},
 	)
 	filters.FieldsFilters.ContainsFilter = reporters.ContainsFilter{
-		FieldsValues: map[string][]interface{}{"status": {"COMPLETE"}},
+		FieldsValues: map[string][]interface{}{"status": {utils.SCAN_STATUS_SUCCESS}},
 	}
 	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource],
 		filters.NodeIds, filters.FieldsFilters, model.FetchWindow{})
