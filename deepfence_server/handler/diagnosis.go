@@ -19,17 +19,17 @@ func (h *Handler) GenerateConsoleDiagnosticLogs(w http.ResponseWriter, r *http.R
 	var req diagnosis.GenerateConsoleDiagnosticLogsRequest
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	err = h.ConsoleDiagnosis.GenerateDiagnosticLogs(r.Context(), strconv.Itoa(req.Tail))
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -43,18 +43,18 @@ func (h *Handler) UpdateAgentDiagnosticLogsStatus(w http.ResponseWriter, r *http
 	var req diagnosis.DiagnosticLogsStatus
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	req.NodeID = chi.URLParam(r, "node_id")
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	err = agentdiagnosis.UpdateAgentDiagnosticLogsStatus(r.Context(), req)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -65,17 +65,17 @@ func (h *Handler) GenerateAgentDiagnosticLogs(w http.ResponseWriter, r *http.Req
 	var req diagnosis.GenerateAgentDiagnosticLogsRequest
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	err = agentdiagnosis.GenerateAgentDiagnosticLogs(r.Context(), req.NodeIds, strconv.Itoa(req.Tail))
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
@@ -87,7 +87,7 @@ func (h *Handler) GenerateAgentDiagnosticLogs(w http.ResponseWriter, r *http.Req
 func (h *Handler) GetDiagnosticLogs(w http.ResponseWriter, r *http.Request) {
 	resp, err := diagnosis.GetDiagnosticLogs(r.Context())
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	httpext.JSON(w, http.StatusOK, resp)
