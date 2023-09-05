@@ -112,21 +112,26 @@ func (bd *NotFoundError) Error() string {
 	return bd.err.Error()
 }
 
-func respondWithErrorCode(err error, w http.ResponseWriter, code int) error {
+func (h *Handler) respondWithErrorCode(err error, w http.ResponseWriter, code int) error {
 	var errorFields map[string]string
+	var errMsg string
 	if code == http.StatusBadRequest {
-		errorFields = model.ParseValidatorError(err.Error(), false)
+		errorFields, errMsg = h.ParseValidatorError(err, false)
+	} else {
+		errMsg = err.Error()
 	}
 	if len(errorFields) > 0 {
 		return httpext.JSON(w, code, model.ErrorResponse{Message: "", ErrorFields: errorFields})
 	} else {
-		return httpext.JSON(w, code, model.ErrorResponse{Message: err.Error(), ErrorFields: errorFields})
+		return httpext.JSON(w, code, model.ErrorResponse{Message: errMsg, ErrorFields: errorFields})
 	}
 }
 
-func respondError(err error, w http.ResponseWriter) error {
+func (h *Handler) respondError(err error, w http.ResponseWriter) error {
 	var code int
 	var errorFields map[string]string
+	errMsg := err.Error()
+
 	// array index for the error field
 	var errorIndex map[string][]int
 	switch err.(type) {
@@ -142,7 +147,7 @@ func respondError(err error, w http.ResponseWriter) error {
 		code = http.StatusBadRequest
 		var validatorError *ValidatorError
 		errors.As(err, &validatorError)
-		errorFields = model.ParseValidatorError(validatorError.Error(), validatorError.skipOverwriteErrorMessage)
+		errorFields, errMsg = h.ParseValidatorError(validatorError.err, validatorError.skipOverwriteErrorMessage)
 		errorIndex = validatorError.errorIndex
 	case *ForbiddenError:
 		code = http.StatusForbidden
@@ -157,6 +162,6 @@ func respondError(err error, w http.ResponseWriter) error {
 	if len(errorFields) > 0 {
 		return httpext.JSON(w, code, model.ErrorResponse{Message: "", ErrorFields: errorFields, ErrorIndex: errorIndex})
 	} else {
-		return httpext.JSON(w, code, model.ErrorResponse{Message: err.Error(), ErrorFields: errorFields, ErrorIndex: errorIndex})
+		return httpext.JSON(w, code, model.ErrorResponse{Message: errMsg, ErrorFields: errorFields, ErrorIndex: errorIndex})
 	}
 }

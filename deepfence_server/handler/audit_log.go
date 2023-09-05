@@ -160,14 +160,14 @@ func (h *Handler) GetAuditLogs(w http.ResponseWriter, r *http.Request) {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get db connection")
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
 	auditLogs, err := pgClient.GetAuditLogs(ctx)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 

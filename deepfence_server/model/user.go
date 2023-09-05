@@ -5,10 +5,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
-	"regexp"
 	"strconv"
 	"time"
 
@@ -22,8 +20,6 @@ import (
 
 const (
 	AdminRole         = "admin"
-	StandardUserRole  = "standard-user"
-	ReadOnlyRole      = "read-only-user"
 	bcryptCost        = 11
 	GrantTypePassword = "password"
 	GrantTypeAPIToken = "api_token"
@@ -32,12 +28,6 @@ const (
 var (
 	AccessTokenExpiry  = time.Minute * 30
 	RefreshTokenExpiry = time.Hour * 26
-	CompanyRegex       = regexp.MustCompile("^[A-Za-z][a-zA-Z0-9-\\s@\\.#&!]+$")
-	UserNameRegex      = regexp.MustCompile("^[A-Za-z][A-Za-z .'-]+$")
-	MinNamespaceLength = 3
-	MaxNamespaceLength = 32
-	NamespaceRegex     = regexp.MustCompile(fmt.Sprintf("^[a-z][a-z0-9-]{%d,%d}$", MinNamespaceLength-1, MaxNamespaceLength-1))
-	ApiTokenRegex      = regexp.MustCompile(fmt.Sprintf("^[a-z][a-z0-9-]{%d,%d}\\:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", MinNamespaceLength-1, MaxNamespaceLength-1))
 )
 
 func init() {

@@ -15,7 +15,7 @@ func NodeCountHandler(w http.ResponseWriter, r *http.Request) {
 	counts, err := reporters_search.CountNodes(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	err = httpext.JSON(w, http.StatusOK, counts)
@@ -26,7 +26,7 @@ func SearchCountHandler[T reporters.CypherableAndCategorizable](w http.ResponseW
 	var req reporters_search.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
@@ -45,7 +45,7 @@ func SearchCountHandler[T reporters.CypherableAndCategorizable](w http.ResponseW
 	entries, err := reporters_search.SearchReport[T](r.Context(), dummy_ff, dummy_ext_ff, req.IndirectFilters, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -66,7 +66,7 @@ func SearchCloudNodeHandler[T reporters.Cypherable](w http.ResponseWriter, r *ht
 	var req reporters_search.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
@@ -88,7 +88,7 @@ func SearchCloudNodeCountHandler[T reporters.CypherableAndCategorizable](w http.
 	var req reporters_search.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
@@ -99,7 +99,7 @@ func SearchCloudNodeCountHandler[T reporters.CypherableAndCategorizable](w http.
 	entries, err := reporters_search.SearchCloudNodeReport[T](r.Context(), dummy_ff, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -120,14 +120,14 @@ func SearchHandler[T reporters.Cypherable](w http.ResponseWriter, r *http.Reques
 	var req reporters_search.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
 	entries, err := reporters_search.SearchReport[T](r.Context(), req.NodeFilter, req.ExtendedNodeFilter, req.IndirectFilters, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -142,14 +142,14 @@ func SearchCloudResourcesHandler(w http.ResponseWriter, r *http.Request) {
 	var req reporters_search.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
 	entries, err := reporters_search.SearchReport[model.CloudResource](r.Context(), req.NodeFilter, req.ExtendedNodeFilter, req.IndirectFilters, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -174,7 +174,7 @@ func SearchCloudResourcesHandler(w http.ResponseWriter, r *http.Request) {
 	accountIdEntries, err := reporters_search.SearchReport[model.CloudNode](r.Context(), searchFilter, reporters_search.SearchFilter{}, nil, model.FetchWindow{})
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	for _, accountIdEntry := range accountIdEntries {
@@ -372,14 +372,14 @@ func SearchScans(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jSc
 	var req reporters_search.SearchScanReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
 	hosts, err := reporters_search.SearchScansReport(r.Context(), req, scan_type)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -394,14 +394,14 @@ func SearchScansCount(w http.ResponseWriter, r *http.Request, scan_type utils.Ne
 	var req reporters_search.SearchScanReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
 	hosts, err := reporters_search.SearchScansReport(r.Context(), req, scan_type)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 

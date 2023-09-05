@@ -24,9 +24,9 @@ func (h *Handler) RegisterCloudNodeAccountCount(w http.ResponseWriter, r *http.R
 }
 
 func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
-	req, err := extractCloudNodeDetails(w, r)
+	req, err := h.extractCloudNodeDetails(w, r)
 	if err != nil {
-		complianceError(w, "Extract cloud node details error")
+		h.complianceError(w, "Extract cloud node details error")
 		return
 	}
 
@@ -46,7 +46,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 	if len(monitoredAccountIds) != 0 {
 		logrus.Debugf("More than 1 account to be monitored: %+v", monitoredAccountIds)
 		if orgAccountId == "" {
-			complianceError(w, "Org account id is needed for multi account setup")
+			h.complianceError(w, "Org account id is needed for multi account setup")
 			return
 		}
 		monitoredAccountIds[req.CloudAccount] = nodeId
@@ -63,7 +63,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		}
 		err = model.UpsertCloudComplianceNode(ctx, node, "")
 		if err != nil {
-			complianceError(w, err.Error())
+			h.complianceError(w, err.Error())
 			return
 		}
 		for monitoredAccountId, monitoredNodeId := range monitoredAccountIds {
@@ -76,7 +76,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			}
 			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeId)
 			if err != nil {
-				complianceError(w, err.Error())
+				h.complianceError(w, err.Error())
 				return
 			}
 			pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, monitoredNodeId)
@@ -109,7 +109,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		err = model.UpsertCloudComplianceNode(ctx, node, "")
 		if err != nil {
 			logrus.Infof("Error while upserting node: %+v", err)
-			complianceError(w, err.Error())
+			h.complianceError(w, err.Error())
 		}
 		pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, nodeId)
 		if err != nil || len(pendingScansList.ScansInfo) == 0 {
@@ -147,7 +147,7 @@ func (h *Handler) ListCloudNodeAccountHandler(w http.ResponseWriter, r *http.Req
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
@@ -155,7 +155,7 @@ func (h *Handler) ListCloudNodeAccountHandler(w http.ResponseWriter, r *http.Req
 		if req.CloudProvider != model.PostureProviderKubernetes && req.CloudProvider != model.PostureProviderLinux {
 			err = fmt.Errorf("unknown Provider: %s", req.CloudProvider)
 			log.Error().Msgf("%v", err)
-			respondError(&BadDecoding{err}, w)
+			h.respondError(&BadDecoding{err}, w)
 			return
 		}
 	}
@@ -163,7 +163,7 @@ func (h *Handler) ListCloudNodeAccountHandler(w http.ResponseWriter, r *http.Req
 	infos, err := model.GetCloudComplianceNodesList(r.Context(), req.CloudProvider, req.Window)
 	if err != nil {
 		log.Error().Msgf("%v, req=%v", err, req)
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -175,15 +175,15 @@ func (h *Handler) ListCloudNodeProvidersHandler(w http.ResponseWriter, r *http.R
 	providers, err := model.GetCloudProvidersList(r.Context())
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
 	httpext.JSON(w, http.StatusOK, model.CloudNodeProvidersListResp{Providers: providers})
 }
 
-func complianceError(w http.ResponseWriter, errorString string) {
-	err := respondError(errors.New(errorString), w)
+func (h *Handler) complianceError(w http.ResponseWriter, errorString string) {
+	err := h.respondError(errors.New(errorString), w)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -191,7 +191,7 @@ func complianceError(w http.ResponseWriter, errorString string) {
 	}
 }
 
-func extractCloudNodeDetails(w http.ResponseWriter, r *http.Request) (model.CloudNodeAccountRegisterReq, error) {
+func (h *Handler) extractCloudNodeDetails(w http.ResponseWriter, r *http.Request) (model.CloudNodeAccountRegisterReq, error) {
 	defer r.Body.Close()
 	var req model.CloudNodeAccountRegisterReq
 	requestDump, err := httputil.DumpRequest(r, true)
@@ -203,14 +203,14 @@ func extractCloudNodeDetails(w http.ResponseWriter, r *http.Request) (model.Clou
 	if err != nil {
 		log.Error().Msgf("Request dump: %s", string(requestDump))
 		log.Error().Msgf("%+v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return req, err
 	}
 
 	if utils.StringToCloudProvider(req.CloudProvider) == -1 {
 		err = fmt.Errorf("unknown CloudProvider: %s", req.CloudProvider)
 		log.Error().Msgf("%v", err)
-		respondError(&NotFoundError{err}, w)
+		h.respondError(&NotFoundError{err}, w)
 	}
 
 	return req, err

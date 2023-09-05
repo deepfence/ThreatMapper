@@ -12,7 +12,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
-	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -20,7 +19,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
-	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
 	"github.com/riandyrn/otelchi"
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -124,40 +122,21 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 		return err
 	}
 
+	apiValidator, translator, err := handler.NewValidator()
+	if err != nil {
+		return err
+	}
+
 	dfHandler := &handler.Handler{
 		TokenAuth:        tokenAuth,
 		AuthEnforcer:     authEnforcer,
 		OpenApiDocs:      openApiDocs,
 		SaasDeployment:   IsSaasDeployment(),
-		Validator:        validator.New(),
+		Validator:        apiValidator,
+		Translator:       translator,
 		IngestChan:       ingestC,
 		TasksPublisher:   taskPublisher,
 		ConsoleDiagnosis: consoleDiagnosis,
-	}
-
-	err = dfHandler.Validator.RegisterValidation("password", model.ValidatePassword)
-	if err != nil {
-		return err
-	}
-	err = dfHandler.Validator.RegisterValidation("company_name", model.ValidateCompanyName)
-	if err != nil {
-		return err
-	}
-	err = dfHandler.Validator.RegisterValidation("user_name", model.ValidateUserName)
-	if err != nil {
-		return err
-	}
-	err = dfHandler.Validator.RegisterValidation("namespace", model.ValidateNamespace)
-	if err != nil {
-		return err
-	}
-	err = dfHandler.Validator.RegisterValidation("api_token", model.ValidateApiToken)
-	if err != nil {
-		return err
-	}
-	err = dfHandler.Validator.RegisterValidation("jira_auth_key", model.ValidateJiraConfig)
-	if err != nil {
-		return err
 	}
 
 	r.Use(otelchi.Middleware("deepfence-server", otelchi.WithChiRoutes(r)))
