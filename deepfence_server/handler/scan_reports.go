@@ -758,26 +758,26 @@ func (h *Handler) stopMalwareScan(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) StatusVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
-	statusScanHandler(w, r, utils.NEO4J_VULNERABILITY_SCAN)
+	h.statusScanHandler(w, r, utils.NEO4J_VULNERABILITY_SCAN)
 }
 
 func (h *Handler) StatusSecretScanHandler(w http.ResponseWriter, r *http.Request) {
-	statusScanHandler(w, r, utils.NEO4J_SECRET_SCAN)
+	h.statusScanHandler(w, r, utils.NEO4J_SECRET_SCAN)
 }
 
 func (h *Handler) StatusComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
-	statusScanHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
+	h.statusScanHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
 }
 
 func (h *Handler) StatusMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
-	statusScanHandler(w, r, utils.NEO4J_MALWARE_SCAN)
+	h.statusScanHandler(w, r, utils.NEO4J_MALWARE_SCAN)
 }
 
 func (h *Handler) StatusCloudComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
-	complianceStatusScanHandler(w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
+	h.complianceStatusScanHandler(w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
 }
 
-func statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
+func (h *Handler) statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req model.ScanStatusReq
 	err := httpext.DecodeJSON(r, httpext.QueryParams, MaxSbomRequestSize, &req)
@@ -807,7 +807,7 @@ func statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.N
 	httpext.JSON(w, http.StatusOK, statuses)
 }
 
-func complianceStatusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
+func (h *Handler) complianceStatusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req model.ScanStatusReq
 	err := httpext.DecodeJSON(r, httpext.QueryParams, MaxSbomRequestSize, &req)
@@ -834,26 +834,26 @@ func complianceStatusScanHandler(w http.ResponseWriter, r *http.Request, scan_ty
 }
 
 func (h *Handler) ListVulnerabilityScansHandler(w http.ResponseWriter, r *http.Request) {
-	listScansHandler(w, r, utils.NEO4J_VULNERABILITY_SCAN)
+	h.listScansHandler(w, r, utils.NEO4J_VULNERABILITY_SCAN)
 }
 
 func (h *Handler) ListSecretScansHandler(w http.ResponseWriter, r *http.Request) {
-	listScansHandler(w, r, utils.NEO4J_SECRET_SCAN)
+	h.listScansHandler(w, r, utils.NEO4J_SECRET_SCAN)
 }
 
 func (h *Handler) ListComplianceScansHandler(w http.ResponseWriter, r *http.Request) {
-	listScansHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
+	h.listScansHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
 }
 
 func (h *Handler) ListMalwareScansHandler(w http.ResponseWriter, r *http.Request) {
-	listScansHandler(w, r, utils.NEO4J_MALWARE_SCAN)
+	h.listScansHandler(w, r, utils.NEO4J_MALWARE_SCAN)
 }
 
 func (h *Handler) ListCloudComplianceScansHandler(w http.ResponseWriter, r *http.Request) {
-	listScansHandler(w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
+	h.listScansHandler(w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
 }
 
-func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
+func (h *Handler) listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req model.ScanListReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
