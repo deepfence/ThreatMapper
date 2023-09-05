@@ -177,7 +177,7 @@ export const RegistryAccountsTable = ({
         maxSize: 120,
       }),
       columnHelper.accessor('is_syncing', {
-        header: () => 'Sync Images',
+        header: () => 'Sync Status',
         cell: (info) => (
           <>
             {info.getValue() === true ? (
@@ -186,7 +186,7 @@ export const RegistryAccountsTable = ({
                 Syncing
               </span>
             ) : (
-              'Ready'
+              'Ready to scan'
             )}
           </>
         ),
