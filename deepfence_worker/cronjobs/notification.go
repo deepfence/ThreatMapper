@@ -12,7 +12,6 @@ import (
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"strconv"
-	"sync"
 )
 
 func SendNotifications(msg *message.Message) error {
@@ -30,19 +29,15 @@ func SendNotifications(msg *message.Message) error {
 		log.Error().Msgf("Error getting postgresCtx", err)
 		return nil
 	}
-	wg := new(sync.WaitGroup)
-	wg.Add(len(integrations))
 	for _, integrationRow := range integrations {
-		go processIntegrationRow(wg, integrationRow, msg)
+		go processIntegrationRow(integrationRow, msg)
 	}
-	wg.Wait()
 	log.Info().Msgf("SendNotifications task ended for timestamp %s", string(msg.Payload))
 	return nil
 }
 
-func processIntegrationRow(wg *sync.WaitGroup, integrationRow postgresql_db.Integration, msg *message.Message) {
-	defer wg.Done()
-	log.Info().Msgf("Processing integration for %s rowId: %d", integrationRow.IntegrationType, integrationRow.ID)
+func processIntegrationRow(integrationRow postgresql_db.Integration, msg *message.Message) {
+	log.Info().Msgf("Processing integration for %s rowId: %d cronTS: %s", integrationRow.IntegrationType, integrationRow.ID, string(msg.Payload))
 	switch integrationRow.Resource {
 	case utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]:
 		processIntegration[model.Vulnerability](msg, integrationRow)
@@ -179,7 +174,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 				integrationRow.ID, integrationRow.Resource, integrationRow.IntegrationType, err)
 			return
 		}
-		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d",
-			integrationRow.Resource, len(results), integrationRow.IntegrationType, integrationRow.ID)
+		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, cronTS: %s",
+			integrationRow.Resource, len(results), integrationRow.IntegrationType, integrationRow.ID, string(msg.Payload))
 	}
 }
