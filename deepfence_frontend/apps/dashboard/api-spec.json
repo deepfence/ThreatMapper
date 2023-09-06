@@ -11874,7 +11874,6 @@
         "properties": {
           "created_at": { "type": "integer" },
           "id": { "type": "integer" },
-          "is_syncing": { "type": "boolean" },
           "name": { "type": "string" },
           "node_id": { "type": "string" },
           "non_secret": {},

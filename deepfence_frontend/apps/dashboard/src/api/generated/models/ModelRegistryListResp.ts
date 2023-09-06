@@ -33,12 +33,6 @@ export interface ModelRegistryListResp {
     id?: number;
     /**
      * 
-     * @type {boolean}
-     * @memberof ModelRegistryListResp
-     */
-    is_syncing?: boolean;
-    /**
-     * 
      * @type {string}
      * @memberof ModelRegistryListResp
      */
@@ -90,7 +84,6 @@ export function ModelRegistryListRespFromJSONTyped(json: any, ignoreDiscriminato
         
         'created_at': !exists(json, 'created_at') ? undefined : json['created_at'],
         'id': !exists(json, 'id') ? undefined : json['id'],
-        'is_syncing': !exists(json, 'is_syncing') ? undefined : json['is_syncing'],
         'name': !exists(json, 'name') ? undefined : json['name'],
         'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
         'non_secret': !exists(json, 'non_secret') ? undefined : json['non_secret'],
@@ -110,7 +103,6 @@ export function ModelRegistryListRespToJSON(value?: ModelRegistryListResp | null
         
         'created_at': value.created_at,
         'id': value.id,
-        'is_syncing': value.is_syncing,
         'name': value.name,
         'node_id': value.node_id,
         'non_secret': value.non_secret,
