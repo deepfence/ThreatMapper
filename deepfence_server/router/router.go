@@ -369,7 +369,6 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			r.Route("/scan/results", func(r chi.Router) {
 				r.Route("/vulnerability", func(r chi.Router) {
 					r.Post("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListVulnerabilityScanResultsHandler))
-					r.Get("/compare", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetVulnerabilitiesScanComparisionReport))
 				})
 
 				r.Route("/secret", func(r chi.Router) {
@@ -400,6 +399,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 						})
 					})
 				})
+
+				r.Get("/compare", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CompareScanHandler))
 			})
 
 			r.Route("/filters", func(r chi.Router) {
