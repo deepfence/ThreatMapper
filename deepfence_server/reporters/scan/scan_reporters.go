@@ -611,13 +611,25 @@ func GetScanResultDiff[T any](ctx context.Context, scan_type utils.Neo4jScanType
 		}
 	}
 
+	ffCondition := reporters.OrderFilter2CypherCondition("d", ff.OrderFilter, nil)
+
+	fname := scanResultId_field(scan_type)
+	if len(fname) > 0 {
+		str := "d." + fname + " ASC"
+		if len(ffCondition) > 0 {
+			ffCondition = ffCondition + "," + str
+		}
+	}
+
 	query = `
-	match (n:` + string(scan_type) + `{node_id: $base_scan_id}) -[:DETECTED]-> (d)
+	match (n:` + string(scan_type) + `{node_id: $base_scan_id}) -[r:DETECTED]-> (d)
 	where not exists {match (m:` + string(scan_type) + `{node_id: $compare_to_scan_id}) -[:DETECTED]-> (d)}
-	with apoc.map.merge( d{.*}, {masked: true}) as d
-	return d{.*}
-	`
-	log.Debug().Msgf("query: %v", query)
+	optional match (d) -[:IS]-> (e)
+	with apoc.map.merge( e{.*}, d{.*, masked: coalesce(d.masked or r.masked, false), name: coalesce(e.name, d.name, '')}) as d` +
+		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
+		ffCondition + ` RETURN d ` +
+		fw.FetchWindow2CypherQuery()
+	log.Debug().Msgf("diff query: %v", query)
 	nres, err := tx.Run(query,
 		map[string]interface{}{
 			"base_scan_id":       baseScanID,
