@@ -72,11 +72,11 @@ func (s Splunk) sendRequest(buffer bytes.Buffer) error {
 
 	// Send the request to Splunk
 	resp, err := client.Do(req)
-	defer resp.Body.Close()
 	if err != nil {
 		fmt.Println("Failed to send data to Splunk", err)
 		return err
 	}
+	defer resp.Body.Close()
 
 	// Check the response status code
 	if resp.StatusCode != http.StatusOK {
