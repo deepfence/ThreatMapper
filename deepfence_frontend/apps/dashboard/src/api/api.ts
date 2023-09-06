@@ -14,6 +14,7 @@ import {
   LookupApi,
   MalwareScanApi,
   RegistryApi,
+  ScanCompareApi,
   ScanResultsApi,
   SearchApi,
   SecretScanApi,
@@ -330,5 +331,12 @@ export function getCommonApiClient() {
   const commonApi = new CommonApi(configuration);
   return {
     getEula: commonApi.eula.bind(commonApi),
+  };
+}
+
+export function getScanCompareApiClient() {
+  const scanCompareApi = new ScanCompareApi(configuration);
+  return {
+    compareScans: scanCompareApi.compareScans.bind(scanCompareApi),
   };
 }

@@ -13,6 +13,7 @@ apis/LookupApi.ts
 apis/MalwareScanApi.ts
 apis/RegistryApi.ts
 apis/ReportsApi.ts
+apis/ScanCompareApi.ts
 apis/ScanResultsApi.ts
 apis/SearchApi.ts
 apis/SecretScanApi.ts
@@ -145,6 +146,8 @@ models/ModelRegistryUpdateReq.ts
 models/ModelResponseAccessToken.ts
 models/ModelSbomRequest.ts
 models/ModelSbomResponse.ts
+models/ModelScanCompareReq.ts
+models/ModelScanComparison.ts
 models/ModelScanFilter.ts
 models/ModelScanInfo.ts
 models/ModelScanListReq.ts
@@ -187,6 +190,7 @@ models/ReportersFieldsFilters.ts
 models/ReportersMatchFilter.ts
 models/ReportersOrderFilter.ts
 models/ReportersOrderSpec.ts
+models/SearchChainedSearchFilter.ts
 models/SearchNodeCountResp.ts
 models/SearchResultGroup.ts
 models/SearchResultGroupResp.ts

@@ -78,6 +78,7 @@ import { module as topology } from '@/features/topology/pages/Topology';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
 import { module as runtimeBom } from '@/features/vulnerabilities/pages/RuntimeBom';
 import { module as uniqueVulnerabilities } from '@/features/vulnerabilities/pages/UniqueVulnerabilities';
+import { module as vulnerabilitiesCompare } from '@/features/vulnerabilities/pages/VulnerabilitiesCompare';
 import { module as vulnerability } from '@/features/vulnerabilities/pages/Vulnerability';
 import { module as vulnerabilityDetails } from '@/features/vulnerabilities/pages/VulnerabilityDetailModal';
 import { module as vulnerabilityScanResults } from '@/features/vulnerabilities/pages/VulnerabilityScanResults';
@@ -350,6 +351,11 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'vulnerability/rbom',
         ...runtimeBom,
         meta: { title: 'Runtime BOM' },
+      },
+      {
+        path: 'vulnerability/compare/:firstScanId/:secondScanId',
+        ...vulnerabilitiesCompare,
+        meta: { title: 'Compare vulnerabilities' },
       },
       // secrets
       {

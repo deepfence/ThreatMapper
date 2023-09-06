@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { cn } from 'tailwind-preset';
 import { Dropdown, DropdownItem, IconButton } from 'ui-components';
 
+import { BalanceLineIcon } from '@/components/icons/common/BalanceLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
@@ -17,9 +18,11 @@ export const ScanHistoryDropdown = ({
     timestamp: string;
     status: string;
     isCurrent: boolean;
+    showScanDiff?: boolean;
     onDeleteClick: (id: string) => void;
     onDownloadClick: (id: string) => void;
     onScanClick: (id: string) => void;
+    onScanCompareButtonClick?: (id: string) => void;
   }>;
   currentTimeStamp: string;
 }) => {
@@ -86,6 +89,21 @@ export const ScanHistoryDropdown = ({
                           e.preventDefault();
                           e.stopPropagation();
                           scan.onDeleteClick(scan.id);
+                          setOpen(false);
+                        }}
+                      />
+                    ) : null}
+                    {isScanComplete(scan.status) && scan.showScanDiff ? (
+                      <IconButton
+                        variant="flat"
+                        icon={
+                          <span className="h-3 w-3">
+                            <BalanceLineIcon />
+                          </span>
+                        }
+                        type="button"
+                        onClick={() => {
+                          scan?.onScanCompareButtonClick?.(scan.id);
                           setOpen(false);
                         }}
                       />
