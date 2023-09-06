@@ -6,11 +6,11 @@ import (
 )
 
 type VulnerabilityScanConfigLanguage struct {
-	Language string `json:"language" required:"true" enum:"all,base,ruby,python,javascript,php,golang,java,rust,dotnet"`
+	Language string `json:"language" validate:"required,oneof=base ruby python javascript php golang golang-binary java rust rust-binary dotnet" required:"true" enum:"base,ruby,python,javascript,php,golang,golang-binary,java,rust,rust-binary,dotnet"`
 }
 
 type VulnerabilityScanConfig struct {
-	ScanConfigLanguages []VulnerabilityScanConfigLanguage `json:"scan_config" required:"true"`
+	ScanConfigLanguages []VulnerabilityScanConfigLanguage `json:"scan_config" validate:"required,min=1" required:"true"`
 }
 
 type VulnerabilityScanTriggerReq struct {
