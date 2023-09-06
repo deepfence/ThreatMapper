@@ -55,6 +55,16 @@ func GetIntegration(ctx context.Context, integrationType string, b []byte) (Inte
 	}
 }
 
+func IsMessagingFormat(integrationType string) bool {
+	retVal := false
+	switch integrationType {
+	case constants.Slack, constants.Teams, constants.PagerDuty,
+		constants.Email, constants.Jira:
+		retVal = true
+	}
+	return retVal
+}
+
 // Integration is the interface for all integrations
 type Integration interface {
 	// extras are additional fields that are not part of the message
