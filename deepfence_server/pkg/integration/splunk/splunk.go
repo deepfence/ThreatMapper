@@ -45,6 +45,9 @@ func (s Splunk) SendNotification(ctx context.Context, message string, extras map
 		// Send out bytes in buffer immediately if the limit exceeded after adding this event
 		if buffer.Len()+len(jsonBytes) > MaxContentLength {
 			s.sendRequest(buffer)
+			fmt.Println("Splunk sent buffer:")
+			fmt.Println(buffer.String())
+			buffer.Reset()
 		}
 	}
 	if buffer.Len() > 0 {
