@@ -22,14 +22,14 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
@@ -37,18 +37,18 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 	b, err := json.Marshal(req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	obj, err := integration.GetIntegration(ctx, req.IntegrationType, b)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	err = obj.ValidateConfig(h.Validator)
 	if err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -57,7 +57,7 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 	integrationExists, err := req.IntegrationExists(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	if integrationExists {
@@ -69,13 +69,13 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 	/*err = i.SendNotification("validating integration")
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}*/
 
 	user, statusCode, _, err := h.GetUserFromJWT(ctx)
 	if err != nil {
-		respondWithErrorCode(err, w, statusCode)
+		h.respondWithErrorCode(err, w, statusCode)
 		return
 	}
 
@@ -83,7 +83,7 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 	err = req.CreateIntegration(ctx, pgClient, user.ID)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
@@ -101,13 +101,13 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	integrations, err := req.GetIntegrations(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
@@ -119,13 +119,13 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(integration.Config, &config)
 		if err != nil {
 			log.Error().Msgf(err.Error())
-			respondError(&InternalServerError{err}, w)
+			h.respondError(&InternalServerError{err}, w)
 			return
 		}
 		err = json.Unmarshal(integration.Filters, &filters)
 		if err != nil {
 			log.Error().Msgf(err.Error())
-			respondError(&InternalServerError{err}, w)
+			h.respondError(&InternalServerError{err}, w)
 			return
 		}
 		newIntegration := model.IntegrationListResp{
@@ -153,14 +153,14 @@ func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
 	err = model.DeleteIntegration(ctx, pgClient, int32(idInt))
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 	}
 
 	h.AuditUserActivity(r, EVENT_INTEGRATION, ACTION_DELETE,

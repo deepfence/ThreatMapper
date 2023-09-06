@@ -1,7 +1,13 @@
 import { Meta, StoryObj } from '@storybook/react';
-import { AiOutlineMail } from 'react-icons/ai';
 
+import { PlusIcon } from '@/components/icons/Plus';
 import TextInput from '@/components/input/TextInput';
+
+const Plus = () => (
+  <span className="h-4 w-4">
+    <PlusIcon />
+  </span>
+);
 
 export default {
   title: 'Components/TextInput',
@@ -34,7 +40,7 @@ export const Disabled: StoryObj<typeof TextInput> = {
 export const WithStartIcon: StoryObj<typeof TextInput> = {
   args: {
     placeholder: 'test@deepfence.io',
-    startIcon: <AiOutlineMail />,
+    startIcon: <Plus />,
     disabled: false,
     color: 'error',
   },
@@ -43,7 +49,7 @@ export const WithStartIcon: StoryObj<typeof TextInput> = {
 export const WithLabel: StoryObj<typeof TextInput> = {
   args: {
     placeholder: 'test@deepfence.io',
-    startIcon: <AiOutlineMail />,
+    startIcon: <Plus />,
     label: 'Username',
   },
 };

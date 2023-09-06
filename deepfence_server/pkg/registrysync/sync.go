@@ -16,6 +16,18 @@ import (
 )
 
 func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgId int32) error {
+	// set registry account syncing
+	err := setRegistryAccountSyncing(ctx, true, r)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err := setRegistryAccountSyncing(ctx, false, r)
+		if err != nil {
+			log.Error().Msgf("failed to set registry account syncing to false, err: %v", err)
+		}
+	}()
 
 	// decrypt secret
 	aesValue, err := model.GetAESValueForEncryption(ctx, pgClient)
@@ -127,4 +139,36 @@ func convertStructFieldToJSONString(bb map[string]interface{}, key string) map[s
 		}
 	}
 	return bb
+}
+
+func setRegistryAccountSyncing(ctx context.Context, syncing bool, r registry.Registry) error {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	registryId := model.GetRegistryID(r.GetRegistryType(), r.GetNamespace())
+	_, err = tx.Run(`
+		MATCH (m:RegistryAccount{node_id:$registry_id})
+		SET m.syncing=$syncing`,
+		map[string]interface{}{
+			"registry_id": registryId,
+			"syncing":     syncing,
+		})
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }

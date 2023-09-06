@@ -27,27 +27,27 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	var req model.ReportReq
 	req.ReportID = chi.URLParam(r, "report_id")
 	if err := h.Validator.Struct(req); err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
 	driver, err := directory.Neo4jClient(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(directory.ErrNamespaceNotFound, w)
+		h.respondError(directory.ErrNamespaceNotFound, w)
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 	}
 	defer tx.Close()
 
@@ -57,25 +57,25 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	result, err := tx.Run(getQuery, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
 	records, err := result.Single()
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
 	i, ok := records.Get("n")
 	if !ok {
-		respondError(&ingesters.NodeNotFoundError{NodeId: req.ReportID}, w)
+		h.respondError(&ingesters.NodeNotFoundError{NodeId: req.ReportID}, w)
 		return
 	}
 	da, ok := i.(dbtype.Node)
 	if !ok {
-		respondError(&ingesters.NodeNotFoundError{NodeId: req.ReportID}, w)
+		h.respondError(&ingesters.NodeNotFoundError{NodeId: req.ReportID}, w)
 		return
 	}
 
@@ -86,7 +86,7 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	mc, err := directory.MinioClient(r.Context())
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get minio client")
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -94,7 +94,7 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	if report.Status != utils.SCAN_STATUS_FAILED {
 		err = mc.DeleteFile(r.Context(), report.StoragePath, false, minio.RemoveObjectOptions{ForceDelete: true})
 		if err != nil {
-			respondError(err, w)
+			h.respondError(err, w)
 			return
 		}
 	}
@@ -103,12 +103,12 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	_, err = tx.Run(deleteQuery, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	if err := tx.Commit(); err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -122,26 +122,26 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	var req model.ReportReq
 	req.ReportID = chi.URLParam(r, "report_id")
 	if err := h.Validator.Struct(req); err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	driver, err := directory.Neo4jClient(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(directory.ErrNamespaceNotFound, w)
+		h.respondError(directory.ErrNamespaceNotFound, w)
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 	}
 	defer tx.Close()
 
@@ -150,25 +150,25 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	result, err := tx.Run(query, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
 	records, err := result.Single()
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
 	i, ok := records.Get("n")
 	if !ok {
-		respondError(&ingesters.NodeNotFoundError{NodeId: req.ReportID}, w)
+		h.respondError(&ingesters.NodeNotFoundError{NodeId: req.ReportID}, w)
 		return
 	}
 	da, ok := i.(dbtype.Node)
 	if !ok {
-		respondError(&ingesters.NodeNotFoundError{NodeId: req.ReportID}, w)
+		h.respondError(&ingesters.NodeNotFoundError{NodeId: req.ReportID}, w)
 		return
 	}
 
@@ -183,20 +183,20 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 	driver, err := directory.Neo4jClient(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(directory.ErrNamespaceNotFound, w)
+		h.respondError(directory.ErrNamespaceNotFound, w)
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 	}
 	defer tx.Close()
 
@@ -204,14 +204,14 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 	result, err := tx.Run(query, map[string]interface{}{})
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
 	records, err := result.Collect()
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -246,11 +246,11 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	if err := h.Validator.Struct(req); err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -266,27 +266,27 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	namespace, err := directory.ExtractNamespace(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
 	driver, err := directory.Neo4jClient(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(directory.ErrNamespaceNotFound, w)
+		h.respondError(directory.ErrNamespaceNotFound, w)
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 	}
 	defer tx.Close()
 
@@ -304,19 +304,19 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	_, err = tx.Run(query, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	if err := tx.Commit(); err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
 	payload, err := json.Marshal(params)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -332,7 +332,7 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	err = h.TasksPublisher.Publish(utils.ReportGeneratorTask, msg)
 	if err != nil {
 		log.Error().Msgf("failed to publish task: %+v", err)
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 

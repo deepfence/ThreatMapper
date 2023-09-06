@@ -17,6 +17,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
+	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -286,14 +287,22 @@ func resetUserPassword(ctx context.Context) error {
 	}
 
 	req := model.LoginRequest{Email: emailId, Password: string(password)}
-	inputValidator := validator.New()
-	err = inputValidator.RegisterValidation("password", model.ValidatePassword)
+	inputValidator, translator, err := handler.NewValidator()
+	if err != nil {
+		return err
+	}
+	err = inputValidator.RegisterValidation("password", handler.ValidatePassword)
 	if err != nil {
 		return err
 	}
 	err = inputValidator.Struct(req)
 	if err != nil {
-		return err
+		var errs validator.ValidationErrors
+		errors.As(err, &errs)
+		for _, e := range errs {
+			log.Error().Msg(e.Translate(translator))
+		}
+		return nil
 	}
 
 	user, statusCode, pgClient, err := model.GetUserByEmail(ctx, emailId)

@@ -1,10 +1,10 @@
 import '@testing-library/jest-dom';
 
 import { forwardRef } from 'react';
-import { HiHome } from 'react-icons/hi';
 import { describe, expect, it } from 'vitest';
 
 import { Breadcrumb, BreadcrumbLink } from '@/components/breadcrumb/Breadcrumb';
+import { PlusIcon } from '@/components/icons/Plus';
 import { renderUI } from '@/tests/utils';
 
 export const Link = forwardRef<
@@ -26,7 +26,14 @@ describe(`Component Breadcrumb`, () => {
   it(`render correct number of breadcrumbs with icons`, () => {
     const { getByText, getAllByText, getByTestId } = renderUI(
       <Breadcrumb>
-        <BreadcrumbLink asChild icon={<HiHome />}>
+        <BreadcrumbLink
+          asChild
+          icon={
+            <span className="h-4 w-4">
+              <PlusIcon />
+            </span>
+          }
+        >
           <Link testid="linkOneTestId">Link One</Link>
         </BreadcrumbLink>
         <BreadcrumbLink asChild>

@@ -61,7 +61,8 @@ func processIntegrationRow(wg *sync.WaitGroup, integrationRow postgresql_db.Inte
 	}
 }
 
-func injectNodeData[T any](results []T, common model.ScanResultsCommon) []map[string]interface{} {
+func injectNodeData[T any](results []T, common model.ScanResultsCommon,
+	integrationType string) []map[string]interface{} {
 	data := []map[string]interface{}{}
 
 	for _, r := range results {
@@ -82,6 +83,16 @@ func injectNodeData[T any](results []T, common model.ScanResultsCommon) []map[st
 		if common.KubernetesClusterName != "" {
 			m["kubernetes_cluster_name"] = common.KubernetesClusterName
 		}
+
+		if _, ok := m["updated_at"]; ok {
+			flag := integration.IsMessagingFormat(integrationType)
+			if flag == true {
+				ts := m["updated_at"].(int64)
+				tm := time.Unix(0, ts*int64(time.Millisecond))
+				m["updated_at"] = tm
+			}
+		}
+
 		data = append(data, m)
 	}
 
@@ -122,7 +133,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 		},
 	)
 	filters.FieldsFilters.ContainsFilter = reporters.ContainsFilter{
-		FieldsValues: map[string][]interface{}{"status": {"COMPLETE"}},
+		FieldsValues: map[string][]interface{}{"status": {utils.SCAN_STATUS_SUCCESS}},
 	}
 
 	profileStart := time.Now()
@@ -179,7 +190,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 		}
 
 		// inject node details to results
-		updatedResults := injectNodeData[T](results, common)
+		updatedResults := injectNodeData[T](results, common, integrationRow.IntegrationType)
 		messageByte, err := json.Marshal(updatedResults)
 		if err != nil {
 			log.Error().Msgf("Error marshall results: %+v", integrationRow, err)

@@ -1,11 +1,17 @@
 import '@testing-library/jest-dom';
 
 import { fireEvent } from '@testing-library/react';
-import { AiOutlineCheck, AiOutlineMail } from 'react-icons/ai';
 import { describe, expect, it, vi } from 'vitest';
 
+import { PlusIcon } from '@/components/icons/Plus';
 import { TextInput } from '@/components/input/TextInput';
 import { renderUI } from '@/tests/utils';
+
+const Plus = () => (
+  <span className="h-4 w-4">
+    <PlusIcon />
+  </span>
+);
 
 describe(`Component TextInput`, () => {
   it(`render with placehoder, label, onChange, startIcon, endIcon, helperText`, () => {
@@ -16,7 +22,7 @@ describe(`Component TextInput`, () => {
         id="id"
         onChange={onChange}
         label="Email"
-        startIcon={<AiOutlineMail />}
+        startIcon={<Plus />}
         helperText="Email length should not exceed 50 characters"
       />,
     );

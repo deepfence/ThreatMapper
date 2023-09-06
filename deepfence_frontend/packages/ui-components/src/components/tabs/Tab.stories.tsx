@@ -1,8 +1,14 @@
 import { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
-import { FaAdn, FaAffiliatetheme, FaAirbnb } from 'react-icons/fa';
 
+import { PlusIcon } from '@/components/icons/Plus';
 import Tab from '@/components/tabs/Tabs';
+
+const Plus = () => (
+  <span className="h-4 w-4 block">
+    <PlusIcon />
+  </span>
+);
 
 export default {
   title: 'Components/Tab',
@@ -42,17 +48,17 @@ const tabs2 = [
   {
     label: 'Tab One',
     value: 'tab1',
-    icon: <FaAdn />,
+    icon: <Plus />,
   },
   {
     label: 'Tab Two',
     value: 'tab2',
-    icon: <FaAffiliatetheme />,
+    icon: <Plus />,
   },
   {
     label: 'Tab Three',
     value: 'tab3',
-    icon: <FaAirbnb />,
+    icon: <Plus />,
   },
 ];
 const WithContent = () => {

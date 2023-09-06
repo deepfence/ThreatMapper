@@ -1,7 +1,13 @@
 import { Meta } from '@storybook/react';
-import { HiMenu } from 'react-icons/hi';
 
 import IconButton from '@/components/button/IconButton';
+import { PlusIcon } from '@/components/icons/Plus';
+
+const Plus = () => (
+  <span className="h-4 w-4">
+    <PlusIcon />
+  </span>
+);
 
 export default {
   title: 'Components/Button/IconButton',
@@ -15,21 +21,21 @@ export const Large: Meta<typeof IconButton> = {
   args: {
     children: 'Large',
     size: 'lg',
-    icon: <HiMenu />,
+    icon: <Plus />,
   },
 };
 export const Medium: Meta<typeof IconButton> = {
   args: {
     children: 'Medium',
     size: 'md',
-    icon: <HiMenu />,
+    icon: <Plus />,
   },
 };
 export const Small: Meta<typeof IconButton> = {
   args: {
     children: 'Small',
     size: 'sm',
-    icon: <HiMenu />,
+    icon: <Plus />,
   },
 };
 
@@ -38,7 +44,7 @@ export const MediumSuccess: Meta<typeof IconButton> = {
     children: 'Medium',
     size: 'md',
     color: 'success',
-    icon: <HiMenu />,
+    icon: <Plus />,
   },
 };
 
@@ -47,7 +53,7 @@ export const MediumError: Meta<typeof IconButton> = {
     children: 'Medium',
     size: 'md',
     color: 'error',
-    icon: <HiMenu />,
+    icon: <Plus />,
   },
 };
 
@@ -56,7 +62,7 @@ export const MediumOutline: Meta<typeof IconButton> = {
     children: 'Medium',
     size: 'md',
     variant: 'outline',
-    icon: <HiMenu />,
+    icon: <Plus />,
   },
 };
 
@@ -66,7 +72,7 @@ export const MediumOutlineSuccess: Meta<typeof IconButton> = {
     size: 'md',
     variant: 'outline',
     color: 'success',
-    icon: <HiMenu />,
+    icon: <Plus />,
   },
 };
 export const MediumOutlineError: Meta<typeof IconButton> = {
@@ -75,7 +81,7 @@ export const MediumOutlineError: Meta<typeof IconButton> = {
     size: 'md',
     variant: 'outline',
     color: 'error',
-    icon: <HiMenu />,
+    icon: <Plus />,
   },
 };
 
@@ -84,7 +90,7 @@ export const MediumFlatVariant: Meta<typeof IconButton> = {
     children: 'Medium',
     size: 'md',
     variant: 'flat',
-    icon: <HiMenu />,
+    icon: <Plus />,
   },
 };
 

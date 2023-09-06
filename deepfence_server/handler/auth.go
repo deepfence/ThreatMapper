@@ -20,7 +20,7 @@ var (
 	parseRefreshTokenError  = errors.New("cannot parse refresh token")
 	accessTokenRevokedError = ForbiddenError{errors.New("access token is revoked")}
 	userInactiveError       = ValidatorError{
-		err:                       errors.New("Key: 'email' Error:user is not active"),
+		err:                       errors.New("email:user is not active"),
 		skipOverwriteErrorMessage: true,
 	}
 )
@@ -30,35 +30,35 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &apiAuthRequest)
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	err = h.Validator.Struct(apiAuthRequest)
 	if err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	tokenSplit := strings.Split(apiAuthRequest.ApiToken, ":")
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tokenSplit[0]))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	parsedUUID, err := uuid.Parse(tokenSplit[1])
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	apiToken := &model.ApiToken{ApiToken: parsedUUID}
 	user, err := apiToken.GetUser(ctx, pgClient)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypeAPIToken)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -72,15 +72,15 @@ func (h *Handler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	user, grantType, err := h.parseRefreshToken(r.Context())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			respondError(&NotFoundError{err}, w)
+			h.respondError(&NotFoundError{err}, w)
 		} else {
-			respondError(err, w)
+			h.respondError(err, w)
 		}
 		return
 	}
 	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, grantType)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	httpext.JSON(w, http.StatusOK, accessTokenResponse)
@@ -132,23 +132,23 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &loginRequest)
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	err = h.Validator.Struct(loginRequest)
 	if err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	loginRequest.Email = strings.ToLower(loginRequest.Email)
 	ctx := directory.NewContextWithNameSpace(directory.FetchNamespace(loginRequest.Email))
 	u, statusCode, pgClient, err := model.GetUserByEmail(ctx, loginRequest.Email)
 	if err != nil {
-		respondWithErrorCode(err, w, statusCode)
+		h.respondWithErrorCode(err, w, statusCode)
 		return
 	}
 	if u.IsActive == false {
-		respondError(&userInactiveError, w)
+		h.respondError(&userInactiveError, w)
 		return
 	}
 	passwordValid, err := u.CompareHashAndPassword(ctx, pgClient, loginRequest.Password)
@@ -158,7 +158,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	accessTokenResponse, err := u.GetAccessToken(h.TokenAuth, model.GrantTypePassword)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -175,7 +175,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	err := LogoutHandler(r.Context())
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_LOGOUT, nil, true)
