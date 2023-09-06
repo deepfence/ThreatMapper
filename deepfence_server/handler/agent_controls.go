@@ -117,7 +117,7 @@ func (h *Handler) ScheduleAgentUpgrade(w http.ResponseWriter, r *http.Request) {
 	b, err := json.Marshal(internal_req)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -168,7 +168,7 @@ func (h *Handler) ScheduleAgentPluginsEnable(w http.ResponseWriter, r *http.Requ
 	b, err := json.Marshal(internal_req)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -211,7 +211,7 @@ func (h *Handler) ScheduleAgentPluginsDisable(w http.ResponseWriter, r *http.Req
 	b, err := json.Marshal(internal_req)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 

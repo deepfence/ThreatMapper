@@ -1,7 +1,6 @@
 import { Meta, StoryFn, StoryObj } from '@storybook/react';
-import { IconContext } from 'react-icons';
-import { HiBookOpen } from 'react-icons/hi';
 
+import { PlusIcon } from '@/components/icons/Plus';
 import { Step, StepIndicator, StepLine, Stepper } from '@/components/stepper/Stepper';
 
 export default {
@@ -9,15 +8,10 @@ export default {
   component: Stepper,
 } satisfies Meta<typeof Stepper>;
 
-const Icon = () => (
-  <IconContext.Provider
-    value={{
-      className: '',
-      size: '24px',
-    }}
-  >
-    <HiBookOpen />
-  </IconContext.Provider>
+const Plus = () => (
+  <span className="h-4 w-4 block">
+    <PlusIcon />
+  </span>
 );
 
 const Template: StoryFn<typeof Stepper> = (args) => (
@@ -25,7 +19,7 @@ const Template: StoryFn<typeof Stepper> = (args) => (
     <Step
       indicator={
         <StepIndicator>
-          <Icon />
+          <Plus />
           <StepLine />
         </StepIndicator>
       }

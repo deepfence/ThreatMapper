@@ -21,13 +21,13 @@ import (
 
 var (
 	invalidIdError = ValidatorError{
-		err: errors.New("Key: 'SettingUpdateRequest.ID' Error:invalid id"), skipOverwriteErrorMessage: true}
+		err: errors.New("id:invalid id"), skipOverwriteErrorMessage: true}
 	invalidUrlError = ValidatorError{
-		err: errors.New("Key: 'SettingUpdateRequest.Value' Error:invalid url"), skipOverwriteErrorMessage: true}
+		err: errors.New("value:invalid url"), skipOverwriteErrorMessage: true}
 	invalidIntegerError = ValidatorError{
-		err: errors.New("Key: 'SettingUpdateRequest.Value' Error:must be integer"), skipOverwriteErrorMessage: true}
+		err: errors.New("value:must be integer"), skipOverwriteErrorMessage: true}
 	invalidEmailConfigTypeError = ValidatorError{
-		err: errors.New(fmt.Sprintf("Key: 'EmailConfigurationAdd.EmailProvider' Error:must be %s or %s", model.EmailSettingSMTP, model.EmailSettingSES)), skipOverwriteErrorMessage: true}
+		err: errors.New(fmt.Sprintf("email_provider:must be %s or %s", model.EmailSettingSMTP, model.EmailSettingSES)), skipOverwriteErrorMessage: true}
 )
 
 func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +36,7 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	if req.EmailProvider == model.EmailSettingSMTP {
@@ -54,29 +54,29 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 			SesRegion:       req.SesRegion,
 		})
 	} else {
-		respondError(&invalidEmailConfigTypeError, w)
+		h.respondError(&invalidEmailConfigTypeError, w)
 		return
 	}
 	if err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	ctx := r.Context()
 	user, statusCode, _, err := h.GetUserFromJWT(ctx)
 	if err != nil {
-		respondWithErrorCode(err, w, statusCode)
+		h.respondWithErrorCode(err, w, statusCode)
 		return
 	}
 	req.CreatedByUserID = user.ID
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	err = req.Create(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	// don't log secrets in audit log
@@ -92,7 +92,7 @@ func (h *Handler) GetEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	resp := []model.EmailConfigurationResp{}
@@ -101,13 +101,13 @@ func (h *Handler) GetEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 		httpext.JSON(w, http.StatusOK, resp)
 		return
 	} else if err != nil {
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	var emailConfig model.EmailConfigurationResp
 	err = json.Unmarshal(setting.Value, &emailConfig)
 	if err != nil {
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	emailConfig.ID = setting.ID
@@ -120,17 +120,17 @@ func (h *Handler) DeleteEmailConfiguration(w http.ResponseWriter, r *http.Reques
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	configId, err := strconv.ParseInt(chi.URLParam(r, "config_id"), 10, 64)
 	if err != nil {
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	err = pgClient.DeleteSettingByID(ctx, configId)
 	if err != nil {
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	h.AuditUserActivity(r, EVENT_SETTINGS, ACTION_DELETE,
@@ -142,12 +142,12 @@ func (h *Handler) GetGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	settings, err := model.GetVisibleSettings(ctx, pgClient)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	httpext.JSON(w, http.StatusOK, settings)
@@ -157,34 +157,34 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	settingId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	defer r.Body.Close()
 	var req model.SettingUpdateRequest
 	err = httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	req.ID = settingId
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	currentSettings, err := model.GetSettingByKey(ctx, pgClient, req.Key)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	if req.ID != currentSettings.ID {
-		respondError(&invalidIdError, w)
+		h.respondError(&invalidIdError, w)
 		return
 	}
 	var value interface{}
@@ -192,14 +192,14 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	case model.ConsoleURLSettingKey:
 		var parsedUrl *url.URL
 		if parsedUrl, err = url.ParseRequestURI(strings.TrimSpace(req.Value)); err != nil {
-			respondError(&invalidUrlError, w)
+			h.respondError(&invalidUrlError, w)
 			return
 		}
 		value = parsedUrl.Scheme + "://" + parsedUrl.Host
 	case model.InactiveNodesDeleteScanResultsKey:
 		value, err = strconv.ParseInt(strings.TrimSpace(req.Value), 10, 64)
 		if err != nil {
-			respondError(&invalidIntegerError, w)
+			h.respondError(&invalidIntegerError, w)
 			return
 		}
 	}
@@ -215,7 +215,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	err = setting.Update(ctx, pgClient)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	h.AuditUserActivity(r, EVENT_SETTINGS, ACTION_UPDATE, setting, true)

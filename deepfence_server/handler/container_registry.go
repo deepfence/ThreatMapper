@@ -37,13 +37,13 @@ func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	registries, err := req.ListRegistriesSafe(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
@@ -60,6 +60,7 @@ func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 			NodeID:       registryId,
 			Name:         r.Name,
 			RegistryType: r.RegistryType,
+			IsSyncing:    req.IsRegistrySyncing(ctx, registryId),
 			NonSecret:    r.NonSecret,
 			CreatedAt:    r.CreatedAt.Unix(),
 			UpdatedAt:    r.UpdatedAt.Unix(),
@@ -77,7 +78,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
@@ -85,14 +86,14 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	b, err := json.Marshal(req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
 	registry, err := registry.GetRegistry(req.RegistryType, b)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
@@ -100,7 +101,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	err = registry.ValidateFields(h.Validator)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -115,13 +116,13 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	registryExists, err := req.RegistryExists(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	if registryExists {
@@ -133,7 +134,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	aesValue, err := model.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
@@ -143,13 +144,13 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(aesValue, &aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	err = registry.EncryptSecret(aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&unknownInternalServerError, w)
+		h.respondError(&unknownInternalServerError, w)
 		return
 	}
 	req.Secret = registry.GetSecret()
@@ -159,13 +160,13 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	pgID, err := req.CreateRegistry(ctx, r.Context(), pgClient, registry.GetNamespace())
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
 	err = h.SyncRegistry(r.Context(), pgID)
 	if err != nil {
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
@@ -183,7 +184,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	err := httpext.DecodeJSON(r, httpext.QueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
@@ -198,7 +199,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(idStr, 10, 32)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
@@ -206,13 +207,13 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	registryExists, err := req.RegistryExists(ctx, pgClient, int32(id))
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	if !registryExists {
@@ -224,14 +225,14 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	b, err := json.Marshal(req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
 	registry, err := registry.GetRegistry(req.RegistryType, b)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
@@ -239,7 +240,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	err = registry.ValidateFields(h.Validator)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -247,14 +248,14 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	aesValue, err := model.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	aes := encryption.AES{}
 	err = json.Unmarshal(aesValue, &aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	if !updateSecret {
@@ -262,7 +263,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 		err = registry.DecryptSecret(aes)
 		if err != nil {
 			log.Error().Msgf(err.Error())
-			respondError(&unknownInternalServerError, w)
+			h.respondError(&unknownInternalServerError, w)
 			return
 		}
 	}
@@ -278,7 +279,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	err = registry.EncryptSecret(aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&unknownInternalServerError, w)
+		h.respondError(&unknownInternalServerError, w)
 		return
 	}
 	req.Secret = registry.GetSecret()
@@ -288,7 +289,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	err = req.UpdateRegistry(ctx, pgClient, int32(id))
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
@@ -304,12 +305,12 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	defer r.Body.Close()
 
 	if err := r.ParseMultipartForm(1024 * 1024); err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	file, fileHeader, err := r.FormFile("service_account_json")
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	defer file.Close()
@@ -321,7 +322,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 
 	fileBytes, err := io.ReadAll(file)
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
@@ -339,7 +340,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 
 	var sa gcr.ServiceAccountJson
 	if err := json.Unmarshal(fileBytes, &sa); err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
@@ -355,14 +356,14 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	b, err := json.Marshal(req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
 	registry, err := registry.GetRegistry(constants.GCR, b)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
@@ -370,7 +371,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	err = registry.ValidateFields(h.Validator)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -385,13 +386,13 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	registryExists, err := req.RegistryExists(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 	if registryExists {
@@ -403,7 +404,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	aesValue, err := model.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
@@ -413,21 +414,21 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	err = json.Unmarshal(aesValue, &aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
 	err = registry.EncryptSecret(aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&unknownInternalServerError, w)
+		h.respondError(&unknownInternalServerError, w)
 		return
 	}
 
 	err = registry.EncryptExtras(aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&unknownInternalServerError, w)
+		h.respondError(&unknownInternalServerError, w)
 		return
 	}
 
@@ -438,13 +439,13 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	pgID, err := req.CreateRegistry(ctx, r.Context(), pgClient, registry.GetNamespace())
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
 	err = h.SyncRegistry(r.Context(), pgID)
 	if err != nil {
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
@@ -459,7 +460,7 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 	pgIds, err := model.GetRegistryPgIds(r.Context(), id)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&NotFoundError{err}, w)
+		h.respondError(&NotFoundError{err}, w)
 		return
 	}
 
@@ -467,7 +468,7 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
@@ -475,7 +476,7 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 
 	if err := model.DeleteRegistryAccount(r.Context(), id); err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&InternalServerError{err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
@@ -483,7 +484,7 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 		err = model.DeleteRegistry(ctx, pgClient, int32(id))
 		if err != nil {
 			log.Error().Msgf("%v", err)
-			respondError(&InternalServerError{err}, w)
+			h.respondError(&InternalServerError{err}, w)
 			return
 		}
 	}
@@ -501,7 +502,7 @@ func (h *Handler) RefreshRegistry(w http.ResponseWriter, r *http.Request) {
 	pgIds, err := model.GetRegistryPgIds(r.Context(), id)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&NotFoundError{err}, w)
+		h.respondError(&NotFoundError{err}, w)
 		return
 	}
 	syncErrs := []string{}
@@ -523,19 +524,19 @@ func (h *Handler) getImages(w http.ResponseWriter, r *http.Request) ([]model.Con
 	var req model.RegistryImagesReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return images, err
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return images, err
 	}
 
 	images, err = model.ListImages(r.Context(), req.RegistryId, req.ImageFilter, req.Window)
 	if err != nil {
 		log.Error().Msgf("failed list images: %v", err)
-		respondError(err, w)
+		h.respondError(err, w)
 		return images, err
 	}
 
@@ -567,19 +568,19 @@ func (h *Handler) getImageStubs(w http.ResponseWriter, r *http.Request) ([]model
 	var req model.RegistryImageStubsReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return images, err
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return images, err
 	}
 
 	images, err = model.ListImageStubs(r.Context(), req.RegistryId, req.ImageFilter, req.Window)
 	if err != nil {
 		log.Error().Msgf("failed get stubs %v", err)
-		respondError(err, w)
+		h.respondError(err, w)
 		return images, err
 	}
 
@@ -615,7 +616,7 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 	}
 	err := h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -623,7 +624,7 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 	counts, err = model.RegistrySummary(r.Context(), mo.Some(req.RegistryId), mo.None[string]())
 	if err != nil {
 		log.Error().Msgf("failed registry summary: %v", err)
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -641,7 +642,7 @@ func (h *Handler) SummaryByRegistryType(w http.ResponseWriter, r *http.Request) 
 	}
 	err := h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -649,7 +650,7 @@ func (h *Handler) SummaryByRegistryType(w http.ResponseWriter, r *http.Request) 
 	counts, err = model.RegistrySummary(r.Context(), mo.None[string](), mo.Some(req.RegistryType))
 	if err != nil {
 		log.Error().Msgf("failed registry summary: %v", err)
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 
@@ -666,7 +667,7 @@ func (h *Handler) Summary(w http.ResponseWriter, r *http.Request) {
 	counts, err := model.RegistrySummaryAll(r.Context())
 	if err != nil {
 		log.Error().Msgf("failed registry summary all: %v", err)
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 

@@ -132,6 +132,16 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(filters ThreatFilters) (map[str
 	}
 	defer tx.Close()
 
+	// The following statement makes sure all threat graph are exclusively executed.
+	// This is required as threat node & threat cloud resource are created on the fly.
+	_, err = tx.Run(`
+		MERGE (n:ThreatNode{node_id:'root'})
+		SET n.lock = true
+	`, map[string]interface{}{})
+	if err != nil {
+		return nil, err
+	}
+
 	_, err = tx.Run(`
 		MATCH (n:ThreatCloudResource)
 		REMOVE n:ThreatCloudResource

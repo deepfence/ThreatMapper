@@ -56,12 +56,12 @@ func (h *Handler) GetIndividualThreatGraph(w http.ResponseWriter, r *http.Reques
 	defer r.Body.Close()
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err: err}, w)
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	var individualThreatGraph []reporters_graph.IndividualThreatGraph
@@ -95,7 +95,7 @@ func (h *Handler) GetIndividualThreatGraph(w http.ResponseWriter, r *http.Reques
 
 	if err != nil {
 		log.Error().Msgf("Error GetIndividualThreatGraph: %v", err)
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	httpext.JSON(w, http.StatusOK, individualThreatGraph)

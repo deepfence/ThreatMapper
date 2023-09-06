@@ -2,7 +2,6 @@ import * as LabelPrimitive from '@radix-ui/react-label';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import { cva, VariantProps } from 'cva';
 import React from 'react';
-import { IconContext } from 'react-icons';
 import { cn } from 'tailwind-preset';
 
 import { ObjectWithNonNullableValues } from '@/types/utils';
@@ -95,13 +94,7 @@ const Tabs = (props: TabProps) => {
                 disabled={disabled}
               >
                 <>
-                  {icon && (
-                    <IconContext.Provider
-                      value={{ className: cn('w-3 h-3 mr-1 inline') }}
-                    >
-                      {icon}
-                    </IconContext.Provider>
-                  )}
+                  {icon && <span className="mr-1 inline">{icon}</span>}
                   <LabelPrimitive.Label
                     htmlFor={_id}
                     className={labelCva({
