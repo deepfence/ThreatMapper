@@ -558,8 +558,8 @@ func (CloudCompliance) GetJsonCategory() string {
 	return "severity"
 }
 
-type VulnerabilityComparison struct {
-	New     []Vulnerability `json:"new" required:"true"`
-	Updated []Vulnerability `json:"updated" required:"true"`
-	Deleted []Vulnerability `json:"deleted" required:"true"`
+type ScanComparison struct {
+	New     interface{} `json:"new" required:"true"`
+	Updated interface{} `json:"updated" required:"true"`
+	Deleted interface{} `json:"deleted" required:"true"`
 }
