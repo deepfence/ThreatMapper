@@ -108,6 +108,7 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 
 	// Upload the JSON data to Security Hub in batches
 	for _, batch := range batches {
+		// Default timeout of aws client is 30 sec
 		importFindings, err := svc.BatchImportFindings(batch)
 		if err != nil {
 			fmt.Println("Failed to upload JSON data to Security Hub", err)

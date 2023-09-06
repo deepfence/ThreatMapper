@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"net/http"
 	"strings"
 )
@@ -54,7 +55,7 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message string, ext
 	req.Header.Set("Content-Type", "application/x-ndjson")
 
 	// Make the HTTP request.
-	client := &http.Client{}
+	client := utils.GetHttpClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		return err

@@ -5,12 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"net/http"
 	"strings"
 )
 
-// todo: add support for batch size
-const BatchSize = 100
+const BatchSize = 5
 
 func New(ctx context.Context, b []byte) (*Teams, error) {
 	t := Teams{}
@@ -42,38 +42,56 @@ func (t Teams) SendNotification(ctx context.Context, message string, extras map[
 		return err
 	}
 
-	for index, msgMap := range msg {
-		payload := Payload{
-			Text:       t.FormatMessage(msgMap, index+1),
-			CardType:   "MessageCard",
-			Context:    "http://schema.org/extensions",
-			ThemeColor: "007FFF",
+	startIndex := 0
+	endIndex := BatchSize
+	if err := t.sendNotification(msg[startIndex:endIndex]); err != nil {
+		return err
+	}
+	for endIndex < len(msg) {
+		startIndex = endIndex
+		endIndex += BatchSize
+		if err := t.sendNotification(msg[startIndex:endIndex]); err != nil {
+			return err
 		}
+	}
+	return nil
+}
 
-		payloadBytes, err := json.Marshal(payload)
-		if err != nil {
-			return err
-		}
+func (t Teams) sendNotification(payloads []map[string]interface{}) error {
+	message := ""
+	for index, msgMap := range payloads {
+		message += t.FormatMessage(msgMap, index+1)
+	}
+	payload := Payload{
+		Text:       message,
+		CardType:   "MessageCard",
+		Context:    "http://schema.org/extensions",
+		ThemeColor: "007FFF",
+	}
 
-		// send message to this webhookURL using http
-		// Set up the HTTP request.
-		req, err := http.NewRequest("POST", t.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
-		if err != nil {
-			return err
-		}
-		req.Header.Set("Content-Type", "application/json")
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
 
-		// Make the HTTP request.
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			return err
-		}
-		resp.Body.Close()
-		// Check the response status code.
-		if resp.StatusCode != http.StatusOK {
-			return err
-		}
+	// send message to this webhookURL using http
+	// Set up the HTTP request.
+	req, err := http.NewRequest("POST", t.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Make the HTTP request.
+	client := utils.GetHttpClient()
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	// Check the response status code.
+	if resp.StatusCode != http.StatusOK {
+		return err
 	}
 	return nil
 }

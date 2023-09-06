@@ -2,9 +2,6 @@ package cronjobs
 
 import (
 	"encoding/json"
-	"strconv"
-	"time"
-
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
@@ -14,12 +11,15 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"strconv"
+	"sync"
+	"time"
 )
 
 func SendNotifications(msg *message.Message) error {
 	RecordOffsets(msg)
 
-	log.Info().Msgf("SendNotifications task starting")
+	log.Info().Msgf("SendNotifications task starting at %s", string(msg.Payload))
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	pgClient, err := directory.PostgresClient(ctx)
@@ -31,22 +31,32 @@ func SendNotifications(msg *message.Message) error {
 		log.Error().Msgf("Error getting postgresCtx", err)
 		return nil
 	}
+	wg := new(sync.WaitGroup)
+	wg.Add(len(integrations))
 	for _, integrationRow := range integrations {
-		switch integrationRow.Resource {
-		case utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]:
-			processIntegration[model.Vulnerability](msg, integrationRow)
-		case utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]:
-			processIntegration[model.Secret](msg, integrationRow)
-		case utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]:
-			processIntegration[model.Malware](msg, integrationRow)
-		case utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]:
-			processIntegration[model.Compliance](msg, integrationRow)
-			// cloud compliance scans
-			integrationRow.Resource = utils.ScanTypeDetectedNode[utils.NEO4J_CLOUD_COMPLIANCE_SCAN]
-			processIntegration[model.CloudCompliance](msg, integrationRow)
-		}
+		go processIntegrationRow(wg, integrationRow, msg)
 	}
+	wg.Wait()
+	log.Info().Msgf("SendNotifications task ended for timestamp %s", string(msg.Payload))
 	return nil
+}
+
+func processIntegrationRow(wg *sync.WaitGroup, integrationRow postgresql_db.Integration, msg *message.Message) {
+	defer wg.Done()
+	log.Info().Msgf("Processing integration for %s rowId: %d", integrationRow.IntegrationType, integrationRow.ID)
+	switch integrationRow.Resource {
+	case utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]:
+		processIntegration[model.Vulnerability](msg, integrationRow)
+	case utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]:
+		processIntegration[model.Secret](msg, integrationRow)
+	case utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]:
+		processIntegration[model.Malware](msg, integrationRow)
+	case utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]:
+		processIntegration[model.Compliance](msg, integrationRow)
+		// cloud compliance scans
+		integrationRow.Resource = utils.ScanTypeDetectedNode[utils.NEO4J_CLOUD_COMPLIANCE_SCAN]
+		processIntegration[model.CloudCompliance](msg, integrationRow)
+	}
 }
 
 func injectNodeData[T any](results []T, common model.ScanResultsCommon,

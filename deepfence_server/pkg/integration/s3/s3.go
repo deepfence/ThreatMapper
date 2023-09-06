@@ -66,6 +66,7 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 
 	// Upload the JSON data to S3
 	svc := s3.New(sess)
+	// Default timeout of aws client is 30 sec
 	_, err = svc.PutObject(&s3.PutObjectInput{
 		Body:   bytes.NewReader(jsonBytes),
 		Bucket: aws.String(s.Config.S3BucketName),
