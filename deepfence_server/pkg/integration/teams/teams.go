@@ -88,7 +88,7 @@ func (t Teams) sendNotification(payloads []map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
 	// Check the response status code.
 	if resp.StatusCode != http.StatusOK {
 		return err
