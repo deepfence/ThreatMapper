@@ -13,6 +13,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"strconv"
 	"sync"
+	"time"
 )
 
 func SendNotifications(msg *message.Message) error {
@@ -42,6 +43,7 @@ func SendNotifications(msg *message.Message) error {
 
 func processIntegrationRow(wg *sync.WaitGroup, integrationRow postgresql_db.Integration, msg *message.Message) {
 	defer wg.Done()
+
 	log.Info().Msgf("Processing integration for %s rowId: %d", integrationRow.IntegrationType, integrationRow.ID)
 	switch integrationRow.Resource {
 	case utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]:
@@ -119,12 +121,14 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	filters.FieldsFilters.ContainsFilter = reporters.ContainsFilter{
 		FieldsValues: map[string][]interface{}{"status": {"COMPLETE"}},
 	}
+	startTime := time.Now()
 	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource],
 		filters.NodeIds, filters.FieldsFilters, model.FetchWindow{})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return
 	}
+	log.Info().Msgf("Time taken for neo4j1: %v", time.Since(startTime))
 
 	// nothing to notify
 	if len(list.ScansInfo) == 0 {
@@ -142,6 +146,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 		return
 	}
 	filters.NodeIds = []model.NodeIdentifier{}
+	startTime = time.Now()
 	for _, scan := range list.ScansInfo {
 		results, common, err := reporters_scan.GetScanResults[T](ctx,
 			utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId,
@@ -182,4 +187,5 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d",
 			integrationRow.Resource, len(results), integrationRow.IntegrationType, integrationRow.ID)
 	}
+	log.Info().Msgf("Time taken for integration %s: %v, TS:%s", integrationRow.IntegrationType, time.Since(startTime), string(msg.Payload))
 }
