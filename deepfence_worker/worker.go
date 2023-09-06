@@ -133,7 +133,7 @@ func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAd
 func (w *worker) pollHandlers() {
 	ticker := time.NewTicker(30 * time.Second)
 	flag := true
-	threshold := 10
+	threshold := 30
 	for {
 		select {
 		case <-ticker.C:
