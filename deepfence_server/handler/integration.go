@@ -128,12 +128,19 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 			h.respondError(&InternalServerError{err}, w)
 			return
 		}
+
+		var integrationStatus string
+		if integration.ErrorMsg.Valid {
+			integrationStatus = integration.ErrorMsg.String
+		}
+
 		newIntegration := model.IntegrationListResp{
 			ID:               integration.ID,
 			IntegrationType:  integration.IntegrationType,
 			NotificationType: integration.Resource,
 			Config:           config,
 			Filters:          filters,
+			Status:           integrationStatus,
 		}
 
 		newIntegration.RedactSensitiveFieldsInConfig()

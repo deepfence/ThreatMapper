@@ -530,7 +530,7 @@ SELECT l.event,
        l.resources,
        l.success,
        l.user_email as email,
-       l.user_role as role,
+       l.user_role  as role,
        l.created_at
 FROM audit_log l
 ORDER BY l.created_at DESC;
@@ -541,7 +541,7 @@ SELECT l.event,
        l.resources,
        l.success,
        l.user_email as email,
-       l.user_role as role,
+       l.user_role  as role,
        l.created_at
 FROM audit_log l
 WHERE l.created_at < (now() - interval '5 minutes')
@@ -575,6 +575,12 @@ WHERE integration_type = $1;
 -- name: GetIntegrations :many
 SELECT *
 FROM integration;
+
+-- name: UpdateIntegrationStatus :exec
+UPDATE integration
+SET error_msg      = $2,
+    last_sent_time = now()
+WHERE id = $1;
 
 -- name: DeleteIntegration :exec
 DELETE
