@@ -14,7 +14,7 @@ import (
 	"sync"
 
 	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/ThreeDotsLabs/watermill-redisstream/pkg/redisstream"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
@@ -26,6 +26,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-playground/validator/v10"
+
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"go.opentelemetry.io/otel"
@@ -165,10 +167,23 @@ func main() {
 	wml := watermill.NewStdLogger(false, false)
 
 	// task publisher
-	publisher, err := kafka.NewPublisher(
-		kafka.PublisherConfig{
-			Brokers:   strings.Split(kafkaBrokers, ","),
-			Marshaler: kafka.DefaultMarshaler{},
+	// publisher, err := kafka.NewPublisher(
+	// 	kafka.PublisherConfig{
+	// 		Brokers:   strings.Split(kafkaBrokers, ","),
+	// 		Marshaler: kafka.DefaultMarshaler{},
+	// 	},
+	// 	wml,
+	// )
+	publisher, err := redisstream.NewPublisher(
+		redisstream.PublisherConfig{
+			Client: redis.NewClient(
+				&redis.Options{
+					Addr:     os.Getenv("DEEPFENCE_REDIS_HOST") + ":" + os.Getenv("DEEPFENCE_REDIS_PORT"),
+					DB:       0,
+					Password: os.Getenv("DEEPFENCE_REDIS_PASSWORD"),
+				},
+			),
+			Marshaller: redisstream.DefaultMarshallerUnmarshaller{},
 		},
 		wml,
 	)

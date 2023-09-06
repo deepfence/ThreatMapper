@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/ThreeDotsLabs/watermill-redisstream/pkg/redisstream"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -51,7 +51,8 @@ func init() {
 	controls = map[ctl.ActionID]func(namespace string, req []byte) error{}
 }
 
-func ConsoleActionSetup(pub *kafka.Publisher) error {
+// func ConsoleActionSetup(pub *kafka.Publisher) error {
+func ConsoleActionSetup(pub *redisstream.Publisher) error {
 	// for vulnerability scan
 	err := RegisterControl(ctl.StartVulnerabilityScan,
 		func(namespace string, req ctl.StartVulnerabilityScanRequest) error {

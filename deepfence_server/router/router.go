@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/ThreeDotsLabs/watermill-redisstream/pkg/redisstream"
 	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
@@ -100,9 +100,11 @@ func getJWTAuthSignKey() (string, error) {
 	}
 }
 
+// func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC chan *kgo.Record,
+//
+//	taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
 func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC chan *kgo.Record,
-	taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
-
+	taskPublisher *redisstream.Publisher, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
 	var tokenAuth *jwtauth.JWTAuth
 
 	signKey, err := getJWTAuthSignKey()

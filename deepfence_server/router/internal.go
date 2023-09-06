@@ -1,14 +1,15 @@
 package router
 
 import (
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/ThreeDotsLabs/watermill-redisstream/pkg/redisstream"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-func InternalRoutes(r *chi.Mux, ingestC chan *kgo.Record, taskPublisher *kafka.Publisher) error {
+// func InternalRoutes(r *chi.Mux, ingestC chan *kgo.Record, taskPublisher *kafka.Publisher) error {
+func InternalRoutes(r *chi.Mux, ingestC chan *kgo.Record, taskPublisher *redisstream.Publisher) error {
 	// authorization
 	authEnforcer, err := newAuthorizationHandler()
 	if err != nil {

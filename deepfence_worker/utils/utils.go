@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/ThreeDotsLabs/watermill-redisstream/pkg/redisstream"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -39,7 +39,8 @@ var httpReplacer = strings.NewReplacer(
 	"https://", "",
 )
 
-func PublishNewJob(pub *kafka.Publisher, metadata map[string]string, topic string, data []byte) error {
+// func PublishNewJob(pub *kafka.Publisher, metadata map[string]string, topic string, data []byte) error {
+func PublishNewJob(pub *redisstream.Publisher, metadata map[string]string, topic string, data []byte) error {
 	msg := message.NewMessage(watermill.NewUUID(), data)
 	msg.Metadata = metadata
 	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)

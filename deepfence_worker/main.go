@@ -5,12 +5,13 @@ import (
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/ThreeDotsLabs/watermill-redisstream/pkg/redisstream"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/controls"
 	cs "github.com/deepfence/ThreatMapper/deepfence_worker/cronscheduler"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -75,10 +76,23 @@ func main() {
 	}
 
 	// task publisher
-	tasksPublisher, err := kafka.NewPublisher(
-		kafka.PublisherConfig{
-			Brokers:   cfg.KafkaBrokers,
-			Marshaler: kafka.DefaultMarshaler{},
+	// tasksPublisher, err := kafka.NewPublisher(
+	// 	kafka.PublisherConfig{
+	// 		Brokers:   cfg.KafkaBrokers,
+	// 		Marshaler: kafka.DefaultMarshaler{},
+	// 	},
+	// 	wml,
+	// )
+	tasksPublisher, err := redisstream.NewPublisher(
+		redisstream.PublisherConfig{
+			Client: redis.NewClient(
+				&redis.Options{
+					Addr:     os.Getenv("DEEPFENCE_REDIS_HOST") + ":" + os.Getenv("DEEPFENCE_REDIS_PORT"),
+					DB:       0,
+					Password: os.Getenv("DEEPFENCE_REDIS_PASSWORD"),
+				},
+			),
+			Marshaller: redisstream.DefaultMarshallerUnmarshaller{},
 		},
 		wml,
 	)

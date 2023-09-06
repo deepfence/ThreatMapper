@@ -23,6 +23,7 @@ require (
 	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.9.1
 	github.com/ThreeDotsLabs/watermill v1.3.2
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.4.0
+	github.com/ThreeDotsLabs/watermill-redisstream v1.2.1
 	github.com/anchore/syft v0.87.0
 	github.com/aws/aws-sdk-go v1.44.325
 	github.com/deepfence/SecretScanner v0.0.0-00010101000000-000000000000
@@ -36,6 +37,7 @@ require (
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.7
 	github.com/pressly/goose/v3 v3.15.0
 	github.com/prometheus/client_golang v1.14.0
+	github.com/redis/go-redis/v9 v9.0.5
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/zerolog v1.29.1
 	github.com/twmb/franz-go v1.13.5
@@ -57,6 +59,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Microsoft/hcsshim v0.10.0-rc.8 // indirect
 	github.com/PagerDuty/go-pagerduty v1.7.0 // indirect
+	github.com/Rican7/retry v0.3.1 // indirect
 	github.com/Shopify/sarama v1.38.0 // indirect
 	github.com/XSAM/otelsql v0.23.0 // indirect
 	github.com/acobaugh/osrelease v0.1.0 // indirect
@@ -197,7 +200,6 @@ require (
 	github.com/prometheus/common v0.39.0 // indirect
 	github.com/prometheus/procfs v0.11.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
-	github.com/redis/go-redis/v9 v9.0.5 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.3 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
@@ -226,6 +228,7 @@ require (
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/vbatts/tar-split v0.11.3 // indirect
+	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/wagoodman/go-partybus v0.0.0-20230516145632-8ccac152c651 // indirect
 	github.com/wagoodman/go-progress v0.0.0-20230301185719-21920a456ad5 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect

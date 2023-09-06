@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/ThreeDotsLabs/watermill-redisstream/pkg/redisstream"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/ThreeDotsLabs/watermill/message/router/plugin"
@@ -20,6 +20,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/reports"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/sbom"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/secretscan"
+	"github.com/redis/go-redis/v9"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -40,7 +41,7 @@ type NoPublisherTask struct {
 // For thread safety, Below map should only be accessed:
 // - From the main() during the initial startup
 // - From the pollHandlers() during runtime
-var HandlerMap map[string]*NoPublisherTask
+// var HandlerMap map[string]*NoPublisherTask
 
 func NewWorker(wml watermill.LoggerAdapter, cfg config, mux *message.Router) worker {
 	return worker{wml: wml, cfg: cfg, mux: mux}
@@ -70,14 +71,14 @@ func (w *worker) AddNoPublisherHandler(task string,
 	if err != nil {
 		return err
 	}
-	hdlr := w.mux.AddNoPublisherHandler(
+	w.mux.AddNoPublisherHandler(
 		task,
 		task,
 		subscriber,
 		telemetryCallbackWrapper(task, taskCallback),
 	)
 	if shouldPoll {
-		HandlerMap[task] = &NoPublisherTask{task, taskCallback, hdlr, subscriber, 0}
+		// HandlerMap[task] = &NoPublisherTask{task, taskCallback, hdlr, subscriber, 0}
 	}
 
 	return nil
@@ -87,7 +88,8 @@ func (w *worker) AddHandler(
 	task string,
 	taskCallback func(msg *message.Message) ([]*message.Message, error),
 	receiverTask string,
-	publisher *kafka.Publisher,
+	// publisher *kafka.Publisher,
+	publisher *redisstream.Publisher,
 ) error {
 	subscriber, err := subscribe(task, w.cfg.KafkaBrokers, w.wml)
 	if err != nil {
@@ -104,21 +106,43 @@ func (w *worker) AddHandler(
 	return nil
 }
 
+// func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAdapter) (message.Subscriber, error) {
+
+// 	subscriberConf := kafka.DefaultSaramaSubscriberConfig()
+// 	subscriberConf.Consumer.Offsets.AutoCommit.Enable = true
+
+// 	subscriberConf.Consumer.Group.Session.Timeout = 20 * time.Second
+// 	subscriberConf.Consumer.Group.Heartbeat.Interval = 6 * time.Second
+// 	subscriberConf.Consumer.MaxProcessingTime = 500 * time.Millisecond
+
+// 	sub, err := kafka.NewSubscriber(
+// 		kafka.SubscriberConfig{
+// 			Brokers:               brokers,
+// 			Unmarshaler:           kafka.DefaultMarshaler{},
+// 			ConsumerGroup:         consumerGroup,
+// 			OverwriteSaramaConfig: subscriberConf,
+// 		},
+// 		logger,
+// 	)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return sub, nil
+// }
+
 func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAdapter) (message.Subscriber, error) {
 
-	subscriberConf := kafka.DefaultSaramaSubscriberConfig()
-	subscriberConf.Consumer.Offsets.AutoCommit.Enable = true
-
-	subscriberConf.Consumer.Group.Session.Timeout = 20 * time.Second
-	subscriberConf.Consumer.Group.Heartbeat.Interval = 6 * time.Second
-	subscriberConf.Consumer.MaxProcessingTime = 500 * time.Millisecond
-
-	sub, err := kafka.NewSubscriber(
-		kafka.SubscriberConfig{
-			Brokers:               brokers,
-			Unmarshaler:           kafka.DefaultMarshaler{},
-			ConsumerGroup:         consumerGroup,
-			OverwriteSaramaConfig: subscriberConf,
+	sub, err := redisstream.NewSubscriber(
+		redisstream.SubscriberConfig{
+			Client: redis.NewClient(
+				&redis.Options{
+					Addr:     os.Getenv("DEEPFENCE_REDIS_HOST") + ":" + os.Getenv("DEEPFENCE_REDIS_PORT"),
+					DB:       0,
+					Password: os.Getenv("DEEPFENCE_REDIS_PASSWORD"),
+				},
+			),
+			Unmarshaller:  redisstream.DefaultMarshallerUnmarshaller{},
+			ConsumerGroup: consumerGroup,
 		},
 		logger,
 	)
@@ -130,91 +154,91 @@ func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAd
 
 // Routine to poll the liveliness of the Handlers for topics regsitered with
 // HandlerMap
-func (w *worker) pollHandlers() {
-	ticker := time.NewTicker(30 * time.Second)
-	flag := true
-	threshold := 30
-	for {
-		select {
-		case <-ticker.C:
-			cronjobData := cronjobs.GetTopicData()
-			var resetTopicList []*NoPublisherTask
-			for topic, task := range HandlerMap {
-				var sub *kafka.Subscriber
-				sub = task.Subscriber.(*kafka.Subscriber)
-				svrOffset, err := sub.PartitionOffset(task.Task)
-				if err != nil {
-					log.Info().Msgf("PartitionOffset error: %v", err)
-					continue
-				}
+// func (w *worker) pollHandlers() {
+// 	ticker := time.NewTicker(30 * time.Second)
+// 	flag := true
+// 	threshold := 30
+// 	for {
+// 		select {
+// 		case <-ticker.C:
+// 			cronjobData := cronjobs.GetTopicData()
+// 			var resetTopicList []*NoPublisherTask
+// 			for topic, task := range HandlerMap {
+// 				var sub *kafka.Subscriber
+// 				sub = task.Subscriber.(*kafka.Subscriber)
+// 				svrOffset, err := sub.PartitionOffset(task.Task)
+// 				if err != nil {
+// 					log.Info().Msgf("PartitionOffset error: %v", err)
+// 					continue
+// 				}
 
-				msgOffset, found := cronjobData[topic]
-				if !found {
-					continue
-				}
+// 				msgOffset, found := cronjobData[topic]
+// 				if !found {
+// 					continue
+// 				}
 
-				maxDelta := int64(1)
-				inactiveFlag := false
-				for id, _ := range svrOffset {
-					if _, ok := msgOffset[id]; ok {
-						delta := svrOffset[id] - msgOffset[id]
-						if delta > maxDelta {
-							inactiveFlag = true
-							break
-						}
-					}
-				}
+// 				maxDelta := int64(1)
+// 				inactiveFlag := false
+// 				for id, _ := range svrOffset {
+// 					if _, ok := msgOffset[id]; ok {
+// 						delta := svrOffset[id] - msgOffset[id]
+// 						if delta > maxDelta {
+// 							inactiveFlag = true
+// 							break
+// 						}
+// 					}
+// 				}
 
-				if inactiveFlag == true {
-					task.InactiveCounter++
-					log.Info().Msgf("Increasing InactiveCounter for topic: %s, counter: %d",
-						topic, task.InactiveCounter)
-				} else {
-					task.InactiveCounter = 0
-				}
+// 				if inactiveFlag == true {
+// 					task.InactiveCounter++
+// 					log.Info().Msgf("Increasing InactiveCounter for topic: %s, counter: %d",
+// 						topic, task.InactiveCounter)
+// 				} else {
+// 					task.InactiveCounter = 0
+// 				}
 
-				if task.InactiveCounter < threshold {
-					continue
-				}
+// 				if task.InactiveCounter < threshold {
+// 					continue
+// 				}
 
-				if flag == true {
-					resetTopicList = append(resetTopicList, task)
-				}
-			}
+// 				if flag == true {
+// 					resetTopicList = append(resetTopicList, task)
+// 				}
+// 			}
 
-			for _, task := range resetTopicList {
-				log.Info().Msgf("Initiating restart of inactive handler for topic: %s", task.Task)
-				task.Handler.Stop()
-				//This select is to make sure the handler has actually stopped
-				select {
-				case _, ok := <-task.Handler.Stopped():
-					if !ok {
-						log.Info().Msgf("Successfully stopped handler for topic: %s", task.Task)
-						break
-					}
-				}
+// 			for _, task := range resetTopicList {
+// 				log.Info().Msgf("Initiating restart of inactive handler for topic: %s", task.Task)
+// 				task.Handler.Stop()
+// 				//This select is to make sure the handler has actually stopped
+// 				select {
+// 				case _, ok := <-task.Handler.Stopped():
+// 					if !ok {
+// 						log.Info().Msgf("Successfully stopped handler for topic: %s", task.Task)
+// 						break
+// 					}
+// 				}
 
-				//Below check is required as the handler is supposed to be stopped and
-				//cleaned up from the list when we this channel is closed.
-				//But actully the channel is first closed and than the handler is removed from the routers list
-				//and that could result in a condition where we might start the new handler while the old
-				//one is not yet removed from the routers list
-				for true {
-					snapshot := w.mux.Handlers()
-					if _, ok := snapshot[task.Task]; !ok {
-						log.Info().Msgf("Successfully deleted handler from router for topic: %s", task.Task)
-						break
-					}
-					time.Sleep(1 * time.Second)
-				}
+// 				//Below check is required as the handler is supposed to be stopped and
+// 				//cleaned up from the list when we this channel is closed.
+// 				//But actully the channel is first closed and than the handler is removed from the routers list
+// 				//and that could result in a condition where we might start the new handler while the old
+// 				//one is not yet removed from the routers list
+// 				for true {
+// 					snapshot := w.mux.Handlers()
+// 					if _, ok := snapshot[task.Task]; !ok {
+// 						log.Info().Msgf("Successfully deleted handler from router for topic: %s", task.Task)
+// 						break
+// 					}
+// 					time.Sleep(1 * time.Second)
+// 				}
 
-				w.AddNoPublisherHandler(task.Task, task.TaskCallback, true)
-				w.mux.RunHandlers(context.Background())
-				log.Info().Msgf("Restarted handler for topic: %s", task.Task)
-			}
-		}
-	}
-}
+// 				w.AddNoPublisherHandler(task.Task, task.TaskCallback, true)
+// 				w.mux.RunHandlers(context.Background())
+// 				log.Info().Msgf("Restarted handler for topic: %s", task.Task)
+// 			}
+// 		}
+// 	}
+// }
 
 func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
@@ -223,23 +247,36 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	defer cancel()
 
 	// create if any topics is missing
-	err := utils.CreateMissingTopics(
-		cfg.KafkaBrokers, utils.Tasks,
-		cfg.KafkaTopicPartitionsTasks, cfg.KafkaTopicReplicas, cfg.KafkaTopicRetentionMs,
-	)
-	if err != nil {
-		log.Error().Msgf("%v", err)
-	}
+	// err := utils.CreateMissingTopics(
+	// 	cfg.KafkaBrokers, utils.Tasks,
+	// 	cfg.KafkaTopicPartitionsTasks, cfg.KafkaTopicReplicas, cfg.KafkaTopicRetentionMs,
+	// )
+	// if err != nil {
+	// 	log.Error().Msgf("%v", err)
+	// }
 
 	// this for sending messages to kafka
 	ingestC := make(chan *kgo.Record, 10000)
 	go utils.StartKafkaProducer(ctx, cfg.KafkaBrokers, ingestC)
 
 	// task publisher
-	publisher, err := kafka.NewPublisher(
-		kafka.PublisherConfig{
-			Brokers:   cfg.KafkaBrokers,
-			Marshaler: kafka.DefaultMarshaler{},
+	// publisher, err := kafka.NewPublisher(
+	// 	kafka.PublisherConfig{
+	// 		Brokers:   cfg.KafkaBrokers,
+	// 		Marshaler: kafka.DefaultMarshaler{},
+	// 	},
+	// 	wml,
+	// )
+	publisher, err := redisstream.NewPublisher(
+		redisstream.PublisherConfig{
+			Client: redis.NewClient(
+				&redis.Options{
+					Addr:     os.Getenv("DEEPFENCE_REDIS_HOST") + ":" + os.Getenv("DEEPFENCE_REDIS_PORT"),
+					DB:       0,
+					Password: os.Getenv("DEEPFENCE_REDIS_PASSWORD"),
+				},
+			),
+			Marshaller: redisstream.DefaultMarshallerUnmarshaller{},
 		},
 		wml,
 	)
@@ -278,9 +315,9 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 		middleware.Recoverer,
 	)
 
-	HandlerMap = make(map[string]*NoPublisherTask)
+	// HandlerMap = make(map[string]*NoPublisherTask)
 
-	cronjobs.TopicData = make(map[string]kafka.PartitionOffset)
+	// cronjobs.TopicData = make(map[string]kafka.PartitionOffset)
 
 	worker := NewWorker(wml, cfg, mux)
 
@@ -338,7 +375,7 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
 	worker.AddNoPublisherHandler(utils.LinkNodesTask, LogErrorWrapper(cronjobs.LinkNodes), true)
 
-	go worker.pollHandlers()
+	// go worker.pollHandlers()
 
 	log.Info().Msg("Starting the consumer")
 	if err = worker.Run(context.Background()); err != nil {

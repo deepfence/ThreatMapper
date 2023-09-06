@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/ThreeDotsLabs/watermill-redisstream/pkg/redisstream"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
@@ -36,12 +36,14 @@ type Jobs struct {
 }
 
 type Scheduler struct {
-	cron           *cron.Cron
-	tasksPublisher *kafka.Publisher
+	cron *cron.Cron
+	// tasksPublisher *kafka.Publisher
+	tasksPublisher *redisstream.Publisher
 	jobs           Jobs
 }
 
-func NewScheduler(tasksPublisher *kafka.Publisher) (*Scheduler, error) {
+// func NewScheduler(tasksPublisher *kafka.Publisher) (*Scheduler, error) {
+func NewScheduler(tasksPublisher *redisstream.Publisher) (*Scheduler, error) {
 	logger := stdLogger.New(os.Stdout, "cron: ", stdLogger.LstdFlags)
 	scheduler := &Scheduler{
 		cron: cron.New(
