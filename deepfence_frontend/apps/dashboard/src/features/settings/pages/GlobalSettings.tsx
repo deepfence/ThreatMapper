@@ -11,6 +11,7 @@ import {
   SlidingModalContent,
   SlidingModalHeader,
   Table,
+  TableNoDataElement,
   TableSkeleton,
   TextInput,
 } from 'ui-components';
@@ -240,6 +241,7 @@ const SettingTable = () => {
           onPageResize={(newSize) => {
             setPageSize(newSize);
           }}
+          noDataElement={<TableNoDataElement text="No settings found" />}
         />
       )}
     </div>

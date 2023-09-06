@@ -261,7 +261,9 @@ function MyConnectorsTable() {
       <Table
         size="default"
         data={data}
-        noDataElement={<TableNoDataElement text="No connectors found" />}
+        noDataElement={
+          <TableNoDataElement text="No connectors found, please add new connector" />
+        }
         columns={columns}
         expanded={expandedState}
         onExpandedChange={setExpandedState}

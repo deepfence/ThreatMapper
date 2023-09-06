@@ -8,6 +8,7 @@ import {
   getRowSelectionColumn,
   RowSelectionState,
   Table,
+  TableNoDataElement,
 } from 'ui-components';
 
 import { ModelRegistryListResp } from '@/api/generated';
@@ -217,6 +218,9 @@ export const RegistryAccountsTable = ({
         onPageResize={(newSize) => {
           setPageSize(newSize);
         }}
+        noDataElement={
+          <TableNoDataElement text="No registries found, please add new registry" />
+        }
       />
     </div>
   );

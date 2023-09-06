@@ -27,6 +27,7 @@ import {
   RowSelectionState,
   SortingState,
   Table,
+  TableNoDataElement,
   TableSkeleton,
 } from 'ui-components';
 
@@ -762,6 +763,9 @@ const AccountTable = ({
               return prev;
             });
           }}
+          noDataElement={
+            <TableNoDataElement text="No accounts available, please add new account" />
+          }
         />
       </div>
     </>
