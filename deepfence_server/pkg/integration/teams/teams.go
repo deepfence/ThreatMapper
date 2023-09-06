@@ -50,6 +50,9 @@ func (t Teams) SendNotification(ctx context.Context, message string, extras map[
 	for endIndex < len(msg) {
 		startIndex = endIndex
 		endIndex += BatchSize
+		if endIndex > len(msg) {
+			endIndex = len(msg)
+		}
 		if err := t.sendNotification(msg[startIndex:endIndex]); err != nil {
 			return err
 		}
