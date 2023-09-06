@@ -252,26 +252,28 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 }
 
 func (h *Handler) CompareScanHandler(w http.ResponseWriter, r *http.Request) {
-	// Get scan type from the params
-	scanType := r.URL.Query().Get("scanType")
-	if scanType == "" {
+	defer r.Body.Close()
+	var req model.ScanCompareReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+	if req.ScanType == "" {
 		respondError(incorrectScanTypeError, w)
 		return
 	}
 
-	// Get the scan ids from the params
-	scanIds := r.URL.Query().Get("scanIds")
-	scanIdsArr := strings.Split(scanIds, ",")
-	if len(scanIdsArr) != 2 {
-		log.Error().Msgf("invalid scan ids: %s", scanIds)
+	if len(req.ScanIds) != 2 {
+		log.Error().Msgf("invalid scan ids: %s", req.ScanIds)
 		respondError(errors.New("could not compare, invalid scan ids"), w)
 		return
 	}
 
-	currentScanId := scanIdsArr[0]
-	previousScanId := scanIdsArr[1]
+	currentScanId := req.ScanIds[0]
+	previousScanId := req.ScanIds[1]
 
-	res, err := compareScanResults(r.Context(), currentScanId, previousScanId, scanType)
+	res, err := compareScanResults(r.Context(), currentScanId, previousScanId, req.ScanType, req.FieldsFilter, req.Window)
 	if err != nil {
 		respondError(err, w)
 		return
@@ -1467,15 +1469,16 @@ func getScanResults(ctx context.Context, scanId, scanType string) (model.Downloa
 // use this function to compare between two scan results, s1 and s2
 // where A and B are scan IDs
 // @returns ScanComparison (new:s1-s2, deleted:s2-s1)
-func compareScanResults(ctx context.Context, s1, s2, scanType string) (compared model.ScanComparison, err error) {
+func compareScanResults(ctx context.Context, s1, s2, scanType string, ff reporters.FieldsFilters, fw model.FetchWindow) (compared model.ScanComparison, err error) {
+	// req.FieldsFilter, req.Window
 	switch scanType {
 	case "VulnerabilityScan":
-		added, err := reporters_scan.GetScanResultDiff[model.Vulnerability](ctx, utils.NEO4J_VULNERABILITY_SCAN, s1, s2, reporters.FieldsFilters{}, model.FetchWindow{})
+		added, err := reporters_scan.GetScanResultDiff[model.Vulnerability](ctx, utils.NEO4J_VULNERABILITY_SCAN, s1, s2, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		removed, err := reporters_scan.GetScanResultDiff[model.Vulnerability](ctx, utils.NEO4J_VULNERABILITY_SCAN, s2, s1, reporters.FieldsFilters{}, model.FetchWindow{})
+		removed, err := reporters_scan.GetScanResultDiff[model.Vulnerability](ctx, utils.NEO4J_VULNERABILITY_SCAN, s2, s1, ff, fw)
 		if err != nil {
 			return compared, err
 		}
@@ -1485,12 +1488,12 @@ func compareScanResults(ctx context.Context, s1, s2, scanType string) (compared 
 		return compared, nil
 
 	case "SecretScan":
-		added, err := reporters_scan.GetScanResultDiff[model.Secret](ctx, utils.NEO4J_SECRET_SCAN, s1, s2, reporters.FieldsFilters{}, model.FetchWindow{})
+		added, err := reporters_scan.GetScanResultDiff[model.Secret](ctx, utils.NEO4J_SECRET_SCAN, s1, s2, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		removed, err := reporters_scan.GetScanResultDiff[model.Secret](ctx, utils.NEO4J_SECRET_SCAN, s2, s1, reporters.FieldsFilters{}, model.FetchWindow{})
+		removed, err := reporters_scan.GetScanResultDiff[model.Secret](ctx, utils.NEO4J_SECRET_SCAN, s2, s1, ff, fw)
 		if err != nil {
 			return compared, err
 		}
@@ -1500,12 +1503,12 @@ func compareScanResults(ctx context.Context, s1, s2, scanType string) (compared 
 		return compared, nil
 
 	case "MalwareScan":
-		added, err := reporters_scan.GetScanResultDiff[model.Malware](ctx, utils.NEO4J_MALWARE_SCAN, s1, s2, reporters.FieldsFilters{}, model.FetchWindow{})
+		added, err := reporters_scan.GetScanResultDiff[model.Malware](ctx, utils.NEO4J_MALWARE_SCAN, s1, s2, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		removed, err := reporters_scan.GetScanResultDiff[model.Malware](ctx, utils.NEO4J_MALWARE_SCAN, s2, s1, reporters.FieldsFilters{}, model.FetchWindow{})
+		removed, err := reporters_scan.GetScanResultDiff[model.Malware](ctx, utils.NEO4J_MALWARE_SCAN, s2, s1, ff, fw)
 		if err != nil {
 			return compared, err
 		}
@@ -1515,12 +1518,12 @@ func compareScanResults(ctx context.Context, s1, s2, scanType string) (compared 
 		return compared, nil
 
 	case "ComplianceScan":
-		added, err := reporters_scan.GetScanResultDiff[model.Compliance](ctx, utils.NEO4J_COMPLIANCE_SCAN, s1, s2, reporters.FieldsFilters{}, model.FetchWindow{})
+		added, err := reporters_scan.GetScanResultDiff[model.Compliance](ctx, utils.NEO4J_COMPLIANCE_SCAN, s1, s2, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		removed, err := reporters_scan.GetScanResultDiff[model.Compliance](ctx, utils.NEO4J_COMPLIANCE_SCAN, s2, s1, reporters.FieldsFilters{}, model.FetchWindow{})
+		removed, err := reporters_scan.GetScanResultDiff[model.Compliance](ctx, utils.NEO4J_COMPLIANCE_SCAN, s2, s1, ff, fw)
 		if err != nil {
 			return compared, err
 		}
@@ -1530,12 +1533,12 @@ func compareScanResults(ctx context.Context, s1, s2, scanType string) (compared 
 		return compared, nil
 
 	case "CloudComplianceScan":
-		added, err := reporters_scan.GetScanResultDiff[model.CloudCompliance](ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, s1, s2, reporters.FieldsFilters{}, model.FetchWindow{})
+		added, err := reporters_scan.GetScanResultDiff[model.CloudCompliance](ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, s1, s2, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		removed, err := reporters_scan.GetScanResultDiff[model.CloudCompliance](ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, s2, s1, reporters.FieldsFilters{}, model.FetchWindow{})
+		removed, err := reporters_scan.GetScanResultDiff[model.CloudCompliance](ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, s2, s1, ff, fw)
 		if err != nil {
 			return compared, err
 		}

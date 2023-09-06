@@ -400,7 +400,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 					})
 				})
 
-				r.Get("/compare", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CompareScanHandler))
+				r.Post("/compare", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CompareScanHandler))
 			})
 
 			r.Route("/filters", func(r chi.Router) {

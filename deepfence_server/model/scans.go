@@ -31,6 +31,13 @@ type ComplianceScanTriggerReq struct {
 	ComplianceBenchmarkTypes
 }
 
+type ScanCompareReq struct {
+	ScanIds      []string                `json:"scan_ids" required:"true"`
+	ScanType     string                  `json:"scan_type" required:"true" enum:"SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan"`
+	FieldsFilter reporters.FieldsFilters `json:"fields_filter" required:"true"`
+	Window       FetchWindow             `json:"window"  required:"true"`
+}
+
 type ScanFilter struct {
 	ImageScanFilter             reporters.ContainsFilter `json:"image_scan_filter" required:"true"`
 	ContainerScanFilter         reporters.ContainsFilter `json:"container_scan_filter" required:"true"`

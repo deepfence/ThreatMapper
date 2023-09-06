@@ -751,3 +751,9 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 		"Upload Vulnerability Database", "Upload Vulnerability Database for use in vulnerability scans",
 		http.StatusOK, []string{tagSettings}, bearerToken, new(vulnerability_db.DBUploadRequest), new(MessageResponse))
 }
+
+func (d *OpenApiDocs) AddScanCompareOperations() {
+	d.AddOperation("compareScans", http.MethodPost, "/deepfence/scan/results/compare",
+		"Compare Scans", "Compare scans between scan ids for a given scan type",
+		http.StatusOK, []string{tagScanCompare}, bearerToken, new(ScanCompareReq), new(ScanComparison))
+}
