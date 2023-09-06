@@ -257,16 +257,16 @@ func (h *Handler) CompareScanHandler(w http.ResponseWriter, r *http.Request) {
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{err}, w)
 	}
 	if req.ScanType == "" {
-		respondError(incorrectScanTypeError, w)
+		h.respondError(incorrectScanTypeError, w)
 		return
 	}
 
 	if len(req.ScanIds) != 2 {
 		log.Error().Msgf("invalid scan ids: %s", req.ScanIds)
-		respondError(errors.New("could not compare, invalid scan ids"), w)
+		h.respondError(errors.New("could not compare, invalid scan ids"), w)
 		return
 	}
 
@@ -275,7 +275,7 @@ func (h *Handler) CompareScanHandler(w http.ResponseWriter, r *http.Request) {
 
 	res, err := compareScanResults(r.Context(), currentScanId, previousScanId, req.ScanType, req.FieldsFilter, req.Window)
 	if err != nil {
-		respondError(err, w)
+		h.respondError(err, w)
 		return
 	}
 	httpext.JSON(w, http.StatusOK, res)
