@@ -42,6 +42,8 @@ func (s Splunk) SendNotification(ctx context.Context, message string, extras map
 			fmt.Println("Failed to marshal HEC event to JSON", err)
 			continue
 		}
+		fmt.Println("Splunk sent buffer:", buffer.Len())
+		fmt.Println(buffer.String())
 		// Send out bytes in buffer immediately if the limit exceeded after adding this event
 		if buffer.Len()+len(jsonBytes) > MaxContentLength {
 			s.sendRequest(buffer)
@@ -49,6 +51,7 @@ func (s Splunk) SendNotification(ctx context.Context, message string, extras map
 			fmt.Println(buffer.String())
 			buffer.Reset()
 		}
+		buffer.Write(jsonBytes)
 	}
 	if buffer.Len() > 0 {
 		s.sendRequest(buffer)
@@ -75,6 +78,7 @@ func (s Splunk) sendRequest(buffer bytes.Buffer) {
 
 	// Send the request to Splunk
 	resp, err := client.Do(req)
+	defer resp.Body.Close()
 	if err != nil {
 		fmt.Println("Failed to send data to Splunk", err)
 	}
@@ -83,5 +87,4 @@ func (s Splunk) sendRequest(buffer bytes.Buffer) {
 	if resp.StatusCode != http.StatusOK {
 		fmt.Println("Failed to send data to Splunk", resp.Status)
 	}
-	resp.Body.Close()
 }
