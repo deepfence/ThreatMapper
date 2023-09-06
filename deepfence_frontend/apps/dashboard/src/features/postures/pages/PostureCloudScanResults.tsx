@@ -250,6 +250,7 @@ const useScanResults = () => {
     scanId: string;
     nodeType: string;
   };
+  console.log(params);
   const scanId = params?.scanId;
   const nodeType = params?.nodeType;
   return useSuspenseQuery({
@@ -536,7 +537,7 @@ const HistoryControls = () => {
                 if (latestScan) {
                   navigate(
                     generatePath('./../:scanId', {
-                      scanId: latestScan.scanId,
+                      scanId: encodeURIComponent(latestScan.scanId),
                     }),
                     { replace: true },
                   );

@@ -35,7 +35,7 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
   const handleSelection = () => {
     navigate(
       generatePath(`../../instructions/:connectorType`, {
-        connectorType: path,
+        connectorType: encodeURIComponent(path),
       }),
     );
   };

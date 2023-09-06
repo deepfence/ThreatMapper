@@ -461,7 +461,9 @@ const DataTable = () => {
                   pathname: generatePath(
                     `/posture/cloud/scan-results/:cloudProvider/:scanId`,
                     {
-                      scanId: info.row.original.cloud_compliance_latest_scan_id,
+                      scanId: encodeURIComponent(
+                        info.row.original.cloud_compliance_latest_scan_id,
+                      ),
                       cloudProvider: info.row.original.cloud_provider,
                     },
                   ),
@@ -548,7 +550,9 @@ const DataTable = () => {
                   pathname: generatePath(
                     `/posture/cloud/scan-results/:cloudProvider/:scanId`,
                     {
-                      scanId: info.row.original.cloud_compliance_latest_scan_id,
+                      scanId: encodeURIComponent(
+                        info.row.original.cloud_compliance_latest_scan_id,
+                      ),
                       cloudProvider: info.row.original.cloud_provider,
                     },
                   ),

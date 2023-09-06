@@ -628,7 +628,7 @@ const ScansTable = () => {
           return (
             <DFLink
               to={generatePath(`/secret/scan-results/:scanId`, {
-                scanId: info.row.original.scan_id,
+                scanId: encodeURIComponent(info.row.original.scan_id),
               })}
             >
               <TruncatedText text={info.getValue()} />
@@ -687,7 +687,7 @@ const ScansTable = () => {
               ></div>
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
-                  scanId: info.row.original.scan_id,
+                  scanId: encodeURIComponent(info.row.original.scan_id),
                 })}
               >
                 {info.getValue()}
@@ -715,7 +715,7 @@ const ScansTable = () => {
               ></div>
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
-                  scanId: info.row.original.scan_id,
+                  scanId: encodeURIComponent(info.row.original.scan_id),
                 })}
               >
                 {info.getValue()}
@@ -743,7 +743,7 @@ const ScansTable = () => {
               ></div>
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
-                  scanId: info.row.original.scan_id,
+                  scanId: encodeURIComponent(info.row.original.scan_id),
                 })}
               >
                 {info.getValue()}
@@ -771,7 +771,7 @@ const ScansTable = () => {
               ></div>
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
-                  scanId: info.row.original.scan_id,
+                  scanId: encodeURIComponent(info.row.original.scan_id),
                 })}
               >
                 {info.getValue()}
@@ -799,7 +799,7 @@ const ScansTable = () => {
               ></div>
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
-                  scanId: info.row.original.scan_id,
+                  scanId: encodeURIComponent(info.row.original.scan_id),
                 })}
               >
                 {info.getValue()}

@@ -613,7 +613,7 @@ const AccountTable = ({
               path = '/posture/cloud/scan-results/:nodeType/:scanId';
             }
             const redirectUrl = generatePath(`${path}`, {
-              scanId: cell.row.original.last_scan_id ?? '',
+              scanId: encodeURIComponent(cell.row.original.last_scan_id ?? ''),
               nodeType: cell.row.original.cloud_provider ?? '',
             });
             return isNeverScan ? (

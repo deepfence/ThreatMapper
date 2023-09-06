@@ -265,7 +265,7 @@ const ScanStatus = () => {
                         `/onboard/scan/view-summary/${scanType}/:nodeType/:bulkScanId`,
                         {
                           nodeType: data?.data?.[0]?.node_type ?? '',
-                          bulkScanId,
+                          bulkScanId: encodeURIComponent(bulkScanId),
                         },
                       ),
                     )

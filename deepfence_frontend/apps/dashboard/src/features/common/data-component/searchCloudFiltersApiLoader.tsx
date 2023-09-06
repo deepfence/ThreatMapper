@@ -61,7 +61,7 @@ export const useGetCloudFilters = (
     if (scanId) {
       fetcher.load(
         generatePath('/data-component/search/cloud/filters/:scanId', {
-          scanId,
+          scanId: encodeURIComponent(scanId),
         }),
       );
     }
