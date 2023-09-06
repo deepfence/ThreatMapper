@@ -2,6 +2,10 @@ package cronjobs
 
 import (
 	"encoding/json"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
@@ -11,9 +15,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"strconv"
-	"sync"
-	"time"
 )
 
 func SendNotifications(msg *message.Message) error {
@@ -88,6 +89,8 @@ func injectNodeData[T any](results []T, common model.ScanResultsCommon) []map[st
 }
 
 func processIntegration[T any](msg *message.Message, integrationRow postgresql_db.Integration) {
+
+	startTime := time.Now()
 	var filters model.IntegrationFilters
 	err := json.Unmarshal(integrationRow.Filters, &filters)
 	if err != nil {
@@ -121,14 +124,15 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	filters.FieldsFilters.ContainsFilter = reporters.ContainsFilter{
 		FieldsValues: map[string][]interface{}{"status": {"COMPLETE"}},
 	}
-	startTime := time.Now()
+
+	profileStart := time.Now()
 	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource],
 		filters.NodeIds, filters.FieldsFilters, model.FetchWindow{})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return
 	}
-	log.Info().Msgf("Time taken for neo4j1: %v", time.Since(startTime))
+	neo4j_query_1 := time.Since(profileStart).Milliseconds()
 
 	// nothing to notify
 	if len(list.ScansInfo) == 0 {
@@ -146,11 +150,17 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 		return
 	}
 	filters.NodeIds = []model.NodeIdentifier{}
-	startTime = time.Now()
+
+	totalQueryTime := int64(0)
+	totalSendTime := int64(0)
+
 	for _, scan := range list.ScansInfo {
+		profileStart = time.Now()
 		results, common, err := reporters_scan.GetScanResults[T](ctx,
 			utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId,
 			filters.FieldsFilters, model.FetchWindow{})
+		totalQueryTime = totalQueryTime + time.Since(profileStart).Milliseconds()
+
 		if len(results) == 0 {
 			log.Info().Msgf("No Results filtered for scan id: %s with filters %+v", scan.ScanId, filters)
 			continue
@@ -178,7 +188,10 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 
 		extras := utils.ToMap[any](common)
 		extras["scan_type"] = integrationRow.Resource
+
+		profileStart = time.Now()
 		err = integrationModel.SendNotification(ctx, string(messageByte), extras)
+		totalSendTime = totalSendTime + time.Since(profileStart).Milliseconds()
 		if err != nil {
 			log.Error().Msgf("Error Sending Notification id %d, resource %s, type %s error: %s",
 				integrationRow.ID, integrationRow.Resource, integrationRow.IntegrationType, err)
@@ -187,5 +200,9 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d",
 			integrationRow.Resource, len(results), integrationRow.IntegrationType, integrationRow.ID)
 	}
-	log.Info().Msgf("Time taken for integration %s: %v, TS:%s", integrationRow.IntegrationType, time.Since(startTime), string(msg.Payload))
+	log.Info().Msgf("%s Total Time taken for integration %s: %d", integrationRow.Resource,
+		integrationRow.IntegrationType, time.Since(startTime).Milliseconds())
+	log.Info().Msgf("Time taken for neo4j_query_1: %d", neo4j_query_1)
+	log.Info().Msgf("Time taken for neo4j_query_2: %d", totalQueryTime)
+	log.Info().Msgf("Time taken for sending data : %d", totalSendTime)
 }
