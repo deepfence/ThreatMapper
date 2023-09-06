@@ -37,7 +37,6 @@ import {
   useState,
 } from 'react';
 import { useImperativeHandle } from 'react';
-import { IconContext } from 'react-icons';
 import { cn } from 'tailwind-preset';
 
 import { Checkbox } from '@/components/checkbox/Checkbox';
@@ -384,34 +383,26 @@ function Th<TData>({
             : flexRender(header.column.columnDef.header, header.getContext())}
         </span>
         {header.column.getCanSort() ? (
-          <span className="ml-1 flex items-center">
-            <IconContext.Provider
-              value={{
-                size: '0.8rem',
-              }}
-            >
-              {header.column.getIsSorted() === 'asc' ? (
-                <span className="h-4 w-4 dark:text-accent-accent">
-                  <TableChevronUp
-                    data-testid={`column-ascending-indicator-${header.id}`}
-                  />
-                </span>
-              ) : null}
-              {header.column.getIsSorted() === 'desc' ? (
-                <span className="h-4 w-4 dark:text-accent-accent">
-                  <TableChevronDown
-                    data-testid={`column-descending-indicator-${header.id}`}
-                  />
-                </span>
-              ) : null}
-              {!header.column.getIsSorted() ? (
-                <span className="h-4 w-4">
-                  <TableChevronDefault
-                    data-testid={`column-unsorted-indicator-${header.id}`}
-                  />
-                </span>
-              ) : null}
-            </IconContext.Provider>
+          <span className={cn('ml-1 flex items-center w-[0.8rem] h-[0.8rem]')}>
+            {header.column.getIsSorted() === 'asc' ? (
+              <span className="h-4 w-4 dark:text-accent-accent">
+                <TableChevronUp data-testid={`column-ascending-indicator-${header.id}`} />
+              </span>
+            ) : null}
+            {header.column.getIsSorted() === 'desc' ? (
+              <span className="h-4 w-4 dark:text-accent-accent">
+                <TableChevronDown
+                  data-testid={`column-descending-indicator-${header.id}`}
+                />
+              </span>
+            ) : null}
+            {!header.column.getIsSorted() ? (
+              <span className="h-4 w-4">
+                <TableChevronDefault
+                  data-testid={`column-unsorted-indicator-${header.id}`}
+                />
+              </span>
+            ) : null}
           </span>
         ) : null}
       </div>

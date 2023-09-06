@@ -1,7 +1,13 @@
 import { Meta } from '@storybook/react';
-import { HiMenu } from 'react-icons/hi';
 
 import Button from '@/components/button/Button';
+import { PlusIcon } from '@/components/icons/Plus';
+
+const Plus = () => (
+  <span className="h-4 w-4">
+    <PlusIcon />
+  </span>
+);
 
 const FilterIcon = () => {
   return (
@@ -101,7 +107,7 @@ export const MediumFlatVariant: Meta<typeof Button> = {
 export const MediumWithStartIcon: Meta<typeof Button> = {
   args: {
     children: 'Refresh',
-    startIcon: <HiMenu />,
+    startIcon: <Plus />,
     size: 'md',
   },
 };
@@ -109,8 +115,8 @@ export const MediumWithStartIcon: Meta<typeof Button> = {
 export const MediumWithStartAndEndIcon: Meta<typeof Button> = {
   args: {
     children: 'Both icon',
-    startIcon: <HiMenu />,
-    endIcon: <HiMenu />,
+    startIcon: <Plus />,
+    endIcon: <Plus />,
     size: 'md',
   },
 };
@@ -118,7 +124,7 @@ export const MediumWithStartAndEndIcon: Meta<typeof Button> = {
 export const MediumOutlineWithStartIcon: Meta<typeof Button> = {
   args: {
     children: 'Refresh',
-    startIcon: <HiMenu />,
+    startIcon: <Plus />,
     size: 'md',
     variant: 'outline',
   },

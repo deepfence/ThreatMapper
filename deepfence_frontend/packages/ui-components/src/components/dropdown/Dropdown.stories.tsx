@@ -1,14 +1,5 @@
 import { Meta, StoryFn, StoryObj } from '@storybook/react';
 import { useState } from 'react';
-import { IconContext } from 'react-icons';
-import {
-  HiChevronDown,
-  HiInboxIn,
-  HiInformationCircle,
-  HiLogout,
-  HiPencilAlt,
-  HiUserAdd,
-} from 'react-icons/hi';
 
 import Button from '@/components/button/Button';
 import {
@@ -17,6 +8,13 @@ import {
   DropdownSeparator,
   DropdownSubMenu,
 } from '@/components/dropdown/Dropdown';
+import { PlusIcon } from '@/components/icons/Plus';
+
+const Plus = () => (
+  <span className="h-4 w-4">
+    <PlusIcon />
+  </span>
+);
 
 export default {
   title: 'Components/Dropdown',
@@ -45,7 +43,7 @@ const DefaultTemplate: StoryFn<typeof Dropdown> = (args) => {
         </>
       }
     >
-      <Button color="default" endIcon={<HiChevronDown />} size="sm">
+      <Button color="default" endIcon={<Plus />} size="sm">
         Click me
       </Button>
     </Dropdown>
@@ -67,37 +65,23 @@ const TemplateForIcons: StoryFn<typeof Dropdown> = (args) => {
       content={
         <>
           <DropdownItem disabled>
-            <IconContext.Provider value={{ size: '18px' }}>
-              <HiUserAdd />
-            </IconContext.Provider>
+            <Plus />
             <span>First Action</span>
           </DropdownItem>
           <DropdownItem>
-            <IconContext.Provider value={{ size: '18px' }}>
-              <HiInboxIn />
-            </IconContext.Provider>
+            <Plus />
             <span>Second Action</span>
           </DropdownItem>
           <DropdownItem>
-            <IconContext.Provider value={{ size: '18px' }}>
-              <HiInformationCircle />
-            </IconContext.Provider>
+            <Plus />
             <span>Third Action</span>
           </DropdownItem>
-          <DropdownItem
-            icon={
-              <IconContext.Provider value={{ size: '18px' }}>
-                <HiPencilAlt />
-              </IconContext.Provider>
-            }
-          >
+          <DropdownItem icon={<Plus />}>
             <span>Fourth Action</span>
           </DropdownItem>
           <DropdownSeparator />
           <DropdownItem className="text-red-500 dark:text-red-500">
-            <IconContext.Provider value={{ size: '18px' }}>
-              <HiLogout />
-            </IconContext.Provider>
+            <Plus />
             <span>Sign Out</span>
           </DropdownItem>
         </>

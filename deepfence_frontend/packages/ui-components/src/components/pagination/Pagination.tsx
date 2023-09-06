@@ -1,22 +1,29 @@
 import { useMemo } from 'react';
-import { HiDotsHorizontal } from 'react-icons/hi';
 import { cn } from 'tailwind-preset';
 
 import { usePagination, UsePaginationOptions } from '@/components/hooks/usePagination';
+import { EllipsisHorizontalLineIcon } from '@/components/icons/EllipsisHorizontalLine';
 
-type PageButtonProps = {
+const DotsHorizontal = () => {
+  return (
+    <span className="h-3 w-3">
+      <EllipsisHorizontalLineIcon />
+    </span>
+  );
+};
+interface PageButtonProps {
   label: string | number | JSX.Element;
   className: string;
   disabled: boolean;
   onPageChange?: () => void;
-};
+}
 
-type OwnProps = {
+interface OwnProps {
   onPageChange: (page: number) => void;
   approximatePagination?: boolean;
   totalRows: number;
   pageSize?: number;
-};
+}
 type Props = Partial<Pick<UsePaginationOptions, 'currentPage' | 'siblingCount'>> &
   OwnProps;
 
@@ -152,7 +159,7 @@ export const Pagination = ({
           if (page === 'DOTS') {
             return (
               <PageButton
-                label={<HiDotsHorizontal />}
+                label={<DotsHorizontal />}
                 key={page + index}
                 disabled={true}
                 className={'px-2 py-1.5 focus:border-gray-300 focus:dark:border-gray-700'}
