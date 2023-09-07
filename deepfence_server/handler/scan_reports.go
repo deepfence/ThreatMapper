@@ -264,16 +264,7 @@ func (h *Handler) CompareScanHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(req.ScanIds) != 2 {
-		log.Error().Msgf("invalid scan ids: %s", req.ScanIds)
-		h.respondError(errors.New("could not compare, invalid scan ids"), w)
-		return
-	}
-
-	currentScanId := req.ScanIds[0]
-	previousScanId := req.ScanIds[1]
-
-	res, err := compareScanResults(r.Context(), currentScanId, previousScanId, req.ScanType, req.FieldsFilter, req.Window)
+	res, err := compareScanResults(r.Context(), req.BaseScanID, req.ToScanID, req.ScanType, req.FieldsFilter, req.Window)
 	if err != nil {
 		h.respondError(err, w)
 		return
