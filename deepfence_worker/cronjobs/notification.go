@@ -78,7 +78,7 @@ func processIntegrationRow(integrationRow postgresql_db.Integration, msg *messag
 	case utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]:
 		return processIntegration[model.Secret](msg, integrationRow)
 	case utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]:
-		processIntegration[model.Malware](msg, integrationRow)
+		return processIntegration[model.Malware](msg, integrationRow)
 	case utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]:
 		err1 := processIntegration[model.Compliance](msg, integrationRow)
 		// cloud compliance scans
