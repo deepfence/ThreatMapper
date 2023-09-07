@@ -251,7 +251,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 	}
 }
 
-func (h *Handler) CompareScanHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DiffAddVulnerabilityScan(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var req model.ScanCompareReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
@@ -259,17 +259,81 @@ func (h *Handler) CompareScanHandler(w http.ResponseWriter, r *http.Request) {
 		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
 	}
-	if req.ScanType == "" {
-		h.respondError(incorrectScanTypeError, w)
-		return
-	}
 
-	res, err := compareScanResults(r.Context(), req.BaseScanID, req.ToScanID, req.ScanType, req.FieldsFilter, req.Window)
+	new, err := reporters_scan.GetScanResultDiff[model.Vulnerability](r.Context(), utils.NEO4J_VULNERABILITY_SCAN, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
 	if err != nil {
 		h.respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, res)
+	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Vulnerability]{New: new})
+}
+
+func (h *Handler) DiffAddSecretScan(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.ScanCompareReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+	}
+
+	new, err := reporters_scan.GetScanResultDiff[model.Secret](r.Context(), utils.NEO4J_SECRET_SCAN, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Secret]{New: new})
+}
+
+func (h *Handler) DiffAddComplianceScan(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.ScanCompareReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+	}
+
+	new, err := reporters_scan.GetScanResultDiff[model.Compliance](r.Context(), utils.NEO4J_COMPLIANCE_SCAN, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Compliance]{New: new})
+}
+
+func (h *Handler) DiffAddMalwareScan(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.ScanCompareReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+	}
+
+	new, err := reporters_scan.GetScanResultDiff[model.Malware](r.Context(), utils.NEO4J_MALWARE_SCAN, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Malware]{New: new})
+}
+
+func (h *Handler) DiffAddCloudComplianceScan(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.ScanCompareReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+	}
+
+	new, err := reporters_scan.GetScanResultDiff[model.CloudCompliance](r.Context(), utils.NEO4J_CLOUD_COMPLIANCE_SCAN, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.CloudCompliance]{New: new})
 }
 
 func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -1454,81 +1518,6 @@ func getScanResults(ctx context.Context, scanId, scanType string) (model.Downloa
 
 	default:
 		return resp, incorrectScanTypeError
-	}
-}
-
-// use this function to compare between two scan results, s1 and s2
-// where A and B are scan IDs
-// @returns ScanComparison (new:s1-s2, deleted:s2-s1)
-func compareScanResults(ctx context.Context, s1, s2, scanType string, ff reporters.FieldsFilters, fw model.FetchWindow) (compared model.ScanComparison, err error) {
-	switch scanType {
-	case "VulnerabilityScan":
-		compared.New, err = reporters_scan.GetScanResultDiff[model.Vulnerability](ctx, utils.NEO4J_VULNERABILITY_SCAN, s1, s2, ff, fw)
-		if err != nil {
-			return compared, err
-		}
-
-		compared.Deleted, err = reporters_scan.GetScanResultDiff[model.Vulnerability](ctx, utils.NEO4J_VULNERABILITY_SCAN, s2, s1, ff, fw)
-		if err != nil {
-			return compared, err
-		}
-
-		return compared, nil
-
-	case "SecretScan":
-		compared.New, err = reporters_scan.GetScanResultDiff[model.Secret](ctx, utils.NEO4J_SECRET_SCAN, s1, s2, ff, fw)
-		if err != nil {
-			return compared, err
-		}
-
-		compared.Deleted, err = reporters_scan.GetScanResultDiff[model.Secret](ctx, utils.NEO4J_SECRET_SCAN, s2, s1, ff, fw)
-		if err != nil {
-			return compared, err
-		}
-
-		return compared, nil
-
-	case "MalwareScan":
-		compared.New, err = reporters_scan.GetScanResultDiff[model.Malware](ctx, utils.NEO4J_MALWARE_SCAN, s1, s2, ff, fw)
-		if err != nil {
-			return compared, err
-		}
-
-		compared.Deleted, err = reporters_scan.GetScanResultDiff[model.Malware](ctx, utils.NEO4J_MALWARE_SCAN, s2, s1, ff, fw)
-		if err != nil {
-			return compared, err
-		}
-
-		return compared, nil
-
-	case "ComplianceScan":
-		compared.New, err = reporters_scan.GetScanResultDiff[model.Compliance](ctx, utils.NEO4J_COMPLIANCE_SCAN, s1, s2, ff, fw)
-		if err != nil {
-			return compared, err
-		}
-
-		compared.Deleted, err = reporters_scan.GetScanResultDiff[model.Compliance](ctx, utils.NEO4J_COMPLIANCE_SCAN, s2, s1, ff, fw)
-		if err != nil {
-			return compared, err
-		}
-
-		return compared, nil
-
-	case "CloudComplianceScan":
-		compared.New, err = reporters_scan.GetScanResultDiff[model.CloudCompliance](ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, s1, s2, ff, fw)
-		if err != nil {
-			return compared, err
-		}
-
-		compared.Deleted, err = reporters_scan.GetScanResultDiff[model.CloudCompliance](ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, s2, s1, ff, fw)
-		if err != nil {
-			return compared, err
-		}
-
-		return compared, nil
-
-	default:
-		return compared, incorrectScanTypeError
 	}
 }
 

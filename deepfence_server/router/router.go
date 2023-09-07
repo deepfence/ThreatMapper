@@ -397,8 +397,14 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 						})
 					})
 				})
+			})
 
-				r.Post("/compare", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CompareScanHandler))
+			r.Route("/diff-add", func(r chi.Router) {
+				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.DiffAddVulnerabilityScan))
+				r.Post("/secret", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.DiffAddSecretScan))
+				r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.DiffAddComplianceScan))
+				r.Post("/malware", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.DiffAddMalwareScan))
+				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.DiffAddCloudComplianceScan))
 			})
 
 			r.Route("/filters", func(r chi.Router) {
