@@ -19,6 +19,54 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
+var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]: {
+	"cve_severity": "Severity", "cve_id": "CVE Id", "cve_description": "Description", "scan_id": "Scan ID",
+	"cve_container_image": "Container image", "@timestamp": "@timestamp", "cve_attack_vector": "Attack Vector",
+	"cve_container_name": "Container Name", "host_name": "Host Name", "cve_overall_score": "CVE Overall Score",
+	"cve_type": "CVE Type", "cve_link": "CVE Link", "cve_fixed_in": "CVE Fixed In", "cve_cvss_score": "CVSS Score",
+	"cve_caused_by_package": "CVE Caused By Package"},
+	utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]: {
+		"LayerID": "Layer ID", "RuleName": "Rule Name", "PartToMatch": "Part to Match", "Match": "Match",
+		"scan_id": "Scan ID",
+		"Regex":   "Regex", "container_image": "Container image", "@timestamp": "@timestamp",
+		"container_name": "Container Name", "node_name": "Node Name",
+		"image_id": "Image ID", "node_type": "Node Type", "registry_id": "Registry ID",
+		"MatchFromByte": "match from byte",
+		"MatchToByte":   "match to byte", "MatchedContents": "Matched Contents", "host_name": "Host Name",
+		"kubernetes_cluster_name": "Kubernetes Cluster Name", "masked": "masked",
+		"CompleteFilename": "Complete File Name", "MetaRules": "Meta Rules", "Summary": "Summary", "Class": "Class",
+		"SeverityScore": "Severity Score", "Severity": "Severity", "PrintBufferStartIndex": "Print Buffer Start Index"},
+	utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]: {
+		"LayerID": "Layer ID", "RuleName": "Rule Name", "StringsToMatch": "Strings to Match", "scan_id": "Scan ID",
+		"CategoryName": "Category Name", "container_image": "Container image",
+		"@timestamp": "@timestamp", "node_name": "Node Name",
+		"image_id": "Image ID", "node_type": "Node Type", "registry_id": "Registry ID",
+		"container_name": "Container Name",
+		"host_name":      "Host Name", "kubernetes_cluster_name": "Kubernetes Cluster Name", "masked": "masked",
+		"Meta":             "Meta",
+		"CompleteFilename": "Complete File Name", "MetaRules": "Meta Rules", "Summary": "Summary", "Class": "Class",
+		"SeverityScore": "Severity Score", "Severity": "Severity", "FileSeverity": "File Severity",
+		"FileSevScore": "File Severity Score"},
+	utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]: {
+		"@timestamp":            "@timestamp",
+		"account_id":            "Account",
+		"cloud_provider":        "Cloud Provider",
+		"compliance_check_type": "Compliance Check Type",
+		"control_id":            "Control Id",
+		"description":           "Description",
+		"host_name":             "Host Name",
+		"node_name":             "Node",
+		"reason":                "Reason",
+		"region":                "Region",
+		"resource":              "Resource",
+		"service":               "Service",
+		"status":                "Test Status",
+		"test_category":         "Test Category",
+		"test_info":             "Info",
+		"test_number":           "Test ID",
+		"title":                 "Title"},
+}
+
 func SendNotifications(msg *message.Message) error {
 	RecordOffsets(msg)
 
@@ -89,42 +137,40 @@ func processIntegrationRow(integrationRow postgresql_db.Integration, msg *messag
 	return errors.New("No integration type")
 }
 
-func injectNodeData[T any](results []T, common model.ScanResultsCommon,
+func injectNodeDatamap(results []map[string]interface{}, common model.ScanResultsCommon,
 	integrationType string) []map[string]interface{} {
-	data := []map[string]interface{}{}
 
 	for _, r := range results {
-		m := utils.ToMap[T](r)
-		m["node_id"] = common.NodeID
-		m["scan_id"] = common.ScanID
-		m["node_name"] = common.NodeName
-		m["node_type"] = common.NodeType
+		//m := utils.ToMap[T](r)
+		r["node_id"] = common.NodeID
+		r["scan_id"] = common.ScanID
+		r["node_name"] = common.NodeName
+		r["node_type"] = common.NodeType
 		if common.ContainerName != "" {
-			m["docker_container_name"] = common.ContainerName
+			r["docker_container_name"] = common.ContainerName
 		}
 		if common.ImageName != "" {
-			m["docker_image_name"] = common.ImageName
+			r["docker_image_name"] = common.ImageName
 		}
 		if common.HostName != "" {
-			m["host_name"] = common.HostName
+			r["host_name"] = common.HostName
 		}
 		if common.KubernetesClusterName != "" {
-			m["kubernetes_cluster_name"] = common.KubernetesClusterName
+			r["kubernetes_cluster_name"] = common.KubernetesClusterName
 		}
 
-		if _, ok := m["updated_at"]; ok {
+		if _, ok := r["updated_at"]; ok {
 			flag := integration.IsMessagingFormat(integrationType)
 			if flag == true {
-				ts := m["updated_at"].(int64)
+				ts := r["updated_at"].(int64)
 				tm := time.Unix(0, ts*int64(time.Millisecond))
-				m["updated_at"] = tm
+				r["updated_at"] = tm
 			}
 		}
 
-		data = append(data, m)
 	}
 
-	return data
+	return results
 }
 
 func processIntegration[T any](msg *message.Message, integrationRow postgresql_db.Integration) error {
@@ -198,9 +244,16 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 		if err != nil {
 			return err
 		}
-
+		var updatedResults []map[string]interface{}
 		// inject node details to results
-		updatedResults := injectNodeData[T](results, common, integrationRow.IntegrationType)
+		if integration.IsMessagingFormat(integrationRow.IntegrationType) {
+			updatedResults = FormatForMessagingApps(results, integrationRow.Resource)
+		} else {
+			for _, r := range results {
+				updatedResults = utils.ToMap[T](r)
+			}
+		}
+		updatedResults = injectNodeDatamap(updatedResults, common, integrationRow.IntegrationType)
 		messageByte, err := json.Marshal(updatedResults)
 		if err != nil {
 			return err
@@ -216,4 +269,18 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 			integrationRow.Resource, len(results), integrationRow.IntegrationType, integrationRow.ID)
 	}
 	return nil
+}
+
+func FormatForMessagingApps[T any](results []T, resourceType string) []map[string]interface{} {
+	var data []map[string]interface{}
+	docFieldsMap := fieldsMap[resourceType]
+	for _, r := range results {
+		m := utils.ToMap[T](r)
+		d := map[string]interface{}{}
+		for k, v := range docFieldsMap {
+			d[v] = m[k]
+		}
+		data = append(data, m)
+	}
+	return data
 }
