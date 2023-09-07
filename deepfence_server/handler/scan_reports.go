@@ -221,10 +221,21 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	err = h.Validator.Struct(reqs)
+	if err != nil {
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
 	binArgs := make(map[string]string, 0)
 	if len(reqs.ScanConfigLanguages) != 0 {
 		languages := []string{}
 		for i := range reqs.ScanConfigLanguages {
+			err = h.Validator.Struct(reqs.ScanConfigLanguages[i])
+			if err != nil {
+				h.respondError(&ValidatorError{err: err}, w)
+				return
+			}
 			languages = append(languages, reqs.ScanConfigLanguages[i].Language)
 		}
 		binArgs["scan_type"] = strings.Join(languages, ",")
