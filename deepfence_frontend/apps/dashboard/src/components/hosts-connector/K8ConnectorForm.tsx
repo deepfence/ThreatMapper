@@ -347,7 +347,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
           title="Connect Kubernetes Cluster"
         >
           <div className="text-p7 dark:text-text-text-and-icon">
-            Connect via Kubernetes Scanner. Find out more information by{' '}
+            Deploy Deepfence agent Kubernetes Scanner. Find out more information by{' '}
             <DFLink
               href={`https://community.deepfence.io/threatmapper/docs/v2.0/sensors/kubernetes`}
               target="_blank"

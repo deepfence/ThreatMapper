@@ -32,7 +32,7 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
           target="_blank"
           rel="noreferrer"
         >
-          reading our documentation
+          More information
         </DFLink>
         .
       </div>

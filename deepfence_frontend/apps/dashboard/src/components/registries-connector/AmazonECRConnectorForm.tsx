@@ -30,9 +30,9 @@ export const AmazonECRConnectorForm = ({
   return (
     <>
       <div className="text-p4 dark:text-text-input-value">
-        Connect to your Amazon Cloud Account. Find out more information by{' '}
+        Connect to your Amazon ECR Registry. Find out more information by{' '}
         <DFLink
-          href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage`}
+          href={`https://community.deepfence.io/threatmapper/docs/v2.0/registries/aws-ecr`}
           target="_blank"
           rel="noreferrer"
         >

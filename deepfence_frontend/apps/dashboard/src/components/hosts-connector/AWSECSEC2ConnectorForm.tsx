@@ -19,10 +19,10 @@ export const AWSECSEC2ConnectorForm = () => {
         title="AWS ECS"
       >
         <div className="text-p7 dark:text-text-text-and-icon">
-          In AWS ECS, the ThreatStryker sensors are deployed as a daemon service using
+          In AWS ECS (EC2), the ThreatMapper sensors are deployed as a daemon service using
           task definition.{' '}
           <DFLink
-            href={`https://community.deepfence.io/threatmapper/docs/sensors/aws-ecs`}
+            href={`https://community.deepfence.io/threatmapper/docs/v2.0/sensors/aws-ecs`}
             target="_blank"
             rel="noreferrer"
             className="mt-2"

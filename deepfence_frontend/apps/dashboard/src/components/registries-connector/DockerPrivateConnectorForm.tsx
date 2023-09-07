@@ -35,7 +35,7 @@ export const DockerPriavateConnectorForm = ({
             target="_blank"
             rel="noreferrer"
           >
-            reading our documentation
+            More information
           </DFLink>
           .
         </div>
