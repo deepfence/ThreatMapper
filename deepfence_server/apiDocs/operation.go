@@ -495,10 +495,10 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusAccepted, []string{tagCompliance}, bearerToken, new(ComplianceScanTriggerReq), nil)
 	d.AddOperation("stopMalwareScan", http.MethodPost, "/deepfence/scan/stop/malware",
 		"Stop Malware Scan", "Stop Malware Scan on agent or registry",
-		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(StopScanRequest), nil)
+		http.StatusAccepted, []string{tagMalwareScan}, bearerToken, new(StopScanRequest), nil)
 	d.AddOperation("stopSecretScan", http.MethodPost, "/deepfence/scan/stop/secret",
 		"Stop Secret Scan", "Stop Secret Scan on agent or registry",
-		http.StatusOK, []string{tagSecretScan}, bearerToken, new(StopScanRequest), nil)
+		http.StatusAccepted, []string{tagSecretScan}, bearerToken, new(StopScanRequest), nil)
 
 	// Status scan
 	d.AddOperation("statusVulnerabilityScan", http.MethodPost, "/deepfence/scan/status/vulnerability",

@@ -293,7 +293,7 @@ type IngestedContainerImage struct {
 	DockerImageVirtualSize string   `json:"docker_image_virtual_size" required:"true"`
 	DockerImageID          string   `json:"docker_image_id" required:"true"`
 	ShortImageID           string   `json:"short_image_id"`
-	Metadata               Metadata `json:"metadata" required:"true" nested_json:"true"`
+	Metadata               Metadata `json:"metadata" nested_json:"true"`
 }
 
 func (IngestedContainerImage) NodeType() string {
@@ -322,7 +322,7 @@ type ContainerImage struct {
 	DockerImageVirtualSize    string      `json:"docker_image_virtual_size" required:"true"`
 	DockerImageID             string      `json:"docker_image_id" required:"true"`
 	DockerImageTagList        []string    `json:"docker_image_tag_list" required:"true"`
-	Metadata                  Metadata    `json:"metadata" required:"true" nested_json:"true"`
+	Metadata                  Metadata    `json:"metadata" nested_json:"true"`
 	VulnerabilitiesCount      int64       `json:"vulnerabilities_count" required:"true"`
 	VulnerabilityScanStatus   string      `json:"vulnerability_scan_status" required:"true"`
 	VulnerabilityLatestScanId string      `json:"vulnerability_latest_scan_id" required:"true"`
