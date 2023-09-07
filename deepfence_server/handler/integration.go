@@ -140,7 +140,7 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 			NotificationType: integration.Resource,
 			Config:           config,
 			Filters:          filters,
-			Status:           integrationStatus,
+			LastErrorMsg:     integrationStatus,
 		}
 
 		newIntegration.RedactSensitiveFieldsInConfig()
