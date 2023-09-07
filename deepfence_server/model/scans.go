@@ -34,11 +34,13 @@ type ComplianceScanTriggerReq struct {
 type ScanCompareReq struct {
 	BaseScanID   string                  `json:"base_scan_id" required:"true"`
 	ToScanID     string                  `json:"to_scan_id" required:"true"`
-	ScanType     string                  `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 	FieldsFilter reporters.FieldsFilters `json:"fields_filter" required:"true"`
 	Window       FetchWindow             `json:"window"  required:"true"`
 }
 
+type ScanCompareRes[T any] struct {
+	New []T `json:"new" required:"true"`
+}
 type ScanFilter struct {
 	ImageScanFilter             reporters.ContainsFilter `json:"image_scan_filter" required:"true"`
 	ContainerScanFilter         reporters.ContainsFilter `json:"container_scan_filter" required:"true"`
@@ -564,9 +566,4 @@ func (v CloudCompliance) GetCategory() string {
 
 func (CloudCompliance) GetJsonCategory() string {
 	return "severity"
-}
-
-type ScanComparison struct {
-	New     interface{} `json:"new" required:"true"`
-	Deleted interface{} `json:"deleted" required:"true"`
 }

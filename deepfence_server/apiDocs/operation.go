@@ -752,8 +752,20 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 		http.StatusOK, []string{tagSettings}, bearerToken, new(vulnerability_db.DBUploadRequest), new(MessageResponse))
 }
 
-func (d *OpenApiDocs) AddScanCompareOperations() {
-	d.AddOperation("compareScans", http.MethodPost, "/deepfence/scan/results/compare",
-		"Compare Scans", "Compare scans between scan ids for a given scan type",
-		http.StatusOK, []string{tagScanCompare}, bearerToken, new(ScanCompareReq), new(ScanComparison))
+func (d *OpenApiDocs) AddDiffAddOperations() {
+	d.AddOperation("addDiffAdd", http.MethodPost, "/deepfence/diff-add/vulnerability",
+		"Get Vulnerability Diff", "Get Vulnerability Diff between two scans",
+		http.StatusOK, []string{tagDiffAdd}, bearerToken, new(ScanCompareReq), new(ScanCompareRes[Vulnerability]))
+	d.AddOperation("addDiffAdd", http.MethodPost, "/deepfence/diff-add/secret",
+		"Get Secret Diff", "Get Secret Diff between two scans",
+		http.StatusOK, []string{tagDiffAdd}, bearerToken, new(ScanCompareReq), new(ScanCompareRes[Secret]))
+	d.AddOperation("addDiffAdd", http.MethodPost, "/deepfence/diff-add/compliance",
+		"Get Compliance Diff", "Get Compliance Diff between two scans",
+		http.StatusOK, []string{tagDiffAdd}, bearerToken, new(ScanCompareReq), new(ScanCompareRes[Compliance]))
+	d.AddOperation("addDiffAdd", http.MethodPost, "/deepfence/diff-add/malware",
+		"Get Malware Diff", "Get Malware Diff between two scans",
+		http.StatusOK, []string{tagDiffAdd}, bearerToken, new(ScanCompareReq), new(ScanCompareRes[Malware]))
+	d.AddOperation("addDiffAdd", http.MethodPost, "/deepfence/diff-add/cloud-compliance",
+		"Get Cloud Compliance Diff", "Get Cloud Compliance Diff between two scans",
+		http.StatusOK, []string{tagDiffAdd}, bearerToken, new(ScanCompareReq), new(ScanCompareRes[CloudCompliance]))
 }
