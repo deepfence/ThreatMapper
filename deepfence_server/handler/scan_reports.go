@@ -1461,81 +1461,70 @@ func getScanResults(ctx context.Context, scanId, scanType string) (model.Downloa
 // where A and B are scan IDs
 // @returns ScanComparison (new:s1-s2, deleted:s2-s1)
 func compareScanResults(ctx context.Context, s1, s2, scanType string, ff reporters.FieldsFilters, fw model.FetchWindow) (compared model.ScanComparison, err error) {
-	// req.FieldsFilter, req.Window
 	switch scanType {
 	case "VulnerabilityScan":
-		added, err := reporters_scan.GetScanResultDiff[model.Vulnerability](ctx, utils.NEO4J_VULNERABILITY_SCAN, s1, s2, ff, fw)
+		compared.New, err = reporters_scan.GetScanResultDiff[model.Vulnerability](ctx, utils.NEO4J_VULNERABILITY_SCAN, s1, s2, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		removed, err := reporters_scan.GetScanResultDiff[model.Vulnerability](ctx, utils.NEO4J_VULNERABILITY_SCAN, s2, s1, ff, fw)
+		compared.Deleted, err = reporters_scan.GetScanResultDiff[model.Vulnerability](ctx, utils.NEO4J_VULNERABILITY_SCAN, s2, s1, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		compared.New = added
-		compared.Deleted = removed
 		return compared, nil
 
 	case "SecretScan":
-		added, err := reporters_scan.GetScanResultDiff[model.Secret](ctx, utils.NEO4J_SECRET_SCAN, s1, s2, ff, fw)
+		compared.New, err = reporters_scan.GetScanResultDiff[model.Secret](ctx, utils.NEO4J_SECRET_SCAN, s1, s2, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		removed, err := reporters_scan.GetScanResultDiff[model.Secret](ctx, utils.NEO4J_SECRET_SCAN, s2, s1, ff, fw)
+		compared.Deleted, err = reporters_scan.GetScanResultDiff[model.Secret](ctx, utils.NEO4J_SECRET_SCAN, s2, s1, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		compared.New = added
-		compared.Deleted = removed
 		return compared, nil
 
 	case "MalwareScan":
-		added, err := reporters_scan.GetScanResultDiff[model.Malware](ctx, utils.NEO4J_MALWARE_SCAN, s1, s2, ff, fw)
+		compared.New, err = reporters_scan.GetScanResultDiff[model.Malware](ctx, utils.NEO4J_MALWARE_SCAN, s1, s2, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		removed, err := reporters_scan.GetScanResultDiff[model.Malware](ctx, utils.NEO4J_MALWARE_SCAN, s2, s1, ff, fw)
+		compared.Deleted, err = reporters_scan.GetScanResultDiff[model.Malware](ctx, utils.NEO4J_MALWARE_SCAN, s2, s1, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		compared.New = added
-		compared.Deleted = removed
 		return compared, nil
 
 	case "ComplianceScan":
-		added, err := reporters_scan.GetScanResultDiff[model.Compliance](ctx, utils.NEO4J_COMPLIANCE_SCAN, s1, s2, ff, fw)
+		compared.New, err = reporters_scan.GetScanResultDiff[model.Compliance](ctx, utils.NEO4J_COMPLIANCE_SCAN, s1, s2, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		removed, err := reporters_scan.GetScanResultDiff[model.Compliance](ctx, utils.NEO4J_COMPLIANCE_SCAN, s2, s1, ff, fw)
+		compared.Deleted, err = reporters_scan.GetScanResultDiff[model.Compliance](ctx, utils.NEO4J_COMPLIANCE_SCAN, s2, s1, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		compared.New = added
-		compared.Deleted = removed
 		return compared, nil
 
 	case "CloudComplianceScan":
-		added, err := reporters_scan.GetScanResultDiff[model.CloudCompliance](ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, s1, s2, ff, fw)
+		compared.New, err = reporters_scan.GetScanResultDiff[model.CloudCompliance](ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, s1, s2, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		removed, err := reporters_scan.GetScanResultDiff[model.CloudCompliance](ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, s2, s1, ff, fw)
+		compared.Deleted, err = reporters_scan.GetScanResultDiff[model.CloudCompliance](ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, s2, s1, ff, fw)
 		if err != nil {
 			return compared, err
 		}
 
-		compared.New = added
-		compared.Deleted = removed
 		return compared, nil
 
 	default:
@@ -2149,18 +2138,4 @@ func startMultiComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, 
 		scanIds = append(scanIds, scanId)
 	}
 	return scanIds, bulkId, nil
-}
-
-// (A-B)
-// use this function to compare between two scan results, A and B
-// to get new vulnerabilities GetDifferenceBetweenVulnerabilitiesScanResults(ctx, A, B)
-// to get deleted vulnerabilities GetDifferenceBetweenVulnerabilitiesScanResults(ctx, B, A)
-// where A and B are scan IDs
-func GetDifferenceBetweenVulnerabilitiesScanResults(ctx context.Context, a, b string) ([]model.Vulnerability, error) {
-	entries, err := reporters_scan.GetScanResultDiff[model.Vulnerability](ctx, utils.NEO4J_VULNERABILITY_SCAN, a, b, reporters.FieldsFilters{}, model.FetchWindow{})
-	if err != nil {
-		return []model.Vulnerability{}, err
-	}
-
-	return entries, nil
 }
