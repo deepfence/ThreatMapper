@@ -567,6 +567,5 @@ func (CloudCompliance) GetJsonCategory() string {
 
 type ScanComparison struct {
 	New     interface{} `json:"new" required:"true"`
-	Updated interface{} `json:"updated" required:"true"`
 	Deleted interface{} `json:"deleted" required:"true"`
 }
