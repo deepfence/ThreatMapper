@@ -19,6 +19,12 @@ import {
     ModelFetchWindowFromJSONTyped,
     ModelFetchWindowToJSON,
 } from './ModelFetchWindow';
+import type { SearchChainedSearchFilter } from './SearchChainedSearchFilter';
+import {
+    SearchChainedSearchFilterFromJSON,
+    SearchChainedSearchFilterFromJSONTyped,
+    SearchChainedSearchFilterToJSON,
+} from './SearchChainedSearchFilter';
 import type { SearchSearchFilter } from './SearchSearchFilter';
 import {
     SearchSearchFilterFromJSON,
@@ -44,6 +50,12 @@ export interface SearchSearchNodeReq {
      * @memberof SearchSearchNodeReq
      */
     node_filter: SearchSearchFilter;
+    /**
+     * 
+     * @type {SearchChainedSearchFilter}
+     * @memberof SearchSearchNodeReq
+     */
+    related_node_filter?: SearchChainedSearchFilter;
     /**
      * 
      * @type {ModelFetchWindow}
@@ -75,6 +87,7 @@ export function SearchSearchNodeReqFromJSONTyped(json: any, ignoreDiscriminator:
         
         'extended_node_filter': !exists(json, 'extended_node_filter') ? undefined : SearchSearchFilterFromJSON(json['extended_node_filter']),
         'node_filter': SearchSearchFilterFromJSON(json['node_filter']),
+        'related_node_filter': !exists(json, 'related_node_filter') ? undefined : SearchChainedSearchFilterFromJSON(json['related_node_filter']),
         'window': ModelFetchWindowFromJSON(json['window']),
     };
 }
@@ -90,6 +103,7 @@ export function SearchSearchNodeReqToJSON(value?: SearchSearchNodeReq | null): a
         
         'extended_node_filter': SearchSearchFilterToJSON(value.extended_node_filter),
         'node_filter': SearchSearchFilterToJSON(value.node_filter),
+        'related_node_filter': SearchChainedSearchFilterToJSON(value.related_node_filter),
         'window': ModelFetchWindowToJSON(value.window),
     };
 }

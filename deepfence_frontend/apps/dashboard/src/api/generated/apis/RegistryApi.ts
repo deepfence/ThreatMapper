@@ -117,13 +117,13 @@ export interface RegistryApiInterface {
      * @throws {RequiredError}
      * @memberof RegistryApiInterface
      */
-    addRegistryRaw(requestParameters: AddRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+    addRegistryRaw(requestParameters: AddRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
 
     /**
      * Add a new supported registry
      * Add Registry
      */
-    addRegistry(requestParameters: AddRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+    addRegistry(requestParameters: AddRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
     /**
      * Add a Google Container registry
@@ -135,13 +135,13 @@ export interface RegistryApiInterface {
      * @throws {RequiredError}
      * @memberof RegistryApiInterface
      */
-    addRegistryGCRRaw(requestParameters: AddRegistryGCRRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+    addRegistryGCRRaw(requestParameters: AddRegistryGCRRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
 
     /**
      * Add a Google Container registry
      * Add Google Container Registry
      */
-    addRegistryGCR(requestParameters: AddRegistryGCRRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+    addRegistryGCR(requestParameters: AddRegistryGCRRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
     /**
      * count of image tags for a given image and registry
@@ -310,13 +310,13 @@ export interface RegistryApiInterface {
      * @throws {RequiredError}
      * @memberof RegistryApiInterface
      */
-    updateRegistryRaw(requestParameters: UpdateRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+    updateRegistryRaw(requestParameters: UpdateRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
 
     /**
      * Update registry
      * Update Registry
      */
-    updateRegistry(requestParameters: UpdateRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+    updateRegistry(requestParameters: UpdateRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
 }
 
@@ -329,7 +329,7 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
      * Add a new supported registry
      * Add Registry
      */
-    async addRegistryRaw(requestParameters: AddRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async addRegistryRaw(requestParameters: AddRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -352,22 +352,23 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             body: ModelRegistryAddReqToJSON(requestParameters.modelRegistryAddReq),
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
     }
 
     /**
      * Add a new supported registry
      * Add Registry
      */
-    async addRegistry(requestParameters: AddRegistryRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.addRegistryRaw(requestParameters, initOverrides);
+    async addRegistry(requestParameters: AddRegistryRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.addRegistryRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
      * Add a Google Container registry
      * Add Google Container Registry
      */
-    async addRegistryGCRRaw(requestParameters: AddRegistryGCRRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async addRegistryGCRRaw(requestParameters: AddRegistryGCRRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
         if (requestParameters.name === null || requestParameters.name === undefined) {
             throw new runtime.RequiredError('name','Required parameter requestParameters.name was null or undefined when calling addRegistryGCR.');
         }
@@ -428,15 +429,16 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             body: formParams,
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
     }
 
     /**
      * Add a Google Container registry
      * Add Google Container Registry
      */
-    async addRegistryGCR(requestParameters: AddRegistryGCRRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.addRegistryGCRRaw(requestParameters, initOverrides);
+    async addRegistryGCR(requestParameters: AddRegistryGCRRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.addRegistryGCRRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
@@ -830,7 +832,7 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
      * Update registry
      * Update Registry
      */
-    async updateRegistryRaw(requestParameters: UpdateRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async updateRegistryRaw(requestParameters: UpdateRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
         if (requestParameters.registryId === null || requestParameters.registryId === undefined) {
             throw new runtime.RequiredError('registryId','Required parameter requestParameters.registryId was null or undefined when calling updateRegistry.');
         }
@@ -857,15 +859,16 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             body: ModelRegistryUpdateReqToJSON(requestParameters.modelRegistryUpdateReq),
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
     }
 
     /**
      * Update registry
      * Update Registry
      */
-    async updateRegistry(requestParameters: UpdateRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.updateRegistryRaw(requestParameters, initOverrides);
+    async updateRegistry(requestParameters: UpdateRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.updateRegistryRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
 }

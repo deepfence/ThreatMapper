@@ -55,6 +55,12 @@ export interface ModelIntegrationListResp {
      * @type {string}
      * @memberof ModelIntegrationListResp
      */
+    last_error_msg?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelIntegrationListResp
+     */
     notification_type?: string;
 }
 
@@ -81,6 +87,7 @@ export function ModelIntegrationListRespFromJSONTyped(json: any, ignoreDiscrimin
         'filters': !exists(json, 'filters') ? undefined : ReportersFieldsFiltersFromJSON(json['filters']),
         'id': !exists(json, 'id') ? undefined : json['id'],
         'integration_type': !exists(json, 'integration_type') ? undefined : json['integration_type'],
+        'last_error_msg': !exists(json, 'last_error_msg') ? undefined : json['last_error_msg'],
         'notification_type': !exists(json, 'notification_type') ? undefined : json['notification_type'],
     };
 }
@@ -98,6 +105,7 @@ export function ModelIntegrationListRespToJSON(value?: ModelIntegrationListResp 
         'filters': ReportersFieldsFiltersToJSON(value.filters),
         'id': value.id,
         'integration_type': value.integration_type,
+        'last_error_msg': value.last_error_msg,
         'notification_type': value.notification_type,
     };
 }
