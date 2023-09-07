@@ -250,7 +250,6 @@ const useScanResults = () => {
     scanId: string;
     nodeType: string;
   };
-  console.log(params);
   const scanId = params?.scanId;
   const nodeType = params?.nodeType;
   return useSuspenseQuery({
