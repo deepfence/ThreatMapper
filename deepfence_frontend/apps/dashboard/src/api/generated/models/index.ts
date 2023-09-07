@@ -164,6 +164,7 @@ export * from './ReportersFieldsFilters';
 export * from './ReportersMatchFilter';
 export * from './ReportersOrderFilter';
 export * from './ReportersOrderSpec';
+export * from './SearchChainedSearchFilter';
 export * from './SearchNodeCountResp';
 export * from './SearchResultGroup';
 export * from './SearchResultGroupResp';
