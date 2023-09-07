@@ -6,8 +6,8 @@ import (
 
 type RegistryDockerPrivate struct {
 	Name         string    `json:"name" validate:"required,min=2,max=64"`
-	NonSecret    NonSecret `json:"non_secret" validate:"required"`
-	Secret       Secret    `json:"secret" validate:"required"`
+	NonSecret    NonSecret `json:"non_secret"`
+	Secret       Secret    `json:"secret"`
 	RegistryType string    `json:"registry_type" validate:"required"`
 }
 
