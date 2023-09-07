@@ -622,10 +622,10 @@ func GetScanResultDiff[T any](ctx context.Context, scan_type utils.Neo4jScanType
 	}
 
 	query = `
-	match (n:` + string(scan_type) + `{node_id: $base_scan_id}) -[r:DETECTED]-> (d)
-	where not exists {match (m:` + string(scan_type) + `{node_id: $compare_to_scan_id}) -[:DETECTED]-> (d)}
-	optional match (d) -[:IS]-> (e)
-	with apoc.map.merge( e{.*}, d{.*, masked: coalesce(d.masked or r.masked, false), name: coalesce(e.name, d.name, '')}) as d` +
+	MATCH (n:` + string(scan_type) + `{node_id: $base_scan_id}) -[r:DETECTED]-> (d)
+	WHERE NOT EXISTS {MATCH (m:` + string(scan_type) + `{node_id: $compare_to_scan_id}) -[:DETECTED]-> (d)}
+	OPTIONAL MATCH (d) -[:IS]-> (e)
+	WITH apoc.map.merge( e{.*}, d{.*, masked: coalesce(d.masked or r.masked, false), name: coalesce(e.name, d.name, '')}) AS d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
 		ffCondition + ` RETURN d ` +
 		fw.FetchWindow2CypherQuery()
