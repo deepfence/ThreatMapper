@@ -2,7 +2,6 @@ package utils
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"os/exec"
 	"strconv"
@@ -14,6 +13,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	"github.com/pkg/errors"
 )
 
 var ReportRetentionTime = 24 * time.Hour

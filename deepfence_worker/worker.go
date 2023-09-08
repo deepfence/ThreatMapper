@@ -20,6 +20,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/reports"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/sbom"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/secretscan"
+	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/redis/go-redis/v9"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -296,23 +297,24 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	mux.AddPlugin(plugin.SignalsHandler)
 
 	// Retried disabled in favor of neo4j scheduling
-	//retryMiddleware := middleware.Retry{
-	//	MaxRetries:          3,
-	//	InitialInterval:     time.Second * 10,
-	//	MaxInterval:         time.Second * 120,
-	//	Multiplier:          1.5,
-	//	MaxElapsedTime:      0,
-	//	RandomizationFactor: 0.5,
-	//	OnRetryHook: func(retryNum int, delay time.Duration) {
-	//		log.Info().Msgf("retry=%d delay=%s", retryNum, delay)
-	//	},
-	//	Logger: wml,
-	//}
+	retry := workerUtils.Retry{
+		MaxRetries:          3,
+		InitialInterval:     time.Second * 5,
+		MaxInterval:         time.Second * 60,
+		Multiplier:          1.5,
+		MaxElapsedTime:      0,
+		RandomizationFactor: 0.25,
+		OnRetryHook: func(retryNum int, delay time.Duration) {
+			log.Info().Msgf("retry=%d delay=%s", retryNum, delay)
+		},
+		Logger: wml,
+	}
 
 	mux.AddMiddleware(
 		middleware.CorrelationID,
 		middleware.NewThrottle(10, time.Second).Middleware,
-		middleware.Recoverer,
+		retry.Middleware,
+		workerUtils.Recoverer,
 	)
 
 	// HandlerMap = make(map[string]*NoPublisherTask)
