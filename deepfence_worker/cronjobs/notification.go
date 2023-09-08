@@ -250,7 +250,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 			updatedResults = FormatForMessagingApps(results, integrationRow.Resource)
 		} else {
 			for _, r := range results {
-				updatedResults = utils.ToMap[T](r)
+				updatedResults = append(updatedResults, utils.ToMap[T](r))
 			}
 		}
 		updatedResults = injectNodeDatamap(updatedResults, common, integrationRow.IntegrationType)
