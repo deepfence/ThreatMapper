@@ -280,7 +280,7 @@ func FormatForMessagingApps[T any](results []T, resourceType string) []map[strin
 		for k, v := range docFieldsMap {
 			d[v] = m[k]
 		}
-		data = append(data, m)
+		data = append(data, d)
 	}
 	return data
 }
