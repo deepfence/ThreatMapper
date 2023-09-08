@@ -7,13 +7,13 @@ apis/CommonApi.ts
 apis/ComplianceApi.ts
 apis/ControlsApi.ts
 apis/DiagnosisApi.ts
+apis/DiffAddApi.ts
 apis/IntegrationApi.ts
 apis/InternalApi.ts
 apis/LookupApi.ts
 apis/MalwareScanApi.ts
 apis/RegistryApi.ts
 apis/ReportsApi.ts
-apis/ScanCompareApi.ts
 apis/ScanResultsApi.ts
 apis/SearchApi.ts
 apis/SecretScanApi.ts
@@ -147,7 +147,11 @@ models/ModelResponseAccessToken.ts
 models/ModelSbomRequest.ts
 models/ModelSbomResponse.ts
 models/ModelScanCompareReq.ts
-models/ModelScanComparison.ts
+models/ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelCloudCompliance.ts
+models/ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelCompliance.ts
+models/ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelMalware.ts
+models/ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelSecret.ts
+models/ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelVulnerability.ts
 models/ModelScanFilter.ts
 models/ModelScanInfo.ts
 models/ModelScanListReq.ts

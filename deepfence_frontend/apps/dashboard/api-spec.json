@@ -1109,6 +1109,276 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/diff-add/cloud-compliance": {
+      "post": {
+        "tags": ["Diff Add"],
+        "summary": "Get Cloud Compliance Diff",
+        "description": "Get Cloud Compliance Diff between two scans",
+        "operationId": "diffAddCloudCompliance",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanCompareReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelCloudCompliance"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/diff-add/compliance": {
+      "post": {
+        "tags": ["Diff Add"],
+        "summary": "Get Compliance Diff",
+        "description": "Get Compliance Diff between two scans",
+        "operationId": "diffAddCompliance",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanCompareReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelCompliance"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/diff-add/malware": {
+      "post": {
+        "tags": ["Diff Add"],
+        "summary": "Get Malware Diff",
+        "description": "Get Malware Diff between two scans",
+        "operationId": "diffAddMalware",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanCompareReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelMalware"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/diff-add/secret": {
+      "post": {
+        "tags": ["Diff Add"],
+        "summary": "Get Secret Diff",
+        "description": "Get Secret Diff between two scans",
+        "operationId": "diffAddSecret",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanCompareReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelSecret"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/diff-add/vulnerability": {
+      "post": {
+        "tags": ["Diff Add"],
+        "summary": "Get Vulnerability Diff",
+        "description": "Get Vulnerability Diff between two scans",
+        "operationId": "diffAddVulnerability",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanCompareReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelVulnerability"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/end-user-license-agreement": {
       "get": {
         "tags": ["Common"],
@@ -4630,58 +4900,6 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/scan/results/compare": {
-      "post": {
-        "tags": ["Scan Compare"],
-        "summary": "Compare Scans",
-        "description": "Compare scans between scan ids for a given scan type",
-        "operationId": "compareScans",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelScanCompareReq" }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ModelScanComparison" }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
-              }
-            }
-          },
-          "401": { "description": "Unauthorized" },
-          "403": { "description": "Forbidden" },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          }
-        },
-        "security": [{ "bearer_token": [] }]
-      }
-    },
     "/deepfence/scan/results/compliance": {
       "post": {
         "tags": ["Compliance"],
@@ -6077,7 +6295,7 @@
           }
         },
         "responses": {
-          "200": { "description": "OK" },
+          "202": { "description": "Accepted" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -6122,7 +6340,7 @@
           }
         },
         "responses": {
-          "200": { "description": "OK" },
+          "202": { "description": "Accepted" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -11228,7 +11446,6 @@
           "docker_image_virtual_size",
           "docker_image_id",
           "docker_image_tag_list",
-          "metadata",
           "vulnerabilities_count",
           "vulnerability_scan_status",
           "vulnerability_latest_scan_id",
@@ -11523,6 +11740,7 @@
           "filters": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
           "id": { "type": "integer" },
           "integration_type": { "type": "string" },
+          "last_error_msg": { "type": "string" },
           "notification_type": { "type": "string" }
         }
       },
@@ -11979,32 +12197,69 @@
         }
       },
       "ModelScanCompareReq": {
-        "required": ["scan_ids", "scan_type", "fields_filter", "window"],
+        "required": ["base_scan_id", "to_scan_id", "fields_filter", "window"],
         "type": "object",
         "properties": {
+          "base_scan_id": { "type": "string" },
           "fields_filter": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
-          "scan_ids": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
-          "scan_type": {
-            "enum": [
-              "SecretScan",
-              "VulnerabilityScan",
-              "MalwareScan",
-              "ComplianceScan",
-              "CloudComplianceScan"
-            ],
-            "type": "string"
-          },
+          "to_scan_id": { "type": "string" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
-      "ModelScanComparison": {
-        "required": ["new", "updated", "deleted"],
+      "ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelCloudCompliance": {
+        "required": ["new"],
         "type": "object",
-        "properties": { "deleted": {}, "new": {}, "updated": {} }
+        "properties": {
+          "new": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelCloudCompliance" },
+            "nullable": true
+          }
+        }
+      },
+      "ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelCompliance": {
+        "required": ["new"],
+        "type": "object",
+        "properties": {
+          "new": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelCompliance" },
+            "nullable": true
+          }
+        }
+      },
+      "ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelMalware": {
+        "required": ["new"],
+        "type": "object",
+        "properties": {
+          "new": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelMalware" },
+            "nullable": true
+          }
+        }
+      },
+      "ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelSecret": {
+        "required": ["new"],
+        "type": "object",
+        "properties": {
+          "new": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelSecret" },
+            "nullable": true
+          }
+        }
+      },
+      "ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelVulnerability": {
+        "required": ["new"],
+        "type": "object",
+        "properties": {
+          "new": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelVulnerability" },
+            "nullable": true
+          }
+        }
       },
       "ModelScanFilter": {
         "required": [
@@ -12543,15 +12798,16 @@
         "properties": {
           "language": {
             "enum": [
-              "all",
               "base",
               "ruby",
               "python",
               "javascript",
               "php",
               "golang",
+              "golang-binary",
               "java",
               "rust",
+              "rust-binary",
               "dotnet"
             ],
             "type": "string"

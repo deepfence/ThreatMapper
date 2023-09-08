@@ -10,11 +10,11 @@ import {
   Configuration,
   ControlsApi,
   DiagnosisApi,
+  DiffAddApi,
   IntegrationApi,
   LookupApi,
   MalwareScanApi,
   RegistryApi,
-  ScanCompareApi,
   ScanResultsApi,
   SearchApi,
   SecretScanApi,
@@ -335,8 +335,8 @@ export function getCommonApiClient() {
 }
 
 export function getScanCompareApiClient() {
-  const scanCompareApi = new ScanCompareApi(configuration);
+  const scanCompareApi = new DiffAddApi(configuration);
   return {
-    compareScans: scanCompareApi.compareScans.bind(scanCompareApi),
+    diffVulnerability: scanCompareApi.diffAddVulnerability.bind(scanCompareApi),
   };
 }

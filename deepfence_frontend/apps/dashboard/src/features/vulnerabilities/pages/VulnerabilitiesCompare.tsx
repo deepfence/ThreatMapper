@@ -1,7 +1,11 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useMemo } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { Outlet, useParams, useSearchParams } from 'react-router-dom';
 import {
+  Breadcrumb,
+  BreadcrumbLink,
+  Card,
+  CircleSpinner,
   createColumnHelper,
   getRowSelectionColumn,
   SortingState,
@@ -10,32 +14,35 @@ import {
   TableSkeleton,
 } from 'ui-components';
 
-import { ModelScanCompareReqScanTypeEnum, ModelVulnerability } from '@/api/generated';
+import { ModelVulnerability } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { PopOutIcon } from '@/components/icons/common/PopOut';
+import { TaskIcon } from '@/components/icons/common/Task';
 import { CveCVSSScore, SeverityBadge } from '@/components/SeverityBadge';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
+import { formatMilliseconds } from '@/utils/date';
+import { abbreviateNumber } from '@/utils/number';
 import { getPageFromSearchParams, useSortingState } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 15;
 
 const useGetScanDiff = () => {
   const [searchParams] = useSearchParams();
-  const { firstScanId, secondScanId } = useParams() as {
-    firstScanId: string;
-    secondScanId: string;
+  const { nodeId, nodeType, firstScanTime, secondScanTime } = useParams() as {
+    firstScanTime: string;
+    secondScanTime: string;
+    nodeId: string;
+    nodeType: string;
   };
 
   return useSuspenseQuery({
     ...queries.vulnerability.scanDiff({
-      firstScanId,
-      secondScanId,
-      page: getPageFromSearchParams(searchParams),
-      pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
-      scanType: ModelScanCompareReqScanTypeEnum.VulnerabilityScan,
+      firstScanTime,
+      secondScanTime,
+      nodeId,
+      nodeType,
     }),
     keepPreviousData: true,
   });
@@ -55,30 +62,6 @@ const CompareTable = () => {
         size: 35,
         minSize: 35,
         maxSize: 35,
-      }),
-      columnHelper.display({
-        id: 'actions',
-        enableSorting: false,
-        cell: (cell) => (
-          <ActionDropdown
-            ids={[cell.row.original.node_id]}
-            setIdsToDelete={setIdsToDelete}
-            setShowDeleteDialog={setShowDeleteDialog}
-            onTableAction={onTableAction}
-            trigger={
-              <button className="p-1">
-                <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
-                  <EllipsisIcon />
-                </div>
-              </button>
-            }
-          />
-        ),
-        header: () => '',
-        size: 40,
-        minSize: 40,
-        maxSize: 40,
-        enableResizing: false,
       }),
       columnHelper.accessor('cve_id', {
         cell: (info) => (
@@ -164,15 +147,10 @@ const CompareTable = () => {
   return (
     <Table
       size="default"
-      data={data?.tableData}
+      data={data?.added}
       columns={columns}
       enablePagination
-      manualPagination
       enableColumnResizing
-      approximatePagination
-      totalRows={data?.totalRows}
-      pageSize={parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE))}
-      pageIndex={data?.currentPage}
       getRowId={(row) => row.node_id}
       enableSorting
       manualSorting
@@ -196,21 +174,6 @@ const CompareTable = () => {
         });
         setSort(newSortState);
       }}
-      onPaginationChange={(updaterOrValue) => {
-        let newPageIndex = 0;
-        if (typeof updaterOrValue === 'function') {
-          newPageIndex = updaterOrValue({
-            pageIndex: data?.currentPage ?? 0,
-            pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
-          }).pageIndex;
-        } else {
-          newPageIndex = updaterOrValue.pageIndex;
-        }
-        setSearchParams((prev) => {
-          prev.set('page', String(newPageIndex));
-          return prev;
-        });
-      }}
       getTrProps={(row) => {
         if (row.original.masked) {
           return {
@@ -232,11 +195,134 @@ const CompareTable = () => {
   );
 };
 
+const CompareCountWidget = () => {
+  const { data } = useGetScanDiff();
+
+  return (
+    <div className="grid grid-cols-12 px-6 items-center">
+      <div className="col-span-2 dark:text-text-text-and-icon">
+        <span className="text-p1">Total difference</span>
+        <div className="flex flex-1 max-w-[160px] gap-1 items-center dark:text-text-input-value">
+          <>
+            <TaskIcon />
+            <span className="text-h1 dark:text-text-input pl-1.5">
+              {abbreviateNumber(20)}
+            </span>
+          </>
+        </div>
+      </div>
+      <div className="w-px h-[60%] dark:bg-bg-grid-border" />
+      <div className="col-span-2 dark:text-text-text-and-icon">
+        <span className="text-p1">Total added vulnerabilities</span>
+        <div className="flex flex-1 max-w-[160px] gap-1 items-center dark:text-text-input-value">
+          <>
+            <div className="h-4 w-4 rounded-full bg-status-success"></div>
+            <span className="text-h1 dark:text-text-input pl-1.5">
+              {abbreviateNumber(10)}
+            </span>
+          </>
+        </div>
+      </div>
+      <div className="col-span-2 dark:text-text-text-and-icon">
+        <span className="text-p1">Total deleted vulnerabilities</span>
+        <div className="flex flex-1 max-w-[160px] gap-1 items-center dark:text-text-input-value">
+          <>
+            <div className="h-4 w-4 rounded-full bg-status-error"></div>
+            <span className="text-h1 dark:text-text-input pl-1.5">
+              {abbreviateNumber(10)}
+            </span>
+          </>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CountWidget = () => {
+  return (
+    <Card className="max-h-[130px] px-4 py-2.5 flex items-center">
+      <div className="flex-1 pl-4">
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center min-h-[120px]">
+              <CircleSpinner size="md" />
+            </div>
+          }
+        >
+          <CompareCountWidget />
+        </Suspense>
+      </div>
+    </Card>
+  );
+};
+
+const ScanComapareTime = () => {
+  const { firstScanTime, secondScanTime } = useParams() as {
+    firstScanTime: string;
+    secondScanTime: string;
+  };
+
+  return (
+    <div className="flex items-center h-12">
+      {/* <Suspense
+        fallback={
+          <div className="gap-x-1.5 flex items-center">
+            <CircleSpinner size="sm" />
+            <div className="dark:text-text-text-and-icon text-p7">
+              Fetching scan compare time...
+            </div>
+          </div>
+        }
+      >
+        <HistoryScan />
+      </Suspense> */}
+      <div className="dark:text-text-text-and-icon text-p4 flex gap-x-1">
+        Comparision between{' '}
+        <span className="dark:text-text-input-value text-p4">
+          {formatMilliseconds(firstScanTime)}
+        </span>{' '}
+        with{' '}
+        <span className="dark:text-text-input-value text-p4">
+          {formatMilliseconds(secondScanTime)}
+        </span>{' '}
+        scans
+      </div>
+    </div>
+  );
+};
+
+const Header = () => {
+  return (
+    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <>
+        <Breadcrumb>
+          <BreadcrumbLink asChild icon={<VulnerabilityIcon />} isLink>
+            <DFLink to={'/vulnerability'} unstyled>
+              Vulnerabilities
+            </DFLink>
+          </BreadcrumbLink>
+          <BreadcrumbLink isLast>
+            <span className="inherit cursor-auto">Compare</span>
+          </BreadcrumbLink>
+        </Breadcrumb>
+      </>
+    </div>
+  );
+};
+
 const VulnerabilitiesCompare = () => {
   return (
-    <Suspense fallback={<TableSkeleton columns={7} rows={DEFAULT_PAGE_SIZE} />}>
-      <CompareTable />
-    </Suspense>
+    <>
+      <Header />
+      <div className="mx-4">
+        <ScanComapareTime />
+        <CountWidget />
+        <Suspense fallback={<TableSkeleton columns={7} rows={DEFAULT_PAGE_SIZE} />}>
+          <CompareTable />
+        </Suspense>
+      </div>
+      <Outlet />
+    </>
   );
 };
 

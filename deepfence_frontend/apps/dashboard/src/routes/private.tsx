@@ -353,7 +353,7 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Runtime BOM' },
       },
       {
-        path: 'vulnerability/compare/:firstScanId/:secondScanId',
+        path: 'vulnerability/compare/:nodeId/:nodeType/:firstScanTime/:secondScanTime',
         ...vulnerabilitiesCompare,
         meta: { title: 'Compare vulnerabilities' },
       },

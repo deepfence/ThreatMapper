@@ -34,22 +34,22 @@ import {
 export interface ModelScanCompareReq {
     /**
      * 
+     * @type {string}
+     * @memberof ModelScanCompareReq
+     */
+    base_scan_id: string;
+    /**
+     * 
      * @type {ReportersFieldsFilters}
      * @memberof ModelScanCompareReq
      */
     fields_filter: ReportersFieldsFilters;
     /**
      * 
-     * @type {Array<string>}
-     * @memberof ModelScanCompareReq
-     */
-    scan_ids: Array<string> | null;
-    /**
-     * 
      * @type {string}
      * @memberof ModelScanCompareReq
      */
-    scan_type: ModelScanCompareReqScanTypeEnum;
+    to_scan_id: string;
     /**
      * 
      * @type {ModelFetchWindow}
@@ -58,28 +58,14 @@ export interface ModelScanCompareReq {
     window: ModelFetchWindow;
 }
 
-
-/**
- * @export
- */
-export const ModelScanCompareReqScanTypeEnum = {
-    SecretScan: 'SecretScan',
-    VulnerabilityScan: 'VulnerabilityScan',
-    MalwareScan: 'MalwareScan',
-    ComplianceScan: 'ComplianceScan',
-    CloudComplianceScan: 'CloudComplianceScan'
-} as const;
-export type ModelScanCompareReqScanTypeEnum = typeof ModelScanCompareReqScanTypeEnum[keyof typeof ModelScanCompareReqScanTypeEnum];
-
-
 /**
  * Check if a given object implements the ModelScanCompareReq interface.
  */
 export function instanceOfModelScanCompareReq(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "base_scan_id" in value;
     isInstance = isInstance && "fields_filter" in value;
-    isInstance = isInstance && "scan_ids" in value;
-    isInstance = isInstance && "scan_type" in value;
+    isInstance = isInstance && "to_scan_id" in value;
     isInstance = isInstance && "window" in value;
 
     return isInstance;
@@ -95,9 +81,9 @@ export function ModelScanCompareReqFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
+        'base_scan_id': json['base_scan_id'],
         'fields_filter': ReportersFieldsFiltersFromJSON(json['fields_filter']),
-        'scan_ids': json['scan_ids'],
-        'scan_type': json['scan_type'],
+        'to_scan_id': json['to_scan_id'],
         'window': ModelFetchWindowFromJSON(json['window']),
     };
 }
@@ -111,9 +97,9 @@ export function ModelScanCompareReqToJSON(value?: ModelScanCompareReq | null): a
     }
     return {
         
+        'base_scan_id': value.base_scan_id,
         'fields_filter': ReportersFieldsFiltersToJSON(value.fields_filter),
-        'scan_ids': value.scan_ids,
-        'scan_type': value.scan_type,
+        'to_scan_id': value.to_scan_id,
         'window': ModelFetchWindowToJSON(value.window),
     };
 }
