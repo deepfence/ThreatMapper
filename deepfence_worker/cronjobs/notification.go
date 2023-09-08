@@ -278,7 +278,10 @@ func FormatForMessagingApps[T any](results []T, resourceType string) []map[strin
 		m := utils.ToMap[T](r)
 		d := map[string]interface{}{}
 		for k, v := range docFieldsMap {
-			d[v] = m[k]
+			value, exists := m[k]
+			if exists {
+				d[v] = value
+			}
 		}
 		data = append(data, d)
 	}
