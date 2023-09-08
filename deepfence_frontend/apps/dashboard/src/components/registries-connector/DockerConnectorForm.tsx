@@ -22,9 +22,9 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
   return (
     <>
       <div className="text-p7 dark:text-text-input-value">
-        Connect to your Docker Registry by{' '}
+        Connect to your Docker Registry. Find out more information by{' '}
         <DFLink
-          href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage`}
+          href={`https://community.deepfence.io/threatmapper/docs/v2.0/registries/`}
           target="_blank"
           rel="noreferrer"
         >

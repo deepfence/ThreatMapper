@@ -4,8 +4,6 @@ title: Google Compute Platform
 
 # Configuring Cloud Scanner for Google Cloud Platform
 
-https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage
-
 Cloud Scanner is deployed as a task within your Google Cloud Platform instance.
 
 You need to configure Terraform with the appropriate resources and inputs for your particular scenario, and you will need to provide the IP address or DNS name for the ThreatMapper management console and an API key.
