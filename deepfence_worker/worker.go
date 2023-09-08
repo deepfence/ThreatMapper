@@ -349,24 +349,3 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	cancel()
 	return nil
 }
-
-// func LogErrorWrapper(wrapped func(*message.Message) error) func(*message.Message) error {
-// 	return func(msg *message.Message) error {
-// 		err := wrapped(msg)
-// 		if err != nil {
-// 			log.Error().Msgf("Cron job err: %v", err)
-// 		}
-// 		return nil
-// 	}
-// }
-
-// func LogErrorsWrapper(wrapped func(*message.Message) ([]*message.Message, error)) func(*message.Message) ([]*message.Message, error) {
-// 	return func(msg *message.Message) ([]*message.Message, error) {
-// 		msgs, err := wrapped(msg)
-// 		if err != nil {
-// 			log.Error().Msgf("Cron job err: %v", err)
-// 			return nil, nil
-// 		}
-// 		return msgs, nil
-// 	}
-// }

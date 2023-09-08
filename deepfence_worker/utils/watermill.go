@@ -29,10 +29,9 @@ func (p RecoveredPanicError) Error() string {
 // to any error returned from the handler.
 func Recoverer(h message.HandlerFunc) message.HandlerFunc {
 	return func(event *message.Message) (events []*message.Message, err error) {
-		panicked := true
 
 		defer func() {
-			if r := recover(); r != nil || panicked {
+			if r := recover(); r != nil {
 				err = errors.WithStack(RecoveredPanicError{V: r, Stacktrace: string(debug.Stack())})
 				// ack message as we don't want to execute panic message again
 				event.Ack()
@@ -40,7 +39,6 @@ func Recoverer(h message.HandlerFunc) message.HandlerFunc {
 		}()
 
 		events, err = h(event)
-		panicked = false
 		return events, err
 	}
 }
