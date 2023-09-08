@@ -94,7 +94,9 @@ export const ScanHistoryDropdown = ({
                         }}
                       />
                     ) : null}
-                    {isScanComplete(scan.status) && scan.showScanDiff ? (
+                    {isScanComplete(scan.status) &&
+                    scan.showScanDiff &&
+                    scans.length > 1 ? (
                       <IconButton
                         variant="flat"
                         icon={

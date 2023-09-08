@@ -247,7 +247,7 @@ const tabs = [
     value: 'new-vulnerabilities',
   },
   {
-    label: 'Deleted vulnerabilities',
+    label: 'Fixed vulnerabilities',
     value: 'deleted-vulnerabilities',
   },
 ];
@@ -311,7 +311,7 @@ export const VulnerabilitiesCompare = ({
               {tab === 'deleted-vulnerabilities' && (
                 <>
                   <CountWidget
-                    title="Total deleted vulnerabilities"
+                    title="Total fixed vulnerabilities"
                     type="deleted"
                     baseScanId={compareInput.baseScanId}
                     toScanId={compareInput.toScanId}
