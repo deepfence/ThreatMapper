@@ -188,11 +188,6 @@ func CachePostureProviders(msg *message.Message) error {
 	}
 	defer tx.Close()
 
-	rdb, err := directory.RedisClient(ctx)
-	if err != nil {
-		return err
-	}
-
 	var postureProviders []model.PostureProvider
 	for _, postureProviderName := range model.SupportedPostureProviders {
 		postureProvider := model.PostureProvider{
@@ -325,7 +320,12 @@ func CachePostureProviders(msg *message.Message) error {
 	if err != nil {
 		return err
 	}
-	err = rdb.Set(ctx, constants.RedisKeyPostureProviders, string(postureProvidersJson), time.Hour*2).Err()
+
+	rdb, err := directory.RedisClient(ctx)
+	if err != nil {
+		return err
+	}
+	err = rdb.Set(ctx, constants.RedisKeyPostureProviders, string(postureProvidersJson), 0).Err()
 	if err != nil {
 		return err
 	}
