@@ -129,7 +129,7 @@ const action = async ({
 
   if (actionType === ActionEnumType.DELETE) {
     if (!scanId) {
-      throw new Error('Invalid action');
+      throw new Error('Scan id is required for deletion');
     }
     const deleteScanResultsForScanIDApi = apiWrapper({
       fn: getScanResultsApiClient().deleteScanResultsForScanID,
@@ -159,6 +159,9 @@ const action = async ({
   };
 };
 
+const isOrganizationAccount = (searchParams: URLSearchParams) =>
+  searchParams.get('showOrganizationAccounts')?.toLowerCase() === 'yes';
+
 const usePostureAccounts = () => {
   const [searchParams] = useSearchParams();
   const params = useParams();
@@ -172,7 +175,7 @@ const usePostureAccounts = () => {
       complianceScanStatus: searchParams.get('complianceScanStatus') as
         | ComplianceScanGroupedStatus
         | undefined,
-      nodeType,
+      nodeType: isOrganizationAccount(searchParams) ? `${nodeType}_org` : nodeType,
     }),
     keepPreviousData: true,
   });
@@ -181,6 +184,7 @@ const usePostureAccounts = () => {
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   complianceScanStatus: 'Posture scan status',
   status: 'Status',
+  showOrganizationAccounts: 'Show organization accounts',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -188,12 +192,13 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
     return prev + searchParams.getAll(curr).length;
   }, 0);
 };
-const Filters = () => {
+const Filters = ({ nodeType }: { nodeType: string }) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [status, setStatus] = useState('');
   const [complianceScanStatusSearchText, setComplianceScanStatusSearchText] =
     useState('');
+  const [organizationAccountSearchText, setOrganizationAccountSearchText] = useState('');
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
   return (
     <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
@@ -271,6 +276,44 @@ const Filters = () => {
             );
           })}
         </Combobox>
+        {!isNonCloudProvider(nodeType) && (
+          <Combobox
+            value={['Yes', 'No'].find((item) => {
+              return item === searchParams.get('showOrganizationAccounts');
+            })}
+            nullable
+            onQueryChange={(query) => {
+              setOrganizationAccountSearchText(query);
+            }}
+            onChange={(value) => {
+              setSearchParams((prev) => {
+                if (value) {
+                  prev.set('showOrganizationAccounts', value);
+                } else {
+                  prev.delete('showOrganizationAccounts');
+                }
+                prev.delete('page');
+                return prev;
+              });
+            }}
+            getDisplayValue={() => FILTER_SEARCHPARAMS['showOrganizationAccounts']}
+          >
+            {['Yes', 'No']
+              .filter((item) => {
+                if (!organizationAccountSearchText.length) return true;
+                return item
+                  .toLowerCase()
+                  .includes(organizationAccountSearchText.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxOption key={item} value={item}>
+                    {item}
+                  </ComboboxOption>
+                );
+              })}
+          </Combobox>
+        )}
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -810,9 +853,13 @@ const Accounts = () => {
     nodeType: string;
   };
 
-  const nodeType = getNodeTypeByProviderName(
-    routeParams.nodeType as ComplianceScanNodeTypeEnum,
-  );
+  const _nodeType = useMemo(() => {
+    return isOrganizationAccount(searchParams)
+      ? `${routeParams.nodeType}_org`
+      : routeParams.nodeType;
+  }, [searchParams]);
+
+  const nodeType = getNodeTypeByProviderName(_nodeType as ComplianceScanNodeTypeEnum);
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [scanIdToDelete, setScanIdToDelete] = useState('');
@@ -843,6 +890,11 @@ const Accounts = () => {
     },
     [fetcher],
   );
+
+  if (!nodeType) {
+    console.warn('Node type is required for compliance scan');
+    throw new Error();
+  }
 
   return (
     <div>
@@ -877,7 +929,7 @@ const Accounts = () => {
             Filter
           </Button>
         </div>
-        {filtersExpanded ? <Filters /> : null}
+        {filtersExpanded ? <Filters nodeType={_nodeType} /> : null}
         <ConfigureScanModal
           open={!!selectedScanType}
           onOpenChange={() => setSelectedScanType(undefined)}

@@ -24,6 +24,9 @@ export const providersToNameMapping: { [key: string]: string } = {
 export const isNonCloudProvider = (provider: string) => {
   return provider === 'linux' || provider === 'kubernetes';
 };
+const isLinuxProvider = (provider: string) => provider === 'linux';
+const isKubernetesProvider = (provider: string) => provider === 'kubernetes';
+
 const HeaderSkeleton = () => {
   return (
     <div className="flex items-center w-full relative">
@@ -150,12 +153,30 @@ const CardCountSection = ({ provider }: { provider: ModelPostureProvider }) => {
   return (
     <div className="ml-[42px]">
       <div className="flex gap-x-6">
-        <span className={textStyle}>Active accounts</span>
+        <span className={textStyle}>
+          {!isNonCloudProvider(provider.name ?? '') ? (
+            'Active Accounts'
+          ) : (
+            <>
+              {isLinuxProvider(provider.name ?? '') && 'Scanned hosts'}
+              {isKubernetesProvider(provider.name ?? '') && 'Scanned clusters'}
+            </>
+          )}
+        </span>
         <span className={countStyle}>{abbreviateNumber(provider.node_count ?? 0)}</span>
       </div>
 
       <div className="flex gap-x-6">
-        <span className={textStyle}>Inactive accounts</span>
+        <span className={textStyle}>
+          {!isNonCloudProvider(provider.name ?? '') ? (
+            'Inactive Accounts'
+          ) : (
+            <>
+              {isLinuxProvider(provider.name ?? '') && 'Not scanned hosts'}
+              {isKubernetesProvider(provider.name ?? '') && 'Not scanned clusters'}
+            </>
+          )}
+        </span>
         <span className={countStyle}>
           {abbreviateNumber(provider.node_count_inactive ?? 0)}
         </span>
