@@ -20,6 +20,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/reports"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/sbom"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/secretscan"
+	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -258,24 +259,24 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
 	mux.AddPlugin(plugin.SignalsHandler)
 
-	// Retried disabled in favor of neo4j scheduling
-	//retryMiddleware := middleware.Retry{
-	//	MaxRetries:          3,
-	//	InitialInterval:     time.Second * 10,
-	//	MaxInterval:         time.Second * 120,
-	//	Multiplier:          1.5,
-	//	MaxElapsedTime:      0,
-	//	RandomizationFactor: 0.5,
-	//	OnRetryHook: func(retryNum int, delay time.Duration) {
-	//		log.Info().Msgf("retry=%d delay=%s", retryNum, delay)
-	//	},
-	//	Logger: wml,
-	//}
+	retry := workerUtils.Retry{
+		MaxRetries:          3,
+		InitialInterval:     time.Second * 5,
+		MaxInterval:         time.Second * 60,
+		Multiplier:          1.5,
+		MaxElapsedTime:      0,
+		RandomizationFactor: 0.25,
+		OnRetryHook: func(retryNum int, delay time.Duration) {
+			log.Info().Msgf("retry=%d delay=%s", retryNum, delay)
+		},
+		Logger: wml,
+	}
 
 	mux.AddMiddleware(
 		middleware.CorrelationID,
-		middleware.NewThrottle(10, time.Second).Middleware,
-		middleware.Recoverer,
+		middleware.NewThrottle(20, time.Second).Middleware,
+		retry.Middleware,
+		workerUtils.Recoverer,
 	)
 
 	HandlerMap = make(map[string]*NoPublisherTask)
@@ -285,58 +286,58 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	worker := NewWorker(wml, cfg, mux)
 
 	// sbom
-	worker.AddNoPublisherHandler(utils.ScanSBOMTask, LogErrorWrapper(sbom.NewSBOMScanner(ingestC).ScanSBOM), false)
+	worker.AddNoPublisherHandler(utils.ScanSBOMTask, sbom.NewSBOMScanner(ingestC).ScanSBOM, false)
 
-	worker.AddHandler(utils.GenerateSBOMTask, LogErrorsWrapper(sbom.NewSbomGenerator(ingestC).GenerateSbom),
+	worker.AddHandler(utils.GenerateSBOMTask, sbom.NewSbomGenerator(ingestC).GenerateSbom,
 		utils.ScanSBOMTask, publisher)
 
-	worker.AddNoPublisherHandler(utils.SetUpGraphDBTask, LogErrorWrapper(cronjobs.ApplyGraphDBStartup), false)
+	worker.AddNoPublisherHandler(utils.SetUpGraphDBTask, cronjobs.ApplyGraphDBStartup, false)
 
-	worker.AddNoPublisherHandler(utils.CleanUpGraphDBTask, LogErrorWrapper(cronjobs.CleanUpDB), true)
+	worker.AddNoPublisherHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB, true)
 
-	worker.AddNoPublisherHandler(utils.ComputeThreatTask, LogErrorWrapper(cronjobs.ComputeThreat), true)
+	worker.AddNoPublisherHandler(utils.ComputeThreatTask, cronjobs.ComputeThreat, true)
 
-	worker.AddNoPublisherHandler(utils.RetryFailedScansTask, LogErrorWrapper(cronjobs.RetryScansDB), true)
+	worker.AddNoPublisherHandler(utils.RetryFailedScansTask, cronjobs.RetryScansDB, true)
 
-	worker.AddNoPublisherHandler(utils.RetryFailedUpgradesTask, LogErrorWrapper(cronjobs.RetryUpgradeAgent), false)
+	worker.AddNoPublisherHandler(utils.RetryFailedUpgradesTask, cronjobs.RetryUpgradeAgent, false)
 
-	worker.AddNoPublisherHandler(utils.CleanUpPostgresqlTask, LogErrorWrapper(cronjobs.CleanUpPostgresDB), true)
+	worker.AddNoPublisherHandler(utils.CleanUpPostgresqlTask, cronjobs.CleanUpPostgresDB, true)
 
-	worker.AddNoPublisherHandler(utils.CleanupDiagnosisLogs, LogErrorWrapper(cronjobs.CleanUpDiagnosisLogs), false)
+	worker.AddNoPublisherHandler(utils.CleanupDiagnosisLogs, cronjobs.CleanUpDiagnosisLogs, false)
 
-	worker.AddNoPublisherHandler(utils.CheckAgentUpgradeTask, LogErrorWrapper(cronjobs.CheckAgentUpgrade), true)
+	worker.AddNoPublisherHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade, true)
 
-	worker.AddNoPublisherHandler(utils.TriggerConsoleActionsTask, LogErrorWrapper(cronjobs.TriggerConsoleControls), true)
+	worker.AddNoPublisherHandler(utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls, true)
 
-	worker.AddNoPublisherHandler(utils.ScheduledTasks, LogErrorWrapper(cronjobs.RunScheduledTasks), false)
+	worker.AddNoPublisherHandler(utils.ScheduledTasks, cronjobs.RunScheduledTasks, false)
 
-	worker.AddNoPublisherHandler(utils.SyncRegistryTask, LogErrorWrapper(cronjobs.SyncRegistry), false)
+	worker.AddNoPublisherHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry, false)
 
 	worker.AddNoPublisherHandler(utils.SecretScanTask,
-		LogErrorWrapper(secretscan.NewSecretScanner(ingestC).StartSecretScan), false)
+		secretscan.NewSecretScanner(ingestC).StartSecretScan, false)
 
 	worker.AddNoPublisherHandler(utils.StopSecretScanTask,
-		LogErrorWrapper(secretscan.NewSecretScanner(ingestC).StopSecretScan), false)
+		secretscan.NewSecretScanner(ingestC).StopSecretScan, false)
 
 	worker.AddNoPublisherHandler(utils.MalwareScanTask,
-		LogErrorWrapper(malwarescan.NewMalwareScanner(ingestC).StartMalwareScan), false)
+		malwarescan.NewMalwareScanner(ingestC).StartMalwareScan, false)
 
 	worker.AddNoPublisherHandler(utils.StopMalwareScanTask,
-		LogErrorWrapper(malwarescan.NewMalwareScanner(ingestC).StopMalwareScan), false)
+		malwarescan.NewMalwareScanner(ingestC).StopMalwareScan, false)
 
-	worker.AddNoPublisherHandler(utils.CloudComplianceTask, LogErrorWrapper(cronjobs.AddCloudControls), true)
+	worker.AddNoPublisherHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls, true)
 
-	worker.AddNoPublisherHandler(utils.CachePostureProviders, LogErrorWrapper(cronjobs.CachePostureProviders), true)
+	worker.AddNoPublisherHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders, true)
 
-	worker.AddNoPublisherHandler(utils.SendNotificationTask, LogErrorWrapper(cronjobs.SendNotifications), true)
+	worker.AddNoPublisherHandler(utils.SendNotificationTask, cronjobs.SendNotifications, true)
 
-	worker.AddNoPublisherHandler(utils.ReportGeneratorTask, LogErrorWrapper(reports.GenerateReport), false)
+	worker.AddNoPublisherHandler(utils.ReportGeneratorTask, reports.GenerateReport, false)
 
-	worker.AddNoPublisherHandler(utils.ReportCleanUpTask, LogErrorWrapper(cronjobs.CleanUpReports), true)
+	worker.AddNoPublisherHandler(utils.ReportCleanUpTask, cronjobs.CleanUpReports, true)
 
-	worker.AddNoPublisherHandler(utils.LinkCloudResourceTask, LogErrorWrapper(cronjobs.LinkCloudResources), true)
+	worker.AddNoPublisherHandler(utils.LinkCloudResourceTask, cronjobs.LinkCloudResources, true)
 
-	worker.AddNoPublisherHandler(utils.LinkNodesTask, LogErrorWrapper(cronjobs.LinkNodes), true)
+	worker.AddNoPublisherHandler(utils.LinkNodesTask, cronjobs.LinkNodes, true)
 
 	go worker.pollHandlers()
 
@@ -349,23 +350,23 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	return nil
 }
 
-func LogErrorWrapper(wrapped func(*message.Message) error) func(*message.Message) error {
-	return func(msg *message.Message) error {
-		err := wrapped(msg)
-		if err != nil {
-			log.Error().Msgf("Cron job err: %v", err)
-		}
-		return nil
-	}
-}
+// func LogErrorWrapper(wrapped func(*message.Message) error) func(*message.Message) error {
+// 	return func(msg *message.Message) error {
+// 		err := wrapped(msg)
+// 		if err != nil {
+// 			log.Error().Msgf("Cron job err: %v", err)
+// 		}
+// 		return nil
+// 	}
+// }
 
-func LogErrorsWrapper(wrapped func(*message.Message) ([]*message.Message, error)) func(*message.Message) ([]*message.Message, error) {
-	return func(msg *message.Message) ([]*message.Message, error) {
-		msgs, err := wrapped(msg)
-		if err != nil {
-			log.Error().Msgf("Cron job err: %v", err)
-			return nil, nil
-		}
-		return msgs, nil
-	}
-}
+// func LogErrorsWrapper(wrapped func(*message.Message) ([]*message.Message, error)) func(*message.Message) ([]*message.Message, error) {
+// 	return func(msg *message.Message) ([]*message.Message, error) {
+// 		msgs, err := wrapped(msg)
+// 		if err != nil {
+// 			log.Error().Msgf("Cron job err: %v", err)
+// 			return nil, nil
+// 		}
+// 		return msgs, nil
+// 	}
+// }
