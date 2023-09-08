@@ -7,6 +7,7 @@ import { CaretDown } from '@/components/icons/common/CaretDown';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
+import { formatMilliseconds } from '@/utils/date';
 import { isScanComplete, isScanFailed } from '@/utils/scan';
 
 export const ScanHistoryDropdown = ({
@@ -15,14 +16,14 @@ export const ScanHistoryDropdown = ({
 }: {
   scans: Array<{
     id: string;
-    timestamp: string;
+    timestamp: number;
     status: string;
     isCurrent: boolean;
     showScanDiff?: boolean;
     onDeleteClick: (id: string) => void;
     onDownloadClick: (id: string) => void;
     onScanClick: (id: string) => void;
-    onScanCompareButtonClick?: (id: string) => void;
+    onScanTimeCompareButtonClick?: (toScanTime: number) => void;
   }>;
   currentTimeStamp: string;
 }) => {
@@ -57,7 +58,7 @@ export const ScanHistoryDropdown = ({
                       'dark:text-text-input-value': scan.isCurrent,
                     })}
                   >
-                    {scan.timestamp}
+                    {formatMilliseconds(scan.timestamp)}
                   </span>
 
                   <div className="flex items-center dark:text-text-link">
@@ -102,8 +103,10 @@ export const ScanHistoryDropdown = ({
                           </span>
                         }
                         type="button"
-                        onClick={() => {
-                          scan?.onScanCompareButtonClick?.(scan.id);
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          scan?.onScanTimeCompareButtonClick?.(scan.timestamp);
                           setOpen(false);
                         }}
                       />

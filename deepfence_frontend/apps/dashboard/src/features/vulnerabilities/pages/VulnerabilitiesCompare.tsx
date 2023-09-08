@@ -1,67 +1,65 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useMemo } from 'react';
-import { Outlet, useParams, useSearchParams } from 'react-router-dom';
+import { Suspense, useMemo, useState } from 'react';
+import { Outlet, useSearchParams } from 'react-router-dom';
+import { cn } from 'tailwind-preset';
 import {
-  Breadcrumb,
-  BreadcrumbLink,
   Card,
   CircleSpinner,
   createColumnHelper,
-  getRowSelectionColumn,
-  SortingState,
+  SlidingModal,
+  SlidingModalCloseButton,
+  SlidingModalContent,
+  SlidingModalHeader,
   Table,
   TableNoDataElement,
   TableSkeleton,
+  Tabs,
 } from 'ui-components';
 
 import { ModelVulnerability } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { PopOutIcon } from '@/components/icons/common/PopOut';
-import { TaskIcon } from '@/components/icons/common/Task';
 import { CveCVSSScore, SeverityBadge } from '@/components/SeverityBadge';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
-import { useSortingState } from '@/utils/table';
 
-const DEFAULT_PAGE_SIZE = 15;
+const DEFAULT_PAGE_SIZE = 10;
 
-const useGetScanDiff = () => {
-  const { nodeId, nodeType, firstScanTime, secondScanTime } = useParams() as {
-    firstScanTime: string;
-    secondScanTime: string;
-    nodeId: string;
-    nodeType: string;
-  };
+interface IScanCompareProps {
+  baseScanId: string;
+  toScanId: string;
+  baseScanTime: number;
+  toScanTime: number;
+}
+const useGetScanDiff = (props: { baseScanId: string; toScanId: string }) => {
+  const { baseScanId, toScanId } = props;
 
   return useSuspenseQuery({
     ...queries.vulnerability.scanDiff({
-      firstScanTime,
-      secondScanTime,
-      nodeId,
-      nodeType,
+      baseScanId,
+      toScanId,
     }),
-    keepPreviousData: true,
   });
 };
 
-const CompareTable = () => {
-  const { data } = useGetScanDiff();
+const CompareTable = (props: IScanCompareProps & { type: string }) => {
+  const { data } = useGetScanDiff({
+    baseScanId: props.baseScanId,
+    toScanId: props.toScanId,
+  });
+
+  const tableData = props.type === 'new' ? data.added : data.deleted;
 
   const [searchParams, setSearchParams] = useSearchParams();
 
   const columnHelper = createColumnHelper<ModelVulnerability>();
-  const [sort, setSort] = useSortingState();
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const columns = useMemo(() => {
     const columns = [
-      getRowSelectionColumn(columnHelper, {
-        size: 35,
-        minSize: 35,
-        maxSize: 35,
-      }),
       columnHelper.accessor('cve_id', {
         cell: (info) => (
           <DFLink
@@ -78,16 +76,16 @@ const CompareTable = () => {
           </DFLink>
         ),
         header: () => 'CVE ID',
-        minSize: 160,
-        size: 160,
-        maxSize: 160,
+        minSize: 120,
+        size: 130,
+        maxSize: 140,
       }),
       columnHelper.accessor('cve_caused_by_package', {
         cell: (info) => info.getValue(),
         header: () => 'Package',
-        minSize: 160,
-        size: 160,
-        maxSize: 160,
+        minSize: 120,
+        size: 130,
+        maxSize: 140,
       }),
       columnHelper.accessor('cve_cvss_score', {
         cell: (info) => (
@@ -110,16 +108,6 @@ const CompareTable = () => {
         minSize: 70,
         size: 80,
         maxSize: 90,
-      }),
-      columnHelper.accessor('cve_description', {
-        enableSorting: false,
-        cell: (info) => {
-          return <TruncatedText text={info.getValue() || 'No description available'} />;
-        },
-        header: () => 'Description',
-        minSize: 220,
-        size: 220,
-        maxSize: 230,
       }),
       columnHelper.accessor('cve_link', {
         enableSorting: false,
@@ -147,33 +135,11 @@ const CompareTable = () => {
     <div className="mt-4">
       <Table
         size="default"
-        data={data?.added}
+        data={tableData}
         columns={columns}
         enablePagination
         enableColumnResizing
-        getRowId={(row) => row.node_id}
         enableSorting
-        manualSorting
-        sortingState={sort}
-        onSortingChange={(updaterOrValue) => {
-          let newSortState: SortingState = [];
-          if (typeof updaterOrValue === 'function') {
-            newSortState = updaterOrValue(sort);
-          } else {
-            newSortState = updaterOrValue;
-          }
-          setSearchParams((prev) => {
-            if (!newSortState.length) {
-              prev.delete('sortby');
-              prev.delete('desc');
-            } else {
-              prev.set('sortby', String(newSortState[0].id));
-              prev.set('desc', String(newSortState[0].desc));
-            }
-            return prev;
-          });
-          setSort(newSortState);
-        }}
         getTrProps={(row) => {
           if (row.original.masked) {
             return {
@@ -183,12 +149,9 @@ const CompareTable = () => {
           return {};
         }}
         enablePageResize
+        pageSize={pageSize}
         onPageResize={(newSize) => {
-          setSearchParams((prev) => {
-            prev.set('size', String(newSize));
-            prev.delete('page');
-            return prev;
-          });
+          setPageSize(newSize);
         }}
         noDataElement={<TableNoDataElement text="No data available" />}
       />
@@ -196,41 +159,40 @@ const CompareTable = () => {
   );
 };
 
-const CompareCountWidget = () => {
-  const { data } = useGetScanDiff();
+const CompareCountWidget = ({
+  title,
+  type,
+  baseScanId,
+  toScanId,
+}: {
+  title: string;
+  type: string;
+  baseScanId: string;
+  toScanId: string;
+}) => {
+  const { data } = useGetScanDiff({
+    baseScanId,
+    toScanId,
+  });
+
+  const isDeleted = type === 'deleted';
+
+  const counts = !isDeleted ? data.added : data.deleted;
 
   return (
-    <div className="grid grid-cols-12 px-6 items-center">
-      <div className="col-span-2 dark:text-text-text-and-icon">
-        <span className="text-p1">Total difference</span>
-        <div className="flex flex-1 max-w-[160px] gap-1 items-center dark:text-text-input-value">
+    <div className="flex flex-col  dark:text-text-text-and-icon items-center">
+      <div className="flex flex-col gap-y-1.5">
+        <span className="text-p1">{title}</span>
+        <div className="flex flex-1 max-w-[160px] dark:text-text-input-value items-baseline">
           <>
-            <TaskIcon />
+            <div
+              className={cn('h-4 w-4 rounded-full', {
+                'bg-status-error': isDeleted,
+                'bg-status-success': !isDeleted,
+              })}
+            ></div>
             <span className="text-h1 dark:text-text-input pl-1.5">
-              {abbreviateNumber(20)}
-            </span>
-          </>
-        </div>
-      </div>
-      <div className="w-px h-[60%] dark:bg-bg-grid-border" />
-      <div className="col-span-2 dark:text-text-text-and-icon">
-        <span className="text-p1">Total added vulnerabilities</span>
-        <div className="flex flex-1 max-w-[160px] gap-1 items-center dark:text-text-input-value">
-          <>
-            <div className="h-4 w-4 rounded-full bg-status-success"></div>
-            <span className="text-h1 dark:text-text-input pl-1.5">
-              {abbreviateNumber(10)}
-            </span>
-          </>
-        </div>
-      </div>
-      <div className="col-span-2 dark:text-text-text-and-icon">
-        <span className="text-p1">Total deleted vulnerabilities</span>
-        <div className="flex flex-1 max-w-[160px] gap-1 items-center dark:text-text-input-value">
-          <>
-            <div className="h-4 w-4 rounded-full bg-status-error"></div>
-            <span className="text-h1 dark:text-text-input pl-1.5">
-              {abbreviateNumber(10)}
+              {abbreviateNumber(counts.length)}
             </span>
           </>
         </div>
@@ -239,9 +201,14 @@ const CompareCountWidget = () => {
   );
 };
 
-const CountWidget = () => {
+const CountWidget = (props: {
+  title: string;
+  type: string;
+  baseScanId: string;
+  toScanId: string;
+}) => {
   return (
-    <Card className="max-h-[130px] px-4 py-2.5 flex items-center">
+    <Card className="mt-4 max-h-[130px] px-4 py-2.5 flex items-center">
       <div className="flex-1 pl-4">
         <Suspense
           fallback={
@@ -250,71 +217,117 @@ const CountWidget = () => {
             </div>
           }
         >
-          <CompareCountWidget />
+          <CompareCountWidget {...props} />
         </Suspense>
       </div>
     </Card>
   );
 };
 
-const ScanComapareTime = () => {
-  const { firstScanTime, secondScanTime } = useParams() as {
-    firstScanTime: string;
-    secondScanTime: string;
-  };
-
+const ScanComapareTime = ({ baseScanTime, toScanTime }: IScanCompareProps) => {
   return (
-    <div className="flex items-center h-12">
+    <div className="px-1.5 flex items-center h-12">
       <div className="dark:text-text-text-and-icon text-p4 flex gap-x-1">
         Comparision between{' '}
         <span className="dark:text-text-input-value text-p4">
-          {formatMilliseconds(firstScanTime)}
+          {formatMilliseconds(baseScanTime)}
         </span>{' '}
         with{' '}
         <span className="dark:text-text-input-value text-p4">
-          {formatMilliseconds(secondScanTime)}
+          {formatMilliseconds(toScanTime)}
         </span>{' '}
         scans
       </div>
     </div>
   );
 };
-
-const Header = () => {
-  return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
-      <>
-        <Breadcrumb>
-          <BreadcrumbLink asChild icon={<VulnerabilityIcon />} isLink>
-            <DFLink to={'/vulnerability'} unstyled>
-              Vulnerabilities
-            </DFLink>
-          </BreadcrumbLink>
-          <BreadcrumbLink isLast>
-            <span className="inherit cursor-auto">Compare</span>
-          </BreadcrumbLink>
-        </Breadcrumb>
-      </>
-    </div>
+const tabs = [
+  {
+    label: 'New vulnerabilities ',
+    value: 'new-vulnerabilities',
+  },
+  {
+    label: 'Deleted vulnerabilities',
+    value: 'deleted-vulnerabilities',
+  },
+];
+export const VulnerabilitiesCompare = ({
+  open,
+  onOpenChange,
+  compareInput,
+}: {
+  open: boolean;
+  onOpenChange: (state: boolean) => void;
+  compareInput: IScanCompareProps;
+}) => {
+  const [tab, setTab] = useState<'new-vulnerabilities' | 'deleted-vulnerabilities'>(
+    'new-vulnerabilities',
   );
-};
-
-const VulnerabilitiesCompare = () => {
   return (
     <>
-      <Header />
-      <div className="mx-4">
-        <ScanComapareTime />
-        <CountWidget />
-        <Suspense fallback={<TableSkeleton columns={7} rows={DEFAULT_PAGE_SIZE} />}>
-          <CompareTable />
-        </Suspense>
-      </div>
-      <Outlet />
+      <SlidingModal
+        open={open}
+        onOpenChange={(state) => {
+          if (onOpenChange) {
+            onOpenChange(state);
+          }
+        }}
+        size="l"
+      >
+        <SlidingModalCloseButton />
+        <SlidingModalHeader>
+          <div className="p-4 text-h3 dark:text-text-text-and-icon dark:bg-bg-breadcrumb-bar ">
+            <div className="overflow-hidden">
+              <TruncatedText text="Vulnerabilities comparision" />
+            </div>
+          </div>
+        </SlidingModalHeader>
+        <SlidingModalContent>
+          <div className="mx-4">
+            <ScanComapareTime {...compareInput} />
+            <Tabs
+              value={tab}
+              defaultValue={tab}
+              tabs={tabs}
+              onValueChange={(v) => {
+                setTab(v as any);
+              }}
+            >
+              {tab === 'new-vulnerabilities' && (
+                <>
+                  <CountWidget
+                    title="Total new vulnerabilities"
+                    type="new"
+                    baseScanId={compareInput.baseScanId}
+                    toScanId={compareInput.toScanId}
+                  />
+                  <Suspense
+                    fallback={<TableSkeleton columns={7} rows={DEFAULT_PAGE_SIZE} />}
+                  >
+                    <CompareTable {...compareInput} type="new" />
+                  </Suspense>
+                </>
+              )}
+              {tab === 'deleted-vulnerabilities' && (
+                <>
+                  <CountWidget
+                    title="Total deleted vulnerabilities"
+                    type="deleted"
+                    baseScanId={compareInput.baseScanId}
+                    toScanId={compareInput.toScanId}
+                  />
+                  <Suspense
+                    fallback={<TableSkeleton columns={7} rows={DEFAULT_PAGE_SIZE} />}
+                  >
+                    <CompareTable {...compareInput} type="deleted" />
+                  </Suspense>
+                </>
+              )}
+            </Tabs>
+          </div>
+          <Outlet />
+        </SlidingModalContent>
+      </SlidingModal>
     </>
   );
-};
-
-export const module = {
-  element: <VulnerabilitiesCompare />,
 };
