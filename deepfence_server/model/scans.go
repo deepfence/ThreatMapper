@@ -41,6 +41,13 @@ type ScanCompareReq struct {
 type ScanCompareRes[T any] struct {
 	New []T `json:"new" required:"true"`
 }
+
+type ScanCompareResVulnerability = ScanCompareRes[Vulnerability]
+type ScanCompareResSecret = ScanCompareRes[Secret]
+type ScanCompareResMalware = ScanCompareRes[Malware]
+type ScanCompareResCompliance = ScanCompareRes[Compliance]
+type ScanCompareResCloudCompliance = ScanCompareRes[CloudCompliance]
+
 type ScanFilter struct {
 	ImageScanFilter             reporters.ContainsFilter `json:"image_scan_filter" required:"true"`
 	ContainerScanFilter         reporters.ContainsFilter `json:"container_scan_filter" required:"true"`
