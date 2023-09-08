@@ -24,12 +24,11 @@ import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
-import { getPageFromSearchParams, useSortingState } from '@/utils/table';
+import { useSortingState } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 15;
 
 const useGetScanDiff = () => {
-  const [searchParams] = useSearchParams();
   const { nodeId, nodeType, firstScanTime, secondScanTime } = useParams() as {
     firstScanTime: string;
     secondScanTime: string;
@@ -145,53 +144,55 @@ const CompareTable = () => {
     return columns;
   }, [setSearchParams]);
   return (
-    <Table
-      size="default"
-      data={data?.added}
-      columns={columns}
-      enablePagination
-      enableColumnResizing
-      getRowId={(row) => row.node_id}
-      enableSorting
-      manualSorting
-      sortingState={sort}
-      onSortingChange={(updaterOrValue) => {
-        let newSortState: SortingState = [];
-        if (typeof updaterOrValue === 'function') {
-          newSortState = updaterOrValue(sort);
-        } else {
-          newSortState = updaterOrValue;
-        }
-        setSearchParams((prev) => {
-          if (!newSortState.length) {
-            prev.delete('sortby');
-            prev.delete('desc');
+    <div className="mt-4">
+      <Table
+        size="default"
+        data={data?.added}
+        columns={columns}
+        enablePagination
+        enableColumnResizing
+        getRowId={(row) => row.node_id}
+        enableSorting
+        manualSorting
+        sortingState={sort}
+        onSortingChange={(updaterOrValue) => {
+          let newSortState: SortingState = [];
+          if (typeof updaterOrValue === 'function') {
+            newSortState = updaterOrValue(sort);
           } else {
-            prev.set('sortby', String(newSortState[0].id));
-            prev.set('desc', String(newSortState[0].desc));
+            newSortState = updaterOrValue;
           }
-          return prev;
-        });
-        setSort(newSortState);
-      }}
-      getTrProps={(row) => {
-        if (row.original.masked) {
-          return {
-            className: 'opacity-40',
-          };
-        }
-        return {};
-      }}
-      enablePageResize
-      onPageResize={(newSize) => {
-        setSearchParams((prev) => {
-          prev.set('size', String(newSize));
-          prev.delete('page');
-          return prev;
-        });
-      }}
-      noDataElement={<TableNoDataElement text="No data available" />}
-    />
+          setSearchParams((prev) => {
+            if (!newSortState.length) {
+              prev.delete('sortby');
+              prev.delete('desc');
+            } else {
+              prev.set('sortby', String(newSortState[0].id));
+              prev.set('desc', String(newSortState[0].desc));
+            }
+            return prev;
+          });
+          setSort(newSortState);
+        }}
+        getTrProps={(row) => {
+          if (row.original.masked) {
+            return {
+              className: 'opacity-40',
+            };
+          }
+          return {};
+        }}
+        enablePageResize
+        onPageResize={(newSize) => {
+          setSearchParams((prev) => {
+            prev.set('size', String(newSize));
+            prev.delete('page');
+            return prev;
+          });
+        }}
+        noDataElement={<TableNoDataElement text="No data available" />}
+      />
+    </div>
   );
 };
 
@@ -264,18 +265,6 @@ const ScanComapareTime = () => {
 
   return (
     <div className="flex items-center h-12">
-      {/* <Suspense
-        fallback={
-          <div className="gap-x-1.5 flex items-center">
-            <CircleSpinner size="sm" />
-            <div className="dark:text-text-text-and-icon text-p7">
-              Fetching scan compare time...
-            </div>
-          </div>
-        }
-      >
-        <HistoryScan />
-      </Suspense> */}
       <div className="dark:text-text-text-and-icon text-p4 flex gap-x-1">
         Comparision between{' '}
         <span className="dark:text-text-input-value text-p4">
