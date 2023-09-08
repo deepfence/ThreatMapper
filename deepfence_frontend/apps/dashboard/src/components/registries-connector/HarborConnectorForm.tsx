@@ -32,7 +32,7 @@ export const HarborConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           target="_blank"
           rel="noreferrer"
         >
-          reading our documentation
+          More information
         </DFLink>
         .
       </div>
