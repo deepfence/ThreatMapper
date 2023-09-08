@@ -273,7 +273,7 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.CachePostureProviders))
+	jobID, err = s.cron.AddFunc("@every 15m", s.enqueueTask(namespace, sdkUtils.CachePostureProviders))
 	if err != nil {
 		return err
 	}

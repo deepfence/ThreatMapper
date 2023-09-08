@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"k8s.io/utils/strings/slices"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
@@ -23,7 +24,7 @@ const (
 	PostureProviderKubernetes = "kubernetes"
 )
 
-var SupportedPostureProviders = []string{PostureProviderAWS, PostureProviderAWSOrg, PostureProviderGCP, PostureProviderGCPOrg,
+var SupportedPostureProviders = []string{PostureProviderAWS, PostureProviderGCP,
 	PostureProviderAzure, PostureProviderLinux, PostureProviderKubernetes}
 
 type CloudNodeAccountRegisterReq struct {
@@ -262,9 +263,9 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 
 	postureProviders := []PostureProvider{
 		{Name: PostureProviderAWS, NodeLabel: "Accounts"},
-		{Name: PostureProviderAWSOrg, NodeLabel: "Organizations"},
+		// {Name: PostureProviderAWSOrg, NodeLabel: "Organizations"},
 		{Name: PostureProviderGCP, NodeLabel: "Accounts"},
-		{Name: PostureProviderGCPOrg, NodeLabel: "Organizations"},
+		// {Name: PostureProviderGCPOrg, NodeLabel: "Organizations"},
 		{Name: PostureProviderAzure, NodeLabel: "Accounts"},
 		{Name: PostureProviderLinux, NodeLabel: "Hosts"},
 		{Name: PostureProviderKubernetes, NodeLabel: "Clusters"},
@@ -279,7 +280,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 
 	// Hosts
 	query := `MATCH (m:Node)
-			WHERE m.pseudo=false and m.kubernetes_cluster_id=""
+			WHERE m.pseudo=false and m.agent_running=true
 			RETURN m.active, count(m)`
 	r, err := tx.Run(query, map[string]interface{}{})
 	if err == nil {
@@ -299,7 +300,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 
 	// Kubernetes
 	query = `MATCH (m:KubernetesCluster)
-			WHERE m.pseudo=false
+			WHERE m.pseudo=false and m.agent_running=true
 			RETURN m.active, count(m)`
 	r, err = tx.Run(query, map[string]interface{}{})
 	if err == nil {
@@ -326,6 +327,9 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 		if err == nil {
 			for _, record := range records {
 				provider := record.Values[0].(string)
+				if slices.Contains([]string{PostureProviderAWSOrg, PostureProviderGCPOrg}, provider) {
+					continue
+				}
 				if record.Values[1].(bool) == true {
 					postureProviders[providersIndex[provider]].NodeCount = record.Values[2].(int64)
 				} else {

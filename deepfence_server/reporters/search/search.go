@@ -295,10 +295,6 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		return res, err
 	}
 	defer tx.Close()
-	nonKubeFilter := ""
-	if cloudProvider == model.PostureProviderLinux {
-		nonKubeFilter = "{kubernetes_cluster_id:'', node_type:'host'}"
-	}
 	if cloudProvider == model.PostureProviderLinux || cloudProvider == model.PostureProviderKubernetes {
 		filter.Filters.ContainsFilter.FieldsValues["agent_running"] = append(make([]interface{}, 0), true)
 		delete(filter.Filters.ContainsFilter.FieldsValues, "cloud_provider")
@@ -315,7 +311,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 	}
 
 	query := `
-		MATCH (n:` + dummy.NodeType() + nonKubeFilter + `)` +
+		MATCH (n:` + dummy.NodeType() + `)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
 		` WITH n.node_id AS node_id UNWIND node_id AS x
 		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `)-[:DETECTED]->(c:` + dummy.ScanResultType() + `)

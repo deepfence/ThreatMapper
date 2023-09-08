@@ -215,15 +215,13 @@ func CachePostureProviders(msg *message.Message) error {
 		if postureProviderName == model.PostureProviderLinux || postureProviderName == model.PostureProviderKubernetes {
 			postureProvider.NodeLabel = nodeLabel
 			scanType = utils.NEO4J_COMPLIANCE_SCAN
-			nonKubeFilter := ""
 			passStatus := []string{"ok", "info", "skip"}
 			if postureProviderName == model.PostureProviderLinux {
-				nonKubeFilter = "{kubernetes_cluster_id:''}"
 				passStatus = []string{"warn", "pass"}
 			}
 			query := fmt.Sprintf(`
-			MATCH (m:%s%s)
-			WHERE m.pseudo=false and m.active=true
+			MATCH (m:%s)
+			WHERE m.pseudo=false and m.active=true and agent_running:true
 			WITH COUNT(DISTINCT m.node_id) AS account_count
 			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s)
 			WITH account_count, COUNT(DISTINCT n.node_id) AS scan_count
@@ -232,7 +230,7 @@ func CachePostureProviders(msg *message.Message) error {
 			OPTIONAL MATCH (m:%s)<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:Compliance)
 			WHERE c1.status IN $passStatus
 			RETURN account_count, scan_count, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage`,
-				neo4jNodeType, nonKubeFilter, scanType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType)
+				neo4jNodeType, scanType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType)
 			nodeRes, err := tx.Run(query, map[string]interface{}{"passStatus": passStatus})
 			if err == nil {
 				nodeRec, err := nodeRes.Single()
