@@ -73,8 +73,8 @@ services:
       NEO4J_dbms_memory_pagecache_size: 2600m
       NEO4JLABS_PLUGINS: '["apoc"]'
     ports:
-      - "0.0.0.0:7474:7474"
-      - "0.0.0.0:7687:7687"
+      - "127.0.0.1:7474:7474"
+      - "127.0.0.1:7687:7687"
     volumes:
       - deepfence_neo4j_data:/data:rw
       - deepfence_neo4j_logs:/logs:rw
@@ -171,8 +171,7 @@ services:
       - deepfence-postgres
       - deepfence-neo4j
     ports:
-      - "8080:8080"
-      - "127.0.0.1:8081:8081"
+      - "127.0.0.1:8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/docker/certs.d:/etc/docker/certs.d:ro
@@ -283,7 +282,7 @@ services:
       - "127.0.0.1:14268:14268"
       - "127.0.0.1:9411:9411"
       - "127.0.0.1:14269:14269"
-      - "0.0.0.0:16686:16686"
+      - "127.0.0.1:16686:16686"
     networks:
       - deepfence_net
 
