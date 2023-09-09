@@ -38,7 +38,8 @@ func getVersionMetadata(url string, result *[]map[string]interface{}) error {
 }
 
 func CheckAgentUpgrade(msg *message.Message) error {
-	RecordOffsets(msg)
+	topic := RecordOffsets(msg)
+	defer SetTopicHandlerStatus(topic, false)
 
 	log.Info().Msg("Start agent version check")
 

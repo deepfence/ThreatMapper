@@ -16,7 +16,8 @@ var threatGraphRunning atomic.Bool
 var exploitabilityRunning atomic.Bool
 
 func ComputeThreat(msg *message.Message) error {
-	RecordOffsets(msg)
+	topic := RecordOffsets(msg)
+	defer SetTopicHandlerStatus(topic, false)
 
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))

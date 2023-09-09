@@ -104,19 +104,18 @@ func (s Splunk) Sender(in chan []byte, wg *sync.WaitGroup) {
 			req, err := http.NewRequest("POST", s.Config.EndpointURL, bytes.NewReader(data))
 			if err != nil {
 				log.Info().Msgf("Failed to create HTTP request: %v", err)
-			}
-			req.Header.Set("Authorization", authToken)
-
-			// Send the request to Splunk
-			resp, err := s.client.Do(req)
-			if err != nil {
-				log.Info().Msgf("Failed to send data to Splunk: %v", err)
 			} else {
-				defer resp.Body.Close()
+				req.Header.Set("Authorization", authToken)
+				resp, err := s.client.Do(req)
+				if err != nil {
+					log.Info().Msgf("Failed to send data to Splunk: %v", err)
+				} else {
+					defer resp.Body.Close()
 
-				// Check the response status code
-				if resp.StatusCode != http.StatusOK {
-					log.Info().Msgf("Failed to send data to Splunk %s", resp.Status)
+					// Check the response status code
+					if resp.StatusCode != http.StatusOK {
+						log.Info().Msgf("Failed to send data to Splunk %s", resp.Status)
+					}
 				}
 			}
 		}

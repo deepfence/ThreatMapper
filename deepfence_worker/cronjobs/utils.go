@@ -11,33 +11,53 @@ import (
 )
 
 var recordLock sync.Mutex
-var TopicData map[string]kafka.PartitionOffset
 
-func GetTopicData() map[string]kafka.PartitionOffset {
+type TopicDataEntry struct {
+	Data      kafka.PartitionOffset
+	IsRunning bool
+}
+
+var TopicData map[string]TopicDataEntry
+
+func GetTopicData() map[string]TopicDataEntry {
 	recordLock.Lock()
 	defer recordLock.Unlock()
-	retVal := make(map[string]kafka.PartitionOffset)
+	retVal := make(map[string]TopicDataEntry)
 	for k, v := range TopicData {
 		retVal[k] = v
 	}
 	return retVal
 }
 
-func RecordOffsets(msg *message.Message) {
-	if msg == nil {
+func SetTopicHandlerStatus(topic string, status bool) {
+	if len(topic) == 0 {
 		return
+	}
+
+	recordLock.Lock()
+	defer recordLock.Unlock()
+
+	if entry, ok := TopicData[topic]; ok {
+		entry.IsRunning = status
+		TopicData[topic] = entry
+	}
+}
+
+func RecordOffsets(msg *message.Message) string {
+	if msg == nil {
+		return ""
 	}
 
 	topic := message.SubscribeTopicFromCtx(msg.Context())
 	if len(topic) == 0 {
 		log.Debug().Msgf("Failed to get the topic from message Context")
-		return
+		return ""
 	}
 
 	partionId, ok1 := kafka.MessagePartitionFromCtx(msg.Context())
 	partitionOffset, ok2 := kafka.MessagePartitionOffsetFromCtx(msg.Context())
 	if !ok1 || !ok2 {
-		return
+		return ""
 	}
 
 	ts, _ := kafka.MessageTimestampFromCtx(msg.Context())
@@ -45,16 +65,23 @@ func RecordOffsets(msg *message.Message) {
 	recordLock.Lock()
 	defer recordLock.Unlock()
 
-	_, found := TopicData[topic]
+	entry, found := TopicData[topic]
 
 	if !found {
-		TopicData[topic] = make(map[int32]int64)
+		entry = TopicDataEntry{}
+		entry.Data = make(map[int32]int64)
+		TopicData[topic] = entry
 	}
 
-	TopicData[topic][partionId] = partitionOffset
+	entry.Data[partionId] = partitionOffset
+	entry.IsRunning = true
+
+	TopicData[topic] = entry
 
 	log.Debug().Msgf("RecordOffsets for %s , pid:%d, offset:%d, ts:%v",
 		topic, partionId, partitionOffset, ts)
+
+	return topic
 }
 
 // Utility function to print the contents of the context

@@ -17,8 +17,15 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
+var notificationLock sync.Mutex
+
 func SendNotifications(msg *message.Message) error {
-	RecordOffsets(msg)
+	//This lock is to ensure only one notification handler runs at a time
+	notificationLock.Lock()
+	defer notificationLock.Unlock()
+
+	topic := RecordOffsets(msg)
+	defer SetTopicHandlerStatus(topic, false)
 
 	log.Info().Msgf("SendNotifications task starting at %s", string(msg.Payload))
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
@@ -32,6 +39,7 @@ func SendNotifications(msg *message.Message) error {
 		log.Error().Msgf("Error getting postgresCtx", err)
 		return nil
 	}
+
 	wg := new(sync.WaitGroup)
 	wg.Add(len(integrations))
 	for _, integrationRow := range integrations {
@@ -210,8 +218,9 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 				integrationRow.ID, integrationRow.Resource, integrationRow.IntegrationType, err)
 			return
 		}
-		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d",
-			integrationRow.Resource, len(results), integrationRow.IntegrationType, integrationRow.ID)
+		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken:%d",
+			integrationRow.Resource, len(results), integrationRow.IntegrationType,
+			integrationRow.ID, time.Since(profileStart).Milliseconds())
 	}
 	log.Info().Msgf("%s Total Time taken for integration %s: %d", integrationRow.Resource,
 		integrationRow.IntegrationType, time.Since(startTime).Milliseconds())

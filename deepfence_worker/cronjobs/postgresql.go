@@ -8,7 +8,8 @@ import (
 
 // CleanUpPostgresDB Delete expired user invites and password reset requests
 func CleanUpPostgresDB(msg *message.Message) error {
-	RecordOffsets(msg)
+	topic := RecordOffsets(msg)
+	defer SetTopicHandlerStatus(topic, false)
 
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))

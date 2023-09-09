@@ -133,7 +133,7 @@ func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAd
 func (w *worker) pollHandlers() {
 	ticker := time.NewTicker(30 * time.Second)
 	flag := true
-	threshold := 30
+	threshold := 15
 	for {
 		select {
 		case <-ticker.C:
@@ -148,11 +148,12 @@ func (w *worker) pollHandlers() {
 					continue
 				}
 
-				msgOffset, found := cronjobData[topic]
+				entry, found := cronjobData[topic]
 				if !found {
 					continue
 				}
 
+				msgOffset := entry.Data
 				maxDelta := int64(1)
 				inactiveFlag := false
 				for id, _ := range svrOffset {
@@ -164,6 +165,8 @@ func (w *worker) pollHandlers() {
 						}
 					}
 				}
+
+				inactiveFlag = inactiveFlag && (!entry.IsRunning)
 
 				if inactiveFlag == true {
 					task.InactiveCounter++
@@ -280,7 +283,7 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
 	HandlerMap = make(map[string]*NoPublisherTask)
 
-	cronjobs.TopicData = make(map[string]kafka.PartitionOffset)
+	cronjobs.TopicData = make(map[string]cronjobs.TopicDataEntry)
 
 	worker := NewWorker(wml, cfg, mux)
 
