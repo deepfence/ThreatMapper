@@ -68,6 +68,7 @@ func GetInsecureHttpClient() *http.Client {
 			Timeout: time.Second * 30,
 			Transport: &http.Transport{
 				TLSClientConfig: tlsConfig,
+				WriteBufferSize: 10240,
 			},
 		}
 	})

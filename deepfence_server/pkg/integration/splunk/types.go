@@ -1,6 +1,8 @@
 package splunk
 
 import (
+	"net/http"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/go-playground/validator/v10"
 )
@@ -11,6 +13,7 @@ type Splunk struct {
 	NotificationType string                  `json:"notification_type"`
 	Filters          reporters.FieldsFilters `json:"filters"`
 	Message          string                  `json:"message"`
+	client           *http.Client
 }
 
 type Config struct {

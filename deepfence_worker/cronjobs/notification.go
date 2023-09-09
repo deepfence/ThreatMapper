@@ -59,6 +59,8 @@ func processIntegrationRow(wg *sync.WaitGroup, integrationRow postgresql_db.Inte
 		integrationRow.Resource = utils.ScanTypeDetectedNode[utils.NEO4J_CLOUD_COMPLIANCE_SCAN]
 		processIntegration[model.CloudCompliance](msg, integrationRow)
 	}
+
+	log.Info().Msgf("Processed integration for %s rowId: %d", integrationRow.IntegrationType, integrationRow.ID)
 }
 
 func injectNodeData[T any](results []T, common model.ScanResultsCommon,
