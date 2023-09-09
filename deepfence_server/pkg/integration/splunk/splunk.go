@@ -91,32 +91,32 @@ func (s Splunk) SendNotification(ctx context.Context, message string, extras map
 
 func (s Splunk) Sender(in chan []byte, wg *sync.WaitGroup) {
 	defer wg.Done()
-	loop := true
 	authToken := "Splunk " + s.Config.Token
-	for loop == true {
+
+SenderLoop:
+	for {
 		select {
 		case data, ok := <-in:
 			if !ok {
-				loop = false
-				break
+				break SenderLoop
 			}
 
 			req, err := http.NewRequest("POST", s.Config.EndpointURL, bytes.NewReader(data))
 			if err != nil {
 				log.Info().Msgf("Failed to create HTTP request: %v", err)
-			} else {
-				req.Header.Set("Authorization", authToken)
-				resp, err := s.client.Do(req)
-				if err != nil {
-					log.Info().Msgf("Failed to send data to Splunk: %v", err)
-				} else {
-					defer resp.Body.Close()
+				continue SenderLoop
+			}
+			req.Header.Set("Authorization", authToken)
+			resp, err := s.client.Do(req)
+			if err != nil {
+				log.Info().Msgf("Failed to send data to Splunk: %v", err)
+				continue SenderLoop
+			}
+			defer resp.Body.Close()
 
-					// Check the response status code
-					if resp.StatusCode != http.StatusOK {
-						log.Info().Msgf("Failed to send data to Splunk %s", resp.Status)
-					}
-				}
+			// Check the response status code
+			if resp.StatusCode != http.StatusOK {
+				log.Info().Msgf("Failed to send data to Splunk %s", resp.Status)
 			}
 		}
 	}
