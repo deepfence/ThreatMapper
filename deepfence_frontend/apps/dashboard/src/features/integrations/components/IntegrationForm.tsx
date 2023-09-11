@@ -764,7 +764,13 @@ export const IntegrationForm = ({
             )}
           </div>
           <div className="mt-14 flex gap-x-2 p-1">
-            <Button size="md" color="default" type="submit">
+            <Button
+              size="md"
+              color="default"
+              type="submit"
+              loading={fetcher.state === 'submitting'}
+              disabled={fetcher.state === 'submitting'}
+            >
               Add
             </Button>
             <Button

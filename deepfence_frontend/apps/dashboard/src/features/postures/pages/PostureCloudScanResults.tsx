@@ -336,6 +336,8 @@ const DeleteConfirmationModal = ({
             <Button
               size="md"
               color="error"
+              loading={fetcher.state === 'submitting'}
+              disabled={fetcher.state === 'submitting'}
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteAction(ActionEnumType.DELETE);
@@ -420,6 +422,8 @@ const DeleteScanConfirmationModal = ({
             <Button
               size="md"
               color="error"
+              loading={fetcher.state === 'submitting'}
+              disabled={fetcher.state === 'submitting'}
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteScan();
