@@ -63,15 +63,15 @@ type CloudNodeAccountsListResp struct {
 }
 
 type CloudNodeAccountInfo struct {
-	NodeId               string         `json:"node_id"`
-	NodeName             string         `json:"node_name"`
-	CloudProvider        string         `json:"cloud_provider"`
-	CompliancePercentage float64        `json:"compliance_percentage"`
-	Active               bool           `json:"active"`
-	LastScanId           string         `json:"last_scan_id"`
-	LastScanStatus       string         `json:"last_scan_status"`
-	ScanStatusMap        map[string]int `json:"scan_status_map"`
-	Version              string         `json:"version"`
+	NodeId               string           `json:"node_id"`
+	NodeName             string           `json:"node_name"`
+	CloudProvider        string           `json:"cloud_provider"`
+	CompliancePercentage float64          `json:"compliance_percentage"`
+	Active               bool             `json:"active"`
+	LastScanId           string           `json:"last_scan_id"`
+	LastScanStatus       string           `json:"last_scan_status"`
+	ScanStatusMap        map[string]int64 `json:"scan_status_map"`
+	Version              string           `json:"version"`
 }
 
 func (v CloudNodeAccountInfo) NodeType() string {

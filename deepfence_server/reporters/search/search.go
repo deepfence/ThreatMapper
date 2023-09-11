@@ -386,8 +386,8 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 	return res, nil
 }
 
-func getScanStatusMap(ctx context.Context, id string, cloudProvider string) (map[string]int, error) {
-	var res map[string]int
+func getScanStatusMap(ctx context.Context, id string, cloudProvider string) (map[string]int64, error) {
+	var res map[string]int64
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return res, err
@@ -423,7 +423,7 @@ func getScanStatusMap(ctx context.Context, id string, cloudProvider string) (map
 		return res, err
 	}
 	for _, rec := range recs {
-		res[rec.Values[0].(string)] = rec.Values[1].(int)
+		res[rec.Values[0].(string)] = rec.Values[1].(int64)
 	}
 	return res, nil
 }
