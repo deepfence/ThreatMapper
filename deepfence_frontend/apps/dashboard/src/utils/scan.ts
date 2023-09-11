@@ -40,19 +40,25 @@ export const getScanLink = ({
   scanId: string;
 }): string => {
   if (scanType === ScanTypeEnum.VulnerabilityScan) {
-    return generatePath('/vulnerability/scan-results/:scanId', { scanId });
+    return generatePath('/vulnerability/scan-results/:scanId', {
+      scanId: encodeURIComponent(scanId),
+    });
   } else if (scanType === ScanTypeEnum.SecretScan) {
-    return generatePath('/secret/scan-results/:scanId', { scanId });
+    return generatePath('/secret/scan-results/:scanId', {
+      scanId: encodeURIComponent(scanId),
+    });
   } else if (scanType === ScanTypeEnum.MalwareScan) {
-    return generatePath('/malware/scan-results/:scanId', { scanId });
+    return generatePath('/malware/scan-results/:scanId', {
+      scanId: encodeURIComponent(scanId),
+    });
   } else if (scanType === ScanTypeEnum.ComplianceScan) {
     return generatePath('/posture/scan-results/:nodeType/:scanId', {
-      scanId,
+      scanId: encodeURIComponent(scanId),
       nodeType: nodeType === 'host' ? 'linux' : nodeType,
     });
   } else if (scanType === ScanTypeEnum.CloudComplianceScan) {
     return generatePath('/posture/cloud/scan-results/:nodeType/:scanId', {
-      scanId,
+      scanId: encodeURIComponent(scanId),
       nodeType,
     });
   }

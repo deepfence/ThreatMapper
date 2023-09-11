@@ -119,7 +119,9 @@ const TabContent = ({
               <DFLink
                 target="_blank"
                 to={generatePath('/posture/cloud/scan-results/:cloudType/:scanId', {
-                  scanId: cell.row.original.cloud_compliance_latest_scan_id,
+                  scanId: encodeURIComponent(
+                    cell.row.original.cloud_compliance_latest_scan_id,
+                  ),
                   cloudType: getCloudTypeFromNodeType(cell.row.original.node_type),
                 })}
               >

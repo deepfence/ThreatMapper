@@ -11,6 +11,7 @@ import {
   SlidingModalContent,
   SlidingModalHeader,
   Table,
+  TableNoDataElement,
   TableSkeleton,
 } from 'ui-components';
 
@@ -229,6 +230,7 @@ const ConsoleDiagnosticLogsTable = () => {
       onPageResize={(newSize) => {
         setPageSize(newSize);
       }}
+      noDataElement={<TableNoDataElement text="No logs available" />}
     />
   );
 };
@@ -311,6 +313,7 @@ const AgentDiagnosticLogsTable = () => {
         onPageResize={(newSize) => {
           setPageSize(newSize);
         }}
+        noDataElement={<TableNoDataElement text="No logs available" />}
       />
     </>
   );

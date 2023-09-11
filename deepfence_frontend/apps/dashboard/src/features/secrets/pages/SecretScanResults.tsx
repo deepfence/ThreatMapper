@@ -526,7 +526,7 @@ const HistoryControls = () => {
           onScanClick: () => {
             navigate(
               generatePath('/secret/scan-results/:scanId', {
-                scanId: item.scanId,
+                scanId: encodeURIComponent(item.scanId),
               }),
               {
                 replace: true,
@@ -550,7 +550,7 @@ const HistoryControls = () => {
                 if (latestScan) {
                   navigate(
                     generatePath('/secret/scan-results/:scanId', {
-                      scanId: latestScan.scanId,
+                      scanId: encodeURIComponent(latestScan.scanId),
                     }),
                     { replace: true },
                   );

@@ -6,6 +6,7 @@ import {
   DropdownItem,
   SortingState,
   Table,
+  TableNoDataElement,
 } from 'ui-components';
 
 import { ModelExportReport } from '@/api/generated';
@@ -180,6 +181,9 @@ export const ReportTable = ({
         onPageResize={(newSize) => {
           setPageSize(newSize);
         }}
+        noDataElement={
+          <TableNoDataElement text="No reports found, please add new report" />
+        }
       />
     </div>
   );

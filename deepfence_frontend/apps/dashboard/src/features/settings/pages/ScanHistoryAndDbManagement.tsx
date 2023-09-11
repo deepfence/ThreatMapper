@@ -195,6 +195,8 @@ const DeleteConfirmationModal = ({
                 });
               }}
               size="md"
+              disabled={fetcher.state !== 'idle'}
+              loading={fetcher.state !== 'idle'}
             >
               Delete
             </Button>

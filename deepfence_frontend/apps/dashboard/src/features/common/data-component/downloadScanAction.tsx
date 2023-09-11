@@ -106,7 +106,7 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<null> => 
   if (reportResponse.ok) {
     const url = reportResponse.value.url;
     if (url) {
-      download(url);
+      download(encodeURIComponent(url));
     } else {
       toast.error('Something went wrong, please try again');
     }

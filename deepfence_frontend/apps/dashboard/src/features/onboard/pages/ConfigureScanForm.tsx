@@ -110,7 +110,7 @@ const ScanConfigureForm = () => {
                     {
                       nodeType,
                       scanType: ScanTypeEnum.VulnerabilityScan,
-                      bulkScanId,
+                      bulkScanId: encodeURIComponent(bulkScanId),
                     },
                   ),
                 );
@@ -135,7 +135,7 @@ const ScanConfigureForm = () => {
                     {
                       nodeType,
                       scanType: ScanTypeEnum.SecretScan,
-                      bulkScanId,
+                      bulkScanId: encodeURIComponent(bulkScanId),
                     },
                   ),
                 );
@@ -160,7 +160,7 @@ const ScanConfigureForm = () => {
                     {
                       nodeType,
                       scanType: ScanTypeEnum.MalwareScan,
-                      bulkScanId,
+                      bulkScanId: encodeURIComponent(bulkScanId),
                     },
                   ),
                 );
@@ -188,7 +188,7 @@ const ScanConfigureForm = () => {
                         scanType === ScanTypeEnum.ComplianceScan
                           ? ScanTypeEnum.ComplianceScan
                           : ScanTypeEnum.CloudComplianceScan,
-                      bulkScanId,
+                      bulkScanId: encodeURIComponent(bulkScanId),
                     },
                   ),
                 );
