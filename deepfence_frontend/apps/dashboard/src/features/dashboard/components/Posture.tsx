@@ -53,7 +53,7 @@ const PostureCardContent = () => {
 
   return (
     <div
-      className="h-full w-full grid p-4 gap-4"
+      className="w-full grid p-4 gap-4"
       ref={measureRef}
       style={{
         gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,

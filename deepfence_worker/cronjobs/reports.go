@@ -15,7 +15,8 @@ import (
 const minioReportsPrefix = "/report/"
 
 func CleanUpReports(msg *message.Message) error {
-	RecordOffsets(msg)
+	topic := RecordOffsets(msg)
+	defer SetTopicHandlerStatus(topic, false)
 
 	log.Info().Msg("Start reports cleanup")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
