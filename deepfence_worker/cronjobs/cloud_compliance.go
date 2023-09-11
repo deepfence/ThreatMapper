@@ -216,7 +216,7 @@ func CachePostureProviders(msg *message.Message) error {
 			}
 			query := fmt.Sprintf(`
 			MATCH (m:%s)
-			WHERE m.pseudo=false and m.active=true and agent_running:true
+			WHERE m.pseudo=false and m.active=true and m.agent_running=true
 			WITH COUNT(DISTINCT m.node_id) AS account_count
 			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s)
 			WITH account_count, COUNT(DISTINCT n.node_id) AS scan_count
