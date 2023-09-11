@@ -19,8 +19,15 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
+var notificationLock sync.Mutex
+
 func SendNotifications(msg *message.Message) error {
-	RecordOffsets(msg)
+	//This lock is to ensure only one notification handler runs at a time
+	notificationLock.Lock()
+	defer notificationLock.Unlock()
+
+	topic := RecordOffsets(msg)
+	defer SetTopicHandlerStatus(topic, false)
 
 	log.Info().Msgf("SendNotifications task starting at %s", string(msg.Payload))
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
@@ -39,7 +46,14 @@ func SendNotifications(msg *message.Message) error {
 	for _, integrationRow := range integrations {
 		go func(integration postgresql_db.Integration) {
 			defer wg.Done()
+			log.Info().Msgf("Processing integration for %s rowId: %d",
+				integration.IntegrationType, integration.ID)
+
 			err := processIntegrationRow(integration, msg)
+
+			log.Info().Msgf("Processed integration for %s rowId: %d",
+				integration.IntegrationType, integration.ID)
+
 			update_row := err != nil || (err == nil && integration.ErrorMsg.Valid)
 			if update_row {
 				var params postgresql_db.UpdateIntegrationStatusParams
@@ -71,7 +85,6 @@ func SendNotifications(msg *message.Message) error {
 }
 
 func processIntegrationRow(integrationRow postgresql_db.Integration, msg *message.Message) error {
-	log.Info().Msgf("Processing integration for %s rowId: %d", integrationRow.IntegrationType, integrationRow.ID)
 	switch integrationRow.Resource {
 	case utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]:
 		return processIntegration[model.Vulnerability](msg, integrationRow)
@@ -128,6 +141,7 @@ func injectNodeData[T any](results []T, common model.ScanResultsCommon,
 }
 
 func processIntegration[T any](msg *message.Message, integrationRow postgresql_db.Integration) error {
+	startTime := time.Now()
 	var filters model.IntegrationFilters
 	err := json.Unmarshal(integrationRow.Filters, &filters)
 	if err != nil {
@@ -159,11 +173,14 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	filters.FieldsFilters.ContainsFilter = reporters.ContainsFilter{
 		FieldsValues: map[string][]interface{}{"status": {utils.SCAN_STATUS_SUCCESS}},
 	}
+
+	profileStart := time.Now()
 	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource],
 		filters.NodeIds, filters.FieldsFilters, model.FetchWindow{})
 	if err != nil {
 		return err
 	}
+	neo4j_query_1 := time.Since(profileStart).Milliseconds()
 
 	// nothing to notify
 	if len(list.ScansInfo) == 0 {
@@ -180,10 +197,17 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 		return err
 	}
 	filters.NodeIds = []model.NodeIdentifier{}
+
+	totalQueryTime := int64(0)
+	totalSendTime := int64(0)
+
 	for _, scan := range list.ScansInfo {
+		profileStart = time.Now()
 		results, common, err := reporters_scan.GetScanResults[T](ctx,
 			utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId,
 			filters.FieldsFilters, model.FetchWindow{})
+		totalQueryTime = totalQueryTime + time.Since(profileStart).Milliseconds()
+
 		if len(results) == 0 {
 			log.Info().Msgf("No Results filtered for scan id: %s with filters %+v", scan.ScanId, filters)
 			continue
@@ -208,12 +232,21 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 
 		extras := utils.ToMap[any](common)
 		extras["scan_type"] = integrationRow.Resource
+
+		profileStart = time.Now()
 		err = integrationModel.SendNotification(ctx, string(messageByte), extras)
+		totalSendTime = totalSendTime + time.Since(profileStart).Milliseconds()
 		if err != nil {
 			return err
 		}
-		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d",
-			integrationRow.Resource, len(results), integrationRow.IntegrationType, integrationRow.ID)
+		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken:%d",
+			integrationRow.Resource, len(results), integrationRow.IntegrationType,
+			integrationRow.ID, time.Since(profileStart).Milliseconds())
 	}
+	log.Info().Msgf("%s Total Time taken for integration %s: %d", integrationRow.Resource,
+		integrationRow.IntegrationType, time.Since(startTime).Milliseconds())
+	log.Debug().Msgf("Time taken for neo4j_query_1: %d", neo4j_query_1)
+	log.Debug().Msgf("Time taken for neo4j_query_2: %d", totalQueryTime)
+	log.Debug().Msgf("Time taken for sending data : %d", totalSendTime)
 	return nil
 }

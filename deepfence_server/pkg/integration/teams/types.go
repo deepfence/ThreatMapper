@@ -1,6 +1,8 @@
 package teams
 
 import (
+	"net/http"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/go-playground/validator/v10"
 )
@@ -12,6 +14,7 @@ type Teams struct {
 	Filters          reporters.FieldsFilters `json:"filters"`
 	Message          string                  `json:"message"`
 	Resource         string                  `json:"resource"`
+	client           *http.Client
 }
 
 type Config struct {
