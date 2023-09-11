@@ -135,10 +135,10 @@ type ScanResultsMaskRequest struct {
 }
 
 type ScanResultsActionRequest struct {
-	ScanID    string   `json:"scan_id" validate:"required" required:"true"`
-	ResultIDs []string `json:"result_ids" validate:"required,gt=0,dive,min=1" required:"true"`
-	ScanType  string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
-	//utils.Neo4jScanType
+	ScanID           string   `json:"scan_id" validate:"required" required:"true"`
+	ResultIDs        []string `json:"result_ids" validate:"required,gt=0,dive,min=1" required:"true"`
+	ScanType         string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
+	NotifyIndividual bool     `json:"notify_individual"`
 }
 
 type DownloadReportResponse struct {

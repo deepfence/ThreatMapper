@@ -258,5 +258,105 @@ func StopScan(ctx context.Context, scanType, scanId string) error {
 }
 
 func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId string, scanIDs []string) error {
+	switch scanType {
+	case utils.NEO4J_VULNERABILITY_SCAN:
+		res, common, err := GetSelectedScanResults[model.Vulnerability](ctx, scanType, scanId, scanIDs)
+		if err != nil {
+			return err
+		}
+		if err := Notify[model.Vulnerability](ctx, res, common, string(scanType)); err != nil {
+			return err
+		}
+	case utils.NEO4J_SECRET_SCAN:
+		res, common, err := GetSelectedScanResults[model.Secret](ctx, scanType, scanId, scanIDs)
+		if err != nil {
+			return err
+		}
+		if err := Notify[model.Secret](ctx, res, common, string(scanType)); err != nil {
+			return err
+		}
+	case utils.NEO4J_MALWARE_SCAN:
+		res, common, err := GetSelectedScanResults[model.Malware](ctx, scanType, scanId, scanIDs)
+		if err != nil {
+			return err
+		}
+		if err := Notify[model.Malware](ctx, res, common, string(scanType)); err != nil {
+			return err
+		}
+	case utils.NEO4J_COMPLIANCE_SCAN:
+		res, common, err := GetSelectedScanResults[model.Compliance](ctx, scanType, scanId, scanIDs)
+		if err != nil {
+			return err
+		}
+		if err := Notify[model.Compliance](ctx, res, common, string(scanType)); err != nil {
+			return err
+		}
+	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
+		res, common, err := GetSelectedScanResults[model.CloudCompliance](ctx, scanType, scanId, scanIDs)
+		if err != nil {
+			return err
+		}
+		if err := Notify[model.CloudCompliance](ctx, res, common, string(scanType)); err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+func GetSelectedScanResults[T any](ctx context.Context, scanType utils.Neo4jScanType, scanId string, scanIDs []string) ([]T, model.ScanResultsCommon, error) {
+	res := []T{}
+	common := model.ScanResultsCommon{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, common, err
+	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	if err != nil {
+		return res, common, err
+	}
+	defer tx.Close()
+
+	query := `MATCH (n:%s) -[:DETECTED]-> (m)
+		WHERE m.node_id IN $scan_ids
+		AND n.node_id = $scan_id
+		RETURN m{.*}`
+
+	result, err := tx.Run(fmt.Sprintf(query, scanType), map[string]interface{}{"scan_ids": scanIDs, "scan_id": scanId})
+	if err != nil {
+		log.Error().Msgf("NotifyScanResult: Error in getting the scan result nodes from neo4j: %v", err)
+		return res, common, err
+	}
+
+	recs, err := result.Collect()
+	if err != nil {
+		log.Error().Msgf("NotifyScanResult: Error in collecting the scan result nodes from neo4j: %v", err)
+		return res, common, err
+	}
+
+	for _, rec := range recs {
+		var tmp T
+		utils.FromMap(rec.Values[0].(map[string]interface{}), &tmp)
+		res = append(res, tmp)
+	}
+
+	ncommonres, err := tx.Run(`
+	MATCH (m:`+string(scanType)+`{node_id: $scan_id}) -[:SCANNED]-> (n)
+	RETURN n{.*, scan_id: m.node_id, updated_at:m.updated_at, created_at:m.created_at}`,
+		map[string]interface{}{"scan_id": scanId})
+	if err != nil {
+		return res, common, err
+	}
+
+	rec, err := ncommonres.Single()
+	if err != nil {
+		return res, common, err
+	}
+
+	utils.FromMap(rec.Values[0].(map[string]interface{}), &common)
+
+	return res, common, err
 }

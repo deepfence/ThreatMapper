@@ -1443,7 +1443,21 @@ func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request
 		}
 		h.AuditUserActivity(r, req.ScanType, ACTION_DELETE, req, true)
 	case "notify":
-		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
+		if req.NotifyIndividual {
+			for _, resultID := range req.ResultIDs {
+				err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{resultID})
+				if err != nil {
+					h.respondError(err, w)
+					return
+				}
+			}
+		} else {
+			err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
+			if err != nil {
+				h.respondError(err, w)
+				return
+			}
+		}
 		h.AuditUserActivity(r, req.ScanType, ACTION_NOTIFY, req, true)
 	}
 	if err != nil {
