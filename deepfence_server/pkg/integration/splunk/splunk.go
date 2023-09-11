@@ -95,29 +95,32 @@ func (s Splunk) Sender(in chan []byte, wg *sync.WaitGroup) {
 
 SenderLoop:
 	for {
+		var data []byte
+		var ok bool
+
 		select {
-		case data, ok := <-in:
+		case data, ok = <-in:
 			if !ok {
 				break SenderLoop
 			}
-
-			req, err := http.NewRequest("POST", s.Config.EndpointURL, bytes.NewReader(data))
-			if err != nil {
-				log.Info().Msgf("Failed to create HTTP request: %v", err)
-				continue SenderLoop
-			}
-			req.Header.Set("Authorization", authToken)
-			resp, err := s.client.Do(req)
-			if err != nil {
-				log.Info().Msgf("Failed to send data to Splunk: %v", err)
-				continue SenderLoop
-			}
-			defer resp.Body.Close()
-
-			// Check the response status code
-			if resp.StatusCode != http.StatusOK {
-				log.Info().Msgf("Failed to send data to Splunk %s", resp.Status)
-			}
 		}
+
+		req, err := http.NewRequest("POST", s.Config.EndpointURL, bytes.NewReader(data))
+		if err != nil {
+			log.Info().Msgf("Failed to create HTTP request: %v", err)
+			continue SenderLoop
+		}
+		req.Header.Set("Authorization", authToken)
+		resp, err := s.client.Do(req)
+		if err != nil {
+			log.Info().Msgf("Failed to send data to Splunk: %v", err)
+			continue SenderLoop
+		}
+
+		// Check the response status code
+		if resp.StatusCode != http.StatusOK {
+			log.Info().Msgf("Failed to send data to Splunk %s", resp.Status)
+		}
+		resp.Body.Close()
 	}
 }

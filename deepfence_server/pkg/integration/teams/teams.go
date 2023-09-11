@@ -69,12 +69,14 @@ func (t Teams) SendNotification(ctx context.Context, message string, extras map[
 	}()
 
 	startIndex := 0
-	endIndex := BatchSize
-	t.enqueueNotification(msg[startIndex:endIndex], senderChan)
+	endIndex := 0
 
 	for endIndex < len(msg) {
 		startIndex = endIndex
 		endIndex += BatchSize
+		if endIndex > len(msg) {
+			endIndex = len(msg)
+		}
 		t.enqueueNotification(msg[startIndex:endIndex], senderChan)
 	}
 	return nil
@@ -99,37 +101,39 @@ func (t Teams) enqueueNotification(payloads []map[string]interface{},
 
 func (t Teams) Sender(in chan *Payload, wg *sync.WaitGroup) {
 	defer wg.Done()
+	var payload *Payload
+	var ok bool
 
 SenderLoop:
 	for {
 		select {
-		case payload, ok := <-in:
+		case payload, ok = <-in:
 			if !ok {
 				break SenderLoop
 			}
-
-			payloadBytes, err := json.Marshal(payload)
-			if err != nil {
-				continue SenderLoop
-			}
-
-			req, err := http.NewRequest("POST", t.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
-			if err != nil {
-				log.Info().Msgf("Failed to create HTTP request: %v", err)
-				continue SenderLoop
-			}
-			req.Header.Set("Content-Type", "application/json")
-
-			resp, err := t.client.Do(req)
-			if err != nil {
-				log.Info().Msgf("Failed to send data to Teams: %v", err)
-				continue SenderLoop
-			}
-
-			defer resp.Body.Close()
-			if resp.StatusCode != http.StatusOK {
-				log.Info().Msgf("Failed to send data to Teams %s", resp.Status)
-			}
 		}
+
+		payloadBytes, err := json.Marshal(payload)
+		if err != nil {
+			continue SenderLoop
+		}
+
+		req, err := http.NewRequest("POST", t.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
+		if err != nil {
+			log.Info().Msgf("Failed to create HTTP request: %v", err)
+			continue SenderLoop
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := t.client.Do(req)
+		if err != nil {
+			log.Info().Msgf("Failed to send data to Teams: %v", err)
+			continue SenderLoop
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			log.Info().Msgf("Failed to send data to Teams %s", resp.Status)
+		}
+		resp.Body.Close()
 	}
 }

@@ -1,7 +1,9 @@
 package cronjobs
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"strconv"
 	"sync"
 	"time"
@@ -36,39 +38,68 @@ func SendNotifications(msg *message.Message) error {
 	}
 	integrations, err := pgClient.GetIntegrations(ctx)
 	if err != nil {
-		log.Error().Msgf("Error getting postgresCtx", err)
+		log.Error().Msgf("Error getting postgresCtx: %v", err)
 		return nil
 	}
-
-	wg := new(sync.WaitGroup)
+	wg := sync.WaitGroup{}
 	wg.Add(len(integrations))
 	for _, integrationRow := range integrations {
-		go processIntegrationRow(wg, integrationRow, msg)
+		go func(integration postgresql_db.Integration) {
+			defer wg.Done()
+			log.Info().Msgf("Processing integration for %s rowId: %d",
+				integration.IntegrationType, integration.ID)
+
+			err := processIntegrationRow(integration, msg)
+
+			log.Info().Msgf("Processed integration for %s rowId: %d",
+				integration.IntegrationType, integration.ID)
+
+			update_row := err != nil || (err == nil && integration.ErrorMsg.Valid)
+			if update_row {
+				var params postgresql_db.UpdateIntegrationStatusParams
+				if err != nil {
+					log.Error().Msgf("Error on integration %v", err)
+					params = postgresql_db.UpdateIntegrationStatusParams{
+						ID: integration.ID,
+						ErrorMsg: sql.NullString{
+							String: err.Error(),
+							Valid:  true,
+						},
+					}
+				} else {
+					params = postgresql_db.UpdateIntegrationStatusParams{
+						ID: integration.ID,
+						ErrorMsg: sql.NullString{
+							String: "",
+							Valid:  false,
+						},
+					}
+				}
+				pgClient.UpdateIntegrationStatus(ctx, params)
+			}
+		}(integrationRow)
 	}
 	wg.Wait()
 	log.Info().Msgf("SendNotifications task ended for timestamp %s", string(msg.Payload))
 	return nil
 }
 
-func processIntegrationRow(wg *sync.WaitGroup, integrationRow postgresql_db.Integration, msg *message.Message) {
-	defer wg.Done()
-
-	log.Info().Msgf("Processing integration for %s rowId: %d", integrationRow.IntegrationType, integrationRow.ID)
+func processIntegrationRow(integrationRow postgresql_db.Integration, msg *message.Message) error {
 	switch integrationRow.Resource {
 	case utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]:
-		processIntegration[model.Vulnerability](msg, integrationRow)
+		return processIntegration[model.Vulnerability](msg, integrationRow)
 	case utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]:
-		processIntegration[model.Secret](msg, integrationRow)
+		return processIntegration[model.Secret](msg, integrationRow)
 	case utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]:
-		processIntegration[model.Malware](msg, integrationRow)
+		return processIntegration[model.Malware](msg, integrationRow)
 	case utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]:
-		processIntegration[model.Compliance](msg, integrationRow)
+		err1 := processIntegration[model.Compliance](msg, integrationRow)
 		// cloud compliance scans
 		integrationRow.Resource = utils.ScanTypeDetectedNode[utils.NEO4J_CLOUD_COMPLIANCE_SCAN]
-		processIntegration[model.CloudCompliance](msg, integrationRow)
+		err2 := processIntegration[model.CloudCompliance](msg, integrationRow)
+		return errors.Join(err1, err2)
 	}
-
-	log.Info().Msgf("Processed integration for %s rowId: %d", integrationRow.IntegrationType, integrationRow.ID)
+	return errors.New("No integration type")
 }
 
 func injectNodeData[T any](results []T, common model.ScanResultsCommon,
@@ -109,14 +140,12 @@ func injectNodeData[T any](results []T, common model.ScanResultsCommon,
 	return data
 }
 
-func processIntegration[T any](msg *message.Message, integrationRow postgresql_db.Integration) {
-
+func processIntegration[T any](msg *message.Message, integrationRow postgresql_db.Integration) error {
 	startTime := time.Now()
 	var filters model.IntegrationFilters
 	err := json.Unmarshal(integrationRow.Filters, &filters)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		return
+		return err
 	}
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
@@ -124,8 +153,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	// get ts from message
 	ts, err := strconv.ParseInt(string(msg.Payload), 10, 64)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		return
+		return err
 	}
 
 	last30sTimeStamp := ts - 30000
@@ -150,8 +178,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource],
 		filters.NodeIds, filters.FieldsFilters, model.FetchWindow{})
 	if err != nil {
-		log.Error().Msg(err.Error())
-		return
+		return err
 	}
 	neo4j_query_1 := time.Since(profileStart).Milliseconds()
 
@@ -159,7 +186,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	if len(list.ScansInfo) == 0 {
 		log.Info().Msgf("No %s scans to notify at timestamp (%d,%d)",
 			integrationRow.Resource, last30sTimeStamp, ts)
-		return
+		return nil
 	}
 
 	log.Info().Msgf("list of %s scans to notify: %+v", integrationRow.Resource, list)
@@ -167,8 +194,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	filters = model.IntegrationFilters{}
 	err = json.Unmarshal(integrationRow.Filters, &filters)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		return
+		return err
 	}
 	filters.NodeIds = []model.NodeIdentifier{}
 
@@ -189,22 +215,19 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 
 		iByte, err := json.Marshal(integrationRow)
 		if err != nil {
-			log.Error().Msgf("Error marshall integrationRow: %+v", integrationRow, err)
-			return
+			return err
 		}
 
 		integrationModel, err := integration.GetIntegration(ctx, integrationRow.IntegrationType, iByte)
 		if err != nil {
-			log.Error().Msgf("Error GetIntegration: %+v", integrationRow, err)
-			return
+			return err
 		}
 
 		// inject node details to results
 		updatedResults := injectNodeData[T](results, common, integrationRow.IntegrationType)
 		messageByte, err := json.Marshal(updatedResults)
 		if err != nil {
-			log.Error().Msgf("Error marshall results: %+v", integrationRow, err)
-			return
+			return err
 		}
 
 		extras := utils.ToMap[any](common)
@@ -214,9 +237,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 		err = integrationModel.SendNotification(ctx, string(messageByte), extras)
 		totalSendTime = totalSendTime + time.Since(profileStart).Milliseconds()
 		if err != nil {
-			log.Error().Msgf("Error Sending Notification id %d, resource %s, type %s error: %s",
-				integrationRow.ID, integrationRow.Resource, integrationRow.IntegrationType, err)
-			return
+			return err
 		}
 		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken:%d",
 			integrationRow.Resource, len(results), integrationRow.IntegrationType,
@@ -224,7 +245,8 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	}
 	log.Info().Msgf("%s Total Time taken for integration %s: %d", integrationRow.Resource,
 		integrationRow.IntegrationType, time.Since(startTime).Milliseconds())
-	log.Info().Msgf("Time taken for neo4j_query_1: %d", neo4j_query_1)
-	log.Info().Msgf("Time taken for neo4j_query_2: %d", totalQueryTime)
-	log.Info().Msgf("Time taken for sending data : %d", totalSendTime)
+	log.Debug().Msgf("Time taken for neo4j_query_1: %d", neo4j_query_1)
+	log.Debug().Msgf("Time taken for neo4j_query_2: %d", totalQueryTime)
+	log.Debug().Msgf("Time taken for sending data : %d", totalSendTime)
+	return nil
 }
