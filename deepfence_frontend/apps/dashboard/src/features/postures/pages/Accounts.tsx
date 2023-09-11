@@ -66,8 +66,12 @@ import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatPercentage } from '@/utils/number';
 import {
+  COMPLIANCE_SCAN_STATUS_GROUPS,
   ComplianceScanGroupedStatus,
+  isNeverScanned,
   isScanComplete,
+  isScanFailed,
+  isScanInProgress,
   SCAN_STATUS_GROUPS,
 } from '@/utils/scan';
 import {
@@ -673,14 +677,14 @@ const AccountTable = ({
           );
         },
         header: () => 'Account',
-        minSize: 80,
-        size: 90,
+        minSize: 40,
+        size: 60,
         maxSize: 100,
       }),
       columnHelper.accessor('compliance_percentage', {
-        minSize: 60,
-        size: 60,
-        maxSize: 70,
+        minSize: 30,
+        size: 40,
+        maxSize: 60,
         header: () => 'Compliance %',
         cell: (cell) => {
           const percent = Number(cell.getValue());
@@ -714,13 +718,41 @@ const AccountTable = ({
       }),
       columnHelper.accessor('last_scan_status', {
         cell: (info) => {
-          const value = info.getValue();
-          return <ScanStatusBadge status={value ?? ''} />;
+          const isOrgAccount = info.row.original.cloud_provider?.endsWith('_org');
+
+          if (isOrgAccount) {
+            const data = info.row.original.scan_status_map ?? {};
+            const keys = Object.keys(data);
+            const statuses = Object.keys(data).map((current, index) => {
+              const scanStatus = COMPLIANCE_SCAN_STATUS_GROUPS.neverScanned.includes(
+                current,
+              )
+                ? ''
+                : current;
+              return (
+                <>
+                  <div className="flex gap-x-1.5 items-center" key={current}>
+                    <span className="dark:text-text-input-value font-medium">
+                      {data[current]}
+                    </span>
+                    <ScanStatusBadge status={scanStatus ?? ''} />
+                    {index < keys.length - 1 ? (
+                      <div className="mx-2 w-px h-[20px] dark:bg-bg-grid-border" />
+                    ) : null}
+                  </div>
+                </>
+              );
+            });
+            return <div className="flex gap-x-1.5">{statuses}</div>;
+          } else {
+            const value = info.getValue();
+            return <ScanStatusBadge status={value ?? ''} />;
+          }
         },
         header: () => 'Status',
-        minSize: 50,
-        size: 70,
-        maxSize: 80,
+        minSize: 120,
+        size: 140,
+        maxSize: 160,
       }),
     ];
 
@@ -732,9 +764,9 @@ const AccountTable = ({
             return <TruncatedText text={info.getValue() ?? ''} />;
           },
           header: () => 'Version',
-          minSize: 50,
-          size: 70,
-          maxSize: 80,
+          minSize: 30,
+          size: 40,
+          maxSize: 60,
         }),
       );
     }
