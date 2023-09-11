@@ -536,7 +536,7 @@ const HistoryControls = () => {
                 if (latestScan) {
                   navigate(
                     generatePath('./../:scanId', {
-                      scanId: latestScan.scanId,
+                      scanId: encodeURIComponent(latestScan.scanId),
                     }),
                     { replace: true },
                   );

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Table } from 'ui-components';
+import { Table, TableNoDataElement } from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
 import {
@@ -44,6 +44,9 @@ export const IntegrationTable = ({
       onPageResize={(newSize) => {
         setPageSize(newSize);
       }}
+      noDataElement={
+        <TableNoDataElement text="No integrations found, please add new integration" />
+      }
     />
   );
 };

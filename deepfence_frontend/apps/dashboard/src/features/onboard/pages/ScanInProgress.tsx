@@ -117,14 +117,14 @@ export const ScanInProgressError = () => {
     <>
       <ConnectorHeader
         title={'Scan Error'}
-        description={'An error has occured, please retry.'}
+        description={'An error has occurred, please retry.'}
       />
       <div className="flex flex-col items-center">
         <span className="w-[70px] h-[70px]">
           <ErrorIcon />
         </span>
         <p className="text-p7 dark:text-status-error mt-4">
-          An error has occured during your scan, please try again
+          An error has occurred during your scan, please try again
         </p>
 
         <DFLink to="/onboard/connectors/my-connectors" className="mt-2">
@@ -265,7 +265,7 @@ const ScanStatus = () => {
                         `/onboard/scan/view-summary/${scanType}/:nodeType/:bulkScanId`,
                         {
                           nodeType: data?.data?.[0]?.node_type ?? '',
-                          bulkScanId,
+                          bulkScanId: encodeURIComponent(bulkScanId),
                         },
                       ),
                     )
