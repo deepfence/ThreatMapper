@@ -1603,16 +1603,27 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 
 	log.Info().Msgf("bulk delete %s scans filters %+v", req.ScanType, req.Filters)
 
-	scanType := utils.DetectedNodeScanType[req.ScanType]
-	scansList, err := reporters_scan.GetScansList(r.Context(), scanType, nil, req.Filters, model.FetchWindow{})
+	err = h.bulkDeleteScanResults(r.Context(), req)
 	if err != nil {
-		h.respondError(&ValidatorError{err: err}, w)
+		h.respondError(err, w)
 		return
+	}
+
+	h.AuditUserActivity(r, ACTION_BULK, ACTION_DELETE, req, true)
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) bulkDeleteScanResults(ctx context.Context, req model.BulkDeleteScansRequest) error {
+	scanType := utils.DetectedNodeScanType[req.ScanType]
+	scansList, err := reporters_scan.GetScansList(ctx, scanType, nil, req.Filters, model.FetchWindow{})
+	if err != nil {
+		return err
 	}
 
 	for _, s := range scansList.ScansInfo {
 		log.Info().Msgf("delete scan %s %s", req.ScanType, s.ScanId)
-		err = reporters_scan.DeleteScan(r.Context(), scanType, s.ScanId, []string{})
+		err = reporters_scan.DeleteScan(ctx, scanType, s.ScanId, []string{})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to delete scan id %s", s.ScanId)
 			continue
@@ -1620,16 +1631,12 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(scansList.ScansInfo) > 0 && (scanType == utils.NEO4J_COMPLIANCE_SCAN || scanType == utils.NEO4J_CLOUD_COMPLIANCE_SCAN) {
-		err = h.CachePostureProviders(r.Context())
+		err = h.CachePostureProviders(ctx)
 		if err != nil {
-			h.respondError(err, w)
-			return
+			return err
 		}
 	}
-
-	h.AuditUserActivity(r, ACTION_BULK, ACTION_DELETE, req, true)
-
-	w.WriteHeader(http.StatusNoContent)
+	return nil
 }
 
 func (h *Handler) GetAllNodesInScanResultBulkHandler(w http.ResponseWriter, r *http.Request) {
