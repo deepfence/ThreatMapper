@@ -25,7 +25,6 @@ const (
 
 // task names
 const (
-	SetUpGraphDBTask          = "set_up_graph_db"
 	CleanUpGraphDBTask        = "clean_up_graph_db"
 	CleanUpPostgresqlTask     = "clean_up_postgresql"
 	CleanupDiagnosisLogs      = "clean_up_diagnosis_logs"
@@ -177,7 +176,6 @@ var Topics = []string{
 
 // list of task names to create topics
 var Tasks = []string{
-	SetUpGraphDBTask,
 	CleanUpGraphDBTask,
 	CleanUpPostgresqlTask,
 	CleanupDiagnosisLogs,

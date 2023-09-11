@@ -293,8 +293,6 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	worker.AddHandler(utils.GenerateSBOMTask, sbom.NewSbomGenerator(ingestC).GenerateSbom,
 		utils.ScanSBOMTask, publisher)
 
-	worker.AddNoPublisherHandler(utils.SetUpGraphDBTask, cronjobs.ApplyGraphDBStartup, false)
-
 	worker.AddNoPublisherHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB, true)
 
 	worker.AddNoPublisherHandler(utils.ComputeThreatTask, cronjobs.ComputeThreat, true)
