@@ -387,7 +387,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 }
 
 func getScanStatusMap(ctx context.Context, id string, cloudProvider string) (map[string]int64, error) {
-	var res map[string]int64
+	res := map[string]int64{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return res, err
