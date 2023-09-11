@@ -67,12 +67,8 @@ import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatPercentage } from '@/utils/number';
 import {
-  COMPLIANCE_SCAN_STATUS_GROUPS,
   ComplianceScanGroupedStatus,
-  isNeverScanned,
   isScanComplete,
-  isScanFailed,
-  isScanInProgress,
   SCAN_STATUS_GROUPS,
 } from '@/utils/scan';
 import {
@@ -134,7 +130,7 @@ const action = async ({
 
   if (actionType === ActionEnumType.DELETE) {
     if (!scanId) {
-      throw new Error('Scan id is required for deletion');
+      throw new Error('Invalid action');
     }
     const deleteScanResultsForScanIDApi = apiWrapper({
       fn: getScanResultsApiClient().deleteScanResultsForScanID,
@@ -164,9 +160,6 @@ const action = async ({
   };
 };
 
-const isOrganizationAccount = (searchParams: URLSearchParams) =>
-  searchParams.get('showOrganizationAccounts')?.toLowerCase() === 'yes';
-
 const usePostureAccounts = () => {
   const [searchParams] = useSearchParams();
   const params = useParams();
@@ -180,7 +173,7 @@ const usePostureAccounts = () => {
       complianceScanStatus: searchParams.get('complianceScanStatus') as
         | ComplianceScanGroupedStatus
         | undefined,
-      nodeType: isOrganizationAccount(searchParams) ? `${nodeType}_org` : nodeType,
+      nodeType,
     }),
     keepPreviousData: true,
   });
@@ -189,7 +182,6 @@ const usePostureAccounts = () => {
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   complianceScanStatus: 'Posture scan status',
   status: 'Status',
-  showOrganizationAccounts: 'Show organization accounts',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -197,13 +189,12 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
     return prev + searchParams.getAll(curr).length;
   }, 0);
 };
-const Filters = ({ nodeType }: { nodeType: string }) => {
+const Filters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [status, setStatus] = useState('');
   const [complianceScanStatusSearchText, setComplianceScanStatusSearchText] =
     useState('');
-  const [organizationAccountSearchText, setOrganizationAccountSearchText] = useState('');
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
   return (
     <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
@@ -281,44 +272,6 @@ const Filters = ({ nodeType }: { nodeType: string }) => {
             );
           })}
         </Combobox>
-        {!isNonCloudProvider(nodeType) && (
-          <Combobox
-            value={['Yes', 'No'].find((item) => {
-              return item === searchParams.get('showOrganizationAccounts');
-            })}
-            nullable
-            onQueryChange={(query) => {
-              setOrganizationAccountSearchText(query);
-            }}
-            onChange={(value) => {
-              setSearchParams((prev) => {
-                if (value) {
-                  prev.set('showOrganizationAccounts', value);
-                } else {
-                  prev.delete('showOrganizationAccounts');
-                }
-                prev.delete('page');
-                return prev;
-              });
-            }}
-            getDisplayValue={() => FILTER_SEARCHPARAMS['showOrganizationAccounts']}
-          >
-            {['Yes', 'No']
-              .filter((item) => {
-                if (!organizationAccountSearchText.length) return true;
-                return item
-                  .toLowerCase()
-                  .includes(organizationAccountSearchText.toLowerCase());
-              })
-              .map((item) => {
-                return (
-                  <ComboboxOption key={item} value={item}>
-                    {item}
-                  </ComboboxOption>
-                );
-              })}
-          </Combobox>
-        )}
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -680,14 +633,14 @@ const AccountTable = ({
           );
         },
         header: () => 'Account',
-        minSize: 40,
-        size: 60,
+        minSize: 80,
+        size: 90,
         maxSize: 100,
       }),
       columnHelper.accessor('compliance_percentage', {
-        minSize: 30,
-        size: 40,
-        maxSize: 60,
+        minSize: 60,
+        size: 60,
+        maxSize: 70,
         header: () => 'Compliance %',
         cell: (cell) => {
           const percent = Number(cell.getValue());
@@ -721,41 +674,13 @@ const AccountTable = ({
       }),
       columnHelper.accessor('last_scan_status', {
         cell: (info) => {
-          const isOrgAccount = info.row.original.cloud_provider?.endsWith('_org');
-
-          if (isOrgAccount) {
-            const data = info.row.original.scan_status_map ?? {};
-            const keys = Object.keys(data);
-            const statuses = Object.keys(data).map((current, index) => {
-              const scanStatus = COMPLIANCE_SCAN_STATUS_GROUPS.neverScanned.includes(
-                current,
-              )
-                ? ''
-                : current;
-              return (
-                <>
-                  <div className="flex gap-x-1.5 items-center" key={current}>
-                    <span className="dark:text-text-input-value font-medium">
-                      {data[current]}
-                    </span>
-                    <ScanStatusBadge status={scanStatus ?? ''} />
-                    {index < keys.length - 1 ? (
-                      <div className="mx-2 w-px h-[20px] dark:bg-bg-grid-border" />
-                    ) : null}
-                  </div>
-                </>
-              );
-            });
-            return <div className="flex gap-x-1.5">{statuses}</div>;
-          } else {
-            const value = info.getValue();
-            return <ScanStatusBadge status={value ?? ''} />;
-          }
+          const value = info.getValue();
+          return <ScanStatusBadge status={value ?? ''} />;
         },
         header: () => 'Status',
-        minSize: 120,
-        size: 140,
-        maxSize: 160,
+        minSize: 50,
+        size: 70,
+        maxSize: 80,
       }),
     ];
 
@@ -767,9 +692,9 @@ const AccountTable = ({
             return <TruncatedText text={info.getValue() ?? ''} />;
           },
           header: () => 'Version',
-          minSize: 30,
-          size: 40,
-          maxSize: 60,
+          minSize: 50,
+          size: 70,
+          maxSize: 80,
         }),
       );
     }
@@ -891,13 +816,9 @@ const Accounts = () => {
     nodeType: string;
   };
 
-  const _nodeType = useMemo(() => {
-    return isOrganizationAccount(searchParams)
-      ? `${routeParams.nodeType}_org`
-      : routeParams.nodeType;
-  }, [searchParams]);
-
-  const nodeType = getNodeTypeByProviderName(_nodeType as ComplianceScanNodeTypeEnum);
+  const nodeType = getNodeTypeByProviderName(
+    routeParams.nodeType as ComplianceScanNodeTypeEnum,
+  );
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [scanIdToDelete, setScanIdToDelete] = useState('');
@@ -928,11 +849,6 @@ const Accounts = () => {
     },
     [fetcher],
   );
-
-  if (!nodeType) {
-    console.warn('Node type is required for compliance scan');
-    throw new Error();
-  }
 
   return (
     <div>
@@ -967,7 +883,7 @@ const Accounts = () => {
             Filter
           </Button>
         </div>
-        {filtersExpanded ? <Filters nodeType={_nodeType} /> : null}
+        {filtersExpanded ? <Filters /> : null}
         <ConfigureScanModal
           open={!!selectedScanType}
           onOpenChange={() => setSelectedScanType(undefined)}

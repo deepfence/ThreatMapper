@@ -97,7 +97,7 @@ export interface ModelContainerImage {
      * @type {{ [key: string]: any; }}
      * @memberof ModelContainerImage
      */
-    metadata?: { [key: string]: any; };
+    metadata: { [key: string]: any; };
     /**
      * 
      * @type {string}
@@ -164,6 +164,7 @@ export function instanceOfModelContainerImage(value: object): boolean {
     isInstance = isInstance && "malware_latest_scan_id" in value;
     isInstance = isInstance && "malware_scan_status" in value;
     isInstance = isInstance && "malwares_count" in value;
+    isInstance = isInstance && "metadata" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "secret_latest_scan_id" in value;
@@ -197,7 +198,7 @@ export function ModelContainerImageFromJSONTyped(json: any, ignoreDiscriminator:
         'malware_latest_scan_id': json['malware_latest_scan_id'],
         'malware_scan_status': json['malware_scan_status'],
         'malwares_count': json['malwares_count'],
-        'metadata': !exists(json, 'metadata') ? undefined : json['metadata'],
+        'metadata': json['metadata'],
         'node_id': json['node_id'],
         'node_name': json['node_name'],
         'secret_latest_scan_id': json['secret_latest_scan_id'],

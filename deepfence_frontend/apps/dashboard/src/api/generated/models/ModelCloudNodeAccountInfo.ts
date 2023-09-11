@@ -63,12 +63,6 @@ export interface ModelCloudNodeAccountInfo {
     node_name?: string;
     /**
      * 
-     * @type {{ [key: string]: number; }}
-     * @memberof ModelCloudNodeAccountInfo
-     */
-    scan_status_map?: { [key: string]: number; } | null;
-    /**
-     * 
      * @type {string}
      * @memberof ModelCloudNodeAccountInfo
      */
@@ -101,7 +95,6 @@ export function ModelCloudNodeAccountInfoFromJSONTyped(json: any, ignoreDiscrimi
         'last_scan_status': !exists(json, 'last_scan_status') ? undefined : json['last_scan_status'],
         'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
         'node_name': !exists(json, 'node_name') ? undefined : json['node_name'],
-        'scan_status_map': !exists(json, 'scan_status_map') ? undefined : json['scan_status_map'],
         'version': !exists(json, 'version') ? undefined : json['version'],
     };
 }
@@ -122,7 +115,6 @@ export function ModelCloudNodeAccountInfoToJSON(value?: ModelCloudNodeAccountInf
         'last_scan_status': value.last_scan_status,
         'node_id': value.node_id,
         'node_name': value.node_name,
-        'scan_status_map': value.scan_status_map,
         'version': value.version,
     };
 }

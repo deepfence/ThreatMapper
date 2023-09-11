@@ -58,7 +58,7 @@ export const ScanStatusBadge = ({
         <span className={iconWrapper}>
           <NotStartedIcon />
         </span>
-        {!justIcon ? <TruncatedText text={'Never Scanned'} /> : null}
+        <TruncatedText text={'Never Scanned'} />
       </div>
     );
   } else if (isScanInProgress(status)) {
