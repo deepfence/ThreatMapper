@@ -22,12 +22,15 @@ const (
 	dbUpgradeTimeout                       = time.Minute * 30
 	defaultDBScannedResourceCleanUpTimeout = time.Hour * 24 * 30
 	dbCloudResourceCleanupTimeout          = time.Hour * 13
+	ecsTaskRunningStatus                   = "RUNNING"
+	ecsTaskPublicEnabledConfig             = "ENABLED"
 )
 
 var (
-	resource_types  = [...]string{"aws_ec2_instance", "aws_ec2_application_load_balancer", "aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer"}
-	resource_lambda = [...]string{"aws_lambda_function"}
-	resource_ecs    = [...]string{"aws_ecs_service"}
+	resource_types    = [...]string{"aws_ec2_instance", "aws_ec2_application_load_balancer", "aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer"}
+	resource_lambda   = [...]string{"aws_lambda_function"}
+	resource_ecs      = [...]string{"aws_ecs_service"}
+	resource_ecs_task = [...]string{"aws_ecs_task"}
 )
 
 func getResourceCleanUpTimeout(ctx context.Context) time.Duration {
@@ -447,10 +450,23 @@ func LinkCloudResources(msg *message.Message) error {
 		SET n.linked = true
 		WITH n, apoc.convert.fromJsonList(n.security_groups) as groups
 		UNWIND groups as subgroup
-		WITH subgroup, CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupName END as name,
+		WITH n, subgroup, CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupName END as name,
 		CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupId END as node_id
-		MERGE (m:SecurityGroup{node_id:node_id})
-		MERGE (m)-[:SECURED]->(n)`,
+		OPTIONAL MATCH (m:CloudResource{id: "aws_vpc_security_group_rule", group_id: node_id})
+		MATCH (o:Node {node_id:'out-the-internet'})
+		MATCH (p:Node {node_id:'in-the-internet'})
+		WITH m, n, o, p, CASE m WHEN NOT NULL THEN [1] ELSE [] END AS make_cat
+		FOREACH (i IN make_cat |
+			MERGE (m) -[:SECURED]-> (n)
+		)
+		WITH m, n, o, p, CASE WHEN m.is_egress AND m.cidr_ipv4 = "0.0.0.0/0" THEN [1] ELSE [] END AS make_cat2
+		FOREACH (i IN make_cat2 |
+			MERGE (n) <-[:PUBLIC]- (o)
+		)
+		WITH m, n, o, p, CASE WHEN NOT m.is_egress AND m.cidr_ipv4 = "0.0.0.0/0" THEN [1] ELSE [] END AS make_cat3
+		FOREACH (i IN make_cat3 |
+			MERGE (n) <-[:PUBLIC]- (p)
+		)`,
 		map[string]interface{}{
 			"types": resource_types[:],
 		}, txConfig); err != nil {
@@ -466,8 +482,21 @@ func LinkCloudResources(msg *message.Message) error {
 		SET n.linked = true
 		WITH n, apoc.convert.fromJsonList(n.vpc_security_group_ids) as sec_group_ids
 		UNWIND sec_group_ids as subgroup
-		MERGE (m:SecurityGroup{node_id:subgroup})
-		MERGE (m)-[:SECURED]->(n)`,
+		OPTIONAL MATCH (m:CloudResource{id: "aws_vpc_security_group_rule", group_id: subgroup})
+		MATCH (o:Node {node_id:'out-the-internet'})
+		MATCH (p:Node {node_id:'in-the-internet'})
+		WITH m, n, o, p, CASE m WHEN NOT NULL THEN [1] ELSE [] END AS make_cat
+		FOREACH (i IN make_cat |
+			MERGE (m) -[:SECURED]-> (n)
+		)
+		WITH m, n, o, p, CASE WHEN m.is_egress AND m.cidr_ipv4 = "0.0.0.0/0" THEN [1] ELSE [] END AS make_cat2
+		FOREACH (i IN make_cat2 |
+			MERGE (n) <-[:PUBLIC]- (o)
+		)
+		WITH m, n, o, p, CASE WHEN NOT m.is_egress AND m.cidr_ipv4 = "0.0.0.0/0" THEN [1] ELSE [] END AS make_cat3
+		FOREACH (i IN make_cat3 |
+			MERGE (n) <-[:PUBLIC]- (p)
+		)`,
 		map[string]interface{}{
 			"types": resource_lambda[:],
 		}, txConfig); err != nil {
@@ -479,14 +508,23 @@ func LinkCloudResources(msg *message.Message) error {
 		MATCH (n:CloudResource)
 		WHERE n.linked = false
 		AND n.node_type in $types
-		WITH n LIMIT 10000
-		SET n.linked = true
 		WITH n, apoc.convert.fromJsonMap(n.network_configuration) as map
-		UNWIND map.AwsvpcConfiguration.SecurityGroups as secgroup
-		MERGE (m:SecurityGroup{node_id:secgroup})
-		MERGE (m)-[:SECURED]->(n)`,
+		MATCH (m:CloudResource)
+		WHERE m.node_type IN $task_types
+		AND n.service_name = split(m.group, ":")[1]
+		AND m.last_status = $status
+		AND map.AwsvpcConfiguration.AssignPublicIp = $enabled
+		WITH m LIMIT 10000
+		SET m.linked = true
+		WITH m, n
+		MATCH (p:Node {node_id:'in-the-internet'})
+		MERGE (m) <-[:PUBLIC]- (p)
+		MERGE (n) <-[:PUBLIC]- (p)`,
 		map[string]interface{}{
-			"types": resource_ecs[:],
+			"types":      resource_ecs[:],
+			"task_types": resource_ecs_task[:],
+			"status":     ecsTaskRunningStatus,
+			"enabled":    ecsTaskPublicEnabledConfig,
 		}, txConfig); err != nil {
 		return err
 	}

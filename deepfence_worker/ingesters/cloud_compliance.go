@@ -30,11 +30,15 @@ func CommitFuncCloudCompliance(ns string, data []ingestersUtil.CloudCompliance) 
 	if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:CloudCompliance{node_id: row.scan_id + "--" + row.control_id + "--" + COALESCE(row.resource, row.account_id, ""), resource:row.resource, scan_id: row.scan_id, control_id: row.control_id})
-		MERGE (m:CloudResource{node_id: row.resource})
 		SET n+= row
-		WITH n, m
+		WITH n, row
+		OPTIONAL MATCH (m:CloudResource{arn: row.resource})
+		WITH n, m, CASE WHEN m IS NOT NULL THEN [1] ELSE [] END AS make_cat
 		MATCH (l:CloudComplianceScan{node_id: n.scan_id})
 		MERGE (l) -[r:DETECTED]-> (n)
+		FOREACH (i IN make_cat |
+			MERGE (n) -[:SCANNED]-> (m)
+		)
 		SET r.masked = false`,
 		map[string]interface{}{"batch": CloudCompliancesToMaps(data)}); err != nil {
 		return err
