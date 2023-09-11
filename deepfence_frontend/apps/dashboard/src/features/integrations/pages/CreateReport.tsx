@@ -379,7 +379,13 @@ const ReportForm = () => {
           ) : null}
 
           <div className="mt-14 flex gap-x-2">
-            <Button size="md" color="default" type="submit">
+            <Button
+              size="md"
+              color="default"
+              type="submit"
+              loading={fetcher.state === 'submitting'}
+              disabled={fetcher.state === 'submitting'}
+            >
               Create
             </Button>
             <Button
