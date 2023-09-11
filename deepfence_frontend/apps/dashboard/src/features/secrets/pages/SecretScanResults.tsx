@@ -1139,12 +1139,16 @@ const DynamicBreadcrumbs = () => {
   const { scanStatusResult } = data;
 
   const { node_type, node_name } = scanStatusResult ?? {};
+  let nodeType = node_type;
+  if (node_type === 'image') {
+    nodeType = 'container_image';
+  }
 
   return (
     <>
       <BreadcrumbLink isLink asChild>
-        <DFLink to={`/secret/scans?nodeType=${node_type}`} unstyled>
-          {capitalize(node_type ?? '')}
+        <DFLink to={`/secret/scans?nodeType=${nodeType}`} unstyled>
+          {capitalize(nodeType?.replace('_', ' ') ?? '')}
         </DFLink>
       </BreadcrumbLink>
       <BreadcrumbLink isLast>
