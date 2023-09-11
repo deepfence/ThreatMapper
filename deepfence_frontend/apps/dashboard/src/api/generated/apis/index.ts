@@ -8,7 +8,6 @@ export * from './CommonApi';
 export * from './ComplianceApi';
 export * from './ControlsApi';
 export * from './DiagnosisApi';
-export * from './DiffAddApi';
 export * from './IntegrationApi';
 export * from './InternalApi';
 export * from './LookupApi';
