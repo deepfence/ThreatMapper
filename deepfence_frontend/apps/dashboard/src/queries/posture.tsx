@@ -48,8 +48,17 @@ export const postureQueries = createQueryKeys('posture', {
       sortBy: string;
       descending: boolean;
     };
+    org_accounts?: string[];
   }) => {
-    const { page = 1, pageSize, complianceScanStatus, status, order, nodeType } = filters;
+    const {
+      page = 1,
+      pageSize,
+      complianceScanStatus,
+      status,
+      order,
+      nodeType,
+      org_accounts,
+    } = filters;
     return {
       queryKey: [{ filters }],
       queryFn: async () => {
@@ -84,6 +93,11 @@ export const postureQueries = createQueryKeys('posture', {
               ];
             }
           }
+        }
+
+        if (org_accounts && org_accounts.length) {
+          searchReq.node_filter.filters.contains_filter.filter_in!['organization_id'] =
+            org_accounts;
         }
 
         if (complianceScanStatus) {

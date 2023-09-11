@@ -41,6 +41,10 @@ import {
 import { ConfigureScanModal } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import {
+  ICloudAccountType,
+  SearchableCloudAccountsList,
+} from '@/components/forms/SearchableCloudAccountsList';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -176,6 +180,7 @@ const usePostureAccounts = () => {
         | ComplianceScanGroupedStatus
         | undefined,
       nodeType,
+      org_accounts: searchParams.getAll('org_accounts'),
     }),
     keepPreviousData: true,
   });
@@ -184,6 +189,7 @@ const usePostureAccounts = () => {
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   complianceScanStatus: 'Posture scan status',
   status: 'Status',
+  org_accounts: 'Organization accounts',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -192,12 +198,16 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   }, 0);
 };
 const Filters = () => {
+  const { nodeType } = useParams() as {
+    nodeType: string;
+  };
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [status, setStatus] = useState('');
   const [complianceScanStatusSearchText, setComplianceScanStatusSearchText] =
     useState('');
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
+
   return (
     <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
       <div className="flex gap-2">
@@ -274,6 +284,29 @@ const Filters = () => {
             );
           })}
         </Combobox>
+        {(nodeType === 'aws' || nodeType === 'gcp') && (
+          <SearchableCloudAccountsList
+            displayValue={`${nodeType.toUpperCase()} organization accounts`}
+            valueKey="nodeId"
+            cloudProvider={`${nodeType}_org` as ICloudAccountType}
+            defaultSelectedAccounts={searchParams.getAll('org_accounts')}
+            onClearAll={() => {
+              setSearchParams((prev) => {
+                prev.delete('org_accounts');
+                return prev;
+              });
+            }}
+            onChange={(value) => {
+              setSearchParams((prev) => {
+                prev.delete('org_accounts');
+                value.forEach((id) => {
+                  prev.append('org_accounts', id);
+                });
+                return prev;
+              });
+            }}
+          />
+        )}
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
