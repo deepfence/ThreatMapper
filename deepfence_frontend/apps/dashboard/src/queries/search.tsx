@@ -316,6 +316,7 @@ export const searchQueries = createQueryKeys('search', {
     searchText?: string;
     size: number;
     active?: boolean;
+    nodeId?: string;
     order?: {
       sortBy: string;
       descending: boolean;
@@ -332,7 +333,7 @@ export const searchQueries = createQueryKeys('search', {
           tagList: string[];
         }[];
       }> => {
-        const { searchText, size, active, order } = filters;
+        const { searchText, size, active, order, nodeId } = filters;
         const searchContainerImagesApi = apiWrapper({
           fn: getSearchApiClient().searchContainerImages,
         });
@@ -373,6 +374,11 @@ export const searchQueries = createQueryKeys('search', {
             size,
           },
         };
+
+        if (nodeId) {
+          scanRequestParams.node_filter.filters!.contains_filter!.filter_in!['node_id'] =
+            [nodeId];
+        }
 
         if (searchText?.trim()?.length) {
           scanRequestParams.node_filter.filters!.match_in_array_filter!.filter_in![
