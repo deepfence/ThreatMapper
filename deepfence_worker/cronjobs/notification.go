@@ -263,6 +263,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 			updatedResults = FormatForMessagingApps(results, integrationRow.Resource)
 		} else {
 			for _, r := range results {
+				updatedResults = []map[string]interface{}{}
 				updatedResults = append(updatedResults, utils.ToMap[T](r))
 			}
 		}
