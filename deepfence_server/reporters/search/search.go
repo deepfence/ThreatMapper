@@ -375,11 +375,58 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		}
 		var node model.CloudNodeAccountInfo
 		utils.FromMap(node_map, &node)
+		if node.CloudProvider == model.PostureProviderAWSOrg || node.CloudProvider == model.PostureProviderGCPOrg {
+			node.ScanStatusMap, err = getScanStatusMap(ctx, node.NodeId, node.CloudProvider)
+			if err != nil {
+				log.Error().Msgf("Error in populating status of org %v", err)
+			}
+		}
 		res = append(res, node)
 	}
 	return res, nil
 }
 
+func getScanStatusMap(ctx context.Context, id string, cloudProvider string) (map[string]int, error) {
+	var res map[string]int
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session, err := driver.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+	query := `MATCH (n:CloudNode{cloud_provider:"` + cloudProvider + `",node_id:"` + id + `"}) -[:IS_CHILD] -> (m:CloudNode)
+			WITH m.node_id AS node_id UNWIND node_id AS x 
+			CALL {
+				WITH x
+				OPTIONAL MATCH (n:CloudNode{node_id: x})<-[:SCANNED]-(s1:CloudComplianceScan)
+				RETURN s1.node_id AS last_scan_id, COALESCE(s1.status, "NEVER_SCANNED") AS last_scan_status
+				ORDER BY s1.updated_at DESC LIMIT 1
+			}
+	RETURN last_scan_status, count(last_scan_status) `
+	r, err := tx.Run(query, map[string]interface{}{})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := r.Collect()
+	if err != nil {
+		return res, err
+	}
+	for _, rec := range recs {
+		res[rec.Values[0].(string)] = rec.Values[1].(int)
+	}
+	return res, nil
+}
 func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanType, scan_filter SearchFilter, resource_filter SearchFilter, fw model.FetchWindow) ([]model.ScanInfo, error) {
 	res := []model.ScanInfo{}
 
