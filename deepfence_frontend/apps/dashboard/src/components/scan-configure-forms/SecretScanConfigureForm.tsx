@@ -58,8 +58,8 @@ export const scanSecretApiAction = async ({
   let filter_in = null;
   let _nodeType = nodeType;
 
-  if (nodeType === SecretScanNodeTypeEnum.imageTag) {
-    _nodeType = 'image';
+  if (nodeType === SecretScanNodeTypeEnum.imageTag || nodeType === 'container_image') {
+    _nodeType = SecretScanNodeTypeEnum.image;
   } else if (nodeType === SecretScanNodeTypeEnum.kubernetes_cluster) {
     _nodeType = 'cluster';
   } else if (nodeType === SecretScanNodeTypeEnum.image) {

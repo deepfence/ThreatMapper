@@ -68,7 +68,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
         {
           field_name: 'updated_at',
           field_value: `${Date.now() - duration}`,
-          greater_than: false,
+          greater_than: true,
         },
       ];
     }
