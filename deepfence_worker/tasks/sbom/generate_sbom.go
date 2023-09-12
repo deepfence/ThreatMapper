@@ -87,6 +87,9 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 
 	defer func() {
 		log.Info().Msgf("remove auth directory %s", authFile)
+		if authFile == "" {
+			return
+		}
 		if err := os.RemoveAll(authFile); err != nil {
 			log.Error().Msg(err.Error())
 		}
