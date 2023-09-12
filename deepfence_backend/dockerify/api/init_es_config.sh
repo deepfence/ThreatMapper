@@ -707,11 +707,6 @@ add_index() {
   echo ""
 }
 
-
-reindex_sbom_artifacts_python_script () {
-    python /app/code/init_scripts/reindex_sbom_artifacts.py
-}
-
 set_es_user_creds
 add_template
 add_index
@@ -720,6 +715,5 @@ add_cve_scan_map_pipeline
 add_compliance_pipeline
 add_compliance_scan_logs_pipeline
 add_indexed_default_upsert_script
-reindex_sbom_artifacts_python_script
 echo ""
 echo "custom configuration added successfully"
