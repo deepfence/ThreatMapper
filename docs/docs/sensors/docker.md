@@ -44,7 +44,7 @@ To upgrade a sensor install, stop the existing sensor and start the new version.
 
 ## Using a Proxy Server with Docker
 
-If ThreatStryker management console is accessed through a proxy server, add the proxy server details to the docker configuration.
+If ThreatMapper management console is accessed through a proxy server, add the proxy server details to the docker configuration.
 
 Edit the file: `~/.docker/config.json`, and add the following content.  Remember to change the proxy server ip address from 111.111.111.111 to your proxy server ip:
 

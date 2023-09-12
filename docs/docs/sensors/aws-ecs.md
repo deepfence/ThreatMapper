@@ -6,7 +6,7 @@ title: AWS ECS (EC2 Provider)
 
 *Deployed as a daemon service using a task definition*
 
-In AWS ECS, the ThreatStryker sensors are deployed as a daemon service using task definition.
+In AWS ECS, the ThreatMapper sensors are deployed as a daemon service using task definition.
 
 # Prerequisites
 
