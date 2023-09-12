@@ -1,234 +1,128 @@
-import { useSuspenseInfiniteQuery, useSuspenseQuery } from '@suspensive/react-query';
-import { debounce } from 'lodash-es';
-import { Suspense, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Suspense, useEffect, useState } from 'react';
+import { Button, CircleSpinner, Modal } from 'ui-components';
+
 import {
-  Button,
-  CircleSpinner,
-  Combobox,
-  ComboboxOption,
-  Listbox,
-  ListboxOption,
-  Modal,
-} from 'ui-components';
-
-import { queries } from '@/queries';
+  ISelected,
+  SearchableScanTimeList,
+} from '@/features/vulnerabilities/components/ScanResults/SearchableScanTimeList';
+import { SearchableTagList } from '@/features/vulnerabilities/components/ScanResults/SearchableTagList';
+import { useScanResults } from '@/features/vulnerabilities/pages/VulnerabilityScanResults';
+import { VulnerabilityScanNodeTypeEnum } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
-import { isScanComplete } from '@/utils/scan';
-
-const useGetTagsForImage = (nodeId: string) => {
-  return useSuspenseQuery({
-    ...queries.search.containerImages({
-      size: 99999,
-      scanType: 'none',
-      nodeId,
-    }),
-    select: (data) => {
-      return data.containerImages[0].tagList;
-    },
-  });
-};
-
-interface SearchableTimeListProps {
-  onChange?: (value: number) => void;
-  onClearAll?: () => void;
-  defaultSelectedTime?: number;
-  valueKey?: 'nodeId';
-  triggerVariant?: 'select' | 'button';
-  helperText?: string;
-  color?: 'error' | 'default';
-  nodeId?: string;
-  tag?: string;
-}
-
-const PAGE_SIZE = 15;
-const SearchableScanTime = ({
-  onChange,
-  onClearAll,
-  defaultSelectedTime,
-  triggerVariant,
-  helperText,
-  color,
-  nodeId,
-  tag,
-}: SearchableTimeListProps) => {
-  const [searchText, setSearchText] = useState('');
-
-  const [selectedTime, setSelectedTime] = useState<number>(defaultSelectedTime ?? 0);
-
-  const isSelectVariantType = useMemo(() => {
-    return triggerVariant === 'select';
-  }, [triggerVariant]);
-
-  useEffect(() => {
-    setSelectedTime(defaultSelectedTime ?? 0);
-  }, [defaultSelectedTime]);
-
-  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useSuspenseInfiniteQuery({
-      ...queries.vulnerability.searchVulnerabilities({
-        size: PAGE_SIZE,
-        searchText,
-        nodeId: nodeId ?? '',
-        tag: tag ?? '',
-      }),
-      keepPreviousData: true,
-      getNextPageParam: (lastPage, allPages) => {
-        return allPages.length * PAGE_SIZE;
-      },
-      getPreviousPageParam: (firstPage, allPages) => {
-        if (!allPages.length) return 0;
-        return (allPages.length - 1) * PAGE_SIZE;
-      },
-    });
-
-  const searchTag = debounce((query: string) => {
-    setSearchText(query);
-  }, 1000);
-
-  const onEndReached = () => {
-    if (hasNextPage) fetchNextPage();
-  };
-  console.log('========', data);
-  return (
-    <>
-      <Combobox
-        startIcon={
-          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
-        }
-        name="timeFilter"
-        triggerVariant={triggerVariant || 'button'}
-        label={isSelectVariantType ? 'Host' : undefined}
-        getDisplayValue={() =>
-          isSelectVariantType ? formatMilliseconds(selectedTime) : ''
-        }
-        placeholder="Select pod"
-        value={selectedTime}
-        onChange={(value: number) => {
-          setSelectedTime(value);
-          onChange?.(value);
-        }}
-        onQueryChange={searchTag}
-        clearAllElement="Clear"
-        onClearAll={onClearAll}
-        onEndReached={onEndReached}
-        helperText={helperText}
-        color={color}
-      >
-        {data.map((pod) => {
-          return (
-            <ComboboxOption key={pod.nodeId} value={pod.nodeName}>
-              {pod.nodeName}
-            </ComboboxOption>
-          );
-        })}
-      </Combobox>
-    </>
-  );
-};
-
-const SearchableScanTimeList = (props: SearchableTimeListProps) => {
-  const { triggerVariant } = props;
-  const isSelectVariantType = useMemo(() => {
-    return triggerVariant === 'select';
-  }, [triggerVariant]);
-
-  return (
-    <Suspense
-      fallback={
-        <Combobox
-          label={isSelectVariantType ? 'Select tags' : undefined}
-          triggerVariant={triggerVariant || 'button'}
-          startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-          placeholder="Select pod"
-          multiple
-          onQueryChange={() => {
-            // no operation
-          }}
-        />
-      }
-    >
-      <SearchableScanTime {...props} />
-    </Suspense>
-  );
-};
 
 const Tags = ({
   nodeId,
-  baseScanTime,
   selectedTag,
   setSelectedTag,
 }: {
-  nodeId: string;
-  baseScanTime: number | null;
+  nodeId: string | '';
   selectedTag: string;
   setSelectedTag: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-  const { data } = useGetTagsForImage(nodeId);
+  const { data } = useScanResults();
 
   return (
-    <Listbox
-      label="Select scan time to compare vulnerabilities"
-      value={selectedTag}
-      name="region"
-      onChange={(value: string) => {
+    <SearchableTagList
+      scanType="none"
+      triggerVariant="select"
+      defaultSelectedTag={selectedTag || nodeId}
+      valueKey="nodeId"
+      onChange={(value) => {
         setSelectedTag(value);
       }}
-      placeholder="Select scan time"
-      getDisplayValue={() => {
-        return selectedTag;
+      onClearAll={() => {
+        setSelectedTag('');
       }}
-    >
-      {data.map((item) => (
-        <ListboxOption value={item} key={item}>
-          {item}
-        </ListboxOption>
-      ))}
-    </Listbox>
+      filter={{
+        dockerImageName: data.data?.dockerImageName ?? '',
+        nodeId,
+      }}
+    />
   );
 };
+type ToScanDataType = {
+  toScanId: string;
+  toScanTime: number | null;
+};
+
 const BaseInput = ({
   nodeId,
-  baseScanTime,
+  nodeType,
+  compareInput,
+  toScanData,
+  setToScanData,
 }: {
   nodeId: string;
-  baseScanTime: number | null;
+  nodeType: string;
+  compareInput: {
+    baseNodeName: string;
+    baseScanId: string;
+    toScanId: string;
+    baseScanTime: number;
+    toScanTime: number;
+  };
+  toScanData: ToScanDataType;
+  setToScanData: React.Dispatch<React.SetStateAction<ToScanDataType>>;
 }) => {
-  const [selectedScanTime, setSelectedScanTime] = useState(0);
-  const [selectedTag, setSelectedTag] = useState('');
+  const [selectedNodeId, setSelectedNodeId] = useState(() => nodeId);
+
+  useEffect(() => {
+    if (selectedNodeId) {
+      setToScanData({
+        toScanTime: null,
+        toScanId: '',
+      });
+    }
+  }, [selectedNodeId]);
+
+  console.log('compareInput', formatMilliseconds(compareInput.baseScanTime));
 
   return (
     <div className="flex flex-col gap-y-6">
-      <Tags
-        nodeId={nodeId}
-        baseScanTime={baseScanTime}
-        selectedTag={selectedTag}
-        setSelectedTag={setSelectedTag}
-      />
-      <SearchableScanTimeList
-        defaultSelectedTime={selectedScanTime}
-        onClearAll={() => {
-          setSelectedScanTime(0);
-        }}
-        onChange={(value) => {
-          setSelectedScanTime(value);
-        }}
-        nodeId={nodeId}
-      />
+      <Suspense fallback={<CircleSpinner size="sm" />}>
+        {nodeType === VulnerabilityScanNodeTypeEnum.image && (
+          <Tags
+            nodeId={nodeId}
+            selectedTag={selectedNodeId}
+            setSelectedTag={setSelectedNodeId}
+          />
+        )}
+
+        <SearchableScanTimeList
+          triggerVariant="select"
+          defaultSelectedTime={toScanData.toScanTime ?? null}
+          valueKey="nodeId"
+          onChange={(data: ISelected) => {
+            setToScanData({
+              toScanTime: data.updatedAt,
+              toScanId: data.scanId,
+            });
+          }}
+          onClearAll={() => {
+            setToScanData({
+              toScanTime: null,
+              toScanId: '',
+            });
+          }}
+          nodeId={selectedNodeId}
+          nodeType={nodeType}
+          skipScanTime={compareInput.baseScanTime}
+        />
+      </Suspense>
     </div>
   );
 };
 export const CompareScanInputModal = ({
   showDialog,
-  baseScanTime,
   setShowDialog,
   scanHistoryData,
   setShowScanCompareModal,
   setCompareInput,
   nodeId,
+  nodeType,
+  compareInput,
 }: {
   showDialog: boolean;
-  baseScanTime: number | null;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
   scanHistoryData: {
     updatedAt: number;
@@ -238,6 +132,7 @@ export const CompareScanInputModal = ({
   setShowScanCompareModal: React.Dispatch<React.SetStateAction<boolean>>;
   setCompareInput: React.Dispatch<
     React.SetStateAction<{
+      baseNodeName: string;
       baseScanId: string;
       toScanId: string;
       baseScanTime: number;
@@ -245,16 +140,19 @@ export const CompareScanInputModal = ({
     }>
   >;
   nodeId: string;
+  nodeType: string;
+  compareInput: {
+    baseNodeName: string;
+    baseScanId: string;
+    toScanId: string;
+    baseScanTime: number;
+    toScanTime: number;
+  };
 }) => {
-  const [selectedScanTime, setSelectedScanTime] = useState(0);
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const [baseTag, setBaseTag] = useState<string[]>([]);
-
-  if (!baseScanTime) {
-    console.warn('Base scan time is required for comparision');
-    return null;
-  }
+  const [toScanData, setToScanData] = useState<ToScanDataType>({
+    toScanId: '',
+    toScanTime: null,
+  });
 
   return (
     <Modal
@@ -279,18 +177,17 @@ export const CompareScanInputModal = ({
           <Button
             size="md"
             type="button"
+            disabled={!toScanData.toScanTime}
             onClick={() => {
-              const toScan = scanHistoryData.find((data) => {
-                return data.updatedAt === selectedScanTime;
-              });
               const baseScan = scanHistoryData.find((data) => {
-                return data.updatedAt === baseScanTime;
+                return data.updatedAt === compareInput.baseScanTime;
               });
               setCompareInput({
+                baseNodeName: '',
                 baseScanId: baseScan?.scanId ?? '',
-                toScanId: toScan?.scanId ?? '',
+                toScanId: toScanData?.toScanId ?? '',
                 baseScanTime: baseScan?.updatedAt ?? 0,
-                toScanTime: toScan?.updatedAt ?? 0,
+                toScanTime: toScanData?.toScanTime ?? 0,
               });
               setShowDialog(false);
               setShowScanCompareModal(true);
@@ -302,17 +199,13 @@ export const CompareScanInputModal = ({
       }
     >
       <div className="grid">
-        {/* <SearchableTagList
-          defaultSelectedTags={baseTags}
-          onClearAll={() => {
-            setBaseTags([]);
-          }}
-          onChange={(value) => {
-            setBaseTags(value);
-          }}
+        <BaseInput
           nodeId={nodeId}
-        /> */}
-        <BaseInput nodeId={nodeId} baseScanTime={baseScanTime} />
+          nodeType={nodeType}
+          compareInput={compareInput}
+          setToScanData={setToScanData}
+          toScanData={toScanData}
+        />
       </div>
     </Modal>
   );

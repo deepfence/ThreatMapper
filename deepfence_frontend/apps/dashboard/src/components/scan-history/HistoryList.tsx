@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { cn } from 'tailwind-preset';
 import { Dropdown, DropdownItem, IconButton } from 'ui-components';
 
@@ -20,14 +20,33 @@ export const ScanHistoryDropdown = ({
     status: string;
     isCurrent: boolean;
     showScanDiff?: boolean;
+    nodeName?: string;
     onDeleteClick: (id: string) => void;
     onDownloadClick: (id: string) => void;
     onScanClick: (id: string) => void;
-    onScanTimeCompareButtonClick?: (toScanTime: number) => void;
+    onScanTimeCompareButtonClick?: (toScanTime: number, nodeName: string) => void;
   }>;
   currentTimeStamp: string;
 }) => {
   const [open, setOpen] = useState(false);
+
+  const areThereMoreThanOneSuccessScan = useCallback(() => {
+    const isMoreThanOneScan = scans.length > 1;
+    if (!isMoreThanOneScan) {
+      return false;
+    }
+    let scanSuccessCount = 0;
+    for (const scan of scans) {
+      if (isScanComplete(scan.status)) {
+        scanSuccessCount = scanSuccessCount + 1;
+      }
+      if (scanSuccessCount > 1) {
+        return true;
+      }
+    }
+    return false;
+  }, [scans]);
+
   return (
     <Dropdown
       open={open}
@@ -94,9 +113,9 @@ export const ScanHistoryDropdown = ({
                         }}
                       />
                     ) : null}
-                    {isScanComplete(scan.status) &&
-                    scan.showScanDiff &&
-                    scans.length > 1 ? (
+                    {scan.showScanDiff &&
+                    isScanComplete(scan.status) &&
+                    areThereMoreThanOneSuccessScan() ? (
                       <IconButton
                         variant="flat"
                         icon={
@@ -108,7 +127,10 @@ export const ScanHistoryDropdown = ({
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          scan?.onScanTimeCompareButtonClick?.(scan.timestamp);
+                          scan?.onScanTimeCompareButtonClick?.(
+                            scan.timestamp,
+                            scan.nodeName ?? '',
+                          );
                           setOpen(false);
                         }}
                       />

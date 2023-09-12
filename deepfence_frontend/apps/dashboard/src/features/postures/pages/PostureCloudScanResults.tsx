@@ -497,7 +497,7 @@ const HistoryControls = () => {
           id: item.scanId,
           isCurrent: item.scanId === scan_id,
           status: item.status,
-          timestamp: formatMilliseconds(item.updatedAt),
+          timestamp: item.updatedAt,
           onDeleteClick: (id) => {
             setScanIdToDelete(id);
           },
