@@ -380,38 +380,25 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	}
 	var res neo4j.Result
 	var query string
-	if isOrgListing {
-		query = `
-		MATCH (m:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (n:` + string(neo4jNodeType) + `{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)
-		OPTIONAL MATCH (s)-[:DETECTED]->(c:CloudCompliance)
-		OPTIONAL MATCH (s)-[:DETECTED]->(c1:CloudCompliance)
-		WHERE c1.status IN $pass_status
-		WITH n, COUNT(distinct c1) as pass_count, COUNT(distinct c) as total_count
-		RETURN  n.node_id, n.node_name, $cloud_provider, pass_count, total_count, n.active, n.updated_at, COALESCE(n.cloud_compliance_latest_scan_id, ''), COALESCE(n.cloud_compliance_latest_scan_status, '')
-		ORDER BY n.updated_at` + fw.FetchWindow2CypherQuery()
-	} else if cloudProvider == PostureProviderKubernetes || cloudProvider == PostureProviderLinux {
+	if cloudProvider == PostureProviderKubernetes || cloudProvider == PostureProviderLinux {
 		nonKubeFilter := ""
 		if cloudProvider == PostureProviderLinux {
 			nonKubeFilter = "{kubernetes_cluster_id:''}"
 		}
 		query = `
-		MATCH (n:` + string(neo4jNodeType) + nonKubeFilter + `)<-[:SCANNED]-(s:` + string(utils.NEO4J_COMPLIANCE_SCAN) + `)
+		MATCH (n:` + string(neo4jNodeType) + nonKubeFilter + `)
 		WHERE n.pseudo=false
-		OPTIONAL MATCH (s)-[:DETECTED]->(c:Compliance)
-		OPTIONAL MATCH (s)-[:DETECTED]->(c1:Compliance)
-		WHERE c1.status IN $pass_status
-		WITH n, COUNT(distinct c1) as pass_count, COUNT(distinct c) as total_count
-		RETURN n.node_id, n.node_name, $cloud_provider, pass_count, total_count, n.active, n.updated_at, COALESCE(n.compliance_latest_scan_id, ''), COALESCE(n.compliance_latest_scan_status, '')
+		RETURN n.node_id, n.node_name, $cloud_provider, n.active, n.updated_at, COALESCE(n.compliance_latest_scan_id, ''), COALESCE(n.compliance_latest_scan_status, '')
 		ORDER BY n.updated_at` + fw.FetchWindow2CypherQuery()
-
+	} else if isOrgListing {
+		query = `
+		MATCH (m:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (n:` + string(neo4jNodeType) + `)
+		RETURN  n.node_id, n.node_name, $cloud_provider, n.active, n.updated_at, COALESCE(n.cloud_compliance_latest_scan_id, ''), COALESCE(n.cloud_compliance_latest_scan_status, '')
+		ORDER BY n.updated_at` + fw.FetchWindow2CypherQuery()
 	} else {
 		query = `
-		MATCH (n:` + string(neo4jNodeType) + `{cloud_provider: $cloud_provider}) <-[:SCANNED]- (s:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)
-		OPTIONAL MATCH (s)-[:DETECTED]->(c:CloudCompliance)
-		OPTIONAL MATCH (s)-[:DETECTED]->(c1:CloudCompliance)
-		WHERE c1.status IN $pass_status
-		WITH n, COUNT(distinct c1) as pass_count, COUNT(distinct c) as total_count
-		RETURN n.node_id, n.node_name, $cloud_provider, pass_count, total_count, n.active, n.updated_at, COALESCE(n.cloud_compliance_latest_scan_id, ''), COALESCE(n.cloud_compliance_latest_scan_status, '')
+		MATCH (n:` + string(neo4jNodeType) + `{cloud_provider: $cloud_provider})
+		RETURN n.node_id, n.node_name, $cloud_provider, n.active, n.updated_at, COALESCE(n.cloud_compliance_latest_scan_id, ''), COALESCE(n.cloud_compliance_latest_scan_status, '')
 		ORDER BY n.updated_at` + fw.FetchWindow2CypherQuery()
 	}
 
@@ -433,18 +420,14 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 
 	cloud_node_accounts_info := []CloudNodeAccountInfo{}
 	for _, rec := range recs {
-		var percent float64
-		if rec.Values[4].(int64) != 0 {
-			percent = float64(rec.Values[3].(int64)) / float64(rec.Values[4].(int64))
-		}
 		tmp := CloudNodeAccountInfo{
 			NodeId:               rec.Values[0].(string),
 			NodeName:             rec.Values[1].(string),
 			CloudProvider:        rec.Values[2].(string),
-			CompliancePercentage: percent,
-			Active:               rec.Values[5].(bool),
-			LastScanId:           rec.Values[7].(string),
-			LastScanStatus:       rec.Values[8].(string),
+			CompliancePercentage: 0,
+			Active:               rec.Values[3].(bool),
+			LastScanId:           rec.Values[5].(string),
+			LastScanStatus:       rec.Values[6].(string),
 		}
 		cloud_node_accounts_info = append(cloud_node_accounts_info, tmp)
 	}
@@ -495,7 +478,7 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 	var res neo4j.Result
 	res, err = tx.Run(`
 		MATCH (n:CloudComplianceBenchmark) -[:INCLUDES]-> (m:CloudComplianceControl)
-		WHERE m.active = true 
+		WHERE m.active = true
 		AND m.compliance_type IN $compliance_types
 		AND n.cloud_provider = $cloud_provider
 		RETURN  n.benchmark_id, n.compliance_type, collect(m.control_id)
