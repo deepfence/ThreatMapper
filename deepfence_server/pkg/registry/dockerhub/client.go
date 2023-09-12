@@ -17,9 +17,14 @@ import (
 var client = &http.Client{Timeout: 10 * time.Second}
 
 func getImagesList(u, p, ns string) ([]model.IngestedContainerImage, error) {
-	token, cookies, err := getAuthTokenAndCookies(u, p)
-	if err != nil {
-		return nil, err
+	token := ""
+	var cookies []*http.Cookie
+	var err error
+	if len(u) > 0 {
+		token, cookies, err = getAuthTokenAndCookies(u, p)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var allRepoWithTags []model.IngestedContainerImage
@@ -36,8 +41,9 @@ func getImagesList(u, p, ns string) ([]model.IngestedContainerImage, error) {
 		for _, v := range cookies {
 			req.AddCookie(v)
 		}
-
-		req.Header.Add("Authorization", "JWT "+token)
+		if len(u) > 0 {
+			req.Header.Add("Authorization", "JWT "+token)
+		}
 
 		resp, err := client.Do(req)
 		if err != nil {
@@ -154,8 +160,9 @@ func getRepoTag(repoName, ns, token string, cookies []*http.Cookie) (ImageTag, e
 	for _, c := range cookies {
 		req.AddCookie(c)
 	}
-
-	req.Header.Add("Authorization", "JWT "+token)
+	if len(token) > 0 {
+		req.Header.Add("Authorization", "JWT "+token)
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {

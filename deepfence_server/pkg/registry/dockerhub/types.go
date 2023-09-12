@@ -11,11 +11,11 @@ type RegistryDockerHub struct {
 
 type NonSecret struct {
 	DockerHubNamespace string `json:"docker_hub_namespace" validate:"required,min=2"`
-	DockerHubUsername  string `json:"docker_hub_username" validate:"required,min=2"`
+	DockerHubUsername  string `json:"docker_hub_username" validate:"min=2"`
 }
 
 type Secret struct {
-	DockerHubPassword string `json:"docker_hub_password" validate:"required,min=2"`
+	DockerHubPassword string `json:"docker_hub_password" validate:"min=2"`
 }
 
 type ImageWithTag struct {
