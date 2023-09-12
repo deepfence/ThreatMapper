@@ -44,7 +44,7 @@ Then, fill in the below parameters as needed:
 
 #### For Deployment in Existing VPC(Optional)
 
-If you want to deploy Cloud Scanner in an existing VPC(say, for environment where the Deepfence Management Console can only be accessed via a private IP within the VPC), you need to fill in the following params:
+If you want to deploy Cloud Scanner in an existing VPC (say, for environment where the Deepfence Management Console can only be accessed via a private IP within the VPC), you need to fill in the following params:
 
 | ![Cloud Scanner](../img/cloud-scanner-aws-3.png) |
 |:------------------------------------------------:|

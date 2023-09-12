@@ -1,10 +1,10 @@
 ---
-title: Sensor Agent container
+title: Sensor Agent
 ---
 
-# Sensor Agent containers
+# Sensor Agent
 
-ThreatMapper Sensors are deployed on your production platforms, directly on each production host.  They are deployed in the form of a privileged container (the 'Sensor Agent container'). They communicate securely with your ThreatMapper Management Console, taking instructions to retrieve SBOMs and run scans, and forwarding telemetry data.
+ThreatMapper Sensors are deployed on your production platforms, directly on each production host.  They are deployed in the form of a privileged container (the 'Sensor Agent'). They communicate securely with your ThreatMapper Management Console, taking instructions to retrieve SBOMs and run scans, and forwarding telemetry data.
 
 The sensors support the following production platforms:
 
@@ -14,5 +14,5 @@ The sensors support the following production platforms:
 * **AWS Fargate** The sensor is deployed as a daemon service alongside each serverless instance.
 
 :::info
-Refer to the Installation Documentation to [Learn how to install Sensor Agent containers](/docs/sensors)
+Refer to the Installation Documentation to [Learn how to install Sensor Agents](/docs/sensors)
 :::

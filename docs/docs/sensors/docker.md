@@ -33,32 +33,6 @@ docker run -dit \
   deepfenceio/deepfence_agent_ce:2.0.0
 ```
 
-## Install a named version of the ThreatMapper Sensor
-
-You should seek to ensure that the version number of the sensors matches the version of your Management Console as closely as possible, for best compatibility.
-
-To start a named [tagged release](https://github.com/deepfence/ThreatMapper/releases) of the ThreatMapper sensor, tag the container appropriately:
-
-```bash
-# Install tagged release 2.0.0
-docker run -dit \
-  --cpus=".2" \
-  --name=deepfence-agent \
-  --restart on-failure \
-  --pid=host \
-  --net=host \
-  --privileged=true \
-  -v /sys/kernel/debug:/sys/kernel/debug:rw \
-  -v /var/log/fenced \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /:/fenced/mnt/host/:ro \
-  -e USER_DEFINED_TAGS="" \
-  -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
-  -e MGMT_CONSOLE_PORT="443" \
-  -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-  deepfenceio/deepfence_agent_ce:2.0.0
-```
-
 :::tip
 Optionally the sensor container can be further tagged using ```USER_DEFINED_TAGS=""``` in the above command. Tags should be comma separated, for example, ```"dev,front-end"```.
 :::
@@ -68,5 +42,36 @@ Optionally the sensor container can be further tagged using ```USER_DEFINED_TAGS
 
 To upgrade a sensor install, stop the existing sensor and start the new version.
 
+## Using a Proxy Server with Docker
 
+If ThreatStryker management console is accessed through a proxy server, add the proxy server details to the docker configuration.
 
+Edit the file: `~/.docker/config.json`, and add the following content.  Remember to change the proxy server ip address from 111.111.111.111 to your proxy server ip:
+
+```json
+{
+    "auths": {
+        "https://index.docker.io/v1/": {
+            "auth": ""
+            }
+    },
+    "HttpHeaders": {
+        "User-Agent": "Docker-Client/19.03.1 (linux)"
+    },
+    "proxies": {
+        "default": {
+            "httpProxy": "http://111.111.111.111:8006",
+            "httpsProxy": "http://111.111.111.111:8006",
+            "noProxy": "localhost,127.0.0.1"
+            }
+    }
+}
+```
+
+Restart the docker daemon:
+
+```bash
+sudo systemctl restart docker
+```
+
+ThreatMapper agent VMs do not require any changes for proxy server.

@@ -14,20 +14,19 @@ Before you install the Sensors, obtain the Management Console URL and API key as
 
 You should take care to install the sensor version that matches your Management Console version, as compatibility across versions is not guaranteed.
 
-Review the architecture for the Sensor Agent, as described in [Architecture: Sensor Agent container](/docs/architecture/sensors).
+Review the architecture for the Sensor Agent, as described in [Architecture: Sensor Agent](/docs/architecture/sensors).
 
 ## System Requirements
 
-ThreatMapper performs detailed scanning of resources using sensor agent containers that are deployed with the target infrastructure.
+ThreatMapper performs detailed scanning of resources using sensor agents that are deployed with the target infrastructure.
 
 Sensor containers can be deployed directly to Kubernetes or Fargate, or can be deployed on a Docker environment.  If you wish to monitor a Linux-based virtual machine or bare-metal production server, you should install a docker runtime within the host Linux operating system:
 
 | Feature              | Requirements                                                               |
 |----------------------|----------------------------------------------------------------------------|
 | CPU: No of cores     | 0.2 units of 1 core                                                        |
-| RAM                  | 50 mb to 100 mb                                                            |
+| RAM                  | 200 MB to 1 GB                                                             |
 | Linux kernel version | >= 4.4                                                                     |
-| Docker binaries      | *Version 18.03 or later*                                                   |
 | Connectivity         | Access to Deepfence Management Console IP address, port 443 (configurable) |
 
 For Windows Server hosts, experimental support exists, but it is not suitable for production use.

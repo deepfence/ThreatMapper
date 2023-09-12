@@ -4,7 +4,7 @@ title: ThreatMapper Architecture
 
 # ThreatMapper Architecture
 
-The ThreatMapper product consists of a Management Console, and multiple Sensor Agent containers and Cloud Scanner tasks that are deployed within your production platform(s).
+The ThreatMapper product consists of a Management Console, and multiple Sensor Agents and Cloud Scanner tasks that are deployed within your production platform(s).
 
 ![ThreatMapper Components](../img/threatmapper-components.jpg)
 

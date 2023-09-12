@@ -8,24 +8,37 @@ You can install the Management Console on a [single Docker host](docker) or in a
 
 ## Install the ThreatMapper Management Console
 
-The following instructions explain how to install the ThreatMapper console on a Kubernetes Cluster, and configure external access to the Console.  For detailed instructions for custom installs, see [Console](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-console) and [Router](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-router) notes.
+The following instructions explain how to install the ThreatMapper console on a Kubernetes Cluster, and configure external access to the Console.
 
-1. **Install OpenEBS storage** ([other storage methods](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-console#install-deepfence-console-helm-chart) are supported):
+1. **Configure Persistent Volume**:
+
+   ## Cloud Managed
+
+   If the Kubernetes cluster is hosted in a cloud provider, it is recommended to use cloud managed storage
+    ```
+    kubectl get storageclass
+    ```
+   | Cloud Provider | Storage Class |
+   |----------------|---------------|
+   | AWS            | gp3           |
+   | GCP            | standard      |
+
+   ## Self-Managed: OpenEBS
 
     ```bash
-    kubectl create ns openebs
-    helm install openebs --namespace openebs --repo "https://openebs.github.io/charts" openebs --set analytics.enabled=false
+    helm repo add openebs https://openebs.github.io/charts
+    helm install openebs --namespace openebs openebs/openebs --create-namespace
     ```
-    
-    ... and wait (```-w```) for the openebs pods to start up:
-    
+
+   ... and wait (```-w```) for the openebs pods to start up:
+
     ```bash
     kubectl get pods -o wide --namespace openebs -w
     ```
 
-2. **Install the metrics server** (if necessary)
+2. **Install the metrics server** (optional)
 
-    If the metrics server is not already installed (```kubectl get deployment metrics-server -n kube-system```), install as follows:
+   If the metrics server is not already installed (```kubectl get deployment metrics-server -n kube-system```), install as follows:
 
     ```bash
     kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
@@ -36,54 +49,74 @@ The following instructions explain how to install the ThreatMapper console on a 
     ```bash
     helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 
-    helm install deepfence-console deepfence/deepfence-console
+    # helm show values deepfence/deepfence-console | less
+
+    helm install deepfence-console deepfence/deepfence-console \
+    --set global.imageTag=2.0.0 \
+    --set global.storageClass=gp3 \
+    --namespace deepfence-console \
+    --create-namespace
     ```
 
-    ... and wait for the pods to start up:
+   ... and wait for the pods to start up:
 
     ```bash
-    kubectl get pods -o wide -w
+    kubectl get pods --namespace deepfence-console -o wide -w
     ```
-
-    :::tip
-    For advanced installation, you can edit the helm chart values as described in the [Helm Chart - detailed setup](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-console#install-deepfence-console-helm-chart).
-    :::
 
 4. **Enable external access** with the ```deepfence-router``` helm chart:
 
-    Deploy deepfence-router:
+   Deploy deepfence-router:
 
     ```bash
-    helm install deepfence-router deepfence/deepfence-router
+    # helm show values deepfence/deepfence-router
+   
+    helm install deepfence-router deepfence/deepfence-router \
+    --namespace deepfence-console \
+    --create-namespace
     ```
 
-    ... and wait for the cloud platform to deploy an external load-balancer:
+   ... and wait for the cloud platform to deploy an external load-balancer:
 
     ```bash
-    kubectl get --namespace default svc -w deepfence-router
+    kubectl get svc -w deepfence-router --namespace deepfence-console
     ```
-
-    :::tip
-    For advanced installation, you can edit the helm chart values as described in the [Helm Chart - detailed setup](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-router#install-deepfence-router-helm-chart).
-    :::
 
 Now proceed to the [Initial Configuration](initial-configuration).
 
-### Upgrade the ThreatMapper Management Console
+## Fine-tune the Helm deployment
 
-You can perform a rolling upgrade of the Management Console to a new, tagged release:
+### Console Helm Chart
+
+```bash
+helm show values deepfence/deepfence-console > deepfence_console_values.yaml
+
+# Make the changes in this file and save
+vim deepfence_console_values.yaml
+
+helm install -f deepfence_console_values.yaml deepfence-console deepfence/deepfence-console \
+    --namespace deepfence-console \
+    --create-namespace
+```
+
+### Router Helm Chart
+
+```bash
+helm show values deepfence/deepfence-router > deepfence_router_values.yaml
+
+# Make the changes in this file and save
+vim deepfence_router_values.yaml
+
+helm install -f deepfence_router_values.yaml deepfence-router deepfence/deepfence-router \
+    --namespace deepfence-console \
+    --create-namespace
+```
+
+## Delete the ThreatMapper Management Console
+
+To delete the ThreatMapper Management Console
 
    ```bash
-   helm repo update deepfence
-   helm upgrade deepfence-console deepfence/deepfence-console --set image.tag=2.0.0
-   helm upgrade deepfence-router deepfence/deepfence-router
-   ```
-
-### Remove the ThreatMapper Management Console
-
-To remove the ThreatMapper Management Console
-
-   ```bash
-   helm delete deepfence-router
-   helm delete deepfence-console
+   helm delete deepfence-router -n deepfence-console
+   helm delete deepfence-console -n deepfence-console
    ```

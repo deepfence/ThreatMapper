@@ -21,10 +21,12 @@ module "cloud-scanner_example_single-subscription" {
   mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  image               = "quay.io/deepfenceio/cloud-scanner:1.5.0"
   name                = "deepfence-cloud-scanner"
+  image               = "quay.io/deepfenceio/cloud-scanner:1.5.0"
 }
+
 ```
+Ensure that the `name` parameter is set to some unique string to avoid collision with existing resource names in the subscription
 
 Then run
 ```shell
