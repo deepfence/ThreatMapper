@@ -89,6 +89,7 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 		log.Error().Msgf("jira attachment error reponse: %s", string(body))
 		return err
 	}
+	defer resp.Body.Close()
 
 	log.Info().Msgf(
 		"jira issue id %s attchment added %+v",

@@ -27,7 +27,9 @@ import {
   RowSelectionState,
   SortingState,
   Table,
+  TableNoDataElement,
   TableSkeleton,
+  Tabs,
 } from 'ui-components';
 
 import { getScanResultsApiClient } from '@/api/api';
@@ -39,6 +41,10 @@ import {
 import { ConfigureScanModal } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import {
+  ICloudAccountType,
+  SearchableCloudAccountsList,
+} from '@/components/forms/SearchableCloudAccountsList';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -66,6 +72,7 @@ import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatPercentage } from '@/utils/number';
 import {
+  COMPLIANCE_SCAN_STATUS_GROUPS,
   ComplianceScanGroupedStatus,
   isScanComplete,
   SCAN_STATUS_GROUPS,
@@ -173,6 +180,7 @@ const usePostureAccounts = () => {
         | ComplianceScanGroupedStatus
         | undefined,
       nodeType,
+      org_accounts: searchParams.getAll('org_accounts'),
     }),
     keepPreviousData: true,
   });
@@ -181,6 +189,7 @@ const usePostureAccounts = () => {
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   complianceScanStatus: 'Posture scan status',
   status: 'Status',
+  org_accounts: 'Organization accounts',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -189,12 +198,16 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   }, 0);
 };
 const Filters = () => {
+  const { nodeType } = useParams() as {
+    nodeType: string;
+  };
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [status, setStatus] = useState('');
   const [complianceScanStatusSearchText, setComplianceScanStatusSearchText] =
     useState('');
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
+
   return (
     <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
       <div className="flex gap-2">
@@ -271,6 +284,29 @@ const Filters = () => {
             );
           })}
         </Combobox>
+        {(nodeType === 'aws' || nodeType === 'gcp') && (
+          <SearchableCloudAccountsList
+            displayValue={`${nodeType.toUpperCase()} organization accounts`}
+            valueKey="nodeId"
+            cloudProvider={`${nodeType}_org` as ICloudAccountType}
+            defaultSelectedAccounts={searchParams.getAll('org_accounts')}
+            onClearAll={() => {
+              setSearchParams((prev) => {
+                prev.delete('org_accounts');
+                return prev;
+              });
+            }}
+            onChange={(value) => {
+              setSearchParams((prev) => {
+                prev.delete('org_accounts');
+                value.forEach((id) => {
+                  prev.append('org_accounts', id);
+                });
+                return prev;
+              });
+            }}
+          />
+        )}
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -374,6 +410,8 @@ const DeleteConfirmationModal = ({
             <Button
               size="md"
               color="error"
+              loading={fetcher.state === 'submitting'}
+              disabled={fetcher.state === 'submitting'}
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteAction(ActionEnumType.DELETE);
@@ -560,6 +598,62 @@ const AccountTable = ({
 
   const accounts = data?.accounts ?? [];
 
+  const columnWidth = nodeType?.endsWith('_org')
+    ? {
+        node_name: {
+          minSize: 40,
+          size: 60,
+          maxSize: 100,
+        },
+        compliance_percentage: {
+          minSize: 30,
+          size: 40,
+          maxSize: 60,
+        },
+        active: {
+          minSize: 40,
+          size: 40,
+          maxSize: 40,
+        },
+        last_scan_status: {
+          minSize: 120,
+          size: 140,
+          maxSize: 160,
+        },
+        version: {
+          minSize: 30,
+          size: 40,
+          maxSize: 60,
+        },
+      }
+    : {
+        node_name: {
+          minSize: 80,
+          size: 90,
+          maxSize: 100,
+        },
+        compliance_percentage: {
+          minSize: 60,
+          size: 60,
+          maxSize: 70,
+        },
+        active: {
+          minSize: 40,
+          size: 40,
+          maxSize: 40,
+        },
+        last_scan_status: {
+          minSize: 50,
+          size: 70,
+          maxSize: 80,
+        },
+        version: {
+          minSize: 50,
+          size: 70,
+          maxSize: 80,
+        },
+      };
+
   const columns = useMemo(() => {
     const columns: ColumnDef<ModelCloudNodeAccountInfo, any>[] = [
       getRowSelectionColumn(columnHelper, {
@@ -612,7 +706,7 @@ const AccountTable = ({
               path = '/posture/cloud/scan-results/:nodeType/:scanId';
             }
             const redirectUrl = generatePath(`${path}`, {
-              scanId: cell.row.original.last_scan_id ?? '',
+              scanId: encodeURIComponent(cell.row.original.last_scan_id ?? ''),
               nodeType: cell.row.original.cloud_provider ?? '',
             });
             return isNeverScan ? (
@@ -630,14 +724,10 @@ const AccountTable = ({
           );
         },
         header: () => 'Account',
-        minSize: 80,
-        size: 90,
-        maxSize: 100,
+        ...columnWidth.node_name,
       }),
       columnHelper.accessor('compliance_percentage', {
-        minSize: 60,
-        size: 60,
-        maxSize: 70,
+        ...columnWidth.compliance_percentage,
         header: () => 'Compliance %',
         cell: (cell) => {
           const percent = Number(cell.getValue());
@@ -661,9 +751,7 @@ const AccountTable = ({
         },
       }),
       columnHelper.accessor('active', {
-        minSize: 40,
-        size: 40,
-        maxSize: 40,
+        ...columnWidth.active,
         header: () => 'Active',
         cell: (info) => {
           return info.getValue() ? 'Yes' : 'No';
@@ -671,13 +759,37 @@ const AccountTable = ({
       }),
       columnHelper.accessor('last_scan_status', {
         cell: (info) => {
-          const value = info.getValue();
-          return <ScanStatusBadge status={value ?? ''} />;
+          if (nodeType?.endsWith?.('_org')) {
+            const data = info.row.original.scan_status_map ?? {};
+            const keys = Object.keys(data);
+            const statuses = Object.keys(data).map((current, index) => {
+              const scanStatus = COMPLIANCE_SCAN_STATUS_GROUPS.neverScanned.includes(
+                current,
+              )
+                ? ''
+                : current;
+              return (
+                <>
+                  <div className="flex gap-x-1.5 items-center" key={current}>
+                    <span className="dark:text-text-input-value font-medium">
+                      {data[current]}
+                    </span>
+                    <ScanStatusBadge status={scanStatus ?? ''} />
+                    {index < keys.length - 1 ? (
+                      <div className="mx-2 w-px h-[20px] dark:bg-bg-grid-border" />
+                    ) : null}
+                  </div>
+                </>
+              );
+            });
+            return <div className="flex gap-x-1.5">{statuses}</div>;
+          } else {
+            const value = info.getValue();
+            return <ScanStatusBadge status={value ?? ''} />;
+          }
         },
         header: () => 'Status',
-        minSize: 50,
-        size: 70,
-        maxSize: 80,
+        ...columnWidth.last_scan_status,
       }),
     ];
 
@@ -689,9 +801,7 @@ const AccountTable = ({
             return <TruncatedText text={info.getValue() ?? ''} />;
           },
           header: () => 'Version',
-          minSize: 50,
-          size: 70,
-          maxSize: 80,
+          ...columnWidth.version,
         }),
       );
     }
@@ -762,6 +872,9 @@ const AccountTable = ({
               return prev;
             });
           }}
+          noDataElement={
+            <TableNoDataElement text="No accounts available, please add new account" />
+          }
         />
       </div>
     </>
@@ -846,8 +959,9 @@ const Accounts = () => {
 
   return (
     <div>
-      <Header />
-      <div className="mx-4 mb-4">
+      {!hasOrgCloudAccount(nodeType ?? '') ? <Header /> : null}
+
+      <div className="mb-4">
         <div className="flex h-12 items-center">
           <BulkActions
             disabled={Object.keys(rowSelectionState).length === 0}
@@ -919,7 +1033,75 @@ const Accounts = () => {
   );
 };
 
+const tabs = [
+  {
+    label: 'Regular Accounts',
+    value: 'accounts',
+  },
+  {
+    label: 'Organization Accounts',
+    value: 'org-accounts',
+  },
+];
+
+const AccountWithTab = () => {
+  const { nodeType } = useParams() as {
+    nodeType: string;
+  };
+
+  const [currentTab, setTab] = useState(() => {
+    return nodeType.endsWith('_org') ? 'org-accounts' : 'accounts';
+  });
+  const { navigate } = usePageNavigation();
+
+  return (
+    <div className="mx-4">
+      <Header />
+      <Tabs
+        className="mt-2"
+        value={currentTab}
+        tabs={tabs}
+        onValueChange={(value) => {
+          if (currentTab === value) return;
+          let _nodeType = nodeType;
+          if (value === 'org-accounts') {
+            _nodeType = _nodeType + '_org';
+          } else {
+            _nodeType = _nodeType.split('_')[0];
+          }
+          setTab(value);
+          navigate(
+            generatePath('/posture/accounts/:nodeType', {
+              nodeType: _nodeType,
+            }),
+          );
+        }}
+        size="md"
+      >
+        <div className="mt-2">
+          <Accounts />
+        </div>
+      </Tabs>
+    </div>
+  );
+};
+
+const ConditionalAccount = () => {
+  const { nodeType } = useParams() as {
+    nodeType: string;
+  };
+
+  if (hasOrgCloudAccount(nodeType)) {
+    return <AccountWithTab />;
+  }
+  return <Accounts />;
+};
+
+const hasOrgCloudAccount = (nodeType: string) => {
+  return nodeType.startsWith('aws') || nodeType.startsWith('gcp');
+};
+
 export const module = {
   action,
-  element: <Accounts />,
+  element: <ConditionalAccount />,
 };

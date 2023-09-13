@@ -58,11 +58,11 @@ Refer to the [Kubernetes Installation Instructions](/docs/console/kubernetes) al
     helm install -f deepfence_console_values.yaml deepfence-console deepfence/deepfence-console
     ```
 
-    Full instructions can be found in the [Console helm chart documentation](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-console).
+    Full instructions can be found in the [Console helm chart documentation](https://github.com/deepfence/ThreatMapper/tree/main/deployment-scripts/helm-charts/deepfence-console).
 
 4. Optional: enable external access with the `deepfence-router` package:
 
-    Refer to the instructions to install the [Router](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-router), typically as follows:
+    Refer to the instructions to install the [Router](https://github.com/deepfence/ThreatMapper/tree/main/deployment-scripts/helm-charts/deepfence-router), typically as follows:
    
     ```bash
     # Create the values file

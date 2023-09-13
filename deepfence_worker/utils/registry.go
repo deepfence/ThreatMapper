@@ -50,8 +50,11 @@ func useHttp(url string) bool {
 
 func GetConfigFileFromRegistry(ctx context.Context, registryId string) (string, regCreds, error) {
 	rc, err := GetCredentialsFromRegistry(ctx, registryId)
-	if rc.UserName == "" || err != nil {
+	if err != nil {
 		return "", regCreds{}, err
+	}
+	if rc.UserName == "" {
+		return "", rc, nil
 	}
 	authFile, err := createAuthFile(registryId, rc.URL, rc.UserName, rc.Password)
 	if err != nil {

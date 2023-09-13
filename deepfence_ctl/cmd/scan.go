@@ -455,7 +455,7 @@ func init() {
 
 	scanStartSubCmd.PersistentFlags().String("node-ids", "", "Node id")
 	scanStartSubCmd.PersistentFlags().String("node-type", "", "Resource type (host, container, image)")
-	scanStartSubCmd.PersistentFlags().String("scan-config", "all", "vulnerability scan type (all,base,ruby,python,javascript,php,golang,java,rust,dotnet)")
+	scanStartSubCmd.PersistentFlags().String("scan-config", "all", "vulnerability scan type (all,base,ruby,python,javascript,php,golang,golang-binary,java,rust,rust-binary,dotnet)")
 
 	scanStatusSubCmd.PersistentFlags().String("scan-id", "", "Scan id")
 

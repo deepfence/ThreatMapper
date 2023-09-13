@@ -5,8 +5,9 @@ import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
 
+export type ICloudAccountType = 'gcp' | 'aws' | 'azure' | 'aws_org' | 'gcp_org';
 export type SearchableCloudAccountsListProps = {
-  cloudProvider?: 'gcp' | 'aws' | 'azure';
+  cloudProvider?: ICloudAccountType;
   onChange?: (value: string[]) => void;
   onClearAll?: () => void;
   defaultSelectedAccounts?: string[];
@@ -15,6 +16,7 @@ export type SearchableCloudAccountsListProps = {
   triggerVariant?: 'select' | 'button';
   label?: string;
   helperText?: string;
+  displayValue?: string;
   color?: 'error' | 'default';
 };
 
@@ -30,6 +32,7 @@ const SearchableCloudAccounts = ({
   label,
   helperText,
   color,
+  displayValue,
 }: SearchableCloudAccountsListProps) => {
   const [searchText, setSearchText] = useState('');
 
@@ -91,7 +94,9 @@ const SearchableCloudAccounts = ({
           isSelectVariantType && selectedAccounts.length > 0
             ? `${selectedAccounts.length} selected`
             : cloudProvider
-            ? `${cloudProvider} account`
+            ? displayValue
+              ? displayValue
+              : `${cloudProvider} account`
             : 'Cloud account'
         }
         multiple

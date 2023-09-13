@@ -221,10 +221,21 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	err = h.Validator.Struct(reqs)
+	if err != nil {
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
 	binArgs := make(map[string]string, 0)
 	if len(reqs.ScanConfigLanguages) != 0 {
 		languages := []string{}
 		for i := range reqs.ScanConfigLanguages {
+			err = h.Validator.Struct(reqs.ScanConfigLanguages[i])
+			if err != nil {
+				h.respondError(&ValidatorError{err: err}, w)
+				return
+			}
 			languages = append(languages, reqs.ScanConfigLanguages[i].Language)
 		}
 		binArgs["scan_type"] = strings.Join(languages, ",")
@@ -245,10 +256,95 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 
 	h.AuditUserActivity(r, EVENT_VULNERABILITY_SCAN, ACTION_START, reqs, true)
 
-	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
+	err = httpext.JSON(w, http.StatusAccepted, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
+}
+
+func (h *Handler) DiffAddVulnerabilityScan(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.ScanCompareReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+	}
+
+	new, err := reporters_scan.GetScanResultDiff[model.Vulnerability](r.Context(), utils.NEO4J_VULNERABILITY_SCAN, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Vulnerability]{New: new})
+}
+
+func (h *Handler) DiffAddSecretScan(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.ScanCompareReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+	}
+
+	new, err := reporters_scan.GetScanResultDiff[model.Secret](r.Context(), utils.NEO4J_SECRET_SCAN, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Secret]{New: new})
+}
+
+func (h *Handler) DiffAddComplianceScan(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.ScanCompareReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+	}
+
+	new, err := reporters_scan.GetScanResultDiff[model.Compliance](r.Context(), utils.NEO4J_COMPLIANCE_SCAN, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Compliance]{New: new})
+}
+
+func (h *Handler) DiffAddMalwareScan(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.ScanCompareReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+	}
+
+	new, err := reporters_scan.GetScanResultDiff[model.Malware](r.Context(), utils.NEO4J_MALWARE_SCAN, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Malware]{New: new})
+}
+
+func (h *Handler) DiffAddCloudComplianceScan(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.ScanCompareReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+	}
+
+	new, err := reporters_scan.GetScanResultDiff[model.CloudCompliance](r.Context(), utils.NEO4J_CLOUD_COMPLIANCE_SCAN, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.CloudCompliance]{New: new})
 }
 
 func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -275,7 +371,7 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 
 	h.AuditUserActivity(r, EVENT_SECRET_SCAN, ACTION_START, reqs, true)
 
-	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
+	err = httpext.JSON(w, http.StatusAccepted, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -361,7 +457,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	h.AuditUserActivity(r, EVENT_COMPLIANCE_SCAN, ACTION_START, reqs, true)
 
-	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scanIds, BulkScanId: bulkId})
+	err = httpext.JSON(w, http.StatusAccepted, model.ScanTriggerResp{ScanIds: scanIds, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -391,7 +487,7 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 
 	h.AuditUserActivity(r, EVENT_MALWARE_SCAN, ACTION_START, reqs, true)
 
-	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
+	err = httpext.JSON(w, http.StatusAccepted, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -722,7 +818,7 @@ func (h *Handler) stopSecretScan(w http.ResponseWriter, r *http.Request) {
 
 	h.AuditUserActivity(r, req.ScanType, ACTION_STOP, req, true)
 
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (h *Handler) stopMalwareScan(w http.ResponseWriter, r *http.Request) {
@@ -754,7 +850,7 @@ func (h *Handler) stopMalwareScan(w http.ResponseWriter, r *http.Request) {
 
 	h.AuditUserActivity(r, req.ScanType, ACTION_STOP, req, true)
 
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (h *Handler) StatusVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -1507,16 +1603,27 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 
 	log.Info().Msgf("bulk delete %s scans filters %+v", req.ScanType, req.Filters)
 
-	scanType := utils.DetectedNodeScanType[req.ScanType]
-	scansList, err := reporters_scan.GetScansList(r.Context(), scanType, nil, req.Filters, model.FetchWindow{})
+	err = h.bulkDeleteScanResults(r.Context(), req)
 	if err != nil {
-		h.respondError(&ValidatorError{err: err}, w)
+		h.respondError(err, w)
 		return
+	}
+
+	h.AuditUserActivity(r, ACTION_BULK, ACTION_DELETE, req, true)
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) bulkDeleteScanResults(ctx context.Context, req model.BulkDeleteScansRequest) error {
+	scanType := utils.DetectedNodeScanType[req.ScanType]
+	scansList, err := reporters_scan.GetScansList(ctx, scanType, nil, req.Filters, model.FetchWindow{})
+	if err != nil {
+		return err
 	}
 
 	for _, s := range scansList.ScansInfo {
 		log.Info().Msgf("delete scan %s %s", req.ScanType, s.ScanId)
-		err = reporters_scan.DeleteScan(r.Context(), scanType, s.ScanId, []string{})
+		err = reporters_scan.DeleteScan(ctx, scanType, s.ScanId, []string{})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to delete scan id %s", s.ScanId)
 			continue
@@ -1524,16 +1631,12 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(scansList.ScansInfo) > 0 && (scanType == utils.NEO4J_COMPLIANCE_SCAN || scanType == utils.NEO4J_CLOUD_COMPLIANCE_SCAN) {
-		err = h.CachePostureProviders(r.Context())
+		err = h.CachePostureProviders(ctx)
 		if err != nil {
-			h.respondError(err, w)
-			return
+			return err
 		}
 	}
-
-	h.AuditUserActivity(r, ACTION_BULK, ACTION_DELETE, req, true)
-
-	w.WriteHeader(http.StatusNoContent)
+	return nil
 }
 
 func (h *Handler) GetAllNodesInScanResultBulkHandler(w http.ResponseWriter, r *http.Request) {

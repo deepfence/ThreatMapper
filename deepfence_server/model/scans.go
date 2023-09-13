@@ -6,11 +6,11 @@ import (
 )
 
 type VulnerabilityScanConfigLanguage struct {
-	Language string `json:"language" required:"true" enum:"all,base,ruby,python,javascript,php,golang,java,rust,dotnet"`
+	Language string `json:"language" validate:"required,oneof=base ruby python javascript php golang golang-binary java rust rust-binary dotnet" required:"true" enum:"base,ruby,python,javascript,php,golang,golang-binary,java,rust,rust-binary,dotnet"`
 }
 
 type VulnerabilityScanConfig struct {
-	ScanConfigLanguages []VulnerabilityScanConfigLanguage `json:"scan_config" required:"true"`
+	ScanConfigLanguages []VulnerabilityScanConfigLanguage `json:"scan_config" validate:"required,min=1" required:"true"`
 }
 
 type VulnerabilityScanTriggerReq struct {
@@ -30,6 +30,23 @@ type ComplianceScanTriggerReq struct {
 	ScanTriggerCommon
 	ComplianceBenchmarkTypes
 }
+
+type ScanCompareReq struct {
+	BaseScanID   string                  `json:"base_scan_id" required:"true"`
+	ToScanID     string                  `json:"to_scan_id" required:"true"`
+	FieldsFilter reporters.FieldsFilters `json:"fields_filter" required:"true"`
+	Window       FetchWindow             `json:"window"  required:"true"`
+}
+
+type ScanCompareRes[T any] struct {
+	New []T `json:"new" required:"true"`
+}
+
+type ScanCompareResVulnerability = ScanCompareRes[Vulnerability]
+type ScanCompareResSecret = ScanCompareRes[Secret]
+type ScanCompareResMalware = ScanCompareRes[Malware]
+type ScanCompareResCompliance = ScanCompareRes[Compliance]
+type ScanCompareResCloudCompliance = ScanCompareRes[CloudCompliance]
 
 type ScanFilter struct {
 	ImageScanFilter             reporters.ContainsFilter `json:"image_scan_filter" required:"true"`

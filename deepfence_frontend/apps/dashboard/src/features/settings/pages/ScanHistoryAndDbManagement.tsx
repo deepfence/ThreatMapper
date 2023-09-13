@@ -68,7 +68,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
         {
           field_name: 'updated_at',
           field_value: `${Date.now() - duration}`,
-          greater_than: false,
+          greater_than: true,
         },
       ];
     }
@@ -195,6 +195,8 @@ const DeleteConfirmationModal = ({
                 });
               }}
               size="md"
+              disabled={fetcher.state !== 'idle'}
+              loading={fetcher.state !== 'idle'}
             >
               Delete
             </Button>

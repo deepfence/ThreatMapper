@@ -58,7 +58,9 @@ func listCatalogRegistryV2(url, userName, password string) ([]string, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.SetBasicAuth(userName, password)
+	if len(userName) > 0 {
+		req.SetBasicAuth(userName, password)
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -100,7 +102,9 @@ func listRepoTagsV2(url, userName, password, repoName string) (RepoTagsResp, err
 		return repoTags, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.SetBasicAuth(userName, password)
+	if len(userName) > 0 {
+		req.SetBasicAuth(userName, password)
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -145,7 +149,9 @@ func getManifestsV2(url, userName, password, repoName, tag string) (string, Mani
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/vnd.docker.distribution.manifest.list.v2+json")
-	req.SetBasicAuth(userName, password)
+	if len(userName) > 0 {
+		req.SetBasicAuth(userName, password)
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {

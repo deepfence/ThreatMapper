@@ -1,8 +1,11 @@
 package cronjobs
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -16,10 +19,78 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
-func SendNotifications(msg *message.Message) error {
-	RecordOffsets(msg)
+var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]: {
+	"cve_severity":          "Severity",
+	"cve_id":                "CVE Id",
+	"cve_description":       "Description",
+	"cve_attack_vector":     "Attack Vector",
+	"cve_container_layer":   "Container Layer",
+	"cve_overall_score":     "CVE Overall Score",
+	"cve_type":              "CVE Type",
+	"cve_link":              "CVE Link",
+	"cve_fixed_in":          "CVE Fixed In",
+	"cve_cvss_score":        "CVSS Score",
+	"cve_caused_by_package": "CVE Caused By Package",
+	"node_id":               "Node ID"},
+	utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]: {
+		"node_id":            "Node ID",
+		"full_filename":      "File Name",
+		"matched_content":    "Matched Content",
+		"level":              "Level",
+		"score":              "Score",
+		"rule_id":            "Rule",
+		"name":               "Name",
+		"part":               "Part",
+		"signature_to_match": "Matched Signature"},
+	utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]: {"class": "Class",
+		"complete_filename": "File Name",
+		"file_sev_score":    "File Severity Score",
+		"file_severity":     "File Severity",
+		"image_layer_id":    "Image Layer ID",
+		"node_id":           "Node ID",
+		"rule_id":           "Rule ID",
+		"rule_name":         "Rule Name",
+		"author":            "Author",
+		"severity_score":    "Severity Score",
+		"summary":           "Summary"},
+	utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]: {
+		"compliance_check_type": "Compliance Check Type",
+		"resource":              "Resource",
+		"status":                "Test Status",
+		"test_category":         "Test Category",
+		"description":           "Description",
+		"test_number":           "Test ID",
+		"test_desc":             "Info"},
+	utils.ScanTypeDetectedNode[utils.NEO4J_CLOUD_COMPLIANCE_SCAN]: {
+		"title":                 "Title",
+		"reason":                "Reason",
+		"resource":              "Resource",
+		"status":                "Test Status",
+		"region":                "Region",
+		"account_id":            "Account ID",
+		"service":               "Service",
+		"compliance_check_type": "Compliance Check Type",
+		"cloud_provider":        "Cloud Provider",
+		"node_id":               "Node ID",
+		"type":                  "Type",
+		"control_id":            "Control ID",
+		"description":           "Description",
+		"severity":              "Severity",
+		"resources":             "Resources",
+	},
+}
 
-	log.Info().Msgf("SendNotifications task starting")
+var notificationLock sync.Mutex
+
+func SendNotifications(msg *message.Message) error {
+	//This lock is to ensure only one notification handler runs at a time
+	notificationLock.Lock()
+	defer notificationLock.Unlock()
+
+	topic := RecordOffsets(msg)
+	defer SetTopicHandlerStatus(topic, false)
+
+	log.Info().Msgf("SendNotifications task starting at %s", string(msg.Payload))
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	pgClient, err := directory.PostgresClient(ctx)
@@ -28,71 +99,112 @@ func SendNotifications(msg *message.Message) error {
 	}
 	integrations, err := pgClient.GetIntegrations(ctx)
 	if err != nil {
-		log.Error().Msgf("Error getting postgresCtx", err)
+		log.Error().Msgf("Error getting postgresCtx: %v", err)
 		return nil
 	}
+	wg := sync.WaitGroup{}
+	wg.Add(len(integrations))
 	for _, integrationRow := range integrations {
-		switch integrationRow.Resource {
-		case utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]:
-			processIntegration[model.Vulnerability](msg, integrationRow)
-		case utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]:
-			processIntegration[model.Secret](msg, integrationRow)
-		case utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]:
-			processIntegration[model.Malware](msg, integrationRow)
-		case utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]:
-			processIntegration[model.Compliance](msg, integrationRow)
-			// cloud compliance scans
-			integrationRow.Resource = utils.ScanTypeDetectedNode[utils.NEO4J_CLOUD_COMPLIANCE_SCAN]
-			processIntegration[model.CloudCompliance](msg, integrationRow)
-		}
+		go func(integration postgresql_db.Integration) {
+			defer wg.Done()
+			log.Info().Msgf("Processing integration for %s rowId: %d",
+				integration.IntegrationType, integration.ID)
+
+			err := processIntegrationRow(integration, msg)
+
+			log.Info().Msgf("Processed integration for %s rowId: %d",
+				integration.IntegrationType, integration.ID)
+
+			update_row := err != nil || (err == nil && integration.ErrorMsg.Valid)
+			if update_row {
+				var params postgresql_db.UpdateIntegrationStatusParams
+				if err != nil {
+					log.Error().Msgf("Error on integration %v", err)
+					params = postgresql_db.UpdateIntegrationStatusParams{
+						ID: integration.ID,
+						ErrorMsg: sql.NullString{
+							String: err.Error(),
+							Valid:  true,
+						},
+					}
+				} else {
+					params = postgresql_db.UpdateIntegrationStatusParams{
+						ID: integration.ID,
+						ErrorMsg: sql.NullString{
+							String: "",
+							Valid:  false,
+						},
+					}
+				}
+				pgClient.UpdateIntegrationStatus(ctx, params)
+			}
+		}(integrationRow)
 	}
+	wg.Wait()
+	log.Info().Msgf("SendNotifications task ended for timestamp %s", string(msg.Payload))
 	return nil
 }
 
-func injectNodeData[T any](results []T, common model.ScanResultsCommon,
+func processIntegrationRow(integrationRow postgresql_db.Integration, msg *message.Message) error {
+	switch integrationRow.Resource {
+	case utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]:
+		return processIntegration[model.Vulnerability](msg, integrationRow)
+	case utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]:
+		return processIntegration[model.Secret](msg, integrationRow)
+	case utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]:
+		return processIntegration[model.Malware](msg, integrationRow)
+	case utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]:
+		err1 := processIntegration[model.Compliance](msg, integrationRow)
+		// cloud compliance scans
+		integrationRow.Resource = utils.ScanTypeDetectedNode[utils.NEO4J_CLOUD_COMPLIANCE_SCAN]
+		err2 := processIntegration[model.CloudCompliance](msg, integrationRow)
+		return errors.Join(err1, err2)
+	}
+	return errors.New("No integration type")
+}
+
+func injectNodeDatamap(results []map[string]interface{}, common model.ScanResultsCommon,
 	integrationType string) []map[string]interface{} {
-	data := []map[string]interface{}{}
 
 	for _, r := range results {
-		m := utils.ToMap[T](r)
-		m["node_id"] = common.NodeID
-		m["scan_id"] = common.ScanID
-		m["node_name"] = common.NodeName
-		m["node_type"] = common.NodeType
+		//m := utils.ToMap[T](r)
+		r["node_id"] = common.NodeID
+		r["scan_id"] = common.ScanID
+		r["node_name"] = common.NodeName
+		r["node_type"] = common.NodeType
 		if common.ContainerName != "" {
-			m["docker_container_name"] = common.ContainerName
+			r["docker_container_name"] = common.ContainerName
 		}
 		if common.ImageName != "" {
-			m["docker_image_name"] = common.ImageName
+			r["docker_image_name"] = common.ImageName
 		}
 		if common.HostName != "" {
-			m["host_name"] = common.HostName
+			r["host_name"] = common.HostName
 		}
 		if common.KubernetesClusterName != "" {
-			m["kubernetes_cluster_name"] = common.KubernetesClusterName
+			r["kubernetes_cluster_name"] = common.KubernetesClusterName
 		}
 
-		if _, ok := m["updated_at"]; ok {
+		if _, ok := r["updated_at"]; ok {
 			flag := integration.IsMessagingFormat(integrationType)
 			if flag == true {
-				ts := m["updated_at"].(int64)
+				ts := r["updated_at"].(int64)
 				tm := time.Unix(0, ts*int64(time.Millisecond))
-				m["updated_at"] = tm
+				r["updated_at"] = tm
 			}
 		}
 
-		data = append(data, m)
 	}
 
-	return data
+	return results
 }
 
-func processIntegration[T any](msg *message.Message, integrationRow postgresql_db.Integration) {
+func processIntegration[T any](msg *message.Message, integrationRow postgresql_db.Integration) error {
+	startTime := time.Now()
 	var filters model.IntegrationFilters
 	err := json.Unmarshal(integrationRow.Filters, &filters)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		return
+		return err
 	}
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
@@ -100,8 +212,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	// get ts from message
 	ts, err := strconv.ParseInt(string(msg.Payload), 10, 64)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		return
+		return err
 	}
 
 	last30sTimeStamp := ts - 30000
@@ -121,18 +232,20 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	filters.FieldsFilters.ContainsFilter = reporters.ContainsFilter{
 		FieldsValues: map[string][]interface{}{"status": {utils.SCAN_STATUS_SUCCESS}},
 	}
+
+	profileStart := time.Now()
 	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource],
 		filters.NodeIds, filters.FieldsFilters, model.FetchWindow{})
 	if err != nil {
-		log.Error().Msg(err.Error())
-		return
+		return err
 	}
+	neo4j_query_1 := time.Since(profileStart).Milliseconds()
 
 	// nothing to notify
 	if len(list.ScansInfo) == 0 {
 		log.Info().Msgf("No %s scans to notify at timestamp (%d,%d)",
 			integrationRow.Resource, last30sTimeStamp, ts)
-		return
+		return nil
 	}
 
 	log.Info().Msgf("list of %s scans to notify: %+v", integrationRow.Resource, list)
@@ -140,14 +253,20 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	filters = model.IntegrationFilters{}
 	err = json.Unmarshal(integrationRow.Filters, &filters)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		return
+		return err
 	}
 	filters.NodeIds = []model.NodeIdentifier{}
+
+	totalQueryTime := int64(0)
+	totalSendTime := int64(0)
+
 	for _, scan := range list.ScansInfo {
+		profileStart = time.Now()
 		results, common, err := reporters_scan.GetScanResults[T](ctx,
 			utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId,
 			filters.FieldsFilters, model.FetchWindow{})
+		totalQueryTime = totalQueryTime + time.Since(profileStart).Milliseconds()
+
 		if len(results) == 0 {
 			log.Info().Msgf("No Results filtered for scan id: %s with filters %+v", scan.ScanId, filters)
 			continue
@@ -155,33 +274,63 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 
 		iByte, err := json.Marshal(integrationRow)
 		if err != nil {
-			log.Error().Msgf("Error marshall integrationRow: %+v", integrationRow, err)
-			return
+			return err
 		}
 
 		integrationModel, err := integration.GetIntegration(ctx, integrationRow.IntegrationType, iByte)
 		if err != nil {
-			log.Error().Msgf("Error GetIntegration: %+v", integrationRow, err)
-			return
+			return err
 		}
-
+		var updatedResults []map[string]interface{}
 		// inject node details to results
-		updatedResults := injectNodeData[T](results, common, integrationRow.IntegrationType)
+		if integration.IsMessagingFormat(integrationRow.IntegrationType) {
+			updatedResults = FormatForMessagingApps(results, integrationRow.Resource)
+		} else {
+			for _, r := range results {
+				updatedResults = []map[string]interface{}{}
+				updatedResults = append(updatedResults, utils.ToMap[T](r))
+			}
+		}
+		updatedResults = injectNodeDatamap(updatedResults, common, integrationRow.IntegrationType)
 		messageByte, err := json.Marshal(updatedResults)
 		if err != nil {
-			log.Error().Msgf("Error marshall results: %+v", integrationRow, err)
-			return
+			return err
 		}
 
 		extras := utils.ToMap[any](common)
 		extras["scan_type"] = integrationRow.Resource
+
+		profileStart = time.Now()
 		err = integrationModel.SendNotification(ctx, string(messageByte), extras)
+		totalSendTime = totalSendTime + time.Since(profileStart).Milliseconds()
 		if err != nil {
-			log.Error().Msgf("Error Sending Notification id %d, resource %s, type %s error: %s",
-				integrationRow.ID, integrationRow.Resource, integrationRow.IntegrationType, err)
-			return
+			return err
 		}
-		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d",
-			integrationRow.Resource, len(results), integrationRow.IntegrationType, integrationRow.ID)
+		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken:%d",
+			integrationRow.Resource, len(results), integrationRow.IntegrationType,
+			integrationRow.ID, time.Since(profileStart).Milliseconds())
 	}
+	log.Info().Msgf("%s Total Time taken for integration %s: %d", integrationRow.Resource,
+		integrationRow.IntegrationType, time.Since(startTime).Milliseconds())
+	log.Debug().Msgf("Time taken for neo4j_query_1: %d", neo4j_query_1)
+	log.Debug().Msgf("Time taken for neo4j_query_2: %d", totalQueryTime)
+	log.Debug().Msgf("Time taken for sending data : %d", totalSendTime)
+	return nil
+}
+
+func FormatForMessagingApps[T any](results []T, resourceType string) []map[string]interface{} {
+	var data []map[string]interface{}
+	docFieldsMap := fieldsMap[resourceType]
+	for _, r := range results {
+		m := utils.ToMap[T](r)
+		d := map[string]interface{}{}
+		for k, v := range docFieldsMap {
+			value, exists := m[k]
+			if exists {
+				d[v] = value
+			}
+		}
+		data = append(data, d)
+	}
+	return data
 }

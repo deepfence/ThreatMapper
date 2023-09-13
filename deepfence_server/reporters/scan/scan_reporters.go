@@ -568,6 +568,91 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 	}, nil
 }
 
+func GetScanResultDiff[T any](ctx context.Context, scan_type utils.Neo4jScanType, baseScanID, compareToScanID string, ff reporters.FieldsFilters, fw model.FetchWindow) ([]T, error) {
+	res := []T{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	query := fmt.Sprintf(`
+		OPTIONAL MATCH (n:%s{node_id:$base_scan_id})
+		RETURN n IS NOT NULL AS Exists`,
+		scan_type)
+	log.Debug().Msgf("query: %v", query)
+	r, err := tx.Run(query,
+		map[string]interface{}{
+			"base_scan_id": baseScanID,
+		})
+	if err != nil {
+		return res, err
+	}
+
+	rec, err := r.Single()
+	if err != nil {
+		return res, err
+	}
+
+	if !rec.Values[0].(bool) {
+		return res, &NodeNotFoundError{
+			node_id: baseScanID,
+		}
+	}
+
+	ffCondition := reporters.OrderFilter2CypherCondition("d", ff.OrderFilter, nil)
+
+	fname := scanResultId_field(scan_type)
+	if len(fname) > 0 {
+		str := "d." + fname + " ASC"
+		if len(ffCondition) > 0 {
+			ffCondition = ffCondition + "," + str
+		}
+	}
+
+	query = `
+	MATCH (n:` + string(scan_type) + `{node_id: $base_scan_id}) -[r:DETECTED]-> (d)
+	WHERE NOT EXISTS {MATCH (m:` + string(scan_type) + `{node_id: $compare_to_scan_id}) -[:DETECTED]-> (d)}
+	OPTIONAL MATCH (d) -[:IS]-> (e)
+	WITH apoc.map.merge( e{.*}, d{.*, masked: coalesce(d.masked or r.masked, false), name: coalesce(e.name, d.name, '')}) AS d` +
+		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
+		ffCondition + ` RETURN d ` +
+		fw.FetchWindow2CypherQuery()
+	log.Debug().Msgf("diff query: %v", query)
+	nres, err := tx.Run(query,
+		map[string]interface{}{
+			"base_scan_id":       baseScanID,
+			"compare_to_scan_id": compareToScanID,
+		})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := nres.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for _, rec := range recs {
+		var tmp T
+		utils.FromMap(rec.Values[0].(map[string]interface{}), &tmp)
+		res = append(res, tmp)
+	}
+
+	return res, nil
+}
+
 func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, scan_id string, ff reporters.FieldsFilters, fw model.FetchWindow) ([]T, model.ScanResultsCommon, error) {
 	res := []T{}
 	common := model.ScanResultsCommon{}

@@ -31,6 +31,7 @@ const (
 	tagIntegration       = "Integration"
 	tagReports           = "Reports"
 	tagSettings          = "Settings"
+	tagDiffAdd           = "Diff Add"
 
 	securityName = "bearer_token"
 )

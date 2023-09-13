@@ -273,7 +273,7 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.CachePostureProviders))
+	jobID, err = s.cron.AddFunc("@every 15m", s.enqueueTask(namespace, sdkUtils.CachePostureProviders))
 	if err != nil {
 		return err
 	}
@@ -304,11 +304,15 @@ func (s *Scheduler) startInitJobs(ctx context.Context) error {
 
 	// initialize sql database
 	if err := initSqlDatabase(ctx); err != nil {
-		log.Error().Err(err).Msgf("failed to initialize database for namespace %s", namespace)
+		log.Error().Err(err).Msgf("failed to initialize sql database for namespace %s", namespace)
+	}
+
+	// initialize neo4j database
+	if err := initNeo4jDatabase(ctx); err != nil {
+		log.Error().Err(err).Msgf("failed to initialize neo4j database for namespace %s", namespace)
 	}
 
 	log.Info().Msgf("Start immediate cronjobs for namespace %s", namespace)
-	s.enqueueTask(namespace, sdkUtils.SetUpGraphDBTask)()
 	s.enqueueTask(namespace, sdkUtils.CheckAgentUpgradeTask)()
 	s.enqueueTask(namespace, sdkUtils.SyncRegistryTask)()
 	s.enqueueTask(namespace, sdkUtils.CloudComplianceTask)()

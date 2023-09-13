@@ -19,7 +19,14 @@ done
 until kcat -L -b ${DEEPFENCE_KAFKA_BROKERS};
 do 
   echo "kafka is unavailable - sleeping"
-  sleep 5
+  sleep 5;
+done
+
+# wait for file server to start
+until nc -z ${DEEPFENCE_MINIO_HOST} ${DEEPFENCE_MINIO_PORT};
+do
+  echo "file server is unavailable - sleeping"
+  sleep 5;
 done
 
 # update vulnerability databae

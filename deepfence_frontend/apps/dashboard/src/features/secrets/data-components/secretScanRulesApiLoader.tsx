@@ -39,7 +39,7 @@ export function useGetSecretRulesForScan({ scanId }: { scanId: string }) {
   useEffect(() => {
     fetcher.load(
       generatePath(`/data-component/secret/rules/scan/:scanId`, {
-        scanId,
+        scanId: encodeURIComponent(scanId),
       }),
     );
   }, [scanId]);

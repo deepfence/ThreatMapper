@@ -46,7 +46,8 @@ type Control struct {
 }
 
 func AddCloudControls(msg *message.Message) error {
-	RecordOffsets(msg)
+	topic := RecordOffsets(msg)
+	defer SetTopicHandlerStatus(topic, false)
 
 	log.Info().Msgf("Starting Cloud Compliance Population")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
@@ -167,7 +168,9 @@ func AddCloudControls(msg *message.Message) error {
 }
 
 func CachePostureProviders(msg *message.Message) error {
-	RecordOffsets(msg)
+	topic := RecordOffsets(msg)
+	defer SetTopicHandlerStatus(topic, false)
+
 	log.Info().Msgf("Caching Posture Providers")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
@@ -188,11 +191,6 @@ func CachePostureProviders(msg *message.Message) error {
 	}
 	defer tx.Close()
 
-	rdb, err := directory.RedisClient(ctx)
-	if err != nil {
-		return err
-	}
-
 	var postureProviders []model.PostureProvider
 	for _, postureProviderName := range model.SupportedPostureProviders {
 		postureProvider := model.PostureProvider{
@@ -203,7 +201,6 @@ func CachePostureProviders(msg *message.Message) error {
 			CompliancePercentage: 0,
 			ResourceCount:        0,
 		}
-		scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
 		neo4jNodeType := "CloudNode"
 		nodeLabel := "Hosts"
 		if postureProviderName == model.PostureProviderKubernetes {
@@ -212,114 +209,179 @@ func CachePostureProviders(msg *message.Message) error {
 		} else if postureProviderName == model.PostureProviderLinux {
 			neo4jNodeType = "Node"
 		}
+		var account_count_query, resource_count_query, scan_count_query, success_count_query, global_count_query string
+		passStatus := []string{"ok", "info", "skip"}
 		if postureProviderName == model.PostureProviderLinux || postureProviderName == model.PostureProviderKubernetes {
 			postureProvider.NodeLabel = nodeLabel
-			scanType = utils.NEO4J_COMPLIANCE_SCAN
-			nonKubeFilter := ""
-			passStatus := []string{"ok", "info", "skip"}
 			if postureProviderName == model.PostureProviderLinux {
-				nonKubeFilter = "{kubernetes_cluster_id:''}"
 				passStatus = []string{"warn", "pass"}
 			}
-			query := fmt.Sprintf(`
-			MATCH (m:%s%s)
-			WHERE m.pseudo=false and m.active=true
-			WITH COUNT(DISTINCT m.node_id) AS account_count
-			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s)
-			WITH account_count, COUNT(DISTINCT n.node_id) AS scan_count
-			OPTIONAL MATCH (m:%s)<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:Compliance)
-			WITH account_count, scan_count, COUNT(c) AS total_compliance_count
-			OPTIONAL MATCH (m:%s)<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:Compliance)
-			WHERE c1.status IN $passStatus
-			RETURN account_count, scan_count, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage`,
-				neo4jNodeType, nonKubeFilter, scanType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType)
-			nodeRes, err := tx.Run(query, map[string]interface{}{"passStatus": passStatus})
-			if err == nil {
-				nodeRec, err := nodeRes.Single()
-				if err != nil {
-					log.Warn().Msgf("Provider query error for %s: %v", postureProviderName, err)
-				} else {
-					postureProvider.NodeCount = nodeRec.Values[0].(int64)
-					postureProvider.ScanCount = nodeRec.Values[1].(int64)
-					postureProvider.CompliancePercentage = nodeRec.Values[2].(float64)
-				}
-			} else {
-				log.Warn().Msg(err.Error())
-			}
+
+			account_count_query = `
+			MATCH (n:` + string(neo4jNodeType) + `)
+			WHERE n.pseudo=false and n.active=true and n.agent_running=true
+			RETURN count(distinct n)`
+
+			resource_count_query = `RETURN 0`
+
+			scan_count_query = `
+			MATCH (n:` + string(neo4jNodeType) + `)
+			WHERE n.pseudo=false and n.active=true and n.agent_running=true
+			MATCH (n) <-[:SCANNED]- (m:` + string(utils.NEO4J_COMPLIANCE_SCAN) + `)
+			RETURN count(distinct m)`
+
+			success_count_query = `
+			MATCH (n:` + string(neo4jNodeType) + `)
+			WHERE n.pseudo=false and n.active=true and n.agent_running=true
+			MATCH (n) <-[:SCANNED]- (m:` + string(utils.NEO4J_COMPLIANCE_SCAN) + `) -[:DETECTED]-> (c:Compliance)
+			MATCH (m) -[:DETECTED] -> (c:Compliance)
+			WHERE c.status IN $passStatus
+			RETURN count(distinct c)`
+
+			global_count_query = `
+			MATCH (n:` + string(neo4jNodeType) + `)
+			WHERE n.pseudo=false and n.active=true and n.agent_running=true
+			MATCH (n) <-[:SCANNED]- (m:` + string(utils.NEO4J_COMPLIANCE_SCAN) + `) -[:DETECTED]-> (c:Compliance)
+			MATCH (m) -[:DETECTED] -> (c:Compliance)
+			RETURN count(distinct c)`
+
 		} else if postureProviderName == model.PostureProviderAWSOrg || postureProviderName == model.PostureProviderGCPOrg {
-			cloudProvider := model.PostureProviderGCP
+			postureProviderName := model.PostureProviderGCP
 			if postureProviderName == model.PostureProviderAWSOrg {
-				cloudProvider = model.PostureProviderAWS
+				postureProviderName = model.PostureProviderAWS
 			}
 			postureProvider.NodeLabel = "Organizations"
-			nodeRes, err := tx.Run(fmt.Sprintf(`
-			MATCH (o:%s{cloud_provider:$cloud_provider+'_org'})
+
+			account_count_query = `
+			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'})
 			WHERE o.active=true
-			WITH COUNT(DISTINCT o.node_id) AS account_count
-			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider}) -[:OWNS]-> (p:CloudResource)
-			WHERE m.organization_id IS NOT NULL
-			WITH account_count, COUNT(distinct p.arn) AS resource_count
-			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})<-[:IS_CHILD]-(o:%s{cloud_provider:$cloud_provider+'_org'})
-			WITH account_count, resource_count, COUNT(DISTINCT n.node_id) AS scan_count
-			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudCompliance), (o:%s{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
-			WHERE m.organization_id IS NOT NULL
-			WITH account_count, resource_count, scan_count, COUNT(c) AS total_compliance_count
-			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:CloudCompliance), (o:%s{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
-			WHERE c1.status IN ['ok', 'info', 'skip'] AND m.organization_id IS NOT NULL
-			RETURN account_count, resource_count, scan_count,
-				CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage`, neo4jNodeType, neo4jNodeType, scanType,
-				neo4jNodeType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, neo4jNodeType, neo4jNodeType,
-				scanType, neo4jNodeType, neo4jNodeType),
-				map[string]interface{}{
-					"cloud_provider": cloudProvider,
-				})
-			if err == nil {
-				nodeRec, err := nodeRes.Single()
-				if err != nil {
-					log.Warn().Msgf("Provider query error for %s: %v", postureProviderName, err)
-				} else {
-					postureProvider.NodeCount = nodeRec.Values[0].(int64)
-					postureProvider.ResourceCount = nodeRec.Values[1].(int64)
-					postureProvider.ScanCount = nodeRec.Values[2].(int64)
-					postureProvider.CompliancePercentage = nodeRec.Values[3].(float64)
-				}
-			} else {
-				log.Warn().Msg(err.Error())
-			}
+			RETURN count(distinct o)`
+
+			resource_count_query = `
+			MATCH (m:` + string(neo4jNodeType) + `{cloud_provider: $cloud_provider}) -[:OWNS]-> (p:CloudResource)
+			RETURN count(distinct p)`
+
+			scan_count_query = `
+			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:`+string(neo4jNodeType)+`)
+			WHERE o.active=true
+			AND m.organization_id IS NOT NULL
+			MATCH (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
+			RETURN count(distinct n)`
+
+			success_count_query = `
+			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:`+string(neo4jNodeType)+`)
+			WHERE o.active=true
+			AND m.organization_id IS NOT NULL
+			MATCH (c:CloudCompliance) <-[:DETECTED]- (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
+			WHERE c.status IN $passStatus
+			RETURN count(distinct c)`
+
+			global_count_query = `
+			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:`+string(neo4jNodeType)+`)
+			WHERE o.active=true
+			AND m.organization_id IS NOT NULL
+			MATCH (c:CloudCompliance) <-[:DETECTED]- (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
+			RETURN count(distinct c)`
+
 		} else {
 			postureProvider.NodeLabel = "Accounts"
-			nodeRes, err := tx.Run(fmt.Sprintf(`
-			MATCH (m:%s{cloud_provider: $cloud_provider})
+			account_count_query = `
+			MATCH (m:` + string(neo4jNodeType) + `{cloud_provider: $cloud_provider})
 			WHERE m.active=true
-			WITH COUNT(DISTINCT m.node_id) AS account_count
-			OPTIONAL MATCH (p:CloudResource{cloud_provider: $cloud_provider})
-			WITH account_count, COUNT(distinct p.arn) AS resource_count
-			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})
-			WITH account_count, resource_count, COUNT(DISTINCT n.node_id) AS scan_count
-			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudCompliance)
-			WITH account_count, resource_count, scan_count, COUNT(c) AS total_compliance_count
-			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:CloudCompliance)
-			WHERE c1.status IN ['ok', 'info', 'skip']
-			RETURN account_count, resource_count, scan_count,
-				CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage`, neo4jNodeType, scanType,
-				neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType),
-				map[string]interface{}{
-					"cloud_provider": postureProviderName,
-				})
-			if err == nil {
-				nodeRec, err := nodeRes.Single()
-				if err != nil {
-					log.Warn().Msgf("Provider query error for %s: %v", postureProviderName, err)
-				} else {
-					postureProvider.NodeCount = nodeRec.Values[0].(int64)
-					postureProvider.ResourceCount = nodeRec.Values[1].(int64)
-					postureProvider.ScanCount = nodeRec.Values[2].(int64)
-					postureProvider.CompliancePercentage = nodeRec.Values[3].(float64)
-				}
-			} else {
-				log.Warn().Msg(err.Error())
-			}
+			RETURN count(distinct m)`
+
+			resource_count_query = `
+			MATCH (p:CloudResource{cloud_provider: $cloud_provider})
+			RETURN count(distinct p)`
+
+			scan_count_query = `
+			MATCH (m:` + string(neo4jNodeType) + `{cloud_provider: $cloud_provider})
+			WHERE m.active=true
+			MATCH (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
+			RETURN count(distinct n)`
+
+			success_count_query = `
+			MATCH (m:` + string(neo4jNodeType) + `{cloud_provider: $cloud_provider})
+			WHERE m.active=true
+			MATCH (c:CloudCompliance) <-[:DETECTED]- (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
+			WHERE c.status IN $passStatus
+			RETURN count(distinct c)`
+
+			global_count_query = `
+			MATCH (m:` + string(neo4jNodeType) + `{cloud_provider: $cloud_provider})
+			WHERE m.active=true
+			MATCH (c:CloudCompliance) <-[:DETECTED]- (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
+			RETURN count(distinct c)`
 		}
+
+		node_count, err := getCount(tx, account_count_query,
+			map[string]interface{}{
+				"cloud_provider": postureProviderName,
+				"passStatus":     passStatus,
+			},
+		)
+
+		if err != nil {
+			log.Error().Msgf("%v", err)
+			continue
+		}
+
+		resource_count, err := getCount(tx, resource_count_query,
+			map[string]interface{}{
+				"cloud_provider": postureProviderName,
+				"passStatus":     passStatus,
+			},
+		)
+
+		if err != nil {
+			log.Error().Msgf("%v", err)
+			continue
+		}
+
+		scan_count, err := getCount(tx, scan_count_query,
+			map[string]interface{}{
+				"cloud_provider": postureProviderName,
+				"passStatus":     passStatus,
+			},
+		)
+
+		if err != nil {
+			log.Error().Msgf("%v", err)
+			continue
+		}
+
+		success_count, err := getCount(tx, success_count_query,
+			map[string]interface{}{
+				"cloud_provider": postureProviderName,
+				"passStatus":     passStatus,
+			},
+		)
+
+		if err != nil {
+			log.Error().Msgf("%v", err)
+			continue
+		}
+
+		global_count, err := getCount(tx, global_count_query,
+			map[string]interface{}{
+				"cloud_provider": postureProviderName,
+				"passStatus":     passStatus,
+			},
+		)
+
+		if err != nil {
+			log.Error().Msgf("%v", err)
+			continue
+		}
+
+		var percent float64
+		if global_count != 0 {
+			percent = float64(success_count) / float64(global_count) * 100
+		}
+		postureProvider.NodeCount = node_count
+		postureProvider.ResourceCount = resource_count
+		postureProvider.ScanCount = scan_count
+		postureProvider.CompliancePercentage = percent
 		postureProviders = append(postureProviders, postureProvider)
 	}
 
@@ -327,9 +389,27 @@ func CachePostureProviders(msg *message.Message) error {
 	if err != nil {
 		return err
 	}
-	err = rdb.Set(ctx, constants.RedisKeyPostureProviders, string(postureProvidersJson), time.Hour*2).Err()
+
+	rdb, err := directory.RedisClient(ctx)
+	if err != nil {
+		return err
+	}
+	err = rdb.Set(ctx, constants.RedisKeyPostureProviders, string(postureProvidersJson), 0).Err()
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func getCount(tx neo4j.Transaction, query string, params map[string]interface{}) (int64, error) {
+	log.Debug().Msgf("Cloud compliance query: %v", query)
+	nodeRes, err := tx.Run(query, params)
+	if err != nil {
+		return 0, err
+	}
+	nodeRec, err := nodeRes.Single()
+	if err != nil {
+		return 0, err
+	}
+	return nodeRec.Values[0].(int64), nil
 }

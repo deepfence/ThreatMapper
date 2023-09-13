@@ -31,7 +31,7 @@ export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPro
           target="_blank"
           rel="noreferrer"
         >
-          reading our documentation
+          More information
         </DFLink>
         .
       </div>

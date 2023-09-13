@@ -11,11 +11,10 @@ The Management Console may be installed on a single Docker host or in a dedicate
 
 | Feature                                   | Requirements (Docker)                                                                                                                  | Requirements (Kubernetes)           | 
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------|
-| CPU: No of cores                          | 4                                                                                                                                      | 3 nodes, 4 cores each               |
+| CPU: No of cores                          | 4 (Recommended: 8)                                                                                                                     | 3 nodes, 4 cores each               |
 | RAM                                       | 16 GB                                                                                                                                  | 3 nodes, 8 GB each                  |
 | Telemetry and data from Deepfence Sensors | Port 443 (configurable), firewalled                                                                                                    | Port 443 (configurable), firewalled |
 | Administrative and API access             | Port 443 (configurable), firewalled                                                                                                    | Port 443 (configurable), firewalled |
 | Docker                                    | *Version 20.10.18 (minimum version 18.06.0)                                                                                            |
-| Tuning                                    | `sysctl -w vm.max_map_count=262144` # [details](https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html) |
 
 Larger deployments, managing 250 or more production nodes, will require additional CPU and RAM resources.  For enterprise-scale deployments, managing 1000+ production nodes, the ThreatMapper Console should be deployed on a Kubernetes cluster of 3 or more nodes.

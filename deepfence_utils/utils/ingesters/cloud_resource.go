@@ -28,6 +28,8 @@ type CloudResource struct {
 	BlockPublicPolicy              bool             `json:"block_public_policy,omitempty"`
 	BucketPolicyIsPublic           bool             `json:"bucket_policy_is_public,omitempty"`
 	CloudProvider                  string           `json:"cloud_provider,omitempty"`
+	ClusterArn                     string           `json:"cluster_arn,omitempty"`
+	ClusterName                    string           `json:"cluster_name,omitempty"`
 	RestrictPublicBuckets          bool             `json:"restrict_public_buckets,omitempty"`
 	ID                             string           `json:"id"`
 	IgnorePublicAcls               bool             `json:"ignore_public_acls,omitempty"`
@@ -40,8 +42,12 @@ type CloudResource struct {
 	NetworkMode                    string           `json:"network_mode,omitempty"`
 	Scheme                         string           `json:"scheme,omitempty"`
 	DbClusterIdentifier            string           `json:"db_cluster_identifier,omitempty"`
+	Connectivity                   string           `json:"connectivity,omitempty"`
+	Group                          string           `json:"group,omitempty"`
 	ServiceName                    string           `json:"service_name,omitempty"`
+	TaskArn                        string           `json:"task_arn,omitempty"`
 	TaskDefinitionArn              string           `json:"task_definition_arn,omitempty"`
+	LastStatus                     string           `json:"last_status"`
 	VpcID                          string           `json:"vpc_id,omitempty"`
 	AllowBlobPublicAccess          bool             `json:"allow_blob_public_access,omitempty"`
 	PublicAccess                   string           `json:"public_access,omitempty"`

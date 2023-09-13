@@ -431,6 +431,8 @@ const InviteUserModal = ({
                 type="submit"
                 name="intent"
                 value={ModelInviteUserRequestActionEnum['SendInviteEmail']}
+                loading={fetcher.state === 'submitting'}
+                disabled={fetcher.state === 'submitting'}
               >
                 Send invite via email
               </Button>
@@ -449,6 +451,8 @@ const InviteUserModal = ({
                 size="md"
                 name="intent"
                 value={ModelInviteUserRequestActionEnum['GetInviteLink']}
+                loading={fetcher.state === 'submitting'}
+                disabled={fetcher.state === 'submitting'}
               >
                 Copy invite link
               </Button>

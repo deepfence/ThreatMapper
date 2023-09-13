@@ -3,14 +3,23 @@ package splunk
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/rs/zerolog/log"
 )
+
+var MaxContentLength = 10000
+
+// HECEvent represents an event for the Splunk HTTP Event Collector (HEC) API
+type HECEvent struct {
+	Event map[string]interface{} `json:"event"`
+}
 
 func New(ctx context.Context, b []byte) (Splunk, error) {
 	var s Splunk
@@ -22,63 +31,96 @@ func New(ctx context.Context, b []byte) (Splunk, error) {
 }
 
 func (s Splunk) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
-	// Create an HTTP client with a timeout
-	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
-	client := &http.Client{
-		Timeout: time.Second * 10,
-		Transport: &http.Transport{
-			TLSClientConfig: tlsConfig,
-		},
-	}
-
+	s.client = utils.GetInsecureHttpClient()
 	var msg []map[string]interface{}
 	d := json.NewDecoder(strings.NewReader(message))
 	if err := d.Decode(&msg); err != nil {
 		fmt.Println("Failed to unmarshal message for splunk", err)
 		return err
 	}
+
+	numRoutines := (len(msg) / 10)
+	if numRoutines == 0 {
+		numRoutines = 1
+	} else if numRoutines > 10 {
+		numRoutines = 10
+	}
+
+	senderChan := make(chan []byte, 500)
+	var wg sync.WaitGroup
+	for i := 0; i < numRoutines; i++ {
+		wg.Add(1)
+		go s.Sender(senderChan, &wg)
+	}
+
+	defer func() {
+		close(senderChan)
+		wg.Wait()
+		log.Info().Msgf("SPLUNK::SendNotification complete, numRoutines:%d", numRoutines)
+	}()
+
+	var buffer bytes.Buffer
 	for _, payload := range msg {
 		currentMicro := time.Now().UnixMicro()
 		payload["timestamp"] = currentMicro
 		payload["@timestamp"] = currentMicro
-		// Create a new HEC event with the data
+
 		event := HECEvent{Event: payload}
-		// Marshal the HEC event to JSON
 		jsonBytes, err := json.Marshal(event)
 		if err != nil {
-			fmt.Println("Failed to marshal HEC event to JSON", err)
+			log.Info().Msgf("Failed to marshal HEC event to JSON, %v", err)
 			continue
 		}
 
-		// Create a new request to send the JSON data to Splunk
-		req, err := http.NewRequest("POST", s.Config.EndpointURL, bytes.NewBuffer(jsonBytes))
-		if err != nil {
-			fmt.Println("Failed to create HTTP request", err)
-			continue
+		// Send out bytes in buffer immediately if the limit exceeded after adding this event
+		if buffer.Len()+len(jsonBytes) > MaxContentLength {
+			b := make([]byte, buffer.Len())
+			copy(b, buffer.Bytes())
+			senderChan <- b
+			buffer.Reset()
 		}
-		req.Header.Set("Authorization", "Splunk "+s.Config.Token)
-		req.Header.Set("Content-Type", "application/json")
+		buffer.Write(jsonBytes)
+	}
 
-		// Send the request to Splunk
-		resp, err := client.Do(req)
+	if buffer.Len() > 0 {
+		senderChan <- buffer.Bytes()
+	}
+
+	return nil
+}
+
+func (s Splunk) Sender(in chan []byte, wg *sync.WaitGroup) {
+	defer wg.Done()
+	authToken := "Splunk " + s.Config.Token
+
+SenderLoop:
+	for {
+		var data []byte
+		var ok bool
+
+		select {
+		case data, ok = <-in:
+			if !ok {
+				break SenderLoop
+			}
+		}
+
+		req, err := http.NewRequest("POST", s.Config.EndpointURL, bytes.NewReader(data))
 		if err != nil {
-			fmt.Println("Failed to send data to Splunk", err)
-			continue
+			log.Info().Msgf("Failed to create HTTP request: %v", err)
+			continue SenderLoop
+		}
+		req.Header.Set("Authorization", authToken)
+		resp, err := s.client.Do(req)
+		if err != nil {
+			log.Info().Msgf("Failed to send data to Splunk: %v", err)
+			continue SenderLoop
 		}
 
 		// Check the response status code
 		if resp.StatusCode != http.StatusOK {
-			fmt.Println("Failed to send data to Splunk", resp.Status)
-			continue
+			log.Info().Msgf("Failed to send data to Splunk %s", resp.Status)
 		}
 		resp.Body.Close()
 	}
-
-	fmt.Println("Data sent to Splunk successfully")
-	return nil
-}
-
-// HECEvent represents an event for the Splunk HTTP Event Collector (HEC) API
-type HECEvent struct {
-	Event map[string]interface{} `json:"event"`
 }

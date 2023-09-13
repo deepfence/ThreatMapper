@@ -67,32 +67,7 @@ const sidebars = {
 
         {
           type: 'category',
-          label: 'Cloud Scanner',
-          link: {
-            type: 'doc',
-            id: 'cloudscanner/index'
-          },
-          items: [
-            'cloudscanner/aws',
-            'cloudscanner/azure',
-            'cloudscanner/gcp',
-            'cloudscanner/other',
-           ],
-        },
-
-        {
-          type: 'category',
-          label: 'Kubernetes Scanner',
-          link: {
-            type: 'doc',
-            id: 'kubernetes-scanner/index'
-          },
-          items: [],
-        },
-
-        {
-          type: 'category',
-          label: 'Sensor Agent container',
+          label: 'Sensor Agent',
           link: {
             type: 'doc',
             id: 'sensors/index'
@@ -104,6 +79,31 @@ const sidebars = {
             'sensors/aws-fargate',
             'sensors/linux-host',
           ],
+        },
+
+        {
+          type: 'category',
+          label: 'Cloud Scanner',
+          link: {
+            type: 'doc',
+            id: 'cloudscanner/index'
+          },
+          items: [
+            'cloudscanner/aws',
+            'cloudscanner/azure',
+            'cloudscanner/gcp',
+            'cloudscanner/other',
+          ],
+        },
+
+        {
+          type: 'category',
+          label: 'Kubernetes Scanner',
+          link: {
+            type: 'doc',
+            id: 'kubernetes-scanner/index'
+          },
+          items: [],
         },
       ],
     },
@@ -147,7 +147,12 @@ const sidebars = {
         'integrations/slack',
         'integrations/microsoft-teams',
         'integrations/sumo-logic',
+        'integrations/elasticsearch',
+        'integrations/email',
+        'integrations/http-endpoint',
         'integrations/jira',
+        'integrations/s3',
+        'integrations/reports',
       ],
     },
 

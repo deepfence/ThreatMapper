@@ -11021,6 +11021,11 @@
           "last_scan_status": { "type": "string" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
+          "scan_status_map": {
+            "type": "object",
+            "additionalProperties": { "type": "integer" },
+            "nullable": true
+          },
           "version": { "type": "string" }
         }
       },

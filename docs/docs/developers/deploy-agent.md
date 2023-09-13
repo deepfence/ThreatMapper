@@ -19,10 +19,20 @@ Execute the following command to install and start the sensors:
 ACC=myorg             # the name of the dockerhub account 
 docker login -u $ACC  # log in to the account
 
-docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=host --net=host \
-  --privileged=true -v /sys/kernel/debug:/sys/kernel/debug:rw -v /var/log/fenced \
-  -v /var/run/docker.sock:/var/run/docker.sock -v /:/fenced/mnt/host/:ro \
-  -e USER_DEFINED_TAGS="" -e MGMT_CONSOLE_URL="---CONSOLE-IP---" -e MGMT_CONSOLE_PORT="443" \
+docker run -dit \
+  --cpus=".2" \
+  --name=deepfence-agent \
+  --restart on-failure \
+  --pid=host \
+  --net=host \
+  --privileged=true \
+  -v /sys/kernel/debug:/sys/kernel/debug:rw \
+  -v /var/log/fenced \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /:/fenced/mnt/host/:ro \
+  -e USER_DEFINED_TAGS="" \
+  -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
+  -e MGMT_CONSOLE_PORT="443" \
   -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
   $ACC/deepfence_agent_ce:2.0.0
 ```
@@ -52,4 +62,4 @@ helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-
 
 Allow a few seconds for the containers to pull and deploy in your Kubernetes environment.
 
-Full instructions can be found in the [Agent helm chart documentation](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-agent).
+Full instructions can be found in the [Agent helm chart documentation](https://github.com/deepfence/ThreatMapper/tree/main/deployment-scripts/helm-charts/deepfence-agent).

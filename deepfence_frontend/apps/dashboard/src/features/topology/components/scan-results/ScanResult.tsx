@@ -100,11 +100,11 @@ const ScanResultHeading = ({
           to={
             type === ScanTypeEnum.ComplianceScan
               ? generatePath('/posture/scan-results/:nodeType/:scanId', {
-                  scanId,
+                  scanId: encodeURIComponent(scanId),
                   nodeType: 'linux',
                 })
               : generatePath(`${scanResultPath}/:scanId`, {
-                  scanId,
+                  scanId: encodeURIComponent(scanId),
                 })
           }
           className="text-h5"

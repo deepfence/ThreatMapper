@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"net/http"
 )
 
@@ -42,7 +43,7 @@ func (h HTTPEndpoint) SendNotification(ctx context.Context, message string, extr
 	req.Header.Set("Content-Type", "application/json")
 
 	// Make the HTTP request.
-	client := &http.Client{}
+	client := utils.GetHttpClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		return err

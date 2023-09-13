@@ -1,10 +1,11 @@
 import { isEmpty } from 'lodash-es';
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { createColumnHelper, Dropdown, DropdownItem } from 'ui-components';
+import { createColumnHelper, Dropdown, DropdownItem, Tooltip } from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
+import { ErrorIcon, SuccessIcon } from '@/components/icons/common/ScanStatuses';
 import { TruncatedText } from '@/components/TruncatedText';
 import { ActionEnumType } from '@/features/integrations/pages/IntegrationAdd';
 
@@ -469,6 +470,38 @@ export const useIntegrationTableColumn = (
       columnHelper.accessor('notification_type', {
         cell: (cell) => cell.getValue(),
         header: () => 'Notification Type',
+        minSize: 65,
+        size: 70,
+        maxSize: 75,
+      }),
+      columnHelper.accessor('last_error_msg', {
+        cell: (cell) => {
+          const isError =
+            cell.row.original?.last_error_msg &&
+            cell.row.original?.last_error_msg?.trim()?.length > 0;
+          return (
+            <div className="flex items-center dark:text-text-text-and-icon text-p4">
+              {isError ? (
+                <Tooltip content={cell.row.original?.last_error_msg}>
+                  <div className="flex gap-1.5">
+                    <span className="w-[18px] h-[18px] shrink-0 flex">
+                      <ErrorIcon />
+                    </span>
+                    Error
+                  </div>
+                </Tooltip>
+              ) : (
+                <div className="flex gap-1.5">
+                  <span className="w-[18px] h-[18px] shrink-0 flex">
+                    <SuccessIcon />
+                  </span>
+                  Active
+                </div>
+              )}
+            </div>
+          );
+        },
+        header: () => 'Status',
         minSize: 65,
         size: 70,
         maxSize: 75,

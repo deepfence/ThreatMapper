@@ -2,7 +2,7 @@
 
 ### Install
 
-Application source: https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/sample-applications/flask-echo-server/
+Application source: https://github.com/deepfence/ThreatMapper/tree/main/deployment-scripts/sample-applications/flask-echo-server/
 
 **Quick start**
 

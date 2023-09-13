@@ -26,6 +26,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -37,8 +38,10 @@ import (
 var ScanIdReplacer = strings.NewReplacer("/", "_", ":", "_", ".", "_")
 
 var (
-	matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
-	matchAllCap   = regexp.MustCompile("([a-z0-9])([A-Z])")
+	matchFirstCap                = regexp.MustCompile("(.)([A-Z][a-z]+)")
+	matchAllCap                  = regexp.MustCompile("([a-z0-9])([A-Z])")
+	once1, once2                 sync.Once
+	secureClient, insecureClient *http.Client
 )
 
 const (
@@ -49,6 +52,29 @@ var (
 	removeAnsiColorRegex = regexp.MustCompile(ansi)
 	emptyStrByte         = []byte("")
 )
+
+func GetHttpClient() *http.Client {
+	once1.Do(func() {
+		secureClient = &http.Client{Timeout: time.Second * 30}
+	})
+
+	return secureClient
+}
+
+func GetInsecureHttpClient() *http.Client {
+	once2.Do(func() {
+		tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
+		insecureClient = &http.Client{
+			Timeout: time.Second * 30,
+			Transport: &http.Transport{
+				TLSClientConfig: tlsConfig,
+				WriteBufferSize: 10240,
+			},
+		}
+	})
+
+	return insecureClient
+}
 
 // StripAnsi remove ansi color from log lines
 func StripAnsi(str []byte) []byte {

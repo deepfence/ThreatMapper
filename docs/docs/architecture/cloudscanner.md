@@ -14,7 +14,7 @@ ThreatMapper then summarises the results in a 'Threat Graph' visualization, to h
 ## Implementation
 
  * Compliance Posture Scanning for **Clouds** requires access (typically read-only) to the cloud platform APIs, and uses the Cloud Scanner task
- * Compliance Posture Scanning for **Hosts** requires direct access to the host, and uses the Sensor Agent container.
+ * Compliance Posture Scanning for **Hosts** requires direct access to the host, and uses the Sensor Agent.
 
 ### Compliance Posture Scanning for Clouds
 

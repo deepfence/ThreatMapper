@@ -6,18 +6,18 @@ import (
 
 type RegistryDockerPrivate struct {
 	Name         string    `json:"name" validate:"required,min=2,max=64"`
-	NonSecret    NonSecret `json:"non_secret" validate:"required"`
-	Secret       Secret    `json:"secret" validate:"required"`
+	NonSecret    NonSecret `json:"non_secret"`
+	Secret       Secret    `json:"secret"`
 	RegistryType string    `json:"registry_type" validate:"required"`
 }
 
 type NonSecret struct {
 	DockerRegistryURL string `json:"docker_registry_url" validate:"required,url"`
-	DockerUsername    string `json:"docker_username" validate:"required,min=2"`
+	DockerUsername    string `json:"docker_username" validate:"omitempty,min=2"`
 }
 
 type Secret struct {
-	DockerPassword string `json:"docker_password" validate:"required,min=2"`
+	DockerPassword string `json:"docker_password" validate:"omitempty,min=2"`
 }
 
 type ReposResp struct {

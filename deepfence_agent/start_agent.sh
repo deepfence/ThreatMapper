@@ -42,22 +42,19 @@ check_options() {
   done
 }
 
-launch_system_services() {
+configure_cron() {
   #Setup cron jobs for misc tasks, it needs to be killed and restarted
   #doesnt work smoothly inside docker!
-  service cron start >/dev/null &
-
+  service cron start
   chmod 600 /etc/logrotate.d/fenced_logrotate.conf
-  line="*/5 * * * * /usr/sbin/logrotate /etc/logrotate.d/fenced_logrotate.conf"
-  (echo "$line") | crontab -
-  (echo "") | crontab -
+  (echo "*/5 * * * * /usr/sbin/logrotate /etc/logrotate.d/fenced_logrotate.conf") | crontab -
 }
 
 launch_deepfenced() {
   # In k8s, if agent pod restarts these files are not cleared
   rm -rf /var/log/fenced/* 2>/dev/null
   mkdir -p /var/log/fenced/malware-scan /var/log/fenced/malware-scan-log /var/log/fenced/secret-scan /var/log/fenced/secret-scan-log /var/log/fenced/compliance /var/log/fenced/compliance-scan-logs 2>/dev/null
-  launch_system_services
+  configure_cron
   if [[ -z "${SCOPE_HOSTNAME}" ]]; then
     SCOPE_HOSTNAME="$(hostname)"
     export SCOPE_HOSTNAME="$SCOPE_HOSTNAME"

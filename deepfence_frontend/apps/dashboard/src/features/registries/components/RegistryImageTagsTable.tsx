@@ -144,8 +144,11 @@ export const RegistryImageTagsTable = ({
         header: () => 'Pushed at',
         cell: (info) => {
           const metadata = info.row.original.metadata;
-          const date = metadata['last_updated'];
-          return formatMilliseconds(date * 1000);
+          const date = metadata?.['last_updated'];
+          if (date) {
+            return formatMilliseconds(date * 1000);
+          }
+          return '-';
         },
         maxSize: 50,
       }),

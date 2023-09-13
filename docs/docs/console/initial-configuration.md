@@ -82,4 +82,37 @@ docker-compose -f docker-compose.yml up -d
 
 ### Using your own TLS certificates - Kubernetes
 
-Follow the instructions to [tune the Helm chart installation](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-console#install-deepfence-console-helm-chart), specifically how to configure the `tls: certFile` and `tls:keyFile` values.
+- To configure certificates in values file use below format
+```yaml
+router:
+  # Use custom ssl certificate for Deepfence UI
+  # custom certificates can be configured using two options
+  # existing secret or base64 encoded cert and key string
+  # provide one off the two options to configure custom certificates
+  tls:
+    # provide secret name which contains tls cert and key
+    # reference: https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets
+    # make sure to create secret in the same namespace as that of the console
+    secretName: ""
+    # embed given cert and key as secret and mount to router pod
+    # provide certificate and key in below example format
+    cert: |-
+      -----BEGIN CERTIFICATE-----
+      MIIFCTCCAvGgAwIBAgIUNshy8GFTjfUR7inZ1JCcN+tDuh4wDQYJKoZIhvcNAQEL
+      .....
+      BMepE4d9+TQFcPQ/OKSlP8FB2nPKZJdM+JlXDFWqeKvbdYS4QErRLd33qUmq
+      -----END CERTIFICATE-----
+    key: |-
+      -----BEGIN PRIVATE KEY-----
+      MIIJQQIBADANBgkqhkiG9w0BAQEFAASCCSswggknAgEAAoICAQDECeUraonCz/89
+      .....
+      bHEvWp7ugCTFhurM+lla0d+ElDO2
+      -----END PRIVATE KEY-----
+```
+
+- If you already have a tls certificate available on cluster in the same namespace as that of the console as tls secret, then pass the name of the secret to helm chart values as shown in below example
+```yaml
+router:
+  tls:
+    secretName: console-tls-certs
+```

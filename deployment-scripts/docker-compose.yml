@@ -33,7 +33,7 @@ services:
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_postgres_ce:${DF_IMG_TAG:-2.0.0}
     ulimits:
       core: 0
-    restart: on-failure
+    restart: unless-stopped
     networks:
       - deepfence_net
     volumes:
@@ -48,7 +48,7 @@ services:
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_redis_ce:${DF_IMG_TAG:-2.0.0}
     ulimits:
       core: 0
-    restart: on-failure
+    restart: unless-stopped
     networks:
       - deepfence_net
     volumes:
@@ -64,7 +64,7 @@ services:
 
     ulimits:
       core: 0
-    restart: on-failure
+    restart: unless-stopped
     tmpfs:
       - /tmp
     networks:
@@ -77,8 +77,8 @@ services:
       AWS_ACCESS_KEY: ""
       AWS_SECRET_KEY: ""
     ports:
-      - "0.0.0.0:7474:7474"
-      - "0.0.0.0:7687:7687"
+      - "127.0.0.1:7474:7474"
+      - "127.0.0.1:7687:7687"
     volumes:
       - deepfence_neo4j_data:/data:rw
       - deepfence_neo4j_logs:/logs:rw
@@ -98,7 +98,7 @@ services:
       resources:
         limits:
           cpus: ".2"
-    restart: on-failure
+    restart: unless-stopped
     environment:
       - MGMT_CONSOLE_URL_INTERNAL=127.0.0.1
       - MGMT_CONSOLE_PORT_INTERNAL=8081
@@ -127,7 +127,7 @@ services:
       core: 0
     networks:
       - deepfence_net
-    restart: always
+    restart: unless-stopped
     environment:
       FORCE_HTTPS_REDIRECT: "true"
       KAFKA_REST_PROXY: "deepfence-rest-proxy:8082"
@@ -148,7 +148,7 @@ services:
       core: 0
     networks:
       - deepfence_net
-    restart: always
+    restart: unless-stopped
     ports:
       - "127.0.0.1:9000:9000"
       - "127.0.0.1:9333:9333"
@@ -178,7 +178,7 @@ services:
       - deepfence-postgres
       - deepfence-neo4j
     ports:
-      - "8080:8080"
+      - "0.0.0.0:8080:8080"
       - "127.0.0.1:8081:8081"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -187,14 +187,14 @@ services:
       driver: "json-file"
       options:
         max-size: "200m"
-    restart: on-failure
+    restart: unless-stopped
 
   deepfence-worker:
     container_name: deepfence-worker
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-2.0.0}
     ulimits:
       core: 0
-    restart: on-failure
+    restart: unless-stopped
     networks:
       - deepfence_net
     depends_on:
@@ -216,7 +216,7 @@ services:
   #   image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-2.0.0}
   #   ulimits:
   #     core: 0
-  #   restart: on-failure
+  #   restart: unless-stopped
   #   networks:
   #     - deepfence_net
   #   depends_on:
@@ -237,7 +237,7 @@ services:
   #   image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-2.0.0}
   #   ulimits:
   #     core: 0
-  #   restart: on-failure
+  #   restart: unless-stopped
   #   networks:
   #     - deepfence_net
   #   depends_on:
@@ -258,7 +258,7 @@ services:
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-2.0.0}
     ulimits:
       core: 0
-    restart: on-failure
+    restart: unless-stopped
     environment:
       <<: *common-creds
       DEEPFENCE_MODE: scheduler
@@ -282,7 +282,7 @@ services:
       core: 0
     networks:
       - deepfence_net
-    restart: on-failure
+    restart: unless-stopped
     depends_on:
       - deepfence-server
     logging:
@@ -307,6 +307,7 @@ services:
       driver: "json-file"
       options:
         max-size: "50m"
+    restart: unless-stopped
 
   deepfence-ingester:
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-2.0.0}
@@ -325,6 +326,7 @@ services:
       driver: "json-file"
       options:
         max-size: "200m"
+    restart: unless-stopped
 
   deepfence-telemetry:
     image: jaegertracing/all-in-one:1.42
@@ -335,7 +337,7 @@ services:
       - "127.0.0.1:14268:14268"
       - "127.0.0.1:9411:9411"
       - "127.0.0.1:14269:14269"
-      - "0.0.0.0:16686:16686"
+      - "127.0.0.1:16686:16686"
     networks:
       - deepfence_net
 

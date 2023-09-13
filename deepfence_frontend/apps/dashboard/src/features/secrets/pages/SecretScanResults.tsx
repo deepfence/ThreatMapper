@@ -345,6 +345,8 @@ const DeleteConfirmationModal = ({
             <Button
               size="md"
               color="error"
+              loading={fetcher.state === 'submitting'}
+              disabled={fetcher.state === 'submitting'}
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteAction(ActionEnumType.DELETE);
@@ -429,6 +431,8 @@ const DeleteScanConfirmationModal = ({
             <Button
               size="md"
               color="error"
+              loading={fetcher.state === 'submitting'}
+              disabled={fetcher.state === 'submitting'}
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteScan();
@@ -526,7 +530,7 @@ const HistoryControls = () => {
           onScanClick: () => {
             navigate(
               generatePath('/secret/scan-results/:scanId', {
-                scanId: item.scanId,
+                scanId: encodeURIComponent(item.scanId),
               }),
               {
                 replace: true,
@@ -550,7 +554,7 @@ const HistoryControls = () => {
                 if (latestScan) {
                   navigate(
                     generatePath('/secret/scan-results/:scanId', {
-                      scanId: latestScan.scanId,
+                      scanId: encodeURIComponent(latestScan.scanId),
                     }),
                     { replace: true },
                   );
@@ -1139,12 +1143,16 @@ const DynamicBreadcrumbs = () => {
   const { scanStatusResult } = data;
 
   const { node_type, node_name } = scanStatusResult ?? {};
+  let nodeType = node_type;
+  if (node_type === 'image') {
+    nodeType = 'container_image';
+  }
 
   return (
     <>
       <BreadcrumbLink isLink asChild>
-        <DFLink to={`/secret/scans?nodeType=${node_type}`} unstyled>
-          {capitalize(node_type ?? '')}
+        <DFLink to={`/secret/scans?nodeType=${nodeType}`} unstyled>
+          {capitalize(nodeType?.replace('_', ' ') ?? '')}
         </DFLink>
       </BreadcrumbLink>
       <BreadcrumbLink isLast>

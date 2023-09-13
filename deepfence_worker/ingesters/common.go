@@ -2,7 +2,6 @@ package ingesters
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -76,46 +75,38 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 		}
 
 		if ts != utils.NEO4J_CLOUD_COMPLIANCE_SCAN && ts != utils.NEO4J_COMPLIANCE_SCAN {
-			updatePodScanStatus(ts, recordMap, session)
+			err = updatePodScanStatus(ts, recordMap, session)
 		}
 
-		return nil
+		return err
 	}
 }
 
+// TODO: move to a specific task
 func updatePodScanStatus(ts utils.Neo4jScanType,
 	recordMap []map[string]interface{}, session neo4j.Session) error {
 
-	query := `UNWIND $batch as row
-		MATCH (n:Pod) 
-		CALL { 
-			WITH row
-			MATCH (p)-[r:SCANNED]->(c:Container)
-			WHERE p.node_id = row.scan_id AND c.pod_name IS NOT NULL
-			RETURN c.pod_name AS pod_name
-		}
-		WITH n, row
-		WHERE n.pod_name = pod_name
-		SET n.%s = row.scan_status`
+	// TODO: Take into account all containers, not just last one
+	query := `
+		UNWIND $batch as row
+		MATCH (s:` + string(ts) + `{node_id: row.scan_id})-[:SCANNED]->(c:Container)
+		WHERE c.pod_id IS NOT NULL
+		MATCH (n:Pod{node_id: c.pod_id})
+		SET n.` + ingestersUtil.ScanStatusField[ts] + `=row.scan_status`
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Run(fmt.Sprintf(query, ingestersUtil.ScanStatusField[ts]),
-		map[string]interface{}{"batch": recordMap})
+	log.Debug().Msgf("query: %v", query)
+	_, err := session.Run(query,
+		map[string]interface{}{
+			"batch": recordMap,
+		},
+		neo4j.WithTxTimeout(30*time.Second),
+	)
 
 	if err != nil {
 		log.Error().Msgf("Error in pod status update query: %+v", err)
 		return err
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		log.Info().Msgf("Error in commit for pod status update query: %v", err)
-		return err
-	}
 	return nil
 }
 

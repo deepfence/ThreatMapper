@@ -23,7 +23,8 @@ While this functon is a cron job, it is running on the worker's address space
 Hence Allocator can be shared across tasks
 */
 func TriggerConsoleControls(msg *message.Message) error {
-	RecordOffsets(msg)
+	topic := RecordOffsets(msg)
+	defer SetTopicHandlerStatus(topic, false)
 
 	log.Debug().Msgf("Trigger console actions #capacity: %v", ScanWorkloadAllocator.MaxAllocable())
 

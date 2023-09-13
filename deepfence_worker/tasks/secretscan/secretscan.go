@@ -119,6 +119,9 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 
 	defer func() {
 		log.Info().Msgf("remove auth directory %s", authDir)
+		if authDir == "" {
+			return
+		}
 		if err := os.RemoveAll(authDir); err != nil {
 			log.Error().Msg(err.Error())
 		}
@@ -146,8 +149,14 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	authFile := authDir + "/config.json"
 	imgTar := dir + "/save-output.tar"
 
-	cmd := exec.Command("skopeo", []string{"copy", "--insecure-policy", "--src-tls-verify=false",
-		"--authfile", authFile, "docker://" + imageName, "docker-archive:" + imgTar}...)
+	var cmd *exec.Cmd
+	if authDir != "" {
+		cmd = exec.Command("skopeo", []string{"copy", "--insecure-policy", "--src-tls-verify=false",
+			"--authfile", authFile, "docker://" + imageName, "docker-archive:" + imgTar}...)
+	} else {
+		cmd = exec.Command("skopeo", []string{"copy", "--insecure-policy", "--src-tls-verify=false",
+			"docker://" + imageName, "docker-archive:" + imgTar}...)
+	}
 
 	log.Info().Msgf("command: %s", cmd.String())
 

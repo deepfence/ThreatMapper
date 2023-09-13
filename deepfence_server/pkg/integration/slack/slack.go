@@ -5,11 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"net/http"
 	"strings"
 )
 
-// todo: add support for batch size
 const BatchSize = 5
 
 func New(ctx context.Context, b []byte) (*Slack, error) {
@@ -158,12 +158,11 @@ func (s Slack) SendNotification(ctx context.Context, message string, extras map[
 		req.Header.Set("Content-Type", "application/json")
 
 		// Make the HTTP request.
-		client := &http.Client{}
+		client := utils.GetHttpClient()
 		resp, err := client.Do(req)
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
 
 		// Check the response status code.
 		if resp.StatusCode != http.StatusOK {
@@ -174,8 +173,10 @@ func (s Slack) SendNotification(ctx context.Context, message string, extras map[
 				buf.ReadFrom(resp.Body)
 				errorMsg = buf.String()
 			}
+			resp.Body.Close()
 			return fmt.Errorf("failed to send notification batch %d, status code: %d , error: %s", i+1, resp.StatusCode, errorMsg)
 		}
+		resp.Body.Close()
 	}
 
 	return nil

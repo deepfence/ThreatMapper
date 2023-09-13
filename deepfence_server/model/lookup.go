@@ -293,7 +293,7 @@ type IngestedContainerImage struct {
 	DockerImageVirtualSize string   `json:"docker_image_virtual_size" required:"true"`
 	DockerImageID          string   `json:"docker_image_id" required:"true"`
 	ShortImageID           string   `json:"short_image_id"`
-	Metadata               Metadata `json:"metadata" required:"true" nested_json:"true"`
+	Metadata               Metadata `json:"metadata" nested_json:"true"`
 }
 
 func (IngestedContainerImage) NodeType() string {
@@ -314,6 +314,7 @@ func (IngestedContainerImage) GetJsonCategory() string {
 
 type ContainerImage struct {
 	ID                        string      `json:"node_id" required:"true"`
+	ImageNodeID               string      `json:"image_node_id" required:"true"`
 	NodeName                  string      `json:"node_name" required:"true"`
 	Name                      string      `json:"docker_image_name" required:"true"`
 	Tag                       string      `json:"docker_image_tag" required:"true"`
@@ -322,7 +323,7 @@ type ContainerImage struct {
 	DockerImageVirtualSize    string      `json:"docker_image_virtual_size" required:"true"`
 	DockerImageID             string      `json:"docker_image_id" required:"true"`
 	DockerImageTagList        []string    `json:"docker_image_tag_list" required:"true"`
-	Metadata                  Metadata    `json:"metadata" required:"true" nested_json:"true"`
+	Metadata                  Metadata    `json:"metadata" nested_json:"true"`
 	VulnerabilitiesCount      int64       `json:"vulnerabilities_count" required:"true"`
 	VulnerabilityScanStatus   string      `json:"vulnerability_scan_status" required:"true"`
 	VulnerabilityLatestScanId string      `json:"vulnerability_latest_scan_id" required:"true"`
@@ -340,7 +341,7 @@ func (ContainerImage) NodeType() string {
 }
 
 func (ContainerImage) ExtendedField() string {
-	return "docker_image_name"
+	return "image_node_id"
 }
 
 func (ContainerImage) GetCategory() string {

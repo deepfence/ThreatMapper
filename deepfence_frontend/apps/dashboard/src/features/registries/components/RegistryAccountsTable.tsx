@@ -2,12 +2,14 @@ import { useSuspenseQuery } from '@suspensive/react-query';
 import { useMemo, useState } from 'react';
 import { generatePath, useParams } from 'react-router-dom';
 import {
+  CircleSpinner,
   createColumnHelper,
   Dropdown,
   DropdownItem,
   getRowSelectionColumn,
   RowSelectionState,
   Table,
+  TableNoDataElement,
 } from 'ui-components';
 
 import { ModelRegistryListResp } from '@/api/generated';
@@ -175,6 +177,24 @@ export const RegistryAccountsTable = ({
         size: 110,
         maxSize: 120,
       }),
+      columnHelper.accessor('is_syncing', {
+        header: () => 'Sync Status',
+        cell: (info) => (
+          <>
+            {info.getValue() === true ? (
+              <span className="flex items-center gap-1.5 dark:text-text-text-and-icon text-p4">
+                <CircleSpinner size="sm" />
+                Syncing
+              </span>
+            ) : (
+              'Ready to scan'
+            )}
+          </>
+        ),
+        minSize: 100,
+        size: 110,
+        maxSize: 120,
+      }),
       columnHelper.accessor('created_at', {
         enableSorting: true,
         header: () => 'Created',
@@ -217,6 +237,9 @@ export const RegistryAccountsTable = ({
         onPageResize={(newSize) => {
           setPageSize(newSize);
         }}
+        noDataElement={
+          <TableNoDataElement text="No registries found, please add new registry" />
+        }
       />
     </div>
   );

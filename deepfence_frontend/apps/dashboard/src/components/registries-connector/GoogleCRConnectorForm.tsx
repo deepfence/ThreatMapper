@@ -21,9 +21,9 @@ export const GoogleCRConnectorForm = ({
   return (
     <>
       <div className="text-p4 dark:text-text-input-value">
-        Connect to your Google Cloud Account. Find out more information by{' '}
+        Connect to your Google Cloud Registry. Find out more information by{' '}
         <DFLink
-          href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage`}
+          href={`https://community.deepfence.io/threatmapper/docs/v2.0/registries/`}
           target="_blank"
           rel="noreferrer"
         >

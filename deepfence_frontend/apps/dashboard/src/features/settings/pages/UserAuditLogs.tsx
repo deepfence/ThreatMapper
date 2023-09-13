@@ -5,6 +5,7 @@ import {
   createColumnHelper,
   IconButton,
   Table,
+  TableNoDataElement,
   TableSkeleton,
   Tooltip,
 } from 'ui-components';
@@ -128,6 +129,7 @@ const AuditTable = () => {
             setPageSize(newSize);
           }}
           enableSorting
+          noDataElement={<TableNoDataElement text="No user audit logs available" />}
         />
       )}
     </div>
