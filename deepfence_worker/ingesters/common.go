@@ -70,7 +70,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 		}
 
 		if ts != utils.NEO4J_CLOUD_COMPLIANCE_SCAN && ts != utils.NEO4J_COMPLIANCE_SCAN {
-			err = updatePodScanStatus(ts, recordMap, session)
+			err = updatePodScanStatus(ts, recordMap, tx)
 			if err != nil {
 				return err
 			}
@@ -86,7 +86,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 }
 
 func updatePodScanStatus(ts utils.Neo4jScanType,
-	recordMap []map[string]interface{}, session neo4j.Session) error {
+	recordMap []map[string]interface{}, tx neo4j.Transaction) error {
 
 	query := `
 		UNWIND $batch as row
@@ -95,13 +95,8 @@ func updatePodScanStatus(ts utils.Neo4jScanType,
 		MATCH (n:Pod{node_id: c.pod_id})
 		SET n.` + ingestersUtil.ScanStatusField[ts] + `=row.scan_status`
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
-	if err != nil {
-		return err
-	}
-
 	log.Debug().Msgf("query: %v", query)
-	_, err = tx.Run(query,
+	_, err := tx.Run(query,
 		map[string]interface{}{
 			"batch": recordMap,
 		},
