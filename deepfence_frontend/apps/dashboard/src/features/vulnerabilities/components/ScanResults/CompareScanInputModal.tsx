@@ -75,8 +75,6 @@ const BaseInput = ({
     }
   }, [selectedNodeId]);
 
-  console.log('compareInput', formatMilliseconds(compareInput.baseScanTime));
-
   return (
     <div className="flex flex-col gap-y-6">
       <Suspense fallback={<CircleSpinner size="sm" />}>
@@ -137,6 +135,7 @@ export const CompareScanInputModal = ({
       toScanId: string;
       baseScanTime: number;
       toScanTime: number;
+      showScanTimeModal: boolean;
     }>
   >;
   nodeId: string;
@@ -188,6 +187,7 @@ export const CompareScanInputModal = ({
                 toScanId: toScanData?.toScanId ?? '',
                 baseScanTime: baseScan?.updatedAt ?? 0,
                 toScanTime: toScanData?.toScanTime ?? 0,
+                showScanTimeModal: false,
               });
               setShowDialog(false);
               setShowScanCompareModal(true);
