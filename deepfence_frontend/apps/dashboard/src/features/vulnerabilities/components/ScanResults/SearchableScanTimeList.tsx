@@ -1,7 +1,6 @@
 import { useSuspenseInfiniteQuery } from '@suspensive/react-query';
-import { debounce } from 'lodash-es';
 import { Suspense, useEffect, useMemo, useState } from 'react';
-import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
+import { CircleSpinner, Listbox, ListboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
@@ -12,12 +11,13 @@ interface SearchableTimeListProps {
   onClearAll?: () => void;
   defaultSelectedTime?: number | null;
   valueKey?: 'nodeId';
-  triggerVariant?: 'select' | 'button';
+  triggerVariant?: 'underline' | 'default';
   helperText?: string;
   color?: 'error' | 'default';
   nodeId?: string;
   nodeType?: string;
   skipScanTime?: number;
+  noDataText?: string;
 }
 
 export interface ISelected {
@@ -30,32 +30,30 @@ const SearchableScanTime = ({
   onChange,
   onClearAll,
   defaultSelectedTime,
-  triggerVariant,
+  triggerVariant = 'underline',
   helperText,
   color,
   nodeId,
   nodeType,
   skipScanTime,
+  noDataText,
 }: SearchableTimeListProps) => {
-  const [searchText, setSearchText] = useState('');
-
   const [selectedTime, setSelectedTime] = useState<number | null>(
     defaultSelectedTime ?? null,
   );
 
   const isSelectVariantType = useMemo(() => {
-    return triggerVariant === 'select';
+    return triggerVariant === 'underline';
   }, [triggerVariant]);
 
   useEffect(() => {
     setSelectedTime(defaultSelectedTime ?? null);
   }, [defaultSelectedTime]);
 
-  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useSuspenseInfiniteQuery({
       ...queries.vulnerability.scanHistories({
         size: PAGE_SIZE,
-        searchText,
         nodeId: nodeId ?? '',
         nodeType: nodeType ?? '',
       }),
@@ -69,22 +67,15 @@ const SearchableScanTime = ({
       },
     });
 
-  const searchTag = debounce((query: string) => {
-    setSearchText(query);
-  }, 1000);
-
   const onEndReached = () => {
     if (hasNextPage) fetchNextPage();
   };
 
   return (
     <>
-      <Combobox
-        startIcon={
-          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
-        }
+      <Listbox
         name="timeFilter"
-        triggerVariant={triggerVariant || 'button'}
+        variant={triggerVariant}
         label={isSelectVariantType ? 'Select Scan Time' : undefined}
         getDisplayValue={() =>
           isSelectVariantType
@@ -99,12 +90,15 @@ const SearchableScanTime = ({
           setSelectedTime(value.updatedAt);
           onChange?.(value);
         }}
-        onQueryChange={searchTag}
-        clearAllElement="Clear"
+        clearAll="Clear"
         onClearAll={onClearAll}
         onEndReached={onEndReached}
         helperText={helperText}
         color={color}
+        startIcon={
+          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+        }
+        noDataText={noDataText}
       >
         {data?.pages
           .flatMap((page) => {
@@ -115,7 +109,7 @@ const SearchableScanTime = ({
           )
           ?.map?.((scan) => {
             return (
-              <ComboboxOption
+              <ListboxOption
                 key={scan.updatedAt}
                 value={
                   {
@@ -125,10 +119,10 @@ const SearchableScanTime = ({
                 }
               >
                 {formatMilliseconds(scan.updatedAt)}
-              </ComboboxOption>
+              </ListboxOption>
             );
           })}
-      </Combobox>
+      </Listbox>
     </>
   );
 };
@@ -136,20 +130,17 @@ const SearchableScanTime = ({
 export const SearchableScanTimeList = (props: SearchableTimeListProps) => {
   const { triggerVariant } = props;
   const isSelectVariantType = useMemo(() => {
-    return triggerVariant === 'select';
+    return triggerVariant === 'underline';
   }, [triggerVariant]);
 
   return (
     <Suspense
       fallback={
-        <Combobox
+        <Listbox
           label={isSelectVariantType ? 'Select time' : undefined}
-          triggerVariant={triggerVariant || 'button'}
+          variant={triggerVariant}
           startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
           placeholder="Select time"
-          onQueryChange={() => {
-            // no operation
-          }}
         />
       }
     >

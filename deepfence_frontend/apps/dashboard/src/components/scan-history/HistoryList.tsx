@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { cn } from 'tailwind-preset';
 import { Dropdown, DropdownItem, IconButton } from 'ui-components';
 
@@ -29,23 +29,6 @@ export const ScanHistoryDropdown = ({
   currentTimeStamp: string;
 }) => {
   const [open, setOpen] = useState(false);
-
-  const areThereMoreThanOneSuccessScan = useCallback(() => {
-    const isMoreThanOneScan = scans.length > 1;
-    if (!isMoreThanOneScan) {
-      return false;
-    }
-    let scanSuccessCount = 0;
-    for (const scan of scans) {
-      if (isScanComplete(scan.status)) {
-        scanSuccessCount = scanSuccessCount + 1;
-      }
-      if (scanSuccessCount > 1) {
-        return true;
-      }
-    }
-    return false;
-  }, [scans]);
 
   return (
     <Dropdown
@@ -113,9 +96,7 @@ export const ScanHistoryDropdown = ({
                         }}
                       />
                     ) : null}
-                    {scan.showScanDiff &&
-                    isScanComplete(scan.status) &&
-                    areThereMoreThanOneSuccessScan() ? (
+                    {scan.showScanDiff && isScanComplete(scan.status) ? (
                       <IconButton
                         variant="flat"
                         icon={

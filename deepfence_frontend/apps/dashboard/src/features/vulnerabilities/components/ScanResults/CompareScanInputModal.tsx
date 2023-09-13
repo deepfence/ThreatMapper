@@ -8,7 +8,6 @@ import {
 import { SearchableTagList } from '@/features/vulnerabilities/components/ScanResults/SearchableTagList';
 import { useScanResults } from '@/features/vulnerabilities/pages/VulnerabilityScanResults';
 import { VulnerabilityScanNodeTypeEnum } from '@/types/common';
-import { formatMilliseconds } from '@/utils/date';
 
 const Tags = ({
   nodeId,
@@ -87,7 +86,7 @@ const BaseInput = ({
         )}
 
         <SearchableScanTimeList
-          triggerVariant="select"
+          triggerVariant="underline"
           defaultSelectedTime={toScanData.toScanTime ?? null}
           valueKey="nodeId"
           onChange={(data: ISelected) => {
@@ -104,7 +103,9 @@ const BaseInput = ({
           }}
           nodeId={selectedNodeId}
           nodeType={nodeType}
-          skipScanTime={compareInput.baseScanTime}
+          // skip scan time when base scan is same as to scan
+          skipScanTime={nodeId === selectedNodeId ? compareInput.baseScanTime : undefined}
+          noDataText="No scan to compare"
         />
       </Suspense>
     </div>
@@ -160,7 +161,7 @@ export const CompareScanInputModal = ({
       onOpenChange={() => {
         setShowDialog(false);
       }}
-      title="Select scan time"
+      title="Select scan to compare"
       footer={
         <div className={'flex gap-x-4 justify-end'}>
           <Button

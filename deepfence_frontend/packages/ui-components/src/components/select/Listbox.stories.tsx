@@ -74,6 +74,44 @@ export const MultiSelect: StoryObj<typeof Listbox> = {
   args: {},
 };
 
+const OPTIONS = [
+  {
+    name: 'Jon',
+    id: '1',
+    age: 20,
+  },
+  {
+    name: 'Jane',
+    id: '2',
+    age: 21,
+  },
+  {
+    name: 'Jack',
+    id: '3',
+    age: 20,
+  },
+  {
+    name: 'July',
+    id: '4',
+    age: 21,
+  },
+  {
+    name: 'Juju',
+    id: '5',
+    age: 21,
+  },
+  {
+    name: 'Jessie',
+    id: '6',
+    age: 21,
+  },
+  {
+    name: 'Jessy',
+    id: '7',
+    age: 21,
+  },
+];
+
 const SingleSelectTemplate: StoryFn<typeof Listbox> = () => {
   const [selected, setSelected] = useState<string>(people[0].value);
 
@@ -155,4 +193,44 @@ const SingleSelectOutlineTemplate: StoryFn<typeof Listbox> = () => {
 export const SingleSelectOutline: StoryObj<typeof Listbox> = {
   render: SingleSelectOutlineTemplate,
   args: {},
+};
+
+export const SingleSelectInfiniteScrollTemplate: StoryFn<typeof Listbox> = () => {
+  const [selected, setSelected] = useState<(typeof OPTIONS)[number] | null>(null);
+  const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
+  const [loading, setLoading] = useState(false);
+
+  function fetchMoreData() {
+    // we can use query here as well
+    setLoading(true);
+    setTimeout(() => {
+      setOptions([...options, ...OPTIONS]);
+      setLoading(false);
+    }, 1000);
+  }
+
+  return (
+    <Listbox
+      value={selected}
+      label="Select your value"
+      onChange={(value) => {
+        setSelected(value);
+      }}
+      getDisplayValue={() => {
+        return 'Select person';
+      }}
+      onEndReached={() => {
+        fetchMoreData();
+      }}
+      loading={loading}
+    >
+      {options.map((person, index) => {
+        return (
+          <ListboxOption key={`${person.id}-${index}`} value={person}>
+            {person.name}
+          </ListboxOption>
+        );
+      })}
+    </Listbox>
+  );
 };
