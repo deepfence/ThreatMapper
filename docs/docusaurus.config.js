@@ -19,7 +19,8 @@ const config = {
   // to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
-    locales: ['en', 'zh-CN', 'zh-TW'],
+    locales: ['en'],
+    // locales: ['en', 'zh-CN', 'zh-TW'],
   },
 
   presets: [
@@ -45,7 +46,7 @@ const config = {
               banner: 'none',
             },
             "v1.5": {
-              label: 'v1.5',
+              label: 'v1.5 (deprecated)',
               path: 'v1.5',
               banner: 'none',
             },
