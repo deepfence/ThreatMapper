@@ -514,7 +514,7 @@ func LinkCloudResources(msg *message.Message) error {
 		AND n.service_name = split(m.group, ":")[1]
 		AND m.last_status = $status
 		AND map.AwsvpcConfiguration.AssignPublicIp = $enabled
-		WITH m LIMIT 10000
+		WITH m, n LIMIT 10000
 		SET m.linked = true
 		WITH m, n
 		MATCH (p:Node {node_id:'in-the-internet'})
