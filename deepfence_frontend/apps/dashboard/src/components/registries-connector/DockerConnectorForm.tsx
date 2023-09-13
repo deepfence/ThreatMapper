@@ -62,7 +62,6 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           name="non_secret.docker_hub_username"
           color={fieldErrors?.['docker_hub_username'] ? 'error' : 'default'}
           helperText={fieldErrors?.['docker_hub_username']}
-          required
           placeholder="Username"
         />
         <TextInput
