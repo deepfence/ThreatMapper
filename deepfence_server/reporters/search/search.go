@@ -214,7 +214,7 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	defer tx.Close()
 
 	query := constructIndirectMatchInit[T](filter, extended_filter, indriect_filters, fw)
-	log.Debug().Msgf("search query: %v", query)
+	log.Debug().Msgf("search query: \n%v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{})
 

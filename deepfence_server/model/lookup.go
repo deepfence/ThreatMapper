@@ -314,6 +314,7 @@ func (IngestedContainerImage) GetJsonCategory() string {
 
 type ContainerImage struct {
 	ID                        string      `json:"node_id" required:"true"`
+	ImageNodeID               string      `json:"image_node_id" required:"true"`
 	NodeName                  string      `json:"node_name" required:"true"`
 	Name                      string      `json:"docker_image_name" required:"true"`
 	Tag                       string      `json:"docker_image_tag" required:"true"`
@@ -340,7 +341,7 @@ func (ContainerImage) NodeType() string {
 }
 
 func (ContainerImage) ExtendedField() string {
-	return "docker_image_name"
+	return "image_node_id"
 }
 
 func (ContainerImage) GetCategory() string {
