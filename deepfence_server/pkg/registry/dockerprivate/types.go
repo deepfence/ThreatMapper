@@ -13,11 +13,11 @@ type RegistryDockerPrivate struct {
 
 type NonSecret struct {
 	DockerRegistryURL string `json:"docker_registry_url" validate:"required,url"`
-	DockerUsername    string `json:"docker_username" validate:"required,min=2"`
+	DockerUsername    string `json:"docker_username" validate:"omitempty,min=2"`
 }
 
 type Secret struct {
-	DockerPassword string `json:"docker_password" validate:"required,min=2"`
+	DockerPassword string `json:"docker_password" validate:"omitempty,min=2"`
 }
 
 type ReposResp struct {
