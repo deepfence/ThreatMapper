@@ -86,12 +86,6 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 func updatePodScanStatus(ts utils.Neo4jScanType,
 	recordMap []map[string]interface{}, session neo4j.Session) error {
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
 	// TODO: Take into account all containers, not just last one
 	query := `
 		UNWIND $batch as row
@@ -101,10 +95,11 @@ func updatePodScanStatus(ts utils.Neo4jScanType,
 		SET n.` + ingestersUtil.ScanStatusField[ts] + `=row.scan_status`
 
 	log.Debug().Msgf("query: %v", query)
-	_, err = tx.Run(query,
+	_, err := session.Run(query,
 		map[string]interface{}{
 			"batch": recordMap,
 		},
+		neo4j.WithTxTimeout(30*time.Second),
 	)
 
 	if err != nil {
