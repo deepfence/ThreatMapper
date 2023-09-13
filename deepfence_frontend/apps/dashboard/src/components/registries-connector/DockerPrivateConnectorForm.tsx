@@ -1,4 +1,5 @@
-import { TextInput } from 'ui-components';
+import { useState } from 'react';
+import { Checkbox, TextInput } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
@@ -22,6 +23,8 @@ export const DockerPriavateConnectorForm = ({
   errorMessage,
   fieldErrors,
 }: RegistryFormProps) => {
+  const [isPublic, setIsPublic] = useState(false);
+
   return (
     <>
       <>
@@ -61,26 +64,43 @@ export const DockerPriavateConnectorForm = ({
             helperText={fieldErrors?.['docker_registry_url']}
             required
           />
-          <TextInput
-            className="w-3/4 min-[200px] max-w-xs"
-            label="Username"
-            type={'text'}
-            name="non_secret.docker_username"
-            placeholder="Username"
-            color={fieldErrors?.['docker_username'] ? 'error' : 'default'}
-            helperText={fieldErrors?.['docker_username']}
-          />
-          <TextInput
-            className="w-3/4 min-[200px] max-w-xs"
-            label="Password"
-            type={'password'}
-            name="secret.docker_password"
-            placeholder="••••••••"
-            color={fieldErrors?.['docker_password'] ? 'error' : 'default'}
-            helperText={fieldErrors?.['docker_password']}
-          />
 
-          <div className="mt-2 text-p7 dark:text-text-input-value">
+          <div className="flex">
+            <input hidden value={String(isPublic)} name="non_secret.is_public" />
+            <Checkbox
+              label="Public Registry"
+              checked={isPublic}
+              onCheckedChange={(checked: boolean) => {
+                setIsPublic(checked);
+              }}
+            />
+          </div>
+          {!isPublic && (
+            <div className="flex flex-col gap-y-4">
+              <TextInput
+                className="w-3/4 min-[200px] max-w-xs"
+                label="Username"
+                type={'text'}
+                name="non_secret.docker_username"
+                placeholder="Username"
+                color={fieldErrors?.['docker_username'] ? 'error' : 'default'}
+                helperText={fieldErrors?.['docker_username']}
+                required
+              />
+              <TextInput
+                className="w-3/4 min-[200px] max-w-xs"
+                label="Password"
+                type={'password'}
+                name="secret.docker_password"
+                placeholder="••••••••"
+                color={fieldErrors?.['docker_password'] ? 'error' : 'default'}
+                helperText={fieldErrors?.['docker_password']}
+                required
+              />
+            </div>
+          )}
+
+          <div className="text-p7 dark:text-text-input-value">
             Supported Versions: API version v2
           </div>
         </div>
