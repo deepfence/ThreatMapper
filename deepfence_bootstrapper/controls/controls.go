@@ -43,7 +43,7 @@ func SetClusterAgentControls(k8sClusterName string) {
 		func(req ctl.SendAgentDiagnosticLogsRequest) error {
 			log.Info().Msg("Generate Cluster Agent Diagnostic Logs")
 			return SendAgentDiagnosticLogs(req,
-				[]string{"/var/log/supervisor", "/var/log/compliance/compliance-status"},
+				[]string{"/var/log/supervisor", "/var/log/fenced/compliance-scan-logs", "/var/log/deepfenced"},
 				[]string{})
 		})
 	if err != nil {
@@ -129,7 +129,7 @@ func SetAgentControls() {
 		func(req ctl.SendAgentDiagnosticLogsRequest) error {
 			log.Info().Msg("Generate Agent Diagnostic Logs")
 			return SendAgentDiagnosticLogs(req,
-				[]string{"/var/log/supervisor", "/var/log/fenced"},
+				[]string{"/var/log/supervisor", "/var/log/fenced", "/var/log/deepfenced"},
 				[]string{"/var/log/fenced/compliance/", "/var/log/fenced/malware-scan/", "/var/log/fenced/secret-scan/"})
 		})
 	if err != nil {
