@@ -69,7 +69,6 @@ export const DockerPriavateConnectorForm = ({
             placeholder="Username"
             color={fieldErrors?.['docker_username'] ? 'error' : 'default'}
             helperText={fieldErrors?.['docker_username']}
-            required
           />
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
