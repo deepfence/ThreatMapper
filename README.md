@@ -126,3 +126,12 @@ Please file GitHub issues as needed, and join the Deepfence Community [Slack cha
 The Deepfence ThreatMapper project (this repository) is offered under the [Apache2 license](https://www.apache.org/licenses/LICENSE-2.0).
 
 [Contributions](CONTRIBUTING.md) to Deepfence ThreatMapper project are similarly accepted under the Apache2 license, as per [GitHub's inbound=outbound policy](https://docs.github.com/en/github/site-policy/github-terms-of-service#6-contributions-under-repository-license).
+
+# Performance Stats of deepfence/ThreatMapper - Last 28 days
+
+<a href="https://next.ossinsight.io/widgets/official/compose-last-28-days-stats?repo_id=238662977" target="_blank" style="display: block" align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://next.ossinsight.io/widgets/official/compose-last-28-days-stats/thumbnail.png?repo_id=238662977&image_size=auto&color_scheme=dark" width="662" height="auto">
+    <img alt="Performance Stats of deepfence/ThreatMapper - Last 28 days" src="https://next.ossinsight.io/widgets/official/compose-last-28-days-stats/thumbnail.png?repo_id=238662977&image_size=auto&color_scheme=light" width="662" height="auto">
+  </picture>
+</a>
