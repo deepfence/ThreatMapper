@@ -2056,6 +2056,7 @@ func StartMultiScan(ctx context.Context,
 			return nil, "", err
 		}
 		scanIds = append(scanIds, scanId)
+		time.Sleep(time.Second * 10)
 	}
 
 	if len(scanIds) == 0 {
