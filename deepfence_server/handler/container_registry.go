@@ -455,7 +455,12 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "registry_id")
+	id, err := utils.URLDecode(chi.URLParam(r, "registry_id"))
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
 
 	pgIds, err := model.GetRegistryPgIds(r.Context(), id)
 	if err != nil {
@@ -497,7 +502,12 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) RefreshRegistry(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "registry_id")
+	id, err := utils.URLDecode(chi.URLParam(r, "registry_id"))
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
 
 	pgIds, err := model.GetRegistryPgIds(r.Context(), id)
 	if err != nil {
