@@ -9,10 +9,13 @@ export type CheckboxProps = CheckboxPrimitive.CheckboxProps & {
 };
 
 export const Checkbox: React.FC<CheckboxProps> = (props) => {
-  const { className, id, label, checked, onCheckedChange, ...rest } = props;
+  const { className, id, label, checked, onCheckedChange, defaultChecked, ...rest } =
+    props;
 
   const [internalChecked, setInternalChecked] =
-    React.useState<CheckboxPrimitive.CheckedState>(checked ?? false);
+    React.useState<CheckboxPrimitive.CheckedState>(
+      !isNil(checked) ? checked : !isNil(defaultChecked) ? defaultChecked : false,
+    );
 
   useEffect(() => {
     if (!isNil(checked)) {
@@ -44,6 +47,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
         )}
         data-testid={`checkbox-${_id}`}
         checked={checked}
+        defaultChecked={defaultChecked}
         onCheckedChange={(state) => {
           if (onCheckedChange) {
             onCheckedChange(state);
