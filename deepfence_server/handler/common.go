@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -11,6 +12,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j/db"
 	"github.com/opentracing/opentracing-go"
 	"github.com/ugorji/go/codec"
 )
@@ -112,6 +114,14 @@ func (bd *NotFoundError) Error() string {
 	return bd.err.Error()
 }
 
+func isTransientError(err error) bool {
+	// Check if the error is a deadlock error
+	if neoErr, ok := err.(*db.Neo4jError); ok {
+		return strings.HasPrefix(neoErr.Code, "Neo.TransientError")
+	}
+	return false
+}
+
 func (h *Handler) respondWithErrorCode(err error, w http.ResponseWriter, code int) error {
 	var errorFields map[string]string
 	var errMsg string
@@ -128,7 +138,7 @@ func (h *Handler) respondWithErrorCode(err error, w http.ResponseWriter, code in
 }
 
 func (h *Handler) respondError(err error, w http.ResponseWriter) error {
-	var code int
+	code := http.StatusInternalServerError
 	var errorFields map[string]string
 	errMsg := err.Error()
 
@@ -155,8 +165,10 @@ func (h *Handler) respondError(err error, w http.ResponseWriter) error {
 		code = http.StatusNotFound
 	case *neo4j.ConnectivityError:
 		code = http.StatusServiceUnavailable
-	default:
-		code = http.StatusInternalServerError
+	case *neo4j.Neo4jError:
+		if isTransientError(err) {
+			code = http.StatusConflict
+		}
 	}
 
 	if len(errorFields) > 0 {
