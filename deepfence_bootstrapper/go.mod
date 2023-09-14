@@ -15,16 +15,16 @@ replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/ag
 require (
 	github.com/Jeffail/tunny v0.1.4
 	github.com/abrander/go-supervisord v0.0.0-20210517172913-a5469a4c50e2
-	github.com/containerd/cgroups/v3 v3.0.1
+	github.com/containerd/cgroups/v3 v3.0.2
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/agent-plugins-grpc v1.1.0
 	github.com/deepfence/compliance v0.1.3-0.20230523055258-4cae3116258c
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-00010101000000-000000000000
-	github.com/deepfence/kubernetes-scanner v0.0.0-20230714185504-ed1f2630a79b
+	github.com/deepfence/kubernetes-scanner/v2 v2.0.0
 	github.com/minio/selfupdate v0.6.0
-	github.com/opencontainers/runtime-spec v1.0.2
+	github.com/opencontainers/runtime-spec v1.1.0
 	github.com/rs/zerolog v1.29.1
 	github.com/weaveworks/scope v1.13.2
 	google.golang.org/grpc v1.56.1
