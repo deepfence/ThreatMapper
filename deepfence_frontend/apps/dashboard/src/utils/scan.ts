@@ -24,7 +24,30 @@ export const isNeverScanned = (status: string): boolean => {
 };
 
 export const isScanInProgress = (status: string): boolean => {
-  if (!isScanComplete(status) && !isScanFailed(status) && !isNeverScanned(status)) {
+  if (
+    !isScanComplete(status) &&
+    !isScanFailed(status) &&
+    !isNeverScanned(status) &&
+    !isScanStopped(status)
+  ) {
+    return true;
+  }
+  return false;
+};
+
+export const isScanStopped = (status: string): boolean => {
+  if (status.length && ScanStatusEnum.stopped === status) {
+    return true;
+  }
+  return false;
+};
+
+export const isScanStopping = (status: string): boolean => {
+  if (
+    status.length &&
+    !isScanStopped(status) &&
+    status.toLowerCase().includes('cancel')
+  ) {
     return true;
   }
   return false;

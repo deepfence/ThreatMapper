@@ -6380,9 +6380,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ModelVulnerabilityScanTriggerReq"
-              }
+              "schema": { "$ref": "#/components/schemas/ModelStopScanRequest" }
             }
           }
         },

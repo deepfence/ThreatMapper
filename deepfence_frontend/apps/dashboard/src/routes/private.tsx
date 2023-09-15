@@ -5,6 +5,7 @@ import { FiveZeroZero } from '@/components/error/500';
 import { scanPostureApiAction } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
+import { actionStopScan } from '@/components/scan-configure-forms/StopScanForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { module as logoutAction } from '@/features/auth/data-components/logoutAction';
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
@@ -573,6 +574,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'scan/posture',
         action: scanPostureApiAction,
+      },
+      {
+        path: 'scan/stop/:scanId',
+        action: actionStopScan,
       },
       {
         path: 'registries/add-connector',
