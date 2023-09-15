@@ -16,27 +16,17 @@
       "aws_compliance.benchmark.soc_2_cc_2",
       "aws_compliance.benchmark.soc_2_cc_3",
       "aws_compliance.benchmark.soc_2_cc_4",
-      "aws_compliance.benchmark.soc_2_cc_5",
       "aws_compliance.benchmark.soc_2_cc_6",
       "aws_compliance.benchmark.soc_2_cc_7",
       "aws_compliance.benchmark.soc_2_cc_8",
-      "aws_compliance.benchmark.soc_2_cc_9",
-      "aws_compliance.benchmark.soc_2_cc_a_1",
-      "aws_compliance.benchmark.soc_2_cc_c_1",
-      "aws_compliance.benchmark.soc_2_p_1",
-      "aws_compliance.benchmark.soc_2_p_2",
-      "aws_compliance.benchmark.soc_2_p_3",
-      "aws_compliance.benchmark.soc_2_p_4",
-      "aws_compliance.benchmark.soc_2_p_5",
-      "aws_compliance.benchmark.soc_2_p_6",
-      "aws_compliance.benchmark.soc_2_p_7",
-      "aws_compliance.benchmark.soc_2_p_8"
+      "aws_compliance.benchmark.soc_2_a_1",
+      "aws_compliance.benchmark.soc_2_c_1"
     ]
   },
   {
     "benchmark_id": "aws_compliance.benchmark.soc_2_cc_1",
     "description": "The criteria relevant to how the entity demonstrates commitment to integrity and ethical values, exercises oversight responsibility, establishes structure, authority and responsibility, demonstrates commitment to competence, and enforces accountability.",
-    "title": "CC1.0 - Common Criteria Related to Control Environment",
+    "title": "CC1 Common Criteria Related to Control Environment",
     "tags": {
       "category": "Compliance",
       "plugin": "aws",
@@ -47,49 +37,7 @@
     },
     "documentation": "",
     "children": [
-      "aws_compliance.benchmark.soc_2_cc_1_1",
-      "aws_compliance.benchmark.soc_2_cc_1_2",
-      "aws_compliance.benchmark.soc_2_cc_1_3",
-      "aws_compliance.benchmark.soc_2_cc_1_4",
-      "aws_compliance.benchmark.soc_2_cc_1_5"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_1_1",
-    "description": "",
-    "title": "CC1.1 COSO Principle 1: The entity demonstrates a commitment to integrity and ethical values",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "1.1",
-      "soc_2_section_id": "cc1",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nSets the Tone at the Top - The board of directors and management, at all levels, demonstrate through their directives, actions, and behavior the importance of integrity and ethical values to support the functioning of the system of internal control.\n\nEstablishes Standards of Conduct - The expectations of the board of directors and senior management concerning integrity and ethical values are defined in the entity’s standards of conduct and understood at all levels of the entity and by outsourced service providers and business partners.\n\nEvaluates Adherence to Standards of Conduct - Processes are in place to evaluate the performance of individuals and teams against the entity’s expected standards of conduct.\n\nAddresses Deviations in a Timely Manner - Deviations from the entity’s expected standards of conduct are identified and remedied in a timely and consistent manner.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_1_2",
-    "description": "",
-    "title": "CC1.2 COSO Principle 2: The board of directors demonstrates independence from management and exercises oversight of the development and performance of internal control",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "1.2",
-      "soc_2_section_id": "cc1",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nEstablishes Oversight Responsibilities - The board of directors identifies and accepts its oversight responsibilities in relation to established requirements and expectations.\n\nApplies Relevant Expertise - The board of directors defines, maintains, and periodically evaluates the skills and expertise needed among its members to enable them to ask probing questions of senior management and take commensurate action.\n\nOperates Independently - The board of directors has sufficient members who are independent from management and objective in evaluations and decision making.\n\nAdditional point of focus specifically related to all engagements using the trust services criteria:\nSupplements Board Expertise - The board of directors supplements its expertise relevant to security, availability, processing integrity, confidentiality, and privacy, as needed, through the use of a subcommittee or consultants.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
+      "aws_compliance.benchmark.soc_2_cc_1_3"
     ]
   },
   {
@@ -110,7 +58,9 @@
     "children": [
       "aws_compliance.control.iam_group_not_empty",
       "aws_compliance.control.iam_group_user_role_no_inline_policies",
+      "aws_compliance.control.iam_managed_policy_attached_to_role",
       "aws_compliance.control.iam_policy_no_star_star",
+      "aws_compliance.control.iam_policy_unused",
       "aws_compliance.control.iam_user_in_group",
       "aws_compliance.control.iam_user_no_inline_attached_policies",
       "aws_compliance.control.iam_user_unused_credentials_90",
@@ -118,47 +68,9 @@
     ]
   },
   {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_1_4",
-    "description": "",
-    "title": "CC1.4 COSO Principle 4: The entity demonstrates a commitment to attract, develop, and retain competent individuals in alignment with objectives",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "1.4",
-      "soc_2_section_id": "cc1",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nEstablishes Policies and Practices - Policies and practices reflect expectations of competence necessary to support the achievement of objectives.\n\nEvaluates Competence and Addresses Shortcomings - The board of directors and management evaluate competence across the entity and in outsourced service providers in relation to established policies and practices and act as necessary to address shortcomings.\n\nAttracts, Develops, and Retains Individuals - The entity provides the mentoring and training needed to attract, develop, and retain sufficient and competent personnel and outsourced service providers to support the achievement of objectives.\n\nPlans and Prepares for Succession - Senior management and the board of directors develop contingency plans for assignments of responsibility important for internal control.\n\nAdditional point of focus specifically related to all engagements using the trust services criteria:\n\nConsiders the Background of Individuals - The entity considers the background of potential and existing personnel, contractors, and vendor employees when determining whether to employ and retain the individuals.\n\nConsiders the Technical Competency of Individuals - The entity considers the technical competency of potential and existing personnel, contractors, and vendor employees when determining whether to employ and retain the individuals.\n\nProvides Training to Maintain Technical Competencies - The entity provides training programs, including continuing education and training, to ensure skill sets and technical competency of existing personnel, contractors, and vendor employees are developed and maintained.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_1_5",
-    "description": "",
-    "title": "CC1.5 COSO Principle 5: The entity holds individuals accountable for their internal control responsibilities in the pursuit of objectives",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "1.5",
-      "soc_2_section_id": "cc1",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nEnforces Accountability Through Structures, Authorities, and Responsibilities - Management and the board of directors establish the mechanisms to communicate and hold individuals accountable for performance of internal control responsibilities across the entity and implement corrective action as necessary.\n\nEstablishes Performance Measures, Incentives, and Rewards - Management and the board of directors establish performance measures, incentives, and other rewards appropriate for responsibilities at all levels of the entity, reflecting appropriate dimensions of performance and expected standards of conduct, and considering the achievement of both short-term and longer-term objectives.\n\nEvaluates Performance Measures, Incentives, and Rewards for Ongoing Relevance - Management and the board of directors align incentives and rewards with the fulfillment of internal control responsibilities in the achievement of objectives.\n\nConsiders Excessive Pressures - Management and the board of directors evaluate and adjust pressures associated with the achievement of objectives as they assign responsibilities, develop performance measures, and evaluate performance.\n\nEvaluates Performance and Rewards or Disciplines Individuals - Management and the board of directors evaluate performance of internal control responsibilities, including adherence to standards of conduct and expected levels of competence, and provide rewards or exercise disciplinary action, as appropriate.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
     "benchmark_id": "aws_compliance.benchmark.soc_2_cc_2",
     "description": "The criteria relevant to how the entity (i) uses relevant information, (ii) communicates internally, and (iii) communicates externally.",
-    "title": "CC2.0 - Common Criteria Related to Communication and Information",
+    "title": "CC2 Common Criteria Related to Communication and Information",
     "tags": {
       "category": "Compliance",
       "plugin": "aws",
@@ -169,9 +81,7 @@
     },
     "documentation": "",
     "children": [
-      "aws_compliance.benchmark.soc_2_cc_2_1",
-      "aws_compliance.benchmark.soc_2_cc_2_2",
-      "aws_compliance.benchmark.soc_2_cc_2_3"
+      "aws_compliance.benchmark.soc_2_cc_2_1"
     ]
   },
   {
@@ -196,47 +106,9 @@
     ]
   },
   {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_2_2",
-    "description": "",
-    "title": "CC2.2 COSO Principle 14: The entity internally communicates information, including objectives and responsibilities for internal control, necessary to support the functioning of internal control",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "2.2",
-      "soc_2_section_id": "cc2",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nCommunicates Internal Control Information - A process is in place to communicate required information to enable all personnel to understand and carry out their internal control responsibilities.\n\nCommunicates With the Board of Directors - Communication exists between management and the board of directors so that both have information needed to fulfill their roles with respect to the entity’s objectives.\n\nProvides Separate Communication Lines - Separate communication channels, such as whistle-blower hotlines, are in place and serve as fail-safe mechanisms to enable anonymous or confidential communication when normal channels are inoperative or ineffective.\n\nSelects Relevant Method of Communication - The method of communication considers the timing, audience, and nature of the information.\n\nAdditional point of focus specifically related to all engagements using the trust services criteria:\nCommunicates Responsibilities - Entity personnel with responsibility for designing, developing, implementing,operating, maintaining, or monitoring system controls receive communications about their responsibilities, including changes in their responsibilities, and have the information necessary to carry out those responsibilities.\n\nCommunicates Information on Reporting Failures, Incidents, Concerns, and Other Matters—Entity personnel are provided with information on how to report systems failures, incidents, concerns, and other complaints to personnel.\n\nCommunicates Objectives and Changes to Objectives - The entity communicates its objectives and changes to those objectives to personnel in a timely manner.\n\nCommunicates Information to Improve Security Knowledge and Awareness - The entity communicates information to improve security knowledge and awareness and to model appropriate security behaviors to personnel through a security awareness training program.\n\nAdditional points of focus that apply only when an engagement using the trust services criteria is performed at the system level:\n\nCommunicates Information About System Operation and Boundaries - The entity prepares and communicates information about the design and operation of the system and its boundaries to authorized personnel to enable them to understand their role in the system and the results of system operation.\n\nCommunicates System Objectives - The entity communicates its objectives to personnel to enable them to carry out their responsibilities.\n\nCommunicates System Changes - System changes that affect responsibilities or the achievement of the entity's objectives are communicated in a timely manner.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_2_3",
-    "description": "",
-    "title": "CC2.3 COSO Principle 15: The entity communicates with external parties regarding matters affecting the functioning of internal control",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "2.3",
-      "soc_2_section_id": "cc2",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nCommunicates to External Parties - Processes are in place to communicate relevant and timely information to external parties, including shareholders, partners, owners, regulators, customers, financial analysts, and other external parties.\n\nEnables Inbound Communications - Open communication channels allow input from customers, consumers, suppliers, external auditors, regulators, financial analysts, and others, providing management and the board of directors with relevant information.\n\nCommunicates With the Board of Directors - Relevant information resulting from assessments conducted by external parties is communicated to the board of directors.\n\nProvides Separate Communication Lines - Separate communication channels, such as whistle-blower hotlines, are in place and serve as fail-safe mechanisms to enable anonymous or confidential communication when normal channels are inoperative or ineffective.\n\nSelects Relevant Method of Communication - The method of communication considers the timing, audience, and nature of the communication and legal, regulatory, and fiduciary requirements and expectations.\n\nAdditional point of focus that applies only to an engagement using the trust services criteria for confidentiality:\n\nCommunicates Objectives Related to Confidentiality and Changes to Objectives -  The entity communicates, to external users, vendors, business partners and others whose products and services are part of the system, objectives and changes to objectives related to confidentiality.\n\nAdditional point of focus that applies only to an engagement using the trust services criteria for privacy:\n\nCommunicates Objectives Related to Privacy and Changes to Objectives - The entity communicates, to external users, vendors, business partners and others whose products and services are part of the system, objectives related to privacy and changes to those objectives.\n\nAdditional points of focus that apply only when an engagement using the trust services criteria is performed at the system level:\n\nCommunicates Information About System Operation and Boundaries - The entity prepares and communicates information about the design and operation of the system and its boundaries to authorized external users to permit users to understand their role in the system and the results of system operation.\n\nCommunicates System Objectives - The entity communicates its system objectives to appropriate external users.\n\nCommunicates System Responsibilities - External users with responsibility for designing, developing, implementing, operating, maintaining, and monitoring system controls receive communications about their responsibilities and have the information necessary to carry out those responsibilities.\n\nCommunicates Information on Reporting System Failures, Incidents, Concerns, and Other Matters - External users are provided with information on how to report systems failures, incidents, concerns, and other complaints to appropriate personnel.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
     "benchmark_id": "aws_compliance.benchmark.soc_2_cc_3",
     "description": "The criteria relevant to how the entity (i) specifies suitable objectives, (ii) identifies and analyzes risk, and (iii) assess fraud risk.",
-    "title": "CC3.0 - Common Criteria Related to Risk Assessment",
+    "title": "CC3 Common Criteria Related to Risk Assessment",
     "tags": {
       "category": "Compliance",
       "plugin": "aws",
@@ -249,7 +121,6 @@
     "children": [
       "aws_compliance.benchmark.soc_2_cc_3_1",
       "aws_compliance.benchmark.soc_2_cc_3_2",
-      "aws_compliance.benchmark.soc_2_cc_3_3",
       "aws_compliance.benchmark.soc_2_cc_3_4"
     ]
   },
@@ -269,9 +140,9 @@
     },
     "documentation": "## Description\n\nOperations Ojectives:\n- Reflects Management's Choices - Operations objectives reflect management's choices about structure, industry considerations, and performance of the entity.\n- Considers Tolerances for Risk - Management considers the acceptable levels of variation relative to the achievement of operations objectives.\n\nExternal Financial Reporting Objectives:\n- Complies With Applicable Accounting Standards - Financial reporting objectives are consistent with accounting principles suitable and available for that entity. The accounting principles selected are appropriate in the circumstances.\n\nExternal Nonfinancial Reporting Objectives:\n- Complies With Externally Established Frameworks - Management establishes objectives consistent with laws and regulations or standards and frameworks of recognized external organizations.\n- Reflects Entity Activities - External reporting reflects the underlying transactions and events within a range of acceptable limits.\n- Considers the Required Level of Precision—Management reflects the required level of precision and accuracy suitable for user needs and based on criteria established by third parties in nonfinancial reporting.\n\nInternal Reporting Objectives:\n- Reflects Management's Choices - Internal reporting provides management with accurate and complete information regarding management's choices and information needed in managing the entity.\n- Considers the Required Level of Precision—Management reflects the required level of precision and accuracy suitable for user needs in nonfinancial reporting objectives and materiality within financial reporting objectives.\n- Reflects Entity Activities—Internal reporting reflects the underlying transactions and events within a range of acceptable limits.\n\nCompliance Objectives:\n - Reflects External Laws and Regulations - Laws and regulations establish minimum standards of conduct, which the entity integrates into compliance objectives.\n- Considers Tolerances for Risk - Management considers the acceptable levels of variation relative to the achievement of operations objectives.\n- Additional point of focus specifically related to all engagements using the trust services criteria:\nEstablishes Sub-objectives to Support Objectives—Management identifies sub-objectives related to security, availability, processing integrity, confidentiality, and privacy to support the achievement of the entity’s objectives related to reporting, operations, and compliance.\n",
     "children": [
+      "aws_compliance.control.config_enabled_all_regions",
       "aws_compliance.control.guardduty_enabled",
-      "aws_compliance.control.securityhub_enabled",
-      "aws_compliance.control.config_enabled_all_regions"
+      "aws_compliance.control.securityhub_enabled"
     ]
   },
   {
@@ -291,29 +162,11 @@
     "documentation": "## Description\n\nIncludes Entity, Subsidiary, Division, Operating Unit, and Functional Levels - The entity identifies and assesses risk at the entity, subsidiary, division, operating unit, and functional levels relevant to the achievement of objectives.\n\nAnalyzes Internal and External Factors - Risk identification considers both internal and external factors and their impact on the achievement of objectives.\n\nInvolves Appropriate Levels of Management - The entity puts into place effective risk assessment mechanisms that involve appropriate levels of management.\n\nEstimates Significance of Risks Identified - Identified risks are analyzed through a process that includes estimating the potential significance of the risk.\n\nDetermines How to Respond to Risks - Risk assessment includes considering how the risk should be managed and whether to accept, avoid, reduce, or share the risk.\n\nAdditional points of focus specifically related to all engagements using the trust services criteria:\n\nIdentifies and Assesses Criticality of Information Assets and Identifies Threats and Vulnerabilities - The entity's risk identification and assessment process includes (1) identifying information assets, including physical devices and systems, virtual devices, software, data and data flows, external information systems, and organizational roles; (2) assessing the criticality of those information assets; (3) identifying the threats to the assets from intentional (including malicious) and unintentional acts and environmental events; and (4) identifying the vulnerabilities of the identified assets.",
     "children": [
       "aws_compliance.control.ec2_instance_ssm_managed",
-      "aws_compliance.control.ssm_managed_instance_compliance_association_compliant",
-      "aws_compliance.control.guardduty_finding_archived",
       "aws_compliance.control.guardduty_enabled",
+      "aws_compliance.control.guardduty_finding_archived",
+      "aws_compliance.control.iam_user_console_access_mfa_enabled",
+      "aws_compliance.control.ssm_managed_instance_compliance_association_compliant",
       "aws_compliance.control.ssm_managed_instance_compliance_patch_compliant"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_3_3",
-    "description": "",
-    "title": "CC3.3 COSO Principle 8: The entity considers the potential for fraud in assessing risks to the achievement of objectives",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "3.3",
-      "soc_2_section_id": "cc4",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nConsiders Various Types of Fraud - The assessment of fraud considers fraudulent reporting, possible loss of assets, and corruption resulting from the various ways that fraud and misconduct can occur.\n\nAssesses Incentives and Pressures - The assessment of fraud risks considers incentives and pressures.\n\nAssesses Opportunities - The assessment of fraud risk considers opportunities for unauthorized acquisition,use, or disposal of assets, altering the entity’s reporting records, or committing other inappropriate acts.\n\nAssesses Attitudes and Rationalizations - The assessment of fraud risk considers how management and other personnel might engage in or justify inappropriate actions.\n\nAdditional point of focus specifically related to all engagements using the trust services criteria:\nConsiders the Risks Related to the Use of IT and Access to Information - The assessment of fraud risks includes consideration of threats and vulnerabilities that arise specifically from the use of IT and access to information.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
     ]
   },
   {
@@ -338,7 +191,7 @@
   {
     "benchmark_id": "aws_compliance.benchmark.soc_2_cc_4",
     "description": "The criteria relevant to how the entity (i) conducts ongoing and/or separate evaluations, and (ii) evaluates and communicates deficiencies.",
-    "title": "CC4.0 - Monitoring Activities",
+    "title": "CC4 Monitoring Activities",
     "tags": {
       "category": "Compliance",
       "plugin": "aws",
@@ -349,27 +202,7 @@
     },
     "documentation": "",
     "children": [
-      "aws_compliance.benchmark.soc_2_cc_4_1",
       "aws_compliance.benchmark.soc_2_cc_4_2"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_4_1",
-    "description": "",
-    "title": "CC4.1 COSO Principle 16: The entity selects, develops, and performs ongoing and/or separate evaluations to ascertain whether the components of internal control are present and functioning",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "4.1",
-      "soc_2_section_id": "cc4",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nConsiders a Mix of Ongoing and Separate Evaluations - Management includes a balance of ongoing and separate evaluations.\n\nConsiders Rate of Change - Management considers the rate of change in business and business processes when selecting and developing ongoing and separate evaluations.\n\nEstablishes Baseline Understanding - The design and current state of an internal control system are used to establish a baseline for ongoing and separate evaluations.\n\nUses Knowledgeable Personnel - Evaluators performing ongoing and separate evaluations have sufficient knowledge to understand what is being evaluated.\n\nIntegrates With Business Processes - Ongoing evaluations are built into the business processes and adjust to changing conditions.\n\nAdjusts Scope and Frequency—Management varies the scope and frequency of separate evaluations depending on risk.\n\nObjectively Evaluates - Separate evaluations are performed periodically to provide objective feedback.\n\nConsiders Different Types of Ongoing and Separate Evaluations - Management uses a variety of different types of ongoing and separate evaluations, including penetration testing, independent certification made against established specifications (for example, ISO certifications), and internal audit assessments.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
     ]
   },
   {
@@ -388,90 +221,15 @@
     },
     "documentation": "## Description\n\nAssesses Results - Management and the board of directors, as appropriate, assess results of ongoing and separate evaluations.\n\nCommunicates Deficiencies - Deficiencies are communicated to parties responsible for taking corrective action and to senior management and the board of directors, as appropriate.\n\nMonitors Corrective Action - Management tracks whether deficiencies are remedied on a timely basis.",
     "children": [
+      "aws_compliance.control.cloudwatch_alarm_action_enabled_check",
       "aws_compliance.control.guardduty_enabled",
       "aws_compliance.control.guardduty_finding_archived"
     ]
   },
   {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_5",
-    "description": "The criteria relevant to how the entity (i) selects and develops control activities, (ii) selects and develops general controls over technology, and (iii) deploys through policies and procedures.",
-    "title": "CC5.0 - Control Activities",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_section_id": "cc5",
-      "type": "Benchmark"
-    },
-    "documentation": "",
-    "children": [
-      "aws_compliance.benchmark.soc_2_cc_5_1",
-      "aws_compliance.benchmark.soc_2_cc_5_2",
-      "aws_compliance.benchmark.soc_2_cc_5_3"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_5_1",
-    "description": "",
-    "title": "CC5.1 COSO Principle 10: The entity selects and develops control activities that contribute to the mitigation of risks to the achievement of objectives to acceptable levels",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "5.1",
-      "soc_2_section_id": "cc5",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nIntegrates With Risk Assessment - Control activities help ensure that risk responses that address and mitigate risks are carried out.\n\nConsiders Entity-Specific Factors - Management considers how the environment, complexity, nature, and scope of its operations, as well as the specific characteristics of its organization, affect the selection and development of control activities.\n\nDetermines Relevant Business Processes - Management determines which relevant business processes require control activities.\n\nEvaluates a Mix of 2017 Data Submitted Types - Control activities include a range and variety of controls and may include a balance of approaches to mitigate risks, considering both manual and automated controls, and preventive and detective controls.\n\nConsiders at What Level Activities Are Applied - Management considers control activities at various levels in the entity.\n\nAddresses Segregation of Duties - Management segregates incompatible duties, and where such segregation is not practical, management selects and develops alternative control activities.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_5_2",
-    "description": "",
-    "title": "CC5.2 COSO Principle 11: The entity also selects and develops general control activities over technology to support the achievement of objectives",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "5.2",
-      "soc_2_section_id": "cc5",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nDetermines Dependency Between the Use of Technology in Business Processes and Technology General Controls - Management understands and determines the dependency and linkage between business processes, automated control activities, and technology general controls.\n\nEstablishes Relevant Technology Infrastructure Control Activities - Management selects and develops control activities over the technology infrastructure, which are designed and implemented to help ensure the completeness, accuracy, and availability of technology processing.\n\nEstablishes Relevant Security Management Process Controls Activities - Management selects and develops control activities that are designed and implemented to restrict technology access rights to authorized users commensurate with their job responsibilities and to protect the entity’s assets from external threats.\n\nEstablishes Relevant Technology Acquisition, Development, and Maintenance Process Control Activities - Management selects and develops control activities over the acquisition, development, and maintenance of technology and its infrastructure to achieve management’s objectives.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_5_3",
-    "description": "",
-    "title": "CCC5.3 COSO Principle 12: The entity deploys control activities through policies that establish what is expected and in procedures that put policies into action",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "5.3",
-      "soc_2_section_id": "cc5",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nEstablishes Policies and Procedures to Support Deployment of Management ‘s Directives - Management establishes control activities that are built into business processes and employees’ day-to-day activities through policies establishing what is expected and relevant procedures specifying actions.\n\nEstablishes Responsibility and Accountability for Executing Policies and Procedures - Management establishes responsibility and accountability for control activities with management (or other designated personnel) of the business unit or function in which the relevant risks reside.\n\nPerforms in a Timely Manner - Responsible personnel perform control activities in a timely manner as defined by the policies and procedures.\n\nTakes Corrective Action - Responsible personnel investigate and act on matters identified as a result of executing control activities.\n\nPerforms Using Competent Personnel - Competent personnel with sufficient authority perform control activities with diligence and continuing focus.\n\nReassesses Policies and Procedures - Management periodically reviews control activities to determine their continued relevance and refreshes them when necessary.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
     "benchmark_id": "aws_compliance.benchmark.soc_2_cc_6",
     "description": "The criteria relevant to how an entity (i) restricts logical and physical access, (ii) provides and removes that access, and (iii) prevents unauthorized access.",
-    "title": "CC6.0 - Logical and Physical Access",
+    "title": "CC6 Logical and Physical Access",
     "tags": {
       "category": "Compliance",
       "plugin": "aws",
@@ -485,8 +243,6 @@
       "aws_compliance.benchmark.soc_2_cc_6_1",
       "aws_compliance.benchmark.soc_2_cc_6_2",
       "aws_compliance.benchmark.soc_2_cc_6_3",
-      "aws_compliance.benchmark.soc_2_cc_6_4",
-      "aws_compliance.benchmark.soc_2_cc_6_5",
       "aws_compliance.benchmark.soc_2_cc_6_6",
       "aws_compliance.benchmark.soc_2_cc_6_7",
       "aws_compliance.benchmark.soc_2_cc_6_8"
@@ -508,7 +264,68 @@
     },
     "documentation": "## Description\n\nIdentifies and Manages the Inventory of Information Assets - The entity identifies, inventories, classifies, and manages information assets.\n\nRestricts Logical Access - Logical access to information assets, including hardware, data (at-rest, during processing, or in transmission), software, administrative authorities, mobile devices, output, and offline system components is restricted through the use of access control software and rule sets.\n\nIdentifies and Authenticates Users - Persons, infrastructure and software are identified and authenticated prior to accessing information assets, whether locally or remotely.\n\nConsiders Network Segmentation - Network segmentation permits unrelated portions of the entity's information system to be isolated from each other.\n\nManages Points of Access - Points of access by outside entities and the types of data that flow through the points of access are identified, inventoried, and managed. The types of individuals and systems using each point of access are identified, documented, and managed.\n\nRestricts Access to Information Assets - Combinations of data classification, separate data structures, port restrictions, access protocol restrictions, user identification, and digital certificates are used to establish access control rules for information assets.\n\nManages Identification and Authentication - Identification and authentication requirements are established, documented, and managed for individuals and systems accessing entity information, infrastructure and software.\n\nManages Credentials for Infrastructure and Software - New internal and external infrastructure and software are registered, authorized, and documented prior to being granted access credentials and implemented on the network or access point. Credentials are removed and access is disabled when access is no longer required or the infrastructure and software are no longer in use.\n\nUses Encryption to Protect Data - The entity uses encryption to supplement other measures used to protect data-at-rest, when such protections are deemed appropriate based on assessed risk.\n\nProtects Encryption Keys - Processes are in place to protect encryption keys during generation, storage, use, and destruction.",
     "children": [
-      "aws_compliance.control.s3_bucket_restrict_public_read_access"
+      "aws_compliance.control.acm_certificate_expires_30_days",
+      "aws_compliance.control.apigateway_stage_cache_encryption_at_rest_enabled",
+      "aws_compliance.control.cloudtrail_trail_logs_encrypted_with_kms_cmk",
+      "aws_compliance.control.dms_replication_instance_not_publicly_accessible",
+      "aws_compliance.control.ebs_attached_volume_encryption_enabled",
+      "aws_compliance.control.ebs_snapshot_not_publicly_restorable",
+      "aws_compliance.control.ec2_ebs_default_encryption_enabled",
+      "aws_compliance.control.ec2_instance_in_vpc",
+      "aws_compliance.control.ec2_instance_not_publicly_accessible",
+      "aws_compliance.control.ec2_instance_ssm_managed",
+      "aws_compliance.control.efs_file_system_encrypt_data_at_rest",
+      "aws_compliance.control.elb_application_lb_drop_http_headers",
+      "aws_compliance.control.elb_application_lb_redirect_http_request_to_https",
+      "aws_compliance.control.elb_application_lb_waf_enabled",
+      "aws_compliance.control.elb_classic_lb_use_ssl_certificate",
+      "aws_compliance.control.elb_classic_lb_use_tls_https_listeners",
+      "aws_compliance.control.emr_cluster_kerberos_enabled",
+      "aws_compliance.control.emr_cluster_master_nodes_no_public_ip",
+      "aws_compliance.control.es_domain_encryption_at_rest_enabled",
+      "aws_compliance.control.es_domain_in_vpc",
+      "aws_compliance.control.es_domain_node_to_node_encryption_enabled",
+      "aws_compliance.control.iam_account_password_policy_strong_min_reuse_24",
+      "aws_compliance.control.iam_group_not_empty",
+      "aws_compliance.control.iam_group_user_role_no_inline_policies",
+      "aws_compliance.control.iam_policy_no_star_star",
+      "aws_compliance.control.iam_root_user_no_access_keys",
+      "aws_compliance.control.iam_user_access_key_age_90",
+      "aws_compliance.control.iam_user_in_group",
+      "aws_compliance.control.iam_user_no_inline_attached_policies",
+      "aws_compliance.control.iam_user_unused_credentials_90",
+      "aws_compliance.control.kms_key_not_pending_deletion",
+      "aws_compliance.control.lambda_function_in_vpc",
+      "aws_compliance.control.lambda_function_restrict_public_access",
+      "aws_compliance.control.log_group_encryption_at_rest_enabled",
+      "aws_compliance.control.rds_db_instance_encryption_at_rest_enabled",
+      "aws_compliance.control.rds_db_instance_prohibit_public_access",
+      "aws_compliance.control.rds_db_snapshot_encrypted_at_rest",
+      "aws_compliance.control.rds_db_snapshot_prohibit_public_access",
+      "aws_compliance.control.redshift_cluster_encryption_in_transit_enabled",
+      "aws_compliance.control.redshift_cluster_encryption_logging_enabled",
+      "aws_compliance.control.redshift_cluster_prohibit_public_access",
+      "aws_compliance.control.s3_bucket_default_encryption_enabled",
+      "aws_compliance.control.s3_bucket_enforces_ssl",
+      "aws_compliance.control.s3_bucket_logging_enabled",
+      "aws_compliance.control.s3_bucket_object_lock_enabled",
+      "aws_compliance.control.s3_bucket_policy_restrict_public_access",
+      "aws_compliance.control.s3_bucket_restrict_public_read_access",
+      "aws_compliance.control.s3_bucket_restrict_public_write_access",
+      "aws_compliance.control.s3_public_access_block_account",
+      "aws_compliance.control.sagemaker_endpoint_configuration_encryption_at_rest_enabled",
+      "aws_compliance.control.sagemaker_notebook_instance_direct_internet_access_disabled",
+      "aws_compliance.control.sagemaker_notebook_instance_encryption_at_rest_enabled",
+      "aws_compliance.control.secretsmanager_secret_automatic_rotation_enabled",
+      "aws_compliance.control.secretsmanager_secret_rotated_as_scheduled",
+      "aws_compliance.control.sns_topic_encrypted_at_rest",
+      "aws_compliance.control.ssm_managed_instance_compliance_association_compliant",
+      "aws_compliance.control.vpc_default_security_group_restricts_all_traffic",
+      "aws_compliance.control.vpc_eip_associated",
+      "aws_compliance.control.vpc_security_group_associated_to_eni",
+      "aws_compliance.control.vpc_security_group_restrict_ingress_common_ports_all",
+      "aws_compliance.control.vpc_security_group_restrict_ingress_ssh_all",
+      "aws_compliance.control.vpc_security_group_restrict_ingress_tcp_udp_all"
     ]
   },
   {
@@ -527,7 +344,68 @@
     },
     "documentation": "## Description\n\nPrior to issuing system credentials and granting system access, the entity registers and authorizes new internal and external users whose access is administered by the entity. For those users whose access is administered by the entity, user system credentials are removed when user access is no longer authorized.\n\nControls Access Credentials to Protected Assets - Information asset access credentials are created based on an authorization from the system's asset owner or authorized custodian.\n\nRemoves Access to Protected Assets When Appropriate - Processes are in place to remove credential access when an individual no longer requires such access.\n\nReviews Appropriateness of Access Credentials - The appropriateness of access credentials is reviewed on a periodic basis for unnecessary and inappropriate individuals with credentials.\n",
     "children": [
-      "aws_compliance.control.rds_db_instance_prohibit_public_access"
+      "aws_compliance.control.acm_certificate_expires_30_days",
+      "aws_compliance.control.apigateway_stage_cache_encryption_at_rest_enabled",
+      "aws_compliance.control.cloudtrail_trail_logs_encrypted_with_kms_cmk",
+      "aws_compliance.control.dms_replication_instance_not_publicly_accessible",
+      "aws_compliance.control.ebs_attached_volume_encryption_enabled",
+      "aws_compliance.control.ebs_snapshot_not_publicly_restorable",
+      "aws_compliance.control.ec2_ebs_default_encryption_enabled",
+      "aws_compliance.control.ec2_instance_in_vpc",
+      "aws_compliance.control.ec2_instance_not_publicly_accessible",
+      "aws_compliance.control.ec2_instance_ssm_managed",
+      "aws_compliance.control.efs_file_system_encrypt_data_at_rest",
+      "aws_compliance.control.elb_application_lb_drop_http_headers",
+      "aws_compliance.control.elb_application_lb_redirect_http_request_to_https",
+      "aws_compliance.control.elb_application_lb_waf_enabled",
+      "aws_compliance.control.elb_classic_lb_use_ssl_certificate",
+      "aws_compliance.control.elb_classic_lb_use_tls_https_listeners",
+      "aws_compliance.control.emr_cluster_kerberos_enabled",
+      "aws_compliance.control.emr_cluster_master_nodes_no_public_ip",
+      "aws_compliance.control.es_domain_encryption_at_rest_enabled",
+      "aws_compliance.control.es_domain_in_vpc",
+      "aws_compliance.control.es_domain_node_to_node_encryption_enabled",
+      "aws_compliance.control.iam_account_password_policy_strong_min_reuse_24",
+      "aws_compliance.control.iam_group_not_empty",
+      "aws_compliance.control.iam_group_user_role_no_inline_policies",
+      "aws_compliance.control.iam_policy_no_star_star",
+      "aws_compliance.control.iam_root_user_no_access_keys",
+      "aws_compliance.control.iam_user_access_key_age_90",
+      "aws_compliance.control.iam_user_in_group",
+      "aws_compliance.control.iam_user_no_inline_attached_policies",
+      "aws_compliance.control.iam_user_unused_credentials_90",
+      "aws_compliance.control.kms_key_not_pending_deletion",
+      "aws_compliance.control.lambda_function_in_vpc",
+      "aws_compliance.control.lambda_function_restrict_public_access",
+      "aws_compliance.control.log_group_encryption_at_rest_enabled",
+      "aws_compliance.control.rds_db_instance_encryption_at_rest_enabled",
+      "aws_compliance.control.rds_db_instance_prohibit_public_access",
+      "aws_compliance.control.rds_db_snapshot_encrypted_at_rest",
+      "aws_compliance.control.rds_db_snapshot_prohibit_public_access",
+      "aws_compliance.control.redshift_cluster_encryption_in_transit_enabled",
+      "aws_compliance.control.redshift_cluster_encryption_logging_enabled",
+      "aws_compliance.control.redshift_cluster_prohibit_public_access",
+      "aws_compliance.control.s3_bucket_default_encryption_enabled",
+      "aws_compliance.control.s3_bucket_enforces_ssl",
+      "aws_compliance.control.s3_bucket_logging_enabled",
+      "aws_compliance.control.s3_bucket_object_lock_enabled",
+      "aws_compliance.control.s3_bucket_policy_restrict_public_access",
+      "aws_compliance.control.s3_bucket_restrict_public_read_access",
+      "aws_compliance.control.s3_bucket_restrict_public_write_access",
+      "aws_compliance.control.s3_public_access_block_account",
+      "aws_compliance.control.sagemaker_endpoint_configuration_encryption_at_rest_enabled",
+      "aws_compliance.control.sagemaker_notebook_instance_direct_internet_access_disabled",
+      "aws_compliance.control.sagemaker_notebook_instance_encryption_at_rest_enabled",
+      "aws_compliance.control.secretsmanager_secret_automatic_rotation_enabled",
+      "aws_compliance.control.secretsmanager_secret_rotated_as_scheduled",
+      "aws_compliance.control.sns_topic_encrypted_at_rest",
+      "aws_compliance.control.ssm_managed_instance_compliance_association_compliant",
+      "aws_compliance.control.vpc_default_security_group_restricts_all_traffic",
+      "aws_compliance.control.vpc_eip_associated",
+      "aws_compliance.control.vpc_security_group_associated_to_eni",
+      "aws_compliance.control.vpc_security_group_restrict_ingress_common_ports_all",
+      "aws_compliance.control.vpc_security_group_restrict_ingress_ssh_all",
+      "aws_compliance.control.vpc_security_group_restrict_ingress_tcp_udp_all"
     ]
   },
   {
@@ -546,45 +424,16 @@
     },
     "documentation": "## Description\n\nCreates or Modifies Access to Protected Information Assets - Processes are in place to create or modify access to protected information assets based on authorization from the asset’s owner.\n\nRemoves Access to Protected Information Assets - Processes are in place to remove access to protected information assets when an individual no longer requires access.\n\nUses Role-Based Access Controls - Role-based access control is utilized to support segregation of incompatible functions.",
     "children": [
-      "aws_compliance.control.iam_policy_no_star_star"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_6_4",
-    "description": "",
-    "title": "CC6.4 The entity restricts physical access to facilities and protected information assets to authorized personnel to meet the entity’s objectives",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "6.4",
-      "soc_2_section_id": "cc6",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nCreates or Modifies Physical Access - Processes are in place to create or modify physical access to facilities such as data centers, office spaces, and work areas, based on authorization from the system's asset owner.\n\nRemoves Physical Access - Processes are in place to remove access to physical resources when an individual no longer requires access.\n\nReviews Physical Access - Processes are in place to periodically review physical access to ensure consistency with job responsibilities.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_6_5",
-    "description": "",
-    "title": "CC6.5 The entity discontinues logical and physical protections over physical assets only after the ability to read or recover data and software from those assets has been diminished and is no longer required to meet the entity’s objectives",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "6.5",
-      "soc_2_section_id": "cc6",
-      "soc_2_type": "automated",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nIdentifies Data and Software for Disposal - Procedures are in place to identify data and software stored on equipment to be disposed and to render such data and software unreadable.\n\nRemoves Data and Software From Entity Control - Procedures are in place to remove data and software stored on equipment to be removed from the physical control of the entity and to render such data and software unreadable.",
-    "children": [
-      "aws_compliance.control.manual_control"
+      "aws_compliance.control.emr_cluster_kerberos_enabled",
+      "aws_compliance.control.iam_group_not_empty",
+      "aws_compliance.control.iam_group_user_role_no_inline_policies",
+      "aws_compliance.control.iam_managed_policy_attached_to_role",
+      "aws_compliance.control.iam_policy_no_star_star",
+      "aws_compliance.control.iam_root_user_no_access_keys",
+      "aws_compliance.control.iam_user_in_group",
+      "aws_compliance.control.iam_user_no_inline_attached_policies",
+      "aws_compliance.control.iam_user_unused_credentials_90",
+      "aws_compliance.control.s3_bucket_policy_restrict_public_access"
     ]
   },
   {
@@ -603,7 +452,35 @@
     },
     "documentation": "## Description\n\nRestricts Access — The types of activities that can occur through a communication channel (for example, FTP site, router port) are restricted.\n\nProtects Identification and Authentication Credentials — Identification and authentication credentials are protected during transmission outside its system boundaries.\n\nRequires Additional Authentication or Credentials — Additional authentication information or credentials are required when accessing the system from outside its boundaries.\n\nImplements Boundary Protection Systems — Boundary protection systems (for example, firewalls, demilitarized zones, and intrusion detection systems) are implemented to protect external access points from attempts and unauthorized access and are monitored to detect such attempts.\n",
     "children": [
-      "aws_compliance.control.ec2_instance_not_publicly_accessible"
+      "aws_compliance.control.dms_replication_instance_not_publicly_accessible",
+      "aws_compliance.control.ebs_snapshot_not_publicly_restorable",
+      "aws_compliance.control.ec2_instance_in_vpc",
+      "aws_compliance.control.ec2_instance_not_publicly_accessible",
+      "aws_compliance.control.elb_application_lb_waf_enabled",
+      "aws_compliance.control.emr_cluster_master_nodes_no_public_ip",
+      "aws_compliance.control.es_domain_in_vpc",
+      "aws_compliance.control.guardduty_enabled",
+      "aws_compliance.control.iam_root_user_hardware_mfa_enabled",
+      "aws_compliance.control.iam_root_user_mfa_enabled",
+      "aws_compliance.control.iam_user_console_access_mfa_enabled",
+      "aws_compliance.control.iam_user_mfa_enabled",
+      "aws_compliance.control.lambda_function_in_vpc",
+      "aws_compliance.control.lambda_function_restrict_public_access",
+      "aws_compliance.control.rds_db_instance_prohibit_public_access",
+      "aws_compliance.control.rds_db_snapshot_prohibit_public_access",
+      "aws_compliance.control.redshift_cluster_prohibit_public_access",
+      "aws_compliance.control.s3_bucket_policy_restrict_public_access",
+      "aws_compliance.control.s3_bucket_restrict_public_read_access",
+      "aws_compliance.control.s3_bucket_restrict_public_write_access",
+      "aws_compliance.control.s3_public_access_block_account",
+      "aws_compliance.control.sagemaker_notebook_instance_direct_internet_access_disabled",
+      "aws_compliance.control.securityhub_enabled",
+      "aws_compliance.control.vpc_default_security_group_restricts_all_traffic",
+      "aws_compliance.control.vpc_flow_logs_enabled",
+      "aws_compliance.control.vpc_igw_attached_to_authorized_vpc",
+      "aws_compliance.control.vpc_security_group_restrict_ingress_common_ports_all",
+      "aws_compliance.control.vpc_security_group_restrict_ingress_ssh_all",
+      "aws_compliance.control.vpc_security_group_restrict_ingress_tcp_udp_all"
     ]
   },
   {
@@ -622,7 +499,15 @@
     },
     "documentation": "## Description\n\nRestricts the Ability to Perform Transmission - Data loss prevention processes and technologies are used to restrict ability to authorize and execute transmission, movement and removal of information.\n\nUses Encryption Technologies or Secure Communication Channels to Protect Data - Encryption technologies or secured communication channels are used to protect transmission of data and other communications beyond connectivity access points.\n\nProtects Removal Media - Encryption technologies and physical asset protections are used for removable media (such as USB drives and back-up tapes), as appropriate.\n\nProtects Mobile Devices - Processes are in place to protect mobile devices (such as laptops, smart phones and tablets) that serve as information assets.\n",
     "children": [
-      "aws_compliance.control.acm_certificate_expires_30_days"
+      "aws_compliance.control.acm_certificate_expires_30_days",
+      "aws_compliance.control.apigateway_stage_cache_encryption_at_rest_enabled",
+      "aws_compliance.control.cloudfront_distribution_encryption_in_transit_enabled",
+      "aws_compliance.control.elb_application_lb_drop_http_headers",
+      "aws_compliance.control.elb_application_lb_redirect_http_request_to_https",
+      "aws_compliance.control.elb_classic_lb_use_ssl_certificate",
+      "aws_compliance.control.elb_classic_lb_use_tls_https_listeners",
+      "aws_compliance.control.es_domain_node_to_node_encryption_enabled",
+      "aws_compliance.control.redshift_cluster_encryption_in_transit_enabled"
     ]
   },
   {
@@ -648,7 +533,7 @@
   {
     "benchmark_id": "aws_compliance.benchmark.soc_2_cc_7",
     "description": "The criteria relevant to how an entity (i) manages the operation of system(s) and (ii) detects and mitigates processing deviations including logical and physical security deviations.",
-    "title": "CC7.0 - System Operations",
+    "title": "CC7 System Operations",
     "tags": {
       "category": "Compliance",
       "plugin": "aws",
@@ -662,8 +547,7 @@
       "aws_compliance.benchmark.soc_2_cc_7_1",
       "aws_compliance.benchmark.soc_2_cc_7_2",
       "aws_compliance.benchmark.soc_2_cc_7_3",
-      "aws_compliance.benchmark.soc_2_cc_7_4",
-      "aws_compliance.benchmark.soc_2_cc_7_5"
+      "aws_compliance.benchmark.soc_2_cc_7_4"
     ]
   },
   {
@@ -682,9 +566,9 @@
     },
     "documentation": "## Description\n\nUses Defined Configuration Standards - Management has defined configuration standards.\n\nMonitors Infrastructure and Software - The entity monitors infrastructure and software for noncompliance with the standards, which could threaten the achievement of the entity's objectives.\n\nImplements Change-Detection Mechanisms - The IT system includes a change-detection mechanism (for example, file integrity monitoring tools) to alert personnel to unauthorized modifications of critical system files, configuration files, or content files.\n\nDetects Unknown or Unauthorized Components - Procedures are in place to detect the introduction of unknown or unauthorized components.\n\nConducts Vulnerability Scans - The entity conducts vulnerability scans designed to identify potential vulnerabilities or misconfigurations on a periodic basis and after any significant change in the environment and takes action to remediate identified deficiencies on a timely basis.",
     "children": [
+      "aws_compliance.control.ec2_instance_ssm_managed",
       "aws_compliance.control.guardduty_enabled",
       "aws_compliance.control.securityhub_enabled",
-      "aws_compliance.control.ec2_instance_ssm_managed",
       "aws_compliance.control.ssm_managed_instance_compliance_association_compliant"
     ]
   },
@@ -704,27 +588,28 @@
     },
     "documentation": "## Description\n\nImplements Detection Policies, Procedures, and Tools - Detection policies and procedures are defined and implemented, and detection tools are implemented on Infrastructure and software to identify anomalies in the operation or unusual activity on systems. Procedures may include (1) a defined governance process for security event detection and management that includes provision of resources; (2) use of intelligence sources to identify newly discovered threats and vulnerabilities; and (3) logging of unusual system activities.\n\nDesigns Detection Measures - Detection measures are designed to identify anomalies that could result from actual or attempted (1) compromise of physical barriers; (2) unauthorized actions of authorized personnel; (3) use of compromised identification and authentication credentials; (4) unauthorized access from outside the system boundaries; (5) compromise of authorized external parties; and (6) implementation or connection of unauthorized hardware and software.\n\nImplements Filters to Analyze Anomalies - Management has implemented procedures to filter, summarize, and analyze anomalies to identify security events.\n\nMonitors Detection Tools for Effective Operation - Management has implemented processes to monitor the effectiveness of detection tools.",
     "children": [
+      "aws_compliance.control.apigateway_stage_logging_enabled",
+      "aws_compliance.control.cloudtrail_multi_region_trail_enabled",
+      "aws_compliance.control.cloudtrail_s3_data_events_enabled",
+      "aws_compliance.control.cloudtrail_trail_enabled",
       "aws_compliance.control.cloudtrail_trail_integrated_with_logs",
       "aws_compliance.control.cloudwatch_alarm_action_enabled",
-      "aws_compliance.control.cloudtrail_s3_data_events_enabled",
-      "aws_compliance.control.lambda_function_dead_letter_queue_configured",
-      "aws_compliance.control.elb_application_classic_lb_logging_enabled",
-      "aws_compliance.control.s3_bucket_logging_enabled",
-      "aws_compliance.control.rds_db_instance_logging_enabled",
-      "aws_compliance.control.wafv2_web_acl_logging_enabled",
-      "aws_compliance.control.cloudtrail_trail_enabled",
-      "aws_compliance.control.codebuild_project_plaintext_env_variables_no_sensitive_aws_values",
-      "aws_compliance.control.securityhub_enabled",
       "aws_compliance.control.cloudwatch_log_group_retention_period_365",
-      "aws_compliance.control.cloudtrail_multi_region_trail_enabled",
-      "aws_compliance.control.redshift_cluster_encryption_logging_enabled",
-      "aws_compliance.control.vpc_flow_logs_enabled",
-      "aws_compliance.control.ec2_instance_detailed_monitoring_enabled",
+      "aws_compliance.control.codebuild_project_plaintext_env_variables_no_sensitive_aws_values",
       "aws_compliance.control.codebuild_project_source_repo_oauth_configured",
+      "aws_compliance.control.ec2_instance_detailed_monitoring_enabled",
+      "aws_compliance.control.elb_application_classic_lb_logging_enabled",
       "aws_compliance.control.guardduty_enabled",
-      "aws_compliance.control.apigateway_stage_logging_enabled",
       "aws_compliance.control.lambda_function_concurrent_execution_limit_configured",
-      "aws_compliance.control.vpc_security_group_restrict_ingress_ssh_all"
+      "aws_compliance.control.lambda_function_dead_letter_queue_configured",
+      "aws_compliance.control.rds_db_instance_logging_enabled",
+      "aws_compliance.control.redshift_cluster_encryption_logging_enabled",
+      "aws_compliance.control.s3_bucket_logging_enabled",
+      "aws_compliance.control.securityhub_enabled",
+      "aws_compliance.control.vpc_flow_logs_enabled",
+      "aws_compliance.control.vpc_security_group_restrict_ingress_ssh_all",
+      "aws_compliance.control.waf_web_acl_logging_enabled",
+      "aws_compliance.control.wafv2_web_acl_logging_enabled"
     ]
   },
   {
@@ -743,21 +628,26 @@
     },
     "documentation": "## Description\n\nResponds to Security Incidents - Procedures are in place for responding to security incidents and evaluating the effectiveness of those policies and procedures on a periodic basis.\n\nCommunicates and Reviews Detected Security Events - Detected security events are communicated to and reviewed by the individuals responsible for the management of the security program and actions are taken, if necessary.\n\nDevelops and Implements Procedures to Analyze Security Incidents - Procedures are in place to analyze security incidents and determine system impact.\n\nAssesses the Impact on Personal Information - Detected security events are evaluated to determine whether they could or did result in the unauthorized disclosure or use of personal information and whether there has been a failure to comply with applicable laws or regulations.\n\nDetermines Personal Information Used or Disclosed - When an unauthorized use or disclosure of personal information has occurred, the affected information is identified.",
     "children": [
-      "aws_compliance.control.log_group_encryption_at_rest_enabled",
-      "aws_compliance.control.cloudtrail_trail_validation_enabled",
-      "aws_compliance.control.cloudtrail_trail_integrated_with_logs",
-      "aws_compliance.control.guardduty_enabled",
       "aws_compliance.control.apigateway_stage_logging_enabled",
-      "aws_compliance.control.lambda_function_dead_letter_queue_configured",
-      "aws_compliance.control.rds_db_instance_logging_enabled",
-      "aws_compliance.control.securityhub_enabled",
+      "aws_compliance.control.cloudtrail_trail_integrated_with_logs",
+      "aws_compliance.control.cloudtrail_trail_validation_enabled",
       "aws_compliance.control.cloudwatch_alarm_action_enabled",
-      "aws_compliance.control.elb_application_classic_lb_logging_enabled",
-      "aws_compliance.control.s3_bucket_logging_enabled",
       "aws_compliance.control.cloudwatch_log_group_retention_period_365",
-      "aws_compliance.control.vpc_flow_logs_enabled",
+      "aws_compliance.control.elb_application_classic_lb_logging_enabled",
+      "aws_compliance.control.es_domain_logs_to_cloudwatch",
+      "aws_compliance.control.guardduty_enabled",
       "aws_compliance.control.guardduty_finding_archived",
-      "aws_compliance.control.wafv2_web_acl_logging_enabled"
+      "aws_compliance.control.lambda_function_dead_letter_queue_configured",
+      "aws_compliance.control.log_group_encryption_at_rest_enabled",
+      "aws_compliance.control.opensearch_domain_audit_logging_enabled",
+      "aws_compliance.control.opensearch_domain_logs_to_cloudwatch",
+      "aws_compliance.control.rds_db_instance_logging_enabled",
+      "aws_compliance.control.redshift_cluster_audit_logging_enabled",
+      "aws_compliance.control.s3_bucket_event_notifications_enabled",
+      "aws_compliance.control.s3_bucket_logging_enabled",
+      "aws_compliance.control.securityhub_enabled",
+      "aws_compliance.control.vpc_flow_logs_enabled",
+      "aws_compliance.control.waf_web_acl_logging_enabled"
     ]
   },
   {
@@ -779,6 +669,7 @@
       "aws_compliance.control.backup_plan_min_retention_35_days",
       "aws_compliance.control.backup_recovery_point_encryption_enabled",
       "aws_compliance.control.backup_recovery_point_manual_deletion_disabled",
+      "aws_compliance.control.backup_recovery_point_min_retention_35_days",
       "aws_compliance.control.cloudwatch_alarm_action_enabled",
       "aws_compliance.control.dynamodb_table_in_backup_plan",
       "aws_compliance.control.dynamodb_table_point_in_time_recovery_enabled",
@@ -805,28 +696,9 @@
     ]
   },
   {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_7_5",
-    "description": "",
-    "title": "CC7.5 The entity identifies, develops, and implements activities to recover from identified security incidents",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "7.5",
-      "soc_2_section_id": "cc7",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nRestores the Affected Environment - The activities restore the affected environment to functional operation by rebuilding systems, updating software, installing patches, and changing configurations, as needed.\n\nCommunicates Information About the Event - Communications about the nature of the incident, recovery actions taken, and activities required for the prevention of future security events are made to management and others as appropriate (internal and external).\n\nDetermines Root Cause of the Event - The root cause of the event is determined.\n\nImplements Changes to Prevent and Detect Recurrences - Additional architecture or changes to preventive and detective controls, or both, are implemented to prevent and detect recurrences on a timely basis.\n\nImproves Response and Recovery Procedures - Lessons learned are analyzed, and the incident response plan and recovery procedures are improved.\n\nImplements Incident Recovery Plan Testing - Incident recovery plan testing is performed on a periodic basis. The testing includes (1) development of testing scenarios based on threat likelihood and magnitude; (2) consideration of relevant system components from across the entity that can impair availability; (3) scenarios that consider the potential for the lack of availability of key personnel; and (4) revision of continuity plans and systems based on test results.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
     "benchmark_id": "aws_compliance.benchmark.soc_2_cc_8",
     "description": "The criteria relevant to how an entity (i) identifies the need for changes, (ii) makes the changes using a controlled change management process, and (iii) prevents unauthorized changes from being made.",
-    "title": "CC8.0 - Change Management",
+    "title": "CC8 Change Management",
     "tags": {
       "category": "Compliance",
       "plugin": "aws",
@@ -856,107 +728,30 @@
     },
     "documentation": "## Description\n\nManages Changes Throughout the System Lifecycle - A process for managing system changes throughout the lifecycle of the system and its components (infrastructure, data, software and procedures) is used to support system availability and processing integrity.\n\nAuthorizes Changes - A process is in place to authorize system changes prior to development.\n\nDesigns and Develops Changes - A process is in place to design and develop system changes.\n\nDocuments Changes - A process is in place to document system changes to support ongoing maintenance of the system and to support system users in performing their responsibilities.\n\nTracks System Changes - A process is in place to track system changes prior to implementation.\n\nConfigures Software - A process is in place to select and implement the configuration parameters used to control the functionality of software.\n\nTests System Changes - A process is in place to test system changes prior to implementation.\n\nApproves System Changes - A process is in place to approve system changes prior to implementation.\n\nDeploys System Changes - A process is in place to implement system changes.\n\nIdentifies and Evaluates System Changes - Objectives affected by system changes are identified, and the ability of the modified system to meet the objectives is evaluated throughout the system development life cycle.\n\nIdentifies Changes in Infrastructure, Data, Software, and Procedures Required to Remediate Incidents - Changes in infrastructure, data, software, and procedures required to remediate incidents to continue to meet objectives are identified, and the change process is initiated upon identification.\n\nCreates Baseline Configuration of IT Technology - A baseline configuration of IT and control systems is created and maintained.\n\nProvides for Changes Necessary in Emergency Situations - A process is in place for authorizing, designing, testing, approving and implementing changes necessary in emergency situations (that is, changes that need to be implemented in an urgent timeframe).\n\nProtects Confidential Information - The entity protects confidential information during system design, development, testing, implementation, and change processes to meet the entity’s objectives related to confidentiality.\n\nProtects Personal Information - The entity protects personal information during system design, development, testing, implementation, and change processes to meet the entity’s objectives related to privacy.\n",
     "children": [
-      "aws_compliance.control.config_enabled_all_regions",
+      "aws_compliance.control.codebuild_project_plaintext_env_variables_no_sensitive_aws_values",
       "aws_compliance.control.codebuild_project_source_repo_oauth_configured",
-      "aws_compliance.control.codebuild_project_plaintext_env_variables_no_sensitive_aws_values"
+      "aws_compliance.control.config_enabled_all_regions"
     ]
   },
   {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_9",
-    "description": "The criteria relevant to how the entity identifies, selects and develops risk mitigation activities arising from potential business disruptions and the use of vendors and business partners.",
-    "title": "CC9.0 - Risk Mitigation",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_section_id": "cc9",
-      "type": "Benchmark"
-    },
-    "documentation": "",
-    "children": [
-      "aws_compliance.benchmark.soc_2_cc_9_1",
-      "aws_compliance.benchmark.soc_2_cc_9_2"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_9_1",
-    "description": "",
-    "title": "CC9.1 The entity identifies, selects, and develops risk mitigation activities for risks arising from potential business disruptions",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "9.1",
-      "soc_2_section_id": "cc9",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nConsiders Mitigation of Risks of Business Disruption - Risk mitigation activities include the development of planned policies, procedures, communications, and alternative processing solutions to respond to, mitigate, and recover from security events that disrupt business operations. Those policies and procedures include monitoring processes and information and communications to meet the entity's objectives during response, mitigation, and recovery efforts.\n\nConsiders the Use of Insurance to Mitigate Financial Impact Risks - The risk management activities consider the use of insurance to offset the financial impact of loss events that would otherwise impair the ability of the entity to meet its objectives.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_9_2",
-    "description": "",
-    "title": "CC9.2 The entity assesses and manages risks associated with vendors and business partners",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "9.2",
-      "soc_2_section_id": "cc9",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nEstablishes Requirements for Vendor and Business Partner Engagements - The entity establishes specific requirements for a vendor and business partner engagement that includes (1) scope of services and product specifications, (2) roles and responsibilities, (3) compliance requirements, and (4) service levels.\n\nAssesses Vendor and Business Partner Risks - The entity assesses, on a periodic basis, the risks that vendors and business partners (and those entities’ vendors and business partners) represent to the achievement of the entity's objectives.\n\nAssigns Responsibility and Accountability for Managing Vendors and Business Partners - The entity assigns responsibility and accountability for the management of risks associated with vendors and business partners.\n\nEstablishes Communication Protocols for Vendors and Business Partners - The entity establishes communication and resolution protocols for service or product issues related to vendors and business partners.\n\nEstablishes Exception Handling Procedures From Vendors and Business Partners - The entity establishes exception handling procedures for service or product issues related to vendors and business partners.\n\nAssesses Vendor and Business Partner Performance - The entity periodically assesses the performance of vendors and business partners.\n\nImplements Procedures for Addressing Issues Identified During Vendor and Business Partner Assessments - The entity implements procedures for addressing issues identified with vendor and business partner relationships.\n\nImplements Procedures for Terminating Vendor and Business Partner Relationships - The entity implements procedures for terminating vendor and business partner relationships.\n\nObtains Confidentiality Commitments from Vendors and Business Partners - The entity obtains confidentiality commitments that are consistent with the entity’s confidentiality commitments and requirements from vendors and business partners who have access to confidential information.\n\nAssesses Compliance With Confidentiality Commitments of Vendors and Business Partners - On a periodic and as-needed basis, the entity assesses compliance by vendors and business partners with the entity’s confidentiality commitments and requirements.\n\nObtains Privacy Commitments from Vendors and Business Partners - The entity obtains privacy commitments, consistent with the entity’s privacy commitments and requirements, from vendors and business partners who have access to personal information.\n\nAssesses Compliance with Privacy Commitments of Vendors and Business Partners - On a periodic and as-needed basis, the entity assesses compliance by vendors and business partners with the entity’s privacy commitments and requirements and takes corrective action as necessary.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_a_1",
+    "benchmark_id": "aws_compliance.benchmark.soc_2_a_1",
     "description": "The availability category refers to the accessibility of information used by the entity’s systems, as well as the products or services provided to its customers.",
-    "title": "CCA1.0 - Additional Criterial for Availability",
+    "title": "A1 Additional Criterial for Availability",
     "tags": {
       "category": "Compliance",
       "plugin": "aws",
       "service": "AWS",
       "soc_2": "true",
-      "soc_2_section_id": "cca1",
+      "soc_2_section_id": "a1",
       "type": "Benchmark"
     },
     "documentation": "",
     "children": [
-      "aws_compliance.benchmark.soc_2_cc_a_1_1",
-      "aws_compliance.benchmark.soc_2_cc_a_1_2",
-      "aws_compliance.benchmark.soc_2_cc_a_1_3"
+      "aws_compliance.benchmark.soc_2_a_1_2"
     ]
   },
   {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_a_1_1",
-    "description": "",
-    "title": "A1.1 The entity maintains, monitors, and evaluates current processing capacity and use of system components (infrastructure, data, and software) to manage capacity demand and to enable the implementation of additional capacity to help meet its objectives",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "a1.1",
-      "soc_2_section_id": "cca1",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nMeasures Current Usage - The use of the system components is measured to establish a baseline for capacity management and to use when evaluating the risk of impaired availability due to capacity constraints.\n\nForecasts Capacity - The expected average and peak use of system components is forecasted and compared to system capacity and associated tolerances. Forecasting considers capacity in the event of the failure of system components that constrain capacity.\n\nMakes Changes Based on Forecasts - The system change management process is initiated when forecasted usage exceeds capacity tolerances.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_a_1_2",
+    "benchmark_id": "aws_compliance.benchmark.soc_2_a_1_2",
     "description": "",
     "title": "A1.2 The entity authorizes, designs, develops or acquires, implements, operates, approves, maintains, and monitors environmental protections, software, data back-up processes, and recovery infrastructure to meet its objectives",
     "tags": {
@@ -965,7 +760,7 @@
       "service": "AWS",
       "soc_2": "true",
       "soc_2_item_id": "a1.2",
-      "soc_2_section_id": "cca1",
+      "soc_2_section_id": "a1",
       "soc_2_type": "automated",
       "type": "Benchmark"
     },
@@ -975,6 +770,7 @@
       "aws_compliance.control.backup_plan_min_retention_35_days",
       "aws_compliance.control.backup_recovery_point_encryption_enabled",
       "aws_compliance.control.backup_recovery_point_manual_deletion_disabled",
+      "aws_compliance.control.backup_recovery_point_min_retention_35_days",
       "aws_compliance.control.cloudtrail_multi_region_trail_enabled",
       "aws_compliance.control.cloudtrail_trail_enabled",
       "aws_compliance.control.cloudtrail_trail_integrated_with_logs",
@@ -998,48 +794,30 @@
       "aws_compliance.control.redshift_cluster_automatic_snapshots_min_7_days",
       "aws_compliance.control.s3_bucket_cross_region_replication_enabled",
       "aws_compliance.control.s3_bucket_versioning_enabled",
+      "aws_compliance.control.waf_web_acl_logging_enabled",
       "aws_compliance.control.wafv2_web_acl_logging_enabled"
     ]
   },
   {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_a_1_3",
-    "description": "",
-    "title": "A1.3 The entity tests recovery plan procedures supporting system recovery to meet its objectives",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "a1.3",
-      "soc_2_section_id": "cca1",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nImplements Business Continuity Plan Testing - Business continuity plan testing is performed on a periodic basis. The testing includes (1) development of testing scenarios based on threat likelihood and magnitude; (2) consideration of system components from across the entity that can impair the availability; (3) scenarios that consider the potential for the lack of availability of key personnel; and (4) revision of continuity plans and systems based on test results.\n\nTests Integrity and Completeness of Back-Up Data - The integrity and completeness of back-up information is tested on a periodic basis.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_c_1",
+    "benchmark_id": "aws_compliance.benchmark.soc_2_c_1",
     "description": "The Confidentiality category refers that all confidential material and information should be sufficiently protected—this includes private customer data.",
-    "title": "CCC1.0 - Additional Criterial for Confidentiality",
+    "title": "C1 Additional Criterial for Confidentiality",
     "tags": {
       "category": "Compliance",
       "plugin": "aws",
       "service": "AWS",
       "soc_2": "true",
-      "soc_2_section_id": "ccc1",
+      "soc_2_section_id": "c1",
       "type": "Benchmark"
     },
     "documentation": "",
     "children": [
-      "aws_compliance.benchmark.soc_2_cc_c_1_1",
-      "aws_compliance.benchmark.soc_2_cc_c_1_2"
+      "aws_compliance.benchmark.soc_2_c_1_1",
+      "aws_compliance.benchmark.soc_2_c_1_2"
     ]
   },
   {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_c_1_1",
+    "benchmark_id": "aws_compliance.benchmark.soc_2_c_1_1",
     "description": "",
     "title": "C1.1 The entity identifies and maintains confidential information to meet the entity’s objectives related to confidentiality",
     "tags": {
@@ -1048,18 +826,19 @@
       "service": "AWS",
       "soc_2": "true",
       "soc_2_item_id": "c1.1",
-      "soc_2_section_id": "ccc1",
+      "soc_2_section_id": "c1",
       "soc_2_type": "automated",
       "type": "Benchmark"
     },
     "documentation": "## Description\n\nIdentifies Confidential information - Procedures are in place to identify and designate confidential information when it is received or created and to determine the period over which the confidential information is to be retained.\n\nProtects Confidential Information from Destruction - Procedures are in place to protect confidential information from erasure or destruction during the specified retention period of the information",
     "children": [
+      "aws_compliance.control.rds_db_instance_deletion_protection_enabled",
       "aws_compliance.control.s3_bucket_object_lock_enabled",
-      "aws_compliance.control.rds_db_instance_deletion_protection_enabled"
+      "aws_compliance.control.s3_bucket_versioning_and_lifecycle_policy_enabled"
     ]
   },
   {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_cc_c_1_2",
+    "benchmark_id": "aws_compliance.benchmark.soc_2_c_1_2",
     "description": "",
     "title": "C1.2 The entity disposes of confidential information to meet the entity’s objectives related to confidentiality",
     "tags": {
@@ -1068,501 +847,14 @@
       "service": "AWS/S3",
       "soc_2": "true",
       "soc_2_item_id": "c1.2",
-      "soc_2_section_id": "ccc1",
+      "soc_2_section_id": "c1",
       "soc_2_type": "automated",
       "type": "Benchmark"
     },
     "documentation": "## Description\n\nIdentifies Confidential Information for Destruction - Procedures are in place to identify confidential information requiring destruction when the end of the retention period is reached.\n\nDestroys Confidential Information - Procedures are in place to erase or otherwise destroy confidential information that has been identified for destruction.",
     "children": [
+      "aws_compliance.control.s3_bucket_lifecycle_policy_enabled",
       "aws_compliance.control.s3_bucket_versioning_enabled"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_1",
-    "description": "This category refers to privacy criteria related to notice and communication of objectives related to privacy.",
-    "title": "P1.0 - Privacy Criteria Related to Notice and Communication of Objectives Related to Privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_section_id": "p1",
-      "type": "Benchmark"
-    },
-    "documentation": "",
-    "children": [
-      "aws_compliance.benchmark.soc_2_p_1_1"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_1_1",
-    "description": "",
-    "title": "P1.1 The entity provides notice to data subjects about its privacy practices to meet the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "1.1",
-      "soc_2_section_id": "p1",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nThe entity provides notice to data subjects about its privacy practices to meet the entity’s objectives related to privacy. The notice is updated and communicated to data subjects in a timely manner for changes to the entity’s privacy practices, including changes in the use of personal information, to meet the entity’s objectives related to privacy.\n\nCommunicates to Data Subjects - Notice is provided to data subjects regarding the following:\n\n- Purpose for collecting personal information\n- Choice and consent\n- Types of personal information collected\n- Methods of collection (for example, use of cookies or other tracking techniques)\n- Use, retention, and disposal\n- Access\n- Disclosure to third parties\n- Security for privacy\n- Quality, including data subjects’ responsibilities for quality\n- Monitoring and enforcement\n- If personal information is collected from sources other than the individual, such sources are described in the privacy notice.\n- Provides Notice to Data Subjects - Notice is provided to data subjects (1) at or before the time personal information is collected or as soon as practical thereafter, (2) at or before the entity changes its privacy notice or as soon as practical thereafter, or (3) before personal information is used for new purposes not previously identified.\n- Covers Entities and Activities in Notice - An objective description of the entities and activities covered is included in the entity’s privacy notice.\n- Uses Clear and Conspicuous Language - The entity’s privacy notice is conspicuous and uses clear language.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_2",
-    "description": "This category refers to privacy criteria related to choice and consent.",
-    "title": "P2.0 - Privacy Criteria Related to Choice and Consent",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_section_id": "p2",
-      "type": "Benchmark"
-    },
-    "documentation": "",
-    "children": [
-      "aws_compliance.benchmark.soc_2_p_2_1"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_2_1",
-    "description": "",
-    "title": "P2.1 The entity communicates choices available regarding the collection, use, retention, disclosure, and disposal of personal information to the data subjects and the consequences, if any, of each choice",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "2.1",
-      "soc_2_section_id": "p2",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nThe entity communicates choices available regarding the collection, use, retention, disclosure, and disposal of personal information to the data subjects and the consequences, if any, of each choice. Explicit consent for the collection, use, retention, disclosure, and disposal of personal information is obtained from data subjects or other authorized persons, if required. Such consent is obtained only for the intended purpose of the information to meet the entity’s objectives related to privacy. The entity’s basis for determining implicit consent for the collection, use, retention, disclosure, and disposal of personal information is documented.\n\nCommunicates to Data Subjects - Data subjects are informed (a) about the choices available to them with respect to the collection, use, and disclosure of personal information and (b) that implicit or explicit consent is required to collect, use, and disclose personal information, unless a law or regulation specifically requires or allows otherwise.\n\nCommunicates Consequences of Denying or Withdrawing Consent - When personal information is collected, data subjects are informed of the consequences of refusing to provide personal information or denying or withdrawing consent to use personal information for purposes identified in the notice.\n\nObtains Implicit or Explicit Consent - Implicit or explicit consent is obtained from data subjects at or before the time personal information is collected or soon thereafter. The individual’s preferences expressed in his or her consent are confirmed and implemented.\n\nDocuments and Obtains Consent for New Purposes and Uses - If information that was previously collected is to be used for purposes not previously identified in the privacy notice, the new purpose is documented, the data subject is notified, and implicit or explicit consent is obtained prior to such new use or purpose.\n\nObtains Explicit Consent for Sensitive Information - Explicit consent is obtained directly from the data subject when sensitive personal information is collected, used, or disclosed, unless a law or regulation specifically requires otherwise.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_3",
-    "description": "This category refers to privacy criteria related to collection. All confidential information and personally identifiable material should be entirely secure, from the point of collection to when it is used, disclosed, and eventually disposed of.",
-    "title": "P3.0 - Privacy Criteria Related to Collection",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_section_id": "p3",
-      "type": "Benchmark"
-    },
-    "documentation": "",
-    "children": [
-      "aws_compliance.benchmark.soc_2_p_3_1",
-      "aws_compliance.benchmark.soc_2_p_3_2"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_3_1",
-    "description": "",
-    "title": "P3.1 Personal information is collected consistent with the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "3.1",
-      "soc_2_section_id": "p3",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nLimits the Collection of Personal Information - The collection of personal information is limited to that necessary to meet the entity’s objectives.\n\nCollects Information by Fair and Lawful Means - Methods of collecting personal information are reviewed by management before they are implemented to confirm that personal information is obtained (a) fairly, without intimidation or deception, and (b) lawfully, adhering to all relevant rules of law, whether derived from statute or common law, relating to the collection of personal information.\n\nCollects Information From Reliable Sources - Management confirms that third parties from whom personal information is collected (that is, sources other than the individual) are reliable sources that collect information fairly and lawfully.\n\nInforms Data Subjects When Additional Information Is Acquired - Data subjects are informed if the entity develops or acquires additional information about them for its use.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_3_2",
-    "description": "",
-    "title": "P3.2 For information requiring explicit consent, the entity communicates the need for such consent, as well as the consequences of a failure to provide consent for the request for personal information, and obtains the consent prior to the collection of the information to meet the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "3.2",
-      "soc_2_section_id": "p3",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nObtains Explicit Consent for Sensitive Information - Explicit consent is obtained directly from the data subject when sensitive personal information is collected, used, or disclosed, unless a law or regulation specifically requires otherwise.\n\nDocuments Explicit Consent to Retain Information - Documentation of explicit consent for the collection, use, or disclosure of sensitive personal information is retained in accordance with objectives related to privacy.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_4",
-    "description": "This category refers to privacy criteria related to use, retention, and disposal.",
-    "title": "P4.0 - Privacy Criteria Related to Use, Retention, and Disposal",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_section_id": "p4",
-      "type": "Benchmark"
-    },
-    "documentation": "",
-    "children": [
-      "aws_compliance.benchmark.soc_2_p_4_1",
-      "aws_compliance.benchmark.soc_2_p_4_2",
-      "aws_compliance.benchmark.soc_2_p_4_3"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_4_1",
-    "description": "",
-    "title": "P4.1 The entity limits the use of personal information to the purposes identified in the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "4.1",
-      "soc_2_section_id": "p4",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nUses Personal Information for Intended Purposes - Personal information is used only for the intended purposes for which it was collected and only when implicit or explicit consent has been obtained unless a law or regulation specifically requires otherwise.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_4_2",
-    "description": "",
-    "title": "P4.2 The entity retains personal information consistent with the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "4.2",
-      "soc_2_section_id": "p4",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nRetains Personal Information - Personal information is retained for no longer than necessary to fulfill the stated purposes, unless a law or regulation specifically requires otherwise.\n\nProtects Personal Information - Policies and procedures have been implemented to protect personal information from erasure or destruction during the specified retention period of the information.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_4_3",
-    "description": "",
-    "title": "P4.3 The entity securely disposes of personal information to meet the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "4.3",
-      "soc_2_section_id": "p4",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nCaptures, Identifies, and Flags Requests for Deletion - Requests for deletion of personal information are captured, and information related to the requests is identified and flagged for destruction to meet the entity’s objectives related to privacy.\n\nDisposes of, Destroys, and Redacts Personal Information - Personal information no longer retained is anonymized, disposed of, or destroyed in a manner that prevents loss, theft, misuse, or unauthorized access.\n\nDestroys Personal Information - Policies and procedures are implemented to erase or otherwise destroy personal information that has been identified for destruction.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_5",
-    "description": "This category refers to privacy criteria related to access.",
-    "title": "P5.0 - Privacy Criteria Related to Access",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_section_id": "p5",
-      "type": "Benchmark"
-    },
-    "documentation": "",
-    "children": [
-      "aws_compliance.benchmark.soc_2_p_5_1",
-      "aws_compliance.benchmark.soc_2_p_5_2"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_5_1",
-    "description": "",
-    "title": "P5.1 The entity grants identified and authenticated data subjects the ability to access their stored personal information for review and, upon request, provides physical or electronic copies of that information to data subjects to meet the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "5.1",
-      "soc_2_section_id": "p5",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nThe entity grants identified and authenticated data subjects the ability to access their stored personal information for review and, upon request, provides physical or electronic copies of that information to data subjects to meet the entity’s objectives related to privacy. If access is denied, data subjects are informed of the denial and reason for such denial, as required, to meet the entity’s objectives related to privacy.\n\nAuthenticates Data Subjects’ Identity - The identity of data subjects who request access to their personal information is authenticated before they are given access to that information.\n\nPermits Data Subjects Access to Their Personal Information - Data subjects are able to determine whether the entity maintains personal information about them and, upon request, may obtain access to their personal information.\n\nProvides Understandable Personal Information Within Reasonable Time - Personal information is provided to data subjects in an understandable form, in a reasonable time frame, and at a reasonable cost, if any.\n\nInforms Data Subjects If Access Is Denied - When data subjects are denied access to their personal information, the entity informs them of the denial and the reason for the denial in a timely manner, unless prohibited by law or regulation.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_5_2",
-    "description": "",
-    "title": "P5.2 The entity corrects, amends, or appends personal information based on information provided by data subjects and communicates such information to third parties, as committed or required, to meet the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "5.2",
-      "soc_2_section_id": "p5",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nThe entity corrects, amends, or appends personal information based on information provided by data subjects and communicates such information to third parties, as committed or required, to meet the entity’s objectives related to privacy. If a request for correction is denied, data subjects are informed of the denial and reason for such denial to meet the entity’s objectives related to privacy.\n\nCommunicates Denial of Access Requests - Data subjects are informed, in writing, of the reason a request for access to their personal information was denied, the source of the entity’s legal right to deny such access, if applicable, and the individual’s right, if any, to challenge such denial, as specifically permitted or required by law or regulation.\n\nPermits Data Subjects to Update or Correct Personal Information - Data subjects are able to update or correct personal information held by the entity. The entity provides such updated or corrected information to third parties that were previously provided with the data subject’s personal information consistent with the entity’s objective related to privacy.\n\nCommunicates Denial of Correction Requests - Data subjects are informed, in writing, about the reason a request for correction of personal information was denied and how they may appeal.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_6",
-    "description": "This category refers to privacy criteria related to disclosure and notification.",
-    "title": "P6.0 - Privacy Criteria Related to Disclosure and Notification",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_section_id": "p6",
-      "type": "Benchmark"
-    },
-    "documentation": "",
-    "children": [
-      "aws_compliance.benchmark.soc_2_p_6_1",
-      "aws_compliance.benchmark.soc_2_p_6_2",
-      "aws_compliance.benchmark.soc_2_p_6_3",
-      "aws_compliance.benchmark.soc_2_p_6_4",
-      "aws_compliance.benchmark.soc_2_p_6_5",
-      "aws_compliance.benchmark.soc_2_p_6_6",
-      "aws_compliance.benchmark.soc_2_p_6_7"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_6_1",
-    "description": "",
-    "title": "P6.1 The entity discloses personal information to third parties with the explicit consent of data subjects, and such consent is obtained prior to disclosure to meet the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "6.1",
-      "soc_2_section_id": "p6",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nCommunicates Privacy Policies to Third Parties - Privacy policies or other specific instructions or requirements for handling personal information are communicated to third parties to whom personal information is disclosed.\n\nDiscloses Personal Information Only When Appropriate - Personal information is disclosed to third parties only for the purposes for which it was collected or created and only when implicit or explicit consent has been obtained from the data subject, unless a law or regulation specifically requires otherwise.\n\nDiscloses Personal Information Only to Appropriate Third Parties - Personal information is disclosed only to third parties who have agreements with the entity to protect personal information in a manner consistent with the relevant aspects of the entity’s privacy notice or other specific instructions or requirements. The entity has procedures in place to evaluate that the third parties have effective controls to meet the terms of the agreement, instructions, or requirements.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_6_2",
-    "description": "",
-    "title": "P6.2 The entity creates and retains a complete, accurate, and timely record of authorized disclosures of personal information to meet the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "6.2",
-      "soc_2_section_id": "p6",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nCreates and Retains Record of Authorized Disclosures - The entity creates and maintains a record of authorized disclosures of personal information that is complete, accurate, and timely.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_6_3",
-    "description": "",
-    "title": "P6.3 The entity creates and retains a complete, accurate, and timely record of detected or reported unauthorized disclosures (including breaches) of personal information to meet the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "6.3",
-      "soc_2_section_id": "p6",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nCreates and Retains Record of Detected or Reported Unauthorized Disclosures - The entity creates and maintains a record of detected or reported unauthorized disclosures of personal information that is complete, accurate, and timely.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_6_4",
-    "description": "",
-    "title": "P6.4 The entity obtains privacy commitments from vendors and other third parties who have access to personal information to meet the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "6.4",
-      "soc_2_section_id": "p6",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nThe entity obtains privacy commitments from vendors and other third parties who have access to personal information to meet the entity’s objectives related to privacy. The entity assesses those parties’ compliance on a periodic and as-needed basis and takes corrective action, if necessary.\n\nDiscloses Personal Information Only to Appropriate Third Parties - Personal information is disclosed only to third parties who have agreements with the entity to protect personal information in a manner consistent with the relevant aspects of the entity’s privacy notice or other specific instructions or requirements. The entity has procedures in place to evaluate that the third parties have effective controls to meet the terms of the agreement, instructions, or requirements.\n\nRemediates Misuse of Personal Information by a Third Party - The entity takes remedial action in response to misuse of personal information by a third party to whom the entity has transferred such information.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_6_5",
-    "description": "",
-    "title": "P6.5 The entity obtains commitments from vendors and other third parties with access to personal information to notify the entity in the event of actual or suspected unauthorized disclosures of personal information",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "6.5",
-      "soc_2_section_id": "p6",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nThe entity obtains commitments from vendors and other third parties with access to personal information to notify the entity in the event of actual or suspected unauthorized disclosures of personal information. Such notifications are reported to appropriate personnel and acted on in accordance with established incident response procedures to meet the entity’s objectives related to privacy.\n\nRemediates Misuse of Personal Information by a Third Party - The entity takes remedial action in response to misuse of personal information by a third party to whom the entity has transferred such information.\n\nReports Actual or Suspected Unauthorized Disclosures - A process exists for obtaining commitments from vendors and other third parties to report to the entity actual or suspected unauthorized disclosures of personal information.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_6_6",
-    "description": "",
-    "title": "P6.6 The entity provides notification of breaches and incidents to affected data subjects, regulators, and others to meet the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "6.6",
-      "soc_2_section_id": "p6",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nRemediates Misuse of Personal Information by a Third Party - The entity takes remedial action in response to misuse of personal information by a third party to whom the entity has transferred such information.\n\nReports Actual or Suspected Unauthorized Disclosures - A process exists for obtaining commitments from vendors and other third parties to report to the entity actual or suspected unauthorized disclosures of personal information.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_6_7",
-    "description": "",
-    "title": "P6.7 The entity provides data subjects with an accounting of the personal information held and disclosure of the data subjects’ personal information, upon the data subjects’ request, to meet the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "6.7",
-      "soc_2_section_id": "p6",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nIdentifies Types of Personal Information and Handling Process - The types of personal information and sensitive personal information and the related processes, systems, and third parties involved in the handling of such information are identified.\n\nCaptures, Identifies, and Communicates Requests for Information - Requests for an accounting of personal information held and disclosures of the data subjects’ personal information are captured, and information related to the requests is identified and communicated to data subjects to meet the entity’s objectives related to privacy.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_7",
-    "description": "This category refers to privacy criteria related to quality.",
-    "title": "P7.0 - Privacy Criteria Related to Quality",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_section_id": "p7",
-      "type": "Benchmark"
-    },
-    "documentation": "",
-    "children": [
-      "aws_compliance.benchmark.soc_2_p_7_1"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_7_1",
-    "description": "",
-    "title": "P7.1 The entity collects and maintains accurate, up-to-date, complete, and relevant personal information to meet the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "7.1",
-      "soc_2_section_id": "p7",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nEnsures Accuracy and Completeness of Personal Information - Personal information is accurate and complete for the purposes for which it is to be used.\n\nEnsures Relevance of Personal Information - Personal information is relevant to the purposes for which it is to be used.",
-    "children": [
-      "aws_compliance.control.manual_control"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_8",
-    "description": "This category refers to privacy criteria related to monitoring and enforcement.",
-    "title": "P8.0 - Privacy Criteria Related to Monitoring and Enforcement",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_section_id": "p8",
-      "type": "Benchmark"
-    },
-    "documentation": "",
-    "children": [
-      "aws_compliance.benchmark.soc_2_p_8_1"
-    ]
-  },
-  {
-    "benchmark_id": "aws_compliance.benchmark.soc_2_p_8_1",
-    "description": "",
-    "title": "P8.1 The entity implements a process for receiving, addressing, resolving, and communicating the resolution of inquiries, complaints, and disputes from data subjects and others and periodically monitors compliance to meet the entity’s objectives related to privacy",
-    "tags": {
-      "category": "Compliance",
-      "plugin": "aws",
-      "service": "AWS",
-      "soc_2": "true",
-      "soc_2_item_id": "8.1",
-      "soc_2_section_id": "p8",
-      "soc_2_type": "manual",
-      "type": "Benchmark"
-    },
-    "documentation": "## Description\n\nThe entity implements a process for receiving, addressing, resolving, and communicating the resolution of inquiries, complaints, and disputes from data subjects and others and periodically monitors compliance to meet the entity’s objectives related to privacy. Corrections and other necessary actions related to identified deficiencies are made or taken in a timely manner.\n\nCommunicates to Data Subjects—Data subjects are informed about how to contact the entity with inquiries, complaints, and disputes.\n\nAddresses Inquiries, Complaints, and Disputes - A process is in place to address inquiries, complaints, and disputes.\n\nDocuments and Communicates Dispute Resolution and Recourse - Each complaint is addressed, and the resolution is documented and communicated to the individual.\n\nDocuments and Reports Compliance Review Results - Compliance with objectives related to privacy are reviewed and documented, and the results of such reviews are reported to management. If problems are identified, remediation plans are developed and implemented.\n\nDocuments and Reports Instances of Noncompliance - Instances of noncompliance with objectives related to privacy are documented and reported and, if needed, corrective and disciplinary measures are taken on a timely basis.\n\nPerforms Ongoing Monitoring - Ongoing procedures are performed for monitoring the effectiveness of controls over personal information and for taking timely corrective actions when necessary.\n",
-    "children": [
-      "aws_compliance.control.manual_control"
     ]
   }
 ]
