@@ -15,6 +15,7 @@ import {
   isScanFailed,
   isScanInProgress,
   isScanStopped,
+  isScanStopping,
 } from '@/utils/scan';
 
 export const ScanStatusBadge = ({
@@ -69,6 +70,16 @@ export const ScanStatusBadge = ({
         <span className={iconWrapper}>
           <CircleSpinner size="sm" />
         </span>
+        {!justIcon ? <TruncatedText text={scanStatus} /> : null}
+      </div>
+    );
+  } else if (isScanStopping(status)) {
+    return (
+      <div className={wrapperClassName}>
+        <span className={iconWrapper}>
+          <CircleSpinner size="sm" />
+        </span>
+
         {!justIcon ? <TruncatedText text={scanStatus} /> : null}
       </div>
     );

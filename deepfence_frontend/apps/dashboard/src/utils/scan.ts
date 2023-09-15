@@ -28,7 +28,8 @@ export const isScanInProgress = (status: string): boolean => {
     !isScanComplete(status) &&
     !isScanFailed(status) &&
     !isNeverScanned(status) &&
-    !isScanStopped(status)
+    !isScanStopped(status) &&
+    !isScanStopping(status)
   ) {
     return true;
   }
@@ -94,6 +95,7 @@ export enum VulnerabilityScanGroupedStatus {
   'inProgress' = 'inProgress',
   'error' = 'error',
   'complete' = 'complete',
+  'cancel' = 'cancel',
 }
 
 export const VULNERABILITY_SCAN_STATUS_GROUPS: Record<
@@ -105,6 +107,7 @@ export const VULNERABILITY_SCAN_STATUS_GROUPS: Record<
   inProgress: ['IN_PROGRESS', 'GENERATING_SBOM', 'GENERATED_SBOM', 'SCAN_IN_PROGRESS'],
   error: ['ERROR'],
   complete: ['COMPLETE'],
+  cancel: ['CANCELLED', 'CANCELLING'],
 };
 
 export enum SecretScanGroupedStatus {
@@ -113,6 +116,7 @@ export enum SecretScanGroupedStatus {
   'inProgress' = 'inProgress',
   'error' = 'error',
   'complete' = 'complete',
+  'cancel' = 'cancel',
 }
 
 export const SECRET_SCAN_STATUS_GROUPS: Record<
@@ -124,6 +128,7 @@ export const SECRET_SCAN_STATUS_GROUPS: Record<
   inProgress: ['IN_PROGRESS'],
   error: ['ERROR'],
   complete: ['COMPLETE'],
+  cancel: ['CANCELLED', 'CANCELLING'],
 };
 
 export enum MalwareScanGroupedStatus {
@@ -132,6 +137,7 @@ export enum MalwareScanGroupedStatus {
   'inProgress' = 'inProgress',
   'error' = 'error',
   'complete' = 'complete',
+  'cancel' = 'cancel',
 }
 
 export const MALWARE_SCAN_STATUS_GROUPS: Record<
@@ -143,6 +149,7 @@ export const MALWARE_SCAN_STATUS_GROUPS: Record<
   inProgress: ['IN_PROGRESS'],
   error: ['ERROR'],
   complete: ['COMPLETE'],
+  cancel: ['CANCELLED', 'CANCELLING'],
 };
 
 export enum ComplianceScanGroupedStatus {
@@ -162,6 +169,7 @@ export const COMPLIANCE_SCAN_STATUS_GROUPS: Record<
   inProgress: ['IN_PROGRESS', 'SCAN_IN_PROGRESS'],
   error: ['ERROR'],
   complete: ['COMPLETE'],
+  cancel: ['CANCELLED', 'CANCELLING'],
 };
 
 export const SCAN_STATUS_GROUPS = [
@@ -184,5 +192,12 @@ export const SCAN_STATUS_GROUPS = [
   {
     label: 'Complete',
     value: 'complete',
+  },
+];
+
+export const CANCEL_SCAN_STATUSES = [
+  {
+    label: 'Cancel',
+    value: 'cancel',
   },
 ];
