@@ -21,6 +21,12 @@ import { exists, mapValues } from '../runtime';
 export interface ModelScanResultsActionRequest {
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelScanResultsActionRequest
+     */
+    notify_individual?: boolean;
+    /**
+     * 
      * @type {Array<string>}
      * @memberof ModelScanResultsActionRequest
      */
@@ -75,6 +81,7 @@ export function ModelScanResultsActionRequestFromJSONTyped(json: any, ignoreDisc
     }
     return {
         
+        'notify_individual': !exists(json, 'notify_individual') ? undefined : json['notify_individual'],
         'result_ids': json['result_ids'],
         'scan_id': json['scan_id'],
         'scan_type': json['scan_type'],
@@ -90,6 +97,7 @@ export function ModelScanResultsActionRequestToJSON(value?: ModelScanResultsActi
     }
     return {
         
+        'notify_individual': value.notify_individual,
         'result_ids': value.result_ids,
         'scan_id': value.scan_id,
         'scan_type': value.scan_type,

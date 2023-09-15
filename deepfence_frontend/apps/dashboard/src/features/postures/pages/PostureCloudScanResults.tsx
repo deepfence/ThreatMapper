@@ -16,6 +16,7 @@ import {
   BreadcrumbLink,
   Button,
   Card,
+  Checkbox,
   CircleSpinner,
   Combobox,
   ComboboxOption,
@@ -40,6 +41,7 @@ import {
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import { BellLineIcon } from '@/components/icons/common/BellLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { ClockLineIcon } from '@/components/icons/common/ClockLine';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
@@ -119,6 +121,7 @@ const action = async ({
   }
 
   if (actionType === ActionEnumType.DELETE || actionType === ActionEnumType.NOTIFY) {
+    const notifyIndividual = formData.get('notifyIndividual')?.toString();
     const apiFunction =
       actionType === ActionEnumType.DELETE
         ? getScanResultsApiClient().deleteScanResult
@@ -132,6 +135,7 @@ const action = async ({
         result_ids: [...ids],
         scan_id: _scanId,
         scan_type: ScanTypeEnum.CloudComplianceScan,
+        notify_individual: notifyIndividual === 'on',
       },
     });
 
@@ -451,6 +455,86 @@ const DeleteScanConfirmationModal = ({
   );
 };
 
+const NotifyModal = ({
+  open,
+  ids,
+  closeModal,
+}: {
+  open: boolean;
+  ids: string[];
+  closeModal: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const fetcher = useFetcher<ActionData>();
+
+  return (
+    <Modal
+      size="s"
+      open={open}
+      onOpenChange={() => closeModal(false)}
+      title={
+        !fetcher.data?.success ? (
+          <div className="flex gap-3 items-center dark:text-text-text-and-icon">
+            <span className="h-6 w-6 shrink-0">
+              <BellLineIcon />
+            </span>
+            Notify compliances
+          </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.success ? (
+        <fetcher.Form method="post">
+          <input
+            type="text"
+            name="actionType"
+            hidden
+            readOnly
+            value={ActionEnumType.NOTIFY}
+          />
+          {ids.map((id) => (
+            <input key={id} type="text" name="nodeIds[]" hidden readOnly value={id} />
+          ))}
+
+          <div className="grid">
+            <span>The selected compliances will be notified.</span>
+            <br />
+            <span>Do you want to notify each compliance separately?</span>
+            <div className="mt-2">
+              <Checkbox label="Yes notify them separately" name="notifyIndividual" />
+            </div>
+            {fetcher.data?.message && (
+              <p className="mt-2 text-p7 dark:text-status-error">
+                {fetcher.data?.message}
+              </p>
+            )}
+          </div>
+          <div className={'flex gap-x-3 justify-end pt-3 mx-2'}>
+            <Button
+              size="md"
+              onClick={() => closeModal(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="md"
+              color="success"
+              loading={fetcher.state === 'submitting'}
+              disabled={fetcher.state === 'submitting'}
+              type="submit"
+            >
+              Notify
+            </Button>
+          </div>
+        </fetcher.Form>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
+    </Modal>
+  );
+};
+
 const ScanHistory = () => {
   return (
     <div className="flex items-center h-12">
@@ -618,6 +702,14 @@ const ActionDropdown = ({
           </DropdownItem>
           <DropdownItem
             onClick={() => {
+              onTableAction(ids, ActionEnumType.NOTIFY);
+            }}
+            className="dark:text-status-success"
+          >
+            Notify
+          </DropdownItem>
+          <DropdownItem
+            onClick={() => {
               setIdsToDelete(ids);
               setShowDeleteDialog(true);
             }}
@@ -643,8 +735,12 @@ const BulkActions = ({
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   onTableAction: (ids: string[], actionType: string) => void;
 }) => {
+  const [openNotifyModal, setOpenNotifyModal] = useState<boolean>(false);
   return (
     <>
+      {openNotifyModal && (
+        <NotifyModal open={true} closeModal={setOpenNotifyModal} ids={ids} />
+      )}
       <Dropdown
         triggerAsChild
         align={'start'}
@@ -691,6 +787,22 @@ const BulkActions = ({
           Unmask
         </Button>
       </Dropdown>
+      <Button
+        variant="flat"
+        size="sm"
+        color="success"
+        startIcon={<BellLineIcon />}
+        disabled={!ids.length}
+        onClick={() => {
+          if (ids.length === 1) {
+            onTableAction(ids, ActionEnumType.NOTIFY);
+          } else {
+            setOpenNotifyModal(true);
+          }
+        }}
+      >
+        Notify
+      </Button>
       <Button
         color="error"
         variant="flat"
