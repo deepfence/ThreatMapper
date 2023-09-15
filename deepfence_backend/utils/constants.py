@@ -470,7 +470,7 @@ CSPM_RESOURCE_LABELS = {
     "gcp_compute_subnetwork": "GCP Compute SubNet"
 }
 
-CVE_SCAN_TYPES = ["base", "java", "python", "ruby", "php", "javascript", "rust", "golang", "dotnet"]
+CVE_SCAN_TYPES = ["base", "java", "python", "ruby", "php", "javascript", "rust", "rust-binary", "golang-binary" "golang", "dotnet"]
 AES_SETTING_KEY = "aes_secret"
 CLOUD_CREDENTIAL_AES_SETTING_KEY = "cloud_credential_secret"
 
