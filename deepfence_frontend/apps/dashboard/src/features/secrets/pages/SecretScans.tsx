@@ -45,6 +45,7 @@ import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
+import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { TruncatedText } from '@/components/TruncatedText';
@@ -58,9 +59,11 @@ import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import {
+  CANCEL_SCAN_STATUSES,
   isNeverScanned,
   isScanComplete,
   isScanInProgress,
+  isScanStopping,
   SCAN_STATUS_GROUPS,
   SecretScanGroupedStatus,
 } from '@/utils/scan';
@@ -246,6 +249,7 @@ const ActionDropdown = ({
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
   const { downloadScan } = useDownloadScan();
+  const [openStopScanModal, setOpenStopScanModal] = useState(false);
 
   const onDownloadAction = useCallback(() => {
     downloadScan({
@@ -260,54 +264,74 @@ const ActionDropdown = ({
   }, [fetcher]);
 
   return (
-    <Dropdown
-      triggerAsChild
-      align="start"
-      open={open}
-      onOpenChange={setOpen}
-      content={
-        <>
-          <DropdownItem
-            onClick={(e) => {
-              if (!isScanComplete(scanStatus)) return;
-              e.preventDefault();
-              onDownloadAction();
-            }}
-            disabled={!isScanComplete(scanStatus)}
-          >
-            <span>Download report</span>
-          </DropdownItem>
-          <DropdownItem
-            onClick={(e) => {
-              e.preventDefault();
-              if (isScanInProgress(scanStatus)) return;
-              setStartScanInfo({
-                start: true,
-                nodeId,
-                nodeType,
-              });
-            }}
-            disabled={isScanInProgress(scanStatus)}
-          >
-            <span>Start scan</span>
-          </DropdownItem>
-          <DropdownItem
-            className="text-sm"
-            onClick={() => {
-              setScanIdToDelete(scanId);
-              setNodeIdToDelete(nodeId);
-              setShowDeleteDialog(true);
-            }}
-          >
-            <span className="text-red-700 dark:text-status-error dark:hover:text-[#C45268]">
-              Delete
-            </span>
-          </DropdownItem>
-        </>
-      }
-    >
-      {trigger}
-    </Dropdown>
+    <>
+      <StopScanForm
+        open={openStopScanModal}
+        closeModal={setOpenStopScanModal}
+        scanIds={[scanId]}
+        scanType={ScanTypeEnum.SecretScan}
+      />
+      <Dropdown
+        triggerAsChild
+        align="start"
+        open={open}
+        onOpenChange={setOpen}
+        content={
+          <>
+            <DropdownItem
+              onClick={(e) => {
+                if (!isScanComplete(scanStatus)) return;
+                e.preventDefault();
+                onDownloadAction();
+              }}
+              disabled={!isScanComplete(scanStatus)}
+            >
+              <span>Download report</span>
+            </DropdownItem>
+            <DropdownItem
+              onClick={(e) => {
+                e.preventDefault();
+                if (isScanInProgress(scanStatus)) return;
+                setStartScanInfo({
+                  start: true,
+                  nodeId,
+                  nodeType,
+                });
+              }}
+              disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
+            >
+              <span>Start scan</span>
+            </DropdownItem>
+            {isScanInProgress(scanStatus) && (
+              <DropdownItem
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpenStopScanModal(true);
+                }}
+                disabled={!isScanInProgress(scanStatus)}
+              >
+                <span className="flex items-center">Cancel scan</span>
+              </DropdownItem>
+            )}
+
+            <DropdownItem
+              className="text-sm"
+              onClick={() => {
+                setScanIdToDelete(scanId);
+                setNodeIdToDelete(nodeId);
+                setShowDeleteDialog(true);
+              }}
+            >
+              <span className="text-red-700 dark:text-status-error dark:hover:text-[#C45268]">
+                Delete
+              </span>
+            </DropdownItem>
+          </>
+        }
+      >
+        {trigger}
+      </Dropdown>
+    </>
   );
 };
 
@@ -375,7 +399,7 @@ const Filters = () => {
             })}
         </Combobox>
         <Combobox
-          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
+          value={SCAN_STATUS_GROUPS.concat(CANCEL_SCAN_STATUSES).find((groupStatus) => {
             return groupStatus.value === searchParams.get('secretScanStatus');
           })}
           nullable
@@ -395,18 +419,20 @@ const Filters = () => {
           }}
           getDisplayValue={() => FILTER_SEARCHPARAMS['secretScanStatus']}
         >
-          {SCAN_STATUS_GROUPS.filter((item) => {
-            if (!secretScanStatusSearchText.length) return true;
-            return item.label
-              .toLowerCase()
-              .includes(secretScanStatusSearchText.toLowerCase());
-          }).map((item) => {
-            return (
-              <ComboboxOption key={item.value} value={item}>
-                {item.label}
-              </ComboboxOption>
-            );
-          })}
+          {SCAN_STATUS_GROUPS.concat(CANCEL_SCAN_STATUSES)
+            .filter((item) => {
+              if (!secretScanStatusSearchText.length) return true;
+              return item.label
+                .toLowerCase()
+                .includes(secretScanStatusSearchText.toLowerCase());
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item.value} value={item}>
+                  {item.label}
+                </ComboboxOption>
+              );
+            })}
         </Combobox>
 
         <SearchableImageList

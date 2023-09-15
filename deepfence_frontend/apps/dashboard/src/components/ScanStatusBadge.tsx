@@ -5,7 +5,6 @@ import { CircleSpinner } from 'ui-components';
 import {
   ErrorIcon,
   NotStartedIcon,
-  StopIcon,
   SuccessIcon,
 } from '@/components/icons/common/ScanStatuses';
 import { TruncatedText } from '@/components/TruncatedText';
@@ -49,7 +48,7 @@ export const ScanStatusBadge = ({
   } else if (isScanFailed(status)) {
     return (
       <div className={wrapperClassName}>
-        <span className={iconWrapper}>
+        <span className={cn(iconWrapper, 'dark:text-status-error')}>
           <ErrorIcon />
         </span>
         {!justIcon ? <TruncatedText text={scanStatus} /> : null}
@@ -86,8 +85,8 @@ export const ScanStatusBadge = ({
   } else if (isScanStopped(status)) {
     return (
       <div className={wrapperClassName}>
-        <span className={iconWrapper}>
-          <StopIcon />
+        <span className={cn(iconWrapper, 'dark:text-df-gray-500')}>
+          <ErrorIcon />
         </span>
 
         {!justIcon ? <TruncatedText text={scanStatus} /> : null}

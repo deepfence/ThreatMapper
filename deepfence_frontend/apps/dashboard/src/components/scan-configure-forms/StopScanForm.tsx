@@ -37,14 +37,20 @@ export const actionStopScan = async ({
   params,
 }: ActionFunctionArgs): Promise<{ success?: boolean; message?: string }> => {
   const scanId = params?.scanId?.toString() ?? '';
+  const scanType = params?.scanType?.toString() as ScanTypeEnum;
+
+  if (!scanId || !scanType) {
+    console.error('Scan id and Scan Type are required for stoping scan');
+    throw new Error('Scan id and Scan Type are required for stoping scan');
+  }
 
   const stopScanApi = apiWrapper({
-    fn: stopScanApiFunctionMap[ScanTypeEnum.VulnerabilityScan],
+    fn: stopScanApiFunctionMap[scanType],
   });
   const result = await stopScanApi({
     modelStopScanRequest: {
       scan_id: scanId,
-      scan_type: ScanTypeEnum.VulnerabilityScan,
+      scan_type: scanType,
     },
   });
   if (!result.ok) {
@@ -72,9 +78,11 @@ export const StopScanForm = ({
   open,
   scanIds,
   closeModal,
+  scanType,
 }: {
   open: boolean;
   scanIds: string[];
+  scanType: ScanTypeEnum;
   closeModal: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher<IActionData>();
@@ -112,8 +120,9 @@ export const StopScanForm = ({
                 e.preventDefault();
                 fetcher.submit(null, {
                   method: 'post',
-                  action: generatePath('/data-component/scan/stop/:scanId', {
+                  action: generatePath('/data-component/scan/stop/:scanType/:scanId', {
                     scanId: encodeURIComponent(scanIds[0]),
+                    scanType,
                   }),
                 });
               }}
@@ -134,7 +143,7 @@ export const StopScanForm = ({
           )}
         </div>
       ) : (
-        <SuccessModalContent text="Cancel scan started" />
+        <SuccessModalContent text="Cancel scan requested" />
       )}
     </Modal>
   );
