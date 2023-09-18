@@ -83,30 +83,29 @@ const BaseInput = ({
             {withOtherTags && <Tags setSelectedTag={setSelectedNodeId} />}
           </>
         ) : null}
-
-        <SearchableScanTimeList
-          triggerVariant="underline"
-          defaultSelectedTime={toScanData.toScanTime ?? null}
-          valueKey="nodeId"
-          onChange={(data: ISelected) => {
-            setToScanData({
-              toScanTime: data.updatedAt,
-              toScanId: data.scanId,
-            });
-          }}
-          onClearAll={() => {
-            setToScanData({
-              toScanTime: null,
-              toScanId: '',
-            });
-          }}
-          nodeId={selectedNodeId}
-          nodeType={nodeType}
-          // skip scan time when base scan is same as to scan
-          skipScanTime={nodeId === selectedNodeId ? compareInput.baseScanTime : undefined}
-          noDataText="No scan to compare"
-        />
       </Suspense>
+      <SearchableScanTimeList
+        triggerVariant="underline"
+        defaultSelectedTime={toScanData.toScanTime ?? null}
+        valueKey="nodeId"
+        onChange={(data: ISelected) => {
+          setToScanData({
+            toScanTime: data.updatedAt,
+            toScanId: data.scanId,
+          });
+        }}
+        onClearAll={() => {
+          setToScanData({
+            toScanTime: null,
+            toScanId: '',
+          });
+        }}
+        nodeId={selectedNodeId}
+        nodeType={nodeType}
+        // skip scan time when base scan is same as to scan
+        skipScanTime={nodeId === selectedNodeId ? compareInput.baseScanTime : undefined}
+        noDataText="No scan to compare"
+      />
     </div>
   );
 };
