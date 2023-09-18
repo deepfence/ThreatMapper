@@ -515,7 +515,6 @@ const NotifyModal = ({
             </Button>
             <Button
               size="md"
-              color="success"
               loading={fetcher.state === 'submitting'}
               disabled={fetcher.state === 'submitting'}
               type="submit"
@@ -701,7 +700,6 @@ const ActionDropdown = ({
             onClick={() => {
               onTableAction(ids, ActionEnumType.NOTIFY);
             }}
-            className="dark:text-status-success"
           >
             Notify
           </DropdownItem>
@@ -788,7 +786,6 @@ const BulkActions = ({
       <Button
         variant="flat"
         size="sm"
-        color="success"
         startIcon={<BellLineIcon />}
         disabled={!ids.length}
         onClick={() => {
