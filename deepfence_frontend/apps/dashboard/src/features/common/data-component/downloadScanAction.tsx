@@ -15,12 +15,16 @@ import { download } from '@/utils/download';
 
 export const action = async ({ request }: ActionFunctionArgs): Promise<null> => {
   const formData = await request.formData();
-  const nodeType = formData.get('nodeType') as UtilsReportFiltersNodeTypeEnum;
+  let nodeType = formData.get('nodeType') as UtilsReportFiltersNodeTypeEnum | 'image';
   const scanId = formData.get('scanId')?.toString() ?? '';
   const scanType = formData.get('scanType') as UtilsReportFiltersScanTypeEnum;
 
   if (!nodeType) {
     throw new Error('Node Type is required');
+  }
+
+  if (nodeType === 'image') {
+    nodeType = UtilsReportFiltersNodeTypeEnum.ContainerImage;
   }
 
   const getReportIdApi = apiWrapper({

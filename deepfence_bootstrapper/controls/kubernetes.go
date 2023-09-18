@@ -5,8 +5,8 @@ import (
 
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	k8sscanner "github.com/deepfence/kubernetes-scanner/scanner/compliance"
-	k8sscannerutil "github.com/deepfence/kubernetes-scanner/util"
+	k8sscanner "github.com/deepfence/kubernetes-scanner/v2/scanner/compliance"
+	k8sscannerutil "github.com/deepfence/kubernetes-scanner/v2/util"
 )
 
 func StartComplianceScan(req ctl.StartComplianceScanRequest) error {
