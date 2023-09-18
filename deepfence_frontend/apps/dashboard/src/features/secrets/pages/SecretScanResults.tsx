@@ -519,7 +519,7 @@ const HistoryControls = () => {
     return null;
   }
   return (
-    <div className="flex items-center gap-x-3">
+    <div className="flex items-center gap-x-3 relative flex-grow">
       <StopScanForm
         open={openStopScanModal}
         closeModal={setOpenStopScanModal}
@@ -584,7 +584,7 @@ const HistoryControls = () => {
       )}
       <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
       <ScanStatusBadge status={status ?? ''} />
-      {!isScanInProgress(status ?? '') && (
+      {!isScanInProgress(status ?? '') ? (
         <>
           <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
           <div className="pl-1.5 flex">
@@ -615,11 +615,12 @@ const HistoryControls = () => {
             />
           </div>
         </>
-      )}
-      {isScanInProgress(status ?? '') && (
+      ) : (
         <Button
           type="button"
+          variant="flat"
           size="sm"
+          className="absolute right-0 top-0"
           onClick={(e) => {
             e.preventDefault();
             setOpenStopScanModal(true);
@@ -920,6 +921,20 @@ const TablePlaceholder = ({
     return (
       <div className="flex items-center justify-center min-h-[384px]">
         <ScanStatusInError errorMessage={message} />
+      </div>
+    );
+  }
+  if (isScanStopped(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center h-[384px]">
+        <ScanStatusStopped errorMessage={message ?? ''} />
+      </div>
+    );
+  }
+  if (isScanStopping(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center h-[384px]">
+        <ScanStatusStopping />
       </div>
     );
   }

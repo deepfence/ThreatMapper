@@ -2,7 +2,6 @@ import { ActionFunctionArgs, generatePath, useFetcher } from 'react-router-dom';
 import { Button, Modal } from 'ui-components';
 
 import {
-  getCloudComplianceApiClient,
   getComplianceApiClient,
   getMalwareApiClient,
   getSecretApiClient,
@@ -29,8 +28,7 @@ export const stopScanApiFunctionMap = {
   [ScanTypeEnum.SecretScan]: getSecretApiClient().stopSecretScan,
   [ScanTypeEnum.MalwareScan]: getMalwareApiClient().stopMalwareScan,
   [ScanTypeEnum.ComplianceScan]: getComplianceApiClient().stopComplianceScan,
-  [ScanTypeEnum.CloudComplianceScan]:
-    getCloudComplianceApiClient().statusCloudComplianceScan,
+  [ScanTypeEnum.CloudComplianceScan]: getComplianceApiClient().stopComplianceScan,
 };
 
 export const actionStopScan = async ({

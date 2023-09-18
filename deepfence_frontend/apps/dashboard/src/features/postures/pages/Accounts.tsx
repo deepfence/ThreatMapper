@@ -493,7 +493,7 @@ const ActionDropdown = ({
         open={openStopScanModal}
         closeModal={setOpenStopScanModal}
         scanIds={[scanId]}
-        scanType={ScanTypeEnum.ComplianceScan}
+        scanType={scanType}
       />
       <Dropdown
         triggerAsChild
