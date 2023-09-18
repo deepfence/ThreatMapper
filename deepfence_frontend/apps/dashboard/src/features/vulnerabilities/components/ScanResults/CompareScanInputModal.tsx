@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState } from 'react';
-import { Button, CircleSpinner, Modal } from 'ui-components';
+import { Button, Checkbox, CircleSpinner, Modal } from 'ui-components';
 
 import {
   ISelected,
@@ -10,12 +10,8 @@ import { useScanResults } from '@/features/vulnerabilities/pages/VulnerabilitySc
 import { VulnerabilityScanNodeTypeEnum } from '@/types/common';
 
 const Tags = ({
-  nodeId,
-  selectedTag,
   setSelectedTag,
 }: {
-  nodeId: string | '';
-  selectedTag: string;
   setSelectedTag: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const { data } = useScanResults();
@@ -24,7 +20,6 @@ const Tags = ({
     <SearchableTagList
       scanType="none"
       triggerVariant="select"
-      defaultSelectedTag={selectedTag || nodeId}
       valueKey="nodeId"
       onChange={(value) => {
         setSelectedTag(value);
@@ -34,7 +29,6 @@ const Tags = ({
       }}
       filter={{
         dockerImageName: data.data?.dockerImageName ?? '',
-        nodeId,
       }}
     />
   );
@@ -64,6 +58,7 @@ const BaseInput = ({
   setToScanData: React.Dispatch<React.SetStateAction<ToScanDataType>>;
 }) => {
   const [selectedNodeId, setSelectedNodeId] = useState(() => nodeId);
+  const [withOtherTags, setWithOtherTags] = useState<boolean>(false);
 
   useEffect(() => {
     if (selectedNodeId) {
@@ -72,18 +67,23 @@ const BaseInput = ({
         toScanId: '',
       });
     }
-  }, [selectedNodeId]);
+  }, [selectedNodeId, withOtherTags]);
 
   return (
     <div className="flex flex-col gap-y-6">
       <Suspense fallback={<CircleSpinner size="sm" />}>
-        {nodeType === VulnerabilityScanNodeTypeEnum.image && (
-          <Tags
-            nodeId={nodeId}
-            selectedTag={selectedNodeId}
-            setSelectedTag={setSelectedNodeId}
-          />
-        )}
+        {nodeType === VulnerabilityScanNodeTypeEnum.image ? (
+          <>
+            <Checkbox
+              label="Compare with other tags"
+              checked={withOtherTags}
+              onCheckedChange={(checked: boolean) => {
+                setWithOtherTags(checked);
+              }}
+            />
+            {withOtherTags && <Tags setSelectedTag={setSelectedNodeId} />}
+          </>
+        ) : null}
 
         <SearchableScanTimeList
           triggerVariant="underline"

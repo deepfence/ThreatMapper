@@ -16,7 +16,6 @@ export type Props = {
   triggerVariant?: 'select' | 'button';
   filter?: {
     dockerImageName: string;
-    nodeId: string;
   };
 };
 
@@ -93,7 +92,7 @@ const SearchableTag = ({
               return page.containerImages;
             })
             .find((tag) => tag.nodeId === value || tag.nodeId === selectedTag);
-          return found?.nodeName ?? '';
+          return found?.nodeName ?? null;
         }}
         placeholder="select tag"
         value={selectedTag}
