@@ -48,7 +48,6 @@ const BaseInput = ({
   nodeId: string;
   nodeType: string;
   compareInput: {
-    baseNodeName: string;
     baseScanId: string;
     toScanId: string;
     baseScanTime: number;
@@ -131,7 +130,6 @@ export const CompareScanInputModal = ({
   setShowScanCompareModal: React.Dispatch<React.SetStateAction<boolean>>;
   setCompareInput: React.Dispatch<
     React.SetStateAction<{
-      baseNodeName: string;
       baseScanId: string;
       toScanId: string;
       baseScanTime: number;
@@ -142,7 +140,6 @@ export const CompareScanInputModal = ({
   nodeId: string;
   nodeType: string;
   compareInput: {
-    baseNodeName: string;
     baseScanId: string;
     toScanId: string;
     baseScanTime: number;
@@ -183,7 +180,6 @@ export const CompareScanInputModal = ({
                 return data.updatedAt === compareInput.baseScanTime;
               });
               setCompareInput({
-                baseNodeName: '',
                 baseScanId: baseScan?.scanId ?? '',
                 toScanId: toScanData?.toScanId ?? '',
                 baseScanTime: baseScan?.updatedAt ?? 0,

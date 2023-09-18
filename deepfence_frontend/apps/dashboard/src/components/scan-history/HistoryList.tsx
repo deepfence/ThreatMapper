@@ -19,12 +19,11 @@ export const ScanHistoryDropdown = ({
     timestamp: number;
     status: string;
     isCurrent: boolean;
-    showScanDiff?: boolean;
-    nodeName?: string;
+    showScanCompareButton?: boolean;
     onDeleteClick: (id: string) => void;
     onDownloadClick: (id: string) => void;
     onScanClick: (id: string) => void;
-    onScanTimeCompareButtonClick?: (toScanTime: number, nodeName: string) => void;
+    onScanTimeCompareButtonClick?: (toScanTime: number) => void;
   }>;
   currentTimeStamp: string;
 }) => {
@@ -96,7 +95,7 @@ export const ScanHistoryDropdown = ({
                         }}
                       />
                     ) : null}
-                    {scan.showScanDiff && isScanComplete(scan.status) ? (
+                    {scan.showScanCompareButton && isScanComplete(scan.status) ? (
                       <IconButton
                         variant="flat"
                         icon={
@@ -108,10 +107,7 @@ export const ScanHistoryDropdown = ({
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          scan?.onScanTimeCompareButtonClick?.(
-                            scan.timestamp,
-                            scan.nodeName ?? '',
-                          );
+                          scan?.onScanTimeCompareButtonClick?.(scan.timestamp);
                           setOpen(false);
                         }}
                       />
