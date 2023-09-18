@@ -537,7 +537,7 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 		return model.CloudComplianceScanListResp{}, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return model.CloudComplianceScanListResp{}, err
 	}
@@ -563,9 +563,56 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 		return model.CloudComplianceScanListResp{}, err
 	}
 
-	return model.CloudComplianceScanListResp{
-		ScansInfo: extractStatusesWithBenchmarks(recs),
-	}, nil
+	scansInfo := extractStatusesWithBenchmarks(recs)
+
+	//Get the list of stopping scans
+	{
+		res, err := tx.Run(`
+        MATCH (m:`+string(scanType)+`) -[:SCANNED]-> (n:CloudNode{node_id: $node_id})
+		WHERE m.stop_requested=true
+		SET m.status = $cancelling, m.stop_requested=false
+		WITH m,n
+        RETURN m.node_id, m.status, m.status_message, 
+		n.node_id, m.updated_at, n.node_name ORDER BY m.updated_at`,
+			map[string]interface{}{"node_id": nodeId,
+				"cancelling": utils.SCAN_STATUS_CANCELLING})
+		if err != nil {
+			log.Info().Msgf("Failed to get stopping scan list for node:%s, error is:%v", nodeId, err)
+		} else {
+			recs, err := res.Collect()
+			if err != nil {
+				return model.CloudComplianceScanListResp{}, err
+			}
+
+			//_ = extractStatusesWithBenchmarks(recs, true)
+			stoppingScansInfo := make([]model.ComplianceScanInfo, 0, len(recs))
+			for _, rec := range recs {
+				tmp := model.ComplianceScanInfo{
+					ScanInfo: model.ScanInfo{
+						ScanId:        rec.Values[0].(string),
+						Status:        rec.Values[1].(string),
+						StatusMessage: rec.Values[2].(string),
+						NodeId:        rec.Values[3].(string),
+						NodeType:      controls.ResourceTypeToString(controls.CloudAccount),
+						UpdatedAt:     rec.Values[4].(int64),
+						NodeName:      rec.Values[5].(string),
+					},
+					BenchmarkTypes: nil,
+				}
+				tmp.StopRequested = true
+				stoppingScansInfo = append(stoppingScansInfo, tmp)
+			}
+
+			if len(stoppingScansInfo) != 0 {
+				scansInfo = append(scansInfo, stoppingScansInfo...)
+			}
+		}
+	}
+
+	err = tx.Commit()
+	pendScanResp := model.CloudComplianceScanListResp{ScansInfo: scansInfo}
+
+	return pendScanResp, err
 }
 
 func GetScanResultDiff[T any](ctx context.Context, scan_type utils.Neo4jScanType, baseScanID, compareToScanID string, ff reporters.FieldsFilters, fw model.FetchWindow) ([]T, error) {

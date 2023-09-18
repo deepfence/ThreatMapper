@@ -353,9 +353,10 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeId string,
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
-		WHERE s.status = '`+utils.SCAN_STATUS_CANCEL_PENDING+`'
+		WHERE s.stop_requested=true
 		WITH s LIMIT $max_work
-        SET s.status = '`+utils.SCAN_STATUS_CANCELLING+`', s.updated_at = TIMESTAMP()
+        SET s.status = '`+utils.SCAN_STATUS_CANCELLING+`', 
+		s.updated_at = TIMESTAMP(), s.stop_requested=false
 		WITH s
 		RETURN s.trigger_action`,
 		map[string]interface{}{"id": nodeId, "max_work": max_work})
@@ -386,6 +387,10 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeId string,
 			action.ID = controls.StopSecretScan
 		case controls.StartMalwareScan:
 			action.ID = controls.StopMalwareScan
+		case controls.StartVulnerabilityScan:
+			action.ID = controls.StopVulnerabilityScan
+		case controls.StartComplianceScan:
+			action.ID = controls.StopComplianceScan
 		default:
 			log.Info().Msgf("Stop functionality not implemented for action: %d", action.ID)
 			continue

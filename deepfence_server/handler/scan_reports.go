@@ -528,7 +528,7 @@ func (h *Handler) SendScanStatus(
 }
 
 func (h *Handler) StopVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
-	stopScan(w, r, ctl.StartVulnerabilityScan)
+	h.stopVulnerabilityScan(w, r)
 }
 
 func (h *Handler) StopSecretScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -536,7 +536,7 @@ func (h *Handler) StopSecretScanHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *Handler) StopComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
-	stopScan(w, r, ctl.StartComplianceScan)
+	h.stopComplianceScan(w, r)
 }
 
 func (h *Handler) StopMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -784,8 +784,73 @@ func ingest_scan_report_kafka[T any](
 	httpext.JSON(respWrite, http.StatusOK, map[string]string{"status": "ok"})
 }
 
-func stopScan(w http.ResponseWriter, r *http.Request, action ctl.ActionID) {
+func (h *Handler) stopComplianceScan(w http.ResponseWriter, r *http.Request) {
+	//	Stopping scan is on best-effort basis, not guaranteed
+	defer r.Body.Close()
+	var req model.StopScanRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("StopComplianceScan Failed to DecodeJSON: %v", err)
+		h.respondError(err, w)
+		return
+	}
 
+	err = h.Validator.Struct(req)
+	if err != nil {
+		log.Error().Msgf("Failed to validate the request: %v", err)
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	log.Info().Msgf("StopComplianceScan request, type: %s, scanid: %s", req.ScanType, req.ScanID)
+
+	if req.ScanType == "CloudComplianceScan" {
+		err = reporters_scan.StopCloudComplianceScan(r.Context(), req.ScanType, req.ScanID)
+	} else {
+		err = reporters_scan.StopScan(r.Context(), req.ScanType, req.ScanID)
+	}
+
+	if err != nil {
+		log.Error().Msgf("Error in StopComplianceScan: %v", err)
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	h.AuditUserActivity(r, req.ScanType, ACTION_STOP, req, true)
+
+	w.WriteHeader(http.StatusAccepted)
+}
+
+func (h *Handler) stopVulnerabilityScan(w http.ResponseWriter, r *http.Request) {
+	//	Stopping scan is on best-effort basis, not guaranteed
+	defer r.Body.Close()
+	var req model.StopScanRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("StopVulnerabilityScan Failed to DecodeJSON: %v", err)
+		h.respondError(err, w)
+		return
+	}
+
+	err = h.Validator.Struct(req)
+	if err != nil {
+		log.Error().Msgf("Failed to validate the request: %v", err)
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	log.Info().Msgf("StopVulnerabilityScan request, type: %s, scanid: %s", req.ScanType, req.ScanID)
+
+	err = reporters_scan.StopScan(r.Context(), req.ScanType, req.ScanID)
+	if err != nil {
+		log.Error().Msgf("Error in StopScan: %v", err)
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	h.AuditUserActivity(r, req.ScanType, ACTION_STOP, req, true)
+
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (h *Handler) stopSecretScan(w http.ResponseWriter, r *http.Request) {
@@ -2069,7 +2134,6 @@ func StartMultiScan(ctx context.Context,
 
 func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, benchmarkTypes []string) ([]string, string, error) {
 	driver, err := directory.Neo4jClient(ctx)
-
 	if err != nil {
 		return nil, "", err
 	}
@@ -2098,6 +2162,7 @@ func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 			reqs[0].NodeType)
 
 		if err != nil {
+			log.Info().Msgf("Error in AddNewCloudComplianceScan:%v", err)
 			if e, is := err.(*ingesters.AlreadyRunningScanError); is {
 				scanIds = append(scanIds, e.ScanId)
 				continue

@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"k8s.io/utils/strings/slices"
 	"time"
+
+	"k8s.io/utils/strings/slices"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -136,10 +137,11 @@ type CloudComplianceBenchmark struct {
 }
 
 type CloudComplianceScanDetails struct {
-	ScanId     string                     `json:"scan_id"`
-	ScanTypes  []string                   `json:"scan_types"`
-	AccountId  string                     `json:"account_id"`
-	Benchmarks []CloudComplianceBenchmark `json:"benchmarks"`
+	ScanId        string                     `json:"scan_id"`
+	ScanTypes     []string                   `json:"scan_types"`
+	AccountId     string                     `json:"account_id"`
+	Benchmarks    []CloudComplianceBenchmark `json:"benchmarks"`
+	StopRequested bool                       `json:"stop_requested"`
 }
 
 type CloudNodeCloudtrailTrail struct {

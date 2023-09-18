@@ -81,11 +81,16 @@ func SetAgentControls() {
 			if err != nil {
 				return err
 			}
-			err = scanner.RunComplianceScan()
-			if err != nil {
-				log.Error().Msgf("Error from scan: %+v", err)
-				return err
-			}
+
+			log.Info().Msg("StartComplianceScan Starting")
+			//We need to run this in a goroutine else it will block the
+			//fetch and execution of controls
+			go func() {
+				err := scanner.RunComplianceScan()
+				if err != nil {
+					log.Error().Msgf("Error from RunComplianceScan: %+v", err)
+				}
+			}()
 			return nil
 		})
 	if err != nil {
@@ -155,4 +160,27 @@ func SetAgentControls() {
 		log.Error().Msgf("set controls: %v", err)
 	}
 
+	err = router.RegisterControl(ctl.StopVulnerabilityScan,
+		func(req ctl.StopVulnerabilityScanRequest) error {
+			log.Info().Msg("StopVulnerabilityScanRequest called")
+			return router.StopVulnerabilityScan(req)
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+
+	err = router.RegisterControl(ctl.StopComplianceScan,
+		func(req ctl.StopComplianceScanRequest) error {
+			log.Info().Msg("StopComplianceScanRequest called")
+			scanId, ok := req.BinArgs["scan_id"]
+			if ok {
+				linuxScanner.StopScan(scanId)
+			} else {
+				log.Error().Msg("Missing scan id in the StopComplianceScanRequest")
+			}
+			return nil
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
 }

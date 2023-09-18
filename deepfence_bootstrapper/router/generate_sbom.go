@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
@@ -171,4 +172,21 @@ func GetPackageScannerJobCount() int32 {
 		return 0
 	}
 	return jobReport.RunningJobs
+}
+
+func StopVulnerabilityScan(req ctl.StopVulnerabilityScanRequest) error {
+	fmt.Printf("Stop Vulnerability Scan : %v\n", req)
+	conn, err := grpc.Dial("unix://"+packageScannerSocket, grpc.WithAuthority("dummy"),
+		grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("StopVulnerabilityScanJob::error in creating Vulnerability scanner client: %s\n", err.Error())
+		return err
+	}
+	defer conn.Close()
+	client := pb.NewScannersClient(conn)
+	var greq pb.StopScanRequest
+	greq.ScanId = req.BinArgs["scan_id"]
+
+	_, err = client.StopScan(context.Background(), &greq)
+	return err
 }

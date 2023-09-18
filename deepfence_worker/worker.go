@@ -341,6 +341,9 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
 	worker.AddNoPublisherHandler(utils.LinkNodesTask, cronjobs.LinkNodes, true)
 
+	worker.AddNoPublisherHandler(utils.StopVulnerabilityScanTask,
+		sbom.StopVulnerabilityScan, false)
+
 	go worker.pollHandlers()
 
 	log.Info().Msg("Starting the consumer")
