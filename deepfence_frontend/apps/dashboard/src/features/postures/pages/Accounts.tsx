@@ -51,6 +51,7 @@ import { FilterIcon } from '@/components/icons/common/Filter';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { CLOUDS } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { TruncatedText } from '@/components/TruncatedText';
@@ -72,9 +73,12 @@ import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatPercentage } from '@/utils/number';
 import {
+  CANCEL_SCAN_STATUSES,
   COMPLIANCE_SCAN_STATUS_GROUPS,
   ComplianceScanGroupedStatus,
   isScanComplete,
+  isScanInProgress,
+  isScanStopping,
   SCAN_STATUS_GROUPS,
 } from '@/utils/scan';
 import {
@@ -251,7 +255,7 @@ const Filters = () => {
             })}
         </Combobox>
         <Combobox
-          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
+          value={SCAN_STATUS_GROUPS.concat(CANCEL_SCAN_STATUSES).find((groupStatus) => {
             return groupStatus.value === searchParams.get('complianceScanStatus');
           })}
           nullable
@@ -271,18 +275,20 @@ const Filters = () => {
           }}
           getDisplayValue={() => FILTER_SEARCHPARAMS['complianceScanStatus']}
         >
-          {SCAN_STATUS_GROUPS.filter((item) => {
-            if (!complianceScanStatusSearchText.length) return true;
-            return item.label
-              .toLowerCase()
-              .includes(complianceScanStatusSearchText.toLowerCase());
-          }).map((item) => {
-            return (
-              <ComboboxOption key={item.value} value={item}>
-                {item.label}
-              </ComboboxOption>
-            );
-          })}
+          {SCAN_STATUS_GROUPS.concat(CANCEL_SCAN_STATUSES)
+            .filter((item) => {
+              if (!complianceScanStatusSearchText.length) return true;
+              return item.label
+                .toLowerCase()
+                .includes(complianceScanStatusSearchText.toLowerCase());
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item.value} value={item}>
+                  {item.label}
+                </ComboboxOption>
+              );
+            })}
         </Combobox>
         {(nodeType === 'aws' || nodeType === 'gcp') && (
           <SearchableCloudAccountsList
@@ -440,7 +446,7 @@ const DeleteConfirmationModal = ({
 };
 
 const ActionDropdown = ({
-  scanId,
+  scanId = '',
   scanStatus,
   nodeType,
   scanType,
@@ -463,6 +469,7 @@ const ActionDropdown = ({
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
   const { downloadScan } = useDownloadScan();
+  const [openStopScanModal, setOpenStopScanModal] = useState(false);
 
   const onDownloadAction = useCallback(() => {
     if (!scanId || !nodeType) return;
@@ -481,50 +488,70 @@ const ActionDropdown = ({
   }, [fetcher]);
 
   return (
-    <Dropdown
-      triggerAsChild
-      align="start"
-      open={open}
-      onOpenChange={setOpen}
-      content={
-        <>
-          <DropdownItem
-            onClick={() => {
-              if (!nodeId) {
-                throw new Error('Node id is required to start scan');
-              }
-              onTableAction([nodeId], ActionEnumType.START_SCAN);
-            }}
-          >
-            Start scan
-          </DropdownItem>
-          <DropdownItem
-            disabled={!isScanComplete(scanStatus)}
-            onClick={(e) => {
-              if (!isScanComplete(scanStatus)) return;
-              e.preventDefault();
-              onDownloadAction();
-            }}
-          >
-            Download latest report
-          </DropdownItem>
-          <DropdownItem
-            disabled={!scanId || !nodeType}
-            onClick={() => {
-              if (!scanId || !nodeType) return;
-              setScanIdToDelete(scanId);
-              setShowDeleteDialog(true);
-            }}
-          >
-            <span className="flex items-center gap-x-2 text-red-700 dark:text-status-error">
-              Delete latest scan
-            </span>
-          </DropdownItem>
-        </>
-      }
-    >
-      {trigger}
-    </Dropdown>
+    <>
+      <StopScanForm
+        open={openStopScanModal}
+        closeModal={setOpenStopScanModal}
+        scanIds={[scanId]}
+        scanType={ScanTypeEnum.ComplianceScan}
+      />
+      <Dropdown
+        triggerAsChild
+        align="start"
+        open={open}
+        onOpenChange={setOpen}
+        content={
+          <>
+            <DropdownItem
+              disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
+              onClick={() => {
+                if (!nodeId) {
+                  throw new Error('Node id is required to start scan');
+                }
+                onTableAction([nodeId], ActionEnumType.START_SCAN);
+              }}
+            >
+              Start scan
+            </DropdownItem>
+            {isScanInProgress(scanStatus) && (
+              <DropdownItem
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpenStopScanModal(true);
+                }}
+                disabled={!isScanInProgress(scanStatus)}
+              >
+                <span className="flex items-center">Cancel scan</span>
+              </DropdownItem>
+            )}
+            <DropdownItem
+              disabled={!isScanComplete(scanStatus)}
+              onClick={(e) => {
+                if (!isScanComplete(scanStatus)) return;
+                e.preventDefault();
+                onDownloadAction();
+              }}
+            >
+              Download latest report
+            </DropdownItem>
+            <DropdownItem
+              disabled={!scanId || !nodeType}
+              onClick={() => {
+                if (!scanId || !nodeType) return;
+                setScanIdToDelete(scanId);
+                setShowDeleteDialog(true);
+              }}
+            >
+              <span className="flex items-center gap-x-2 text-red-700 dark:text-status-error">
+                Delete latest scan
+              </span>
+            </DropdownItem>
+          </>
+        }
+      >
+        {trigger}
+      </Dropdown>
+    </>
   );
 };
 

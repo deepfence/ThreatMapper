@@ -6245,7 +6245,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelComplianceScanTriggerReq" }
+              "schema": { "$ref": "#/components/schemas/ModelStopScanRequest" }
             }
           }
         },
@@ -10959,7 +10959,8 @@
             "type": "array",
             "items": { "type": "string" },
             "nullable": true
-          }
+          },
+          "stop_requested": { "type": "boolean" }
         }
       },
       "ModelCloudComplianceScanResult": {
@@ -11279,6 +11280,7 @@
           },
           "status": { "type": "string" },
           "status_message": { "type": "string" },
+          "stop_requested": { "type": "boolean" },
           "updated_at": { "type": "integer", "format": "int64" }
         }
       },
@@ -12313,6 +12315,7 @@
           },
           "status": { "type": "string" },
           "status_message": { "type": "string" },
+          "stop_requested": { "type": "boolean" },
           "updated_at": { "type": "integer", "format": "int64" }
         }
       },

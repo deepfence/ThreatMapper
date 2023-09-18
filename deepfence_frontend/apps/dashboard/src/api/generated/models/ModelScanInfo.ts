@@ -69,6 +69,12 @@ export interface ModelScanInfo {
     status_message: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelScanInfo
+     */
+    stop_requested?: boolean;
+    /**
+     * 
      * @type {number}
      * @memberof ModelScanInfo
      */
@@ -111,6 +117,7 @@ export function ModelScanInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
         'severity_counts': json['severity_counts'],
         'status': json['status'],
         'status_message': json['status_message'],
+        'stop_requested': !exists(json, 'stop_requested') ? undefined : json['stop_requested'],
         'updated_at': json['updated_at'],
     };
 }
@@ -132,6 +139,7 @@ export function ModelScanInfoToJSON(value?: ModelScanInfo | null): any {
         'severity_counts': value.severity_counts,
         'status': value.status,
         'status_message': value.status_message,
+        'stop_requested': value.stop_requested,
         'updated_at': value.updated_at,
     };
 }
