@@ -67,6 +67,13 @@ func AddCloudControls(msg *message.Message) error {
 	}
 	defer tx.Close()
 
+	if _, err = tx.Run(`
+		MATCH (n:CloudComplianceControl)
+		SET n.disabled=true`, map[string]interface{}{}); err != nil {
+		log.Error().Msgf(err.Error())
+		return nil
+	}
+
 	for cloud, benchmarksAvailable := range BenchmarksAvailableMap {
 		cwd := "/cloud_controls/" + cloud
 		for _, benchmark := range benchmarksAvailable {
@@ -92,9 +99,9 @@ func AddCloudControls(msg *message.Message) error {
 		})
 		ON CREATE
 			SET n.active = true,
+			n.disabled = false,
 			n.control_id = row.control_id,
 			n.benchmark_id = row.benchmark_id,
-			n.type = 'benchmark',
 			n.description = row.description,
 			n.title = row.title,
 			n.documentation = row.documentation,
@@ -104,7 +111,15 @@ func AddCloudControls(msg *message.Message) error {
 			n.parent_control_hierarchy = row.parent_control_hierarchy,
 			n.category_hierarchy = row.category_hierarchy,
 			n.compliance_type = $benchmark,
-			n.executable = false`,
+			n.executable = false
+		ON MATCH
+			SET n.disabled = false,
+			n.description = row.description,
+			n.title = row.title,
+			n.documentation = row.documentation,
+			n.service = $cloudCap,
+			n.parent_control_hierarchy = row.parent_control_hierarchy,
+			n.category_hierarchy = row.category_hierarchy`,
 				map[string]interface{}{
 					"batch":     controlMap,
 					"benchmark": benchmark,
@@ -135,8 +150,8 @@ func AddCloudControls(msg *message.Message) error {
 		MERGE (n:CloudComplianceExecutable:CloudComplianceBenchmark{
 			node_id: row.benchmark_id
 		})
-		ON CREATE SET n.benchmark_id = row.benchmark_id,
-			n.type = 'benchmark',
+		ON CREATE 
+			SET n.benchmark_id = row.benchmark_id,
 			n.description = row.description,
 			n.title = row.title,
 			n.documentation = row.documentation,
@@ -145,6 +160,11 @@ func AddCloudControls(msg *message.Message) error {
 			n.category = 'Compliance',
 			n.compliance_type = $benchmark,
 			n.executable = false
+		ON MATCH
+			SET n.description = row.description,
+			n.title = row.title,
+			n.documentation = row.documentation,
+			n.service = $cloudCap
 		WITH n, row.children AS children, row.benchmark_id AS benchmark_id
 		UNWIND children AS childControl
 		MATCH (m:CloudComplianceExecutable{control_id: childControl})
@@ -163,7 +183,7 @@ func AddCloudControls(msg *message.Message) error {
 			}
 		}
 	}
-	log.Info().Msgf("Finishing Cloud Compliance Population")
+	log.Info().Msgf("Updated Cloud Compliance Controls")
 	return tx.Commit()
 }
 
@@ -262,14 +282,14 @@ func CachePostureProviders(msg *message.Message) error {
 			RETURN count(distinct p)`
 
 			scan_count_query = `
-			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:`+string(neo4jNodeType)+`)
+			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:` + string(neo4jNodeType) + `)
 			WHERE o.active=true
 			AND m.organization_id IS NOT NULL
 			MATCH (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
 			RETURN count(distinct n)`
 
 			success_count_query = `
-			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:`+string(neo4jNodeType)+`)
+			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:` + string(neo4jNodeType) + `)
 			WHERE o.active=true
 			AND m.organization_id IS NOT NULL
 			MATCH (c:CloudCompliance) <-[:DETECTED]- (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
@@ -277,7 +297,7 @@ func CachePostureProviders(msg *message.Message) error {
 			RETURN count(distinct c)`
 
 			global_count_query = `
-			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:`+string(neo4jNodeType)+`)
+			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:` + string(neo4jNodeType) + `)
 			WHERE o.active=true
 			AND m.organization_id IS NOT NULL
 			MATCH (c:CloudCompliance) <-[:DETECTED]- (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
