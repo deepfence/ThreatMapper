@@ -3438,7 +3438,6 @@
     "description": "The use of Basic or Free SKUs in Azure whilst cost effective have significant limitations in terms of what can be monitored and what support can be realized from Microsoft. Typically, these SKU’s do not have a service SLA and Microsoft will usually refuse to provide support for them. Consequently Basic/Free SKUs should never be used for production workloads.",
     "title": "Network load balancers should use standard SKUs as a minimum",
     "tags": {
-      "cis": "true",
       "service": "Azure/Network"
     },
     "documentation": "",
@@ -3461,7 +3460,6 @@
     "description": "The use of Basic or Free SKUs in Azure whilst cost effective have significant limitations in terms of what can be monitored and what support can be realized from Microsoft. Typically, these SKU’s do not have a service SLA and Microsoft will usually refuse to provide support for them. Consequently Basic/Free SKUs should never be used for production workloads.",
     "title": "Network public IPs should use standard SKUs as a minimum",
     "tags": {
-      "cis": "true",
       "service": "Azure/Network"
     },
     "documentation": "",
@@ -3484,7 +3482,6 @@
     "description": "The use of Basic or Free SKUs in Azure whilst cost effective have significant limitations in terms of what can be monitored and what support can be realized from Microsoft. Typically, these SKU’s do not have a service SLA and Microsoft will usually refuse to provide support for them. Consequently Basic/Free SKUs should never be used for production workloads.",
     "title": "Virtual network gateways should use standard SKUs as a minimum",
     "tags": {
-      "cis": "true",
       "service": "Azure/Network"
     },
     "documentation": "",
@@ -3507,7 +3504,6 @@
     "description": "The use of Basic or Free SKUs in Azure whilst cost effective have significant limitations in terms of what can be monitored and what support can be realized from Microsoft. Typically, these SKU’s do not have a service SLA and Microsoft will usually refuse to provide support for them. Consequently Basic/Free SKUs should never be used for production workloads.",
     "title": "Azure Cache for Redis should use standard SKUs as a minimum",
     "tags": {
-      "cis": "true",
       "service": "Azure/Redis"
     },
     "documentation": "",

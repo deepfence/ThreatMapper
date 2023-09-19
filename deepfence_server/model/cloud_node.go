@@ -480,6 +480,7 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 	res, err = tx.Run(`
 		MATCH (n:CloudComplianceBenchmark) -[:INCLUDES]-> (m:CloudComplianceControl)
 		WHERE m.active = true
+		AND m.disable = false
 		AND m.compliance_type IN $compliance_types
 		AND n.cloud_provider = $cloud_provider
 		RETURN  n.benchmark_id, n.compliance_type, collect(m.control_id)

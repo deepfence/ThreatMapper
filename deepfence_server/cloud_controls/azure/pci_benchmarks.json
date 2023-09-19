@@ -41,8 +41,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_1_3",
-    "description": "",
-    "title": "Prohibit direct public access between the Internet and any system component in the cardholder data environment",
+    "description": "Prohibit direct public access between the Internet and any system component in the cardholder data environment.",
+    "title": "PCI DSS requirement 1.3",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -58,8 +58,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_1_3_2",
-    "description": "",
-    "title": "Limit inbound Internet traffic to IP addresses within the DMZ",
+    "description": "Limit inbound Internet traffic to IP addresses within the DMZ.",
+    "title": "PCI DSS requirement 1.3.2",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -75,8 +75,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_1_3_4",
-    "description": "",
-    "title": "Do not allow unauthorized outbound traffic from the cardholder data environment to the Internet",
+    "description": "Do not allow unauthorized outbound traffic from the cardholder data environment to the Internet.",
+    "title": "PCI DSS requirement 1.3.4",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -86,7 +86,6 @@
     },
     "documentation": "",
     "children": [
-      "azure_compliance.control.automation_account_variable_encryption_enabled",
       "azure_compliance.control.compute_vm_remote_access_restricted_all_ports",
       "azure_compliance.control.storage_account_default_network_access_rule_denied"
     ]
@@ -110,8 +109,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_3_2",
-    "description": "Render all sensitive authentication data unrecoverable upon completion of the authorization process. Issuers and related entities may store sensitive authentication data if there is a business justification, and the data is stored securely.",
-    "title": "Do not store sensitive authentication data after authorization (even if it is encrypted)",
+    "description": "Do not store sensitive authentication data after authorization (even if it is encrypted). Render all sensitive authentication data unrecoverable upon completion of the authorization process. Issuers and related entities may store sensitive authentication data if there is a business justification, and the data is stored securely.",
+    "title": "PCI DSS requirement 3.2",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -132,8 +131,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_3_4",
-    "description": "Technology solutions for this requirement may include strong one-way hash functions of the entire PAN, truncation, index tokens with securely stored pads, or strong cryptography.",
-    "title": "Render PAN unreadable anywhere it is stored – including on portable digital media, backup media, in logs, and data received from or stored by wireless networks",
+    "description": "Render PAN unreadable anywhere it is stored - including on portable digital media, backup media, in logs, and data received from or stored by wireless networks. Technology solutions for this requirement may include strong one-way hash functions of the entire PAN, truncation, index tokens with securely stored pads, or strong cryptography.",
+    "title": "PCI DSS requirement 3.4",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -143,9 +142,10 @@
     },
     "documentation": "",
     "children": [
+      "azure_compliance.control.appservice_api_app_use_https",
       "azure_compliance.control.appservice_function_app_only_https_accessible",
-      "azure_compliance.control.appservice_web_app_use_https",
-      "azure_compliance.control.azure_redis_cache_ssl_enabled",
+      "azure_compliance.control.automation_account_variable_encryption_enabled",
+      "azure_compliance.control.redis_cache_ssl_enabled",
       "azure_compliance.control.compute_vm_temp_disks_cache_and_data_flows_encrypted",
       "azure_compliance.control.servicefabric_cluster_protection_level_as_encrypt_and_sign",
       "azure_compliance.control.sql_database_transparent_data_encryption_enabled",
@@ -170,8 +170,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_4_1",
-    "description": "Ensure wireless networks transmitting cardholder data or connected to the cardholder data environment use industry best practices to implement strong encryption for authentication and transmission.",
-    "title": "Use strong cryptography and security protocols to safeguard sensitive cardholder data during transmission over open, public networks (eg. Internet, wireless technologies, cellular technologies, General Packet Radio Service [GPRS], satellite communications)",
+    "description": "Use strong cryptography and security protocols to safeguard sensitive cardholder data during transmission over open, public networks (eg. Internet, wireless technologies, cellular technologies, General Packet Radio Service [GPRS], satellite communications). Ensure wireless networks transmitting cardholder data or connected to the cardholder data environment use industry best practices to implement strong encryption for authentication and transmission.",
+    "title": "PCI DSS requirement 4.1",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -184,7 +184,7 @@
       "azure_compliance.control.appservice_api_app_use_https",
       "azure_compliance.control.appservice_function_app_only_https_accessible",
       "azure_compliance.control.automation_account_variable_encryption_enabled",
-      "azure_compliance.control.azure_redis_cache_ssl_enabled",
+      "azure_compliance.control.redis_cache_ssl_enabled",
       "azure_compliance.control.compute_vm_temp_disks_cache_and_data_flows_encrypted",
       "azure_compliance.control.servicefabric_cluster_protection_level_as_encrypt_and_sign",
       "azure_compliance.control.sql_database_transparent_data_encryption_enabled",
@@ -209,8 +209,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_5_1",
-    "description": "For systems not affected commonly by malicious software, perform periodic evaluations to evaluate evolving malware threats and confirm whether such systems continue to not require anti-virus software.",
-    "title": "Deploy anti-virus software on all systems commonly affected by malicious software (particularly personal computers and servers)",
+    "description": "Deploy anti-virus software on all systems commonly affected by malicious software (particularly personal computers and servers). For systems not affected commonly by malicious software, perform periodic evaluations to evaluate evolving malware threats and confirm whether such systems continue to not require anti-virus software.",
+    "title": "PCI DSS requirement 5.1",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -247,8 +247,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_6_2",
-    "description": "Install critical security patches within one month of release.",
-    "title": "Protect all system components and software from known vulnerabilities by installing applicable vendor-supplied security patches",
+    "description": "Protect all system components and software from known vulnerabilities by installing applicable vendor-supplied security patches. Install critical security patches within one month of release.",
+    "title": "PCI DSS requirement 6.2",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -258,17 +258,17 @@
     },
     "documentation": "",
     "children": [
-      "azure_compliance.control.compute_vm_vulnerability_assessment_solution_enabled",
       "azure_compliance.control.compute_vm_endpoint_protection_agent_installed",
-      "azure_compliance.control.sql_database_vulnerability_findings_resolved",
+      "azure_compliance.control.compute_vm_security_configuration_vulnerabilities_remediated",
       "azure_compliance.control.compute_vm_system_updates_installed",
-      "azure_compliance.control.compute_vm_security_configuration_vulnerabilities_remediated"
+      "azure_compliance.control.compute_vm_vulnerability_assessment_solution_enabled",
+      "azure_compliance.control.sql_database_vulnerability_findings_resolved"
     ]
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_6_5",
-    "description": "",
-    "title": "Prevent common coding vulnerabilities in software development processes by training developers in secure coding techniques and developing applications based on secure coding guidelines - including how sensitive data is handled in memory",
+    "description": "Prevent common coding vulnerabilities in software development processes by training developers in secure coding techniques and developing applications based on secure coding guidelines - including how sensitive data is handled in memory.",
+    "title": "PCI DSS requirement 6.5",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -283,8 +283,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3",
-    "description": "",
-    "title": "Insecure cryptographic storage",
+    "description": "Insecure cryptographic storage.",
+    "title": "PCI DSS requirement 6.5.3",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -294,10 +294,10 @@
     },
     "documentation": "",
     "children": [
+      "azure_compliance.control.appservice_api_app_use_https",
       "azure_compliance.control.appservice_function_app_only_https_accessible",
-      "azure_compliance.control.appservice_web_app_use_https",
       "azure_compliance.control.automation_account_variable_encryption_enabled",
-      "azure_compliance.control.azure_redis_cache_ssl_enabled",
+      "azure_compliance.control.redis_cache_ssl_enabled",
       "azure_compliance.control.compute_vm_temp_disks_cache_and_data_flows_encrypted",
       "azure_compliance.control.servicefabric_cluster_protection_level_as_encrypt_and_sign",
       "azure_compliance.control.sql_database_transparent_data_encryption_enabled",
@@ -306,8 +306,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_6_6",
-    "description": "",
-    "title": "Ensure all public-facing web applications are protected against known attacks, either by performing application vulnerability assessment at least annually and after any changes, or by installing an automated technical solution that detects and prevents web-based attacks (for example, a web-application firewall) in front of public-facing web applications, to continually check all traffic",
+    "description": "Ensure all public-facing web applications are protected against known attacks, either by performing application vulnerability assessment at least annually and after any changes, or by installing an automated technical solution that detects and prevents web-based attacks (for example, a web-application firewall) in front of public-facing web applications, to continually check all traffic.",
+    "title": "PCI DSS requirement 6.6",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -343,8 +343,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_7_1",
-    "description": "",
-    "title": "Limit access to system components and cardholder data to only those individuals whose job requires such access",
+    "description": "Limit access to system components and cardholder data to only those individuals whose job requires such access.",
+    "title": "PCI DSS requirement 7.1",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -361,8 +361,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_7_1_1",
-    "description": "",
-    "title": "Define access needs for each role, including: - System components and data resources that each role needs to access for their job function - Level of privilege required (for example, user, administrator, etc.) for accessing resources",
+    "description": "Define access needs for each role, including: - System components and data resources that each role needs to access for their job function - Level of privilege required (for example, user, administrator, etc.) for accessing resources.",
+    "title": "PCI DSS requirement 7.1.1",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -378,8 +378,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_7_1_2",
-    "description": "",
-    "title": "Restrict access to privileged user IDs to least privileges necessary to perform job responsibilities",
+    "description": "Restrict access to privileged user IDs to least privileges necessary to perform job responsibilities.",
+    "title": "PCI DSS requirement 7.1.2",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -395,8 +395,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_7_1_3",
-    "description": "",
-    "title": "Assign access based on individual personnel's job classification and function",
+    "description": "Assign access based on individual personnel's job classification and function.",
+    "title": "PCI DSS requirement 7.1.3",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -412,8 +412,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_7_2",
-    "description": "",
-    "title": "Establish an access control system(s) for systems components that restricts access based on a user's need to know, and is set to “deny all” unless specifically allowed",
+    "description": "Establish an access control system(s) for systems components that restricts access based on a user's need to know, and is set to “deny all” unless specifically allowed.",
+    "title": "PCI DSS requirement 7.2",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -428,8 +428,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1",
-    "description": "",
-    "title": "Coverage of all system components",
+    "description": "Coverage of all system components.",
+    "title": "PCI DSS requirement 7.2.1",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -468,8 +468,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_8_1",
-    "description": "Assign all users a unique user name before allowing them to access system components or cardholder data.",
-    "title": "Define and implement policies and procedures to ensure proper user identification management for users and administrators on all system components",
+    "description": "Define and implement policies and procedures to ensure proper user identification management for users and administrators on all system components. Assign all users a unique user name before allowing them to access system components or cardholder data.",
+    "title": "PCI DSS requirement 8.1",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -486,8 +486,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_2",
-    "description": "",
-    "title": "Control addition, deletion, and modification of user IDs, credentials, and other identifier objects",
+    "description": "Control addition, deletion, and modification of user IDs, credentials, and other identifier objects.",
+    "title": "PCI DSS requirement 8.1.2",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -506,8 +506,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_3",
-    "description": "",
-    "title": "Immediately revoke access for any terminated users",
+    "description": "Immediately revoke access for any terminated users.",
+    "title": "PCI DSS requirement 8.1.3",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -523,8 +523,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_5",
-    "description": "Remote access are as follows: - Enabled only during the time period needed and disabled when not in use. - Monitored when in use.",
-    "title": "Manage IDs used by thid parties to access, support, or maintain system components via remote access",
+    "description": "Manage IDs used by thid parties to access, support, or maintain system components via remote access. Remote access are as follows: - Enabled only during the time period needed and disabled when not in use. - Monitored when in use.",
+    "title": "PCI DSS requirement 8.1.5",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -543,8 +543,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_8_2",
-    "description": "Use strong authentication methods and render all passwords/passphrases unreadable during transmission and storage using strong cryptography.",
-    "title": "Employ at least one of these to authenticate all users: something you know, such as a password or passphrase; something you have, such as a token device or smart card; or something you are, such as a biometric",
+    "description": "Employ at least one of these to authenticate all users: something you know, such as a password or passphrase; something you have, such as a token device or smart card; or something you are, such as a biometric. Use strong authentication methods and render all passwords/passphrases unreadable during transmission and storage using strong cryptography.",
+    "title": "PCI DSS requirement 8.2",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -560,8 +560,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_8_2_3",
-    "description": "Alternatively, the passwords/phrases must have complexity and strength at least equivalent to the parameters specified above.",
-    "title": "Passwords/phrases must meet the following: - Require a minimum length of at least seven characters. - Contain both numeric and alphabetic characters",
+    "description": "Passwords/phrases must meet the following: - Require a minimum length of at least seven characters. - Contain both numeric and alphabetic characters. Alternatively, the passwords/phrases must have complexity and strength at least equivalent to the parameters specified above.",
+    "title": "PCI DSS requirement 8.2.3",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -581,8 +581,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_8_2_5",
-    "description": "",
-    "title": "Do not allow an individual to submit a new password/phrase that is the same as any of the last four passwords/phrases he or she has used",
+    "description": "Do not allow an individual to submit a new password/phrase that is the same as any of the last four passwords/phrases he or she has used.",
+    "title": "PCI DSS requirement 8.2.5",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -602,8 +602,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_8_3",
-    "description": "This requires at least two of the three authentication methods described in 8.2 are used for authentication. Using one factor twice (e.g. using two separate passwords) is not considered multi-factor authentication. This requirement applies to administrative personnel with non-console access to the CDE from within the entity's network, and all remote network access (including for users, administrators, and third-parties) originating from outside the entity's network.",
-    "title": "Secure all individual non-console administrative access and all remote access to the cardholder data environment using multi-factor authentication",
+    "description": "Secure all individual non-console administrative access and all remote access to the cardholder data environment using multi-factor authentication. This requires at least two of the three authentication methods described in 8.2 are used for authentication. Using one factor twice (e.g. using two separate passwords) is not considered multi-factor authentication. This requirement applies to administrative personnel with non-console access to the CDE from within the entity's network, and all remote network access (including for users, administrators, and third-parties) originating from outside the entity's network.",
+    "title": "PCI DSS requirement 8.3",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -618,8 +618,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1",
-    "description": "",
-    "title": "Incorporate multi-factor authentication for all non-console access into the CDE for personnel with administrative access",
+    "description": "Incorporate multi-factor authentication for all non-console access into the CDE for personnel with administrative access.",
+    "title": "PCI DSS requirement 8.3.1",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -656,8 +656,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_10_5",
-    "description": "",
-    "title": "Secure audit trails so they cannot be altered",
+    "description": "Secure audit trails so they cannot be altered.",
+    "title": "PCI DSS requirement 10.5",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -672,8 +672,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_10_5_4",
-    "description": "",
-    "title": "Write logs for external-facing technologies onto a secure, centralized, internal log server or media device",
+    "description": "Write logs for external-facing technologies onto a secure, centralized, internal log server or media device.",
+    "title": "PCI DSS requirement 10.5.4",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -707,8 +707,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_11_2",
-    "description": "Address vulnerabilities and perform rescans as needed, until passing scans are achieved. After passing a scan for initial PCI DSS compliance, an entity must, in subsequent years, complete four consecutive quarters of passing scans. Quarterly external scans must be performed by an Approved Scanning Vendor (ASV). Scans conducted after network changes and internal scans may be performed by internal staff.",
-    "title": "Run internal and external network vulnerability scans at least quarterly and after any significant change in the network",
+    "description": "Run internal and external network vulnerability scans at least quarterly and after any significant change in the network. Address vulnerabilities and perform rescans as needed, until passing scans are achieved. After passing a scan for initial PCI DSS compliance, an entity must, in subsequent years, complete four consecutive quarters of passing scans. Quarterly external scans must be performed by an Approved Scanning Vendor (ASV). Scans conducted after network changes and internal scans may be performed by internal staff.",
+    "title": "PCI DSS requirement 11.2",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
@@ -723,8 +723,8 @@
   },
   {
     "benchmark_id": "azure_compliance.benchmark.pci_dss_v321_requirement_11_2_1",
-    "description": "Scans must be performed by qualified personnel.",
-    "title": "Perform quarterly internal vulnerability scans and rescans as needed, until all “high-risk” vulnerabilities (as identified in Requirement 6.1) are resolved",
+    "description": "Perform quarterly internal vulnerability scans and rescans as needed, until all “high-risk” vulnerabilities (as identified in Requirement 6.1) are resolved. Scans must be performed by qualified personnel.",
+    "title": "PCI DSS requirement 11.2.1",
     "tags": {
       "category": "Compliance",
       "pci_dss_v321": "true",
