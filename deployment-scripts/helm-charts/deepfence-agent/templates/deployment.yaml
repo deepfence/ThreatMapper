@@ -71,11 +71,11 @@ spec:
       nodeSelector:
       {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.clusterAgentTolerations }}
+      {{- with .Values.clusterAgentAffinity }}
       affinity:
       {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.clusterAgentAffinity }}
+      {{- with .Values.clusterAgentTolerations }}
       tolerations:
       {{- toYaml . | nindent 8 }}
       {{- end }}
