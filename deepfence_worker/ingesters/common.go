@@ -42,7 +42,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			in_progress_query = `
 			UNWIND $batch as row
 			MATCH (n:` + string(ts) + `{node_id: row.scan_id})
-			WHERE NOT n.scan_status IN $cancel_states
+			WHERE NOT n.status IN $cancel_states
 			SET n.status = row.scan_status, n.status_message = row.scan_message, n.updated_at = TIMESTAMP()
 			WITH n
 			OPTIONAL MATCH (n) -[:DETECTED]- (m)
@@ -59,11 +59,12 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			WITH n, count(m) as count
 			MATCH (n) -[:SCANNED]- (r)
 			SET r.` + ingestersUtil.ScanCountField[ts] + `=count, r.` + ingestersUtil.ScanStatusField[ts] + `=n.status, r.` + ingestersUtil.LatestScanIdField[ts] + `=n.node_id`
+
 		case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
 			in_progress_query = `
 			UNWIND $batch as row
 			MATCH (n:` + string(ts) + `{node_id: row.scan_id})
-			WHERE NOT n.scan_status IN $cancel_states
+			WHERE NOT n.status IN $cancel_states
 			SET n.status = row.scan_status, n.status_message = row.scan_message, n.updated_at = TIMESTAMP()
 			WITH n
 			OPTIONAL MATCH (n) -[:DETECTED]- (m)
@@ -91,7 +92,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 		recordMap := statusesToMaps(data)
 		in_progress, others := splitInprogressStatus(recordMap)
 		if _, err = tx.Run(in_progress_query, map[string]interface{}{
-			"batch": in_progress,
+			"batch":         in_progress,
 			"cancel_states": []string{utils.SCAN_STATUS_CANCELLING, utils.SCAN_STATUS_CANCEL_PENDING}}); err != nil {
 			log.Error().Msgf("Error while updating scan status: %+v", err)
 			return err

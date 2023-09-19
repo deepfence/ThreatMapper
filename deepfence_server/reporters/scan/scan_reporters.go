@@ -575,7 +575,7 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
         RETURN m.node_id, m.status, m.status_message, 
 		n.node_id, m.updated_at, n.node_name ORDER BY m.updated_at`,
 			map[string]interface{}{"node_id": nodeId,
-				"cancel_pending": utils.SCAN_STATUS_CANCELLING,
+				"cancel_pending": utils.SCAN_STATUS_CANCEL_PENDING,
 				"cancelling":     utils.SCAN_STATUS_CANCELLING})
 		if err != nil {
 			log.Info().Msgf("Failed to get stopping scan list for node:%s, error is:%v", nodeId, err)

@@ -241,7 +241,7 @@ func StopCloudComplianceScan(ctx context.Context, scanType, scanId string) error
 	query := `MATCH (n:%s) -[:SCANNED]-> ()
         WHERE n.node_id = $scan_id
         AND n.status = $in_progress
-        SET n.status=$cancel_pending, n.stop_requested=true`
+        SET n.status=$cancel_pending`
 
 	if _, err = tx.Run(fmt.Sprintf(query, scanType),
 		map[string]interface{}{
@@ -274,7 +274,7 @@ func StopScan(ctx context.Context, scanType, scanId string) error {
 	query := `MATCH (n:%s) -[:SCANNED]-> ()
         WHERE n.node_id = $scan_id
         AND n.status IN [$starting, $in_progress]
-        SET n.status=$cancel_pending, n.stop_requested=true`
+        SET n.status=$cancel_pending`
 
 	if _, err = tx.Run(fmt.Sprintf(query, scanType),
 		map[string]interface{}{
