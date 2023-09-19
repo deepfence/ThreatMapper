@@ -36,6 +36,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/aws/aws-sdk-go v1.44.267 // indirect
 	github.com/c9s/goprocinfo v0.0.0-20151025191153-19cb9f127a9c // indirect
+	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/cilium/ebpf v0.9.1 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
