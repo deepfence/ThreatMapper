@@ -4,6 +4,7 @@
 package controls
 
 import (
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -43,7 +44,9 @@ func SetClusterAgentControls(k8sClusterName string) {
 		func(req ctl.SendAgentDiagnosticLogsRequest) error {
 			log.Info().Msg("Generate Cluster Agent Diagnostic Logs")
 			return SendAgentDiagnosticLogs(req,
-				[]string{"/var/log/supervisor", "/var/log/fenced/compliance-scan-logs", "/var/log/deepfenced"},
+				[]string{"/var/log/supervisor",
+					"/var/log/fenced/compliance-scan-logs",
+					"/var/log/deepfenced"},
 				[]string{})
 		})
 	if err != nil {
@@ -81,11 +84,16 @@ func SetAgentControls() {
 			if err != nil {
 				return err
 			}
-			err = scanner.RunComplianceScan()
-			if err != nil {
-				log.Error().Msgf("Error from scan: %+v", err)
-				return err
-			}
+
+			log.Info().Msg("StartComplianceScan Starting")
+			//We need to run this in a goroutine else it will block the
+			//fetch and execution of controls
+			go func() {
+				err := scanner.RunComplianceScan()
+				if err != nil {
+					log.Error().Msgf("Error from RunComplianceScan: %+v", err)
+				}
+			}()
 			return nil
 		})
 	if err != nil {
@@ -155,4 +163,31 @@ func SetAgentControls() {
 		log.Error().Msgf("set controls: %v", err)
 	}
 
+	err = router.RegisterControl(ctl.StopVulnerabilityScan,
+		func(req ctl.StopVulnerabilityScanRequest) error {
+			log.Info().Msg("StopVulnerabilityScanRequest called")
+			return router.StopVulnerabilityScan(req)
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+
+	err = router.RegisterControl(ctl.StopComplianceScan,
+		func(req ctl.StopComplianceScanRequest) error {
+			log.Info().Msg("StopComplianceScanRequest called")
+			scanId, ok := req.BinArgs["scan_id"]
+			var err error
+			if ok {
+				retVal := linuxScanner.StopScan(scanId)
+				if retVal == false {
+					err = errors.New("Failed to stop scan")
+				}
+			} else {
+				err = errors.New("Missing scan id in the StopComplianceScanRequest")
+			}
+			return err
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
 }

@@ -89,10 +89,11 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 					log.Error().Msgf("Error getting controls for compliance type: %+v", scan.BenchmarkTypes)
 				}
 				scanDetail := model.CloudComplianceScanDetails{
-					ScanId:     scan.ScanId,
-					ScanTypes:  scan.BenchmarkTypes,
-					AccountId:  monitoredAccountId,
-					Benchmarks: benchmarks,
+					ScanId:        scan.ScanId,
+					ScanTypes:     scan.BenchmarkTypes,
+					AccountId:     monitoredAccountId,
+					Benchmarks:    benchmarks,
+					StopRequested: scan.StopRequested,
 				}
 				scanList[scan.ScanId] = scanDetail
 			}
@@ -125,10 +126,11 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 				log.Error().Msgf("Error getting controls for compliance type: %+v", scan.BenchmarkTypes)
 			}
 			scanDetail := model.CloudComplianceScanDetails{
-				ScanId:     scan.ScanId,
-				ScanTypes:  scan.BenchmarkTypes,
-				AccountId:  req.CloudAccount,
-				Benchmarks: benchmarks,
+				ScanId:        scan.ScanId,
+				ScanTypes:     scan.BenchmarkTypes,
+				AccountId:     req.CloudAccount,
+				Benchmarks:    benchmarks,
+				StopRequested: scan.StopRequested,
 			}
 			scanList[scan.ScanId] = scanDetail
 		}

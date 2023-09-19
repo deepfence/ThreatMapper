@@ -63,7 +63,9 @@ func StartStatusReporter(title string, statusChan chan SbomScanStatus, ingestC c
 					log.Error().Msgf("error sending scan status: %s, scanid: %s",
 						err.Error(), params.ScanId)
 				}
-				if status == utils.SCAN_STATUS_SUCCESS || status == utils.SCAN_STATUS_FAILED {
+				if status == utils.SCAN_STATUS_SUCCESS ||
+					status == utils.SCAN_STATUS_FAILED ||
+					status == utils.SCAN_STATUS_CANCELLED {
 					break loop
 				}
 			case <-ticker.C:

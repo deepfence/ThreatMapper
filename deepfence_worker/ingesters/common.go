@@ -124,7 +124,8 @@ func statusesToMaps[T any](data []T) []map[string]interface{} {
 		} else {
 			old_status := old["scan_status"].(string)
 			if new_status != old_status {
-				if new_status == utils.SCAN_STATUS_SUCCESS || new_status == utils.SCAN_STATUS_FAILED {
+				if new_status == utils.SCAN_STATUS_SUCCESS ||
+					new_status == utils.SCAN_STATUS_FAILED || new_status == utils.SCAN_STATUS_CANCELLED {
 					statusBuff[scan_id] = new
 				}
 			}

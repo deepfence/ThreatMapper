@@ -223,6 +223,39 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 	return nil
 }
 
+func StopCloudComplianceScan(ctx context.Context, scanType, scanId string) error {
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	query := `MATCH (n:%s) -[:SCANNED]-> ()
+        WHERE n.node_id = $scan_id
+        AND n.status = $in_progress
+        SET n.status=$cancel_pending, n.stop_requested=true`
+
+	if _, err = tx.Run(fmt.Sprintf(query, scanType),
+		map[string]interface{}{
+			"scan_id":        scanId,
+			"in_progress":    utils.SCAN_STATUS_INPROGRESS,
+			"cancel_pending": utils.SCAN_STATUS_CANCEL_PENDING,
+		}); err != nil {
+		log.Error().Msgf("StopCloudComplianceScan: Error in setting the state in neo4j: %v", err)
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func StopScan(ctx context.Context, scanType, scanId string) error {
 
 	driver, err := directory.Neo4jClient(ctx)
@@ -241,14 +274,14 @@ func StopScan(ctx context.Context, scanType, scanId string) error {
 	query := `MATCH (n:%s) -[:SCANNED]-> ()
         WHERE n.node_id = $scan_id
         AND n.status IN [$starting, $in_progress]
-        SET n.status=$cancelling`
+        SET n.status=$cancel_pending, n.stop_requested=true`
 
 	if _, err = tx.Run(fmt.Sprintf(query, scanType),
 		map[string]interface{}{
-			"scan_id":     scanId,
-			"starting":    utils.SCAN_STATUS_STARTING,
-			"in_progress": utils.SCAN_STATUS_INPROGRESS,
-			"cancelling":  utils.SCAN_STATUS_CANCEL_PENDING,
+			"scan_id":        scanId,
+			"starting":       utils.SCAN_STATUS_STARTING,
+			"in_progress":    utils.SCAN_STATUS_INPROGRESS,
+			"cancel_pending": utils.SCAN_STATUS_CANCEL_PENDING,
 		}); err != nil {
 		log.Error().Msgf("StopScan: Error in setting the state in neo4j: %v", err)
 		return err

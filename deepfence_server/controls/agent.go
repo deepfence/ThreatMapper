@@ -386,6 +386,10 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeId string,
 			action.ID = controls.StopSecretScan
 		case controls.StartMalwareScan:
 			action.ID = controls.StopMalwareScan
+		case controls.StartVulnerabilityScan:
+			action.ID = controls.StopVulnerabilityScan
+		case controls.StartComplianceScan:
+			action.ID = controls.StopComplianceScan
 		default:
 			log.Info().Msgf("Stop functionality not implemented for action: %d", action.ID)
 			continue

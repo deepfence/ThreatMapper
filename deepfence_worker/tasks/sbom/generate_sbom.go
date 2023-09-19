@@ -3,6 +3,7 @@ package sbom
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
 	"encoding/json"
 	"os"
 	"path"
@@ -25,6 +26,7 @@ import (
 
 var (
 	syftBin = "syft"
+	scanMap = sync.Map{}
 )
 
 type SbomGenerator struct {
@@ -33,6 +35,29 @@ type SbomGenerator struct {
 
 func NewSbomGenerator(ingest chan *kgo.Record) SbomGenerator {
 	return SbomGenerator{ingestC: ingest}
+}
+
+func StopVulnerabilityScan(msg *message.Message) error {
+	log.Info().Msgf("StopVulnerabilityScan, uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
+	var params utils.SbomParameters
+	if err := json.Unmarshal(msg.Payload, &params); err != nil {
+		log.Error().Msgf("StopVulnerabilityScan, error in Unmarshal: %s", err.Error())
+		return nil
+	}
+
+	scanID := params.ScanId
+	cancelFnObj, found := scanMap.Load(scanID)
+	logMsg := ""
+	if found {
+		cancelFn := cancelFnObj.(context.CancelFunc)
+		cancelFn()
+		logMsg = "Stop GenerateSBOM request submitted"
+	} else {
+		logMsg = "Failed to Stop scan, SBOM may have already generated or errored out"
+	}
+
+	log.Info().Msgf("%s, scan_id: %s", logMsg, scanID)
+	return nil
 }
 
 func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, error) {
@@ -85,6 +110,14 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 		return nil, nil
 	}
 
+	log.Info().Msgf("Adding scanid to map:%s", params.ScanId)
+	ctxSbom, cancel := context.WithCancel(context.Background())
+	scanMap.Store(params.ScanId, cancel)
+	defer func(scanId string) {
+		log.Info().Msgf("Removing scaind from map:%s", scanId)
+		scanMap.Delete(scanId)
+	}(params.ScanId)
+
 	defer func() {
 		log.Info().Msgf("remove auth directory %s", authFile)
 		if authFile == "" {
@@ -127,10 +160,15 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 
 	statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil)
 
-	rawSbom, err := syft.GenerateSBOM(ctx, cfg)
+	rawSbom, err := syft.GenerateSBOM(ctxSbom, cfg)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
+		if ctxSbom.Err() == context.Canceled {
+			log.Error().Msgf("Stopping GenerateSBOM as per user request, scanID:%s", params.ScanId)
+			statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_CANCELLED, err.Error(), nil)
+		} else {
+			log.Error().Msg(err.Error())
+			statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
+		}
 		return nil, nil
 	}
 
