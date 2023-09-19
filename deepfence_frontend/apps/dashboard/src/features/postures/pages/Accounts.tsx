@@ -45,6 +45,7 @@ import {
   ICloudAccountType,
   SearchableCloudAccountsList,
 } from '@/components/forms/SearchableCloudAccountsList';
+import { BellLineIcon } from '@/components/icons/common/BellLine';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -557,9 +558,11 @@ const ActionDropdown = ({
 
 const BulkActions = ({
   onClick,
+  onCancelScan,
   disabled,
 }: {
   onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  onCancelScan?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   disabled: boolean;
 }) => {
   const { navigate } = usePageNavigation();
@@ -594,6 +597,15 @@ const BulkActions = ({
         onClick={onClick}
       >
         Start scan
+      </Button>
+      <Button
+        color="default"
+        variant="flat"
+        size="sm"
+        disabled={disabled}
+        onClick={onCancelScan}
+      >
+        Cancel scan
       </Button>
     </>
   );
@@ -955,6 +967,7 @@ const Accounts = () => {
   );
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCancelScan, setShowCancelScan] = useState(false);
   const [scanIdToDelete, setScanIdToDelete] = useState('');
   const [nodeIdsToScan, setNodeIdsToScan] = useState<string[]>([]);
 
@@ -987,13 +1000,23 @@ const Accounts = () => {
   return (
     <div>
       {!hasOrgCloudAccount(nodeType ?? '') ? <Header /> : null}
-
+      {showCancelScan && (
+        <StopScanForm
+          open={true}
+          closeModal={setShowCancelScan}
+          scanIds={[...Object.keys(rowSelectionState)]}
+          scanType={scanType}
+        />
+      )}
       <div className="mb-4">
         <div className="flex h-12 items-center">
           <BulkActions
             disabled={Object.keys(rowSelectionState).length === 0}
             onClick={() => {
               setSelectedScanType(scanType);
+            }}
+            onCancelScan={() => {
+              setShowCancelScan(true);
             }}
           />
           <Button

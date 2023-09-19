@@ -44,11 +44,7 @@ export const isScanStopped = (status: string): boolean => {
 };
 
 export const isScanStopping = (status: string): boolean => {
-  if (
-    status.length &&
-    !isScanStopped(status) &&
-    status.toLowerCase().includes('cancel')
-  ) {
+  if (status.length && VULNERABILITY_SCAN_STATUS_GROUPS.cancelling.includes(status)) {
     return true;
   }
   return false;
@@ -95,7 +91,8 @@ export enum VulnerabilityScanGroupedStatus {
   'inProgress' = 'inProgress',
   'error' = 'error',
   'complete' = 'complete',
-  'cancel' = 'cancel',
+  'cancelled' = 'cancelled',
+  'cancelling' = 'cancelling',
 }
 
 export const VULNERABILITY_SCAN_STATUS_GROUPS: Record<
@@ -107,7 +104,8 @@ export const VULNERABILITY_SCAN_STATUS_GROUPS: Record<
   inProgress: ['IN_PROGRESS', 'GENERATING_SBOM', 'GENERATED_SBOM', 'SCAN_IN_PROGRESS'],
   error: ['ERROR'],
   complete: ['COMPLETE'],
-  cancel: ['CANCELLED', 'CANCELLING'],
+  cancelled: ['CANCELLED'],
+  cancelling: ['CANCEL_PENDING', 'CANCELLING'],
 };
 
 export enum SecretScanGroupedStatus {
@@ -117,6 +115,7 @@ export enum SecretScanGroupedStatus {
   'error' = 'error',
   'complete' = 'complete',
   'cancel' = 'cancel',
+  'cancelling' = 'cancelling',
 }
 
 export const SECRET_SCAN_STATUS_GROUPS: Record<
@@ -128,7 +127,8 @@ export const SECRET_SCAN_STATUS_GROUPS: Record<
   inProgress: ['IN_PROGRESS'],
   error: ['ERROR'],
   complete: ['COMPLETE'],
-  cancel: ['CANCELLED', 'CANCELLING'],
+  cancelled: ['CANCELLED'],
+  cancelling: ['CANCEL_PENDING', 'CANCELLING'],
 };
 
 export enum MalwareScanGroupedStatus {
@@ -137,7 +137,7 @@ export enum MalwareScanGroupedStatus {
   'inProgress' = 'inProgress',
   'error' = 'error',
   'complete' = 'complete',
-  'cancel' = 'cancel',
+  'cancelled' = 'cancelled',
 }
 
 export const MALWARE_SCAN_STATUS_GROUPS: Record<
@@ -149,7 +149,8 @@ export const MALWARE_SCAN_STATUS_GROUPS: Record<
   inProgress: ['IN_PROGRESS'],
   error: ['ERROR'],
   complete: ['COMPLETE'],
-  cancel: ['CANCELLED', 'CANCELLING'],
+  cancelled: ['CANCELLED'],
+  cancelling: ['CANCEL_PENDING', 'CANCELLING'],
 };
 
 export enum ComplianceScanGroupedStatus {
@@ -158,6 +159,8 @@ export enum ComplianceScanGroupedStatus {
   'inProgress' = 'inProgress',
   'error' = 'error',
   'complete' = 'complete',
+  'cancelled' = 'cancelled',
+  'cancelling' = 'cancelling',
 }
 
 export const COMPLIANCE_SCAN_STATUS_GROUPS: Record<
@@ -169,7 +172,8 @@ export const COMPLIANCE_SCAN_STATUS_GROUPS: Record<
   inProgress: ['IN_PROGRESS', 'SCAN_IN_PROGRESS'],
   error: ['ERROR'],
   complete: ['COMPLETE'],
-  cancel: ['CANCELLED', 'CANCELLING'],
+  cancelled: ['CANCELLED'],
+  cancelling: ['CANCEL_PENDING', 'CANCELLING'],
 };
 
 export const SCAN_STATUS_GROUPS = [
@@ -197,7 +201,11 @@ export const SCAN_STATUS_GROUPS = [
 
 export const CANCEL_SCAN_STATUSES = [
   {
-    label: 'Cancel',
-    value: 'cancel',
+    label: 'Cancelled',
+    value: 'cancelled',
+  },
+  {
+    label: 'Cancelling',
+    value: 'cancelling',
   },
 ];
