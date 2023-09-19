@@ -8,6 +8,7 @@ import {
 import { SearchableTagList } from '@/features/vulnerabilities/components/ScanResults/SearchableTagList';
 import { useScanResults } from '@/features/vulnerabilities/pages/VulnerabilityScanResults';
 import { VulnerabilityScanNodeTypeEnum } from '@/types/common';
+import { isScanComplete } from '@/utils/scan';
 
 const Tags = ({
   setSelectedTag,
@@ -68,6 +69,7 @@ const BaseInput = ({
     }
   }, [selectedNodeId, withOtherTags]);
 
+  const skipScanTime = nodeId === selectedNodeId ? compareInput.baseScanTime : undefined;
   return (
     <div className="flex flex-col gap-y-6">
       <Suspense fallback={<CircleSpinner size="sm" />}>
@@ -85,6 +87,7 @@ const BaseInput = ({
         ) : null}
       </Suspense>
       <SearchableScanTimeList
+        label="Select Scan Time"
         triggerVariant="underline"
         defaultSelectedTime={toScanData.toScanTime ?? null}
         valueKey="nodeId"
@@ -100,10 +103,12 @@ const BaseInput = ({
             toScanId: '',
           });
         }}
+        optionFilter={(scan: { updatedAt: number; status: string }) =>
+          scan.updatedAt !== skipScanTime && isScanComplete(scan.status)
+        }
         nodeId={selectedNodeId}
         nodeType={nodeType}
         // skip scan time when base scan is same as to scan
-        skipScanTime={nodeId === selectedNodeId ? compareInput.baseScanTime : undefined}
         noDataText="No scan to compare"
       />
     </div>

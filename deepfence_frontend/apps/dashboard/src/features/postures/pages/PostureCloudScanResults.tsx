@@ -559,7 +559,7 @@ const HistoryControls = () => {
   const { data } = useScanResults();
   const { nodeType = '' } = useParams();
   const { scanStatusResult } = data;
-  const { scan_id, node_id, updated_at, status } = scanStatusResult ?? {};
+  const { scan_id, node_id, updated_at, status, node_type } = scanStatusResult ?? {};
   const { navigate, goBack } = usePageNavigation();
   const { downloadScan } = useDownloadScan();
 
@@ -577,37 +577,41 @@ const HistoryControls = () => {
     refetch();
   }, [scan_id]);
 
+  if (!scan_id || !node_id || !node_type) {
+    throw new Error('Scan Type, Node Type and Node Id are required');
+  }
+  if (!updated_at) {
+    return null;
+  }
+
   return (
     <div className="flex items-center gap-x-3">
       <ScanHistoryDropdown
-        scans={[...(historyData?.data ?? [])].reverse().map((item) => ({
-          id: item.scanId,
-          isCurrent: item.scanId === scan_id,
-          status: item.status,
-          timestamp: item.updatedAt,
-          onDeleteClick: (id) => {
-            setScanIdToDelete(id);
-          },
-          onDownloadClick: () => {
-            downloadScan({
-              scanId: item.scanId,
-              scanType: UtilsReportFiltersScanTypeEnum.CloudCompliance,
-              nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
-            });
-          },
-          onScanClick: () => {
-            navigate(
-              generatePath(`/posture/cloud/scan-results/:nodeType/:scanId`, {
-                scanId: encodeURIComponent(item.scanId),
-                nodeType: nodeType,
-              }),
-              {
-                replace: true,
-              },
-            );
-          },
-        }))}
-        currentTimeStamp={formatMilliseconds(updated_at ?? '')}
+        currentTimeStamp={updated_at}
+        nodeType={node_type}
+        nodeId={node_id}
+        currentScanId={scan_id}
+        onDeleteClick={(id) => {
+          setScanIdToDelete(id);
+        }}
+        onDownloadClick={(scanId: string) => {
+          downloadScan({
+            scanId: scanId,
+            scanType: UtilsReportFiltersScanTypeEnum.CloudCompliance,
+            nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
+          });
+        }}
+        onScanClick={(scanId: string) => {
+          navigate(
+            generatePath('/posture/cloud/scan-results/:nodeType/:scanId', {
+              scanId: encodeURIComponent(scanId),
+              nodeType,
+            }),
+            {
+              replace: true,
+            },
+          );
+        }}
       />
 
       {scanIdToDelete && (

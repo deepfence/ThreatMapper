@@ -4,8 +4,13 @@ import { CircleSpinner, Listbox, ListboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
-import { isScanComplete } from '@/utils/scan';
 
+interface IOption {
+  updatedAt: number;
+  scanId: string;
+  status: string;
+  nodeName: string;
+}
 interface SearchableTimeListProps {
   onChange?: (data: ISelected) => void;
   onClearAll?: () => void;
@@ -16,8 +21,11 @@ interface SearchableTimeListProps {
   color?: 'error' | 'default';
   nodeId?: string;
   nodeType?: string;
-  skipScanTime?: number;
+  label?: string;
   noDataText?: string;
+  shouldReverseOption?: boolean;
+  renderOption?: (scan: IOption) => React.ReactNode;
+  optionFilter?: (scan: IOption) => boolean;
 }
 
 export interface ISelected {
@@ -35,8 +43,11 @@ const SearchableScanTime = ({
   color,
   nodeId,
   nodeType,
-  skipScanTime,
+  label,
   noDataText,
+  optionFilter,
+  renderOption,
+  shouldReverseOption,
 }: SearchableTimeListProps) => {
   const [selectedTime, setSelectedTime] = useState<number | null>(
     defaultSelectedTime ?? null,
@@ -71,12 +82,18 @@ const SearchableScanTime = ({
     if (hasNextPage) fetchNextPage();
   };
 
+  let options = data?.pages.flatMap((page) => {
+    return page.data;
+  });
+  if (shouldReverseOption) {
+    options = options.reverse();
+  }
   return (
     <>
       <Listbox
         name="timeFilter"
         variant={triggerVariant}
-        label={isSelectVariantType ? 'Select Scan Time' : undefined}
+        label={label}
         getDisplayValue={() =>
           isSelectVariantType
             ? selectedTime
@@ -100,13 +117,8 @@ const SearchableScanTime = ({
         }
         noDataText={noDataText}
       >
-        {data?.pages
-          .flatMap((page) => {
-            return page.data;
-          })
-          .filter(
-            (scan) => scan.updatedAt !== skipScanTime && isScanComplete(scan.status),
-          )
+        {options
+          .filter(optionFilter ? optionFilter : (option) => option)
           ?.map?.((scan) => {
             return (
               <ListboxOption
@@ -118,7 +130,7 @@ const SearchableScanTime = ({
                   } as ISelected
                 }
               >
-                {formatMilliseconds(scan.updatedAt)}
+                {renderOption ? renderOption(scan) : formatMilliseconds(scan.updatedAt)}
               </ListboxOption>
             );
           })}
@@ -128,16 +140,13 @@ const SearchableScanTime = ({
 };
 
 export const SearchableScanTimeList = (props: SearchableTimeListProps) => {
-  const { triggerVariant } = props;
-  const isSelectVariantType = useMemo(() => {
-    return triggerVariant === 'underline';
-  }, [triggerVariant]);
+  const { triggerVariant, label } = props;
 
   return (
     <Suspense
       fallback={
         <Listbox
-          label={isSelectVariantType ? 'Select time' : undefined}
+          label={label}
           variant={triggerVariant}
           startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
           placeholder="Select time"
