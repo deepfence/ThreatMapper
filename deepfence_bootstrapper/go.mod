@@ -18,7 +18,7 @@ require (
 	github.com/containerd/cgroups/v3 v3.0.2
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/agent-plugins-grpc v1.1.0
-	github.com/deepfence/compliance v0.1.3-0.20230523055258-4cae3116258c
+	github.com/deepfence/compliance v0.1.3-0.20230919060520-1991901e5d83
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-00010101000000-000000000000
@@ -34,7 +34,7 @@ require (
 require (
 	aead.dev/minisign v0.2.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
-	github.com/aws/aws-sdk-go v1.44.267 // indirect
+	github.com/aws/aws-sdk-go v1.44.282 // indirect
 	github.com/c9s/goprocinfo v0.0.0-20151025191153-19cb9f127a9c // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/cilium/ebpf v0.9.1 // indirect
