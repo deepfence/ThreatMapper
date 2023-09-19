@@ -600,7 +600,6 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 					},
 					BenchmarkTypes: nil,
 				}
-				tmp.StopRequested = true
 				stoppingScansInfo = append(stoppingScansInfo, tmp)
 			}
 
