@@ -75,7 +75,7 @@ func NewProcHandler(name, path, command, env string, autorestart bool, cgroup st
 }
 
 func startLogging(name string, cmd *exec.Cmd) {
-	f, err := os.Create(log_root + name)
+	f, err := os.OpenFile(log_root+name+".log", os.O_WRONLY|os.O_CREATE|os.O_APPEND|os.O_SYNC, 0666)
 	if err != nil {
 		log.Error().Msgf("Cannot start logging: %v", err)
 		return

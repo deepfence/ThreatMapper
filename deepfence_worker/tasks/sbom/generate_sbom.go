@@ -127,7 +127,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 
 	statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil)
 
-	rawSbom, err := syft.GenerateSBOM(cfg)
+	rawSbom, err := syft.GenerateSBOM(ctx, cfg)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
