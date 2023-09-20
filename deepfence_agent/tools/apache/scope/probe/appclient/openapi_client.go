@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -28,16 +29,29 @@ type OpenapiClient struct {
 
 var PushBackError = errors.New("Server push back")
 
+func getenv(key, fallback string) string {
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		return fallback
+	}
+	return value
+}
+
 func NewOpenapiClient() (*OpenapiClient, error) {
 	openapiClient, err := common.NewClient()
 	if err != nil {
 		return nil, err
 	}
+	publishUrl := fmt.Sprintf(
+		"https://%s:%s/deepfence/ingest/report",
+		getenv("MGMT_CONSOLE_URL", "localhost"),
+		getenv("MGMT_CONSOLE_PORT", "443"),
+	)
 	res := &OpenapiClient{
 		client:               openapiClient,
 		stopControlListening: make(chan struct{}),
 		publishInterval:      atomic.Int32{},
-		publishReportUrl:     "https://" + os.Getenv("MGMT_CONSOLE_URL") + ":443/deepfence/ingest/report",
+		publishReportUrl:     publishUrl,
 		rawClient:            openapiClient.Client().GetConfig().HTTPClient,
 	}
 	res.publishInterval.Store(10)

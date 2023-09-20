@@ -137,10 +137,11 @@ type CloudComplianceBenchmark struct {
 }
 
 type CloudComplianceScanDetails struct {
-	ScanId     string                     `json:"scan_id"`
-	ScanTypes  []string                   `json:"scan_types"`
-	AccountId  string                     `json:"account_id"`
-	Benchmarks []CloudComplianceBenchmark `json:"benchmarks"`
+	ScanId        string                     `json:"scan_id"`
+	ScanTypes     []string                   `json:"scan_types"`
+	AccountId     string                     `json:"account_id"`
+	Benchmarks    []CloudComplianceBenchmark `json:"benchmarks"`
+	StopRequested bool                       `json:"stop_requested"`
 }
 
 type CloudNodeCloudtrailTrail struct {
@@ -479,6 +480,7 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 	res, err = tx.Run(`
 		MATCH (n:CloudComplianceBenchmark) -[:INCLUDES]-> (m:CloudComplianceControl)
 		WHERE m.active = true
+		AND m.disable = false
 		AND m.compliance_type IN $compliance_types
 		AND n.cloud_provider = $cloud_provider
 		RETURN  n.benchmark_id, n.compliance_type, collect(m.control_id)

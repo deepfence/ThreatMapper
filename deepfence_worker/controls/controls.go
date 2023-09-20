@@ -19,7 +19,8 @@ var controls_guard sync.RWMutex
 func RegisterControl[T ctl.StartVulnerabilityScanRequest | ctl.StartSecretScanRequest |
 	ctl.StartComplianceScanRequest | ctl.StartMalwareScanRequest |
 	ctl.StartAgentUpgradeRequest | ctl.StopSecretScanRequest |
-	ctl.StopMalwareScanRequest](id ctl.ActionID, callback func(namespace string, req T) error) error {
+	ctl.StopMalwareScanRequest | ctl.StopVulnerabilityScanRequest](id ctl.ActionID,
+	callback func(namespace string, req T) error) error {
 
 	controls_guard.Lock()
 	defer controls_guard.Unlock()
@@ -54,101 +55,72 @@ func init() {
 func ConsoleActionSetup(pub *kafka.Publisher) error {
 	// for vulnerability scan
 	err := RegisterControl(ctl.StartVulnerabilityScan,
-		func(namespace string, req ctl.StartVulnerabilityScanRequest) error {
-			metadata := map[string]string{directory.NamespaceKey: namespace}
-			log.Info().Msgf("payload: %+v", req.BinArgs)
-			data, err := json.Marshal(req.BinArgs)
-			if err != nil {
-				log.Error().Msg(err.Error())
-				return err
-			}
-			if err := utils.PublishNewJob(pub, metadata, sdkUtils.GenerateSBOMTask, data); err != nil {
-				log.Error().Msg(err.Error())
-				return err
-			}
-			return nil
-		})
+		GetRegisterControlFunc[ctl.StartVulnerabilityScanRequest](pub,
+			sdkUtils.GenerateSBOMTask))
 	if err != nil {
 		return err
 	}
 
 	// for secret scan
 	err = RegisterControl(ctl.StartSecretScan,
-		func(namespace string, req ctl.StartSecretScanRequest) error {
-			metadata := map[string]string{directory.NamespaceKey: namespace}
-			log.Info().Msgf("payload: %+v", req.BinArgs)
-			data, err := json.Marshal(req.BinArgs)
-			if err != nil {
-				log.Error().Msg(err.Error())
-				return err
-			}
-			if err := utils.PublishNewJob(pub, metadata, sdkUtils.SecretScanTask, data); err != nil {
-				log.Error().Msg(err.Error())
-				return err
-			}
-			return nil
-		})
-	if err != nil {
-		return err
-	}
-
-	err = RegisterControl(ctl.StopSecretScan,
-		func(namespace string, req ctl.StopSecretScanRequest) error {
-			metadata := map[string]string{directory.NamespaceKey: namespace}
-			log.Info().Msgf("StopSecretScan payload: %+v", req.BinArgs)
-			data, err := json.Marshal(req.BinArgs)
-			if err != nil {
-				log.Error().Msg(err.Error())
-				return err
-			}
-			if err := utils.PublishNewJob(pub, metadata, sdkUtils.StopSecretScanTask, data); err != nil {
-				log.Error().Msg(err.Error())
-				return err
-			}
-			return nil
-		})
+		GetRegisterControlFunc[ctl.StartSecretScanRequest](pub,
+			sdkUtils.SecretScanTask))
 	if err != nil {
 		return err
 	}
 
 	// for malware scan
 	err = RegisterControl(ctl.StartMalwareScan,
-		func(namespace string, req ctl.StartMalwareScanRequest) error {
-			metadata := map[string]string{directory.NamespaceKey: namespace}
-			log.Info().Msgf("payload: %+v", req.BinArgs)
-			data, err := json.Marshal(req.BinArgs)
-			if err != nil {
-				log.Error().Msg(err.Error())
-				return err
-			}
-			if err := utils.PublishNewJob(pub, metadata, sdkUtils.MalwareScanTask, data); err != nil {
-				log.Error().Msg(err.Error())
-				return err
-			}
-			return nil
-		})
+		GetRegisterControlFunc[ctl.StartMalwareScanRequest](pub,
+			sdkUtils.MalwareScanTask))
+	if err != nil {
+		return err
+	}
+
+	err = RegisterControl(ctl.StopSecretScan,
+		GetRegisterControlFunc[ctl.StopSecretScanRequest](pub,
+			sdkUtils.StopSecretScanTask))
 	if err != nil {
 		return err
 	}
 
 	err = RegisterControl(ctl.StopMalwareScan,
-		func(namespace string, req ctl.StopMalwareScanRequest) error {
-			metadata := map[string]string{directory.NamespaceKey: namespace}
-			log.Info().Msgf("StopMalwareScan payload: %+v", req.BinArgs)
-			data, err := json.Marshal(req.BinArgs)
-			if err != nil {
-				log.Error().Msg(err.Error())
-				return err
-			}
-			if err := utils.PublishNewJob(pub, metadata, sdkUtils.StopMalwareScanTask, data); err != nil {
-				log.Error().Msg(err.Error())
-				return err
-			}
-			return nil
-		})
+		GetRegisterControlFunc[ctl.StopMalwareScanRequest](pub,
+			sdkUtils.StopMalwareScanTask))
+	if err != nil {
+		return err
+	}
+
+	err = RegisterControl(ctl.StopVulnerabilityScan,
+		GetRegisterControlFunc[ctl.StopVulnerabilityScanRequest](pub,
+			sdkUtils.StopVulnerabilityScanTask))
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func GetRegisterControlFunc[T ctl.StartVulnerabilityScanRequest | ctl.StartSecretScanRequest |
+	ctl.StartComplianceScanRequest | ctl.StartMalwareScanRequest |
+	ctl.StopSecretScanRequest | ctl.StopMalwareScanRequest |
+	ctl.StopVulnerabilityScanRequest](pub *kafka.Publisher,
+	task string) func(namespace string, req T) error {
+
+	controlFunc := func(namespace string, req T) error {
+		metadata := map[string]string{directory.NamespaceKey: namespace}
+		BinArgs := ctl.GetBinArgs(req)
+		log.Info().Msgf("%s payload: %+v", task, BinArgs)
+		data, err := json.Marshal(BinArgs)
+		if err != nil {
+			log.Error().Msg(err.Error())
+			return err
+		}
+		if err := utils.PublishNewJob(pub, metadata, task, data); err != nil {
+			log.Error().Msg(err.Error())
+			return err
+		}
+		return nil
+	}
+	return controlFunc
 }

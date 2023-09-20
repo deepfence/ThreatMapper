@@ -48,6 +48,7 @@ const (
 	LinkNodesTask             = "link_nodes"
 	StopSecretScanTask        = "task_stop_secret_scan"
 	StopMalwareScanTask       = "task_stop_malware_scan"
+	StopVulnerabilityScanTask = "task_stop_vulnerability_scan"
 )
 
 const (
@@ -199,6 +200,7 @@ var Tasks = []string{
 	LinkNodesTask,
 	StopSecretScanTask,
 	StopMalwareScanTask,
+	StopVulnerabilityScanTask,
 }
 
 type ReportType string

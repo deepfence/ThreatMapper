@@ -24,7 +24,8 @@ x-service-variables: &common-creds
     DEEPFENCE_REDIS_PORT: 6379
     DEEPFENCE_SAAS_DEPLOYMENT: "false"
     DEEPFENCE_DEBUG: "false"
-    DF_ENABLE_DEBUG: "false"
+    DF_ENABLE_DEBUG: ""
+    DEEPFENCE_ENABLE_PPROF: ""
 
 services:
 

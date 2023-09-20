@@ -36,37 +36,41 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 		}
 		defer tx.Close()
 
-		query := ""
-		switch ts {
-		default:
-			query = `
-			UNWIND $batch as row
-			MERGE (n:` + string(ts) + `{node_id: row.scan_id})
-			SET n.status = row.scan_status, n.status_message = row.scan_message, n.updated_at = TIMESTAMP()
-			WITH n
-			OPTIONAL MATCH (n) -[:DETECTED]- (m)
-			WITH n, count(m) as count
-			MATCH (n) -[:SCANNED]- (r)
-			SET r.` + ingestersUtil.ScanCountField[ts] + `=count, r.` + ingestersUtil.ScanStatusField[ts] + `=n.status, r.` + ingestersUtil.LatestScanIdField[ts] + `=n.node_id`
-		case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
-			query = `
-			UNWIND $batch as row
-			MERGE (n:` + string(ts) + `{node_id: row.scan_id})
-			SET n.status = row.scan_status, n.status_message = row.scan_message, n.updated_at = TIMESTAMP()
-			WITH n
-			OPTIONAL MATCH (n) -[:DETECTED]- (m)
-			WITH n, count(m) as total_count
-			OPTIONAL MATCH (n) -[:DETECTED]- (m)
-			WITH  n, total_count, m.resource as arn, count(m) as count
-			OPTIONAL MATCH (n) -[:SCANNED]- (cn) -[:OWNS]- (cr:CloudResource{arn: arn})
-			SET cn.` + ingestersUtil.ScanCountField[ts] + `=total_count, cn.` + ingestersUtil.ScanStatusField[ts] + `=n.status, cn.` + ingestersUtil.LatestScanIdField[ts] + `=n.node_id
-			SET cr.` + ingestersUtil.ScanCountField[ts] + `=count, cr.` + ingestersUtil.ScanStatusField[ts] + `=n.status, cr.` + ingestersUtil.LatestScanIdField[ts] + `=n.node_id`
-		}
+		query := `
+		UNWIND $batch as row
+		MATCH (n:` + string(ts) + `{node_id: row.scan_id})
+		WHERE NOT n.status IN $cancel_states
+		SET n.status = row.scan_status,
+			n.status_message = row.scan_message,
+			n.updated_at = TIMESTAMP()
+		WITH n
+		OPTIONAL MATCH (m) -[:DETECTED]- (n)
+		WITH n, count(m) as m_count
+		MATCH (n) -[:SCANNED]- (r)
+		SET r.` + ingestersUtil.ScanStatusField[ts] + `=n.status,
+			r.` + ingestersUtil.LatestScanIdField[ts] + `=n.node_id,
+			r.` + ingestersUtil.ScanCountField[ts] + `=m_count`
 
 		recordMap := statusesToMaps(data)
-		if _, err = tx.Run(query, map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {
-			log.Error().Msgf("Error while updating scan status: %+v", err)
-			return err
+		in_progress, others := splitInprogressStatus(recordMap)
+		if len(in_progress) > 0 {
+			log.Debug().Msgf("query: %v", query)
+			if _, err = tx.Run(query, map[string]interface{}{
+				"batch":         in_progress,
+				"cancel_states": []string{utils.SCAN_STATUS_CANCELLING, utils.SCAN_STATUS_CANCEL_PENDING}}); err != nil {
+				log.Error().Msgf("Error while updating scan status: %+v", err)
+				return err
+			}
+		}
+
+		if len(others) > 0 {
+			log.Debug().Msgf("query: %v", query)
+			if _, err = tx.Run(query, map[string]interface{}{
+				"batch":         others,
+				"cancel_states": []string{}}); err != nil {
+				log.Error().Msgf("Error while updating scan status: %+v", err)
+				return err
+			}
 		}
 
 		err = tx.Commit()
@@ -74,7 +78,9 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			return err
 		}
 
-		if ts != utils.NEO4J_CLOUD_COMPLIANCE_SCAN && ts != utils.NEO4J_COMPLIANCE_SCAN {
+		if ts == utils.NEO4J_CLOUD_COMPLIANCE_SCAN {
+			err = updateCloudResourceScanStatus(ts, recordMap, session)
+		} else if ts != utils.NEO4J_COMPLIANCE_SCAN {
 			err = updatePodScanStatus(ts, recordMap, session)
 		}
 
@@ -110,6 +116,35 @@ func updatePodScanStatus(ts utils.Neo4jScanType,
 	return nil
 }
 
+// TODO: move to a specific task
+func updateCloudResourceScanStatus(ts utils.Neo4jScanType,
+	recordMap []map[string]interface{}, session neo4j.Session) error {
+
+	query := `
+		UNWIND $batch as row
+		MATCH (n:` + string(ts) + `{node_id: row.scan_id}) -[:DETECTED]- (m)
+		WITH  m.resource as arn, count(m) as count, n.status as status, n.node_id as scan_id
+		MATCH (cr:CloudResource{arn: arn})
+		SET cr.` + ingestersUtil.ScanCountField[ts] + `=count,
+			cr.` + ingestersUtil.ScanStatusField[ts] + `=status,
+			cr.` + ingestersUtil.LatestScanIdField[ts] + `=scan_id`
+
+	log.Debug().Msgf("query: %v", query)
+	_, err := session.Run(query,
+		map[string]interface{}{
+			"batch": recordMap,
+		},
+		neo4j.WithTxTimeout(30*time.Second),
+	)
+
+	if err != nil {
+		log.Error().Msgf("Error in pod status update query: %+v", err)
+		return err
+	}
+
+	return nil
+}
+
 // also handles status deduplication
 func statusesToMaps[T any](data []T) []map[string]interface{} {
 	statusBuff := map[string]map[string]interface{}{}
@@ -124,7 +159,8 @@ func statusesToMaps[T any](data []T) []map[string]interface{} {
 		} else {
 			old_status := old["scan_status"].(string)
 			if new_status != old_status {
-				if new_status == utils.SCAN_STATUS_SUCCESS || new_status == utils.SCAN_STATUS_FAILED {
+				if new_status == utils.SCAN_STATUS_SUCCESS ||
+					new_status == utils.SCAN_STATUS_FAILED || new_status == utils.SCAN_STATUS_CANCELLED {
 					statusBuff[scan_id] = new
 				}
 			}
@@ -136,6 +172,20 @@ func statusesToMaps[T any](data []T) []map[string]interface{} {
 		statuses = append(statuses, v)
 	}
 	return statuses
+}
+
+func splitInprogressStatus(data []map[string]interface{}) ([]map[string]interface{}, []map[string]interface{}) {
+	in_progress := []map[string]interface{}{}
+	others := []map[string]interface{}{}
+
+	for i := range data {
+		if data[i]["scan_status"].(string) == utils.SCAN_STATUS_INPROGRESS {
+			in_progress = append(in_progress, data[i])
+		} else {
+			others = append(others, data[i])
+		}
+	}
+	return in_progress, others
 }
 
 func ToMap[T any](data T) map[string]interface{} {

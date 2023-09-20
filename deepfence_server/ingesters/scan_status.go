@@ -264,12 +264,14 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		OPTIONAL MATCH (n:%s)-[:SCANNED]->(m)
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
+		AND NOT n.status = $cancelled
 		AND n.benchmark_types = $benchmark_types
 		RETURN n.node_id, m.agent_running`, neo4jNodeType, scanType),
 		map[string]interface{}{
 			"node_id":         nodeId,
 			"complete":        utils.SCAN_STATUS_SUCCESS,
 			"failed":          utils.SCAN_STATUS_FAILED,
+			"cancelled":       utils.SCAN_STATUS_CANCELLED,
 			"benchmark_types": benchmarkTypes,
 		})
 	if err != nil {
