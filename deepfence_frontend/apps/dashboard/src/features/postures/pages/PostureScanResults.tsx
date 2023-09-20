@@ -54,7 +54,7 @@ import { TaskIcon } from '@/components/icons/common/Task';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
-import { ScanHistoryDropdown } from '@/components/scan-history/HistoryList';
+import { ScanHistoryList } from '@/components/scan-history/HistoryList';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import {
   ScanStatusInError,
@@ -77,7 +77,6 @@ import {
 } from '@/types/common';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
-import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
 import { isScanComplete, isScanFailed, isScanInProgress } from '@/utils/scan';
 import {
@@ -583,7 +582,8 @@ const HistoryControls = () => {
 
   return (
     <div className="flex items-center gap-x-3">
-      <ScanHistoryDropdown
+      <ScanHistoryList
+        scanType={ScanTypeEnum.ComplianceScan}
         currentTimeStamp={updated_at}
         nodeType={node_type}
         nodeId={node_id}

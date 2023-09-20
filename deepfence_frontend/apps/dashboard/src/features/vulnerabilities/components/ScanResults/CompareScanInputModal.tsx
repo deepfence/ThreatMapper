@@ -1,13 +1,10 @@
 import { Suspense, useEffect, useState } from 'react';
 import { Button, Checkbox, CircleSpinner, Modal } from 'ui-components';
 
-import {
-  ISelected,
-  SearchableScanTimeList,
-} from '@/features/vulnerabilities/components/ScanResults/SearchableScanTimeList';
+import { ISelected, ScanTimeList } from '@/components/forms/ScanTimeList';
 import { SearchableTagList } from '@/features/vulnerabilities/components/ScanResults/SearchableTagList';
 import { useScanResults } from '@/features/vulnerabilities/pages/VulnerabilityScanResults';
-import { VulnerabilityScanNodeTypeEnum } from '@/types/common';
+import { ScanTypeEnum, VulnerabilityScanNodeTypeEnum } from '@/types/common';
 import { isScanComplete } from '@/utils/scan';
 
 const Tags = ({
@@ -86,7 +83,8 @@ const BaseInput = ({
           </>
         ) : null}
       </Suspense>
-      <SearchableScanTimeList
+      <ScanTimeList
+        scanType={ScanTypeEnum.VulnerabilityScan}
         label="Select Scan Time"
         triggerVariant="underline"
         defaultSelectedTime={toScanData.toScanTime ?? null}

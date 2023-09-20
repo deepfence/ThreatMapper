@@ -1,15 +1,16 @@
 import { cn } from 'tailwind-preset';
 import { IconButton } from 'ui-components';
 
+import { ScanTimeList } from '@/components/forms/ScanTimeList';
 import { BalanceLineIcon } from '@/components/icons/common/BalanceLine';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
-import { SearchableScanTimeList } from '@/features/vulnerabilities/components/ScanResults/SearchableScanTimeList';
+import { ScanTypeEnum } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
 import { isScanComplete, isScanFailed } from '@/utils/scan';
 
-export const ScanHistoryDropdown = ({
+export const ScanHistoryList = ({
   currentTimeStamp,
   nodeType,
   nodeId,
@@ -19,7 +20,9 @@ export const ScanHistoryDropdown = ({
   showScanCompareButton,
   onScanClick,
   onScanTimeCompareButtonClick,
+  scanType,
 }: {
+  scanType: ScanTypeEnum;
   currentTimeStamp: number;
   nodeType: string;
   nodeId: string;
@@ -32,7 +35,8 @@ export const ScanHistoryDropdown = ({
 }) => {
   return (
     <div className="w-[190px]">
-      <SearchableScanTimeList
+      <ScanTimeList
+        scanType={scanType}
         triggerVariant="noBackground"
         contentWidth="fit-content"
         defaultSelectedTime={currentTimeStamp}

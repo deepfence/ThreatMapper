@@ -424,11 +424,11 @@ export const secretQueries = createQueryKeys('secret', {
       },
     };
   },
-  scanHistories: (filters: { nodeId: string; nodeType: string }) => {
-    const { nodeId, nodeType } = filters;
+  scanHistories: (filters: { nodeId: string; nodeType: string; size: number }) => {
+    const { nodeId, nodeType, size } = filters;
     return {
       queryKey: [{ filters }],
-      queryFn: async () => {
+      queryFn: async ({ pageParam = 0 }) => {
         if (!nodeId || !nodeType) {
           throw new Error('Scan Type, Node Type and Node Id are required');
         }
@@ -454,8 +454,8 @@ export const secretQueries = createQueryKeys('secret', {
               },
             ],
             window: {
-              offset: 0,
-              size: Number.MAX_SAFE_INTEGER,
+              offset: pageParam,
+              size,
             },
           },
         });
@@ -476,7 +476,7 @@ export const secretQueries = createQueryKeys('secret', {
         }
 
         return {
-          data: result.value.scans_info?.map((res) => {
+          data: result.value.scans_info.slice(0, size)?.map((res) => {
             return {
               updatedAt: res.updated_at,
               scanId: res.scan_id,

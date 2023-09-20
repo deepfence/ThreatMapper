@@ -337,12 +337,13 @@ export const postureQueries = createQueryKeys('posture', {
   scanHistories: (filters: {
     nodeId: string;
     nodeType: string;
+    size: number;
     scanType: 'ComplianceScan' | 'CloudComplianceScan';
   }) => {
-    const { nodeId, nodeType, scanType } = filters;
+    const { nodeId, nodeType, scanType, size } = filters;
     return {
       queryKey: [{ filters }],
-      queryFn: async () => {
+      queryFn: async ({ pageParam = 0 }) => {
         if (!nodeType || !scanType) {
           throw new Error('Scan Type, Node Type and Node Id are required');
         }
@@ -372,8 +373,8 @@ export const postureQueries = createQueryKeys('posture', {
               },
             ],
             window: {
-              offset: 0,
-              size: Number.MAX_SAFE_INTEGER,
+              offset: pageParam,
+              size,
             },
           },
         });
@@ -394,7 +395,7 @@ export const postureQueries = createQueryKeys('posture', {
         }
 
         return {
-          data: result.value.scans_info?.map((res) => {
+          data: result.value.scans_info.slice(0, size)?.map((res) => {
             return {
               updatedAt: res.updated_at,
               scanId: res.scan_id,

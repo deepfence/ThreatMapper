@@ -1,8 +1,9 @@
 import { useSuspenseInfiniteQuery } from '@suspensive/react-query';
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { CircleSpinner, Listbox, ListboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
+import { ScanTypeEnum } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
 
 interface IOption {
@@ -11,7 +12,8 @@ interface IOption {
   status: string;
   nodeName: string;
 }
-interface SearchableTimeListProps {
+interface ScanTimeListProps {
+  scanType: ScanTypeEnum;
   onChange?: (data: ISelected) => void;
   onClearAll?: () => void;
   defaultSelectedTime?: number | null;
@@ -34,8 +36,16 @@ export interface ISelected {
   scanId: string;
 }
 
+const apiFunctionMap = {
+  [ScanTypeEnum.VulnerabilityScan]: queries.vulnerability,
+  [ScanTypeEnum.SecretScan]: queries.secret,
+  [ScanTypeEnum.MalwareScan]: queries.malware,
+  [ScanTypeEnum.ComplianceScan]: queries.posture,
+  [ScanTypeEnum.CloudComplianceScan]: queries.posture,
+};
+
 const PAGE_SIZE = 15;
-const SearchableScanTime = ({
+const ScanTime = ({
   onChange,
   onClearAll,
   defaultSelectedTime,
@@ -47,10 +57,11 @@ const SearchableScanTime = ({
   label,
   noDataText,
   contentWidth,
+  scanType,
   optionFilter,
   renderOption,
   shouldReverseOption,
-}: SearchableTimeListProps) => {
+}: ScanTimeListProps) => {
   const [selectedTime, setSelectedTime] = useState<number | null>(
     defaultSelectedTime ?? null,
   );
@@ -59,9 +70,10 @@ const SearchableScanTime = ({
     setSelectedTime(defaultSelectedTime ?? null);
   }, [defaultSelectedTime]);
 
+  const apiFunc = apiFunctionMap[scanType];
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useSuspenseInfiniteQuery({
-      ...queries.vulnerability.scanHistories({
+      ...apiFunc.scanHistories({
         size: PAGE_SIZE,
         nodeId: nodeId ?? '',
         nodeType: nodeType ?? '',
@@ -137,7 +149,7 @@ const SearchableScanTime = ({
   );
 };
 
-export const SearchableScanTimeList = (props: SearchableTimeListProps) => {
+export const ScanTimeList = (props: ScanTimeListProps) => {
   const { label, triggerVariant } = props;
 
   return (
@@ -151,7 +163,7 @@ export const SearchableScanTimeList = (props: SearchableTimeListProps) => {
         />
       }
     >
-      <SearchableScanTime {...props} />
+      <ScanTime {...props} />
     </Suspense>
   );
 };
