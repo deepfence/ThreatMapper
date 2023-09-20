@@ -19,6 +19,9 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+
+	"net/http"
+	_ "net/http/pprof"
 )
 
 type config struct {
@@ -72,6 +75,15 @@ func main() {
 	err = initializeTelemetry(cfg.Mode)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Telemetry initialization failed")
+	}
+
+	if os.Getenv("DEEPFENCE_ENABLE_PPROF") != "" {
+		go func() {
+			err := http.ListenAndServe("localhost:6060", nil)
+			if err != nil {
+				log.Error().Msgf("pprof err: %v", err)
+			}
+		}()
 	}
 
 	// task publisher
