@@ -21,18 +21,18 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-type worker struct {
+type Worker struct {
 	cfg       config
 	mux       *asynq.ServeMux
 	srv       *asynq.Server
 	namespace directory.NamespaceID
 }
 
-func NewWorker(namespace directory.NamespaceID, srv *asynq.Server, cfg config, mux *asynq.ServeMux) worker {
-	return worker{srv: srv, cfg: cfg, mux: mux, namespace: namespace}
+func NewWorker(namespace directory.NamespaceID, srv *asynq.Server, cfg config, mux *asynq.ServeMux) Worker {
+	return Worker{srv: srv, cfg: cfg, mux: mux, namespace: namespace}
 }
 
-func (w *worker) Run(ctx context.Context) error {
+func (w *Worker) Run(ctx context.Context) error {
 	if err := w.srv.Run(w.mux); err != nil {
 		log.Fatal().Msgf("could not run server: %v", err)
 	}
@@ -58,7 +58,7 @@ func contextInjectorCallbackWrapper(namespace directory.NamespaceID, taskCallbac
 	}
 }
 
-func (w *worker) AddHandler(
+func (w *Worker) AddHandler(
 	task string,
 	taskCallback workerUtils.WorkerHandler,
 ) error {
