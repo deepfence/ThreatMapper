@@ -33,6 +33,7 @@ done
 if [ "$DEEPFENCE_MODE" == "worker" ]; then
   echo "update vulnerability database"
   /usr/local/bin/grype db update
+  /usr/sbin/crond
 fi
 
 if [[ "${1#-}" != "$1" ]]; then
