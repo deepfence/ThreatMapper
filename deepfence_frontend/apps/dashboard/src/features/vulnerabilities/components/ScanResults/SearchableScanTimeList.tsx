@@ -138,13 +138,14 @@ const SearchableScanTime = ({
 };
 
 export const SearchableScanTimeList = (props: SearchableTimeListProps) => {
-  const { label } = props;
+  const { label, triggerVariant } = props;
 
   return (
     <Suspense
       fallback={
         <Listbox
           label={label}
+          variant={triggerVariant}
           startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
           placeholder="Select time"
         />
