@@ -25,6 +25,7 @@ x-service-variables: &common-creds
     DEEPFENCE_SAAS_DEPLOYMENT: "false"
     DEEPFENCE_DEBUG: "false"
     DF_ENABLE_DEBUG: "false"
+    DEEPFENCE_ENABLE_PPROF: ""
 
 services:
 
