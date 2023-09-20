@@ -33,11 +33,13 @@ export const stopScanApiFunctionMap = {
 
 export const actionStopScan = async ({
   params,
+  request,
 }: ActionFunctionArgs): Promise<{ success?: boolean; message?: string }> => {
-  const scanId = params?.scanId?.toString() ?? '';
   const scanType = params?.scanType?.toString() as ScanTypeEnum;
+  const formData = await request.formData();
+  const scanIds = formData.getAll('scanIds') as string[];
 
-  if (!scanId || !scanType) {
+  if (!scanType || scanIds.length === 0) {
     console.error('Scan id and Scan Type are required for stoping scan');
     throw new Error('Scan id and Scan Type are required for stoping scan');
   }
@@ -47,7 +49,7 @@ export const actionStopScan = async ({
   });
   const result = await stopScanApi({
     modelStopScanRequest: {
-      scan_id: scanId,
+      scan_id: scanIds[0],
       scan_type: scanType,
     },
   });
@@ -116,10 +118,11 @@ export const StopScanForm = ({
               disabled={fetcher.state === 'submitting'}
               onClick={(e) => {
                 e.preventDefault();
-                fetcher.submit(null, {
+                const formData = new FormData();
+                scanIds.forEach((scanId) => formData.append('scanIds[]', scanId));
+                fetcher.submit(formData, {
                   method: 'post',
-                  action: generatePath('/data-component/scan/stop/:scanType/:scanId', {
-                    scanId: encodeURIComponent(scanIds[0]),
+                  action: generatePath('/data-component/scan/stop/:scanType', {
                     scanType,
                   }),
                 });

@@ -576,7 +576,7 @@ export const privateRoutes: CustomRouteObject[] = [
         action: scanPostureApiAction,
       },
       {
-        path: 'scan/stop/:scanType/:scanId',
+        path: 'scan/stop/:scanType',
         action: actionStopScan,
       },
       {
