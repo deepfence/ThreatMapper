@@ -40,6 +40,8 @@ const Command = () => {
   --restart on-failure \\
   --pid=host \\
   --net=host \\
+  --log-driver json-file \\
+  --log-opt max-size=50m \\
   --privileged=true \\
   -v /sys/kernel/debug:/sys/kernel/debug:rw \\
   -v /var/log/fenced \\
