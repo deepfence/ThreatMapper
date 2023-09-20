@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
+	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -58,24 +58,25 @@ func generateReport(ctx context.Context, params sdkUtils.ReportParams) (string, 
 	return "", ErrUnknownReportType
 }
 
-func GenerateReport(msg *message.Message) error {
+func GenerateReport(ctx context.Context, task *asynq.Task) error {
 
 	var params sdkUtils.ReportParams
 
-	tenantID := msg.Metadata.Get(directory.NamespaceKey)
+	tenantID, err := directory.ExtractNamespace(ctx)
+	if err != nil {
+		return err
+	}
 	if len(tenantID) == 0 {
 		log.Error().Msg("tenant-id/namespace is empty")
 		return errors.New("tenant-id/namespace is empty")
 	}
 	log.Info().Msgf("message tenant id %s", string(tenantID))
 
-	log.Info().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
+	log.Info().Msgf("payload: %s ", string(task.Payload()))
 
-	if err := json.Unmarshal(msg.Payload, &params); err != nil {
-		log.Error().Err(err).Msgf("error decoding report request payload %s", string(msg.Payload))
+	if err := json.Unmarshal(task.Payload(), &params); err != nil {
+		log.Error().Err(err).Msgf("error decoding report request payload %s", string(task.Payload()))
 	}
-
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tenantID))
 
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {

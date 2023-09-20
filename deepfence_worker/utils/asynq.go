@@ -7,13 +7,14 @@ import (
 	"context"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/hibiken/asynq"
 	"github.com/pkg/errors"
 
 	"github.com/cenkalti/backoff/v3"
-
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/message"
 )
+
+type WorkerHandler func(ctx context.Context, t *asynq.Task) error
 
 // RecoveredPanicError holds the recovered panic's error along with the stacktrace.
 type RecoveredPanicError struct {
@@ -27,20 +28,17 @@ func (p RecoveredPanicError) Error() string {
 
 // Recoverer recovers from any panic in the handler and appends RecoveredPanicError with the stacktrace
 // to any error returned from the handler.
-func Recoverer(h message.HandlerFunc) message.HandlerFunc {
-	return func(event *message.Message) (events []*message.Message, err error) {
-
+func Recoverer(h asynq.Handler) asynq.Handler {
+	return asynq.HandlerFunc(func(ctx context.Context, task *asynq.Task) (err error) {
 		defer func() {
 			if r := recover(); r != nil {
 				err = errors.WithStack(RecoveredPanicError{V: r, Stacktrace: string(debug.Stack())})
-				// ack message as we don't want to execute panic message again
-				event.Ack()
 			}
 		}()
 
-		events, err = h(event)
-		return events, err
-	}
+		err = h.ProcessTask(ctx, task)
+		return err
+	})
 }
 
 // Retry provides a middleware that retries the handler if errors are returned.
@@ -64,16 +62,14 @@ type Retry struct {
 	// OnRetryHook is an optional function that will be executed on each retry attempt.
 	// The number of the current retry is passed as retryNum,
 	OnRetryHook func(retryNum int, delay time.Duration)
-
-	Logger watermill.LoggerAdapter
 }
 
 // Middleware returns the Retry middleware.
-func (r Retry) Middleware(h message.HandlerFunc) message.HandlerFunc {
-	return func(msg *message.Message) ([]*message.Message, error) {
-		producedMessages, err := h(msg)
+func (r Retry) Middleware(h asynq.Handler) asynq.Handler {
+	return asynq.HandlerFunc(func(ctx context.Context, task *asynq.Task) error {
+		err := h.ProcessTask(ctx, task)
 		if err == nil {
-			return producedMessages, nil
+			return nil
 		}
 
 		expBackoff := backoff.NewExponentialBackOff()
@@ -83,7 +79,6 @@ func (r Retry) Middleware(h message.HandlerFunc) message.HandlerFunc {
 		expBackoff.MaxElapsedTime = r.MaxElapsedTime
 		expBackoff.RandomizationFactor = r.RandomizationFactor
 
-		ctx := msg.Context()
 		if r.MaxElapsedTime > 0 {
 			var cancel func()
 			ctx, cancel = context.WithTimeout(ctx, r.MaxElapsedTime)
@@ -97,39 +92,33 @@ func (r Retry) Middleware(h message.HandlerFunc) message.HandlerFunc {
 			waitTime := expBackoff.NextBackOff()
 			select {
 			case <-ctx.Done():
-				return producedMessages, err
+				return err
 			case <-time.After(waitTime):
 				// go on
 			}
 
-			producedMessages, err = h(msg)
+			err = h.ProcessTask(ctx, task)
 			if err == nil {
-				return producedMessages, nil
+				return nil
 			}
 
-			if r.Logger != nil {
-				r.Logger.Error("Error occurred, retrying", err, watermill.LogFields{
-					"retry_no":     retryNum,
-					"max_retries":  r.MaxRetries,
-					"wait_time":    waitTime,
-					"elapsed_time": expBackoff.GetElapsedTime(),
-				})
-			}
+			log.Warn().Msgf("Error occurred, retrying %v: %v", err, map[string]interface{}{
+				"retry_no":     retryNum,
+				"max_retries":  r.MaxRetries,
+				"wait_time":    waitTime,
+				"elapsed_time": expBackoff.GetElapsedTime(),
+			})
 			if r.OnRetryHook != nil {
 				r.OnRetryHook(retryNum, waitTime)
 			}
 
 			retryNum++
 			if retryNum > r.MaxRetries {
-				if r.Logger != nil {
-					r.Logger.Error("Error Max retries reached", err, watermill.LogFields{"msg_uuid": msg.UUID})
-				}
-				// ack the message don't want to execute already retried message
-				msg.Ack()
+				log.Error().Msgf("Error Max retries reached %v", err)
 				break retryLoop
 			}
 		}
 
-		return nil, err
-	}
+		return err
+	})
 }

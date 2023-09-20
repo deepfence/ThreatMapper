@@ -1,18 +1,19 @@
 package cronjobs
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/hibiken/asynq"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -45,13 +46,8 @@ type Control struct {
 	Executable              bool              `json:"executable"`
 }
 
-func AddCloudControls(msg *message.Message) error {
-	topic := RecordOffsets(msg)
-	defer SetTopicHandlerStatus(topic, false)
-
+func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 	log.Info().Msgf("Starting Cloud Compliance Population")
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msgf(err.Error())
@@ -187,13 +183,8 @@ func AddCloudControls(msg *message.Message) error {
 	return tx.Commit()
 }
 
-func CachePostureProviders(msg *message.Message) error {
-	topic := RecordOffsets(msg)
-	defer SetTopicHandlerStatus(topic, false)
-
+func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 	log.Info().Msgf("Caching Posture Providers")
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err

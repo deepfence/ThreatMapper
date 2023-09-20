@@ -4,8 +4,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/controls"
@@ -33,6 +31,7 @@ type config struct {
 	KafkaTopicReplicas        int16    `default:"1" split_words:"true"`
 	KafkaTopicRetentionMs     string   `default:"86400000" split_words:"true"`
 	KafkaTopicPartitionsTasks int32    `default:"3" split_words:"true"`
+	RedisAddr                 string   `default:"deepfence-redis:6379"`
 }
 
 // build info
@@ -49,7 +48,6 @@ func main() {
 
 	var cfg config
 	var err error
-	var wml watermill.LoggerAdapter
 	err = envconfig.Process("DEEPFENCE", &cfg)
 	if err != nil {
 		log.Fatal().Msg(err.Error())
@@ -59,10 +57,8 @@ func main() {
 
 	if cfg.Debug {
 		log.Initialize(zerolog.LevelDebugValue)
-		wml = NewZerologWaterMillAdapter(true, false)
 	} else {
 		log.Initialize(zerolog.LevelInfoValue)
-		wml = NewZerologWaterMillAdapter(false, false)
 	}
 
 	// check connection to kafka broker
@@ -86,20 +82,6 @@ func main() {
 		}()
 	}
 
-	// task publisher
-	tasksPublisher, err := kafka.NewPublisher(
-		kafka.PublisherConfig{
-			Brokers:   cfg.KafkaBrokers,
-			Marshaler: kafka.DefaultMarshaler{},
-		},
-		wml,
-	)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return
-	}
-	defer tasksPublisher.Close()
-
 	switch cfg.Mode {
 	case "ingester":
 		log.Info().Msg("Starting ingester")
@@ -109,11 +91,11 @@ func main() {
 		}
 	case "worker":
 		log.Info().Msg("Starting worker")
-		if err := controls.ConsoleActionSetup(tasksPublisher); err != nil {
+		if err := controls.ConsoleActionSetup(); err != nil {
 			log.Error().Msg(err.Error())
 			return
 		}
-		err := startWorker(wml, cfg)
+		err := startWorker(cfg)
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return
@@ -122,7 +104,7 @@ func main() {
 		log.Info().Msg("Starting scheduler")
 		go cs.InitMinioDatabase()
 		time.Sleep(10 * time.Second)
-		scheduler, err := cs.NewScheduler(tasksPublisher)
+		scheduler, err := cs.NewScheduler()
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return

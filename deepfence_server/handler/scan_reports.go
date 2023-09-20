@@ -15,9 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -669,18 +666,14 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	msg := message.NewMessage(watermill.NewUUID(), payload)
-	namespace, err := directory.ExtractNamespace(r.Context())
+	worker, err := directory.Worker(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 		return
 	}
-	msg.Metadata = map[string]string{directory.NamespaceKey: string(namespace)}
-	msg.SetContext(directory.NewContextWithNameSpace(namespace))
-	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)
 
-	err = h.TasksPublisher.Publish(utils.ScanSBOMTask, msg)
+	err = worker.Enqueue(utils.ScanSBOMTask, payload)
 	if err != nil {
 		log.Error().Msgf("cannot publish message:", err)
 		h.respondError(err, w)
