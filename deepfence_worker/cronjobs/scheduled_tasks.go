@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -15,14 +14,12 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/hibiken/asynq"
 )
 
-func RunScheduledTasks(msg *message.Message) error {
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
-
+func RunScheduledTasks(ctx context.Context, task *asynq.Task) error {
 	messagePayload := map[string]interface{}{}
-	if err := json.Unmarshal(msg.Payload, &messagePayload); err != nil {
+	if err := json.Unmarshal(task.Payload(), &messagePayload); err != nil {
 		log.Error().Msg(err.Error())
 		return nil
 	}

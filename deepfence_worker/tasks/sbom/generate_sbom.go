@@ -10,9 +10,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -20,6 +17,7 @@ import (
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/deepfence/package-scanner/sbom/syft"
 	psUtils "github.com/deepfence/package-scanner/utils"
+	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -37,10 +35,10 @@ func NewSbomGenerator(ingest chan *kgo.Record) SbomGenerator {
 	return SbomGenerator{ingestC: ingest}
 }
 
-func StopVulnerabilityScan(msg *message.Message) error {
-	log.Info().Msgf("StopVulnerabilityScan, uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
+func StopVulnerabilityScan(ctx context.Context, task *asynq.Task) error {
+	log.Info().Msgf("StopVulnerabilityScan, payload: %s ", string(task.Payload()))
 	var params utils.SbomParameters
-	if err := json.Unmarshal(msg.Payload, &params); err != nil {
+	if err := json.Unmarshal(task.Payload(), &params); err != nil {
 		log.Error().Msgf("StopVulnerabilityScan, error in Unmarshal: %s", err.Error())
 		return nil
 	}
@@ -60,15 +58,18 @@ func StopVulnerabilityScan(msg *message.Message) error {
 	return nil
 }
 
-func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, error) {
+func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error {
 	defer cronjobs.ScanWorkloadAllocator.Free()
 
 	var params utils.SbomParameters
 
-	tenantID := msg.Metadata.Get(directory.NamespaceKey)
+	tenantID, err := directory.ExtractNamespace(ctx)
+	if err != nil {
+		return err
+	}
 	if len(tenantID) == 0 {
 		log.Error().Msg("tenant-id/namespace is empty")
-		return nil, directory.ErrNamespaceNotFound
+		return directory.ErrNamespaceNotFound
 	}
 	log.Info().Msgf("message tenant id %s", string(tenantID))
 
@@ -76,21 +77,24 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tenantID))
+	worker, err := directory.Worker(ctx)
+	if err != nil {
+		return err
+	}
 
-	log.Info().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
+	log.Info().Msgf("payload: %s ", string(task.Payload()))
 
-	if err := json.Unmarshal(msg.Payload, &params); err != nil {
+	if err := json.Unmarshal(task.Payload(), &params); err != nil {
 		log.Error().Msg(err.Error())
 		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
-		return nil, nil
+		return nil
 	}
 
 	if params.RegistryId == "" {
 		log.Error().Msgf("registry id is empty in params %+v", params)
 		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED,
 			"registry id is empty in params", nil), rh)
-		return nil, nil
+		return nil
 	}
 
 	statusChan := make(chan SbomScanStatus)
@@ -107,7 +111,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	if err != nil {
 		log.Error().Msg(err.Error())
 		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
-		return nil, nil
+		return nil
 	}
 
 	log.Info().Msgf("Adding scanid to map:%s", params.ScanId)
@@ -169,7 +173,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 			log.Error().Msg(err.Error())
 			statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
 		}
-		return nil, nil
+		return nil
 	}
 
 	gzpb64Sbom := bytes.Buffer{}
@@ -178,7 +182,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	if err != nil {
 		log.Error().Msg(err.Error())
 		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
-		return nil, nil
+		return nil
 	}
 	gzipwriter.Close()
 
@@ -187,7 +191,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	if err != nil {
 		log.Error().Msg(err.Error())
 		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
-		return nil, nil
+		return nil
 	}
 
 	sbomFile := path.Join("/sbom/", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
@@ -223,7 +227,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 		if logError == true {
 			log.Error().Msg(err.Error())
 			statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
-			return nil, nil
+			return nil
 		}
 	}
 
@@ -238,12 +242,13 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	payload, err := json.Marshal(params)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		return nil, nil
+		return nil
 	}
 
-	scanMsg := message.NewMessage(watermill.NewUUID(), payload)
-	scanMsg.Metadata = map[string]string{directory.NamespaceKey: tenantID}
-	middleware.SetCorrelationID(watermill.NewShortUUID(), scanMsg)
+	err = worker.Enqueue(utils.ScanSBOMTask, payload)
+	if err != nil {
+		return err
+	}
 
-	return []*message.Message{scanMsg}, nil
+	return nil
 }

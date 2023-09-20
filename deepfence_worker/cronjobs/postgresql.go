@@ -1,18 +1,15 @@
 package cronjobs
 
 import (
-	"github.com/ThreeDotsLabs/watermill/message"
+	"context"
+
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/hibiken/asynq"
 )
 
 // CleanUpPostgresDB Delete expired user invites and password reset requests
-func CleanUpPostgresDB(msg *message.Message) error {
-	topic := RecordOffsets(msg)
-	defer SetTopicHandlerStatus(topic, false)
-
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
+func CleanUpPostgresDB(ctx context.Context, task *asynq.Task) error {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return err

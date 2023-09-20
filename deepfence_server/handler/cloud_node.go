@@ -7,9 +7,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -229,20 +226,9 @@ func (h *Handler) extractCloudNodeDetails(w http.ResponseWriter, r *http.Request
 }
 
 func (h *Handler) CachePostureProviders(ctx context.Context) error {
-	msg := message.NewMessage(watermill.NewUUID(), []byte{})
-	namespace, err := directory.ExtractNamespace(ctx)
+	worker, err := directory.Worker(ctx)
 	if err != nil {
-		log.Error().Msgf("cannot extract namespace:", err)
 		return err
 	}
-	msg.Metadata = map[string]string{directory.NamespaceKey: string(namespace)}
-	msg.SetContext(directory.NewContextWithNameSpace(namespace))
-	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)
-
-	err = h.TasksPublisher.Publish(utils.CachePostureProviders, msg)
-	if err != nil {
-		log.Error().Msgf("cannot publish message:", err)
-		return err
-	}
-	return nil
+	return worker.Enqueue(utils.CachePostureProviders, []byte{})
 }

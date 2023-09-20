@@ -7,11 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
-	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
-	"github.com/ThreeDotsLabs/watermill/message/router/plugin"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -21,41 +17,33 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/sbom"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/secretscan"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
+	"github.com/hibiken/asynq"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type worker struct {
-	wml watermill.LoggerAdapter
-	cfg config
-	mux *message.Router
+	cfg       config
+	mux       *asynq.ServeMux
+	srv       *asynq.Server
+	namespace directory.NamespaceID
 }
 
-type NoPublisherTask struct {
-	Task            string
-	TaskCallback    func(*message.Message) error
-	Handler         *message.Handler
-	Subscriber      message.Subscriber
-	InactiveCounter int
-}
-
-// For thread safety, Below map should only be accessed:
-// - From the main() during the initial startup
-// - From the pollHandlers() during runtime
-var HandlerMap map[string]*NoPublisherTask
-
-func NewWorker(wml watermill.LoggerAdapter, cfg config, mux *message.Router) worker {
-	return worker{wml: wml, cfg: cfg, mux: mux}
+func NewWorker(namespace directory.NamespaceID, srv *asynq.Server, cfg config, mux *asynq.ServeMux) worker {
+	return worker{srv: srv, cfg: cfg, mux: mux, namespace: namespace}
 }
 
 func (w *worker) Run(ctx context.Context) error {
-	return w.mux.Run(ctx)
+	if err := w.srv.Run(w.mux); err != nil {
+		log.Fatal().Msgf("could not run server: %v", err)
+	}
+	return nil
 }
 
-func telemetryCallbackWrapper(task string, taskCallback func(*message.Message) error) func(*message.Message) error {
-	return func(m *message.Message) error {
+func telemetryCallbackWrapper(task string, taskCallback workerUtils.WorkerHandler) workerUtils.WorkerHandler {
+	return func(ctx context.Context, t *asynq.Task) error {
 		span := telemetry.NewSpan(context.Background(), "workerjobs", task)
 		defer span.End()
-		err := taskCallback(m)
+		err := taskCallback(ctx, t)
 		if err != nil {
 			span.EndWithErr(err)
 		}
@@ -63,163 +51,25 @@ func telemetryCallbackWrapper(task string, taskCallback func(*message.Message) e
 	}
 }
 
-func (w *worker) AddNoPublisherHandler(task string,
-	taskCallback func(*message.Message) error,
-	shouldPoll bool) error {
-
-	subscriber, err := subscribe(task, w.cfg.KafkaBrokers, w.wml)
-	if err != nil {
-		return err
+func contextInjectorCallbackWrapper(namespace directory.NamespaceID, taskCallback workerUtils.WorkerHandler) workerUtils.WorkerHandler {
+	return func(ctx context.Context, t *asynq.Task) error {
+		ctx = context.WithValue(ctx, directory.NamespaceKey, namespace)
+		return taskCallback(ctx, t)
 	}
-	hdlr := w.mux.AddNoPublisherHandler(
-		task,
-		task,
-		subscriber,
-		telemetryCallbackWrapper(task, taskCallback),
-	)
-	if shouldPoll {
-		HandlerMap[task] = &NoPublisherTask{task, taskCallback, hdlr, subscriber, 0}
-	}
-
-	return nil
 }
 
 func (w *worker) AddHandler(
 	task string,
-	taskCallback func(msg *message.Message) ([]*message.Message, error),
-	receiverTask string,
-	publisher *kafka.Publisher,
+	taskCallback workerUtils.WorkerHandler,
 ) error {
-	subscriber, err := subscribe(task, w.cfg.KafkaBrokers, w.wml)
-	if err != nil {
-		return err
-	}
-	w.mux.AddHandler(
+	w.mux.HandleFunc(
 		task,
-		task,
-		subscriber,
-		receiverTask,
-		publisher,
-		taskCallback,
+		contextInjectorCallbackWrapper(w.namespace, telemetryCallbackWrapper(task, taskCallback)),
 	)
 	return nil
 }
 
-func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAdapter) (message.Subscriber, error) {
-
-	subscriberConf := kafka.DefaultSaramaSubscriberConfig()
-	subscriberConf.Consumer.Offsets.AutoCommit.Enable = true
-
-	subscriberConf.Consumer.Group.Session.Timeout = 20 * time.Second
-	subscriberConf.Consumer.Group.Heartbeat.Interval = 6 * time.Second
-	subscriberConf.Consumer.MaxProcessingTime = 500 * time.Millisecond
-
-	sub, err := kafka.NewSubscriber(
-		kafka.SubscriberConfig{
-			Brokers:               brokers,
-			Unmarshaler:           kafka.DefaultMarshaler{},
-			ConsumerGroup:         consumerGroup,
-			OverwriteSaramaConfig: subscriberConf,
-		},
-		logger,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return sub, nil
-}
-
-// Routine to poll the liveliness of the Handlers for topics regsitered with
-// HandlerMap
-func (w *worker) pollHandlers() {
-	ticker := time.NewTicker(30 * time.Second)
-	flag := true
-	threshold := 30
-	for {
-		select {
-		case <-ticker.C:
-			cronjobData := cronjobs.GetTopicData()
-			var resetTopicList []*NoPublisherTask
-			for topic, task := range HandlerMap {
-				var sub *kafka.Subscriber
-				sub = task.Subscriber.(*kafka.Subscriber)
-				svrOffset, err := sub.PartitionOffset(task.Task)
-				if err != nil {
-					log.Info().Msgf("PartitionOffset error: %v", err)
-					continue
-				}
-
-				entry, found := cronjobData[topic]
-				if !found {
-					continue
-				}
-
-				msgOffset := entry.Data
-				maxDelta := int64(1)
-				inactiveFlag := false
-				for id, _ := range svrOffset {
-					if _, ok := msgOffset[id]; ok {
-						delta := svrOffset[id] - msgOffset[id]
-						if delta > maxDelta {
-							inactiveFlag = true
-							break
-						}
-					}
-				}
-
-				inactiveFlag = inactiveFlag && (!entry.IsRunning)
-				if inactiveFlag == true {
-					task.InactiveCounter++
-					log.Info().Msgf("Increasing InactiveCounter for topic: %s, counter: %d",
-						topic, task.InactiveCounter)
-				} else {
-					task.InactiveCounter = 0
-				}
-
-				if task.InactiveCounter < threshold {
-					continue
-				}
-
-				if flag == true {
-					resetTopicList = append(resetTopicList, task)
-				}
-			}
-
-			for _, task := range resetTopicList {
-				log.Info().Msgf("Initiating restart of inactive handler for topic: %s", task.Task)
-				task.Handler.Stop()
-				//This select is to make sure the handler has actually stopped
-				select {
-				case _, ok := <-task.Handler.Stopped():
-					if !ok {
-						log.Info().Msgf("Successfully stopped handler for topic: %s", task.Task)
-						break
-					}
-				}
-
-				//Below check is required as the handler is supposed to be stopped and
-				//cleaned up from the list when we this channel is closed.
-				//But actully the channel is first closed and than the handler is removed from the routers list
-				//and that could result in a condition where we might start the new handler while the old
-				//one is not yet removed from the routers list
-				for true {
-					snapshot := w.mux.Handlers()
-					if _, ok := snapshot[task.Task]; !ok {
-						log.Info().Msgf("Successfully deleted handler from router for topic: %s", task.Task)
-						break
-					}
-					time.Sleep(1 * time.Second)
-				}
-
-				w.AddNoPublisherHandler(task.Task, task.TaskCallback, true)
-				w.mux.RunHandlers(context.Background())
-				log.Info().Msgf("Restarted handler for topic: %s", task.Task)
-			}
-		}
-	}
-}
-
-func startWorker(wml watermill.LoggerAdapter, cfg config) error {
+func startWorker(cfg config) error {
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		os.Interrupt, syscall.SIGTERM)
@@ -238,28 +88,19 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	ingestC := make(chan *kgo.Record, 10000)
 	go utils.StartKafkaProducer(ctx, cfg.KafkaBrokers, ingestC)
 
-	// task publisher
-	publisher, err := kafka.NewPublisher(
-		kafka.PublisherConfig{
-			Brokers:   cfg.KafkaBrokers,
-			Marshaler: kafka.DefaultMarshaler{},
+	mux := asynq.NewServeMux()
+
+	srv := asynq.NewServer(
+		asynq.RedisClientOpt{Addr: cfg.RedisAddr},
+		asynq.Config{
+			Concurrency: 10,
+			Queues: map[string]int{
+				"critical": 6,
+				"default":  3,
+				"low":      1,
+			},
 		},
-		wml,
 	)
-	if err != nil {
-		cancel()
-		return err
-	}
-	defer publisher.Close()
-
-	// task router
-	mux, err := message.NewRouter(message.RouterConfig{}, wml)
-	if err != nil {
-		cancel()
-		return err
-	}
-
-	mux.AddPlugin(plugin.SignalsHandler)
 
 	retry := workerUtils.Retry{
 		MaxRetries:          3,
@@ -271,84 +112,69 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 		OnRetryHook: func(retryNum int, delay time.Duration) {
 			log.Info().Msgf("retry=%d delay=%s", retryNum, delay)
 		},
-		Logger: wml,
 	}
 
-	mux.AddMiddleware(
-		middleware.CorrelationID,
-		middleware.NewThrottle(20, time.Second).Middleware,
+	mux.Use(
 		retry.Middleware,
 		workerUtils.Recoverer,
 	)
 
-	HandlerMap = make(map[string]*NoPublisherTask)
-
-	cronjobs.TopicData = make(map[string]cronjobs.TopicDataEntry)
-
-	worker := NewWorker(wml, cfg, mux)
+	worker := NewWorker(directory.NonSaaSDirKey, srv, cfg, mux)
 
 	// sbom
-	worker.AddNoPublisherHandler(utils.ScanSBOMTask, sbom.NewSBOMScanner(ingestC).ScanSBOM, false)
+	worker.AddHandler(utils.ScanSBOMTask, sbom.NewSBOMScanner(ingestC).ScanSBOM)
 
-	worker.AddHandler(utils.GenerateSBOMTask, sbom.NewSbomGenerator(ingestC).GenerateSbom,
-		utils.ScanSBOMTask, publisher)
+	worker.AddHandler(utils.GenerateSBOMTask, sbom.NewSbomGenerator(ingestC).GenerateSbom)
 
-	worker.AddNoPublisherHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB, true)
+	worker.AddHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)
 
-	worker.AddNoPublisherHandler(utils.ComputeThreatTask, cronjobs.ComputeThreat, true)
+	worker.AddHandler(utils.ComputeThreatTask, cronjobs.ComputeThreat)
 
-	worker.AddNoPublisherHandler(utils.RetryFailedScansTask, cronjobs.RetryScansDB, true)
+	worker.AddHandler(utils.RetryFailedScansTask, cronjobs.RetryScansDB)
 
-	worker.AddNoPublisherHandler(utils.RetryFailedUpgradesTask, cronjobs.RetryUpgradeAgent, false)
+	worker.AddHandler(utils.RetryFailedUpgradesTask, cronjobs.RetryUpgradeAgent)
 
-	worker.AddNoPublisherHandler(utils.CleanUpPostgresqlTask, cronjobs.CleanUpPostgresDB, true)
+	worker.AddHandler(utils.CleanUpPostgresqlTask, cronjobs.CleanUpPostgresDB)
 
-	worker.AddNoPublisherHandler(utils.CleanupDiagnosisLogs, cronjobs.CleanUpDiagnosisLogs, false)
+	worker.AddHandler(utils.CleanupDiagnosisLogs, cronjobs.CleanUpDiagnosisLogs)
 
-	worker.AddNoPublisherHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade, true)
+	worker.AddHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade)
 
-	worker.AddNoPublisherHandler(utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls, true)
+	worker.AddHandler(utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls)
 
-	worker.AddNoPublisherHandler(utils.ScheduledTasks, cronjobs.RunScheduledTasks, false)
+	worker.AddHandler(utils.ScheduledTasks, cronjobs.RunScheduledTasks)
 
-	worker.AddNoPublisherHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry, false)
+	worker.AddHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry)
 
-	worker.AddNoPublisherHandler(utils.SecretScanTask,
-		secretscan.NewSecretScanner(ingestC).StartSecretScan, false)
+	worker.AddHandler(utils.SecretScanTask,
+		secretscan.NewSecretScanner(ingestC).StartSecretScan)
 
-	worker.AddNoPublisherHandler(utils.StopSecretScanTask,
-		secretscan.NewSecretScanner(ingestC).StopSecretScan, false)
+	worker.AddHandler(utils.StopSecretScanTask,
+		secretscan.NewSecretScanner(ingestC).StopSecretScan)
 
-	worker.AddNoPublisherHandler(utils.MalwareScanTask,
-		malwarescan.NewMalwareScanner(ingestC).StartMalwareScan, false)
+	worker.AddHandler(utils.MalwareScanTask,
+		malwarescan.NewMalwareScanner(ingestC).StartMalwareScan)
 
-	worker.AddNoPublisherHandler(utils.StopMalwareScanTask,
-		malwarescan.NewMalwareScanner(ingestC).StopMalwareScan, false)
+	worker.AddHandler(utils.StopMalwareScanTask,
+		malwarescan.NewMalwareScanner(ingestC).StopMalwareScan)
 
-	worker.AddNoPublisherHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls, true)
+	worker.AddHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
 
-	worker.AddNoPublisherHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders, true)
+	worker.AddHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders)
 
-	worker.AddNoPublisherHandler(utils.SendNotificationTask, cronjobs.SendNotifications, true)
+	worker.AddHandler(utils.SendNotificationTask, cronjobs.SendNotifications)
 
-	worker.AddNoPublisherHandler(utils.ReportGeneratorTask, reports.GenerateReport, false)
+	worker.AddHandler(utils.ReportGeneratorTask, reports.GenerateReport)
 
-	worker.AddNoPublisherHandler(utils.ReportCleanUpTask, cronjobs.CleanUpReports, true)
+	worker.AddHandler(utils.ReportCleanUpTask, cronjobs.CleanUpReports)
 
-	worker.AddNoPublisherHandler(utils.LinkCloudResourceTask, cronjobs.LinkCloudResources, true)
+	worker.AddHandler(utils.LinkCloudResourceTask, cronjobs.LinkCloudResources)
 
-	worker.AddNoPublisherHandler(utils.LinkNodesTask, cronjobs.LinkNodes, true)
+	worker.AddHandler(utils.LinkNodesTask, cronjobs.LinkNodes)
 
-	worker.AddNoPublisherHandler(utils.StopVulnerabilityScanTask,
-		sbom.StopVulnerabilityScan, false)
+	worker.AddHandler(utils.StopVulnerabilityScanTask, sbom.StopVulnerabilityScan)
 
-	go worker.pollHandlers()
-
-	log.Info().Msg("Starting the consumer")
-	if err = worker.Run(context.Background()); err != nil {
-		cancel()
-		return err
-	}
-	cancel()
-	return nil
+	log.Info().Msg("Starting the worker")
+	err = worker.Run(context.Background())
+	return err
 }

@@ -1,26 +1,22 @@
 package cronjobs
 
 import (
+	"context"
 	"sync/atomic"
 	"time"
-
-	"github.com/ThreeDotsLabs/watermill/message"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/hibiken/asynq"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 var threatGraphRunning atomic.Bool
 var exploitabilityRunning atomic.Bool
 
-func ComputeThreat(msg *message.Message) error {
-	topic := RecordOffsets(msg)
-	defer SetTopicHandlerStatus(topic, false)
+func ComputeThreat(ctx context.Context, task *asynq.Task) error {
 
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err

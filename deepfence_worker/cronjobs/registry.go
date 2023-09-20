@@ -1,21 +1,19 @@
 package cronjobs
 
 import (
+	"context"
 	"encoding/json"
 
-	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry"
 	sync "github.com/deepfence/ThreatMapper/deepfence_server/pkg/registrysync"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/hibiken/asynq"
 )
 
-func SyncRegistry(msg *message.Message) error {
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
-
+func SyncRegistry(ctx context.Context, task *asynq.Task) error {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("unable to get postgres client: %v", err)
@@ -26,10 +24,10 @@ func SyncRegistry(msg *message.Message) error {
 
 	rsp := utils.RegistrySyncParams{}
 
-	if msg.Payload != nil {
-		err = json.Unmarshal(msg.Payload, &rsp)
+	if task.Payload() != nil {
+		err = json.Unmarshal(task.Payload(), &rsp)
 		if err != nil {
-			log.Warn().Msgf("unable to unmarshal payload: %v, error: %v syncing all registries...", msg.Payload, err)
+			log.Warn().Msgf("unable to unmarshal payload: %v, error: %v syncing all registries...", task.Payload(), err)
 			registries, err = pgClient.GetContainerRegistries(ctx)
 			if err != nil {
 				log.Error().Msgf("unable to get registries: %v", err)
