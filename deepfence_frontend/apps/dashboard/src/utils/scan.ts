@@ -114,7 +114,7 @@ export enum SecretScanGroupedStatus {
   'inProgress' = 'inProgress',
   'error' = 'error',
   'complete' = 'complete',
-  'cancel' = 'cancel',
+  'cancelled' = 'cancelled',
   'cancelling' = 'cancelling',
 }
 
@@ -138,6 +138,7 @@ export enum MalwareScanGroupedStatus {
   'error' = 'error',
   'complete' = 'complete',
   'cancelled' = 'cancelled',
+  'cancelling' = 'cancelling',
 }
 
 export const MALWARE_SCAN_STATUS_GROUPS: Record<

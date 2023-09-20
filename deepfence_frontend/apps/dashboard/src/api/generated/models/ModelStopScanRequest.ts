@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelNodeIdentifier } from './ModelNodeIdentifier';
+import {
+    ModelNodeIdentifierFromJSON,
+    ModelNodeIdentifierFromJSONTyped,
+    ModelNodeIdentifierToJSON,
+} from './ModelNodeIdentifier';
+
 /**
  * 
  * @export
@@ -21,10 +28,16 @@ import { exists, mapValues } from '../runtime';
 export interface ModelStopScanRequest {
     /**
      * 
-     * @type {string}
+     * @type {Array<ModelNodeIdentifier>}
      * @memberof ModelStopScanRequest
      */
-    scan_id: string;
+    node_ids: Array<ModelNodeIdentifier> | null;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ModelStopScanRequest
+     */
+    scan_ids: Array<string> | null;
     /**
      * 
      * @type {string}
@@ -52,7 +65,8 @@ export type ModelStopScanRequestScanTypeEnum = typeof ModelStopScanRequestScanTy
  */
 export function instanceOfModelStopScanRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "scan_id" in value;
+    isInstance = isInstance && "node_ids" in value;
+    isInstance = isInstance && "scan_ids" in value;
     isInstance = isInstance && "scan_type" in value;
 
     return isInstance;
@@ -68,7 +82,8 @@ export function ModelStopScanRequestFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
-        'scan_id': json['scan_id'],
+        'node_ids': (json['node_ids'] === null ? null : (json['node_ids'] as Array<any>).map(ModelNodeIdentifierFromJSON)),
+        'scan_ids': json['scan_ids'],
         'scan_type': json['scan_type'],
     };
 }
@@ -82,7 +97,8 @@ export function ModelStopScanRequestToJSON(value?: ModelStopScanRequest | null):
     }
     return {
         
-        'scan_id': value.scan_id,
+        'node_ids': (value.node_ids === null ? null : (value.node_ids as Array<any>).map(ModelNodeIdentifierToJSON)),
+        'scan_ids': value.scan_ids,
         'scan_type': value.scan_type,
     };
 }

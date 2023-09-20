@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { ActionFunctionArgs, generatePath, useFetcher } from 'react-router-dom';
 import { Button, Modal } from 'ui-components';
 
@@ -7,10 +8,11 @@ import {
   getSecretApiClient,
   getVulnerabilityApiClient,
 } from '@/api/api';
+import { ModelNodeIdentifierNodeTypeEnum } from '@/api/generated';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries } from '@/queries';
-import { ScanTypeEnum } from '@/types/common';
+import { ScanTypeEnum, VulnerabilityScanNodeTypeEnum } from '@/types/common';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
@@ -37,7 +39,9 @@ export const actionStopScan = async ({
 }: ActionFunctionArgs): Promise<{ success?: boolean; message?: string }> => {
   const scanType = params?.scanType?.toString() as ScanTypeEnum;
   const formData = await request.formData();
-  const scanIds = formData.getAll('scanIds') as string[];
+  const scanIds = formData.getAll('scanIds[]') as string[];
+  const nodeIds = formData.getAll('nodeIds[]') as string[];
+  const nodeTypes = formData.getAll('nodeTypes[]') as string[];
 
   if (!scanType || scanIds.length === 0) {
     console.error('Scan id and Scan Type are required for stoping scan');
@@ -49,7 +53,15 @@ export const actionStopScan = async ({
   });
   const result = await stopScanApi({
     modelStopScanRequest: {
-      scan_id: scanIds[0],
+      node_ids: nodeIds.map((nodeId, index) => {
+        return {
+          node_id: nodeId,
+          node_type: getNodeType(
+            nodeTypes[index] as VulnerabilityScanNodeTypeEnum,
+          ) as ModelNodeIdentifierNodeTypeEnum,
+        };
+      }),
+      scan_ids: scanIds,
       scan_type: scanType,
     },
   });
@@ -74,18 +86,52 @@ export const actionStopScan = async ({
     success: true,
   };
 };
+const getNodeType = (nodeType: VulnerabilityScanNodeTypeEnum | 'container_image') => {
+  let _nodeType = '';
+  if (nodeType === VulnerabilityScanNodeTypeEnum.host) {
+    _nodeType = VulnerabilityScanNodeTypeEnum.host;
+  } else if (nodeType === VulnerabilityScanNodeTypeEnum.container) {
+    _nodeType = VulnerabilityScanNodeTypeEnum.container;
+  } else if (
+    nodeType === VulnerabilityScanNodeTypeEnum.imageTag ||
+    nodeType === 'container_image'
+  ) {
+    _nodeType = VulnerabilityScanNodeTypeEnum.image;
+  } else if (nodeType === VulnerabilityScanNodeTypeEnum.kubernetes_cluster) {
+    _nodeType = 'cluster';
+  } else if (nodeType === VulnerabilityScanNodeTypeEnum.image) {
+    _nodeType = 'registry';
+  } else if (nodeType === VulnerabilityScanNodeTypeEnum.registry) {
+    _nodeType = VulnerabilityScanNodeTypeEnum.registry;
+  }
+  return _nodeType;
+};
+
 export const StopScanForm = ({
   open,
-  scanIds,
+  nodes,
   closeModal,
   scanType,
+  onCancelScanSuccess,
 }: {
   open: boolean;
-  scanIds: string[];
+  nodes: {
+    nodeId: string;
+    scanId: string;
+    nodeType: string;
+  }[];
   scanType: ScanTypeEnum;
   closeModal: React.Dispatch<React.SetStateAction<boolean>>;
+  onCancelScanSuccess?: () => void;
 }) => {
   const fetcher = useFetcher<IActionData>();
+
+  useEffect(() => {
+    if (fetcher.state === 'idle' && fetcher.data?.success) {
+      onCancelScanSuccess?.();
+    }
+  }, [fetcher]);
+
   return (
     <Modal
       size="s"
@@ -97,7 +143,7 @@ export const StopScanForm = ({
             <span className="h-6 w-6 shrink-0 dark:text-df-gray-500">
               <ErrorStandardLineIcon />
             </span>
-            Cancel {scanIds.length > 1 ? 'scans' : 'scan'}
+            Cancel {nodes.length > 1 ? 'scans' : 'scan'}
           </div>
         ) : undefined
       }
@@ -119,7 +165,11 @@ export const StopScanForm = ({
               onClick={(e) => {
                 e.preventDefault();
                 const formData = new FormData();
-                scanIds.forEach((scanId) => formData.append('scanIds[]', scanId));
+                nodes.forEach((node) => {
+                  formData.append('scanIds[]', node.scanId);
+                  formData.append('nodeIds[]', node.nodeId);
+                  formData.append('nodeTypes[]', node.nodeType);
+                });
                 fetcher.submit(formData, {
                   method: 'post',
                   action: generatePath('/data-component/scan/stop/:scanType', {

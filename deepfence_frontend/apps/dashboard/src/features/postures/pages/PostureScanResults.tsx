@@ -503,12 +503,22 @@ const HistoryControls = () => {
     refetch();
   }, [scan_id]);
 
+  if (!node_id || !node_type || !scan_id) {
+    throw new Error('Scan id, Node type and Node id are required');
+  }
+
   return (
     <div className="flex items-center gap-x-3 relative flex-grow">
       <StopScanForm
         open={openStopScanModal}
         closeModal={setOpenStopScanModal}
-        scanIds={[scan_id ?? '']}
+        nodes={[
+          {
+            nodeId: node_id,
+            scanId: scan_id,
+            nodeType: node_type,
+          },
+        ]}
         scanType={ScanTypeEnum.ComplianceScan}
       />
       <ScanHistoryDropdown

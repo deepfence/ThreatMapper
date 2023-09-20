@@ -10465,12 +10465,16 @@
           "bucket_policy_is_public": { "type": "boolean" },
           "cidr_ipv4": { "type": "string" },
           "cloud_provider": { "type": "string" },
+          "cluster_arn": { "type": "string" },
+          "cluster_name": { "type": "string" },
+          "connectivity": { "type": "string" },
           "container_definitions": {},
           "containers": {},
           "create_date": { "type": "string" },
           "db_cluster_identifier": { "type": "string" },
           "description": { "type": "string" },
           "event_notification_configuration": {},
+          "group": { "type": "string" },
           "group_id": { "type": "string" },
           "groups": {},
           "host_name": { "type": "string" },
@@ -10487,6 +10491,7 @@
           "instances": {},
           "ip_configuration": {},
           "is_egress": { "type": "boolean" },
+          "last_status": { "type": "string" },
           "name": { "type": "string" },
           "network_configuration": {},
           "network_interfaces": {},
@@ -10516,6 +10521,7 @@
           "tags": {},
           "target_group_arn": { "type": "string" },
           "target_health_descriptions": {},
+          "task_arn": { "type": "string" },
           "task_definition": {},
           "task_definition_arn": { "type": "string" },
           "user-groups": {},
@@ -11280,7 +11286,6 @@
           },
           "status": { "type": "string" },
           "status_message": { "type": "string" },
-          "stop_requested": { "type": "boolean" },
           "updated_at": { "type": "integer", "format": "int64" }
         }
       },
@@ -11443,6 +11448,7 @@
       "ModelContainerImage": {
         "required": [
           "node_id",
+          "image_node_id",
           "node_name",
           "docker_image_name",
           "docker_image_tag",
@@ -11480,6 +11486,7 @@
             "nullable": true
           },
           "docker_image_virtual_size": { "type": "string" },
+          "image_node_id": { "type": "string" },
           "malware_latest_scan_id": { "type": "string" },
           "malware_scan_status": { "type": "string" },
           "malwares_count": { "type": "integer" },
@@ -12315,7 +12322,6 @@
           },
           "status": { "type": "string" },
           "status_message": { "type": "string" },
-          "stop_requested": { "type": "boolean" },
           "updated_at": { "type": "integer", "format": "int64" }
         }
       },
@@ -12359,6 +12365,7 @@
         "required": ["scan_id", "result_ids", "scan_type"],
         "type": "object",
         "properties": {
+          "notify_individual": { "type": "boolean" },
           "result_ids": {
             "type": "array",
             "items": { "type": "string" },
@@ -12597,10 +12604,19 @@
         }
       },
       "ModelStopScanRequest": {
-        "required": ["scan_id", "scan_type"],
+        "required": ["scan_ids", "scan_type", "node_ids"],
         "type": "object",
         "properties": {
-          "scan_id": { "type": "string" },
+          "node_ids": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
+            "nullable": true
+          },
+          "scan_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "scan_type": {
             "enum": [
               "SecretScan",

@@ -19,7 +19,9 @@ import {
   createColumnHelper,
   Dropdown,
   DropdownItem,
+  getRowSelectionColumn,
   Modal,
+  RowSelectionState,
   SortingState,
   Table,
   TableSkeleton,
@@ -45,6 +47,7 @@ import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
+import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
@@ -99,9 +102,9 @@ const action = async ({
 > => {
   const formData = await request.formData();
   const actionType = formData.get('actionType');
-  const scanId = formData.get('scanId');
-  const nodeId = formData.get('nodeId');
-  if (!actionType || !scanId || !nodeId) {
+  const scanIds = formData.getAll('scanId');
+
+  if (!actionType || scanIds.length === 0) {
     throw new Error('Invalid action');
   }
 
@@ -110,7 +113,7 @@ const action = async ({
       fn: getScanResultsApiClient().deleteScanResultsForScanID,
     });
     const result = await resultApi({
-      scanId: scanId.toString(),
+      scanId: scanIds[0] as string,
       scanType: ScanTypeEnum.SecretScan,
     });
     if (!result.ok) {
@@ -137,14 +140,14 @@ const action = async ({
 
 const DeleteConfirmationModal = ({
   showDialog,
-  scanId,
-  nodeId,
+  scanIds,
   setShowDialog,
+  onDeleteSuccess,
 }: {
   showDialog: boolean;
-  scanId: string;
-  nodeId: string;
+  scanIds: string[];
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onDeleteSuccess: () => void;
 }) => {
   const fetcher = useFetcher();
 
@@ -152,14 +155,23 @@ const DeleteConfirmationModal = ({
     (actionType: string) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
-      formData.append('scanId', scanId);
-      formData.append('nodeId', nodeId);
+      scanIds.forEach((scanId) => formData.append('scanId', scanId));
       fetcher.submit(formData, {
         method: 'post',
       });
     },
-    [scanId, nodeId, fetcher],
+    [scanIds, fetcher],
   );
+
+  useEffect(() => {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data?.success &&
+      fetcher.data.action === ActionEnumType.DELETE
+    ) {
+      onDeleteSuccess();
+    }
+  }, [fetcher]);
 
   return (
     <Modal
@@ -227,7 +239,6 @@ const ActionDropdown = ({
   nodeType,
   setShowDeleteDialog,
   setScanIdToDelete,
-  setNodeIdToDelete,
   setStartScanInfo,
 }: {
   trigger: React.ReactNode;
@@ -237,7 +248,6 @@ const ActionDropdown = ({
   nodeType: string;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   setScanIdToDelete: React.Dispatch<React.SetStateAction<string>>;
-  setNodeIdToDelete: React.Dispatch<React.SetStateAction<string>>;
   setStartScanInfo: React.Dispatch<
     React.SetStateAction<{
       start: boolean;
@@ -268,7 +278,13 @@ const ActionDropdown = ({
       <StopScanForm
         open={openStopScanModal}
         closeModal={setOpenStopScanModal}
-        scanIds={[scanId]}
+        nodes={[
+          {
+            nodeId,
+            scanId,
+            nodeType,
+          },
+        ]}
         scanType={ScanTypeEnum.SecretScan}
       />
       <Dropdown
@@ -318,7 +334,6 @@ const ActionDropdown = ({
               className="text-sm"
               onClick={() => {
                 setScanIdToDelete(scanId);
-                setNodeIdToDelete(nodeId);
                 setShowDeleteDialog(true);
               }}
             >
@@ -567,7 +582,13 @@ const Filters = () => {
   );
 };
 
-const ScansTable = () => {
+const ScansTable = ({
+  rowSelectionState,
+  setRowSelectionState,
+}: {
+  rowSelectionState: RowSelectionState;
+  setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
+}) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = useSuspenseQuery({
     ...queries.secret.scanList({
@@ -595,12 +616,16 @@ const ScansTable = () => {
     nodeId: '',
     nodeType: '',
   });
-  const [nodeIdToDelete, setNodeIdToDelete] = useState('');
 
   const columnHelper = createColumnHelper<ScanResult>();
 
   const columns = useMemo(() => {
     const columns = [
+      getRowSelectionColumn(columnHelper, {
+        size: 45,
+        minSize: 45,
+        maxSize: 45,
+      }),
       columnHelper.display({
         id: 'actions',
         enableSorting: false,
@@ -611,7 +636,6 @@ const ScansTable = () => {
             nodeType={cell.row.original.node_type}
             scanStatus={cell.row.original.status}
             setScanIdToDelete={setScanIdToDelete}
-            setNodeIdToDelete={setNodeIdToDelete}
             setShowDeleteDialog={setShowDeleteDialog}
             setStartScanInfo={setStartScanInfo}
             trigger={
@@ -850,9 +874,11 @@ const ScansTable = () => {
       {showDeleteDialog && (
         <DeleteConfirmationModal
           showDialog={showDeleteDialog}
-          scanId={scanIdToDelete}
-          nodeId={nodeIdToDelete}
+          scanIds={[scanIdToDelete]}
           setShowDialog={setShowDeleteDialog}
+          onDeleteSuccess={() => {
+            //
+          }}
         />
       )}
       {startScanInfo.start && (
@@ -884,6 +910,17 @@ const ScansTable = () => {
       <Table
         data={data.scans}
         columns={columns}
+        enableRowSelection
+        rowSelectionState={rowSelectionState}
+        onRowSelectionChange={setRowSelectionState}
+        getRowId={(row) => {
+          return JSON.stringify({
+            scanId: row.scan_id,
+            nodeId: row.node_id,
+            nodeType: row.node_type,
+            updatedAt: row.updated_at,
+          });
+        }}
         enablePagination
         manualPagination
         enableColumnResizing
@@ -940,6 +977,85 @@ const ScansTable = () => {
     </>
   );
 };
+
+const BulkActions = ({
+  selectedRows,
+  setIdsToDelete,
+  setShowDeleteDialog,
+  setShowCancelScanDialog,
+  onTableAction,
+}: {
+  selectedRows: {
+    scanId: string;
+    nodeId: string;
+    nodeType: string;
+  }[];
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowCancelScanDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onTableAction: (ids: string[], actionType: string, maskHostAndImages?: string) => void;
+}) => {
+  const [openStartScan, setOpenStartScan] = useState<boolean>(false);
+  return (
+    <>
+      {openStartScan && (
+        <ConfigureScanModal
+          open={true}
+          onOpenChange={() => setOpenStartScan(false)}
+          scanOptions={
+            {
+              showAdvancedOptions: true,
+              scanType: ScanTypeEnum.SecretScan,
+              data: {
+                nodes: selectedRows.map((row) => {
+                  return {
+                    nodeId: row.nodeId,
+                    nodeType: row.nodeType,
+                  };
+                }),
+              },
+            } as ConfigureScanModalProps['scanOptions']
+          }
+        />
+      )}
+
+      <Button
+        color="default"
+        variant="flat"
+        size="sm"
+        disabled={!selectedRows.length}
+        onClick={() => {
+          setOpenStartScan(true);
+        }}
+      >
+        Start Scan
+      </Button>
+      <Button
+        color="default"
+        variant="flat"
+        size="sm"
+        disabled={!selectedRows.length}
+        onClick={() => setShowCancelScanDialog(true)}
+      >
+        Cancel Scan
+      </Button>
+      <Button
+        color="error"
+        variant="flat"
+        size="sm"
+        startIcon={<TrashLineIcon />}
+        disabled={!selectedRows.length}
+        onClick={() => {
+          setIdsToDelete(selectedRows.map((row) => row.nodeId));
+          setShowDeleteDialog(true);
+        }}
+      >
+        Delete
+      </Button>
+    </>
+  );
+};
+
 const SecretScans = () => {
   const [searchParams] = useSearchParams();
 
@@ -947,6 +1063,32 @@ const SecretScans = () => {
   const isFetching = useIsFetching({
     queryKey: queries.secret.scanList._def,
   });
+
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+  const [idsToDelete, setIdsToDelete] = useState<string[]>([]);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCancelScanDialog, setShowCancelScanDialog] = useState(false);
+
+  const fetcher = useFetcher();
+
+  const onTableAction = useCallback(
+    (ids: string[], actionType: string) => {
+      const formData = new FormData();
+      formData.append('actionType', actionType);
+
+      ids.forEach((item) => formData.append('nodeIds[]', item));
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [fetcher],
+  );
+
+  const selectedRows = useMemo(() => {
+    return Object.keys(rowSelectionState).map((item) => {
+      return JSON.parse(item);
+    });
+  }, [rowSelectionState]);
 
   return (
     <div>
@@ -968,10 +1110,17 @@ const SecretScans = () => {
       </div>
 
       <div className="mx-4">
-        <div className="h-12 flex items-center">
+        <div className="mt-4 h-12 flex items-center">
+          <BulkActions
+            selectedRows={selectedRows}
+            onTableAction={onTableAction}
+            setIdsToDelete={setIdsToDelete}
+            setShowDeleteDialog={setShowDeleteDialog}
+            setShowCancelScanDialog={setShowCancelScanDialog}
+          />
           <Button
             variant="flat"
-            className="ml-auto py-2"
+            className="ml-auto"
             startIcon={<FilterIcon />}
             endIcon={
               getAppliedFiltersCount(searchParams) > 0 ? (
@@ -991,10 +1140,41 @@ const SecretScans = () => {
             Filter
           </Button>
         </div>
+
         {filtersExpanded ? <Filters /> : null}
         <Suspense fallback={<TableSkeleton columns={7} rows={15} />}>
-          <ScansTable />
+          <ScansTable
+            rowSelectionState={rowSelectionState}
+            setRowSelectionState={setRowSelectionState}
+          />
         </Suspense>
+        {showDeleteDialog && (
+          <DeleteConfirmationModal
+            showDialog={showDeleteDialog}
+            scanIds={idsToDelete}
+            setShowDialog={setShowDeleteDialog}
+            onDeleteSuccess={() => {
+              setRowSelectionState({});
+            }}
+          />
+        )}
+        {showCancelScanDialog ? (
+          <StopScanForm
+            open={showCancelScanDialog}
+            closeModal={setShowCancelScanDialog}
+            nodes={selectedRows.map((row) => {
+              return {
+                nodeId: row.nodeId,
+                scanId: row.scanId,
+                nodeType: row.nodeType,
+              };
+            })}
+            scanType={ScanTypeEnum.SecretScan}
+            onCancelScanSuccess={() => {
+              setRowSelectionState({});
+            }}
+          />
+        ) : null}
       </div>
     </div>
   );

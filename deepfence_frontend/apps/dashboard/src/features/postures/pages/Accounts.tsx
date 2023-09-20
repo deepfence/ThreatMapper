@@ -473,7 +473,6 @@ const ActionDropdown = ({
   const [openStopScanModal, setOpenStopScanModal] = useState(false);
 
   const onDownloadAction = useCallback(() => {
-    if (!scanId || !nodeType) return;
     downloadScan({
       scanId,
       nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
@@ -488,12 +487,22 @@ const ActionDropdown = ({
     if (fetcher.state === 'idle') setOpen(false);
   }, [fetcher]);
 
+  if (!scanId || !nodeType || !nodeId) {
+    throw new Error('Scan id, Node type and Node id are required');
+  }
+
   return (
     <>
       <StopScanForm
         open={openStopScanModal}
         closeModal={setOpenStopScanModal}
-        scanIds={[scanId]}
+        nodes={[
+          {
+            nodeId,
+            scanId,
+            nodeType,
+          },
+        ]}
         scanType={scanType}
       />
       <Dropdown
@@ -879,7 +888,13 @@ const AccountTable = ({
           enableRowSelection
           rowSelectionState={rowSelectionState}
           onRowSelectionChange={setRowSelectionState}
-          getRowId={(row) => row.node_id ?? ''}
+          getRowId={(row) => {
+            return JSON.stringify({
+              scanId: row.last_scan_id,
+              nodeId: row.node_id,
+              nodeType: row.cloud_provider,
+            });
+          }}
           enableColumnResizing
           enableSorting
           manualSorting
@@ -997,6 +1012,12 @@ const Accounts = () => {
     [fetcher],
   );
 
+  const selectedRows = useMemo(() => {
+    return Object.keys(rowSelectionState).map((item) => {
+      return JSON.parse(item);
+    });
+  }, [rowSelectionState]);
+
   return (
     <div>
       {!hasOrgCloudAccount(nodeType ?? '') ? <Header /> : null}
@@ -1004,8 +1025,17 @@ const Accounts = () => {
         <StopScanForm
           open={true}
           closeModal={setShowCancelScan}
-          scanIds={[...Object.keys(rowSelectionState)]}
+          nodes={selectedRows.map((row) => {
+            return {
+              nodeId: row.nodeId,
+              scanId: row.scanId,
+              nodeType: row.nodeType,
+            };
+          })}
           scanType={scanType}
+          onCancelScanSuccess={() => {
+            setRowSelectionState({});
+          }}
         />
       )}
       <div className="mb-4">
