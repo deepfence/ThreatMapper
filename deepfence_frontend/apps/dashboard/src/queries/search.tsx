@@ -320,6 +320,9 @@ export const searchQueries = createQueryKeys('search', {
       sortBy: string;
       descending: boolean;
     };
+    filter?: {
+      dockerImageName: string;
+    };
   }) => {
     return {
       queryKey: [{ filters }],
@@ -332,7 +335,7 @@ export const searchQueries = createQueryKeys('search', {
           tagList: string[];
         }[];
       }> => {
-        const { searchText, size, active, order } = filters;
+        const { searchText, size, active, order, filter } = filters;
         const searchContainerImagesApi = apiWrapper({
           fn: getSearchApiClient().searchContainerImages,
         });
@@ -378,6 +381,12 @@ export const searchQueries = createQueryKeys('search', {
           scanRequestParams.node_filter.filters!.match_in_array_filter!.filter_in![
             'docker_image_tag_list'
           ] = [searchText];
+        }
+
+        if (filter?.dockerImageName && filter?.dockerImageName?.length) {
+          scanRequestParams.node_filter.filters!.contains_filter!.filter_in![
+            'docker_image_name'
+          ] = [filter?.dockerImageName];
         }
 
         if (order) {

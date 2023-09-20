@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { cn } from 'tailwind-preset';
 import { Dropdown, DropdownItem, IconButton } from 'ui-components';
 
+import { BalanceLineIcon } from '@/components/icons/common/BalanceLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
+import { formatMilliseconds } from '@/utils/date';
 import { isScanComplete, isScanFailed } from '@/utils/scan';
 
 export const ScanHistoryDropdown = ({
@@ -14,16 +16,19 @@ export const ScanHistoryDropdown = ({
 }: {
   scans: Array<{
     id: string;
-    timestamp: string;
+    timestamp: number;
     status: string;
     isCurrent: boolean;
+    showScanCompareButton?: boolean;
     onDeleteClick: (id: string) => void;
     onDownloadClick: (id: string) => void;
     onScanClick: (id: string) => void;
+    onScanTimeCompareButtonClick?: (toScanTime: number) => void;
   }>;
   currentTimeStamp: string;
 }) => {
   const [open, setOpen] = useState(false);
+
   return (
     <Dropdown
       open={open}
@@ -54,7 +59,7 @@ export const ScanHistoryDropdown = ({
                       'dark:text-text-input-value': scan.isCurrent,
                     })}
                   >
-                    {scan.timestamp}
+                    {formatMilliseconds(scan.timestamp)}
                   </span>
 
                   <div className="flex items-center dark:text-text-link">
@@ -86,6 +91,23 @@ export const ScanHistoryDropdown = ({
                           e.preventDefault();
                           e.stopPropagation();
                           scan.onDeleteClick(scan.id);
+                          setOpen(false);
+                        }}
+                      />
+                    ) : null}
+                    {scan.showScanCompareButton && isScanComplete(scan.status) ? (
+                      <IconButton
+                        variant="flat"
+                        icon={
+                          <span className="h-3 w-3">
+                            <BalanceLineIcon />
+                          </span>
+                        }
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          scan?.onScanTimeCompareButtonClick?.(scan.timestamp);
                           setOpen(false);
                         }}
                       />
