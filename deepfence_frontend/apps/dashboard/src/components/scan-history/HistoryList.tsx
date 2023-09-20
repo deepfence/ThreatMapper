@@ -34,6 +34,7 @@ export const ScanHistoryDropdown = ({
     <div className="w-[190px]">
       <SearchableScanTimeList
         triggerVariant="noBackground"
+        contentWidth="fit-content"
         defaultSelectedTime={currentTimeStamp}
         valueKey="nodeId"
         onChange={(data) => {

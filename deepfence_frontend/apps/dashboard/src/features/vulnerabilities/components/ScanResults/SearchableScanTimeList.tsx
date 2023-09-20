@@ -26,6 +26,7 @@ interface SearchableTimeListProps {
   shouldReverseOption?: boolean;
   renderOption?: (scan: IOption) => React.ReactNode;
   optionFilter?: (scan: IOption) => boolean;
+  contentWidth?: 'default' | 'fit-content';
 }
 
 export interface ISelected {
@@ -45,6 +46,7 @@ const SearchableScanTime = ({
   nodeType,
   label,
   noDataText,
+  contentWidth,
   optionFilter,
   renderOption,
   shouldReverseOption,
@@ -52,10 +54,6 @@ const SearchableScanTime = ({
   const [selectedTime, setSelectedTime] = useState<number | null>(
     defaultSelectedTime ?? null,
   );
-
-  const isSelectVariantType = useMemo(() => {
-    return triggerVariant === 'underline';
-  }, [triggerVariant]);
 
   useEffect(() => {
     setSelectedTime(defaultSelectedTime ?? null);
@@ -93,7 +91,7 @@ const SearchableScanTime = ({
       <Listbox
         name="timeFilter"
         variant={triggerVariant}
-        contentWidth="fit-content"
+        contentWidth={contentWidth}
         label={label}
         getDisplayValue={() => {
           if (selectedTime) {
@@ -140,14 +138,13 @@ const SearchableScanTime = ({
 };
 
 export const SearchableScanTimeList = (props: SearchableTimeListProps) => {
-  const { triggerVariant, label } = props;
+  const { label } = props;
 
   return (
     <Suspense
       fallback={
         <Listbox
           label={label}
-          variant={triggerVariant}
           startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
           placeholder="Select time"
         />
