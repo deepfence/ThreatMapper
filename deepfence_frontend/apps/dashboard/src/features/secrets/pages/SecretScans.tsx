@@ -870,8 +870,12 @@ const ScansTable = () => {
               showAdvancedOptions: true,
               scanType: ScanTypeEnum.SecretScan,
               data: {
-                nodeIds: [startScanInfo.nodeId],
-                nodeType: startScanInfo.nodeType,
+                nodes: [
+                  {
+                    nodeId: startScanInfo.nodeId,
+                    nodeType: startScanInfo.nodeType,
+                  },
+                ],
               },
             } as ConfigureScanModalProps['scanOptions']
           }

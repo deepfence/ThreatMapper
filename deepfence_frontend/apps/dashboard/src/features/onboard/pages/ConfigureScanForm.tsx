@@ -97,9 +97,12 @@ const ScanConfigureForm = () => {
           <VulnerabilityScanConfigureForm
             showAdvancedOptions={false}
             data={{
-              nodeIds: state.map((node) => node.urlId),
-              nodeType: state[0].urlType as VulnerabilityScanNodeTypeEnum,
-              images: [],
+              nodes: state.map((node) => {
+                return {
+                  nodeId: node.urlId,
+                  nodeType: state[0].urlType as VulnerabilityScanNodeTypeEnum,
+                };
+              }),
             }}
             onSuccess={(data) => {
               if (data) {
@@ -122,9 +125,12 @@ const ScanConfigureForm = () => {
           <SecretScanConfigureForm
             showAdvancedOptions={false}
             data={{
-              nodeIds: state.map((node) => node.urlId),
-              nodeType: state[0].urlType as SecretScanNodeTypeEnum,
-              images: [],
+              nodes: state.map((node) => {
+                return {
+                  nodeId: node.urlId,
+                  nodeType: state[0].urlType as SecretScanNodeTypeEnum,
+                };
+              }),
             }}
             onSuccess={(data) => {
               if (data) {
@@ -147,8 +153,12 @@ const ScanConfigureForm = () => {
           <MalwareScanConfigureForm
             showAdvancedOptions={false}
             data={{
-              nodeIds: state.map((node) => node.urlId),
-              nodeType: state[0].urlType as MalwareScanNodeTypeEnum,
+              nodes: state.map((node) => {
+                return {
+                  nodeId: node.urlId,
+                  nodeType: state[0].urlType as MalwareScanNodeTypeEnum,
+                };
+              }),
               images: [],
             }}
             onSuccess={(data) => {
