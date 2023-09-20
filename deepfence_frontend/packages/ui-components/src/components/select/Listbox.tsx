@@ -62,6 +62,7 @@ const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[5px] px-2
     variant: {
       underline: '',
       default: '',
+      noBackground: '',
     },
   },
   defaultVariants: {
@@ -79,6 +80,19 @@ const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[5px] px-2
       className: cn(
         defaultUnderlineStyle,
         'df-error data-[headlessui-state=open]:dark:border-b-[#f55b47] dark:focus:border-b-[#f55b47] dark:border-b-[#f55b47]',
+      ),
+    },
+    {
+      variant: 'noBackground',
+      color: 'default',
+      className: cn(`${defaultStyle} border-none dark:bg-transparent`),
+    },
+    {
+      variant: 'noBackground',
+      color: 'error',
+      className: cn(
+        defaultStyle,
+        'dark:bg-transparent df-error data-[headlessui-state=open]:dark:border-[#f55b47] dark:focus:border-[#f55b47] dark:border-[#f55b47]',
       ),
     },
   ],
@@ -156,7 +170,7 @@ interface ListboxProps<TType, TActualType>
     TActualType
   > {
   color?: ColorType;
-  variant?: 'underline' | 'default';
+  variant?: 'underline' | 'default' | 'noBackground';
   children?: React.ReactNode;
   label?: string;
   clearAll?: React.ReactNode;
@@ -170,6 +184,7 @@ interface ListboxProps<TType, TActualType>
   id?: string;
   helperText?: string;
   noDataText?: string;
+  contentWidth?: 'default' | 'fit-content';
 }
 export function Listbox<TType, TActualType>({
   color,
@@ -190,6 +205,7 @@ export function Listbox<TType, TActualType>({
   loading,
   startIcon,
   noDataText,
+  contentWidth,
   ...props
 }: ListboxProps<TType, TActualType>) {
   const internalId = useId();
@@ -259,7 +275,14 @@ export function Listbox<TType, TActualType>({
                 </PopoverPrimitive.Trigger>
                 <PopoverPrimitive.Portal>
                   <PopoverPrimitive.Content align="start" sideOffset={2} asChild>
-                    <div className="data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down w-[var(--radix-popper-anchor-width)]">
+                    <div
+                      className={cn(
+                        'data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down w-[var(--radix-popper-anchor-width)]',
+                        {
+                          'w-fit': contentWidth === 'fit-content',
+                        },
+                      )}
+                    >
                       <HUIListbox.Options>
                         <div
                           className={cn(

@@ -31,9 +31,9 @@ export const ScanHistoryDropdown = ({
   onScanTimeCompareButtonClick?: (toScanTime: number) => void;
 }) => {
   return (
-    <div className="w-[280px]">
+    <div className="w-[190px]">
       <SearchableScanTimeList
-        triggerVariant="underline"
+        triggerVariant="noBackground"
         defaultSelectedTime={currentTimeStamp}
         valueKey="nodeId"
         onChange={(data) => {

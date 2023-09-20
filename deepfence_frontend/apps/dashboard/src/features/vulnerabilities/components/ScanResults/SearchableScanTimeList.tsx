@@ -16,7 +16,7 @@ interface SearchableTimeListProps {
   onClearAll?: () => void;
   defaultSelectedTime?: number | null;
   valueKey?: 'nodeId';
-  triggerVariant?: 'underline' | 'default';
+  triggerVariant?: 'underline' | 'default' | 'noBackground';
   helperText?: string;
   color?: 'error' | 'default';
   nodeId?: string;
@@ -93,14 +93,14 @@ const SearchableScanTime = ({
       <Listbox
         name="timeFilter"
         variant={triggerVariant}
+        contentWidth="fit-content"
         label={label}
-        getDisplayValue={() =>
-          isSelectVariantType
-            ? selectedTime
-              ? formatMilliseconds(selectedTime)
-              : ''
-            : ''
-        }
+        getDisplayValue={() => {
+          if (selectedTime) {
+            return formatMilliseconds(selectedTime);
+          }
+          return '';
+        }}
         placeholder="scan time"
         value={selectedTime as unknown as ISelected}
         onChange={(value: ISelected) => {
