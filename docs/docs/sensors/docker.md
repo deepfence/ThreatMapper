@@ -16,21 +16,23 @@ Install and start the latest release of the deepfence sensor.  Run the following
 
 ```bash
 docker run -dit \
-  --cpus=".2" \
-  --name=deepfence-agent \
-  --restart on-failure \
-  --pid=host \
-  --net=host \
-  --privileged=true \
-  -v /sys/kernel/debug:/sys/kernel/debug:rw \
-  -v /var/log/fenced \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /:/fenced/mnt/host/:ro \
-  -e USER_DEFINED_TAGS="" \
-  -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
-  -e MGMT_CONSOLE_PORT="443" \
-  -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-  deepfenceio/deepfence_agent_ce:2.0.0
+    --cpus=".2" \
+    --name=deepfence-agent \
+    --restart on-failure \
+    --pid=host \
+    --net=host \
+    --log-driver json-file \
+    --log-opt max-size=50m \
+    --privileged=true \
+    -v /sys/kernel/debug:/sys/kernel/debug:rw \
+    -v /var/log/fenced \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v /:/fenced/mnt/host/:ro \
+    -e USER_DEFINED_TAGS="" \
+    -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
+    -e MGMT_CONSOLE_PORT="443" \
+    -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
+    deepfenceio/deepfence_agent_ce:2.0.0
 ```
 
 :::tip
