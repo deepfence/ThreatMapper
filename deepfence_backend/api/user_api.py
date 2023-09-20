@@ -1688,23 +1688,24 @@ class IntegrationView(MethodView):
             }
 
             response = requests.request("GET", url, headers=headers, data=payload)
-            integration_key = ""
+            # integration_key = ""
             if response.status_code != 200:
                 raise InvalidUsage("Looks like no user own this Authentication token provided")
-            else:
-                service_key_found = False
-                for data in response.json()["services"]:
-                    if data["integrations"]:
-                        for integrations in data["integrations"]:
-                            if integrations.get("integration_key", ""):
-                                integration_key = integrations.get("integration_key", "")
-                                if integration_key == service_key:
-                                    service_key_found = True
-                                    break
-                    if service_key_found:
-                        break
-                if not integration_key or not service_key_found:
-                    raise InvalidUsage("Looks like integration key provided is not valid")
+            # Following does not work in case user does not have permission
+            # else:
+            #     service_key_found = False
+            #     for data in response.json()["services"]:
+            #         if data["integrations"]:
+            #             for integrations in data["integrations"]:
+            #                 if integrations.get("integration_key", ""):
+            #                     integration_key = integrations.get("integration_key", "")
+            #                     if integration_key == service_key:
+            #                         service_key_found = True
+            #                         break
+            #         if service_key_found:
+            #             break
+            #     if not integration_key or not service_key_found:
+            #         raise InvalidUsage("Looks like integration key provided is not valid")
         except Exception as e:
             raise InvalidUsage(e)
 
