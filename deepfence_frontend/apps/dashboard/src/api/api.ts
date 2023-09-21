@@ -10,6 +10,7 @@ import {
   Configuration,
   ControlsApi,
   DiagnosisApi,
+  DiffAddApi,
   IntegrationApi,
   LookupApi,
   MalwareScanApi,
@@ -334,5 +335,12 @@ export function getCommonApiClient() {
   const commonApi = new CommonApi(configuration);
   return {
     getEula: commonApi.eula.bind(commonApi),
+  };
+}
+
+export function getScanCompareApiClient() {
+  const scanCompareApi = new DiffAddApi(configuration);
+  return {
+    diffVulnerability: scanCompareApi.diffAddVulnerability.bind(scanCompareApi),
   };
 }

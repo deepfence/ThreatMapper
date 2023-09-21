@@ -67,11 +67,15 @@ spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
 
-      {{- with .Values.nodeSelector }}
+      {{- with .Values.clusterAgentNodeSelector }}
       nodeSelector:
       {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.clusterAgentAffinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.clusterAgentTolerations }}
       tolerations:
       {{- toYaml . | nindent 8 }}
       {{- end }}

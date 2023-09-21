@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	log2 "github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/weaveworks/scope/probe/appclient"
@@ -66,6 +67,7 @@ func setLogLevel(levelname string) {
 		log.Fatal(err)
 	}
 	log.SetLevel(level)
+	log2.Initialize(levelname)
 }
 
 type flags struct {

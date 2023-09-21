@@ -20,21 +20,23 @@ ACC=myorg             # the name of the dockerhub account
 docker login -u $ACC  # log in to the account
 
 docker run -dit \
-  --cpus=".2" \
-  --name=deepfence-agent \
-  --restart on-failure \
-  --pid=host \
-  --net=host \
-  --privileged=true \
-  -v /sys/kernel/debug:/sys/kernel/debug:rw \
-  -v /var/log/fenced \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /:/fenced/mnt/host/:ro \
-  -e USER_DEFINED_TAGS="" \
-  -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
-  -e MGMT_CONSOLE_PORT="443" \
-  -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-  $ACC/deepfence_agent_ce:2.0.0
+    --cpus=".2" \
+    --name=deepfence-agent \
+    --restart on-failure \
+    --pid=host \
+    --net=host \
+    --log-driver json-file \
+    --log-opt max-size=50m \
+    --privileged=true \
+    -v /sys/kernel/debug:/sys/kernel/debug:rw \
+    -v /var/log/fenced \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v /:/fenced/mnt/host/:ro \
+    -e USER_DEFINED_TAGS="" \
+    -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
+    -e MGMT_CONSOLE_PORT="443" \
+    -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
+    $ACC/deepfence_agent_ce:2.0.0
 ```
 
 ## Installing and Running the Sensor Agents in a Kubernetes Cluster
@@ -48,7 +50,7 @@ You can use these instructions for helm-based installations in standalone and ho
 ```bash
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 
-helm show values deepfence/deepfence-agent > deepfence_agent_values.yaml
+helm show values deepfence/deepfence-agent --version 2.0.0 > deepfence_agent_values.yaml
 
 # You will need to update the following values:
 #   image:name and image:clusterAgentImageName - change the account to point to your images
@@ -57,7 +59,8 @@ vim deepfence_agent_values.yaml
 
 helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-agent \
     --namespace deepfence \
-    --create-namespace
+    --create-namespace \
+    --version 2.0.0
 ```
 
 Allow a few seconds for the containers to pull and deploy in your Kubernetes environment.

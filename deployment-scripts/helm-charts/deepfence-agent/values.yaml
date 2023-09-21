@@ -74,6 +74,8 @@ clusterAgentResources:
     memory: 1536Mi
 
 nodeSelector: {"kubernetes.io/os": "linux"}
+# "kubernetes.io/arch": "amd64"
+clusterAgentNodeSelector: {"kubernetes.io/os": "linux"}
 
 tolerations:
   - operator: "Exists"
@@ -81,7 +83,14 @@ tolerations:
   - operator: "Exists"
     effect: "NoExecute"
 
+clusterAgentTolerations:
+  - operator: "Exists"
+    effect: "NoSchedule"
+  - operator: "Exists"
+    effect: "NoExecute"
+
 affinity: {}
+clusterAgentAffinity: {}
 
 serviceAccount:
   # Annotations to add to the service account

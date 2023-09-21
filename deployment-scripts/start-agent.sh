@@ -91,11 +91,14 @@ start_agent() {
     --ulimit core=0 \
     --name=deepfence-agent \
     --restart on-failure \
-    --pid=host --net=host --uts=host \
+    --pid=host \
+    --net=host \
+    --log-driver json-file \
+    --log-opt max-size=50m \
     --privileged=true \
     -v /sys/kernel/debug:/sys/kernel/debug:rw \
-    -v /var/log/fenced -v /var/run/docker.sock:/var/run/docker.sock \
-    -v /var/lib/docker/:/fenced/mnt/host/var/lib/docker/:rw \
+    -v /var/log/fenced \
+    -v /var/run/docker.sock:/var/run/docker.sock \
     -v /:/fenced/mnt/host/:ro \
     -e DF_ENABLE_PROCESS_REPORT="true" \
     -e DF_ENABLE_CONNECTIONS_REPORT="true" \

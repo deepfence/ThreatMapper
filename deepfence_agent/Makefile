@@ -48,7 +48,6 @@ agent: tools/apache/scope/vendor
 
 clean:
 	-$(RM) tools/apache/deepfence/df-utils/getCloudInstanceId
-	-$(RM) tools/apache/compliance_check/deepfence_compliance_check
 	-$(RM) tools/apache/scope/docker/deepfence_exe
 	-(cd plugins && make clean)
 	-$(RM) -rf tools/apache/scope/vendor

@@ -33,6 +33,7 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeId, cloudProvider, 
 			cloud_provider: $cloud_provider,
 			compliance_type: $compliance_type
 		})
+		WHERE n.disabled = false
 		RETURN n.node_id, n.title, n.description, n.service, n.category_hierarchy, n.active`,
 		map[string]interface{}{"cloud_provider": cloudProvider, "compliance_type": complianceType})
 

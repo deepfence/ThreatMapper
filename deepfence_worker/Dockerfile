@@ -52,7 +52,9 @@ COPY --from=builder-yara /usr/local/yara.tar.gz /usr/local/yara.tar.gz
 # extract yara
 RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \
     && rm /usr/local/yara.tar.gz \
-    && chmod +x /entrypoint.sh
+    && chmod +x /entrypoint.sh \
+#    && sed -i 's/auto-update: true/auto-update: false/g' /usr/local/bin/grype.yaml \
+    && echo "0 */2 * * * /usr/local/bin/grype db update" >> /etc/crontabs/root
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/local/bin/deepfence_worker"]

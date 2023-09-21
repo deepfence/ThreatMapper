@@ -431,6 +431,27 @@ var scanStopSubCmd = &cobra.Command{
 				ScanType: "MalwareScan",
 			})
 			res, err = http.Client().MalwareScanAPI.StopMalwareScanExecute(req)
+		case "vulnerability":
+			req := http.Client().VulnerabilityAPI.StopVulnerabilityScan(context.Background())
+			req = req.ModelStopScanRequest(deepfence_server_client.ModelStopScanRequest{
+				ScanId:   scan_id,
+				ScanType: "VulnerabilityScan",
+			})
+			res, err = http.Client().VulnerabilityAPI.StopVulnerabilityScanExecute(req)
+		case "compliance":
+			req := http.Client().ComplianceAPI.StopComplianceScan(context.Background())
+			req = req.ModelStopScanRequest(deepfence_server_client.ModelStopScanRequest{
+				ScanId:   scan_id,
+				ScanType: "ComplianceScan",
+			})
+			res, err = http.Client().ComplianceAPI.StopComplianceScanExecute(req)
+		case "cloudcompliance":
+			req := http.Client().ComplianceAPI.StopComplianceScan(context.Background())
+			req = req.ModelStopScanRequest(deepfence_server_client.ModelStopScanRequest{
+				ScanId:   scan_id,
+				ScanType: "CloudComplianceScan",
+			})
+			res, err = http.Client().ComplianceAPI.StopComplianceScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}

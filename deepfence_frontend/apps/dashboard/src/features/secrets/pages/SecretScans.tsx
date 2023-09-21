@@ -408,7 +408,7 @@ const Filters = () => {
             .map((item) => {
               return (
                 <ComboboxOption key={item} value={item}>
-                  {capitalize(item)}
+                  {capitalize(item.replace('_', ' '))}
                 </ComboboxOption>
               );
             })}

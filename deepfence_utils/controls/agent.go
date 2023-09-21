@@ -18,6 +18,8 @@ const (
 	UpgradeAgentPlugin
 	StopSecretScan
 	StopMalwareScan
+	StopVulnerabilityScan
+	StopComplianceScan
 )
 
 type ScanResource int
@@ -118,17 +120,10 @@ type StartMalwareScanRequest struct {
 	BinArgs  map[string]string `json:"bin_args" required:"true"`
 }
 
-type StopSecretScanRequest struct {
-	NodeId   string            `json:"node_id" required:"true"`
-	NodeType ScanResource      `json:"node_type" required:"true"`
-	BinArgs  map[string]string `json:"bin_args" required:"true"`
-}
-
-type StopMalwareScanRequest struct {
-	NodeId   string            `json:"node_id" required:"true"`
-	NodeType ScanResource      `json:"node_type" required:"true"`
-	BinArgs  map[string]string `json:"bin_args" required:"true"`
-}
+type StopSecretScanRequest StartSecretScanRequest
+type StopMalwareScanRequest StartSecretScanRequest
+type StopVulnerabilityScanRequest StartSecretScanRequest
+type StopComplianceScanRequest StartSecretScanRequest
 
 type SendAgentDiagnosticLogsRequest struct {
 	NodeId    string       `json:"node_id" required:"true"`
@@ -169,4 +164,24 @@ type AgentControls struct {
 
 func (ac AgentControls) ToBytes() ([]byte, error) {
 	return json.Marshal(ac)
+}
+
+func GetBinArgs(T interface{}) map[string]string {
+	switch T.(type) {
+	case StartVulnerabilityScanRequest:
+		return T.(StartVulnerabilityScanRequest).BinArgs
+	case StartSecretScanRequest:
+		return T.(StartSecretScanRequest).BinArgs
+	case StartComplianceScanRequest:
+		return T.(StartComplianceScanRequest).BinArgs
+	case StartMalwareScanRequest:
+		return T.(StartMalwareScanRequest).BinArgs
+	case StopSecretScanRequest:
+		return T.(StopSecretScanRequest).BinArgs
+	case StopMalwareScanRequest:
+		return T.(StopVulnerabilityScanRequest).BinArgs
+	case StopVulnerabilityScanRequest:
+		return T.(StopVulnerabilityScanRequest).BinArgs
+	}
+	return nil
 }

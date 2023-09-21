@@ -8,11 +8,12 @@ import {
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { cva } from 'cva';
 import { isEmpty, isNil } from 'lodash-es';
-import { createContext, useContext, useId } from 'react';
+import { createContext, useContext, useEffect, useId, useRef } from 'react';
+import { useIntersection } from 'react-use';
 import { cn } from 'tailwind-preset';
 
 import HelperText from '@/components/input/HelperText';
-import { Badge, Checkbox, Separator } from '@/main';
+import { Badge, Checkbox, CircleSpinner, Separator } from '@/main';
 export type ColorType = 'default' | 'error';
 
 const ListboxContext = createContext<{
@@ -52,7 +53,7 @@ const defaultUnderlineStyle = cn(
   // disabled text color
   'disabled:text-gray-600 dark:disabled:text-gray-600',
 );
-const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[5px] px-3'], {
+const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[5px] px-2'], {
   variants: {
     color: {
       default: [defaultStyle],
@@ -129,6 +130,23 @@ const SelectArrow = () => {
     </span>
   );
 };
+
+const OptionsWrapper = ({
+  children,
+  noDataText,
+}: {
+  children: React.ReactNode;
+  noDataText?: string;
+}) => {
+  if (children === null || isEmpty(children)) {
+    return (
+      <div className="py-3 px-2 w-full flex items-center justify-center text-p6 dark:text-text-text-and-icon">
+        {noDataText?.length ? noDataText : 'No results found'}
+      </div>
+    );
+  }
+  return <>{children}</>;
+};
 interface ListboxProps<TType, TActualType>
   extends HUIListboxProps<
     React.ExoticComponent<{
@@ -145,9 +163,13 @@ interface ListboxProps<TType, TActualType>
   onClearAll?: () => void;
   placeholder?: string;
   getDisplayValue?: (value?: TType) => string;
+  onEndReached?: () => void;
+  startIcon?: React.ReactNode;
+  loading?: boolean;
   required?: boolean;
   id?: string;
   helperText?: string;
+  noDataText?: string;
 }
 export function Listbox<TType, TActualType>({
   color,
@@ -164,6 +186,10 @@ export function Listbox<TType, TActualType>({
   helperText,
   disabled,
   multiple,
+  onEndReached,
+  loading,
+  startIcon,
+  noDataText,
   ...props
 }: ListboxProps<TType, TActualType>) {
   const internalId = useId();
@@ -204,9 +230,14 @@ export function Listbox<TType, TActualType>({
                       }),
                     )}
                   >
-                    <span className="truncate text-start block text-p4">
-                      {getPlaceholderValue(value, getDisplayValue, placeholder)}
-                    </span>
+                    <div className="flex gap-x-2 items-center">
+                      {startIcon ? (
+                        <div className="w-4 h-4 shrink-0">{startIcon}</div>
+                      ) : null}
+                      <span className="truncate text-start block text-p4">
+                        {getPlaceholderValue(value, getDisplayValue, placeholder)}
+                      </span>
+                    </div>
                     <div
                       className={cn('absolute inset-y-0 right-0 flex pr-3', {
                         'gap-[18px]': multiple,
@@ -229,20 +260,36 @@ export function Listbox<TType, TActualType>({
                 <PopoverPrimitive.Portal>
                   <PopoverPrimitive.Content align="start" sideOffset={2} asChild>
                     <div className="data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down w-[var(--radix-popper-anchor-width)]">
-                      <HUIListbox.Options
-                        className={cn(
-                          // bg
-                          'bg-bg-card dark:bg-bg-card',
-                          'text-p7',
-                          // border
-                          'border border-bg-grid-border dark:border-bg-grid-border',
-                          'rounded-[5px]',
-                          'select-none',
-                          // text
-                          'text-text-text-and-icon dark:text-text-text-and-icon outline-none focus:outline-none',
-                        )}
-                      >
-                        <div className={cn('max-h-60 overflow-y-auto')}>{children}</div>
+                      <HUIListbox.Options>
+                        <div
+                          className={cn(
+                            // bg
+                            'max-h-60 overflow-auto',
+                            'bg-bg-card dark:bg-bg-card',
+                            'text-p7',
+                            // border
+                            'border border-bg-grid-border dark:border-bg-grid-border',
+                            'rounded-[5px]',
+                            'select-none',
+                            // text
+                            'text-text-text-and-icon dark:text-text-text-and-icon outline-none focus:outline-none',
+                          )}
+                        >
+                          <OptionsWrapper noDataText={noDataText}>
+                            {children}
+                          </OptionsWrapper>
+                          {loading ? (
+                            <div className="pt-2 pb-1 px-2 flex items-center">
+                              <CircleSpinner size="sm" />
+                            </div>
+                          ) : (
+                            <InfiniteLoadingObserverElement
+                              onVisible={() => {
+                                onEndReached?.();
+                              }}
+                            />
+                          )}
+                        </div>
                         {multiple ? (
                           <>
                             <Separator />
@@ -278,6 +325,23 @@ export function Listbox<TType, TActualType>({
   );
 }
 
+const InfiniteLoadingObserverElement = ({ onVisible }: { onVisible: () => void }) => {
+  const intersectionRef = useRef<HTMLDivElement>(null);
+  const intersection = useIntersection(intersectionRef, {
+    root: null,
+    rootMargin: '0px',
+    threshold: 1,
+  });
+
+  useEffect(() => {
+    if (intersection?.isIntersecting && intersection?.intersectionRatio > 0) {
+      onVisible();
+    }
+  }, [intersection]);
+
+  return <div ref={intersectionRef}></div>;
+};
+
 export function ListboxOption<TType>({
   children,
   ...props
@@ -289,7 +353,7 @@ export function ListboxOption<TType>({
       className={({ active, selected }) => {
         return cn(
           'relative select-none',
-          'pt-2 pb-1 px-3',
+          'pt-2 pb-1 px-2',
           'flex gap-1.5',
           'cursor-pointer',
           'dark:hover:bg-bg-grid-header',

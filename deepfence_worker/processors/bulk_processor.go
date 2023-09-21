@@ -3,14 +3,48 @@ package processors
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/cenkalti/backoff/v3"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/db"
 )
+
+var (
+	wait    chan struct{}
+	breaker sync.RWMutex
+)
+
+func init() {
+	wait = make(chan struct{})
+
+	neo4j_port := os.Getenv("DEEPFENCE_NEO4J_BOLT_PORT")
+	neo4j_host := os.Getenv("DEEPFENCE_NEO4J_HOST")
+	go func() {
+		for {
+			select {
+			case <-wait:
+				breaker.Lock()
+				log.Info().Msgf("Breaker opened")
+			}
+			for {
+				err := utils.WaitServiceTcpConn(neo4j_host, neo4j_port, time.Second*30)
+				if err != nil {
+					log.Error().Msgf("err: %v", err)
+					continue
+				}
+				break
+			}
+			breaker.Unlock()
+			log.Info().Msgf("Breaker closed")
+		}
+	}()
+}
 
 type BulkRequest struct {
 	NameSpace string
@@ -260,6 +294,13 @@ func isTransientError(err error) bool {
 	return false
 }
 
+func isConnectivityError(err error) bool {
+	if _, ok := err.(*neo4j.ConnectivityError); ok {
+		return true
+	}
+	return false
+}
+
 func (w *bulkWorker) commit(ctx context.Context) []error {
 	errs := []error{}
 	for k, v := range w.buffer.Read() {
@@ -267,13 +308,24 @@ func (w *bulkWorker) commit(ctx context.Context) []error {
 		w.expBackoff.Reset()
 		var err error
 		for {
-			if err = w.p.commitFn(k, v); err != nil {
+			breaker.RLock()
+			err = w.p.commitFn(k, v)
+			breaker.RUnlock()
+			if err != nil {
 				if isTransientError(err) {
 					waitTime := w.expBackoff.NextBackOff()
 					if waitTime != backoff.Stop {
 						<-time.After(waitTime)
 						continue
 					}
+				} else if isConnectivityError(err) {
+					select {
+					case wait <- struct{}{}:
+					default:
+					}
+					// Give some room
+					<-time.After(time.Second)
+					continue
 				}
 				errs = append(errs, err)
 			}
