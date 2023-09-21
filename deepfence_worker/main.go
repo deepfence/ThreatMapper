@@ -34,7 +34,7 @@ type config struct {
 	KafkaTopicRetentionMs     string   `default:"86400000" split_words:"true"`
 	KafkaTopicPartitionsTasks int32    `default:"3" split_words:"true"`
 	RedisHost                 string   `default:"deepfence-redis"`
-	RedisDb                   string   `default:""`
+	RedisDbNumber             int      `default:"0"`
 	RedisPort                 string   `default:"6379"`
 	RedisPassword             string   `default:""`
 }
