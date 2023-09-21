@@ -1,9 +1,11 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   createColumnHelper,
   IconButton,
+  SortingState,
   Table,
   TableNoDataElement,
   TableSkeleton,
@@ -16,19 +18,25 @@ import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
+import { getPageFromSearchParams, useSortingState } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 10;
 
 const useUserActivityLogs = () => {
+  const [searchParams] = useSearchParams();
   return useSuspenseQuery({
-    ...queries.setting.listUserActivityLogs(),
+    ...queries.setting.listUserActivityLogs({
+      page: getPageFromSearchParams(searchParams),
+      pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
+    }),
   });
 };
 const AuditTable = () => {
   const columnHelper = createColumnHelper<PostgresqlDbGetAuditLogsRow>();
 
   const { copy, isCopied } = useCopyToClipboardState();
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [sort, setSort] = useSortingState();
 
   const { data } = useUserActivityLogs();
   const columns = useMemo(() => {
@@ -123,12 +131,50 @@ const AuditTable = () => {
           data={data.data || []}
           columns={columns}
           enablePagination
-          pageSize={pageSize}
           enablePageResize
-          onPageResize={(newSize) => {
-            setPageSize(newSize);
-          }}
+          manualPagination
+          enableColumnResizing
+          approximatePagination
+          totalRows={data?.pagination?.totalRows}
+          pageSize={parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE))}
+          pageIndex={data?.pagination?.currentPage}
           enableSorting
+          manualSorting
+          sortingState={sort}
+          onSortingChange={(updaterOrValue) => {
+            let newSortState: SortingState = [];
+            if (typeof updaterOrValue === 'function') {
+              newSortState = updaterOrValue(sort);
+            } else {
+              newSortState = updaterOrValue;
+            }
+            setSearchParams((prev) => {
+              if (!newSortState.length) {
+                prev.delete('sortby');
+                prev.delete('desc');
+              } else {
+                prev.set('sortby', String(newSortState[0].id));
+                prev.set('desc', String(newSortState[0].desc));
+              }
+              return prev;
+            });
+            setSort(newSortState);
+          }}
+          onPaginationChange={(updaterOrValue) => {
+            let newPageIndex = 0;
+            if (typeof updaterOrValue === 'function') {
+              newPageIndex = updaterOrValue({
+                pageIndex: data?.pagination?.currentPage ?? 0,
+                pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
+              }).pageIndex;
+            } else {
+              newPageIndex = updaterOrValue.pageIndex;
+            }
+            setSearchParams((prev) => {
+              prev.set('page', String(newPageIndex));
+              return prev;
+            });
+          }}
           noDataElement={<TableNoDataElement text="No user audit logs available" />}
         />
       )}
