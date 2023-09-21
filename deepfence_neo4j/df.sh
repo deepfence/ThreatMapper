@@ -18,6 +18,10 @@ export PROVIDER="s3"
 
 trap backup_db USR1
 
+# Cleans up stall state if any.
+# This helps in case neo4j was stopped via container kill or restart
+neo4j status
+
 backup_db() {
     echo "Start backup"
     trap '' USR1
