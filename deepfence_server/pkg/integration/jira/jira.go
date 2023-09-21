@@ -79,6 +79,35 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 	}
 	log.Info().Msgf("jira issue created id %s link %s", issue.ID, issue.Self)
 
+	// parse message in case of custom fields
+	var msgWithCustomFields []map[string]interface{}
+	if len(j.Config.CustomFields) > 0 {
+		var msg []map[string]interface{}
+		err = json.Unmarshal([]byte(message), &msg)
+		if err != nil {
+			log.Error().Msgf(err.Error())
+			return err
+		}
+
+		for _, m := range msg {
+			customFields := make(map[string]interface{})
+			for _, f := range j.Config.CustomFields {
+				if value, ok := m[f]; ok {
+					customFields[f] = value
+				}
+			}
+			msgWithCustomFields = append(msgWithCustomFields, customFields)
+		}
+
+		finalByte, err := json.MarshalIndent(msgWithCustomFields, "", "  ")
+		if err != nil {
+			log.Error().Msgf(err.Error())
+			return err
+		}
+
+		message = string(finalByte)
+	}
+
 	attachment, resp, err := client.Issue.PostAttachment(issue.ID, strings.NewReader(message), "scan-results.json")
 	if err != nil {
 		log.Error().Msgf(err.Error())
