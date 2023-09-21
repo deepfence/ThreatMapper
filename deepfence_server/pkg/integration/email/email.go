@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -34,29 +35,36 @@ func New(ctx context.Context, b []byte) (*Email, error) {
 }
 
 func (e Email) FormatMessage(message []map[string]interface{}) string {
-	entiremsg := "*" + e.Resource + "*\n\n"
+	var entiremsg strings.Builder
+	entiremsg.WriteString("*")
+	entiremsg.WriteString(e.Resource)
+	entiremsg.WriteString("*\n\n")
 
 	//Prepare the sorted keys so that the output has the records in same order
 	var keys []string
 	if len(message) > 0 {
 		keys = make([]string, 0, len(message[0]))
-		for key, _ := range message[0] {
+		for key := range message[0] {
 			keys = append(keys, key)
 		}
 
 		sort.Strings(keys)
 	}
 
-	entryFmt := "%s: %s\n"
 	for k, v := range message {
-		entiremsg = entiremsg + fmt.Sprintf("#%d\n", k+1)
+		entiremsg.WriteString("#")
+		entiremsg.WriteString(strconv.Itoa(k + 1))
+		entiremsg.WriteString("\n")
 		for _, key := range keys {
 			if val, ok := v[key]; ok {
 				fmtVal := ""
 				if val != nil {
 					fmtVal = fmt.Sprintf("%v", val)
 				}
-				entiremsg += fmt.Sprintf(entryFmt, key, fmtVal)
+				entiremsg.WriteString(key)
+				entiremsg.WriteString(": ")
+				entiremsg.WriteString(fmtVal)
+				entiremsg.WriteString("\n")
 				delete(v, key)
 			}
 		}
@@ -68,13 +76,14 @@ func (e Email) FormatMessage(message []map[string]interface{}) string {
 			if val != nil {
 				fmtVal = fmt.Sprintf("%v", val)
 			}
-
-			entiremsg += fmt.Sprintf(entryFmt, key, fmtVal)
+			entiremsg.WriteString(key)
+			entiremsg.WriteString(": ")
+			entiremsg.WriteString(fmtVal)
+			entiremsg.WriteString("\n")
 		}
-
-		entiremsg = entiremsg + "\n"
+		entiremsg.WriteString("\n")
 	}
-	return entiremsg
+	return entiremsg.String()
 }
 
 func (e Email) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
