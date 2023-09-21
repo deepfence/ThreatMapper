@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -16,7 +16,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/reports"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/sbom"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/secretscan"
-	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
+	wtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/hibiken/asynq"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -28,10 +28,6 @@ type Worker struct {
 	namespace directory.NamespaceID
 }
 
-func NewWorker(namespace directory.NamespaceID, srv *asynq.Server, cfg config, mux *asynq.ServeMux) Worker {
-	return Worker{srv: srv, cfg: cfg, mux: mux, namespace: namespace}
-}
-
 func (w *Worker) Run(ctx context.Context) error {
 	if err := w.srv.Run(w.mux); err != nil {
 		log.Fatal().Msgf("could not run server: %v", err)
@@ -39,7 +35,7 @@ func (w *Worker) Run(ctx context.Context) error {
 	return nil
 }
 
-func telemetryCallbackWrapper(task string, taskCallback workerUtils.WorkerHandler) workerUtils.WorkerHandler {
+func telemetryCallbackWrapper(task string, taskCallback wtils.WorkerHandler) wtils.WorkerHandler {
 	return func(ctx context.Context, t *asynq.Task) error {
 		span := telemetry.NewSpan(context.Background(), "workerjobs", task)
 		defer span.End()
@@ -51,47 +47,68 @@ func telemetryCallbackWrapper(task string, taskCallback workerUtils.WorkerHandle
 	}
 }
 
-func contextInjectorCallbackWrapper(namespace directory.NamespaceID, taskCallback workerUtils.WorkerHandler) workerUtils.WorkerHandler {
+func contextInjectorCallbackWrapper(
+	namespace directory.NamespaceID,
+	taskCallback wtils.WorkerHandler) wtils.WorkerHandler {
 	return func(ctx context.Context, t *asynq.Task) error {
-		ctx = context.WithValue(ctx, directory.NamespaceKey, namespace)
-		return taskCallback(ctx, t)
+		return taskCallback(
+			context.WithValue(ctx, directory.NamespaceKey, namespace),
+			t)
+	}
+}
+
+func skipRetryCallbackWrapper(taskCallback wtils.WorkerHandler) wtils.WorkerHandler {
+	return func(ctx context.Context, t *asynq.Task) error {
+		err := taskCallback(ctx, t)
+		if err != nil {
+			return fmt.Errorf("%v: %w", err, asynq.SkipRetry)
+		}
+		return nil
 	}
 }
 
 func (w *Worker) AddHandler(
 	task string,
-	taskCallback workerUtils.WorkerHandler,
+	taskCallback wtils.WorkerHandler,
 ) error {
 	w.mux.HandleFunc(
 		task,
-		contextInjectorCallbackWrapper(w.namespace, telemetryCallbackWrapper(task, taskCallback)),
+		contextInjectorCallbackWrapper(w.namespace,
+			telemetryCallbackWrapper(task, taskCallback)),
 	)
 	return nil
 }
 
-func startWorker(cfg config) error {
-
-	ctx, cancel := signal.NotifyContext(context.Background(),
-		os.Interrupt, syscall.SIGTERM)
-	defer cancel()
-
-	// create if any topics is missing
-	err := utils.CreateMissingTopics(
-		cfg.KafkaBrokers, utils.Tasks,
-		cfg.KafkaTopicPartitionsTasks, cfg.KafkaTopicReplicas, cfg.KafkaTopicRetentionMs,
+// CronJobHandler do not retry on failure
+// The job will simply be tried again later on.
+func (w *Worker) AddCronJobHandler(
+	task string,
+	taskCallback wtils.WorkerHandler,
+) error {
+	w.mux.HandleFunc(
+		task,
+		skipRetryCallbackWrapper(
+			contextInjectorCallbackWrapper(w.namespace,
+				telemetryCallbackWrapper(task, taskCallback))),
 	)
-	if err != nil {
-		log.Error().Msgf("%v", err)
-	}
+	return nil
+}
+
+func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc, error) {
+
+	kafkaCtx, cancel := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM)
 
 	// this for sending messages to kafka
 	ingestC := make(chan *kgo.Record, 10000)
-	go utils.StartKafkaProducer(ctx, cfg.KafkaBrokers, ingestC)
-
-	mux := asynq.NewServeMux()
+	go utils.StartKafkaProducer(kafkaCtx, cfg.KafkaBrokers, ingestC)
 
 	srv := asynq.NewServer(
-		asynq.RedisClientOpt{Addr: cfg.RedisAddr},
+		asynq.RedisClientOpt{
+			Addr: fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort),
+		},
 		asynq.Config{
 			Concurrency: 10,
 			Queues: map[string]int{
@@ -99,82 +116,77 @@ func startWorker(cfg config) error {
 				"default":  3,
 				"low":      1,
 			},
+			ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
+				retried, _ := asynq.GetRetryCount(ctx)
+				maxRetry, _ := asynq.GetMaxRetry(ctx)
+				if retried >= maxRetry {
+					err = fmt.Errorf("retry exhausted for task %s: %w", task.Type(), err)
+				}
+				log.Error().Msgf("worker task error: %v", err)
+			}),
 		},
 	)
 
-	retry := workerUtils.Retry{
-		MaxRetries:          3,
-		InitialInterval:     time.Second * 5,
-		MaxInterval:         time.Second * 60,
-		Multiplier:          1.5,
-		MaxElapsedTime:      0,
-		RandomizationFactor: 0.25,
-		OnRetryHook: func(retryNum int, delay time.Duration) {
-			log.Info().Msgf("retry=%d delay=%s", retryNum, delay)
-		},
+	mux := asynq.NewServeMux()
+	mux.Use(
+		wtils.Recoverer,
+	)
+
+	worker := Worker{
+		cfg:       cfg,
+		mux:       mux,
+		srv:       srv,
+		namespace: ns,
 	}
 
-	mux.Use(
-		retry.Middleware,
-		workerUtils.Recoverer,
-	)
+	worker.AddCronJobHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)
 
-	worker := NewWorker(directory.NonSaaSDirKey, srv, cfg, mux)
+	worker.AddCronJobHandler(utils.ComputeThreatTask, cronjobs.ComputeThreat)
+
+	worker.AddCronJobHandler(utils.RetryFailedScansTask, cronjobs.RetryScansDB)
+
+	worker.AddCronJobHandler(utils.RetryFailedUpgradesTask, cronjobs.RetryUpgradeAgent)
+
+	worker.AddCronJobHandler(utils.CleanUpPostgresqlTask, cronjobs.CleanUpPostgresDB)
+
+	worker.AddCronJobHandler(utils.CleanupDiagnosisLogs, cronjobs.CleanUpDiagnosisLogs)
+
+	worker.AddCronJobHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade)
+
+	worker.AddCronJobHandler(utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls)
+
+	worker.AddCronJobHandler(utils.ScheduledTasks, cronjobs.RunScheduledTasks)
+
+	worker.AddCronJobHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry)
+
+	worker.AddCronJobHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
+
+	worker.AddCronJobHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders)
+
+	worker.AddCronJobHandler(utils.SendNotificationTask, cronjobs.SendNotifications)
+
+	worker.AddCronJobHandler(utils.ReportGeneratorTask, reports.GenerateReport)
+
+	worker.AddCronJobHandler(utils.ReportCleanUpTask, cronjobs.CleanUpReports)
+
+	worker.AddCronJobHandler(utils.LinkCloudResourceTask, cronjobs.LinkCloudResources)
+
+	worker.AddCronJobHandler(utils.LinkNodesTask, cronjobs.LinkNodes)
 
 	// sbom
 	worker.AddHandler(utils.ScanSBOMTask, sbom.NewSBOMScanner(ingestC).ScanSBOM)
 
 	worker.AddHandler(utils.GenerateSBOMTask, sbom.NewSbomGenerator(ingestC).GenerateSbom)
 
-	worker.AddHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)
+	worker.AddHandler(utils.SecretScanTask, secretscan.NewSecretScanner(ingestC).StartSecretScan)
 
-	worker.AddHandler(utils.ComputeThreatTask, cronjobs.ComputeThreat)
+	worker.AddHandler(utils.StopSecretScanTask, secretscan.NewSecretScanner(ingestC).StopSecretScan)
 
-	worker.AddHandler(utils.RetryFailedScansTask, cronjobs.RetryScansDB)
+	worker.AddHandler(utils.MalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StartMalwareScan)
 
-	worker.AddHandler(utils.RetryFailedUpgradesTask, cronjobs.RetryUpgradeAgent)
-
-	worker.AddHandler(utils.CleanUpPostgresqlTask, cronjobs.CleanUpPostgresDB)
-
-	worker.AddHandler(utils.CleanupDiagnosisLogs, cronjobs.CleanUpDiagnosisLogs)
-
-	worker.AddHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade)
-
-	worker.AddHandler(utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls)
-
-	worker.AddHandler(utils.ScheduledTasks, cronjobs.RunScheduledTasks)
-
-	worker.AddHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry)
-
-	worker.AddHandler(utils.SecretScanTask,
-		secretscan.NewSecretScanner(ingestC).StartSecretScan)
-
-	worker.AddHandler(utils.StopSecretScanTask,
-		secretscan.NewSecretScanner(ingestC).StopSecretScan)
-
-	worker.AddHandler(utils.MalwareScanTask,
-		malwarescan.NewMalwareScanner(ingestC).StartMalwareScan)
-
-	worker.AddHandler(utils.StopMalwareScanTask,
-		malwarescan.NewMalwareScanner(ingestC).StopMalwareScan)
-
-	worker.AddHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
-
-	worker.AddHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders)
-
-	worker.AddHandler(utils.SendNotificationTask, cronjobs.SendNotifications)
-
-	worker.AddHandler(utils.ReportGeneratorTask, reports.GenerateReport)
-
-	worker.AddHandler(utils.ReportCleanUpTask, cronjobs.CleanUpReports)
-
-	worker.AddHandler(utils.LinkCloudResourceTask, cronjobs.LinkCloudResources)
-
-	worker.AddHandler(utils.LinkNodesTask, cronjobs.LinkNodes)
+	worker.AddHandler(utils.StopMalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StopMalwareScan)
 
 	worker.AddHandler(utils.StopVulnerabilityScanTask, sbom.StopVulnerabilityScan)
 
-	log.Info().Msg("Starting the worker")
-	err = worker.Run(context.Background())
-	return err
+	return worker, cancel, nil
 }
