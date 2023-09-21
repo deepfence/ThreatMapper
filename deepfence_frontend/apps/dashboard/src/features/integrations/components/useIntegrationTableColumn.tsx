@@ -148,26 +148,24 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.jira:
         return [
-          columnHelper.accessor(
-            (cell) => {
-              if (isEmpty(cell.config)) {
+          columnHelper.display({
+            id: 'api_token',
+            header: () => <TruncatedText text={'Auth type'} />,
+            minSize: 50,
+            size: 55,
+            maxSize: 60,
+            cell: (cell) => {
+              if (isEmpty(cell.row.original.config)) {
                 return '-';
               }
-              const isToken = cell.config?.api_token !== undefined;
+              const isToken = cell.row.original.config?.api_token !== undefined;
               if (isToken) {
                 return <TruncatedText text={'Token'} />;
               } else {
                 return <TruncatedText text={'Password'} />;
               }
             },
-            {
-              id: 'api_token',
-              header: () => <TruncatedText text={'Auth type'} />,
-              minSize: 50,
-              size: 55,
-              maxSize: 60,
-            },
-          ),
+          }),
           columnHelper.accessor(
             (cell) => (!isEmpty(cell.config) ? cell.config.issueType : '-'),
             {
