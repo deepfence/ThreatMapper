@@ -55,22 +55,13 @@ export const scanSecretApiAction = async ({
   const imageTag = formData.get('imageTag')?.toString() ?? '';
 
   const getNodeType = (nodeType: SecretScanNodeTypeEnum | 'container_image') => {
-    let _nodeType = '';
-    if (nodeType === SecretScanNodeTypeEnum.host) {
-      _nodeType = SecretScanNodeTypeEnum.host;
-    } else if (nodeType === SecretScanNodeTypeEnum.container) {
-      _nodeType = SecretScanNodeTypeEnum.container;
-    } else if (
-      nodeType === SecretScanNodeTypeEnum.imageTag ||
-      nodeType === 'container_image'
-    ) {
+    let _nodeType = nodeType as ModelNodeIdentifierNodeTypeEnum;
+    if (nodeType === SecretScanNodeTypeEnum.imageTag || nodeType === 'container_image') {
       _nodeType = SecretScanNodeTypeEnum.image;
     } else if (nodeType === SecretScanNodeTypeEnum.kubernetes_cluster) {
       _nodeType = 'cluster';
     } else if (nodeType === SecretScanNodeTypeEnum.image) {
       _nodeType = 'registry';
-    } else if (nodeType === SecretScanNodeTypeEnum.registry) {
-      _nodeType = SecretScanNodeTypeEnum.registry;
     }
     return _nodeType;
   };

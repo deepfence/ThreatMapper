@@ -487,24 +487,27 @@ const ActionDropdown = ({
     if (fetcher.state === 'idle') setOpen(false);
   }, [fetcher]);
 
-  if (!scanId || !nodeType || !nodeId) {
-    throw new Error('Scan id, Node type and Node id are required');
+  if (!nodeType || !nodeId) {
+    throw new Error('Node type and Node id are required');
   }
 
   return (
     <>
-      <StopScanForm
-        open={openStopScanModal}
-        closeModal={setOpenStopScanModal}
-        nodes={[
-          {
-            nodeId,
-            scanId,
-            nodeType,
-          },
-        ]}
-        scanType={scanType}
-      />
+      {openStopScanModal && (
+        <StopScanForm
+          open={openStopScanModal}
+          closeModal={setOpenStopScanModal}
+          nodes={[
+            {
+              nodeId,
+              scanId,
+              nodeType,
+            },
+          ]}
+          scanType={scanType}
+        />
+      )}
+
       <Dropdown
         triggerAsChild
         align="start"
@@ -645,7 +648,6 @@ const AccountTable = ({
   const columnHelper = createColumnHelper<ModelCloudNodeAccountInfo>();
 
   const accounts = data?.accounts ?? [];
-
   const columnWidth = nodeType?.endsWith('_org')
     ? {
         node_name: {
@@ -990,9 +992,15 @@ const Accounts = () => {
     ? ScanTypeEnum.ComplianceScan
     : ScanTypeEnum.CloudComplianceScan;
 
-  useEffect(() => {
-    setNodeIdsToScan(Object.keys(rowSelectionState));
+  const selectedRows = useMemo(() => {
+    return Object.keys(rowSelectionState).map((item) => {
+      return JSON.parse(item);
+    });
   }, [rowSelectionState]);
+
+  useEffect(() => {
+    setNodeIdsToScan(selectedRows.map((node) => node.nodeId));
+  }, [selectedRows]);
 
   const onTableAction = useCallback(
     (nodeIds: string[], actionType: ActionEnumType) => {
@@ -1011,12 +1019,6 @@ const Accounts = () => {
     },
     [fetcher],
   );
-
-  const selectedRows = useMemo(() => {
-    return Object.keys(rowSelectionState).map((item) => {
-      return JSON.parse(item);
-    });
-  }, [rowSelectionState]);
 
   return (
     <div>
@@ -1075,6 +1077,7 @@ const Accounts = () => {
         <ConfigureScanModal
           open={!!selectedScanType}
           onOpenChange={() => setSelectedScanType(undefined)}
+          onSuccess={() => setRowSelectionState({})}
           scanOptions={
             selectedScanType && nodeType
               ? {

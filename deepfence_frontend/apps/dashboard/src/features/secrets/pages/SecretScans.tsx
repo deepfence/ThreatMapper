@@ -983,7 +983,7 @@ const BulkActions = ({
   setIdsToDelete,
   setShowDeleteDialog,
   setShowCancelScanDialog,
-  onTableAction,
+  setRowSelectionState,
 }: {
   selectedRows: {
     scanId: string;
@@ -993,7 +993,7 @@ const BulkActions = ({
   setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   setShowCancelScanDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  onTableAction: (ids: string[], actionType: string, maskHostAndImages?: string) => void;
+  setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
 }) => {
   const [openStartScan, setOpenStartScan] = useState<boolean>(false);
   return (
@@ -1002,6 +1002,7 @@ const BulkActions = ({
         <ConfigureScanModal
           open={true}
           onOpenChange={() => setOpenStartScan(false)}
+          onSuccess={() => setRowSelectionState({})}
           scanOptions={
             {
               showAdvancedOptions: true,
@@ -1039,19 +1040,6 @@ const BulkActions = ({
       >
         Cancel Scan
       </Button>
-      <Button
-        color="error"
-        variant="flat"
-        size="sm"
-        startIcon={<TrashLineIcon />}
-        disabled={!selectedRows.length}
-        onClick={() => {
-          setIdsToDelete(selectedRows.map((row) => row.nodeId));
-          setShowDeleteDialog(true);
-        }}
-      >
-        Delete
-      </Button>
     </>
   );
 };
@@ -1068,21 +1056,6 @@ const SecretScans = () => {
   const [idsToDelete, setIdsToDelete] = useState<string[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showCancelScanDialog, setShowCancelScanDialog] = useState(false);
-
-  const fetcher = useFetcher();
-
-  const onTableAction = useCallback(
-    (ids: string[], actionType: string) => {
-      const formData = new FormData();
-      formData.append('actionType', actionType);
-
-      ids.forEach((item) => formData.append('nodeIds[]', item));
-      fetcher.submit(formData, {
-        method: 'post',
-      });
-    },
-    [fetcher],
-  );
 
   const selectedRows = useMemo(() => {
     return Object.keys(rowSelectionState).map((item) => {
@@ -1113,10 +1086,10 @@ const SecretScans = () => {
         <div className="mt-4 h-12 flex items-center">
           <BulkActions
             selectedRows={selectedRows}
-            onTableAction={onTableAction}
             setIdsToDelete={setIdsToDelete}
             setShowDeleteDialog={setShowDeleteDialog}
             setShowCancelScanDialog={setShowCancelScanDialog}
+            setRowSelectionState={setRowSelectionState}
           />
           <Button
             variant="flat"

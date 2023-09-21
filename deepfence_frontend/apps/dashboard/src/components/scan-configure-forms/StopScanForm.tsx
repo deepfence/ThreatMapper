@@ -86,13 +86,10 @@ export const actionStopScan = async ({
     success: true,
   };
 };
-const getNodeType = (nodeType: VulnerabilityScanNodeTypeEnum | 'container_image') => {
-  let _nodeType = '';
-  if (nodeType === VulnerabilityScanNodeTypeEnum.host) {
-    _nodeType = VulnerabilityScanNodeTypeEnum.host;
-  } else if (nodeType === VulnerabilityScanNodeTypeEnum.container) {
-    _nodeType = VulnerabilityScanNodeTypeEnum.container;
-  } else if (
+type NodeType = VulnerabilityScanNodeTypeEnum | 'container_image';
+const getNodeType = (nodeType: NodeType) => {
+  let _nodeType = nodeType as ModelNodeIdentifierNodeTypeEnum;
+  if (
     nodeType === VulnerabilityScanNodeTypeEnum.imageTag ||
     nodeType === 'container_image'
   ) {
@@ -101,8 +98,6 @@ const getNodeType = (nodeType: VulnerabilityScanNodeTypeEnum | 'container_image'
     _nodeType = 'cluster';
   } else if (nodeType === VulnerabilityScanNodeTypeEnum.image) {
     _nodeType = 'registry';
-  } else if (nodeType === VulnerabilityScanNodeTypeEnum.registry) {
-    _nodeType = VulnerabilityScanNodeTypeEnum.registry;
   }
   return _nodeType;
 };
