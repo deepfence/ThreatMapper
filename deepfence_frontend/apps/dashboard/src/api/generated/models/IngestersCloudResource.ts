@@ -87,6 +87,24 @@ export interface IngestersCloudResource {
     cloud_provider?: string;
     /**
      * 
+     * @type {string}
+     * @memberof IngestersCloudResource
+     */
+    cluster_arn?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof IngestersCloudResource
+     */
+    cluster_name?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof IngestersCloudResource
+     */
+    connectivity?: string;
+    /**
+     * 
      * @type {any}
      * @memberof IngestersCloudResource
      */
@@ -121,6 +139,12 @@ export interface IngestersCloudResource {
      * @memberof IngestersCloudResource
      */
     event_notification_configuration?: any | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof IngestersCloudResource
+     */
+    group?: string;
     /**
      * 
      * @type {string}
@@ -217,6 +241,12 @@ export interface IngestersCloudResource {
      * @memberof IngestersCloudResource
      */
     is_egress?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof IngestersCloudResource
+     */
+    last_status?: string;
     /**
      * 
      * @type {string}
@@ -393,6 +423,12 @@ export interface IngestersCloudResource {
     target_health_descriptions?: any | null;
     /**
      * 
+     * @type {string}
+     * @memberof IngestersCloudResource
+     */
+    task_arn?: string;
+    /**
+     * 
      * @type {any}
      * @memberof IngestersCloudResource
      */
@@ -477,12 +513,16 @@ export function IngestersCloudResourceFromJSONTyped(json: any, ignoreDiscriminat
         'bucket_policy_is_public': !exists(json, 'bucket_policy_is_public') ? undefined : json['bucket_policy_is_public'],
         'cidr_ipv4': !exists(json, 'cidr_ipv4') ? undefined : json['cidr_ipv4'],
         'cloud_provider': !exists(json, 'cloud_provider') ? undefined : json['cloud_provider'],
+        'cluster_arn': !exists(json, 'cluster_arn') ? undefined : json['cluster_arn'],
+        'cluster_name': !exists(json, 'cluster_name') ? undefined : json['cluster_name'],
+        'connectivity': !exists(json, 'connectivity') ? undefined : json['connectivity'],
         'container_definitions': !exists(json, 'container_definitions') ? undefined : json['container_definitions'],
         'containers': !exists(json, 'containers') ? undefined : json['containers'],
         'create_date': !exists(json, 'create_date') ? undefined : json['create_date'],
         'db_cluster_identifier': !exists(json, 'db_cluster_identifier') ? undefined : json['db_cluster_identifier'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'event_notification_configuration': !exists(json, 'event_notification_configuration') ? undefined : json['event_notification_configuration'],
+        'group': !exists(json, 'group') ? undefined : json['group'],
         'group_id': !exists(json, 'group_id') ? undefined : json['group_id'],
         'groups': !exists(json, 'groups') ? undefined : json['groups'],
         'host_name': !exists(json, 'host_name') ? undefined : json['host_name'],
@@ -499,6 +539,7 @@ export function IngestersCloudResourceFromJSONTyped(json: any, ignoreDiscriminat
         'instances': !exists(json, 'instances') ? undefined : json['instances'],
         'ip_configuration': !exists(json, 'ip_configuration') ? undefined : json['ip_configuration'],
         'is_egress': !exists(json, 'is_egress') ? undefined : json['is_egress'],
+        'last_status': !exists(json, 'last_status') ? undefined : json['last_status'],
         'name': !exists(json, 'name') ? undefined : json['name'],
         'network_configuration': !exists(json, 'network_configuration') ? undefined : json['network_configuration'],
         'network_interfaces': !exists(json, 'network_interfaces') ? undefined : json['network_interfaces'],
@@ -528,6 +569,7 @@ export function IngestersCloudResourceFromJSONTyped(json: any, ignoreDiscriminat
         'tags': !exists(json, 'tags') ? undefined : json['tags'],
         'target_group_arn': !exists(json, 'target_group_arn') ? undefined : json['target_group_arn'],
         'target_health_descriptions': !exists(json, 'target_health_descriptions') ? undefined : json['target_health_descriptions'],
+        'task_arn': !exists(json, 'task_arn') ? undefined : json['task_arn'],
         'task_definition': !exists(json, 'task_definition') ? undefined : json['task_definition'],
         'task_definition_arn': !exists(json, 'task_definition_arn') ? undefined : json['task_definition_arn'],
         'user_groups': !exists(json, 'user-groups') ? undefined : json['user-groups'],
@@ -560,12 +602,16 @@ export function IngestersCloudResourceToJSON(value?: IngestersCloudResource | nu
         'bucket_policy_is_public': value.bucket_policy_is_public,
         'cidr_ipv4': value.cidr_ipv4,
         'cloud_provider': value.cloud_provider,
+        'cluster_arn': value.cluster_arn,
+        'cluster_name': value.cluster_name,
+        'connectivity': value.connectivity,
         'container_definitions': value.container_definitions,
         'containers': value.containers,
         'create_date': value.create_date,
         'db_cluster_identifier': value.db_cluster_identifier,
         'description': value.description,
         'event_notification_configuration': value.event_notification_configuration,
+        'group': value.group,
         'group_id': value.group_id,
         'groups': value.groups,
         'host_name': value.host_name,
@@ -582,6 +628,7 @@ export function IngestersCloudResourceToJSON(value?: IngestersCloudResource | nu
         'instances': value.instances,
         'ip_configuration': value.ip_configuration,
         'is_egress': value.is_egress,
+        'last_status': value.last_status,
         'name': value.name,
         'network_configuration': value.network_configuration,
         'network_interfaces': value.network_interfaces,
@@ -611,6 +658,7 @@ export function IngestersCloudResourceToJSON(value?: IngestersCloudResource | nu
         'tags': value.tags,
         'target_group_arn': value.target_group_arn,
         'target_health_descriptions': value.target_health_descriptions,
+        'task_arn': value.task_arn,
         'task_definition': value.task_definition,
         'task_definition_arn': value.task_definition_arn,
         'user-groups': value.user_groups,

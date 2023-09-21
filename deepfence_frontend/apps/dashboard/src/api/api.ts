@@ -331,6 +331,7 @@ export function getCommonApiClient() {
   const commonApi = new CommonApi(configuration);
   return {
     getEula: commonApi.eula.bind(commonApi),
+    getScanReportFields: commonApi.getScanReportFields.bind(commonApi),
   };
 }
 

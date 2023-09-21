@@ -25,6 +25,7 @@ import { SuccessModalContent } from '@/features/settings/components/SuccessModal
 import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
+import { getArrayTypeValuesFromFormData } from '@/utils/formData';
 
 import { IntegrationForm, IntegrationType } from '../components/IntegrationForm';
 import { IntegrationTable } from '../components/IntegrationTable';
@@ -125,6 +126,7 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
           jiraProjectKey: formBody.accessKey,
           issueType: formBody.task,
           jiraAssignee: formBody.assigne,
+          custom_fields: getArrayTypeValuesFromFormData(formData, 'reportingFields'),
         };
       }
       return {
@@ -135,6 +137,7 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
         jiraProjectKey: formBody.accessKey,
         issueType: formBody.task,
         jiraAssignee: formBody.assigne,
+        custom_fields: getArrayTypeValuesFromFormData(formData, 'reportingFields'),
       };
     }
     case IntegrationType.s3: {

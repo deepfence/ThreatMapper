@@ -27,6 +27,7 @@ import type {
   ModelScanStatusReq,
   ModelScanStatusResp,
   ModelScanTriggerResp,
+  ModelStopScanRequest,
   SearchSearchCountResp,
 } from '../models';
 import {
@@ -54,6 +55,8 @@ import {
     ModelScanStatusRespToJSON,
     ModelScanTriggerRespFromJSON,
     ModelScanTriggerRespToJSON,
+    ModelStopScanRequestFromJSON,
+    ModelStopScanRequestToJSON,
     SearchSearchCountRespFromJSON,
     SearchSearchCountRespToJSON,
 } from '../models';
@@ -87,7 +90,7 @@ export interface StatusComplianceScanRequest {
 }
 
 export interface StopComplianceScanRequest {
-    modelComplianceScanTriggerReq?: ModelComplianceScanTriggerReq;
+    modelStopScanRequest?: ModelStopScanRequest;
 }
 
 /**
@@ -212,7 +215,7 @@ export interface ComplianceApiInterface {
     /**
      * Stop Compliance Scan on agent or registry
      * @summary Stop Compliance Scan
-     * @param {ModelComplianceScanTriggerReq} [modelComplianceScanTriggerReq] 
+     * @param {ModelStopScanRequest} [modelStopScanRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ComplianceApiInterface
@@ -527,7 +530,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelComplianceScanTriggerReqToJSON(requestParameters.modelComplianceScanTriggerReq),
+            body: ModelStopScanRequestToJSON(requestParameters.modelStopScanRequest),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);

@@ -50,6 +50,12 @@ export interface ModelCloudComplianceScanDetails {
      * @memberof ModelCloudComplianceScanDetails
      */
     scan_types?: Array<string> | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ModelCloudComplianceScanDetails
+     */
+    stop_requested?: boolean;
 }
 
 /**
@@ -75,6 +81,7 @@ export function ModelCloudComplianceScanDetailsFromJSONTyped(json: any, ignoreDi
         'benchmarks': !exists(json, 'benchmarks') ? undefined : (json['benchmarks'] === null ? null : (json['benchmarks'] as Array<any>).map(ModelCloudComplianceBenchmarkFromJSON)),
         'scan_id': !exists(json, 'scan_id') ? undefined : json['scan_id'],
         'scan_types': !exists(json, 'scan_types') ? undefined : json['scan_types'],
+        'stop_requested': !exists(json, 'stop_requested') ? undefined : json['stop_requested'],
     };
 }
 
@@ -91,6 +98,7 @@ export function ModelCloudComplianceScanDetailsToJSON(value?: ModelCloudComplian
         'benchmarks': value.benchmarks === undefined ? undefined : (value.benchmarks === null ? null : (value.benchmarks as Array<any>).map(ModelCloudComplianceBenchmarkToJSON)),
         'scan_id': value.scan_id,
         'scan_types': value.scan_types,
+        'stop_requested': value.stop_requested,
     };
 }
 
