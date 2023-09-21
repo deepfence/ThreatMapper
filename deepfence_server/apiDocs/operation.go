@@ -472,6 +472,11 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 }
 
 func (d *OpenApiDocs) AddScansOperations() {
+	// List scan result fields
+	d.AddOperation("getScanReportFields", http.MethodGet, "/deepfence/scan/results/fields",
+		"Get Scan Report Fields", "Get all the fields available in all the scan reports",
+		http.StatusOK, []string{tagVulnerability, tagSecretScan, tagCompliance, tagMalwareScan}, bearerToken, nil, new(ScanReportFieldsResponse))
+
 	// Start scan
 	d.AddOperation("startVulnerabilityScan", http.MethodPost, "/deepfence/scan/start/vulnerability",
 		"Start Vulnerability Scan", "Start Vulnerability Scan on agent or registry",

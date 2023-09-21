@@ -14,14 +14,15 @@ type Jira struct {
 }
 
 type Config struct {
-	JiraSiteUrl    string `json:"jiraSiteUrl" validate:"required,url" required:"true"`
-	Username       string `json:"username" validate:"required,min=1" required:"true"`
-	Password       string `json:"password" validate:"omitempty,min=8,max=100,jira_auth_key"`
-	JiraProjectKey string `json:"jiraProjectKey" validate:"required,min=1" required:"true"`
-	JiraAssignee   string `json:"jiraAssignee" validate:"omitempty,min=1"`
-	IssueType      string `json:"issueType" validate:"required,min=1" required:"true"`
-	IsAuthToken    bool   `json:"isAuthToken" validate:"required" required:"true"`
-	APIToken       string `json:"api_token" validate:"omitempty,min=32,max=300,jira_auth_key"`
+	JiraSiteUrl    string   `json:"jiraSiteUrl" validate:"required,url" required:"true"`
+	Username       string   `json:"username" validate:"required,min=1" required:"true"`
+	Password       string   `json:"password" validate:"omitempty,min=8,max=100,jira_auth_key"`
+	JiraProjectKey string   `json:"jiraProjectKey" validate:"required,min=1" required:"true"`
+	JiraAssignee   string   `json:"jiraAssignee" validate:"omitempty,min=1"`
+	IssueType      string   `json:"issueType" validate:"required,min=1" required:"true"`
+	IsAuthToken    bool     `json:"isAuthToken" validate:"required" required:"true"`
+	APIToken       string   `json:"api_token" validate:"omitempty,min=32,max=300,jira_auth_key"`
+	CustomFields   []string `json:"custom_fields"`
 }
 
 func (j Jira) ValidateConfig(validate *validator.Validate) error {

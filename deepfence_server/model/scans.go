@@ -574,3 +574,10 @@ func (v CloudCompliance) GetCategory() string {
 func (CloudCompliance) GetJsonCategory() string {
 	return "severity"
 }
+
+type ScanReportFieldsResponse struct {
+	Vulnerability []string `json:"vulnerability"`
+	Secret        []string `json:"secret"`
+	Malware       []string `json:"malware"`
+	Compliance    []string `json:"compliance"`
+}

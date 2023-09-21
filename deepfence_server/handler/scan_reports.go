@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -949,6 +950,61 @@ func (h *Handler) listScansHandler(w http.ResponseWriter, r *http.Request, scan_
 	}
 
 	httpext.JSON(w, http.StatusOK, infos)
+}
+
+func (h *Handler) GetScanReportFields(w http.ResponseWriter, r *http.Request) {
+	// iterate over empty struct "model.Vulnerability" fields
+	// and push the field json tag name to an array
+	vulnerabilityFields := []string{}
+	vulnerability := model.Vulnerability{}
+	vulnerabilityType := reflect.TypeOf(vulnerability)
+	for i := 0; i < vulnerabilityType.NumField(); i++ {
+		fieldString := vulnerabilityType.Field(i).Tag.Get("json")
+		fields := strings.Split(fieldString, ",")
+		vulnerabilityFields = append(vulnerabilityFields, fields[0])
+	}
+
+	// iterate over empty struct "model.Secret" fields
+	// and push the field json tag name to an array
+	secretFields := []string{}
+	secret := model.Secret{}
+	secretType := reflect.TypeOf(secret)
+	for i := 0; i < secretType.NumField(); i++ {
+		fieldString := vulnerabilityType.Field(i).Tag.Get("json")
+		fields := strings.Split(fieldString, ",")
+		secretFields = append(secretFields, fields[0])
+	}
+
+	// iterate over empty struct "model.Compliance" fields
+	// and push the field json tag name to an array
+	complianceFields := []string{}
+	compliance := model.Compliance{}
+	complianceType := reflect.TypeOf(compliance)
+	for i := 0; i < complianceType.NumField(); i++ {
+		fieldString := vulnerabilityType.Field(i).Tag.Get("json")
+		fields := strings.Split(fieldString, ",")
+		complianceFields = append(complianceFields, fields[0])
+	}
+
+	// iterate over empty struct "model.Malware" fields
+	// and push the field json tag name to an array
+	malwareFields := []string{}
+	malware := model.Malware{}
+	malwareType := reflect.TypeOf(malware)
+	for i := 0; i < malwareType.NumField(); i++ {
+		fieldString := vulnerabilityType.Field(i).Tag.Get("json")
+		fields := strings.Split(fieldString, ",")
+		malwareFields = append(malwareFields, fields[0])
+	}
+
+	response := model.ScanReportFieldsResponse{
+		Vulnerability: vulnerabilityFields,
+		Secret:        secretFields,
+		Compliance:    complianceFields,
+		Malware:       malwareFields,
+	}
+
+	httpext.JSON(w, http.StatusOK, response)
 }
 
 func (h *Handler) ListVulnerabilityScanResultsHandler(w http.ResponseWriter, r *http.Request) {
