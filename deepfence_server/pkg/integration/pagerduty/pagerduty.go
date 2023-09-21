@@ -5,11 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/PagerDuty/go-pagerduty"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"net/http"
-	"strings"
 )
 
 const (
@@ -109,18 +111,22 @@ func createPagerDutyEvent(pagerDutyAPIToken string, event pagerduty.V2Event) err
 }
 
 func (p PagerDuty) FormatMessage(message []map[string]interface{}) string {
-	var msg string
+	var msg strings.Builder
 	count := 1
 
 	for _, m := range message {
-		msg += fmt.Sprintf("%s #%d\n", p.Resource, count)
+		msg.WriteString(p.Resource)
+		msg.WriteString(" #")
+		msg.WriteString(strconv.Itoa(count))
+		msg.WriteString("\n")
 		for k, v := range m {
-			msg += fmt.Sprintf("%s: %v\n", k, v)
+			msg.WriteString(k)
+			msg.WriteString(fmt.Sprintf(": %v\n", v))
 		}
-		msg += "\n\n"
+		msg.WriteString("\n\n")
 		count++
 	}
-	return msg
+	return msg.String()
 }
 
 // todo: implement this and make this method as part of the interface

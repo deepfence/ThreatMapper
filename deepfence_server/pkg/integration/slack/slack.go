@@ -5,9 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"net/http"
 	"strings"
+
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
 const BatchSize = 5
