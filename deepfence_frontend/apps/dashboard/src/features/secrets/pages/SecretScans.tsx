@@ -1054,7 +1054,13 @@ const SecretScans = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showCancelScanDialog, setShowCancelScanDialog] = useState(false);
 
-  const selectedRows = useMemo(() => {
+  const selectedRows = useMemo<
+    {
+      scanId: string;
+      nodeId: string;
+      nodeType: string;
+    }[]
+  >(() => {
     return Object.keys(rowSelectionState).map((item) => {
       return JSON.parse(item);
     });
@@ -1132,7 +1138,7 @@ const SecretScans = () => {
           <StopScanForm
             open={showCancelScanDialog}
             closeModal={setShowCancelScanDialog}
-            scanIds={selectedRows.map((row) => row.scanI)}
+            scanIds={selectedRows.map((row) => row.scanId)}
             scanType={ScanTypeEnum.SecretScan}
             onCancelScanSuccess={() => {
               setRowSelectionState({});

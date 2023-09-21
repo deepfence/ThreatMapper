@@ -986,7 +986,13 @@ const Accounts = () => {
     ? ScanTypeEnum.ComplianceScan
     : ScanTypeEnum.CloudComplianceScan;
 
-  const selectedRows = useMemo(() => {
+  const selectedRows = useMemo<
+    {
+      scanId: string;
+      nodeId: string;
+      nodeType: string;
+    }[]
+  >(() => {
     return Object.keys(rowSelectionState).map((item) => {
       return JSON.parse(item);
     });
