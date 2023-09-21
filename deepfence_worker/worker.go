@@ -107,7 +107,9 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 
 	srv := asynq.NewServer(
 		asynq.RedisClientOpt{
-			Addr: fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort),
+			Addr:     fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort),
+			DB:       cfg.RedisDbNumber,
+			Password: cfg.RedisPassword,
 		},
 		asynq.Config{
 			Concurrency: 10,
