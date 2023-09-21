@@ -497,13 +497,7 @@ const ActionDropdown = ({
         <StopScanForm
           open={openStopScanModal}
           closeModal={setOpenStopScanModal}
-          nodes={[
-            {
-              nodeId,
-              scanId,
-              nodeType,
-            },
-          ]}
+          scanIds={[scanId]}
           scanType={scanType}
         />
       )}
@@ -1027,13 +1021,7 @@ const Accounts = () => {
         <StopScanForm
           open={true}
           closeModal={setShowCancelScan}
-          nodes={selectedRows.map((row) => {
-            return {
-              nodeId: row.nodeId,
-              scanId: row.scanId,
-              nodeType: row.nodeType,
-            };
-          })}
+          scanIds={selectedRows.map((row) => row.scanId)}
           scanType={scanType}
           onCancelScanSuccess={() => {
             setRowSelectionState({});

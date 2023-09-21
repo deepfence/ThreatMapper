@@ -12604,14 +12604,9 @@
         }
       },
       "ModelStopScanRequest": {
-        "required": ["scan_ids", "scan_type", "node_ids"],
+        "required": ["scan_ids", "scan_type"],
         "type": "object",
         "properties": {
-          "node_ids": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
-            "nullable": true
-          },
           "scan_ids": {
             "type": "array",
             "items": { "type": "string" },

@@ -40,8 +40,6 @@ export const actionStopScan = async ({
   const scanType = params?.scanType?.toString() as ScanTypeEnum;
   const formData = await request.formData();
   const scanIds = formData.getAll('scanIds[]') as string[];
-  const nodeIds = formData.getAll('nodeIds[]') as string[];
-  const nodeTypes = formData.getAll('nodeTypes[]') as string[];
 
   if (!scanType || scanIds.length === 0) {
     console.error('Scan id and Scan Type are required for stoping scan');
@@ -53,14 +51,6 @@ export const actionStopScan = async ({
   });
   const result = await stopScanApi({
     modelStopScanRequest: {
-      node_ids: nodeIds.map((nodeId, index) => {
-        return {
-          node_id: nodeId,
-          node_type: getNodeType(
-            nodeTypes[index] as VulnerabilityScanNodeTypeEnum,
-          ) as ModelNodeIdentifierNodeTypeEnum,
-        };
-      }),
       scan_ids: scanIds,
       scan_type: scanType,
     },
@@ -86,35 +76,16 @@ export const actionStopScan = async ({
     success: true,
   };
 };
-type NodeType = VulnerabilityScanNodeTypeEnum | 'container_image';
-const getNodeType = (nodeType: NodeType) => {
-  let _nodeType = nodeType as ModelNodeIdentifierNodeTypeEnum;
-  if (
-    nodeType === VulnerabilityScanNodeTypeEnum.imageTag ||
-    nodeType === 'container_image'
-  ) {
-    _nodeType = VulnerabilityScanNodeTypeEnum.image;
-  } else if (nodeType === VulnerabilityScanNodeTypeEnum.kubernetes_cluster) {
-    _nodeType = 'cluster';
-  } else if (nodeType === VulnerabilityScanNodeTypeEnum.image) {
-    _nodeType = 'registry';
-  }
-  return _nodeType;
-};
 
 export const StopScanForm = ({
   open,
-  nodes,
+  scanIds,
   closeModal,
   scanType,
   onCancelScanSuccess,
 }: {
   open: boolean;
-  nodes: {
-    nodeId: string;
-    scanId: string;
-    nodeType: string;
-  }[];
+  scanIds: string[];
   scanType: ScanTypeEnum;
   closeModal: React.Dispatch<React.SetStateAction<boolean>>;
   onCancelScanSuccess?: () => void;
@@ -138,7 +109,7 @@ export const StopScanForm = ({
             <span className="h-6 w-6 shrink-0 dark:text-df-gray-500">
               <ErrorStandardLineIcon />
             </span>
-            Cancel {nodes.length > 1 ? 'scans' : 'scan'}
+            Cancel {scanIds.length > 1 ? 'scans' : 'scan'}
           </div>
         ) : undefined
       }
@@ -160,10 +131,8 @@ export const StopScanForm = ({
               onClick={(e) => {
                 e.preventDefault();
                 const formData = new FormData();
-                nodes.forEach((node) => {
-                  formData.append('scanIds[]', node.scanId);
-                  formData.append('nodeIds[]', node.nodeId);
-                  formData.append('nodeTypes[]', node.nodeType);
+                scanIds.forEach((scanId) => {
+                  formData.append('scanIds[]', scanId);
                 });
                 fetcher.submit(formData, {
                   method: 'post',

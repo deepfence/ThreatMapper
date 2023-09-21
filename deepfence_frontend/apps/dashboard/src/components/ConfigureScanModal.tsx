@@ -97,7 +97,10 @@ export const ConfigureScanModal = ({
             <VulnerabilityScanConfigureForm
               showAdvancedOptions={scanOptions.showAdvancedOptions}
               data={scanOptions.data}
-              onSuccess={() => onOpenChange(false)}
+              onSuccess={() => {
+                onOpenChange(false);
+                onSuccess?.();
+              }}
               onCancel={() => onOpenChange(false)}
             />
           )}
@@ -105,7 +108,10 @@ export const ConfigureScanModal = ({
             <SecretScanConfigureForm
               showAdvancedOptions={scanOptions.showAdvancedOptions}
               data={scanOptions.data}
-              onSuccess={() => onOpenChange(false)}
+              onSuccess={() => {
+                onOpenChange(false);
+                onSuccess?.();
+              }}
               onCancel={() => onOpenChange(false)}
             />
           )}
@@ -113,7 +119,10 @@ export const ConfigureScanModal = ({
             <MalwareScanConfigureForm
               showAdvancedOptions={scanOptions.showAdvancedOptions}
               data={scanOptions.data}
-              onSuccess={() => onOpenChange(false)}
+              onSuccess={() => {
+                onOpenChange(false);
+                onSuccess?.();
+              }}
               onCancel={() => onOpenChange(false)}
             />
           )}

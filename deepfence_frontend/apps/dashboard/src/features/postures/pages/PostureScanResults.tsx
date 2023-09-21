@@ -592,18 +592,15 @@ const HistoryControls = () => {
 
   return (
     <div className="flex items-center gap-x-3 relative flex-grow">
-      <StopScanForm
-        open={openStopScanModal}
-        closeModal={setOpenStopScanModal}
-        nodes={[
-          {
-            nodeId: node_id,
-            scanId: scan_id,
-            nodeType: node_type,
-          },
-        ]}
-        scanType={ScanTypeEnum.ComplianceScan}
-      />
+      {openStopScanModal && (
+        <StopScanForm
+          open={openStopScanModal}
+          closeModal={setOpenStopScanModal}
+          scanIds={[scan_id]}
+          scanType={ScanTypeEnum.ComplianceScan}
+        />
+      )}
+
       <ScanHistoryDropdown
         scans={[...(historyData?.data ?? [])].reverse().map((item) => ({
           id: item.scanId,

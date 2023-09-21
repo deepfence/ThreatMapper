@@ -275,18 +275,15 @@ const ActionDropdown = ({
 
   return (
     <>
-      <StopScanForm
-        open={openStopScanModal}
-        closeModal={setOpenStopScanModal}
-        nodes={[
-          {
-            nodeId,
-            scanId,
-            nodeType,
-          },
-        ]}
-        scanType={ScanTypeEnum.SecretScan}
-      />
+      {openStopScanModal && (
+        <StopScanForm
+          open={openStopScanModal}
+          closeModal={setOpenStopScanModal}
+          scanIds={[scanId]}
+          scanType={ScanTypeEnum.SecretScan}
+        />
+      )}
+
       <Dropdown
         triggerAsChild
         align="start"
@@ -1135,13 +1132,7 @@ const SecretScans = () => {
           <StopScanForm
             open={showCancelScanDialog}
             closeModal={setShowCancelScanDialog}
-            nodes={selectedRows.map((row) => {
-              return {
-                nodeId: row.nodeId,
-                scanId: row.scanId,
-                nodeType: row.nodeType,
-              };
-            })}
+            scanIds={selectedRows.map((row) => row.scanI)}
             scanType={ScanTypeEnum.SecretScan}
             onCancelScanSuccess={() => {
               setRowSelectionState({});
