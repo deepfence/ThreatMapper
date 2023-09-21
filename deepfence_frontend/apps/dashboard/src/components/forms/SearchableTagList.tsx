@@ -31,7 +31,6 @@ const SearchableTag = ({
   filter,
 }: Props) => {
   const [searchText, setSearchText] = useState('');
-
   const [selectedTag, setSelectedTag] = useState<string>(() => {
     return defaultSelectedTag ?? '';
   });

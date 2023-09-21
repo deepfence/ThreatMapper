@@ -2,6 +2,7 @@ import { mergeQueryKeys } from '@lukemorales/query-key-factory';
 import { QueryKey } from '@tanstack/react-query';
 
 import { queryClient } from '@/queries/client';
+import { commonQueries } from '@/queries/common';
 import { integrationQueries } from '@/queries/integration';
 import { lookupQueries } from '@/queries/lookup';
 import { malwareQueries } from '@/queries/malware';
@@ -40,4 +41,5 @@ export const queries = mergeQueryKeys(
   threatQueries,
   onboardQueries,
   userQueries,
+  commonQueries,
 );

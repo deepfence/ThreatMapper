@@ -1,23 +1,41 @@
 import { Suspense, useEffect, useState } from 'react';
 import { Button, Checkbox, CircleSpinner, Modal } from 'ui-components';
 
-import {
-  ISelected,
-  SearchableScanTimeList,
-} from '@/features/vulnerabilities/components/ScanResults/SearchableScanTimeList';
-import { SearchableTagList } from '@/features/vulnerabilities/components/ScanResults/SearchableTagList';
-import { useScanResults } from '@/features/vulnerabilities/pages/VulnerabilityScanResults';
-import { VulnerabilityScanNodeTypeEnum } from '@/types/common';
+import { ModelNodeIdentifierNodeTypeEnum } from '@/api/generated';
+import { ISelected, ScanTimeList } from '@/components/forms/ScanTimeList';
+import { SearchableTagList } from '@/components/forms/SearchableTagList';
+import { useScanResults as malwareScanResults } from '@/features/malwares/pages/MalwareScanResults';
+import { useScanResults as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
+import { useScanResults as vulnerabilityScanResults } from '@/features/vulnerabilities/pages/VulnerabilityScanResults';
+import { ScanTypeEnum } from '@/types/common';
+
+const useScanResults = ({ scanType }: { scanType: ScanTypeEnum }) => {
+  if (scanType === ScanTypeEnum.VulnerabilityScan) {
+    return vulnerabilityScanResults().data.data?.dockerImageName;
+  } else if (scanType === ScanTypeEnum.SecretScan) {
+    return secretScanResults().data.data?.dockerImageName;
+  } else if (scanType === ScanTypeEnum.MalwareScan) {
+    return malwareScanResults().data.data?.dockerImageName;
+  }
+  return '';
+};
 
 const Tags = ({
+  selectedTag,
   setSelectedTag,
+  scanType,
 }: {
+  selectedTag: string;
   setSelectedTag: React.Dispatch<React.SetStateAction<string>>;
+  scanType: ScanTypeEnum;
 }) => {
-  const { data } = useScanResults();
+  const dockerImageName = useScanResults({
+    scanType,
+  });
 
   return (
     <SearchableTagList
+      defaultSelectedTag={selectedTag}
       scanType="none"
       triggerVariant="select"
       valueKey="nodeId"
@@ -28,7 +46,7 @@ const Tags = ({
         setSelectedTag('');
       }}
       filter={{
-        dockerImageName: data.data?.dockerImageName ?? '',
+        dockerImageName: dockerImageName ?? '',
       }}
     />
   );
@@ -41,12 +59,14 @@ type ToScanDataType = {
 const BaseInput = ({
   nodeId,
   nodeType,
+  scanType,
   compareInput,
   toScanData,
   setToScanData,
 }: {
   nodeId: string;
   nodeType: string;
+  scanType: string;
   compareInput: {
     baseScanId: string;
     toScanId: string;
@@ -71,7 +91,7 @@ const BaseInput = ({
   return (
     <div className="flex flex-col gap-y-6">
       <Suspense fallback={<CircleSpinner size="sm" />}>
-        {nodeType === VulnerabilityScanNodeTypeEnum.image ? (
+        {nodeType === ModelNodeIdentifierNodeTypeEnum.Image ? (
           <>
             <Checkbox
               label="Compare with other tags"
@@ -80,11 +100,17 @@ const BaseInput = ({
                 setWithOtherTags(checked);
               }}
             />
-            {withOtherTags && <Tags setSelectedTag={setSelectedNodeId} />}
+            {withOtherTags && (
+              <Tags
+                setSelectedTag={setSelectedNodeId}
+                scanType={scanType as ScanTypeEnum}
+                selectedTag={selectedNodeId}
+              />
+            )}
           </>
         ) : null}
       </Suspense>
-      <SearchableScanTimeList
+      <ScanTimeList
         triggerVariant="underline"
         defaultSelectedTime={toScanData.toScanTime ?? null}
         valueKey="nodeId"
@@ -102,6 +128,7 @@ const BaseInput = ({
         }}
         nodeId={selectedNodeId}
         nodeType={nodeType}
+        scanType={scanType as ScanTypeEnum}
         // skip scan time when base scan is same as to scan
         skipScanTime={nodeId === selectedNodeId ? compareInput.baseScanTime : undefined}
         noDataText="No scan to compare"
@@ -117,6 +144,7 @@ export const CompareScanInputModal = ({
   setCompareInput,
   nodeId,
   nodeType,
+  scanType,
   compareInput,
 }: {
   showDialog: boolean;
@@ -138,6 +166,7 @@ export const CompareScanInputModal = ({
   >;
   nodeId: string;
   nodeType: string;
+  scanType: string;
   compareInput: {
     baseScanId: string;
     toScanId: string;
@@ -198,6 +227,7 @@ export const CompareScanInputModal = ({
         <BaseInput
           nodeId={nodeId}
           nodeType={nodeType}
+          scanType={scanType}
           compareInput={compareInput}
           setToScanData={setToScanData}
           toScanData={toScanData}

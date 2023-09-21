@@ -42,6 +42,7 @@ import {
 import { ModelSecret } from '@/api/generated/models/ModelSecret';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import { BalanceLineIcon } from '@/components/icons/common/BalanceLine';
 import { BellLineIcon } from '@/components/icons/common/BellLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { ClockLineIcon } from '@/components/icons/common/ClockLine';
@@ -66,14 +67,16 @@ import { TruncatedText } from '@/components/TruncatedText';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { SecretScanResultsPieChart } from '@/features/secrets/components/scan-results/SecretScanResultsPieChart';
+import { SecretsCompare } from '@/features/secrets/components/scan-results/SecretsCompare';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { CompareScanInputModal } from '@/features/vulnerabilities/components/ScanResults/CompareScanInputModal';
 import { invalidateAllQueries, queries } from '@/queries';
 import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
-import { isScanFailed, isScanInProgress } from '@/utils/scan';
+import { isScanComplete, isScanFailed, isScanInProgress } from '@/utils/scan';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -254,7 +257,7 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   }, 0);
 };
 
-const useScanResults = () => {
+export const useScanResults = () => {
   const [searchParams] = useSearchParams();
   const params = useParams();
   const scanId = params?.scanId ?? '';
@@ -566,18 +569,36 @@ const ScanHistory = () => {
 };
 
 const HistoryControls = () => {
-  const { data } = useScanResults();
+  const { data, fetchStatus } = useScanResults();
   const { scanStatusResult } = data;
   const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
   const { navigate, goBack } = usePageNavigation();
   const { downloadScan } = useDownloadScan();
 
+  const [showScanCompareModal, setShowScanCompareModal] = useState<boolean>(false);
+
   const [scanIdToDelete, setScanIdToDelete] = useState<string | null>(null);
 
+  const [compareInput, setCompareInput] = useState<{
+    baseScanId: string;
+    toScanId: string;
+    baseScanTime: number;
+    toScanTime: number;
+    showScanTimeModal: boolean;
+  }>({
+    baseScanId: '',
+    toScanId: '',
+    baseScanTime: updated_at ?? 0,
+    toScanTime: 0,
+    showScanTimeModal: false,
+  });
+
   const { data: historyData, refetch } = useSuspenseQuery({
-    ...queries.secret.scanHistories({
+    ...queries.common.scanHistories({
       nodeId: node_id ?? '',
       nodeType: node_type ?? '',
+      size: Number.MAX_SAFE_INTEGER,
+      scanType: ScanTypeEnum.SecretScan,
     }),
   });
 
@@ -591,99 +612,160 @@ const HistoryControls = () => {
   if (!updated_at) {
     return null;
   }
-  return (
-    <div className="flex items-center gap-x-3">
-      <ScanHistoryDropdown
-        scans={[...(historyData?.data ?? [])].reverse().map((item) => ({
-          id: item.scanId,
-          isCurrent: item.scanId === scan_id,
-          status: item.status,
-          timestamp: item.updatedAt,
-          onDeleteClick: (id) => {
-            setScanIdToDelete(id);
-          },
-          onDownloadClick: () => {
-            downloadScan({
-              scanId: item.scanId,
-              scanType: UtilsReportFiltersScanTypeEnum.Secret,
-              nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
-            });
-          },
-          onScanClick: () => {
-            navigate(
-              generatePath('/secret/scan-results/:scanId', {
-                scanId: encodeURIComponent(item.scanId),
-              }),
-              {
-                replace: true,
-              },
-            );
-          },
-        }))}
-        currentTimeStamp={formatMilliseconds(updated_at)}
-      />
+  const onCompareScanClick = (baseScanTime: number) => {
+    setCompareInput({
+      ...compareInput,
+      baseScanTime,
+      showScanTimeModal: true,
+    });
+  };
 
-      {scanIdToDelete && (
-        <DeleteScanConfirmationModal
-          scanId={scanIdToDelete}
-          open={!!scanIdToDelete}
-          onOpenChange={(open, deleteSuccessful) => {
-            if (!open) {
-              if (deleteSuccessful && scanIdToDelete === scan_id) {
-                const latestScan = [...historyData.data].reverse().find((scan) => {
-                  return scan.scanId !== scanIdToDelete;
-                });
-                if (latestScan) {
-                  navigate(
-                    generatePath('/secret/scan-results/:scanId', {
-                      scanId: encodeURIComponent(latestScan.scanId),
-                    }),
-                    { replace: true },
-                  );
-                } else {
-                  goBack();
-                }
-              }
-              setScanIdToDelete(null);
-            }
+  return (
+    <>
+      {compareInput.showScanTimeModal && (
+        <CompareScanInputModal
+          showDialog={true}
+          setShowDialog={() => {
+            setCompareInput((input) => {
+              return {
+                ...input,
+                showScanTimeModal: false,
+              };
+            });
           }}
+          setShowScanCompareModal={setShowScanCompareModal}
+          scanHistoryData={historyData.data}
+          setCompareInput={setCompareInput}
+          compareInput={compareInput}
+          nodeId={node_id}
+          nodeType={node_type}
+          scanType={ScanTypeEnum.SecretScan}
         />
       )}
-      <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
-      <ScanStatusBadge status={status ?? ''} />
-      {!isScanInProgress(status ?? '') && (
-        <>
-          <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
-          <div className="pl-1.5 flex">
-            <IconButton
-              variant="flat"
-              icon={
-                <span className="h-3 w-3">
-                  <DownloadLineIcon />
-                </span>
-              }
-              size="md"
-              onClick={() => {
-                downloadScan({
-                  scanId: scan_id,
-                  scanType: UtilsReportFiltersScanTypeEnum.Secret,
-                  nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
-                });
-              }}
-            />
-            <IconButton
-              variant="flat"
-              icon={
-                <span className="h-3 w-3">
-                  <TrashLineIcon />
-                </span>
-              }
-              onClick={() => setScanIdToDelete(scan_id)}
-            />
-          </div>
-        </>
+      {showScanCompareModal && (
+        <SecretsCompare
+          open={showScanCompareModal}
+          onOpenChange={setShowScanCompareModal}
+          compareInput={compareInput}
+        />
       )}
-    </div>
+      <div className="flex items-center gap-x-3">
+        <ScanHistoryDropdown
+          scans={[...(historyData?.data ?? [])].reverse().map((item) => ({
+            id: item.scanId,
+            isCurrent: item.scanId === scan_id,
+            status: item.status,
+            timestamp: item.updatedAt,
+            showScanCompareButton: true,
+            onScanTimeCompareButtonClick: onCompareScanClick,
+            onDeleteClick: (id) => {
+              setScanIdToDelete(id);
+            },
+            onDownloadClick: () => {
+              downloadScan({
+                scanId: item.scanId,
+                scanType: UtilsReportFiltersScanTypeEnum.Secret,
+                nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
+              });
+            },
+            onScanClick: () => {
+              navigate(
+                generatePath('/secret/scan-results/:scanId', {
+                  scanId: encodeURIComponent(item.scanId),
+                }),
+                {
+                  replace: true,
+                },
+              );
+            },
+          }))}
+          currentTimeStamp={formatMilliseconds(updated_at)}
+        />
+
+        {scanIdToDelete && (
+          <DeleteScanConfirmationModal
+            scanId={scanIdToDelete}
+            open={!!scanIdToDelete}
+            onOpenChange={(open, deleteSuccessful) => {
+              if (!open) {
+                if (deleteSuccessful && scanIdToDelete === scan_id) {
+                  const latestScan = [...historyData.data].reverse().find((scan) => {
+                    return scan.scanId !== scanIdToDelete;
+                  });
+                  if (latestScan) {
+                    navigate(
+                      generatePath('/secret/scan-results/:scanId', {
+                        scanId: encodeURIComponent(latestScan.scanId),
+                      }),
+                      { replace: true },
+                    );
+                  } else {
+                    goBack();
+                  }
+                }
+                setScanIdToDelete(null);
+              }
+            }}
+          />
+        )}
+        <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
+        <ScanStatusBadge status={status ?? ''} />
+        {!isScanInProgress(status ?? '') && (
+          <>
+            <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
+            <div className="pl-1.5 flex">
+              <IconButton
+                variant="flat"
+                icon={
+                  <span className="h-3 w-3">
+                    <DownloadLineIcon />
+                  </span>
+                }
+                disabled={fetchStatus !== 'idle'}
+                size="md"
+                onClick={() => {
+                  downloadScan({
+                    scanId: scan_id,
+                    scanType: UtilsReportFiltersScanTypeEnum.Secret,
+                    nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
+                  });
+                }}
+              />
+              <IconButton
+                variant="flat"
+                icon={
+                  <span className="h-3 w-3">
+                    <TrashLineIcon />
+                  </span>
+                }
+                disabled={fetchStatus !== 'idle'}
+                onClick={() => setScanIdToDelete(scan_id)}
+              />
+              <>
+                {isScanComplete(status ?? '') && (
+                  <IconButton
+                    variant="flat"
+                    icon={
+                      <span className="h-3 w-3">
+                        <BalanceLineIcon />
+                      </span>
+                    }
+                    disabled={fetchStatus !== 'idle'}
+                    onClick={() => {
+                      setCompareInput({
+                        ...compareInput,
+                        baseScanTime: updated_at ?? 0,
+                        showScanTimeModal: true,
+                      });
+                    }}
+                  />
+                )}
+              </>
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 };
 
