@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"os"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/controls"
@@ -31,7 +33,10 @@ type config struct {
 	KafkaTopicReplicas        int16    `default:"1" split_words:"true"`
 	KafkaTopicRetentionMs     string   `default:"86400000" split_words:"true"`
 	KafkaTopicPartitionsTasks int32    `default:"3" split_words:"true"`
-	RedisAddr                 string   `default:"deepfence-redis:6379"`
+	RedisHost                 string   `default:"deepfence-redis"`
+	RedisDb                   string   `default:""`
+	RedisPort                 string   `default:"6379"`
+	RedisPassword             string   `default:""`
 }
 
 // build info
@@ -95,7 +100,13 @@ func main() {
 			log.Error().Msg(err.Error())
 			return
 		}
-		err := startWorker(cfg)
+		worker, kafkaCancel, err := NewWorker(directory.NonSaaSDirKey, cfg)
+		defer kafkaCancel()
+		if err != nil {
+			log.Fatal().Msg(err.Error())
+		}
+		log.Info().Msg("Starting the worker")
+		err = worker.Run(context.Background())
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return

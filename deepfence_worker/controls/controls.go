@@ -1,6 +1,7 @@
 package controls
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sync"
@@ -11,27 +12,27 @@ import (
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
-var controls map[ctl.ActionID]func(namespace directory.NamespaceID, req []byte) error
+var controls map[ctl.ActionID]func(ctx context.Context, req []byte) error
 var controls_guard sync.RWMutex
 
 func RegisterControl[T ctl.StartVulnerabilityScanRequest | ctl.StartSecretScanRequest |
 	ctl.StartComplianceScanRequest | ctl.StartMalwareScanRequest |
 	ctl.StartAgentUpgradeRequest | ctl.StopSecretScanRequest |
 	ctl.StopMalwareScanRequest | ctl.StopVulnerabilityScanRequest](id ctl.ActionID,
-	callback func(namespace directory.NamespaceID, req T) error) error {
+	callback func(ctx context.Context, req T) error) error {
 
 	controls_guard.Lock()
 	defer controls_guard.Unlock()
 	if controls[id] != nil {
 		return fmt.Errorf("action %v already registered", id)
 	}
-	controls[id] = func(namespace directory.NamespaceID, req []byte) error {
+	controls[id] = func(ctx context.Context, req []byte) error {
 		var typedReq T
 		err := json.Unmarshal(req, &typedReq)
 		if err != nil {
 			return err
 		}
-		return callback(namespace, typedReq)
+		return callback(ctx, typedReq)
 	}
 
 	log.Info().Msgf("registered controls for action %v", ctl.ActionID(id))
@@ -39,15 +40,15 @@ func RegisterControl[T ctl.StartVulnerabilityScanRequest | ctl.StartSecretScanRe
 	return nil
 }
 
-func ApplyControl(namespace directory.NamespaceID, req ctl.Action) error {
+func ApplyControl(ctx context.Context, req ctl.Action) error {
 	controls_guard.RLock()
 	defer controls_guard.RUnlock()
 	log.Info().Msgf("apply control req: %+v", req)
-	return controls[ctl.ActionID(req.ID)](namespace, []byte(req.RequestPayload))
+	return controls[ctl.ActionID(req.ID)](ctx, []byte(req.RequestPayload))
 }
 
 func init() {
-	controls = map[ctl.ActionID]func(namespace directory.NamespaceID, req []byte) error{}
+	controls = map[ctl.ActionID]func(ctx context.Context, req []byte) error{}
 }
 
 func ConsoleActionSetup() error {
@@ -97,9 +98,9 @@ func GetRegisterControlFunc[T ctl.StartVulnerabilityScanRequest | ctl.StartSecre
 	ctl.StartComplianceScanRequest | ctl.StartMalwareScanRequest |
 	ctl.StopSecretScanRequest | ctl.StopMalwareScanRequest |
 	ctl.StopVulnerabilityScanRequest](
-	task string) func(namespace directory.NamespaceID, req T) error {
+	task string) func(ctx context.Context, req T) error {
 
-	controlFunc := func(namespace directory.NamespaceID, req T) error {
+	controlFunc := func(ctx context.Context, req T) error {
 		BinArgs := ctl.GetBinArgs(req)
 		log.Info().Msgf("%s payload: %+v", task, BinArgs)
 		data, err := json.Marshal(BinArgs)
@@ -107,7 +108,7 @@ func GetRegisterControlFunc[T ctl.StartVulnerabilityScanRequest | ctl.StartSecre
 			log.Error().Msg(err.Error())
 			return err
 		}
-		worker, err := directory.Worker(directory.NewContextWithNameSpace(namespace))
+		worker, err := directory.Worker(ctx)
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return err

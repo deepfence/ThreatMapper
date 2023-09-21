@@ -5,7 +5,6 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	utils_ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_worker/controls"
 	"github.com/hibiken/asynq"
@@ -37,14 +36,9 @@ func TriggerConsoleControls(ctx context.Context, t *asynq.Task) error {
 	ScanWorkloadAllocator.Reserve(int32(len(actions)))
 
 	log.Debug().Msgf("Trigger console actions #actions: %d", len(actions))
-	ns, err := directory.ExtractNamespace(ctx)
-	if err != nil {
-		return err
-	}
-
 	for _, action := range actions {
 		log.Info().Msgf("Init execute: %v", action.ID)
-		err := ctl.ApplyControl(ns, action)
+		err := ctl.ApplyControl(ctx, action)
 		if err != nil {
 			log.Error().Msgf("Control %v failed: %v", action, err)
 		}

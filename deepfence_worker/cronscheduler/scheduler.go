@@ -327,7 +327,6 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID, schedu
 	return func() {
 		log.Info().Msgf("Enqueuing task: %s, %s for namespace %s",
 			schedule.Description, schedule.CronExpr, namespace)
-		//metadata := map[string]string{directory.NamespaceKey: string(namespace)}
 		message := map[string]interface{}{
 			"action":      schedule.Action,
 			"id":          schedule.ID,
@@ -336,6 +335,10 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID, schedu
 		}
 		messageJson, _ := json.Marshal(message)
 		worker, err := directory.Worker(directory.NewContextWithNameSpace(namespace))
+		if err != nil {
+			log.Error().Msg(err.Error())
+			return
+		}
 		err = worker.Enqueue(sdkUtils.ScheduledTasks, messageJson)
 		if err != nil {
 			log.Error().Msg(err.Error())
