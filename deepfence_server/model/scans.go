@@ -156,8 +156,8 @@ type BulkDeleteScansRequest struct {
 }
 
 type StopScanRequest struct {
-	ScanID   string `json:"scan_id" validate:"required" required:"true"`
-	ScanType string `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
+	ScanIds  []string `json:"scan_ids" validate:"required" required:"true"`
+	ScanType string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 }
 
 type ScanActionRequest struct {

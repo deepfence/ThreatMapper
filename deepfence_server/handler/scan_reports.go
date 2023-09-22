@@ -804,17 +804,19 @@ func (h *Handler) stopScan(w http.ResponseWriter, r *http.Request, tag string) {
 	}
 
 	if req.ScanType == "CloudComplianceScan" {
-		log.Info().Msgf("CloudComplianceScan request, type: %s, scanid: %s",
-			req.ScanType, req.ScanID)
-		err = reporters_scan.StopCloudComplianceScan(r.Context(), req.ScanType, req.ScanID)
+		tag = "StopCloudComplianceScan"
+		log.Info().Msgf("StopCloudComplianceScan request, type: %s, scanid: %v",
+			tag, req.ScanType, req.ScanIds)
+
+		err = reporters_scan.StopCloudComplianceScan(r.Context(), req.ScanIds)
 	} else {
-		log.Info().Msgf("%s request, type: %s, scanid: %s",
-			tag, req.ScanType, req.ScanID)
-		err = reporters_scan.StopScan(r.Context(), req.ScanType, req.ScanID)
+		log.Info().Msgf("%s request, type: %s, scanid: %v",
+			tag, req.ScanType, req.ScanIds)
+		err = reporters_scan.StopScan(r.Context(), req.ScanType, req.ScanIds)
 	}
 
 	if err != nil {
-		log.Error().Msgf("Error in StopScan: %v", err)
+		log.Error().Msgf("%s Error in StopScan: %v", tag, err)
 		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
