@@ -41,6 +41,7 @@ import {
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import { CompareScanInputModal } from '@/components/forms/CompareScanInputModal';
 import { BalanceLineIcon } from '@/components/icons/common/BalanceLine';
 import { BellLineIcon } from '@/components/icons/common/BellLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
@@ -68,10 +69,9 @@ import { TruncatedText } from '@/components/TruncatedText';
 import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { PostureScanResultsPieChart } from '@/features/postures/components/scan-result/PostureScanResultsPieChart';
+import { PosturesCompare } from '@/features/postures/components/scan-result/PosturesCompare';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { CompareScanInputModal } from '@/features/vulnerabilities/components/ScanResults/CompareScanInputModal';
-import { VulnerabilitiesCompare } from '@/features/vulnerabilities/components/ScanResults/VulnerabilitiesCompare';
 import { invalidateAllQueries, queries } from '@/queries';
 import {
   ComplianceScanNodeTypeEnum,
@@ -628,7 +628,7 @@ const HistoryControls = () => {
         />
       )}
       {showScanCompareModal && (
-        <VulnerabilitiesCompare
+        <PosturesCompare
           open={showScanCompareModal}
           onOpenChange={setShowScanCompareModal}
           compareInput={compareInput}

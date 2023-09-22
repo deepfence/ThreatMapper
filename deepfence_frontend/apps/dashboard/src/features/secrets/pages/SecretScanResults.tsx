@@ -42,6 +42,7 @@ import {
 import { ModelSecret } from '@/api/generated/models/ModelSecret';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import { CompareScanInputModal } from '@/components/forms/CompareScanInputModal';
 import { BalanceLineIcon } from '@/components/icons/common/BalanceLine';
 import { BellLineIcon } from '@/components/icons/common/BellLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
@@ -69,7 +70,6 @@ import { useDownloadScan } from '@/features/common/data-component/downloadScanAc
 import { SecretScanResultsPieChart } from '@/features/secrets/components/scan-results/SecretScanResultsPieChart';
 import { SecretsCompare } from '@/features/secrets/components/scan-results/SecretsCompare';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { CompareScanInputModal } from '@/features/vulnerabilities/components/ScanResults/CompareScanInputModal';
 import { invalidateAllQueries, queries } from '@/queries';
 import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
 import { get403Message } from '@/utils/403';

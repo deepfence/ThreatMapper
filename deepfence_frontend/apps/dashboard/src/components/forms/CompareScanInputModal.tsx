@@ -3,7 +3,7 @@ import { Button, Checkbox, CircleSpinner, Modal } from 'ui-components';
 
 import { ModelNodeIdentifierNodeTypeEnum } from '@/api/generated';
 import { ISelected, ScanTimeList } from '@/components/forms/ScanTimeList';
-import { SearchableTagList } from '@/components/forms/SearchableTagList';
+import { ImageTagType, SearchableTagList } from '@/components/forms/SearchableTagList';
 import { useScanResults as malwareScanResults } from '@/features/malwares/pages/MalwareScanResults';
 import { useScanResults as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { useScanResults as vulnerabilityScanResults } from '@/features/vulnerabilities/pages/VulnerabilityScanResults';
@@ -25,8 +25,8 @@ const Tags = ({
   setSelectedTag,
   scanType,
 }: {
-  selectedTag: string;
-  setSelectedTag: React.Dispatch<React.SetStateAction<string>>;
+  selectedTag: ImageTagType;
+  setSelectedTag: React.Dispatch<React.SetStateAction<ImageTagType>>;
   scanType: ScanTypeEnum;
 }) => {
   const dockerImageName = useScanResults({
@@ -42,9 +42,6 @@ const Tags = ({
       onChange={(value) => {
         setSelectedTag(value);
       }}
-      onClearAll={() => {
-        setSelectedTag('');
-      }}
       filter={{
         dockerImageName: dockerImageName ?? '',
       }}
@@ -56,7 +53,7 @@ type ToScanDataType = {
   toScanTime: number | null;
 };
 
-const BaseInput = ({
+const InputForm = ({
   nodeId,
   nodeType,
   scanType,
@@ -76,22 +73,42 @@ const BaseInput = ({
   toScanData: ToScanDataType;
   setToScanData: React.Dispatch<React.SetStateAction<ToScanDataType>>;
 }) => {
-  const [selectedNodeId, setSelectedNodeId] = useState(() => nodeId);
+  const [selectedTag, setSelectedTag] = useState<ImageTagType>({
+    nodeId,
+    nodeName: '',
+    tagList: [],
+  });
   const [withOtherTags, setWithOtherTags] = useState<boolean>(false);
 
+  // clear scan time when compare with other tags checkbox is checked
   useEffect(() => {
-    if (selectedNodeId) {
+    if (withOtherTags) {
+      setSelectedTag({
+        nodeId: '',
+        nodeName: '',
+        tagList: [],
+      });
+    }
+    setToScanData({
+      toScanTime: null,
+      toScanId: '',
+    });
+  }, [withOtherTags]);
+
+  // clear to scan time when tag is selected
+  useEffect(() => {
+    if (selectedTag) {
       setToScanData({
         toScanTime: null,
         toScanId: '',
       });
     }
-  }, [selectedNodeId, withOtherTags]);
+  }, [selectedTag]);
 
   return (
     <div className="flex flex-col gap-y-6">
-      <Suspense fallback={<CircleSpinner size="sm" />}>
-        {nodeType === ModelNodeIdentifierNodeTypeEnum.Image ? (
+      <>
+        {nodeType === ModelNodeIdentifierNodeTypeEnum.Image && (
           <>
             <Checkbox
               label="Compare with other tags"
@@ -100,39 +117,55 @@ const BaseInput = ({
                 setWithOtherTags(checked);
               }}
             />
-            {withOtherTags && (
-              <Tags
-                setSelectedTag={setSelectedNodeId}
-                scanType={scanType as ScanTypeEnum}
-                selectedTag={selectedNodeId}
-              />
-            )}
+            <Suspense fallback={<CircleSpinner size="sm" />}>
+              {withOtherTags && (
+                <Tags
+                  setSelectedTag={setSelectedTag}
+                  scanType={scanType as ScanTypeEnum}
+                  selectedTag={selectedTag}
+                />
+              )}
+            </Suspense>
           </>
-        ) : null}
-      </Suspense>
-      <ScanTimeList
-        triggerVariant="underline"
-        defaultSelectedTime={toScanData.toScanTime ?? null}
-        valueKey="nodeId"
-        onChange={(data: ISelected) => {
-          setToScanData({
-            toScanTime: data.updatedAt,
-            toScanId: data.scanId,
-          });
-        }}
-        onClearAll={() => {
-          setToScanData({
-            toScanTime: null,
-            toScanId: '',
-          });
-        }}
-        nodeId={selectedNodeId}
-        nodeType={nodeType}
-        scanType={scanType as ScanTypeEnum}
-        // skip scan time when base scan is same as to scan
-        skipScanTime={nodeId === selectedNodeId ? compareInput.baseScanTime : undefined}
-        noDataText="No scan to compare"
-      />
+        )}
+
+        {withOtherTags ? (
+          <ScanTimeList
+            triggerVariant="underline"
+            defaultSelectedTime={toScanData.toScanTime ?? null}
+            valueKey="nodeId"
+            onChange={(data: ISelected) => {
+              setToScanData({
+                toScanTime: data.updatedAt,
+                toScanId: data.scanId,
+              });
+            }}
+            // node id should be selected tag nodeid
+            nodeId={selectedTag?.nodeId}
+            nodeType={nodeType}
+            scanType={scanType as ScanTypeEnum}
+            noDataText="No scan to compare"
+          />
+        ) : (
+          <ScanTimeList
+            triggerVariant="underline"
+            defaultSelectedTime={toScanData.toScanTime ?? null}
+            valueKey="nodeId"
+            onChange={(data: ISelected) => {
+              setToScanData({
+                toScanTime: data.updatedAt,
+                toScanId: data.scanId,
+              });
+            }}
+            nodeId={nodeId}
+            nodeType={nodeType}
+            scanType={scanType as ScanTypeEnum}
+            // skip scan time when base scan is same as to scan
+            skipScanTime={compareInput.baseScanTime}
+            noDataText="No scan to compare"
+          />
+        )}
+      </>
     </div>
   );
 };
@@ -224,7 +257,7 @@ export const CompareScanInputModal = ({
       }
     >
       <div className="grid">
-        <BaseInput
+        <InputForm
           nodeId={nodeId}
           nodeType={nodeType}
           scanType={scanType}

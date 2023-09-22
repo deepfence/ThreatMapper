@@ -23,7 +23,9 @@ export const commonQueries = createQueryKeys('common', {
       queryKey: [{ filters }],
       queryFn: async ({ pageParam = 0 }) => {
         if (!nodeId || !nodeType || !scanType) {
-          throw new Error('Scan Type, Node Type and Node Id are required');
+          return {
+            data: [],
+          };
         }
 
         const getScanHistory = apiWrapper({
@@ -79,7 +81,7 @@ export const commonQueries = createQueryKeys('common', {
         }
 
         return {
-          data: result.value.scans_info.slice(0, size)?.map((res) => {
+          data: (result.value.scans_info ?? []).slice(0, size)?.map((res) => {
             return {
               updatedAt: res.updated_at,
               scanId: res.scan_id,

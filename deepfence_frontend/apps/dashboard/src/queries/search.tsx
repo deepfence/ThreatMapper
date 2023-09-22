@@ -207,7 +207,7 @@ export const searchQueries = createQueryKeys('search', {
           };
         }
         return {
-          pods: searchPodsResponse.value.map((res) => {
+          pods: searchPodsResponse.value.slice(0, size).map((res) => {
             return {
               nodeId: res.node_id,
               podName: res.pod_name,

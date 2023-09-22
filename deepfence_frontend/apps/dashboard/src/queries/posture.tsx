@@ -5,15 +5,18 @@ import {
   getCloudNodesApiClient,
   getComplianceApiClient,
   getControlsApiClient,
+  getScanCompareApiClient,
   getSearchApiClient,
 } from '@/api/api';
 import {
+  ModelCloudCompliance,
   ModelCloudNodeControlReqCloudProviderEnum,
-  ModelNodeIdentifierNodeTypeEnum,
+  ModelCompliance,
+  ModelScanCompareReq,
   ModelScanResultsReq,
   SearchSearchNodeReq,
 } from '@/api/generated';
-import { ScanStatusEnum, ScanTypeEnum } from '@/types/common';
+import { ScanStatusEnum } from '@/types/common';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { ComplianceScanGroupedStatus } from '@/utils/scan';
@@ -603,6 +606,202 @@ export const postureQueries = createQueryKeys('posture', {
           timestamp: complianceScanResults.value.created_at,
           counts: complianceScanResults.value.status_counts ?? {},
         };
+      },
+    };
+  },
+  scanDiff: (filters: { baseScanId: string; toScanId: string }) => {
+    const { baseScanId, toScanId } = filters;
+    return {
+      queryKey: [{ filters }],
+      queryFn: async () => {
+        if (!baseScanId || !toScanId) {
+          throw new Error('Scan ids are required for comparision');
+        }
+
+        const results: {
+          added: ModelCompliance[];
+          deleted: ModelCompliance[];
+          message?: string;
+        } = {
+          added: [],
+          deleted: [],
+        };
+
+        const compareScansApi = apiWrapper({
+          fn: getScanCompareApiClient().diffAddCompliance,
+        });
+
+        const addedCompareReq: ModelScanCompareReq = {
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: { filter_in: {} },
+            order_filter: { order_fields: [] },
+            compare_filter: null,
+          },
+          base_scan_id: baseScanId,
+          to_scan_id: toScanId,
+          window: {
+            offset: 0,
+            size: 99999,
+          },
+        };
+
+        const addScanResponse = await compareScansApi({
+          modelScanCompareReq: addedCompareReq,
+        });
+
+        if (!addScanResponse.ok) {
+          return {
+            error: 'Error getting scan diff',
+            message: addScanResponse.error.message,
+            ...results,
+          };
+        }
+
+        if (!addScanResponse.value) {
+          return results;
+        }
+
+        const addedScans = addScanResponse.value._new;
+
+        // deleted
+        const deletedCompareReq: ModelScanCompareReq = {
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: { filter_in: {} },
+            order_filter: { order_fields: [] },
+            compare_filter: null,
+          },
+          base_scan_id: toScanId,
+          to_scan_id: baseScanId,
+          window: {
+            offset: 0,
+            size: 99999,
+          },
+        };
+        const deletedScanResponse = await compareScansApi({
+          modelScanCompareReq: deletedCompareReq,
+        });
+
+        if (!deletedScanResponse.ok) {
+          return {
+            error: 'Error getting scan diff',
+            message: deletedScanResponse.error.message,
+            ...results,
+          };
+        }
+
+        if (!deletedScanResponse.value) {
+          return results;
+        }
+        const deletedScans = deletedScanResponse.value._new;
+
+        results.added = addedScans ?? [];
+        results.deleted = deletedScans ?? [];
+
+        return results;
+      },
+    };
+  },
+  scanDiffCloud: (filters: { baseScanId: string; toScanId: string }) => {
+    const { baseScanId, toScanId } = filters;
+    return {
+      queryKey: [{ filters }],
+      queryFn: async () => {
+        if (!baseScanId || !toScanId) {
+          throw new Error('Scan ids are required for comparision');
+        }
+
+        const results: {
+          added: ModelCloudCompliance[];
+          deleted: ModelCloudCompliance[];
+          message?: string;
+        } = {
+          added: [],
+          deleted: [],
+        };
+
+        const compareScansApi = apiWrapper({
+          fn: getScanCompareApiClient().diffAddCloudCompliance,
+        });
+
+        const addedCompareReq: ModelScanCompareReq = {
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: { filter_in: {} },
+            order_filter: { order_fields: [] },
+            compare_filter: null,
+          },
+          base_scan_id: baseScanId,
+          to_scan_id: toScanId,
+          window: {
+            offset: 0,
+            size: 99999,
+          },
+        };
+
+        const addScanResponse = await compareScansApi({
+          modelScanCompareReq: addedCompareReq,
+        });
+
+        if (!addScanResponse.ok) {
+          return {
+            error: 'Error getting scan diff',
+            message: addScanResponse.error.message,
+            ...results,
+          };
+        }
+
+        if (!addScanResponse.value) {
+          return results;
+        }
+
+        const addedScans = addScanResponse.value._new;
+
+        // deleted
+        const deletedCompareReq: ModelScanCompareReq = {
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: { filter_in: {} },
+            order_filter: { order_fields: [] },
+            compare_filter: null,
+          },
+          base_scan_id: toScanId,
+          to_scan_id: baseScanId,
+          window: {
+            offset: 0,
+            size: 99999,
+          },
+        };
+        const deletedScanResponse = await compareScansApi({
+          modelScanCompareReq: deletedCompareReq,
+        });
+
+        if (!deletedScanResponse.ok) {
+          return {
+            error: 'Error getting scan diff',
+            message: deletedScanResponse.error.message,
+            ...results,
+          };
+        }
+
+        if (!deletedScanResponse.value) {
+          return results;
+        }
+        const deletedScans = deletedScanResponse.value._new;
+
+        results.added = addedScans ?? [];
+        results.deleted = deletedScans ?? [];
+
+        return results;
       },
     };
   },

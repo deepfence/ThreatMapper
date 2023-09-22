@@ -16,14 +16,14 @@ import {
   Tabs,
 } from 'ui-components';
 
-import { ModelSecret } from '@/api/generated';
+import { ModelCloudCompliance } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
-import { PopOutIcon } from '@/components/icons/common/PopOut';
-import { CveCVSSScore, SeverityBadge } from '@/components/SeverityBadge';
-import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
+import { PostureStatusBadge } from '@/components/SeverityBadge';
+import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
+import { PostureSeverityType } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
 
@@ -39,7 +39,7 @@ const useGetScanDiff = (props: { baseScanId: string; toScanId: string }) => {
   const { baseScanId, toScanId } = props;
 
   return useSuspenseQuery({
-    ...queries.secret.scanDiff({
+    ...queries.posture.scanDiffCloud({
       baseScanId,
       toScanId,
     }),
@@ -56,55 +56,53 @@ const CompareTable = (props: IScanCompareProps & { type: string }) => {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const columnHelper = createColumnHelper<ModelSecret>();
+  const columnHelper = createColumnHelper<ModelCloudCompliance>();
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('node_id', {
-        cell: (info) => (
-          <DFLink
-            to={{
-              pathname: `./${encodeURIComponent(info.row.original.node_id)}`,
-              search: searchParams.toString(),
-            }}
-            className="flex items-center gap-x-[6px]"
-          >
-            <div className="w-4 h-4 shrink-0 dark:text-text-text-and-icon">
-              <SecretsIcon />
-            </div>
-            <div className="truncate">{info.getValue()}</div>
-          </DFLink>
-        ),
+        id: 'control_id',
+        enableSorting: true,
+        enableResizing: false,
+        cell: (info) => {
+          return (
+            <DFLink
+              to={{
+                pathname: `./${encodeURIComponent(info.row.original.node_id)}`,
+                search: searchParams.toString(),
+              }}
+              className="flex items-center gap-x-[6px]"
+            >
+              <div className="w-4 h-4 dark:text-text-text-and-icon">
+                <PostureIcon />
+              </div>
+              <TruncatedText
+                text={info.row.original.control_id ?? info.row.original.node_id}
+              />
+            </DFLink>
+          );
+        },
         header: () => 'ID',
         minSize: 90,
-        size: 110,
-        maxSize: 120,
+        size: 100,
+        maxSize: 110,
       }),
-      columnHelper.accessor('full_filename', {
-        cell: (info) => <TruncatedText text={info.getValue()} />,
-        header: () => 'File name',
+      columnHelper.accessor('compliance_check_type', {
+        cell: (info) => info.getValue().toUpperCase(),
+        header: () => <TruncatedText text="Check Type" />,
+        minSize: 60,
+        size: 80,
+        maxSize: 90,
+      }),
+      columnHelper.accessor('status', {
+        cell: (info) => {
+          return <PostureStatusBadge status={info.getValue() as PostureSeverityType} />;
+        },
+        header: () => 'Status',
         minSize: 70,
         size: 80,
-        maxSize: 100,
-      }),
-      columnHelper.accessor('matched_content', {
-        cell: (info) => <TruncatedText text={info.getValue()} />,
-        header: () => <TruncatedText text="Matched Content" />,
-        minSize: 50,
-        size: 60,
-        maxSize: 60,
-      }),
-      columnHelper.accessor('level', {
-        cell: (info) => (
-          <div>
-            <SeverityBadge severity={info.getValue()} />
-          </div>
-        ),
-        header: () => 'Severity',
-        minSize: 60,
-        size: 70,
-        maxSize: 80,
+        maxSize: 90,
       }),
     ];
 
@@ -224,15 +222,15 @@ const ScanComapareTime = ({ baseScanTime, toScanTime }: IScanCompareProps) => {
 };
 const tabs = [
   {
-    label: 'New secrets ',
-    value: 'new-secrets',
+    label: 'New compliances ',
+    value: 'new-compliances',
   },
   {
-    label: 'Fixed secrets',
-    value: 'deleted-secrets',
+    label: 'Fixed compliances',
+    value: 'deleted-compliances',
   },
 ];
-export const SecretsCompare = ({
+export const PosturesCloudCompare = ({
   open,
   onOpenChange,
   compareInput,
@@ -241,7 +239,9 @@ export const SecretsCompare = ({
   onOpenChange: (state: boolean) => void;
   compareInput: IScanCompareProps;
 }) => {
-  const [tab, setTab] = useState<'new-secrets' | 'deleted-secrets'>('new-secrets');
+  const [tab, setTab] = useState<'new-compliances' | 'deleted-compliances'>(
+    'new-compliances',
+  );
   return (
     <>
       <SlidingModal
@@ -272,10 +272,10 @@ export const SecretsCompare = ({
                 setTab(v as any);
               }}
             >
-              {tab === 'new-secrets' && (
+              {tab === 'new-compliances' && (
                 <>
                   <CountWidget
-                    title="Total new secrets"
+                    title="Total new compliances"
                     type="new"
                     baseScanId={compareInput.baseScanId}
                     toScanId={compareInput.toScanId}
@@ -287,10 +287,10 @@ export const SecretsCompare = ({
                   </Suspense>
                 </>
               )}
-              {tab === 'deleted-secrets' && (
+              {tab === 'deleted-compliances' && (
                 <>
                   <CountWidget
-                    title="Total fixed secrets"
+                    title="Total fixed compliances"
                     type="deleted"
                     baseScanId={compareInput.baseScanId}
                     toScanId={compareInput.toScanId}

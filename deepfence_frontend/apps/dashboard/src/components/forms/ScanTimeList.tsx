@@ -27,7 +27,7 @@ export interface ISelected {
   scanId: string;
 }
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 10;
 const ScanTime = ({
   onChange,
   onClearAll,
@@ -88,7 +88,7 @@ const ScanTime = ({
               : ''
             : ''
         }
-        placeholder="scan time"
+        placeholder="Scan time"
         value={selectedTime as unknown as ISelected}
         onChange={(value: ISelected) => {
           setSelectedTime(value.updatedAt);
@@ -141,10 +141,10 @@ export const ScanTimeList = (props: TimeListProps) => {
     <Suspense
       fallback={
         <Listbox
-          label={isSelectVariantType ? 'Select time' : undefined}
+          label={isSelectVariantType ? 'Select Scan Time' : undefined}
           variant={triggerVariant}
           startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-          placeholder="Select time"
+          placeholder="Scan time"
         />
       }
     >
