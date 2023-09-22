@@ -41,7 +41,7 @@ func (h *Handler) GetThreatGraph(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	graph, err := reporter.GetThreatGraph(filters)
+	graph, err := reporter.GetThreatGraph(ctx, filters)
 	if err != nil {
 		log.Error().Msgf("Error Adding report: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)

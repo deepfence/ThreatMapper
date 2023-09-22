@@ -13,19 +13,11 @@ import (
 )
 
 type ThreatGraphReporter struct {
-	driver neo4j.Driver
 }
 
 func NewThreatGraphReporter(ctx context.Context) (*ThreatGraphReporter, error) {
-	driver, err := directory.Neo4jClient(ctx)
 
-	if err != nil {
-		return nil, err
-	}
-
-	nc := &ThreatGraphReporter{
-		driver: driver,
-	}
+	nc := &ThreatGraphReporter{}
 
 	return nc, nil
 }
@@ -39,8 +31,8 @@ const (
 
 var CLOUD_ALL = [...]string{CLOUD_AWS, CLOUD_AZURE, CLOUD_GCP, CLOUD_PRIVATE}
 
-func (tc *ThreatGraphReporter) GetThreatGraph(filter ThreatFilters) (ThreatGraph, error) {
-	aggreg, err := tc.GetRawThreatGraph(filter)
+func (tc *ThreatGraphReporter) GetThreatGraph(ctx context.Context, filter ThreatFilters) (ThreatGraph, error) {
+	aggreg, err := tc.GetRawThreatGraph(ctx, filter)
 	if err != nil {
 		return ThreatGraph{}, err
 	}
@@ -118,8 +110,15 @@ func build_attack_paths(paths AttackPaths, root int64, visited map[int64]struct{
 	return res
 }
 
-func (tc *ThreatGraphReporter) GetRawThreatGraph(filters ThreatFilters) (map[string]AttackPaths, error) {
-	session, err := tc.driver.Session(neo4j.AccessModeWrite)
+func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters ThreatFilters) (map[string]AttackPaths, error) {
+
+	driver, err := directory.Neo4jClient(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	session, err := driver.Session(neo4j.AccessModeWrite)
 
 	if err != nil {
 		return nil, err
