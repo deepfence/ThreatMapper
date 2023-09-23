@@ -899,8 +899,15 @@ func isTransientError(err error) bool {
 	return false
 }
 
-func (nc *neo4jIngester) runDBPusher(ctx context.Context, db_pusher, db_pusher_seq, db_pusher_retry chan ReportIngestionData,
+func isClosedError(err error) bool {
+	return strings.Contains(err.Error(), "Pool closed")
+}
+
+func (nc *neo4jIngester) runDBPusher(
+	ctx context.Context,
+	db_pusher, db_pusher_seq, db_pusher_retry chan ReportIngestionData,
 	pusher func(ReportIngestionData, neo4j.Session) error) {
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msgf("Failed to get client: %v", err)
@@ -911,7 +918,6 @@ func (nc *neo4jIngester) runDBPusher(ctx context.Context, db_pusher, db_pusher_s
 		log.Error().Msgf("Failed to open session: %v", err)
 		return
 	}
-	defer session.Close()
 
 	for batches := range db_pusher {
 		span := telemetry.NewSpan(context.Background(), "ingester", "PushAgentReportsToDB")
@@ -919,6 +925,18 @@ func (nc *neo4jIngester) runDBPusher(ctx context.Context, db_pusher, db_pusher_s
 			err := pusher(batches, session)
 			if err != nil {
 				batches.Retries += 1
+				if isClosedError(err) {
+					log.Warn().Msg("Renew session")
+					new_driver, err := directory.Neo4jClient(ctx)
+					if err == nil {
+						new_session, err := new_driver.Session(neo4j.AccessModeWrite)
+						if err == nil {
+							driver = new_driver
+							session.Close()
+							session = new_session
+						}
+					}
+				}
 				if batches.Retries == 2 || !isTransientError(err) {
 					log.Error().Msgf("Neo4j err: %v", err)
 					span.EndWithErr(err)
@@ -942,6 +960,7 @@ func (nc *neo4jIngester) runDBPusher(ctx context.Context, db_pusher, db_pusher_s
 			break
 		}
 	}
+	session.Close()
 	log.Info().Msgf("runDBPusher ended")
 }
 
@@ -971,7 +990,6 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 		return nil, err
 	}
 	collector_ctx := directory.NewContextWithNameSpace(ns)
-
 
 	done := make(chan struct{})
 	db_pusher := make(chan ReportIngestionData, db_input_size)
