@@ -1132,34 +1132,36 @@ const AccountWithTab = () => {
   const { navigate } = usePageNavigation();
 
   return (
-    <div className="mx-4">
+    <>
       <Header />
-      <Tabs
-        className="mt-2"
-        value={currentTab}
-        tabs={tabs}
-        onValueChange={(value) => {
-          if (currentTab === value) return;
-          let _nodeType = nodeType;
-          if (value === 'org-accounts') {
-            _nodeType = _nodeType + '_org';
-          } else {
-            _nodeType = _nodeType.split('_')[0];
-          }
-          setTab(value);
-          navigate(
-            generatePath('/posture/accounts/:nodeType', {
-              nodeType: _nodeType,
-            }),
-          );
-        }}
-        size="md"
-      >
-        <div className="mt-2">
-          <Accounts />
-        </div>
-      </Tabs>
-    </div>
+      <div className="mx-4">
+        <Tabs
+          className="mt-2"
+          value={currentTab}
+          tabs={tabs}
+          onValueChange={(value) => {
+            if (currentTab === value) return;
+            let _nodeType = nodeType;
+            if (value === 'org-accounts') {
+              _nodeType = _nodeType + '_org';
+            } else {
+              _nodeType = _nodeType.split('_')[0];
+            }
+            setTab(value);
+            navigate(
+              generatePath('/posture/accounts/:nodeType', {
+                nodeType: _nodeType,
+              }),
+            );
+          }}
+          size="md"
+        >
+          <div className="mt-2">
+            <Accounts />
+          </div>
+        </Tabs>
+      </div>
+    </>
   );
 };
 
