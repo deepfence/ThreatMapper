@@ -622,7 +622,7 @@ const HistoryControls = () => {
   };
 
   return (
-    <>
+    <div className="flex items-center relative flex-grow">
       {openStopScanModal && (
         <StopScanForm
           open={openStopScanModal}
@@ -788,7 +788,7 @@ const HistoryControls = () => {
           </Button>
         )}
       </div>
-    </>
+    </div>
   );
 };
 
@@ -1205,7 +1205,7 @@ const CloudPostureResults = () => {
 
   return (
     <div className="self-start">
-      <div className="mt-4 h-12 flex items-center">
+      <div className="h-12 flex items-center">
         <BulkActions
           ids={selectedIds}
           onTableAction={onTableAction}

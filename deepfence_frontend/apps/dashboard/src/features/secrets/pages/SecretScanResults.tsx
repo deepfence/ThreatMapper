@@ -632,7 +632,7 @@ const HistoryControls = () => {
   };
 
   return (
-    <>
+    <div className="flex items-center relative flex-grow">
       {openStopScanModal && (
         <StopScanForm
           open={openStopScanModal}
@@ -797,7 +797,7 @@ const HistoryControls = () => {
           </Button>
         )}
       </div>
-    </>
+    </div>
   );
 };
 

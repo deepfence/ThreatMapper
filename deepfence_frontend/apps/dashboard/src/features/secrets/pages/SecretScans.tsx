@@ -1086,7 +1086,7 @@ const SecretScans = () => {
       </div>
 
       <div className="mx-4">
-        <div className="mt-4 h-12 flex items-center">
+        <div className="h-12 flex items-center">
           <BulkActions
             selectedRows={selectedRows}
             setIdsToDelete={setIdsToDelete}
