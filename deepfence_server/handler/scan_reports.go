@@ -28,7 +28,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/google/uuid"
-	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/samber/lo"
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -408,7 +407,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 	} else {
-		nodes = reqs.NodeIds
+		nodes = cloudNodeIds
 	}
 
 	var scanTrigger model.NodeIdentifier

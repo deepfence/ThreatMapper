@@ -439,19 +439,21 @@ func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdenti
 			NodeType: controls.ResourceTypeToString(controls.CloudAccount),
 		})
 	}
-	nres, err = tx.Run(`
+	if len(orgNodeIds) > 0 {
+		nres, err = tx.Run(`
 		MATCH (n:CloudNode) -[:IS_CHILD] -> (m)
 		WHERE n.node_id IN $node_ids
 		RETURN m.node_id`,
-		map[string]interface{}{"node_ids": orgNodeIds})
-	if err != nil {
-		return res, err
-	}
-	for _, rec := range recs {
-		res = append(res, model.NodeIdentifier{
-			NodeId:   rec.Values[0].(string),
-			NodeType: controls.ResourceTypeToString(controls.CloudAccount),
-		})
+			map[string]interface{}{"node_ids": orgNodeIds})
+		if err != nil {
+			return res, err
+		}
+		for _, rec := range recs {
+			res = append(res, model.NodeIdentifier{
+				NodeId:   rec.Values[0].(string),
+				NodeType: controls.ResourceTypeToString(controls.CloudAccount),
+			})
+		}
 	}
 
 	return res, nil
