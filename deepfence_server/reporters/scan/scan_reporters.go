@@ -430,7 +430,6 @@ func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdenti
 	orgNodeIds := []string{}
 	for _, rec := range recs {
 		cloudProvider := rec.Values[1].(string)
-		fmt.Println("cloudProviderFound:" + cloudProvider)
 		if cloudProvider == model.PostureProviderAWSOrg || cloudProvider == model.PostureProviderGCPOrg {
 			orgNodeIds = append(orgNodeIds, rec.Values[0].(string))
 			continue
@@ -446,6 +445,10 @@ func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdenti
 		WHERE n.node_id IN $node_ids
 		RETURN m.node_id`,
 			map[string]interface{}{"node_ids": orgNodeIds})
+		if err != nil {
+			return res, err
+		}
+		recs, err = nres.Collect()
 		if err != nil {
 			return res, err
 		}
