@@ -36,6 +36,8 @@ func NewSbomGenerator(ingest chan *kgo.Record) SbomGenerator {
 }
 
 func StopVulnerabilityScan(ctx context.Context, task *asynq.Task) error {
+	defer cronjobs.ScanWorkloadAllocator.Free()
+
 	log.Info().Msgf("StopVulnerabilityScan, payload: %s ", string(task.Payload()))
 	var params utils.SbomParameters
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {

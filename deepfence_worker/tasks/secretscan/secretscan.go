@@ -38,6 +38,8 @@ func NewSecretScanner(ingest chan *kgo.Record) SecretScan {
 }
 
 func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error {
+	defer cronjobs.ScanWorkloadAllocator.Free()
+
 	var params utils.SecretScanParameters
 
 	log.Info().Msgf("StopSecretScan, payload: %s ", string(task.Payload()))
