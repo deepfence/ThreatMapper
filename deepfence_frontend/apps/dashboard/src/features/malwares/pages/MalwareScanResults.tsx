@@ -537,7 +537,7 @@ const NotifyModal = ({
           </div>
         </fetcher.Form>
       ) : (
-        <SuccessModalContent text="Deleted successfully!" />
+        <SuccessModalContent text="Notified successfully!" />
       )}
     </Modal>
   );
