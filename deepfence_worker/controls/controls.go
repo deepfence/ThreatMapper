@@ -48,8 +48,7 @@ func ApplyControl(ctx context.Context, req ctl.Action) error {
 		log.Info().Msgf("apply control req: %+v", req)
 		return f(ctx, []byte(req.RequestPayload))
 	}
-	log.Warn().Msgf("apply control req: %+v not implemented", req)
-	return nil
+	return fmt.Errorf("apply control req: %+v not implemented", req)
 }
 
 func init() {
