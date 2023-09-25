@@ -393,6 +393,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 		h.respondError(err, w)
 		return
 	}
+	log.Error().Msgf("cloudNodeIds1 %v", cloudNodeIds)
 
 	var nodes []model.NodeIdentifier
 	if len(reqs.NodeIds) == 0 {
@@ -428,6 +429,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.Host) {
+		log.Error().Msgf("cloudNodeIds2 %v", nodes)
 		scanIds, bulkId, err = StartMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
 		scanStatusType = utils.CLOUD_COMPLIANCE_SCAN_STATUS
 	} else {
