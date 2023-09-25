@@ -3,10 +3,11 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Listbox, ListboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
+import { ScanTypeEnum } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
 import { isScanComplete } from '@/utils/scan';
 
-interface SearchableTimeListProps {
+interface TimeListProps {
   onChange?: (data: ISelected) => void;
   onClearAll?: () => void;
   defaultSelectedTime?: number | null;
@@ -16,6 +17,7 @@ interface SearchableTimeListProps {
   color?: 'error' | 'default';
   nodeId?: string;
   nodeType?: string;
+  scanType: string;
   skipScanTime?: number;
   noDataText?: string;
 }
@@ -25,8 +27,8 @@ export interface ISelected {
   scanId: string;
 }
 
-const PAGE_SIZE = 15;
-const SearchableScanTime = ({
+const PAGE_SIZE = 10;
+const ScanTime = ({
   onChange,
   onClearAll,
   defaultSelectedTime,
@@ -35,9 +37,10 @@ const SearchableScanTime = ({
   color,
   nodeId,
   nodeType,
+  scanType,
   skipScanTime,
   noDataText,
-}: SearchableTimeListProps) => {
+}: TimeListProps) => {
   const [selectedTime, setSelectedTime] = useState<number | null>(
     defaultSelectedTime ?? null,
   );
@@ -52,10 +55,11 @@ const SearchableScanTime = ({
 
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useSuspenseInfiniteQuery({
-      ...queries.vulnerability.scanHistories({
+      ...queries.common.scanHistories({
         size: PAGE_SIZE,
         nodeId: nodeId ?? '',
         nodeType: nodeType ?? '',
+        scanType: scanType as ScanTypeEnum,
       }),
       keepPreviousData: true,
       getNextPageParam: (lastPage, allPages) => {
@@ -84,7 +88,7 @@ const SearchableScanTime = ({
               : ''
             : ''
         }
-        placeholder="scan time"
+        placeholder="Scan time"
         value={selectedTime as unknown as ISelected}
         onChange={(value: ISelected) => {
           setSelectedTime(value.updatedAt);
@@ -127,7 +131,7 @@ const SearchableScanTime = ({
   );
 };
 
-export const SearchableScanTimeList = (props: SearchableTimeListProps) => {
+export const ScanTimeList = (props: TimeListProps) => {
   const { triggerVariant } = props;
   const isSelectVariantType = useMemo(() => {
     return triggerVariant === 'underline';
@@ -137,14 +141,14 @@ export const SearchableScanTimeList = (props: SearchableTimeListProps) => {
     <Suspense
       fallback={
         <Listbox
-          label={isSelectVariantType ? 'Select time' : undefined}
+          label={isSelectVariantType ? 'Select Scan Time' : undefined}
           variant={triggerVariant}
           startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-          placeholder="Select time"
+          placeholder="Scan time"
         />
       }
     >
-      <SearchableScanTime {...props} />
+      <ScanTime {...props} />
     </Suspense>
   );
 };

@@ -339,5 +339,9 @@ export function getScanCompareApiClient() {
   const scanCompareApi = new DiffAddApi(configuration);
   return {
     diffVulnerability: scanCompareApi.diffAddVulnerability.bind(scanCompareApi),
+    diffAddSecret: scanCompareApi.diffAddSecret.bind(scanCompareApi),
+    diffAddMalware: scanCompareApi.diffAddMalware.bind(scanCompareApi),
+    diffAddCompliance: scanCompareApi.diffAddCompliance.bind(scanCompareApi),
+    diffAddCloudCompliance: scanCompareApi.diffAddCloudCompliance.bind(scanCompareApi),
   };
 }

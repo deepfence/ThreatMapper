@@ -8,9 +8,9 @@ import { ScanTypeEnum } from '@/types/common';
 
 export type Props = {
   scanType: ScanTypeEnum | 'none';
-  onChange?: (value: string) => void;
+  onChange?: (value: ImageTagType) => void;
   onClearAll?: () => void;
-  defaultSelectedTag?: string;
+  defaultSelectedTag?: ImageTagType;
   valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
   triggerVariant?: 'select' | 'button';
@@ -19,21 +19,24 @@ export type Props = {
   };
 };
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 10;
+export type ImageTagType = {
+  nodeId: string;
+  nodeName: string;
+  tagList: string[];
+};
 const SearchableTag = ({
   scanType,
   onChange,
   onClearAll,
   defaultSelectedTag,
-  valueKey = 'nodeId',
   active,
   triggerVariant,
   filter,
 }: Props) => {
   const [searchText, setSearchText] = useState('');
-
-  const [selectedTag, setSelectedTag] = useState<string>(() => {
-    return defaultSelectedTag ?? '';
+  const [selectedTag, setSelectedTag] = useState<ImageTagType | undefined>(() => {
+    return defaultSelectedTag;
   });
 
   const isSelectVariantType = useMemo(() => {
@@ -41,7 +44,7 @@ const SearchableTag = ({
   }, [triggerVariant]);
 
   useEffect(() => {
-    setSelectedTag(defaultSelectedTag ?? '');
+    setSelectedTag(defaultSelectedTag ?? undefined);
   }, [defaultSelectedTag]);
 
   const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
@@ -86,15 +89,10 @@ const SearchableTag = ({
         name="tagFilter"
         triggerVariant={triggerVariant || 'button'}
         label={isSelectVariantType ? 'Select Image Tag' : undefined}
-        getDisplayValue={(value) => {
-          const found = data?.pages
-            .flatMap((page) => {
-              return page.containerImages;
-            })
-            .find((tag) => tag.nodeId === value || tag.nodeId === selectedTag);
-          return found?.nodeName ?? null;
+        getDisplayValue={() => {
+          return selectedTag?.nodeName ? selectedTag?.nodeName : null;
         }}
-        placeholder="select tag"
+        placeholder="Select tag"
         value={selectedTag}
         onChange={(value) => {
           setSelectedTag(value);
@@ -111,7 +109,7 @@ const SearchableTag = ({
           })
           .map((image, index) => {
             return (
-              <ComboboxOption key={`${image.nodeId}-${index}`} value={image[valueKey]}>
+              <ComboboxOption key={`${image.nodeId}-${index}`} value={image}>
                 <div>{image.nodeName}</div>
               </ComboboxOption>
             );
@@ -134,7 +132,7 @@ export const SearchableTagList = (props: Props) => {
           label={isSelectVariantType ? 'Select Image Tag' : undefined}
           triggerVariant={triggerVariant || 'button'}
           startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-          placeholder="select tag"
+          placeholder="Select tag"
           multiple
           onQueryChange={() => {
             // no operation

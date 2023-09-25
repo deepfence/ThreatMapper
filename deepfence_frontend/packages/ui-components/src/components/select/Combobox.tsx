@@ -260,7 +260,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                               'pl-[6px] text-p6 dark:text-text-input-value',
                               'dark:focus-visible:outline-none dark:bg-bg-card',
                               'dark:placeholder:text-df-gray-600',
-                              'min-w-0',
+                              'min-w-0 w-full',
                             )}
                             onChange={(event) => {
                               onQueryChange(event.target.value);
