@@ -3,7 +3,10 @@ import { generatePath, Navigate, useLocation, useParams } from 'react-router-dom
 import { Button, Card, Tooltip } from 'ui-components';
 
 import { ComplianceScanConfigureForm } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
-import { MalwareScanConfigureForm } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import {
+  MalwareScanConfigureForm,
+  MalwareScanConfigureFormProps,
+} from '@/components/scan-configure-forms/MalwareScanConfigureForm';
 import { SecretScanConfigureForm } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { VulnerabilityScanConfigureForm } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
@@ -152,15 +155,17 @@ const ScanConfigureForm = () => {
         {scanType === ScanTypeEnum.MalwareScan && (
           <MalwareScanConfigureForm
             showAdvancedOptions={false}
-            data={{
-              nodes: state.map((node) => {
-                return {
-                  nodeId: node.urlId,
-                  nodeType: state[0].urlType as MalwareScanNodeTypeEnum,
-                };
-              }),
-              images: [],
-            }}
+            data={
+              {
+                nodes: state.map((node) => {
+                  return {
+                    nodeId: node.urlId,
+                    nodeType: state[0].urlType as MalwareScanNodeTypeEnum,
+                  };
+                }),
+                images: [],
+              } as MalwareScanConfigureFormProps['data']
+            }
             onSuccess={(data) => {
               if (data) {
                 const { nodeType, bulkScanId } = data;
