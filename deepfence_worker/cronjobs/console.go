@@ -1,12 +1,13 @@
 package cronjobs
 
 import (
-	"github.com/ThreeDotsLabs/watermill/message"
+	"context"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	utils_ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_worker/controls"
+	"github.com/hibiken/asynq"
 )
 
 const (
@@ -22,14 +23,8 @@ var (
 While this functon is a cron job, it is running on the worker's address space
 Hence Allocator can be shared across tasks
 */
-func TriggerConsoleControls(msg *message.Message) error {
-	topic := RecordOffsets(msg)
-	defer SetTopicHandlerStatus(topic, false)
-
+func TriggerConsoleControls(ctx context.Context, t *asynq.Task) error {
 	log.Debug().Msgf("Trigger console actions #capacity: %v", ScanWorkloadAllocator.MaxAllocable())
-
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 
 	actions, errs := controls.GetAgentActions(ctx, ConsoleAgentId, int(ScanWorkloadAllocator.MaxAllocable()))
 	for _, e := range errs {
@@ -41,11 +36,11 @@ func TriggerConsoleControls(msg *message.Message) error {
 	ScanWorkloadAllocator.Reserve(int32(len(actions)))
 
 	log.Debug().Msgf("Trigger console actions #actions: %d", len(actions))
-
 	for _, action := range actions {
 		log.Info().Msgf("Init execute: %v", action.ID)
-		err := ctl.ApplyControl(namespace, action)
+		err := ctl.ApplyControl(ctx, action)
 		if err != nil {
+			ScanWorkloadAllocator.Free()
 			log.Error().Msgf("Control %v failed: %v", action, err)
 		}
 	}

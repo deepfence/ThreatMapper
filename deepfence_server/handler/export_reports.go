@@ -6,9 +6,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -263,7 +260,7 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 		Filters:    req.Filters,
 	}
 
-	namespace, err := directory.ExtractNamespace(r.Context())
+	worker, err := directory.Worker(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -320,16 +317,7 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// create a task message
-	msg := message.NewMessage(watermill.NewUUID(), payload)
-	msg.Metadata = map[string]string{
-		directory.NamespaceKey: string(namespace),
-		"report_type":          req.ReportType,
-	}
-	msg.SetContext(directory.NewContextWithNameSpace(namespace))
-	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)
-
-	err = h.TasksPublisher.Publish(utils.ReportGeneratorTask, msg)
+	err = worker.Enqueue(utils.ReportGeneratorTask, payload)
 	if err != nil {
 		log.Error().Msgf("failed to publish task: %+v", err)
 		h.respondError(err, w)

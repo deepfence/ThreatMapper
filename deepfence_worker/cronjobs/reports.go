@@ -4,23 +4,18 @@ import (
 	"context"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
+	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 const minioReportsPrefix = "/report/"
 
-func CleanUpReports(msg *message.Message) error {
-	topic := RecordOffsets(msg)
-	defer SetTopicHandlerStatus(topic, false)
-
+func CleanUpReports(ctx context.Context, task *asynq.Task) error {
 	log.Info().Msg("Start reports cleanup")
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {

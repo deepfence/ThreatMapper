@@ -42,6 +42,8 @@ import {
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import { CompareScanInputModal } from '@/components/forms/CompareScanInputModal';
+import { BalanceLineIcon } from '@/components/icons/common/BalanceLine';
 import { BellLineIcon } from '@/components/icons/common/BellLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { ClockLineIcon } from '@/components/icons/common/ClockLine';
@@ -71,6 +73,7 @@ import { TruncatedText } from '@/components/TruncatedText';
 import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { PostureScanResultsPieChart } from '@/features/postures/components/scan-result/PostureScanResultsPieChart';
+import { PosturesCompare } from '@/features/postures/components/scan-result/PosturesCompare';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
@@ -534,7 +537,7 @@ const NotifyModal = ({
           </div>
         </fetcher.Form>
       ) : (
-        <SuccessModalContent text="Deleted successfully!" />
+        <SuccessModalContent text="Notified successfully!" />
       )}
     </Modal>
   );
@@ -563,7 +566,7 @@ const ScanHistory = () => {
 };
 
 const HistoryControls = () => {
-  const { data } = useScanResults();
+  const { data, fetchStatus } = useScanResults();
   const { nodeType = '' } = useParams();
   const { scanStatusResult } = data;
   const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
@@ -572,13 +575,29 @@ const HistoryControls = () => {
 
   const [openStopScanModal, setOpenStopScanModal] = useState(false);
 
+  const [showScanCompareModal, setShowScanCompareModal] = useState<boolean>(false);
   const [scanIdToDelete, setScanIdToDelete] = useState<string | null>(null);
 
+  const [compareInput, setCompareInput] = useState<{
+    baseScanId: string;
+    toScanId: string;
+    baseScanTime: number;
+    toScanTime: number;
+    showScanTimeModal: boolean;
+  }>({
+    baseScanId: '',
+    toScanId: '',
+    baseScanTime: updated_at ?? 0,
+    toScanTime: 0,
+    showScanTimeModal: false,
+  });
+
   const { data: historyData, refetch } = useSuspenseQuery({
-    ...queries.posture.scanHistories({
+    ...queries.common.scanHistories({
       scanType: ScanTypeEnum.ComplianceScan,
       nodeId: node_id ?? '',
       nodeType: node_type ?? '',
+      size: Number.MAX_SAFE_INTEGER,
     }),
   });
 
@@ -590,122 +609,169 @@ const HistoryControls = () => {
     throw new Error('Scan id, Node type and Node id are required');
   }
 
+  const onCompareScanClick = (baseScanTime: number) => {
+    setCompareInput({
+      ...compareInput,
+      baseScanTime,
+      showScanTimeModal: true,
+    });
+  };
+
   return (
-    <div className="flex items-center gap-x-3 relative flex-grow">
+    <>
       {openStopScanModal && (
         <StopScanForm
           open={openStopScanModal}
           closeModal={setOpenStopScanModal}
           scanIds={[scan_id]}
+          scanType={ScanTypeEnum.CloudComplianceScan}
+        />
+      )}
+      {compareInput.showScanTimeModal && (
+        <CompareScanInputModal
+          showDialog={true}
+          setShowDialog={() => {
+            setCompareInput((input) => {
+              return {
+                ...input,
+                showScanTimeModal: false,
+              };
+            });
+          }}
+          setShowScanCompareModal={setShowScanCompareModal}
+          scanHistoryData={historyData.data}
+          setCompareInput={setCompareInput}
+          compareInput={compareInput}
+          nodeId={node_id}
+          nodeType={node_type}
           scanType={ScanTypeEnum.ComplianceScan}
         />
       )}
-
-      <ScanHistoryDropdown
-        scans={[...(historyData?.data ?? [])].reverse().map((item) => ({
-          id: item.scanId,
-          isCurrent: item.scanId === scan_id,
-          status: item.status,
-          timestamp: item.updatedAt,
-          onDeleteClick: (id) => {
-            setScanIdToDelete(id);
-          },
-          onDownloadClick: () => {
-            downloadScan({
-              scanId: item.scanId,
-              scanType: UtilsReportFiltersScanTypeEnum.Compliance,
-              nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
-            });
-          },
-          onScanClick: () => {
-            navigate(
-              generatePath('/posture/scan-results/:nodeType/:scanId', {
-                scanId: encodeURIComponent(item.scanId),
-                nodeType,
-              }),
-              {
-                replace: true,
-              },
-            );
-          },
-        }))}
-        currentTimeStamp={formatMilliseconds(updated_at ?? '')}
-      />
-
-      {scanIdToDelete && (
-        <DeleteScanConfirmationModal
-          scanId={scanIdToDelete}
-          open={!!scanIdToDelete}
-          onOpenChange={(open, deleteSuccessful) => {
-            if (!open) {
-              if (deleteSuccessful && scanIdToDelete === scan_id) {
-                const latestScan = [...historyData.data].reverse().find((scan) => {
-                  return scan.scanId !== scanIdToDelete;
-                });
-                if (latestScan) {
-                  navigate(
-                    generatePath('./../:scanId', {
-                      scanId: encodeURIComponent(latestScan.scanId),
-                    }),
-                    { replace: true },
-                  );
-                } else {
-                  goBack();
-                }
-              }
-              setScanIdToDelete(null);
-            }
-          }}
+      {showScanCompareModal && (
+        <PosturesCompare
+          open={showScanCompareModal}
+          onOpenChange={setShowScanCompareModal}
+          compareInput={compareInput}
         />
       )}
-      <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
-      <ScanStatusBadge status={status ?? ''} />
-      {!isScanInProgress(status ?? '') ? (
-        <>
-          <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
-          <div className="pl-1.5 flex">
-            <IconButton
-              variant="flat"
-              icon={
-                <span className="h-3 w-3">
-                  <DownloadLineIcon />
-                </span>
+      <div className="flex items-center gap-x-3">
+        <ScanHistoryDropdown
+          scans={[...(historyData?.data ?? [])].reverse().map((item) => ({
+            id: item.scanId,
+            isCurrent: item.scanId === scan_id,
+            status: item.status,
+            timestamp: item.updatedAt,
+            showScanCompareButton: true,
+            onScanTimeCompareButtonClick: onCompareScanClick,
+            onDeleteClick: (id) => {
+              setScanIdToDelete(id);
+            },
+            onDownloadClick: () => {
+              downloadScan({
+                scanId: item.scanId,
+                scanType: UtilsReportFiltersScanTypeEnum.Compliance,
+                nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
+              });
+            },
+            onScanClick: () => {
+              navigate(
+                generatePath('/posture/scan-results/:nodeType/:scanId', {
+                  scanId: encodeURIComponent(item.scanId),
+                  nodeType,
+                }),
+                {
+                  replace: true,
+                },
+              );
+            },
+          }))}
+          currentTimeStamp={formatMilliseconds(updated_at ?? '')}
+        />
+
+        {scanIdToDelete && (
+          <DeleteScanConfirmationModal
+            scanId={scanIdToDelete}
+            open={!!scanIdToDelete}
+            onOpenChange={(open, deleteSuccessful) => {
+              if (!open) {
+                if (deleteSuccessful && scanIdToDelete === scan_id) {
+                  const latestScan = [...historyData.data].reverse().find((scan) => {
+                    return scan.scanId !== scanIdToDelete;
+                  });
+                  if (latestScan) {
+                    navigate(
+                      generatePath('./../:scanId', {
+                        scanId: encodeURIComponent(latestScan.scanId),
+                      }),
+                      { replace: true },
+                    );
+                  } else {
+                    goBack();
+                  }
+                }
+                setScanIdToDelete(null);
               }
-              size="md"
-              onClick={() => {
-                downloadScan({
-                  scanId: scan_id ?? '',
-                  scanType: UtilsReportFiltersScanTypeEnum.Compliance,
-                  nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
-                });
-              }}
-            />
-            <IconButton
-              variant="flat"
-              icon={
-                <span className="h-3 w-3">
-                  <TrashLineIcon />
-                </span>
-              }
-              onClick={() => setScanIdToDelete(scan_id ?? '')}
-            />
-          </div>
-        </>
-      ) : (
-        <Button
-          type="button"
-          variant="flat"
-          size="sm"
-          className="absolute right-0 top-0"
-          onClick={(e) => {
-            e.preventDefault();
-            setOpenStopScanModal(true);
-          }}
-        >
-          Cancel scan
-        </Button>
-      )}
-    </div>
+            }}
+          />
+        )}
+        <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
+        <ScanStatusBadge status={status ?? ''} />
+        {!isScanInProgress(status ?? '') && (
+          <>
+            <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
+            <div className="pl-1.5 flex">
+              <IconButton
+                variant="flat"
+                icon={
+                  <span className="h-3 w-3">
+                    <DownloadLineIcon />
+                  </span>
+                }
+                disabled={fetchStatus !== 'idle'}
+                size="md"
+                onClick={() => {
+                  downloadScan({
+                    scanId: scan_id ?? '',
+                    scanType: UtilsReportFiltersScanTypeEnum.Compliance,
+                    nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
+                  });
+                }}
+              />
+              <IconButton
+                variant="flat"
+                icon={
+                  <span className="h-3 w-3">
+                    <TrashLineIcon />
+                  </span>
+                }
+                disabled={fetchStatus !== 'idle'}
+                onClick={() => setScanIdToDelete(scan_id ?? '')}
+              />
+              <>
+                {isScanComplete(status ?? '') && (
+                  <IconButton
+                    variant="flat"
+                    icon={
+                      <span className="h-3 w-3">
+                        <BalanceLineIcon />
+                      </span>
+                    }
+                    disabled={fetchStatus !== 'idle'}
+                    onClick={() => {
+                      setCompareInput({
+                        ...compareInput,
+                        baseScanTime: updated_at ?? 0,
+                        showScanTimeModal: true,
+                      });
+                    }}
+                  />
+                )}
+              </>
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 };
 

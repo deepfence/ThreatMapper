@@ -18,6 +18,7 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ModelMessageResponse,
+  ModelScanReportFieldsResponse,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -26,6 +27,8 @@ import {
     ApiDocsFailureResponseToJSON,
     ModelMessageResponseFromJSON,
     ModelMessageResponseToJSON,
+    ModelScanReportFieldsResponseFromJSON,
+    ModelScanReportFieldsResponseToJSON,
 } from '../models';
 
 /**
@@ -49,6 +52,21 @@ export interface CommonApiInterface {
      * Get End User License Agreement
      */
     eula(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
+
+    /**
+     * Get all the fields available in all the scan reports
+     * @summary Get Scan Report Fields
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CommonApiInterface
+     */
+    getScanReportFieldsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanReportFieldsResponse>>;
+
+    /**
+     * Get all the fields available in all the scan reports
+     * Get Scan Report Fields
+     */
+    getScanReportFields(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanReportFieldsResponse>;
 
 }
 
@@ -82,6 +100,42 @@ export class CommonApi extends runtime.BaseAPI implements CommonApiInterface {
      */
     async eula(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
         const response = await this.eulaRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get all the fields available in all the scan reports
+     * Get Scan Report Fields
+     */
+    async getScanReportFieldsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanReportFieldsResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/results/fields`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanReportFieldsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get all the fields available in all the scan reports
+     * Get Scan Report Fields
+     */
+    async getScanReportFields(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanReportFieldsResponse> {
+        const response = await this.getScanReportFieldsRaw(initOverrides);
         return await response.value();
     }
 

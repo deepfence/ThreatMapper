@@ -1,8 +1,13 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
 
-import { getSearchApiClient, getSecretApiClient } from '@/api/api';
+import {
+  getScanCompareApiClient,
+  getSearchApiClient,
+  getSecretApiClient,
+} from '@/api/api';
 import {
   ModelNodeIdentifierNodeTypeEnum,
+  ModelScanCompareReq,
   ModelScanInfo,
   ModelScanResultsReq,
   ModelSecret,
@@ -364,6 +369,7 @@ export const secretQueries = createQueryKeys('secret', {
               unknown: resultSecretScanResponse.value.severity_counts?.['unknown'] ?? 0,
             },
             tableData: resultSecretScanResponse.value.secrets ?? [],
+            dockerImageName: resultSecretScanResponse.value.docker_image_name,
             pagination: {
               currentPage: page,
               totalRows: page * pageSize + resultCounts.value.count,
@@ -420,69 +426,6 @@ export const secretQueries = createQueryKeys('secret', {
 
         return {
           data: resultSecretScanResponse.value.secrets,
-        };
-      },
-    };
-  },
-  scanHistories: (filters: { nodeId: string; nodeType: string }) => {
-    const { nodeId, nodeType } = filters;
-    return {
-      queryKey: [{ filters }],
-      queryFn: async () => {
-        if (!nodeId || !nodeType) {
-          throw new Error('Scan Type, Node Type and Node Id are required');
-        }
-
-        const getScanHistory = apiWrapper({
-          fn: getSecretApiClient().listSecretScans,
-        });
-
-        const result = await getScanHistory({
-          modelScanListReq: {
-            fields_filter: {
-              contains_filter: {
-                filter_in: {},
-              },
-              match_filter: { filter_in: {} },
-              order_filter: { order_fields: [] },
-              compare_filter: null,
-            },
-            node_ids: [
-              {
-                node_id: nodeId.toString(),
-                node_type: nodeType.toString() as ModelNodeIdentifierNodeTypeEnum,
-              },
-            ],
-            window: {
-              offset: 0,
-              size: Number.MAX_SAFE_INTEGER,
-            },
-          },
-        });
-
-        if (!result.ok) {
-          console.error(result.error);
-          return {
-            error: 'Error getting scan history',
-            message: result.error.message,
-            data: [],
-          };
-        }
-
-        if (!result.value.scans_info) {
-          return {
-            data: [],
-          };
-        }
-
-        return {
-          data: result.value.scans_info?.map((res) => {
-            return {
-              updatedAt: res.updated_at,
-              scanId: res.scan_id,
-              status: res.status,
-            };
-          }),
         };
       },
     };
@@ -952,6 +895,104 @@ export const secretQueries = createQueryKeys('secret', {
           timestamp: secretScanResults.value.created_at,
           counts: secretScanResults.value.severity_counts ?? {},
         };
+      },
+    };
+  },
+  scanDiff: (filters: { baseScanId: string; toScanId: string }) => {
+    const { baseScanId, toScanId } = filters;
+    return {
+      queryKey: [{ filters }],
+      queryFn: async () => {
+        if (!baseScanId || !toScanId) {
+          throw new Error('Scan ids are required for comparision');
+        }
+
+        const results: {
+          added: ModelSecret[];
+          deleted: ModelSecret[];
+          message?: string;
+        } = {
+          added: [],
+          deleted: [],
+        };
+
+        const compareScansApi = apiWrapper({
+          fn: getScanCompareApiClient().diffAddSecret,
+        });
+
+        const addedCompareReq: ModelScanCompareReq = {
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: { filter_in: {} },
+            order_filter: { order_fields: [] },
+            compare_filter: null,
+          },
+          base_scan_id: baseScanId,
+          to_scan_id: toScanId,
+          window: {
+            offset: 0,
+            size: 99999,
+          },
+        };
+
+        const addScanResponse = await compareScansApi({
+          modelScanCompareReq: addedCompareReq,
+        });
+
+        if (!addScanResponse.ok) {
+          return {
+            error: 'Error getting scan diff',
+            message: addScanResponse.error.message,
+            ...results,
+          };
+        }
+
+        if (!addScanResponse.value) {
+          return results;
+        }
+
+        const addedScans = addScanResponse.value._new;
+
+        // deleted
+        const deletedCompareReq: ModelScanCompareReq = {
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: { filter_in: {} },
+            order_filter: { order_fields: [] },
+            compare_filter: null,
+          },
+          base_scan_id: toScanId,
+          to_scan_id: baseScanId,
+          window: {
+            offset: 0,
+            size: 99999,
+          },
+        };
+        const deletedScanResponse = await compareScansApi({
+          modelScanCompareReq: deletedCompareReq,
+        });
+
+        if (!deletedScanResponse.ok) {
+          return {
+            error: 'Error getting scan diff',
+            message: deletedScanResponse.error.message,
+            ...results,
+          };
+        }
+
+        if (!deletedScanResponse.value) {
+          return results;
+        }
+        const deletedScans = deletedScanResponse.value._new;
+
+        results.added = addedScans ?? [];
+        results.deleted = deletedScans ?? [];
+
+        return results;
       },
     };
   },

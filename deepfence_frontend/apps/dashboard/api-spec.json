@@ -5347,6 +5347,51 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/scan/results/fields": {
+      "get": {
+        "tags": ["Common"],
+        "summary": "Get Scan Report Fields",
+        "description": "Get all the fields available in all the scan reports",
+        "operationId": "getScanReportFields",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelScanReportFieldsResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/scan/results/malware": {
       "post": {
         "tags": ["Malware Scan"],
@@ -12345,6 +12390,23 @@
           "scans_info": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelScanInfo" },
+            "nullable": true
+          }
+        }
+      },
+      "ModelScanReportFieldsResponse": {
+        "type": "object",
+        "properties": {
+          "compliance": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "malware": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "secret": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "vulnerability": {
+            "type": "array",
+            "items": { "type": "string" },
             "nullable": true
           }
         }

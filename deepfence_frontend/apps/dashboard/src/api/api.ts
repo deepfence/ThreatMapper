@@ -335,6 +335,7 @@ export function getCommonApiClient() {
   const commonApi = new CommonApi(configuration);
   return {
     getEula: commonApi.eula.bind(commonApi),
+    getScanReportFields: commonApi.getScanReportFields.bind(commonApi),
   };
 }
 
@@ -342,5 +343,9 @@ export function getScanCompareApiClient() {
   const scanCompareApi = new DiffAddApi(configuration);
   return {
     diffVulnerability: scanCompareApi.diffAddVulnerability.bind(scanCompareApi),
+    diffAddSecret: scanCompareApi.diffAddSecret.bind(scanCompareApi),
+    diffAddMalware: scanCompareApi.diffAddMalware.bind(scanCompareApi),
+    diffAddCompliance: scanCompareApi.diffAddCompliance.bind(scanCompareApi),
+    diffAddCloudCompliance: scanCompareApi.diffAddCloudCompliance.bind(scanCompareApi),
   };
 }

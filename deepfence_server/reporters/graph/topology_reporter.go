@@ -31,9 +31,7 @@ type TopologyReporter interface {
 	Close()
 }
 
-type neo4jTopologyReporter struct {
-	driver neo4j.Driver
-}
+type neo4jTopologyReporter struct{}
 
 type NodeID string
 
@@ -344,7 +342,12 @@ func nodeIds2nodeId(node_ids []NodeID) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(tx neo4j.Transaction, cloud_provider []string, cloud_regions []string, cloud_services []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
+func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(
+	tx neo4j.Transaction,
+	cloud_provider []string,
+	cloud_regions []string,
+	cloud_services []string,
+	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
 	res := map[NodeID][]ResourceStub{}
 	r, err := tx.Run(`
 		MATCH (s:CloudResource)
@@ -455,7 +458,12 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 
 }
 
-func (nc *neo4jTopologyReporter) GetPublicCloudResources(tx neo4j.Transaction, cloud_provider []string, cloud_regions []string, cloud_services []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
+func (nc *neo4jTopologyReporter) GetPublicCloudResources(
+	tx neo4j.Transaction,
+	cloud_provider []string,
+	cloud_regions []string,
+	cloud_services []string,
+	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
 	res := map[NodeID][]ResourceStub{}
 	r, err := tx.Run(`
 		MATCH (cp: CloudProvider)
@@ -567,7 +575,10 @@ func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_pro
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getCloudKubernetes(tx neo4j.Transaction, cloud_provider []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
+func (nc *neo4jTopologyReporter) getCloudKubernetes(
+	tx neo4j.Transaction,
+	cloud_provider []string,
+	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(`
 		MATCH (cr:CloudProvider)
@@ -610,7 +621,10 @@ func filterNil(params map[string]interface{}) map[string]interface{} {
 	return params
 }
 
-func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, cloud_regions, cloud_kubernetes []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
+func (nc *neo4jTopologyReporter) getHosts(
+	tx neo4j.Transaction,
+	cloud_provider, cloud_regions, cloud_kubernetes []string,
+	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 
 	query := `
@@ -685,7 +699,9 @@ func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getProcesses(tx neo4j.Transaction, hosts, containers []string) (map[NodeID][]NodeStub, error) {
+func (nc *neo4jTopologyReporter) getProcesses(
+	tx neo4j.Transaction, hosts,
+	containers []string) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(`
@@ -744,7 +760,10 @@ func (nc *neo4jTopologyReporter) getProcesses(tx neo4j.Transaction, hosts, conta
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getPods(tx neo4j.Transaction, hosts []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
+func (nc *neo4jTopologyReporter) getPods(
+	tx neo4j.Transaction,
+	hosts []string,
+	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(`
@@ -776,7 +795,10 @@ func (nc *neo4jTopologyReporter) getPods(tx neo4j.Transaction, hosts []string, f
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
+func (nc *neo4jTopologyReporter) getContainers(
+	tx neo4j.Transaction,
+	hosts, pods []string,
+	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(`
@@ -859,10 +881,16 @@ const (
 	root_node_id = ""
 )
 
-func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+func (nc *neo4jTopologyReporter) getContainerGraph(
+	ctx context.Context,
+	filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
 
-	session, err := nc.driver.Session(neo4j.AccessModeRead)
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+	session, err := driver.Session(neo4j.AccessModeRead)
 	if err != nil {
 		return res, err
 	}
@@ -892,12 +920,18 @@ func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context, filters 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getPodGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+func (nc *neo4jTopologyReporter) getPodGraph(
+	ctx context.Context,
+	filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
 
 	pod_filter := filters.PodFilter
 
-	session, err := nc.driver.Session(neo4j.AccessModeRead)
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+	session, err := driver.Session(neo4j.AccessModeRead)
 	if err != nil {
 		return res, err
 	}
@@ -933,7 +967,11 @@ func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters
 	host_filter := filters.HostFilter
 	pod_filter := filters.PodFilter
 
-	session, err := nc.driver.Session(neo4j.AccessModeRead)
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+	session, err := driver.Session(neo4j.AccessModeRead)
 	if err != nil {
 		return res, err
 	}
@@ -988,7 +1026,11 @@ func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topol
 	host_filter := filters.HostFilter
 	pod_filter := filters.PodFilter
 
-	session, err := nc.driver.Session(neo4j.AccessModeRead)
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+	session, err := driver.Session(neo4j.AccessModeRead)
 	if err != nil {
 		return res, err
 	}
@@ -1047,7 +1089,11 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 	pod_filter := filters.PodFilter
 	container_filter := filters.ContainerFilter
 
-	session, err := nc.driver.Session(neo4j.AccessModeRead)
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+	session, err := driver.Session(neo4j.AccessModeRead)
 	if err != nil {
 		return res, err
 	}
@@ -1131,15 +1177,7 @@ func (nc *neo4jTopologyReporter) KubernetesGraph(ctx context.Context, filters To
 }
 
 func NewNeo4jCollector(ctx context.Context) (TopologyReporter, error) {
-	driver, err := directory.Neo4jClient(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	nc := &neo4jTopologyReporter{
-		driver: driver,
-	}
+	nc := &neo4jTopologyReporter{}
 
 	return nc, nil
 }

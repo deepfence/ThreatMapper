@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"sync"
 
-	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/SecretScanner/core"
 	"github.com/deepfence/SecretScanner/output"
 	"github.com/deepfence/SecretScanner/scan"
@@ -20,6 +19,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
+	"github.com/hibiken/asynq"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -37,12 +37,14 @@ func NewSecretScanner(ingest chan *kgo.Record) SecretScan {
 	return SecretScan{ingestC: ingest}
 }
 
-func (s SecretScan) StopSecretScan(msg *message.Message) error {
+func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error {
+	defer cronjobs.ScanWorkloadAllocator.Free()
+
 	var params utils.SecretScanParameters
 
-	log.Info().Msgf("StopSecretScan, uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
+	log.Info().Msgf("StopSecretScan, payload: %s ", string(task.Payload()))
 
-	if err := json.Unmarshal(msg.Payload, &params); err != nil {
+	if err := json.Unmarshal(task.Payload(), &params); err != nil {
 		log.Error().Msgf("StopSecretScan, error in Unmarshal: %s", err.Error())
 		return nil
 	}
@@ -62,10 +64,13 @@ func (s SecretScan) StopSecretScan(msg *message.Message) error {
 	return nil
 }
 
-func (s SecretScan) StartSecretScan(msg *message.Message) error {
+func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error {
 	defer cronjobs.ScanWorkloadAllocator.Free()
 
-	tenantID := msg.Metadata.Get(directory.NamespaceKey)
+	tenantID, err := directory.ExtractNamespace(ctx)
+	if err != nil {
+		return err
+	}
 	if len(tenantID) == 0 {
 		log.Error().Msg("tenant-id/namespace is empty")
 		return nil
@@ -76,12 +81,11 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tenantID))
-	log.Info().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
+	log.Info().Msgf("payload: %s ", string(task.Payload()))
 
 	var params utils.SecretScanParameters
 
-	if err := json.Unmarshal(msg.Payload, &params); err != nil {
+	if err := json.Unmarshal(task.Payload(), &params); err != nil {
 		log.Error().Msg(err.Error())
 		return nil
 	}

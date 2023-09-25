@@ -156,6 +156,7 @@ models/ModelScanFilter.ts
 models/ModelScanInfo.ts
 models/ModelScanListReq.ts
 models/ModelScanListResp.ts
+models/ModelScanReportFieldsResponse.ts
 models/ModelScanResultBasicNode.ts
 models/ModelScanResultsActionRequest.ts
 models/ModelScanResultsCommon.ts

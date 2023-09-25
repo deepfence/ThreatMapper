@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"net/http"
 	"strings"
+
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
 func New(ctx context.Context, b []byte) (SumoLogic, error) {
@@ -31,7 +32,7 @@ func (s SumoLogic) FormatMessage(message []map[string]interface{}) (bytes.Buffer
 			log.Error().Msgf("%v", err)
 			return buffer, err
 		}
-		buffer.WriteString(string(b))
+		buffer.Write(b)
 		buffer.WriteString("\n")
 	}
 	return buffer, nil

@@ -10,13 +10,11 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -410,7 +408,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 	} else {
-		nodes = reqs.NodeIds
+		nodes = cloudNodeIds
 	}
 
 	var scanTrigger model.NodeIdentifier
@@ -668,18 +666,14 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	msg := message.NewMessage(watermill.NewUUID(), payload)
-	namespace, err := directory.ExtractNamespace(r.Context())
+	worker, err := directory.Worker(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 		return
 	}
-	msg.Metadata = map[string]string{directory.NamespaceKey: string(namespace)}
-	msg.SetContext(directory.NewContextWithNameSpace(namespace))
-	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)
 
-	err = h.TasksPublisher.Publish(utils.ScanSBOMTask, msg)
+	err = worker.Enqueue(utils.ScanSBOMTask, payload)
 	if err != nil {
 		log.Error().Msgf("cannot publish message:", err)
 		h.respondError(err, w)
@@ -803,17 +797,19 @@ func (h *Handler) stopScan(w http.ResponseWriter, r *http.Request, tag string) {
 	}
 
 	if req.ScanType == "CloudComplianceScan" {
-		log.Info().Msgf("CloudComplianceScan request, type: %s, scanid: %s",
-			req.ScanType, req.ScanID)
-		err = reporters_scan.StopCloudComplianceScan(r.Context(), req.ScanType, req.ScanID)
+		tag = "StopCloudComplianceScan"
+		log.Info().Msgf("StopCloudComplianceScan request, type: %s, scanid: %v",
+			tag, req.ScanType, req.ScanIds)
+
+		err = reporters_scan.StopCloudComplianceScan(r.Context(), req.ScanIds)
 	} else {
-		log.Info().Msgf("%s request, type: %s, scanid: %s",
-			tag, req.ScanType, req.ScanID)
-		err = reporters_scan.StopScan(r.Context(), req.ScanType, req.ScanID)
+		log.Info().Msgf("%s request, type: %s, scanid: %v",
+			tag, req.ScanType, req.ScanIds)
+		err = reporters_scan.StopScan(r.Context(), req.ScanType, req.ScanIds)
 	}
 
 	if err != nil {
-		log.Error().Msgf("Error in StopScan: %v", err)
+		log.Error().Msgf("%s Error in StopScan: %v", tag, err)
 		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
@@ -949,6 +945,61 @@ func (h *Handler) listScansHandler(w http.ResponseWriter, r *http.Request, scan_
 	}
 
 	httpext.JSON(w, http.StatusOK, infos)
+}
+
+func (h *Handler) GetScanReportFields(w http.ResponseWriter, r *http.Request) {
+	// iterate over empty struct "model.Vulnerability" fields
+	// and push the field json tag name to an array
+	vulnerabilityFields := []string{}
+	vulnerability := model.Vulnerability{}
+	vulnerabilityType := reflect.TypeOf(vulnerability)
+	for i := 0; i < vulnerabilityType.NumField(); i++ {
+		fieldString := vulnerabilityType.Field(i).Tag.Get("json")
+		fields := strings.Split(fieldString, ",")
+		vulnerabilityFields = append(vulnerabilityFields, fields[0])
+	}
+
+	// iterate over empty struct "model.Secret" fields
+	// and push the field json tag name to an array
+	secretFields := []string{}
+	secret := model.Secret{}
+	secretType := reflect.TypeOf(secret)
+	for i := 0; i < secretType.NumField(); i++ {
+		fieldString := vulnerabilityType.Field(i).Tag.Get("json")
+		fields := strings.Split(fieldString, ",")
+		secretFields = append(secretFields, fields[0])
+	}
+
+	// iterate over empty struct "model.Compliance" fields
+	// and push the field json tag name to an array
+	complianceFields := []string{}
+	compliance := model.Compliance{}
+	complianceType := reflect.TypeOf(compliance)
+	for i := 0; i < complianceType.NumField(); i++ {
+		fieldString := vulnerabilityType.Field(i).Tag.Get("json")
+		fields := strings.Split(fieldString, ",")
+		complianceFields = append(complianceFields, fields[0])
+	}
+
+	// iterate over empty struct "model.Malware" fields
+	// and push the field json tag name to an array
+	malwareFields := []string{}
+	malware := model.Malware{}
+	malwareType := reflect.TypeOf(malware)
+	for i := 0; i < malwareType.NumField(); i++ {
+		fieldString := vulnerabilityType.Field(i).Tag.Get("json")
+		fields := strings.Split(fieldString, ",")
+		malwareFields = append(malwareFields, fields[0])
+	}
+
+	response := model.ScanReportFieldsResponse{
+		Vulnerability: vulnerabilityFields,
+		Secret:        secretFields,
+		Compliance:    complianceFields,
+		Malware:       malwareFields,
+	}
+
+	httpext.JSON(w, http.StatusOK, response)
 }
 
 func (h *Handler) ListVulnerabilityScanResultsHandler(w http.ResponseWriter, r *http.Request) {

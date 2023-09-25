@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/anchore/syft/syft/formats"
 	"github.com/anchore/syft/syft/sbom"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -23,6 +22,7 @@ import (
 	ps "github.com/deepfence/package-scanner/scanner"
 	"github.com/deepfence/package-scanner/scanner/grype"
 	psUtils "github.com/deepfence/package-scanner/utils"
+	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -82,9 +82,12 @@ func (b UnzippedFile) Close() error {
 	return b.file.Close()
 }
 
-func (s SbomParser) ScanSBOM(msg *message.Message) error {
+func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 
-	tenantID := msg.Metadata.Get(directory.NamespaceKey)
+	tenantID, err := directory.ExtractNamespace(ctx)
+	if err != nil {
+		return err
+	}
 	if len(tenantID) == 0 {
 		log.Error().Msg("tenant-id/namespace is empty")
 		return directory.ErrNamespaceNotFound
@@ -96,11 +99,11 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
-	log.Info().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
+	log.Info().Msgf("payload: %s ", string(task.Payload()))
 
 	var params utils.SbomParameters
 
-	if err := json.Unmarshal(msg.Payload, &params); err != nil {
+	if err := json.Unmarshal(task.Payload(), &params); err != nil {
 		log.Error().Msg(err.Error())
 		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
 		return nil
@@ -114,8 +117,6 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 
 	// send inprogress status
 	statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil)
-
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tenantID))
 
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {

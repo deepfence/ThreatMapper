@@ -13,8 +13,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
@@ -162,30 +160,15 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	go utils.StartKafkaProducer(ctx, strings.Split(kafkaBrokers, ","), ingestC)
 
-	wml := watermill.NewStdLogger(false, false)
-
-	// task publisher
-	publisher, err := kafka.NewPublisher(
-		kafka.PublisherConfig{
-			Brokers:   strings.Split(kafkaBrokers, ","),
-			Marshaler: kafka.DefaultMarshaler{},
-		},
-		wml,
-	)
-	if err != nil {
-		panic(err)
-	}
-	defer publisher.Close()
-
 	err = router.SetupRoutes(mux,
-		config.HttpListenEndpoint, *serveOpenapiDocs, ingestC, publisher, openApiDocs, config.Orchestrator,
+		config.HttpListenEndpoint, *serveOpenapiDocs, ingestC, openApiDocs, config.Orchestrator,
 	)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return
 	}
 
-	err = router.InternalRoutes(internalMux, ingestC, publisher)
+	err = router.InternalRoutes(internalMux, ingestC)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return

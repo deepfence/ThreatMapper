@@ -9,7 +9,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func getClient[T *redis.Client | *CypherDriver | *postgresqlDb.Queries | *minio.Client](ctx context.Context, pool *sync.Map, newClient func(DBConfigs) (T, error)) (T, error) {
+func getClient[T *redis.Client | *CypherDriver | *postgresqlDb.Queries | *minio.Client | *asyncq_clients](ctx context.Context, pool *sync.Map, newClient func(DBConfigs) (T, error)) (T, error) {
 	key, err := ExtractNamespace(ctx)
 	if err != nil {
 		return nil, err

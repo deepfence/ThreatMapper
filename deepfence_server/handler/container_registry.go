@@ -9,9 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
@@ -692,23 +689,19 @@ func (h *Handler) SyncRegistry(rCtx context.Context, pgID int32) error {
 		PgID: pgID,
 	})
 	if err != nil {
-		log.Error().Msgf("cannot marshal payload:", err)
+		log.Error().Msgf("cannot marshal payload: %v", err)
 		return err
 	}
 
-	msg := message.NewMessage(watermill.NewUUID(), payload)
-	namespace, err := directory.ExtractNamespace(rCtx)
+	worker, err := directory.Worker(rCtx)
 	if err != nil {
-		log.Error().Msgf("cannot extract namespace:", err)
+		log.Error().Msgf("cannot extract namespace: %v", err)
 		return err
 	}
-	msg.Metadata = map[string]string{directory.NamespaceKey: string(namespace)}
-	msg.SetContext(directory.NewContextWithNameSpace(namespace))
-	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)
 
-	err = h.TasksPublisher.Publish(utils.SyncRegistryTask, msg)
+	err = worker.Enqueue(utils.SyncRegistryTask, payload)
 	if err != nil {
-		log.Error().Msgf("cannot publish message:", err)
+		log.Error().Msgf("cannot publish message: %v", err)
 		return err
 	}
 	return nil

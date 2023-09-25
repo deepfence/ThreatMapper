@@ -11,10 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill/message"
-
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/hibiken/asynq"
 	m "github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -37,10 +36,7 @@ func getVersionMetadata(url string, result *[]map[string]interface{}) error {
 	return nil
 }
 
-func CheckAgentUpgrade(msg *message.Message) error {
-	topic := RecordOffsets(msg)
-	defer SetTopicHandlerStatus(topic, false)
-
+func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
 	log.Info().Msg("Start agent version check")
 
 	res := []map[string]interface{}{}
@@ -52,9 +48,6 @@ func CheckAgentUpgrade(msg *message.Message) error {
 			tags_to_ingest = append(tags_to_ingest, tag["name"].(string))
 		}
 	}
-
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 
 	tags_with_urls, err := prepareAgentReleases(ctx, tags_to_ingest)
 	if err != nil {
