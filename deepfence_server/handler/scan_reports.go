@@ -408,7 +408,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 	} else {
-		nodes = reqs.NodeIds
+		nodes = cloudNodeIds
 	}
 
 	var scanTrigger model.NodeIdentifier

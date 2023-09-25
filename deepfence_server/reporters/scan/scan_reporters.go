@@ -416,8 +416,8 @@ func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdenti
 
 	nres, err := tx.Run(`
 		MATCH (n:CloudNode)
-		WHERE n.cloud_provider IN $node_ids
-		RETURN n.node_id`,
+		WHERE n.node_id IN $node_ids
+		RETURN n.node_id, n.cloud_provider`,
 		map[string]interface{}{"node_ids": NodeIdentifierToIdList(cloudProviderIds)})
 	if err != nil {
 		return res, err
@@ -427,12 +427,37 @@ func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdenti
 	if err != nil {
 		return res, err
 	}
-
+	orgNodeIds := []string{}
 	for _, rec := range recs {
+		cloudProvider := rec.Values[1].(string)
+		if cloudProvider == model.PostureProviderAWSOrg || cloudProvider == model.PostureProviderGCPOrg {
+			orgNodeIds = append(orgNodeIds, rec.Values[0].(string))
+			continue
+		}
 		res = append(res, model.NodeIdentifier{
 			NodeId:   rec.Values[0].(string),
 			NodeType: controls.ResourceTypeToString(controls.CloudAccount),
 		})
+	}
+	if len(orgNodeIds) > 0 {
+		nres, err = tx.Run(`
+		MATCH (n:CloudNode) -[:IS_CHILD] -> (m)
+		WHERE n.node_id IN $node_ids
+		RETURN m.node_id`,
+			map[string]interface{}{"node_ids": orgNodeIds})
+		if err != nil {
+			return res, err
+		}
+		recs, err = nres.Collect()
+		if err != nil {
+			return res, err
+		}
+		for _, rec := range recs {
+			res = append(res, model.NodeIdentifier{
+				NodeId:   rec.Values[0].(string),
+				NodeType: controls.ResourceTypeToString(controls.CloudAccount),
+			})
+		}
 	}
 
 	return res, nil
