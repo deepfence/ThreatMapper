@@ -40,6 +40,7 @@ func TriggerConsoleControls(ctx context.Context, t *asynq.Task) error {
 		log.Info().Msgf("Init execute: %v", action.ID)
 		err := ctl.ApplyControl(ctx, action)
 		if err != nil {
+			ScanWorkloadAllocator.Free()
 			log.Error().Msgf("Control %v failed: %v", action, err)
 		}
 	}

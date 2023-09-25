@@ -43,8 +43,13 @@ func RegisterControl[T ctl.StartVulnerabilityScanRequest | ctl.StartSecretScanRe
 func ApplyControl(ctx context.Context, req ctl.Action) error {
 	controls_guard.RLock()
 	defer controls_guard.RUnlock()
-	log.Info().Msgf("apply control req: %+v", req)
-	return controls[ctl.ActionID(req.ID)](ctx, []byte(req.RequestPayload))
+	f, has := controls[ctl.ActionID(req.ID)]
+	if has {
+		log.Info().Msgf("apply control req: %+v", req)
+		return f(ctx, []byte(req.RequestPayload))
+	}
+	log.Warn().Msgf("apply control req: %+v not implemented", req)
+	return nil
 }
 
 func init() {
