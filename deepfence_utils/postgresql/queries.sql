@@ -536,6 +536,10 @@ FROM audit_log l
 ORDER BY id DESC
 OFFSET $1 LIMIT $2;
 
+-- name: CountAuditLogs :one
+SELECT count(*)
+FROM audit_log;
+
 -- name: GetAuditLogsLast5Minutes :many
 SELECT l.event,
        l.action,

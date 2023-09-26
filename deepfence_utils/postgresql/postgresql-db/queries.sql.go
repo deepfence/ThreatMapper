@@ -42,6 +42,18 @@ func (q *Queries) CountActiveUsers(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countAuditLogs = `-- name: CountAuditLogs :one
+SELECT count(*)
+FROM audit_log
+`
+
+func (q *Queries) CountAuditLogs(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countAuditLogs)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countCompanies = `-- name: CountCompanies :one
 SELECT count(*)
 FROM company

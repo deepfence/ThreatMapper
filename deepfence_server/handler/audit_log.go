@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
@@ -153,6 +154,27 @@ func (h *Handler) AddAuditLog(namespace string, params postgresql_db.CreateAudit
 	}
 
 	return nil
+}
+
+func (h *Handler) GetAuditLogsCount(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get db connection")
+		h.respondError(err, w)
+		return
+	}
+
+	count, err := pgClient.CountAuditLogs(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to run CountAuditLogs query")
+		h.respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+		Count: int(count),
+	})
 }
 
 func (h *Handler) GetAuditLogs(w http.ResponseWriter, r *http.Request) {

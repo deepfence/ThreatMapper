@@ -206,7 +206,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			})
 
 			r.Route("/settings", func(r chi.Router) {
-				r.Post("/user-activity-log", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetAuditLogs))
+				r.Route("/user-audit-log", func(r chi.Router) {
+					r.Post("/", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetAuditLogs))
+					r.Get("/count", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetAuditLogsCount))
+				})
 				r.Route("/global-settings", func(r chi.Router) {
 					r.Get("/", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetGlobalSettings))
 					r.Patch("/{id}", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UpdateGlobalSettings))
