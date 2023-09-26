@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import {
   createColumnHelper,
   IconButton,
-  SortingState,
   Table,
   TableNoDataElement,
   TableSkeleton,
@@ -18,7 +17,7 @@ import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
-import { getPageFromSearchParams, useSortingState } from '@/utils/table';
+import { getPageFromSearchParams } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -37,7 +36,6 @@ const AuditTable = () => {
 
   const { copy, isCopied } = useCopyToClipboardState();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [sort, setSort] = useSortingState();
 
   const { data } = useUserActivityLogs();
   const columns = useMemo(() => {
@@ -50,6 +48,7 @@ const AuditTable = () => {
         minSize: 30,
         size: 35,
         maxSize: 40,
+        enableSorting: false,
       }),
       columnHelper.accessor('event', {
         cell: (cell) => cell.getValue(),
@@ -57,6 +56,7 @@ const AuditTable = () => {
         minSize: 30,
         size: 30,
         maxSize: 40,
+        enableSorting: false,
       }),
       columnHelper.accessor('action', {
         cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
@@ -64,6 +64,7 @@ const AuditTable = () => {
         minSize: 20,
         size: 25,
         maxSize: 30,
+        enableSorting: false,
       }),
       columnHelper.accessor('email', {
         cell: (cell) => cell.getValue(),
@@ -71,6 +72,7 @@ const AuditTable = () => {
         minSize: 30,
         size: 50,
         maxSize: 60,
+        enableSorting: false,
       }),
       columnHelper.accessor('role', {
         cell: (cell) => cell.getValue(),
@@ -78,6 +80,7 @@ const AuditTable = () => {
         minSize: 30,
         size: 30,
         maxSize: 35,
+        enableSorting: false,
       }),
       columnHelper.accessor('resources', {
         cell: (cell) => {
@@ -111,6 +114,7 @@ const AuditTable = () => {
         minSize: 30,
         size: 30,
         maxSize: 40,
+        enableSorting: false,
       }),
     ];
     return columns;
@@ -139,28 +143,6 @@ const AuditTable = () => {
           totalRows={data?.pagination?.totalRows}
           pageSize={parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE))}
           pageIndex={data?.pagination?.currentPage}
-          enableSorting
-          manualSorting
-          sortingState={sort}
-          onSortingChange={(updaterOrValue) => {
-            let newSortState: SortingState = [];
-            if (typeof updaterOrValue === 'function') {
-              newSortState = updaterOrValue(sort);
-            } else {
-              newSortState = updaterOrValue;
-            }
-            setSearchParams((prev) => {
-              if (!newSortState.length) {
-                prev.delete('sortby');
-                prev.delete('desc');
-              } else {
-                prev.set('sortby', String(newSortState[0].id));
-                prev.set('desc', String(newSortState[0].desc));
-              }
-              return prev;
-            });
-            setSort(newSortState);
-          }}
           onPaginationChange={(updaterOrValue) => {
             let newPageIndex = 0;
             if (typeof updaterOrValue === 'function') {
