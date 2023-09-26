@@ -58,6 +58,10 @@ type SettingsResponse struct {
 	Description string      `json:"description" required:"true"`
 }
 
+type GetAuditLogsRequest struct {
+	Window FetchWindow `json:"window"  required:"true"`
+}
+
 type SettingUpdateRequest struct {
 	ID    int64  `path:"id" validate:"required" required:"true"`
 	Key   string `json:"key" validate:"required,oneof=console_url inactive_delete_scan_results" required:"true" enum:"console_url,inactive_delete_scan_results"`

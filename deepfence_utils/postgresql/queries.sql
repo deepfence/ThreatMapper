@@ -533,7 +533,8 @@ SELECT l.event,
        l.user_role  as role,
        l.created_at
 FROM audit_log l
-ORDER BY l.created_at DESC;
+ORDER BY id DESC
+OFFSET $1 LIMIT $2;
 
 -- name: GetAuditLogsLast5Minutes :many
 SELECT l.event,

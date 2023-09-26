@@ -156,6 +156,14 @@ func (h *Handler) AddAuditLog(namespace string, params postgresql_db.CreateAudit
 }
 
 func (h *Handler) GetAuditLogs(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.GetAuditLogsRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
@@ -164,7 +172,10 @@ func (h *Handler) GetAuditLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auditLogs, err := pgClient.GetAuditLogs(ctx)
+	auditLogs, err := pgClient.GetAuditLogs(ctx, postgresql_db.GetAuditLogsParams{
+		Offset: int32(req.Window.Offset),
+		Limit:  int32(req.Window.Size),
+	})
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
