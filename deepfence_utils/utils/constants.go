@@ -25,30 +25,32 @@ const (
 
 // task names
 const (
-	CleanUpGraphDBTask        = "clean_up_graph_db"
-	CleanUpPostgresqlTask     = "clean_up_postgresql"
-	CleanupDiagnosisLogs      = "clean_up_diagnosis_logs"
-	RetryFailedScansTask      = "retry_failed_scans"
-	RetryFailedUpgradesTask   = "retry_failed_upgrades"
-	ScanSBOMTask              = "tasks_scan_sbom"
-	GenerateSBOMTask          = "tasks_generate_sbom"
-	CheckAgentUpgradeTask     = "tasks_check_agent_upgrade"
-	SyncRegistryTask          = "task_sync_registry"
-	TriggerConsoleActionsTask = "trigger_console_actions"
-	ScheduledTasks            = "scheduled_tasks"
-	SecretScanTask            = "task_secret_scan"
-	MalwareScanTask           = "task_malware_scan"
-	ReportGeneratorTask       = "tasks_generate_report"
-	ComputeThreatTask         = "compute_threat"
-	SendNotificationTask      = "tasks_send_notification"
-	CloudComplianceTask       = "cloud_compliance"
-	CachePostureProviders     = "cache_posture_providers"
-	ReportCleanUpTask         = "tasks_cleanup_reports"
-	LinkCloudResourceTask     = "link_cloud_resource"
-	LinkNodesTask             = "link_nodes"
-	StopSecretScanTask        = "task_stop_secret_scan"
-	StopMalwareScanTask       = "task_stop_malware_scan"
-	StopVulnerabilityScanTask = "task_stop_vulnerability_scan"
+	CleanUpGraphDBTask                = "clean_up_graph_db"
+	CleanUpPostgresqlTask             = "clean_up_postgresql"
+	CleanupDiagnosisLogs              = "clean_up_diagnosis_logs"
+	RetryFailedScansTask              = "retry_failed_scans"
+	RetryFailedUpgradesTask           = "retry_failed_upgrades"
+	ScanSBOMTask                      = "tasks_scan_sbom"
+	GenerateSBOMTask                  = "tasks_generate_sbom"
+	CheckAgentUpgradeTask             = "tasks_check_agent_upgrade"
+	SyncRegistryTask                  = "task_sync_registry"
+	TriggerConsoleActionsTask         = "trigger_console_actions"
+	ScheduledTasks                    = "scheduled_tasks"
+	SecretScanTask                    = "task_secret_scan"
+	MalwareScanTask                   = "task_malware_scan"
+	ReportGeneratorTask               = "tasks_generate_report"
+	ComputeThreatTask                 = "compute_threat"
+	SendNotificationTask              = "tasks_send_notification"
+	CloudComplianceTask               = "cloud_compliance"
+	CachePostureProviders             = "cache_posture_providers"
+	ReportCleanUpTask                 = "tasks_cleanup_reports"
+	LinkCloudResourceTask             = "link_cloud_resource"
+	LinkNodesTask                     = "link_nodes"
+	StopSecretScanTask                = "task_stop_secret_scan"
+	StopMalwareScanTask               = "task_stop_malware_scan"
+	StopVulnerabilityScanTask         = "task_stop_vulnerability_scan"
+	UpdateCloudResourceScanStatusTask = "update_cloud_resource_scan_status"
+	UpdatePodScanStatusTask           = "update_pod_scan_status"
 )
 
 const (
@@ -201,6 +203,8 @@ var Tasks = []string{
 	StopSecretScanTask,
 	StopMalwareScanTask,
 	StopVulnerabilityScanTask,
+	UpdateCloudResourceScanStatusTask,
+	UpdatePodScanStatusTask,
 }
 
 type ReportType string

@@ -15,6 +15,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/malwarescan"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/reports"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/sbom"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/scans"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/secretscan"
 	wtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/hibiken/asynq"
@@ -189,6 +190,10 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 	worker.AddHandler(utils.StopMalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StopMalwareScan)
 
 	worker.AddHandler(utils.StopVulnerabilityScanTask, sbom.StopVulnerabilityScan)
+
+	worker.AddHandler(utils.UpdateCloudResourceScanStatusTask, scans.UpdateCloudResourceScanStatus)
+
+	worker.AddHandler(utils.UpdatePodScanStatusTask, scans.UpdatePodScanStatus)
 
 	return worker, cancel, nil
 }
