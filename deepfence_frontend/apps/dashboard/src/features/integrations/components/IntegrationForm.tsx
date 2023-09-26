@@ -14,6 +14,7 @@ import { SearchableClusterList } from '@/components/forms/SearchableClusterList'
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
+import { FieldSelection } from '@/features/integrations/components/report-form/FieldSelection';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { ScanTypeEnum } from '@/types/common';
 
@@ -103,6 +104,14 @@ const isCloudTrailNotification = (notificationType: string) => {
 
 const isUserActivityNotification = (notificationType: string) => {
   return notificationType && notificationType === 'User Activities';
+};
+
+const isVulnerabilityNotification = (notificationType: string) => {
+  return notificationType && notificationType === 'Vulnerability';
+};
+
+const isJiraIntegration = (integrationType: string) => {
+  return integrationType && integrationType === IntegrationType.jira;
 };
 
 const API_SCAN_TYPE_MAP: {
@@ -336,6 +345,13 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
       !isCloudTrailNotification(notificationType) &&
       !isUserActivityNotification(notificationType) ? (
         <AdvancedFilters notificationType={notificationType} />
+      ) : null}
+      {notificationType &&
+      isVulnerabilityNotification(notificationType) &&
+      isJiraIntegration(integrationType) ? (
+        <FieldSelection
+          notificationType={notificationType.toLowerCase() as 'vulnerability'}
+        />
       ) : null}
     </>
   );

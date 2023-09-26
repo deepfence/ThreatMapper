@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
@@ -100,8 +99,7 @@ func getJWTAuthSignKey() (string, error) {
 	}
 }
 
-func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC chan *kgo.Record,
-	taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
+func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC chan *kgo.Record, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
 
 	var tokenAuth *jwtauth.JWTAuth
 
@@ -135,7 +133,6 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 		Validator:        apiValidator,
 		Translator:       translator,
 		IngestChan:       ingestC,
-		TasksPublisher:   taskPublisher,
 		ConsoleDiagnosis: consoleDiagnosis,
 	}
 
@@ -367,6 +364,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListCloudComplianceScansHandler))
 			})
 			r.Route("/scan/results", func(r chi.Router) {
+				r.Get("/fields", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetScanReportFields))
+
 				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListVulnerabilityScanResultsHandler))
 
 				r.Route("/secret", func(r chi.Router) {

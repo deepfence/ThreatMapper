@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
@@ -19,6 +18,5 @@ type Handler struct {
 	Validator        *validator.Validate
 	Translator       ut.Translator
 	IngestChan       chan *kgo.Record
-	TasksPublisher   *kafka.Publisher
 	ConsoleDiagnosis consolediagnosis.ConsoleDiagnosisHandler
 }

@@ -45,12 +45,14 @@ import {
   ICloudAccountType,
   SearchableCloudAccountsList,
 } from '@/components/forms/SearchableCloudAccountsList';
+import { BellLineIcon } from '@/components/icons/common/BellLine';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { CLOUDS } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { TruncatedText } from '@/components/TruncatedText';
@@ -75,6 +77,8 @@ import {
   COMPLIANCE_SCAN_STATUS_GROUPS,
   ComplianceScanGroupedStatus,
   isScanComplete,
+  isScanInProgress,
+  isScanStopping,
   SCAN_STATUS_GROUPS,
 } from '@/utils/scan';
 import {
@@ -440,7 +444,7 @@ const DeleteConfirmationModal = ({
 };
 
 const ActionDropdown = ({
-  scanId,
+  scanId = '',
   scanStatus,
   nodeType,
   scanType,
@@ -463,9 +467,9 @@ const ActionDropdown = ({
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
   const { downloadScan } = useDownloadScan();
+  const [openStopScanModal, setOpenStopScanModal] = useState(false);
 
   const onDownloadAction = useCallback(() => {
-    if (!scanId || !nodeType) return;
     downloadScan({
       scanId,
       nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
@@ -480,59 +484,88 @@ const ActionDropdown = ({
     if (fetcher.state === 'idle') setOpen(false);
   }, [fetcher]);
 
+  if (!nodeType || !nodeId) {
+    throw new Error('Node type and Node id are required');
+  }
+
   return (
-    <Dropdown
-      triggerAsChild
-      align="start"
-      open={open}
-      onOpenChange={setOpen}
-      content={
-        <>
-          <DropdownItem
-            onClick={() => {
-              if (!nodeId) {
-                throw new Error('Node id is required to start scan');
-              }
-              onTableAction([nodeId], ActionEnumType.START_SCAN);
-            }}
-          >
-            Start scan
-          </DropdownItem>
-          <DropdownItem
-            disabled={!isScanComplete(scanStatus)}
-            onClick={(e) => {
-              if (!isScanComplete(scanStatus)) return;
-              e.preventDefault();
-              onDownloadAction();
-            }}
-          >
-            Download latest report
-          </DropdownItem>
-          <DropdownItem
-            disabled={!scanId || !nodeType}
-            onClick={() => {
-              if (!scanId || !nodeType) return;
-              setScanIdToDelete(scanId);
-              setShowDeleteDialog(true);
-            }}
-          >
-            <span className="flex items-center gap-x-2 text-red-700 dark:text-status-error">
-              Delete latest scan
-            </span>
-          </DropdownItem>
-        </>
-      }
-    >
-      {trigger}
-    </Dropdown>
+    <>
+      {openStopScanModal && (
+        <StopScanForm
+          open={openStopScanModal}
+          closeModal={setOpenStopScanModal}
+          scanIds={[scanId]}
+          scanType={scanType}
+        />
+      )}
+
+      <Dropdown
+        triggerAsChild
+        align="start"
+        open={open}
+        onOpenChange={setOpen}
+        content={
+          <>
+            <DropdownItem
+              disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
+              onClick={() => {
+                if (!nodeId) {
+                  throw new Error('Node id is required to start scan');
+                }
+                onTableAction([nodeId], ActionEnumType.START_SCAN);
+              }}
+            >
+              Start scan
+            </DropdownItem>
+            {isScanInProgress(scanStatus) && (
+              <DropdownItem
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpenStopScanModal(true);
+                }}
+                disabled={!isScanInProgress(scanStatus)}
+              >
+                <span className="flex items-center">Cancel scan</span>
+              </DropdownItem>
+            )}
+            <DropdownItem
+              disabled={!isScanComplete(scanStatus)}
+              onClick={(e) => {
+                if (!isScanComplete(scanStatus)) return;
+                e.preventDefault();
+                onDownloadAction();
+              }}
+            >
+              Download latest report
+            </DropdownItem>
+            <DropdownItem
+              disabled={!scanId || !nodeType}
+              onClick={() => {
+                if (!scanId || !nodeType) return;
+                setScanIdToDelete(scanId);
+                setShowDeleteDialog(true);
+              }}
+            >
+              <span className="flex items-center gap-x-2 text-red-700 dark:text-status-error">
+                Delete latest scan
+              </span>
+            </DropdownItem>
+          </>
+        }
+      >
+        {trigger}
+      </Dropdown>
+    </>
   );
 };
 
 const BulkActions = ({
   onClick,
+  onCancelScan,
   disabled,
 }: {
   onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  onCancelScan?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   disabled: boolean;
 }) => {
   const { navigate } = usePageNavigation();
@@ -568,6 +601,15 @@ const BulkActions = ({
       >
         Start scan
       </Button>
+      <Button
+        color="default"
+        variant="flat"
+        size="sm"
+        disabled={disabled}
+        onClick={onCancelScan}
+      >
+        Cancel scan
+      </Button>
     </>
   );
 };
@@ -597,7 +639,6 @@ const AccountTable = ({
   const columnHelper = createColumnHelper<ModelCloudNodeAccountInfo>();
 
   const accounts = data?.accounts ?? [];
-
   const columnWidth = nodeType?.endsWith('_org')
     ? {
         node_name: {
@@ -840,7 +881,13 @@ const AccountTable = ({
           enableRowSelection
           rowSelectionState={rowSelectionState}
           onRowSelectionChange={setRowSelectionState}
-          getRowId={(row) => row.node_id ?? ''}
+          getRowId={(row) => {
+            return JSON.stringify({
+              scanId: row.last_scan_id,
+              nodeId: row.node_id,
+              nodeType: row.cloud_provider,
+            });
+          }}
           enableColumnResizing
           enableSorting
           manualSorting
@@ -928,6 +975,7 @@ const Accounts = () => {
   );
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCancelScan, setShowCancelScan] = useState(false);
   const [scanIdToDelete, setScanIdToDelete] = useState('');
   const [nodeIdsToScan, setNodeIdsToScan] = useState<string[]>([]);
 
@@ -935,9 +983,21 @@ const Accounts = () => {
     ? ScanTypeEnum.ComplianceScan
     : ScanTypeEnum.CloudComplianceScan;
 
-  useEffect(() => {
-    setNodeIdsToScan(Object.keys(rowSelectionState));
+  const selectedRows = useMemo<
+    {
+      scanId: string;
+      nodeId: string;
+      nodeType: string;
+    }[]
+  >(() => {
+    return Object.keys(rowSelectionState).map((item) => {
+      return JSON.parse(item);
+    });
   }, [rowSelectionState]);
+
+  useEffect(() => {
+    setNodeIdsToScan(selectedRows.map((node) => node.nodeId));
+  }, [selectedRows]);
 
   const onTableAction = useCallback(
     (nodeIds: string[], actionType: ActionEnumType) => {
@@ -960,13 +1020,26 @@ const Accounts = () => {
   return (
     <div>
       {!hasOrgCloudAccount(nodeType ?? '') ? <Header /> : null}
-
+      {showCancelScan && (
+        <StopScanForm
+          open={true}
+          closeModal={setShowCancelScan}
+          scanIds={selectedRows.map((row) => row.scanId)}
+          scanType={scanType}
+          onCancelScanSuccess={() => {
+            setRowSelectionState({});
+          }}
+        />
+      )}
       <div className="mb-4">
         <div className="flex h-12 items-center">
           <BulkActions
             disabled={Object.keys(rowSelectionState).length === 0}
             onClick={() => {
               setSelectedScanType(scanType);
+            }}
+            onCancelScan={() => {
+              setShowCancelScan(true);
             }}
           />
           <Button
@@ -995,6 +1068,7 @@ const Accounts = () => {
         <ConfigureScanModal
           open={!!selectedScanType}
           onOpenChange={() => setSelectedScanType(undefined)}
+          onSuccess={() => setRowSelectionState({})}
           scanOptions={
             selectedScanType && nodeType
               ? {
@@ -1055,34 +1129,36 @@ const AccountWithTab = () => {
   const { navigate } = usePageNavigation();
 
   return (
-    <div className="mx-4">
+    <>
       <Header />
-      <Tabs
-        className="mt-2"
-        value={currentTab}
-        tabs={tabs}
-        onValueChange={(value) => {
-          if (currentTab === value) return;
-          let _nodeType = nodeType;
-          if (value === 'org-accounts') {
-            _nodeType = _nodeType + '_org';
-          } else {
-            _nodeType = _nodeType.split('_')[0];
-          }
-          setTab(value);
-          navigate(
-            generatePath('/posture/accounts/:nodeType', {
-              nodeType: _nodeType,
-            }),
-          );
-        }}
-        size="md"
-      >
-        <div className="mt-2">
-          <Accounts />
-        </div>
-      </Tabs>
-    </div>
+      <div className="mx-4">
+        <Tabs
+          className="mt-2"
+          value={currentTab}
+          tabs={tabs}
+          onValueChange={(value) => {
+            if (currentTab === value) return;
+            let _nodeType = nodeType;
+            if (value === 'org-accounts') {
+              _nodeType = _nodeType + '_org';
+            } else {
+              _nodeType = _nodeType.split('_')[0];
+            }
+            setTab(value);
+            navigate(
+              generatePath('/posture/accounts/:nodeType', {
+                nodeType: _nodeType,
+              }),
+            );
+          }}
+          size="md"
+        >
+          <div className="mt-2">
+            <Accounts />
+          </div>
+        </Tabs>
+      </div>
+    </>
   );
 };
 

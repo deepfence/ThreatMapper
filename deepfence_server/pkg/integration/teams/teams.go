@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -24,17 +25,22 @@ func New(ctx context.Context, b []byte) (*Teams, error) {
 	return &t, nil
 }
 
-func (t Teams) FormatMessage(message map[string]interface{}, position int) string {
-	entiremsg := ""
+func (t Teams) FormatMessage(message map[string]interface{}, position int, entiremsg *strings.Builder) string {
+	entiremsg.Reset()
 	if position == 1 {
-		entiremsg = "**" + t.Resource + "**<br><br>"
+		entiremsg.WriteString("**")
+		entiremsg.WriteString(t.Resource)
+		entiremsg.WriteString("**<br><br>")
 	}
-	entiremsg = entiremsg + fmt.Sprintf("**#%d**<br>", position)
+	entiremsg.WriteString("**#")
+	entiremsg.WriteString(strconv.Itoa(position))
+	entiremsg.WriteString("**<br>")
+
 	for key, val := range message {
-		entiremsg += fmt.Sprintf("**%s**:%s<br>", key, val)
+		entiremsg.WriteString(fmt.Sprintf("**%s**:%s<br>", key, val))
 	}
-	entiremsg = entiremsg + "<br>"
-	return entiremsg
+	entiremsg.WriteString("<br>")
+	return entiremsg.String()
 }
 
 func (t Teams) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
@@ -85,12 +91,13 @@ func (t Teams) SendNotification(ctx context.Context, message string, extras map[
 func (t Teams) enqueueNotification(payloads []map[string]interface{},
 	senderChan chan *Payload) {
 
-	message := ""
+	var message strings.Builder
+	var b strings.Builder
 	for index, msgMap := range payloads {
-		message += t.FormatMessage(msgMap, index+1)
+		message.WriteString(t.FormatMessage(msgMap, index+1, &b))
 	}
 	payload := Payload{
-		Text:       message,
+		Text:       message.String(),
 		CardType:   "MessageCard",
 		Context:    "http://schema.org/extensions",
 		ThemeColor: "007FFF",

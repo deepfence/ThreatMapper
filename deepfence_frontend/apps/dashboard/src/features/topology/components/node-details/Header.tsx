@@ -91,8 +91,10 @@ export const Header = ({
                       e.preventDefault();
                       onStartScanClick({
                         data: {
-                          nodeIds: [nodeId],
-                          nodeType,
+                          nodes: [nodeId].map((nodeId) => ({
+                            nodeId,
+                            nodeType,
+                          })),
                         },
                         showAdvancedOptions: true,
                         scanType: ScanTypeEnum.VulnerabilityScan,
@@ -109,8 +111,10 @@ export const Header = ({
                       e.preventDefault();
                       onStartScanClick({
                         data: {
-                          nodeIds: [nodeId],
-                          nodeType,
+                          nodes: [nodeId].map((nodeId) => ({
+                            nodeId,
+                            nodeType,
+                          })),
                         },
                         scanType: ScanTypeEnum.SecretScan,
                         showAdvancedOptions: true,
@@ -127,8 +131,10 @@ export const Header = ({
                       e.preventDefault();
                       onStartScanClick({
                         data: {
-                          nodeIds: [nodeId],
-                          nodeType,
+                          nodes: [nodeId].map((nodeId) => ({
+                            nodeId,
+                            nodeType,
+                          })),
                         },
                         scanType: ScanTypeEnum.MalwareScan,
                         showAdvancedOptions: true,

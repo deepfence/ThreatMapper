@@ -1,6 +1,10 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
 
-import { getIntegrationApiClient, getReportsApiClient } from '@/api/api';
+import {
+  getCommonApiClient,
+  getIntegrationApiClient,
+  getReportsApiClient,
+} from '@/api/api';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
@@ -49,6 +53,21 @@ export const integrationQueries = createQueryKeys('integration', {
         return {
           data: reportsResponse.value,
         };
+      },
+    };
+  },
+  getNotificationFields: () => {
+    return {
+      queryKey: ['getNotificationFields'],
+      queryFn: async () => {
+        const getReportFields = apiWrapper({
+          fn: getCommonApiClient().getScanReportFields,
+        });
+        const reportFieldsResponse = await getReportFields();
+        if (!reportFieldsResponse.ok) {
+          throw reportFieldsResponse.error;
+        }
+        return reportFieldsResponse.value;
       },
     };
   },

@@ -5347,6 +5347,51 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/scan/results/fields": {
+      "get": {
+        "tags": ["Common"],
+        "summary": "Get Scan Report Fields",
+        "description": "Get all the fields available in all the scan reports",
+        "operationId": "getScanReportFields",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelScanReportFieldsResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/scan/results/malware": {
       "post": {
         "tags": ["Malware Scan"],
@@ -6245,7 +6290,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelComplianceScanTriggerReq" }
+              "schema": { "$ref": "#/components/schemas/ModelStopScanRequest" }
             }
           }
         },
@@ -6380,9 +6425,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ModelVulnerabilityScanTriggerReq"
-              }
+              "schema": { "$ref": "#/components/schemas/ModelStopScanRequest" }
             }
           }
         },
@@ -10467,12 +10510,16 @@
           "bucket_policy_is_public": { "type": "boolean" },
           "cidr_ipv4": { "type": "string" },
           "cloud_provider": { "type": "string" },
+          "cluster_arn": { "type": "string" },
+          "cluster_name": { "type": "string" },
+          "connectivity": { "type": "string" },
           "container_definitions": {},
           "containers": {},
           "create_date": { "type": "string" },
           "db_cluster_identifier": { "type": "string" },
           "description": { "type": "string" },
           "event_notification_configuration": {},
+          "group": { "type": "string" },
           "group_id": { "type": "string" },
           "groups": {},
           "host_name": { "type": "string" },
@@ -10489,6 +10536,7 @@
           "instances": {},
           "ip_configuration": {},
           "is_egress": { "type": "boolean" },
+          "last_status": { "type": "string" },
           "name": { "type": "string" },
           "network_configuration": {},
           "network_interfaces": {},
@@ -10518,6 +10566,7 @@
           "tags": {},
           "target_group_arn": { "type": "string" },
           "target_health_descriptions": {},
+          "task_arn": { "type": "string" },
           "task_definition": {},
           "task_definition_arn": { "type": "string" },
           "user-groups": {},
@@ -10961,7 +11010,8 @@
             "type": "array",
             "items": { "type": "string" },
             "nullable": true
-          }
+          },
+          "stop_requested": { "type": "boolean" }
         }
       },
       "ModelCloudComplianceScanResult": {
@@ -11443,6 +11493,7 @@
       "ModelContainerImage": {
         "required": [
           "node_id",
+          "image_node_id",
           "node_name",
           "docker_image_name",
           "docker_image_tag",
@@ -11480,6 +11531,7 @@
             "nullable": true
           },
           "docker_image_virtual_size": { "type": "string" },
+          "image_node_id": { "type": "string" },
           "malware_latest_scan_id": { "type": "string" },
           "malware_scan_status": { "type": "string" },
           "malwares_count": { "type": "integer" },
@@ -12342,6 +12394,23 @@
           }
         }
       },
+      "ModelScanReportFieldsResponse": {
+        "type": "object",
+        "properties": {
+          "compliance": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "malware": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "secret": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "vulnerability": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          }
+        }
+      },
       "ModelScanResultBasicNode": {
         "required": ["result_id", "basic_nodes"],
         "type": "object",
@@ -12597,10 +12666,14 @@
         }
       },
       "ModelStopScanRequest": {
-        "required": ["scan_id", "scan_type"],
+        "required": ["scan_ids", "scan_type"],
         "type": "object",
         "properties": {
-          "scan_id": { "type": "string" },
+          "scan_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "scan_type": {
             "enum": [
               "SecretScan",

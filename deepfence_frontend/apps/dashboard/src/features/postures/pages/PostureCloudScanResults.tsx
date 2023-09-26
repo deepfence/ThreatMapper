@@ -36,11 +36,14 @@ import {
 import { getScanResultsApiClient } from '@/api/api';
 import {
   ModelCloudCompliance,
+  ModelScanInfo,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import { CompareScanInputModal } from '@/components/forms/CompareScanInputModal';
+import { BalanceLineIcon } from '@/components/icons/common/BalanceLine';
 import { BellLineIcon } from '@/components/icons/common/BellLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { ClockLineIcon } from '@/components/icons/common/ClockLine';
@@ -54,12 +57,15 @@ import { TaskIcon } from '@/components/icons/common/Task';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanHistoryDropdown } from '@/components/scan-history/HistoryList';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import {
   ScanStatusInError,
   ScanStatusInProgress,
   ScanStatusNoData,
+  ScanStatusStopped,
+  ScanStatusStopping,
 } from '@/components/ScanStatusMessage';
 import { PostureStatusBadge } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
@@ -68,6 +74,7 @@ import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { useGetCloudFilters } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { PostureScanResultsPieChart } from '@/features/postures/components/scan-result/PostureScanResultsPieChart';
+import { PosturesCloudCompare } from '@/features/postures/components/scan-result/PosturesCloudCompare';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
@@ -80,7 +87,13 @@ import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
-import { isScanComplete, isScanFailed, isScanInProgress } from '@/utils/scan';
+import {
+  isScanComplete,
+  isScanFailed,
+  isScanInProgress,
+  isScanStopped,
+  isScanStopping,
+} from '@/utils/scan';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -528,7 +541,7 @@ const NotifyModal = ({
           </div>
         </fetcher.Form>
       ) : (
-        <SuccessModalContent text="Deleted successfully!" />
+        <SuccessModalContent text="Notified successfully!" />
       )}
     </Modal>
   );
@@ -556,20 +569,39 @@ const ScanHistory = () => {
   );
 };
 const HistoryControls = () => {
-  const { data } = useScanResults();
+  const { data, fetchStatus } = useScanResults();
   const { nodeType = '' } = useParams();
   const { scanStatusResult } = data;
-  const { scan_id, node_id, updated_at, status } = scanStatusResult ?? {};
   const { navigate, goBack } = usePageNavigation();
   const { downloadScan } = useDownloadScan();
 
+  const [openStopScanModal, setOpenStopScanModal] = useState(false);
+  const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
+
+  const [showScanCompareModal, setShowScanCompareModal] = useState<boolean>(false);
+
   const [scanIdToDelete, setScanIdToDelete] = useState<string | null>(null);
 
+  const [compareInput, setCompareInput] = useState<{
+    baseScanId: string;
+    toScanId: string;
+    baseScanTime: number;
+    toScanTime: number;
+    showScanTimeModal: boolean;
+  }>({
+    baseScanId: '',
+    toScanId: '',
+    baseScanTime: updated_at ?? 0,
+    toScanTime: 0,
+    showScanTimeModal: false,
+  });
+
   const { data: historyData, refetch } = useSuspenseQuery({
-    ...queries.posture.scanHistories({
+    ...queries.common.scanHistories({
       scanType: ScanTypeEnum.CloudComplianceScan,
       nodeId: node_id ?? '',
       nodeType: 'cloud_account',
+      size: Number.MAX_SAFE_INTEGER,
     }),
   });
 
@@ -577,99 +609,185 @@ const HistoryControls = () => {
     refetch();
   }, [scan_id]);
 
-  return (
-    <div className="flex items-center gap-x-3">
-      <ScanHistoryDropdown
-        scans={[...(historyData?.data ?? [])].reverse().map((item) => ({
-          id: item.scanId,
-          isCurrent: item.scanId === scan_id,
-          status: item.status,
-          timestamp: item.updatedAt,
-          onDeleteClick: (id) => {
-            setScanIdToDelete(id);
-          },
-          onDownloadClick: () => {
-            downloadScan({
-              scanId: item.scanId,
-              scanType: UtilsReportFiltersScanTypeEnum.CloudCompliance,
-              nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
-            });
-          },
-          onScanClick: () => {
-            navigate(
-              generatePath(`/posture/cloud/scan-results/:nodeType/:scanId`, {
-                scanId: encodeURIComponent(item.scanId),
-                nodeType: nodeType,
-              }),
-              {
-                replace: true,
-              },
-            );
-          },
-        }))}
-        currentTimeStamp={formatMilliseconds(updated_at ?? '')}
-      />
+  if (!node_id || !node_type || !scan_id) {
+    throw new Error('Scan id, Node type and Node id are required');
+  }
 
-      {scanIdToDelete && (
-        <DeleteScanConfirmationModal
-          scanId={scanIdToDelete}
-          open={!!scanIdToDelete}
-          onOpenChange={(open, deleteSuccessful) => {
-            if (!open) {
-              if (deleteSuccessful && scanIdToDelete === scan_id) {
-                const latestScan = [...historyData.data].reverse().find((scan) => {
-                  return scan.scanId !== scanIdToDelete;
-                });
-                if (latestScan) {
-                  navigate(
-                    generatePath('./../:scanId', {
-                      scanId: encodeURIComponent(latestScan.scanId),
-                    }),
-                    { replace: true },
-                  );
-                } else {
-                  goBack();
-                }
-              }
-              setScanIdToDelete(null);
-            }
-          }}
+  const onCompareScanClick = (baseScanTime: number) => {
+    setCompareInput({
+      ...compareInput,
+      baseScanTime,
+      showScanTimeModal: true,
+    });
+  };
+
+  return (
+    <div className="flex items-center relative flex-grow">
+      {openStopScanModal && (
+        <StopScanForm
+          open={openStopScanModal}
+          closeModal={setOpenStopScanModal}
+          scanIds={[scan_id]}
+          scanType={ScanTypeEnum.CloudComplianceScan}
         />
       )}
-      <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
-      <ScanStatusBadge status={status ?? ''} />
-      {!isScanInProgress(status ?? '') && (
-        <>
-          <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
-          <div className="pl-1.5 flex">
-            <IconButton
-              variant="flat"
-              icon={
-                <span className="h-3 w-3">
-                  <DownloadLineIcon />
-                </span>
-              }
-              size="md"
-              onClick={() => {
-                downloadScan({
-                  scanId: scan_id ?? '',
-                  scanType: UtilsReportFiltersScanTypeEnum.CloudCompliance,
-                  nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
-                });
-              }}
-            />
-            <IconButton
-              variant="flat"
-              icon={
-                <span className="h-3 w-3">
-                  <TrashLineIcon />
-                </span>
-              }
-              onClick={() => setScanIdToDelete(scan_id ?? '')}
-            />
-          </div>
-        </>
+      {compareInput.showScanTimeModal && (
+        <CompareScanInputModal
+          showDialog={true}
+          setShowDialog={() => {
+            setCompareInput((input) => {
+              return {
+                ...input,
+                showScanTimeModal: false,
+              };
+            });
+          }}
+          setShowScanCompareModal={setShowScanCompareModal}
+          scanHistoryData={historyData.data}
+          setCompareInput={setCompareInput}
+          compareInput={compareInput}
+          nodeId={node_id}
+          nodeType={node_type}
+          scanType={ScanTypeEnum.CloudComplianceScan}
+        />
       )}
+      {showScanCompareModal && (
+        <PosturesCloudCompare
+          open={showScanCompareModal}
+          onOpenChange={setShowScanCompareModal}
+          compareInput={compareInput}
+        />
+      )}
+      <div className="flex items-center gap-x-3">
+        <ScanHistoryDropdown
+          scans={[...(historyData?.data ?? [])].reverse().map((item) => ({
+            id: item.scanId,
+            isCurrent: item.scanId === scan_id,
+            status: item.status,
+            timestamp: item.updatedAt,
+            showScanCompareButton: true,
+            onScanTimeCompareButtonClick: onCompareScanClick,
+            onDeleteClick: (id) => {
+              setScanIdToDelete(id);
+            },
+            onDownloadClick: () => {
+              downloadScan({
+                scanId: item.scanId,
+                scanType: UtilsReportFiltersScanTypeEnum.CloudCompliance,
+                nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+              });
+            },
+            onScanClick: () => {
+              navigate(
+                generatePath(`/posture/cloud/scan-results/:nodeType/:scanId`, {
+                  scanId: encodeURIComponent(item.scanId),
+                  nodeType: nodeType,
+                }),
+                {
+                  replace: true,
+                },
+              );
+            },
+          }))}
+          currentTimeStamp={formatMilliseconds(updated_at ?? '')}
+        />
+
+        {scanIdToDelete && (
+          <DeleteScanConfirmationModal
+            scanId={scanIdToDelete}
+            open={!!scanIdToDelete}
+            onOpenChange={(open, deleteSuccessful) => {
+              if (!open) {
+                if (deleteSuccessful && scanIdToDelete === scan_id) {
+                  const latestScan = [...historyData.data].reverse().find((scan) => {
+                    return scan.scanId !== scanIdToDelete;
+                  });
+                  if (latestScan) {
+                    navigate(
+                      generatePath('./../:scanId', {
+                        scanId: encodeURIComponent(latestScan.scanId),
+                      }),
+                      { replace: true },
+                    );
+                  } else {
+                    goBack();
+                  }
+                }
+                setScanIdToDelete(null);
+              }
+            }}
+          />
+        )}
+        <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
+        <ScanStatusBadge status={status ?? ''} />
+        {!isScanInProgress(status ?? '') ? (
+          <>
+            <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
+            <div className="pl-1.5 flex">
+              <IconButton
+                variant="flat"
+                icon={
+                  <span className="h-3 w-3">
+                    <DownloadLineIcon />
+                  </span>
+                }
+                disabled={fetchStatus !== 'idle'}
+                size="md"
+                onClick={() => {
+                  downloadScan({
+                    scanId: scan_id ?? '',
+                    scanType: UtilsReportFiltersScanTypeEnum.CloudCompliance,
+                    nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+                  });
+                }}
+              />
+              <IconButton
+                variant="flat"
+                icon={
+                  <span className="h-3 w-3">
+                    <TrashLineIcon />
+                  </span>
+                }
+                disabled={fetchStatus !== 'idle'}
+                onClick={() => setScanIdToDelete(scan_id ?? '')}
+              />
+              <>
+                {isScanComplete(status ?? '') && (
+                  <IconButton
+                    variant="flat"
+                    icon={
+                      <span className="h-3 w-3">
+                        <BalanceLineIcon />
+                      </span>
+                    }
+                    disabled={fetchStatus !== 'idle'}
+                    onClick={() => {
+                      setCompareInput({
+                        ...compareInput,
+                        baseScanTime: updated_at ?? 0,
+                        showScanTimeModal: true,
+                      });
+                    }}
+                  />
+                )}
+              </>
+            </div>
+          </>
+        ) : (
+          <Button
+            type="button"
+            variant="flat"
+            size="sm"
+            className="absolute right-0 top-0"
+            onClick={(e) => {
+              e.preventDefault();
+              setOpenStopScanModal(true);
+            }}
+          >
+            Cancel scan
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
@@ -1087,7 +1205,7 @@ const CloudPostureResults = () => {
 
   return (
     <div className="self-start">
-      <div className="mt-4 h-12 flex items-center">
+      <div className="h-12 flex items-center">
         <BulkActions
           ids={selectedIds}
           onTableAction={onTableAction}
@@ -1155,7 +1273,20 @@ const TablePlaceholder = ({
       </div>
     );
   }
-
+  if (isScanStopped(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center h-[384px]">
+        <ScanStatusStopped errorMessage={message ?? ''} />
+      </div>
+    );
+  }
+  if (isScanStopping(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center h-[384px]">
+        <ScanStatusStopping />
+      </div>
+    );
+  }
   if (isScanInProgress(scanStatus)) {
     return (
       <div className="flex items-center justify-center min-h-[384px]">
@@ -1455,6 +1586,59 @@ const StatusesCount = ({
   );
 };
 
+const ScanStatusWrapper = ({
+  children,
+  scanStatusResult,
+  displayNoData,
+  className,
+}: {
+  children: React.ReactNode;
+  className: string;
+  scanStatusResult: ModelScanInfo | undefined;
+  displayNoData?: boolean;
+}) => {
+  if (isScanFailed(scanStatusResult?.status ?? '')) {
+    return (
+      <div className={className}>
+        <ScanStatusInError errorMessage={scanStatusResult?.status_message ?? ''} />
+      </div>
+    );
+  }
+
+  if (isScanStopped(scanStatusResult?.status ?? '')) {
+    return (
+      <div className={className}>
+        <ScanStatusStopped errorMessage={scanStatusResult?.status_message ?? ''} />
+      </div>
+    );
+  }
+
+  if (isScanStopping(scanStatusResult?.status ?? '')) {
+    return (
+      <div className={className}>
+        <ScanStatusStopping />
+      </div>
+    );
+  }
+
+  if (isScanInProgress(scanStatusResult?.status ?? '')) {
+    return (
+      <div className={className}>
+        <ScanStatusInProgress />
+      </div>
+    );
+  }
+  if (displayNoData) {
+    return (
+      <div className={className}>
+        <ScanStatusNoData />
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+};
+
 const SeverityCountWidget = () => {
   const {
     data: { data, scanStatusResult },
@@ -1471,23 +1655,14 @@ const SeverityCountWidget = () => {
 
   return (
     <div className="grid grid-cols-12 px-6 items-center">
-      {isScanFailed(scanStatusResult?.status ?? '') ? (
-        <div className="h-full col-span-4 flex items-center justify-center">
-          <ScanStatusInError errorMessage={scanStatusResult?.status_message ?? ''} />
+      <ScanStatusWrapper
+        scanStatusResult={scanStatusResult}
+        className="col-span-4 flex items-center justify-center min-h-[120px]"
+      >
+        <div className="col-span-2 h-[120px] w-[120px]">
+          <PostureScanResultsPieChart data={statusCounts} />
         </div>
-      ) : (
-        <>
-          {isScanInProgress(scanStatusResult?.status ?? '') ? (
-            <div className="h-full col-span-4 flex items-center justify-center">
-              <ScanStatusInProgress />
-            </div>
-          ) : (
-            <div className="col-span-2 h-[120px] w-[120px]">
-              <PostureScanResultsPieChart data={statusCounts} />
-            </div>
-          )}
-        </>
-      )}
+      </ScanStatusWrapper>
       {isScanComplete(scanStatusResult?.status ?? '') ? (
         <div className="col-span-2 dark:text-text-text-and-icon">
           <span className="text-p1">Total compliances</span>
@@ -1508,27 +1683,18 @@ const SeverityCountWidget = () => {
 
       <div className="w-px h-[60%] dark:bg-bg-grid-border" />
 
-      {isScanComplete(scanStatusResult?.status ?? '') ? (
-        <>
-          {keys(statusCounts).length === 0 ? (
-            <div className="col-span-6 flex items-center justify-center">
-              <ScanStatusNoData />
-            </div>
-          ) : (
-            <StatusesCount statusCounts={statusCounts} />
-          )}
-        </>
-      ) : (
-        <div className="col-span-6 flex items-center justify-center">
-          {isScanInProgress(scanStatusResult?.status ?? '') ? (
-            <ScanStatusInProgress />
-          ) : (
-            isScanFailed(scanStatusResult?.status ?? '') && (
-              <ScanStatusInError errorMessage={scanStatusResult?.status_message ?? ''} />
-            )
-          )}
-        </div>
-      )}
+      <ScanStatusWrapper
+        scanStatusResult={scanStatusResult}
+        className="col-span-6 flex items-center justify-center min-h-[120px]"
+      >
+        {keys(statusCounts).length === 0 ? (
+          <div className="col-span-6 flex items-center justify-center">
+            <ScanStatusNoData />
+          </div>
+        ) : (
+          <StatusesCount statusCounts={statusCounts} />
+        )}
+      </ScanStatusWrapper>
     </div>
   );
 };

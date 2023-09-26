@@ -13,6 +13,8 @@ import {
   isScanComplete,
   isScanFailed,
   isScanInProgress,
+  isScanStopped,
+  isScanStopping,
 } from '@/utils/scan';
 
 export const ScanStatusBadge = ({
@@ -46,7 +48,7 @@ export const ScanStatusBadge = ({
   } else if (isScanFailed(status)) {
     return (
       <div className={wrapperClassName}>
-        <span className={iconWrapper}>
+        <span className={cn(iconWrapper, 'dark:text-status-error')}>
           <ErrorIcon />
         </span>
         {!justIcon ? <TruncatedText text={scanStatus} /> : null}
@@ -67,6 +69,26 @@ export const ScanStatusBadge = ({
         <span className={iconWrapper}>
           <CircleSpinner size="sm" />
         </span>
+        {!justIcon ? <TruncatedText text={scanStatus} /> : null}
+      </div>
+    );
+  } else if (isScanStopping(status)) {
+    return (
+      <div className={wrapperClassName}>
+        <span className={iconWrapper}>
+          <CircleSpinner size="sm" />
+        </span>
+
+        {!justIcon ? <TruncatedText text={scanStatus} /> : null}
+      </div>
+    );
+  } else if (isScanStopped(status)) {
+    return (
+      <div className={wrapperClassName}>
+        <span className={cn(iconWrapper, 'dark:text-df-gray-500')}>
+          <ErrorIcon />
+        </span>
+
         {!justIcon ? <TruncatedText text={scanStatus} /> : null}
       </div>
     );

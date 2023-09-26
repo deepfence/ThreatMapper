@@ -1,19 +1,17 @@
 package cronjobs
 
 import (
+	"context"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
 )
 
-func CleanUpDiagnosisLogs(msg *message.Message) error {
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
-
+func CleanUpDiagnosisLogs(ctx context.Context, task *asynq.Task) error {
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		return err

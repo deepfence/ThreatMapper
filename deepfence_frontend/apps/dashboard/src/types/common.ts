@@ -53,6 +53,7 @@ export enum ScanStatusEnum {
   complete = 'COMPLETE',
   error = 'ERROR',
   neverScanned = 'NEVER_SCANNED',
+  stopped = 'CANCELLED',
 }
 
 export const RegistryType = {

@@ -72,8 +72,10 @@ function getScanOptions(
       showAdvancedOptions: true,
       scanType,
       data: {
-        nodeIds: ids,
-        nodeType: VulnerabilityScanNodeTypeEnum.registry,
+        nodes: ids.map((id) => ({
+          nodeId: id,
+          nodeType: VulnerabilityScanNodeTypeEnum.registry,
+        })),
       },
     };
   }
@@ -83,8 +85,10 @@ function getScanOptions(
       showAdvancedOptions: true,
       scanType,
       data: {
-        nodeIds: ids,
-        nodeType: SecretScanNodeTypeEnum.registry,
+        nodes: ids.map((id) => ({
+          nodeId: id,
+          nodeType: SecretScanNodeTypeEnum.registry,
+        })),
       },
     };
   }
@@ -94,8 +98,10 @@ function getScanOptions(
       showAdvancedOptions: true,
       scanType,
       data: {
-        nodeIds: ids,
-        nodeType: MalwareScanNodeTypeEnum.registry,
+        nodes: ids.map((id) => ({
+          nodeId: id,
+          nodeType: MalwareScanNodeTypeEnum.registry,
+        })),
       },
     };
   }

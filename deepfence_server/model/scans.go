@@ -156,8 +156,8 @@ type BulkDeleteScansRequest struct {
 }
 
 type StopScanRequest struct {
-	ScanID   string `json:"scan_id" validate:"required" required:"true"`
-	ScanType string `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
+	ScanIds  []string `json:"scan_ids" validate:"required" required:"true"`
+	ScanType string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 }
 
 type ScanActionRequest struct {
@@ -573,4 +573,11 @@ func (v CloudCompliance) GetCategory() string {
 
 func (CloudCompliance) GetJsonCategory() string {
 	return "severity"
+}
+
+type ScanReportFieldsResponse struct {
+	Vulnerability []string `json:"vulnerability"`
+	Secret        []string `json:"secret"`
+	Malware       []string `json:"malware"`
+	Compliance    []string `json:"compliance"`
 }

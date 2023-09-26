@@ -21,10 +21,10 @@ import { exists, mapValues } from '../runtime';
 export interface ModelStopScanRequest {
     /**
      * 
-     * @type {string}
+     * @type {Array<string>}
      * @memberof ModelStopScanRequest
      */
-    scan_id: string;
+    scan_ids: Array<string> | null;
     /**
      * 
      * @type {string}
@@ -52,7 +52,7 @@ export type ModelStopScanRequestScanTypeEnum = typeof ModelStopScanRequestScanTy
  */
 export function instanceOfModelStopScanRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "scan_id" in value;
+    isInstance = isInstance && "scan_ids" in value;
     isInstance = isInstance && "scan_type" in value;
 
     return isInstance;
@@ -68,7 +68,7 @@ export function ModelStopScanRequestFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
-        'scan_id': json['scan_id'],
+        'scan_ids': json['scan_ids'],
         'scan_type': json['scan_type'],
     };
 }
@@ -82,7 +82,7 @@ export function ModelStopScanRequestToJSON(value?: ModelStopScanRequest | null):
     }
     return {
         
-        'scan_id': value.scan_id,
+        'scan_ids': value.scan_ids,
         'scan_type': value.scan_type,
     };
 }

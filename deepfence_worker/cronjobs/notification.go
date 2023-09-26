@@ -1,6 +1,7 @@
 package cronjobs
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -8,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -17,6 +17,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/hibiken/asynq"
 )
 
 var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]: {
@@ -82,17 +83,12 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 
 var notificationLock sync.Mutex
 
-func SendNotifications(msg *message.Message) error {
+func SendNotifications(ctx context.Context, task *asynq.Task) error {
 	//This lock is to ensure only one notification handler runs at a time
 	notificationLock.Lock()
 	defer notificationLock.Unlock()
 
-	topic := RecordOffsets(msg)
-	defer SetTopicHandlerStatus(topic, false)
-
-	log.Info().Msgf("SendNotifications task starting at %s", string(msg.Payload))
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
+	log.Info().Msgf("SendNotifications task starting at %s", string(task.Payload()))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return nil
@@ -110,7 +106,7 @@ func SendNotifications(msg *message.Message) error {
 			log.Info().Msgf("Processing integration for %s rowId: %d",
 				integration.IntegrationType, integration.ID)
 
-			err := processIntegrationRow(integration, msg)
+			err := processIntegrationRow(integration, ctx, task)
 
 			log.Info().Msgf("Processed integration for %s rowId: %d",
 				integration.IntegrationType, integration.ID)
@@ -141,23 +137,23 @@ func SendNotifications(msg *message.Message) error {
 		}(integrationRow)
 	}
 	wg.Wait()
-	log.Info().Msgf("SendNotifications task ended for timestamp %s", string(msg.Payload))
+	log.Info().Msgf("SendNotifications task ended for timestamp %s", string(task.Payload()))
 	return nil
 }
 
-func processIntegrationRow(integrationRow postgresql_db.Integration, msg *message.Message) error {
+func processIntegrationRow(integrationRow postgresql_db.Integration, ctx context.Context, task *asynq.Task) error {
 	switch integrationRow.Resource {
 	case utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]:
-		return processIntegration[model.Vulnerability](msg, integrationRow)
+		return processIntegration[model.Vulnerability](ctx, task, integrationRow)
 	case utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]:
-		return processIntegration[model.Secret](msg, integrationRow)
+		return processIntegration[model.Secret](ctx, task, integrationRow)
 	case utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]:
-		return processIntegration[model.Malware](msg, integrationRow)
+		return processIntegration[model.Malware](ctx, task, integrationRow)
 	case utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]:
-		err1 := processIntegration[model.Compliance](msg, integrationRow)
+		err1 := processIntegration[model.Compliance](ctx, task, integrationRow)
 		// cloud compliance scans
 		integrationRow.Resource = utils.ScanTypeDetectedNode[utils.NEO4J_CLOUD_COMPLIANCE_SCAN]
-		err2 := processIntegration[model.CloudCompliance](msg, integrationRow)
+		err2 := processIntegration[model.CloudCompliance](ctx, task, integrationRow)
 		return errors.Join(err1, err2)
 	}
 	return errors.New("No integration type")
@@ -199,18 +195,16 @@ func injectNodeDatamap(results []map[string]interface{}, common model.ScanResult
 	return results
 }
 
-func processIntegration[T any](msg *message.Message, integrationRow postgresql_db.Integration) error {
+func processIntegration[T any](ctx context.Context, task *asynq.Task, integrationRow postgresql_db.Integration) error {
 	startTime := time.Now()
 	var filters model.IntegrationFilters
 	err := json.Unmarshal(integrationRow.Filters, &filters)
 	if err != nil {
 		return err
 	}
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 
 	// get ts from message
-	ts, err := strconv.ParseInt(string(msg.Payload), 10, 64)
+	ts, err := strconv.ParseInt(string(task.Payload()), 10, 64)
 	if err != nil {
 		return err
 	}

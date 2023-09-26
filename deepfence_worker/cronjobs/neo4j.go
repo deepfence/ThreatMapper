@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/hibiken/asynq"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -66,10 +66,7 @@ func getPushBackValue(session neo4j.Session) int32 {
 
 var cleanUpRunning = atomic.Bool{}
 
-func CleanUpDB(msg *message.Message) error {
-	topic := RecordOffsets(msg)
-	defer SetTopicHandlerStatus(topic, false)
-
+func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	if cleanUpRunning.Swap(true) {
 		return nil
 	}
@@ -77,8 +74,6 @@ func CleanUpDB(msg *message.Message) error {
 
 	log.Info().Msgf("Clean up DB Starting")
 	defer log.Info().Msgf("Clean up DB Done")
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 
 	dbScannedResourceCleanUpTimeout := getResourceCleanUpTimeout(ctx)
 
@@ -385,10 +380,7 @@ func CleanUpDB(msg *message.Message) error {
 
 var linkCloudResourcesRunning = atomic.Bool{}
 
-func LinkCloudResources(msg *message.Message) error {
-	topic := RecordOffsets(msg)
-	defer SetTopicHandlerStatus(topic, false)
-
+func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 	if linkCloudResourcesRunning.Swap(true) {
 		return nil
 	}
@@ -396,8 +388,6 @@ func LinkCloudResources(msg *message.Message) error {
 
 	log.Info().Msgf("Link CR Starting")
 	defer log.Info().Msgf("Link CR Done")
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -536,10 +526,7 @@ func LinkCloudResources(msg *message.Message) error {
 
 var linkNodesRunning = atomic.Bool{}
 
-func LinkNodes(msg *message.Message) error {
-	topic := RecordOffsets(msg)
-	defer SetTopicHandlerStatus(topic, false)
-
+func LinkNodes(ctx context.Context, task *asynq.Task) error {
 	if linkNodesRunning.Swap(true) {
 		return nil
 	}
@@ -547,8 +534,6 @@ func LinkNodes(msg *message.Message) error {
 
 	log.Info().Msgf("Link Nodes Starting")
 	defer log.Info().Msgf("Link Nodes Done")
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -604,14 +589,10 @@ func LinkNodes(msg *message.Message) error {
 	return nil
 }
 
-func RetryScansDB(msg *message.Message) error {
-	topic := RecordOffsets(msg)
-	defer SetTopicHandlerStatus(topic, false)
+func RetryScansDB(ctx context.Context, task *asynq.Task) error {
 
 	log.Info().Msgf("Retry scan DB Starting")
 	defer log.Info().Msgf("Retry scan DB Done")
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -661,14 +642,9 @@ func RetryScansDB(msg *message.Message) error {
 	return tx.Commit()
 }
 
-func RetryUpgradeAgent(msg *message.Message) error {
-	topic := RecordOffsets(msg)
-	defer SetTopicHandlerStatus(topic, false)
-
+func RetryUpgradeAgent(ctx context.Context, task *asynq.Task) error {
 	log.Info().Msgf("Retry upgrade DB Starting")
 	defer log.Info().Msgf("Retry upgrade DB Done")
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err

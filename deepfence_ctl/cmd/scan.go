@@ -414,43 +414,38 @@ var scanStopSubCmd = &cobra.Command{
 			log.Fatal().Msg("Please provide a scan id")
 		}
 
+		scan_ids := strings.Split(scan_id, ",")
+		stopReq := deepfence_server_client.ModelStopScanRequest{
+			ScanIds: scan_ids,
+		}
+
 		var err error
 		var res interface{}
 		switch scan_type {
 		case "secret":
 			req := http.Client().SecretScanAPI.StopSecretScan(context.Background())
-			req = req.ModelStopScanRequest(deepfence_server_client.ModelStopScanRequest{
-				ScanId:   scan_id,
-				ScanType: "SecretScan",
-			})
+			stopReq.ScanType = "SecretScan"
+			req = req.ModelStopScanRequest(stopReq)
 			res, err = http.Client().SecretScanAPI.StopSecretScanExecute(req)
 		case "malware":
 			req := http.Client().MalwareScanAPI.StopMalwareScan(context.Background())
-			req = req.ModelStopScanRequest(deepfence_server_client.ModelStopScanRequest{
-				ScanId:   scan_id,
-				ScanType: "MalwareScan",
-			})
+			stopReq.ScanType = "MalwareScan"
+			req = req.ModelStopScanRequest(stopReq)
 			res, err = http.Client().MalwareScanAPI.StopMalwareScanExecute(req)
 		case "vulnerability":
 			req := http.Client().VulnerabilityAPI.StopVulnerabilityScan(context.Background())
-			req = req.ModelStopScanRequest(deepfence_server_client.ModelStopScanRequest{
-				ScanId:   scan_id,
-				ScanType: "VulnerabilityScan",
-			})
+			stopReq.ScanType = "VulnerabilityScan"
+			req = req.ModelStopScanRequest(stopReq)
 			res, err = http.Client().VulnerabilityAPI.StopVulnerabilityScanExecute(req)
 		case "compliance":
 			req := http.Client().ComplianceAPI.StopComplianceScan(context.Background())
-			req = req.ModelStopScanRequest(deepfence_server_client.ModelStopScanRequest{
-				ScanId:   scan_id,
-				ScanType: "ComplianceScan",
-			})
+			stopReq.ScanType = "ComplianceScan"
+			req = req.ModelStopScanRequest(stopReq)
 			res, err = http.Client().ComplianceAPI.StopComplianceScanExecute(req)
 		case "cloudcompliance":
 			req := http.Client().ComplianceAPI.StopComplianceScan(context.Background())
-			req = req.ModelStopScanRequest(deepfence_server_client.ModelStopScanRequest{
-				ScanId:   scan_id,
-				ScanType: "CloudComplianceScan",
-			})
+			stopReq.ScanType = "CloudComplianceScan"
+			req = req.ModelStopScanRequest(stopReq)
 			res, err = http.Client().ComplianceAPI.StopComplianceScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")

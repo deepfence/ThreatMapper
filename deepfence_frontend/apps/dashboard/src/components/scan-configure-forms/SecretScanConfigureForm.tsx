@@ -7,6 +7,7 @@ import { getSecretApiClient } from '@/api/api';
 import {
   ModelNodeIdentifierNodeTypeEnum,
   ModelSecretScanTriggerReq,
+  ReportersContainsFilter,
 } from '@/api/generated';
 import { invalidateAllQueries } from '@/queries';
 import { SecretScanNodeTypeEnum } from '@/types/common';
@@ -18,19 +19,23 @@ export type SecretScanConfigureFormProps = {
   showAdvancedOptions: boolean;
   data:
     | {
-        nodeIds: string[];
-        nodeType:
-          | SecretScanNodeTypeEnum.host
-          | SecretScanNodeTypeEnum.kubernetes_cluster
-          | SecretScanNodeTypeEnum.registry
-          | SecretScanNodeTypeEnum.container
-          | SecretScanNodeTypeEnum.imageTag
-          | SecretScanNodeTypeEnum.pod;
+        nodes: {
+          nodeId: string;
+          nodeType:
+            | SecretScanNodeTypeEnum.host
+            | SecretScanNodeTypeEnum.kubernetes_cluster
+            | SecretScanNodeTypeEnum.registry
+            | SecretScanNodeTypeEnum.container
+            | SecretScanNodeTypeEnum.imageTag
+            | SecretScanNodeTypeEnum.pod;
+        }[];
       }
     | {
-        nodeIds: string[];
+        nodes: {
+          nodeId: string;
+          nodeType: SecretScanNodeTypeEnum.image;
+        }[];
         images: string[];
-        nodeType: SecretScanNodeTypeEnum.image;
       };
   onSuccess: (data?: { nodeType: string; bulkScanId: string }) => void;
   onCancel?: () => void;
@@ -51,35 +56,53 @@ export const scanSecretApiAction = async ({
   const formData = await request.formData();
   const nodeIds = formData.get('_nodeIds')?.toString().split(',') ?? [];
   const _images = formData.get('_images')?.toString().split(',') ?? [];
-  const nodeType = formData.get('_nodeType')?.toString() ?? '';
+  const nodeTypes = formData.get('_nodeTypes')?.toString().split(',') ?? [];
 
   const imageTag = formData.get('imageTag')?.toString() ?? '';
 
-  let filter_in = null;
-  let _nodeType = nodeType;
+  const getNodeType = (nodeType: SecretScanNodeTypeEnum | 'container_image') => {
+    let _nodeType = nodeType as ModelNodeIdentifierNodeTypeEnum;
+    if (nodeType === SecretScanNodeTypeEnum.imageTag || nodeType === 'container_image') {
+      _nodeType = SecretScanNodeTypeEnum.image;
+    } else if (nodeType === SecretScanNodeTypeEnum.kubernetes_cluster) {
+      _nodeType = 'cluster';
+    } else if (nodeType === SecretScanNodeTypeEnum.image) {
+      _nodeType = 'registry';
+    }
+    return _nodeType;
+  };
 
-  if (nodeType === SecretScanNodeTypeEnum.imageTag || nodeType === 'container_image') {
-    _nodeType = SecretScanNodeTypeEnum.image;
-  } else if (nodeType === SecretScanNodeTypeEnum.kubernetes_cluster) {
-    _nodeType = 'cluster';
-  } else if (nodeType === SecretScanNodeTypeEnum.image) {
-    _nodeType = 'registry';
-    if (imageTag !== '') {
-      filter_in = {
-        docker_image_name: _images,
-        docker_image_tag: [imageTag],
-      };
-    } else {
-      filter_in = {
-        docker_image_name: _images,
-      };
+  const createFilter = (
+    nodeType: SecretScanNodeTypeEnum,
+  ): ReportersContainsFilter['filter_in'] => {
+    if (nodeType === SecretScanNodeTypeEnum.image) {
+      if (imageTag !== '') {
+        return {
+          docker_image_name: _images,
+          docker_image_tag: [imageTag],
+        };
+      } else {
+        return {
+          docker_image_name: _images,
+        };
+      }
+    } else if (nodeType === SecretScanNodeTypeEnum.registry) {
+      if (imageTag !== '') {
+        return {
+          docker_image_tag: [imageTag],
+        };
+      }
     }
-  } else if (nodeType === SecretScanNodeTypeEnum.registry) {
-    if (imageTag !== '') {
-      filter_in = {
-        docker_image_tag: [imageTag],
-      };
-    }
+    return null;
+  };
+
+  const nodeType = nodeTypes[0];
+  let filter_in = null;
+  if (
+    nodeType === SecretScanNodeTypeEnum.image ||
+    nodeType === SecretScanNodeTypeEnum.registry
+  ) {
+    filter_in = createFilter(nodeType);
   }
 
   const requestBody: ModelSecretScanTriggerReq = {
@@ -92,14 +115,17 @@ export const scanSecretApiAction = async ({
         filter_in,
       },
     },
-    node_ids: nodeIds.map((nodeId) => ({
+    node_ids: nodeIds.map((nodeId, index) => ({
       node_id: nodeId,
-      node_type: _nodeType as ModelNodeIdentifierNodeTypeEnum,
+      node_type: getNodeType(
+        nodeTypes[index] as SecretScanNodeTypeEnum,
+      ) as ModelNodeIdentifierNodeTypeEnum,
     })),
   };
   const startSecretScanApi = apiWrapper({
     fn: getSecretApiClient().startSecretScan,
   });
+
   const startSecretScanResponse = await startSecretScanApi({
     modelSecretScanTriggerReq: requestBody,
   });
@@ -128,7 +154,7 @@ export const scanSecretApiAction = async ({
     success: true,
     data: {
       bulkScanId: startSecretScanResponse.value.bulk_scan_id,
-      nodeType,
+      nodeType, // for onboard page redirection
     },
   };
 };
@@ -154,22 +180,37 @@ export const SecretScanConfigureForm = ({
     }
   }, [fetcherData, state]);
 
+  // in case of registry scan nodeType will be always be of same type
+  const nodeType = data.nodes[0].nodeType;
+
   return (
     <fetcher.Form
       className="flex flex-col min-w-[380px]"
       method="post"
       action="/data-component/scan/secret"
     >
-      <input type="text" name="_nodeIds" hidden readOnly value={data.nodeIds.join(',')} />
-      <input type="text" name="_nodeType" readOnly hidden value={data.nodeType} />
-      {data.nodeType === SecretScanNodeTypeEnum.image && data.images && (
+      <input
+        type="text"
+        name="_nodeIds"
+        hidden
+        readOnly
+        value={data.nodes.map((node) => node.nodeId).join(',')}
+      />
+      <input
+        type="text"
+        name="_nodeTypes"
+        readOnly
+        hidden
+        value={data.nodes.map((node) => node.nodeType).join(',')}
+      />
+      {'images' in data && (
         <input type="text" name="_images" hidden readOnly value={data.images.join(',')} />
       )}
 
       <div className="flex">
         {wantAdvanceOptions &&
-          isNodeTypeARegistryType(data.nodeType) &&
-          !isNodeTypeARegistryTagType(data.nodeType) && ( // remove isNodeTypeARegistryType when we have other advance options
+          isNodeTypeARegistryType(nodeType) &&
+          !isNodeTypeARegistryTagType(nodeType) && ( // remove isNodeTypeARegistryType when we have other advance options
             <h6 className={'text-md font-medium dark:text-white'}>Advanced Options</h6>
           )}
         {!wantAdvanceOptions && (
@@ -177,12 +218,12 @@ export const SecretScanConfigureForm = ({
             Click on start scan to find secrets
           </p>
         )}
-        {wantAdvanceOptions && isNodeTypeARegistryTagType(data.nodeType) && (
+        {wantAdvanceOptions && isNodeTypeARegistryTagType(nodeType) && (
           <p className="text-gray-900 dark:text-text-text-and-icon text-p4 pr-3">
             Click on start scan to find secrets
           </p>
         )}
-        {wantAdvanceOptions && !isNodeTypeARegistryType(data.nodeType) && (
+        {wantAdvanceOptions && !isNodeTypeARegistryType(nodeType) && (
           <p className="text-gray-900 dark:text-text-text-and-icon text-p4 pr-3">
             Click on start scan to find secrets
           </p>
@@ -190,21 +231,20 @@ export const SecretScanConfigureForm = ({
       </div>
       {wantAdvanceOptions ? (
         <div className="flex flex-col gap-y-6">
-          {isNodeTypeARegistryType(data.nodeType) &&
-            !isNodeTypeARegistryTagType(data.nodeType) && (
-              <Radio
-                name="imageTag"
-                value={imageTag}
-                options={[
-                  { label: 'Scan last pushed tag', value: 'recent' },
-                  { label: 'Scan by "latest" tag', value: 'latest' },
-                  { label: 'Scan all image tags', value: 'all' },
-                ]}
-                onValueChange={(value) => {
-                  setImageTag(value);
-                }}
-              />
-            )}
+          {isNodeTypeARegistryType(nodeType) && !isNodeTypeARegistryTagType(nodeType) && (
+            <Radio
+              name="imageTag"
+              value={imageTag}
+              options={[
+                { label: 'Scan last pushed tag', value: 'recent' },
+                { label: 'Scan by "latest" tag', value: 'latest' },
+                { label: 'Scan all image tags', value: 'all' },
+              ]}
+              onValueChange={(value) => {
+                setImageTag(value);
+              }}
+            />
+          )}
         </div>
       ) : null}
 

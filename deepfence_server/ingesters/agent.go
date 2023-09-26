@@ -161,7 +161,6 @@ func (erc *EndpointResolversCache) Close() {
 }
 
 type neo4jIngester struct {
-	driver           neo4j.Driver
 	ingester         chan report.CompressedReport
 	resolvers        *EndpointResolversCache
 	batcher          chan ReportIngestionData
@@ -900,14 +899,25 @@ func isTransientError(err error) bool {
 	return false
 }
 
-func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_seq, db_pusher_retry chan ReportIngestionData,
+func isClosedError(err error) bool {
+	return strings.Contains(err.Error(), "Pool closed")
+}
+
+func (nc *neo4jIngester) runDBPusher(
+	ctx context.Context,
+	db_pusher, db_pusher_seq, db_pusher_retry chan ReportIngestionData,
 	pusher func(ReportIngestionData, neo4j.Session) error) {
-	session, err := nc.driver.Session(neo4j.AccessModeWrite)
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		log.Error().Msgf("Failed to get client: %v", err)
+		return
+	}
+	session, err := driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
 		log.Error().Msgf("Failed to open session: %v", err)
 		return
 	}
-	defer session.Close()
 
 	for batches := range db_pusher {
 		span := telemetry.NewSpan(context.Background(), "ingester", "PushAgentReportsToDB")
@@ -915,6 +925,18 @@ func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_seq, db_pusher_retry c
 			err := pusher(batches, session)
 			if err != nil {
 				batches.Retries += 1
+				if isClosedError(err) {
+					log.Warn().Msg("Renew session")
+					new_driver, err := directory.Neo4jClient(ctx)
+					if err == nil {
+						new_session, err := new_driver.Session(neo4j.AccessModeWrite)
+						if err == nil {
+							driver = new_driver
+							session.Close()
+							session = new_session
+						}
+					}
+				}
 				if batches.Retries == 2 || !isTransientError(err) {
 					log.Error().Msgf("Neo4j err: %v", err)
 					span.EndWithErr(err)
@@ -938,6 +960,7 @@ func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_seq, db_pusher_retry c
 			break
 		}
 	}
+	session.Close()
 	log.Info().Msgf("runDBPusher ended")
 }
 
@@ -956,17 +979,17 @@ func (nc *neo4jIngester) runPreparer() {
 }
 
 func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], error) {
-	driver, err := directory.Neo4jClient(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
 	rdb, err := newEndpointResolversCache(ctx)
 
 	if err != nil {
 		return nil, err
 	}
+
+	ns, err := directory.ExtractNamespace(ctx)
+	if err != nil {
+		return nil, err
+	}
+	collector_ctx := directory.NewContextWithNameSpace(ns)
 
 	done := make(chan struct{})
 	db_pusher := make(chan ReportIngestionData, db_input_size)
@@ -974,7 +997,6 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 	db_pusher_retry := make(chan ReportIngestionData, db_input_size/2)
 	db_pusher_seq_retry := make(chan ReportIngestionData, db_input_size/2)
 	nc := &neo4jIngester{
-		driver:           driver,
 		resolvers:        rdb,
 		ingester:         make(chan report.CompressedReport, ingester_size),
 		batcher:          make(chan ReportIngestionData, db_batch_size),
@@ -992,10 +1014,10 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 	}
 
 	for i := 0; i < db_pusher_workers_num; i++ {
-		go nc.runDBPusher(db_pusher, db_pusher_seq, db_pusher_retry, nc.PushToDB)
+		go nc.runDBPusher(collector_ctx, db_pusher, db_pusher_seq, db_pusher_retry, nc.PushToDB)
 	}
 
-	go nc.runDBPusher(db_pusher_seq, nil, db_pusher_seq_retry, nc.PushToDBSeq)
+	go nc.runDBPusher(collector_ctx, db_pusher_seq, nil, db_pusher_seq_retry, nc.PushToDBSeq)
 
 	go nc.resolversUpdater()
 
@@ -1047,21 +1069,8 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 
 	// Push back updater
 	go func() {
-		// Received num at the time of push back change
 		prev_received_num := int32(0)
-		newValue, err := GetPushBack(nc.driver)
-		if err != nil {
-			log.Error().Msgf("Fail to get push back value: %v", err)
-		} else {
-			Push_back.Store(newValue)
-		}
-		prev_push_back := Push_back.Load()
-		session, err := driver.Session(neo4j.AccessModeWrite)
-		if err != nil {
-			log.Error().Msgf("Fail to get session for push back: %v", err)
-			return
-		}
-		defer session.Close()
+		prev_push_back := FetchPushBack(collector_ctx)
 		ticker := time.NewTicker(agent_base_timeout * time.Duration(Push_back.Load()))
 		defer ticker.Stop()
 	loop:
@@ -1109,7 +1118,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 			// Keep the highest number of reports
 			prev_received_num = max(prev_received_num, current_num_received)
 
-			err := UpdatePushBack(session, &Push_back, prev_push_back)
+			err := UpdatePushBack(collector_ctx, &Push_back, prev_push_back)
 			if err != nil {
 				log.Error().Msgf("push back err: %v", err)
 			}
@@ -1122,6 +1131,27 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 	}()
 
 	return nc, nil
+}
+
+func FetchPushBack(ctx context.Context) int32 {
+
+	prev_push_back := int32(default_push_back)
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		log.Error().Msgf("Cannot get push back value: %v", err)
+		return prev_push_back
+	}
+	// Received num at the time of push back change
+	newValue, err := GetPushBack(driver)
+	if err != nil {
+		log.Error().Msgf("Fail to get push back value: %v", err)
+	} else {
+		Push_back.Store(newValue)
+	}
+	prev_push_back = Push_back.Load()
+
+	return prev_push_back
 }
 
 func min(a, b int) int {
@@ -1162,7 +1192,20 @@ func metadataToMap(n report.Metadata) map[string]interface{} {
 }
 
 // TODO: improve syncro across multiple servers
-func UpdatePushBack(session neo4j.Session, newValue *atomic.Int32, prev int32) error {
+func UpdatePushBack(ctx context.Context, newValue *atomic.Int32, prev int32) error {
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		log.Error().Msgf("Fail to get neo4j client for push back: %v", err)
+		return err
+	}
+
+	session, err := driver.Session(neo4j.AccessModeWrite)
+	if err != nil {
+		log.Error().Msgf("Fail to get session for push back: %v", err)
+		return err
+	}
+	defer session.Close()
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(5 * time.Second))
 	if err != nil {
 		return err

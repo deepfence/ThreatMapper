@@ -9,13 +9,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/robfig/cron/v3"
 )
 
@@ -36,12 +34,11 @@ type Jobs struct {
 }
 
 type Scheduler struct {
-	cron           *cron.Cron
-	tasksPublisher *kafka.Publisher
-	jobs           Jobs
+	cron *cron.Cron
+	jobs Jobs
 }
 
-func NewScheduler(tasksPublisher *kafka.Publisher) (*Scheduler, error) {
+func NewScheduler() (*Scheduler, error) {
 	logger := stdLogger.New(os.Stdout, "cron: ", stdLogger.LstdFlags)
 	scheduler := &Scheduler{
 		cron: cron.New(
@@ -49,7 +46,6 @@ func NewScheduler(tasksPublisher *kafka.Publisher) (*Scheduler, error) {
 			cron.WithLocation(time.UTC),
 			cron.WithLogger(cron.VerbosePrintfLogger(logger)),
 		),
-		tasksPublisher: tasksPublisher,
 		jobs: Jobs{
 			CronJobs:      make(map[directory.NamespaceID]CronJobs),
 			ScheduledJobs: make(map[directory.NamespaceID]ScheduledJobs),
@@ -331,7 +327,6 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID, schedu
 	return func() {
 		log.Info().Msgf("Enqueuing task: %s, %s for namespace %s",
 			schedule.Description, schedule.CronExpr, namespace)
-		metadata := map[string]string{directory.NamespaceKey: string(namespace)}
 		message := map[string]interface{}{
 			"action":      schedule.Action,
 			"id":          schedule.ID,
@@ -339,7 +334,12 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID, schedu
 			"description": schedule.Description,
 		}
 		messageJson, _ := json.Marshal(message)
-		err := utils.PublishNewJob(s.tasksPublisher, metadata, sdkUtils.ScheduledTasks, messageJson)
+		worker, err := directory.Worker(directory.NewContextWithNameSpace(namespace))
+		if err != nil {
+			log.Error().Msg(err.Error())
+			return
+		}
+		err = worker.Enqueue(sdkUtils.ScheduledTasks, messageJson)
 		if err != nil {
 			log.Error().Msg(err.Error())
 		}
@@ -350,9 +350,12 @@ func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string) fu
 	log.Info().Msgf("Registering task: %s for namespace %s", task, namespace)
 	return func() {
 		log.Info().Msgf("Enqueuing task: %s for namespace %s", task, namespace)
-		metadata := map[string]string{directory.NamespaceKey: string(namespace)}
-		err := utils.PublishNewJob(s.tasksPublisher, metadata, task,
-			[]byte(strconv.FormatInt(sdkUtils.GetTimestamp(), 10)))
+		worker, err := directory.Worker(directory.NewContextWithNameSpace(namespace))
+		if err != nil {
+			log.Error().Msg(err.Error())
+			return
+		}
+		err = worker.Enqueue(task, []byte(strconv.FormatInt(sdkUtils.GetTimestamp(), 10)))
 		if err != nil {
 			log.Error().Msg(err.Error())
 		}

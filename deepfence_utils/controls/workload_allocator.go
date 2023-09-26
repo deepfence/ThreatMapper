@@ -15,15 +15,10 @@ type WorkloadAllocator struct {
 	access          sync.Mutex
 }
 
-func (wa *WorkloadAllocator) Reserve(delta int32) error {
+func (wa *WorkloadAllocator) Reserve(delta int32) {
 	wa.access.Lock()
 	defer wa.access.Unlock()
-	if wa.currentWorkload+delta <= wa.maxWorkload {
-		wa.currentWorkload += delta
-		return nil
-	}
-
-	return NotEnoughRoomError
+	wa.currentWorkload += delta
 }
 
 func (wa *WorkloadAllocator) Free() {
@@ -35,7 +30,11 @@ func (wa *WorkloadAllocator) Free() {
 func (wa *WorkloadAllocator) MaxAllocable() int32 {
 	wa.access.Lock()
 	defer wa.access.Unlock()
-	return wa.maxWorkload - wa.currentWorkload
+	delta := wa.maxWorkload - wa.currentWorkload
+	if delta < 0 {
+		return 0
+	}
+	return delta
 }
 
 func NewWorkloadAllocator(maxWorkload int32) *WorkloadAllocator {

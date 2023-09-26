@@ -11,6 +11,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -223,7 +224,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 	return nil
 }
 
-func StopCloudComplianceScan(ctx context.Context, scanType, scanId string) error {
+func StopCloudComplianceScan(ctx context.Context, scanIds []string) error {
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -238,55 +239,60 @@ func StopCloudComplianceScan(ctx context.Context, scanType, scanId string) error
 	}
 	defer tx.Close()
 
-	query := `MATCH (n:%s) -[:SCANNED]-> ()
-        WHERE n.node_id = $scan_id
-        AND n.status = $in_progress
-        SET n.status=$cancel_pending`
+	query := `MATCH (n:CloudComplianceScan{node_id: $scan_id}) -[:SCANNED]-> ()
+        WHERE n.status = $in_progress
+        SET n.status = $cancel_pending`
 
-	if _, err = tx.Run(fmt.Sprintf(query, scanType),
-		map[string]interface{}{
-			"scan_id":        scanId,
-			"in_progress":    utils.SCAN_STATUS_INPROGRESS,
-			"cancel_pending": utils.SCAN_STATUS_CANCEL_PENDING,
-		}); err != nil {
-		log.Error().Msgf("StopCloudComplianceScan: Error in setting the state in neo4j: %v", err)
-		return err
+	for _, scanid := range scanIds {
+		if _, err = tx.Run(query,
+			map[string]interface{}{
+				"scan_id":        scanid,
+				"in_progress":    utils.SCAN_STATUS_INPROGRESS,
+				"cancel_pending": utils.SCAN_STATUS_CANCEL_PENDING,
+			}); err != nil {
+			log.Error().Msgf("StopCloudComplianceScan: Error in setting the state in neo4j: %v", err)
+			return err
+		}
 	}
 
 	return tx.Commit()
 }
 
-func StopScan(ctx context.Context, scanType, scanId string) error {
-
+func StopScan(ctx context.Context, scanType string, scanIds []string) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
 	}
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
-
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
 	if err != nil {
 		return err
 	}
 	defer tx.Close()
 
-	query := `MATCH (n:%s) -[:SCANNED]-> ()
-        WHERE n.node_id = $scan_id
-        AND n.status IN [$starting, $in_progress]
-        SET n.status=$cancel_pending`
+	nodeStatusField := ingestersUtil.ScanStatusField[utils.Neo4jScanType(scanType)]
 
-	if _, err = tx.Run(fmt.Sprintf(query, scanType),
-		map[string]interface{}{
-			"scan_id":        scanId,
-			"starting":       utils.SCAN_STATUS_STARTING,
-			"in_progress":    utils.SCAN_STATUS_INPROGRESS,
-			"cancel_pending": utils.SCAN_STATUS_CANCEL_PENDING,
-		}); err != nil {
-		log.Error().Msgf("StopScan: Error in setting the state in neo4j: %v", err)
-		return err
+	query := `MATCH (n:%s{node_id: $scan_id}) -[:SCANNED]-> (m)
+			WHERE n.status IN [$starting, $in_progress]
+			WITH n,m                
+			SET n.status = CASE WHEN n.status = $starting THEN $cancelled 
+			ELSE $cancel_pending END, 
+			m.%s = n.status`
+
+	queryStr := fmt.Sprintf(query, scanType, nodeStatusField)
+	for _, scanid := range scanIds {
+		if _, err = tx.Run(queryStr,
+			map[string]interface{}{
+				"scan_id":        scanid,
+				"starting":       utils.SCAN_STATUS_STARTING,
+				"in_progress":    utils.SCAN_STATUS_INPROGRESS,
+				"cancel_pending": utils.SCAN_STATUS_CANCEL_PENDING,
+				"cancelled":      utils.SCAN_STATUS_CANCELLED,
+			}); err != nil {
+			return err
+		}
 	}
-
 	return tx.Commit()
 }
 

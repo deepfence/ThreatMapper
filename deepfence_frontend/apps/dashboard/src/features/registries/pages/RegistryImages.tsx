@@ -91,8 +91,12 @@ function getScanOptions(
       showAdvancedOptions: true,
       scanType,
       data: {
-        nodeIds,
-        nodeType: VulnerabilityScanNodeTypeEnum.image,
+        nodes: nodeIds.map((nodeId) => {
+          return {
+            nodeId: nodeId,
+            nodeType: VulnerabilityScanNodeTypeEnum.image,
+          };
+        }),
         images,
       },
     };
@@ -103,8 +107,12 @@ function getScanOptions(
       showAdvancedOptions: true,
       scanType,
       data: {
-        nodeIds,
-        nodeType: SecretScanNodeTypeEnum.image,
+        nodes: nodeIds.map((nodeId) => {
+          return {
+            nodeId: nodeId,
+            nodeType: SecretScanNodeTypeEnum.image,
+          };
+        }),
         images,
       },
     };
@@ -115,8 +123,12 @@ function getScanOptions(
       showAdvancedOptions: true,
       scanType,
       data: {
-        nodeIds,
-        nodeType: MalwareScanNodeTypeEnum.image,
+        nodes: nodeIds.map((nodeId) => {
+          return {
+            nodeId: nodeId,
+            nodeType: MalwareScanNodeTypeEnum.image,
+          };
+        }),
         images,
       },
     };
