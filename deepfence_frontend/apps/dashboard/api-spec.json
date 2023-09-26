@@ -12666,10 +12666,14 @@
         }
       },
       "ModelStopScanRequest": {
-        "required": ["scan_id", "scan_type"],
+        "required": ["scan_ids", "scan_type"],
         "type": "object",
         "properties": {
-          "scan_id": { "type": "string" },
+          "scan_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "scan_type": {
             "enum": [
               "SecretScan",

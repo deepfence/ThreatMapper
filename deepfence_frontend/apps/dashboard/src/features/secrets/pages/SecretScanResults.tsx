@@ -36,6 +36,7 @@ import {
 
 import { getScanResultsApiClient } from '@/api/api';
 import {
+  ModelScanInfo,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
@@ -55,12 +56,15 @@ import { EyeSolidIcon } from '@/components/icons/common/EyeSolid';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
+import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanHistoryDropdown } from '@/components/scan-history/HistoryList';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import {
   ScanStatusInError,
   ScanStatusInProgress,
   ScanStatusNoData,
+  ScanStatusStopped,
+  ScanStatusStopping,
 } from '@/components/ScanStatusMessage';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
@@ -76,7 +80,13 @@ import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
-import { isScanComplete, isScanFailed, isScanInProgress } from '@/utils/scan';
+import {
+  isScanComplete,
+  isScanFailed,
+  isScanInProgress,
+  isScanStopped,
+  isScanStopping,
+} from '@/utils/scan';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -574,6 +584,7 @@ const HistoryControls = () => {
   const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
   const { navigate, goBack } = usePageNavigation();
   const { downloadScan } = useDownloadScan();
+  const [openStopScanModal, setOpenStopScanModal] = useState(false);
 
   const [showScanCompareModal, setShowScanCompareModal] = useState<boolean>(false);
 
@@ -621,7 +632,15 @@ const HistoryControls = () => {
   };
 
   return (
-    <>
+    <div className="flex items-center relative flex-grow">
+      {openStopScanModal && (
+        <StopScanForm
+          open={openStopScanModal}
+          closeModal={setOpenStopScanModal}
+          scanIds={[scan_id]}
+          scanType={ScanTypeEnum.SecretScan}
+        />
+      )}
       {compareInput.showScanTimeModal && (
         <CompareScanInputModal
           showDialog={true}
@@ -710,7 +729,7 @@ const HistoryControls = () => {
         )}
         <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
         <ScanStatusBadge status={status ?? ''} />
-        {!isScanInProgress(status ?? '') && (
+        {!isScanInProgress(status ?? '') ? (
           <>
             <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
             <div className="pl-1.5 flex">
@@ -763,9 +782,22 @@ const HistoryControls = () => {
               </>
             </div>
           </>
+        ) : (
+          <Button
+            type="button"
+            variant="flat"
+            size="sm"
+            className="absolute right-0 top-0"
+            onClick={(e) => {
+              e.preventDefault();
+              setOpenStopScanModal(true);
+            }}
+          >
+            Cancel scan
+          </Button>
         )}
       </div>
-    </>
+    </div>
   );
 };
 
@@ -1084,6 +1116,20 @@ const TablePlaceholder = ({
     return (
       <div className="flex items-center justify-center min-h-[384px]">
         <ScanStatusInError errorMessage={message} />
+      </div>
+    );
+  }
+  if (isScanStopped(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center h-[384px]">
+        <ScanStatusStopped errorMessage={message ?? ''} />
+      </div>
+    );
+  }
+  if (isScanStopping(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center h-[384px]">
+        <ScanStatusStopping />
       </div>
     );
   }
@@ -1466,19 +1512,35 @@ const SeverityCounts = ({
     </>
   );
 };
-const SeverityCountWidget = () => {
-  const {
-    data: { data, scanStatusResult },
-  } = useScanResults();
-
-  const severityCounts: {
-    [k: string]: number;
-  } = data?.severityCounts ?? {};
-
+const ScanStatusWrapper = ({
+  children,
+  scanStatusResult,
+  displayNoData,
+}: {
+  children: React.ReactNode;
+  scanStatusResult: ModelScanInfo | undefined;
+  displayNoData?: boolean;
+}) => {
   if (isScanFailed(scanStatusResult?.status ?? '')) {
     return (
       <div className="flex items-center justify-center h-[140px]">
         <ScanStatusInError errorMessage={scanStatusResult?.status_message ?? ''} />
+      </div>
+    );
+  }
+
+  if (isScanStopped(scanStatusResult?.status ?? '')) {
+    return (
+      <div className="flex items-center justify-center h-[140px]">
+        <ScanStatusStopped errorMessage={scanStatusResult?.status_message ?? ''} />
+      </div>
+    );
+  }
+
+  if (isScanStopping(scanStatusResult?.status ?? '')) {
+    return (
+      <div className="flex items-center justify-center h-[140px]">
+        <ScanStatusStopping />
       </div>
     );
   }
@@ -1490,26 +1552,47 @@ const SeverityCountWidget = () => {
       </div>
     );
   }
+  if (displayNoData) {
+    return (
+      <div className="flex items-center justify-center h-[140px]">
+        <ScanStatusNoData />
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+};
+
+const SeverityCountWidget = () => {
+  const {
+    data: { data, scanStatusResult },
+  } = useScanResults();
+
+  const severityCounts: {
+    [k: string]: number;
+  } = data?.severityCounts ?? {};
 
   return (
-    <div className="flex items-center">
-      <div className="h-[140px] w-[140px]">
-        <SecretScanResultsPieChart data={severityCounts} />
-      </div>
-      <div className="flex flex-1 justify-center">
-        <div className="flex flex-col flex-1 max-w-[160px] gap-1">
-          {keys(severityCounts).length === 0 ? (
-            <div className="flex flex-col flex-1 gap-1">
-              <ScanStatusNoData />
-            </div>
-          ) : (
-            <div className="flex flex-col flex-1 max-w-[160px] gap-1">
-              <SeverityCounts severityCounts={severityCounts} />
-            </div>
-          )}
+    <ScanStatusWrapper scanStatusResult={scanStatusResult}>
+      <div className="flex items-center">
+        <div className="h-[140px] w-[140px]">
+          <SecretScanResultsPieChart data={severityCounts} />
+        </div>
+        <div className="flex flex-1 justify-center">
+          <div className="flex flex-col flex-1 max-w-[160px] gap-1">
+            {keys(severityCounts).length === 0 ? (
+              <div className="flex flex-col flex-1 gap-1">
+                <ScanStatusNoData />
+              </div>
+            ) : (
+              <div className="flex flex-col flex-1 max-w-[160px] gap-1">
+                <SeverityCounts severityCounts={severityCounts} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </ScanStatusWrapper>
   );
 };
 
@@ -1520,85 +1603,54 @@ const Top5Widget = () => {
   const { data: scanResult } = useScanResults();
   const { scanStatusResult } = scanResult;
 
-  if (isScanFailed(scanStatusResult?.status ?? '')) {
-    return (
-      <div className="flex items-center justify-center h-[140px]">
-        <ScanStatusInError errorMessage={scanStatusResult?.status_message ?? ''} />
-      </div>
-    );
-  }
-
-  if (isScanInProgress(scanStatusResult?.status ?? '')) {
-    return (
-      <div className="flex items-center justify-center h-[140px]">
-        <ScanStatusInProgress />
-      </div>
-    );
-  }
-
-  if (!data.data || data.data?.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-[140px]">
-        <ScanStatusNoData />
-      </div>
-    );
-  }
-
   return (
-    <table className="table-fixed w-full">
-      <tbody>
-        {data.data.map((secret) => {
-          return (
-            <tr key={secret.node_id}>
-              <td className="w-[70%] px-0 pt-0 pb-2">
-                <DFLink
-                  to={{
-                    pathname: `./${encodeURIComponent(secret.node_id)}`,
-                    search: searchParams.toString(),
-                  }}
-                  className="flex items-center gap-3"
-                >
-                  <div className="w-[14px] h-[14px] shrink-0">
-                    <SecretsIcon />
+    <ScanStatusWrapper
+      scanStatusResult={scanStatusResult}
+      displayNoData={!data.data || data.data?.length === 0}
+    >
+      <table className="table-fixed w-full">
+        <tbody>
+          {data.data?.map?.((secret) => {
+            return (
+              <tr key={secret.node_id}>
+                <td className="w-[70%] px-0 pt-0 pb-2">
+                  <DFLink
+                    to={{
+                      pathname: `./${encodeURIComponent(secret.node_id)}`,
+                      search: searchParams.toString(),
+                    }}
+                    className="flex items-center gap-3"
+                  >
+                    <div className="w-[14px] h-[14px] shrink-0">
+                      <SecretsIcon />
+                    </div>
+                    <div className="text-p7 truncate">
+                      <TruncatedText text={secret.node_id} />
+                    </div>
+                  </DFLink>
+                </td>
+                <td className="w-[30%] px-0 pt-0 pb-2">
+                  <div className="flex items-center justify-end">
+                    <SeverityBadge severity={secret.level} />
                   </div>
-                  <div className="text-p7 truncate">
-                    <TruncatedText text={secret.node_id} />
-                  </div>
-                </DFLink>
-              </td>
-              <td className="w-[30%] px-0 pt-0 pb-2">
-                <div className="flex items-center justify-end">
-                  <SeverityBadge severity={secret.level} />
-                </div>
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </ScanStatusWrapper>
   );
 };
 const TopAttackPath = () => {
   const { data: scanResult } = useScanResults();
   const { scanStatusResult } = scanResult;
 
-  if (isScanFailed(scanStatusResult?.status ?? '')) {
-    return (
-      <div className="flex items-center justify-center h-[140px]">
-        <ScanStatusInError errorMessage={scanStatusResult?.status_message ?? ''} />
-      </div>
-    );
-  }
-
-  if (isScanInProgress(scanStatusResult?.status ?? '')) {
-    return (
-      <div className="flex items-center justify-center h-[140px]">
-        <ScanStatusInProgress />
-      </div>
-    );
-  }
-
-  return <ScanStatusNoData />;
+  return (
+    <ScanStatusWrapper scanStatusResult={scanStatusResult}>
+      <ScanStatusNoData />
+    </ScanStatusWrapper>
+  );
 };
 const Widgets = () => {
   return (

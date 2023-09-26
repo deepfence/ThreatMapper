@@ -83,6 +83,7 @@ export function getVulnerabilityApiClient() {
   return {
     startVulnerabilityScan:
       vulnerabilityApi.startVulnerabilityScan.bind(vulnerabilityApi),
+    stopVulnerabilityScan: vulnerabilityApi.stopVulnerabilityScan.bind(vulnerabilityApi),
     resultVulnerabilityScan:
       vulnerabilityApi.resultsVulnerabilityScans.bind(vulnerabilityApi),
     resultCountVulnerabilityScan:
@@ -100,6 +101,7 @@ export function getSecretApiClient() {
   const secretApi = new SecretScanApi(configuration);
   return {
     startSecretScan: secretApi.startSecretScan.bind(secretApi),
+    stopSecretScan: secretApi.stopSecretScan.bind(secretApi),
     resultSecretScan: secretApi.resultsSecretScan.bind(secretApi),
     resultCountSecretScan: secretApi.countResultsSecretScan.bind(secretApi),
     statusSecretScan: secretApi.statusSecretScan.bind(secretApi),
@@ -113,6 +115,7 @@ export function getComplianceApiClient() {
   const complianceApi = new ComplianceApi(configuration);
   return {
     startComplianceScan: complianceApi.startComplianceScan.bind(complianceApi),
+    stopComplianceScan: complianceApi.stopComplianceScan.bind(complianceApi),
     statusComplianceScan: complianceApi.statusComplianceScan.bind(complianceApi),
     resultComplianceScan: complianceApi.resultsComplianceScan.bind(complianceApi),
     resultCountComplianceScan:
@@ -157,6 +160,7 @@ export function getMalwareApiClient() {
   const malwareApi = new MalwareScanApi(configuration);
   return {
     startMalwareScan: malwareApi.startMalwareScan.bind(malwareApi),
+    stopMalwareScan: malwareApi.stopMalwareScan.bind(malwareApi),
     resultMalwareScan: malwareApi.resultsMalwareScan.bind(malwareApi),
     resultCountMalwareScan: malwareApi.countResultsMalwareScan.bind(malwareApi),
     statusMalwareScan: malwareApi.statusMalwareScan.bind(malwareApi),

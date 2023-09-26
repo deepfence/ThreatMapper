@@ -219,8 +219,12 @@ const BulkActions = ({
                   showAdvancedOptions: nodesWithAgentRunning.length === 1,
                   scanType: ScanTypeEnum.VulnerabilityScan,
                   data: {
-                    nodeIds: nodesWithAgentRunning.map((node) => node.nodeId),
-                    nodeType: VulnerabilityScanNodeTypeEnum.kubernetes_cluster,
+                    nodes: nodesWithAgentRunning.map((node) => {
+                      return {
+                        nodeId: node.nodeId,
+                        nodeType: VulnerabilityScanNodeTypeEnum.kubernetes_cluster,
+                      };
+                    }),
                   },
                 });
               }}
@@ -235,8 +239,12 @@ const BulkActions = ({
                   showAdvancedOptions: nodesWithAgentRunning.length === 1,
                   scanType: ScanTypeEnum.SecretScan,
                   data: {
-                    nodeIds: nodesWithAgentRunning.map((node) => node.nodeId),
-                    nodeType: SecretScanNodeTypeEnum.kubernetes_cluster,
+                    nodes: nodesWithAgentRunning.map((node) => {
+                      return {
+                        nodeId: node.nodeId,
+                        nodeType: SecretScanNodeTypeEnum.kubernetes_cluster,
+                      };
+                    }),
                   },
                 });
               }}
@@ -251,8 +259,12 @@ const BulkActions = ({
                   showAdvancedOptions: nodesWithAgentRunning.length === 1,
                   scanType: ScanTypeEnum.MalwareScan,
                   data: {
-                    nodeIds: nodesWithAgentRunning.map((node) => node.nodeId),
-                    nodeType: MalwareScanNodeTypeEnum.kubernetes_cluster,
+                    nodes: nodesWithAgentRunning.map((node) => {
+                      return {
+                        nodeId: node.nodeId,
+                        nodeType: MalwareScanNodeTypeEnum.kubernetes_cluster,
+                      };
+                    }),
                   },
                 });
               }}
