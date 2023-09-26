@@ -8,6 +8,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/scans"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -78,71 +79,29 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			return err
 		}
 
-		if ts == utils.NEO4J_CLOUD_COMPLIANCE_SCAN {
-			err = updateCloudResourceScanStatus(ts, recordMap, session)
-		} else if ts != utils.NEO4J_COMPLIANCE_SCAN {
-			err = updatePodScanStatus(ts, recordMap, session)
+		if ts != utils.NEO4J_COMPLIANCE_SCAN {
+			worker, err := directory.Worker(ctx)
+			if err != nil {
+				return err
+			}
+
+			event := scans.UpdateScanEvent{
+				ScanType:  ts,
+				RecordMap: recordMap,
+			}
+			b, err := json.Marshal(event)
+			if err != nil {
+				return err
+			}
+			task := utils.UpdatePodScanStatusTask
+			if ts == utils.NEO4J_CLOUD_COMPLIANCE_SCAN {
+				task = utils.UpdateCloudResourceScanStatusTask
+			}
+			err = worker.Enqueue(task, b)
 		}
 
 		return err
 	}
-}
-
-// TODO: move to a specific task
-func updatePodScanStatus(ts utils.Neo4jScanType,
-	recordMap []map[string]interface{}, session neo4j.Session) error {
-
-	// TODO: Take into account all containers, not just last one
-	query := `
-		UNWIND $batch as row
-		MATCH (s:` + string(ts) + `{node_id: row.scan_id})-[:SCANNED]->(c:Container)
-		WHERE c.pod_id IS NOT NULL
-		MATCH (n:Pod{node_id: c.pod_id})
-		SET n.` + ingestersUtil.ScanStatusField[ts] + `=row.scan_status`
-
-	log.Debug().Msgf("query: %v", query)
-	_, err := session.Run(query,
-		map[string]interface{}{
-			"batch": recordMap,
-		},
-		neo4j.WithTxTimeout(30*time.Second),
-	)
-
-	if err != nil {
-		log.Error().Msgf("Error in pod status update query: %+v", err)
-		return err
-	}
-
-	return nil
-}
-
-// TODO: move to a specific task
-func updateCloudResourceScanStatus(ts utils.Neo4jScanType,
-	recordMap []map[string]interface{}, session neo4j.Session) error {
-
-	query := `
-		UNWIND $batch as row
-		MATCH (n:` + string(ts) + `{node_id: row.scan_id}) -[:DETECTED]- (m)
-		WITH  m.resource as arn, count(m) as count, n.status as status, n.node_id as scan_id
-		MATCH (cr:CloudResource{arn: arn})
-		SET cr.` + ingestersUtil.ScanCountField[ts] + `=count,
-			cr.` + ingestersUtil.ScanStatusField[ts] + `=status,
-			cr.` + ingestersUtil.LatestScanIdField[ts] + `=scan_id`
-
-	log.Debug().Msgf("query: %v", query)
-	_, err := session.Run(query,
-		map[string]interface{}{
-			"batch": recordMap,
-		},
-		neo4j.WithTxTimeout(30*time.Second),
-	)
-
-	if err != nil {
-		log.Error().Msgf("Error in pod status update query: %+v", err)
-		return err
-	}
-
-	return nil
 }
 
 // also handles status deduplication
