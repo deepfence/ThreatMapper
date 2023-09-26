@@ -29,6 +29,7 @@ import {
 
 import { getScanResultsApiClient } from '@/api/api';
 import {
+  ModelBulkDeleteScansRequestScanTypeEnum,
   ModelScanInfo,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
@@ -109,11 +110,22 @@ const action = async ({
 
   if (actionType === ActionEnumType.DELETE) {
     const resultApi = apiWrapper({
-      fn: getScanResultsApiClient().deleteScanResultsForScanID,
+      fn: getScanResultsApiClient().bulkDeleteScans,
     });
     const result = await resultApi({
-      scanId: scanIds[0] as string, // TODO: Add support for multi deletion
-      scanType: ScanTypeEnum.SecretScan,
+      modelBulkDeleteScansRequest: {
+        filters: {
+          compare_filter: null,
+          contains_filter: {
+            filter_in: {
+              node_id: scanIds,
+            },
+          },
+          order_filter: { order_fields: [] },
+          match_filter: { filter_in: {} },
+        },
+        scan_type: ModelBulkDeleteScansRequestScanTypeEnum.Secret,
+      },
     });
     if (!result.ok) {
       if (result.error.response.status === 400 || result.error.response.status === 409) {
@@ -1033,6 +1045,23 @@ const BulkActions = ({
         onClick={() => setShowCancelScanDialog(true)}
       >
         Cancel Scan
+      </Button>
+      <Button
+        color="error"
+        variant="flat"
+        startIcon={<TrashLineIcon />}
+        size="sm"
+        disabled={!selectedRows.length}
+        onClick={() => {
+          setIdsToDelete(
+            selectedRows.map((row) => {
+              return row.scanId;
+            }),
+          );
+          setShowDeleteDialog(true);
+        }}
+      >
+        Delete
       </Button>
     </>
   );

@@ -10,6 +10,7 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { toast } from 'sonner';
+import { cn } from 'tailwind-preset';
 import {
   Badge,
   Breadcrumb,
@@ -34,6 +35,7 @@ import {
 
 import { getScanResultsApiClient } from '@/api/api';
 import {
+  ModelBulkDeleteScansRequestScanTypeEnum,
   ModelCloudNodeAccountInfo,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
@@ -45,12 +47,12 @@ import {
   ICloudAccountType,
   SearchableCloudAccountsList,
 } from '@/components/forms/SearchableCloudAccountsList';
-import { BellLineIcon } from '@/components/icons/common/BellLine';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { TimesIcon } from '@/components/icons/common/Times';
+import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { CLOUDS } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
@@ -132,22 +134,33 @@ const action = async ({
 }: ActionFunctionArgs): Promise<{ success?: boolean; message?: string } | null> => {
   const formData = await request.formData();
   const actionType = formData.get('actionType');
-  const scanId = formData.get('scanId');
-  const scanType = formData.get('scanType');
+  const scanIds = formData.getAll('scanId');
+  const scanType = formData.get('scanType') as ModelBulkDeleteScansRequestScanTypeEnum;
   if (!actionType) {
     throw new Error('Invalid action');
   }
 
   if (actionType === ActionEnumType.DELETE) {
-    if (!scanId) {
-      throw new Error('Invalid action');
+    if (scanIds.length === 0) {
+      throw new Error('Scan ids are required for deletion');
     }
     const deleteScanResultsForScanIDApi = apiWrapper({
-      fn: getScanResultsApiClient().deleteScanResultsForScanID,
+      fn: getScanResultsApiClient().bulkDeleteScans,
     });
     const result = await deleteScanResultsForScanIDApi({
-      scanId: scanId.toString(),
-      scanType: scanType as ScanTypeEnum,
+      modelBulkDeleteScansRequest: {
+        filters: {
+          compare_filter: null,
+          contains_filter: {
+            filter_in: {
+              node_id: scanIds,
+            },
+          },
+          order_filter: { order_fields: [] },
+          match_filter: { filter_in: {} },
+        },
+        scan_type: scanType,
+      },
     });
     if (!result.ok) {
       if (result.error.response.status === 400 || result.error.response.status === 409) {
@@ -361,14 +374,16 @@ const Filters = () => {
 };
 const DeleteConfirmationModal = ({
   showDialog,
-  scanId,
+  scanIds,
   scanType,
   setShowDialog,
+  onSuccess,
 }: {
   showDialog: boolean;
-  scanId: string;
+  scanIds: string[];
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  scanType?: ScanTypeEnum;
+  scanType?: ModelBulkDeleteScansRequestScanTypeEnum;
+  onSuccess: () => void;
 }) => {
   const fetcher = useFetcher();
 
@@ -376,14 +391,24 @@ const DeleteConfirmationModal = ({
     (actionType: string) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
-      formData.append('scanId', scanId);
+      scanIds.forEach((scanId) => formData.append('scanId', scanId));
       formData.append('scanType', scanType ?? '');
       fetcher.submit(formData, {
         method: 'post',
       });
     },
-    [scanId, scanType, fetcher],
+    [scanIds, scanType, fetcher],
   );
+
+  useEffect(() => {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data?.success &&
+      fetcher.data.action === ActionEnumType.DELETE
+    ) {
+      onSuccess();
+    }
+  }, [fetcher]);
 
   return (
     <Modal
@@ -450,9 +475,7 @@ const ActionDropdown = ({
   scanType,
   nodeId,
   trigger,
-  setShowDeleteDialog,
   onTableAction,
-  setScanIdToDelete,
 }: {
   trigger: React.ReactNode;
   scanId?: string;
@@ -460,14 +483,14 @@ const ActionDropdown = ({
   scanType: ScanTypeEnum;
   scanStatus: string;
   nodeId?: string;
-  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   onTableAction: (ids: string[], actionType: ActionEnumType) => void;
-  setScanIdToDelete: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
   const { downloadScan } = useDownloadScan();
   const [openStopScanModal, setOpenStopScanModal] = useState(false);
+
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const onDownloadAction = useCallback(() => {
     downloadScan({
@@ -498,7 +521,21 @@ const ActionDropdown = ({
           scanType={scanType}
         />
       )}
-
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          scanIds={[scanId]}
+          scanType={
+            (scanType as ScanTypeEnum) === ScanTypeEnum.ComplianceScan
+              ? ModelBulkDeleteScansRequestScanTypeEnum.Compliance
+              : ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance
+          }
+          setShowDialog={setShowDeleteDialog}
+          onSuccess={() => {
+            //
+          }}
+        />
+      )}
       <Dropdown
         triggerAsChild
         align="start"
@@ -542,11 +579,14 @@ const ActionDropdown = ({
               disabled={!scanId || !nodeType}
               onClick={() => {
                 if (!scanId || !nodeType) return;
-                setScanIdToDelete(scanId);
                 setShowDeleteDialog(true);
               }}
             >
-              <span className="flex items-center gap-x-2 text-red-700 dark:text-status-error">
+              <span
+                className={cn('flex items-center gap-x-2', {
+                  'text-red-700 dark:text-status-error': scanId,
+                })}
+              >
                 Delete latest scan
               </span>
             </DropdownItem>
@@ -561,11 +601,13 @@ const ActionDropdown = ({
 
 const BulkActions = ({
   onClick,
+  onDelete,
   onCancelScan,
   disabled,
 }: {
   onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   onCancelScan?: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  onDelete?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   disabled: boolean;
 }) => {
   const { navigate } = usePageNavigation();
@@ -610,6 +652,16 @@ const BulkActions = ({
       >
         Cancel scan
       </Button>
+      <Button
+        color="error"
+        variant="flat"
+        startIcon={<TrashLineIcon />}
+        size="sm"
+        disabled={disabled}
+        onClick={onDelete}
+      >
+        Delete
+      </Button>
     </>
   );
 };
@@ -619,8 +671,6 @@ const AccountTable = ({
   rowSelectionState,
   onTableAction,
   scanType,
-  setShowDeleteDialog,
-  setScanIdToDelete,
   nodeType,
 }: {
   nodeType?: ComplianceScanNodeTypeEnum;
@@ -628,8 +678,6 @@ const AccountTable = ({
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
   rowSelectionState: RowSelectionState;
   onTableAction: (ids: string[], actionType: ActionEnumType) => void;
-  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  setScanIdToDelete: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = usePostureAccounts();
@@ -712,10 +760,8 @@ const AccountTable = ({
               nodeId={cell.row.original.node_id}
               nodeType={nodeType}
               scanType={scanType}
-              setScanIdToDelete={setScanIdToDelete}
               scanStatus={cell.row.original.last_scan_status || ''}
               onTableAction={onTableAction}
-              setShowDeleteDialog={setShowDeleteDialog}
               trigger={
                 <button className="p-1 flex">
                   <span className="block h-4 w-4 dark:text-text-text-and-icon rotate-90 shrink-0">
@@ -976,7 +1022,6 @@ const Accounts = () => {
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showCancelScan, setShowCancelScan] = useState(false);
-  const [scanIdToDelete, setScanIdToDelete] = useState('');
   const [nodeIdsToScan, setNodeIdsToScan] = useState<string[]>([]);
 
   const scanType = isNonCloudProvider(routeParams.nodeType)
@@ -1006,13 +1051,6 @@ const Accounts = () => {
         setSelectedScanType(scanType);
         return;
       }
-      const formData = new FormData();
-      formData.append('actionType', actionType);
-      formData.append('scanId', scanIdToDelete);
-      nodeIds.forEach((item) => formData.append('nodeIds[]', item));
-      fetcher.submit(formData, {
-        method: 'post',
-      });
     },
     [fetcher],
   );
@@ -1040,6 +1078,9 @@ const Accounts = () => {
             }}
             onCancelScan={() => {
               setShowCancelScan(true);
+            }}
+            onDelete={() => {
+              setShowDeleteDialog(true);
             }}
           />
           <Button
@@ -1086,8 +1127,6 @@ const Accounts = () => {
         <Suspense fallback={<TableSkeleton columns={6} rows={10} />}>
           <AccountTable
             setRowSelectionState={setRowSelectionState}
-            setScanIdToDelete={setScanIdToDelete}
-            setShowDeleteDialog={setShowDeleteDialog}
             rowSelectionState={rowSelectionState}
             onTableAction={onTableAction}
             scanType={scanType}
@@ -1098,9 +1137,16 @@ const Accounts = () => {
       {showDeleteDialog && (
         <DeleteConfirmationModal
           showDialog={showDeleteDialog}
-          scanId={scanIdToDelete}
-          scanType={scanType}
+          scanIds={selectedRows.map((row) => row.scanId)}
+          scanType={
+            isNonCloudProvider(routeParams.nodeType)
+              ? ModelBulkDeleteScansRequestScanTypeEnum.Compliance
+              : ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance
+          }
           setShowDialog={setShowDeleteDialog}
+          onSuccess={() => {
+            setRowSelectionState({});
+          }}
         />
       )}
     </div>

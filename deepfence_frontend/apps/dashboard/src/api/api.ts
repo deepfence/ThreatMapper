@@ -221,6 +221,7 @@ export function getScanResultsApiClient() {
   return {
     deleteScanResult: scanResultsApi.deleteScanResult.bind(scanResultsApi),
     downloadScanResultsForScanID: scanResultsApi.downloadScanResults.bind(scanResultsApi),
+    bulkDeleteScans: scanResultsApi.bulkDeleteScans.bind(scanResultsApi),
     deleteScanResultsForScanID:
       scanResultsApi.deleteScanResultsForScanID.bind(scanResultsApi),
     notifyScanResult: scanResultsApi.notifyScanResult.bind(scanResultsApi),
@@ -228,7 +229,6 @@ export function getScanResultsApiClient() {
     unmaskScanResult: scanResultsApi.unmaskScanResult.bind(scanResultsApi),
     getAllNodesInScanResults:
       scanResultsApi.getAllNodesInScanResults.bind(scanResultsApi),
-    bulkDeleteScansHistory: scanResultsApi.bulkDeleteScans.bind(scanResultsApi),
   };
 }
 
