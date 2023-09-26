@@ -1,6 +1,7 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
 
 import { getDiagnosisApiClient, getSettingsApiClient, getUserApiClient } from '@/api/api';
+import { ModelGetAuditLogsRequest } from '@/api/generated';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
@@ -32,18 +33,10 @@ export const settingQueries = createQueryKeys('setting', {
   },
   listUserActivityLogs: (filters: { page: number; pageSize: number }) => {
     return {
-      queryKey: ['listUserActivityLogs'],
+      queryKey: [{ filters }],
       queryFn: async () => {
         const { page, pageSize } = filters;
-        const logsReq: any = {
-          fields_filter: {
-            contains_filter: {
-              filter_in: {},
-            },
-            match_filter: { filter_in: {} },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
-          },
+        const logsReq: ModelGetAuditLogsRequest = {
           window: {
             offset: page * pageSize,
             size: pageSize,
@@ -54,21 +47,13 @@ export const settingQueries = createQueryKeys('setting', {
           fn: getSettingsApiClient().getUserActivityLogs,
         });
         const userResponse = await userApi({
-          modelScanResultsReq: logsReq,
+          modelGetAuditLogsRequest: logsReq,
         });
 
         const logsCountApi = apiWrapper({
-          fn: getSettingsApiClient().resultCountVulnerabilityScan,
+          fn: getSettingsApiClient().getUserActivityLogCount,
         });
-        const logsCount = await logsCountApi({
-          modelScanResultsReq: {
-            ...logsReq,
-            window: {
-              ...logsReq.window,
-              size: 10 * logsReq.window.size,
-            },
-          },
-        });
+        const logsCount = await logsCountApi();
 
         if (!logsCount.ok) {
           throw logsCount.error;
@@ -92,7 +77,7 @@ export const settingQueries = createQueryKeys('setting', {
           data: userResponse.value,
           pagination: {
             currentPage: page,
-            totalRows: page * pageSize + logsCount.value.count,
+            totalRows: logsCount.value.count,
           },
         };
       },

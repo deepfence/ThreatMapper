@@ -9318,12 +9318,19 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/settings/user-activity-log": {
-      "get": {
+    "/deepfence/settings/user-audit-log": {
+      "post": {
         "tags": ["Settings"],
-        "summary": "Get activity logs",
-        "description": "Get activity logs for all users",
-        "operationId": "getUserActivityLogs",
+        "summary": "Get user audit logs",
+        "description": "Get audit logs for all users",
+        "operationId": "getUserAuditLogs",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelGetAuditLogsRequest" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -9333,6 +9340,51 @@
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/PostgresqlDbGetAuditLogsRow" }
                 }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/settings/user-audit-log/count": {
+      "get": {
+        "tags": ["Settings"],
+        "summary": "Get user audit logs count",
+        "description": "Get user audit logs count",
+        "operationId": "getUserAuditLogsCount",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
               }
             }
           },
@@ -11636,6 +11688,11 @@
       "ModelGenerateReportResp": {
         "type": "object",
         "properties": { "report_id": { "type": "string" } }
+      },
+      "ModelGetAuditLogsRequest": {
+        "required": ["window"],
+        "type": "object",
+        "properties": { "window": { "$ref": "#/components/schemas/ModelFetchWindow" } }
       },
       "ModelHost": {
         "required": [

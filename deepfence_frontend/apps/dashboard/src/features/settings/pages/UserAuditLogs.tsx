@@ -29,6 +29,7 @@ const useUserActivityLogs = () => {
       page: getPageFromSearchParams(searchParams),
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
     }),
+    keepPreviousData: true,
   });
 };
 const AuditTable = () => {
@@ -172,6 +173,13 @@ const AuditTable = () => {
             }
             setSearchParams((prev) => {
               prev.set('page', String(newPageIndex));
+              return prev;
+            });
+          }}
+          onPageResize={(newSize) => {
+            setSearchParams((prev) => {
+              prev.set('size', String(newSize));
+              prev.delete('page');
               return prev;
             });
           }}
