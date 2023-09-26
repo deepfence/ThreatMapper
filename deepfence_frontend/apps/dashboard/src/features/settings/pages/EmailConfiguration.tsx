@@ -501,8 +501,8 @@ const DeleteConfirmationModal = ({
                 color="error"
                 type="submit"
                 size="md"
-                loading={fetcher.state === 'submitting'}
-                disabled={fetcher.state === 'submitting'}
+                disabled={fetcher.state !== 'idle'}
+                loading={fetcher.state !== 'idle'}
               >
                 Delete
               </Button>

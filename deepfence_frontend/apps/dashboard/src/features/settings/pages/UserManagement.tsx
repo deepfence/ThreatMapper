@@ -984,8 +984,8 @@ const DeleteUserConfirmationModal = ({
               size="md"
               color="error"
               type="submit"
-              loading={fetcher.state === 'submitting'}
-              disabled={fetcher.state === 'submitting'}
+              loading={fetcher.state !== 'idle'}
+              disabled={fetcher.state !== 'idle'}
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteAction();
@@ -1061,8 +1061,8 @@ const ResetAPIKeyConfirmationModal = ({
               color="error"
               size="md"
               type="submit"
-              loading={fetcher.state === 'submitting'}
-              disabled={fetcher.state === 'submitting'}
+              loading={fetcher.state !== 'idle'}
+              disabled={fetcher.state !== 'idle'}
               onClick={(e) => {
                 e.preventDefault();
                 onResetAction();
