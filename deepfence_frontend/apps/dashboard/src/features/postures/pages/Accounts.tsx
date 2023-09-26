@@ -74,7 +74,6 @@ import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatPercentage } from '@/utils/number';
 import {
-  CANCEL_SCAN_STATUSES,
   COMPLIANCE_SCAN_STATUS_GROUPS,
   ComplianceScanGroupedStatus,
   isScanComplete,
@@ -256,7 +255,7 @@ const Filters = () => {
             })}
         </Combobox>
         <Combobox
-          value={SCAN_STATUS_GROUPS.concat(CANCEL_SCAN_STATUSES).find((groupStatus) => {
+          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
             return groupStatus.value === searchParams.get('complianceScanStatus');
           })}
           nullable
@@ -276,20 +275,18 @@ const Filters = () => {
           }}
           getDisplayValue={() => FILTER_SEARCHPARAMS['complianceScanStatus']}
         >
-          {SCAN_STATUS_GROUPS.concat(CANCEL_SCAN_STATUSES)
-            .filter((item) => {
-              if (!complianceScanStatusSearchText.length) return true;
-              return item.label
-                .toLowerCase()
-                .includes(complianceScanStatusSearchText.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item.value} value={item}>
-                  {item.label}
-                </ComboboxOption>
-              );
-            })}
+          {SCAN_STATUS_GROUPS.filter((item) => {
+            if (!complianceScanStatusSearchText.length) return true;
+            return item.label
+              .toLowerCase()
+              .includes(complianceScanStatusSearchText.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item.value} value={item}>
+                {item.label}
+              </ComboboxOption>
+            );
+          })}
         </Combobox>
         {(nodeType === 'aws' || nodeType === 'gcp') && (
           <SearchableCloudAccountsList

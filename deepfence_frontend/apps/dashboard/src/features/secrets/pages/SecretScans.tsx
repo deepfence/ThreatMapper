@@ -62,7 +62,6 @@ import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import {
-  CANCEL_SCAN_STATUSES,
   isNeverScanned,
   isScanComplete,
   isScanInProgress,
@@ -113,7 +112,7 @@ const action = async ({
       fn: getScanResultsApiClient().deleteScanResultsForScanID,
     });
     const result = await resultApi({
-      scanId: scanIds[0] as string,
+      scanId: scanIds[0] as string, // TODO: Add support for multi deletion
       scanType: ScanTypeEnum.SecretScan,
     });
     if (!result.ok) {
@@ -411,7 +410,7 @@ const Filters = () => {
             })}
         </Combobox>
         <Combobox
-          value={SCAN_STATUS_GROUPS.concat(CANCEL_SCAN_STATUSES).find((groupStatus) => {
+          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
             return groupStatus.value === searchParams.get('secretScanStatus');
           })}
           nullable
@@ -431,20 +430,18 @@ const Filters = () => {
           }}
           getDisplayValue={() => FILTER_SEARCHPARAMS['secretScanStatus']}
         >
-          {SCAN_STATUS_GROUPS.concat(CANCEL_SCAN_STATUSES)
-            .filter((item) => {
-              if (!secretScanStatusSearchText.length) return true;
-              return item.label
-                .toLowerCase()
-                .includes(secretScanStatusSearchText.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item.value} value={item}>
-                  {item.label}
-                </ComboboxOption>
-              );
-            })}
+          {SCAN_STATUS_GROUPS.filter((item) => {
+            if (!secretScanStatusSearchText.length) return true;
+            return item.label
+              .toLowerCase()
+              .includes(secretScanStatusSearchText.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item.value} value={item}>
+                {item.label}
+              </ComboboxOption>
+            );
+          })}
         </Combobox>
 
         <SearchableImageList

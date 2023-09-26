@@ -198,9 +198,6 @@ export const SCAN_STATUS_GROUPS = [
     label: 'Complete',
     value: 'complete',
   },
-];
-
-export const CANCEL_SCAN_STATUSES = [
   {
     label: 'Cancelled',
     value: 'cancelled',

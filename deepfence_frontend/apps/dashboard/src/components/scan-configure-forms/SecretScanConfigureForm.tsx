@@ -17,20 +17,26 @@ import { isNodeTypeARegistryTagType, isNodeTypeARegistryType } from '@/utils/reg
 
 export type SecretScanConfigureFormProps = {
   showAdvancedOptions: boolean;
-  data: {
-    nodes: {
-      nodeId: string;
-      nodeType:
-        | SecretScanNodeTypeEnum.host
-        | SecretScanNodeTypeEnum.kubernetes_cluster
-        | SecretScanNodeTypeEnum.registry
-        | SecretScanNodeTypeEnum.container
-        | SecretScanNodeTypeEnum.imageTag
-        | SecretScanNodeTypeEnum.image
-        | SecretScanNodeTypeEnum.pod;
-    }[];
-    images?: string[]; // for registry image filter
-  };
+  data:
+    | {
+        nodes: {
+          nodeId: string;
+          nodeType:
+            | SecretScanNodeTypeEnum.host
+            | SecretScanNodeTypeEnum.kubernetes_cluster
+            | SecretScanNodeTypeEnum.registry
+            | SecretScanNodeTypeEnum.container
+            | SecretScanNodeTypeEnum.imageTag
+            | SecretScanNodeTypeEnum.pod;
+        }[];
+      }
+    | {
+        nodes: {
+          nodeId: string;
+          nodeType: SecretScanNodeTypeEnum.image;
+        }[];
+        images: string[];
+      };
   onSuccess: (data?: { nodeType: string; bulkScanId: string }) => void;
   onCancel?: () => void;
 };
@@ -197,7 +203,7 @@ export const SecretScanConfigureForm = ({
         hidden
         value={data.nodes.map((node) => node.nodeType).join(',')}
       />
-      {data.images && (
+      {'images' in data && (
         <input type="text" name="_images" hidden readOnly value={data.images.join(',')} />
       )}
 

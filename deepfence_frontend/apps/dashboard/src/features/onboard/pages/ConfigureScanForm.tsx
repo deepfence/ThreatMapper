@@ -7,8 +7,14 @@ import {
   MalwareScanConfigureForm,
   MalwareScanConfigureFormProps,
 } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
-import { SecretScanConfigureForm } from '@/components/scan-configure-forms/SecretScanConfigureForm';
-import { VulnerabilityScanConfigureForm } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
+import {
+  SecretScanConfigureForm,
+  SecretScanConfigureFormProps,
+} from '@/components/scan-configure-forms/SecretScanConfigureForm';
+import {
+  VulnerabilityScanConfigureForm,
+  VulnerabilityScanConfigureFormProps,
+} from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { OnboardConnectionNode } from '@/features/onboard/pages/connectors/MyConnectors';
 import {
@@ -99,14 +105,17 @@ const ScanConfigureForm = () => {
         {scanType === ScanTypeEnum.VulnerabilityScan && (
           <VulnerabilityScanConfigureForm
             showAdvancedOptions={false}
-            data={{
-              nodes: state.map((node) => {
-                return {
-                  nodeId: node.urlId,
-                  nodeType: state[0].urlType as VulnerabilityScanNodeTypeEnum,
-                };
-              }),
-            }}
+            data={
+              {
+                nodes: state.map((node) => {
+                  return {
+                    nodeId: node.urlId,
+                    nodeType: state[0].urlType as VulnerabilityScanNodeTypeEnum,
+                  };
+                }),
+                images: [],
+              } as VulnerabilityScanConfigureFormProps['data']
+            }
             onSuccess={(data) => {
               if (data) {
                 const { nodeType, bulkScanId } = data;
@@ -127,14 +136,17 @@ const ScanConfigureForm = () => {
         {scanType === ScanTypeEnum.SecretScan && (
           <SecretScanConfigureForm
             showAdvancedOptions={false}
-            data={{
-              nodes: state.map((node) => {
-                return {
-                  nodeId: node.urlId,
-                  nodeType: state[0].urlType as SecretScanNodeTypeEnum,
-                };
-              }),
-            }}
+            data={
+              {
+                nodes: state.map((node) => {
+                  return {
+                    nodeId: node.urlId,
+                    nodeType: state[0].urlType as SecretScanNodeTypeEnum,
+                  };
+                }),
+                images: [],
+              } as SecretScanConfigureFormProps['data']
+            }
             onSuccess={(data) => {
               if (data) {
                 const { nodeType, bulkScanId } = data;
