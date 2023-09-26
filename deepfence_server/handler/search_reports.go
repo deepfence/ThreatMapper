@@ -137,64 +137,6 @@ func SearchHandler[T reporters.Cypherable](w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func SearchCloudResourcesHandler(w http.ResponseWriter, r *http.Request, h *Handler) {
-	defer r.Body.Close()
-	var req reporters_search.SearchNodeReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-	if err != nil {
-		h.respondError(&BadDecoding{err}, w)
-		return
-	}
-
-	entries, err := reporters_search.SearchReport[model.CloudResource](r.Context(), req.NodeFilter, req.ExtendedNodeFilter, req.IndirectFilters, req.Window)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-		return
-	}
-
-	accountIDs := make(map[string]model.CloudNode)
-	for _, entry := range entries {
-		if entry.AccountId == "" {
-			continue
-		}
-		if _, ok := accountIDs[entry.AccountId]; !ok {
-			accountIDs[entry.AccountId] = model.CloudNode{}
-		}
-	}
-
-	searchFilter := reporters_search.SearchFilter{
-		Filters: reporters.FieldsFilters{
-			ContainsFilter: reporters.ContainsFilter{FieldsValues: map[string][]interface{}{"node_id": {}}},
-		},
-	}
-	for accountId := range accountIDs {
-		searchFilter.Filters.ContainsFilter.FieldsValues["node_id"] = append(searchFilter.Filters.ContainsFilter.FieldsValues["node_id"], accountId)
-	}
-	accountIdEntries, err := reporters_search.SearchReport[model.CloudNode](r.Context(), searchFilter, reporters_search.SearchFilter{}, nil, model.FetchWindow{})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-		return
-	}
-	for _, accountIdEntry := range accountIdEntries {
-		accountIDs[accountIdEntry.ID] = accountIdEntry
-	}
-	for i, entry := range entries {
-		if entry.AccountId == "" {
-			continue
-		}
-		entries[i].CloudComplianceLatestScanId = accountIDs[entry.AccountId].CloudComplianceLatestScanId
-		entries[i].CloudCompliancesCount = accountIDs[entry.AccountId].CloudCompliancesCount
-		entries[i].CloudComplianceScanStatus = accountIDs[entry.AccountId].CloudComplianceScanStatus
-	}
-
-	err = httpext.JSON(w, http.StatusOK, entries)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
 func (h *Handler) SearchHosts(w http.ResponseWriter, r *http.Request) {
 	SearchHandler[model.Host](w, r, h)
 }
@@ -224,7 +166,7 @@ func (h *Handler) SearchCloudCompliances(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *Handler) SearchCloudResources(w http.ResponseWriter, r *http.Request) {
-	SearchCloudResourcesHandler(w, r, h)
+	SearchHandler[model.CloudResource](w, r, h)
 }
 
 func (h *Handler) SearchKubernetesClusters(w http.ResponseWriter, r *http.Request) {

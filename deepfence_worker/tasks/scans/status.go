@@ -70,8 +70,8 @@ func UpdateCloudResourceScanStatus(ctx context.Context, task *asynq.Task) error 
 		return err
 	}
 
-	log.Info().Msgf("Update pod scan status")
-	defer log.Info().Msgf("Update pod scan status done")
+	log.Info().Msgf("Update cloud resource scan status")
+	defer log.Info().Msgf("Update cloud resource scan status done")
 
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -99,7 +99,7 @@ func UpdateCloudResourceScanStatus(ctx context.Context, task *asynq.Task) error 
 	)
 
 	if err != nil {
-		log.Error().Msgf("Error in pod status update query: %+v", err)
+		log.Error().Msgf("Error in cloud resource status update query: %+v", err)
 		return err
 	}
 
