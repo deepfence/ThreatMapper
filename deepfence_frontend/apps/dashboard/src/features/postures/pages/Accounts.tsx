@@ -660,7 +660,7 @@ const BulkActions = ({
         disabled={disabled}
         onClick={onDelete}
       >
-        Delete
+        Delete scan
       </Button>
     </>
   );
