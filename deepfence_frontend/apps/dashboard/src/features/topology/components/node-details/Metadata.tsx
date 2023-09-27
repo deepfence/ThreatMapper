@@ -1,5 +1,15 @@
 import { upperCase } from 'lodash-es';
 
+import { convertSeconds } from '@/utils/date';
+
+const uptimeText = (uptime: boolean | string) => {
+  return typeof uptime === 'string' ? `since ${convertSeconds(+uptime)}` : '';
+};
+
+const timeFormatKey = {
+  uptime: 'uptime',
+};
+
 export const Metadata = ({
   data,
   title,
@@ -22,7 +32,7 @@ export const Metadata = ({
               {toTopologyMetadataKey(key)}
             </div>
             <div className="text-p1 dark:text-text-input-value break-words">
-              {data[key]}
+              {key in timeFormatKey ? uptimeText(data[key]) : data[key]}
             </div>
           </div>
         ))}
