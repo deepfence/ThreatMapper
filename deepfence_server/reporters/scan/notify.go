@@ -98,6 +98,9 @@ func injectNodeData[T any](results []T, common model.ScanResultsCommon,
 
 // ConvertScanResultsCommonToMap converts ScanResultsCommon to map[string]interface{}
 func ConvertScanResultsCommonToMap(scanResults model.ScanResultsCommon) map[string]interface{} {
+	updatedAtTimeObj := time.Unix(0, scanResults.UpdatedAt*int64(time.Millisecond)).In(time.UTC)
+	createdAtTimeObj := time.Unix(0, scanResults.CreatedAt*int64(time.Millisecond)).In(time.UTC)
+
 	resultMap := make(map[string]interface{})
 	resultMap["docker_container_name"] = scanResults.ContainerName
 	resultMap["docker_image_name"] = scanResults.ImageName
@@ -107,7 +110,7 @@ func ConvertScanResultsCommonToMap(scanResults model.ScanResultsCommon) map[stri
 	resultMap["node_name"] = scanResults.NodeName
 	resultMap["node_type"] = scanResults.NodeType
 	resultMap["scan_id"] = scanResults.ScanID
-	resultMap["updated_at"] = scanResults.UpdatedAt
-	resultMap["created_at"] = scanResults.CreatedAt
+	resultMap["updated_at"] = updatedAtTimeObj.Format("02-01-2006 15:04:05 MST")
+	resultMap["created_at"] = createdAtTimeObj.Format("02-01-2006 15:04:05 MST")
 	return resultMap
 }

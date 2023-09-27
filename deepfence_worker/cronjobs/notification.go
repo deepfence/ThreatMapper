@@ -294,6 +294,20 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		extras := utils.ToMap[any](common)
 		extras["scan_type"] = integrationRow.Resource
 
+		// if extras has updated_at, convert to time
+		if _, ok := extras["updated_at"]; ok {
+			ts := extras["updated_at"].(int64)
+			timeObj := time.Unix(0, ts*int64(time.Millisecond)).In(time.UTC)
+			extras["updated_at"] = timeObj.Format("02-01-2006 15:04:05 MST")
+		}
+
+		// if extras has created_at, convert to time
+		if _, ok := extras["created_at"]; ok {
+			ts := extras["created_at"].(int64)
+			timeObj := time.Unix(0, ts*int64(time.Millisecond)).In(time.UTC)
+			extras["created_at"] = timeObj.Format("02-01-2006 15:04:05 MST")
+		}
+
 		profileStart = time.Now()
 		err = integrationModel.SendNotification(ctx, string(messageByte), extras)
 		totalSendTime = totalSendTime + time.Since(profileStart).Milliseconds()
