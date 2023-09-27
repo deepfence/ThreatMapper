@@ -735,9 +735,12 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 	d.AddOperation("updateSetting", http.MethodPatch, "/deepfence/settings/global-settings/{id}",
 		"Update setting", "Update setting",
 		http.StatusNoContent, []string{tagSettings}, bearerToken, new(SettingUpdateRequest), nil)
-	d.AddOperation("getUserActivityLogs", http.MethodGet, "/deepfence/settings/user-activity-log",
-		"Get activity logs", "Get activity logs for all users",
-		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]postgresqldb.GetAuditLogsRow))
+	d.AddOperation("getUserAuditLogs", http.MethodPost, "/deepfence/settings/user-audit-log",
+		"Get user audit logs", "Get audit logs for all users",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(GetAuditLogsRequest), new([]postgresqldb.GetAuditLogsRow))
+	d.AddOperation("getUserAuditLogsCount", http.MethodGet, "/deepfence/settings/user-audit-log/count",
+		"Get user audit logs count", "Get user audit logs count",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(SearchCountResp))
 
 	// Scheduled tasks
 	d.AddOperation("getScheduledTasks", http.MethodGet, "/deepfence/scheduled-task",
