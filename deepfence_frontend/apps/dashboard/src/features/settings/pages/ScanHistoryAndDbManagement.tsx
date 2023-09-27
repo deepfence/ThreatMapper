@@ -74,7 +74,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
     }
 
     const deleteScanHistory = apiWrapper({
-      fn: getScanResultsApiClient().bulkDeleteScansHistory,
+      fn: getScanResultsApiClient().bulkDeleteScans,
     });
 
     const deleteScanHistoryResponse = await deleteScanHistory({
