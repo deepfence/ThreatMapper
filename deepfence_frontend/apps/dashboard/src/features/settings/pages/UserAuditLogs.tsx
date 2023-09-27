@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   createColumnHelper,
@@ -16,19 +17,25 @@ import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
+import { getPageFromSearchParams } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 10;
 
 const useUserActivityLogs = () => {
+  const [searchParams] = useSearchParams();
   return useSuspenseQuery({
-    ...queries.setting.listUserActivityLogs(),
+    ...queries.setting.listUserActivityLogs({
+      page: getPageFromSearchParams(searchParams),
+      pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
+    }),
+    keepPreviousData: true,
   });
 };
 const AuditTable = () => {
   const columnHelper = createColumnHelper<PostgresqlDbGetAuditLogsRow>();
 
   const { copy, isCopied } = useCopyToClipboardState();
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { data } = useUserActivityLogs();
   const columns = useMemo(() => {
@@ -41,6 +48,7 @@ const AuditTable = () => {
         minSize: 30,
         size: 35,
         maxSize: 40,
+        enableSorting: false,
       }),
       columnHelper.accessor('event', {
         cell: (cell) => cell.getValue(),
@@ -48,6 +56,7 @@ const AuditTable = () => {
         minSize: 30,
         size: 30,
         maxSize: 40,
+        enableSorting: false,
       }),
       columnHelper.accessor('action', {
         cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
@@ -55,6 +64,7 @@ const AuditTable = () => {
         minSize: 20,
         size: 25,
         maxSize: 30,
+        enableSorting: false,
       }),
       columnHelper.accessor('email', {
         cell: (cell) => cell.getValue(),
@@ -62,6 +72,7 @@ const AuditTable = () => {
         minSize: 30,
         size: 50,
         maxSize: 60,
+        enableSorting: false,
       }),
       columnHelper.accessor('role', {
         cell: (cell) => cell.getValue(),
@@ -69,6 +80,7 @@ const AuditTable = () => {
         minSize: 30,
         size: 30,
         maxSize: 35,
+        enableSorting: false,
       }),
       columnHelper.accessor('resources', {
         cell: (cell) => {
@@ -102,6 +114,7 @@ const AuditTable = () => {
         minSize: 30,
         size: 30,
         maxSize: 40,
+        enableSorting: false,
       }),
     ];
     return columns;
@@ -123,12 +136,35 @@ const AuditTable = () => {
           data={data.data || []}
           columns={columns}
           enablePagination
-          pageSize={pageSize}
           enablePageResize
-          onPageResize={(newSize) => {
-            setPageSize(newSize);
+          manualPagination
+          enableColumnResizing
+          approximatePagination
+          totalRows={data?.pagination?.totalRows}
+          pageSize={parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE))}
+          pageIndex={data?.pagination?.currentPage}
+          onPaginationChange={(updaterOrValue) => {
+            let newPageIndex = 0;
+            if (typeof updaterOrValue === 'function') {
+              newPageIndex = updaterOrValue({
+                pageIndex: data?.pagination?.currentPage ?? 0,
+                pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
+              }).pageIndex;
+            } else {
+              newPageIndex = updaterOrValue.pageIndex;
+            }
+            setSearchParams((prev) => {
+              prev.set('page', String(newPageIndex));
+              return prev;
+            });
           }}
-          enableSorting
+          onPageResize={(newSize) => {
+            setSearchParams((prev) => {
+              prev.set('size', String(newSize));
+              prev.delete('page');
+              return prev;
+            });
+          }}
           noDataElement={<TableNoDataElement text="No user audit logs available" />}
         />
       )}

@@ -1,6 +1,7 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
 
 import { getDiagnosisApiClient, getSettingsApiClient, getUserApiClient } from '@/api/api';
+import { ModelGetAuditLogsRequest } from '@/api/generated';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
@@ -30,14 +31,34 @@ export const settingQueries = createQueryKeys('setting', {
       },
     };
   },
-  listUserActivityLogs: () => {
+  listUserActivityLogs: (filters: { page: number; pageSize: number }) => {
     return {
-      queryKey: ['listUserActivityLogs'],
+      queryKey: [{ filters }],
       queryFn: async () => {
+        const { page, pageSize } = filters;
+        const logsReq: ModelGetAuditLogsRequest = {
+          window: {
+            offset: page * pageSize,
+            size: pageSize,
+          },
+        };
+
         const userApi = apiWrapper({
           fn: getSettingsApiClient().getUserActivityLogs,
         });
-        const userResponse = await userApi();
+        const userResponse = await userApi({
+          modelGetAuditLogsRequest: logsReq,
+        });
+
+        const logsCountApi = apiWrapper({
+          fn: getSettingsApiClient().getUserActivityLogCount,
+        });
+        const logsCount = await logsCountApi();
+
+        if (!logsCount.ok) {
+          throw logsCount.error;
+        }
+
         if (!userResponse.ok) {
           if (userResponse.error.response.status === 400) {
             return {
@@ -54,6 +75,10 @@ export const settingQueries = createQueryKeys('setting', {
 
         return {
           data: userResponse.value,
+          pagination: {
+            currentPage: page,
+            totalRows: logsCount.value.count,
+          },
         };
       },
     };

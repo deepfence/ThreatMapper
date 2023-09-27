@@ -86,6 +86,7 @@ export * from './ModelFiltersReq';
 export * from './ModelFiltersResult';
 export * from './ModelGenerateReportReq';
 export * from './ModelGenerateReportResp';
+export * from './ModelGetAuditLogsRequest';
 export * from './ModelHost';
 export * from './ModelImageStub';
 export * from './ModelInitAgentReq';
