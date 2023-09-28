@@ -7,6 +7,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/render/detailed"
+	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/completion"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/lookup"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
@@ -775,4 +776,10 @@ func (d *OpenApiDocs) AddDiffAddOperations() {
 	d.AddOperation("diffAddCloudCompliance", http.MethodPost, "/deepfence/diff-add/cloud-compliance",
 		"Get Cloud Compliance Diff", "Get Cloud Compliance Diff between two scans",
 		http.StatusOK, []string{tagDiffAdd}, bearerToken, new(ScanCompareReq), new(ScanCompareResCloudCompliance))
+}
+
+func (d *OpenApiDocs) AddCompletionOperations() {
+	d.AddOperation("completeProcessInfo", http.MethodPost, "/deepfence/complete/process",
+		"Get Completion for process fields", "Complete process info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 }
