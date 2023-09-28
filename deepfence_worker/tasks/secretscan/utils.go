@@ -1,9 +1,7 @@
 package secretscan
 
 import (
-	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/deepfence/SecretScanner/scan"
@@ -37,7 +35,7 @@ func SendScanStatus(ingestC chan *kgo.Record, status SecretScanStatus, rh []kgo.
 	return nil
 }
 
-func StartStatusReporter(ctx context.Context, scanCtx *scan.ScanContext,
+func StartStatusReporter(scanCtx *scan.ScanContext,
 	params utils.SecretScanParameters, ingestC chan *kgo.Record,
 	rh []kgo.RecordHeader) chan error {
 
@@ -46,45 +44,27 @@ func StartStatusReporter(ctx context.Context, scanCtx *scan.ScanContext,
 
 	//If we don't get any active status back within threshold,
 	//we consider the scan job as dead
-	threshold := 600
+	threshold := 1200
 	go func() {
-		ticker := time.NewTicker(1 * time.Second)
-		var err, abort error
+		ticker := time.NewTicker(30 * time.Second)
+		var err error
 		ts := time.Now()
-		var counter uint64
 		log.Info().Msgf("StatusReporter started, scan_id: %s", scan_id)
 	loop:
 		for {
 			select {
 			case err = <-res:
 				break loop
-			case <-ctx.Done():
-				abort = ctx.Err()
-				break loop
 			case <-scanCtx.ScanStatusChan:
 				ts = time.Now()
 			case <-ticker.C:
-				if scanCtx.Stopped.Load() == true {
-					log.Info().Msgf("Scanner job stopped, Scan id: %s", scan_id)
-					break loop
-				}
-
-				counter++
-				//log.Info().Msgf("VARUN::: ScanID: %s, counter is: %d", scan_id, counter)
-
-				//We perform the check once per 30 seconds
-				if counter%30 != 0 {
-					continue
+				if scanCtx.Stopped.Load() || scanCtx.Aborted.Load() {
+					continue loop
 				}
 
 				elapsed := int(time.Since(ts).Seconds())
 				if elapsed > threshold {
-					err = fmt.Errorf("Scan job aborted due to inactivity")
-					log.Error().Msgf("Scan job aborted due to inactivity, Scan id: %s",
-						scan_id)
-
 					scanCtx.Aborted.Store(true)
-					break loop
 				} else {
 					SendScanStatus(ingestC, NewSecretScanStatus(params,
 						utils.SCAN_STATUS_INPROGRESS, ""), rh)
@@ -93,9 +73,9 @@ func StartStatusReporter(ctx context.Context, scanCtx *scan.ScanContext,
 			}
 		}
 
-		if abort != nil {
+		if scanCtx.Aborted.Load() == true {
 			SendScanStatus(ingestC, NewSecretScanStatus(params,
-				utils.SCAN_STATUS_FAILED, abort.Error()), rh)
+				utils.SCAN_STATUS_FAILED, scan.AbortError.Error()), rh)
 		} else if scanCtx.Stopped.Load() == true {
 			SendScanStatus(ingestC, NewSecretScanStatus(params,
 				utils.SCAN_STATUS_CANCELLED, "Scan stopped by user"), rh)
