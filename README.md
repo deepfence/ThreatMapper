@@ -119,7 +119,7 @@ Thank you for using ThreatMapper.  Please feel welcome to participate in the [Th
 
 ThreatStryker is the enterprise version of ThreatMapper, with additional features for enterprise security teams.  ThreatStryker is available as a cloud service or for on-premises deployment.
 
-<a href="https://www.deepfence.io/view-enterprise-sandbox"><img src="./images/ThreatStryker.png">
+<a href="https://deepfence.io/view-enterprise-sandbox" target="_blank"><img src="./images/threatstryker.png">
 
 # Security and Support
 
