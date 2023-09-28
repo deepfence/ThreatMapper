@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"io/ioutil"
 	"os"
+	"path"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -56,6 +58,14 @@ func main() {
 	err = envconfig.Process("DEEPFENCE", &cfg)
 	if err != nil {
 		log.Fatal().Msg(err.Error())
+	}
+
+	dir, err := ioutil.ReadDir("/tmp")
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
+	for _, d := range dir {
+		os.RemoveAll(path.Join([]string{"tmp", d.Name()}...))
 	}
 
 	log.Info().Msgf("config: %+v", cfg)

@@ -145,8 +145,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 
 	dir, err := ioutil.TempDir("/tmp", "secretscan-*")
 	if err != nil {
-		// return nil
-		log.Error().Msgf(err.Error())
+		return err
 	}
 	defer os.RemoveAll(dir)
 
