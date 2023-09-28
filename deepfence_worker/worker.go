@@ -68,7 +68,7 @@ func skipRetryCallbackWrapper(taskCallback wtils.WorkerHandler) wtils.WorkerHand
 	}
 }
 
-func (w *Worker) AddHandler(
+func (w *Worker) AddRetryableHandler(
 	task string,
 	taskCallback wtils.WorkerHandler,
 ) error {
@@ -82,7 +82,7 @@ func (w *Worker) AddHandler(
 
 // CronJobHandler do not retry on failure
 // The job will simply be tried again later on.
-func (w *Worker) AddCronJobHandler(
+func (w *Worker) AddOneShotHandler(
 	task string,
 	taskCallback wtils.WorkerHandler,
 ) error {
@@ -142,58 +142,58 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 		namespace: ns,
 	}
 
-	worker.AddCronJobHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)
+	worker.AddOneShotHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)
 
-	worker.AddCronJobHandler(utils.ComputeThreatTask, cronjobs.ComputeThreat)
+	worker.AddOneShotHandler(utils.ComputeThreatTask, cronjobs.ComputeThreat)
 
-	worker.AddCronJobHandler(utils.RetryFailedScansTask, cronjobs.RetryScansDB)
+	worker.AddOneShotHandler(utils.RetryFailedScansTask, cronjobs.RetryScansDB)
 
-	worker.AddCronJobHandler(utils.RetryFailedUpgradesTask, cronjobs.RetryUpgradeAgent)
+	worker.AddOneShotHandler(utils.RetryFailedUpgradesTask, cronjobs.RetryUpgradeAgent)
 
-	worker.AddCronJobHandler(utils.CleanUpPostgresqlTask, cronjobs.CleanUpPostgresDB)
+	worker.AddOneShotHandler(utils.CleanUpPostgresqlTask, cronjobs.CleanUpPostgresDB)
 
-	worker.AddCronJobHandler(utils.CleanupDiagnosisLogs, cronjobs.CleanUpDiagnosisLogs)
+	worker.AddOneShotHandler(utils.CleanupDiagnosisLogs, cronjobs.CleanUpDiagnosisLogs)
 
-	worker.AddCronJobHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade)
+	worker.AddOneShotHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade)
 
-	worker.AddCronJobHandler(utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls)
+	worker.AddOneShotHandler(utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls)
 
-	worker.AddCronJobHandler(utils.ScheduledTasks, cronjobs.RunScheduledTasks)
+	worker.AddOneShotHandler(utils.ScheduledTasks, cronjobs.RunScheduledTasks)
 
-	worker.AddCronJobHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry)
+	worker.AddOneShotHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry)
 
-	worker.AddCronJobHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
+	worker.AddOneShotHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
 
-	worker.AddCronJobHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders)
+	worker.AddOneShotHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders)
 
-	worker.AddCronJobHandler(utils.SendNotificationTask, cronjobs.SendNotifications)
+	worker.AddOneShotHandler(utils.SendNotificationTask, cronjobs.SendNotifications)
 
-	worker.AddCronJobHandler(utils.ReportGeneratorTask, reports.GenerateReport)
+	worker.AddOneShotHandler(utils.ReportGeneratorTask, reports.GenerateReport)
 
-	worker.AddCronJobHandler(utils.ReportCleanUpTask, cronjobs.CleanUpReports)
+	worker.AddOneShotHandler(utils.ReportCleanUpTask, cronjobs.CleanUpReports)
 
-	worker.AddCronJobHandler(utils.LinkCloudResourceTask, cronjobs.LinkCloudResources)
+	worker.AddOneShotHandler(utils.LinkCloudResourceTask, cronjobs.LinkCloudResources)
 
-	worker.AddCronJobHandler(utils.LinkNodesTask, cronjobs.LinkNodes)
+	worker.AddOneShotHandler(utils.LinkNodesTask, cronjobs.LinkNodes)
 
 	// sbom
-	worker.AddHandler(utils.ScanSBOMTask, sbom.NewSBOMScanner(ingestC).ScanSBOM)
+	worker.AddRetryableHandler(utils.ScanSBOMTask, sbom.NewSBOMScanner(ingestC).ScanSBOM)
 
-	worker.AddHandler(utils.GenerateSBOMTask, sbom.NewSbomGenerator(ingestC).GenerateSbom)
+	worker.AddOneShotHandler(utils.GenerateSBOMTask, sbom.NewSbomGenerator(ingestC).GenerateSbom)
 
-	worker.AddHandler(utils.SecretScanTask, secretscan.NewSecretScanner(ingestC).StartSecretScan)
+	worker.AddOneShotHandler(utils.SecretScanTask, secretscan.NewSecretScanner(ingestC).StartSecretScan)
 
-	worker.AddHandler(utils.StopSecretScanTask, secretscan.NewSecretScanner(ingestC).StopSecretScan)
+	worker.AddOneShotHandler(utils.StopSecretScanTask, secretscan.NewSecretScanner(ingestC).StopSecretScan)
 
-	worker.AddHandler(utils.MalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StartMalwareScan)
+	worker.AddOneShotHandler(utils.MalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StartMalwareScan)
 
-	worker.AddHandler(utils.StopMalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StopMalwareScan)
+	worker.AddOneShotHandler(utils.StopMalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StopMalwareScan)
 
-	worker.AddHandler(utils.StopVulnerabilityScanTask, sbom.StopVulnerabilityScan)
+	worker.AddOneShotHandler(utils.StopVulnerabilityScanTask, sbom.StopVulnerabilityScan)
 
-	worker.AddHandler(utils.UpdateCloudResourceScanStatusTask, scans.UpdateCloudResourceScanStatus)
+	worker.AddRetryableHandler(utils.UpdateCloudResourceScanStatusTask, scans.UpdateCloudResourceScanStatus)
 
-	worker.AddHandler(utils.UpdatePodScanStatusTask, scans.UpdatePodScanStatus)
+	worker.AddRetryableHandler(utils.UpdatePodScanStatusTask, scans.UpdatePodScanStatus)
 
 	return worker, cancel, nil
 }
