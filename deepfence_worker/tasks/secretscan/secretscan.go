@@ -99,13 +99,22 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	//an error has caused used to abort/return from this function
 	var hardErr error
 	scanCtx := scan.NewScanContext(params.ScanId)
-	res := StartStatusReporter(context.Background(), scanCtx, params, s.ingestC, rh)
+	res := StartStatusReporter(scanCtx, params, s.ingestC, rh)
 
 	ScanMap.Store(params.ScanId, scanCtx)
 
 	defer func() {
 		log.Info().Msgf("Removing from scan map, scan_id: %s", params.ScanId)
 		ScanMap.Delete(params.ScanId)
+
+		if scanCtx.Aborted.Load() {
+			log.Info().Msgf("%s, scanid: %s",
+				secretScan.AbortError.Error(), scanCtx.ScanID)
+		} else if scanCtx.Stopped.Load() {
+			log.Info().Msgf("%s, scanid: %s",
+				secretScan.StopError.Error(), scanCtx.ScanID)
+		}
+
 		res <- hardErr
 		close(res)
 	}()
@@ -170,9 +179,13 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 		return nil
 	}
 
-	// init secret scan
+	if scanCtx.Aborted.Load() == true {
+		return nil
+	}
+
 	scanCtx.ScanStatusChan <- true
 
+	// init secret scan
 	scanResult, err := secretScan.ExtractAndScanFromTar(dir, imageName, scanCtx)
 	if err != nil {
 		log.Error().Msg(err.Error())
