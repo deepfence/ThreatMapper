@@ -160,15 +160,15 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 
 	worker.AddOneShotHandler(utils.ScheduledTasks, cronjobs.RunScheduledTasks)
 
-	worker.AddOneShotHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry)
+	worker.AddRetryableHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry)
 
-	worker.AddOneShotHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
+	worker.AddRetryableHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
 
 	worker.AddOneShotHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders)
 
 	worker.AddOneShotHandler(utils.SendNotificationTask, cronjobs.SendNotifications)
 
-	worker.AddOneShotHandler(utils.ReportGeneratorTask, reports.GenerateReport)
+	worker.AddRetryableHandler(utils.ReportGeneratorTask, reports.GenerateReport)
 
 	worker.AddOneShotHandler(utils.ReportCleanUpTask, cronjobs.CleanUpReports)
 
