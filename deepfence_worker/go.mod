@@ -79,11 +79,11 @@ require (
 	github.com/containerd/stargz-snapshotter/estargz v0.14.3 // indirect
 	github.com/containerd/ttrpc v1.2.2 // indirect
 	github.com/containerd/typeurl/v2 v2.1.1 // indirect
-	github.com/cyphar/filepath-securejoin v0.2.3 // indirect
+	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230817093436-faaacc23dfd8 // indirect
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230817093436-faaacc23dfd8 // indirect
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230922050328-b19457df35dc // indirect
 	github.com/deepfence/vessel v0.11.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/cli v24.0.2+incompatible // indirect

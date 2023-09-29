@@ -34,7 +34,7 @@ cd ThreatMapper/deployment-scripts
 docker-compose -f docker-compose.yml up --detach
 ```
 
-Once started, you can point a web browser at `https://--IP-ADDRESS---/` to register a first user on the Deepfence Management Console.  See [Initial Configuration](/docs/console/initial-configuration) for more information.
+Once started, you can point a web browser at `https://--IP-ADDRESS---/` to register a first user on the Deepfence Management Console.  See [Initial Configuration](/docs/v1.5/console/initial-configuration) for more information.
 
 To stop the Deepfence Management Console:
 
