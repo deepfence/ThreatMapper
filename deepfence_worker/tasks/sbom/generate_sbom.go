@@ -9,12 +9,14 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
+	"github.com/deepfence/golang_deepfence_sdk/utils/tasks"
 	"github.com/deepfence/package-scanner/sbom/syft"
 	psUtils "github.com/deepfence/package-scanner/utils"
 	"github.com/hibiken/asynq"
@@ -63,7 +65,10 @@ func StopVulnerabilityScan(ctx context.Context, task *asynq.Task) error {
 func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error {
 	defer cronjobs.ScanWorkloadAllocator.Free()
 
-	var params utils.SbomParameters
+	var (
+		params utils.SbomParameters
+		err    error
+	)
 
 	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
@@ -79,6 +84,35 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
+	res, scanCtx := tasks.StartStatusReporter(params.ScanId,
+		func(status tasks.ScanStatus) error {
+			sb, err := json.Marshal(status)
+			if err != nil {
+				return err
+			}
+			s.ingestC <- &kgo.Record{
+				Topic:   utils.VULNERABILITY_SCAN_STATUS,
+				Value:   sb,
+				Headers: rh,
+			}
+			return nil
+		}, tasks.StatusValues{
+			IN_PROGRESS: utils.SCAN_STATUS_INPROGRESS,
+			CANCELLED:   utils.SCAN_STATUS_CANCELLED,
+			FAILED:      utils.SCAN_STATUS_FAILED,
+			SUCCESS:     utils.SCAN_STATUS_SUCCESS,
+		},
+		time.Minute*20,
+	)
+	log.Info().Msgf("Adding scanid to map:%s", params.ScanId)
+	scanMap.Store(params.ScanId, scanCtx)
+	defer func() {
+		log.Info().Msgf("Removing scaind from map:%s", params.ScanId)
+		scanMap.Delete(params.ScanId)
+		res <- err
+		close(res)
+	}()
+
 	worker, err := directory.Worker(ctx)
 	if err != nil {
 		return err
@@ -87,42 +121,19 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 	log.Info().Msgf("payload: %s ", string(task.Payload()))
 
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {
-		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
-		return nil
+		return err
 	}
 
 	if params.RegistryId == "" {
 		log.Error().Msgf("registry id is empty in params %+v", params)
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED,
-			"registry id is empty in params", nil), rh)
-		return nil
+		return err
 	}
-
-	statusChan := make(chan SbomScanStatus)
-	var wg sync.WaitGroup
-	wg.Add(1)
-	StartStatusReporter("SBOM_GENERATION", statusChan, s.ingestC, rh, params, &wg)
-	defer wg.Wait()
-
-	// send inprogress status
-	statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil)
 
 	// get registry credentials
 	authFile, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
-		return nil
+		return err
 	}
-
-	log.Info().Msgf("Adding scanid to map:%s", params.ScanId)
-	ctxSbom, cancel := context.WithCancel(context.Background())
-	scanMap.Store(params.ScanId, cancel)
-	defer func(scanId string) {
-		log.Info().Msgf("Removing scaind from map:%s", scanId)
-		scanMap.Delete(scanId)
-	}(params.ScanId)
 
 	defer func() {
 		log.Info().Msgf("remove auth directory %s", authFile)
@@ -164,18 +175,11 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 
 	log.Debug().Msgf("config: %+v", cfg)
 
-	statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil)
+	scanCtx.Checkpoint("Before generating SBOM")
 
-	rawSbom, err := syft.GenerateSBOM(ctxSbom, cfg)
+	rawSbom, err := syft.GenerateSBOM(scanCtx.Context, cfg)
 	if err != nil {
-		if ctxSbom.Err() == context.Canceled {
-			log.Error().Msgf("Stopping GenerateSBOM as per user request, scanID:%s", params.ScanId)
-			statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_CANCELLED, err.Error(), nil)
-		} else {
-			log.Error().Msg(err.Error())
-			statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
-		}
-		return nil
+		return err
 	}
 
 	gzpb64Sbom := bytes.Buffer{}
@@ -183,17 +187,17 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 	_, err = gzipwriter.Write(rawSbom)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
-		return nil
+		return err
 	}
 	gzipwriter.Close()
+
+	scanCtx.Checkpoint("Before storing to minio")
 
 	// upload sbom to minio
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
-		return nil
+		return err
 	}
 
 	sbomFile := path.Join("/sbom/", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
@@ -228,16 +232,13 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 
 		if logError == true {
 			log.Error().Msg(err.Error())
-			statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
-			return nil
+			return err
 		}
 	}
 
 	log.Info().Msgf("sbom file uploaded %+v", info)
 
 	// write sbom to minio and return details another task will scan sbom
-
-	statusChan <- NewSbomScanStatus(params, SBOM_GENERATED, "", nil)
 
 	params.SBOMFilePath = sbomFile
 
