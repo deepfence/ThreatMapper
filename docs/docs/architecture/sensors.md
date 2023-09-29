@@ -14,5 +14,5 @@ The sensors support the following production platforms:
 * **AWS Fargate** The sensor is deployed as a daemon service alongside each serverless instance.
 
 :::info
-Refer to the Installation Documentation to [Learn how to install Sensor Agents](/docs/sensors)
+Refer to the Installation Documentation to [Learn how to install Sensor Agents](/docs/v2.0/sensors)
 :::

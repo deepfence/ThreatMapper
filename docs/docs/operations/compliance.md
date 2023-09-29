@@ -38,7 +38,7 @@ The benchmarks available vary by cloud provider:
 
 Begin on the **Posture** page in the ThreatMapper console.
 
-Select a cloud instance that you have [configured previously](/docs/cloudscanner/).  You may have several instances of a given cloud type:
+Select a cloud instance that you have [configured previously](/docs/v2.0/cloudscanner/).  You may have several instances of a given cloud type:
 
 | ![Cloud Compliance Scan - Select](../img/compliance-scan-1.png) |
 |:---------------------------------------------------------------:|
@@ -48,7 +48,7 @@ Select a cloud instance that you have [configured previously](/docs/cloudscanner
 |:---------------------------------------------------------------:|
 |             Select target for Cloud Compliance Scan             |
 
-If you want to scan a host (Linux host or Kubernetes master or slave node), ensure that the [threatmapper sensor](/docs/sensors) is deployed on that host.
+If you want to scan a host (Linux host or Kubernetes master or slave node), ensure that the [threatmapper sensor](/docs/v2.0/sensors) is deployed on that host.
 
 Select the compliance benchmarks you wish to run on the target cloud instance or host:
 

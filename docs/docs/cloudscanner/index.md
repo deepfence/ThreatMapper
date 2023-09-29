@@ -10,7 +10,7 @@ The Cloud Scanner task interacts with the local cloud APIs under the instruction
 
 ## Before You Begin
 
-Review the architecture for compliance scanning, as described in [Architecture: Cloud Scanner task](/docs/architecture/cloudscanner).
+Review the architecture for compliance scanning, as described in [Architecture: Cloud Scanner task](/docs/v2.0/architecture/cloudscanner).
 
 
 ## Configuring Cloud Posture Management

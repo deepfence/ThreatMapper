@@ -70,7 +70,7 @@ Controls are grouped into **benchmarks**. Where multiple benchmarks are availabl
 
 When you run a compliance scan, you can select which benchmarks you wish to measure against, and ThreatMapper will then evaluate the appropriate controls and present the results, by benchmark, once the scan has completed.
 
-For full information, refer to [Operations: Compliance Scanning](/docs/operations/compliance).
+For full information, refer to [Operations: Compliance Scanning](/docs/v1.5/operations/compliance).
 
 :::tip Maximizing Coverage
 For maximum coverage, you can use both Cloud Scanner and local Sensor Agent compliance scans together. You could scan your GCP infrastructure using Cloud Scanner, and [scan selected VMs deployed within GCP](other) using the Sensor Agent.
