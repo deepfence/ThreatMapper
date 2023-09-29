@@ -197,11 +197,13 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 
 	// Delete old with no data
 	if _, err = session.Run(`
-		MATCH (n:Node)
+		MATCH (n:Node) <-[:HOSTS]- (cr:CloudRegion)
 		WHERE n.active = false
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
-		WITH n LIMIT 10000
+		WITH n, cr LIMIT 10000
+		SET cr.cr_shown = CASE WHEN n.kubernetes_cluster_id= "" or n.kubernetes_cluster_id is null THEN cr.cr_shown - 1 ELSE cr.cr_shown END,
+			cr.active = cr.cr_shown <> 0
 		DETACH DELETE n`,
 		map[string]interface{}{
 			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
@@ -416,6 +418,15 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		MERGE (cr) -[:HOSTS]-> (n)
 		WITH cr, n
 		WHERE n.is_shown = true
+		WITH cr, count(n) as cnt
+		SET cr.cr_shown = COALESCE(cr.cr_shown, 0) + cnt`,
+		map[string]interface{}{}, txConfig); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:Node) <-[:HOSTS]- (cr:CloudRegion)
+		WHERE n.active = true and (n.kubernetes_cluster_id= "" or n.kubernetes_cluster_id is null)
 		WITH cr, count(n) as cnt
 		SET cr.cr_shown = COALESCE(cr.cr_shown, 0) + cnt`,
 		map[string]interface{}{}, txConfig); err != nil {
