@@ -5,11 +5,11 @@
 [submodule "deepfence_agent/plugins/package-scanner"]
 	path = deepfence_agent/plugins/package-scanner
 	url = https://github.com/deepfence/package-scanner
-	branch = main
+	branch = cleanup-status
 [submodule "deepfence_agent/plugins/SecretScanner"]
 	path = deepfence_agent/plugins/SecretScanner
 	url = https://github.com/deepfence/SecretScanner
-	branch = main
+	branch = cleanup-status
 [submodule "deepfence_agent/plugins/compliance"]
 	path = deepfence_agent/plugins/compliance
 	url = https://github.com/deepfence/compliance
@@ -21,7 +21,7 @@
 [submodule "deepfence_agent/plugins/YaraHunter"]
 	path = deepfence_agent/plugins/YaraHunter
 	url = https://github.com/deepfence/YaraHunter.git
-	branch = main
+	branch = cleanup-status
 [submodule "deepfence_agent/plugins/yara-rules"]
 	path = deepfence_agent/plugins/yara-rules
 	url = https://github.com/deepfence/yara-rules
