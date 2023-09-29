@@ -357,9 +357,14 @@ func initializeKafka() error {
 }
 
 func initializeTelemetry() error {
+
+	telemetryHost := utils.GetEnvOrDefault("DEEPFENCE_TELEMETRY_HOST", "deepfence-telemetry")
+	telemetryPort := utils.GetEnvOrDefault("DEEPFENCE_TELEMETRY_PORT", "14268")
+	telemetryEndpoint := fmt.Sprintf("http://%s:%s/api/traces", telemetryHost, telemetryPort)
+
 	exp, err := jaeger.New(
 		jaeger.WithCollectorEndpoint(
-			jaeger.WithEndpoint("http://deepfence-telemetry:14268/api/traces"),
+			jaeger.WithEndpoint(telemetryEndpoint),
 		),
 	)
 	if err != nil {

@@ -569,7 +569,7 @@ func SHA256sum(data []byte) string {
 
 func GetEnvOrDefault(envVar string, defaultValue string) string {
 	envValue, has := os.LookupEnv(envVar)
-	if !has {
+	if !has || len(envValue) == 0 {
 		return defaultValue
 	}
 	return envValue
