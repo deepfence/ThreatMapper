@@ -29,14 +29,13 @@ import (
 )
 
 var (
+	attackVectorRegex   = regexp.MustCompile(`.*av:n.*`)
 	grypeConfig         = "/usr/local/bin/grype.yaml"
 	grypeBin            = "grype"
 	minioHost           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_HOST", "deepfence-file-server")
 	minioPort           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_PORT", "9000")
 	GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=http://%s:%s/database/database/vulnerability/listing.json", minioHost, minioPort)
 )
-
-var attackVectorRegex = regexp.MustCompile(`.*av:n.*`)
 
 type SbomParser struct {
 	ingestC chan *kgo.Record
