@@ -6,7 +6,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/render/detailed"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/lookup"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
@@ -90,10 +89,6 @@ func (d *OpenApiDocs) AddUserOperations() {
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {
-	type GraphResult struct {
-		Nodes detailed.NodeSummaries               `json:"nodes" required:"true"`
-		Edges detailed.TopologyConnectionSummaries `json:"edges" required:"true"`
-	}
 	d.AddOperation("getTopologyGraph", http.MethodPost, "/deepfence/graph/topology/",
 		"Get Topology Graph", "Retrieve the full topology graph associated with the account",
 		http.StatusOK, []string{tagTopology}, bearerToken, new(TopologyFilters), new(GraphResult))
@@ -113,6 +108,10 @@ func (d *OpenApiDocs) AddGraphOperations() {
 	d.AddOperation("getPodsTopologyGraph", http.MethodPost, "/deepfence/graph/topology/pods",
 		"Get Pods Topology Graph", "Retrieve the full topology graph associated with the account from Pods",
 		http.StatusOK, []string{tagTopology}, bearerToken, new(TopologyFilters), new(GraphResult))
+
+	d.AddOperation("getTopologyDelta", http.MethodPost, "/deepfence/graph/topology/delta",
+		"Get Topology Delta", "Retrieve addition or deletion toplogy deltas",
+		http.StatusOK, []string{tagTopology}, bearerToken, new(TopologyDeltaReq), new(TopologyDeltaResponse))
 
 	d.AddOperation("getThreatGraph", http.MethodPost, "/deepfence/graph/threat",
 		"Get Threat Graph", "Retrieve the full threat graph associated with the account",

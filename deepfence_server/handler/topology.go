@@ -8,11 +8,13 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/render/detailed"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
 	reporters_graph "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
 var (
@@ -87,12 +89,38 @@ func (h *Handler) GetTopologyPodsGraph(w http.ResponseWriter, req *http.Request)
 	})
 }
 
-func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, getGraph func(context.Context, reporters_graph.TopologyFilters, reporters_graph.TopologyReporter) (reporters_graph.RenderedGraph, error)) {
-
-	type GraphResult struct {
-		Nodes detailed.NodeSummaries               `json:"nodes" required:"true"`
-		Edges detailed.TopologyConnectionSummaries `json:"edges" required:"true"`
+func (h *Handler) GetTopologyDelta(w http.ResponseWriter, req *http.Request) {
+	defer req.Body.Close()
+	var deltaReq model.TopologyDeltaReq
+	err := httpext.DecodeJSON(req, httpext.NoQueryParams, MaxPostRequestSize, &deltaReq)
+	if err != nil {
+		log.Error().Msgf("Failed to DecodeJSON: %v", err)
+		h.respondError(err, w)
+		return
 	}
+
+	err = h.Validator.Struct(deltaReq)
+	if err != nil {
+		log.Error().Msgf("Failed to validate the request: %v", err)
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	ctx := req.Context()
+	delta, err := reporters_graph.GetTopologyDelta(ctx, deltaReq)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+
+	err = httpext.JSON(w, http.StatusOK, delta)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, getGraph func(context.Context, reporters_graph.TopologyFilters, reporters_graph.TopologyReporter) (reporters_graph.RenderedGraph, error)) {
 
 	ctx := req.Context()
 
@@ -134,7 +162,7 @@ func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, get
 
 	newTopo, newConnections := graphToSummaries(graph, filters.CloudFilter, filters.RegionFilter, filters.KubernetesFilter, filters.HostFilter)
 
-	respondWith(ctx, w, http.StatusOK, GraphResult{Nodes: newTopo, Edges: newConnections})
+	respondWith(ctx, w, http.StatusOK, model.GraphResult{Nodes: newTopo, Edges: newConnections})
 }
 
 func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, region_filter, kubernetes_filter, host_filter []string) (detailed.NodeSummaries, detailed.TopologyConnectionSummaries) {
