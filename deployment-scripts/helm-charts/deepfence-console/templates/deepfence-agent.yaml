@@ -2,25 +2,22 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: deepfence-agent
+  name: {{ include "deepfence-console.fullname" . }}-agent
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: agent
-    name: deepfence-agent
+    name: {{ include "deepfence-console.fullname" . }}-agent
 spec:
   selector:
     matchLabels:
       {{- include "deepfence-console.labels" . | nindent 6 }}
-      component: agent
-      name: deepfence-agent
+      name: {{ include "deepfence-console.fullname" . }}-agent
   updateStrategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
         {{- include "deepfence-console.labels" . | nindent 8 }}
-        component: agent
-        name: deepfence-agent
+        name: {{ include "deepfence-console.fullname" . }}-agent
     spec:
       hostPID: true
       hostNetwork: true
@@ -79,11 +76,11 @@ spec:
               memory: {{ .Values.console_agents.agent.resources.limits.memory }}
           env:
             - name: MGMT_CONSOLE_URL_INTERNAL
-              value: "deepfence-server"
+              value: {{ include "deepfence-console.fullname" . }}-server
             - name: MGMT_CONSOLE_PORT_INTERNAL
               value: "8081"
             - name: MGMT_CONSOLE_URL
-              value: "deepfence-router"
+              value: {{ include "deepfence-console.fullname" . }}-router
             - name: MGMT_CONSOLE_PORT
               value: "443"
             - name: "DEEPFENCE_KEY"

@@ -3,19 +3,17 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: deepfence-neo4j
+  name: {{ include "deepfence-console.fullname" . }}-neo4j
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: neo4j
-    name: deepfence-neo4j
+    name: {{ include "deepfence-console.fullname" . }}-neo4j
 spec:
   serviceName: deepfence-neo4j
   replicas: 1
   selector:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
-      component: neo4j
-      name: deepfence-neo4j
+      name: {{ include "deepfence-console.fullname" . }}-neo4j
   template:
     metadata:
       {{- with .Values.neo4j.podAnnotations }}
@@ -24,8 +22,7 @@ spec:
       {{- end }}
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
-        component: neo4j
-        name: deepfence-neo4j
+        name: {{ include "deepfence-console.fullname" . }}-neo4j
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
@@ -38,9 +35,9 @@ spec:
           imagePullPolicy: {{ .Values.neo4j.image.pullPolicy }}
           envFrom:
             - secretRef:
-                name: "deepfence-neo4j-secret"
+                name: {{ include "deepfence-console.fullname" . }}-neo4j-secret
             - configMapRef:
-                name: "deepfence-neo4j-config"
+                name: {{ include "deepfence-console.fullname" . }}-neo4j-config
           ports:
             - name: ui
               containerPort: 7474
@@ -95,11 +92,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: deepfence-neo4j
+  name: {{ include "deepfence-console.fullname" . }}-neo4j
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: neo4j
-    name: deepfence-neo4j
+    name: {{ include "deepfence-console.fullname" . }}-neo4j
 spec:
   type: ClusterIP
   ports:
@@ -113,6 +109,5 @@ spec:
       protocol: TCP
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
-    component: neo4j
-    name: deepfence-neo4j
+    name: {{ include "deepfence-console.fullname" . }}-neo4j
 {{- end }}

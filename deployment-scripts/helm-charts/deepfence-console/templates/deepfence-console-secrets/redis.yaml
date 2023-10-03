@@ -1,10 +1,10 @@
 {{- if .Values.redis.create }}
 ---
-kind: Secret
 apiVersion: v1
+kind: Secret
 type: Opaque
 metadata:
-  name: "deepfence-console-secrets-redis"
+  name: {{ include "deepfence-console.fullname" . }}-secrets-redis
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: redis

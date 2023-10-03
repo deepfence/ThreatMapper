@@ -44,7 +44,9 @@ kafka:
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.0.0
-  storageUUID: hNQ55qppT5GGybF52ZGlOQ
+  config:
+    # required recomended to generate new UUID using kafka-storage tool
+    STORAGE_UUID: hNQ55qppT5GGybF52ZGlOQ
   storageClass: ""
   volumeSize: 50G
   resources:
@@ -61,18 +63,17 @@ kafka:
   tolerations: []
   affinity: {}
 
-postgresql:
+postgres:
   # Specifies whether a postgres database instance should be created
   create: true
   # if create false provide name of the existing secret
-  # secret format refer templates/console-secrets/postgresql.yaml
+  # secret format refer templates/deepfence-console-secrets/postgres.yaml
   secretName: ""
   # if create true then below values are used to create postgres database instance
   secrets:
     POSTGRES_PASSWORD: deepfence
     POSTGRES_USER: deepfence
     POSTGRES_DB: users
-  replicaCount: 1
   image:
     repository: deepfenceio/deepfence_postgres_ce
     pullPolicy: Always

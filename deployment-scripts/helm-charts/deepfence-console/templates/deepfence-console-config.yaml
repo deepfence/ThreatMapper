@@ -2,15 +2,16 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: "deepfence-console-config"
+  name: "{{ include "deepfence-console.fullname" . }}-config"
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
+    name: "{{ include "deepfence-console.fullname" . }}-config"
 data:
   DEEPFENCE_DEBUG: "false"
   DEEPFENCE_SAAS_DEPLOYMENT: "false"
-  UI_SERVICE_NAME: "deepfence-ui"
+  UI_SERVICE_NAME: {{ include "deepfence-console.fullname" . }}-ui
   UI_SERVICE_PORT: {{ .Values.ui.service.port | quote }}
-  API_SERVICE_HOST: "deepfence-server"
+  API_SERVICE_HOST: {{ include "deepfence-console.fullname" . }}-server
   API_SERVICE_PORT: {{ .Values.server.service.port | quote }}
-  FILE_SERVER_HOST: "deepfence-file-server"
+  FILE_SERVER_HOST: {{ include "deepfence-console.fullname" . }}-file-server
   FILE_SERVER_PORT: "9000"

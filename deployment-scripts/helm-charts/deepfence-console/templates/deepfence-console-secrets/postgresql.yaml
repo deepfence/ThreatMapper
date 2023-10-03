@@ -1,18 +1,18 @@
-{{- if .Values.postgresql.create }}
+{{- if .Values.postgres.create }}
 ---
-kind: Secret
 apiVersion: v1
+kind: Secret
 type: Opaque
 metadata:
-  name: "deepfence-console-secrets-postgresql"
+  name: {{ include "deepfence-console.fullname" . }}-secrets-postgres
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: postgresql
+    name: {{ include "deepfence-console.fullname" . }}-secrets-postgres
 stringData:
   DEEPFENCE_POSTGRES_USER_DB_PORT: "5432"
-  DEEPFENCE_POSTGRES_USER_DB_HOST: deepfence-postgresql
+  DEEPFENCE_POSTGRES_USER_DB_HOST: deepfence-postgres
   DEEPFENCE_POSTGRES_USER_DB_SSLMODE: disable
-  DEEPFENCE_POSTGRES_USER_DB_USER: {{ .Values.postgresql.secrets.POSTGRES_USER | quote }}
-  DEEPFENCE_POSTGRES_USER_DB_PASSWORD: {{ .Values.postgresql.secrets.POSTGRES_PASSWORD | quote }}
-  DEEPFENCE_POSTGRES_USER_DB_NAME: {{ .Values.postgresql.secrets.POSTGRES_DB | quote }}
+  DEEPFENCE_POSTGRES_USER_DB_USER: {{ .Values.postgres.secrets.POSTGRES_USER | quote }}
+  DEEPFENCE_POSTGRES_USER_DB_PASSWORD: {{ .Values.postgres.secrets.POSTGRES_PASSWORD | quote }}
+  DEEPFENCE_POSTGRES_USER_DB_NAME: {{ .Values.postgres.secrets.POSTGRES_DB | quote }}
 {{- end }}

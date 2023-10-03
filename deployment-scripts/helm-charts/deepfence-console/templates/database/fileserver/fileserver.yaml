@@ -3,19 +3,17 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: deepfence-file-server
+  name: {{ include "deepfence-console.fullname" . }}-file-server
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: fileserver
-    name: deepfence-file-server
+    name: {{ include "deepfence-console.fullname" . }}-file-server
 spec:
   serviceName: deepfence-file-server
   replicas: 1
   selector:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
-      component: fileserver
-      name: deepfence-file-server
+      name: {{ include "deepfence-console.fullname" . }}-file-server
   template:
     metadata:
       {{- with .Values.fileserver.podAnnotations }}
@@ -24,8 +22,7 @@ spec:
       {{- end }}
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
-        component: fileserver
-        name: deepfence-file-server
+        name: {{ include "deepfence-console.fullname" . }}-file-server
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
@@ -38,7 +35,7 @@ spec:
           imagePullPolicy: {{ .Values.fileserver.image.pullPolicy }}
           envFrom:
             - secretRef:
-                name: "deepfence-file-server"
+                name: {{ include "deepfence-console.fullname" . }}-file-server-secret
           ports:
             - name: http
               containerPort: 9000
@@ -95,11 +92,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: deepfence-file-server
+  name: {{ include "deepfence-console.fullname" . }}-file-server
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: fileserver
-    name: deepfence-file-server
+    name: {{ include "deepfence-console.fullname" . }}-file-server
 spec:
   type: ClusterIP
   ports:
@@ -113,6 +109,5 @@ spec:
       protocol: TCP
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
-    component: fileserver
-    name: deepfence-file-server
+    name: {{ include "deepfence-console.fullname" . }}-file-server
 {{- end }}

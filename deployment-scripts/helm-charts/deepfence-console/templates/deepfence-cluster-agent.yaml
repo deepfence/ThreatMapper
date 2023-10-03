@@ -2,11 +2,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deepfence-cluster-agent
+  name: {{ include "deepfence-console.fullname" . }}-cluster-agent
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: cluster-agent
-    name: deepfence-cluster-agent
+    name: {{ include "deepfence-console.fullname" . }}-cluster-agent
 spec:
   replicas: 1
   revisionHistoryLimit: 2
@@ -15,14 +14,12 @@ spec:
   selector:
     matchLabels:
       {{- include "deepfence-console.labels" . | nindent 6 }}
-      component: cluster-agent
-      name: deepfence-cluster-agent
+      name: {{ include "deepfence-console.fullname" . }}-cluster-agent
   template:
     metadata:
       labels:
         {{- include "deepfence-console.labels" . | nindent 8 }}
-        component: cluster-agent
-        name: deepfence-cluster-agent
+        name: {{ include "deepfence-console.fullname" . }}-cluster-agent
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       automountServiceAccountToken: true
@@ -32,11 +29,11 @@ spec:
           imagePullPolicy: {{ .Values.console_agents.cluster_agent.image.pullPolicy }}
           env:
             - name: MGMT_CONSOLE_URL_INTERNAL
-              value: "deepfence-server"
+              value: {{ include "deepfence-console.fullname" . }}-server
             - name: MGMT_CONSOLE_PORT_INTERNAL
               value: "8081"
             - name: MGMT_CONSOLE_URL
-              value: "deepfence-router"
+              value: {{ include "deepfence-console.fullname" . }}-router
             - name: MGMT_CONSOLE_PORT
               value: "443"
             - name: "DEEPFENCE_KEY"
