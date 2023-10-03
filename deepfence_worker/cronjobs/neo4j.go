@@ -202,8 +202,8 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n, cr LIMIT 10000
-		SET cr.cr_shown = CASE WHEN n.kubernetes_cluster_id= "" or n.kubernetes_cluster_id is null THEN cr.cr_shown - 1 ELSE cr.cr_shown END,
-			cr.active = cr.cr_shown <> 0
+		SET cr.res_shown = CASE WHEN n.kubernetes_cluster_id= "" or n.kubernetes_cluster_id is null THEN cr.res_shown - 1 ELSE cr.res_shown END,
+			cr.active = cr.res_shown <> 0
 		DETACH DELETE n`,
 		map[string]interface{}{
 			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
@@ -334,8 +334,8 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n, cr LIMIT 10000
-		SET cr.cr_shown = CASE WHEN n.is_shown THEN cr.cr_shown - 1 ELSE cr.cr_shown END,
-			cr.active = cr.cr_shown <> 0
+		SET cr.res_shown = CASE WHEN n.is_shown THEN cr.res_shown - 1 ELSE cr.res_shown END,
+			cr.active = cr.res_shown <> 0
 		WITH n
 		DETACH DELETE n`,
 		map[string]interface{}{
@@ -419,7 +419,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		WITH cr, n
 		WHERE n.is_shown = true
 		WITH cr, count(n) as cnt
-		SET cr.cr_shown = COALESCE(cr.cr_shown, 0) + cnt`,
+		SET cr.res_shown = COALESCE(cr.res_shown, 0) + cnt`,
 		map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}
@@ -428,15 +428,15 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		MATCH (n:Node) <-[:HOSTS]- (cr:CloudRegion)
 		WHERE n.active = true and (n.kubernetes_cluster_id= "" or n.kubernetes_cluster_id is null)
 		WITH cr, count(n) as cnt
-		SET cr.cr_shown = COALESCE(cr.cr_shown, 0) + cnt`,
+		SET cr.res_shown = COALESCE(cr.res_shown, 0) + cnt`,
 		map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}
 
 	if _, err = session.Run(`
 		MATCH (cr:CloudRegion)
-		WHERE NOT cr.cr_shown IS NULL
-		SET cr.active = cr.cr_shown <> 0`,
+		WHERE NOT cr.res_shown IS NULL
+		SET cr.active = cr.res_shown <> 0`,
 		map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}
