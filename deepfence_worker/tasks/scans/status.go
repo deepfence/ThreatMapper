@@ -44,7 +44,7 @@ func UpdatePodScanStatus(ctx context.Context, task *asynq.Task) error {
 		MATCH (s:` + string(event.ScanType) + `{node_id: row.scan_id})-[:SCANNED]->(c:Container)
 		WHERE c.pod_id IS NOT NULL
 		MATCH (n:Pod{node_id: c.pod_id})
-		SET n.` + ingestersUtil.ScanStatusField[event.ScanType] + `=row.scan_status`
+		SET n.` + ingestersUtil.ScanStatusField[event.ScanType] + `=s.scan_status`
 
 	log.Debug().Msgf("query: %v", query)
 	_, err = session.Run(query,

@@ -30,10 +30,10 @@ const isKubernetesProvider = (provider: string) => provider === 'kubernetes';
 const HeaderSkeleton = () => {
   return (
     <div className="flex items-center w-full relative">
-      <div className="dark:bg-bg-grid-border absolute -top-[34px] left-[12px] rounded-full">
-        <div className="w-[72px] h-[72px]"></div>
+      <div className="dark:bg-bg-grid-border absolute -top-[34px] left-[8px] rounded-full">
+        <div className="w-[64px] h-[64px]"></div>
       </div>
-      <div className="ml-[102px]">
+      <div className="ml-[100px]">
         <div className="h-4 w-20 bg-gray-200 dark:bg-bg-grid-border rounded"></div>
       </div>
     </div>
@@ -70,10 +70,10 @@ const CountSkeleton = () => {
     </div>
   );
 };
-const CardSkeleton = () => {
+const CardSkeleton = ({ count }: { count: number }) => {
   return (
     <>
-      {Array.from(Array(5).keys()).map((k) => (
+      {Array.from(Array(count).keys()).map((k) => (
         <Card
           className="p-2 animate-pulse items-center gap-2 dark:bg-bg-card min-w-[322px]"
           key={k}
@@ -278,7 +278,19 @@ const Posture = () => {
         </Breadcrumb>
       </div>
       <div className="mx-4 my-10 flex gap-x-4 flex-wrap gap-y-10">
-        <Suspense fallback={<CardSkeleton />}>
+        <Suspense
+          fallback={
+            <div className="flex flex-col gap-y-10">
+              <div className="flex gap-x-4">
+                <CardSkeleton count={3} />
+              </div>
+              <Separator className="dark:bg-bg-grid-border h-px w-full" />
+              <div className="mt-8 flex gap-x-4">
+                <CardSkeleton count={2} />
+              </div>
+            </div>
+          }
+        >
           <PostureCloudList />
           <Separator className="dark:bg-bg-grid-border h-px w-full" />
           <div className="mt-6 flex gap-x-4">

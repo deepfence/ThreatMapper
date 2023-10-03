@@ -4,14 +4,14 @@ title: Deploy Console
 
 # Deploy a custom ThreatMapper Console
 
-You should first [build the management console](build) and push the images to a suitable repository.  You can then adapt the standard installation instructions ([Docker](/docs/console/docker), [Kubernetes](/docs/console/kubernetes)) to refer to your custom images rather than the Deepfence-provided ones.
+You should first [build the management console](build) and push the images to a suitable repository.  You can then adapt the standard installation instructions ([Docker](/docs/v2.0/console/docker), [Kubernetes](/docs/v2.0/console/kubernetes)) to refer to your custom images rather than the Deepfence-provided ones.
 
 
 
 ## Installing and Running the Management Console on a Docker Host
 
 :::tip
-Refer to the [Docker Installation Instructions](/docs/console/docker) along with the modifications below.
+Refer to the [Docker Installation Instructions](/docs/v2.0/console/docker) along with the modifications below.
 :::
 
 1. Download the file [docker-compose.yml](https://github.com/deepfence/ThreatMapper/blob/release-2.0/deployment-scripts/docker-compose.yml) to the system that will host the Console
@@ -31,12 +31,12 @@ Refer to the [Docker Installation Instructions](/docs/console/docker) along with
 ## Installing and Running the Management Console in a Kubernetes Cluster
 
 :::tip
-Refer to the [Kubernetes Installation Instructions](/docs/console/kubernetes) along with the modifications below.
+Refer to the [Kubernetes Installation Instructions](/docs/v2.0/console/kubernetes) along with the modifications below.
 :::
 
 1. Prepare the cluster, installing the storage driver and metrics service
 
-    Follow the instructions to install the OpenEBS storage and metrics server: [Installation Instructions](/docs/console/kubernetes)
+    Follow the instructions to install the OpenEBS storage and metrics server: [Installation Instructions](/docs/v2.0/console/kubernetes)
 
 
 2. Install your Management Console

@@ -36,6 +36,7 @@ import {
 import { getScanResultsApiClient } from '@/api/api';
 import {
   ModelCloudCompliance,
+  ModelScanInfo,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
@@ -56,12 +57,15 @@ import { TaskIcon } from '@/components/icons/common/Task';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanHistoryDropdown } from '@/components/scan-history/HistoryList';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import {
   ScanStatusInError,
   ScanStatusInProgress,
   ScanStatusNoData,
+  ScanStatusStopped,
+  ScanStatusStopping,
 } from '@/components/ScanStatusMessage';
 import { PostureStatusBadge } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
@@ -83,7 +87,13 @@ import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
-import { isScanComplete, isScanFailed, isScanInProgress } from '@/utils/scan';
+import {
+  isScanComplete,
+  isScanFailed,
+  isScanInProgress,
+  isScanStopped,
+  isScanStopping,
+} from '@/utils/scan';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -562,9 +572,11 @@ const HistoryControls = () => {
   const { data, fetchStatus } = useScanResults();
   const { nodeType = '' } = useParams();
   const { scanStatusResult } = data;
-  const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
   const { navigate, goBack } = usePageNavigation();
   const { downloadScan } = useDownloadScan();
+
+  const [openStopScanModal, setOpenStopScanModal] = useState(false);
+  const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
 
   const [showScanCompareModal, setShowScanCompareModal] = useState<boolean>(false);
 
@@ -597,8 +609,8 @@ const HistoryControls = () => {
     refetch();
   }, [scan_id]);
 
-  if (!node_id || !node_type) {
-    throw new Error('Node Type and Node Id are required');
+  if (!node_id || !node_type || !scan_id) {
+    throw new Error('Scan id, Node type and Node id are required');
   }
 
   const onCompareScanClick = (baseScanTime: number) => {
@@ -610,7 +622,15 @@ const HistoryControls = () => {
   };
 
   return (
-    <>
+    <div className="flex items-center relative flex-grow">
+      {openStopScanModal && (
+        <StopScanForm
+          open={openStopScanModal}
+          closeModal={setOpenStopScanModal}
+          scanIds={[scan_id]}
+          scanType={ScanTypeEnum.CloudComplianceScan}
+        />
+      )}
       {compareInput.showScanTimeModal && (
         <CompareScanInputModal
           showDialog={true}
@@ -700,7 +720,7 @@ const HistoryControls = () => {
         )}
         <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
         <ScanStatusBadge status={status ?? ''} />
-        {!isScanInProgress(status ?? '') && (
+        {!isScanInProgress(status ?? '') ? (
           <>
             <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
             <div className="pl-1.5 flex">
@@ -753,9 +773,22 @@ const HistoryControls = () => {
               </>
             </div>
           </>
+        ) : (
+          <Button
+            type="button"
+            variant="flat"
+            size="sm"
+            className="absolute right-0 top-0"
+            onClick={(e) => {
+              e.preventDefault();
+              setOpenStopScanModal(true);
+            }}
+          >
+            Cancel scan
+          </Button>
         )}
       </div>
-    </>
+    </div>
   );
 };
 
@@ -1172,7 +1205,7 @@ const CloudPostureResults = () => {
 
   return (
     <div className="self-start">
-      <div className="mt-4 h-12 flex items-center">
+      <div className="h-12 flex items-center">
         <BulkActions
           ids={selectedIds}
           onTableAction={onTableAction}
@@ -1240,7 +1273,20 @@ const TablePlaceholder = ({
       </div>
     );
   }
-
+  if (isScanStopped(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center h-[384px]">
+        <ScanStatusStopped errorMessage={message ?? ''} />
+      </div>
+    );
+  }
+  if (isScanStopping(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center h-[384px]">
+        <ScanStatusStopping />
+      </div>
+    );
+  }
   if (isScanInProgress(scanStatus)) {
     return (
       <div className="flex items-center justify-center min-h-[384px]">
@@ -1540,6 +1586,59 @@ const StatusesCount = ({
   );
 };
 
+const ScanStatusWrapper = ({
+  children,
+  scanStatusResult,
+  displayNoData,
+  className,
+}: {
+  children: React.ReactNode;
+  className: string;
+  scanStatusResult: ModelScanInfo | undefined;
+  displayNoData?: boolean;
+}) => {
+  if (isScanFailed(scanStatusResult?.status ?? '')) {
+    return (
+      <div className={className}>
+        <ScanStatusInError errorMessage={scanStatusResult?.status_message ?? ''} />
+      </div>
+    );
+  }
+
+  if (isScanStopped(scanStatusResult?.status ?? '')) {
+    return (
+      <div className={className}>
+        <ScanStatusStopped errorMessage={scanStatusResult?.status_message ?? ''} />
+      </div>
+    );
+  }
+
+  if (isScanStopping(scanStatusResult?.status ?? '')) {
+    return (
+      <div className={className}>
+        <ScanStatusStopping />
+      </div>
+    );
+  }
+
+  if (isScanInProgress(scanStatusResult?.status ?? '')) {
+    return (
+      <div className={className}>
+        <ScanStatusInProgress />
+      </div>
+    );
+  }
+  if (displayNoData) {
+    return (
+      <div className={className}>
+        <ScanStatusNoData />
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+};
+
 const SeverityCountWidget = () => {
   const {
     data: { data, scanStatusResult },
@@ -1556,23 +1655,14 @@ const SeverityCountWidget = () => {
 
   return (
     <div className="grid grid-cols-12 px-6 items-center">
-      {isScanFailed(scanStatusResult?.status ?? '') ? (
-        <div className="h-full col-span-4 flex items-center justify-center">
-          <ScanStatusInError errorMessage={scanStatusResult?.status_message ?? ''} />
+      <ScanStatusWrapper
+        scanStatusResult={scanStatusResult}
+        className="col-span-4 flex items-center justify-center min-h-[120px]"
+      >
+        <div className="col-span-2 h-[120px] w-[120px]">
+          <PostureScanResultsPieChart data={statusCounts} />
         </div>
-      ) : (
-        <>
-          {isScanInProgress(scanStatusResult?.status ?? '') ? (
-            <div className="h-full col-span-4 flex items-center justify-center">
-              <ScanStatusInProgress />
-            </div>
-          ) : (
-            <div className="col-span-2 h-[120px] w-[120px]">
-              <PostureScanResultsPieChart data={statusCounts} />
-            </div>
-          )}
-        </>
-      )}
+      </ScanStatusWrapper>
       {isScanComplete(scanStatusResult?.status ?? '') ? (
         <div className="col-span-2 dark:text-text-text-and-icon">
           <span className="text-p1">Total compliances</span>
@@ -1593,27 +1683,18 @@ const SeverityCountWidget = () => {
 
       <div className="w-px h-[60%] dark:bg-bg-grid-border" />
 
-      {isScanComplete(scanStatusResult?.status ?? '') ? (
-        <>
-          {keys(statusCounts).length === 0 ? (
-            <div className="col-span-6 flex items-center justify-center">
-              <ScanStatusNoData />
-            </div>
-          ) : (
-            <StatusesCount statusCounts={statusCounts} />
-          )}
-        </>
-      ) : (
-        <div className="col-span-6 flex items-center justify-center">
-          {isScanInProgress(scanStatusResult?.status ?? '') ? (
-            <ScanStatusInProgress />
-          ) : (
-            isScanFailed(scanStatusResult?.status ?? '') && (
-              <ScanStatusInError errorMessage={scanStatusResult?.status_message ?? ''} />
-            )
-          )}
-        </div>
-      )}
+      <ScanStatusWrapper
+        scanStatusResult={scanStatusResult}
+        className="col-span-6 flex items-center justify-center min-h-[120px]"
+      >
+        {keys(statusCounts).length === 0 ? (
+          <div className="col-span-6 flex items-center justify-center">
+            <ScanStatusNoData />
+          </div>
+        ) : (
+          <StatusesCount statusCounts={statusCounts} />
+        )}
+      </ScanStatusWrapper>
     </div>
   );
 };

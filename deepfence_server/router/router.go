@@ -206,7 +206,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			})
 
 			r.Route("/settings", func(r chi.Router) {
-				r.Get("/user-activity-log", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetAuditLogs))
+				r.Route("/user-audit-log", func(r chi.Router) {
+					r.Post("/", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetAuditLogs))
+					r.Get("/count", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetAuditLogsCount))
+				})
 				r.Route("/global-settings", func(r chi.Router) {
 					r.Get("/", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetGlobalSettings))
 					r.Patch("/{id}", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UpdateGlobalSettings))
@@ -245,6 +248,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/malwares", dfHandler.GetMalwares)
 				r.Post("/compliances", dfHandler.GetCompliances)
 				r.Post("/cloud-compliances", dfHandler.GetCloudCompliances)
+			})
+
+			r.Route("/complete", func(r chi.Router) {
+				r.Post("/process", dfHandler.CompleteProcessInfo)
 			})
 
 			r.Route("/search", func(r chi.Router) {

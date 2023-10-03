@@ -27,6 +27,7 @@ import { ScanTypeEnum } from '@/types/common';
 export interface ConfigureScanModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
   scanOptions?: { showAdvancedOptions: boolean } & (
     | {
         scanType: typeof ScanTypeEnum.VulnerabilityScan;
@@ -66,6 +67,7 @@ const Header = ({ title }: { title: string }) => {
 };
 export const ConfigureScanModal = ({
   open,
+  onSuccess,
   onOpenChange,
   scanOptions,
 }: ConfigureScanModalProps) => {
@@ -95,7 +97,10 @@ export const ConfigureScanModal = ({
             <VulnerabilityScanConfigureForm
               showAdvancedOptions={scanOptions.showAdvancedOptions}
               data={scanOptions.data}
-              onSuccess={() => onOpenChange(false)}
+              onSuccess={() => {
+                onOpenChange(false);
+                onSuccess?.();
+              }}
               onCancel={() => onOpenChange(false)}
             />
           )}
@@ -103,7 +108,10 @@ export const ConfigureScanModal = ({
             <SecretScanConfigureForm
               showAdvancedOptions={scanOptions.showAdvancedOptions}
               data={scanOptions.data}
-              onSuccess={() => onOpenChange(false)}
+              onSuccess={() => {
+                onOpenChange(false);
+                onSuccess?.();
+              }}
               onCancel={() => onOpenChange(false)}
             />
           )}
@@ -111,7 +119,10 @@ export const ConfigureScanModal = ({
             <MalwareScanConfigureForm
               showAdvancedOptions={scanOptions.showAdvancedOptions}
               data={scanOptions.data}
-              onSuccess={() => onOpenChange(false)}
+              onSuccess={() => {
+                onOpenChange(false);
+                onSuccess?.();
+              }}
               onCancel={() => onOpenChange(false)}
             />
           )}
@@ -120,7 +131,10 @@ export const ConfigureScanModal = ({
             <ComplianceScanConfigureForm
               showAdvancedOptions={scanOptions.showAdvancedOptions}
               data={scanOptions.data}
-              onSuccess={() => onOpenChange(false)}
+              onSuccess={() => {
+                onOpenChange(false);
+                onSuccess?.();
+              }}
               onCancel={() => onOpenChange(false)}
             />
           )}

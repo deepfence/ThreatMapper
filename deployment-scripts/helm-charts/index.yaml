@@ -12,6 +12,21 @@ entries:
     - deepfence-agent-2.0.0.tgz
     version: 2.0.0
   - apiVersion: v2
+    appVersion: 1.5.0
+    created: "2023-09-29T19:30:09.962553+05:30"
+    dependencies:
+    - condition: deployKubernetesScanner
+      name: deepfence-k8s-scanner
+      repository: https://deepfence-helm-charts.s3.amazonaws.com/deepfence-k8s-scanner
+      version: 0.1.0
+    description: Deepfence Agent - Helm chart for Kubernetes
+    digest: f302ab1bdd9fb3fa834178cd007c1404ee072aa75f0fc9e71ba1e51ea7a0c3b7
+    name: deepfence-agent
+    type: application
+    urls:
+    - deepfence-agent-1.5.0.tgz
+    version: 1.5.0
+  - apiVersion: v2
     appVersion: 1.4.2
     created: "2023-01-12T18:17:57.272773+05:30"
     dependencies:
@@ -197,6 +212,16 @@ entries:
     urls:
     - deepfence-console-2.0.0.tgz
     version: 2.0.0
+  - apiVersion: v2
+    appVersion: 1.5.0
+    created: "2023-09-29T19:30:09.965637+05:30"
+    description: Deepfence Console - Helm chart for Kubernetes
+    digest: 4816561b6d915ef038bf5a899c60a4b97570041a4e56c22c19bc4da16210993b
+    name: deepfence-console
+    type: application
+    urls:
+    - deepfence-console-1.5.2.tgz
+    version: 1.5.2
   - apiVersion: v2
     appVersion: 1.4.2
     created: "2023-01-12T18:17:57.277377+05:30"
@@ -389,6 +414,16 @@ entries:
     - deepfence-router-2.0.0.tgz
     version: 2.0.0
   - apiVersion: v2
+    appVersion: 1.5.0
+    created: "2023-09-29T19:30:09.966255+05:30"
+    description: Deepfence Router - Helm chart for Kubernetes
+    digest: f580b1ae2b425fa380271fa49d257a2186968efdb1406f1e9b0306bd441bfec4
+    name: deepfence-router
+    type: application
+    urls:
+    - deepfence-router-1.5.0.tgz
+    version: 1.5.0
+  - apiVersion: v2
     appVersion: 1.4.2
     created: "2023-01-12T18:17:57.278349+05:30"
     description: Deepfence Router - Helm chart for Kubernetes
@@ -488,4 +523,4 @@ entries:
     urls:
     - deepfence-router-1.0.0.tgz
     version: 1.0.0
-generated: "2023-09-19T22:47:44.415974+05:30"
+generated: "2023-09-29T19:30:09.961121+05:30"

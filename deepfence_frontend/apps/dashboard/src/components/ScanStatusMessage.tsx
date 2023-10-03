@@ -14,6 +14,17 @@ export const ScanStatusInProgress = () => {
   );
 };
 
+export const ScanStatusStopping = () => {
+  return (
+    <div className="flex items-center justify-center gap-x-2">
+      <CircleSpinner size="md" />
+      <span className="text-h3 font-medium dark:text-text-text-and-icon">
+        Scan cancelling
+      </span>
+    </div>
+  );
+};
+
 export const ScanStatusInError = ({ errorMessage }: { errorMessage: string }) => {
   return (
     <div className="flex items-center justify-center gap-x-2">
@@ -31,6 +42,28 @@ export const ScanStatusInError = ({ errorMessage }: { errorMessage: string }) =>
 
       <div className="flex flex-col text-h3 dark:text-text-text-and-icon">
         Scan failed
+      </div>
+    </div>
+  );
+};
+
+export const ScanStatusStopped = ({ errorMessage }: { errorMessage: string }) => {
+  return (
+    <div className="flex items-center justify-center gap-x-2">
+      {errorMessage ? (
+        <Tooltip content={errorMessage}>
+          <div className="w-6 h-6 dark:text-df-gray-500  rounded-full">
+            <ErrorStandardSolidIcon />
+          </div>
+        </Tooltip>
+      ) : (
+        <div className="w-6 h-6 dark:text-df-gray-500  rounded-full">
+          <ErrorStandardSolidIcon />
+        </div>
+      )}
+
+      <div className="flex flex-col text-h3 dark:text-text-text-and-icon">
+        Scan cancelled
       </div>
     </div>
   );

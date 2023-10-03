@@ -20,12 +20,14 @@ import type {
   ModelAddScheduledTaskRequest,
   ModelEmailConfigurationAdd,
   ModelEmailConfigurationResp,
+  ModelGetAuditLogsRequest,
   ModelMessageResponse,
   ModelSettingUpdateRequest,
   ModelSettingsResponse,
   ModelUpdateScheduledTaskRequest,
   PostgresqlDbGetAuditLogsRow,
   PostgresqlDbScheduler,
+  SearchSearchCountResp,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -38,6 +40,8 @@ import {
     ModelEmailConfigurationAddToJSON,
     ModelEmailConfigurationRespFromJSON,
     ModelEmailConfigurationRespToJSON,
+    ModelGetAuditLogsRequestFromJSON,
+    ModelGetAuditLogsRequestToJSON,
     ModelMessageResponseFromJSON,
     ModelMessageResponseToJSON,
     ModelSettingUpdateRequestFromJSON,
@@ -50,6 +54,8 @@ import {
     PostgresqlDbGetAuditLogsRowToJSON,
     PostgresqlDbSchedulerFromJSON,
     PostgresqlDbSchedulerToJSON,
+    SearchSearchCountRespFromJSON,
+    SearchSearchCountRespToJSON,
 } from '../models';
 
 export interface AddEmailConfigurationRequest {
@@ -62,6 +68,10 @@ export interface AddScheduledTaskRequest {
 
 export interface DeleteEmailConfigurationRequest {
     configId: string;
+}
+
+export interface GetUserAuditLogsRequest {
+    modelGetAuditLogsRequest?: ModelGetAuditLogsRequest;
 }
 
 export interface UpdateScheduledTaskRequest {
@@ -179,19 +189,35 @@ export interface SettingsApiInterface {
     getSettings(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSettingsResponse>>;
 
     /**
-     * Get activity logs for all users
-     * @summary Get activity logs
+     * Get audit logs for all users
+     * @summary Get user audit logs
+     * @param {ModelGetAuditLogsRequest} [modelGetAuditLogsRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SettingsApiInterface
      */
-    getUserActivityLogsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PostgresqlDbGetAuditLogsRow>>>;
+    getUserAuditLogsRaw(requestParameters: GetUserAuditLogsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PostgresqlDbGetAuditLogsRow>>>;
 
     /**
-     * Get activity logs for all users
-     * Get activity logs
+     * Get audit logs for all users
+     * Get user audit logs
      */
-    getUserActivityLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PostgresqlDbGetAuditLogsRow>>;
+    getUserAuditLogs(requestParameters: GetUserAuditLogsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PostgresqlDbGetAuditLogsRow>>;
+
+    /**
+     * Get user audit logs count
+     * @summary Get user audit logs count
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    getUserAuditLogsCountRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Get user audit logs count
+     * Get user audit logs count
+     */
+    getUserAuditLogsCount(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
      * Update scheduled task
@@ -475,10 +501,49 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
     }
 
     /**
-     * Get activity logs for all users
-     * Get activity logs
+     * Get audit logs for all users
+     * Get user audit logs
      */
-    async getUserActivityLogsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PostgresqlDbGetAuditLogsRow>>> {
+    async getUserAuditLogsRaw(requestParameters: GetUserAuditLogsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PostgresqlDbGetAuditLogsRow>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/settings/user-audit-log`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelGetAuditLogsRequestToJSON(requestParameters.modelGetAuditLogsRequest),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(PostgresqlDbGetAuditLogsRowFromJSON));
+    }
+
+    /**
+     * Get audit logs for all users
+     * Get user audit logs
+     */
+    async getUserAuditLogs(requestParameters: GetUserAuditLogsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PostgresqlDbGetAuditLogsRow>> {
+        const response = await this.getUserAuditLogsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get user audit logs count
+     * Get user audit logs count
+     */
+    async getUserAuditLogsCountRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -492,21 +557,21 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/settings/user-activity-log`,
+            path: `/deepfence/settings/user-audit-log/count`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(PostgresqlDbGetAuditLogsRowFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
     }
 
     /**
-     * Get activity logs for all users
-     * Get activity logs
+     * Get user audit logs count
+     * Get user audit logs count
      */
-    async getUserActivityLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PostgresqlDbGetAuditLogsRow>> {
-        const response = await this.getUserActivityLogsRaw(initOverrides);
+    async getUserAuditLogsCount(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.getUserAuditLogsCountRaw(initOverrides);
         return await response.value();
     }
 

@@ -110,6 +110,7 @@ models/ModelFiltersReq.ts
 models/ModelFiltersResult.ts
 models/ModelGenerateReportReq.ts
 models/ModelGenerateReportResp.ts
+models/ModelGetAuditLogsRequest.ts
 models/ModelHost.ts
 models/ModelImageStub.ts
 models/ModelInitAgentReq.ts

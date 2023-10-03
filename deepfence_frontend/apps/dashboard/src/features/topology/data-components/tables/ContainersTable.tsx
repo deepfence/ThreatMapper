@@ -122,8 +122,12 @@ const BulkActions = ({ nodeIds }: { nodeIds: string[] }) => {
                   showAdvancedOptions: nodeIds.length === 1,
                   scanType: ScanTypeEnum.VulnerabilityScan,
                   data: {
-                    nodeIds,
-                    nodeType: VulnerabilityScanNodeTypeEnum.container,
+                    nodes: nodeIds.map((nodeId) => {
+                      return {
+                        nodeId,
+                        nodeType: VulnerabilityScanNodeTypeEnum.container,
+                      };
+                    }),
                   },
                 });
               }}
@@ -138,8 +142,12 @@ const BulkActions = ({ nodeIds }: { nodeIds: string[] }) => {
                   showAdvancedOptions: nodeIds.length === 1,
                   scanType: ScanTypeEnum.SecretScan,
                   data: {
-                    nodeIds,
-                    nodeType: SecretScanNodeTypeEnum.container,
+                    nodes: nodeIds.map((nodeId) => {
+                      return {
+                        nodeId,
+                        nodeType: SecretScanNodeTypeEnum.container,
+                      };
+                    }),
                   },
                 });
               }}
@@ -154,8 +162,12 @@ const BulkActions = ({ nodeIds }: { nodeIds: string[] }) => {
                   showAdvancedOptions: nodeIds.length === 1,
                   scanType: ScanTypeEnum.MalwareScan,
                   data: {
-                    nodeIds,
-                    nodeType: MalwareScanNodeTypeEnum.container,
+                    nodes: nodeIds.map((nodeId) => {
+                      return {
+                        nodeId,
+                        nodeType: MalwareScanNodeTypeEnum.container,
+                      };
+                    }),
                   },
                 });
               }}

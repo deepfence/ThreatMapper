@@ -19,6 +19,7 @@ import { PostureStatusBadge } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { queries } from '@/queries';
 import { PostureSeverityType } from '@/types/common';
+import { formatMilliseconds } from '@/utils/date';
 import { replacebyUppercaseCharacters } from '@/utils/label';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -30,6 +31,10 @@ function useGetComplianceDetails() {
     }),
   });
 }
+const timeFormatKey = {
+  updated_at: 'updated_at',
+};
+
 const Header = () => {
   const {
     data: { data: cloudPostures },
@@ -169,7 +174,7 @@ const DetailsComponent = () => {
                 <CopyField value={valueAsStr} />
               </div>
               <div className="text-p1 dark:text-text-input-value break-words">
-                {valueAsStr}
+                {key in timeFormatKey ? formatMilliseconds(+valueAsStr) : valueAsStr}
               </div>
             </div>
           );

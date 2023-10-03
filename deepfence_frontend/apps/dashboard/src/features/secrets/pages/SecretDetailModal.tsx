@@ -18,6 +18,7 @@ import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { queries } from '@/queries';
+import { formatMilliseconds } from '@/utils/date';
 import { replacebyUppercaseCharacters } from '@/utils/label';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -29,6 +30,10 @@ function useGetSecretDetails() {
     }),
   });
 }
+
+const timeFormatKey = {
+  updated_at: 'updated_at',
+};
 
 const Header = () => {
   const {
@@ -161,7 +166,7 @@ const DetailsComponent = () => {
                 <CopyField value={valueAsStr} />
               </div>
               <div className="text-p1 dark:text-text-input-value break-words">
-                {valueAsStr}
+                {key in timeFormatKey ? formatMilliseconds(+valueAsStr) : valueAsStr}
               </div>
             </div>
           );

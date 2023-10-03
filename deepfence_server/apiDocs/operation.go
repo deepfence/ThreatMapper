@@ -6,6 +6,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/model"
+	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/completion"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/lookup"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
@@ -734,9 +735,12 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 	d.AddOperation("updateSetting", http.MethodPatch, "/deepfence/settings/global-settings/{id}",
 		"Update setting", "Update setting",
 		http.StatusNoContent, []string{tagSettings}, bearerToken, new(SettingUpdateRequest), nil)
-	d.AddOperation("getUserActivityLogs", http.MethodGet, "/deepfence/settings/user-activity-log",
-		"Get activity logs", "Get activity logs for all users",
-		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]postgresqldb.GetAuditLogsRow))
+	d.AddOperation("getUserAuditLogs", http.MethodPost, "/deepfence/settings/user-audit-log",
+		"Get user audit logs", "Get audit logs for all users",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(GetAuditLogsRequest), new([]postgresqldb.GetAuditLogsRow))
+	d.AddOperation("getUserAuditLogsCount", http.MethodGet, "/deepfence/settings/user-audit-log/count",
+		"Get user audit logs count", "Get user audit logs count",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(SearchCountResp))
 
 	// Scheduled tasks
 	d.AddOperation("getScheduledTasks", http.MethodGet, "/deepfence/scheduled-task",
@@ -771,4 +775,10 @@ func (d *OpenApiDocs) AddDiffAddOperations() {
 	d.AddOperation("diffAddCloudCompliance", http.MethodPost, "/deepfence/diff-add/cloud-compliance",
 		"Get Cloud Compliance Diff", "Get Cloud Compliance Diff between two scans",
 		http.StatusOK, []string{tagDiffAdd}, bearerToken, new(ScanCompareReq), new(ScanCompareResCloudCompliance))
+}
+
+func (d *OpenApiDocs) AddCompletionOperations() {
+	d.AddOperation("completeProcessInfo", http.MethodPost, "/deepfence/complete/process",
+		"Get Completion for process fields", "Complete process info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 }

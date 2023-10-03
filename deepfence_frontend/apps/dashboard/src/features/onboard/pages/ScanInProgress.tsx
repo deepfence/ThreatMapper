@@ -120,7 +120,7 @@ export const ScanInProgressError = () => {
         description={'An error has occurred, please retry.'}
       />
       <div className="flex flex-col items-center">
-        <span className="w-[70px] h-[70px]">
+        <span className="w-[70px] h-[70px] dark:text-status-error">
           <ErrorIcon />
         </span>
         <p className="text-p7 dark:text-status-error mt-4">
@@ -231,7 +231,7 @@ const ScanStatus = () => {
         ) : (
           <>
             {allScanFailed ? (
-              <span className="w-20 h-20">
+              <span className="w-20 h-20 dark:text-status-error">
                 <ErrorIcon />
               </span>
             ) : (
