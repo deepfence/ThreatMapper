@@ -5,11 +5,13 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"reflect"
 	"sort"
 	"strconv"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -1180,6 +1182,92 @@ func NewNeo4jCollector(ctx context.Context) (TopologyReporter, error) {
 	nc := &neo4jTopologyReporter{}
 
 	return nc, nil
+}
+
+func GetTopologyDelta(ctx context.Context,
+	deltaReq model.TopologyDeltaReq) (model.TopologyDeltaResponse, error) {
+
+	deltaResp := model.TopologyDeltaResponse{}
+	deltaResp.Additions = make([]model.NodeIdentifier, 0)
+	deltaResp.Deletions = make([]model.NodeIdentifier, 0)
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return deltaResp, err
+	}
+
+	session, err := driver.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return deltaResp, err
+	}
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return deltaResp, err
+	}
+	defer tx.Close()
+
+	processRecords := func(isAdd bool, query string) error {
+		r, err := tx.Run(query, map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+
+		records, err := r.Collect()
+		if err != nil {
+			return err
+		}
+
+		for _, record := range records {
+			nodeid := record.Values[0].(string)
+			nodeType := record.Values[1].(string)
+			if isAdd {
+				deltaResp.Additions = append(deltaResp.Additions,
+					model.NodeIdentifier{nodeid, nodeType})
+			} else {
+				deltaResp.Deletions = append(deltaResp.Deletions,
+					model.NodeIdentifier{nodeid, nodeType})
+			}
+		}
+
+		return nil
+	}
+
+	nodeTypeQueryStr := "("
+	for idx, entity := range deltaReq.EntityTypes {
+		nodeTypeQueryStr = nodeTypeQueryStr + "n:" + entity
+		if idx < (len(deltaReq.EntityTypes) - 1) {
+			nodeTypeQueryStr = nodeTypeQueryStr + " OR "
+		} else {
+			nodeTypeQueryStr = nodeTypeQueryStr + ")"
+		}
+	}
+
+	if deltaReq.Addition == true {
+		additionQuery := `MATCH (n) WHERE ` + nodeTypeQueryStr + `
+		AND n.active=true AND n.created_at >=%d 
+		RETURN n.node_id, n.node_type`
+
+		err = processRecords(true, fmt.Sprintf(additionQuery,
+			deltaReq.Timestamp))
+		if err != nil {
+			return deltaResp, err
+		}
+	}
+
+	if deltaReq.Deletion == true {
+		deletionQuery := `MATCH (n) WHERE ` + nodeTypeQueryStr + `
+        AND n.active=false AND n.updated_at >=%d
+        RETURN n.node_id, n.node_type`
+
+		err = processRecords(false, fmt.Sprintf(deletionQuery,
+			deltaReq.Timestamp))
+		if err != nil {
+			return deltaResp, err
+		}
+	}
+
+	return deltaResp, nil
 }
 
 func (ntp *neo4jTopologyReporter) Close() {

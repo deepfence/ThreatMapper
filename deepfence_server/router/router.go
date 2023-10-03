@@ -226,6 +226,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 					r.Post("/kubernetes", dfHandler.GetTopologyKubernetesGraph)
 					r.Post("/containers", dfHandler.GetTopologyContainersGraph)
 					r.Post("/pods", dfHandler.GetTopologyPodsGraph)
+					r.Post("/delta", dfHandler.GetTopologyDelta)
 				})
 				r.Route("/threat", func(r chi.Router) {
 					r.Post("/", dfHandler.GetThreatGraph)

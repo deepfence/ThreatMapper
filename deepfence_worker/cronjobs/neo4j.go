@@ -24,6 +24,7 @@ const (
 	dbCloudResourceCleanupTimeout          = time.Hour * 13
 	ecsTaskRunningStatus                   = "RUNNING"
 	ecsTaskPublicEnabledConfig             = "ENABLED"
+	dbDeletionTimeThreshold                = time.Hour
 )
 
 var (
@@ -104,7 +105,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		AND n.agent_running=true
 		AND n.active = true
 		WITH n LIMIT 10000
-		SET n.active=false`,
+		SET n.active=false, n.updated_at=TIMESTAMP()`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -116,7 +117,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		AND n.agent_running=false
 		AND n.active = true
 		WITH n LIMIT 10000
-		SET n.active=false`,
+		SET n.active=false, n.updated_at=TIMESTAMP()`,
 		map[string]interface{}{"time_ms": dbCloudResourceCleanupTimeout.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -129,7 +130,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		AND n.updated_at < TIMESTAMP()-$time_ms
 		AND n.active = true
 		WITH n LIMIT 10000
-		SET n.active=false`,
+		SET n.active=false, n.updated_at=TIMESTAMP()`,
 		map[string]interface{}{"time_ms": dbRegistryCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -143,7 +144,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		AND n.updated_at < TIMESTAMP()-$time_ms
 		AND n.active = true
 		WITH n LIMIT 10000
-		SET n.active=false`,
+		SET n.active=false, n.updated_at=TIMESTAMP()`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeoutBase.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -165,7 +166,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND n.active = true
 		WITH n LIMIT 10000
-		SET n.active=false`,
+		SET n.active=false, n.updated_at=TIMESTAMP()`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -177,7 +178,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		AND n.active = true
 		AND n.agent_running=true
 		WITH n LIMIT 10000
-		SET n.active=false`,
+		SET n.active=false, n.updated_at=TIMESTAMP()`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -189,7 +190,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		AND n.active = true
 		AND n.agent_running=false
 		WITH n LIMIT 10000
-		SET n.active=false`,
+		SET n.active=false, n.updated_at=TIMESTAMP()`,
 		map[string]interface{}{"time_ms": dbCloudResourceCleanupTimeout.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -199,13 +200,15 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	if _, err = session.Run(`
 		MATCH (n:Node)
 		WHERE n.active = false
-		AND NOT exists((n) <-[:SCANNED]-())
+		AND (NOT exists((n) <-[:SCANNED]-())
+		AND n.updated_at < TIMESTAMP() - $delete_threshold_ms)
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{
-			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
-			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+			"time_ms":             dbReportCleanUpTimeout.Milliseconds(),
+			"old_time_ms":         dbScannedResourceCleanUpTimeout.Milliseconds(),
+			"delete_threshold_ms": dbDeletionTimeThreshold.Milliseconds(),
 		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -214,12 +217,14 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	if _, err = session.Run(`
 		MATCH (n:ContainerImage)
 		WHERE n.active = false
-		AND (NOT exists((n) <-[:SCANNED]-())
+		AND ((NOT exists((n) <-[:SCANNED]-()) 
+		AND n.updated_at < TIMESTAMP() - $delete_threshold_ms)
 		OR n.updated_at < TIMESTAMP()-$old_time_ms)
 		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{
-			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+			"old_time_ms":         dbScannedResourceCleanUpTimeout.Milliseconds(),
+			"delete_threshold_ms": dbDeletionTimeThreshold.Milliseconds(),
 		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -228,12 +233,14 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	if _, err = session.Run(`
 		MATCH (n:Container)
 		WHERE n.active = false
-		AND (NOT exists((n) <-[:SCANNED]-())
+		AND ((NOT exists((n) <-[:SCANNED]-()) 
+		AND n.updated_at < TIMESTAMP() - $delete_threshold_ms) 
 		OR n.updated_at < TIMESTAMP()-$old_time_ms)
 		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{
-			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+			"old_time_ms":         dbScannedResourceCleanUpTimeout.Milliseconds(),
+			"delete_threshold_ms": dbDeletionTimeThreshold.Milliseconds(),
 		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err

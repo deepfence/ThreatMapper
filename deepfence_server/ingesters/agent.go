@@ -724,7 +724,10 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:Node{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true`,
+		ON CREATE SET n.created_at = TIMESTAMP(), n+= row, 
+		n.updated_at = TIMESTAMP(), n.active = true
+		ON MATCH SET n+= row, n.updated_at = TIMESTAMP(), 
+		n.active = true`,
 		map[string]interface{}{"batch": batches.Host_batch}); err != nil {
 		return err
 	}
@@ -732,7 +735,10 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:Container{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = row.docker_container_state <> "deleted"`,
+		ON CREATE SET n.created_at = TIMESTAMP(),n+= row, n.updated_at = TIMESTAMP(), 
+        n.active = row.docker_container_state <> "deleted"
+		ON MATCH SET n+= row, n.updated_at = TIMESTAMP(), 
+		n.active = row.docker_container_state <> "deleted"`,
 		map[string]interface{}{"batch": batches.Container_batch}); err != nil {
 		return err
 	}
@@ -795,7 +801,11 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:KubernetesCluster{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true, n.node_type = 'cluster'`,
+		ON CREATE SET n.created_at = TIMESTAMP(), 
+		n+= row, n.updated_at = TIMESTAMP(), n.active = true, 
+		n.node_type = 'cluster'
+		ON MATCH SET n+= row, n.updated_at = TIMESTAMP(), 
+		n.active = true, n.node_type = 'cluster'`,
 		map[string]interface{}{"batch": batches.Kubernetes_cluster_batch}); err != nil {
 		return err
 	}
@@ -803,7 +813,9 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:Pod{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true`,
+		ON CREATE SET n.created_at = TIMESTAMP(), n+= row, 
+		n.updated_at = TIMESTAMP(), n.active = true
+		ON MATCH SET n+= row, n.updated_at = TIMESTAMP(), n.active = true`,
 		map[string]interface{}{"batch": batches.Pod_batch}); err != nil {
 		return err
 	}
