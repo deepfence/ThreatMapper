@@ -217,8 +217,8 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	if _, err = session.Run(`
 		MATCH (n:ContainerImage)
 		WHERE n.active = false
-		AND ((NOT exists((n) <-[:SCANNED]-()) AND 
-		n.updated_at < TIMESTAMP() - $delete_threshold_ms)
+		AND ((NOT exists((n) <-[:SCANNED]-()) 
+		AND n.updated_at < TIMESTAMP() - $delete_threshold_ms)
 		OR n.updated_at < TIMESTAMP()-$old_time_ms)
 		WITH n LIMIT 10000
 		DETACH DELETE n`,
@@ -233,8 +233,8 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	if _, err = session.Run(`
 		MATCH (n:Container)
 		WHERE n.active = false
-		AND ((NOT exists((n) <-[:SCANNED]-()) AND 
-		n.updated_at < TIMESTAMP() - $delete_threshold_ms) 
+		AND ((NOT exists((n) <-[:SCANNED]-()) 
+		AND n.updated_at < TIMESTAMP() - $delete_threshold_ms) 
 		OR n.updated_at < TIMESTAMP()-$old_time_ms)
 		WITH n LIMIT 10000
 		DETACH DELETE n`,

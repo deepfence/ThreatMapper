@@ -1221,11 +1221,11 @@ func GetTopologyDelta(ctx context.Context,
 		for _, record := range records {
 			nodeid := record.Values[0].(string)
 			nodeType := record.Values[1].(string)
-			if isAdd == true {
+			if isAdd {
 				deltaResp.Additions = append(deltaResp.Additions,
 					model.NodeIdentifier{nodeid, nodeType})
 			} else {
-				deltaResp.Deletions = append(deltaResp.Additions,
+				deltaResp.Deletions = append(deltaResp.Deletions,
 					model.NodeIdentifier{nodeid, nodeType})
 			}
 		}
@@ -1243,14 +1243,13 @@ func GetTopologyDelta(ctx context.Context,
 		}
 	}
 
-	threshold := deltaReq.Timestamp + (30 * 1000)
 	if deltaReq.Addition == true {
 		additionQuery := `MATCH (n) WHERE ` + nodeTypeQueryStr + `
-		AND n.active=true AND n.created_at >=%d AND n.created_at < %d
+		AND n.active=true AND n.created_at >=%d 
 		RETURN n.node_id, n.node_type`
 
 		err = processRecords(true, fmt.Sprintf(additionQuery,
-			deltaReq.Timestamp, threshold))
+			deltaReq.Timestamp))
 		if err != nil {
 			return deltaResp, err
 		}
@@ -1258,11 +1257,11 @@ func GetTopologyDelta(ctx context.Context,
 
 	if deltaReq.Deletion == true {
 		deletionQuery := `MATCH (n) WHERE ` + nodeTypeQueryStr + `
-        AND n.active=false AND n.updated_at >=%d AND n.updated_at < %d
+        AND n.active=false AND n.updated_at >=%d
         RETURN n.node_id, n.node_type`
 
 		err = processRecords(false, fmt.Sprintf(deletionQuery,
-			deltaReq.Timestamp, threshold))
+			deltaReq.Timestamp))
 		if err != nil {
 			return deltaResp, err
 		}
