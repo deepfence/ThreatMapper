@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -28,15 +29,13 @@ import (
 )
 
 var (
-	grypeConfig = "/usr/local/bin/grype.yaml"
-	grypeBin    = "grype"
+	attackVectorRegex   = regexp.MustCompile(`.*av:n.*`)
+	grypeConfig         = "/usr/local/bin/grype.yaml"
+	grypeBin            = "grype"
+	minioHost           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_HOST", "deepfence-file-server")
+	minioPort           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_PORT", "9000")
+	GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=http://%s:%s/database/database/vulnerability/listing.json", minioHost, minioPort)
 )
-
-var attackVectorRegex *regexp.Regexp
-
-func init() {
-	attackVectorRegex = regexp.MustCompile(`.*av:n.*`)
-}
 
 type SbomParser struct {
 	ingestC chan *kgo.Record
@@ -164,9 +163,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	}()
 
 	log.Info().Msg("scanning sbom for vulnerabilities ...")
-	env := []string{
-		"GRYPE_DB_UPDATE_URL=http://deepfence-file-server:9000/database/database/vulnerability/listing.json",
-	}
+	env := []string{GRYPE_DB_UPDATE_URL}
 	vulnerabilities, err := grype.Scan(grypeBin, grypeConfig, sbomFilePath, &env)
 	if err != nil {
 		log.Error().Msgf("error: %s output: %s", err.Error(), string(vulnerabilities))
