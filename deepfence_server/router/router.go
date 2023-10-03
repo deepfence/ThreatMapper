@@ -252,6 +252,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 
 			r.Route("/complete", func(r chi.Router) {
 				r.Post("/process", dfHandler.CompleteProcessInfo)
+				r.Post("/vulnerability", dfHandler.CompleteVulnerabilityInfo)
 			})
 
 			r.Route("/search", func(r chi.Router) {
