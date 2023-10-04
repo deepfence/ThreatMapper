@@ -35,6 +35,18 @@ spec:
           env:
             - name: FORCE_HTTPS_REDIRECT
               value: "{{ .Values.router.forceHttpsRedirect }}"
+            - name: UI_SERVICE_NAME
+              value: {{ include "deepfence-console.fullname" . }}-ui
+            - name: UI_SERVICE_PORT
+              value: {{ .Values.ui.service.port | quote }}
+            - name: API_SERVICE_HOST
+              value: {{ include "deepfence-console.fullname" . }}-server
+            - name: API_SERVICE_PORT
+              value: {{ .Values.server.service.port | quote }}
+            - name: DEEPFENCE_MINIO_HOST
+              value: {{ include "deepfence-console.fullname" . }}-file-server
+            - name: DEEPFENCE_MINIO_PORT
+              value: "9000"
           envFrom:
             - configMapRef:
                 name: "{{ include "deepfence-console.fullname" . }}-config"
