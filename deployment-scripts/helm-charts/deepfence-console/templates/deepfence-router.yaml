@@ -50,7 +50,7 @@ spec:
               path: /
               port: https
               scheme: HTTPS
-            initialDelaySeconds: 120
+            initialDelaySeconds: 90
             periodSeconds: 30
             timeoutSeconds: 5
             failureThreshold: 5
@@ -60,9 +60,9 @@ spec:
               path: /
               port: https
               scheme: HTTPS
-            initialDelaySeconds: 120
-            periodSeconds: 20
-            timeoutSeconds: 10
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            timeoutSeconds: 5
             failureThreshold: 10
             successThreshold: 1
           volumeMounts:

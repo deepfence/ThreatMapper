@@ -8,7 +8,7 @@ metadata:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     name: {{ include "deepfence-console.fullname" . }}-postgres
 spec:
-  serviceName: deepfence-postgres
+  serviceName: {{ include "deepfence-console.fullname" . }}-postgres
   replicas: 1
   selector:
     matchLabels:

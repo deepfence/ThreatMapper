@@ -9,7 +9,7 @@ metadata:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: file-server
 stringData:
-  DEEPFENCE_MINIO_HOST: deepfence-file-server
+  DEEPFENCE_MINIO_HOST: {{ include "deepfence-console.fullname" . }}-file-server
   DEEPFENCE_MINIO_PORT: "9000"
   DEEPFENCE_MINIO_SECURE: "false"
   DEEPFENCE_MINIO_BUCKET: deepfence

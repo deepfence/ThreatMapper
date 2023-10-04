@@ -11,5 +11,5 @@ metadata:
 stringData:
   DEEPFENCE_REDIS_DB_NUMBER: "0"
   DEEPFENCE_REDIS_PORT: "6379"
-  DEEPFENCE_REDIS_HOST: deepfence-redis
+  DEEPFENCE_REDIS_HOST: {{ include "deepfence-console.fullname" . }}-redis
 {{- end }}

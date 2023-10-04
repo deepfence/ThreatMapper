@@ -8,7 +8,7 @@ metadata:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     name: {{ include "deepfence-console.fullname" . }}-file-server
 spec:
-  serviceName: deepfence-file-server
+  serviceName: {{ include "deepfence-console.fullname" . }}-file-server
   replicas: 1
   selector:
     matchLabels:
