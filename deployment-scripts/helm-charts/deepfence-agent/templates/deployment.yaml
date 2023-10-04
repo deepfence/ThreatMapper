@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deepfence-cluster-agent
-  namespace: {{ .Release.Namespace }}
+  name: {{ include "deepfence-agent.fullname" . }}-cluster
   labels:
-  {{- include "deepfence-cluster-agent.labels" . | nindent 4 }}
+    {{- include "deepfence-agent.labels" . | nindent 4 }}
+    name: {{ include "deepfence-agent.fullname" . }}-cluster
 spec:
   replicas: 1
   revisionHistoryLimit: 2
@@ -12,17 +12,20 @@ spec:
     type: RollingUpdate
   selector:
     matchLabels:
-  {{- include "deepfence-cluster-agent.selectorLabels" . | nindent 6 }}
+      {{- include "deepfence-agent.selectorLabels" . | nindent 6 }}
+      name: {{ include "deepfence-agent.fullname" . }}-cluster
   template:
     metadata:
       labels:
-    {{- include "deepfence-cluster-agent.selectorLabels" . | nindent 8 }}
+        {{- include "deepfence-agent.selectorLabels" . | nindent 8 }}
+        name: {{ include "deepfence-agent.fullname" . }}-cluster
     spec:
       hostNetwork: true
+      serviceAccountName: {{ include "deepfence-agent.serviceAccountName" . }}
       containers:
         - name: deepfence-cluster-agent
-          image: "{{ .Values.image.clusterAgentImageName }}:{{ .Values.image.clusterAgentImageTag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.cluster_agent.image.name }}:{{ default .Values.global.imageTag .Values.cluster_agent.image.tag }}"
+          imagePullPolicy: {{ .Values.cluster_agent.image.pullPolicy }}
           env:
             - name: MGMT_CONSOLE_URL
               value: "{{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}"
@@ -31,7 +34,7 @@ spec:
             - name: DEEPFENCE_KEY
               valueFrom:
                 secretKeyRef:
-                  name: "deepfence-key"
+                  name: {{ include "deepfence-agent.fullname" . }}-key
                   key: "deepfence-key"
             - name: DF_CLUSTER_NAME
               value: "{{ .Values.clusterName }}"
@@ -57,25 +60,16 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
           resources:
-            requests:
-              cpu: {{ .Values.clusterAgentResources.requests.cpu }}
-              memory: {{ .Values.clusterAgentResources.requests.memory }}
-            limits:
-              cpu: {{ .Values.clusterAgentResources.limits.cpu }}
-              memory: {{ .Values.clusterAgentResources.limits.memory }}
-      serviceAccountName: {{ .Values.serviceAccount.name }}
-      imagePullSecrets:
-        - name: {{ .Values.image.pullSecretName }}
-
-      {{- with .Values.clusterAgentNodeSelector }}
+            {{- toYaml .Values.cluster_agent.resources | nindent 12 }}
+      {{- with .Values.cluster_agent.nodeSelector }}
       nodeSelector:
       {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.clusterAgentAffinity }}
+      {{- with .Values.cluster_agent.affinity }}
       affinity:
       {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.clusterAgentTolerations }}
+      {{- with .Values.cluster_agent.tolerations }}
       tolerations:
       {{- toYaml . | nindent 8 }}
       {{- end }}

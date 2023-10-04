@@ -29,10 +29,15 @@ helm show values deepfence/deepfence-agent > deepfence_agent_values.yaml
 ```
 - (Optional) Edit values file and set docker hub username and password (if using your own registry)
 ```yaml
-registry:
-  name: "https://index.docker.io/v1/"
-  username: "<>"
-  password: "<>"
+imagePullSecret:
+  # Specifies whether a image pull secret should be created
+  create: true
+  registry: "https://index.docker.io/v1/"
+  username: ""
+  password: ""
+  # The name of the imagePullSecret to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
 ```
 - Set Deepfence management console ip address
 ```yaml
@@ -40,15 +45,10 @@ managementConsoleUrl: ""
 ```
 - Set image tag
 ```yaml
-image:
-  # deepfence agent runs as a daemonset in all nodes in the cluster
-  name: deepfenceio/deepfence_agent_ce
-  tag: 2.0.0
-  # cluster agent runs as a single pod
-  clusterAgentImageName: deepfenceio/deepfence_cluster_agent_ce
-  clusterAgentImageTag: 2.0.0
-  pullPolicy: Always
-  pullSecretName: deepfence-docker-secret
+global:
+  # this image tag is used every where for agents
+  # to override set tag at agents level
+  imageTag: 2.0.0
 ```
 - Set deepfence auth key
 Set authentication key when it is enabled in management console
@@ -99,5 +99,5 @@ kubectl get pods -n deepfence
 ### Delete
 
 ```bash
-helm delete deepfence-agent -n deepfence
+helm uninstall deepfence-agent -n deepfence
 ```
