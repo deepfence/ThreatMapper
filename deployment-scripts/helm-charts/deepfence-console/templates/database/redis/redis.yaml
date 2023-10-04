@@ -63,7 +63,7 @@ spec:
             {{- toYaml .Values.redis.resources | nindent 12 }}
           volumeMounts:
             - mountPath: /data
-              name: "redis-{{ .Release.Name }}"
+              name: "redis"
       {{- with .Values.redis.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -78,7 +78,7 @@ spec:
       {{- end }}
   volumeClaimTemplates:
     - metadata:
-        name: "redis-{{ .Release.Name }}"
+        name: "redis"
       spec:
         accessModes:
           - "ReadWriteOnce"

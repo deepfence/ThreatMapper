@@ -66,7 +66,7 @@ spec:
             {{- toYaml .Values.postgres.resources | nindent 12 }}
           volumeMounts:
             - mountPath: /data
-              name: "postgres-{{ .Release.Name }}"
+              name: "postgres"
       {{- with .Values.postgres.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -81,7 +81,7 @@ spec:
       {{- end }}
   volumeClaimTemplates:
     - metadata:
-        name: "postgres-{{ .Release.Name }}"
+        name: "postgres"
       spec:
         accessModes:
           - "ReadWriteOnce"

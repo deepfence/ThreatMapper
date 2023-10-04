@@ -58,13 +58,13 @@ spec:
           resources:
             {{- toYaml .Values.neo4j.resources | nindent 12 }}
           volumeMounts:
-            - name: "neo4j-{{ .Release.Name }}"
+            - name: "neo4j"
               mountPath: /data
-            - name: "neo4j-{{ .Release.Name }}"
+            - name: "neo4j"
               mountPath: /logs
-            - name: "neo4j-{{ .Release.Name }}"
+            - name: "neo4j"
               mountPath: /plugins
-            - name: "neo4j-{{ .Release.Name }}"
+            - name: "neo4j"
               mountPath: /backups
       {{- with .Values.neo4j.nodeSelector }}
       nodeSelector:
@@ -80,7 +80,7 @@ spec:
       {{- end }}
   volumeClaimTemplates:
     - metadata:
-        name: "neo4j-{{ .Release.Name }}"
+        name: "neo4j"
       spec:
         accessModes:
           - "ReadWriteOnce"

@@ -87,7 +87,7 @@ spec:
           resources:
             {{- toYaml .Values.kafka.resources | nindent 12 }}
           volumeMounts:
-          - name: "kafka-broker-{{ .Release.Name }}"
+          - name: "kafka-broker"
             mountPath: /data
       {{- with .Values.kafka.nodeSelector }}
       nodeSelector:
@@ -99,7 +99,7 @@ spec:
       {{- end }}
   volumeClaimTemplates:
     - metadata:
-        name: "kafka-broker-{{ .Release.Name }}"
+        name: "kafka-broker"
       spec:
         accessModes:
           - "ReadWriteOnce"

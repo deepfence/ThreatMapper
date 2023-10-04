@@ -65,7 +65,7 @@ spec:
             {{- toYaml .Values.fileserver.resources | nindent 12 }}
           volumeMounts:
             - mountPath: /data
-              name: "file-server-{{ .Release.Name }}"
+              name: "file-server"
       {{- with .Values.fileserver.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -80,7 +80,7 @@ spec:
       {{- end }}
   volumeClaimTemplates:
     - metadata:
-        name: "file-server-{{ .Release.Name }}"
+        name: "file-server"
       spec:
         accessModes:
           - "ReadWriteOnce"
