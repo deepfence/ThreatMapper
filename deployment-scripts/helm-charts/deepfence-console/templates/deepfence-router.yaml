@@ -38,36 +38,6 @@ spec:
           envFrom:
             - configMapRef:
                 name: "{{ include "deepfence-console.fullname" . }}-config"
-            - secretRef:
-                {{- if .Values.redis.create }}
-                name: "{{ include "deepfence-console.fullname" . }}-secrets-redis"
-                {{- else }}
-                name: {{ .Values.redis.secretName }}
-                {{- end }}
-            - secretRef:
-                {{- if .Values.fileserver.create }}
-                name: "{{ include "deepfence-console.fullname" . }}-secrets-fileserver"
-                {{- else }}
-                name: {{ .Values.minio.secretName }}
-                {{- end }}
-            - secretRef:
-                {{- if .Values.kafka.create }}
-                name: "{{ include "deepfence-console.fullname" . }}-secrets-kafka"
-                {{- else }}
-                name: {{ .Values.kafka.secretName }}
-                {{- end }}
-            - secretRef:
-                {{- if .Values.postgres.create }}
-                name: "{{ include "deepfence-console.fullname" . }}-secrets-postgres"
-                {{- else }}
-                name: {{ .Values.postgres.secretName }}
-                {{- end }}
-            - secretRef:
-                {{- if .Values.neo4j.create }}
-                name: "{{ include "deepfence-console.fullname" . }}-secrets-neo4j"
-                {{- else }}
-                name: {{ .Values.neo4j.secretName }}
-                {{- end }}
           ports:
             - name: http
               containerPort: 80
@@ -126,7 +96,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
 ---
-{{- if .Values.router.service.create }}
+{{- if or .Values.router.service.create .Values.ingress.enable }}
 apiVersion: v1
 kind: Service
 metadata:
