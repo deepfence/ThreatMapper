@@ -2,7 +2,6 @@ package completion
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -46,14 +45,14 @@ func FieldValueCompletion[T reporters.Cypherable](ctx context.Context, req Compl
 
 	if req.ScanID != "" {
 		query = `
-		MATCH (n{node_id: $scan_id}) -[:DETECTED]-> (m) -[:IS]-> (r:` + dummy.NodeType() + `) ` +
-			getWhereClause("r", req.FieldName, req.Completion) +
-			` RETURN DISTINCT r.` + req.FieldName
+		MATCH (n{node_id: $scan_id}) -[:DETECTED]-> (m) -[:IS]-> (r:` + dummy.NodeType() + `)
+		WHERE n.` + req.FieldName + ` =~ '^` + req.Completion + `.*'
+		RETURN DISTINCT r.` + req.FieldName
 	} else {
 		query = `
-		MATCH (n:` + dummy.NodeType() + `) ` +
-			getWhereClause("n", req.FieldName, req.Completion) +
-			` RETURN DISTINCT n.` + req.FieldName
+		MATCH (n:` + dummy.NodeType() + `) 
+		WHERE n.` + req.FieldName + ` =~ '^` + req.Completion + `.*'
+		RETURN DISTINCT n.` + req.FieldName
 	}
 
 	log.Info().Msgf("completion query: \n%v", query)
@@ -77,11 +76,4 @@ func FieldValueCompletion[T reporters.Cypherable](ctx context.Context, req Compl
 	}
 
 	return res, nil
-}
-
-func getWhereClause(n, fieldName, completion string) string {
-	if completion == "" {
-		return ""
-	}
-	return fmt.Sprintf("WHERE %s.%s =~ '^%s.*'", n, fieldName, completion)
 }
