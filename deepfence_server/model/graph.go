@@ -8,13 +8,16 @@ type GraphResult struct {
 }
 
 type TopologyDeltaReq struct {
-	Timestamp   int64    `json:"timestamp" required:"true" format:"int64"`
-	Addition    bool     `json:"addition" required:"true"`
-	Deletion    bool     `json:"deletion" required:"true"`
-	EntityTypes []string `json:"entity_types" required:"true"`
+	AdditionTimestamp int64    `json:"addition_timestamp" required:"true" format:"int64"`
+	DeletionTimestamp int64    `json:"deletion_timestamp" required:"true" format:"int64"`
+	Addition          bool     `json:"addition" required:"true"`
+	Deletion          bool     `json:"deletion" required:"true"`
+	EntityTypes       []string `json:"entity_types" required:"true"`
 }
 
 type TopologyDeltaResponse struct {
-	Additions []NodeIdentifier `json:"additons"`
-	Deletions []NodeIdentifier `json:"deletions"`
+	Additions         []NodeIdentifier `json:"additons"`
+	Deletions         []NodeIdentifier `json:"deletions"`
+	AdditionTimestamp int64            `json:"addition_timestamp" format:"int64"`
+	DeletionTimestamp int64            `json:"deletion_timestamp" format:"int64"`
 }
