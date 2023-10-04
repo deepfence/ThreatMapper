@@ -38,6 +38,8 @@ spec:
               value: "443"
             - name: "DEEPFENCE_KEY"
               value: "\"\""
+            - name: "DEEPFENCE_CONSOLE_AGENT"
+              value: "true"
             - name: DF_CLUSTER_NAME
               value: "{{ .Values.console_agents.cluster_name }}"
             - name: AGENT_HOSTNAME

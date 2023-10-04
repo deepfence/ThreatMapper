@@ -85,6 +85,8 @@ spec:
               value: "443"
             - name: "DEEPFENCE_KEY"
               value: "\"\""
+            - name: "DEEPFENCE_CONSOLE_AGENT"
+              value: "true"
             - name: USER_DEFINED_TAGS
               value: {{ .Values.console_agents.userDefinedTags }}
             - name: DF_ENABLE_PROCESS_REPORT
