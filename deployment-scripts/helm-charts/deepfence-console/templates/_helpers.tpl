@@ -34,6 +34,7 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "deepfence-console.labels" -}}
+app: deepfence-console
 helm.sh/chart: {{ include "deepfence-console.chart" . }}
 {{ include "deepfence-console.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
@@ -46,6 +47,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "deepfence-console.selectorLabels" -}}
+app: deepfence-console
 app.kubernetes.io/name: {{ include "deepfence-console.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

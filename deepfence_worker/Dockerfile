@@ -27,7 +27,7 @@ ENV DEEPFENCE_KAFKA_TOPIC_PARTITIONS=3 \
     DEEPFENCE_DEBUG=false \
     DEEPFENCE_MODE=worker \
     LD_LIBRARY_PATH=/usr/local/yara/lib \
-    GRYPE_DB_UPDATE_URL="http://deepfence-file-server:9000/database/database/vulnerability/listing.json"
+    GRYPE_DB_UPDATE_URL="http://${DEEPFENCE_MINIO_HOST}:${DEEPFENCE_MINIO_PORT}/database/database/vulnerability/listing.json"
 
 # RUN apk add --no-cache --update bash curl \
 #     && apk upgrade \

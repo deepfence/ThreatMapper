@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: deepfence-router-ingress
+  name: {{ include "deepfence-console.fullname" . }}-ingress
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -16,9 +16,13 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: deepfence-router
+              name: {{ include "deepfence-console.fullname" . }}-router
               port:
+                {{- if .Values.router.forceHttpsRedirect }}
                 number: {{ .Values.router.service.httpsPort }}
+                {{- else }}
+                number: {{ .Values.router.service.httpPort }}
+                {{- end }}
     {{- with .Values.ingress.host }}
     host: {{ . }}
     {{- end }}

@@ -1,32 +1,78 @@
-# Default values for deepfence.
+# Default values for deepfence-agent.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-registry:
-  name: "https://index.docker.io/v1/"
-  # Set docker hub username and password provided by Deepfence
-  # This will create a secret called "deepfence-docker-secret"
+nameOverride: ""
+fullnameOverride: ""
+
+global:
+  # this image tag is used every where for agents
+  # to override set tag at agents level
+  imageTag: 2.0.0
+
+imagePullSecret:
+  # Specifies whether a image pull secret should be created
+  create: false
+  registry: "https://index.docker.io/v1/"
   username: ""
   password: ""
-  # If kubernetes secret is already defined externally, change following value to false
-  # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-  createRegistrySecret: true
+  # The name of the imagePullSecret to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
 
-image:
-  # deepfence agent runs as a daemonset in all nodes in the cluster
-  name: deepfenceio/deepfence_agent_ce
-  tag: 2.0.0
-  # cluster agent runs as a single pod
-  clusterAgentImageName: deepfenceio/deepfence_cluster_agent_ce
-  clusterAgentImageTag: 2.0.0
-  pullPolicy: Always
-  pullSecretName: deepfence-docker-secret
+# deepfence agent runs as a daemonset in all nodes in the cluster
+agent:
+  image:
+    name: deepfenceio/deepfence_agent_ce
+    # tag: 2.0.0
+    pullPolicy: Always
+  affinity: {}
+  nodeSelector:
+    kubernetes.io/os: linux
+    # kubernetes.io/arch: amd64
+  tolerations:
+    - operator: "Exists"
+      effect: "NoSchedule"
+    - operator: "Exists"
+      effect: "NoExecute"
+  resources:
+    requests:
+      cpu: 150m
+      memory: 512Mi
+    limits:
+      cpu: 1500m
+      memory: 1536Mi
 
+# cluster agent runs as a single pod
+cluster_agent:
+  image:
+    name: deepfenceio/deepfence_cluster_agent_ce
+    # tag: 2.0.0
+    pullPolicy: Always
+  affinity: {}
+  nodeSelector:
+    kubernetes.io/os: linux
+    # kubernetes.io/arch: amd64
+  tolerations:
+    - operator: "Exists"
+      effect: "NoSchedule"
+    - operator: "Exists"
+      effect: "NoExecute"
+  resources:
+    requests:
+      cpu: 25m
+      memory: 80Mi
+    limits:
+      cpu: 1500m
+      memory: 1536Mi
+
+# required deepfence management console url and port
 managementConsoleUrl: ""
 managementConsolePort: "443"
 
 # Auth: Get deepfence api key from UI -> Settings -> User Management
 deepfenceKey: ""
+
 # If kubernetes secret is already defined externally, change following value to false
 createDeepfenceKeySecret: true
 
@@ -57,45 +103,12 @@ mountContainerRuntimeSocket:
   # Change if socket path is not the following
   crioSockPath: "/var/run/crio/crio.sock"
 
-resources:
-  requests:
-    cpu: 150m
-    memory: 512Mi
-  limits:
-    cpu: 1500m
-    memory: 1536Mi
-
-clusterAgentResources:
-  requests:
-    cpu: 25m
-    memory: 80Mi
-  limits:
-    cpu: 1500m
-    memory: 1536Mi
-
-nodeSelector: {"kubernetes.io/os": "linux"}
-# "kubernetes.io/arch": "amd64"
-clusterAgentNodeSelector: {"kubernetes.io/os": "linux"}
-
-tolerations:
-  - operator: "Exists"
-    effect: "NoSchedule"
-  - operator: "Exists"
-    effect: "NoExecute"
-
-clusterAgentTolerations:
-  - operator: "Exists"
-    effect: "NoSchedule"
-  - operator: "Exists"
-    effect: "NoExecute"
-
-affinity: {}
-clusterAgentAffinity: {}
 
 serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
   # Annotations to add to the service account
   annotations: {}
-  name: "deepfence-agent"
-
-nameOverride: ""
-fullnameOverride: ""
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""

@@ -1,14 +1,14 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: deepfence-agent
+  name: {{ include "deepfence-agent.fullname" . }}
   labels:
     {{- include "deepfence-agent.labels" . | nindent 4 }}
 roleRef:
   kind: ClusterRole
-  name: deepfence-agent
+  name: {{ include "deepfence-agent.fullname" . }}
   apiGroup: rbac.authorization.k8s.io
 subjects:
   - kind: ServiceAccount
-    name: {{ .Values.serviceAccount.name }}
+    name: {{ include "deepfence-agent.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}

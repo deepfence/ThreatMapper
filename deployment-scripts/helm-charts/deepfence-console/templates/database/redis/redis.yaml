@@ -3,19 +3,17 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: deepfence-redis
+  name: {{ include "deepfence-console.fullname" . }}-redis
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: redis
-    name: deepfence-redis
+    name: {{ include "deepfence-console.fullname" . }}-redis
 spec:
-  serviceName: deepfence-redis
+  serviceName: {{ include "deepfence-console.fullname" . }}-redis
   replicas: 1
   selector:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
-      component: redis
-      name: deepfence-redis
+      name: {{ include "deepfence-console.fullname" . }}-redis
   template:
     metadata:
       {{- with .Values.redis.podAnnotations }}
@@ -24,8 +22,7 @@ spec:
       {{- end }}
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
-        component: redis
-        name: deepfence-redis
+        name: {{ include "deepfence-console.fullname" . }}-redis
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
@@ -66,7 +63,7 @@ spec:
             {{- toYaml .Values.redis.resources | nindent 12 }}
           volumeMounts:
             - mountPath: /data
-              name: "redis-{{ .Release.Name }}"
+              name: "redis"
       {{- with .Values.redis.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -81,7 +78,7 @@ spec:
       {{- end }}
   volumeClaimTemplates:
     - metadata:
-        name: "redis-{{ .Release.Name }}"
+        name: "redis"
       spec:
         accessModes:
           - "ReadWriteOnce"
@@ -93,11 +90,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: deepfence-redis
+  name: {{ include "deepfence-console.fullname" . }}-redis
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: redis
-    name: deepfence-redis
+    name: {{ include "deepfence-console.fullname" . }}-redis
 spec:
   type: ClusterIP
   ports:
@@ -107,6 +103,5 @@ spec:
       name: tcp
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
-    component: redis
-    name: deepfence-redis
+    name: {{ include "deepfence-console.fullname" . }}-redis
 {{- end }}

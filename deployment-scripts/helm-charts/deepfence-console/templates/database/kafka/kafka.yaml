@@ -3,19 +3,17 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: deepfence-kafka-broker
+  name: {{ include "deepfence-console.fullname" . }}-kafka-broker
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: kafka-broker
-    name: deepfence-kafka-broker
+    name: {{ include "deepfence-console.fullname" . }}-kafka-broker
 spec:
-  serviceName: deepfence-kafka-broker
+  serviceName: {{ include "deepfence-console.fullname" . }}-kafka-broker
   replicas: {{ .Values.kafka.replicaCount }}
   selector:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
-      component: kafka-broker
-      name: deepfence-kafka-broker
+      name: {{ include "deepfence-console.fullname" . }}-kafka-broker
   template:
     metadata:
       {{- with .Values.kafka.podAnnotations }}
@@ -24,8 +22,7 @@ spec:
       {{- end }}
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
-        component: kafka-broker
-        name: deepfence-kafka-broker
+        name: {{ include "deepfence-console.fullname" . }}-kafka-broker
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
@@ -71,12 +68,12 @@ spec:
             - name: REPLICAS
               value: "{{ .Values.kafka.replicaCount }}"
             - name: SERVICE
-              value: deepfence-kafka-broker
+              value: {{ include "deepfence-console.fullname" . }}-kafka-broker
             - name: KAFKA_LOG_DIRS
               value: /data/kafka
           envFrom:
-            - secretRef:
-                name: "deepfence-kafka-broker"
+            - configMapRef:
+                name: {{ include "deepfence-console.fullname" . }}-kafka-broker-config
           livenessProbe:
             tcpSocket:
               port: 9092
@@ -90,7 +87,7 @@ spec:
           resources:
             {{- toYaml .Values.kafka.resources | nindent 12 }}
           volumeMounts:
-          - name: "kafka-broker-{{ .Release.Name }}"
+          - name: "kafka-broker"
             mountPath: /data
       {{- with .Values.kafka.nodeSelector }}
       nodeSelector:
@@ -102,7 +99,7 @@ spec:
       {{- end }}
   volumeClaimTemplates:
     - metadata:
-        name: "kafka-broker-{{ .Release.Name }}"
+        name: "kafka-broker"
       spec:
         accessModes:
           - "ReadWriteOnce"
@@ -114,18 +111,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: deepfence-kafka-broker
+  name: {{ include "deepfence-console.fullname" . }}-kafka-broker
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: kafka-broker
-    name: deepfence-kafka-broker
+    name: {{ include "deepfence-console.fullname" . }}-kafka-broker
 spec:
   type: ClusterIP
   clusterIP: None
   selector:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
-      component: kafka-broker
-      name: deepfence-kafka-broker
+      name: {{ include "deepfence-console.fullname" . }}-kafka-broker
   ports:
     - name: '9092'
       port: 9092
