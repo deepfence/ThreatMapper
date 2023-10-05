@@ -13,6 +13,7 @@ helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=40.40.40.40 \
     --set deepfenceKey="" \
     --set clusterName="prod-cluster" \
+    --set global.imageTag="2.0.0" \
     --namespace deepfence \
     --create-namespace
 ```

@@ -37,8 +37,7 @@ helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmap
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
     --set deepfenceKey=73f6f3d0-9931-4b31-8967-fd6adf475f80 \
-    --set image.tag=2.0.0 \
-    --set image.clusterAgentImageTag=2.0.0 \
+    --set global.imageTag=2.0.0 \
     --set clusterName="prod-cluster" \
     --set mountContainerRuntimeSocket.containerdSock=true \
     --set mountContainerRuntimeSocket.dockerSock=false \
