@@ -47,15 +47,15 @@ func FieldValueCompletion[T reporters.Cypherable](ctx context.Context, req Compl
 		query = `
 		MATCH (n{node_id: $scan_id}) -[:DETECTED]-> (m) -[:IS]-> (r:` + dummy.NodeType() + `)
 		WHERE r.` + req.FieldName + ` =~ '^` + req.Completion + `.*'
-		WITH r.` + req.FieldName + ` as ` + req.FieldName + `, r.node_id as node_id ORDER BY node_id
-		RETURN DISTINCT ` + req.FieldName +
+		RETURN DISTINCT r.` + req.FieldName + `
+		ORDER BY r.` + req.FieldName +
 			req.Window.FetchWindow2CypherQuery()
 	} else {
 		query = `
 		MATCH (n:` + dummy.NodeType() + `) 
 		WHERE n.` + req.FieldName + ` =~ '^` + req.Completion + `.*'
-		WITH n.` + req.FieldName + ` as ` + req.FieldName + `, n.node_id as node_id ORDER BY node_id
-		RETURN DISTINCT n.` + req.FieldName +
+		RETURN DISTINCT n.` + req.FieldName + `
+		ORDER BY n.` + req.FieldName +
 			req.Window.FetchWindow2CypherQuery()
 	}
 
