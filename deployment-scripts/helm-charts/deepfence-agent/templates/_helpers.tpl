@@ -55,7 +55,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Create secret to access docker registry
 */}}
 {{- define "imagePullSecret" }}
-{{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.registry.name (printf "%s:%s" .Values.registry.username .Values.registry.password | b64enc) | b64enc }}
+{{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.imagePullSecret.registry (printf "%s:%s" .Values.imagePullSecret.username .Values.imagePullSecret.password | b64enc) | b64enc }}
 {{- end }}
 
 {{/*

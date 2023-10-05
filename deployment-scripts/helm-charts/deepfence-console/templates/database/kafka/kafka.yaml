@@ -47,7 +47,7 @@ spec:
             privileged: true
           command:  ["/bin/chmod","-R","777", "/data"]
           volumeMounts:
-            - name: "kafka-broker-{{ .Release.Name }}"
+            - name: "kafka-broker"
               mountPath: /data
       containers:
         - name: kafka
