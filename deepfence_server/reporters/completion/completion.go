@@ -59,7 +59,7 @@ func FieldValueCompletion[T reporters.Cypherable](ctx context.Context, req Compl
 			req.Window.FetchWindow2CypherQuery()
 	}
 
-	log.Info().Msgf("completion query: \n%v", query)
+	log.Debug().Msgf("completion query: \n%v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{
 			"scan_id": req.ScanID,
