@@ -197,6 +197,7 @@ const ViewSwitcher = () => {
             ['dark:text-text-text-and-icon']: isGraphView,
             ['dark:text-accent-accent']: !isGraphView,
           })}
+          data-testid="tableViewId"
         >
           <div className="h-6 w-6 shrink-0" tabIndex={-1}>
             <TableIcon />

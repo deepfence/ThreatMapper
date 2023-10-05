@@ -111,6 +111,7 @@ export const RegisterUser = () => {
           type="submit"
           disabled={state !== 'idle' || !eulaAccepted}
           loading={state !== 'idle'}
+          data-testid="registerBtnId"
         >
           Register
         </Button>
