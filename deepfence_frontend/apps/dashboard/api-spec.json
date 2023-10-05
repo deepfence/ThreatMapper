@@ -378,6 +378,118 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/complete/process": {
+      "post": {
+        "tags": ["Completion"],
+        "summary": "Get Completion for process fields",
+        "description": "Complete process info",
+        "operationId": "completeProcessInfo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionCompletionNodeFieldReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletionCompletionNodeFieldRes"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/complete/vulnerability": {
+      "post": {
+        "tags": ["Completion"],
+        "summary": "Get Completion for vulnerability fields",
+        "description": "Complete vulnerability info",
+        "operationId": "completeVulnerabilityInfo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionCompletionNodeFieldReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletionCompletionNodeFieldRes"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/controls/agent": {
       "post": {
         "tags": ["Controls"],
@@ -1654,7 +1766,7 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsGraphResult" }
+                "schema": { "$ref": "#/components/schemas/ModelGraphResult" }
               }
             }
           },
@@ -1706,7 +1818,59 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsGraphResult" }
+                "schema": { "$ref": "#/components/schemas/ModelGraphResult" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/graph/topology/delta": {
+      "post": {
+        "tags": ["Topology"],
+        "summary": "Get Topology Delta",
+        "description": "Retrieve addition or deletion toplogy deltas",
+        "operationId": "getTopologyDelta",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelTopologyDeltaReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelTopologyDeltaResponse" }
               }
             }
           },
@@ -1758,7 +1922,7 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsGraphResult" }
+                "schema": { "$ref": "#/components/schemas/ModelGraphResult" }
               }
             }
           },
@@ -1810,7 +1974,7 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsGraphResult" }
+                "schema": { "$ref": "#/components/schemas/ModelGraphResult" }
               }
             }
           },
@@ -1862,7 +2026,7 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsGraphResult" }
+                "schema": { "$ref": "#/components/schemas/ModelGraphResult" }
               }
             }
           },
@@ -10162,12 +10326,25 @@
           "success": { "type": "boolean", "example": false }
         }
       },
-      "ApiDocsGraphResult": {
-        "required": ["nodes", "edges"],
+      "CompletionCompletionNodeFieldReq": {
+        "required": ["completion", "field_name", "window"],
         "type": "object",
         "properties": {
-          "edges": { "$ref": "#/components/schemas/DetailedTopologyConnectionSummaries" },
-          "nodes": { "$ref": "#/components/schemas/DetailedNodeSummaries" }
+          "completion": { "type": "string" },
+          "field_name": { "type": "string" },
+          "scan_id": { "type": "string" },
+          "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
+        }
+      },
+      "CompletionCompletionNodeFieldRes": {
+        "required": ["possible_values"],
+        "type": "object",
+        "properties": {
+          "possible_values": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          }
         }
       },
       "ControlsAction": {
@@ -10869,6 +11046,7 @@
           "cve_link": { "type": "string" },
           "cve_overall_score": { "type": "number" },
           "cve_severity": { "type": "string" },
+          "cve_type": { "type": "string" },
           "exploit_poc": { "type": "string" },
           "exploitability_score": { "type": "integer" },
           "has_live_connection": { "type": "boolean" },
@@ -11693,6 +11871,14 @@
         "required": ["window"],
         "type": "object",
         "properties": { "window": { "$ref": "#/components/schemas/ModelFetchWindow" } }
+      },
+      "ModelGraphResult": {
+        "required": ["nodes", "edges"],
+        "type": "object",
+        "properties": {
+          "edges": { "$ref": "#/components/schemas/DetailedTopologyConnectionSummaries" },
+          "nodes": { "$ref": "#/components/schemas/DetailedNodeSummaries" }
+        }
       },
       "ModelHost": {
         "required": [
@@ -12752,6 +12938,35 @@
           "scans_in_progress": { "type": "integer" },
           "scans_total": { "type": "integer" },
           "tags": { "type": "integer" }
+        }
+      },
+      "ModelTopologyDeltaReq": {
+        "required": ["timestamp", "addition", "deletion", "entity_types"],
+        "type": "object",
+        "properties": {
+          "addition": { "type": "boolean" },
+          "deletion": { "type": "boolean" },
+          "entity_types": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "timestamp": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ModelTopologyDeltaResponse": {
+        "type": "object",
+        "properties": {
+          "additons": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
+            "nullable": true
+          },
+          "deletions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
+            "nullable": true
+          }
         }
       },
       "ModelUpdateScheduledTaskRequest": {

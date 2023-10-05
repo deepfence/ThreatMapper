@@ -29,27 +29,27 @@ import {
 /**
  * 
  * @export
- * @interface ApiDocsGraphResult
+ * @interface ModelGraphResult
  */
-export interface ApiDocsGraphResult {
+export interface ModelGraphResult {
     /**
      * 
      * @type {{ [key: string]: DetailedConnectionSummary; }}
-     * @memberof ApiDocsGraphResult
+     * @memberof ModelGraphResult
      */
     edges: { [key: string]: DetailedConnectionSummary; };
     /**
      * 
      * @type {{ [key: string]: DetailedNodeSummary; }}
-     * @memberof ApiDocsGraphResult
+     * @memberof ModelGraphResult
      */
     nodes: { [key: string]: DetailedNodeSummary; };
 }
 
 /**
- * Check if a given object implements the ApiDocsGraphResult interface.
+ * Check if a given object implements the ModelGraphResult interface.
  */
-export function instanceOfApiDocsGraphResult(value: object): boolean {
+export function instanceOfModelGraphResult(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "edges" in value;
     isInstance = isInstance && "nodes" in value;
@@ -57,11 +57,11 @@ export function instanceOfApiDocsGraphResult(value: object): boolean {
     return isInstance;
 }
 
-export function ApiDocsGraphResultFromJSON(json: any): ApiDocsGraphResult {
-    return ApiDocsGraphResultFromJSONTyped(json, false);
+export function ModelGraphResultFromJSON(json: any): ModelGraphResult {
+    return ModelGraphResultFromJSONTyped(json, false);
 }
 
-export function ApiDocsGraphResultFromJSONTyped(json: any, ignoreDiscriminator: boolean): ApiDocsGraphResult {
+export function ModelGraphResultFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelGraphResult {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -72,7 +72,7 @@ export function ApiDocsGraphResultFromJSONTyped(json: any, ignoreDiscriminator: 
     };
 }
 
-export function ApiDocsGraphResultToJSON(value?: ApiDocsGraphResult | null): any {
+export function ModelGraphResultToJSON(value?: ModelGraphResult | null): any {
     if (value === undefined) {
         return undefined;
     }

@@ -4,6 +4,7 @@ apis/CloudNodesApi.ts
 apis/CloudResourcesApi.ts
 apis/CloudScannerApi.ts
 apis/CommonApi.ts
+apis/CompletionApi.ts
 apis/ComplianceApi.ts
 apis/ControlsApi.ts
 apis/DiagnosisApi.ts
@@ -26,7 +27,8 @@ apis/index.ts
 index.ts
 models/ApiDocsBadRequestResponse.ts
 models/ApiDocsFailureResponse.ts
-models/ApiDocsGraphResult.ts
+models/CompletionCompletionNodeFieldReq.ts
+models/CompletionCompletionNodeFieldRes.ts
 models/ControlsAction.ts
 models/ControlsAgentBeat.ts
 models/ControlsAgentControls.ts
@@ -111,6 +113,7 @@ models/ModelFiltersResult.ts
 models/ModelGenerateReportReq.ts
 models/ModelGenerateReportResp.ts
 models/ModelGetAuditLogsRequest.ts
+models/ModelGraphResult.ts
 models/ModelHost.ts
 models/ModelImageStub.ts
 models/ModelInitAgentReq.ts
@@ -175,6 +178,8 @@ models/ModelSettingUpdateRequest.ts
 models/ModelSettingsResponse.ts
 models/ModelStopScanRequest.ts
 models/ModelSummary.ts
+models/ModelTopologyDeltaReq.ts
+models/ModelTopologyDeltaResponse.ts
 models/ModelUpdateScheduledTaskRequest.ts
 models/ModelUpdateUserIdRequest.ts
 models/ModelUpdateUserPasswordRequest.ts
