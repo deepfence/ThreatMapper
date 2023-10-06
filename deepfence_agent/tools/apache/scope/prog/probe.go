@@ -167,7 +167,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 			}
 		}
 	}
-	endNestedIf:
+endNestedIf:
 	// https://groups.google.com/d/msg/kubernetes-sig-architecture/mVGobfD4TpY/Pa7n5t2qAAAJ
 	k8sClusterId, k8sClusterName, k8sVersion, nodeRole, _ := dfUtils.GetKubernetesDetails()
 	if flags.kubernetesEnabled && flags.kubernetesRole != kubernetesRoleHost {
