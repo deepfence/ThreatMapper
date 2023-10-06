@@ -423,6 +423,40 @@ func GetGenericMetadata(onlyValidate bool) (CloudMetadata, error) {
 	return genericMetadata, nil
 }
 
+func GetCloudMetadata() CloudMetadata {
+	// Check if AWS
+	cloudMetadata, err := GetAWSMetadata(false)
+	if err == nil {
+		return cloudMetadata
+	}
+	// Check if Google Cloud
+	cloudMetadata, err = GetGoogleCloudMetadata(false)
+	if err == nil {
+		return cloudMetadata
+	}
+	// Check if Azure
+	cloudMetadata, err = GetAzureMetadata(false)
+	if err == nil {
+		return cloudMetadata
+	}
+	// Check if Digital Ocean
+	cloudMetadata, err = GetDigitalOceanMetadata(false)
+	if err == nil {
+		return cloudMetadata
+	}
+	// Check if AWS ECS / Fargate
+	cloudMetadata, err = GetAWSFargateMetadata(false)
+	if err == nil {
+		return cloudMetadata
+	}
+	// Check if Softlayer
+	cloudMetadata, err = GetSoftlayerMetadata(false)
+	if err == nil {
+		return cloudMetadata
+	}
+	return CloudMetadata{InstanceID: "", CloudProvider: "private_cloud"}
+}
+
 func DetectCloudServiceProvider() string {
 	// Check if AWS
 	_, err := GetAWSMetadata(true)

@@ -386,6 +386,7 @@ func (r *Reporter) Report() (report.Report, error) {
 				IsConsoleVm:         r.IsConsoleVm,
 				AgentRunning:        true,
 				LocalCIDRs:          localCIDRs,
+				CloudAccountID:      cloudMetadata.AccountID,
 				CloudProvider:       cloudProvider,
 				CloudRegion:         cloudMetadata.Region,
 				InstanceID:          cloudMetadata.InstanceID,
