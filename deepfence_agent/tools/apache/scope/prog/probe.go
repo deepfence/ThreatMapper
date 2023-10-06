@@ -142,12 +142,14 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		// KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443
 		client, err := docker_client.NewClientFromEnv()
 		if err != nil {
+			log.Error().Msg(err.Error())
 			goto endNestedIf
 		}
 		containerFilters := make(map[string][]string, 2)
 		containerFilters["label"] = []string{"io.kubernetes.container.name=kube-proxy"}
 		containers, err := client.ListContainers(docker_client.ListContainersOptions{Filters: containerFilters})
 		if err != nil {
+			log.Error().Msg(err.Error())
 			goto endNestedIf
 		}
 		for _, container := range containers {
@@ -155,6 +157,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 				ID: container.ID,
 			})
 			if err != nil {
+				log.Error().Msg(err.Error())
 				break
 			}
 			for _, env := range containerDetails.Config.Env {
