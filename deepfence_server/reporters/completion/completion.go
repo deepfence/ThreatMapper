@@ -15,6 +15,7 @@ type CompletionNodeFieldReq struct {
 	Completion string            `json:"completion" required:"true"`
 	FieldName  string            `json:"field_name" required:"true"`
 	Window     model.FetchWindow `json:"window" required:"true"`
+	ScanID     string            `json:"scan_id" required:"false"`
 }
 
 type CompletionNodeFieldRes struct {
@@ -31,10 +32,7 @@ func FieldValueCompletion[T reporters.Cypherable](ctx context.Context, req Compl
 		return res, err
 	}
 
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -43,14 +41,29 @@ func FieldValueCompletion[T reporters.Cypherable](ctx context.Context, req Compl
 	}
 	defer tx.Close()
 
-	query := `
-	MATCH (n:` + dummy.NodeType() + `)
-	WHERE n.` + req.FieldName + ` =~ '^` + req.Completion + `.*'
-	RETURN DISTINCT n.` + req.FieldName
+	query := ""
+
+	if req.ScanID != "" {
+		query = `
+		MATCH (n{node_id: $scan_id}) -[:DETECTED]-> (m) -[:IS]-> (r:` + dummy.NodeType() + `)
+		WHERE r.` + req.FieldName + ` =~ '^` + req.Completion + `.*'
+		RETURN DISTINCT r.` + req.FieldName + `
+		ORDER BY r.` + req.FieldName +
+			req.Window.FetchWindow2CypherQuery()
+	} else {
+		query = `
+		MATCH (n:` + dummy.NodeType() + `) 
+		WHERE n.` + req.FieldName + ` =~ '^` + req.Completion + `.*'
+		RETURN DISTINCT n.` + req.FieldName + `
+		ORDER BY n.` + req.FieldName +
+			req.Window.FetchWindow2CypherQuery()
+	}
 
 	log.Debug().Msgf("completion query: \n%v", query)
 	r, err := tx.Run(query,
-		map[string]interface{}{})
+		map[string]interface{}{
+			"scan_id": req.ScanID,
+		})
 
 	if err != nil {
 		return res, err
