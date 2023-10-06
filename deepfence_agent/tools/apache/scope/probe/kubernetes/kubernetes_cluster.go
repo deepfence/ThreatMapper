@@ -13,12 +13,14 @@ type KubernetesClusterResource interface {
 }
 
 type kubernetesCluster struct {
-	cloudProvider string
+	cloudProvider  string
+	cloudAccountID string
 }
 
 // NewKubernetesClusterResource creates a new Cluster node
 func NewKubernetesClusterResource() KubernetesClusterResource {
-	return &kubernetesCluster{cloudProvider: cloud_metadata.DetectCloudServiceProvider()}
+	metadata := cloud_metadata.GetCloudMetadata()
+	return &kubernetesCluster{cloudProvider: metadata.CloudProvider, cloudAccountID: metadata.AccountID}
 }
 
 func (k *kubernetesCluster) GetNode() report.TopologyNode {
@@ -31,6 +33,7 @@ func (k *kubernetesCluster) GetNode() report.TopologyNode {
 		KubernetesClusterName: kubernetesClusterName,
 		CloudProvider:         k.cloudProvider,
 		AgentRunning:          true,
+		CloudAccountID:        k.cloudAccountID,
 	}
 	return report.TopologyNode{
 		Metadata: metadata,
