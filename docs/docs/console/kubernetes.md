@@ -18,10 +18,10 @@ The following instructions explain how to install the ThreatMapper console on a 
     ```
     kubectl get storageclass
     ```
-   | Cloud Provider | Storage Class |
-   |----------------|---------------|
-   | AWS            | gp3           |
-   | GCP            | standard      |
+   | Cloud Provider | Storage Class                                                       |
+   |----------------|---------------------------------------------------------------------|
+   | AWS            | gp3 (https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html) |
+   | GCP            | standard                                                            |
 
    ## Self-Managed: OpenEBS
 
