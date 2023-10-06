@@ -36,6 +36,12 @@ export interface ReportMetadata {
      * @type {string}
      * @memberof ReportMetadata
      */
+    cloud_account_id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ReportMetadata
+     */
     cloud_provider?: string;
     /**
      * 
@@ -474,6 +480,7 @@ export function ReportMetadataFromJSONTyped(json: any, ignoreDiscriminator: bool
         
         'agent_running': !exists(json, 'agent_running') ? undefined : json['agent_running'],
         'availability_zone': !exists(json, 'availability_zone') ? undefined : json['availability_zone'],
+        'cloud_account_id': !exists(json, 'cloud_account_id') ? undefined : json['cloud_account_id'],
         'cloud_provider': !exists(json, 'cloud_provider') ? undefined : json['cloud_provider'],
         'cloud_region': !exists(json, 'cloud_region') ? undefined : json['cloud_region'],
         'cmdline': !exists(json, 'cmdline') ? undefined : json['cmdline'],
@@ -558,6 +565,7 @@ export function ReportMetadataToJSON(value?: ReportMetadata | null): any {
         
         'agent_running': value.agent_running,
         'availability_zone': value.availability_zone,
+        'cloud_account_id': value.cloud_account_id,
         'cloud_provider': value.cloud_provider,
         'cloud_region': value.cloud_region,
         'cmdline': value.cmdline,

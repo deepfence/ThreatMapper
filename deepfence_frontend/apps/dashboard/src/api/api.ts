@@ -6,6 +6,7 @@ import {
   CloudNodesApi,
   CloudScannerApi,
   CommonApi,
+  CompletionApi,
   ComplianceApi,
   Configuration,
   ControlsApi,
@@ -348,5 +349,14 @@ export function getScanCompareApiClient() {
     diffAddMalware: scanCompareApi.diffAddMalware.bind(scanCompareApi),
     diffAddCompliance: scanCompareApi.diffAddCompliance.bind(scanCompareApi),
     diffAddCloudCompliance: scanCompareApi.diffAddCloudCompliance.bind(scanCompareApi),
+  };
+}
+
+export function getScanResultCompletionApiClient() {
+  const scanCompleteionApi = new CompletionApi(configuration);
+  return {
+    completeVulnerabilityInfo:
+      scanCompleteionApi.completeVulnerabilityInfo.bind(scanCompleteionApi),
+    completeHostInfo: scanCompleteionApi.completeHostInfo.bind(scanCompleteionApi),
   };
 }

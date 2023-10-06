@@ -17,10 +17,12 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
-  ApiDocsGraphResult,
   ControlsAgentBeat,
   GraphTopologyFilters,
   IngestersReportIngestionData,
+  ModelGraphResult,
+  ModelTopologyDeltaReq,
+  ModelTopologyDeltaResponse,
   ReportRawReport,
 } from '../models';
 import {
@@ -28,14 +30,18 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    ApiDocsGraphResultFromJSON,
-    ApiDocsGraphResultToJSON,
     ControlsAgentBeatFromJSON,
     ControlsAgentBeatToJSON,
     GraphTopologyFiltersFromJSON,
     GraphTopologyFiltersToJSON,
     IngestersReportIngestionDataFromJSON,
     IngestersReportIngestionDataToJSON,
+    ModelGraphResultFromJSON,
+    ModelGraphResultToJSON,
+    ModelTopologyDeltaReqFromJSON,
+    ModelTopologyDeltaReqToJSON,
+    ModelTopologyDeltaResponseFromJSON,
+    ModelTopologyDeltaResponseToJSON,
     ReportRawReportFromJSON,
     ReportRawReportToJSON,
 } from '../models';
@@ -54,6 +60,10 @@ export interface GetKubernetesTopologyGraphRequest {
 
 export interface GetPodsTopologyGraphRequest {
     graphTopologyFilters?: GraphTopologyFilters;
+}
+
+export interface GetTopologyDeltaRequest {
+    modelTopologyDeltaReq?: ModelTopologyDeltaReq;
 }
 
 export interface GetTopologyGraphRequest {
@@ -83,13 +93,13 @@ export interface TopologyApiInterface {
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
      */
-    getContainersTopologyGraphRaw(requestParameters: GetContainersTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>>;
+    getContainersTopologyGraphRaw(requestParameters: GetContainersTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelGraphResult>>;
 
     /**
      * Retrieve the full topology graph associated with the account from Containers
      * Get Containers Topology Graph
      */
-    getContainersTopologyGraph(requestParameters: GetContainersTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult>;
+    getContainersTopologyGraph(requestParameters: GetContainersTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelGraphResult>;
 
     /**
      * Retrieve the full topology graph associated with the account from Hosts
@@ -99,13 +109,13 @@ export interface TopologyApiInterface {
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
      */
-    getHostsTopologyGraphRaw(requestParameters: GetHostsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>>;
+    getHostsTopologyGraphRaw(requestParameters: GetHostsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelGraphResult>>;
 
     /**
      * Retrieve the full topology graph associated with the account from Hosts
      * Get Hosts Topology Graph
      */
-    getHostsTopologyGraph(requestParameters: GetHostsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult>;
+    getHostsTopologyGraph(requestParameters: GetHostsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelGraphResult>;
 
     /**
      * Retrieve the full topology graph associated with the account from Kubernetes
@@ -115,13 +125,13 @@ export interface TopologyApiInterface {
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
      */
-    getKubernetesTopologyGraphRaw(requestParameters: GetKubernetesTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>>;
+    getKubernetesTopologyGraphRaw(requestParameters: GetKubernetesTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelGraphResult>>;
 
     /**
      * Retrieve the full topology graph associated with the account from Kubernetes
      * Get Kubernetes Topology Graph
      */
-    getKubernetesTopologyGraph(requestParameters: GetKubernetesTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult>;
+    getKubernetesTopologyGraph(requestParameters: GetKubernetesTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelGraphResult>;
 
     /**
      * Retrieve the full topology graph associated with the account from Pods
@@ -131,13 +141,29 @@ export interface TopologyApiInterface {
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
      */
-    getPodsTopologyGraphRaw(requestParameters: GetPodsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>>;
+    getPodsTopologyGraphRaw(requestParameters: GetPodsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelGraphResult>>;
 
     /**
      * Retrieve the full topology graph associated with the account from Pods
      * Get Pods Topology Graph
      */
-    getPodsTopologyGraph(requestParameters: GetPodsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult>;
+    getPodsTopologyGraph(requestParameters: GetPodsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelGraphResult>;
+
+    /**
+     * Retrieve addition or deletion toplogy deltas
+     * @summary Get Topology Delta
+     * @param {ModelTopologyDeltaReq} [modelTopologyDeltaReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TopologyApiInterface
+     */
+    getTopologyDeltaRaw(requestParameters: GetTopologyDeltaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelTopologyDeltaResponse>>;
+
+    /**
+     * Retrieve addition or deletion toplogy deltas
+     * Get Topology Delta
+     */
+    getTopologyDelta(requestParameters: GetTopologyDeltaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelTopologyDeltaResponse>;
 
     /**
      * Retrieve the full topology graph associated with the account
@@ -147,13 +173,13 @@ export interface TopologyApiInterface {
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
      */
-    getTopologyGraphRaw(requestParameters: GetTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>>;
+    getTopologyGraphRaw(requestParameters: GetTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelGraphResult>>;
 
     /**
      * Retrieve the full topology graph associated with the account
      * Get Topology Graph
      */
-    getTopologyGraph(requestParameters: GetTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult>;
+    getTopologyGraph(requestParameters: GetTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelGraphResult>;
 
     /**
      * Ingest data reported by one Agent
@@ -198,7 +224,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
      * Retrieve the full topology graph associated with the account from Containers
      * Get Containers Topology Graph
      */
-    async getContainersTopologyGraphRaw(requestParameters: GetContainersTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>> {
+    async getContainersTopologyGraphRaw(requestParameters: GetContainersTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelGraphResult>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -221,14 +247,14 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             body: GraphTopologyFiltersToJSON(requestParameters.graphTopologyFilters),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelGraphResultFromJSON(jsonValue));
     }
 
     /**
      * Retrieve the full topology graph associated with the account from Containers
      * Get Containers Topology Graph
      */
-    async getContainersTopologyGraph(requestParameters: GetContainersTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult> {
+    async getContainersTopologyGraph(requestParameters: GetContainersTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelGraphResult> {
         const response = await this.getContainersTopologyGraphRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -237,7 +263,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
      * Retrieve the full topology graph associated with the account from Hosts
      * Get Hosts Topology Graph
      */
-    async getHostsTopologyGraphRaw(requestParameters: GetHostsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>> {
+    async getHostsTopologyGraphRaw(requestParameters: GetHostsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelGraphResult>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -260,14 +286,14 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             body: GraphTopologyFiltersToJSON(requestParameters.graphTopologyFilters),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelGraphResultFromJSON(jsonValue));
     }
 
     /**
      * Retrieve the full topology graph associated with the account from Hosts
      * Get Hosts Topology Graph
      */
-    async getHostsTopologyGraph(requestParameters: GetHostsTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult> {
+    async getHostsTopologyGraph(requestParameters: GetHostsTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelGraphResult> {
         const response = await this.getHostsTopologyGraphRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -276,7 +302,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
      * Retrieve the full topology graph associated with the account from Kubernetes
      * Get Kubernetes Topology Graph
      */
-    async getKubernetesTopologyGraphRaw(requestParameters: GetKubernetesTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>> {
+    async getKubernetesTopologyGraphRaw(requestParameters: GetKubernetesTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelGraphResult>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -299,14 +325,14 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             body: GraphTopologyFiltersToJSON(requestParameters.graphTopologyFilters),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelGraphResultFromJSON(jsonValue));
     }
 
     /**
      * Retrieve the full topology graph associated with the account from Kubernetes
      * Get Kubernetes Topology Graph
      */
-    async getKubernetesTopologyGraph(requestParameters: GetKubernetesTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult> {
+    async getKubernetesTopologyGraph(requestParameters: GetKubernetesTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelGraphResult> {
         const response = await this.getKubernetesTopologyGraphRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -315,7 +341,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
      * Retrieve the full topology graph associated with the account from Pods
      * Get Pods Topology Graph
      */
-    async getPodsTopologyGraphRaw(requestParameters: GetPodsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>> {
+    async getPodsTopologyGraphRaw(requestParameters: GetPodsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelGraphResult>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -338,15 +364,54 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             body: GraphTopologyFiltersToJSON(requestParameters.graphTopologyFilters),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelGraphResultFromJSON(jsonValue));
     }
 
     /**
      * Retrieve the full topology graph associated with the account from Pods
      * Get Pods Topology Graph
      */
-    async getPodsTopologyGraph(requestParameters: GetPodsTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult> {
+    async getPodsTopologyGraph(requestParameters: GetPodsTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelGraphResult> {
         const response = await this.getPodsTopologyGraphRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve addition or deletion toplogy deltas
+     * Get Topology Delta
+     */
+    async getTopologyDeltaRaw(requestParameters: GetTopologyDeltaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelTopologyDeltaResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/graph/topology/delta`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelTopologyDeltaReqToJSON(requestParameters.modelTopologyDeltaReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelTopologyDeltaResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Retrieve addition or deletion toplogy deltas
+     * Get Topology Delta
+     */
+    async getTopologyDelta(requestParameters: GetTopologyDeltaRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelTopologyDeltaResponse> {
+        const response = await this.getTopologyDeltaRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -354,7 +419,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
      * Retrieve the full topology graph associated with the account
      * Get Topology Graph
      */
-    async getTopologyGraphRaw(requestParameters: GetTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>> {
+    async getTopologyGraphRaw(requestParameters: GetTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelGraphResult>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -377,14 +442,14 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             body: GraphTopologyFiltersToJSON(requestParameters.graphTopologyFilters),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelGraphResultFromJSON(jsonValue));
     }
 
     /**
      * Retrieve the full topology graph associated with the account
      * Get Topology Graph
      */
-    async getTopologyGraph(requestParameters: GetTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult> {
+    async getTopologyGraph(requestParameters: GetTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelGraphResult> {
         const response = await this.getTopologyGraphRaw(requestParameters, initOverrides);
         return await response.value();
     }

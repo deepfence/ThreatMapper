@@ -613,6 +613,7 @@ export const searchQueries = createQueryKeys('search', {
       descending: boolean;
     };
     agentRunning?: boolean[];
+    cloudAccounts?: string[];
   }) => {
     return {
       queryKey: [filters],
@@ -627,6 +628,7 @@ export const searchQueries = createQueryKeys('search', {
           cloudProvider,
           order,
           agentRunning,
+          cloudAccounts,
         } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
@@ -733,6 +735,12 @@ export const searchQueries = createQueryKeys('search', {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
             ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
             cloud_provider: cloudProvider,
+          };
+        }
+        if (cloudAccounts?.length) {
+          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
+            ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
+            cloud_account_id: cloudAccounts,
           };
         }
         if (order) {

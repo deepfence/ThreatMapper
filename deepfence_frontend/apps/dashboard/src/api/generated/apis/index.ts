@@ -5,6 +5,7 @@ export * from './CloudNodesApi';
 export * from './CloudResourcesApi';
 export * from './CloudScannerApi';
 export * from './CommonApi';
+export * from './CompletionApi';
 export * from './ComplianceApi';
 export * from './ControlsApi';
 export * from './DiagnosisApi';
