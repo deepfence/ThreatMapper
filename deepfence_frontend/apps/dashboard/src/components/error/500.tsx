@@ -12,15 +12,19 @@ const ErrorComponent = ({ maintenance }: { maintenance: boolean }) => {
     <div className="flex flex-col h-full items-center pt-20">
       {!maintenance ? (
         <h1 className="text-[140px] text-chart-orange dark:text-chart-orange font-black leading-[190px]">
-          500
+          ERROR
         </h1>
       ) : null}
       <h4 className="text-3xl font-semibold text-text-text-and-icon dark:text-text-text-and-icon flex flex-col text-center">
         <span>
-          {maintenance ? 'Maintenance in progress...' : 'Internal server error.'}
+          {maintenance
+            ? 'Maintenance in progress...'
+            : 'An error has occurred, please refresh the page.'}
         </span>
         <span>
-          {maintenance ? 'Please try again after some time.' : 'Contact support.'}
+          {maintenance
+            ? 'Please try again after some time.'
+            : 'If problem persists, please contact deepfence.'}
         </span>
       </h4>
       {!maintenance ? (
