@@ -33,6 +33,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -358,30 +359,44 @@ func initializeKafka() error {
 
 func initializeTelemetry() error {
 
-	telemetryHost := utils.GetEnvOrDefault("DEEPFENCE_TELEMETRY_HOST", "deepfence-telemetry")
-	telemetryPort := utils.GetEnvOrDefault("DEEPFENCE_TELEMETRY_PORT", "14268")
-	telemetryEndpoint := fmt.Sprintf("http://%s:%s/api/traces", telemetryHost, telemetryPort)
+	telemetryEnabled := len(utils.GetEnvOrDefault("DEEPFENCE_TELEMETRY_ENABLED", "")) > 0
 
-	exp, err := jaeger.New(
-		jaeger.WithCollectorEndpoint(
-			jaeger.WithEndpoint(telemetryEndpoint),
-		),
-	)
-	if err != nil {
-		return err
+	if telemetryEnabled {
+		telemetryHost := utils.GetEnvOrDefault("DEEPFENCE_TELEMETRY_HOST", "deepfence-telemetry")
+		telemetryPort := utils.GetEnvOrDefault("DEEPFENCE_TELEMETRY_PORT", "14268")
+		telemetryEndpoint := fmt.Sprintf("http://%s:%s/api/traces", telemetryHost, telemetryPort)
+
+		log.Info().Msgf("sending traces to endpoint %s", telemetryEndpoint)
+
+		exp, err := jaeger.New(
+			jaeger.WithCollectorEndpoint(
+				jaeger.WithEndpoint(telemetryEndpoint),
+			),
+		)
+		if err != nil {
+			return err
+		}
+
+		tp := tracesdk.NewTracerProvider(
+			tracesdk.WithBatcher(exp),
+			tracesdk.WithResource(resource.NewWithAttributes(
+				semconv.SchemaURL,
+				semconv.ServiceNameKey.String("deepfence-server"),
+				attribute.String("environment", "dev"),
+			)),
+		)
+
+		otel.SetTracerProvider(tp)
+
+	} else {
+		log.Info().Msgf("setting up noop tracer provider")
+		// set a noop tracer provider
+		otel.SetTracerProvider(trace.NewNoopTracerProvider())
 	}
-	tp := tracesdk.NewTracerProvider(
-		tracesdk.WithBatcher(exp),
-		tracesdk.WithResource(resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("deepfence-server"),
-			attribute.String("environment", "dev"),
-		)),
-	)
 
-	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(
 		propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}),
 	)
+
 	return nil
 }
