@@ -424,7 +424,7 @@ function Filters() {
         </Combobox>
         <SearchableCloudAccount
           scanId={''}
-          defaultSelectedCVEIds={searchParams.getAll('cloudAccounts')}
+          defaultSelectedAccounts={searchParams.getAll('cloudAccounts')}
           onChange={(values) => {
             setSearchParams((prev) => {
               prev.delete('cloudAccounts');

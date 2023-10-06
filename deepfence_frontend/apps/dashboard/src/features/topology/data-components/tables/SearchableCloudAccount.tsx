@@ -8,7 +8,7 @@ import { queries } from '@/queries';
 type SearchableCloudAccountProps = {
   onChange?: (value: string[]) => void;
   onClearAll?: () => void;
-  defaultSelectedCVEIds?: string[];
+  defaultSelectedAccounts?: string[];
   triggerVariant?: 'select' | 'button';
   helperText?: string;
   color?: 'error' | 'default';
@@ -16,10 +16,10 @@ type SearchableCloudAccountProps = {
 };
 
 const PAGE_SIZE = 15;
-const SearchableId = ({
+const SearchableCloudAccountId = ({
   onChange,
   onClearAll,
-  defaultSelectedCVEIds,
+  defaultSelectedAccounts,
   triggerVariant,
   helperText,
   color,
@@ -27,8 +27,8 @@ const SearchableId = ({
 }: SearchableCloudAccountProps) => {
   const [searchText, setSearchText] = useState('');
 
-  const [selectedCVEIds, setSelectedCVEIds] = useState<string[]>(
-    defaultSelectedCVEIds ?? [],
+  const [selectedAccounts, setSelectedAccounts] = useState<string[]>(
+    defaultSelectedAccounts ?? [],
   );
 
   const isSelectVariantType = useMemo(() => {
@@ -36,8 +36,8 @@ const SearchableId = ({
   }, [triggerVariant]);
 
   useEffect(() => {
-    setSelectedCVEIds(defaultSelectedCVEIds ?? []);
-  }, [defaultSelectedCVEIds]);
+    setSelectedAccounts(defaultSelectedAccounts ?? []);
+  }, [defaultSelectedAccounts]);
 
   const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useSuspenseInfiniteQuery({
@@ -72,7 +72,7 @@ const SearchableId = ({
         name="selectedCloudAccountLength"
         hidden
         readOnly
-        value={selectedCVEIds.length}
+        value={selectedAccounts.length}
       />
       <Combobox
         startIcon={
@@ -82,15 +82,15 @@ const SearchableId = ({
         triggerVariant={triggerVariant || 'button'}
         label={isSelectVariantType ? 'Cloud account' : undefined}
         getDisplayValue={() =>
-          isSelectVariantType && selectedCVEIds.length > 0
-            ? `${selectedCVEIds.length} selected`
+          isSelectVariantType && selectedAccounts.length > 0
+            ? `${selectedAccounts.length} selected`
             : null
         }
         placeholder="Cloud account"
         multiple
-        value={selectedCVEIds}
+        value={selectedAccounts}
         onChange={(values) => {
-          setSelectedCVEIds(values);
+          setSelectedAccounts(values);
           onChange?.(values);
         }}
         onQueryChange={searchId}
@@ -137,7 +137,7 @@ export const SearchableCloudAccount = (props: SearchableCloudAccountProps) => {
         />
       }
     >
-      <SearchableId {...props} />
+      <SearchableCloudAccountId {...props} />
     </Suspense>
   );
 };
