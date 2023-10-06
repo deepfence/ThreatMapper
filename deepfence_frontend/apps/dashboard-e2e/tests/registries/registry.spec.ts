@@ -1,4 +1,4 @@
-import { test, expect, Locator } from '@playwright/test';
+import { test, expect, Locator, Page } from '@playwright/test';
 import { TIMEOUT } from '../../playwright.config';
 
 const registryType = 'docker_private_registry';
@@ -80,17 +80,35 @@ test.describe('Registry', () => {
       await testUntil();
     }
   });
-  test(`should start vulnerability scan on imagetag of ${imageToScan} image`, async ({
+  test(`should start Vulnerability scan on imagetag of ${imageToScan} image`, async ({
     page,
     baseURL,
   }) => {
-    expect(page.getByText(registryName)).toBeVisible({
-      timeout: TIMEOUT,
-    });
-    const rowSelection = page.getByRole('row').filter({
-      hasText: 'Ready to scan',
-    });
-    await expect(rowSelection).toBeVisible();
+    async function refreshAndCheckImagePresence() {
+      let loop = false;
+      const rowSelection = page.getByRole('row').filter({
+        hasText: 'Ready to scan',
+      });
+      await rowSelection
+        .waitFor({
+          timeout: 10 * 1000,
+        })
+        .catch(async () => {
+          const refreshBtn = page.locator(`button[title="Refresh now"]`);
+          if (refreshBtn) {
+            refreshBtn.click();
+          }
+          await refreshAndCheckImagePresence();
+        })
+        .then(() => {
+          loop = true;
+          return true;
+        });
+
+      return loop;
+    }
+    await refreshAndCheckImagePresence();
+
     const registry = page.getByText(registryName);
     await expect(registry).toBeVisible({
       timeout: TIMEOUT,
@@ -137,10 +155,217 @@ test.describe('Registry', () => {
       await expect(page.getByTestId('sliding-modal-close-button')).not.toBeAttached();
       await page.mouse.click(0, 0);
 
+      await expect(page.getByText('Scan started sucessfully')).toBeVisible();
+      await page.waitForTimeout(5000);
+
+      const interval = setInterval(async () => {
+        const refreshBtn = page.locator(`button[title="Refresh now"]`);
+        if (refreshBtn) {
+          refreshBtn.click();
+        }
+      }, 30 * 1000);
       const cell = rowSelectionTag.getByRole(`cell`).nth(5);
-      await expect(cell).toHaveText('In Progress', {
+      const complete = cell.locator('tr > td:nth-child(5), td:has-text("Complete")');
+      const completed = await complete.isVisible();
+      if (completed) {
+        clearInterval(interval);
+      }
+
+      await expect(cell).toHaveText('Complete', {
         timeout: TIMEOUT,
       });
+    } else {
+      console.error('tbody element not found.');
+    }
+  });
+  test(`should start Secret scan on imagetag of ${imageToScan} image`, async ({
+    page,
+    baseURL,
+  }) => {
+    async function refreshAndCheckImagePresence() {
+      let loop = false;
+      const rowSelection = page.getByRole('row').filter({
+        hasText: 'Ready to scan',
+      });
+      await rowSelection
+        .waitFor({
+          timeout: 10 * 1000,
+        })
+        .catch(async () => {
+          const refreshBtn = page.locator(`button[title="Refresh now"]`);
+          if (refreshBtn) {
+            refreshBtn.click();
+          }
+          await refreshAndCheckImagePresence();
+        })
+        .then(() => {
+          loop = true;
+          return true;
+        });
+
+      return loop;
+    }
+    await refreshAndCheckImagePresence();
+
+    const registry = page.getByText(registryName);
+    await expect(registry).toBeVisible({
+      timeout: TIMEOUT,
+    });
+    await registry.click();
+
+    await expect(page).toHaveURL(/.*registries\/images/);
+
+    const totalImages = page.getByTestId('totalRegistryImagesId');
+    await expect(totalImages).toBeVisible();
+    expect(Number(await totalImages.textContent())).toBeGreaterThan(0);
+
+    const imageCloudScanner = page.getByText(imageToScan);
+    await expect(imageCloudScanner).toBeVisible();
+
+    // select image
+    const rowSelectionTag = page.getByRole('row').filter({
+      hasText: imageToScan,
+    });
+
+    // got to tag page
+    await rowSelectionTag.getByText(imageToScan).click();
+    await expect(page).toHaveURL(/.*registries\/imagetags/);
+    const tbodyElement = page.locator('tbody');
+
+    if (tbodyElement) {
+      // select tag
+      const rowSelectionTag = tbodyElement.getByRole('row').nth(0);
+      await rowSelectionTag.getByRole('checkbox').click();
+
+      // click on action button to choose scan type
+      const actionBtn = page.getByRole('button', {
+        name: 'Start scan',
+      });
+      expect(actionBtn).toBeEnabled();
+      actionBtn.click();
+
+      // start vulnerabillity scan
+      await page.getByText('Start Secret Scan').click();
+
+      const scanForm = page.locator('form');
+      await scanForm.waitFor();
+      await scanForm.getByRole('button', { name: 'Start Scan' }).click();
+      await expect(page.getByTestId('sliding-modal-close-button')).not.toBeAttached();
+      await page.mouse.click(0, 0);
+
+      await expect(page.getByText('Scan started sucessfully')).toBeVisible();
+      await page.waitForTimeout(5000);
+
+      const interval = setInterval(async () => {
+        const refreshBtn = page.locator(`button[title="Refresh now"]`);
+        if (refreshBtn) {
+          refreshBtn.click();
+        }
+      }, 30 * 1000);
+      const cell = rowSelectionTag.getByRole(`cell`).nth(6);
+      const complete = cell.locator('tr > td:nth-child(6), td:has-text("Complete")');
+      const completed = await complete.isVisible();
+      if (completed) {
+        clearInterval(interval);
+      }
+
+      await expect(cell).toHaveText('Complete', {
+        timeout: TIMEOUT,
+      });
+    } else {
+      console.error('tbody element not found.');
+    }
+  });
+  test(`should start Malware scan on imagetag of ${imageToScan} image`, async ({
+    page,
+    baseURL,
+  }) => {
+    async function refreshAndCheckImagePresence() {
+      let loop = false;
+      const rowSelection = page.getByRole('row').filter({
+        hasText: 'Ready to scan',
+      });
+      await rowSelection
+        .waitFor({
+          timeout: 10 * 1000,
+        })
+        .catch(async () => {
+          const refreshBtn = page.locator(`button[title="Refresh now"]`);
+          if (refreshBtn) {
+            refreshBtn.click();
+          }
+          await refreshAndCheckImagePresence();
+        })
+        .then(() => {
+          loop = true;
+          return true;
+        });
+
+      return loop;
+    }
+    await refreshAndCheckImagePresence();
+
+    const registry = page.getByText(registryName);
+    await expect(registry).toBeVisible({
+      timeout: TIMEOUT,
+    });
+    await registry.click();
+
+    await expect(page).toHaveURL(/.*registries\/images/);
+
+    const totalImages = page.getByTestId('totalRegistryImagesId');
+    await expect(totalImages).toBeVisible();
+    expect(Number(await totalImages.textContent())).toBeGreaterThan(0);
+
+    const imageCloudScanner = page.getByText(imageToScan);
+    await expect(imageCloudScanner).toBeVisible();
+
+    // select image
+    const rowSelectionTag = page.getByRole('row').filter({
+      hasText: imageToScan,
+    });
+
+    // got to tag page
+    await rowSelectionTag.getByText(imageToScan).click();
+    await expect(page).toHaveURL(/.*registries\/imagetags/);
+    const tbodyElement = page.locator('tbody');
+
+    if (tbodyElement) {
+      // select tag
+      const rowSelectionTag = tbodyElement.getByRole('row').nth(0);
+      await rowSelectionTag.getByRole('checkbox').click();
+
+      // click on action button to choose scan type
+      const actionBtn = page.getByRole('button', {
+        name: 'Start scan',
+      });
+      expect(actionBtn).toBeEnabled();
+      actionBtn.click();
+
+      // start vulnerabillity scan
+      await page.getByText('Start Malware Scan').click();
+
+      const scanForm = page.locator('form');
+      await scanForm.waitFor();
+      await scanForm.getByRole('button', { name: 'Start Scan' }).click();
+      await expect(page.getByTestId('sliding-modal-close-button')).not.toBeAttached();
+      await page.mouse.click(0, 0);
+
+      await expect(page.getByText('Scan started sucessfully')).toBeVisible();
+      await page.waitForTimeout(5000);
+
+      const interval = setInterval(async () => {
+        const refreshBtn = page.locator(`button[title="Refresh now"]`);
+        if (refreshBtn) {
+          refreshBtn.click();
+        }
+      }, 30 * 1000);
+      const cell = rowSelectionTag.getByRole(`cell`).nth(7);
+      const complete = cell.locator('tr > td:nth-child(7), td:has-text("Complete")');
+      const completed = await complete.isVisible();
+      if (completed) {
+        clearInterval(interval);
+      }
 
       await expect(cell).toHaveText('Complete', {
         timeout: TIMEOUT,
