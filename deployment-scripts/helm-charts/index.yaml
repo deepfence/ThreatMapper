@@ -425,6 +425,16 @@ entries:
   deepfence-router:
   - apiVersion: v2
     appVersion: 2.0.0
+    created: "2023-10-06T15:19:46.770901+05:30"
+    description: Deepfence Router - Helm chart for Kubernetes
+    digest: 9c391d17d579d88b5b96eb0c0c4cfe1e103a3bf9969d06a08aeb796d3f91f164
+    name: deepfence-router
+    type: application
+    urls:
+    - deepfence-router-2.0.1.tgz
+    version: 2.0.1
+  - apiVersion: v2
+    appVersion: 2.0.0
     created: "2023-09-14T18:43:38.795529+05:30"
     description: Deepfence Router - Helm chart for Kubernetes
     digest: d8f35e5ab433c5c90996ee7edf868cb9fbd7615dc0df0871b152cc2bdb1400be
@@ -543,4 +553,4 @@ entries:
     urls:
     - deepfence-router-1.0.0.tgz
     version: 1.0.0
-generated: "2023-10-05T17:56:33.331789+05:30"
+generated: "2023-10-06T15:19:46.769692+05:30"
