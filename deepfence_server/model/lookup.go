@@ -79,6 +79,7 @@ type Host struct {
 	LocalNetworks             []interface{}    `json:"local_networks" required:"true"`
 	InstanceID                string           `json:"instance_id" required:"true"`
 	CloudProvider             string           `json:"cloud_provider" required:"true"`
+	CloudAccountID            string           `json:"cloud_account_id" required:"true"`
 	InstanceType              string           `json:"instance_type" required:"true"`
 	PublicIP                  []interface{}    `json:"public_ip" required:"true"`
 	PrivateIP                 []interface{}    `json:"private_ip" required:"true"`

@@ -30,6 +30,7 @@ type Metadata struct {
 	// cloud metadata
 	InstanceID       string   `json:"instance_id,omitempty"`
 	CloudProvider    string   `json:"cloud_provider,omitempty"`
+	CloudAccountID   string   `json:"cloud_account_id,omitempty"`
 	InstanceType     string   `json:"instance_type,omitempty"`
 	PublicIP         []string `json:"public_ip,omitempty"`
 	PrivateIP        []string `json:"private_ip,omitempty"`

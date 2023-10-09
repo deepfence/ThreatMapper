@@ -18,6 +18,10 @@ func (h *Handler) CompleteVulnerabilityInfo(w http.ResponseWriter, r *http.Reque
 	genericCompleteInfoHandler[model.VulnerabilityRule](w, r, h)
 }
 
+func (h *Handler) CompleteHostInfo(w http.ResponseWriter, r *http.Request) {
+	genericCompleteInfoHandler[model.Host](w, r, h)
+}
+
 func genericCompleteInfoHandler[T reporters.Cypherable](w http.ResponseWriter, r *http.Request, h *Handler) {
 	defer r.Body.Close()
 	var req completion.CompletionNodeFieldReq

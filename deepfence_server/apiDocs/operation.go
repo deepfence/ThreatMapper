@@ -784,4 +784,7 @@ func (d *OpenApiDocs) AddCompletionOperations() {
 	d.AddOperation("completeVulnerabilityInfo", http.MethodPost, "/deepfence/complete/vulnerability",
 		"Get Completion for vulnerability fields", "Complete vulnerability info",
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completeHostInfo", http.MethodPost, "/deepfence/complete/host",
+		"Get Completion for host fields", "Complete host info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 }
