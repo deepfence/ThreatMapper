@@ -2,13 +2,13 @@ import { LoaderFunctionArgs } from 'react-router-dom';
 import { useUnmount } from 'react-use';
 
 import { getTopologyApiClient } from '@/api/api';
-import { ApiDocsGraphResult } from '@/api/generated';
+import { ModelGraphResult } from '@/api/generated';
 import { TopologyAction } from '@/features/topology/types/graph';
 import { GraphStorageManager, NodeType } from '@/features/topology/utils/topology-data';
 import { apiWrapper } from '@/utils/api';
 
 export interface TopologyLoaderData {
-  data: ApiDocsGraphResult;
+  data: ModelGraphResult;
   action?: TopologyAction;
 }
 

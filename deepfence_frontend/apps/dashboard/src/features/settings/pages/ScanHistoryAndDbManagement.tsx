@@ -214,7 +214,7 @@ const DeleteConfirmationModal = ({
           )}
         </div>
       ) : (
-        <SuccessModalContent text="Sucessfully deleted" />
+        <SuccessModalContent text="Successfully deleted" />
       )}
     </Modal>
   );

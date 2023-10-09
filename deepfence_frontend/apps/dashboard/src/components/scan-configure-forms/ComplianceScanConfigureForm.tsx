@@ -123,7 +123,7 @@ export const scanPostureApiAction = async ({
     }
     throw startComplianceScanResponse.error;
   }
-  toast.success('Scan started sucessfully');
+  toast.success('Scan started successfully');
   invalidateAllQueries();
   return {
     success: true,
