@@ -359,7 +359,7 @@ func initializeKafka() error {
 
 func initializeTelemetry() error {
 
-	telemetryEnabled := len(utils.GetEnvOrDefault("DEEPFENCE_TELEMETRY_ENABLED", "")) > 0
+	telemetryEnabled := os.GetEnv("DEEPFENCE_TELEMETRY_ENABLED") != ""
 
 	if telemetryEnabled {
 		telemetryHost := utils.GetEnvOrDefault("DEEPFENCE_TELEMETRY_HOST", "deepfence-telemetry")
