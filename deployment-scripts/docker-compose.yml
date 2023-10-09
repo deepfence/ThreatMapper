@@ -26,6 +26,7 @@ x-service-variables: &common-creds
     DEEPFENCE_DEBUG: "false"
     DF_ENABLE_DEBUG: ""
     DEEPFENCE_ENABLE_PPROF: ""
+    DEEPFENCE_TELEMETRY_ENABLED: "true"
 
 services:
 
