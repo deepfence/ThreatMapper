@@ -33,7 +33,7 @@ func NewReporter(registry Registry, hostID string, probeID string, probe *probe.
 		registry:              registry,
 		hostID:                hostID,
 		probeID:               probeID,
-		isConsoleVm:           dfUtils.IsThisHostUIMachine(),
+		isConsoleVm:           dfUtils.IsThisConsoleAgent(),
 		probe:                 probe,
 		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
 		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),

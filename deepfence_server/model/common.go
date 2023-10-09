@@ -82,6 +82,7 @@ func isOnboardingRequired(ctx context.Context) (bool, error) {
 		WHERE (n:Node OR n:KubernetesCluster or n:RegistryAccount or n:CloudNode)
 		AND n.active=true
 		AND COALESCE(n.pseudo, false)=false
+		AND COALESCE(n.is_console_vm, false)=false
 		RETURN count(n)`,
 		map[string]interface{}{})
 	if err != nil {

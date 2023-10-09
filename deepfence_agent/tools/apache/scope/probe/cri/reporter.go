@@ -30,7 +30,7 @@ func NewReporter(cri client.RuntimeServiceClient, hostID string, criImageClient 
 		hostID:                hostID,
 		cri:                   cri,
 		criImageClient:        criImageClient,
-		isConsoleVm:           dfUtils.IsThisHostUIMachine(),
+		isConsoleVm:           dfUtils.IsThisConsoleAgent(),
 		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
 		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
 	}
