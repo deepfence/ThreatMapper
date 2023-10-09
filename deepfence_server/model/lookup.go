@@ -253,6 +253,7 @@ func (c Container) id() string {
 type Process struct {
 	ID             string  `json:"node_id" required:"true"`
 	Name           string  `json:"node_name" required:"true"`
+	ShortNodeName  string  `json:"short_name" required:"true"`
 	PID            int     `json:"pid" required:"true"`
 	Command        string  `json:"cmdline" required:"true"`
 	PPID           int     `json:"ppid" required:"true"`

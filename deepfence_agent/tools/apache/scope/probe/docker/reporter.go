@@ -42,7 +42,7 @@ func NewReporter(registry Registry, hostID string, probeID string, probe *probe.
 }
 
 // Name of this reporter, for metrics gathering
-func (Reporter) Name() string { return "Docker" }
+func (*Reporter) Name() string { return "Docker" }
 
 // Report generates a Report containing Container and ContainerImage topologies
 func (r *Reporter) Report() (report.Report, error) {
