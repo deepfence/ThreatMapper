@@ -1,6 +1,7 @@
 package process
 
 import (
+	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
@@ -70,7 +71,7 @@ func NewReporter(walker Walker, hostID string, jiffies Jiffies, noCommandLineArg
 }
 
 // Name of this reporter, for metrics gathering
-func (Reporter) Name() string { return "Process" }
+func (*Reporter) Name() string { return "Process" }
 
 func (r *Reporter) updateProcessCache() {
 
@@ -110,6 +111,10 @@ func (r *Reporter) Report() (report.Report, error) {
 	return result, nil
 }
 
+func shortProcessName(processName string) string {
+	return filepath.Base(processName)
+}
+
 func (r *Reporter) processTopology() (report.Topology, error) {
 	t := report.MakeTopology()
 	deltaTotal, maxCPU, err := r.jiffies()
@@ -124,6 +129,7 @@ func (r *Reporter) processTopology() (report.Topology, error) {
 			Timestamp:      time.Now().UTC().Format(time.RFC3339Nano),
 			NodeID:         nodeID,
 			NodeName:       p.Name,
+			ShortNodeName:  shortProcessName(p.Name),
 			NodeType:       report.Process,
 			HostName:       r.hostName,
 			Pid:            p.PID,

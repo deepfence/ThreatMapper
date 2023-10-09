@@ -39,7 +39,7 @@ func NewReporter(cri client.RuntimeServiceClient, hostID string, criImageClient 
 }
 
 // Name of this reporter, for metrics gathering
-func (Reporter) Name() string { return "CRI" }
+func (*Reporter) Name() string { return "CRI" }
 
 // Report generates a Report containing Container topologies
 func (r *Reporter) Report() (report.Report, error) {
