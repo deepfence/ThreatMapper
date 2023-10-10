@@ -613,6 +613,7 @@ export const searchQueries = createQueryKeys('search', {
       descending: boolean;
     };
     agentRunning?: boolean[];
+    clusterIds: string[];
   }) => {
     return {
       queryKey: [filters],
@@ -627,6 +628,7 @@ export const searchQueries = createQueryKeys('search', {
           cloudProvider,
           order,
           agentRunning,
+          clusterIds,
         } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
@@ -728,6 +730,12 @@ export const searchQueries = createQueryKeys('search', {
               compliance_scan_status: COMPLIANCE_SCAN_STATUS_GROUPS[complianceScanStatus],
             };
           }
+        }
+        if (clusterIds?.length) {
+          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
+            ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
+            kubernetes_cluster_id: clusterIds,
+          };
         }
         if (cloudProvider?.length) {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
