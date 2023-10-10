@@ -185,6 +185,7 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 
 func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 	log.Info().Msgf("Caching Posture Providers")
+	defer log.Info().Msgf("Caching Posture Providers - Done")
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -237,9 +238,9 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 
 			scan_count_query = `
 			MATCH (n:` + string(neo4jNodeType) + `)
-			WHERE n.pseudo=false and n.active=true and n.agent_running=true
+			WHERE n.pseudo=false
 			MATCH (n) <-[:SCANNED]- (m:` + string(utils.NEO4J_COMPLIANCE_SCAN) + `)
-			RETURN count(distinct m)`
+			RETURN count(distinct n)`
 
 			success_count_query = `
 			MATCH (n:` + string(neo4jNodeType) + `)
@@ -274,10 +275,9 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 
 			scan_count_query = `
 			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:` + string(neo4jNodeType) + `)
-			WHERE o.active=true
 			AND m.organization_id IS NOT NULL
 			MATCH (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
-			RETURN count(distinct n)`
+			RETURN count(distinct m)`
 
 			success_count_query = `
 			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:` + string(neo4jNodeType) + `)
@@ -307,9 +307,8 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 
 			scan_count_query = `
 			MATCH (m:` + string(neo4jNodeType) + `{cloud_provider: $cloud_provider})
-			WHERE m.active=true
 			MATCH (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
-			RETURN count(distinct n)`
+			RETURN count(distinct m)`
 
 			success_count_query = `
 			MATCH (m:` + string(neo4jNodeType) + `{cloud_provider: $cloud_provider})
