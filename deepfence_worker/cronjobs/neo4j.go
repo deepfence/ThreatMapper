@@ -367,7 +367,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		MATCH (n:CloudRegion)
 		WHERE not (n) -[:HOSTS]-> ()
 		WITH n LIMIT 10000
-		DELETE n`,
+		DETACH DELETE n`,
 		map[string]interface{}{}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
