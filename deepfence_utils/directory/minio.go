@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 
@@ -240,9 +241,7 @@ func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, ad
 		return "", err
 	}
 
-	exposedUrl := strings.ReplaceAll(urlLink.String(), "deepfence-file-server:9000", fmt.Sprintf("%s/file-server", consoleIp))
-	exposedUrl = strings.ReplaceAll(exposedUrl, "http://", "https://")
-	return exposedUrl, nil
+	return updateURL(urlLink.String(), consoleIp), nil
 }
 
 func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error) {
@@ -266,9 +265,7 @@ func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath
 		return "", err
 	}
 
-	exposedUrl := strings.ReplaceAll(urlLink.String(), "deepfence-file-server:9000", fmt.Sprintf("%s/file-server", consoleIp))
-	exposedUrl = strings.ReplaceAll(exposedUrl, "http://", "https://")
-	return exposedUrl, nil
+	return updateURL(urlLink.String(), consoleIp), nil
 }
 
 func (mfm *MinioFileManager) Client() interface{} {
@@ -310,6 +307,18 @@ func (mfm *MinioFileManager) CreatePublicBucket(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func updateURL(url string, consoleIp string) string {
+	minioHost := utils.GetEnvOrDefault("DEEPFENCE_MINIO_HOST", "deepfence-file-server")
+	minioPort := utils.GetEnvOrDefault("DEEPFENCE_MINIO_PORT", "9000")
+
+	updated := strings.ReplaceAll(url,
+		fmt.Sprintf("%s:%s", minioHost, minioPort),
+		fmt.Sprintf("%s/file-server", consoleIp),
+	)
+
+	return strings.ReplaceAll(updated, "http://", "https://")
 }
 
 func newMinioClient(endpoints DBConfigs) (*minio.Client, error) {

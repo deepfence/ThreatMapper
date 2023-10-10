@@ -1,44 +1,41 @@
-{{- if .Values.postgresql.create }}
+{{- if .Values.postgres.create }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: deepfence-postgresql
+  name: {{ include "deepfence-console.fullname" . }}-postgres
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: postgresql
-    name: deepfence-postgresql
+    name: {{ include "deepfence-console.fullname" . }}-postgres
 spec:
-  serviceName: deepfence-postgresql
+  serviceName: {{ include "deepfence-console.fullname" . }}-postgres
   replicas: 1
   selector:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
-      component: postgresql
-      name: deepfence-postgresql
+      name: {{ include "deepfence-console.fullname" . }}-postgres
   template:
     metadata:
-      {{- with .Values.postgresql.podAnnotations }}
+      {{- with .Values.postgres.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
-        component: postgresql
-        name: deepfence-postgresql
+        name: {{ include "deepfence-console.fullname" . }}-postgres
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.postgresql.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.postgres.podSecurityContext | nindent 8 }}
       containers:
-        - name: postgresql
+        - name: postgres
           securityContext:
-            {{- toYaml .Values.postgresql.securityContext | nindent 12 }}
-          image: "{{ .Values.global.imageRepoPrefix }}/{{ .Values.postgresql.image.repository }}:{{ default .Values.global.imageTag .Values.postgresql.image.tag }}"
-          imagePullPolicy: {{ .Values.postgresql.image.pullPolicy }}
+            {{- toYaml .Values.postgres.securityContext | nindent 12 }}
+          image: "{{ .Values.global.imageRepoPrefix }}/{{ .Values.postgres.image.repository }}:{{ default .Values.global.imageTag .Values.postgres.image.tag }}"
+          imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
           envFrom:
             - secretRef:
-                name: "deepfence-postgresql"
+                name: {{ include "deepfence-console.fullname" . }}-postgres-secret
           ports:
             - name: tcp
               containerPort: 5432
@@ -66,41 +63,40 @@ spec:
             failureThreshold: 5
             successThreshold: 1
           resources:
-            {{- toYaml .Values.postgresql.resources | nindent 12 }}
+            {{- toYaml .Values.postgres.resources | nindent 12 }}
           volumeMounts:
             - mountPath: /data
-              name: "postgresql-{{ .Release.Name }}"
-      {{- with .Values.postgresql.nodeSelector }}
+              name: "postgres"
+      {{- with .Values.postgres.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.postgresql.affinity }}
+      {{- with .Values.postgres.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.postgresql.tolerations }}
+      {{- with .Values.postgres.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
   volumeClaimTemplates:
     - metadata:
-        name: "postgresql-{{ .Release.Name }}"
+        name: "postgres"
       spec:
         accessModes:
           - "ReadWriteOnce"
         resources:
           requests:
-            storage: "{{ .Values.postgresql.volumeSize }}"
-        storageClassName: {{ default .Values.global.storageClass .Values.postgresql.storageClass }}
+            storage: "{{ .Values.postgres.volumeSize }}"
+        storageClassName: {{ default .Values.global.storageClass .Values.postgres.storageClass }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: deepfence-postgresql
+  name: {{ include "deepfence-console.fullname" . }}-postgres
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: postgresql
-    name: deepfence-postgresql
+    name: {{ include "deepfence-console.fullname" . }}-postgres
 spec:
   type: ClusterIP
   ports:
@@ -110,6 +106,5 @@ spec:
       protocol: TCP
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
-    component: postgresql
-    name: deepfence-postgresql
+    name: {{ include "deepfence-console.fullname" . }}-postgres
 {{- end }}

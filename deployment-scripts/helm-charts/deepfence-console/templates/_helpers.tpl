@@ -46,6 +46,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "deepfence-console.selectorLabels" -}}
+app: deepfence-console
 app.kubernetes.io/name: {{ include "deepfence-console.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

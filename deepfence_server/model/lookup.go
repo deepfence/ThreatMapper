@@ -79,6 +79,7 @@ type Host struct {
 	LocalNetworks             []interface{}    `json:"local_networks" required:"true"`
 	InstanceID                string           `json:"instance_id" required:"true"`
 	CloudProvider             string           `json:"cloud_provider" required:"true"`
+	CloudAccountID            string           `json:"cloud_account_id" required:"true"`
 	InstanceType              string           `json:"instance_type" required:"true"`
 	PublicIP                  []interface{}    `json:"public_ip" required:"true"`
 	PrivateIP                 []interface{}    `json:"private_ip" required:"true"`
@@ -252,6 +253,7 @@ func (c Container) id() string {
 type Process struct {
 	ID             string  `json:"node_id" required:"true"`
 	Name           string  `json:"node_name" required:"true"`
+	ShortNodeName  string  `json:"short_name" required:"true"`
 	PID            int     `json:"pid" required:"true"`
 	Command        string  `json:"cmdline" required:"true"`
 	PPID           int     `json:"ppid" required:"true"`

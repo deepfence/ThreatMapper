@@ -2,7 +2,8 @@
 /* eslint-disable */
 export * from './ApiDocsBadRequestResponse';
 export * from './ApiDocsFailureResponse';
-export * from './ApiDocsGraphResult';
+export * from './CompletionCompletionNodeFieldReq';
+export * from './CompletionCompletionNodeFieldRes';
 export * from './ControlsAction';
 export * from './ControlsAgentBeat';
 export * from './ControlsAgentControls';
@@ -87,6 +88,7 @@ export * from './ModelFiltersResult';
 export * from './ModelGenerateReportReq';
 export * from './ModelGenerateReportResp';
 export * from './ModelGetAuditLogsRequest';
+export * from './ModelGraphResult';
 export * from './ModelHost';
 export * from './ModelImageStub';
 export * from './ModelInitAgentReq';
@@ -151,6 +153,8 @@ export * from './ModelSettingUpdateRequest';
 export * from './ModelSettingsResponse';
 export * from './ModelStopScanRequest';
 export * from './ModelSummary';
+export * from './ModelTopologyDeltaReq';
+export * from './ModelTopologyDeltaResponse';
 export * from './ModelUpdateScheduledTaskRequest';
 export * from './ModelUpdateUserIdRequest';
 export * from './ModelUpdateUserPasswordRequest';

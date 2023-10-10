@@ -1,9 +1,0 @@
-FROM confluentinc/cp-kafka-rest:7.4.0
-
-LABEL MAINTAINER="Deepfence Inc"
-LABEL deepfence.role=system
-
-ENV KAFKA_REST_HOST_NAME=deepfence-rest-proxy \
-    KAFKA_REST_BOOTSTRAP_SERVERS=deepfence-kafka-broker:9092 \
-    KAFKA_REST_LISTENERS="http://0.0.0.0:8082" \
-    KAFKA_REST_PRODUCER_MAX_REQUEST_SIZE=52428800

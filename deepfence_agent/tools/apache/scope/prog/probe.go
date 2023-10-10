@@ -130,7 +130,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	)
 	log.Info().Msgf("probe starting, version %s, ID %s", version, probeID)
 
-	if flags.kubernetesEnabled {
+	if flags.kubernetesEnabled && os.Getenv("KUBERNETES_SERVICE_HOST") == "" {
 		// If KUBERNETES_SERVICE_HOST env is not there, get it from kube-proxy container in this host
 		// KUBERNETES_PORT_443_TCP_PROTO="tcp"
 		// KUBERNETES_PORT_443_TCP_PORT="443"
@@ -140,33 +140,37 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		// KUBERNETES_SERVICE_PORT_HTTPS="443"
 		// KUBERNETES_PORT=tcp://10.96.0.1:443
 		// KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443
-		if os.Getenv("KUBERNETES_SERVICE_HOST") == "" {
-			client, err := docker_client.NewClientFromEnv()
-			if err == nil {
-				containerFilters := make(map[string][]string, 2)
-				containerFilters["label"] = []string{"io.kubernetes.container.name=kube-proxy"}
-				containers, err := client.ListContainers(docker_client.ListContainersOptions{Filters: containerFilters})
-				if err == nil {
-					for _, container := range containers {
-						containerDetails, err := client.InspectContainerWithOptions(docker_client.InspectContainerOptions{
-							ID: container.ID,
-						})
-						if err == nil {
-							for _, env := range containerDetails.Config.Env {
-								if strings.HasPrefix(env, "KUBERNETES_SERVICE_HOST=") {
-									os.Setenv("KUBERNETES_SERVICE_HOST", strings.Split(env, "=")[1])
-								}
-								if strings.HasPrefix(env, "KUBERNETES_SERVICE_PORT=") {
-									os.Setenv("KUBERNETES_SERVICE_PORT", strings.Split(env, "=")[1])
-								}
-							}
-						}
-					}
+		client, err := docker_client.NewClientFromEnv()
+		if err != nil {
+			log.Error().Msg(err.Error())
+			goto endNestedIf
+		}
+		containerFilters := make(map[string][]string, 2)
+		containerFilters["label"] = []string{"io.kubernetes.container.name=kube-proxy"}
+		containers, err := client.ListContainers(docker_client.ListContainersOptions{Filters: containerFilters})
+		if err != nil {
+			log.Error().Msg(err.Error())
+			goto endNestedIf
+		}
+		for _, container := range containers {
+			containerDetails, err := client.InspectContainerWithOptions(docker_client.InspectContainerOptions{
+				ID: container.ID,
+			})
+			if err != nil {
+				log.Error().Msg(err.Error())
+				break
+			}
+			for _, env := range containerDetails.Config.Env {
+				if strings.HasPrefix(env, "KUBERNETES_SERVICE_HOST=") {
+					os.Setenv("KUBERNETES_SERVICE_HOST", strings.Split(env, "=")[1])
+				}
+				if strings.HasPrefix(env, "KUBERNETES_SERVICE_PORT=") {
+					os.Setenv("KUBERNETES_SERVICE_PORT", strings.Split(env, "=")[1])
 				}
 			}
 		}
 	}
-
+endNestedIf:
 	// https://groups.google.com/d/msg/kubernetes-sig-architecture/mVGobfD4TpY/Pa7n5t2qAAAJ
 	k8sClusterId, k8sClusterName, k8sVersion, nodeRole, _ := dfUtils.GetKubernetesDetails()
 	if flags.kubernetesEnabled && flags.kubernetesRole != kubernetesRoleHost {

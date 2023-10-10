@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"io/ioutil"
+	"fmt"
 	"os"
 	"path"
 	"time"
@@ -21,24 +21,24 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	"go.opentelemetry.io/otel/trace"
 
 	"net/http"
 	_ "net/http/pprof"
 )
 
 type config struct {
-	Debug                     bool     `default:"false"`
-	Mode                      string   `default:"worker" required:"true"`
-	MetricsPort               string   `default:"8181" split_words:"true"`
-	KafkaBrokers              []string `default:"deepfence-kafka-broker:9092" required:"true" split_words:"true"`
-	KafkaTopicPartitions      int32    `default:"1" split_words:"true"`
-	KafkaTopicReplicas        int16    `default:"1" split_words:"true"`
-	KafkaTopicRetentionMs     string   `default:"86400000" split_words:"true"`
-	KafkaTopicPartitionsTasks int32    `default:"3" split_words:"true"`
-	RedisHost                 string   `default:"deepfence-redis"`
-	RedisDbNumber             int      `default:"0"`
-	RedisPort                 string   `default:"6379"`
-	RedisPassword             string   `default:""`
+	Debug                 bool     `default:"false"`
+	Mode                  string   `default:"worker" required:"true"`
+	MetricsPort           string   `default:"8181" split_words:"true"`
+	KafkaBrokers          []string `default:"deepfence-kafka-broker:9092" required:"true" split_words:"true"`
+	KafkaTopicPartitions  int32    `default:"1" split_words:"true"`
+	KafkaTopicReplicas    int16    `default:"1" split_words:"true"`
+	KafkaTopicRetentionMs string   `default:"86400000" split_words:"true"`
+	RedisHost             string   `default:"deepfence-redis" required:"true" split_words:"true"`
+	RedisDbNumber         int      `default:"0" split_words:"true"`
+	RedisPort             string   `default:"6379" split_words:"true"`
+	RedisPassword         string   `default:"" split_words:"true"`
 }
 
 // build info
@@ -60,7 +60,7 @@ func main() {
 		log.Fatal().Msg(err.Error())
 	}
 
-	dir, err := ioutil.ReadDir("/tmp")
+	dir, err := os.ReadDir("/tmp")
 	if err != nil {
 		log.Fatal().Msg(err.Error())
 	}
@@ -138,26 +138,45 @@ func main() {
 }
 
 func initializeTelemetry(mode string) error {
-	exp, err := jaeger.New(
-		jaeger.WithCollectorEndpoint(
-			jaeger.WithEndpoint("http://deepfence-telemetry:14268/api/traces"),
-		),
-	)
-	if err != nil {
-		return err
-	}
-	tp := tracesdk.NewTracerProvider(
-		tracesdk.WithBatcher(exp),
-		tracesdk.WithResource(resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("deepfence-"+mode),
-			attribute.String("environment", "dev"),
-		)),
-	)
 
-	otel.SetTracerProvider(tp)
+	telemetryEnabled := os.Getenv("DEEPFENCE_TELEMETRY_ENABLED") != ""
+
+	if telemetryEnabled {
+		telemetryHost := utils.GetEnvOrDefault("DEEPFENCE_TELEMETRY_HOST", "deepfence-telemetry")
+		telemetryPort := utils.GetEnvOrDefault("DEEPFENCE_TELEMETRY_PORT", "14268")
+		telemetryEndpoint := fmt.Sprintf("http://%s:%s/api/traces", telemetryHost, telemetryPort)
+
+		log.Info().Msgf("sending traces to endpoint %s", telemetryEndpoint)
+
+		exp, err := jaeger.New(
+			jaeger.WithCollectorEndpoint(
+				jaeger.WithEndpoint(telemetryEndpoint),
+			),
+		)
+		if err != nil {
+			return err
+		}
+
+		tp := tracesdk.NewTracerProvider(
+			tracesdk.WithBatcher(exp),
+			tracesdk.WithResource(resource.NewWithAttributes(
+				semconv.SchemaURL,
+				semconv.ServiceNameKey.String("deepfence-"+mode),
+				attribute.String("environment", "dev"),
+			)),
+		)
+
+		otel.SetTracerProvider(tp)
+
+	} else {
+		log.Info().Msgf("setting up noop tracer provider")
+		// set a noop tracer provider
+		otel.SetTracerProvider(trace.NewNoopTracerProvider())
+	}
+
 	otel.SetTextMapPropagator(
 		propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}),
 	)
+
 	return nil
 }

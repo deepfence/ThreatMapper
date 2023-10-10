@@ -4,6 +4,8 @@ go 1.20
 
 replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_sdk/client/
 
+replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils
+
 replace github.com/deepfence/ThreatMapper/deepfence_utils => ../deepfence_utils/
 
 replace github.com/deepfence/df-utils => ../deepfence_agent/tools/apache/deepfence/df-utils
@@ -29,6 +31,7 @@ require (
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/YaraHunter v0.0.0-00010101000000-000000000000
 	github.com/deepfence/agent-plugins-grpc v1.1.0
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230929125743-1713a043efe5
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
 	github.com/hibiken/asynq v0.24.1
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -45,6 +48,7 @@ require (
 	go.opentelemetry.io/otel v1.18.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.16.0
 	go.opentelemetry.io/otel/sdk v1.18.0
+	go.opentelemetry.io/otel/trace v1.18.0
 )
 
 require (
@@ -83,7 +87,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230817093436-faaacc23dfd8 // indirect
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230922050328-b19457df35dc // indirect
 	github.com/deepfence/vessel v0.11.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/cli v24.0.2+incompatible // indirect
@@ -220,7 +223,6 @@ require (
 	github.com/xuri/nfp v0.0.0-20220409054826-5e722a1d9e22 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.18.0 // indirect
-	go.opentelemetry.io/otel/trace v1.18.0 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/exp v0.0.0-20230202163644-54bba9f4231b // indirect
 	golang.org/x/mod v0.12.0 // indirect

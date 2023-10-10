@@ -7,10 +7,10 @@ import (
 	"os"
 	"os/exec"
 	"sync"
+	"time"
 
 	"github.com/deepfence/SecretScanner/core"
 	"github.com/deepfence/SecretScanner/output"
-	"github.com/deepfence/SecretScanner/scan"
 	secretScan "github.com/deepfence/SecretScanner/scan"
 	"github.com/deepfence/SecretScanner/signature"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -19,6 +19,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
+	tasks "github.com/deepfence/golang_deepfence_sdk/utils/tasks"
 	"github.com/hibiken/asynq"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -57,8 +58,9 @@ func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error 
 		return nil
 	}
 
-	scanCtx := obj.(*scan.ScanContext)
-	scanCtx.Stopped.Store(true)
+	scanCtx := obj.(*tasks.ScanContext)
+	scanCtx.StopTriggered.Store(true)
+	scanCtx.Cancel()
 	log.Error().Msgf("SecretScanner::Stop request submitted, ScanID: %s", scanID)
 
 	return nil
@@ -77,10 +79,6 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	}
 	log.Info().Msgf("message tenant id %s", string(tenantID))
 
-	rh := []kgo.RecordHeader{
-		{Key: "namespace", Value: []byte(tenantID)},
-	}
-
 	log.Info().Msgf("payload: %s ", string(task.Payload()))
 
 	var params utils.SecretScanParameters
@@ -98,8 +96,26 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	//Set this "hardErr" variable to appropriate error if
 	//an error has caused used to abort/return from this function
 	var hardErr error
-	scanCtx := scan.NewScanContext(params.ScanId)
-	res := StartStatusReporter(context.Background(), scanCtx, params, s.ingestC, rh)
+	res, scanCtx := tasks.StartStatusReporter(params.ScanId,
+		func(status tasks.ScanStatus) error {
+			sb, err := json.Marshal(status)
+			if err != nil {
+				return err
+			}
+			s.ingestC <- &kgo.Record{
+				Topic:   utils.SECRET_SCAN_STATUS,
+				Value:   sb,
+				Headers: []kgo.RecordHeader{{Key: "namespace", Value: []byte(tenantID)}},
+			}
+			return nil
+		}, tasks.StatusValues{
+			IN_PROGRESS: utils.SCAN_STATUS_INPROGRESS,
+			CANCELLED:   utils.SCAN_STATUS_CANCELLED,
+			FAILED:      utils.SCAN_STATUS_FAILED,
+			SUCCESS:     utils.SCAN_STATUS_SUCCESS,
+		},
+		time.Minute*20,
+	)
 
 	ScanMap.Store(params.ScanId, scanCtx)
 
@@ -111,7 +127,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	}()
 
 	// send inprogress status
-	scanCtx.ScanStatusChan <- true
+	scanCtx.Checkpoint("After initialization")
 
 	// get registry credentials
 	authDir, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
@@ -170,9 +186,9 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 		return nil
 	}
 
-	// init secret scan
-	scanCtx.ScanStatusChan <- true
+	scanCtx.Checkpoint("After skopeo download")
 
+	// init secret scan
 	scanResult, err := secretScan.ExtractAndScanFromTar(dir, imageName, scanCtx)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -196,7 +212,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 			s.ingestC <- &kgo.Record{
 				Topic:   utils.SECRET_SCAN,
 				Value:   cb,
-				Headers: rh,
+				Headers: []kgo.RecordHeader{{Key: "namespace", Value: []byte(tenantID)}},
 			}
 		}
 	}

@@ -1,11 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deepfence-server
+  name: {{ include "deepfence-console.fullname" . }}-server
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: server
-    name: deepfence-server
+    name: {{ include "deepfence-console.fullname" . }}-server
 spec:
   {{- if not .Values.server.autoscaling.enabled }}
   replicas: {{ .Values.server.replicaCount }}
@@ -13,8 +12,7 @@ spec:
   selector:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
-      component: server
-      name: deepfence-server
+      name: {{ include "deepfence-console.fullname" . }}-server
   template:
     metadata:
       {{- with .Values.server.podAnnotations }}
@@ -23,8 +21,7 @@ spec:
       {{- end }}
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
-        component: server
-        name: deepfence-server
+        name: {{ include "deepfence-console.fullname" . }}-server
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       automountServiceAccountToken: true
@@ -47,34 +44,34 @@ spec:
               value: "kubernetes"
           envFrom:
             - configMapRef:
-                name: "deepfence-console-config"
+                name: "{{ include "deepfence-console.fullname" . }}-config"
             - secretRef:
                 {{- if .Values.redis.create }}
-                name: "deepfence-console-secrets-redis"
+                name: "{{ include "deepfence-console.fullname" . }}-secrets-redis"
                 {{- else }}
                 name: {{ .Values.redis.secretName }}
                 {{- end }}
             - secretRef:
                 {{- if .Values.fileserver.create }}
-                name: "deepfence-console-secrets-fileserver"
+                name: "{{ include "deepfence-console.fullname" . }}-secrets-fileserver"
                 {{- else }}
                 name: {{ .Values.minio.secretName }}
                 {{- end }}
             - secretRef:
                 {{- if .Values.kafka.create }}
-                name: "deepfence-console-secrets-kafka"
+                name: "{{ include "deepfence-console.fullname" . }}-secrets-kafka"
                 {{- else }}
                 name: {{ .Values.kafka.secretName }}
                 {{- end }}
             - secretRef:
-                {{- if .Values.postgresql.create }}
-                name: "deepfence-console-secrets-postgresql"
+                {{- if .Values.postgres.create }}
+                name: "{{ include "deepfence-console.fullname" . }}-secrets-postgres"
                 {{- else }}
-                name: {{ .Values.postgresql.secretName }}
+                name: {{ .Values.postgres.secretName }}
                 {{- end }}
             - secretRef:
                 {{- if .Values.neo4j.create }}
-                name: "deepfence-console-secrets-neo4j"
+                name: "{{ include "deepfence-console.fullname" . }}-secrets-neo4j"
                 {{- else }}
                 name: {{ .Values.neo4j.secretName }}
                 {{- end }}
@@ -121,11 +118,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: deepfence-server
+  name: {{ include "deepfence-console.fullname" . }}-server
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: server
-    name: deepfence-server
+    name: {{ include "deepfence-console.fullname" . }}-server
 spec:
   type: ClusterIP
   ports:
@@ -139,23 +135,21 @@ spec:
       name: internal
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
-    component: server
-    name: deepfence-server
+    name: {{ include "deepfence-console.fullname" . }}-server
 ---
 {{- if .Values.server.autoscaling.enabled }}
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: deepfence-server
+  name: {{ include "deepfence-console.fullname" . }}-server
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: server
-    name: deepfence-server
+    name: {{ include "deepfence-console.fullname" . }}-server
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: deepfence-server
+    name: {{ include "deepfence-console.fullname" . }}-server
   minReplicas: {{ .Values.server.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.server.autoscaling.maxReplicas }}
   metrics:

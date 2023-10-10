@@ -31,14 +31,13 @@ kubectl delete -f https://deepfence-public.s3.amazonaws.com/kubernetes/deepfence
 ```bash
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 
-# helm show readme deepfence/deepfence-agent --version 2.0.0 | less
-# helm show values deepfence/deepfence-agent --version 2.0.0 | less
+# helm show readme deepfence/deepfence-agent --version 2.0.1 | less
+# helm show values deepfence/deepfence-agent --version 2.0.1 | less
 
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
     --set deepfenceKey=73f6f3d0-9931-4b31-8967-fd6adf475f80 \
-    --set image.tag=2.0.0 \
-    --set image.clusterAgentImageTag=2.0.0 \
+    --set global.imageTag=2.0.0 \
     --set clusterName="prod-cluster" \
     --set mountContainerRuntimeSocket.containerdSock=true \
     --set mountContainerRuntimeSocket.dockerSock=false \
@@ -46,7 +45,7 @@ helm install deepfence-agent deepfence/deepfence-agent \
     --set mountContainerRuntimeSocket.containerdSockPath="/run/containerd/containerd.sock" \
     --namespace deepfence \
     --create-namespace \
-    --version 2.0.0
+    --version 2.0.1
 ```
 
 ## Fine-tune the Helm deployment
@@ -54,7 +53,7 @@ helm install deepfence-agent deepfence/deepfence-agent \
 ```bash
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 
-helm show values deepfence/deepfence-agent --version 2.0.0 > deepfence_agent_values.yaml
+helm show values deepfence/deepfence-agent --version 2.0.1 > deepfence_agent_values.yaml
 
 # You will need to update the following values:
 #   managementConsoleUrl and deepfenceKey - specify your URL/IP and API key value
@@ -66,7 +65,7 @@ vim deepfence_agent_values.yaml
 helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-agent \
     --namespace deepfence \
     --create-namespace \
-    --version 2.0.0
+    --version 2.0.1
 ```
 
 ## Delete the ThreatMapper Sensor

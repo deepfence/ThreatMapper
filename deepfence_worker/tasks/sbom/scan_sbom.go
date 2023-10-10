@@ -5,11 +5,11 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"path"
 	"regexp"
-	"sync"
 	"time"
 
 	"github.com/anchore/syft/syft/formats"
@@ -18,6 +18,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/deepfence/golang_deepfence_sdk/utils/tasks"
 	psOutput "github.com/deepfence/package-scanner/output"
 	ps "github.com/deepfence/package-scanner/scanner"
 	"github.com/deepfence/package-scanner/scanner/grype"
@@ -28,15 +29,13 @@ import (
 )
 
 var (
-	grypeConfig = "/usr/local/bin/grype.yaml"
-	grypeBin    = "grype"
+	attackVectorRegex   = regexp.MustCompile(`.*av:n.*`)
+	grypeConfig         = "/usr/local/bin/grype.yaml"
+	grypeBin            = "grype"
+	minioHost           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_HOST", "deepfence-file-server")
+	minioPort           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_PORT", "9000")
+	GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=http://%s:%s/database/database/vulnerability/listing.json", minioHost, minioPort)
 )
-
-var attackVectorRegex *regexp.Regexp
-
-func init() {
-	attackVectorRegex = regexp.MustCompile(`.*av:n.*`)
-}
 
 type SbomParser struct {
 	ingestC chan *kgo.Record
@@ -84,6 +83,7 @@ func (b UnzippedFile) Close() error {
 
 func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 
+	var err error
 	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
@@ -99,30 +99,50 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
-	log.Info().Msgf("payload: %s ", string(task.Payload()))
-
 	var params utils.SbomParameters
 
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
 		return nil
 	}
 
-	statusChan := make(chan SbomScanStatus)
-	var wg sync.WaitGroup
-	wg.Add(1)
-	StartStatusReporter("SCAN_SBOM", statusChan, s.ingestC, rh, params, &wg)
-	defer wg.Wait()
+	res, scanCtx := tasks.StartStatusReporter(params.ScanId,
+		func(status tasks.ScanStatus) error {
+			sb, err := json.Marshal(status)
+			if err != nil {
+				return err
+			}
+			s.ingestC <- &kgo.Record{
+				Topic:   utils.VULNERABILITY_SCAN_STATUS,
+				Value:   sb,
+				Headers: rh,
+			}
+			return nil
+		}, tasks.StatusValues{
+			IN_PROGRESS: utils.SCAN_STATUS_INPROGRESS,
+			CANCELLED:   utils.SCAN_STATUS_CANCELLED,
+			FAILED:      utils.SCAN_STATUS_FAILED,
+			SUCCESS:     utils.SCAN_STATUS_SUCCESS,
+		},
+		time.Minute*20,
+	)
+	log.Info().Msgf("Adding scanid to map:%s", params.ScanId)
+	scanMap.Store(params.ScanId, scanCtx)
+	defer func() {
+		log.Info().Msgf("Removing scaind from map:%s", params.ScanId)
+		scanMap.Delete(params.ScanId)
+		res <- err
+		close(res)
+	}()
+
+	log.Info().Msgf("payload: %s ", string(task.Payload()))
 
 	// send inprogress status
-	statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil)
 
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
-		return nil
+		return err
 	}
 
 	sbomFilePath := path.Join("/tmp", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
@@ -135,8 +155,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	err = mc.DownloadFileTo(context.Background(), params.SBOMFilePath, sbomFile, minio.GetObjectOptions{})
 	if err != nil {
 		log.Error().Msg(err.Error())
-		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
-		return nil
+		return err
 	}
 	defer func() {
 		log.Info().Msgf("remove sbom file %s", sbomFilePath)
@@ -144,14 +163,11 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	}()
 
 	log.Info().Msg("scanning sbom for vulnerabilities ...")
-	env := []string{
-		"GRYPE_DB_UPDATE_URL=http://deepfence-file-server:9000/database/database/vulnerability/listing.json",
-	}
+	env := []string{GRYPE_DB_UPDATE_URL}
 	vulnerabilities, err := grype.Scan(grypeBin, grypeConfig, sbomFilePath, &env)
 	if err != nil {
 		log.Error().Msgf("error: %s output: %s", err.Error(), string(vulnerabilities))
-		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
-		return nil
+		return err
 	}
 
 	cfg := psUtils.Config{
@@ -167,8 +183,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	report, err := grype.PopulateFinalReport(vulnerabilities, cfg)
 	if err != nil {
 		log.Error().Msgf("error on generate vulnerability report: %s", err)
-		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
-		return nil
+		return err
 	}
 
 	details := psOutput.CountBySeverity(&report)
@@ -189,36 +204,17 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		}
 	}
 
-	// scan status
-	info := model.ScanInfo{
-		ScanId:    params.ScanId,
-		Status:    utils.SCAN_STATUS_SUCCESS,
-		UpdatedAt: time.Now().Unix(),
-		NodeId:    params.NodeId,
-		NodeType:  params.NodeType,
-		NodeName:  params.NodeId,
-		SeverityCounts: map[string]int32{
-			"total":          int32(details.Total),
-			psUtils.CRITICAL: int32(details.Severity.Critical),
-			psUtils.HIGH:     int32(details.Severity.High),
-			psUtils.MEDIUM:   int32(details.Severity.Medium),
-			psUtils.LOW:      int32(details.Severity.Low),
-		},
-	}
-
-	statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_SUCCESS, "", &info)
-
 	// generate runtime sbom
 	runtimeSbom, err := generateRuntimeSBOM(sbomFilePath, report)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to generate runtime sbom")
-		return nil
+		return err
 	}
 
 	runtimeSbomBytes, err := json.Marshal(runtimeSbom)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to marshal runtime sbom")
-		return nil
+		return err
 	}
 
 	runtimeSbomPath := path.Join("/sbom/", "runtime-"+utils.ScanIdReplacer.Replace(params.ScanId)+".json")
@@ -226,7 +222,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to upload runtime sbom")
-		return nil
+		return err
 	}
 
 	log.Info().Msgf("scan_id: %s, runtime sbom minio file info: %+v", params.ScanId, uploadInfo)

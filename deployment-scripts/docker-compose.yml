@@ -26,6 +26,7 @@ x-service-variables: &common-creds
     DEEPFENCE_DEBUG: "false"
     DF_ENABLE_DEBUG: ""
     DEEPFENCE_ENABLE_PPROF: ""
+    DEEPFENCE_TELEMETRY_ENABLED: "true"
 
 services:
 
@@ -106,6 +107,7 @@ services:
       - MGMT_CONSOLE_URL=127.0.0.1
       - MGMT_CONSOLE_PORT=443
       - DEEPFENCE_KEY=""
+      - DEEPFENCE_CONSOLE_AGENT=true
     network_mode: "host"
     volumes:
       - /sys/kernel/debug:/sys/kernel/debug:rw

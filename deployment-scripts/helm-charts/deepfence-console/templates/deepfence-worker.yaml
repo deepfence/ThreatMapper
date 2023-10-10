@@ -1,11 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deepfence-worker
+  name: {{ include "deepfence-console.fullname" . }}-worker
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: worker
-    name: deepfence-worker
+    name: {{ include "deepfence-console.fullname" . }}-worker
 spec:
   {{- if not .Values.worker.autoscaling.enabled }}
   replicas: {{ .Values.worker.replicaCount }}
@@ -13,8 +12,7 @@ spec:
   selector:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
-      component: worker
-      name: deepfence-worker
+      name: {{ include "deepfence-console.fullname" . }}-worker
   template:
     metadata:
       {{- with .Values.worker.podAnnotations }}
@@ -23,8 +21,7 @@ spec:
       {{- end }}
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
-        component: worker
-        name: deepfence-worker
+        name: {{ include "deepfence-console.fullname" . }}-worker
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
@@ -40,34 +37,34 @@ spec:
               value: worker
           envFrom:
             - configMapRef:
-                name: "deepfence-console-config"
+                name: "{{ include "deepfence-console.fullname" . }}-config"
             - secretRef:
                 {{- if .Values.redis.create }}
-                name: "deepfence-console-secrets-redis"
+                name: "{{ include "deepfence-console.fullname" . }}-secrets-redis"
                 {{- else }}
                 name: {{ .Values.redis.secretName }}
                 {{- end }}
             - secretRef:
                 {{- if .Values.fileserver.create }}
-                name: "deepfence-console-secrets-fileserver"
+                name: "{{ include "deepfence-console.fullname" . }}-secrets-fileserver"
                 {{- else }}
                 name: {{ .Values.minio.secretName }}
                 {{- end }}
             - secretRef:
                 {{- if .Values.kafka.create }}
-                name: "deepfence-console-secrets-kafka"
+                name: "{{ include "deepfence-console.fullname" . }}-secrets-kafka"
                 {{- else }}
                 name: {{ .Values.kafka.secretName }}
                 {{- end }}
             - secretRef:
-                {{- if .Values.postgresql.create }}
-                name: "deepfence-console-secrets-postgresql"
+                {{- if .Values.postgres.create }}
+                name: "{{ include "deepfence-console.fullname" . }}-secrets-postgres"
                 {{- else }}
-                name: {{ .Values.postgresql.secretName }}
+                name: {{ .Values.postgres.secretName }}
                 {{- end }}
             - secretRef:
                 {{- if .Values.neo4j.create }}
-                name: "deepfence-console-secrets-neo4j"
+                name: "{{ include "deepfence-console.fullname" . }}-secrets-neo4j"
                 {{- else }}
                 name: {{ .Values.neo4j.secretName }}
                 {{- end }}
@@ -101,11 +98,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: deepfence-worker
+  name: {{ include "deepfence-console.fullname" . }}-worker
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: worker
-    name: deepfence-worker
+    name: {{ include "deepfence-console.fullname" . }}-worker
 spec:
   type: {{ .Values.worker.service.type }}
   ports:
@@ -115,23 +111,21 @@ spec:
       name: http
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
-    component: worker
-    name: deepfence-worker
+    name: {{ include "deepfence-console.fullname" . }}-worker
 ---
 {{- if .Values.worker.autoscaling.enabled }}
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: deepfence-worker
+  name: {{ include "deepfence-console.fullname" . }}-worker
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
-    component: worker
-    name: deepfence-worker
+    name: {{ include "deepfence-console.fullname" . }}-worker
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: deepfence-worker
+    name: {{ include "deepfence-console.fullname" . }}-worker
   minReplicas: {{ .Values.worker.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.worker.autoscaling.maxReplicas }}
   metrics:

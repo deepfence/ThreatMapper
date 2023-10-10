@@ -59,7 +59,7 @@ export const action = async ({
     throw updateResponse.error;
   }
 
-  toast.success('Updated sucessfully');
+  toast.success('Updated successfully');
   invalidateAllQueries();
   return {
     success: true,

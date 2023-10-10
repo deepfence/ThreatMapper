@@ -226,10 +226,7 @@ type Reporter struct {
 func NewReporter(hostName, probeID, version string) (*Reporter, string, string) {
 	kernelRelease, kernelVersion, _ := GetKernelReleaseAndVersion()
 	kernel := fmt.Sprintf("%s %s", kernelRelease, kernelVersion)
-	isConsoleVm := false
-	if dfUtils.IsThisHostUIMachine() {
-		isConsoleVm = true
-	}
+	isConsoleVm := dfUtils.IsThisConsoleAgent()
 	r := &Reporter{
 		hostName:          hostName,
 		probeID:           probeID,
@@ -386,6 +383,7 @@ func (r *Reporter) Report() (report.Report, error) {
 				IsConsoleVm:         r.IsConsoleVm,
 				AgentRunning:        true,
 				LocalCIDRs:          localCIDRs,
+				CloudAccountID:      cloudMetadata.AccountID,
 				CloudProvider:       cloudProvider,
 				CloudRegion:         cloudMetadata.Region,
 				InstanceID:          cloudMetadata.InstanceID,

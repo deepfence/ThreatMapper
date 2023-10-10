@@ -1,18 +1,18 @@
 import { remove } from 'lodash-es';
 
 import {
-  ApiDocsGraphResult,
   DetailedConnectionSummary,
   DetailedNodeSummary,
   GraphTopologyFilters,
+  ModelGraphResult,
 } from '@/api/generated';
 import { ApiDiff } from '@/features/topology/types/graph';
 import { TopologyTreeData } from '@/features/topology/types/table';
 import { getObjectKeys } from '@/utils/array';
 
 export function getTopologyDiff(
-  data: ApiDocsGraphResult,
-  previousData?: ApiDocsGraphResult,
+  data: ModelGraphResult,
+  previousData?: ModelGraphResult,
 ): ApiDiff {
   const nodesDiff: ApiDiff['nodesDiff'] = {
     add: [],
@@ -116,8 +116,8 @@ export enum NodeType {
 type NodesMap = Map<string, DetailedNodeSummary>;
 
 export class GraphStorageManager {
-  private data?: ApiDocsGraphResult;
-  private previousData?: ApiDocsGraphResult;
+  private data?: ModelGraphResult;
+  private previousData?: ModelGraphResult;
   private diff?: ApiDiff;
   private filters: Pick<
     GraphTopologyFilters,
@@ -163,10 +163,10 @@ export class GraphStorageManager {
   getFilters() {
     return this.filters;
   }
-  static getTotalNodesCount(data?: ApiDocsGraphResult) {
+  static getTotalNodesCount(data?: ModelGraphResult) {
     return Object.keys(data?.nodes ?? {}).length;
   }
-  setGraphData(data: ApiDocsGraphResult) {
+  setGraphData(data: ModelGraphResult) {
     this.previousData = this.data;
     this.data = data;
     this.createDiff();

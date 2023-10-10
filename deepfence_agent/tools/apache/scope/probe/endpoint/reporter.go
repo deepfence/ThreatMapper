@@ -20,4 +20,4 @@ type ReporterConfig struct {
 }
 
 // Name of this reporter, for metrics gathering
-func (Reporter) Name() string { return "Endpoint" }
+func (*Reporter) Name() string { return "Endpoint" }

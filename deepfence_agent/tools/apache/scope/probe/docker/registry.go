@@ -134,7 +134,7 @@ func NewRegistry(options RegistryOptions) (Registry, error) {
 		userDefinedImageTags: UserDefinedTags{
 			tags: make(map[string][]string),
 		},
-		isConsoleVm:           dfUtils.IsThisHostUIMachine(),
+		isConsoleVm:           dfUtils.IsThisConsoleAgent(),
 		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
 		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
 	}
@@ -461,7 +461,7 @@ func (r *registry) WalkImages(f func(docker_client.APIImages)) {
 	defer r.RUnlock()
 
 	// Loop over containers so we only emit images for running containers.
-	if !dfUtils.IsThisHostUIMachine() {
+	if !dfUtils.IsThisConsoleAgent() {
 		for _, image := range r.images {
 			f(image)
 		}
