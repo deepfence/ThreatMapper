@@ -2,6 +2,7 @@ package ingesters
 
 import (
 	"encoding/json"
+	"strconv"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -79,12 +80,12 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			return err
 		}
 
-		if ts != utils.NEO4J_COMPLIANCE_SCAN {
-			worker, err := directory.Worker(ctx)
-			if err != nil {
-				return err
-			}
+		worker, err := directory.Worker(ctx)
+		if err != nil {
+			return err
+		}
 
+		if ts != utils.NEO4J_COMPLIANCE_SCAN {
 			event := scans.UpdateScanEvent{
 				ScanType:  ts,
 				RecordMap: recordMap,
@@ -97,7 +98,17 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			if ts == utils.NEO4J_CLOUD_COMPLIANCE_SCAN {
 				task = utils.UpdateCloudResourceScanStatusTask
 			}
-			err = worker.Enqueue(task, b)
+			if err := worker.Enqueue(task, b); err != nil {
+				log.Error().Err(err).Msgf("failed to enqueue %s", task)
+			}
+		}
+
+		if (ts == utils.NEO4J_COMPLIANCE_SCAN || ts == utils.NEO4J_CLOUD_COMPLIANCE_SCAN) && anyCompleted(others) {
+			err := worker.Enqueue(utils.CachePostureProviders,
+				[]byte(strconv.FormatInt(utils.GetTimestamp(), 10)))
+			if err != nil {
+				log.Error().Err(err).Msgf("failed to enqueue %s", utils.CachePostureProviders)
+			}
 		}
 
 		return err
@@ -155,4 +166,18 @@ func ToMap[T any](data T) map[string]interface{} {
 	bb := map[string]interface{}{}
 	_ = json.Unmarshal(out, &bb)
 	return bb
+}
+
+func anyCompleted(data []map[string]interface{}) bool {
+
+	complete := false
+
+	for i := range data {
+		if data[i]["scan_status"].(string) == utils.SCAN_STATUS_SUCCESS {
+			complete = true
+			break
+		}
+	}
+
+	return complete
 }
