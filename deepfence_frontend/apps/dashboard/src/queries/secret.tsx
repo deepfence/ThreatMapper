@@ -701,8 +701,21 @@ export const secretQueries = createQueryKeys('secret', {
     };
     pageSize: number;
     severity: string[];
+    hostIds: string[];
+    containerIds: string[];
+    containerImageIds: string[];
+    clusterIds: string[];
   }) => {
-    const { page = 1, order, severity, pageSize } = filters;
+    const {
+      page = 1,
+      order,
+      severity,
+      pageSize,
+      hostIds,
+      containerIds,
+      containerImageIds,
+      clusterIds,
+    } = filters;
     return {
       queryKey: [{ filters }],
       queryFn: async () => {
@@ -733,7 +746,60 @@ export const secretQueries = createQueryKeys('secret', {
           },
           window: { offset: page * pageSize, size: pageSize },
         };
+        const nodeIds = [...hostIds, ...containerIds, ...containerImageIds];
+        if (nodeIds.length || clusterIds.length) {
+          const nodeTypes = [];
+          if (hostIds.length) {
+            nodeTypes.push('host');
+          }
+          if (containerIds.length) {
+            nodeTypes.push('container');
+          }
+          if (containerImageIds.length) {
+            nodeTypes.push('container_image');
+          }
 
+          const containsFilter = {
+            filter_in: {},
+          };
+
+          if (nodeIds.length) {
+            containsFilter.filter_in = {
+              node_id: nodeIds,
+              node_type: nodeTypes,
+            };
+          }
+          if (clusterIds.length) {
+            containsFilter.filter_in = {
+              ...containsFilter.filter_in,
+              kubernetes_cluster_id: clusterIds,
+            };
+          }
+          searchSecretsRequestParams.related_node_filter = {
+            relation_ship: 'DETECTED',
+            node_filter: {
+              filters: {
+                contains_filter: { filter_in: {} },
+                order_filter: { order_fields: [] },
+                match_filter: { filter_in: {} },
+                compare_filter: null,
+              },
+              in_field_filter: null,
+              window: {
+                offset: 0,
+                size: 0,
+              },
+            },
+            next_filter: {
+              relation_ship: 'SCANNED',
+              node_filter: {
+                filters: {
+                  contains_filter: containsFilter,
+                },
+              },
+            },
+          };
+        }
         if (severity.length) {
           searchSecretsRequestParams.node_filter.filters.contains_filter.filter_in![
             'level'
@@ -790,8 +856,14 @@ export const secretQueries = createQueryKeys('secret', {
       },
     };
   },
-  mostExploitableSecrets: (filters: { severity: string[] }) => {
-    const { severity } = filters;
+  mostExploitableSecrets: (filters: {
+    severity: string[];
+    hostIds: string[];
+    containerIds: string[];
+    containerImageIds: string[];
+    clusterIds: string[];
+  }) => {
+    const { severity, hostIds, containerIds, containerImageIds, clusterIds } = filters;
     return {
       queryKey: [{ filters }],
       queryFn: async () => {
@@ -830,6 +902,61 @@ export const secretQueries = createQueryKeys('secret', {
           },
           window: { offset: 0, size: 1000 },
         };
+
+        const nodeIds = [...hostIds, ...containerIds, ...containerImageIds];
+
+        if (nodeIds.length || clusterIds.length) {
+          const nodeTypes = [];
+          if (hostIds.length) {
+            nodeTypes.push('host');
+          }
+          if (containerIds.length) {
+            nodeTypes.push('container');
+          }
+          if (containerImageIds.length) {
+            nodeTypes.push('container_image');
+          }
+
+          const containsFilter = {
+            filter_in: {},
+          };
+          if (nodeIds.length) {
+            containsFilter.filter_in = {
+              node_id: nodeIds,
+              node_type: nodeTypes,
+            };
+          }
+          if (clusterIds.length) {
+            containsFilter.filter_in = {
+              ...containsFilter.filter_in,
+              kubernetes_cluster_id: clusterIds,
+            };
+          }
+          searchSecretsRequestParams.related_node_filter = {
+            relation_ship: 'DETECTED',
+            node_filter: {
+              filters: {
+                contains_filter: { filter_in: {} },
+                order_filter: { order_fields: [] },
+                match_filter: { filter_in: {} },
+                compare_filter: null,
+              },
+              in_field_filter: null,
+              window: {
+                offset: 0,
+                size: 0,
+              },
+            },
+            next_filter: {
+              relation_ship: 'SCANNED',
+              node_filter: {
+                filters: {
+                  contains_filter: containsFilter,
+                },
+              },
+            },
+          };
+        }
 
         const searchSecretsApi = apiWrapper({
           fn: getSearchApiClient().searchSecrets,
