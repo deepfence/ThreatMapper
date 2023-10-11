@@ -1,4 +1,4 @@
-import { useLocation, useRouteError } from 'react-router-dom';
+import { useRouteError } from 'react-router-dom';
 
 const SVG404 = () => {
   return (
@@ -406,38 +406,27 @@ const SVG404 = () => {
 
 const PageNotFoundComponent = () => {
   return (
-    <div className="flex flex-col h-full items-center pt-20">
-      <h1 className="text-[140px] text-chart-orange dark:text-chart-orange font-black leading-[190px]">
+    <div className="flex flex-col h-full items-center sm:pt-10 2xl:pt-20">
+      <h1 className="sm:text-[80px] 2xl:text-[100px] text-chart-orange dark:text-chart-orange font-black leading-none">
         404
       </h1>
-      <h4 className="text-3xl font-semibold text-text-text-and-icon dark:text-text-text-and-icon flex flex-col text-center">
-        Page not found.
-      </h4>
-      <div className="mt-6 w-[455px]">
-        <SVG404 />
+      <div className="mt-6 flex flex-col gap-y-14 items-center">
+        <h4 className="sm:text-base 2xl:text-xl font-semibold text-text-text-and-icon dark:text-text-text-and-icon flex flex-col text-center">
+          Page not found.
+        </h4>
+        <div className="sm:w-[375px] 2xl:w-[455px]">
+          <SVG404 />
+        </div>
       </div>
     </div>
   );
 };
 
 export const FourZeroFourAuthenticated = () => {
-  const location = useLocation();
   const error = useRouteError();
   console.error(error);
 
-  if (location.pathname.startsWith('/onboard')) {
-    return (
-      <div className="pt-[64px] h-screen">
-        <PageNotFoundComponent />
-      </div>
-    );
-  }
-
-  return (
-    <main className="pt-[64px] h-screen">
-      <PageNotFoundComponent />
-    </main>
-  );
+  return <PageNotFoundComponent />;
 };
 
 export const FourZeroFourPublic = () => {
@@ -445,10 +434,8 @@ export const FourZeroFourPublic = () => {
   console.error(error);
 
   return (
-    <div className="fixed inset-0 dark:bg-bg-page">
-      <div className="h-screen">
-        <PageNotFoundComponent />
-      </div>
+    <div className="fixed inset-0 dark:bg-bg-page py-20">
+      <PageNotFoundComponent />
     </div>
   );
 };
