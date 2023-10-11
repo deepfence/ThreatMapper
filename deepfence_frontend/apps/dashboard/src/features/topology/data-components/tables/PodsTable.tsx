@@ -285,7 +285,7 @@ function useSearchPodsWithPagination() {
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       order: getOrderFromSearchParams(searchParams),
       hosts: searchParams.getAll('hosts'),
-      clusters: searchParams.getAll('clusters'),
+      clusterNames: searchParams.getAll('clusters'),
       pods: searchParams.getAll('pods'),
       kubernetesStatus: searchParams.get('kubernetesStatus') ?? undefined,
     }),

@@ -22,8 +22,10 @@ import {
   ConfigureScanModal,
   ConfigureScanModalProps,
 } from '@/components/ConfigureScanModal';
+import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { CaretDown } from '@/components/icons/common/CaretDown';
+import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
@@ -370,7 +372,44 @@ const DataTable = ({
           } else {
             name = info.row.original.node_id;
           }
-          return <TruncatedText text={name} />;
+          return (
+            <div className="flex gap-x-2 items-center">
+              <Dropdown
+                triggerAsChild={true}
+                align={'start'}
+                content={
+                  <>
+                    <DropdownItem>
+                      <DFLink
+                        to={`../table/host?clusters=${info.row.original.node_id}`}
+                        unstyled
+                      >
+                        Go to hosts
+                      </DFLink>
+                    </DropdownItem>
+                    <DropdownItem>
+                      <DFLink
+                        to={`../table/container?clusters=${info.row.original.node_id}`}
+                        unstyled
+                      >
+                        Go to containers
+                      </DFLink>
+                    </DropdownItem>
+                    <DropdownItem>
+                      <DFLink to={`../table/pod?clusters=${name}`} unstyled>
+                        Go to pods
+                      </DFLink>
+                    </DropdownItem>
+                  </>
+                }
+              >
+                <div className="cursor-pointer h-3 w-4 dark:text-text-text-and-icon rotate-90">
+                  <EllipsisIcon />
+                </div>
+              </Dropdown>
+              <TruncatedText text={name} />
+            </div>
+          );
         },
         header: () => 'Name',
         minSize: 150,
