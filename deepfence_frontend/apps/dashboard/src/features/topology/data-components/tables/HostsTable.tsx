@@ -24,6 +24,7 @@ import {
 } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
@@ -422,6 +423,26 @@ function Filters() {
             );
           })}
         </Combobox>
+        <SearchableClusterList
+          defaultSelectedClusters={searchParams.getAll('clusters')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              value.forEach((cluster) => {
+                prev.append('clusters', cluster);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
         <SearchableCloudAccount
           scanId={''}
           defaultSelectedAccounts={searchParams.getAll('cloudAccounts')}
@@ -547,6 +568,7 @@ function useSearchHostsWithPagination() {
         .getAll('agentRunning')
         .map((value) => (value === 'On' ? true : false)),
       cloudAccounts: searchParams.getAll('cloudAccounts'),
+      clusterIds: searchParams.getAll('clusters'),
     }),
     keepPreviousData: true,
   });

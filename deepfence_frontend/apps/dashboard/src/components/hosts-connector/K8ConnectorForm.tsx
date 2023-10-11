@@ -37,19 +37,19 @@ const PLACEHOLDER_VERSION = '---PRODUCT_TAG_VERSION--';
 const containerRuntimeDropdown = [
   {
     name: 'containerd',
-    value: `--set mountContainerRuntimeSocket.containerdSock=true \\ 
-  --set mountContainerRuntimeSocket.dockerSock=false \\ 
+    value: `--set mountContainerRuntimeSocket.containerdSock=true \\
+  --set mountContainerRuntimeSocket.dockerSock=false \\
   --set mountContainerRuntimeSocket.crioSock=false`,
   },
   {
     name: 'docker',
-    value: `--set mountContainerRuntimeSocket.containerdSock=false \\ 
-  --set mountContainerRuntimeSocket.dockerSock=true \\ 
+    value: `--set mountContainerRuntimeSocket.containerdSock=false \\
+  --set mountContainerRuntimeSocket.dockerSock=true \\
   --set mountContainerRuntimeSocket.crioSock=false`,
   },
   {
     name: 'cri-o',
-    value: `--set mountContainerRuntimeSocket.containerdSock=false \\ 
+    value: `--set mountContainerRuntimeSocket.containerdSock=false \\
   --set mountContainerRuntimeSocket.dockerSock=false \\
   --set mountContainerRuntimeSocket.crioSock=true`,
   },
