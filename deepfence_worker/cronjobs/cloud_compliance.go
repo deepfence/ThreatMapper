@@ -238,7 +238,7 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 
 			scan_count_query = `
 			MATCH (n:` + string(neo4jNodeType) + `)
-			WHERE n.pseudo=false
+			WHERE n.pseudo=false and n.agent_running=true
 			MATCH (n) <-[:SCANNED]- (m:` + string(utils.NEO4J_COMPLIANCE_SCAN) + `)
 			RETURN count(distinct n)`
 
