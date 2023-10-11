@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
 	"strconv"
 	"sync"
 	"time"
@@ -160,7 +161,7 @@ func processIntegrationRow(integrationRow postgresql_db.Integration, ctx context
 }
 
 func injectNodeDatamap(results []map[string]interface{}, common model.ScanResultsCommon,
-	integrationType string) []map[string]interface{} {
+	integrationType string, ctx context.Context) []map[string]interface{} {
 
 	for _, r := range results {
 		//m := utils.ToMap[T](r)
@@ -176,6 +177,21 @@ func injectNodeDatamap(results []map[string]interface{}, common model.ScanResult
 		}
 		if common.HostName != "" {
 			r["host_name"] = common.HostName
+			filter := reporters_search.SearchFilter{
+				Filters: reporters.FieldsFilters{
+					ContainsFilter: reporters.ContainsFilter{
+						FieldsValues: map[string][]interface{}{
+							"host_name": {common.HostName},
+						},
+					},
+				},
+			}
+			eFilter := reporters_search.SearchFilter{}
+			hosts, err := reporters_search.SearchReport[model.Host](
+				ctx, filter, eFilter, nil, model.FetchWindow{})
+			if err != nil {
+				r["cloud_account_id"] = hosts[0].CloudAccountID
+			}
 		}
 		if common.KubernetesClusterName != "" {
 			r["kubernetes_cluster_name"] = common.KubernetesClusterName
@@ -285,7 +301,7 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 				updatedResults = append(updatedResults, utils.ToMap[T](r))
 			}
 		}
-		updatedResults = injectNodeDatamap(updatedResults, common, integrationRow.IntegrationType)
+		updatedResults = injectNodeDatamap(updatedResults, common, integrationRow.IntegrationType, ctx)
 		messageByte, err := json.Marshal(updatedResults)
 		if err != nil {
 			return err

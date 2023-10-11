@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-sdk-go/service/sts"
 	"strings"
 	"time"
 
@@ -62,17 +63,6 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 		return nil
 	}
 
-	resource, err := getResource(ctx, a.Resource, nodeIDStr, a.Config.AWSRegion, a.Config.AWSAccountId)
-	if err != nil {
-		// if err.Err check here
-		if err.Error() == "not aws" {
-			log.Info().Msgf("skipping non aws resource")
-			return nil
-		}
-		log.Error().Msg(err.Error())
-		return nil
-	}
-
 	// Create an AWS session with your credentials and region
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(a.Config.AWSRegion),
@@ -80,6 +70,23 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 	})
 	if err != nil {
 		fmt.Println("Failed to create AWS session", err)
+		return nil
+	}
+	stsSvc := sts.New(sess)
+	id, err := stsSvc.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+	if err != nil {
+		fmt.Println("Failed to get caller identity", err)
+		return nil
+	}
+
+	resource, err := getResource(ctx, a.Resource, nodeIDStr, a.Config.AWSRegion, *id.Account)
+	if err != nil {
+		// if err.Err check here
+		if err.Error() == "not aws" {
+			log.Info().Msgf("skipping non aws resource")
+			return nil
+		}
+		log.Error().Msg(err.Error())
 		return nil
 	}
 
@@ -92,7 +99,7 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 		return nil
 	}
 
-	fs := a.mapPayloadToFindings(msg, resource)
+	fs := a.mapPayloadToFindings(msg, resource, *id.Account)
 
 	// Split the JSON data into batches of 100
 	var batches []*securityhub.BatchImportFindingsInput
@@ -152,7 +159,7 @@ func getResourceForVulnerability(ctx context.Context, nodeID, region, accountID 
 	defer tx.Close()
 
 	//query for Host/Node
-	query := `MATCH (m:VulnerabilityScan{node_id: $id})-[:SCHEDULED|SCANNED]->(o:Node) WHERE o.pseudo <> true RETURN o.cloud_provider as cp, o.instance_id as instanceID`
+	query := `MATCH (m:VulnerabilityScan{node_id: $id})-[:SCHEDULED|SCANNED]->(o:Node) WHERE o.pseudo <> true RETURN o.cloud_provider as cp, o.instance_id as instanceID, o.cloud_account_id as cloudAccountID`
 	vars := map[string]interface{}{"id": nodeID}
 	r, err := tx.Run(query, vars)
 
@@ -175,7 +182,7 @@ func getResourceForVulnerability(ctx context.Context, nodeID, region, accountID 
 			return []*securityhub.Resource{
 				{
 					Type: aws.String("AwsEc2Instance"),
-					Id:   aws.String(fmt.Sprintf("arn:aws:ec2:%s:%s:instance/%s", region, accountID, rec.Values[1].(string))),
+					Id:   aws.String(fmt.Sprintf("arn:aws:ec2:%s:%s:instance/%s", region, rec.Values[2].(string), rec.Values[1].(string))),
 				},
 			}, nil
 		}
@@ -235,7 +242,7 @@ func getResourceForCompliance(ctx context.Context, nodeID, region, accountID str
 	defer tx.Close()
 
 	//query for Host/Node
-	query := `MATCH (m:ComplianceScan{node_id: $id})-[:SCHEDULED|SCANNED]->(o:Node) WHERE o.pseudo <> true RETURN o.cloud_provider as cp, o.instance_id as instanceID`
+	query := `MATCH (m:ComplianceScan{node_id: $id})-[:SCHEDULED|SCANNED]->(o:Node) WHERE o.pseudo <> true RETURN o.cloud_provider as cp, o.instance_id as instanceID, o.cloud_account_id as cloudAccountID`
 	vars := map[string]interface{}{"id": nodeID}
 	r, err := tx.Run(query, vars)
 
@@ -258,7 +265,7 @@ func getResourceForCompliance(ctx context.Context, nodeID, region, accountID str
 			return []*securityhub.Resource{
 				{
 					Type: aws.String("AwsEc2Instance"),
-					Id:   aws.String(fmt.Sprintf("arn:aws:ec2:%s:%s:instance/%s", region, accountID, rec.Values[1].(string))),
+					Id:   aws.String(fmt.Sprintf("arn:aws:ec2:%s:%s:instance/%s", region, rec.Values[2].(string), rec.Values[1].(string))),
 				},
 			}, nil
 		}
@@ -267,10 +274,18 @@ func getResourceForCompliance(ctx context.Context, nodeID, region, accountID str
 	return nil, fmt.Errorf("not aws")
 }
 
-func (a AwsSecurityHub) mapPayloadToFindings(msg []map[string]interface{}, resource []*securityhub.Resource) *securityhub.BatchImportFindingsInput {
+func (a AwsSecurityHub) mapPayloadToFindings(msg []map[string]interface{}, resource []*securityhub.Resource, accountID string) *securityhub.BatchImportFindingsInput {
 	findings := securityhub.BatchImportFindingsInput{}
 	if a.Resource == utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN] {
 		for _, m := range msg {
+			accID, found := m["cloud_account_id"]
+			if !found {
+				accID = accountID
+			}
+			if !utils.InSlice(accID.(string), a.Config.AWSAccountId) {
+				fmt.Println("Skipping result as not in list of selected account IDs:", accID)
+				continue
+			}
 			finding := securityhub.AwsSecurityFinding{}
 
 			var pkgName, pkgVersion string
@@ -314,8 +329,8 @@ func (a AwsSecurityHub) mapPayloadToFindings(msg []map[string]interface{}, resou
 				cveDescription = cveDescription[:1024]
 			}
 
-			finding.SetProductArn(fmt.Sprintf("arn:aws:securityhub:%s:%s:product/%s/default", a.Config.AWSRegion, a.Config.AWSAccountId, a.Config.AWSAccountId))
-			finding.SetAwsAccountId(a.Config.AWSAccountId)
+			finding.SetProductArn(fmt.Sprintf("arn:aws:securityhub:%s:%s:product/%s/default", a.Config.AWSRegion, accID.(string), accID.(string)))
+			finding.SetAwsAccountId(accID.(string))
 			finding.SetCreatedAt(updatedAtStr)
 			finding.SetUpdatedAt(updatedAtStr)
 			finding.SetTitle(m["cve_id"].(string))
@@ -344,6 +359,14 @@ func (a AwsSecurityHub) mapPayloadToFindings(msg []map[string]interface{}, resou
 		}
 	} else if a.Resource == utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN] {
 		for _, m := range msg {
+			accID, found := m["cloud_account_id"]
+			if !found {
+				accID = accountID
+			}
+			if !utils.InSlice(accID.(string), a.Config.AWSAccountId) {
+				fmt.Println("Skipping result as not in list of selected account IDs:", accID)
+				continue
+			}
 			finding := securityhub.AwsSecurityFinding{}
 
 			updatedAt, ok := m["updated_at"].(int64)
@@ -372,8 +395,8 @@ func (a AwsSecurityHub) mapPayloadToFindings(msg []map[string]interface{}, resou
 				compDescription = compDescription[:1024]
 			}
 
-			finding.SetProductArn(fmt.Sprintf("arn:aws:securityhub:%s:%s:product/%s/default", a.Config.AWSRegion, a.Config.AWSAccountId, a.Config.AWSAccountId))
-			finding.SetAwsAccountId(a.Config.AWSAccountId)
+			finding.SetProductArn(fmt.Sprintf("arn:aws:securityhub:%s:%s:product/%s/default", a.Config.AWSRegion, accID.(string), accID.(string)))
+			finding.SetAwsAccountId(accID.(string))
 			finding.SetCreatedAt(updatedAtStr)
 			finding.SetUpdatedAt(updatedAtStr)
 			finding.SetTitle(m["test_category"].(string))
