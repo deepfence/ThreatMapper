@@ -9,29 +9,39 @@ import storage from '@/utils/storage';
 
 const ErrorComponent = ({ maintenance }: { maintenance: boolean }) => {
   return (
-    <div className="flex flex-col h-full items-center pt-20">
+    <div className="flex flex-col h-full items-center sm:pt-10 2xl:pt-20">
       {!maintenance ? (
-        <h1 className="text-[140px] text-chart-orange dark:text-chart-orange font-black leading-[190px]">
+        <h1 className="sm:text-[80px] 2xl:text-[100px] text-chart-orange dark:text-chart-orange font-black leading-none">
           ERROR
         </h1>
       ) : null}
-      <h4 className="text-3xl font-semibold text-text-text-and-icon dark:text-text-text-and-icon flex flex-col text-center">
-        <span>
-          {maintenance
-            ? 'Maintenance in progress...'
-            : 'An error has occurred, please refresh the page.'}
-        </span>
-        <span>
-          {maintenance
-            ? 'Please try again after some time.'
-            : 'If problem persists, please contact deepfence.'}
-        </span>
-      </h4>
-      {!maintenance ? (
-        <div className="mt-12 w-[455px]">
-          <SVG500 />
-        </div>
-      ) : null}
+      <div className="mt-6 flex flex-col gap-y-14 items-center">
+        <h4
+          className={cn(
+            'font-semibold text-text-text-and-icon dark:text-text-text-and-icon flex flex-col text-center',
+            {
+              'sm:text-base 2xl:text-xl': !maintenance,
+              'sm:text-xl 2xl:text-2xl': maintenance,
+            },
+          )}
+        >
+          <span>
+            {maintenance
+              ? 'Maintenance in progress...'
+              : 'An error has occurred, please refresh the page.'}
+          </span>
+          <span>
+            {maintenance
+              ? 'Please try again after some time.'
+              : 'If problem persists, please contact deepfence.'}
+          </span>
+        </h4>
+        {!maintenance ? (
+          <div className="sm:w-[375px] 2xl:w-[455px]">
+            <SVG500 />
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 };
