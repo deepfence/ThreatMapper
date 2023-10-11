@@ -120,14 +120,28 @@ func statusesToMaps[T any](data []T) []map[string]interface{} {
 	statusBuff := map[string]map[string]interface{}{}
 	for _, i := range data {
 		new := ToMap(i)
-		scan_id := new["scan_id"].(string)
-		new_status := new["scan_status"].(string)
+
+		scan_id, ok := new["scan_id"].(string)
+		if !ok {
+			log.Error().Msgf("failed to convert scan_id to string, data: %v", new)
+			continue
+		}
+
+		new_status, ok := new["scan_status"].(string)
+		if !ok {
+			log.Error().Msgf("failed to convert scan_status to string, data: %v", new)
+			continue
+		}
 
 		old, found := statusBuff[scan_id]
 		if !found {
 			statusBuff[scan_id] = new
 		} else {
-			old_status := old["scan_status"].(string)
+			old_status, ok := old["scan_status"].(string)
+			if !ok {
+				log.Error().Msgf("failed to convert scan_status to string, data: %v", old)
+				continue
+			}
 			if new_status != old_status {
 				if new_status == utils.SCAN_STATUS_SUCCESS ||
 					new_status == utils.SCAN_STATUS_FAILED || new_status == utils.SCAN_STATUS_CANCELLED {
@@ -149,7 +163,13 @@ func splitInprogressStatus(data []map[string]interface{}) ([]map[string]interfac
 	others := []map[string]interface{}{}
 
 	for i := range data {
-		if data[i]["scan_status"].(string) == utils.SCAN_STATUS_INPROGRESS {
+		status, ok := data[i]["scan_status"].(string)
+		if !ok {
+			log.Error().Msgf("failed to convert scan_status to string, data: %v", data[i])
+			continue
+		}
+
+		if status == utils.SCAN_STATUS_INPROGRESS {
 			in_progress = append(in_progress, data[i])
 		} else {
 			others = append(others, data[i])
@@ -173,7 +193,13 @@ func anyCompleted(data []map[string]interface{}) bool {
 	complete := false
 
 	for i := range data {
-		if data[i]["scan_status"].(string) == utils.SCAN_STATUS_SUCCESS {
+		status, ok := data[i]["scan_status"].(string)
+		if !ok {
+			log.Error().Msgf("failed to convert scan_status to string, data: %v", data[i])
+			continue
+		}
+
+		if status == utils.SCAN_STATUS_SUCCESS {
 			complete = true
 			break
 		}
