@@ -24,6 +24,7 @@ import {
 } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -204,6 +205,7 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   secretScanStatus: 'Secret scan status',
   malwareScanStatus: 'Malware scan status',
   hosts: 'Host',
+  clusters: 'Cluster',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -347,6 +349,26 @@ function Filters() {
             });
           }}
         />
+        <SearchableClusterList
+          defaultSelectedClusters={searchParams.getAll('clusters')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              value.forEach((cluster) => {
+                prev.append('clusters', cluster);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -413,6 +435,7 @@ function useSearchContainersWithPagination() {
         | MalwareScanGroupedStatus
         | undefined,
       order: getOrderFromSearchParams(searchParams),
+      clusterIds: searchParams.getAll('clusters'),
     }),
     keepPreviousData: true,
   });

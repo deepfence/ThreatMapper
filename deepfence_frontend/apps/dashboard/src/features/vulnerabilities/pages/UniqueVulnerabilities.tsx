@@ -39,6 +39,10 @@ const DEFAULT_PAGE_SIZE = 10;
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   liveConnection: 'Live Connection',
   severity: 'CVE Severity',
+  hosts: 'Host',
+  containers: 'Container',
+  containerImages: 'Container Images',
+  clusters: 'Clusters',
 };
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
