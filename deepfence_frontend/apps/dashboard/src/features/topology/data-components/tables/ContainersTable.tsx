@@ -205,6 +205,7 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   secretScanStatus: 'Secret scan status',
   malwareScanStatus: 'Malware scan status',
   hosts: 'Host',
+  clusters: 'Cluster',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
