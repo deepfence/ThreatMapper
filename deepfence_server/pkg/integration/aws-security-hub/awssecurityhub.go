@@ -78,6 +78,7 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 		fmt.Println("Failed to get caller identity", err)
 		return nil
 	}
+	log.Error().Msgf("Account id detected : %s", *id.Account)
 
 	resource, err := getResource(ctx, a.Resource, nodeIDStr, a.Config.AWSRegion, *id.Account)
 	if err != nil {
@@ -98,7 +99,6 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 		fmt.Println("Failed to marshal JSON data", err)
 		return nil
 	}
-	log.Error().Msgf("Account id detected : %s", *id.Account)
 	fs := a.mapPayloadToFindings(msg, resource, *id.Account)
 
 	// Split the JSON data into batches of 100
@@ -134,6 +134,7 @@ func getResource(ctx context.Context, scanType, nodeID, region, accountID string
 	} else if scanType == utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN] {
 		return getResourceForCompliance(ctx, nodeID, region, accountID)
 	}
+	log.Error().Msg("here1")
 	return nil, fmt.Errorf("not aws")
 }
 
@@ -177,6 +178,7 @@ func getResourceForVulnerability(ctx context.Context, nodeID, region, accountID 
 	if len(records) > 0 {
 		for _, rec := range records {
 			if rec.Values[0].(string) != "aws" {
+				log.Error().Msg("here2")
 				return nil, fmt.Errorf("not aws")
 			}
 			return []*securityhub.Resource{
@@ -206,6 +208,7 @@ func getResourceForVulnerability(ctx context.Context, nodeID, region, accountID 
 	if len(records) > 0 {
 		for _, rec := range records {
 			if rec.Values[1].(string) != "ecr" {
+				log.Error().Msg("here3")
 				return nil, fmt.Errorf("not aws")
 			}
 			return []*securityhub.Resource{
@@ -216,7 +219,7 @@ func getResourceForVulnerability(ctx context.Context, nodeID, region, accountID 
 			}, nil
 		}
 	}
-
+	log.Error().Msg("here4")
 	return nil, fmt.Errorf("not aws")
 }
 
@@ -260,6 +263,7 @@ func getResourceForCompliance(ctx context.Context, nodeID, region, accountID str
 	if len(records) > 0 {
 		for _, rec := range records {
 			if rec.Values[0].(string) != "aws" {
+				log.Error().Msg("here6")
 				return nil, fmt.Errorf("not aws")
 			}
 			return []*securityhub.Resource{
@@ -270,7 +274,7 @@ func getResourceForCompliance(ctx context.Context, nodeID, region, accountID str
 			}, nil
 		}
 	}
-
+	log.Error().Msg("here7")
 	return nil, fmt.Errorf("not aws")
 }
 
