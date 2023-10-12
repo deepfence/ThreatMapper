@@ -190,7 +190,7 @@ func injectNodeDatamap(results []map[string]interface{}, common model.ScanResult
 			hosts, err := reporters_search.SearchReport[model.Host](
 				ctx, filter, eFilter, nil, model.FetchWindow{})
 			log.Error().Msgf("hosts: %+v", hosts)
-			if err != nil {
+			if err == nil {
 				r["cloud_account_id"] = hosts[0].CloudAccountID
 			}
 		}

@@ -98,7 +98,7 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 		fmt.Println("Failed to marshal JSON data", err)
 		return nil
 	}
-
+	log.Error().Msgf("Account id detected : %s", *id.Account)
 	fs := a.mapPayloadToFindings(msg, resource, *id.Account)
 
 	// Split the JSON data into batches of 100
