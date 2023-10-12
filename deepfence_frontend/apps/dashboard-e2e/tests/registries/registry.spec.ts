@@ -173,23 +173,6 @@ test.describe('Registry', () => {
         )
         .toBeTruthy();
 
-      // const interval = setInterval(async () => {
-      //   const refreshBtn = page.locator(`button[title="Refresh now"]`);
-      //   if (refreshBtn) {
-      //     refreshBtn.click();
-      //   }
-      // }, 30 * 1000);
-
-      // const cell = rowSelectionTag.getByRole(`cell`).nth(5);
-      // const complete = cell.locator('tr > td:nth-child(5), td:has-text("Complete")');
-      // const completed = await complete.isVisible();
-      // if (completed) {
-      //   clearInterval(interval);
-      // }
-
-      // await expect(cell).toHaveText('Complete', {
-      //   timeout: TIMEOUT,
-      // });
     } else {
       console.error('tbody element not found.');
     }
@@ -378,7 +361,8 @@ test.describe('Registry', () => {
 
       await expect
         .poll(
-          async () => {
+          async () => {   
+
             await page.waitForTimeout(5000);
             const tbodyElement = page.locator('tbody');
             const rowSelectionTag = tbodyElement.getByRole('row').nth(0);
