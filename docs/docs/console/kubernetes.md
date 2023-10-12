@@ -60,7 +60,7 @@ The following instructions explain how to install the ThreatMapper console on a 
     ... and wait for the cloud platform to deploy an external load-balancer:
 
     ```bash
-    kubectl get --namespace default svc -w deepfence-router
+    kubectl get --namespace default svc -w deepfence-console-router
     ```
 
     :::tip
