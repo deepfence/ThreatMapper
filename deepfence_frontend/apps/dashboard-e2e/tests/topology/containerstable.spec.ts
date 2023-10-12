@@ -30,25 +30,31 @@ test.describe('Containers', () => {
 
     await page.mouse.click(0, 0);
 
-    // refresh until it finished
-    const interval = setInterval(async () => {
-      const refreshBtn = page.locator(`button[title="Refresh now"]`);
-      if (refreshBtn) {
-        refreshBtn.click();
-      }
-    }, 30 * 1000);
-
-    const cell = rowSelection.getByRole(`cell`).nth(3);
-
-    const complete = cell.locator('tr > td:nth-child(3), td:has-text("Complete")');
-    const completed = await complete.isVisible();
-    if (completed) {
-      clearInterval(interval);
-    }
-
-    await expect(cell).toHaveText('Complete', {
-      timeout: TIMEOUT,
-    });
+    await expect
+        .poll(
+          async () => {
+            await page.waitForTimeout(5000);
+            const rowSelection = page.getByRole('row').filter({
+              hasText: containerName,
+            });
+            const cell = rowSelection.getByRole(`cell`).nth(3);
+            const complete = cell.locator('div:text-is("Complete")');
+            const visible = await complete.isVisible();
+            if (!visible) {
+              const refreshBtn = page.locator(`button[title="Refresh now"]`);
+              if (refreshBtn) {
+                refreshBtn.click();
+              }
+            } else {
+              return true;
+            }
+          },
+          {
+            timeout: TIMEOUT,
+            intervals: [30_000],
+          },
+        )
+        .toBeTruthy();
   });
   test('should scan a container for secret', async ({ page, baseURL }) => {
     page.goto(`${baseURL}/topology/table/container`);
@@ -78,25 +84,31 @@ test.describe('Containers', () => {
 
     await page.mouse.click(0, 0);
 
-    // refresh until it finished
-    const interval = setInterval(async () => {
-      const refreshBtn = page.locator(`button[title="Refresh now"]`);
-      if (refreshBtn) {
-        refreshBtn.click();
-      }
-    }, 30 * 1000);
-
-    const cell = rowSelection.getByRole(`cell`).nth(4);
-
-    const complete = cell.locator('tr > td:nth-child(4), td:has-text("Complete")');
-    const completed = await complete.isVisible();
-    if (completed) {
-      clearInterval(interval);
-    }
-
-    await expect(cell).toHaveText('Complete', {
-      timeout: TIMEOUT,
-    });
+    await expect
+        .poll(
+          async () => {
+            await page.waitForTimeout(5000);
+            const rowSelection = page.getByRole('row').filter({
+              hasText: containerName,
+            });
+            const cell = rowSelection.getByRole(`cell`).nth(4);
+            const complete = cell.locator('div:text-is("Complete")');
+            const visible = await complete.isVisible();
+            if (!visible) {
+              const refreshBtn = page.locator(`button[title="Refresh now"]`);
+              if (refreshBtn) {
+                refreshBtn.click();
+              }
+            } else {
+              return true;
+            }
+          },
+          {
+            timeout: TIMEOUT,
+            intervals: [30_000],
+          },
+        )
+        .toBeTruthy();
   });
   test('should scan a container for malware', async ({ page, baseURL }) => {
     page.goto(`${baseURL}/topology/table/container`);
@@ -126,24 +138,30 @@ test.describe('Containers', () => {
 
     await page.mouse.click(0, 0);
 
-    // refresh until it finished
-    const interval = setInterval(async () => {
-      const refreshBtn = page.locator(`button[title="Refresh now"]`);
-      if (refreshBtn) {
-        refreshBtn.click();
-      }
-    }, 30 * 1000);
-
-    const cell = rowSelection.getByRole(`cell`).nth(5);
-
-    const complete = cell.locator('tr > td:nth-child(5), td:has-text("Complete")');
-    const completed = await complete.isVisible();
-    if (completed) {
-      clearInterval(interval);
-    }
-
-    await expect(cell).toHaveText('Complete', {
-      timeout: TIMEOUT,
-    });
+    await expect
+    .poll(
+      async () => {
+        await page.waitForTimeout(5000);
+        const rowSelection = page.getByRole('row').filter({
+          hasText: containerName,
+        });
+        const cell = rowSelection.getByRole(`cell`).nth(5);
+        const complete = cell.locator('div:text-is("Complete")');
+        const visible = await complete.isVisible();
+        if (!visible) {
+          const refreshBtn = page.locator(`button[title="Refresh now"]`);
+          if (refreshBtn) {
+            refreshBtn.click();
+          }
+        } else {
+          return true;
+        }
+      },
+      {
+        timeout: TIMEOUT,
+        intervals: [30_000],
+      },
+    )
+    .toBeTruthy();
   });
 });

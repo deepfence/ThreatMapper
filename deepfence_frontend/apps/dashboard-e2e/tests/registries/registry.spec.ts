@@ -270,24 +270,31 @@ test.describe('Registry', () => {
       await page.mouse.click(0, 0);
 
       await expect(page.getByText('Scan started sucessfully')).toBeVisible();
-      await page.waitForTimeout(5000);
 
-      const interval = setInterval(async () => {
-        const refreshBtn = page.locator(`button[title="Refresh now"]`);
-        if (refreshBtn) {
-          refreshBtn.click();
-        }
-      }, 30 * 1000);
-      const cell = rowSelectionTag.getByRole(`cell`).nth(6);
-      const complete = cell.locator('tr > td:nth-child(6), td:has-text("Complete")');
-      const completed = await complete.isVisible();
-      if (completed) {
-        clearInterval(interval);
-      }
-
-      await expect(cell).toHaveText('Complete', {
-        timeout: TIMEOUT,
-      });
+      await expect
+        .poll(
+          async () => {
+            await page.waitForTimeout(5000);
+            const tbodyElement = page.locator('tbody');
+            const rowSelectionTag = tbodyElement.getByRole('row').nth(0);
+            const cell = rowSelectionTag.getByRole(`cell`).nth(6);
+            const complete = cell.locator('div:text-is("Complete")');
+            const visible = await complete.isVisible();
+            if (!visible) {
+              const refreshBtn = page.locator(`button[title="Refresh now"]`);
+              if (refreshBtn) {
+                refreshBtn.click();
+              }
+            } else {
+              return true;
+            }
+          },
+          {
+            timeout: TIMEOUT,
+            intervals: [30_000],
+          },
+        )
+        .toBeTruthy();
     } else {
       console.error('tbody element not found.');
     }
@@ -368,24 +375,31 @@ test.describe('Registry', () => {
       await page.mouse.click(0, 0);
 
       await expect(page.getByText('Scan started sucessfully')).toBeVisible();
-      await page.waitForTimeout(5000);
 
-      const interval = setInterval(async () => {
-        const refreshBtn = page.locator(`button[title="Refresh now"]`);
-        if (refreshBtn) {
-          refreshBtn.click();
-        }
-      }, 30 * 1000);
-      const cell = rowSelectionTag.getByRole(`cell`).nth(7);
-      const complete = cell.locator('tr > td:nth-child(7), td:has-text("Complete")');
-      const completed = await complete.isVisible();
-      if (completed) {
-        clearInterval(interval);
-      }
-
-      await expect(cell).toHaveText('Complete', {
-        timeout: TIMEOUT,
-      });
+      await expect
+        .poll(
+          async () => {
+            await page.waitForTimeout(5000);
+            const tbodyElement = page.locator('tbody');
+            const rowSelectionTag = tbodyElement.getByRole('row').nth(0);
+            const cell = rowSelectionTag.getByRole(`cell`).nth(7);
+            const complete = cell.locator('div:text-is("Complete")');
+            const visible = await complete.isVisible();
+            if (!visible) {
+              const refreshBtn = page.locator(`button[title="Refresh now"]`);
+              if (refreshBtn) {
+                refreshBtn.click();
+              }
+            } else {
+              return true;
+            }
+          },
+          {
+            timeout: TIMEOUT,
+            intervals: [30_000],
+          },
+        )
+        .toBeTruthy();
     } else {
       console.error('tbody element not found.');
     }

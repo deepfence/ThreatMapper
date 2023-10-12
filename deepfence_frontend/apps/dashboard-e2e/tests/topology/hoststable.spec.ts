@@ -15,7 +15,7 @@ const consoleAgentImageName = /deepfenceio\/deepfence_agent_ce.*/;
 
 test.describe('Topology', () => {
   test.describe('Hosts', () => {
-    test('should scan a host for malware', async ({ page, baseURL, topologyPage }) => {
+    test('should go to host table and scan a host for malware', async ({ page, baseURL, topologyPage }) => {
       await page.waitForURL(`${baseURL}/topology/table/host`);
       await expect(
         page.getByRole('button', {
@@ -41,11 +41,32 @@ test.describe('Topology', () => {
       await expect(page.getByTestId('sliding-modal-close-button')).not.toBeAttached();
 
       await page.mouse.click(0, 0);
-      const cell = rowSelection.getByRole(`cell`).nth(4);
 
-      await expect(cell).toHaveText('Complete', {
-        timeout: TIMEOUT,
-      });
+      await expect
+        .poll(
+          async () => {
+            await page.waitForTimeout(5000);
+            const rowSelection = page.getByRole('row').filter({
+              hasText: consoleHostName,
+            });
+            const cell = rowSelection.getByRole(`cell`).nth(4);
+            const complete = cell.locator('div:text-is("Complete")');
+            const visible = await complete.isVisible();
+            if (!visible) {
+              const refreshBtn = page.locator(`button[title="Refresh now"]`);
+              if (refreshBtn) {
+                refreshBtn.click();
+              }
+            } else {
+              return true;
+            }
+          },
+          {
+            timeout: TIMEOUT,
+            intervals: [30_000],
+          },
+        )
+        .toBeTruthy();
     });
     test('should go to host table and scan a host for vulnerability', async ({
       page,
@@ -77,11 +98,32 @@ test.describe('Topology', () => {
       await expect(page.getByTestId('sliding-modal-close-button')).not.toBeAttached();
 
       await page.mouse.click(0, 0);
-      const cell = rowSelection.getByRole(`cell`).nth(2);
 
-      await expect(cell).toHaveText('Complete', {
-        timeout: TIMEOUT,
-      });
+      await expect
+        .poll(
+          async () => {
+            await page.waitForTimeout(5000);
+            const rowSelection = page.getByRole('row').filter({
+              hasText: consoleHostName,
+            });
+            const cell = rowSelection.getByRole(`cell`).nth(2);
+            const complete = cell.locator('div:text-is("Complete")');
+            const visible = await complete.isVisible();
+            if (!visible) {
+              const refreshBtn = page.locator(`button[title="Refresh now"]`);
+              if (refreshBtn) {
+                refreshBtn.click();
+              }
+            } else {
+              return true;
+            }
+          },
+          {
+            timeout: TIMEOUT,
+            intervals: [30_000],
+          },
+        )
+        .toBeTruthy();
     });
     test('should go to host table and scan a host for secret', async ({
       page,
@@ -114,15 +156,36 @@ test.describe('Topology', () => {
       await expect(page.getByTestId('sliding-modal-close-button')).not.toBeAttached();
 
       await page.mouse.click(0, 0);
-      const cell = rowSelection.getByRole(`cell`).nth(3);
 
-      await expect(cell).toHaveText('Complete', {
-        timeout: TIMEOUT,
-      });
+      await expect
+        .poll(
+          async () => {
+            await page.waitForTimeout(5000);
+            const rowSelection = page.getByRole('row').filter({
+              hasText: consoleHostName,
+            });
+            const cell = rowSelection.getByRole(`cell`).nth(3);
+            const complete = cell.locator('div:text-is("Complete")');
+            const visible = await complete.isVisible();
+            if (!visible) {
+              const refreshBtn = page.locator(`button[title="Refresh now"]`);
+              if (refreshBtn) {
+                refreshBtn.click();
+              }
+            } else {
+              return true;
+            }
+          },
+          {
+            timeout: TIMEOUT,
+            intervals: [30_000],
+          },
+        )
+        .toBeTruthy();
     });
   });
   test.describe('Container Images', () => {
-    test('should scan a host for malware', async ({ page, baseURL, topologyPage }) => {
+    test('should scan a container image for malware', async ({ page, baseURL, topologyPage }) => {
       await page.waitForURL(`${baseURL}/topology/table/host`);
       const rowSelection = page.getByRole('row').filter({
         hasText: consoleHostName,
@@ -172,31 +235,37 @@ test.describe('Topology', () => {
 
       // go to malware scan and check for complete state
       await page.goto(`${baseURL}/malware/scans?nodeType=container_image`);
-      const malwarescantbody = page.getByRole('table').locator('tbody');
 
-      const waitingRow = malwarescantbody.getByRole('row').filter({
-        hasText: consoleAgentImageName,
-      });
+      await expect
+      .poll(
+        async () => {
+          await page.waitForTimeout(5000);
+          const malwarescantbody = page.getByRole('table').locator('tbody');
 
-      const interval = setInterval(async () => {
-        const refreshBtn = page.locator(`button[title="Refresh now"]`);
-        if (refreshBtn) {
-          refreshBtn.click();
-        }
-      }, 30 * 1000);
+          const waitingRow = malwarescantbody.getByRole('row').filter({
+            hasText: consoleAgentImageName,
+          });
 
-      const cell = waitingRow.getByRole(`cell`).nth(5);
-      const complete = cell.locator('tr > td:nth-child(5), td:has-text("Complete")');
-      const completed = await complete.isVisible();
-      if (completed) {
-        clearInterval(interval);
-      }
-
-      await expect(cell).toHaveText('Complete', {
-        timeout: TIMEOUT,
-      });
+          const cell = waitingRow.getByRole(`cell`).nth(5);
+          const complete = cell.locator('div:text-is("Complete")');
+          const visible = await complete.isVisible();
+          if (!visible) {
+            const refreshBtn = page.locator(`button[title="Refresh now"]`);
+            if (refreshBtn) {
+              refreshBtn.click();
+            }
+          } else {
+            return true;
+          }
+        },
+        {
+          timeout: TIMEOUT,
+          intervals: [30_000],
+        },
+      )
+      .toBeTruthy();
     });
-    test('should scan a host for vulnerability', async ({
+    test('should scan a container image for vulnerability', async ({
       page,
       baseURL,
       topologyPage,
@@ -250,31 +319,38 @@ test.describe('Topology', () => {
 
       // go to vulnerability scan and check for complete state
       await page.goto(`${baseURL}/vulnerability/scans?nodeType=container_image`);
-      const malwarescantbody = page.getByRole('table').locator('tbody');
 
-      const waitingRow = malwarescantbody.getByRole('row').filter({
-        hasText: consoleAgentImageName,
-      });
+      await expect
+      .poll(
+        async () => {
+          await page.waitForTimeout(5000);
+          const vulnscantbody = page.getByRole('table').locator('tbody');
 
-      const interval = setInterval(async () => {
-        const refreshBtn = page.locator(`button[title="Refresh now"]`);
-        if (refreshBtn) {
-          refreshBtn.click();
-        }
-      }, 30 * 1000);
+          const waitingRow = vulnscantbody.getByRole('row').filter({
+            hasText: consoleAgentImageName,
+          });
 
-      const cell = waitingRow.getByRole(`cell`).nth(5);
-      const complete = cell.locator('tr > td:nth-child(5), td:has-text("Complete")');
-      const completed = await complete.isVisible();
-      if (completed) {
-        clearInterval(interval);
-      }
+          const cell = waitingRow.getByRole(`cell`).nth(5);
+          const complete = cell.locator('div:text-is("Complete")');
+          const visible = await complete.isVisible();
+          if (!visible) {
+            const refreshBtn = page.locator(`button[title="Refresh now"]`);
+            if (refreshBtn) {
+              refreshBtn.click();
+            }
+          } else {
+            return true;
+          }
+        },
+        {
+          timeout: TIMEOUT,
+          intervals: [30_000],
+        },
+      )
+      .toBeTruthy();
 
-      await expect(cell).toHaveText('Complete', {
-        timeout: TIMEOUT,
-      });
     });
-    test('should scan a host for secret', async ({ page, baseURL, topologyPage }) => {
+    test('should scan a container image for secret', async ({ page, baseURL, topologyPage }) => {
       await page.waitForURL(`${baseURL}/topology/table/host`);
       const rowSelection = page.getByRole('row').filter({
         hasText: consoleHostName,
@@ -323,30 +399,37 @@ test.describe('Topology', () => {
       await expect(page.getByText('Scan started sucessfully')).toBeVisible();
 
       // go to secret scan and check for complete state
-      await page.goto(`${baseURL}/vulnerability/scans?nodeType=container_image`);
-      const malwarescantbody = page.getByRole('table').locator('tbody');
+      await page.goto(`${baseURL}/secret/scans?nodeType=container_image`);
 
-      const waitingRow = malwarescantbody.getByRole('row').filter({
-        hasText: consoleAgentImageName,
-      });
+      await expect
+      .poll(
+        async () => {
+          await page.waitForTimeout(5000);
+          const secretscantbody = page.getByRole('table').locator('tbody');
 
-      const interval = setInterval(async () => {
-        const refreshBtn = page.locator(`button[title="Refresh now"]`);
-        if (refreshBtn) {
-          refreshBtn.click();
-        }
-      }, 30 * 1000);
+          const waitingRow = secretscantbody.getByRole('row').filter({
+            hasText: consoleAgentImageName,
+          });
 
-      const cell = waitingRow.getByRole(`cell`).nth(5);
-      const complete = cell.locator('tr > td:nth-child(5), td:has-text("Complete")');
-      const completed = await complete.isVisible();
-      if (completed) {
-        clearInterval(interval);
-      }
-
-      await expect(cell).toHaveText('Complete', {
-        timeout: TIMEOUT,
-      });
+          const cell = waitingRow.getByRole(`cell`).nth(5);
+          const complete = cell.locator('div:text-is("Complete")');
+          const visible = await complete.isVisible();
+          if (!visible) {
+            const refreshBtn = page.locator(`button[title="Refresh now"]`);
+            if (refreshBtn) {
+              refreshBtn.click();
+            }
+          } else {
+            return true;
+          }
+        },
+        {
+          timeout: TIMEOUT,
+          intervals: [30_000],
+        },
+      )
+      .toBeTruthy();
+     
     });
   });
 });
