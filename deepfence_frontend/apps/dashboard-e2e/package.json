@@ -5,8 +5,11 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "playwright": "playwright test --ui",
-    "playwright:debug": "playwright test --debug"
+    "test:headless": "pnpm run start:server && playwright test ; pnpm run stop:server",
+    "test:ui": "pnpm run start:server && playwright test --ui ; pnpm run stop:server",
+    "test:debug": "pnpm run start:server && playwright test --debug ; pnpm run stop:server",
+    "start:server": "node start-console.js",
+    "stop:server": "node stop-console.js"
   },
   "keywords": [],
   "author": "",
