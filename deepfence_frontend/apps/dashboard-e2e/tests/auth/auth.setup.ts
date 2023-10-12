@@ -15,8 +15,8 @@ test.describe('Authentication', () => {
     const authPage = new AuthPage(page);
     await authPage.goto(`${baseURL}/auth/register`);
 
-    await authPage.enterField('firstName', 'milan');
-    await authPage.enterField('lastName', 'singh');
+    await authPage.enterField('firstName', 'test');
+    await authPage.enterField('lastName', 'test');
     await authPage.enterField('email', username!);
     await authPage.enterField('password', password!);
     await authPage.enterField('confirmPassword', password!);
