@@ -55,13 +55,17 @@ export function AppHeader() {
                     });
                   }}
                   className="text-red-700 dark:text-text-input-value"
+                  data-testid="logoutDropdownItemId"
                 >
                   Logout
                 </DropdownItem>
               </>
             }
           >
-            <button className="dark:text-text-text-and-icon flex gap-[6px] items-center text-p1">
+            <button
+              className="dark:text-text-text-and-icon flex gap-[6px] items-center text-p1"
+              data-testid="loginUserButtonId"
+            >
               <div className="h-[18px] w-[18px]">
                 <UserLine />
               </div>

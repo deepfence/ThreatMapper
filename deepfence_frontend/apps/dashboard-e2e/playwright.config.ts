@@ -43,7 +43,7 @@ const config: PlaywrightTestConfig = {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     actionTimeout: 60 * 10000,
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.VITE_DEV_TEST_API_BASE_URL,
+    baseURL: process.env.CONSOLE_URL,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
