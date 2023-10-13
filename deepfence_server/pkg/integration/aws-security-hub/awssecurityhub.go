@@ -139,6 +139,7 @@ func getResource(ctx context.Context, scanType, nodeID, region, accountID string
 }
 
 func getResourceForVulnerability(ctx context.Context, nodeID, region, accountID string) ([]*securityhub.Resource, error) {
+	log.Error().Msg("NodeID received:" + nodeID)
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
