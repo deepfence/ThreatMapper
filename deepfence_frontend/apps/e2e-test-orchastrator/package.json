@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.ts",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:console": "tsx index.ts"
+    "start:console": "tsx console.ts",
+    "dev:console": "tsx watch console.ts",
+    "start:agent": "tsx agent.ts",
+    "dev:agent": "tsx watch agent.ts"
   },
   "keywords": [],
   "author": "",
@@ -14,5 +18,13 @@
     "@types/node": "^20.8.2",
     "tsx": "^3.13.0",
     "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "@fastify/type-provider-typebox": "^3.5.0",
+    "@sinclair/typebox": "^0.31.17",
+    "fastify": "^4.23.2",
+    "fastify-type-provider-zod": "^1.1.9",
+    "zod": "^3.22.3",
+    "zx": "^7.2.3"
   }
 }
