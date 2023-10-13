@@ -800,12 +800,12 @@ func (h *Handler) stopScan(w http.ResponseWriter, r *http.Request, tag string) {
 
 	if req.ScanType == "CloudComplianceScan" {
 		tag = "StopCloudComplianceScan"
-		log.Info().Msgf("StopCloudComplianceScan request, type: %s, scanid: %v",
+		log.Info().Msgf("StopCloudComplianceScan request, type: %s, scan id: %v",
 			tag, req.ScanType, req.ScanIds)
 
 		err = reporters_scan.StopCloudComplianceScan(r.Context(), req.ScanIds)
 	} else {
-		log.Info().Msgf("%s request, type: %s, scanid: %v",
+		log.Info().Msgf("%s request, type: %s, scan id: %v",
 			tag, req.ScanType, req.ScanIds)
 		err = reporters_scan.StopScan(r.Context(), req.ScanType, req.ScanIds)
 	}

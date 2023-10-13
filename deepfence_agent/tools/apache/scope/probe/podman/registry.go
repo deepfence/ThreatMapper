@@ -8,6 +8,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -27,7 +28,7 @@ type PodmanClient struct {
 // NewPodmanClient creates client to Podman.
 func NewPodmanClient(endpoint string) (*PodmanClient, error) {
 	podmanClient := PodmanClient{
-		Endpoint: endpoint,
+		Endpoint: strings.TrimPrefix(endpoint, "unix://"),
 	}
 	return &podmanClient, nil
 }

@@ -126,10 +126,10 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		},
 		time.Minute*20,
 	)
-	log.Info().Msgf("Adding scanid to map:%s", params.ScanId)
+	log.Info().Msgf("Adding scan id to map:%s", params.ScanId)
 	scanMap.Store(params.ScanId, scanCtx)
 	defer func() {
-		log.Info().Msgf("Removing scaind from map:%s", params.ScanId)
+		log.Info().Msgf("Removing scan id from map:%s", params.ScanId)
 		scanMap.Delete(params.ScanId)
 		res <- err
 		close(res)

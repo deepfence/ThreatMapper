@@ -164,24 +164,30 @@ func (r *Reporter) containerImageTopology() (report.Topology, map[string]ImageMe
 	imageMetadataMap := make(map[string]ImageMetadata, len(images))
 	for _, image := range images {
 		imageNode, imageMetadata := r.getImageNode(image)
-		if imageMetadata.ImageRef != "" {
-			imageMetadataMap[imageMetadata.ImageID] = imageMetadata
+		if imageNode == nil {
+			continue
 		}
-		result.AddNode(imageNode)
+		if imageMetadata.ImageRef != "" {
+			imageMetadataMap[imageMetadata.ImageID] = *imageMetadata
+		}
+		result.AddNode(*imageNode)
 	}
 	return result, imageMetadataMap, nil
 }
 
-func (r *Reporter) getImageNode(c ContainerImage) (report.TopologyNode, ImageMetadata) {
+func (r *Reporter) getImageNode(c ContainerImage) (*report.TopologyNode, *ImageMetadata) {
 	shortImageID := getShortImageID(c.ID)
 
 	metadata := report.Metadata{
-		Timestamp:            time.Now().UTC().Format(time.RFC3339Nano),
-		NodeType:             report.ContainerImage,
-		NodeID:               c.ID,
-		DockerImageSize:      humanize.Bytes(uint64(c.Size)),
-		DockerImageCreatedAt: time.Unix(int64(c.Created), 0).Format("2006-01-02T15:04:05") + "Z",
-		HostName:             r.hostID,
+		Timestamp:              time.Now().UTC().Format(time.RFC3339Nano),
+		NodeType:               report.ContainerImage,
+		NodeID:                 c.ID,
+		DockerImageSize:        humanize.Bytes(uint64(c.Size)),
+		DockerImageVirtualSize: humanize.Bytes(uint64(c.VirtualSize)),
+		DockerImageCreatedAt:   time.Unix(int64(c.Created), 0).Format("2006-01-02T15:04:05") + "Z",
+		HostName:               r.hostID,
+		KubernetesClusterId:    r.kubernetesClusterId,
+		KubernetesClusterName:  r.kubernetesClusterName,
 	}
 	var imageRef string
 	if len(c.RepoDigests) > 0 {
@@ -198,15 +204,13 @@ func (r *Reporter) getImageNode(c ContainerImage) (report.TopologyNode, ImageMet
 		metadata.ImageNameWithTag = metadata.ImageName + ":" + metadata.ImageTag
 		metadata.NodeName = metadata.ImageNameWithTag + " (" + shortImageID + ")"
 	} else {
-		metadata.ImageName = ""
-		metadata.ImageTag = ""
-		metadata.NodeName = c.ID
+		return nil, nil
 	}
-	return report.TopologyNode{
+	return &report.TopologyNode{
 			Metadata: metadata,
 			Parents:  &report.Parent{Host: r.hostID},
 		},
-		ImageMetadata{
+		&ImageMetadata{
 			ImageName: metadata.ImageName,
 			ImageTag:  metadata.ImageTag,
 			ImageID:   c.ID,
