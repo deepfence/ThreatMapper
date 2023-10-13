@@ -232,6 +232,7 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   complianceScanStatus: 'Posture scan status',
   cloudProvider: 'Cloud provider',
   agentRunning: 'Agent running',
+  clusters: 'Cluster',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {

@@ -20,7 +20,7 @@ import { ModelEmailConfigurationAdd, ModelEmailConfigurationResp } from '@/api/g
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
-import { getFieldErrors } from '@/utils/403';
+import { get403Message, getFieldErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
 type ActionReturnType = {
@@ -82,6 +82,12 @@ export const action = async ({
           success: false,
           message: deleteResponse.error.message,
         };
+      } else if (deleteResponse.error.response.status === 403) {
+        const message = await get403Message(deleteResponse.error);
+        return {
+          message,
+          success: false,
+        };
       }
       throw deleteResponse.error;
     }
@@ -126,6 +132,12 @@ export const action = async ({
             created_by_user_id: fieldErrors?.created_by_user_id,
             email_provider: fieldErrors?.email_provider,
           },
+        };
+      } else if (addResponse.error.response.status === 403) {
+        const message = await get403Message(addResponse.error);
+        return {
+          message,
+          success: false,
         };
       }
       throw addResponse.error;
