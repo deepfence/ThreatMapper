@@ -45,6 +45,7 @@ export interface DetailsModalProps {
   nodes?: { [key: string]: GraphNodeInfo } | null;
   label: string;
   nodeType: string;
+  cloudId: string;
 }
 
 export const DetailsModal = ({
@@ -53,6 +54,7 @@ export const DetailsModal = ({
   nodes,
   label,
   nodeType,
+  cloudId,
 }: DetailsModalProps) => {
   return (
     <SlidingModal open={open} onOpenChange={onOpenChange} size="m">
@@ -75,7 +77,7 @@ export const DetailsModal = ({
             </div>
           }
         >
-          <ModalContent nodeType={nodeType} nodes={nodes} />
+          <ModalContent nodeType={nodeType} nodes={nodes} cloudId={cloudId} />
         </Suspense>
       </SlidingModalContent>
     </SlidingModal>
@@ -108,9 +110,11 @@ const SCAN_TYPE_MAP: Record<ScanTypeEnum, { label: string; logo: () => JSX.Eleme
 const ModalContent = ({
   nodes,
   nodeType,
+  cloudId,
 }: {
   nodes?: { [key: string]: GraphNodeInfo } | null;
   nodeType: string;
+  cloudId: string;
 }) => {
   const data = useLookupResources(nodeType, Object.keys(nodes ?? {}));
   const nodesData = useMemo(() => {
@@ -171,6 +175,8 @@ const ModalContent = ({
                 nodeType={nodeType}
                 scanType={ScanTypeEnum.VulnerabilityScan}
                 scanId={item.latest_vulnerability_scan_id}
+                nodeId={item.node_id}
+                cloudId={cloudId}
               />
             ) : null}
             {item?.secrets_count ? (
@@ -179,6 +185,8 @@ const ModalContent = ({
                 nodeType={nodeType}
                 scanType={ScanTypeEnum.SecretScan}
                 scanId={item.latest_secret_scan_id}
+                cloudId={cloudId}
+                nodeId={item.node_id}
               />
             ) : null}
             {item?.compliance_count ? (
@@ -187,6 +195,8 @@ const ModalContent = ({
                 nodeType={nodeType}
                 scanType={ScanTypeEnum.ComplianceScan}
                 scanId={item.latest_compliance_scan_id}
+                cloudId={cloudId}
+                nodeId={item.node_id}
               />
             ) : null}
             {item?.cloud_compliance_count ? (
@@ -195,6 +205,8 @@ const ModalContent = ({
                 nodeType={nodeType}
                 scanType={ScanTypeEnum.CloudComplianceScan}
                 scanId={item.latest_cloud_compliance_scan_id}
+                cloudId={cloudId}
+                nodeId={item.node_id}
               />
             ) : null}
           </div>
@@ -209,11 +221,15 @@ const CountCard = ({
   nodeType,
   scanId,
   scanType,
+  cloudId,
+  nodeId,
 }: {
   count: number;
   scanId?: string;
   nodeType: string;
   scanType: ScanTypeEnum;
+  cloudId: string;
+  nodeId: string;
 }) => {
   const Logo = SCAN_TYPE_MAP[scanType].logo;
   const label = SCAN_TYPE_MAP[scanType].label;
@@ -228,7 +244,7 @@ const CountCard = ({
     if (scanId) {
       return (
         <DFLink
-          to={getScanLink({ nodeType, scanType, scanId })}
+          to={getScanLink({ nodeType, scanType, scanId, cloudId, nodeId })}
           target="_blank"
           unstyled
           className={className}
