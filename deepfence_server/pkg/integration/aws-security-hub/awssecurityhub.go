@@ -51,13 +51,13 @@ func New(ctx context.Context, b []byte) (*AwsSecurityHub, error) {
 
 func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
 
-	nodeID, ok := extras["node_id"]
+	scanID, ok := extras["scan_id"]
 	if !ok {
 		log.Error().Msgf("AwsSecurityHub: SendNotification: node_id not found in extras")
 		return nil
 	}
 
-	nodeIDStr, ok := nodeID.(string)
+	scanIDStr, ok := scanID.(string)
 	if !ok {
 		log.Error().Msgf("AwsSecurityHub: SendNotification: node_id not string")
 		return nil
@@ -80,7 +80,7 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 	}
 	log.Error().Msgf("Account id detected : %s", *id.Account)
 
-	resource, err := getResource(ctx, a.Resource, nodeIDStr, a.Config.AWSRegion, *id.Account)
+	resource, err := getResource(ctx, a.Resource, scanIDStr, a.Config.AWSRegion, *id.Account)
 	if err != nil {
 		// if err.Err check here
 		if err.Error() == "not aws" {
@@ -128,18 +128,18 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 	return nil
 }
 
-func getResource(ctx context.Context, scanType, nodeID, region, accountID string) ([]*securityhub.Resource, error) {
+func getResource(ctx context.Context, scanType, scanID, region, accountID string) ([]*securityhub.Resource, error) {
 	if scanType == utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN] {
-		return getResourceForVulnerability(ctx, nodeID, region, accountID)
+		return getResourceForVulnerability(ctx, scanID, region, accountID)
 	} else if scanType == utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN] {
-		return getResourceForCompliance(ctx, nodeID, region, accountID)
+		return getResourceForCompliance(ctx, scanID, region, accountID)
 	}
 	log.Error().Msg("here1")
 	return nil, fmt.Errorf("not aws")
 }
 
-func getResourceForVulnerability(ctx context.Context, nodeID, region, accountID string) ([]*securityhub.Resource, error) {
-	log.Error().Msg("NodeID received:" + nodeID)
+func getResourceForVulnerability(ctx context.Context, scanID, region, accountID string) ([]*securityhub.Resource, error) {
+	log.Error().Msg("NodeID received:" + scanID)
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -162,7 +162,7 @@ func getResourceForVulnerability(ctx context.Context, nodeID, region, accountID 
 
 	//query for Host/Node
 	query := `MATCH (m:VulnerabilityScan{node_id: $id})-[:SCHEDULED|SCANNED]->(o:Node) WHERE o.pseudo <> true RETURN o.cloud_provider as cp, o.instance_id as instanceID, o.cloud_account_id as cloudAccountID`
-	vars := map[string]interface{}{"id": nodeID}
+	vars := map[string]interface{}{"id": scanID}
 	r, err := tx.Run(query, vars)
 
 	if err != nil {
@@ -224,7 +224,7 @@ func getResourceForVulnerability(ctx context.Context, nodeID, region, accountID 
 	return nil, fmt.Errorf("not aws")
 }
 
-func getResourceForCompliance(ctx context.Context, nodeID, region, accountID string) ([]*securityhub.Resource, error) {
+func getResourceForCompliance(ctx context.Context, scanID, region, accountID string) ([]*securityhub.Resource, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -247,7 +247,7 @@ func getResourceForCompliance(ctx context.Context, nodeID, region, accountID str
 
 	//query for Host/Node
 	query := `MATCH (m:ComplianceScan{node_id: $id})-[:SCHEDULED|SCANNED]->(o:Node) WHERE o.pseudo <> true RETURN o.cloud_provider as cp, o.instance_id as instanceID, o.cloud_account_id as cloudAccountID`
-	vars := map[string]interface{}{"id": nodeID}
+	vars := map[string]interface{}{"id": scanID}
 	r, err := tx.Run(query, vars)
 
 	if err != nil {
