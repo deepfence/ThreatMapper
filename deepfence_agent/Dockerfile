@@ -15,7 +15,6 @@ ENV CHECKPOINT_DISABLE=true \
     DF_TLS_ON="1" \
     MGMT_CONSOLE_PORT=443 \
     DF_KUBERNETES_ON="N" \
-    PACKAGE_SCAN_CONCURRENCY=1 \
     MGMT_CONSOLE_URL_SCHEMA=https \
     DEEPFENCE_KEY="" \
     MGMT_CONSOLE_URL_INTERNAL=127.0.0.1 \
@@ -75,7 +74,7 @@ RUN apt-get -qq -y --no-install-recommends install libjansson4 libssl1.1 libmagi
     && cd /tmp \
     && chmod +x /usr/local/bin/start_agent
 RUN apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
-RUN vessel_version="0.11.2" \
+RUN vessel_version="0.12.0" \
     && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v${vessel_version}/vessel_v${vessel_version}_linux_amd64.tar.gz \
     && tar -xzf vessel_v${vessel_version}_linux_amd64.tar.gz \
     && mv vessel /usr/local/bin/ \

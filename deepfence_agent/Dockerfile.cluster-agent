@@ -3,11 +3,9 @@ LABEL maintainer="Deepfence Inc"
 LABEL deepfence.role=system
 
 ENV CHECKPOINT_DISABLE=true \
-    DOCKERVERSION=24.0.2 \
     DF_TLS_ON="1" \
     MGMT_CONSOLE_PORT=443 \
     DF_KUBERNETES_ON="Y" \
-    PACKAGE_SCAN_CONCURRENCY=1 \
     MGMT_CONSOLE_URL_SCHEMA=https \
     DEEPFENCE_KEY="" \
     MGMT_CONSOLE_URL_INTERNAL=127.0.0.1 \
@@ -17,23 +15,6 @@ ENV CHECKPOINT_DISABLE=true \
 WORKDIR /home/deepfence
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends libpcap0.8 bash conntrack iproute2 util-linux curl grep tar git wget supervisor gettext htop vim ca-certificates sudo cron logrotate
-RUN apt-get -y --allow-unauthenticated install podman
-RUN curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
-    && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
-    && rm docker-${DOCKERVERSION}.tgz
-RUN vessel_version="0.11.2" \
-    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v${vessel_version}/vessel_v${vessel_version}_linux_amd64.tar.gz \
-    && tar -xzf vessel_v${vessel_version}_linux_amd64.tar.gz \
-    && mv vessel /usr/local/bin/ \
-    && rm -rf vessel_v${vessel_version}_linux_amd64.tar.gz
-RUN nerdctl_version="1.6.0" \
-    && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v${nerdctl_version}/nerdctl-${nerdctl_version}-linux-amd64.tar.gz \
-    && tar Cxzvvf /usr/local/bin nerdctl-${nerdctl_version}-linux-amd64.tar.gz \
-    && rm nerdctl-${nerdctl_version}-linux-amd64.tar.gz
-RUN crictl_version="v1.28.0" \
-    && curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/${crictl_version}/crictl-${crictl_version}-linux-amd64.tar.gz --output crictl-${crictl_version}-linux-amd64.tar.gz \
-    && tar zxvf crictl-${crictl_version}-linux-amd64.tar.gz -C /usr/local/bin \
-    && rm -f crictl-${crictl_version}-linux-amd64.tar.gz
 RUN /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)"
 RUN useradd -rm -d /home/deepfence -s /bin/bash -g root -G sudo -u 1001 deepfence
 
