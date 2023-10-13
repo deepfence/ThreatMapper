@@ -32,7 +32,10 @@ done
 # update vulnerability databae
 if [ "$DEEPFENCE_MODE" == "worker" ]; then
   echo "update vulnerability database"
+  export GRYPE_DB_UPDATE_URL="http://${DEEPFENCE_MINIO_HOST}:${DEEPFENCE_MINIO_PORT}/database/database/vulnerability/listing.json"
+  echo "db update url $GRYPE_DB_UPDATE_URL"
   /usr/local/bin/grype db update
+  echo "0 */2 * * * export GRYPE_DB_UPDATE_URL=http://${DEEPFENCE_MINIO_HOST}:${DEEPFENCE_MINIO_PORT}/database/database/vulnerability/listing.json && /usr/local/bin/grype db update" >> /etc/crontabs/root
   /usr/sbin/crond
 fi
 
