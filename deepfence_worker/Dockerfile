@@ -26,8 +26,9 @@ ENV DEEPFENCE_KAFKA_TOPIC_PARTITIONS=3 \
     DEEPFENCE_KAFKA_TOPIC_RETENTION_MS="86400000" \
     DEEPFENCE_DEBUG=false \
     DEEPFENCE_MODE=worker \
-    LD_LIBRARY_PATH=/usr/local/yara/lib \
-    GRYPE_DB_UPDATE_URL="http://${DEEPFENCE_MINIO_HOST}:${DEEPFENCE_MINIO_PORT}/database/database/vulnerability/listing.json"
+    LD_LIBRARY_PATH=/usr/local/yara/lib
+
+# ENV GRYPE_DB_UPDATE_URL="http://${DEEPFENCE_MINIO_HOST}:${DEEPFENCE_MINIO_PORT}/database/database/vulnerability/listing.json"
 
 # RUN apk add --no-cache --update bash curl \
 #     && apk upgrade \
@@ -52,9 +53,8 @@ COPY --from=builder-yara /usr/local/yara.tar.gz /usr/local/yara.tar.gz
 # extract yara
 RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \
     && rm /usr/local/yara.tar.gz \
-    && chmod +x /entrypoint.sh \
-#    && sed -i 's/auto-update: true/auto-update: false/g' /usr/local/bin/grype.yaml \
-    && echo "0 */2 * * * /usr/local/bin/grype db update" >> /etc/crontabs/root
+    && chmod +x /entrypoint.sh
+    # && sed -i 's/auto-update: true/auto-update: false/g' /usr/local/bin/grype.yaml
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/local/bin/deepfence_worker"]
