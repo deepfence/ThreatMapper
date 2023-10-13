@@ -209,6 +209,7 @@ type ScanResultsCommon struct {
 	ScanID                string `json:"scan_id" required:"true"`
 	UpdatedAt             int64  `json:"updated_at" required:"true" format:"int64"`
 	CreatedAt             int64  `json:"created_at" required:"true" format:"int64"`
+	CloudAccountID        string `json:"cloud_account_id" required:"true"`
 }
 
 type FiltersReq struct {
