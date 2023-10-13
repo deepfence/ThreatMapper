@@ -7,6 +7,7 @@
   "scripts": {
     "test:headless": "pnpm run start:server && playwright test ; pnpm run stop:server",
     "test:ui": "pnpm run start:server && playwright test --ui ; pnpm run stop:server",
+    "test:ui-local": "playwright test --ui",
     "test:debug": "pnpm run start:server && playwright test --debug ; pnpm run stop:server",
     "start:server": "node start-console.js",
     "stop:server": "node stop-console.js"

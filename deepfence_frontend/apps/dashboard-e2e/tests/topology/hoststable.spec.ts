@@ -11,10 +11,11 @@ const test = base.extend<{ topologyPage: TopologyPage }>({
 });
 
 const consoleHostName = 'ui-automation-agent-setup';
+const agentHostName = 'ip-172-31-60-127';
 const consoleAgentImageName = /deepfenceio\/deepfence_agent_ce.*/;
 
 test.describe('Topology', () => {
-  test.describe('Hosts', () => {
+  test.describe('Hosts console', () => {
     test('should go to host table and scan a host for malware', async ({ page, baseURL, topologyPage }) => {
       await page.waitForURL(`${baseURL}/topology/table/host`);
       await expect(
@@ -163,6 +164,176 @@ test.describe('Topology', () => {
             await page.waitForTimeout(5000);
             const rowSelection = page.getByRole('row').filter({
               hasText: consoleHostName,
+            });
+            const cell = rowSelection.getByRole(`cell`).nth(3);
+            const complete = cell.locator('div:text-is("Complete")');
+            const visible = await complete.isVisible();
+            if (!visible) {
+              const refreshBtn = page.locator(`button[title="Refresh now"]`);
+              if (refreshBtn) {
+                refreshBtn.click();
+              }
+            } else {
+              return true;
+            }
+          },
+          {
+            timeout: TIMEOUT,
+            intervals: [30_000],
+          },
+        )
+        .toBeTruthy();
+    });
+  });
+  test.describe('Hosts Agent', () => {
+    test('should go to host table and scan a host for malware', async ({ page, baseURL, topologyPage }) => {
+      await page.waitForURL(`${baseURL}/topology/table/host`);
+      await expect(
+        page.getByRole('button', {
+          name: 'Actions',
+        }),
+      ).toBeDisabled();
+
+      const rowSelection = page.getByRole('row').filter({
+        hasText: agentHostName,
+      });
+      await expect(rowSelection).toBeVisible();
+      await rowSelection.getByRole('checkbox').click();
+
+      const actionBtn = page.getByRole('button', {
+        name: 'Actions',
+      });
+      expect(actionBtn).toBeEnabled();
+
+      actionBtn.click();
+      await page.getByText('Start Malware Scan').click();
+      await page.getByRole('button', { name: 'Start Scan' }).click();
+
+      await expect(page.getByTestId('sliding-modal-close-button')).not.toBeAttached();
+
+      await page.mouse.click(0, 0);
+
+      await expect
+        .poll(
+          async () => {
+            await page.waitForTimeout(5000);
+            const rowSelection = page.getByRole('row').filter({
+              hasText: agentHostName,
+            });
+            const cell = rowSelection.getByRole(`cell`).nth(4);
+            const complete = cell.locator('div:text-is("Complete")');
+            const visible = await complete.isVisible();
+            if (!visible) {
+              const refreshBtn = page.locator(`button[title="Refresh now"]`);
+              if (refreshBtn) {
+                refreshBtn.click();
+              }
+            } else {
+              return true;
+            }
+          },
+          {
+            timeout: TIMEOUT,
+            intervals: [30_000],
+          },
+        )
+        .toBeTruthy();
+    });
+    test('should go to host table and scan a host for vulnerability', async ({
+      page,
+      baseURL,
+      topologyPage,
+    }) => {
+      await page.waitForURL(`${baseURL}/topology/table/host`);
+      await expect(
+        page.getByRole('button', {
+          name: 'Actions',
+        }),
+      ).toBeDisabled();
+
+      const rowSelection = page.getByRole('row').filter({
+        hasText: agentHostName,
+      });
+      await expect(rowSelection).toBeVisible();
+      await rowSelection.getByRole('checkbox').click();
+
+      const actionBtn = page.getByRole('button', {
+        name: 'Actions',
+      });
+      expect(actionBtn).toBeEnabled();
+
+      actionBtn.click();
+      await page.getByText('Start Vulnerability Scan').click();
+      await page.getByRole('button', { name: 'Start Scan' }).click();
+
+      await expect(page.getByTestId('sliding-modal-close-button')).not.toBeAttached();
+
+      await page.mouse.click(0, 0);
+
+      await expect
+        .poll(
+          async () => {
+            await page.waitForTimeout(5000);
+            const rowSelection = page.getByRole('row').filter({
+              hasText: agentHostName,
+            });
+            const cell = rowSelection.getByRole(`cell`).nth(2);
+            const complete = cell.locator('div:text-is("Complete")');
+            const visible = await complete.isVisible();
+            if (!visible) {
+              const refreshBtn = page.locator(`button[title="Refresh now"]`);
+              if (refreshBtn) {
+                refreshBtn.click();
+              }
+            } else {
+              return true;
+            }
+          },
+          {
+            timeout: TIMEOUT,
+            intervals: [30_000],
+          },
+        )
+        .toBeTruthy();
+    });
+    test('should go to host table and scan a host for secret', async ({
+      page,
+      baseURL,
+      topologyPage,
+    }) => {
+      await page.waitForURL(`${baseURL}/topology/table/host`);
+      await expect(
+        page.getByRole('button', {
+          name: 'Actions',
+        }),
+      ).toBeDisabled();
+
+      const rowSelection = page.getByRole('row').filter({
+        hasText: agentHostName,
+      });
+      await expect(rowSelection).toBeVisible();
+      await rowSelection.getByRole('checkbox').click();
+
+      const actionBtn = page.getByRole('button', {
+        name: 'Actions',
+      });
+      expect(actionBtn).toBeEnabled();
+
+      await actionBtn.click();
+
+      await page.getByText('Start Secret Scan').click();
+      await page.getByRole('button', { name: 'Start Scan' }).click();
+
+      await expect(page.getByTestId('sliding-modal-close-button')).not.toBeAttached();
+
+      await page.mouse.click(0, 0);
+
+      await expect
+        .poll(
+          async () => {
+            await page.waitForTimeout(5000);
+            const rowSelection = page.getByRole('row').filter({
+              hasText: agentHostName,
             });
             const cell = rowSelection.getByRole(`cell`).nth(3);
             const complete = cell.locator('div:text-is("Complete")');
