@@ -54,10 +54,14 @@ export const getScanLink = ({
   nodeType,
   scanType,
   scanId,
+  cloudId,
+  nodeId,
 }: {
   nodeType: string;
   scanType: ScanTypeEnum;
   scanId: string;
+  cloudId: string;
+  nodeId: string;
 }): string => {
   if (scanType === ScanTypeEnum.VulnerabilityScan) {
     return generatePath('/vulnerability/scan-results/:scanId', {
@@ -77,10 +81,10 @@ export const getScanLink = ({
       nodeType: nodeType === 'host' ? 'linux' : nodeType,
     });
   } else if (scanType === ScanTypeEnum.CloudComplianceScan) {
-    return generatePath('/posture/cloud/scan-results/:nodeType/:scanId', {
+    return `${generatePath('/posture/cloud/scan-results/:nodeType/:scanId', {
       scanId: encodeURIComponent(scanId),
-      nodeType,
-    });
+      nodeType: cloudId,
+    })}?resources=${encodeURIComponent(nodeId)}`;
   }
   throw new Error('Invalid scan type');
 };
