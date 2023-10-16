@@ -14,12 +14,14 @@ import (
 )
 
 const (
-	ebpfSocketPath         = "/tmp/secret-scanner.sock"
-	ssEbpfLogPath          = "/var/log/fenced/secretScanner.log"
 	defaultScanConcurrency = 1
 )
 
-var certPath = "/etc/filebeat/filebeat.crt"
+var (
+	ebpfSocketPath = getDfInstallDir() + "/tmp/secret-scanner.sock"
+	ssEbpfLogPath  = getDfInstallDir() + "/var/log/fenced/secretScanner.log"
+	certPath       = getDfInstallDir() + "/etc/filebeat/filebeat.crt"
+)
 
 var (
 	scanConcurrency    int
@@ -44,7 +46,6 @@ func init() {
 	}
 	deepfenceKey = os.Getenv("DEEPFENCE_KEY")
 	if os.Getenv("DF_SERVERLESS") == "true" {
-		certPath = "/deepfence/etc/filebeat/filebeat.crt"
 		scanDir = "/"
 	} else {
 		scanDir = HostMountDir
