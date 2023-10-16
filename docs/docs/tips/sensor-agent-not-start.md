@@ -26,7 +26,7 @@ Running `kubectl describe pod -n deepfence deepfence-agent-8lxng` reveals:
 ```bash
 helm delete deepfence-agent -n deepfence
 
-helm show values deepfence/deepfence-agent --version 2.0.1 > deepfence_agent_values.yaml
+helm show values deepfence/deepfence-agent --version 2.0.2 > deepfence_agent_values.yaml
 
 # You will need to update the following values:
 #   containerdSock - set to "false"
@@ -35,5 +35,5 @@ vim deepfence_agent_values.yaml
 helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-agent \
     --namespace deepfence \
     --create-namespace \
-    --version 2.0.1
+    --version 2.0.2
 ```
