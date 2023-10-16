@@ -18,11 +18,11 @@ import (
 )
 
 var BenchmarksAvailableMap = map[string][]string{
-	"aws":     {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2"},
-	"gcp":     {"cis"},
-	"azure":   {"cis", "nist", "pci", "hipaa"},
-	"cluster": {"nsa-cisa"},
-	"host":    {"hipaa", "nist", "pci", "gdpr"}}
+	model.PostureProviderAWS:     {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2"},
+	model.PostureProviderGCP:     {"cis"},
+	model.PostureProviderAzure:   {"cis", "nist", "pci", "hipaa"},
+	model.PostureProviderCluster: {"nsa-cisa"},
+	model.PostureProviderHost:    {"hipaa", "nist", "pci", "gdpr"}}
 
 type Benchmark struct {
 	BenchmarkId   string            `json:"benchmark_id"`
