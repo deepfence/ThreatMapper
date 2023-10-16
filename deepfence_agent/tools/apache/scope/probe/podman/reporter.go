@@ -12,10 +12,6 @@ import (
 	"github.com/weaveworks/scope/report"
 )
 
-const (
-	containerNameUnknown = "unknown"
-)
-
 // Reporter generate Reports containing Container and ContainerImage topologies
 type Reporter struct {
 	isConsoleVm           bool
@@ -94,9 +90,9 @@ func (r *Reporter) getContainerNode(c Container, imageMetadataMap map[string]Ima
 		imageTag = docker.ImageNameTag(c.Image)
 	}
 
-	containerName := containerNameUnknown
+	var containerName string
 	if len(c.Names) > 0 {
-		containerName = c.Names[0]
+		containerName = strings.Trim(c.Names[0], "/")
 	}
 	if containerName == "" {
 		containerName = c.ID
@@ -118,7 +114,7 @@ func (r *Reporter) getContainerNode(c Container, imageMetadataMap map[string]Ima
 		DockerContainerState:      containerState,
 		DockerContainerStateHuman: containerState,
 		DockerContainerCommand:    strings.Join(c.Command, " "),
-		DockerContainerCreated:    c.CreatedAt,
+		DockerContainerCreated:    c.Created.Format("2006-01-02T15:04:05") + "Z",
 		ImageName:                 imageName,
 		ImageTag:                  imageTag,
 		DockerImageID:             imageID,

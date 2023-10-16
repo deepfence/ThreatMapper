@@ -106,6 +106,11 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		containerName = c.Id
 	}
 
+	containerCreatedAt := ""
+	if c.CreatedAt > 0 {
+		containerCreatedAt = time.Unix(c.CreatedAt/1000000000, 0).Format("2006-01-02T15:04:05") + "Z"
+	}
+
 	metadata := report.Metadata{
 		Timestamp:                 time.Now().UTC().Format(time.RFC3339Nano),
 		NodeType:                  report.Container,
@@ -115,7 +120,7 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		DockerContainerName:       containerName,
 		DockerContainerState:      containerState,
 		DockerContainerStateHuman: containerState,
-		DockerContainerCreated:    time.Unix(int64(c.CreatedAt), 0).Format("2006-01-02T15:04:05") + "Z",
+		DockerContainerCreated:    containerCreatedAt,
 		ImageName:                 imageName,
 		ImageTag:                  imageTag,
 		DockerImageID:             imageID,
