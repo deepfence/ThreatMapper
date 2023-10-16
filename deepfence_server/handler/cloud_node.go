@@ -161,7 +161,7 @@ func (h *Handler) ListCloudNodeAccountHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	if utils.StringToCloudProvider(req.CloudProvider) == -1 {
-		if req.CloudProvider != model.PostureProviderKubernetes && req.CloudProvider != model.PostureProviderLinux {
+		if req.CloudProvider != model.PostureProviderCluster && req.CloudProvider != model.PostureProviderHost {
 			err = fmt.Errorf("unknown Provider: %s", req.CloudProvider)
 			log.Error().Msgf("%v", err)
 			h.respondError(&BadDecoding{err}, w)

@@ -18,11 +18,11 @@ import (
 )
 
 var BenchmarksAvailableMap = map[string][]string{
-	"aws":        {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2"},
-	"gcp":        {"cis"},
-	"azure":      {"cis", "nist", "pci", "hipaa"},
-	"kubernetes": {"nsa-cisa"},
-	"linux":      {"hipaa", "nist", "pci", "gdpr"}}
+	"aws":     {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2"},
+	"gcp":     {"cis"},
+	"azure":   {"cis", "nist", "pci", "hipaa"},
+	"cluster": {"nsa-cisa"},
+	"host":    {"hipaa", "nist", "pci", "gdpr"}}
 
 type Benchmark struct {
 	BenchmarkId   string            `json:"benchmark_id"`
@@ -215,17 +215,17 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 		}
 		neo4jNodeType := "CloudNode"
 		nodeLabel := "Hosts"
-		if postureProviderName == model.PostureProviderKubernetes {
+		if postureProviderName == model.PostureProviderCluster {
 			neo4jNodeType = "KubernetesCluster"
 			nodeLabel = "Clusters"
-		} else if postureProviderName == model.PostureProviderLinux {
+		} else if postureProviderName == model.PostureProviderHost {
 			neo4jNodeType = "Node"
 		}
 		var account_count_query, resource_count_query, scan_count_query, success_count_query, global_count_query string
 		passStatus := []string{"ok", "info", "skip"}
-		if postureProviderName == model.PostureProviderLinux || postureProviderName == model.PostureProviderKubernetes {
+		if postureProviderName == model.PostureProviderHost || postureProviderName == model.PostureProviderCluster {
 			postureProvider.NodeLabel = nodeLabel
-			if postureProviderName == model.PostureProviderLinux {
+			if postureProviderName == model.PostureProviderHost {
 				passStatus = []string{"warn", "pass"}
 			}
 
