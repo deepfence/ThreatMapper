@@ -115,6 +115,7 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		DockerContainerName:       containerName,
 		DockerContainerState:      containerState,
 		DockerContainerStateHuman: containerState,
+		DockerContainerCreated:    time.Unix(int64(c.CreatedAt), 0).Format("2006-01-02T15:04:05") + "Z",
 		ImageName:                 imageName,
 		ImageTag:                  imageTag,
 		DockerImageID:             imageID,

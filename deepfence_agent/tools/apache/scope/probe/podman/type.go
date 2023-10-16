@@ -17,18 +17,24 @@ type Container struct {
 	ImageID    string            `json:"ImageID"`
 	IsInfra    bool              `json:"IsInfra"`
 	Labels     map[string]string `json:"Labels"`
-	Mounts     []any             `json:"Mounts"`
+	Mounts     []string          `json:"Mounts"`
 	Names      []string          `json:"Names"`
 	Namespaces struct{}          `json:"Namespaces"`
 	Networks   []string          `json:"Networks"`
 	Pid        int               `json:"Pid"`
 	Pod        string            `json:"Pod"`
 	PodName    string            `json:"PodName"`
-	Ports      any               `json:"Ports"`
-	Size       any               `json:"Size"`
-	StartedAt  int               `json:"StartedAt"`
-	State      string            `json:"State"`
-	Status     string            `json:"Status"`
+	Ports      []struct {
+		HostIP        string `json:"host_ip"`
+		ContainerPort int    `json:"container_port"`
+		HostPort      int    `json:"host_port"`
+		Range         int    `json:"range"`
+		Protocol      string `json:"protocol"`
+	} `json:"Ports"`
+	Size      any    `json:"Size"`
+	StartedAt int    `json:"StartedAt"`
+	State     string `json:"State"`
+	Status    string `json:"Status"`
 }
 
 type ContainerImage struct {

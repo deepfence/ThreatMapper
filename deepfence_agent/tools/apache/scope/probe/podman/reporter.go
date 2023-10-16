@@ -3,6 +3,7 @@ package podman
 import (
 	"encoding/json"
 	"os"
+	"strings"
 	"time"
 
 	dfUtils "github.com/deepfence/df-utils"
@@ -116,6 +117,8 @@ func (r *Reporter) getContainerNode(c Container, imageMetadataMap map[string]Ima
 		DockerContainerName:       containerName,
 		DockerContainerState:      containerState,
 		DockerContainerStateHuman: containerState,
+		DockerContainerCommand:    strings.Join(c.Command, " "),
+		DockerContainerCreated:    c.CreatedAt,
 		ImageName:                 imageName,
 		ImageTag:                  imageTag,
 		DockerImageID:             imageID,

@@ -30,6 +30,10 @@ func NewPodmanClient(endpoint string) (*PodmanClient, error) {
 	podmanClient := PodmanClient{
 		Endpoint: strings.TrimPrefix(endpoint, "unix://"),
 	}
+	err := podmanClient.Validate()
+	if err != nil {
+		return nil, err
+	}
 	return &podmanClient, nil
 }
 
