@@ -1,7 +1,6 @@
-package cri
+package podman
 
 import (
-	"context"
 	"encoding/json"
 	"os"
 	"strings"
@@ -9,7 +8,6 @@ import (
 
 	dfUtils "github.com/deepfence/df-utils"
 	"github.com/dustin/go-humanize"
-	client "github.com/weaveworks/scope/cri/runtime"
 	"github.com/weaveworks/scope/probe/docker"
 	"github.com/weaveworks/scope/report"
 )
@@ -18,18 +16,16 @@ import (
 type Reporter struct {
 	isConsoleVm           bool
 	hostID                string
-	cri                   client.RuntimeServiceClient
-	criImageClient        client.ImageServiceClient
+	podmanClient          *PodmanClient
 	kubernetesClusterId   string
 	kubernetesClusterName string
 }
 
 // NewReporter makes a new Reporter
-func NewReporter(cri client.RuntimeServiceClient, hostID string, criImageClient client.ImageServiceClient) *Reporter {
+func NewReporter(podmanClient *PodmanClient, hostID string) *Reporter {
 	reporter := &Reporter{
 		hostID:                hostID,
-		cri:                   cri,
-		criImageClient:        criImageClient,
+		podmanClient:          podmanClient,
 		isConsoleVm:           dfUtils.IsThisConsoleAgent(),
 		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
 		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
@@ -39,88 +35,86 @@ func NewReporter(cri client.RuntimeServiceClient, hostID string, criImageClient 
 }
 
 // Name of this reporter, for metrics gathering
-func (*Reporter) Name() string { return "CRI" }
+func (*Reporter) Name() string { return "Podman" }
 
-// Report generates a Report containing Container topologies
 func (r *Reporter) Report() (report.Report, error) {
 	result := report.MakeReport()
-	imageTopol, imageMetadataMap, err := r.containerImageTopology()
+
+	containerImageTopology, imageMetadataMap, err := r.containerImageTopology()
 	if err != nil {
 		return report.MakeReport(), err
 	}
 
-	containerTopol, err := r.containerTopology(imageMetadataMap)
+	containerTopology, err := r.containerTopology(imageMetadataMap)
 	if err != nil {
 		return report.MakeReport(), err
 	}
 
-	result.Container.Merge(containerTopol)
-	result.ContainerImage.Merge(imageTopol)
+	result.Container.Merge(containerTopology)
+	result.ContainerImage.Merge(containerImageTopology)
 	return result, nil
 }
 
 func (r *Reporter) containerTopology(imageMetadataMap map[string]ImageMetadata) (report.Topology, error) {
 	result := report.MakeTopology()
-	ctx := context.Background()
-	resp, err := r.cri.ListContainers(ctx, &client.ListContainersRequest{})
+
+	containers, err := r.podmanClient.ListContainers()
 	if err != nil {
 		return result, err
 	}
-
-	for _, c := range resp.Containers {
-		node := r.getNode(c, imageMetadataMap)
+	for _, c := range containers {
+		node := r.getContainerNode(c, imageMetadataMap)
 		if node == nil {
 			continue
 		}
 		result.AddNode(*node)
 	}
-
 	return result, nil
 }
 
-func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]ImageMetadata) *report.TopologyNode {
+func (r *Reporter) getContainerNode(c Container, imageMetadataMap map[string]ImageMetadata) *report.TopologyNode {
 	containerState := getState(c)
 	if report.SkipReportContainerState[containerState] {
 		return nil
 	}
-	imageMetadata, ok := imageMetadataMap[c.ImageRef]
+
+	imageMetadata, ok := imageMetadataMap[c.ImageID]
 	var imageID, imageName, imageTag string
 	if ok {
 		imageID = imageMetadata.ImageID
 		imageName = imageMetadata.ImageName
 		imageTag = imageMetadata.ImageTag
 	} else {
-		imageID = trimImageID(c.Image.GetImage())
-		imageName, imageTag = docker.ParseImageDigest(c.ImageRef)
-	}
-	var dockerLabels string
-	podName := c.Labels["io.kubernetes.pod.name"]
-	podUid := c.Labels["io.kubernetes.pod.uid"]
-	dockerLabelsJson, err := json.Marshal(c.Labels)
-	if err == nil {
-		dockerLabels = string(dockerLabelsJson)
+		imageID = c.ImageID
+		imageName = docker.ImageNameWithoutTag(c.Image)
+		imageTag = docker.ImageNameTag(c.Image)
 	}
 
-	containerName := c.Metadata.Name
+	var containerName string
+	if len(c.Names) > 0 {
+		containerName = strings.Trim(c.Names[0], "/")
+	}
 	if containerName == "" {
-		containerName = c.Id
+		containerName = c.ID
 	}
 
-	containerCreatedAt := ""
-	if c.CreatedAt > 0 {
-		containerCreatedAt = time.Unix(c.CreatedAt/1000000000, 0).Format("2006-01-02T15:04:05") + "Z"
+	var containerLabels string
+	containerLabelsJson, err := json.Marshal(c.Labels)
+	if err == nil {
+		containerLabels = string(containerLabelsJson)
 	}
 
 	metadata := report.Metadata{
 		Timestamp:                 time.Now().UTC().Format(time.RFC3339Nano),
 		NodeType:                  report.Container,
-		NodeID:                    c.Id,
+		NodeID:                    c.ID,
 		NodeName:                  containerName + " / " + r.hostID,
 		HostName:                  r.hostID,
 		DockerContainerName:       containerName,
 		DockerContainerState:      containerState,
 		DockerContainerStateHuman: containerState,
-		DockerContainerCreated:    containerCreatedAt,
+		DockerContainerCommand:    strings.Join(c.Command, " "),
+		DockerContainerCreated:    c.Created.Format("2006-01-02T15:04:05") + "Z",
 		ImageName:                 imageName,
 		ImageTag:                  imageTag,
 		DockerImageID:             imageID,
@@ -128,9 +122,9 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		IsConsoleVm:               r.isConsoleVm,
 		KubernetesClusterName:     r.kubernetesClusterName,
 		KubernetesClusterId:       r.kubernetesClusterId,
-		DockerLabels:              dockerLabels,
-		PodName:                   podName,
-		PodID:                     podUid,
+		DockerLabels:              containerLabels,
+		PodName:                   c.PodName,
+		PodID:                     c.Pod,
 	}
 	return &report.TopologyNode{
 		Metadata: metadata,
@@ -138,85 +132,74 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 			KubernetesCluster: r.kubernetesClusterId,
 			Host:              r.hostID,
 			ContainerImage:    imageID,
-			Pod:               podUid,
+			Pod:               c.Pod,
 		},
 	}
 }
 
-func getState(c *client.Container) string {
-	switch c.State.String() {
-	case "CONTAINER_RUNNING":
+func getState(c Container) string {
+	switch c.State {
+	case "running":
 		return report.StateRunning
-	case "CONTAINER_EXITED":
+	case "stopped", "exited", "removing", "stopping":
 		return report.StateExited
-	case "CONTAINER_UNKNOWN":
-		return report.StateUnknown
-	case "CONTAINER_CREATED":
+	case "paused":
+		return report.StatePaused
+	case "created", "initialized":
 		return report.StateCreated
 	default:
 		return report.StateUnknown
 	}
 }
 
-type ImageMetadata struct {
-	ImageName string
-	ImageTag  string
-	ImageID   string
-	ImageRef  string
-}
-
 func (r *Reporter) containerImageTopology() (report.Topology, map[string]ImageMetadata, error) {
 	result := report.MakeTopology()
 
-	ctx := context.Background()
-	resp, err := r.criImageClient.ListImages(ctx, &client.ListImagesRequest{})
+	images, err := r.podmanClient.ListImages()
 	if err != nil {
 		return result, nil, err
 	}
 
-	imageMetadataMap := make(map[string]ImageMetadata, len(resp.Images))
-	for _, img := range resp.Images {
-		imageNode, imageMetadata := r.getImage(img)
+	imageMetadataMap := make(map[string]ImageMetadata, len(images))
+	for _, image := range images {
+		imageNode, imageMetadata := r.getImageNode(image)
 		if imageNode == nil {
 			continue
 		}
 		if imageMetadata.ImageRef != "" {
-			imageMetadataMap[imageMetadata.ImageRef] = *imageMetadata
+			imageMetadataMap[imageMetadata.ImageID] = *imageMetadata
 		}
 		result.AddNode(*imageNode)
 	}
-
 	return result, imageMetadataMap, nil
 }
 
-func (r *Reporter) getImage(image *client.Image) (*report.TopologyNode, *ImageMetadata) {
-	// logrus.Infof("images: %v", image)
-	// image format: sha256:ab21abc2d2c34c2b2d2c23bbcf23gg23f23
-	imageID := trimImageID(image.Id)
-	shortImageID := getShortImageID(imageID)
+func (r *Reporter) getImageNode(c ContainerImage) (*report.TopologyNode, *ImageMetadata) {
+	shortImageID := getShortImageID(c.ID)
+
 	metadata := report.Metadata{
 		Timestamp:              time.Now().UTC().Format(time.RFC3339Nano),
 		NodeType:               report.ContainerImage,
-		NodeID:                 imageID,
-		DockerImageSize:        humanize.Bytes(uint64(image.Size())),
-		DockerImageVirtualSize: humanize.Bytes(uint64(image.Size())),
-		DockerImageCreatedAt:   time.Unix(0, 0).Format("2006-01-02T15:04:05") + "Z",
+		NodeID:                 c.ID,
+		DockerImageSize:        humanize.Bytes(uint64(c.Size)),
+		DockerImageVirtualSize: humanize.Bytes(uint64(c.VirtualSize)),
+		DockerImageCreatedAt:   time.Unix(int64(c.Created), 0).Format("2006-01-02T15:04:05") + "Z",
 		HostName:               r.hostID,
 		KubernetesClusterId:    r.kubernetesClusterId,
 		KubernetesClusterName:  r.kubernetesClusterName,
 	}
 	var imageRef string
-	if len(image.RepoDigests) > 0 {
-		imageRef = image.RepoDigests[0]
+	if len(c.RepoDigests) > 0 {
+		imageRef = c.RepoDigests[0]
 	}
-	if len(image.RepoTags) > 0 {
-		imageFullName := image.RepoTags[0]
+	if len(c.RepoTags) > 0 {
+		imageFullName := c.RepoTags[0]
 		metadata.ImageName = docker.ImageNameWithoutTag(imageFullName)
 		metadata.ImageTag = docker.ImageNameTag(imageFullName)
 		metadata.ImageNameWithTag = metadata.ImageName + ":" + metadata.ImageTag
 		metadata.NodeName = metadata.ImageNameWithTag + " (" + shortImageID + ")"
-	} else if len(image.RepoDigests) > 0 {
-		metadata.ImageName, metadata.ImageTag = docker.ParseImageDigest(image.RepoDigests[0])
+	} else if len(c.RepoDigests) > 0 {
+		metadata.ImageName, metadata.ImageTag = docker.ParseImageDigest(c.RepoDigests[0])
 		metadata.ImageNameWithTag = metadata.ImageName + ":" + metadata.ImageTag
 		metadata.NodeName = metadata.ImageNameWithTag + " (" + shortImageID + ")"
 	} else {
@@ -229,17 +212,18 @@ func (r *Reporter) getImage(image *client.Image) (*report.TopologyNode, *ImageMe
 		&ImageMetadata{
 			ImageName: metadata.ImageName,
 			ImageTag:  metadata.ImageTag,
-			ImageID:   imageID,
+			ImageID:   c.ID,
 			ImageRef:  imageRef,
 		}
 }
 
-// CRI sometimes prefixes ids with a "type" annotation, but it renders a bit
-// ugly and isn't necessary, so we should strip it off
-func trimImageID(id string) string {
-	return strings.TrimPrefix(id, "sha256:")
-}
-
 func getShortImageID(id string) string {
 	return id[:12]
+}
+
+type ImageMetadata struct {
+	ImageName string
+	ImageTag  string
+	ImageID   string
+	ImageRef  string
 }

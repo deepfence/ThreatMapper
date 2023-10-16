@@ -102,6 +102,9 @@ mountContainerRuntimeSocket:
   crioSock: false
   # Change if socket path is not the following
   crioSockPath: "/var/run/crio/crio.sock"
+  podmanSock: false
+  # Change if socket path is not the following
+  podmanSockPath: "/run/podman/podman.sock"
 
 
 serviceAccount:

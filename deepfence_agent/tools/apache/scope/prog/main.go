@@ -115,6 +115,9 @@ type probeFlags struct {
 	criEnabled  bool
 	criEndpoint string
 
+	podmanEnabled  bool
+	podmanEndpoint string
+
 	kubernetesEnabled      bool
 	kubernetesRole         string
 	kubernetesNodeName     string
@@ -207,6 +210,10 @@ func setupFlags(flags *flags) {
 	// CRI
 	flag.BoolVar(&flags.probe.criEnabled, "probe.cri", false, "collect CRI-related attributes for processes")
 	flag.StringVar(&flags.probe.criEndpoint, "probe.cri.endpoint", "unix///var/run/dockershim.sock", "The endpoint to connect to the CRI")
+
+	// Podman
+	flag.BoolVar(&flags.probe.podmanEnabled, "probe.podman", false, "collect Podman-related attributes for processes")
+	flag.StringVar(&flags.probe.podmanEndpoint, "probe.podman.endpoint", "unix:///run/podman/podman.sock", "The endpoint to connect to the Podman")
 
 	// K8s
 	flag.BoolVar(&flags.probe.kubernetesEnabled, "probe.kubernetes", false, "collect kubernetes-related attributes for containers")
