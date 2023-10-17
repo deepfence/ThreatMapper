@@ -2,6 +2,7 @@ package reporters_lookup
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
@@ -12,6 +13,10 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 	"github.com/rs/zerolog/log"
+)
+
+const (
+	nodeReportResourcesSplit = "##"
 )
 
 // If no nodeIds are provided, will return all
@@ -313,7 +318,7 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 		        OPTIONAL MATCH (l) -[:DETECTED]-> (n)
 		        OPTIONAL MATCH (l) -[:SCANNED]-> (k)
 				WITH distinct k
-		        RETURN collect((coalesce(k.node_name, '') + '/' + coalesce(k.node_type, ''))) as resources 
+		        RETURN collect(coalesce(k.node_id, '') + '##' + coalesce(k.node_name, '') + '##' + coalesce(k.node_type, '')) as resources
 			}
 			RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources`
 	} else {
@@ -326,7 +331,7 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 		        OPTIONAL MATCH (l) -[:DETECTED]-> (n)
 		        OPTIONAL MATCH (l) -[:SCANNED]-> (k)
 				WITH distinct k
-		        RETURN collect((coalesce(k.node_name, '') + '/' + coalesce(k.node_type, ''))) as resources 
+		        RETURN collect(coalesce(k.node_id, '') + '##' + coalesce(k.node_name, '') + '##' + coalesce(k.node_type, '')) as resources
 			}
 			RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources`
 	}
@@ -377,9 +382,17 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 		resources, isValue := rec.Get("resources")
 		if isValue {
 			resourceList := resources.([]interface{})
-			resourceListString := make([]string, len(resourceList))
+			resourceListString := make([]model.BasicNode, len(resourceList))
 			for i, v := range resourceList {
-				resourceListString[i] = v.(string)
+				nodeDetails := strings.Split(v.(string), nodeReportResourcesSplit)
+				if len(nodeDetails) != 3 {
+					continue
+				}
+				resourceListString[i] = model.BasicNode{
+					NodeId:   nodeDetails[0],
+					Name:     nodeDetails[1],
+					NodeType: nodeDetails[2],
+				}
 			}
 			node_map["resources"] = resourceListString
 		}
