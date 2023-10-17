@@ -332,7 +332,7 @@ services:
     restart: unless-stopped
 
   deepfence-telemetry:
-    image: jaegertracing/all-in-one:1.42
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/jaegertracing-all-in-one:1.50
     hostname: deepfence-telemetry
     container_name: deepfence-telemetry
     ports:

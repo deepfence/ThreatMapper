@@ -19,7 +19,7 @@ export VERSION?="2.0.0"
 default: bootstrap console_plugins agent console
 
 .PHONY: console
-console: redis postgres kafka-broker router server worker ui file-server graphdb
+console: redis postgres kafka-broker router server worker ui file-server graphdb jaeger
 
 .PHONY: console_plugins
 console_plugins: secretscanner malwarescanner packagescanner compliancescanner
@@ -81,6 +81,11 @@ server: alpine_builder
 worker: alpine_builder
 	(cd ./deepfence_worker && make image)
 
+.PHONY: jaeger
+jaeger:
+	docker pull jaegertracing/all-in-one:1.50
+	docker tag jaegertracing/all-in-one:1.50 $(IMAGE_REPOSITORY)/jaegertracing-all-in-one:1.50
+
 .PHONY: graphdb
 graphdb:
 	docker build -f ./deepfence_neo4j/Dockerfile --build-arg IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) --build-arg DF_IMG_TAG=$(DF_IMG_TAG) -t $(IMAGE_REPOSITORY)/deepfence_neo4j_ce:$(DF_IMG_TAG) ./deepfence_neo4j
@@ -137,7 +142,7 @@ cli: bootstrap
 	(cd $(DEEPFENCE_CTL) && make clean && make all)
 
 .PHONY: publish
-publish: publish-redis publish-postgres publish-kafka publish-router publish-minio publish-server publish-worker publish-ui publish-agent publish-cluster-agent publish-packagescanner publish-secretscanner publish-malwarescanner publish-graphdb
+publish: publish-redis publish-postgres publish-kafka publish-router publish-minio publish-server publish-worker publish-ui publish-agent publish-cluster-agent publish-packagescanner publish-secretscanner publish-malwarescanner publish-graphdb publish-jaeger
 
 .PHONY: publish-redis
 publish-redis:
@@ -195,6 +200,9 @@ publish-malwarescanner:
 publish-graphdb:
 	docker push $(IMAGE_REPOSITORY)/deepfence_neo4j_ce:$(DF_IMG_TAG)
 
+.PHONY: publish-jaeger
+publish-jaeger:
+	docker push $(IMAGE_REPOSITORY)/jaegertracing-all-in-one:1.5.0
 
 .PHONY: clean
 clean:
