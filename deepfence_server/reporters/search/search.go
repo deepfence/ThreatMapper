@@ -295,7 +295,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		return res, err
 	}
 	defer tx.Close()
-	if cloudProvider == model.PostureProviderHost || cloudProvider == model.PostureProviderCluster {
+	if cloudProvider == model.PostureProviderHost || cloudProvider == model.PostureProviderKubernetesCluster {
 		filter.Filters.ContainsFilter.FieldsValues["agent_running"] = append(make([]interface{}, 0), true)
 		delete(filter.Filters.ContainsFilter.FieldsValues, "cloud_provider")
 	}

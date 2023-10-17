@@ -16,17 +16,17 @@ import (
 )
 
 const (
-	PostureProviderAWS     = "aws"
-	PostureProviderAWSOrg  = "aws_org"
-	PostureProviderGCP     = "gcp"
-	PostureProviderGCPOrg  = "gcp_org"
-	PostureProviderAzure   = "azure"
-	PostureProviderHost    = "host"
-	PostureProviderCluster = "cluster"
+	PostureProviderAWS               = "aws"
+	PostureProviderAWSOrg            = "aws_org"
+	PostureProviderGCP               = "gcp"
+	PostureProviderGCPOrg            = "gcp_org"
+	PostureProviderAzure             = "azure"
+	PostureProviderHost              = "host"
+	PostureProviderKubernetesCluster = "kubernetes_cluster"
 )
 
 var SupportedPostureProviders = []string{PostureProviderAWS, PostureProviderGCP,
-	PostureProviderAzure, PostureProviderHost, PostureProviderCluster}
+	PostureProviderAzure, PostureProviderHost, PostureProviderKubernetesCluster}
 
 type CloudNodeAccountRegisterReq struct {
 	NodeId              string            `json:"node_id" required:"true"`
@@ -77,7 +77,7 @@ type CloudNodeAccountInfo struct {
 
 func (v CloudNodeAccountInfo) NodeType() string {
 	switch v.CloudProvider {
-	case PostureProviderCluster:
+	case PostureProviderKubernetesCluster:
 		return utils.NodeTypeKubernetesCluster
 	case PostureProviderHost:
 		return utils.NodeTypeHost
@@ -93,7 +93,7 @@ func (v CloudNodeAccountInfo) ScanType() utils.Neo4jScanType {
 	switch v.CloudProvider {
 	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg:
 		return utils.NEO4J_CLOUD_COMPLIANCE_SCAN
-	case PostureProviderCluster, PostureProviderHost:
+	case PostureProviderKubernetesCluster, PostureProviderHost:
 		return utils.NEO4J_COMPLIANCE_SCAN
 	default:
 		return utils.NEO4J_CLOUD_COMPLIANCE_SCAN
@@ -104,7 +104,7 @@ func (v CloudNodeAccountInfo) ScanResultType() string {
 	switch v.CloudProvider {
 	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg:
 		return "CloudCompliance"
-	case PostureProviderCluster, PostureProviderHost:
+	case PostureProviderKubernetesCluster, PostureProviderHost:
 		return "Compliance"
 	default:
 		return "CloudCompliance"
@@ -113,7 +113,7 @@ func (v CloudNodeAccountInfo) ScanResultType() string {
 
 func (v CloudNodeAccountInfo) GetPassStatus() []string {
 	switch v.CloudProvider {
-	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg, PostureProviderCluster:
+	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg, PostureProviderKubernetesCluster:
 		return []string{"ok", "info", "skip"}
 	case PostureProviderHost:
 		return []string{"warn", "pass"}
@@ -271,7 +271,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 		// {Name: PostureProviderGCPOrg, NodeLabel: "Organizations"},
 		{Name: PostureProviderAzure, NodeLabel: "Accounts"},
 		{Name: PostureProviderHost, NodeLabel: "Hosts"},
-		{Name: PostureProviderCluster, NodeLabel: "Clusters"},
+		{Name: PostureProviderKubernetesCluster, NodeLabel: "Clusters"},
 	}
 	providersIndex := make(map[string]int)
 	for i, provider := range postureProviders {
@@ -311,9 +311,9 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 		if err == nil {
 			for _, record := range records {
 				if record.Values[0].(bool) == true {
-					postureProviders[providersIndex[PostureProviderCluster]].NodeCount = record.Values[1].(int64)
+					postureProviders[providersIndex[PostureProviderKubernetesCluster]].NodeCount = record.Values[1].(int64)
 				} else {
-					postureProviders[providersIndex[PostureProviderCluster]].NodeCountInactive = record.Values[1].(int64)
+					postureProviders[providersIndex[PostureProviderKubernetesCluster]].NodeCountInactive = record.Values[1].(int64)
 				}
 			}
 		}
@@ -373,7 +373,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	} else if cloudProvider == PostureProviderGCPOrg {
 		cloudProvider = PostureProviderGCP
 		isOrgListing = true
-	} else if cloudProvider == PostureProviderCluster {
+	} else if cloudProvider == PostureProviderKubernetesCluster {
 		neo4jNodeType = "KubernetesCluster"
 	} else if cloudProvider == PostureProviderHost {
 		neo4jNodeType = "Node"
@@ -381,7 +381,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	}
 	var res neo4j.Result
 	var query string
-	if cloudProvider == PostureProviderCluster || cloudProvider == PostureProviderHost {
+	if cloudProvider == PostureProviderKubernetesCluster || cloudProvider == PostureProviderHost {
 		nonKubeFilter := ""
 		if cloudProvider == PostureProviderHost {
 			nonKubeFilter = "{kubernetes_cluster_id:''}"

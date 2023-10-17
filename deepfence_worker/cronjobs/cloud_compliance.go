@@ -18,11 +18,11 @@ import (
 )
 
 var BenchmarksAvailableMap = map[string][]string{
-	model.PostureProviderAWS:     {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2"},
-	model.PostureProviderGCP:     {"cis"},
-	model.PostureProviderAzure:   {"cis", "nist", "pci", "hipaa"},
-	model.PostureProviderCluster: {"nsa-cisa"},
-	model.PostureProviderHost:    {"hipaa", "nist", "pci", "gdpr"}}
+	model.PostureProviderAWS:               {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2"},
+	model.PostureProviderGCP:               {"cis"},
+	model.PostureProviderAzure:             {"cis", "nist", "pci", "hipaa"},
+	model.PostureProviderKubernetesCluster: {"nsa-cisa"},
+	model.PostureProviderHost:              {"hipaa", "nist", "pci", "gdpr"}}
 
 type Benchmark struct {
 	BenchmarkId   string            `json:"benchmark_id"`
@@ -215,7 +215,7 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 		}
 		neo4jNodeType := "CloudNode"
 		nodeLabel := "Hosts"
-		if postureProviderName == model.PostureProviderCluster {
+		if postureProviderName == model.PostureProviderKubernetesCluster {
 			neo4jNodeType = "KubernetesCluster"
 			nodeLabel = "Clusters"
 		} else if postureProviderName == model.PostureProviderHost {
@@ -223,7 +223,7 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 		}
 		var account_count_query, resource_count_query, scan_count_query, success_count_query, global_count_query string
 		passStatus := []string{"ok", "info", "skip"}
-		if postureProviderName == model.PostureProviderHost || postureProviderName == model.PostureProviderCluster {
+		if postureProviderName == model.PostureProviderHost || postureProviderName == model.PostureProviderKubernetesCluster {
 			postureProvider.NodeLabel = nodeLabel
 			if postureProviderName == model.PostureProviderHost {
 				passStatus = []string{"warn", "pass"}
