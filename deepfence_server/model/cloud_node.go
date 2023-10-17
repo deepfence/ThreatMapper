@@ -158,7 +158,7 @@ type PendingCloudComplianceScan struct {
 
 type CloudNodeControlReq struct {
 	NodeId         string `json:"node_id"`
-	CloudProvider  string `json:"cloud_provider" required:"true" enum:"aws,gcp,azure,host,cluster"`
+	CloudProvider  string `json:"cloud_provider" required:"true" enum:"aws,gcp,azure,host,kubernetes_cluster"`
 	ComplianceType string `json:"compliance_type" required:"true"`
 }
 
