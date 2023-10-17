@@ -157,7 +157,7 @@ func StartScanActionBuilder(ctx context.Context, scanType ctl.ActionID, addition
 		}
 		binArgs := map[string]string{
 			"scan_id":     scanId,
-			"node_type":   req.NodeType,
+			"node_type":   ctl.ResourceTypeToString(ctl.StringToResourceType(req.NodeType)),
 			"node_id":     req.NodeId,
 			"registry_id": registryIdStr,
 		}

@@ -80,8 +80,6 @@ func StringToResourceType(s string) ScanResource {
 		return Container
 	case "container_image":
 		return Image
-	case "image":
-		return Image
 	case "host":
 		return Host
 	case "cluster":
