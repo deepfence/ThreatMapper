@@ -202,7 +202,7 @@ publish-graphdb:
 
 .PHONY: publish-jaeger
 publish-jaeger:
-	docker push $(IMAGE_REPOSITORY)/jaegertracing-all-in-one:1.5.0
+	docker push $(IMAGE_REPOSITORY)/jaegertracing-all-in-one:1.50
 
 .PHONY: clean
 clean:
