@@ -50,13 +50,13 @@ type SearchCountResp struct {
 }
 
 type NodeCountResp struct {
-	CloudProviders int64 `json:"cloud_provider" required:"true"`
-	Host           int64 `json:"host" required:"true"`
-	Container      int64 `json:"container" required:"true"`
-	ContainerImage int64 `json:"container_image" required:"true"`
-	Pod            int64 `json:"pod" required:"true"`
-	Cluster        int64 `json:"cluster" required:"true"`
-	Namespace      int64 `json:"namespace" required:"true"`
+	CloudProviders    int64 `json:"cloud_provider" required:"true"`
+	Host              int64 `json:"host" required:"true"`
+	Container         int64 `json:"container" required:"true"`
+	ContainerImage    int64 `json:"container_image" required:"true"`
+	Pod               int64 `json:"pod" required:"true"`
+	KubernetesCluster int64 `json:"kubernetes_cluster" required:"true"`
+	Namespace         int64 `json:"namespace" required:"true"`
 }
 
 type ResultGroup struct {
@@ -133,7 +133,7 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 	res.Host = rec.Values[0].(int64)
 	res.Container = rec.Values[1].(int64)
 	res.ContainerImage = rec.Values[2].(int64)
-	res.Cluster = rec.Values[3].(int64)
+	res.KubernetesCluster = rec.Values[3].(int64)
 	res.Pod = rec.Values[4].(int64)
 	res.Namespace = rec.Values[5].(int64)
 	res.CloudProviders = rec.Values[6].(int64)
