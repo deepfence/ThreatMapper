@@ -190,15 +190,13 @@ const DetailsComponent = () => {
               if (resource.node_type === 'container_image') {
                 return (
                   <>
-                    <Suspense fallback={<CircleSpinner size="md" />}>
-                      {showResourceModal && (
-                        <ResourceDetailModal
-                          open={showResourceModal}
-                          onClose={setShowResourceModal}
-                          nodeId={resource.node_id}
-                        />
-                      )}
-                    </Suspense>
+                    {showResourceModal && (
+                      <ResourceDetailModal
+                        open={showResourceModal}
+                        onClose={setShowResourceModal}
+                        nodeId={resource.node_id}
+                      />
+                    )}
 
                     <button
                       type="button"
