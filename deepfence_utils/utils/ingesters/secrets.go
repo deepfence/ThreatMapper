@@ -25,6 +25,5 @@ type Secret struct {
 		Level string  `json:"level"`
 		Score float64 `json:"score"`
 	} `json:"Severity"`
-	Masked bool   `json:"masked"`
 	ScanID string `json:"scan_id"`
 }
