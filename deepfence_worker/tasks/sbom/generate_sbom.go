@@ -84,6 +84,12 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
+	log.Info().Msgf("payload: %s ", string(task.Payload()))
+
+	if err := json.Unmarshal(task.Payload(), &params); err != nil {
+		return err
+	}
+
 	res, scanCtx := tasks.StartStatusReporter(params.ScanId,
 		func(status tasks.ScanStatus) error {
 			sb, err := json.Marshal(status)
@@ -105,17 +111,6 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		time.Minute*20,
 	)
 
-	worker, err := directory.Worker(ctx)
-	if err != nil {
-		return err
-	}
-
-	log.Info().Msgf("payload: %s ", string(task.Payload()))
-
-	if err := json.Unmarshal(task.Payload(), &params); err != nil {
-		return err
-	}
-
 	log.Info().Msgf("Adding scan id to map:%s", params.ScanId)
 	scanMap.Store(params.ScanId, scanCtx)
 	defer func() {
@@ -127,6 +122,11 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 
 	if params.RegistryId == "" {
 		log.Error().Msgf("registry id is empty in params %+v", params)
+		return err
+	}
+
+	worker, err := directory.Worker(ctx)
+	if err != nil {
 		return err
 	}
 
