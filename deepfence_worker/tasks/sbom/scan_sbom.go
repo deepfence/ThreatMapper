@@ -99,6 +99,8 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
+	log.Info().Msgf("payload: %s ", string(task.Payload()))
+
 	var params utils.SbomParameters
 
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {
@@ -126,6 +128,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		},
 		time.Minute*20,
 	)
+
 	log.Info().Msgf("Adding scan id to map:%s", params.ScanId)
 	scanMap.Store(params.ScanId, scanCtx)
 	defer func() {
@@ -134,8 +137,6 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		res <- err
 		close(res)
 	}()
-
-	log.Info().Msgf("payload: %s ", string(task.Payload()))
 
 	// send inprogress status
 
