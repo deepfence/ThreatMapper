@@ -185,6 +185,7 @@ const action = async ({
     const result = await apiFunctionApi({
       modelScanResultsMaskRequest: {
         mask_across_hosts_and_images: mask === 'maskHostAndImages',
+        mask_in_this_host_or_image_tags: mask !== 'maskHostAndImages',
         result_ids: [...ids],
         scan_id: _scanId,
         scan_type: ScanTypeEnum.SecretScan,
@@ -632,7 +633,7 @@ const HistoryControls = () => {
   };
 
   return (
-    <div className="flex items-center relative flex-grow">
+    <div className="flex items-center relative flex-grow gap-2">
       {openStopScanModal && (
         <StopScanForm
           open={openStopScanModal}
@@ -732,7 +733,7 @@ const HistoryControls = () => {
         {!isScanInProgress(status ?? '') ? (
           <>
             <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
-            <div className="pl-1.5 flex">
+            <div className="flex">
               <IconButton
                 variant="flat"
                 icon={
@@ -807,13 +808,16 @@ const ActionDropdown = ({
   setIdsToDelete,
   setShowDeleteDialog,
   onTableAction,
+  nodeType,
 }: {
   ids: string[];
   trigger: React.ReactNode;
   setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   onTableAction: (ids: string[], actionType: string, maskHostAndImages?: string) => void;
+  nodeType: string;
 }) => {
+  const isHost = nodeType === 'host';
   return (
     <Dropdown
       triggerAsChild={true}
@@ -821,7 +825,9 @@ const ActionDropdown = ({
       content={
         <>
           <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.MASK, '')}>
-            Mask secret
+            {isHost
+              ? 'Mask secret for this host'
+              : 'Mask secret for this image(all tags)'}
           </DropdownItem>
           <DropdownItem
             onClick={() => onTableAction(ids, ActionEnumType.MASK, 'maskHostAndImages')}
@@ -830,7 +836,9 @@ const ActionDropdown = ({
           </DropdownItem>
           <DropdownSeparator />
           <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK, '')}>
-            Un-mask secret
+            {isHost
+              ? 'Un-mask secret for this host'
+              : 'Un-mask secret for this image(all tags)'}
           </DropdownItem>
           <DropdownItem
             onClick={() => onTableAction(ids, ActionEnumType.UNMASK, 'maskHostAndImages')}
@@ -875,6 +883,13 @@ const BulkActions = ({
   onTableAction: (ids: string[], actionType: string, maskHostAndImages?: string) => void;
 }) => {
   const [openNotifyModal, setOpenNotifyModal] = useState<boolean>(false);
+
+  const {
+    data: { scanStatusResult },
+  } = useScanResults();
+
+  const isHost = scanStatusResult?.node_type === 'host';
+
   return (
     <>
       {openNotifyModal && (
@@ -887,7 +902,9 @@ const BulkActions = ({
         content={
           <>
             <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.MASK, '')}>
-              Mask secrets
+              {isHost
+                ? 'Mask secrets for this host'
+                : 'Mask secrets for this image(all tags)'}
             </DropdownItem>
             <DropdownItem
               onClick={() => onTableAction(ids, ActionEnumType.MASK, 'maskHostAndImages')}
@@ -915,7 +932,9 @@ const BulkActions = ({
         content={
           <>
             <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK, '')}>
-              Un-mask secrets
+              {isHost
+                ? 'Un-mask vulnerabilities for this host'
+                : 'Un-mask vulnerabilities for this image(all tags)'}
             </DropdownItem>
             <DropdownItem
               onClick={() =>
@@ -1160,6 +1179,8 @@ const SecretTable = ({
   const columnHelper = createColumnHelper<ModelSecret>();
   const [sort, setSort] = useSortingState();
 
+  const nodeType = data.scanStatusResult?.node_type ?? '';
+
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
@@ -1176,6 +1197,7 @@ const SecretTable = ({
             setIdsToDelete={setIdsToDelete}
             setShowDeleteDialog={setShowDeleteDialog}
             onTableAction={onTableAction}
+            nodeType={nodeType}
             trigger={
               <button className="p-1">
                 <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
@@ -1267,7 +1289,7 @@ const SecretTable = ({
     ];
 
     return columns;
-  }, [setSearchParams]);
+  }, [setSearchParams, nodeType]);
 
   const { data: scanResultData, scanStatusResult } = data;
 
@@ -1431,12 +1453,14 @@ const ScanResults = () => {
   return (
     <div className="self-start">
       <div className="mt-4 h-12 flex items-center">
-        <BulkActions
-          ids={selectedIds}
-          onTableAction={onTableAction}
-          setIdsToDelete={setIdsToDelete}
-          setShowDeleteDialog={setShowDeleteDialog}
-        />
+        <Suspense>
+          <BulkActions
+            ids={selectedIds}
+            onTableAction={onTableAction}
+            setIdsToDelete={setIdsToDelete}
+            setShowDeleteDialog={setShowDeleteDialog}
+          />
+        </Suspense>
         <div className="pr-2 ml-auto flex items-center gap-1">
           <Button
             className="pr-0"
