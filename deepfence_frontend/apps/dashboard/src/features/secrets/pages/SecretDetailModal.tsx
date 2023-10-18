@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
   Button,
@@ -19,7 +19,7 @@ import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { PopOutIcon } from '@/components/icons/common/PopOut';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
-import { TruncatedText } from '@/components/TruncatedText';
+import { ResourceDetailModal } from '@/features/secrets/components/ResourceDetailModal';
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
 import { replacebyUppercaseCharacters } from '@/utils/label';
@@ -125,6 +125,8 @@ const DetailsComponent = () => {
     data: { data: secrets },
   } = useGetSecretDetails();
 
+  const [showResourceModal, setShowResourceModal] = useState(false);
+
   if (!secrets.length) {
     return (
       <div className="flex items-center p-4 justify-center">
@@ -183,8 +185,32 @@ const DetailsComponent = () => {
           <div className="text-p1">
             {secret.resources.map((resource) => {
               if (!resource.node_id || !resource.node_type) {
+                return null;
+              }
+              if (resource.node_type === 'container_image') {
                 return (
-                  <TruncatedText key={resource.node_id} text={resource.name ?? '-'} />
+                  <>
+                    <Suspense fallback={<CircleSpinner size="md" />}>
+                      {showResourceModal && (
+                        <ResourceDetailModal
+                          open={showResourceModal}
+                          onClose={setShowResourceModal}
+                          nodeId={resource.node_id}
+                        />
+                      )}
+                    </Suspense>
+
+                    <button
+                      type="button"
+                      key={resource.node_id}
+                      onClick={() => {
+                        setShowResourceModal(true);
+                      }}
+                      className="text-p1 w-fit dark:text-accent-accent"
+                    >
+                      {resource.name}
+                    </button>
+                  </>
                 );
               }
               let redirectPath = '';
@@ -192,12 +218,6 @@ const DetailsComponent = () => {
                 redirectPath = `host?hosts=${resource.node_id}`;
               } else if (resource.node_type === 'container') {
                 redirectPath = `container?containers=${resource.node_id}`;
-              }
-              if (resource.node_type === 'pod') {
-                redirectPath = `pod?pods=${resource.name}`;
-              }
-              if (resource.node_type === 'kubernetes_cluster') {
-                redirectPath = `kubernetes_cluster?clusters=${resource.node_id}`;
               }
               return (
                 <DFLink

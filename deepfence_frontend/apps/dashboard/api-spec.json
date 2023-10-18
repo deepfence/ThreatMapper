@@ -10752,7 +10752,6 @@
           "description": { "type": "string" },
           "doc_id": { "type": "string" },
           "group": { "type": "string" },
-          "masked": { "type": "boolean" },
           "reason": { "type": "string" },
           "region": { "type": "string" },
           "resource": { "type": "string" },
@@ -10911,7 +10910,6 @@
           "file_sev_score": { "type": "number" },
           "file_severity": { "type": "string" },
           "image_layer_id": { "type": "string" },
-          "masked": { "type": "boolean" },
           "meta": { "type": "array", "items": { "type": "string" }, "nullable": true },
           "meta_rules": { "$ref": "#/components/schemas/IngestersMetaRules" },
           "rule_name": { "type": "string" },
@@ -11076,7 +11074,6 @@
             "type": "object",
             "properties": { "level": { "type": "string" }, "score": { "type": "number" } }
           },
-          "masked": { "type": "boolean" },
           "scan_id": { "type": "string" }
         }
       },
@@ -12789,6 +12786,7 @@
         "type": "object",
         "properties": {
           "mask_across_hosts_and_images": { "type": "boolean" },
+          "mask_in_this_host_or_image_tags": { "type": "boolean" },
           "result_ids": {
             "type": "array",
             "items": { "type": "string" },
