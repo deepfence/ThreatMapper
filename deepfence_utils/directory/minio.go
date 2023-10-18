@@ -20,7 +20,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var minioClientMap sync.Map
+var (
+	MinioBucket         = utils.GetEnvOrDefault("DEEPFENCE_MINIO_BUCKET", string(NonSaaSDirKey))
+	MinioDatabaseBucket = utils.GetEnvOrDefault("DEEPFENCE_MINIO_DB_BUCKET", string(DatabaseDirKey))
+	minioClientMap      sync.Map
+)
 
 func init() {
 	minioClientMap = sync.Map{}
@@ -46,11 +50,12 @@ type FileManager interface {
 	CreatePublicUploadURL(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error)
 	Client() interface{}
 	Bucket() string
-	CreatePublicBucket(ctx context.Context) error
+	CreatePublicBucket(ctx context.Context, bucket string) error
 }
 
 type MinioFileManager struct {
 	client    *minio.Client
+	bucket    string
 	namespace string
 }
 
@@ -113,7 +118,7 @@ func (mfm *MinioFileManager) ListFiles(ctx context.Context, pathPrefix string, r
 	var objectsInfo []ObjectInfo
 	for obj := range objects {
 		isDir := strings.HasSuffix(obj.Key, "/")
-		if skipDir == true && isDir == true {
+		if skipDir && isDir {
 			continue
 		}
 		objectsInfo = append(objectsInfo, ObjectInfo{
@@ -273,35 +278,33 @@ func (mfm *MinioFileManager) Client() interface{} {
 }
 
 func (mfm *MinioFileManager) Bucket() string {
-	return mfm.namespace
+	return mfm.bucket
 }
 
 func (mfm *MinioFileManager) createBucketIfNeeded(ctx context.Context) error {
 
-	exists, err := mfm.client.BucketExists(ctx, mfm.namespace)
+	exists, err := mfm.client.BucketExists(ctx, mfm.bucket)
 
 	if err != nil {
 		return err
 	}
 
 	if !exists {
-		err = mfm.client.MakeBucket(ctx, mfm.namespace,
-			minio.MakeBucketOptions{ObjectLocking: false})
-
+		err = mfm.client.MakeBucket(ctx, mfm.bucket, minio.MakeBucketOptions{ObjectLocking: false})
 	}
 	return err
 }
 
-func (mfm *MinioFileManager) CreatePublicBucket(ctx context.Context) error {
+func (mfm *MinioFileManager) CreatePublicBucket(ctx context.Context, bucket string) error {
 
-	exists, err := mfm.client.BucketExists(ctx, mfm.namespace)
+	exists, err := mfm.client.BucketExists(ctx, bucket)
 	if err != nil {
 		return err
 	} else if exists {
 		return nil
 	}
 
-	err = mfm.client.MakeBucket(ctx, mfm.namespace, minio.MakeBucketOptions{ObjectLocking: false})
+	err = mfm.client.MakeBucket(ctx, bucket, minio.MakeBucketOptions{ObjectLocking: false})
 	if err != nil {
 		return err
 	}
@@ -343,8 +346,14 @@ func MinioClient(ctx context.Context) (FileManager, error) {
 		return nil, err
 	}
 
+	bucket := MinioBucket
+	if ns == DatabaseDirKey {
+		bucket = MinioDatabaseBucket
+	}
+
 	return &MinioFileManager{
 		client:    client,
+		bucket:    bucket,
 		namespace: string(ns),
 	}, err
 }
