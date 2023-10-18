@@ -104,14 +104,6 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		},
 		time.Minute*20,
 	)
-	log.Info().Msgf("Adding scan id to map:%s", params.ScanId)
-	scanMap.Store(params.ScanId, scanCtx)
-	defer func() {
-		log.Info().Msgf("Removing scan id from map:%s", params.ScanId)
-		scanMap.Delete(params.ScanId)
-		res <- err
-		close(res)
-	}()
 
 	worker, err := directory.Worker(ctx)
 	if err != nil {
@@ -123,6 +115,15 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {
 		return err
 	}
+
+	log.Info().Msgf("Adding scan id to map:%s", params.ScanId)
+	scanMap.Store(params.ScanId, scanCtx)
+	defer func() {
+		log.Info().Msgf("Removing scan id from map:%s", params.ScanId)
+		scanMap.Delete(params.ScanId)
+		res <- err
+		close(res)
+	}()
 
 	if params.RegistryId == "" {
 		log.Error().Msgf("registry id is empty in params %+v", params)
