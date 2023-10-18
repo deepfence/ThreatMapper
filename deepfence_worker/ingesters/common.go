@@ -207,3 +207,37 @@ func anyCompleted(data []map[string]interface{}) bool {
 
 	return complete
 }
+
+func getEntityIdFromScanID(scanId, scanType string,
+	tx neo4j.Transaction) (string, error) {
+
+	entityId := ""
+	query := `MATCH (s:` + scanType + `{node_id:'` + scanId + `'}) - [:SCANNED] -> (n)
+		WITH labels(n) as label, n
+		RETURN 
+		CASE 
+    		WHEN 'ContainerImage' IN label or 'Container' in label 
+			THEN [(ci:ContainerImage{node_id:n.docker_image_id}) - [:IS] -> (cis) | cis.node_id] 
+    		ELSE [n.node_id]
+		END`
+	res, err := tx.Run(query, map[string]interface{}{})
+	if err != nil {
+		return "", err
+	}
+
+	rec, err := res.Single()
+	if err != nil {
+		return "", err
+	}
+
+	values := rec.Values[0].([]interface{})
+	if len(values) > 0 {
+		entityId = values[0].(string)
+	}
+
+	if len(entityId) == 0 {
+		entityId = scanId
+	}
+
+	return entityId, nil
+}
