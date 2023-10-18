@@ -614,6 +614,7 @@ export const searchQueries = createQueryKeys('search', {
     };
     agentRunning?: boolean[];
     clusterIds: string[];
+    hosts: string[];
   }) => {
     return {
       queryKey: [filters],
@@ -629,6 +630,7 @@ export const searchQueries = createQueryKeys('search', {
           order,
           agentRunning,
           clusterIds,
+          hosts,
         } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
@@ -737,6 +739,12 @@ export const searchQueries = createQueryKeys('search', {
             kubernetes_cluster_id: clusterIds,
           };
         }
+        if (hosts?.length) {
+          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
+            ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
+            node_id: hosts,
+          };
+        }
         if (cloudProvider?.length) {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
             ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
@@ -801,11 +809,12 @@ export const searchQueries = createQueryKeys('search', {
       descending: boolean;
     };
     agentRunning?: boolean[];
+    clusterIds?: string[];
   }) => {
     return {
       queryKey: [filters],
       queryFn: async () => {
-        const { page, pageSize, order, agentRunning } = filters;
+        const { page, pageSize, order, agentRunning, clusterIds } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
             filters: {
@@ -840,6 +849,12 @@ export const searchQueries = createQueryKeys('search', {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
             ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
             agent_running: agentRunning,
+          };
+        }
+        if (clusterIds?.length) {
+          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
+            ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
+            kubernetes_cluster_id: clusterIds,
           };
         }
         const searchKubernetesClustersApi = apiWrapper({
@@ -896,6 +911,7 @@ export const searchQueries = createQueryKeys('search', {
       descending: boolean;
     };
     clusterIds: string[];
+    containers: string[];
   }) => {
     return {
       queryKey: [filters],
@@ -909,6 +925,7 @@ export const searchQueries = createQueryKeys('search', {
           malwareScanStatus,
           order,
           clusterIds,
+          containers,
         } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
@@ -997,6 +1014,12 @@ export const searchQueries = createQueryKeys('search', {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
             ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
             kubernetes_cluster_id: clusterIds,
+          };
+        }
+        if (containers?.length) {
+          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
+            ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
+            node_id: containers,
           };
         }
         if (order) {

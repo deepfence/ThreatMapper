@@ -27,22 +27,28 @@ export interface ModelTopologyDeltaReq {
     addition: boolean;
     /**
      * 
+     * @type {number}
+     * @memberof ModelTopologyDeltaReq
+     */
+    addition_timestamp: number;
+    /**
+     * 
      * @type {boolean}
      * @memberof ModelTopologyDeltaReq
      */
     deletion: boolean;
     /**
      * 
+     * @type {number}
+     * @memberof ModelTopologyDeltaReq
+     */
+    deletion_timestamp: number;
+    /**
+     * 
      * @type {Array<string>}
      * @memberof ModelTopologyDeltaReq
      */
     entity_types: Array<string> | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelTopologyDeltaReq
-     */
-    timestamp: number;
 }
 
 /**
@@ -51,9 +57,10 @@ export interface ModelTopologyDeltaReq {
 export function instanceOfModelTopologyDeltaReq(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "addition" in value;
+    isInstance = isInstance && "addition_timestamp" in value;
     isInstance = isInstance && "deletion" in value;
+    isInstance = isInstance && "deletion_timestamp" in value;
     isInstance = isInstance && "entity_types" in value;
-    isInstance = isInstance && "timestamp" in value;
 
     return isInstance;
 }
@@ -69,9 +76,10 @@ export function ModelTopologyDeltaReqFromJSONTyped(json: any, ignoreDiscriminato
     return {
         
         'addition': json['addition'],
+        'addition_timestamp': json['addition_timestamp'],
         'deletion': json['deletion'],
+        'deletion_timestamp': json['deletion_timestamp'],
         'entity_types': json['entity_types'],
-        'timestamp': json['timestamp'],
     };
 }
 
@@ -85,9 +93,10 @@ export function ModelTopologyDeltaReqToJSON(value?: ModelTopologyDeltaReq | null
     return {
         
         'addition': value.addition,
+        'addition_timestamp': value.addition_timestamp,
         'deletion': value.deletion,
+        'deletion_timestamp': value.deletion_timestamp,
         'entity_types': value.entity_types,
-        'timestamp': value.timestamp,
     };
 }
 

@@ -81,6 +81,12 @@ export interface ModelProcess {
     ppid: number;
     /**
      * 
+     * @type {string}
+     * @memberof ModelProcess
+     */
+    short_name: string;
+    /**
+     * 
      * @type {number}
      * @memberof ModelProcess
      */
@@ -102,6 +108,7 @@ export function instanceOfModelProcess(value: object): boolean {
     isInstance = isInstance && "open_files_count" in value;
     isInstance = isInstance && "pid" in value;
     isInstance = isInstance && "ppid" in value;
+    isInstance = isInstance && "short_name" in value;
     isInstance = isInstance && "threads" in value;
 
     return isInstance;
@@ -127,6 +134,7 @@ export function ModelProcessFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'open_files_count': json['open_files_count'],
         'pid': json['pid'],
         'ppid': json['ppid'],
+        'short_name': json['short_name'],
         'threads': json['threads'],
     };
 }
@@ -150,6 +158,7 @@ export function ModelProcessToJSON(value?: ModelProcess | null): any {
         'open_files_count': value.open_files_count,
         'pid': value.pid,
         'ppid': value.ppid,
+        'short_name': value.short_name,
         'threads': value.threads,
     };
 }
