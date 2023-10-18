@@ -17,4 +17,4 @@ RUN rm ./linux_amd64_full.tar.gz
 RUN mkdir -p /data
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["weed", "server", "-ip=0.0.0.0", "-dir=/data", "-s3", "-s3.port=9000", "-s3.config=/etc/seaweed.json", "-volume.max=15"]
+CMD ["weed", "server", "-ip=0.0.0.0", "-dir=/data", "-s3", "-s3.port=9000", "-s3.config=/etc/seaweed.json", "-volume.max=100"]

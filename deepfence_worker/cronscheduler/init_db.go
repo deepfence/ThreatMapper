@@ -82,7 +82,7 @@ func InitMinioDatabase() error {
 	}
 	retries := 3
 	for {
-		if err := mc.CreatePublicBucket(ctx); err != nil {
+		if err := mc.CreatePublicBucket(ctx, directory.MinioDatabaseBucket); err != nil {
 			log.Error().Err(err).Msgf("failed to create bucket")
 			retries -= 1
 			if retries != 0 {
