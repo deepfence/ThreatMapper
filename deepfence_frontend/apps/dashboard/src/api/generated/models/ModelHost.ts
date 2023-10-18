@@ -67,6 +67,12 @@ export interface ModelHost {
      * @type {string}
      * @memberof ModelHost
      */
+    cloud_account_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelHost
+     */
     cloud_provider: string;
     /**
      * 
@@ -311,6 +317,7 @@ export function instanceOfModelHost(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "agent_running" in value;
     isInstance = isInstance && "availability_zone" in value;
+    isInstance = isInstance && "cloud_account_id" in value;
     isInstance = isInstance && "cloud_provider" in value;
     isInstance = isInstance && "cloud_region" in value;
     isInstance = isInstance && "compliance_latest_scan_id" in value;
@@ -367,6 +374,7 @@ export function ModelHostFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         
         'agent_running': json['agent_running'],
         'availability_zone': json['availability_zone'],
+        'cloud_account_id': json['cloud_account_id'],
         'cloud_provider': json['cloud_provider'],
         'cloud_region': json['cloud_region'],
         'compliance_latest_scan_id': json['compliance_latest_scan_id'],
@@ -421,6 +429,7 @@ export function ModelHostToJSON(value?: ModelHost | null): any {
         
         'agent_running': value.agent_running,
         'availability_zone': value.availability_zone,
+        'cloud_account_id': value.cloud_account_id,
         'cloud_provider': value.cloud_provider,
         'cloud_region': value.cloud_region,
         'compliance_latest_scan_id': value.compliance_latest_scan_id,

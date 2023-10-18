@@ -28,10 +28,22 @@ import {
 export interface ModelTopologyDeltaResponse {
     /**
      * 
+     * @type {number}
+     * @memberof ModelTopologyDeltaResponse
+     */
+    addition_timestamp?: number;
+    /**
+     * 
      * @type {Array<ModelNodeIdentifier>}
      * @memberof ModelTopologyDeltaResponse
      */
     additons?: Array<ModelNodeIdentifier> | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelTopologyDeltaResponse
+     */
+    deletion_timestamp?: number;
     /**
      * 
      * @type {Array<ModelNodeIdentifier>}
@@ -59,7 +71,9 @@ export function ModelTopologyDeltaResponseFromJSONTyped(json: any, ignoreDiscrim
     }
     return {
         
+        'addition_timestamp': !exists(json, 'addition_timestamp') ? undefined : json['addition_timestamp'],
         'additons': !exists(json, 'additons') ? undefined : (json['additons'] === null ? null : (json['additons'] as Array<any>).map(ModelNodeIdentifierFromJSON)),
+        'deletion_timestamp': !exists(json, 'deletion_timestamp') ? undefined : json['deletion_timestamp'],
         'deletions': !exists(json, 'deletions') ? undefined : (json['deletions'] === null ? null : (json['deletions'] as Array<any>).map(ModelNodeIdentifierFromJSON)),
     };
 }
@@ -73,7 +87,9 @@ export function ModelTopologyDeltaResponseToJSON(value?: ModelTopologyDeltaRespo
     }
     return {
         
+        'addition_timestamp': value.addition_timestamp,
         'additons': value.additons === undefined ? undefined : (value.additons === null ? null : (value.additons as Array<any>).map(ModelNodeIdentifierToJSON)),
+        'deletion_timestamp': value.deletion_timestamp,
         'deletions': value.deletions === undefined ? undefined : (value.deletions === null ? null : (value.deletions as Array<any>).map(ModelNodeIdentifierToJSON)),
     };
 }

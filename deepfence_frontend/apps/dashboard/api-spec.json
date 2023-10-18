@@ -378,6 +378,62 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/complete/host": {
+      "post": {
+        "tags": ["Completion"],
+        "summary": "Get Completion for host fields",
+        "description": "Complete host info",
+        "operationId": "completeHostInfo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionCompletionNodeFieldReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletionCompletionNodeFieldRes"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/complete/process": {
       "post": {
         "tags": ["Completion"],
@@ -10696,7 +10752,6 @@
           "description": { "type": "string" },
           "doc_id": { "type": "string" },
           "group": { "type": "string" },
-          "masked": { "type": "boolean" },
           "reason": { "type": "string" },
           "region": { "type": "string" },
           "resource": { "type": "string" },
@@ -10855,7 +10910,6 @@
           "file_sev_score": { "type": "number" },
           "file_severity": { "type": "string" },
           "image_layer_id": { "type": "string" },
-          "masked": { "type": "boolean" },
           "meta": { "type": "array", "items": { "type": "string" }, "nullable": true },
           "meta_rules": { "$ref": "#/components/schemas/IngestersMetaRules" },
           "rule_name": { "type": "string" },
@@ -11020,7 +11074,6 @@
             "type": "object",
             "properties": { "level": { "type": "string" }, "score": { "type": "number" } }
           },
-          "masked": { "type": "boolean" },
           "scan_id": { "type": "string" }
         }
       },
@@ -11256,6 +11309,7 @@
           "scan_id",
           "updated_at",
           "created_at",
+          "cloud_account_id",
           "benchmark_type",
           "status_counts",
           "compliance_percentage",
@@ -11268,6 +11322,7 @@
             "items": { "type": "string" },
             "nullable": true
           },
+          "cloud_account_id": { "type": "string" },
           "compliance_percentage": { "type": "number" },
           "compliances": {
             "type": "array",
@@ -11576,6 +11631,7 @@
           "scan_id",
           "updated_at",
           "created_at",
+          "cloud_account_id",
           "benchmark_type",
           "status_counts",
           "compliance_percentage",
@@ -11588,6 +11644,7 @@
             "items": { "type": "string" },
             "nullable": true
           },
+          "cloud_account_id": { "type": "string" },
           "compliance_percentage": { "type": "number" },
           "compliances": {
             "type": "array",
@@ -11899,6 +11956,7 @@
           "local_networks",
           "instance_id",
           "cloud_provider",
+          "cloud_account_id",
           "instance_type",
           "public_ip",
           "private_ip",
@@ -11929,6 +11987,7 @@
         "properties": {
           "agent_running": { "type": "boolean" },
           "availability_zone": { "type": "string" },
+          "cloud_account_id": { "type": "string" },
           "cloud_provider": { "type": "string" },
           "cloud_region": { "type": "string" },
           "compliance_latest_scan_id": { "type": "string" },
@@ -12170,11 +12229,13 @@
           "scan_id",
           "updated_at",
           "created_at",
+          "cloud_account_id",
           "malwares",
           "severity_counts"
         ],
         "type": "object",
         "properties": {
+          "cloud_account_id": { "type": "string" },
           "created_at": { "type": "integer", "format": "int64" },
           "docker_container_name": { "type": "string" },
           "docker_image_name": { "type": "string" },
@@ -12352,6 +12413,7 @@
         "required": [
           "node_id",
           "node_name",
+          "short_name",
           "pid",
           "cmdline",
           "ppid",
@@ -12374,6 +12436,7 @@
           "open_files_count": { "type": "integer" },
           "pid": { "type": "integer" },
           "ppid": { "type": "integer" },
+          "short_name": { "type": "string" },
           "threads": { "type": "integer" }
         }
       },
@@ -12700,10 +12763,12 @@
           "node_type",
           "scan_id",
           "updated_at",
-          "created_at"
+          "created_at",
+          "cloud_account_id"
         ],
         "type": "object",
         "properties": {
+          "cloud_account_id": { "type": "string" },
           "created_at": { "type": "integer", "format": "int64" },
           "docker_container_name": { "type": "string" },
           "docker_image_name": { "type": "string" },
@@ -12721,6 +12786,7 @@
         "type": "object",
         "properties": {
           "mask_across_hosts_and_images": { "type": "boolean" },
+          "mask_in_this_host_or_image_tags": { "type": "boolean" },
           "result_ids": {
             "type": "array",
             "items": { "type": "string" },
@@ -12840,11 +12906,13 @@
           "scan_id",
           "updated_at",
           "created_at",
+          "cloud_account_id",
           "secrets",
           "severity_counts"
         ],
         "type": "object",
         "properties": {
+          "cloud_account_id": { "type": "string" },
           "created_at": { "type": "integer", "format": "int64" },
           "docker_container_name": { "type": "string" },
           "docker_image_name": { "type": "string" },
@@ -12941,27 +13009,36 @@
         }
       },
       "ModelTopologyDeltaReq": {
-        "required": ["timestamp", "addition", "deletion", "entity_types"],
+        "required": [
+          "addition_timestamp",
+          "deletion_timestamp",
+          "addition",
+          "deletion",
+          "entity_types"
+        ],
         "type": "object",
         "properties": {
           "addition": { "type": "boolean" },
+          "addition_timestamp": { "type": "integer", "format": "int64" },
           "deletion": { "type": "boolean" },
+          "deletion_timestamp": { "type": "integer", "format": "int64" },
           "entity_types": {
             "type": "array",
             "items": { "type": "string" },
             "nullable": true
-          },
-          "timestamp": { "type": "integer", "format": "int64" }
+          }
         }
       },
       "ModelTopologyDeltaResponse": {
         "type": "object",
         "properties": {
+          "addition_timestamp": { "type": "integer", "format": "int64" },
           "additons": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
             "nullable": true
           },
+          "deletion_timestamp": { "type": "integer", "format": "int64" },
           "deletions": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
@@ -13177,11 +13254,13 @@
           "scan_id",
           "updated_at",
           "created_at",
+          "cloud_account_id",
           "vulnerabilities",
           "severity_counts"
         ],
         "type": "object",
         "properties": {
+          "cloud_account_id": { "type": "string" },
           "created_at": { "type": "integer", "format": "int64" },
           "docker_container_name": { "type": "string" },
           "docker_image_name": { "type": "string" },
@@ -13257,6 +13336,7 @@
         "properties": {
           "agent_running": { "type": "boolean" },
           "availability_zone": { "type": "string" },
+          "cloud_account_id": { "type": "string" },
           "cloud_provider": { "type": "string" },
           "cloud_region": { "type": "string" },
           "cmdline": { "type": "string" },
@@ -13321,6 +13401,7 @@
           "pseudo": { "type": "boolean" },
           "public_ip": { "type": "array", "items": { "type": "string" } },
           "resource_group": { "type": "string" },
+          "short_name": { "type": "string" },
           "tags": { "type": "array", "items": { "type": "string" } },
           "threads": { "type": "integer" },
           "timestamp": { "type": "string" },
