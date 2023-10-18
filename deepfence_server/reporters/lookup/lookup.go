@@ -318,6 +318,7 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 		        OPTIONAL MATCH (l) -[:DETECTED]-> (n)
 		        OPTIONAL MATCH (l) -[:SCANNED]-> (k)
 				WITH distinct k
+				WHERE k.active=true
 		        RETURN collect(coalesce(k.node_id, '') + '##' + coalesce(k.node_name, '') + '##' + coalesce(k.node_type, '')) as resources
 			}
 			RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources`
@@ -331,6 +332,7 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 		        OPTIONAL MATCH (l) -[:DETECTED]-> (n)
 		        OPTIONAL MATCH (l) -[:SCANNED]-> (k)
 				WITH distinct k
+				WHERE k.active=true
 		        RETURN collect(coalesce(k.node_id, '') + '##' + coalesce(k.node_name, '') + '##' + coalesce(k.node_type, '')) as resources
 			}
 			RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources`
