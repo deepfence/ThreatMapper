@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelBasicNode } from './ModelBasicNode';
+import {
+    ModelBasicNodeFromJSON,
+    ModelBasicNodeFromJSONTyped,
+    ModelBasicNodeToJSON,
+} from './ModelBasicNode';
+
 /**
  * 
  * @export
@@ -75,10 +82,10 @@ export interface ModelSecret {
     relative_starting_index: number;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<ModelBasicNode>}
      * @memberof ModelSecret
      */
-    resources?: Array<string> | null;
+    resources?: Array<ModelBasicNode> | null;
     /**
      * 
      * @type {number}
@@ -153,7 +160,7 @@ export function ModelSecretFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'part': json['part'],
         'relative_ending_index': json['relative_ending_index'],
         'relative_starting_index': json['relative_starting_index'],
-        'resources': !exists(json, 'resources') ? undefined : json['resources'],
+        'resources': !exists(json, 'resources') ? undefined : (json['resources'] === null ? null : (json['resources'] as Array<any>).map(ModelBasicNodeFromJSON)),
         'rule_id': json['rule_id'],
         'score': json['score'],
         'signature_to_match': json['signature_to_match'],
@@ -180,7 +187,7 @@ export function ModelSecretToJSON(value?: ModelSecret | null): any {
         'part': value.part,
         'relative_ending_index': value.relative_ending_index,
         'relative_starting_index': value.relative_starting_index,
-        'resources': value.resources,
+        'resources': value.resources === undefined ? undefined : (value.resources === null ? null : (value.resources as Array<any>).map(ModelBasicNodeToJSON)),
         'rule_id': value.rule_id,
         'score': value.score,
         'signature_to_match': value.signature_to_match,

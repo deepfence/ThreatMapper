@@ -34,6 +34,12 @@ export interface ModelComplianceScanResult {
     benchmark_type: Array<string> | null;
     /**
      * 
+     * @type {string}
+     * @memberof ModelComplianceScanResult
+     */
+    cloud_account_id: string;
+    /**
+     * 
      * @type {number}
      * @memberof ModelComplianceScanResult
      */
@@ -118,6 +124,7 @@ export interface ModelComplianceScanResult {
 export function instanceOfModelComplianceScanResult(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "benchmark_type" in value;
+    isInstance = isInstance && "cloud_account_id" in value;
     isInstance = isInstance && "compliance_percentage" in value;
     isInstance = isInstance && "compliances" in value;
     isInstance = isInstance && "created_at" in value;
@@ -146,6 +153,7 @@ export function ModelComplianceScanResultFromJSONTyped(json: any, ignoreDiscrimi
     return {
         
         'benchmark_type': json['benchmark_type'],
+        'cloud_account_id': json['cloud_account_id'],
         'compliance_percentage': json['compliance_percentage'],
         'compliances': (json['compliances'] === null ? null : (json['compliances'] as Array<any>).map(ModelComplianceFromJSON)),
         'created_at': json['created_at'],
@@ -172,6 +180,7 @@ export function ModelComplianceScanResultToJSON(value?: ModelComplianceScanResul
     return {
         
         'benchmark_type': value.benchmark_type,
+        'cloud_account_id': value.cloud_account_id,
         'compliance_percentage': value.compliance_percentage,
         'compliances': (value.compliances === null ? null : (value.compliances as Array<any>).map(ModelComplianceToJSON)),
         'created_at': value.created_at,
