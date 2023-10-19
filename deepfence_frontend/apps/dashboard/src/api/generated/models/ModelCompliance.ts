@@ -91,6 +91,12 @@ export interface ModelCompliance {
      * @type {string}
      * @memberof ModelCompliance
      */
+    rule_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCompliance
+     */
     status: string;
     /**
      * 
@@ -144,6 +150,7 @@ export function instanceOfModelCompliance(value: object): boolean {
     isInstance = isInstance && "remediation_puppet" in value;
     isInstance = isInstance && "remediation_script" in value;
     isInstance = isInstance && "resource" in value;
+    isInstance = isInstance && "rule_id" in value;
     isInstance = isInstance && "status" in value;
     isInstance = isInstance && "test_category" in value;
     isInstance = isInstance && "test_desc" in value;
@@ -175,6 +182,7 @@ export function ModelComplianceFromJSONTyped(json: any, ignoreDiscriminator: boo
         'remediation_script': json['remediation_script'],
         'resource': json['resource'],
         'resources': !exists(json, 'resources') ? undefined : (json['resources'] === null ? null : (json['resources'] as Array<any>).map(ModelBasicNodeFromJSON)),
+        'rule_id': json['rule_id'],
         'status': json['status'],
         'test_category': json['test_category'],
         'test_desc': json['test_desc'],
@@ -204,6 +212,7 @@ export function ModelComplianceToJSON(value?: ModelCompliance | null): any {
         'remediation_script': value.remediation_script,
         'resource': value.resource,
         'resources': value.resources === undefined ? undefined : (value.resources === null ? null : (value.resources as Array<any>).map(ModelBasicNodeToJSON)),
+        'rule_id': value.rule_id,
         'status': value.status,
         'test_category': value.test_category,
         'test_desc': value.test_desc,

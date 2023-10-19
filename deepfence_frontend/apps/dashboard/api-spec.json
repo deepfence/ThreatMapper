@@ -11534,7 +11534,8 @@
           "node_id",
           "node_type",
           "masked",
-          "updated_at"
+          "updated_at",
+          "rule_id"
         ],
         "type": "object",
         "properties": {
@@ -11552,6 +11553,7 @@
             "items": { "$ref": "#/components/schemas/ModelBasicNode" },
             "nullable": true
           },
+          "rule_id": { "type": "string" },
           "status": { "type": "string" },
           "test_category": { "type": "string" },
           "test_desc": { "type": "string" },
@@ -13148,7 +13150,8 @@
           "cve_attack_vector",
           "urls",
           "exploit_poc",
-          "parsed_attack_vector"
+          "parsed_attack_vector",
+          "rule_id"
         ],
         "type": "object",
         "properties": {
@@ -13174,6 +13177,7 @@
             "items": { "$ref": "#/components/schemas/ModelBasicNode" },
             "nullable": true
           },
+          "rule_id": { "type": "string" },
           "updated_at": { "type": "integer" },
           "urls": { "type": "array", "items": {}, "nullable": true }
         }
