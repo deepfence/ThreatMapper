@@ -9,6 +9,7 @@ import (
 	"k8s.io/utils/strings/slices"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -45,6 +46,7 @@ type CloudNodeAccountRegisterRespData struct {
 	Scans            map[string]CloudComplianceScanDetails `json:"scans"`
 	CloudtrailTrails []CloudNodeCloudtrailTrail            `json:"cloudtrail_trails"`
 	Refresh          string                                `json:"refresh"`
+	LogAction        ctl.Action                            `json:"log_action"`
 }
 
 type CloudNodeAccountsListReq struct {

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 
+	cloudscanner_diagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/cloudscanner-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -144,9 +145,16 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		logrus.Debugf("Pending scans for node: %+v", scanList)
 	}
 	logrus.Debugf("Returning response: Scan List %+v cloudtrailTrails %+v Refresh %s", scanList, cloudtrailTrails, doRefresh)
+
+	// get log request for cloudscanner, if any
+	logRequestAction, err := cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx)
+	if err != nil {
+		log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
+	}
+
 	httpext.JSON(w, http.StatusOK,
 		model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
-			CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh}})
+			CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh, LogAction: logRequestAction}})
 	return
 }
 
