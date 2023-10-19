@@ -422,7 +422,7 @@ const InviteUserModal = ({
 
             {!data?.success && data?.message && (
               <div className={`dark:text-status-error text-p7`}>
-                <span>{data?.message}</span>
+                <span data-testid="inviteUserErrorId">{data?.message}</span>
               </div>
             )}
             <div className="flex items-center gap-x-2 mt-6">
