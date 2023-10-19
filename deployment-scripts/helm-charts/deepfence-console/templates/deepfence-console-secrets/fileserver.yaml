@@ -12,7 +12,7 @@ stringData:
   DEEPFENCE_MINIO_HOST: {{ include "deepfence-console.fullname" . }}-file-server
   DEEPFENCE_MINIO_PORT: "9000"
   DEEPFENCE_MINIO_SECURE: "false"
-  DEEPFENCE_MINIO_BUCKET: deepfence
+  DEEPFENCE_MINIO_BUCKET: default
   DEEPFENCE_MINIO_PASSWORD: {{ .Values.fileserver.secrets.MINIO_ROOT_PASSWORD | quote }}
   DEEPFENCE_MINIO_USER: {{ .Values.fileserver.secrets.MINIO_ROOT_USER | quote }}
 {{- end }}
