@@ -10,8 +10,8 @@
       "name": "admin",
       "credentials": [
         {
-          "accessKey": "deepfence",
-          "secretKey": "deepfence"
+          "accessKey": "$MINIO_ROOT_USER",
+          "secretKey": "$MINIO_ROOT_PASSWORD"
         }
       ],
       "actions": [

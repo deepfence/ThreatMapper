@@ -7,7 +7,6 @@ if [ "${1}" != "weed" ]; then
     fi
 fi
 
-# Create the bucket
-mkdir -p "/data/$BUCKET_NAME"
+envsubst < /etc/seaweed.json.sample > /etc/seaweed.json
 
 exec "$@"
