@@ -933,8 +933,8 @@ const BulkActions = ({
           <>
             <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK, '')}>
               {isHost
-                ? 'Un-mask vulnerabilities for this host'
-                : 'Un-mask vulnerabilities for this image(all tags)'}
+                ? 'Un-mask secrets for this host'
+                : 'Un-mask secrets for this image(all tags)'}
             </DropdownItem>
             <DropdownItem
               onClick={() =>
