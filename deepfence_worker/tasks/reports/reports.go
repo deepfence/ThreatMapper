@@ -112,7 +112,7 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 		return nil
 	}
 
-	reportName := path.Join("report", reportFileName(params))
+	reportName := path.Join("/report", reportFileName(params))
 	res, err := mc.UploadLocalFile(ctx, reportName,
 		localReportPath, putOpts(sdkUtils.ReportType(params.ReportType)))
 	if err != nil {
