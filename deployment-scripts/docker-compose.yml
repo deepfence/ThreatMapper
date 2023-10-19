@@ -152,6 +152,9 @@ services:
     networks:
       - deepfence_net
     restart: unless-stopped
+    # environment:
+    #   - MINIO_ROOT_USER=deepfence
+    #   - MINIO_ROOT_PASSWORD=deepfence
     ports:
       - "127.0.0.1:9000:9000"
       - "127.0.0.1:9333:9333"
