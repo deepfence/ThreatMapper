@@ -352,6 +352,7 @@ type Vulnerability struct {
 	ExploitPOC                 string        `json:"exploit_poc" required:"true"`
 	ParsedAttackVector         string        `json:"parsed_attack_vector" required:"true"`
 	Resources                  []BasicNode   `json:"resources" required:"false"`
+	RuleID                     string        `json:"rule_id" required:"true"`
 }
 
 func (Vulnerability) NodeType() string {
@@ -493,6 +494,7 @@ type Compliance struct {
 	Masked              bool        `json:"masked" required:"true"`
 	UpdatedAt           int64       `json:"updated_at" required:"true"`
 	Resources           []BasicNode `json:"resources" required:"false"`
+	RuleID              string      `json:"rule_id" required:"true"`
 }
 
 func (Compliance) NodeType() string {
