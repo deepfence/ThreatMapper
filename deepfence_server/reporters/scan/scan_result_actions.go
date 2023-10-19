@@ -171,13 +171,13 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 			log.Error().Err(err).Msg("failed to get minio client")
 			return err
 		}
-		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(scanId)+".json.gz")
+		sbomFile := path.Join("/sbom", utils.ScanIdReplacer.Replace(scanId)+".json.gz")
 		err = mc.DeleteFile(ctx, sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to delete sbom for scan id %s", scanId)
 			return err
 		}
-		runtimeSbomFile := path.Join("sbom", "runtime-"+utils.ScanIdReplacer.Replace(scanId)+".json")
+		runtimeSbomFile := path.Join("/sbom", "runtime-"+utils.ScanIdReplacer.Replace(scanId)+".json")
 		err = mc.DeleteFile(ctx, runtimeSbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to delete runtime sbom for scan id %s", scanId)

@@ -13,7 +13,7 @@ x-service-variables: &common-creds
     DEEPFENCE_POSTGRES_USER_DB_PORT: 5432
     DEEPFENCE_POSTGRES_USER_DB_SSLMODE: disable
     DEEPFENCE_KAFKA_BROKERS: deepfence-kafka-broker:9092
-    DEEPFENCE_MINIO_BUCKET: deepfence
+    DEEPFENCE_MINIO_BUCKET: default
     DEEPFENCE_MINIO_HOST: deepfence-file-server
     DEEPFENCE_MINIO_PASSWORD: deepfence
     DEEPFENCE_MINIO_PORT: 9000
@@ -152,6 +152,9 @@ services:
     networks:
       - deepfence_net
     restart: unless-stopped
+    # environment:
+    #   - MINIO_ROOT_USER=deepfence
+    #   - MINIO_ROOT_PASSWORD=deepfence
     ports:
       - "127.0.0.1:9000:9000"
       - "127.0.0.1:9333:9333"

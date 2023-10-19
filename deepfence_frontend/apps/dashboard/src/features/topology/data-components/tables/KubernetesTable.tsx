@@ -24,6 +24,7 @@ import {
 } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -68,6 +69,26 @@ function Filters() {
   return (
     <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
       <div className="flex gap-2">
+        <SearchableClusterList
+          defaultSelectedClusters={searchParams.getAll('clusters')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              value.forEach((cluster) => {
+                prev.append('clusters', cluster);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
         <Combobox
           value={searchParams.getAll('agentRunning')}
           multiple
@@ -321,6 +342,7 @@ function useSearchClustersWithPagination() {
       page: getPageFromSearchParams(searchParams),
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       order: getOrderFromSearchParams(searchParams),
+      clusterIds: searchParams.getAll('clusters'),
       agentRunning: searchParams
         .getAll('agentRunning')
         .map((value) => (value === 'On' ? true : false)),
