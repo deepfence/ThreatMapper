@@ -64,12 +64,6 @@ export interface IngestersSecret {
     Severity?: IngestersSecretSeverity;
     /**
      * 
-     * @type {boolean}
-     * @memberof IngestersSecret
-     */
-    masked?: boolean;
-    /**
-     * 
      * @type {string}
      * @memberof IngestersSecret
      */
@@ -99,7 +93,6 @@ export function IngestersSecretFromJSONTyped(json: any, ignoreDiscriminator: boo
         'Match': !exists(json, 'Match') ? undefined : IngestersSecretMatchFromJSON(json['Match']),
         'Rule': !exists(json, 'Rule') ? undefined : IngestersSecretRuleFromJSON(json['Rule']),
         'Severity': !exists(json, 'Severity') ? undefined : IngestersSecretSeverityFromJSON(json['Severity']),
-        'masked': !exists(json, 'masked') ? undefined : json['masked'],
         'scan_id': !exists(json, 'scan_id') ? undefined : json['scan_id'],
     };
 }
@@ -117,7 +110,6 @@ export function IngestersSecretToJSON(value?: IngestersSecret | null): any {
         'Match': IngestersSecretMatchToJSON(value.Match),
         'Rule': IngestersSecretRuleToJSON(value.Rule),
         'Severity': IngestersSecretSeverityToJSON(value.Severity),
-        'masked': value.masked,
         'scan_id': value.scan_id,
     };
 }

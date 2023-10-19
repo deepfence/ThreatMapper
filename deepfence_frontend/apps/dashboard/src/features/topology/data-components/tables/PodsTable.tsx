@@ -130,6 +130,26 @@ function Filters() {
   return (
     <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
       <div className="flex gap-2">
+        <SearchablePodList
+          defaultSelectedPods={searchParams.getAll('pods')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('pods');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('pods');
+              value.forEach((pod) => {
+                prev.append('pods', pod);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
         <Combobox
           value={KUBERNETES_STATUSES.find((status) => {
             return status.value === searchParams.get('kubernetesStatus');
@@ -202,26 +222,6 @@ function Filters() {
               prev.delete('clusters');
               value.forEach((cluster) => {
                 prev.append('clusters', cluster);
-              });
-              prev.delete('page');
-              return prev;
-            });
-          }}
-        />
-        <SearchablePodList
-          defaultSelectedPods={searchParams.getAll('pods')}
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('pods');
-              prev.delete('page');
-              return prev;
-            });
-          }}
-          onChange={(value) => {
-            setSearchParams((prev) => {
-              prev.delete('pods');
-              value.forEach((pod) => {
-                prev.append('pods', pod);
               });
               prev.delete('page');
               return prev;

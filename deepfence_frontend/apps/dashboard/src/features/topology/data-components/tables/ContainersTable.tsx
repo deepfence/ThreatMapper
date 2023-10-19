@@ -25,6 +25,7 @@ import {
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
+import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -206,6 +207,7 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   malwareScanStatus: 'Malware scan status',
   hosts: 'Host',
   clusters: 'Cluster',
+  containers: 'Container',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -225,6 +227,27 @@ function Filters() {
   return (
     <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
       <div className="flex gap-2">
+        <SearchableContainerList
+          scanType={'none'}
+          defaultSelectedContainers={searchParams.getAll('containers')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('containers');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('containers');
+              value.forEach((container) => {
+                prev.append('containers', container);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
         <Combobox
           value={SCAN_STATUS_GROUPS.find((groupStatus) => {
             return groupStatus.value === searchParams.get('vulnerabilityScanStatus');
@@ -436,6 +459,7 @@ function useSearchContainersWithPagination() {
         | undefined,
       order: getOrderFromSearchParams(searchParams),
       clusterIds: searchParams.getAll('clusters'),
+      containers: searchParams.getAll('containers'),
     }),
     keepPreviousData: true,
   });
