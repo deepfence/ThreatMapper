@@ -133,6 +133,7 @@ type ScanResultsMaskRequest struct {
 	ScanType                 string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 	MaskAcrossHostsAndImages bool     `json:"mask_across_hosts_and_images"`
 	MaskAcrossImageTags      bool     `json:"mask_in_this_host_or_image_tags"`
+	MaskForImageTag          bool     `json:"mask_in_this_image_tag"`
 }
 
 type ScanResultsActionRequest struct {

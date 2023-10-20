@@ -83,8 +83,11 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r
 	_, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:ContainerImage{node_id:row.node_id})
-		MERGE (s:ImageStub{node_id: row.docker_image_name + "_" + $registry_id, docker_image_name: row.docker_image_name})
+		MERGE (s:ImageStub{node_id: row.docker_image_name + "_" + $registry_id, 
+		docker_image_name: row.docker_image_name})
+		MERGE (t:ImageTag{node_id: row.docker_image_name + "_" + row.docker_image_tag + "_" + $registry_id})
 		MERGE (n) -[:IS]-> (s)
+		MERGE (n) -[:ALIAS]-> (t)
 		MERGE (m:RegistryAccount{node_id:$registry_id})
 		MERGE (m) -[:HOSTS]-> (n)
 		MERGE (m) -[:HOSTS]-> (s)
@@ -97,7 +100,8 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r
 		n.docker_image_tag_list = REDUCE(distinctElements = [], element IN COALESCE(n.docker_image_tag_list, []) + (row.docker_image_name+":"+row.docker_image_tag) | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
 		n.node_name=n.docker_image_name+":"+n.docker_image_tag+" ("+n.short_image_id+")",
 		s.updated_at = TIMESTAMP(),
-		s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`,
+		s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
+		t.updated_at = TIMESTAMP()`,
 		map[string]interface{}{
 			"batch": imageMap, "registry_id": registryId,
 			"pgId": pgId, "registry_type": r.GetRegistryType(),
