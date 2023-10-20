@@ -73,12 +73,12 @@ func initSqlDatabase(ctx context.Context) error {
 	return nil
 }
 
-func InitMinioDatabase() error {
+func InitMinioDatabase() {
 	ctx := directory.NewContextWithNameSpace("database")
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		return err
+		return
 	}
 	retries := 3
 	for {
@@ -88,7 +88,7 @@ func InitMinioDatabase() error {
 			if retries != 0 {
 				continue
 			}
-			return err
+			return
 		}
 		break
 	}
@@ -96,5 +96,4 @@ func InitMinioDatabase() error {
 	// download vulnerability database once on init
 	vulnerability_db.DownloadDatabase()
 
-	return nil
 }

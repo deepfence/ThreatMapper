@@ -13,12 +13,21 @@ x-service-variables: &common-creds
     DEEPFENCE_POSTGRES_USER_DB_PORT: 5432
     DEEPFENCE_POSTGRES_USER_DB_SSLMODE: disable
     DEEPFENCE_KAFKA_BROKERS: deepfence-kafka-broker:9092
+    # public bucket with read permisons on objects for hosting vulnerability database
+    DEEPFENCE_MINIO_DB_BUCKET: database
+    # prvate bucket to host reports, sbom, etc.
     DEEPFENCE_MINIO_BUCKET: default
+    # set s3.amazonaws.com if using s3 buckets
     DEEPFENCE_MINIO_HOST: deepfence-file-server
-    DEEPFENCE_MINIO_PASSWORD: deepfence
     DEEPFENCE_MINIO_PORT: 9000
-    DEEPFENCE_MINIO_SECURE: "false"
+    # set access key if using s3 buckets
     DEEPFENCE_MINIO_USER: deepfence
+    # set secret key if using s3 buckets
+    DEEPFENCE_MINIO_PASSWORD: deepfence
+    # set true if using s3 buckets
+    DEEPFENCE_MINIO_SECURE: "false"
+    # set aws s3 buckets region if using s3 buckets
+    DEEPFENCE_MINIO_REGION: ""
     DEEPFENCE_REDIS_DB_NUMBER: 0
     DEEPFENCE_REDIS_HOST: deepfence-redis
     DEEPFENCE_REDIS_PORT: 6379

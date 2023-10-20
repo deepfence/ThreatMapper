@@ -34,8 +34,18 @@ var (
 	grypeBin            = "grype"
 	minioHost           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_HOST", "deepfence-file-server")
 	minioPort           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_PORT", "9000")
-	GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=http://%s:%s/database/database/vulnerability/listing.json", minioHost, minioPort)
+	minioRegion         = os.Getenv("DEEPFENCE_MINIO_REGION")
+	minioBucket         = os.Getenv("DEEPFENCE_MINIO_DB_BUCKET")
+	GRYPE_DB_UPDATE_URL string
 )
+
+func init() {
+	// for aws s3
+	GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=https://%s.s3.%s.amazonaws.com/database/vulnerability/listing.json", minioBucket, minioRegion)
+	if minioHost != "s3.amazonaws.com" {
+		GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=http://%s:%s/database/database/vulnerability/listing.json", minioHost, minioPort)
+	}
+}
 
 type SbomParser struct {
 	ingestC chan *kgo.Record
