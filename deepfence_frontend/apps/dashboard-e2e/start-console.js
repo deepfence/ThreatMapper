@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import url from 'node:url';
 
-const orchastratorURL = process.env.ORCHASTRATOR_URL;
+const orchastratorURL = process.env.CONSOLE_ORCHASTRATOR_URL;
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
