@@ -128,16 +128,14 @@ export const postureQueries = createQueryKeys('posture', {
         const searchCloudAccounts = apiWrapper({
           fn: getSearchApiClient().searchCloudAccounts,
         });
-        const result = await searchCloudAccounts({
+        const resultPromise = searchCloudAccounts({
           searchSearchNodeReq: searchReq,
         });
-        if (!result.ok) {
-          throw result.error;
-        }
+
         const countsResultApi = apiWrapper({
           fn: getSearchApiClient().searchCloudAccountsCount,
         });
-        const countsResult = await countsResultApi({
+        const countsResultPromise = countsResultApi({
           searchSearchNodeReq: {
             ...searchReq,
             window: {
@@ -146,6 +144,15 @@ export const postureQueries = createQueryKeys('posture', {
             },
           },
         });
+
+        const [result, countsResult] = await Promise.all([
+          resultPromise,
+          countsResultPromise,
+        ]);
+        if (!result.ok) {
+          throw result.error;
+        }
+
         if (!countsResult.ok) {
           throw countsResult.error;
         }
@@ -248,16 +255,31 @@ export const postureQueries = createQueryKeys('posture', {
           });
         }
 
-        //
-        let result = null;
-        let resultCounts = null;
-
         const resultCloudComplianceScanApi = apiWrapper({
           fn: getComplianceApiClient().resultComplianceScan,
         });
-        result = await resultCloudComplianceScanApi({
+        const resultPromise = resultCloudComplianceScanApi({
           modelScanResultsReq: scanResultsReq,
         });
+
+        const resultCountComplianceScanApi = apiWrapper({
+          fn: getComplianceApiClient().resultCountComplianceScan,
+        });
+        const resultCountsPromise = resultCountComplianceScanApi({
+          modelScanResultsReq: {
+            ...scanResultsReq,
+            window: {
+              ...scanResultsReq.window,
+              size: 10 * scanResultsReq.window.size,
+            },
+          },
+        });
+
+        const [result, resultCounts] = await Promise.all([
+          resultPromise,
+          resultCountsPromise,
+        ]);
+
         if (!result.ok) {
           if (
             result.error.response.status === 400 ||
@@ -269,19 +291,6 @@ export const postureQueries = createQueryKeys('posture', {
           }
           throw result.error;
         }
-
-        const resultCountComplianceScanApi = apiWrapper({
-          fn: getComplianceApiClient().resultCountComplianceScan,
-        });
-        resultCounts = await resultCountComplianceScanApi({
-          modelScanResultsReq: {
-            ...scanResultsReq,
-            window: {
-              ...scanResultsReq.window,
-              size: 10 * scanResultsReq.window.size,
-            },
-          },
-        });
 
         if (!resultCounts.ok) {
           if (
@@ -439,16 +448,31 @@ export const postureQueries = createQueryKeys('posture', {
           });
         }
 
-        //
-        let result = null;
-        let resultCounts = null;
-
         const resultCloudComplianceScanApi = apiWrapper({
           fn: getCloudComplianceApiClient().resultCloudComplianceScan,
         });
-        result = await resultCloudComplianceScanApi({
+        const resultPromise = resultCloudComplianceScanApi({
           modelScanResultsReq: scanResultsReq,
         });
+
+        const resultCountCloudComplianceScanApi = apiWrapper({
+          fn: getCloudComplianceApiClient().resultCountCloudComplianceScan,
+        });
+        const resultCountsPromise = resultCountCloudComplianceScanApi({
+          modelScanResultsReq: {
+            ...scanResultsReq,
+            window: {
+              ...scanResultsReq.window,
+              size: 10 * scanResultsReq.window.size,
+            },
+          },
+        });
+
+        const [result, resultCounts] = await Promise.all([
+          resultPromise,
+          resultCountsPromise,
+        ]);
+
         if (!result.ok) {
           if (
             result.error.response.status === 400 ||
@@ -460,19 +484,6 @@ export const postureQueries = createQueryKeys('posture', {
           }
           throw result.error;
         }
-
-        const resultCountCloudComplianceScanApi = apiWrapper({
-          fn: getCloudComplianceApiClient().resultCountCloudComplianceScan,
-        });
-        resultCounts = await resultCountCloudComplianceScanApi({
-          modelScanResultsReq: {
-            ...scanResultsReq,
-            window: {
-              ...scanResultsReq.window,
-              size: 10 * scanResultsReq.window.size,
-            },
-          },
-        });
 
         if (!resultCounts.ok) {
           if (
@@ -648,23 +659,9 @@ export const postureQueries = createQueryKeys('posture', {
           },
         };
 
-        const addScanResponse = await compareScansApi({
+        const addScanPromise = compareScansApi({
           modelScanCompareReq: addedCompareReq,
         });
-
-        if (!addScanResponse.ok) {
-          return {
-            error: 'Error getting scan diff',
-            message: addScanResponse.error.message,
-            ...results,
-          };
-        }
-
-        if (!addScanResponse.value) {
-          return results;
-        }
-
-        const addedScans = addScanResponse.value._new;
 
         // deleted
         const deletedCompareReq: ModelScanCompareReq = {
@@ -683,9 +680,28 @@ export const postureQueries = createQueryKeys('posture', {
             size: 99999,
           },
         };
-        const deletedScanResponse = await compareScansApi({
+        const deletedScanPromise = compareScansApi({
           modelScanCompareReq: deletedCompareReq,
         });
+
+        const [addScanResponse, deletedScanResponse] = await Promise.all([
+          addScanPromise,
+          deletedScanPromise,
+        ]);
+
+        if (!addScanResponse.ok) {
+          return {
+            error: 'Error getting scan diff',
+            message: addScanResponse.error.message,
+            ...results,
+          };
+        }
+
+        if (!addScanResponse.value) {
+          return results;
+        }
+
+        const addedScans = addScanResponse.value._new;
 
         if (!deletedScanResponse.ok) {
           return {
@@ -746,23 +762,9 @@ export const postureQueries = createQueryKeys('posture', {
           },
         };
 
-        const addScanResponse = await compareScansApi({
+        const addScanPromise = compareScansApi({
           modelScanCompareReq: addedCompareReq,
         });
-
-        if (!addScanResponse.ok) {
-          return {
-            error: 'Error getting scan diff',
-            message: addScanResponse.error.message,
-            ...results,
-          };
-        }
-
-        if (!addScanResponse.value) {
-          return results;
-        }
-
-        const addedScans = addScanResponse.value._new;
 
         // deleted
         const deletedCompareReq: ModelScanCompareReq = {
@@ -781,9 +783,28 @@ export const postureQueries = createQueryKeys('posture', {
             size: 99999,
           },
         };
-        const deletedScanResponse = await compareScansApi({
+        const deletedScanPromise = compareScansApi({
           modelScanCompareReq: deletedCompareReq,
         });
+
+        const [addScanResponse, deletedScanResponse] = await Promise.all([
+          addScanPromise,
+          deletedScanPromise,
+        ]);
+
+        if (!addScanResponse.ok) {
+          return {
+            error: 'Error getting scan diff',
+            message: addScanResponse.error.message,
+            ...results,
+          };
+        }
+
+        if (!addScanResponse.value) {
+          return results;
+        }
+
+        const addedScans = addScanResponse.value._new;
 
         if (!deletedScanResponse.ok) {
           return {

@@ -169,17 +169,14 @@ export const secretQueries = createQueryKeys('secret', {
         const searchSecretsScanApi = apiWrapper({
           fn: getSearchApiClient().searchSecretsScan,
         });
-        const result = await searchSecretsScanApi({
+        const resultPromise = searchSecretsScanApi({
           searchSearchScanReq: scanRequestParams,
         });
-        if (!result.ok) {
-          throw result.error;
-        }
 
         const countsResultApi = apiWrapper({
           fn: getSearchApiClient().searchSecretScanCount,
         });
-        const countsResult = await countsResultApi({
+        const countsResultPromise = countsResultApi({
           searchSearchScanReq: {
             ...scanRequestParams,
             window: {
@@ -188,6 +185,14 @@ export const secretQueries = createQueryKeys('secret', {
             },
           },
         });
+
+        const [result, countsResult] = await Promise.all([
+          resultPromise,
+          countsResultPromise,
+        ]);
+        if (!result.ok) {
+          throw result.error;
+        }
         if (!countsResult.ok) {
           throw countsResult.error;
         }
@@ -321,9 +326,28 @@ export const secretQueries = createQueryKeys('secret', {
         const resultSecretScanApi = apiWrapper({
           fn: getSecretApiClient().resultSecretScan,
         });
-        const resultSecretScanResponse = await resultSecretScanApi({
+        const resultSecretScanPromise = resultSecretScanApi({
           modelScanResultsReq: scanResultsReq,
         });
+
+        const resultCountSecretScanApi = apiWrapper({
+          fn: getSecretApiClient().resultCountSecretScan,
+        });
+
+        const resultCountsPromise = resultCountSecretScanApi({
+          modelScanResultsReq: {
+            ...scanResultsReq,
+            window: {
+              ...scanResultsReq.window,
+              size: 10 * scanResultsReq.window.size,
+            },
+          },
+        });
+
+        const [resultSecretScanResponse, resultCounts] = await Promise.all([
+          resultSecretScanPromise,
+          resultCountsPromise,
+        ]);
 
         if (!resultSecretScanResponse.ok) {
           throw resultSecretScanResponse.error;
@@ -339,19 +363,6 @@ export const secretQueries = createQueryKeys('secret', {
           acc = acc + value;
           return acc;
         }, 0);
-
-        const resultCountSecretScanApi = apiWrapper({
-          fn: getSecretApiClient().resultCountSecretScan,
-        });
-        const resultCounts = await resultCountSecretScanApi({
-          modelScanResultsReq: {
-            ...scanResultsReq,
-            window: {
-              ...scanResultsReq.window,
-              size: 10 * scanResultsReq.window.size,
-            },
-          },
-        });
 
         if (!resultCounts.ok) {
           throw resultCounts.error;
@@ -825,17 +836,14 @@ export const secretQueries = createQueryKeys('secret', {
         const searchSecretsApi = apiWrapper({
           fn: getSearchApiClient().searchSecrets,
         });
-        const searchSecretsResponse = await searchSecretsApi({
+        const searchSecretsPromise = searchSecretsApi({
           searchSearchNodeReq: searchSecretsRequestParams,
         });
-        if (!searchSecretsResponse.ok) {
-          throw searchSecretsResponse.error;
-        }
 
         const searchSecretsCountApi = apiWrapper({
           fn: getSearchApiClient().searchSecretsCount,
         });
-        const searchSecretsCountResponse = await searchSecretsCountApi({
+        const searchSecretsCountPromise = searchSecretsCountApi({
           searchSearchNodeReq: {
             ...searchSecretsRequestParams,
             window: {
@@ -844,6 +852,15 @@ export const secretQueries = createQueryKeys('secret', {
             },
           },
         });
+
+        const [searchSecretsResponse, searchSecretsCountResponse] = await Promise.all([
+          searchSecretsPromise,
+          searchSecretsCountPromise,
+        ]);
+
+        if (!searchSecretsResponse.ok) {
+          throw searchSecretsResponse.error;
+        }
         if (!searchSecretsCountResponse.ok) {
           throw searchSecretsCountResponse.error;
         }
@@ -1064,23 +1081,9 @@ export const secretQueries = createQueryKeys('secret', {
           },
         };
 
-        const addScanResponse = await compareScansApi({
+        const addScanPromise = compareScansApi({
           modelScanCompareReq: addedCompareReq,
         });
-
-        if (!addScanResponse.ok) {
-          return {
-            error: 'Error getting scan diff',
-            message: addScanResponse.error.message,
-            ...results,
-          };
-        }
-
-        if (!addScanResponse.value) {
-          return results;
-        }
-
-        const addedScans = addScanResponse.value._new;
 
         // deleted
         const deletedCompareReq: ModelScanCompareReq = {
@@ -1099,9 +1102,28 @@ export const secretQueries = createQueryKeys('secret', {
             size: 99999,
           },
         };
-        const deletedScanResponse = await compareScansApi({
+        const deletedScanPromise = compareScansApi({
           modelScanCompareReq: deletedCompareReq,
         });
+
+        const [addScanResponse, deletedScanResponse] = await Promise.all([
+          addScanPromise,
+          deletedScanPromise,
+        ]);
+
+        if (!addScanResponse.ok) {
+          return {
+            error: 'Error getting scan diff',
+            message: addScanResponse.error.message,
+            ...results,
+          };
+        }
+
+        if (!addScanResponse.value) {
+          return results;
+        }
+
+        const addedScans = addScanResponse.value._new;
 
         if (!deletedScanResponse.ok) {
           return {
