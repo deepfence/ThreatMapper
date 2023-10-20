@@ -768,18 +768,14 @@ export const searchQueries = createQueryKeys('search', {
         const getThreatGraphApi = apiWrapper({
           fn: getSearchApiClient().searchHosts,
         });
-        const hostsData = await getThreatGraphApi({
+        const hostsDataPromise = getThreatGraphApi({
           searchSearchNodeReq,
         });
-
-        if (!hostsData.ok) {
-          throw hostsData;
-        }
 
         const searchHostsCountApi = apiWrapper({
           fn: getSearchApiClient().searchHostsCount,
         });
-        const hostsDataCount = await searchHostsCountApi({
+        const hostsDataCountPromise = searchHostsCountApi({
           searchSearchNodeReq: {
             ...searchSearchNodeReq,
             window: {
@@ -789,6 +785,14 @@ export const searchQueries = createQueryKeys('search', {
           },
         });
 
+        const [hostsData, hostsDataCount] = await Promise.all([
+          hostsDataPromise,
+          hostsDataCountPromise,
+        ]);
+
+        if (!hostsData.ok) {
+          throw hostsData;
+        }
         if (!hostsDataCount.ok) {
           throw hostsDataCount;
         }
@@ -860,17 +864,14 @@ export const searchQueries = createQueryKeys('search', {
         const searchKubernetesClustersApi = apiWrapper({
           fn: getSearchApiClient().searchKubernetesClusters,
         });
-        const clusterData = await searchKubernetesClustersApi({
+        const clusterDataPromise = searchKubernetesClustersApi({
           searchSearchNodeReq,
         });
-        if (!clusterData.ok) {
-          throw clusterData.error;
-        }
 
         const countKubernetesClustersApi = apiWrapper({
           fn: getSearchApiClient().countKubernetesClusters,
         });
-        const clustersDataCount = await countKubernetesClustersApi({
+        const clustersDataCountPromise = countKubernetesClustersApi({
           searchSearchNodeReq: {
             ...searchSearchNodeReq,
             window: {
@@ -879,6 +880,15 @@ export const searchQueries = createQueryKeys('search', {
             },
           },
         });
+
+        const [clusterData, clustersDataCount] = await Promise.all([
+          clusterDataPromise,
+          clustersDataCountPromise,
+        ]);
+
+        if (!clusterData.ok) {
+          throw clusterData.error;
+        }
 
         if (!clustersDataCount.ok) {
           throw clustersDataCount;
@@ -1031,17 +1041,14 @@ export const searchQueries = createQueryKeys('search', {
         const searchContainersApi = apiWrapper({
           fn: getSearchApiClient().searchContainers,
         });
-        const containersData = await searchContainersApi({
+        const containersDataPromise = searchContainersApi({
           searchSearchNodeReq,
         });
-        if (!containersData.ok) {
-          throw containersData.error;
-        }
 
         const countContainersApi = apiWrapper({
           fn: getSearchApiClient().countContainers,
         });
-        const containersDataCount = await countContainersApi({
+        const containersDataCountPromise = countContainersApi({
           searchSearchNodeReq: {
             ...searchSearchNodeReq,
             window: {
@@ -1050,6 +1057,15 @@ export const searchQueries = createQueryKeys('search', {
             },
           },
         });
+
+        const [containersData, containersDataCount] = await Promise.all([
+          containersDataPromise,
+          containersDataCountPromise,
+        ]);
+
+        if (!containersData.ok) {
+          throw containersData.error;
+        }
 
         if (!containersDataCount.ok) {
           throw containersDataCount.error;
@@ -1137,17 +1153,14 @@ export const searchQueries = createQueryKeys('search', {
         const searchPodsApi = apiWrapper({
           fn: getSearchApiClient().searchPods,
         });
-        const podsData = await searchPodsApi({
+        const podsDataPromise = searchPodsApi({
           searchSearchNodeReq,
         });
-        if (!podsData.ok) {
-          throw podsData.error;
-        }
 
         const countPodsApi = apiWrapper({
           fn: getSearchApiClient().countPods,
         });
-        const podsDataCount = await countPodsApi({
+        const podsDataCountPromise = countPodsApi({
           searchSearchNodeReq: {
             ...searchSearchNodeReq,
             window: {
@@ -1156,6 +1169,15 @@ export const searchQueries = createQueryKeys('search', {
             },
           },
         });
+
+        const [podsData, podsDataCount] = await Promise.all([
+          podsDataPromise,
+          podsDataCountPromise,
+        ]);
+
+        if (!podsData.ok) {
+          throw podsData.error;
+        }
 
         if (!podsDataCount.ok) {
           throw podsDataCount.error;
@@ -1252,17 +1274,14 @@ export const searchQueries = createQueryKeys('search', {
         const searchCloudResourcesApi = apiWrapper({
           fn: getSearchApiClient().searchCloudResources,
         });
-        const resourcesResults = await searchCloudResourcesApi({
+        const resourcesPromises = searchCloudResourcesApi({
           searchSearchNodeReq,
         });
-        if (!resourcesResults.ok) {
-          throw new Error(`Failed to load cloud resoures : ${resourceId}`);
-        }
 
         const searchCloudResourcesCountApi = apiWrapper({
           fn: getSearchApiClient().searchCloudResourcesCount,
         });
-        const resourcesCountResults = await searchCloudResourcesCountApi({
+        const resourcesCountPromise = searchCloudResourcesCountApi({
           searchSearchNodeReq: {
             ...searchSearchNodeReq,
             window: {
@@ -1271,6 +1290,15 @@ export const searchQueries = createQueryKeys('search', {
             },
           },
         });
+
+        const [resourcesResults, resourcesCountResults] = await Promise.all([
+          resourcesPromises,
+          resourcesCountPromise,
+        ]);
+
+        if (!resourcesResults.ok) {
+          throw new Error(`Failed to load cloud resoures : ${resourceId}`);
+        }
 
         if (!resourcesCountResults.ok) {
           throw new Error(`Failed to load cloud resoures count : ${resourceId}`);

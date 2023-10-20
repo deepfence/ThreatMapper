@@ -140,9 +140,28 @@ export const registryQueries = createQueryKeys('registry', {
           fn: getRegistriesApiClient().listImageStubs,
         });
 
-        const result = await listImageStubs({
+        const resultPromise = listImageStubs({
           modelRegistryImageStubsReq: imageRequest,
         });
+
+        const countImageStubs = apiWrapper({
+          fn: getRegistriesApiClient().countImageStubs,
+        });
+
+        const resultCountsPromise = countImageStubs({
+          modelRegistryImageStubsReq: {
+            ...imageRequest,
+            window: {
+              ...imageRequest.window,
+              size: 10 * imageRequest.window.size,
+            },
+          },
+        });
+
+        const [result, resultCounts] = await Promise.all([
+          resultPromise,
+          resultCountsPromise,
+        ]);
 
         if (!result.ok) {
           throw result.error;
@@ -154,19 +173,6 @@ export const registryQueries = createQueryKeys('registry', {
             totalRows: 0,
           };
         }
-        const countImageStubs = apiWrapper({
-          fn: getRegistriesApiClient().countImageStubs,
-        });
-
-        const resultCounts = await countImageStubs({
-          modelRegistryImageStubsReq: {
-            ...imageRequest,
-            window: {
-              ...imageRequest.window,
-              size: 10 * imageRequest.window.size,
-            },
-          },
-        });
 
         if (!resultCounts.ok) {
           throw resultCounts.error;
@@ -309,9 +315,25 @@ export const registryQueries = createQueryKeys('registry', {
         }
         const listImages = apiWrapper({ fn: getRegistriesApiClient().listImages });
 
-        const result = await listImages({
+        const resultPromise = listImages({
           modelRegistryImagesReq: imageTagsRequest,
         });
+
+        const countImages = apiWrapper({ fn: getRegistriesApiClient().countImages });
+        const resultCountsPromise = countImages({
+          modelRegistryImagesReq: {
+            ...imageTagsRequest,
+            window: {
+              ...imageTagsRequest.window,
+              size: 10 * imageTagsRequest.window.size,
+            },
+          },
+        });
+
+        const [result, resultCounts] = await Promise.all([
+          resultPromise,
+          resultCountsPromise,
+        ]);
 
         if (!result.ok) {
           throw result.error;
@@ -324,16 +346,6 @@ export const registryQueries = createQueryKeys('registry', {
             totalRows: 0,
           };
         }
-        const countImages = apiWrapper({ fn: getRegistriesApiClient().countImages });
-        const resultCounts = await countImages({
-          modelRegistryImagesReq: {
-            ...imageTagsRequest,
-            window: {
-              ...imageTagsRequest.window,
-              size: 10 * imageTagsRequest.window.size,
-            },
-          },
-        });
 
         if (!resultCounts.ok) {
           throw resultCounts.error;
