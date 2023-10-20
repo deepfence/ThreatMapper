@@ -5,12 +5,18 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test:headless": "pnpm run start:server && playwright test ; pnpm run stop:server",
-    "test:ui": "pnpm run start:server && playwright test --ui ; pnpm run stop:server",
+    "start:console": "node start-console.js",
+    "stop:console": "node stop-console.js",
+    "start:agent": "node start-agent.js",
+    "stop:agent": "node stop-agent.js",
+    "test:setup:headless": "playwright test --project=setup",
+    "test:chromium:headless": "pnpm run start:agent && playwright test --project=chromium ; pnpm run stop:agent",
+    "test:headless": "pnpm run start:console && pnpm run test:setup:headless && test:chromium:headless ; pnpm run stop:console",
+    "test:setup:ui": "playwright test --ui --project=setup",
+    "test:chromium:ui": "pnpm run start:agent && playwright test --ui --project=chromium ; pnpm run stop:agent",
+    "test:ui": "pnpm run start:console && pnpm run test:setup:ui && test:chromium:ui ; pnpm run stop:console",
     "test:ui-local": "playwright test --ui",
-    "test:debug": "pnpm run start:server && playwright test --debug ; pnpm run stop:server",
-    "start:server": "node start-console.js",
-    "stop:server": "node stop-console.js"
+    "test:debug": "pnpm run start:console && playwright test --debug ; pnpm run stop:console"
   },
   "keywords": [],
   "author": "",
