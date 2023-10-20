@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -37,6 +38,14 @@ type AlreadyPresentError struct {
 
 func (e AlreadyPresentError) Error() string {
 	return fmt.Sprintf("Already exists here: %s", e.Path)
+}
+
+type PathDoesNotExistsError struct {
+	Path string
+}
+
+func (e PathDoesNotExistsError) Error() string {
+	return fmt.Sprintf("Path doesnot exists here: %s", e.Path)
 }
 
 type FileManager interface {
@@ -92,19 +101,12 @@ func (mfm *MinioFileManager) optionallyAddNamespacePrefix(filePath string, addFi
 	if addFilePathPrefix {
 		return mfm.addNamespacePrefix(filePath)
 	} else {
-		if strings.HasPrefix(filePath, "/") {
-			return filePath
-		} else {
-			return "/" + filePath
-		}
+		return strings.TrimPrefix(filePath, "/")
 	}
 }
 
 func (mfm *MinioFileManager) addNamespacePrefix(filePath string) string {
-	if !strings.HasPrefix(filePath, "/") {
-		filePath = "/" + filePath
-	}
-	return mfm.namespace + filePath
+	return filepath.Join(mfm.namespace, filePath)
 }
 
 func (mfm *MinioFileManager) ListFiles(ctx context.Context, pathPrefix string, recursive bool, maxKeys int, skipDir bool) []ObjectInfo {
@@ -233,17 +235,22 @@ func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, ad
 		return "", err
 	}
 
-	headers := http.Header{}
-	headers.Add("Host", consoleIp)
+	actualPath := mfm.optionallyAddNamespacePrefix(filePath, addFilePathPrefix)
+
+	key, has := checkIfFileExists(ctx, mfm.client, mfm.bucket, actualPath)
+	if !has {
+		return "", PathDoesNotExistsError{Path: actualPath}
+	}
 
 	urlLink, err := mfm.client.PresignHeader(
 		ctx,
 		"GET",
 		mfm.bucket,
-		mfm.optionallyAddNamespacePrefix(filePath, addFilePathPrefix),
+		key,
 		expires,
 		reqParams,
-		headers)
+		http.Header{},
+	)
 	if err != nil {
 		return "", err
 	}
@@ -257,9 +264,6 @@ func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath
 		return "", err
 	}
 
-	headers := http.Header{}
-	headers.Add("Host", consoleIp)
-
 	urlLink, err := mfm.client.PresignHeader(
 		ctx,
 		"PUT",
@@ -267,7 +271,8 @@ func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath
 		mfm.optionallyAddNamespacePrefix(filePath, addFilePathPrefix),
 		expires,
 		reqParams,
-		headers)
+		http.Header{},
+	)
 	if err != nil {
 		return "", err
 	}
@@ -346,6 +351,7 @@ func newMinioClient(endpoints DBConfigs) (*minio.Client, error) {
 	minioClient, err := minio.New(endpoints.Minio.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(endpoints.Minio.Username, endpoints.Minio.Password, ""),
 		Secure: endpoints.Minio.Secure,
+		Region: endpoints.Minio.Region,
 	})
 	return minioClient, err
 }

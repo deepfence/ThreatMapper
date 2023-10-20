@@ -45,6 +45,7 @@ type MinioConfig struct {
 	Password   string
 	BucketName string
 	Secure     bool
+	Region     string
 }
 
 type DBConfigs struct {
@@ -195,11 +196,18 @@ func initMinio() MinioConfig {
 		minioPort = "9000"
 		log.Warn().Msgf("DEEPFENCE_MINIO_PORT defaults to: %v", minioPort)
 	}
-	minioEndpoint := minioHost + ":" + minioPort
+
 	minioUser := os.Getenv("DEEPFENCE_MINIO_USER")
 	minioPassword := os.Getenv("DEEPFENCE_MINIO_PASSWORD")
 	minioBucket := os.Getenv("DEEPFENCE_MINIO_BUCKET")
+	minioRegion := os.Getenv("DEEPFENCE_MINIO_REGION")
 	minioSecure := os.Getenv("DEEPFENCE_MINIO_SECURE")
+
+	minioEndpoint := minioHost
+	if minioHost != "s3.amazonaws.com" {
+		minioEndpoint = minioHost + ":" + minioPort
+	}
+
 	if minioSecure == "" {
 		minioSecure = "false"
 	}
@@ -214,6 +222,7 @@ func initMinio() MinioConfig {
 		Password:   minioPassword,
 		BucketName: minioBucket,
 		Secure:     isSecure,
+		Region:     minioRegion,
 	}
 }
 
