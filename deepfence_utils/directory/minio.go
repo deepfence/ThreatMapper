@@ -110,15 +110,19 @@ func (mfm *MinioFileManager) addNamespacePrefix(filePath string) string {
 }
 
 func (mfm *MinioFileManager) ListFiles(ctx context.Context, pathPrefix string, recursive bool, maxKeys int, skipDir bool) []ObjectInfo {
-	objects := mfm.client.ListObjects(ctx, mfm.bucket, minio.ListObjectsOptions{
-		WithVersions: false,
-		WithMetadata: false,
-		Prefix:       mfm.addNamespacePrefix(pathPrefix),
-		Recursive:    recursive,
-		MaxKeys:      maxKeys,
-		StartAfter:   "",
-		UseV1:        false,
-	})
+	prefix := mfm.addNamespacePrefix(pathPrefix) + "/"
+
+	objects := mfm.client.ListObjects(ctx, mfm.bucket,
+		minio.ListObjectsOptions{
+			WithVersions: false,
+			WithMetadata: false,
+			Prefix:       prefix,
+			Recursive:    recursive,
+			MaxKeys:      maxKeys,
+			StartAfter:   "",
+			UseV1:        false,
+		})
+
 	var objectsInfo []ObjectInfo
 	for obj := range objects {
 		isDir := strings.HasSuffix(obj.Key, "/")
