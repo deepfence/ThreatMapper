@@ -10,14 +10,15 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 const (
 	DiagnosisLinkExpiry              = 5 * time.Minute
-	ConsoleDiagnosisFileServerPrefix = "/diagnosis/console-diagnosis/"
-	AgentDiagnosisFileServerPrefix   = "/diagnosis/agent-diagnosis/"
+	ConsoleDiagnosisFileServerPrefix = "diagnosis/console-diagnosis/"
+	AgentDiagnosisFileServerPrefix   = "diagnosis/agent-diagnosis/"
 )
 
 type DiagnosticNotification struct {
@@ -76,11 +77,13 @@ func GetDiagnosticLogs(ctx context.Context) (*GetDiagnosticLogsResponse, error) 
 func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, pathPrefix string) []DiagnosticLogsLink {
 	// Get completed files from minio
 	objects := mc.ListFiles(ctx, pathPrefix, false, 0, true)
+	log.Debug().Msgf("diagnosis logs at %s: %v", pathPrefix, objects)
 	diagnosticLogsResponse := make([]DiagnosticLogsLink, len(objects))
 	for i, obj := range objects {
 		message := ""
 		urlLink, err := mc.ExposeFile(ctx, obj.Key, false, DiagnosisLinkExpiry, url.Values{})
 		if err != nil {
+			log.Error().Err(err).Msg("failed to list console diagnosis logs")
 			var minioError utils.MinioError
 			xmlErr := xml.Unmarshal([]byte(err.Error()), &minioError)
 			if xmlErr != nil {
@@ -122,6 +125,10 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 	}
 	defer session.Close()
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return diagnosticLogs
+	}
 	defer tx.Close()
 
 	r, err := tx.Run(`
@@ -133,6 +140,10 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 
 	nodeIdToName := make(map[string]string)
 	records, err := r.Collect()
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return diagnosticLogs
+	}
 	for _, rec := range records {
 		var nodeId, fileName, message, status, updatedAt, nodeName interface{}
 		var ok bool

@@ -88,7 +88,8 @@ func InitMinioDatabase() {
 			if retries != 0 {
 				continue
 			}
-			return
+			// donot continue we need this step succesfull
+			panic(err)
 		}
 		break
 	}

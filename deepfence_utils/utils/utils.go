@@ -455,16 +455,6 @@ func RecursiveZip(pathsToZip []string, excludePathPrefixes []string, destination
 }
 
 func UploadFile(url string, fileName string) ([]byte, int, error) {
-	// r, err := os.Open(fileName)
-	// if err != nil {
-	// 	return nil, 0, err
-	// }
-	// buf := make([]byte, 512)
-	// _, err = r.Read(buf)
-	// if err != nil {
-	// 	return nil, 0, err
-	// }
-	// r.Close()
 
 	buff, err := os.ReadFile(fileName)
 	if err != nil {

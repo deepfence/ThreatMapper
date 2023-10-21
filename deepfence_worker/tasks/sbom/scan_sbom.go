@@ -45,6 +45,7 @@ func init() {
 	if minioHost != "s3.amazonaws.com" {
 		GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=http://%s:%s/database/database/vulnerability/listing.json", minioHost, minioPort)
 	}
+	log.Info().Msg(GRYPE_DB_UPDATE_URL)
 }
 
 type SbomParser struct {
