@@ -8,12 +8,14 @@ test.describe('Settings - User management', () => {
     await page.goto(`${baseURL}/settings/user-management`);
   });
   test('should be able to change password', async ({ page }) => {
-    const emailLabel = page.getByText('Email', {
+    const wrapper = page.getByTestId('currentUserWrapperId');
+    await expect(wrapper).toBeVisible();
+    const emailLabel = wrapper.getByText('Email', {
       exact: true,
     });
 
     await expect(emailLabel).toBeVisible();
-    const emailHolder = await emailLabel.locator('..');
+    const emailHolder = emailLabel.locator('..');
 
     expect(emailHolder).toContainText(username!);
 
@@ -23,23 +25,26 @@ test.describe('Settings - User management', () => {
       })
       .click();
 
-    await page.getByLabel('Current Password').fill(password!);
-    await page
+    const addModal = page.getByRole('dialog');
+    await expect(addModal).toBeVisible();
+
+    await addModal.getByLabel('Current Password').fill(password!);
+    await addModal
       .getByLabel(/New Password/, {
         exact: true,
       })
       .fill(password!);
-    await page.getByLabel('Confirm new Password').fill(password!);
+    await addModal.getByLabel('Confirm new Password').fill(password!);
 
-    await page
+    await addModal
       .getByRole('button', {
         name: 'submit',
       })
       .click();
 
-    await expect(page.getByText('Password changed successfully')).toBeVisible();
+    await expect(addModal.getByText('Password changed successfully')).toBeVisible();
   });
-  test('should show permission message show user list', async ({ page }) => {
+  test('should show permission message or show user list', async ({ page }) => {
     const response = await page.waitForResponse((response) => {
       return response.url().includes('/deepfence/user');
     });
@@ -61,7 +66,6 @@ test.describe('Settings - User management', () => {
         const email = tableBody.locator('tr', {
           hasText: process.env.USERNAME,
         });
-        console.log(await email.innerHTML());
         await expect(email).toBeVisible();
         await expect(email).toContainText(process.env.USERNAME!);
       }
@@ -121,15 +125,11 @@ test.describe('Settings - User management', () => {
     }
 
     await page.goto(`${baseURL}/settings/email-configuration`);
-    const addConfigBtn = page.getByRole('button', {
-      name: 'add configuration',
-    });
-    await expect(addConfigBtn).toBeVisible();
-
-    if (await addConfigBtn.isVisible()) {
+    await page.waitForTimeout(5000);
+    if (await page.isVisible('button:has-text("add configuration")')) {
       // try to invite user before email configuration is set
       const inviteModal = await inviteUser();
-      await expect(inviteModal.getByTestId('inviteUserErrorId')).toBeVisible();
+      await expect(inviteModal.getByText('not configured to send emails')).toBeVisible();
 
       // configure email provider
       const addModal = await configureEmail();

@@ -78,7 +78,7 @@ export const OnboardAppHeader = () => {
           >
             <button
               className="dark:text-text-text-and-icon flex gap-[6px] items-center text-p1"
-              data-testid="loginUserButtonId"
+              data-testid="logoutUserButtonId"
             >
               <div className="h-[18px] w-[18px]">
                 <UserLine />

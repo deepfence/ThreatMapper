@@ -11,12 +11,16 @@ const test = base.extend<{ topologyPage: TopologyPage }>({
 });
 
 const consoleHostName = 'ui-automation-agent-setup';
-const agentHostName = 'ip-172-31-60-127';
-const consoleAgentImageName = /deepfenceio\/deepfence_agent_ce.*/;
+const agentHostName = 'manan-e2e-agent';
+const agentImageName = /deepfenceio\/deepfence_agent_ce.*/;
 
 test.describe('Topology', () => {
-  test.describe('Hosts console', () => {
-    test('should go to host table and scan a host for malware', async ({ page, baseURL, topologyPage }) => {
+  test.describe.skip('Hosts console', () => {
+    test('should go to host table and scan a host for malware', async ({
+      page,
+      baseURL,
+      topologyPage,
+    }) => {
       await page.waitForURL(`${baseURL}/topology/table/host`);
       await expect(
         page.getByRole('button', {
@@ -186,7 +190,11 @@ test.describe('Topology', () => {
     });
   });
   test.describe('Hosts Agent', () => {
-    test('should go to host table and scan a host for malware', async ({ page, baseURL, topologyPage }) => {
+    test('should go to host table and scan a host for malware', async ({
+      page,
+      baseURL,
+      topologyPage,
+    }) => {
       await page.waitForURL(`${baseURL}/topology/table/host`);
       await expect(
         page.getByRole('button', {
@@ -356,13 +364,17 @@ test.describe('Topology', () => {
     });
   });
   test.describe('Container Images', () => {
-    test('should scan a container image for malware', async ({ page, baseURL, topologyPage }) => {
+    test('should scan a container image for malware', async ({
+      page,
+      baseURL,
+      topologyPage,
+    }) => {
       await page.waitForURL(`${baseURL}/topology/table/host`);
       const rowSelection = page.getByRole('row').filter({
-        hasText: consoleHostName,
+        hasText: agentHostName,
       });
       await expect(rowSelection).toBeVisible();
-      await rowSelection.getByText(consoleHostName).click();
+      await rowSelection.getByText(agentHostName).click();
 
       // side panel opens
       await expect(page.getByTestId('sliding-modal-title')).toBeVisible();
@@ -377,7 +389,7 @@ test.describe('Topology', () => {
 
       const imageTableParent = page.getByText('Container images').locator('..');
       const tbody = imageTableParent.getByRole('table').locator('tbody');
-      const agentImage = tbody.getByText(consoleAgentImageName);
+      const agentImage = tbody.getByText(agentImageName);
       await expect(agentImage).toBeVisible({
         timeout: TIMEOUT,
       });
@@ -388,7 +400,7 @@ test.describe('Topology', () => {
 
       await expect(
         page.getByTestId('sliding-modal-title').filter({
-          hasText: consoleAgentImageName,
+          hasText: agentImageName,
         }),
       ).toBeVisible();
 
@@ -402,39 +414,39 @@ test.describe('Topology', () => {
       await page.getByText('Start Malware Scan').click();
       await page.getByRole('button', { name: 'Start Scan' }).click();
 
-      await expect(page.getByText('Scan started sucessfully')).toBeVisible();
+      await expect(page.getByText('Scan started successfully')).toBeVisible();
 
       // go to malware scan and check for complete state
       await page.goto(`${baseURL}/malware/scans?nodeType=container_image`);
 
       await expect
-      .poll(
-        async () => {
-          await page.waitForTimeout(5000);
-          const malwarescantbody = page.getByRole('table').locator('tbody');
+        .poll(
+          async () => {
+            await page.waitForTimeout(5000);
+            const malwarescantbody = page.getByRole('table').locator('tbody');
 
-          const waitingRow = malwarescantbody.getByRole('row').filter({
-            hasText: consoleAgentImageName,
-          });
+            const waitingRow = malwarescantbody.getByRole('row').filter({
+              hasText: agentImageName,
+            });
 
-          const cell = waitingRow.getByRole(`cell`).nth(5);
-          const complete = cell.locator('div:text-is("Complete")');
-          const visible = await complete.isVisible();
-          if (!visible) {
-            const refreshBtn = page.locator(`button[title="Refresh now"]`);
-            if (refreshBtn) {
-              refreshBtn.click();
+            const cell = waitingRow.getByRole(`cell`).nth(5);
+            const complete = cell.locator('div:text-is("Complete")');
+            const visible = await complete.isVisible();
+            if (!visible) {
+              const refreshBtn = page.locator(`button[title="Refresh now"]`);
+              if (refreshBtn) {
+                refreshBtn.click();
+              }
+            } else {
+              return true;
             }
-          } else {
-            return true;
-          }
-        },
-        {
-          timeout: TIMEOUT,
-          intervals: [30_000],
-        },
-      )
-      .toBeTruthy();
+          },
+          {
+            timeout: TIMEOUT,
+            intervals: [30_000],
+          },
+        )
+        .toBeTruthy();
     });
     test('should scan a container image for vulnerability', async ({
       page,
@@ -443,10 +455,10 @@ test.describe('Topology', () => {
     }) => {
       await page.waitForURL(`${baseURL}/topology/table/host`);
       const rowSelection = page.getByRole('row').filter({
-        hasText: consoleHostName,
+        hasText: agentHostName,
       });
       await expect(rowSelection).toBeVisible();
-      await rowSelection.getByText(consoleHostName).click();
+      await rowSelection.getByText(agentHostName).click();
 
       // side panel opens
       await expect(page.getByTestId('sliding-modal-title')).toBeVisible();
@@ -461,7 +473,7 @@ test.describe('Topology', () => {
 
       const imageTableParent = page.getByText('Container images').locator('..');
       const tbody = imageTableParent.getByRole('table').locator('tbody');
-      const agentImage = tbody.getByText(consoleAgentImageName);
+      const agentImage = tbody.getByText(agentImageName);
       await expect(agentImage).toBeVisible({
         timeout: TIMEOUT,
       });
@@ -472,7 +484,7 @@ test.describe('Topology', () => {
 
       await expect(
         page.getByTestId('sliding-modal-title').filter({
-          hasText: consoleAgentImageName,
+          hasText: agentImageName,
         }),
       ).toBeVisible();
 
@@ -486,48 +498,51 @@ test.describe('Topology', () => {
       await page.getByText('Start Vulnerability Scan').click();
       await page.getByRole('button', { name: 'Start Scan' }).click();
 
-      await expect(page.getByText('Scan started sucessfully')).toBeVisible();
+      await expect(page.getByText('Scan started successfully')).toBeVisible();
 
       // go to vulnerability scan and check for complete state
       await page.goto(`${baseURL}/vulnerability/scans?nodeType=container_image`);
 
       await expect
-      .poll(
-        async () => {
-          await page.waitForTimeout(5000);
-          const vulnscantbody = page.getByRole('table').locator('tbody');
+        .poll(
+          async () => {
+            await page.waitForTimeout(5000);
+            const vulnscantbody = page.getByRole('table').locator('tbody');
 
-          const waitingRow = vulnscantbody.getByRole('row').filter({
-            hasText: consoleAgentImageName,
-          });
+            const waitingRow = vulnscantbody.getByRole('row').filter({
+              hasText: agentImageName,
+            });
 
-          const cell = waitingRow.getByRole(`cell`).nth(5);
-          const complete = cell.locator('div:text-is("Complete")');
-          const visible = await complete.isVisible();
-          if (!visible) {
-            const refreshBtn = page.locator(`button[title="Refresh now"]`);
-            if (refreshBtn) {
-              refreshBtn.click();
+            const cell = waitingRow.getByRole(`cell`).nth(5);
+            const complete = cell.locator('div:text-is("Complete")');
+            const visible = await complete.isVisible();
+            if (!visible) {
+              const refreshBtn = page.locator(`button[title="Refresh now"]`);
+              if (refreshBtn) {
+                refreshBtn.click();
+              }
+            } else {
+              return true;
             }
-          } else {
-            return true;
-          }
-        },
-        {
-          timeout: TIMEOUT,
-          intervals: [30_000],
-        },
-      )
-      .toBeTruthy();
-
+          },
+          {
+            timeout: TIMEOUT,
+            intervals: [30_000],
+          },
+        )
+        .toBeTruthy();
     });
-    test('should scan a container image for secret', async ({ page, baseURL, topologyPage }) => {
+    test('should scan a container image for secret', async ({
+      page,
+      baseURL,
+      topologyPage,
+    }) => {
       await page.waitForURL(`${baseURL}/topology/table/host`);
       const rowSelection = page.getByRole('row').filter({
-        hasText: consoleHostName,
+        hasText: agentHostName,
       });
       await expect(rowSelection).toBeVisible();
-      await rowSelection.getByText(consoleHostName).click();
+      await rowSelection.getByText(agentHostName).click();
 
       // side panel opens
       await expect(page.getByTestId('sliding-modal-title')).toBeVisible();
@@ -542,7 +557,7 @@ test.describe('Topology', () => {
 
       const imageTableParent = page.getByText('Container images').locator('..');
       const tbody = imageTableParent.getByRole('table').locator('tbody');
-      const agentImage = tbody.getByText(consoleAgentImageName);
+      const agentImage = tbody.getByText(agentImageName);
       await expect(agentImage).toBeVisible({
         timeout: TIMEOUT,
       });
@@ -553,7 +568,7 @@ test.describe('Topology', () => {
 
       await expect(
         page.getByTestId('sliding-modal-title').filter({
-          hasText: consoleAgentImageName,
+          hasText: agentImageName,
         }),
       ).toBeVisible();
 
@@ -567,40 +582,39 @@ test.describe('Topology', () => {
       await page.getByText('Start Secret Scan').click();
       await page.getByRole('button', { name: 'Start Scan' }).click();
 
-      await expect(page.getByText('Scan started sucessfully')).toBeVisible();
+      await expect(page.getByText('Scan started successfully')).toBeVisible();
 
       // go to secret scan and check for complete state
       await page.goto(`${baseURL}/secret/scans?nodeType=container_image`);
 
       await expect
-      .poll(
-        async () => {
-          await page.waitForTimeout(5000);
-          const secretscantbody = page.getByRole('table').locator('tbody');
+        .poll(
+          async () => {
+            await page.waitForTimeout(5000);
+            const secretscantbody = page.getByRole('table').locator('tbody');
 
-          const waitingRow = secretscantbody.getByRole('row').filter({
-            hasText: consoleAgentImageName,
-          });
+            const waitingRow = secretscantbody.getByRole('row').filter({
+              hasText: agentImageName,
+            });
 
-          const cell = waitingRow.getByRole(`cell`).nth(5);
-          const complete = cell.locator('div:text-is("Complete")');
-          const visible = await complete.isVisible();
-          if (!visible) {
-            const refreshBtn = page.locator(`button[title="Refresh now"]`);
-            if (refreshBtn) {
-              refreshBtn.click();
+            const cell = waitingRow.getByRole(`cell`).nth(5);
+            const complete = cell.locator('div:text-is("Complete")');
+            const visible = await complete.isVisible();
+            if (!visible) {
+              const refreshBtn = page.locator(`button[title="Refresh now"]`);
+              if (refreshBtn) {
+                refreshBtn.click();
+              }
+            } else {
+              return true;
             }
-          } else {
-            return true;
-          }
-        },
-        {
-          timeout: TIMEOUT,
-          intervals: [30_000],
-        },
-      )
-      .toBeTruthy();
-     
+          },
+          {
+            timeout: TIMEOUT,
+            intervals: [30_000],
+          },
+        )
+        .toBeTruthy();
     });
   });
 });

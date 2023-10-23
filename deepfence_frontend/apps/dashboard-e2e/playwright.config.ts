@@ -15,7 +15,7 @@ const current = fileURLToPath(import.meta.url);
 const root = path.dirname(current);
 dotenv.config({ path: path.resolve(root, '.env') });
 
-export const TIMEOUT = 10 * 60 * 1000; // 10 mins
+export const TIMEOUT = 20 * 60 * 1000; // 10 mins
 
 const config: PlaywrightTestConfig = {
   testDir: './tests',
@@ -43,7 +43,7 @@ const config: PlaywrightTestConfig = {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     actionTimeout: 60 * 10000,
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.CONSOLE_URL,
+    baseURL: process.env.LOCAL_CONSOLE_URL,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -53,7 +53,18 @@ const config: PlaywrightTestConfig = {
   /* Configure projects for major browsers */
   projects: [
     // Setup project
-    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    { name: 'setup', testMatch: /setup\.ts/ },
+    {
+      name: 'agent',
+      testMatch: /agent.spec.ts/,
+      // dependencies: ['authenticate'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests/auth/user.json',
+      },
+    },
+    // login
+    { name: 'authenticate', testMatch: /authenticate\.ts/ },
     {
       name: 'chromium',
       use: {

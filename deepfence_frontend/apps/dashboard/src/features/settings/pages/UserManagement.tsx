@@ -685,7 +685,7 @@ const CurrentUserInfo = ({
   const { data: user } = useGetCurrentUser();
   const currentUser = user.user;
   return (
-    <div>
+    <div data-testid="currentUserWrapperId">
       <div className="flex items-center">
         <div className="flex items-end gap-x-4">
           <span className="text-2xl dark:text-gray-100 font-semibold min-w-[124px]">

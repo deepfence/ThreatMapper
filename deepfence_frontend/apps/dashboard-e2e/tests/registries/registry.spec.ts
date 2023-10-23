@@ -146,7 +146,7 @@ test.describe('Registry', () => {
       await scanForm.waitFor();
       await scanForm.getByRole('button', { name: 'Start Scan' }).click();
 
-      await expect(page.getByText('Scan started sucessfully')).toBeVisible();
+      await expect(page.getByText('Scan started successfully')).toBeVisible();
 
       await expect
         .poll(
@@ -172,7 +172,6 @@ test.describe('Registry', () => {
           },
         )
         .toBeTruthy();
-
     } else {
       console.error('tbody element not found.');
     }
@@ -252,7 +251,7 @@ test.describe('Registry', () => {
       await expect(page.getByTestId('sliding-modal-close-button')).not.toBeAttached();
       await page.mouse.click(0, 0);
 
-      await expect(page.getByText('Scan started sucessfully')).toBeVisible();
+      await expect(page.getByText('Scan started successfully')).toBeVisible();
 
       await expect
         .poll(
@@ -357,12 +356,11 @@ test.describe('Registry', () => {
       await expect(page.getByTestId('sliding-modal-close-button')).not.toBeAttached();
       await page.mouse.click(0, 0);
 
-      await expect(page.getByText('Scan started sucessfully')).toBeVisible();
+      await expect(page.getByText('Scan started successfully')).toBeVisible();
 
       await expect
         .poll(
-          async () => {   
-
+          async () => {
             await page.waitForTimeout(5000);
             const tbodyElement = page.locator('tbody');
             const rowSelectionTag = tbodyElement.getByRole('row').nth(0);
