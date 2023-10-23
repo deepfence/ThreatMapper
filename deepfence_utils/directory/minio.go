@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -20,7 +21,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var minioClientMap sync.Map
+var (
+	MinioBucket         = utils.GetEnvOrDefault("DEEPFENCE_MINIO_BUCKET", string(NonSaaSDirKey))
+	MinioDatabaseBucket = utils.GetEnvOrDefault("DEEPFENCE_MINIO_DB_BUCKET", string(DatabaseDirKey))
+	minioClientMap      sync.Map
+)
 
 func init() {
 	minioClientMap = sync.Map{}
@@ -46,11 +51,13 @@ type FileManager interface {
 	CreatePublicUploadURL(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error)
 	Client() interface{}
 	Bucket() string
-	CreatePublicBucket(ctx context.Context) error
+	CreatePublicBucket(ctx context.Context, bucket string) error
+	CleanNamespace(ctx context.Context) error
 }
 
 type MinioFileManager struct {
 	client    *minio.Client
+	bucket    string
 	namespace string
 }
 
@@ -101,7 +108,7 @@ func (mfm *MinioFileManager) addNamespacePrefix(filePath string) string {
 }
 
 func (mfm *MinioFileManager) ListFiles(ctx context.Context, pathPrefix string, recursive bool, maxKeys int, skipDir bool) []ObjectInfo {
-	objects := mfm.client.ListObjects(ctx, mfm.namespace, minio.ListObjectsOptions{
+	objects := mfm.client.ListObjects(ctx, mfm.bucket, minio.ListObjectsOptions{
 		WithVersions: false,
 		WithMetadata: false,
 		Prefix:       mfm.addNamespacePrefix(pathPrefix),
@@ -113,7 +120,7 @@ func (mfm *MinioFileManager) ListFiles(ctx context.Context, pathPrefix string, r
 	var objectsInfo []ObjectInfo
 	for obj := range objects {
 		isDir := strings.HasSuffix(obj.Key, "/")
-		if skipDir == true && isDir == true {
+		if skipDir && isDir {
 			continue
 		}
 		objectsInfo = append(objectsInfo, ObjectInfo{
@@ -136,11 +143,11 @@ func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context, filename strin
 
 	objectName := mfm.addNamespacePrefix(filename)
 
-	if key, has := checkIfFileExists(ctx, mfm.client, mfm.namespace, objectName); has {
+	if key, has := checkIfFileExists(ctx, mfm.client, mfm.bucket, objectName); has {
 		return UploadResult{}, AlreadyPresentError{Path: key}
 	}
 
-	info, err := mfm.client.FPutObject(ctx, mfm.namespace, objectName, localFilename, extra.(minio.PutObjectOptions))
+	info, err := mfm.client.FPutObject(ctx, mfm.bucket, objectName, localFilename, extra.(minio.PutObjectOptions))
 	if err != nil {
 		return UploadResult{}, err
 	}
@@ -164,11 +171,11 @@ func (mfm *MinioFileManager) UploadFile(ctx context.Context, filename string, da
 
 	objectName := mfm.addNamespacePrefix(filename)
 
-	if key, has := checkIfFileExists(ctx, mfm.client, mfm.namespace, objectName); has {
+	if key, has := checkIfFileExists(ctx, mfm.client, mfm.bucket, objectName); has {
 		return UploadResult{}, AlreadyPresentError{Path: key}
 	}
 
-	info, err := mfm.client.PutObject(ctx, mfm.namespace, objectName, bytes.NewReader(data), int64(len(data)), extra.(minio.PutObjectOptions))
+	info, err := mfm.client.PutObject(ctx, mfm.bucket, objectName, bytes.NewReader(data), int64(len(data)), extra.(minio.PutObjectOptions))
 
 	if err != nil {
 		return UploadResult{}, err
@@ -186,15 +193,15 @@ func (mfm *MinioFileManager) UploadFile(ctx context.Context, filename string, da
 }
 
 func (mfm *MinioFileManager) DeleteFile(ctx context.Context, filePath string, addFilePathPrefix bool, extra interface{}) error {
-	return mfm.client.RemoveObject(ctx, mfm.namespace, mfm.optionallyAddNamespacePrefix(filePath, addFilePathPrefix), extra.(minio.RemoveObjectOptions))
+	return mfm.client.RemoveObject(ctx, mfm.bucket, mfm.optionallyAddNamespacePrefix(filePath, addFilePathPrefix), extra.(minio.RemoveObjectOptions))
 }
 
 func (mfm *MinioFileManager) DownloadFile(ctx context.Context, remoteFile string, localFile string, extra interface{}) error {
-	return mfm.client.FGetObject(ctx, mfm.namespace, mfm.addNamespacePrefix(remoteFile), localFile, extra.(minio.GetObjectOptions))
+	return mfm.client.FGetObject(ctx, mfm.bucket, mfm.addNamespacePrefix(remoteFile), localFile, extra.(minio.GetObjectOptions))
 }
 
 func (mfm *MinioFileManager) DownloadFileTo(ctx context.Context, remoteFile string, writer io.WriteCloser, extra interface{}) error {
-	obj, err := mfm.client.GetObject(ctx, mfm.namespace, mfm.addNamespacePrefix(remoteFile), extra.(minio.GetObjectOptions))
+	obj, err := mfm.client.GetObject(ctx, mfm.bucket, mfm.addNamespacePrefix(remoteFile), extra.(minio.GetObjectOptions))
 	if err != nil {
 		return err
 	}
@@ -206,7 +213,7 @@ func (mfm *MinioFileManager) DownloadFileTo(ctx context.Context, remoteFile stri
 }
 
 func (mfm *MinioFileManager) DownloadFileContexts(ctx context.Context, remoteFile string, extra interface{}) ([]byte, error) {
-	object, err := mfm.client.GetObject(ctx, mfm.namespace, mfm.addNamespacePrefix(remoteFile), extra.(minio.GetObjectOptions))
+	object, err := mfm.client.GetObject(ctx, mfm.bucket, mfm.addNamespacePrefix(remoteFile), extra.(minio.GetObjectOptions))
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +239,7 @@ func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, ad
 	urlLink, err := mfm.client.PresignHeader(
 		ctx,
 		"GET",
-		mfm.namespace,
+		mfm.bucket,
 		mfm.optionallyAddNamespacePrefix(filePath, addFilePathPrefix),
 		expires,
 		reqParams,
@@ -256,7 +263,7 @@ func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath
 	urlLink, err := mfm.client.PresignHeader(
 		ctx,
 		"PUT",
-		mfm.namespace,
+		mfm.bucket,
 		mfm.optionallyAddNamespacePrefix(filePath, addFilePathPrefix),
 		expires,
 		reqParams,
@@ -273,37 +280,48 @@ func (mfm *MinioFileManager) Client() interface{} {
 }
 
 func (mfm *MinioFileManager) Bucket() string {
-	return mfm.namespace
+	return mfm.bucket
 }
 
 func (mfm *MinioFileManager) createBucketIfNeeded(ctx context.Context) error {
 
-	exists, err := mfm.client.BucketExists(ctx, mfm.namespace)
+	exists, err := mfm.client.BucketExists(ctx, mfm.bucket)
 
 	if err != nil {
 		return err
 	}
 
 	if !exists {
-		err = mfm.client.MakeBucket(ctx, mfm.namespace,
-			minio.MakeBucketOptions{ObjectLocking: false})
-
+		err = mfm.client.MakeBucket(ctx, mfm.bucket, minio.MakeBucketOptions{ObjectLocking: false})
 	}
 	return err
 }
 
-func (mfm *MinioFileManager) CreatePublicBucket(ctx context.Context) error {
+func (mfm *MinioFileManager) CreatePublicBucket(ctx context.Context, bucket string) error {
 
-	exists, err := mfm.client.BucketExists(ctx, mfm.namespace)
+	exists, err := mfm.client.BucketExists(ctx, bucket)
 	if err != nil {
 		return err
 	} else if exists {
 		return nil
 	}
 
-	err = mfm.client.MakeBucket(ctx, mfm.namespace, minio.MakeBucketOptions{ObjectLocking: false})
+	err = mfm.client.MakeBucket(ctx, bucket, minio.MakeBucketOptions{ObjectLocking: false})
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (mfm *MinioFileManager) CleanNamespace(ctx context.Context) error {
+
+	files := mfm.ListFiles(ctx, "", true, 0, false)
+	log.Info().Msgf("delete %d file for namespace %s", len(files), mfm.namespace)
+	for _, f := range files {
+		if err := mfm.DeleteFile(ctx, f.Key, false, minio.RemoveObjectOptions{ForceDelete: true}); err != nil {
+			log.Error().Err(err).Msgf("failed to delete file %s", f.Key)
+		}
 	}
 
 	return nil
@@ -343,8 +361,14 @@ func MinioClient(ctx context.Context) (FileManager, error) {
 		return nil, err
 	}
 
+	bucket := MinioBucket
+	if ns == DatabaseDirKey {
+		bucket = MinioDatabaseBucket
+	}
+
 	return &MinioFileManager{
 		client:    client,
+		bucket:    bucket,
 		namespace: string(ns),
 	}, err
 }

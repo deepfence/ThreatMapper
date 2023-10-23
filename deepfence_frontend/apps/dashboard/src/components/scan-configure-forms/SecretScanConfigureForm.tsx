@@ -148,7 +148,7 @@ export const scanSecretApiAction = async ({
     throw startSecretScanResponse.error;
   }
 
-  toast.success('Scan started sucessfully');
+  toast.success('Scan started successfully');
   invalidateAllQueries();
   return {
     success: true,

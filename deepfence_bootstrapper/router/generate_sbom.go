@@ -14,12 +14,9 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const (
-	packageScannerSocket = "/tmp/package-scanner.sock"
-)
-
 var (
-	scanPath = "dir:/fenced/mnt/host/"
+	packageScannerSocket = getDfInstallDir() + "/tmp/package-scanner.sock"
+	scanPath             = "dir:/fenced/mnt/host/"
 )
 
 func init() {

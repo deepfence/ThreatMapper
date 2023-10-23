@@ -21,6 +21,12 @@ import { exists, mapValues } from '../runtime';
 export interface ModelScanResultsCommon {
     /**
      * 
+     * @type {string}
+     * @memberof ModelScanResultsCommon
+     */
+    cloud_account_id: string;
+    /**
+     * 
      * @type {number}
      * @memberof ModelScanResultsCommon
      */
@@ -86,6 +92,7 @@ export interface ModelScanResultsCommon {
  */
 export function instanceOfModelScanResultsCommon(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "cloud_account_id" in value;
     isInstance = isInstance && "created_at" in value;
     isInstance = isInstance && "docker_container_name" in value;
     isInstance = isInstance && "docker_image_name" in value;
@@ -110,6 +117,7 @@ export function ModelScanResultsCommonFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
+        'cloud_account_id': json['cloud_account_id'],
         'created_at': json['created_at'],
         'docker_container_name': json['docker_container_name'],
         'docker_image_name': json['docker_image_name'],
@@ -132,6 +140,7 @@ export function ModelScanResultsCommonToJSON(value?: ModelScanResultsCommon | nu
     }
     return {
         
+        'cloud_account_id': value.cloud_account_id,
         'created_at': value.created_at,
         'docker_container_name': value.docker_container_name,
         'docker_image_name': value.docker_image_name,

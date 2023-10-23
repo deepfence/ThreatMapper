@@ -24,6 +24,8 @@ import {
 } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
+import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
@@ -231,6 +233,8 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   complianceScanStatus: 'Posture scan status',
   cloudProvider: 'Cloud provider',
   agentRunning: 'Agent running',
+  clusters: 'Cluster',
+  hosts: 'Host',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -254,6 +258,27 @@ function Filters() {
   return (
     <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
       <div className="flex gap-2">
+        <SearchableHostList
+          scanType={'none'}
+          defaultSelectedHosts={searchParams.getAll('hosts')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('hosts');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('hosts');
+              value.forEach((host) => {
+                prev.append('hosts', host);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
         <Combobox
           value={SCAN_STATUS_GROUPS.find((groupStatus) => {
             return groupStatus.value === searchParams.get('vulnerabilityScanStatus');
@@ -421,6 +446,26 @@ function Filters() {
             );
           })}
         </Combobox>
+        <SearchableClusterList
+          defaultSelectedClusters={searchParams.getAll('clusters')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              value.forEach((cluster) => {
+                prev.append('clusters', cluster);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
         <Combobox
           value={searchParams.getAll('agentRunning')}
           multiple
@@ -524,6 +569,8 @@ function useSearchHostsWithPagination() {
       agentRunning: searchParams
         .getAll('agentRunning')
         .map((value) => (value === 'On' ? true : false)),
+      clusterIds: searchParams.getAll('clusters'),
+      hosts: searchParams.getAll('hosts'),
     }),
     keepPreviousData: true,
   });

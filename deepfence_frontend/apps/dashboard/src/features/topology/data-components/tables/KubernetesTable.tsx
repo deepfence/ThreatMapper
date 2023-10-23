@@ -22,8 +22,11 @@ import {
   ConfigureScanModal,
   ConfigureScanModalProps,
 } from '@/components/ConfigureScanModal';
+import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
+import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
@@ -66,6 +69,26 @@ function Filters() {
   return (
     <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
       <div className="flex gap-2">
+        <SearchableClusterList
+          defaultSelectedClusters={searchParams.getAll('clusters')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              value.forEach((cluster) => {
+                prev.append('clusters', cluster);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
         <Combobox
           value={searchParams.getAll('agentRunning')}
           multiple
@@ -319,6 +342,7 @@ function useSearchClustersWithPagination() {
       page: getPageFromSearchParams(searchParams),
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       order: getOrderFromSearchParams(searchParams),
+      clusterIds: searchParams.getAll('clusters'),
       agentRunning: searchParams
         .getAll('agentRunning')
         .map((value) => (value === 'On' ? true : false)),
@@ -370,7 +394,44 @@ const DataTable = ({
           } else {
             name = info.row.original.node_id;
           }
-          return <TruncatedText text={name} />;
+          return (
+            <div className="flex gap-x-2 items-center">
+              <Dropdown
+                triggerAsChild={true}
+                align={'start'}
+                content={
+                  <>
+                    <DropdownItem>
+                      <DFLink
+                        to={`../table/host?clusters=${info.row.original.node_id}`}
+                        unstyled
+                      >
+                        Go to hosts
+                      </DFLink>
+                    </DropdownItem>
+                    <DropdownItem>
+                      <DFLink
+                        to={`../table/container?clusters=${info.row.original.node_id}`}
+                        unstyled
+                      >
+                        Go to containers
+                      </DFLink>
+                    </DropdownItem>
+                    <DropdownItem>
+                      <DFLink to={`../table/pod?clusters=${name}`} unstyled>
+                        Go to pods
+                      </DFLink>
+                    </DropdownItem>
+                  </>
+                }
+              >
+                <div className="cursor-pointer h-3 w-4 dark:text-text-text-and-icon rotate-90">
+                  <EllipsisIcon />
+                </div>
+              </Dropdown>
+              <TruncatedText text={name} />
+            </div>
+          );
         },
         header: () => 'Name',
         minSize: 150,

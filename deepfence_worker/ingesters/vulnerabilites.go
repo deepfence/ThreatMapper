@@ -29,22 +29,28 @@ func CommitFuncVulnerabilities(ns string, data []ingestersUtil.Vulnerability) er
 	}
 	defer tx.Close()
 
+	dataMap, err := CVEsToMaps(data, tx)
+	if err != nil {
+		return err
+	}
+
 	if _, err = tx.Run(`
-		UNWIND $batch as row WITH row.rule as rule, row.data as data, row.scan_id as scan_id
+		UNWIND $batch as row WITH row.rule as rule, row.data as data, 
+		row.scan_id as scan_id, row.node_id as node_id
 		MERGE (v:VulnerabilityStub{node_id:rule.cve_id})
-		MERGE (n:Vulnerability{node_id:data.cve_caused_by_package+rule.cve_id})
+		MERGE (n:Vulnerability{node_id:node_id})
 		MERGE (n) -[:IS]-> (v)
 		SET v += rule,
 		    v.masked = COALESCE(v.masked, false),
 		    v.updated_at = TIMESTAMP(),
 		    n += data,
-		    n.masked = COALESCE(n.masked, false),
+		    n.masked = COALESCE(n.masked, v.masked, false),
 		    n.updated_at = TIMESTAMP()
 		WITH n, scan_id
 		MATCH (m:VulnerabilityScan{node_id: scan_id})
 		MERGE (m) -[r:DETECTED]-> (n)
-		SET r.masked = false`,
-		map[string]interface{}{"batch": CVEsToMaps(data)}); err != nil {
+		SET r.masked = COALESCE(n.masked, false)`,
+		map[string]interface{}{"batch": dataMap}); err != nil {
 		log.Error().Msgf(err.Error())
 		return err
 	}
@@ -52,15 +58,29 @@ func CommitFuncVulnerabilities(ns string, data []ingestersUtil.Vulnerability) er
 	return tx.Commit()
 }
 
-func CVEsToMaps(ms []ingestersUtil.Vulnerability) []map[string]interface{} {
+func CVEsToMaps(ms []ingestersUtil.Vulnerability,
+	tx neo4j.Transaction) ([]map[string]interface{}, error) {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
 		data, rule := v.Split()
+
+		entityId, err := getEntityIdFromScanID(v.ScanId, string(utils.NEO4J_VULNERABILITY_SCAN), tx)
+		if err != nil {
+			log.Error().Msgf("Error in getting entityId: %v", err)
+			return nil, err
+		}
+
+		nodeId := data.CveCausedByPackage + rule.CveId
+		if len(entityId) > 0 {
+			nodeId = nodeId + "_" + entityId
+		}
+
 		res = append(res, map[string]interface{}{
 			"rule":    utils.ToMap(rule),
 			"data":    utils.ToMap(data),
 			"scan_id": v.ScanId,
+			"node_id": nodeId,
 		})
 	}
-	return res
+	return res, nil
 }

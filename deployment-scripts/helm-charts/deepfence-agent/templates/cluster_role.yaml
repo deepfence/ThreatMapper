@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: deepfence-agent
+  name: {{ include "deepfence-agent.fullname" . }}
   labels:
     {{- include "deepfence-agent.labels" . | nindent 4 }}
 rules:

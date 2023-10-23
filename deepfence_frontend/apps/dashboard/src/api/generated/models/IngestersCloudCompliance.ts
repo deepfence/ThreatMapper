@@ -75,12 +75,6 @@ export interface IngestersCloudCompliance {
     group?: string;
     /**
      * 
-     * @type {boolean}
-     * @memberof IngestersCloudCompliance
-     */
-    masked?: boolean;
-    /**
-     * 
      * @type {string}
      * @memberof IngestersCloudCompliance
      */
@@ -163,7 +157,6 @@ export function IngestersCloudComplianceFromJSONTyped(json: any, ignoreDiscrimin
         'description': !exists(json, 'description') ? undefined : json['description'],
         'doc_id': !exists(json, 'doc_id') ? undefined : json['doc_id'],
         'group': !exists(json, 'group') ? undefined : json['group'],
-        'masked': !exists(json, 'masked') ? undefined : json['masked'],
         'reason': !exists(json, 'reason') ? undefined : json['reason'],
         'region': !exists(json, 'region') ? undefined : json['region'],
         'resource': !exists(json, 'resource') ? undefined : json['resource'],
@@ -194,7 +187,6 @@ export function IngestersCloudComplianceToJSON(value?: IngestersCloudCompliance 
         'description': value.description,
         'doc_id': value.doc_id,
         'group': value.group,
-        'masked': value.masked,
         'reason': value.reason,
         'region': value.region,
         'resource': value.resource,

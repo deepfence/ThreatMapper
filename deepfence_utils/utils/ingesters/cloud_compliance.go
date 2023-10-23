@@ -40,7 +40,6 @@ type CloudCompliance struct {
 	ComplianceCheckType string `json:"compliance_check_type"`
 	CloudProvider       string `json:"cloud_provider"`
 	ScanID              string `json:"scan_id"`
-	Masked              bool   `json:"masked"`
 	Type                string `json:"type"`
 	ControlID           string `json:"control_id"`
 	Description         string `json:"description"`

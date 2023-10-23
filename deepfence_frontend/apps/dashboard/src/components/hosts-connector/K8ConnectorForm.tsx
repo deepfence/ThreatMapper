@@ -37,19 +37,19 @@ const PLACEHOLDER_VERSION = '---PRODUCT_TAG_VERSION--';
 const containerRuntimeDropdown = [
   {
     name: 'containerd',
-    value: `--set mountContainerRuntimeSocket.containerdSock=true \\ 
-  --set mountContainerRuntimeSocket.dockerSock=false \\ 
+    value: `--set mountContainerRuntimeSocket.containerdSock=true \\
+  --set mountContainerRuntimeSocket.dockerSock=false \\
   --set mountContainerRuntimeSocket.crioSock=false`,
   },
   {
     name: 'docker',
-    value: `--set mountContainerRuntimeSocket.containerdSock=false \\ 
-  --set mountContainerRuntimeSocket.dockerSock=true \\ 
+    value: `--set mountContainerRuntimeSocket.containerdSock=false \\
+  --set mountContainerRuntimeSocket.dockerSock=true \\
   --set mountContainerRuntimeSocket.crioSock=false`,
   },
   {
     name: 'cri-o',
-    value: `--set mountContainerRuntimeSocket.containerdSock=false \\ 
+    value: `--set mountContainerRuntimeSocket.containerdSock=false \\
   --set mountContainerRuntimeSocket.dockerSock=false \\
   --set mountContainerRuntimeSocket.crioSock=true`,
   },
@@ -140,8 +140,7 @@ const InformationForm = ({
     const installCommand = `helm install deepfence-agent deepfence/deepfence-agent \\
   --set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
   --set deepfenceKey=${dfApiKey} \\
-  --set image.tag=${PLACEHOLDER_VERSION} \\
-  --set image.clusterAgentImageTag=${PLACEHOLDER_VERSION} \\
+  --set global.imageTag=${PLACEHOLDER_VERSION} \\
   --set clusterName=${_clusterName} \\
   ${runtimeCommand} \\
   ${sockCommand}="${_socketPath}" \\
@@ -322,8 +321,7 @@ helm repo update
 helm install deepfence-agent deepfence/deepfence-agent \\
   --set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
   --set deepfenceKey=${PLACEHOLDER_API_KEY} \\
-  --set image.tag=${''} \\
-  --set image.clusterAgentImageTag=${''} \\
+  --set global.imageTag=${''} \\
   --set clusterName=${defaultCluster} \\
   ${containerRuntimeDropdown[0].value} \\
   ${socketMap.containerd.command}="${defaultSocketPath}" \\

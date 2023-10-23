@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -29,6 +30,11 @@ func CommitFuncSecrets(ns string, data []ingestersUtil.Secret) error {
 	}
 	defer tx.Close()
 
+	dataMap, err := secretsToMaps(data, tx)
+	if err != nil {
+		return err
+	}
+
 	if _, err = tx.Run(`
 		UNWIND $batch as row WITH row.Rule as rule, row.Secret as secret
 		MERGE (r:SecretRule{rule_id:rule.rule_id})
@@ -37,23 +43,25 @@ func CommitFuncSecrets(ns string, data []ingestersUtil.Secret) error {
 		    r.updated_at = TIMESTAMP()
 		WITH secret as row, r
 		MERGE (n:Secret{node_id:row.node_id})
-		SET n+= row,
-		    n.masked = COALESCE(n.masked, false),
-		    n.updated_at = TIMESTAMP()
+		SET n+= row, 
+			n.masked = COALESCE(n.masked, r.masked, false),
+			n.updated_at = TIMESTAMP()
 		WITH n, r, row
 		MERGE (n)-[:IS]->(r)
 		MERGE (m:SecretScan{node_id: row.scan_id})
 		WITH n, m
 		MERGE (m) -[l:DETECTED]-> (n)
-		SET l.masked = false`,
-		map[string]interface{}{"batch": secretsToMaps(data)}); err != nil {
+		SET l.masked = COALESCE(n.masked, false)`,
+		map[string]interface{}{"batch": dataMap}); err != nil {
 		return err
 	}
 
 	return tx.Commit()
 }
 
-func secretsToMaps(data []ingestersUtil.Secret) []map[string]map[string]interface{} {
+func secretsToMaps(data []ingestersUtil.Secret,
+	tx neo4j.Transaction) ([]map[string]map[string]interface{}, error) {
+
 	var secrets []map[string]map[string]interface{}
 	for _, i := range data {
 		secret := utils.ToMap(i)
@@ -68,7 +76,24 @@ func secretsToMaps(data []ingestersUtil.Secret) []map[string]map[string]interfac
 		for k, v := range utils.ToMap(i.Match) {
 			secret[k] = v
 		}
-		secret["node_id"] = utils.ScanIdReplacer.Replace(fmt.Sprintf("%v:%v", i.Rule.ID, i.Match.FullFilename))
+
+		entityId := ""
+		if _, ok := secret["scan_id"]; ok {
+			scanId := secret["scan_id"].(string)
+			var err error
+			entityId, err = getEntityIdFromScanID(scanId, string(utils.NEO4J_SECRET_SCAN), tx)
+			if err != nil {
+				log.Error().Msgf("Error in getting entityId: %v", err)
+				return nil, err
+			}
+		}
+
+		nodeId := utils.ScanIdReplacer.Replace(fmt.Sprintf("%v:%v",
+			i.Rule.ID, i.Match.FullFilename))
+		if len(entityId) > 0 {
+			nodeId = nodeId + "_" + entityId
+		}
+		secret["node_id"] = nodeId
 		rule := utils.ToMap(i.Rule)
 		delete(rule, "id")
 		rule["rule_id"] = i.Rule.ID
@@ -78,5 +103,5 @@ func secretsToMaps(data []ingestersUtil.Secret) []map[string]map[string]interfac
 			"Secret": secret,
 		})
 	}
-	return secrets
+	return secrets, nil
 }

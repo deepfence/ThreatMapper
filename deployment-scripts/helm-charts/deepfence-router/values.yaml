@@ -9,7 +9,7 @@ fullnameOverride: ""
 managementConsolePort: "443"
 
 service:
-  name: deepfence-router
+  name: deepfence-console-router
   # Select the type of service to be used. 
   # When exposing the service in an on premisses Kubernetes cluster, select NodePort as type
   # Also, possible to use Ingress as type when ingress controller is installed

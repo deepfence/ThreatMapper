@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelBasicNode } from './ModelBasicNode';
+import {
+    ModelBasicNodeFromJSON,
+    ModelBasicNodeFromJSONTyped,
+    ModelBasicNodeToJSON,
+} from './ModelBasicNode';
+
 /**
  * 
  * @export
@@ -99,10 +106,10 @@ export interface ModelCloudCompliance {
     resource: string;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<ModelBasicNode>}
      * @memberof ModelCloudCompliance
      */
-    resources?: Array<string> | null;
+    resources?: Array<ModelBasicNode> | null;
     /**
      * 
      * @type {string}
@@ -192,7 +199,7 @@ export function ModelCloudComplianceFromJSONTyped(json: any, ignoreDiscriminator
         'reason': json['reason'],
         'region': json['region'],
         'resource': json['resource'],
-        'resources': !exists(json, 'resources') ? undefined : json['resources'],
+        'resources': !exists(json, 'resources') ? undefined : (json['resources'] === null ? null : (json['resources'] as Array<any>).map(ModelBasicNodeFromJSON)),
         'service': json['service'],
         'severity': json['severity'],
         'status': json['status'],
@@ -224,7 +231,7 @@ export function ModelCloudComplianceToJSON(value?: ModelCloudCompliance | null):
         'reason': value.reason,
         'region': value.region,
         'resource': value.resource,
-        'resources': value.resources,
+        'resources': value.resources === undefined ? undefined : (value.resources === null ? null : (value.resources as Array<any>).map(ModelBasicNodeToJSON)),
         'service': value.service,
         'severity': value.severity,
         'status': value.status,

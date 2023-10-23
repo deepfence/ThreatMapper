@@ -29,7 +29,7 @@ if [[ "$1" = 'haproxy' ]]; then
 	set -- haproxy -W -db "$@"
 fi
 
-until curl -s "http://deepfence-server:8080/deepfence/ping" > /dev/null; do
+until curl -s "http://${API_SERVICE_HOST}:${API_SERVICE_PORT}/deepfence/ping" > /dev/null; do
   echo "Waiting for containers to start up"
   sleep 15
 done

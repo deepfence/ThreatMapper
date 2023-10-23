@@ -1,0 +1,14 @@
+{{- if .Values.kafka.create }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "deepfence-console.fullname" . }}-kafka-broker-config
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    name: {{ include "deepfence-console.fullname" . }}-kafka-broker-config
+data:
+  {{- range $k, $v := .Values.kafka.config }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}
+{{- end }}

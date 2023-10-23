@@ -55,7 +55,7 @@ func (r *Reporter) Stop() {
 }
 
 // Name of this reporter, for metrics gathering
-func (Reporter) Name() string { return "K8s" }
+func (*Reporter) Name() string { return "K8s" }
 
 //func (r *Reporter) podEvent(e Event, pod Pod) {
 //	// filter out non-local pods, if we have been given a node name to report on

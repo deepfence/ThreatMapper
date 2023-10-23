@@ -281,12 +281,12 @@ func GetContainerNameFromID(containerID string) (string, error) {
 	return cName, nil
 }
 
-func IsThisHostUIMachine() bool {
-	value := os.Getenv("DF_PROG_NAME")
-	if len(value) == 0 || value != "discovery" {
-		return false
+func IsThisConsoleAgent() bool {
+	value := os.Getenv("DEEPFENCE_CONSOLE_AGENT")
+	if value == "true" {
+		return true
 	}
-	return true
+	return false
 }
 
 func FileExists(name string) bool {

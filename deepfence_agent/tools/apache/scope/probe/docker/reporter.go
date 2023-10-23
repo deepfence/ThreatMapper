@@ -33,7 +33,7 @@ func NewReporter(registry Registry, hostID string, probeID string, probe *probe.
 		registry:              registry,
 		hostID:                hostID,
 		probeID:               probeID,
-		isConsoleVm:           dfUtils.IsThisHostUIMachine(),
+		isConsoleVm:           dfUtils.IsThisConsoleAgent(),
 		probe:                 probe,
 		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
 		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
@@ -42,7 +42,7 @@ func NewReporter(registry Registry, hostID string, probeID string, probe *probe.
 }
 
 // Name of this reporter, for metrics gathering
-func (Reporter) Name() string { return "Docker" }
+func (*Reporter) Name() string { return "Docker" }
 
 // Report generates a Report containing Container and ContainerImage topologies
 func (r *Reporter) Report() (report.Report, error) {

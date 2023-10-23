@@ -25,11 +25,23 @@ Restart Docker daemon
 ## Reset Password
 
 If you have not configured [SES / SMTP](manage-users.md#configuring-google-smtp) and need to reset the password, please follow these steps
-- In docker
+#### Docker
 ```shell
 docker exec -it deepfence-server bash -c "/usr/local/bin/deepfence_server --reset-password"
 ```
-- In kubernetes
+
+#### Kubernetes
+
+:::note
+If the helm chart name was customized, please change the deployment name accordingly
 ```shell
-kubectl exec -it deploy/deepfence-server -c deepfence-server -- bash -c "/usr/local/bin/deepfence_server --reset-password"
+kubectl get deploy --namespace deepfence-console
+```
+:::
+
+```shell
+kubectl exec -it deploy/deepfence-console-server \
+  -c server \
+  --namespace deepfence-console \
+  -- bash -c "/usr/local/bin/deepfence_server --reset-password"
 ```

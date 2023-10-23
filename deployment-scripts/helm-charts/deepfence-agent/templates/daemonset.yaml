@@ -1,30 +1,30 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: deepfence-agent
-  namespace: {{ .Release.Namespace }}
+  name: {{ include "deepfence-agent.fullname" . }}
   labels:
     {{- include "deepfence-agent.labels" . | nindent 4 }}
+    name: {{ include "deepfence-agent.fullname" . }}
 spec:
   selector:
     matchLabels:
       {{- include "deepfence-agent.selectorLabels" . | nindent 6 }}
+      name: {{ include "deepfence-agent.fullname" . }}
   updateStrategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
         {{- include "deepfence-agent.selectorLabels" . | nindent 8 }}
+        name: {{ include "deepfence-agent.fullname" . }}
     spec:
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName | quote }}
       {{- end }}
-
       hostPID: true
       hostNetwork: true
-      serviceAccountName: {{ .Values.serviceAccount.name }}
+      serviceAccountName: {{ include "deepfence-agent.serviceAccountName" . }}
       dnsPolicy: ClusterFirstWithHostNet
-
       volumes:
         {{- if .Values.mountContainerRuntimeSocket.dockerSock }}
         - name: docker-sock
@@ -48,6 +48,16 @@ spec:
             type: Directory
           name: containers
         {{- end }}
+        {{- if .Values.mountContainerRuntimeSocket.podmanSock }}
+        - name: podman-sock
+          hostPath:
+            path: {{ .Values.mountContainerRuntimeSocket.podmanSockPath }}
+            type: Socket
+        - name: systemd
+          hostPath:
+            path: /run/systemd
+            type: Directory
+        {{- end }}
         - name: kernel-sys
           hostPath:
             path: /sys/kernel/debug
@@ -62,25 +72,19 @@ spec:
           emptyDir: {}
         - name: fenced-path-compliance-scan-logs
           emptyDir: {}
-
       containers:
         - name: deepfence-agent
-          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.agent.image.name }}:{{ default .Values.global.imageTag .Values.agent.image.tag }}"
+          imagePullPolicy: {{ .Values.agent.image.pullPolicy }}
           securityContext:
             privileged: true
           resources:
-            requests:
-              cpu: {{ .Values.resources.requests.cpu }}
-              memory: {{ .Values.resources.requests.memory }}
-            limits:
-              cpu: {{ .Values.resources.limits.cpu }}
-              memory: {{ .Values.resources.limits.memory }}
+            {{- toYaml .Values.agent.resources | nindent 12 }}
           env:
             - name: DEEPFENCE_KEY
               valueFrom:
                 secretKeyRef:
-                  name: "deepfence-key"
+                  name: {{ include "deepfence-agent.fullname" . }}-key
                   key: "deepfence-key"
             - name: USER_DEFINED_TAGS
               value: {{ .Values.userDefinedTags }}
@@ -131,6 +135,10 @@ spec:
             - name: CRIO_SOCKET_PATH
               value: "{{ .Values.mountContainerRuntimeSocket.crioSockPath }}"
             {{ end }}
+            {{- if .Values.mountContainerRuntimeSocket.podmanSock }}
+            - name: PODMAN_SOCKET_PATH
+              value: "{{ .Values.mountContainerRuntimeSocket.podmanSockPath }}"
+            {{ end }}
           volumeMounts:
             {{- if .Values.mountContainerRuntimeSocket.dockerSock }}
             - mountPath: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
@@ -146,6 +154,12 @@ spec:
             - mountPath: /var/lib/containers
               name: containers
             {{ end }}
+            {{- if .Values.mountContainerRuntimeSocket.podmanSock }}
+            - mountPath: {{ .Values.mountContainerRuntimeSocket.podmanSockPath }}
+              name: podman-sock
+            - mountPath: /run/systemd
+              name: systemd
+            {{ end }}
             - mountPath: /sys/kernel/debug
               name: kernel-sys
             - mountPath: /fenced/mnt/host
@@ -157,18 +171,15 @@ spec:
               name: fenced-path-compliance
             - mountPath: /var/log/fenced/compliance-scan-logs
               name: fenced-path-compliance-scan-logs
-      imagePullSecrets:
-        - name: {{ .Values.image.pullSecretName }}
-
-      {{- with .Values.nodeSelector }}
+      {{- with .Values.agent.nodeSelector }}
       nodeSelector:
       {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with .Values.agent.affinity }}
       affinity:
       {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.agent.tolerations }}
       tolerations:
       {{- toYaml . | nindent 8 }}
       {{- end }}

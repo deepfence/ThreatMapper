@@ -43,15 +43,6 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
-{{- define "deepfence-cluster-agent.labels" -}}
-helm.sh/chart: {{ include "deepfence-agent.chart" . }}
-{{ include "deepfence-cluster-agent.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
 {{/*
 Selector labels
 */}}
@@ -60,14 +51,31 @@ app.kubernetes.io/name: {{ include "deepfence-agent.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
-{{- define "deepfence-cluster-agent.selectorLabels" -}}
-app.kubernetes.io/name: deepfence-cluster-agent
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}
-
 {{/*
 Create secret to access docker registry
 */}}
 {{- define "imagePullSecret" }}
-{{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.registry.name (printf "%s:%s" .Values.registry.username .Values.registry.password | b64enc) | b64enc }}
+{{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.imagePullSecret.registry (printf "%s:%s" .Values.imagePullSecret.username .Values.imagePullSecret.password | b64enc) | b64enc }}
+{{- end }}
+
+{{/*
+Create the name of the imagePullSecret to use
+*/}}
+{{- define "deepfence-agent.imagePullSecretName" -}}
+{{- if .Values.imagePullSecret.create }}
+{{- default (include "deepfence-agent.fullname" .) .Values.imagePullSecret.name }}
+{{- else }}
+{{- .Values.imagePullSecret.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "deepfence-agent.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "deepfence-agent.fullname" .) .Values.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.name }}
+{{- end }}
 {{- end }}

@@ -2,6 +2,7 @@ package ingesters
 
 import (
 	"encoding/json"
+	"strconv"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -79,12 +80,12 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			return err
 		}
 
-		if ts != utils.NEO4J_COMPLIANCE_SCAN {
-			worker, err := directory.Worker(ctx)
-			if err != nil {
-				return err
-			}
+		worker, err := directory.Worker(ctx)
+		if err != nil {
+			return err
+		}
 
+		if ts != utils.NEO4J_COMPLIANCE_SCAN {
 			event := scans.UpdateScanEvent{
 				ScanType:  ts,
 				RecordMap: recordMap,
@@ -97,7 +98,17 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			if ts == utils.NEO4J_CLOUD_COMPLIANCE_SCAN {
 				task = utils.UpdateCloudResourceScanStatusTask
 			}
-			err = worker.Enqueue(task, b)
+			if err := worker.Enqueue(task, b); err != nil {
+				log.Error().Err(err).Msgf("failed to enqueue %s", task)
+			}
+		}
+
+		if (ts == utils.NEO4J_COMPLIANCE_SCAN || ts == utils.NEO4J_CLOUD_COMPLIANCE_SCAN) && anyCompleted(others) {
+			err := worker.Enqueue(utils.CachePostureProviders,
+				[]byte(strconv.FormatInt(utils.GetTimestamp(), 10)))
+			if err != nil {
+				log.Error().Err(err).Msgf("failed to enqueue %s", utils.CachePostureProviders)
+			}
 		}
 
 		return err
@@ -109,14 +120,28 @@ func statusesToMaps[T any](data []T) []map[string]interface{} {
 	statusBuff := map[string]map[string]interface{}{}
 	for _, i := range data {
 		new := ToMap(i)
-		scan_id := new["scan_id"].(string)
-		new_status := new["scan_status"].(string)
+
+		scan_id, ok := new["scan_id"].(string)
+		if !ok {
+			log.Error().Msgf("failed to convert scan_id to string, data: %v", new)
+			continue
+		}
+
+		new_status, ok := new["scan_status"].(string)
+		if !ok {
+			log.Error().Msgf("failed to convert scan_status to string, data: %v", new)
+			continue
+		}
 
 		old, found := statusBuff[scan_id]
 		if !found {
 			statusBuff[scan_id] = new
 		} else {
-			old_status := old["scan_status"].(string)
+			old_status, ok := old["scan_status"].(string)
+			if !ok {
+				log.Error().Msgf("failed to convert scan_status to string, data: %v", old)
+				continue
+			}
 			if new_status != old_status {
 				if new_status == utils.SCAN_STATUS_SUCCESS ||
 					new_status == utils.SCAN_STATUS_FAILED || new_status == utils.SCAN_STATUS_CANCELLED {
@@ -138,7 +163,13 @@ func splitInprogressStatus(data []map[string]interface{}) ([]map[string]interfac
 	others := []map[string]interface{}{}
 
 	for i := range data {
-		if data[i]["scan_status"].(string) == utils.SCAN_STATUS_INPROGRESS {
+		status, ok := data[i]["scan_status"].(string)
+		if !ok {
+			log.Error().Msgf("failed to convert scan_status to string, data: %v", data[i])
+			continue
+		}
+
+		if status == utils.SCAN_STATUS_INPROGRESS {
 			in_progress = append(in_progress, data[i])
 		} else {
 			others = append(others, data[i])
@@ -155,4 +186,58 @@ func ToMap[T any](data T) map[string]interface{} {
 	bb := map[string]interface{}{}
 	_ = json.Unmarshal(out, &bb)
 	return bb
+}
+
+func anyCompleted(data []map[string]interface{}) bool {
+
+	complete := false
+
+	for i := range data {
+		status, ok := data[i]["scan_status"].(string)
+		if !ok {
+			log.Error().Msgf("failed to convert scan_status to string, data: %v", data[i])
+			continue
+		}
+
+		if status == utils.SCAN_STATUS_SUCCESS {
+			complete = true
+			break
+		}
+	}
+
+	return complete
+}
+
+func getEntityIdFromScanID(scanId, scanType string,
+	tx neo4j.Transaction) (string, error) {
+
+	entityId := ""
+	query := `MATCH (s:` + scanType + `{node_id:'` + scanId + `'}) - [:SCANNED] -> (n)
+		WITH labels(n) as label, n
+		RETURN 
+		CASE 
+    		WHEN 'ContainerImage' IN label or 'Container' in label 
+			THEN [(ci:ContainerImage{node_id:n.docker_image_id}) - [:IS] -> (cis) | cis.node_id] 
+    		ELSE [n.node_id]
+		END`
+	res, err := tx.Run(query, map[string]interface{}{})
+	if err != nil {
+		return "", err
+	}
+
+	rec, err := res.Single()
+	if err != nil {
+		return "", err
+	}
+
+	values := rec.Values[0].([]interface{})
+	if len(values) > 0 {
+		entityId = values[0].(string)
+	}
+
+	if len(entityId) == 0 {
+		entityId = scanId
+	}
+
+	return entityId, nil
 }

@@ -800,12 +800,12 @@ func (h *Handler) stopScan(w http.ResponseWriter, r *http.Request, tag string) {
 
 	if req.ScanType == "CloudComplianceScan" {
 		tag = "StopCloudComplianceScan"
-		log.Info().Msgf("StopCloudComplianceScan request, type: %s, scanid: %v",
+		log.Info().Msgf("StopCloudComplianceScan request, type: %s, scan id: %v",
 			tag, req.ScanType, req.ScanIds)
 
 		err = reporters_scan.StopCloudComplianceScan(r.Context(), req.ScanIds)
 	} else {
-		log.Info().Msgf("%s request, type: %s, scanid: %v",
+		log.Info().Msgf("%s request, type: %s, scan id: %v",
 			tag, req.ScanType, req.ScanIds)
 		err = reporters_scan.StopScan(r.Context(), req.ScanType, req.ScanIds)
 	}
@@ -1722,7 +1722,7 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 	switch action {
 	case "get":
 		sbom := make([]model.SbomResponse, 0)
-		runtimeSbom := path.Join("sbom", "runtime-"+utils.ScanIdReplacer.Replace(req.ScanID)+".json")
+		runtimeSbom := path.Join("/sbom", "runtime-"+utils.ScanIdReplacer.Replace(req.ScanID)+".json")
 		buff, err := mc.DownloadFileContexts(r.Context(), runtimeSbom, minio.GetObjectOptions{})
 		if err != nil {
 			log.Error().Msg(err.Error())
@@ -1737,7 +1737,7 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 		httpext.JSON(w, http.StatusOK, sbom)
 	case "download":
 		resp := model.DownloadReportResponse{}
-		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json.gz")
+		sbomFile := path.Join("/sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json.gz")
 		cd := url.Values{
 			"response-content-disposition": []string{
 				"attachment; filename=" + strconv.Quote(utils.ScanIdReplacer.Replace(req.ScanID)+".json.gz")},

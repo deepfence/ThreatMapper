@@ -15,7 +15,6 @@ ENV CHECKPOINT_DISABLE=true \
     DF_TLS_ON="1" \
     MGMT_CONSOLE_PORT=443 \
     DF_KUBERNETES_ON="N" \
-    PACKAGE_SCAN_CONCURRENCY=1 \
     MGMT_CONSOLE_URL_SCHEMA=https \
     DEEPFENCE_KEY="" \
     MGMT_CONSOLE_URL_INTERNAL=127.0.0.1 \
@@ -75,15 +74,18 @@ RUN apt-get -qq -y --no-install-recommends install libjansson4 libssl1.1 libmagi
     && cd /tmp \
     && chmod +x /usr/local/bin/start_agent
 RUN apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
-RUN curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.11.1/vessel_v0.11.1_linux_amd64.tar.gz \
-    && tar -xzf vessel_v0.11.1_linux_amd64.tar.gz \
+RUN vessel_version="0.12.0" \
+    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v${vessel_version}/vessel_v${vessel_version}_linux_amd64.tar.gz \
+    && tar -xzf vessel_v${vessel_version}_linux_amd64.tar.gz \
     && mv vessel /usr/local/bin/ \
-    && rm -rf vessel_v0.11.1_linux_amd64.tar.gz
-RUN nerdctl_version=1.4.0 && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v${nerdctl_version}/nerdctl-${nerdctl_version}-linux-amd64.tar.gz \
+    && rm -rf vessel_v${vessel_version}_linux_amd64.tar.gz
+RUN nerdctl_version="1.6.0" \
+    && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v${nerdctl_version}/nerdctl-${nerdctl_version}-linux-amd64.tar.gz \
     && tar Cxzvvf /usr/local/bin nerdctl-${nerdctl_version}-linux-amd64.tar.gz \
     && rm nerdctl-${nerdctl_version}-linux-amd64.tar.gz
-RUN VERSION="v1.27.0" && curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-${VERSION}-linux-amd64.tar.gz --output crictl-${VERSION}-linux-amd64.tar.gz \
-    && tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin \
-    && rm -f crictl-$VERSION-linux-amd64.tar.gz
+RUN crictl_version="v1.28.0" \
+    && curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/${crictl_version}/crictl-${crictl_version}-linux-amd64.tar.gz --output crictl-${crictl_version}-linux-amd64.tar.gz \
+    && tar zxvf crictl-${crictl_version}-linux-amd64.tar.gz -C /usr/local/bin \
+    && rm -f crictl-${crictl_version}-linux-amd64.tar.gz
 
 ENTRYPOINT ["/usr/local/bin/start_agent"]

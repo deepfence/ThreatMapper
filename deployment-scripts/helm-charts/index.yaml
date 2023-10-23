@@ -3,6 +3,26 @@ entries:
   deepfence-agent:
   - apiVersion: v2
     appVersion: 2.0.0
+    created: "2023-10-16T16:39:28.960231+05:30"
+    description: Deepfence Agent - Helm chart for Kubernetes
+    digest: 5c36ad0e53895eebe5eb2aca50559615ecbea769a651f4d00836e18a235d971a
+    name: deepfence-agent
+    type: application
+    urls:
+    - deepfence-agent-2.0.2.tgz
+    version: 2.0.2
+  - apiVersion: v2
+    appVersion: 2.0.0
+    created: "2023-10-14T00:08:07.606342+05:30"
+    description: Deepfence Agent - Helm chart for Kubernetes
+    digest: ddf2bbd199a7864e173ff2870ae44e5f5bc2f77e9da1a41b333e60233d9f4b1b
+    name: deepfence-agent
+    type: application
+    urls:
+    - deepfence-agent-2.0.1.tgz
+    version: 2.0.1
+  - apiVersion: v2
+    appVersion: 2.0.0
     created: "2023-09-19T22:47:44.416897+05:30"
     description: Deepfence Agent - Helm chart for Kubernetes
     digest: 8c355ba3d3b40f3a30ff212299866e336410490d6776010d200fc14229ae6314
@@ -202,6 +222,16 @@ entries:
     - deepfence-agent-1.0.0.tgz
     version: 1.0.0
   deepfence-console:
+  - apiVersion: v2
+    appVersion: 2.0.0
+    created: "2023-10-16T16:39:28.9625+05:30"
+    description: A Helm chart for Kubernetes
+    digest: aa1d894cc6ec4abfe13ad3ee02eaa3b38b2ea8141c188eeb6b33426d28eda203
+    name: deepfence-console
+    type: application
+    urls:
+    - deepfence-console-2.0.1.tgz
+    version: 2.0.1
   - apiVersion: v2
     appVersion: 2.0.0
     created: "2023-09-14T18:43:38.794471+05:30"
@@ -405,6 +435,16 @@ entries:
   deepfence-router:
   - apiVersion: v2
     appVersion: 2.0.0
+    created: "2023-10-06T15:19:46.770901+05:30"
+    description: Deepfence Router - Helm chart for Kubernetes
+    digest: 9c391d17d579d88b5b96eb0c0c4cfe1e103a3bf9969d06a08aeb796d3f91f164
+    name: deepfence-router
+    type: application
+    urls:
+    - deepfence-router-2.0.1.tgz
+    version: 2.0.1
+  - apiVersion: v2
+    appVersion: 2.0.0
     created: "2023-09-14T18:43:38.795529+05:30"
     description: Deepfence Router - Helm chart for Kubernetes
     digest: d8f35e5ab433c5c90996ee7edf868cb9fbd7615dc0df0871b152cc2bdb1400be
@@ -523,4 +563,4 @@ entries:
     urls:
     - deepfence-router-1.0.0.tgz
     version: 1.0.0
-generated: "2023-09-29T19:30:09.961121+05:30"
+generated: "2023-10-16T16:39:28.95914+05:30"
