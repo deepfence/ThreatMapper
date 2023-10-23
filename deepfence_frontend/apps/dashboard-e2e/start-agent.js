@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import url from 'node:url';
 
-const consoleOrchastratorURL = process.env.CONSOLE_ORCHASTRATOR_URL;
 const consoleURL = process.env.CONSOLE_URL;
 const agentOrchastratorURL = process.env.AGENT_ORCHASTRATOR_URL;
 
@@ -39,7 +38,7 @@ async function startAgent() {
   await fetch(`${agentOrchastratorURL}/start-agent`, {
     method: 'POST',
     body: JSON.stringify({
-      tag: '2.0.0',
+      tag: process.env.AGENT_TAG,
       consoleIp,
       apiKey,
     }),

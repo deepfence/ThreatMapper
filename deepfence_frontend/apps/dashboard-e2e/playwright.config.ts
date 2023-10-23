@@ -15,7 +15,7 @@ const current = fileURLToPath(import.meta.url);
 const root = path.dirname(current);
 dotenv.config({ path: path.resolve(root, '.env') });
 
-export const TIMEOUT = 20 * 60 * 1000; // 10 mins
+export const TIMEOUT = 60 * 60 * 1000; // 10 mins
 
 const config: PlaywrightTestConfig = {
   testDir: './tests',

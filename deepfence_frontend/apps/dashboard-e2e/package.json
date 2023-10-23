@@ -15,9 +15,8 @@
     "test:setup:ui": "playwright test --ui --project=setup",
     "test:chromium:ui": "pnpm run start:agent && playwright test --ui --project=agent && playwright test --ui --project=chromium ; pnpm run stop:agent",
     "test:ui": "pnpm run start:console && pnpm run test:setup:ui && pnpm run test:chromium:ui ; pnpm run stop:console",
-    "test:ui-local": "playwright test --project=authenticate && playwright test --ui --project=chromium",
-    "test:debug": "pnpm run start:console && playwright test --debug ; pnpm run stop:console",
-    "test:delete": "playwright test --ui --project=authenticate && playwright test --ui --project=agent"
+    "test:ui-dev": "playwright test --project=authenticate && playwright test --ui --project=chromium",
+    "test:debug": "pnpm run start:console && playwright test --debug ; pnpm run stop:console"
   },
   "keywords": [],
   "author": "",

@@ -13,7 +13,7 @@ async function startServer() {
   const startServerResponse = await fetch(`${orchastratorURL}/start-console`, {
     method: 'POST',
     body: JSON.stringify({
-      tag: '2.0.0',
+      tag: process.env.AGENT_TAG,
     }),
     headers: {
       'content-type': 'application/json',

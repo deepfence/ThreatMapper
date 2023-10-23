@@ -8,7 +8,11 @@ test.describe('User Registration', () => {
     });
     const authPage = new AuthPage(page);
     await authPage.goto(`${baseURL}/auth/register`);
-    await expect(page.getByTestId('registerBtnId')).toBeDisabled();
+    await expect(
+      page.getByRole('button', {
+        name: 'Register',
+      }),
+    ).toBeDisabled();
     await page.close();
   });
   test('validation error when no input is provided', async ({ baseURL, browser }) => {

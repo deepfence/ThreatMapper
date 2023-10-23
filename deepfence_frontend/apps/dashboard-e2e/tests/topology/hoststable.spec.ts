@@ -12,7 +12,10 @@ const test = base.extend<{ topologyPage: TopologyPage }>({
 
 const consoleHostName = 'ui-automation-agent-setup';
 const agentHostName = 'manan-e2e-agent';
-const agentImageName = /deepfenceio\/deepfence_agent_ce.*/;
+
+const agentImageName = new RegExp(
+  'deepfenceio/deepfence_agent_ce:' + process.env.AGENT_TAG,
+);
 
 test.describe('Topology', () => {
   test.describe.skip('Hosts console', () => {

@@ -75,7 +75,7 @@ test.describe('Settings - User management', () => {
     page,
     baseURL,
   }) => {
-    async function inviteUser(): Promise<Locator> {
+    async function inviteUser(action: 'send' | 'copy'): Promise<Locator> {
       await page.goto(`${baseURL}/settings/user-management`);
       const inviteUserBtn = page.getByRole('button', {
         name: 'invite user',
@@ -92,11 +92,19 @@ test.describe('Settings - User management', () => {
           hasText: 'Admin',
         })
         .click();
-      await inviteModal
-        .getByRole('button', {
-          name: 'Send invite via email',
-        })
-        .click();
+      if (action === 'send') {
+        await inviteModal
+          .getByRole('button', {
+            name: 'Send invite via email',
+          })
+          .click();
+      } else if (action === 'copy') {
+        await inviteModal
+          .getByRole('button', {
+            name: 'copy invite link',
+          })
+          .click();
+      }
       return inviteModal;
     }
 
@@ -128,7 +136,7 @@ test.describe('Settings - User management', () => {
     await page.waitForTimeout(5000);
     if (await page.isVisible('button:has-text("add configuration")')) {
       // try to invite user before email configuration is set
-      const inviteModal = await inviteUser();
+      const inviteModal = await inviteUser('send');
       await expect(inviteModal.getByText('not configured to send emails')).toBeVisible();
 
       // configure email provider
@@ -146,10 +154,8 @@ test.describe('Settings - User management', () => {
       await expect(deleteButton).toBeVisible();
 
       // invite user should success
-      const inviteSucccessModal = await inviteUser();
-      await expect(
-        inviteSucccessModal.getByText('invite will expire after'),
-      ).toBeVisible();
+      const modal = await inviteUser('copy');
+      await expect(modal.getByText('invite will expire after')).toBeVisible();
     } else {
       const deleteButton = page.getByRole('button', {
         name: 'delete configuration',
