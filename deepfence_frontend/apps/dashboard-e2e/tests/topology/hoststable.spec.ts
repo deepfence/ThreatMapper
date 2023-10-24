@@ -217,6 +217,7 @@ test.describe('Topology', () => {
       expect(actionBtn).toBeEnabled();
 
       actionBtn.click();
+
       await page.getByText('Start Malware Scan').click();
       await page.getByRole('button', { name: 'Start Scan' }).click();
 
@@ -347,6 +348,88 @@ test.describe('Topology', () => {
               hasText: agentHostName,
             });
             const cell = rowSelection.getByRole(`cell`).nth(3);
+            const complete = cell.locator('div:text-is("Complete")');
+            const visible = await complete.isVisible();
+            if (!visible) {
+              const refreshBtn = page.locator(`button[title="Refresh now"]`);
+              if (refreshBtn) {
+                refreshBtn.click();
+              }
+            } else {
+              return true;
+            }
+          },
+          {
+            timeout: TIMEOUT,
+            intervals: [30_000],
+          },
+        )
+        .toBeTruthy();
+    });
+    test('should go to host table and scan a host for posture', async ({
+      page,
+      baseURL,
+      topologyPage,
+    }) => {
+      await page.waitForURL(`${baseURL}/topology/table/host`);
+      await expect(
+        page.getByRole('button', {
+          name: 'Actions',
+        }),
+      ).toBeDisabled();
+
+      const rowSelection = page.getByRole('row').filter({
+        hasText: agentHostName,
+      });
+      await expect(rowSelection).toBeVisible();
+      await rowSelection.getByRole('checkbox').click();
+
+      const actionBtn = page.getByRole('button', {
+        name: 'Actions',
+      });
+      expect(actionBtn).toBeEnabled();
+
+      await actionBtn.click();
+      await page.getByText('Start Posture Scan').click();
+
+      // select each tab
+      await page
+        .getByRole('tab', {
+          name: 'GDPR',
+        })
+        .click();
+      await page.getByText('Enable GDPR').click();
+      await page.waitForTimeout(5000);
+
+      await page
+        .getByRole('tab', {
+          name: 'PCI',
+        })
+        .click();
+      await page.getByText('Enable PCI').click();
+      await page.waitForTimeout(5000);
+
+      await page
+        .getByRole('tab', {
+          name: 'NIST',
+        })
+        .click();
+      await page.getByText('Enable NIST').click();
+      await page.waitForTimeout(5000);
+
+      await page.getByRole('button', { name: 'Start Scan' }).click();
+
+      await page.getByTestId('sliding-modal-close-button').click();
+      await page.mouse.click(0, 0);
+
+      await expect
+        .poll(
+          async () => {
+            await page.waitForTimeout(5000);
+            const rowSelection = page.getByRole('row').filter({
+              hasText: agentHostName,
+            });
+            const cell = rowSelection.getByRole(`cell`).nth(5);
             const complete = cell.locator('div:text-is("Complete")');
             const visible = await complete.isVisible();
             if (!visible) {
