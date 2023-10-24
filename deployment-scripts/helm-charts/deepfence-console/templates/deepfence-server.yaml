@@ -52,10 +52,12 @@ spec:
                 name: {{ .Values.redis.secretName }}
                 {{- end }}
             - secretRef:
-                {{- if .Values.fileserver.create }}
+                {{- if or .Values.fileserver.create .Values.aws_s3_buckets.create }}
                 name: "{{ include "deepfence-console.fullname" . }}-secrets-fileserver"
-                {{- else }}
-                name: {{ .Values.minio.secretName }}
+                {{- else if .Values.fileserver.secretName }}
+                name: {{ .Values.fileserver.secretName }}
+                {{- else if .Values.aws_s3_buckets.secretName }}
+                name: {{ .Values.aws_s3_buckets.secretName }}
                 {{- end }}
             - secretRef:
                 {{- if .Values.kafka.create }}
