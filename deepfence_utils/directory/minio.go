@@ -246,6 +246,11 @@ func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, ad
 		return "", PathDoesNotExistsError{Path: actualPath}
 	}
 
+	headers := http.Header{}
+	if !strings.Contains(mfm.client.EndpointURL().Hostname(), "s3.amazonaws.com") {
+		headers.Add("Host", consoleIp)
+	}
+
 	urlLink, err := mfm.client.PresignHeader(
 		ctx,
 		"GET",
@@ -253,7 +258,7 @@ func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, ad
 		key,
 		expires,
 		reqParams,
-		http.Header{},
+		headers,
 	)
 	if err != nil {
 		return "", err
@@ -268,6 +273,11 @@ func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath
 		return "", err
 	}
 
+	headers := http.Header{}
+	if !strings.Contains(mfm.client.EndpointURL().Hostname(), "s3.amazonaws.com") {
+		headers.Add("Host", consoleIp)
+	}
+
 	urlLink, err := mfm.client.PresignHeader(
 		ctx,
 		"PUT",
@@ -275,7 +285,7 @@ func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath
 		mfm.optionallyAddNamespacePrefix(filePath, addFilePathPrefix),
 		expires,
 		reqParams,
-		http.Header{},
+		headers,
 	)
 	if err != nil {
 		return "", err
