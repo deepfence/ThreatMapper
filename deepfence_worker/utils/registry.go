@@ -152,7 +152,7 @@ func gitlabCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) 
 		Password:      hub.Secret.GitlabToken,
 		NameSpace:     "",
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.GitlabRegistryURL),
-		SkipTLSVerify: false,
+		SkipTLSVerify: true,
 		UseHttp:       useHttp(hub.NonSecret.GitlabRegistryURL),
 	}, nil
 
@@ -295,7 +295,7 @@ func quayCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (r
 		Password:      hub.Secret.QuayAccessToken,
 		NameSpace:     hub.NonSecret.QuayNamespace,
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.QuayRegistryURL) + "/" + hub.NonSecret.QuayNamespace,
-		SkipTLSVerify: false,
+		SkipTLSVerify: true,
 		UseHttp:       useHttp(hub.NonSecret.QuayRegistryURL),
 	}, nil
 }
