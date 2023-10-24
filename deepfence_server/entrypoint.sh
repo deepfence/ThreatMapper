@@ -32,11 +32,15 @@ do
 done
 
 # wait for file server to start
-until nc -z ${DEEPFENCE_MINIO_HOST} ${DEEPFENCE_MINIO_PORT};
-do
-  echo "file server is unavailable - sleeping"
-  sleep 5;
-done
+if [ "$DEEPFENCE_MINIO_HOST" != "s3.amazonaws.com" ]; then
+  until nc -z ${DEEPFENCE_MINIO_HOST} ${DEEPFENCE_MINIO_PORT};
+  do
+    echo "file server is unavailable - sleeping"
+    sleep 5;
+  done
+else
+  echo "S3 mode skip file server health check"
+fi
 
 sed -i "s/https:\/\/petstore.swagger.io\/v2\/swagger.json/\/deepfence\/openapi.json/g" /usr/local/share/swagger-ui/swagger-initializer.js
 
