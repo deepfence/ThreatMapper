@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useCallback, useState } from 'react';
 import { ActionFunctionArgs, Outlet, useFetcher } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbLink, Button, Modal, TableSkeleton } from 'ui-components';

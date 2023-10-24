@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { isNil } from 'lodash-es';
 import { Suspense } from 'react';
 import { generatePath } from 'react-router-dom';

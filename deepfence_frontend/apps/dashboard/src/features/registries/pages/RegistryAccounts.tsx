@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { useIsFetching } from '@tanstack/react-query';
 import { isEmpty } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useState } from 'react';

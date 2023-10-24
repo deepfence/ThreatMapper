@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { keepPreviousData, useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -461,7 +461,7 @@ function useSearchContainersWithPagination() {
       clusterIds: searchParams.getAll('clusters'),
       containers: searchParams.getAll('containers'),
     }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 }
 

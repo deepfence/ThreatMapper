@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { keepPreviousData, useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useCallback, useState } from 'react';
 import { generatePath, useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -136,7 +136,7 @@ export const useScanResults = () => {
         | MalwareScanGroupedStatus
         | undefined,
     }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 };
 

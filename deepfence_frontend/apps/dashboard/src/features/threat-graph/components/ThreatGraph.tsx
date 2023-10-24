@@ -1,7 +1,7 @@
 import '@/features/threat-graph/utils/threat-graph-custom-node';
 
 import { IEdge, INode } from '@antv/g6';
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useMeasure } from 'react-use';

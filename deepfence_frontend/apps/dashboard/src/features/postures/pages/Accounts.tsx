@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { keepPreviousData, useSuspenseQuery } from '@tanstack/react-query';
 import { useIsFetching } from '@tanstack/react-query';
 import { capitalize } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
@@ -199,7 +199,7 @@ const usePostureAccounts = () => {
       nodeType,
       org_accounts: searchParams.getAll('org_accounts'),
     }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 };
 

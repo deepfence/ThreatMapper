@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { createColumnHelper, Table, TableSkeleton } from 'ui-components';

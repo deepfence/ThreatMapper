@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { keepPreviousData, useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -347,7 +347,7 @@ function useSearchClustersWithPagination() {
         .getAll('agentRunning')
         .map((value) => (value === 'On' ? true : false)),
     }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 }
 

@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { keepPreviousData, useSuspenseQuery } from '@tanstack/react-query';
 import { isEmpty } from 'lodash-es';
 import { Suspense, useCallback, useState } from 'react';
 import { generatePath, useParams, useSearchParams } from 'react-router-dom';
@@ -64,7 +64,7 @@ export const useListImages = () => {
         descending: true,
       },
     }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 };
 

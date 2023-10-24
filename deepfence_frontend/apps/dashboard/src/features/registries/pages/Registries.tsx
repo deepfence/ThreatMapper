@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense } from 'react';
 import { cn } from 'tailwind-preset';
 import { Breadcrumb, BreadcrumbLink, Card } from 'ui-components';

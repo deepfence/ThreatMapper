@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { keepPreviousData, useSuspenseQuery } from '@tanstack/react-query';
 import { useIsFetching } from '@tanstack/react-query';
 import { capitalize } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
@@ -310,7 +310,7 @@ const UniqueTable = () => {
       containerImageIds: searchParams.getAll('containerImages'),
       clusterIds: searchParams.getAll('clusters'),
     }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   return (

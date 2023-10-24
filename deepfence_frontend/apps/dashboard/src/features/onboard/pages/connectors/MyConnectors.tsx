@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { useIsFetching } from '@tanstack/react-query';
 import { Suspense, useMemo, useRef, useState } from 'react';
 import { useInterval } from 'react-use';

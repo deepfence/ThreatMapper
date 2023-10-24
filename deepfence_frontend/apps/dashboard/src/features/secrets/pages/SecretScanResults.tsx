@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { keepPreviousData, useSuspenseQuery } from '@tanstack/react-query';
 import { capitalize, keys } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -285,7 +285,7 @@ export const useScanResults = () => {
       severity: searchParams.getAll('severity'),
       visibility: searchParams.getAll('visibility'),
     }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 };
 const useTop5Secrets = () => {

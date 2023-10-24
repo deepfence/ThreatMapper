@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { truncate } from 'lodash-es';
 import { Suspense } from 'react';
 import { preset } from 'tailwind-preset';

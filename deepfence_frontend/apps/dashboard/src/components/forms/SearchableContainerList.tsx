@@ -1,4 +1,4 @@
-import { useSuspenseInfiniteQuery } from '@suspensive/react-query';
+import { keepPreviousData, useSuspenseInfiniteQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
@@ -51,7 +51,7 @@ const SearchableContainer = ({
           descending: false,
         },
       }),
-      keepPreviousData: true,
+      placeholderData: keepPreviousData,
       getNextPageParam: (lastPage, allPages) => {
         return allPages.length * PAGE_SIZE;
       },

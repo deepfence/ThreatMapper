@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense } from 'react';
 import { preset } from 'tailwind-preset';
 import { Card, CircleSpinner } from 'ui-components';

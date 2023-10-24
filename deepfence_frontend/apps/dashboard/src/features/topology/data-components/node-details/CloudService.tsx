@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { keepPreviousData, useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useMemo, useState } from 'react';
 import { generatePath } from 'react-router-dom';
 import {
@@ -31,7 +31,7 @@ function useSearchCloudResources(params: {
 }) {
   return useSuspenseQuery({
     ...queries.search.cloudResourcesWithPagination(params),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 }
 

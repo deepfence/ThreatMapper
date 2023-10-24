@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { keepPreviousData, useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -289,7 +289,7 @@ function useSearchPodsWithPagination() {
       pods: searchParams.getAll('pods'),
       kubernetesStatus: searchParams.get('kubernetesStatus') ?? undefined,
     }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 }
 

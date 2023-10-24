@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import React, { Suspense, useMemo } from 'react';
 import {
   CircleSpinner,

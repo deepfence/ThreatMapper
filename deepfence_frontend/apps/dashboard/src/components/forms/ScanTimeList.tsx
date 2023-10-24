@@ -1,4 +1,4 @@
-import { useSuspenseInfiniteQuery } from '@suspensive/react-query';
+import { keepPreviousData, useSuspenseInfiniteQuery } from '@tanstack/react-query';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Listbox, ListboxOption } from 'ui-components';
 
@@ -61,7 +61,7 @@ const ScanTime = ({
         nodeType: nodeType ?? '',
         scanType: scanType as ScanTypeEnum,
       }),
-      keepPreviousData: true,
+      placeholderData: keepPreviousData,
       getNextPageParam: (lastPage, allPages) => {
         return allPages.length * PAGE_SIZE;
       },

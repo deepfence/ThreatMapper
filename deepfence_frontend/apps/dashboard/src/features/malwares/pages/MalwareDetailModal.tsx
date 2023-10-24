@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {

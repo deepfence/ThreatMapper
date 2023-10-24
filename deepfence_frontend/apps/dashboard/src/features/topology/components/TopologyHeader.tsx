@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { ReactNode, Suspense } from 'react';
 import { generatePath, Link, useLocation, useMatches, useParams } from 'react-router-dom';
 import { cn } from 'tailwind-preset';

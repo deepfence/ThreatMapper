@@ -1,7 +1,7 @@
 import '@/features/threat-graph/utils/top-attack-paths-custom-node';
 
 import G6, { IEdge, INode, NodeConfig } from '@antv/g6';
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { truncate } from 'lodash-es';
 import { Suspense, useEffect, useState } from 'react';
 import { useMeasure } from 'react-use';

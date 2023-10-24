@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
+import { keepPreviousData, useSuspenseQuery } from '@tanstack/react-query';
 import { useIsFetching } from '@tanstack/react-query';
 import { capitalize } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
@@ -54,7 +54,7 @@ function useVulnerabilityScanList() {
       page: parseInt(searchParams.get('page') ?? '0', 10),
       order: getOrderFromSearchParams(searchParams),
     }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 }
 
