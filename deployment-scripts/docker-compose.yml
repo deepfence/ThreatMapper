@@ -14,6 +14,7 @@ x-service-variables: &common-creds
     DEEPFENCE_POSTGRES_USER_DB_SSLMODE: disable
     DEEPFENCE_KAFKA_BROKERS: deepfence-kafka-broker:9092
     # public bucket with read permisons on objects for hosting vulnerability database
+    # required permissions {"Version":"2012-10-17","Statement":[{"Sid":"public_objects","Effect":"Allow","Principal":"*","Action":"s3:GetObject","Resource":["arn:aws:s3:::<bucket-name>/*","arn:aws:s3:::<bucket-name>"]}]}
     DEEPFENCE_MINIO_DB_BUCKET: database
     # prvate bucket to host reports, sbom, etc.
     DEEPFENCE_MINIO_BUCKET: default
