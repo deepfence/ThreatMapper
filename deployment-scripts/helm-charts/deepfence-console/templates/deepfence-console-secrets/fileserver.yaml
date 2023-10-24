@@ -15,5 +15,6 @@ stringData:
   DEEPFENCE_MINIO_BUCKET: default
   DEEPFENCE_MINIO_PASSWORD: {{ .Values.fileserver.secrets.MINIO_ROOT_PASSWORD | quote }}
   DEEPFENCE_MINIO_USER: {{ .Values.fileserver.secrets.MINIO_ROOT_USER | quote }}
+  DEEPFENCE_MINIO_DB_BUCKET: database
 {{- end }}
 
