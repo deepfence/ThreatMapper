@@ -386,7 +386,7 @@ const SelectCloudAccount = ({
 }) => {
   const [cloud, setCloud] = useState('');
   const [selectedCloudAccounts, setSelectedCloudAccounts] = useState<string[]>([]);
-  console.log('====', fetcher?.data);
+
   return (
     <div className="flex flex-col gap-y-8">
       <Listbox
