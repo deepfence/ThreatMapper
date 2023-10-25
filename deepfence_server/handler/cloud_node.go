@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"net/http"
 	"net/http/httputil"
 
@@ -30,6 +31,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 
 	logrus.Debugf("Register Cloud Node Account Request: %+v", req)
 
+	var logRequestAction ctl.Action
 	monitoredAccountIds := req.MonitoredAccountIds
 	orgAccountId := req.OrgAccountId
 	scanList := map[string]model.CloudComplianceScanDetails{}
@@ -64,7 +66,9 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			h.complianceError(w, err.Error())
 			return
 		}
+		monitoredNodeIds := make([]string, 0, len(monitoredAccountIds))
 		for monitoredAccountId, monitoredNodeId := range monitoredAccountIds {
+			monitoredNodeIds = append(monitoredNodeIds, monitoredNodeId)
 			monitoredNode := map[string]interface{}{
 				"node_id":         monitoredNodeId,
 				"cloud_provider":  req.CloudProvider,
@@ -101,6 +105,10 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 				scanList[scan.ScanId] = scanDetail
 			}
 		}
+		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, append(monitoredNodeIds, nodeId))
+		if err != nil {
+			log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
+		}
 	} else {
 		logrus.Debugf("Single account monitoring for node: %s", nodeId)
 		node := map[string]interface{}{
@@ -115,12 +123,17 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			logrus.Infof("Error while upserting node: %+v", err)
 			h.complianceError(w, err.Error())
 		}
+		// get log request for cloudscanner, if any
+		logRequestAction, err := cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeId})
+		if err != nil {
+			log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
+		}
 		pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, nodeId)
 		if err != nil || len(pendingScansList.ScansInfo) == 0 {
 			logrus.Debugf("No pending scans found for node id: %s", nodeId)
 			httpext.JSON(w, http.StatusOK,
 				model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
-					CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh}})
+					CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh, LogAction: logRequestAction}})
 			return
 		}
 		for _, scan := range pendingScansList.ScansInfo {
@@ -145,12 +158,6 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		logrus.Debugf("Pending scans for node: %+v", scanList)
 	}
 	logrus.Debugf("Returning response: Scan List %+v cloudtrailTrails %+v Refresh %s", scanList, cloudtrailTrails, doRefresh)
-
-	// get log request for cloudscanner, if any
-	logRequestAction, err := cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeId})
-	if err != nil {
-		log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
-	}
 
 	httpext.JSON(w, http.StatusOK,
 		model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
