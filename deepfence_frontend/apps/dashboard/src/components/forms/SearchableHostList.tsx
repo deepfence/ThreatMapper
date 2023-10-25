@@ -1,4 +1,4 @@
-import { useSuspenseInfiniteQuery } from '@tanstack/react-query';
+import { keepPreviousData, useSuspenseInfiniteQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
