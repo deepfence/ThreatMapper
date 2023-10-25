@@ -12787,8 +12787,10 @@
         "required": ["scan_id", "result_ids", "scan_type"],
         "type": "object",
         "properties": {
+          "entity_id": { "type": "string" },
+          "image_name": { "type": "string" },
+          "image_tag": { "type": "string" },
           "mask_across_hosts_and_images": { "type": "boolean" },
-          "mask_in_this_host_or_image_tags": { "type": "boolean" },
           "result_ids": {
             "type": "array",
             "items": { "type": "string" },

@@ -21,16 +21,28 @@ import { exists, mapValues } from '../runtime';
 export interface ModelScanResultsMaskRequest {
     /**
      * 
-     * @type {boolean}
+     * @type {string}
      * @memberof ModelScanResultsMaskRequest
      */
-    mask_across_hosts_and_images?: boolean;
+    entity_id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelScanResultsMaskRequest
+     */
+    image_name?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelScanResultsMaskRequest
+     */
+    image_tag?: string;
     /**
      * 
      * @type {boolean}
      * @memberof ModelScanResultsMaskRequest
      */
-    mask_in_this_host_or_image_tags?: boolean;
+    mask_across_hosts_and_images?: boolean;
     /**
      * 
      * @type {Array<string>}
@@ -87,8 +99,10 @@ export function ModelScanResultsMaskRequestFromJSONTyped(json: any, ignoreDiscri
     }
     return {
         
+        'entity_id': !exists(json, 'entity_id') ? undefined : json['entity_id'],
+        'image_name': !exists(json, 'image_name') ? undefined : json['image_name'],
+        'image_tag': !exists(json, 'image_tag') ? undefined : json['image_tag'],
         'mask_across_hosts_and_images': !exists(json, 'mask_across_hosts_and_images') ? undefined : json['mask_across_hosts_and_images'],
-        'mask_in_this_host_or_image_tags': !exists(json, 'mask_in_this_host_or_image_tags') ? undefined : json['mask_in_this_host_or_image_tags'],
         'result_ids': json['result_ids'],
         'scan_id': json['scan_id'],
         'scan_type': json['scan_type'],
@@ -104,8 +118,10 @@ export function ModelScanResultsMaskRequestToJSON(value?: ModelScanResultsMaskRe
     }
     return {
         
+        'entity_id': value.entity_id,
+        'image_name': value.image_name,
+        'image_tag': value.image_tag,
         'mask_across_hosts_and_images': value.mask_across_hosts_and_images,
-        'mask_in_this_host_or_image_tags': value.mask_in_this_host_or_image_tags,
         'result_ids': value.result_ids,
         'scan_id': value.scan_id,
         'scan_type': value.scan_type,
