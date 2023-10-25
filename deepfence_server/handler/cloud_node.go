@@ -147,7 +147,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 	logrus.Debugf("Returning response: Scan List %+v cloudtrailTrails %+v Refresh %s", scanList, cloudtrailTrails, doRefresh)
 
 	// get log request for cloudscanner, if any
-	logRequestAction, err := cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx)
+	logRequestAction, err := cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeId})
 	if err != nil {
 		log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
 	}

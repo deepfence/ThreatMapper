@@ -183,7 +183,7 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 
 }
 
-func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context) (ctl.Action, error) {
+func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context, nodeIDs []string) (ctl.Action, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return ctl.Action{}, err
@@ -198,10 +198,10 @@ func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context) (ctl.Action, error
 	defer tx.Close()
 
 	res, err := tx.Run(`MATCH (n:CloudScannerDiagnosticLogs)
-		WHERE n.status = $status
+		WHERE n.status = $status and n.node_id in $node_ids
 		RETURN n.trigger_action
 		ORDER BY n.updated_at ASC LIMIT 1`,
-		map[string]interface{}{"status": utils.SCAN_STATUS_STARTING})
+		map[string]interface{}{"status": utils.SCAN_STATUS_STARTING, "node_ids": nodeIDs})
 
 	if err != nil {
 		return ctl.Action{}, err
@@ -218,20 +218,6 @@ func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context) (ctl.Action, error
 
 	var action ctl.Action
 	if err := json.Unmarshal([]byte(rec[0].Values[0].(string)), &action); err != nil {
-		return ctl.Action{}, err
-	}
-
-	if _, err = tx.Run(`MATCH (n:CloudScannerDiagnosticLogs)
-		WHERE n.status = $status
-		SET n.status = $inprogress, n.updated_at = TIMESTAMP()
-		RETURN n.node_id`,
-		map[string]interface{}{
-			"status":     utils.SCAN_STATUS_STARTING,
-			"inprogress": utils.SCAN_STATUS_INPROGRESS}); err != nil {
-		return ctl.Action{}, err
-	}
-
-	if err := tx.Commit(); err != nil {
 		return ctl.Action{}, err
 	}
 
