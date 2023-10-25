@@ -188,7 +188,6 @@ neo4j:
     DF_S3_BUCKET_NAME: ""
   config:
     NEO4J_dbms_memory_pagecache_size: 2600m
-    NEO4JLABS_PLUGINS: '["apoc"]'
   image:
     repository: deepfenceio/deepfence_neo4j_ce
     pullPolicy: Always

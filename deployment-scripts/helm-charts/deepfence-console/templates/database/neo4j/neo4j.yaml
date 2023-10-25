@@ -63,8 +63,6 @@ spec:
             - name: "neo4j"
               mountPath: /logs
             - name: "neo4j"
-              mountPath: /plugins
-            - name: "neo4j"
               mountPath: /backups
       {{- with .Values.neo4j.nodeSelector }}
       nodeSelector:
