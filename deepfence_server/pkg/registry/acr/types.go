@@ -11,11 +11,11 @@ type RegistryACR struct {
 
 type NonSecret struct {
 	AzureRegistryURL      string `json:"azure_registry_url" validate:"required,url"`
-	AzureRegistryUsername string `json:"azure_registry_username" validate:"required,min=1"`
+	AzureRegistryUsername string `json:"azure_registry_username" validate:"omitempty,min=1"`
 }
 
 type Secret struct {
-	AzureRegistryPassword string `json:"azure_registry_password" validate:"required,min=1"`
+	AzureRegistryPassword string `json:"azure_registry_password" validate:"omitempty,min=1"`
 }
 
 type ReposResp struct {

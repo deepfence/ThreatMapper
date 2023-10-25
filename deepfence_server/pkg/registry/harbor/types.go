@@ -11,12 +11,12 @@ type RegistryHarbor struct {
 
 type NonSecret struct {
 	HarborRegistryURL string `json:"harbor_registry_url" validate:"required,url"`
-	HarborUsername    string `json:"harbor_username" validate:"required,min=2"`
+	HarborUsername    string `json:"harbor_username" validate:"omitempty,min=2"`
 	HarborProjectName string `json:"harbor_project_name" validate:"required,min=2"`
 }
 
 type Secret struct {
-	HarborPassword string `json:"harbor_password" validate:"required,min=2"`
+	HarborPassword string `json:"harbor_password" validate:"omitempty,min=2"`
 }
 
 type Repository struct {

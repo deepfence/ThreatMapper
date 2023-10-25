@@ -13,7 +13,7 @@ type NonSecret struct {
 }
 
 type Secret struct {
-	QuayAccessToken string `json:"quay_access_token" validate:"required,min=2"`
+	QuayAccessToken string `json:"quay_access_token" validate:"omitempty,min=2"`
 }
 
 type ReposResp struct {
