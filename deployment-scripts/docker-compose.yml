@@ -84,7 +84,6 @@ services:
     environment:
       <<: *common-creds
       NEO4J_dbms_memory_pagecache_size: 2600m
-      NEO4JLABS_PLUGINS: '["apoc"]'
       DF_REMOTE_BACKUP_ROOT: ""
       AWS_ACCESS_KEY: ""
       AWS_SECRET_KEY: ""
@@ -94,7 +93,6 @@ services:
     volumes:
       - deepfence_neo4j_data:/data:rw
       - deepfence_neo4j_logs:/logs:rw
-      - deepfence_neo4j_plugins:/plugins:rw
       - deepfence_neo4j_backups:/backups:rw
     logging:
       driver: "json-file"
@@ -371,8 +369,6 @@ volumes:
   deepfence_neo4j_data:
     driver: local
   deepfence_neo4j_logs:
-    driver: local
-  deepfence_neo4j_plugins:
     driver: local
   deepfence_neo4j_backups:
     driver: local
