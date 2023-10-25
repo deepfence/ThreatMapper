@@ -645,6 +645,12 @@ func (d *OpenApiDocs) AddDiagnosisOperations() {
 	d.AddOperation("updateAgentDiagnosticLogsStatus", http.MethodPut, "/deepfence/diagnosis/agent-logs/status/{node_id}",
 		"Update Agent Diagnostic Logs Status", "Update agent diagnostic logs status",
 		http.StatusNoContent, []string{tagDiagnosis}, bearerToken, new(diagnosis.DiagnosticLogsStatus), nil)
+	d.AddOperation("generateCloudScannerDiagnosticLogs", http.MethodPost, "/deepfence/diagnosis/cloud-scanner-logs",
+		"Generate Cloud Scanner Diagnostic Logs", "Generate Cloud Scanner Diagnostic Logs",
+		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(diagnosis.GenerateCloudScannerDiagnosticLogsRequest), nil)
+	d.AddOperation("updateCloudScannerDiagnosticLogsStatus", http.MethodPut, "/deepfence/diagnosis/cloud-scanner-logs/status/{node_id}",
+		"Update Cloud Scanner Diagnostic Logs Status", "Update cloud scanner diagnostic logs status",
+		http.StatusNoContent, []string{tagDiagnosis}, bearerToken, new(diagnosis.DiagnosticLogsStatus), nil)
 	d.AddOperation("getDiagnosticLogs", http.MethodGet, "/deepfence/diagnosis/diagnostic-logs",
 		"Get Diagnostic Logs", "Get diagnostic logs download url links",
 		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new(diagnosis.GetDiagnosticLogsResponse))

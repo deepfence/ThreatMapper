@@ -469,7 +469,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 					r.Post("/", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.GenerateAgentDiagnosticLogs))
 					r.Put("/status/{node_id}", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.UpdateAgentDiagnosticLogsStatus))
 				})
-				r.Route("/cloudscanner-logs", func(r chi.Router) {
+				r.Route("/cloud-scanner-logs", func(r chi.Router) {
 					r.Post("/", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.GenerateCloudScannerDiagnosticLogs))
 					r.Put("/status/{node_id}", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.UpdateCloudScannerDiagnosticLogsStatus))
 				})
