@@ -199,7 +199,7 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 }
 
 func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathPrefix string) []DiagnosticLogsLink {
-	diagnosticLogs := getDiagnosticLogsHelper(ctx, mc, AgentDiagnosisFileServerPrefix)
+	diagnosticLogs := getDiagnosticLogsHelper(ctx, mc, CloudScannerDiagnosticLogsPrefix)
 	minioAgentLogsKeys := make(map[string]int)
 	for i, log := range diagnosticLogs {
 		minioAgentLogsKeys[log.FileName] = i
