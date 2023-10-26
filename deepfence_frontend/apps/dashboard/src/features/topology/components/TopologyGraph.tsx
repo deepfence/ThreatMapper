@@ -8,6 +8,7 @@ import { DFLink } from '@/components/DFLink';
 import { DetailsLineIcon } from '@/components/icons/common/DetailsLine';
 import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
 import { ResizeUpIcon } from '@/components/icons/common/ResizeUp';
+import { useNudge } from '@/features/common/components/NudgeContext';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import {
   TopologyLoaderData,
@@ -98,6 +99,19 @@ export const TopologyGraph = () => {
       }
     }
   }, [dataDiffWithAction]);
+
+  const params = useParams();
+  const type = params.viewType ?? 'cloud_provider';
+  useNudge(
+    {
+      id: 'topology-hosts',
+      remindBackAfterMS: 86400000,
+      type: 'info',
+      title: 'Do you want to monitor more hosts?',
+      text: 'Consider upgrading to enterprise edition for automatic probe deployment and runtime incident reporting.',
+    },
+    type === 'host' && (dataDiffWithAction.diff?.nodesDiff.add.length ?? 0) > 50,
+  );
 
   // change graph size if parent size changes
   useEffect(() => {

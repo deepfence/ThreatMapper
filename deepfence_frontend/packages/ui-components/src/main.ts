@@ -6,6 +6,8 @@ export {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/accordion/Accordion';
+export type { AlertProps } from '@/components/alert/Alert';
+export { Alert } from '@/components/alert/Alert';
 export { Avatar } from '@/components/avatar/Avatar';
 export { Badge } from '@/components/badge/Badge';
 export { Breadcrumb, BreadcrumbLink } from '@/components/breadcrumb/Breadcrumb';

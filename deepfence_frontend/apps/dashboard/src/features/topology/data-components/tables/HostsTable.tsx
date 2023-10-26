@@ -34,6 +34,7 @@ import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
+import { useNudge } from '@/features/common/components/NudgeContext';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { queries } from '@/queries';
 import {
@@ -566,6 +567,17 @@ const DataTable = ({
   }>();
   const [sort, setSort] = useSortingState();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  useNudge(
+    {
+      id: 'topology-hosts',
+      remindBackAfterMS: 86400000,
+      type: 'info',
+      title: 'Do you want to monitor more hosts?',
+      text: 'Consider upgrading to enterprise edition for automatic probe deployment and runtime incident reporting.',
+    },
+    data.totalRows > 50,
+  );
 
   useEffect(() => {
     setSelectedNodes((prev) => {
