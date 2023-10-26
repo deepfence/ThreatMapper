@@ -349,14 +349,31 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 			h.respondError(err, w)
 			return
 		}
+
+		htmlEmail, err := sendemail.RenderEmailTemplate(
+			sendemail.UserInviteTemplate,
+			sendemail.UserInvite{
+				Project:     utils.Project,
+				Username:    "",
+				RequestedBy: fmt.Sprintf("%s %s (%s)", user.FirstName, user.LastName, user.Email),
+				InviteLink:  inviteURL,
+			},
+		)
+		if err != nil {
+			log.Error().Err(err).Msg("error rendering UserInviteTemplate")
+			h.respondError(err, w)
+			return
+		}
+
 		err = emailSender.Send(
 			[]string{inviteUserRequest.Email},
-			"Deepfence - Invitation to join ThreatMapper",
-			fmt.Sprintf(sendemail.UserInviteEmail, user.FirstName, user.LastName, user.Email, inviteURL),
+			fmt.Sprintf(sendemail.UserInviteEmailSubject, utils.Project),
 			"",
+			htmlEmail,
 			nil,
 		)
 		if err != nil {
+			log.Error().Err(err).Msg("error sending user invite email")
 			h.respondError(err, w)
 			return
 		}
@@ -665,15 +682,32 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	resetPasswordURL := fmt.Sprintf("%s/auth/reset-password?code=%s&namespace=%s", consoleUrl, resetCode, user.CompanyNamespace)
+
+	htmlEmail, err := sendemail.RenderEmailTemplate(
+		sendemail.PasswordResetTemplate,
+		sendemail.PasswordReset{
+			Project:    utils.Project,
+			Username:   user.FirstName + " " + user.LastName,
+			InviteLink: resetPasswordURL,
+		},
+	)
+	if err != nil {
+		pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
+		log.Error().Err(err).Msg("error rendering PasswordResetTemplate")
+		h.respondError(err, w)
+		return
+	}
+
 	err = emailSender.Send(
 		[]string{resetPasswordRequest.Email},
-		"Deepfence - Password Reset",
-		fmt.Sprintf(sendemail.PasswordResetEmail, user.FirstName, user.LastName, resetPasswordURL, 10),
+		sendemail.PasswordResetEmailSubject,
 		"",
+		htmlEmail,
 		nil,
 	)
 	if err != nil {
 		pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
+		log.Error().Err(err).Msg("error sending password reset email")
 		h.respondError(err, w)
 		return
 	}

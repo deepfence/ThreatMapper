@@ -54,7 +54,7 @@ deepfence_ctl/vendor
 
 go.work*
 
-pkg/
+./pkg/
 deepfence_agent/tools/apache/scope/docker/deepfenceutil
 deepfence_agent/tools/apache/scope/docker/deepfence_exe
 deepfence_agent/tools/apache/scope/docker/deepfence
