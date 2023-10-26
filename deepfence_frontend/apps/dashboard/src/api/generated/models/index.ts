@@ -13,6 +13,7 @@ export * from './DiagnosisDiagnosticLogsLink';
 export * from './DiagnosisDiagnosticLogsStatus';
 export * from './DiagnosisDiagnosticNotification';
 export * from './DiagnosisGenerateAgentDiagnosticLogsRequest';
+export * from './DiagnosisGenerateCloudScannerDiagnosticLogsRequest';
 export * from './DiagnosisGenerateConsoleDiagnosticLogsRequest';
 export * from './DiagnosisGetDiagnosticLogsResponse';
 export * from './DiagnosisNodeIdentifier';

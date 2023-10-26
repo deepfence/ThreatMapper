@@ -38,6 +38,7 @@ models/DiagnosisDiagnosticLogsLink.ts
 models/DiagnosisDiagnosticLogsStatus.ts
 models/DiagnosisDiagnosticNotification.ts
 models/DiagnosisGenerateAgentDiagnosticLogsRequest.ts
+models/DiagnosisGenerateCloudScannerDiagnosticLogsRequest.ts
 models/DiagnosisGenerateConsoleDiagnosticLogsRequest.ts
 models/DiagnosisGetDiagnosticLogsResponse.ts
 models/DiagnosisNodeIdentifier.ts

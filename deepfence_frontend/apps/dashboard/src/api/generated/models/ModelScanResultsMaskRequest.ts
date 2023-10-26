@@ -33,6 +33,12 @@ export interface ModelScanResultsMaskRequest {
     mask_in_this_host_or_image_tags?: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelScanResultsMaskRequest
+     */
+    mask_in_this_image_tag?: boolean;
+    /**
+     * 
      * @type {Array<string>}
      * @memberof ModelScanResultsMaskRequest
      */
@@ -89,6 +95,7 @@ export function ModelScanResultsMaskRequestFromJSONTyped(json: any, ignoreDiscri
         
         'mask_across_hosts_and_images': !exists(json, 'mask_across_hosts_and_images') ? undefined : json['mask_across_hosts_and_images'],
         'mask_in_this_host_or_image_tags': !exists(json, 'mask_in_this_host_or_image_tags') ? undefined : json['mask_in_this_host_or_image_tags'],
+        'mask_in_this_image_tag': !exists(json, 'mask_in_this_image_tag') ? undefined : json['mask_in_this_image_tag'],
         'result_ids': json['result_ids'],
         'scan_id': json['scan_id'],
         'scan_type': json['scan_type'],
@@ -106,6 +113,7 @@ export function ModelScanResultsMaskRequestToJSON(value?: ModelScanResultsMaskRe
         
         'mask_across_hosts_and_images': value.mask_across_hosts_and_images,
         'mask_in_this_host_or_image_tags': value.mask_in_this_host_or_image_tags,
+        'mask_in_this_image_tag': value.mask_in_this_image_tag,
         'result_ids': value.result_ids,
         'scan_id': value.scan_id,
         'scan_type': value.scan_type,

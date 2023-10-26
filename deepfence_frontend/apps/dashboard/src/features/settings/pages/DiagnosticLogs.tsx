@@ -1,11 +1,13 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useMemo, useState } from 'react';
-import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
+import { ActionFunctionArgs, FetcherWithComponents, useFetcher } from 'react-router-dom';
 import { useInterval } from 'react-use';
 import { toast } from 'sonner';
 import {
   Button,
   createColumnHelper,
+  Listbox,
+  ListboxOption,
   SlidingModal,
   SlidingModalCloseButton,
   SlidingModalContent,
@@ -21,6 +23,7 @@ import {
   DiagnosisNodeIdentifierNodeTypeEnum,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudAccountsList';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
@@ -31,11 +34,13 @@ import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
+import { getArrayTypeValuesFromFormData } from '@/utils/formData';
 
 const DEFAULT_PAGE_SIZE = 10;
 const ACTION_TYPE = {
   CONSOLE_LOGS: 'consoleLogs',
   AGENT_LOGS: 'agentLogs',
+  CLOUD_SCANNER_LOGS: 'cloudScannerLogs',
 };
 
 type ActionData = {
@@ -68,13 +73,19 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     }
   }
 
+  // cloud filter
+  const accountIds = getArrayTypeValuesFromFormData(formData, 'cloudAccountsFilter');
+
   if (!actionType) {
     return {
       success: false,
       message: 'You have not triggered any action',
     };
   }
-  if (actionType === ACTION_TYPE.AGENT_LOGS) {
+  if (
+    actionType === ACTION_TYPE.AGENT_LOGS ||
+    actionType === ACTION_TYPE.CLOUD_SCANNER_LOGS
+  ) {
     const _hosts = nodeIds.map((node) => {
       return {
         node_id: node,
@@ -89,16 +100,36 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       };
     });
 
-    const logsApi = apiWrapper({
-      fn: getDiagnosisApiClient().generateAgentDiagnosticLogs,
+    const clouds = accountIds.map((account) => {
+      return {
+        node_id: account,
+        node_type: DiagnosisNodeIdentifierNodeTypeEnum.CloudAccount,
+      };
     });
 
-    const logsResponse = await logsApi({
-      diagnosisGenerateAgentDiagnosticLogsRequest: {
-        node_ids: [..._hosts, ..._clusters],
-        tail: 10000,
-      },
+    const logsApi = apiWrapper({
+      fn:
+        actionType === ACTION_TYPE.CLOUD_SCANNER_LOGS
+          ? getDiagnosisApiClient().generateCloudScannerDiagnosticLogs
+          : getDiagnosisApiClient().generateAgentDiagnosticLogs,
     });
+
+    const api =
+      actionType === ACTION_TYPE.CLOUD_SCANNER_LOGS
+        ? {
+            diagnosisGenerateCloudScannerDiagnosticLogsRequest: {
+              node_ids: [..._hosts, ..._clusters, ...clouds],
+              tail: 10000,
+            },
+          }
+        : {
+            diagnosisGenerateAgentDiagnosticLogsRequest: {
+              node_ids: [..._hosts, ..._clusters, ...clouds],
+              tail: 10000,
+            },
+          };
+
+    const logsResponse = await logsApi(api);
 
     if (!logsResponse.ok) {
       if (logsResponse.error.response.status === 400) {
@@ -239,6 +270,7 @@ const AgentDiagnosticLogsTable = () => {
   const { data } = useGetLogs();
   const { data: _logs, message } = data;
   const agentLogs = _logs?.agent_logs ?? [];
+  const cloudScannerLogs = _logs?.cloud_scanner_logs ?? [];
 
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const columns = useMemo(() => {
@@ -305,7 +337,7 @@ const AgentDiagnosticLogsTable = () => {
     <>
       <Table
         size="default"
-        data={agentLogs}
+        data={[...agentLogs, ...cloudScannerLogs]}
         columns={columns}
         enablePagination
         pageSize={pageSize}
@@ -347,13 +379,62 @@ const ConsoleDiagnosticLogsComponent = () => {
   );
 };
 
+const SelectCloudAccount = ({
+  fetcher,
+}: {
+  fetcher: FetcherWithComponents<ActionData>;
+}) => {
+  const [cloud, setCloud] = useState('');
+  const [selectedCloudAccounts, setSelectedCloudAccounts] = useState<string[]>([]);
+
+  return (
+    <div className="flex flex-col gap-y-8">
+      <Listbox
+        variant="underline"
+        value={cloud}
+        name="cloud"
+        onChange={(value) => {
+          setCloud(value);
+        }}
+        placeholder="Select cloud type"
+        label="Select Cloud Type"
+        getDisplayValue={(value) => {
+          return value?.toString() || '';
+        }}
+      >
+        {['AWS', 'GCP', 'Azure']?.map((provider) => {
+          return (
+            <ListboxOption value={provider} key={provider}>
+              {provider}
+            </ListboxOption>
+          );
+        })}
+      </Listbox>
+      <SearchableCloudAccountsList
+        active
+        label={`${cloud} Account`}
+        triggerVariant="select"
+        defaultSelectedAccounts={selectedCloudAccounts}
+        cloudProvider={cloud.toLowerCase() as 'aws' | 'gcp' | 'azure'}
+        onClearAll={() => {
+          setSelectedCloudAccounts([]);
+        }}
+        onChange={(value) => {
+          setSelectedCloudAccounts(value);
+        }}
+        helperText={fetcher?.data?.fieldErrors?.node_ids}
+        color={fetcher?.data?.fieldErrors?.node_ids ? 'error' : 'default'}
+      />
+    </div>
+  );
+};
 const AgentDiagnosticsLogsModal = ({
   showDialog,
   setShowDialog,
   nodeType,
 }: {
   showDialog: boolean;
-  nodeType: 'host' | 'cluster';
+  nodeType: 'host' | 'cluster' | 'cloud account';
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher<ActionData>();
@@ -382,7 +463,11 @@ const AgentDiagnosticsLogsModal = ({
                 name="actionType"
                 readOnly
                 hidden
-                value={ACTION_TYPE.AGENT_LOGS}
+                value={
+                  nodeType === 'cloud account'
+                    ? ACTION_TYPE.CLOUD_SCANNER_LOGS
+                    : ACTION_TYPE.AGENT_LOGS
+                }
               />
               {nodeType === 'host' && (
                 <SearchableHostList
@@ -416,6 +501,8 @@ const AgentDiagnosticsLogsModal = ({
                 />
               )}
 
+              {nodeType === 'cloud account' && <SelectCloudAccount fetcher={fetcher} />}
+
               {fetcher?.data?.message ? (
                 <p className="text-p7 dark:text-status-error pt-2">
                   {fetcher.data.message}
@@ -448,7 +535,7 @@ const AgentDiagnosticsLogsModal = ({
 
 const AgentDiagnosticLogsComponent = () => {
   const [showDialog, setShowDialog] = useState(false);
-  const [nodeType, setNodeType] = useState<'host' | 'cluster'>('host');
+  const [nodeType, setNodeType] = useState<'host' | 'cluster' | 'cloud account'>('host');
   const { data } = useGetLogs();
   const { message } = data;
   if (message) {
@@ -487,6 +574,18 @@ const AgentDiagnosticLogsComponent = () => {
           startIcon={<PlusIcon />}
         >
           Generate cluster agent diagnostic logs
+        </Button>
+        <Button
+          variant="flat"
+          onClick={() => {
+            setNodeType('cloud account');
+            setShowDialog(true);
+          }}
+          className="w-fit"
+          size="sm"
+          startIcon={<PlusIcon />}
+        >
+          Generate cloud scanner diagnostic logs
         </Button>
       </div>
     </>
