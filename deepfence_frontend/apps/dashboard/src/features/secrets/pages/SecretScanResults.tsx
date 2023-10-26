@@ -182,13 +182,31 @@ const action = async ({
     const apiFunctionApi = apiWrapper({
       fn: apiFunction,
     });
+    const maskInfo: {
+      image_name?: string;
+      image_tag?: string;
+      entity_id?: string;
+    } = {};
+    const hostId = formData.get('hostId');
+    const imageName = formData.get('imageName');
+    const imageTag = formData.get('imageTag');
+    if (hostId) {
+      maskInfo.entity_id = hostId.toString();
+    }
+    if (imageName) {
+      maskInfo.image_name = imageName.toString();
+    }
+    if (imageTag) {
+      maskInfo.image_tag = imageTag.toString();
+    }
+
     const result = await apiFunctionApi({
       modelScanResultsMaskRequest: {
-        mask_across_hosts_and_images: mask === 'maskHostAndImages',
-        mask_in_this_host_or_image_tags: mask !== 'maskHostAndImages',
+        mask_across_hosts_and_images: mask === 'true',
         result_ids: [...ids],
         scan_id: _scanId,
         scan_type: ScanTypeEnum.SecretScan,
+        ...maskInfo,
       },
     });
     if (!result.ok) {
@@ -809,13 +827,30 @@ const ActionDropdown = ({
   setShowDeleteDialog,
   onTableAction,
   nodeType,
+  maskInfo,
 }: {
   ids: string[];
   trigger: React.ReactNode;
   setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  onTableAction: (ids: string[], actionType: string, maskHostAndImages?: string) => void;
+  onTableAction: (
+    ids: string[],
+    actionType: string,
+    maskInfo?: {
+      hostId?: string;
+      imageName?: string;
+      imageTag?: string;
+      maskHostAndImages?: boolean;
+    },
+  ) => void;
   nodeType: string;
+  maskInfo:
+    | {
+        imageName?: string;
+        imageTag?: string;
+        hostId?: string;
+      }
+    | undefined;
 }) => {
   const isHost = nodeType === 'host';
   return (
@@ -824,24 +859,88 @@ const ActionDropdown = ({
       align={'start'}
       content={
         <>
-          <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.MASK, '')}>
-            {isHost
-              ? 'Mask secret for this host'
-              : 'Mask secret for this image(all tags)'}
-          </DropdownItem>
+          {isHost ? (
+            <DropdownItem
+              onClick={() =>
+                onTableAction(ids, ActionEnumType.MASK, {
+                  hostId: maskInfo?.hostId,
+                })
+              }
+            >
+              Mask secret for this host
+            </DropdownItem>
+          ) : (
+            <>
+              <DropdownItem
+                onClick={() =>
+                  onTableAction(ids, ActionEnumType.MASK, {
+                    imageName: maskInfo?.imageName,
+                    imageTag: maskInfo?.imageTag,
+                  })
+                }
+              >
+                Mask secret for this image tag
+              </DropdownItem>
+              <DropdownItem
+                onClick={() =>
+                  onTableAction(ids, ActionEnumType.MASK, {
+                    imageName: maskInfo?.imageName,
+                  })
+                }
+              >
+                Mask secret for this image(all tags)
+              </DropdownItem>
+            </>
+          )}
           <DropdownItem
-            onClick={() => onTableAction(ids, ActionEnumType.MASK, 'maskHostAndImages')}
+            onClick={() =>
+              onTableAction(ids, ActionEnumType.MASK, {
+                maskHostAndImages: true,
+              })
+            }
           >
             Mask secret across hosts and images
           </DropdownItem>
           <DropdownSeparator />
-          <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK, '')}>
-            {isHost
-              ? 'Un-mask secret for this host'
-              : 'Un-mask secret for this image(all tags)'}
-          </DropdownItem>
+          {isHost ? (
+            <DropdownItem
+              onClick={() =>
+                onTableAction(ids, ActionEnumType.UNMASK, {
+                  hostId: maskInfo?.hostId,
+                })
+              }
+            >
+              Un-mask secret for this host
+            </DropdownItem>
+          ) : (
+            <>
+              <DropdownItem
+                onClick={() =>
+                  onTableAction(ids, ActionEnumType.UNMASK, {
+                    imageName: maskInfo?.imageName,
+                    imageTag: maskInfo?.imageTag,
+                  })
+                }
+              >
+                Un-mask secret for this image tag
+              </DropdownItem>
+              <DropdownItem
+                onClick={() =>
+                  onTableAction(ids, ActionEnumType.UNMASK, {
+                    imageName: maskInfo?.imageName,
+                  })
+                }
+              >
+                Un-mask secret for this image(all tags)
+              </DropdownItem>
+            </>
+          )}
           <DropdownItem
-            onClick={() => onTableAction(ids, ActionEnumType.UNMASK, 'maskHostAndImages')}
+            onClick={() =>
+              onTableAction(ids, ActionEnumType.UNMASK, {
+                maskHostAndImages: true,
+              })
+            }
           >
             Un-mask secret across hosts and images
           </DropdownItem>
@@ -880,13 +979,21 @@ const BulkActions = ({
   ids: string[];
   setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  onTableAction: (ids: string[], actionType: string, maskHostAndImages?: string) => void;
+  onTableAction: (
+    ids: string[],
+    actionType: string,
+    maskInfo?: {
+      hostId?: string;
+      imageName?: string;
+      imageTag?: string;
+      maskHostAndImages?: boolean;
+    },
+  ) => void;
 }) => {
   const [openNotifyModal, setOpenNotifyModal] = useState<boolean>(false);
 
-  const {
-    data: { scanStatusResult },
-  } = useScanResults();
+  const { data } = useScanResults();
+  const { data: scanResultData, scanStatusResult } = data;
 
   const isHost = scanStatusResult?.node_type === 'host';
 
@@ -901,13 +1008,45 @@ const BulkActions = ({
         disabled={!ids.length}
         content={
           <>
-            <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.MASK, '')}>
-              {isHost
-                ? 'Mask secrets for this host'
-                : 'Mask secrets for this image(all tags)'}
-            </DropdownItem>
+            {isHost ? (
+              <DropdownItem
+                onClick={() =>
+                  onTableAction(ids, ActionEnumType.MASK, {
+                    hostId: scanResultData?.hostId,
+                  })
+                }
+              >
+                Mask secrets for this host
+              </DropdownItem>
+            ) : (
+              <>
+                <DropdownItem
+                  onClick={() =>
+                    onTableAction(ids, ActionEnumType.MASK, {
+                      imageName: scanResultData?.dockerImageName,
+                      imageTag: scanResultData?.imageTag,
+                    })
+                  }
+                >
+                  Mask secrets for this image tag
+                </DropdownItem>
+                <DropdownItem
+                  onClick={() =>
+                    onTableAction(ids, ActionEnumType.MASK, {
+                      imageName: scanResultData?.dockerImageName,
+                    })
+                  }
+                >
+                  Mask secrets for this image(all tags)
+                </DropdownItem>
+              </>
+            )}
             <DropdownItem
-              onClick={() => onTableAction(ids, ActionEnumType.MASK, 'maskHostAndImages')}
+              onClick={() =>
+                onTableAction(ids, ActionEnumType.MASK, {
+                  maskHostAndImages: true,
+                })
+              }
             >
               Mask secrets across hosts and images
             </DropdownItem>
@@ -931,14 +1070,44 @@ const BulkActions = ({
         disabled={!ids.length}
         content={
           <>
-            <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK, '')}>
-              {isHost
-                ? 'Un-mask secrets for this host'
-                : 'Un-mask secrets for this image(all tags)'}
-            </DropdownItem>
+            {isHost ? (
+              <DropdownItem
+                onClick={() =>
+                  onTableAction(ids, ActionEnumType.UNMASK, {
+                    hostId: scanResultData?.hostId,
+                  })
+                }
+              >
+                Un-mask secrets for this host
+              </DropdownItem>
+            ) : (
+              <>
+                <DropdownItem
+                  onClick={() =>
+                    onTableAction(ids, ActionEnumType.UNMASK, {
+                      imageName: scanResultData?.dockerImageName,
+                      imageTag: scanResultData?.imageTag,
+                    })
+                  }
+                >
+                  Un-mask secrets for this image tag
+                </DropdownItem>
+                <DropdownItem
+                  onClick={() =>
+                    onTableAction(ids, ActionEnumType.UNMASK, {
+                      imageName: scanResultData?.dockerImageName,
+                    })
+                  }
+                >
+                  Un-mask secrets for this image(all tags)
+                </DropdownItem>
+              </>
+            )}
             <DropdownItem
               onClick={() =>
-                onTableAction(ids, ActionEnumType.UNMASK, 'maskHostAndImages')
+                onTableAction(ids, ActionEnumType.UNMASK, {
+                  maskHostAndImages: true,
+                })
               }
             >
               Un-mask secrets across hosts and images
@@ -1168,7 +1337,16 @@ const SecretTable = ({
   rowSelectionState,
   setRowSelectionState,
 }: {
-  onTableAction: (ids: string[], actionType: string, maskHostAndImages?: string) => void;
+  onTableAction: (
+    ids: string[],
+    actionType: string,
+    maskInfo?: {
+      hostId?: string;
+      imageName?: string;
+      imageTag?: string;
+      maskHostAndImages?: boolean;
+    },
+  ) => void;
   setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   rowSelectionState: RowSelectionState;
@@ -1176,6 +1354,7 @@ const SecretTable = ({
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = useScanResults();
+  const { data: scanResultData, scanStatusResult } = data;
   const columnHelper = createColumnHelper<ModelSecret>();
   const [sort, setSort] = useSortingState();
 
@@ -1198,6 +1377,11 @@ const SecretTable = ({
             setShowDeleteDialog={setShowDeleteDialog}
             onTableAction={onTableAction}
             nodeType={nodeType}
+            maskInfo={{
+              imageName: scanResultData?.dockerImageName,
+              imageTag: scanResultData?.imageTag,
+              hostId: scanResultData?.hostId,
+            }}
             trigger={
               <button className="p-1">
                 <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
@@ -1290,8 +1474,6 @@ const SecretTable = ({
 
     return columns;
   }, [setSearchParams, nodeType]);
-
-  const { data: scanResultData, scanStatusResult } = data;
 
   return (
     <Table
@@ -1430,12 +1612,35 @@ const ScanResults = () => {
   const fetcher = useFetcher<ActionData>();
 
   const onTableAction = useCallback(
-    (ids: string[], actionType: string, maskHostAndImages?: string) => {
+    (
+      ids: string[],
+      actionType: string,
+      maskInfo?: {
+        hostId?: string;
+        imageName?: string;
+        imageTag?: string;
+        maskHostAndImages?: boolean;
+      },
+    ) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
 
       if (actionType === ActionEnumType.MASK || actionType === ActionEnumType.UNMASK) {
-        formData.append('maskHostAndImages', maskHostAndImages ?? '');
+        if (maskInfo?.maskHostAndImages) {
+          formData.append(
+            'maskHostAndImages',
+            maskInfo?.maskHostAndImages?.toString() ?? '',
+          );
+        }
+        if (maskInfo?.hostId) {
+          formData.append('hostId', maskInfo.hostId?.toString() ?? '');
+        }
+        if (maskInfo?.imageName) {
+          formData.append('imageName', maskInfo.imageName?.toString() ?? '');
+        }
+        if (maskInfo?.imageTag) {
+          formData.append('imageTag', maskInfo.imageTag?.toString() ?? '');
+        }
       }
 
       ids.forEach((item) => formData.append('nodeIds[]', item));
