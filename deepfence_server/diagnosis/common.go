@@ -20,6 +20,7 @@ const (
 	ConsoleDiagnosisFileServerPrefix = "diagnosis/console-diagnosis/"
 	AgentDiagnosisFileServerPrefix   = "diagnosis/agent-diagnosis/"
 	CloudScannerDiagnosticLogsPrefix = "diagnosis/cloud-scanner-diagnosis/"
+
 )
 
 type DiagnosticNotification struct {

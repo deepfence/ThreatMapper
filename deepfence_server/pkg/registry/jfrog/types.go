@@ -14,11 +14,11 @@ type RegistryJfrog struct {
 type NonSecret struct {
 	JfrogRegistryURL string `json:"jfrog_registry_url" validate:"required,url"`
 	JfrogRepository  string `json:"jfrog_repository" validate:"required,min=2"`
-	JfrogUsername    string `json:"jfrog_username" validate:"required,min=2"`
+	JfrogUsername    string `json:"jfrog_username" validate:"omitempty,min=2"`
 }
 
 type Secret struct {
-	JfrogPassword string `json:"jfrog_password" validate:"required,min=2"`
+	JfrogPassword string `json:"jfrog_password" validate:"omitempty,min=2"`
 }
 
 type ReposResp struct {
