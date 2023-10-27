@@ -128,12 +128,10 @@ type CloudComplianceScanListResp struct {
 }
 
 type ScanResultsMaskRequest struct {
-	ScanID                   string   `json:"scan_id" validate:"required" required:"true"`
-	ResultIDs                []string `json:"result_ids" validate:"required,gt=0,dive,min=1" required:"true"`
-	ScanType                 string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
-	MaskAcrossHostsAndImages bool     `json:"mask_across_hosts_and_images"`
-	MaskAcrossImageTags      bool     `json:"mask_in_this_host_or_image_tags"`
-	MaskForImageTag          bool     `json:"mask_in_this_image_tag"`
+	ScanID     string   `json:"scan_id" validate:"required" required:"true"`
+	ResultIDs  []string `json:"result_ids" validate:"required,gt=0,dive,min=1" required:"true"`
+	ScanType   string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
+	MaskAction string   `json:"mask_action" validate:"required,oneof=mask_global mask_all_image_tag mask_entity mask_image_tag" required:"true" enum:"mask_global,mask_all_image_tag,mask_entity,mask_image_tag"`
 }
 
 type ScanResultsActionRequest struct {
