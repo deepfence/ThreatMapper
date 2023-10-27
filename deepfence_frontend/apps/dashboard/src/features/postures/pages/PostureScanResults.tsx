@@ -37,6 +37,7 @@ import { getScanResultsApiClient } from '@/api/api';
 import {
   ModelCompliance,
   ModelScanInfo,
+  ModelScanResultsMaskRequestMaskActionEnum,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
@@ -189,6 +190,7 @@ const action = async ({
     });
     const result = await resultApi({
       modelScanResultsMaskRequest: {
+        mask_action: ModelScanResultsMaskRequestMaskActionEnum.Global,
         result_ids: [...ids],
         scan_id: _scanId,
         scan_type: ScanTypeEnum.ComplianceScan,
