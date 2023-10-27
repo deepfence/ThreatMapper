@@ -1133,6 +1133,106 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/diagnosis/cloud-scanner-logs": {
+      "post": {
+        "tags": ["Diagnosis"],
+        "summary": "Generate Cloud Scanner Diagnostic Logs",
+        "description": "Generate Cloud Scanner Diagnostic Logs",
+        "operationId": "generateCloudScannerDiagnosticLogs",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiagnosisGenerateCloudScannerDiagnosticLogsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": { "description": "Accepted" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/diagnosis/cloud-scanner-logs/status/{node_id}": {
+      "put": {
+        "tags": ["Diagnosis"],
+        "summary": "Update Cloud Scanner Diagnostic Logs Status",
+        "description": "Update cloud scanner diagnostic logs status",
+        "operationId": "updateCloudScannerDiagnosticLogsStatus",
+        "parameters": [
+          {
+            "name": "node_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DiagnosisDiagnosticLogsStatus" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/diagnosis/console-logs": {
       "post": {
         "tags": ["Diagnosis"],
@@ -10490,6 +10590,18 @@
           "tail": { "type": "integer" }
         }
       },
+      "DiagnosisGenerateCloudScannerDiagnosticLogsRequest": {
+        "required": ["node_ids", "tail"],
+        "type": "object",
+        "properties": {
+          "node_ids": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DiagnosisNodeIdentifier" },
+            "nullable": true
+          },
+          "tail": { "type": "integer" }
+        }
+      },
       "DiagnosisGenerateConsoleDiagnosticLogsRequest": {
         "required": ["tail"],
         "type": "object",
@@ -10499,6 +10611,11 @@
         "type": "object",
         "properties": {
           "agent_logs": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DiagnosisDiagnosticLogsLink" },
+            "nullable": true
+          },
+          "cloud_scanner_logs": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/DiagnosisDiagnosticLogsLink" },
             "nullable": true
@@ -10515,7 +10632,7 @@
         "type": "object",
         "properties": {
           "node_id": { "type": "string" },
-          "node_type": { "enum": ["host", "cluster"], "type": "string" }
+          "node_type": { "enum": ["host", "cluster", "cloud_account"], "type": "string" }
         }
       },
       "FormDataModelRegistryGCRAddReq": {
@@ -11394,6 +11511,7 @@
             "items": { "$ref": "#/components/schemas/ModelCloudNodeCloudtrailTrail" },
             "nullable": true
           },
+          "log_action": { "$ref": "#/components/schemas/ControlsAction" },
           "refresh": { "type": "string" },
           "scans": {
             "type": "object",

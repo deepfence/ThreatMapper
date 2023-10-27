@@ -20,6 +20,7 @@ import type {
   DiagnosisDiagnosticLogsStatus,
   DiagnosisDiagnosticNotification,
   DiagnosisGenerateAgentDiagnosticLogsRequest,
+  DiagnosisGenerateCloudScannerDiagnosticLogsRequest,
   DiagnosisGenerateConsoleDiagnosticLogsRequest,
   DiagnosisGetDiagnosticLogsResponse,
 } from '../models';
@@ -34,6 +35,8 @@ import {
     DiagnosisDiagnosticNotificationToJSON,
     DiagnosisGenerateAgentDiagnosticLogsRequestFromJSON,
     DiagnosisGenerateAgentDiagnosticLogsRequestToJSON,
+    DiagnosisGenerateCloudScannerDiagnosticLogsRequestFromJSON,
+    DiagnosisGenerateCloudScannerDiagnosticLogsRequestToJSON,
     DiagnosisGenerateConsoleDiagnosticLogsRequestFromJSON,
     DiagnosisGenerateConsoleDiagnosticLogsRequestToJSON,
     DiagnosisGetDiagnosticLogsResponseFromJSON,
@@ -44,11 +47,20 @@ export interface GenerateAgentDiagnosticLogsRequest {
     diagnosisGenerateAgentDiagnosticLogsRequest?: DiagnosisGenerateAgentDiagnosticLogsRequest;
 }
 
+export interface GenerateCloudScannerDiagnosticLogsRequest {
+    diagnosisGenerateCloudScannerDiagnosticLogsRequest?: DiagnosisGenerateCloudScannerDiagnosticLogsRequest;
+}
+
 export interface GenerateConsoleDiagnosticLogsRequest {
     diagnosisGenerateConsoleDiagnosticLogsRequest?: DiagnosisGenerateConsoleDiagnosticLogsRequest;
 }
 
 export interface UpdateAgentDiagnosticLogsStatusRequest {
+    nodeId: string;
+    diagnosisDiagnosticLogsStatus?: DiagnosisDiagnosticLogsStatus;
+}
+
+export interface UpdateCloudScannerDiagnosticLogsStatusRequest {
     nodeId: string;
     diagnosisDiagnosticLogsStatus?: DiagnosisDiagnosticLogsStatus;
 }
@@ -90,6 +102,22 @@ export interface DiagnosisApiInterface {
      * Generate Agent Diagnostic Logs
      */
     generateAgentDiagnosticLogs(requestParameters: GenerateAgentDiagnosticLogsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Generate Cloud Scanner Diagnostic Logs
+     * @summary Generate Cloud Scanner Diagnostic Logs
+     * @param {DiagnosisGenerateCloudScannerDiagnosticLogsRequest} [diagnosisGenerateCloudScannerDiagnosticLogsRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DiagnosisApiInterface
+     */
+    generateCloudScannerDiagnosticLogsRaw(requestParameters: GenerateCloudScannerDiagnosticLogsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Generate Cloud Scanner Diagnostic Logs
+     * Generate Cloud Scanner Diagnostic Logs
+     */
+    generateCloudScannerDiagnosticLogs(requestParameters: GenerateCloudScannerDiagnosticLogsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Generate Console Diagnostic Logs
@@ -138,6 +166,23 @@ export interface DiagnosisApiInterface {
      * Update Agent Diagnostic Logs Status
      */
     updateAgentDiagnosticLogsStatus(requestParameters: UpdateAgentDiagnosticLogsStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Update cloud scanner diagnostic logs status
+     * @summary Update Cloud Scanner Diagnostic Logs Status
+     * @param {string} nodeId 
+     * @param {DiagnosisDiagnosticLogsStatus} [diagnosisDiagnosticLogsStatus] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DiagnosisApiInterface
+     */
+    updateCloudScannerDiagnosticLogsStatusRaw(requestParameters: UpdateCloudScannerDiagnosticLogsStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Update cloud scanner diagnostic logs status
+     * Update Cloud Scanner Diagnostic Logs Status
+     */
+    updateCloudScannerDiagnosticLogsStatus(requestParameters: UpdateCloudScannerDiagnosticLogsStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -218,6 +263,44 @@ export class DiagnosisApi extends runtime.BaseAPI implements DiagnosisApiInterfa
      */
     async generateAgentDiagnosticLogs(requestParameters: GenerateAgentDiagnosticLogsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.generateAgentDiagnosticLogsRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Generate Cloud Scanner Diagnostic Logs
+     * Generate Cloud Scanner Diagnostic Logs
+     */
+    async generateCloudScannerDiagnosticLogsRaw(requestParameters: GenerateCloudScannerDiagnosticLogsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/diagnosis/cloud-scanner-logs`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DiagnosisGenerateCloudScannerDiagnosticLogsRequestToJSON(requestParameters.diagnosisGenerateCloudScannerDiagnosticLogsRequest),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Generate Cloud Scanner Diagnostic Logs
+     * Generate Cloud Scanner Diagnostic Logs
+     */
+    async generateCloudScannerDiagnosticLogs(requestParameters: GenerateCloudScannerDiagnosticLogsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.generateCloudScannerDiagnosticLogsRaw(requestParameters, initOverrides);
     }
 
     /**
@@ -334,6 +417,48 @@ export class DiagnosisApi extends runtime.BaseAPI implements DiagnosisApiInterfa
      */
     async updateAgentDiagnosticLogsStatus(requestParameters: UpdateAgentDiagnosticLogsStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.updateAgentDiagnosticLogsStatusRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Update cloud scanner diagnostic logs status
+     * Update Cloud Scanner Diagnostic Logs Status
+     */
+    async updateCloudScannerDiagnosticLogsStatusRaw(requestParameters: UpdateCloudScannerDiagnosticLogsStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.nodeId === null || requestParameters.nodeId === undefined) {
+            throw new runtime.RequiredError('nodeId','Required parameter requestParameters.nodeId was null or undefined when calling updateCloudScannerDiagnosticLogsStatus.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/diagnosis/cloud-scanner-logs/status/{node_id}`.replace(`{${"node_id"}}`, encodeURIComponent(String(requestParameters.nodeId))),
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DiagnosisDiagnosticLogsStatusToJSON(requestParameters.diagnosisDiagnosticLogsStatus),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Update cloud scanner diagnostic logs status
+     * Update Cloud Scanner Diagnostic Logs Status
+     */
+    async updateCloudScannerDiagnosticLogsStatus(requestParameters: UpdateCloudScannerDiagnosticLogsStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.updateCloudScannerDiagnosticLogsStatusRaw(requestParameters, initOverrides);
     }
 
 }

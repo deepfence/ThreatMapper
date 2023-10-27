@@ -4,6 +4,10 @@ const (
 	ErrorUserNotFound = "user not found"
 )
 
+const (
+	Project = "ThreatMapper"
+)
+
 // kafka topics
 const (
 	AUDIT_LOGS                   = "audit-logs"

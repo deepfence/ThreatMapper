@@ -39,7 +39,8 @@ export interface DiagnosisNodeIdentifier {
  */
 export const DiagnosisNodeIdentifierNodeTypeEnum = {
     Host: 'host',
-    Cluster: 'cluster'
+    Cluster: 'cluster',
+    CloudAccount: 'cloud_account'
 } as const;
 export type DiagnosisNodeIdentifierNodeTypeEnum = typeof DiagnosisNodeIdentifierNodeTypeEnum[keyof typeof DiagnosisNodeIdentifierNodeTypeEnum];
 
