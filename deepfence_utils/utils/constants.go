@@ -217,3 +217,10 @@ const (
 	ReportXLSX ReportType = "xlsx"
 	ReportPDF  ReportType = "pdf"
 )
+
+const (
+	MASK_GLOBAL        = "mask_global"
+	MASK_ALL_IMAGE_TAG = "mask_all_image_tag"
+	MASK_ENTITY        = "mask_entity"
+	MASK_IMAGE_TAG     = "mask_image_tag"
+)
