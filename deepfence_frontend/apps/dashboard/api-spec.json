@@ -12784,13 +12784,18 @@
         }
       },
       "ModelScanResultsMaskRequest": {
-        "required": ["scan_id", "result_ids", "scan_type"],
+        "required": ["scan_id", "result_ids", "scan_type", "mask_action"],
         "type": "object",
         "properties": {
-          "entity_id": { "type": "string" },
-          "image_name": { "type": "string" },
-          "image_tag": { "type": "string" },
-          "mask_across_hosts_and_images": { "type": "boolean" },
+          "mask_action": {
+            "enum": [
+              "mask_global",
+              "mask_all_image_tag",
+              "mask_entity",
+              "mask_image_tag"
+            ],
+            "type": "string"
+          },
           "result_ids": {
             "type": "array",
             "items": { "type": "string" },

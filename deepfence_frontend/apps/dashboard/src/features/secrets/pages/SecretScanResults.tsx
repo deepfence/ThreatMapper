@@ -37,6 +37,7 @@ import {
 import { getScanResultsApiClient } from '@/api/api';
 import {
   ModelScanInfo,
+  ModelScanResultsMaskRequestMaskActionEnum,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
@@ -118,7 +119,7 @@ const action = async ({
   const ids = (formData.getAll('nodeIds[]') ?? []) as string[];
   const actionType = formData.get('actionType');
   const _scanId = scanId;
-  const mask = formData.get('maskHostAndImages');
+  const maskAction = formData.get('maskAction');
   if (!_scanId) {
     throw new Error('Scan ID is required');
   }
@@ -182,31 +183,12 @@ const action = async ({
     const apiFunctionApi = apiWrapper({
       fn: apiFunction,
     });
-    const maskInfo: {
-      image_name?: string;
-      image_tag?: string;
-      entity_id?: string;
-    } = {};
-    const hostId = formData.get('hostId');
-    const imageName = formData.get('imageName');
-    const imageTag = formData.get('imageTag');
-    if (hostId) {
-      maskInfo.entity_id = hostId.toString();
-    }
-    if (imageName) {
-      maskInfo.image_name = imageName.toString();
-    }
-    if (imageTag) {
-      maskInfo.image_tag = imageTag.toString();
-    }
-
     const result = await apiFunctionApi({
       modelScanResultsMaskRequest: {
-        mask_across_hosts_and_images: mask === 'true',
+        mask_action: maskAction as ModelScanResultsMaskRequestMaskActionEnum,
         result_ids: [...ids],
         scan_id: _scanId,
         scan_type: ScanTypeEnum.SecretScan,
-        ...maskInfo,
       },
     });
     if (!result.ok) {
@@ -827,7 +809,7 @@ const ActionDropdown = ({
   setShowDeleteDialog,
   onTableAction,
   nodeType,
-  maskInfo,
+  isDockerImageNameEmpty,
 }: {
   ids: string[];
   trigger: React.ReactNode;
@@ -836,21 +818,10 @@ const ActionDropdown = ({
   onTableAction: (
     ids: string[],
     actionType: string,
-    maskInfo?: {
-      hostId?: string;
-      imageName?: string;
-      imageTag?: string;
-      maskHostAndImages?: boolean;
-    },
+    maskAction?: ModelScanResultsMaskRequestMaskActionEnum,
   ) => void;
   nodeType: string;
-  maskInfo:
-    | {
-        imageName?: string;
-        imageTag?: string;
-        hostId?: string;
-      }
-    | undefined;
+  isDockerImageNameEmpty: boolean;
 }) => {
   const isHost = nodeType === 'host';
   return (
@@ -862,41 +833,52 @@ const ActionDropdown = ({
           {isHost ? (
             <DropdownItem
               onClick={() =>
-                onTableAction(ids, ActionEnumType.MASK, {
-                  hostId: maskInfo?.hostId,
-                })
+                onTableAction(
+                  ids,
+                  ActionEnumType.MASK,
+                  ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                )
               }
             >
               Mask secret for this host
             </DropdownItem>
           ) : (
             <>
-              <DropdownItem
-                onClick={() =>
-                  onTableAction(ids, ActionEnumType.MASK, {
-                    imageName: maskInfo?.imageName,
-                    imageTag: maskInfo?.imageTag,
-                  })
-                }
-              >
-                Mask secret for this image tag
-              </DropdownItem>
-              <DropdownItem
-                onClick={() =>
-                  onTableAction(ids, ActionEnumType.MASK, {
-                    imageName: maskInfo?.imageName,
-                  })
-                }
-              >
-                Mask secret for this image(all tags)
-              </DropdownItem>
+              {!isDockerImageNameEmpty && (
+                <>
+                  <DropdownItem
+                    onClick={() =>
+                      onTableAction(
+                        ids,
+                        ActionEnumType.MASK,
+                        ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
+                      )
+                    }
+                  >
+                    Mask secret for this image tag
+                  </DropdownItem>
+                  <DropdownItem
+                    onClick={() =>
+                      onTableAction(
+                        ids,
+                        ActionEnumType.MASK,
+                        ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
+                      )
+                    }
+                  >
+                    Mask secret for this image(all tags)
+                  </DropdownItem>
+                </>
+              )}
             </>
           )}
           <DropdownItem
             onClick={() =>
-              onTableAction(ids, ActionEnumType.MASK, {
-                maskHostAndImages: true,
-              })
+              onTableAction(
+                ids,
+                ActionEnumType.MASK,
+                ModelScanResultsMaskRequestMaskActionEnum.Global,
+              )
             }
           >
             Mask secret across hosts and images
@@ -905,41 +887,52 @@ const ActionDropdown = ({
           {isHost ? (
             <DropdownItem
               onClick={() =>
-                onTableAction(ids, ActionEnumType.UNMASK, {
-                  hostId: maskInfo?.hostId,
-                })
+                onTableAction(
+                  ids,
+                  ActionEnumType.UNMASK,
+                  ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                )
               }
             >
               Un-mask secret for this host
             </DropdownItem>
           ) : (
             <>
-              <DropdownItem
-                onClick={() =>
-                  onTableAction(ids, ActionEnumType.UNMASK, {
-                    imageName: maskInfo?.imageName,
-                    imageTag: maskInfo?.imageTag,
-                  })
-                }
-              >
-                Un-mask secret for this image tag
-              </DropdownItem>
-              <DropdownItem
-                onClick={() =>
-                  onTableAction(ids, ActionEnumType.UNMASK, {
-                    imageName: maskInfo?.imageName,
-                  })
-                }
-              >
-                Un-mask secret for this image(all tags)
-              </DropdownItem>
+              {!isDockerImageNameEmpty && (
+                <>
+                  <DropdownItem
+                    onClick={() =>
+                      onTableAction(
+                        ids,
+                        ActionEnumType.UNMASK,
+                        ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
+                      )
+                    }
+                  >
+                    Un-mask secret for this image tag
+                  </DropdownItem>
+                  <DropdownItem
+                    onClick={() =>
+                      onTableAction(
+                        ids,
+                        ActionEnumType.UNMASK,
+                        ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
+                      )
+                    }
+                  >
+                    Un-mask secret for this image(all tags)
+                  </DropdownItem>
+                </>
+              )}
             </>
           )}
           <DropdownItem
             onClick={() =>
-              onTableAction(ids, ActionEnumType.UNMASK, {
-                maskHostAndImages: true,
-              })
+              onTableAction(
+                ids,
+                ActionEnumType.UNMASK,
+                ModelScanResultsMaskRequestMaskActionEnum.Global,
+              )
             }
           >
             Un-mask secret across hosts and images
@@ -982,20 +975,16 @@ const BulkActions = ({
   onTableAction: (
     ids: string[],
     actionType: string,
-    maskInfo?: {
-      hostId?: string;
-      imageName?: string;
-      imageTag?: string;
-      maskHostAndImages?: boolean;
-    },
+    maskAction?: ModelScanResultsMaskRequestMaskActionEnum,
   ) => void;
 }) => {
   const [openNotifyModal, setOpenNotifyModal] = useState<boolean>(false);
 
   const { data } = useScanResults();
-  const { data: scanResultData, scanStatusResult } = data;
+  const { scanStatusResult, data: scanResults } = data;
 
   const isHost = scanStatusResult?.node_type === 'host';
+  const isDockerImageNameEmpty = scanResults?.dockerImageName?.trim()?.length === 0;
 
   return (
     <>
@@ -1011,41 +1000,52 @@ const BulkActions = ({
             {isHost ? (
               <DropdownItem
                 onClick={() =>
-                  onTableAction(ids, ActionEnumType.MASK, {
-                    hostId: scanResultData?.hostId,
-                  })
+                  onTableAction(
+                    ids,
+                    ActionEnumType.MASK,
+                    ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                  )
                 }
               >
                 Mask secrets for this host
               </DropdownItem>
             ) : (
               <>
-                <DropdownItem
-                  onClick={() =>
-                    onTableAction(ids, ActionEnumType.MASK, {
-                      imageName: scanResultData?.dockerImageName,
-                      imageTag: scanResultData?.imageTag,
-                    })
-                  }
-                >
-                  Mask secrets for this image tag
-                </DropdownItem>
-                <DropdownItem
-                  onClick={() =>
-                    onTableAction(ids, ActionEnumType.MASK, {
-                      imageName: scanResultData?.dockerImageName,
-                    })
-                  }
-                >
-                  Mask secrets for this image(all tags)
-                </DropdownItem>
+                {!isDockerImageNameEmpty && (
+                  <>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.MASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
+                        )
+                      }
+                    >
+                      Mask secrets for this image tag
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.MASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
+                        )
+                      }
+                    >
+                      Mask secrets for this image(all tags)
+                    </DropdownItem>
+                  </>
+                )}
               </>
             )}
             <DropdownItem
               onClick={() =>
-                onTableAction(ids, ActionEnumType.MASK, {
-                  maskHostAndImages: true,
-                })
+                onTableAction(
+                  ids,
+                  ActionEnumType.MASK,
+                  ModelScanResultsMaskRequestMaskActionEnum.Global,
+                )
               }
             >
               Mask secrets across hosts and images
@@ -1073,41 +1073,52 @@ const BulkActions = ({
             {isHost ? (
               <DropdownItem
                 onClick={() =>
-                  onTableAction(ids, ActionEnumType.UNMASK, {
-                    hostId: scanResultData?.hostId,
-                  })
+                  onTableAction(
+                    ids,
+                    ActionEnumType.UNMASK,
+                    ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                  )
                 }
               >
                 Un-mask secrets for this host
               </DropdownItem>
             ) : (
               <>
-                <DropdownItem
-                  onClick={() =>
-                    onTableAction(ids, ActionEnumType.UNMASK, {
-                      imageName: scanResultData?.dockerImageName,
-                      imageTag: scanResultData?.imageTag,
-                    })
-                  }
-                >
-                  Un-mask secrets for this image tag
-                </DropdownItem>
-                <DropdownItem
-                  onClick={() =>
-                    onTableAction(ids, ActionEnumType.UNMASK, {
-                      imageName: scanResultData?.dockerImageName,
-                    })
-                  }
-                >
-                  Un-mask secrets for this image(all tags)
-                </DropdownItem>
+                {!isDockerImageNameEmpty && (
+                  <>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.UNMASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
+                        )
+                      }
+                    >
+                      Un-mask secrets for this image tag
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.UNMASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
+                        )
+                      }
+                    >
+                      Un-mask secrets for this image(all tags)
+                    </DropdownItem>
+                  </>
+                )}
               </>
             )}
             <DropdownItem
               onClick={() =>
-                onTableAction(ids, ActionEnumType.UNMASK, {
-                  maskHostAndImages: true,
-                })
+                onTableAction(
+                  ids,
+                  ActionEnumType.UNMASK,
+                  ModelScanResultsMaskRequestMaskActionEnum.Global,
+                )
               }
             >
               Un-mask secrets across hosts and images
@@ -1337,16 +1348,7 @@ const SecretTable = ({
   rowSelectionState,
   setRowSelectionState,
 }: {
-  onTableAction: (
-    ids: string[],
-    actionType: string,
-    maskInfo?: {
-      hostId?: string;
-      imageName?: string;
-      imageTag?: string;
-      maskHostAndImages?: boolean;
-    },
-  ) => void;
+  onTableAction: (ids: string[], actionType: string) => void;
   setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   rowSelectionState: RowSelectionState;
@@ -1358,7 +1360,8 @@ const SecretTable = ({
   const columnHelper = createColumnHelper<ModelSecret>();
   const [sort, setSort] = useSortingState();
 
-  const nodeType = data.scanStatusResult?.node_type ?? '';
+  const nodeType = scanStatusResult?.node_type ?? '';
+  const isDockerImageNameEmpty = scanResultData?.dockerImageName?.trim()?.length === 0;
 
   const columns = useMemo(() => {
     const columns = [
@@ -1377,11 +1380,7 @@ const SecretTable = ({
             setShowDeleteDialog={setShowDeleteDialog}
             onTableAction={onTableAction}
             nodeType={nodeType}
-            maskInfo={{
-              imageName: scanResultData?.dockerImageName,
-              imageTag: scanResultData?.imageTag,
-              hostId: scanResultData?.hostId,
-            }}
+            isDockerImageNameEmpty={isDockerImageNameEmpty}
             trigger={
               <button className="p-1">
                 <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
@@ -1615,32 +1614,13 @@ const ScanResults = () => {
     (
       ids: string[],
       actionType: string,
-      maskInfo?: {
-        hostId?: string;
-        imageName?: string;
-        imageTag?: string;
-        maskHostAndImages?: boolean;
-      },
+      maskAction?: ModelScanResultsMaskRequestMaskActionEnum,
     ) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
 
       if (actionType === ActionEnumType.MASK || actionType === ActionEnumType.UNMASK) {
-        if (maskInfo?.maskHostAndImages) {
-          formData.append(
-            'maskHostAndImages',
-            maskInfo?.maskHostAndImages?.toString() ?? '',
-          );
-        }
-        if (maskInfo?.hostId) {
-          formData.append('hostId', maskInfo.hostId?.toString() ?? '');
-        }
-        if (maskInfo?.imageName) {
-          formData.append('imageName', maskInfo.imageName?.toString() ?? '');
-        }
-        if (maskInfo?.imageTag) {
-          formData.append('imageTag', maskInfo.imageTag?.toString() ?? '');
-        }
+        formData.append('maskAction', maskAction?.toString() ?? '');
       }
 
       ids.forEach((item) => formData.append('nodeIds[]', item));

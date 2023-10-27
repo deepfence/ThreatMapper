@@ -24,25 +24,7 @@ export interface ModelScanResultsMaskRequest {
      * @type {string}
      * @memberof ModelScanResultsMaskRequest
      */
-    entity_id?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelScanResultsMaskRequest
-     */
-    image_name?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelScanResultsMaskRequest
-     */
-    image_tag?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof ModelScanResultsMaskRequest
-     */
-    mask_across_hosts_and_images?: boolean;
+    mask_action: ModelScanResultsMaskRequestMaskActionEnum;
     /**
      * 
      * @type {Array<string>}
@@ -67,6 +49,17 @@ export interface ModelScanResultsMaskRequest {
 /**
  * @export
  */
+export const ModelScanResultsMaskRequestMaskActionEnum = {
+    Global: 'mask_global',
+    AllImageTag: 'mask_all_image_tag',
+    Entity: 'mask_entity',
+    ImageTag: 'mask_image_tag'
+} as const;
+export type ModelScanResultsMaskRequestMaskActionEnum = typeof ModelScanResultsMaskRequestMaskActionEnum[keyof typeof ModelScanResultsMaskRequestMaskActionEnum];
+
+/**
+ * @export
+ */
 export const ModelScanResultsMaskRequestScanTypeEnum = {
     SecretScan: 'SecretScan',
     VulnerabilityScan: 'VulnerabilityScan',
@@ -82,6 +75,7 @@ export type ModelScanResultsMaskRequestScanTypeEnum = typeof ModelScanResultsMas
  */
 export function instanceOfModelScanResultsMaskRequest(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "mask_action" in value;
     isInstance = isInstance && "result_ids" in value;
     isInstance = isInstance && "scan_id" in value;
     isInstance = isInstance && "scan_type" in value;
@@ -99,10 +93,7 @@ export function ModelScanResultsMaskRequestFromJSONTyped(json: any, ignoreDiscri
     }
     return {
         
-        'entity_id': !exists(json, 'entity_id') ? undefined : json['entity_id'],
-        'image_name': !exists(json, 'image_name') ? undefined : json['image_name'],
-        'image_tag': !exists(json, 'image_tag') ? undefined : json['image_tag'],
-        'mask_across_hosts_and_images': !exists(json, 'mask_across_hosts_and_images') ? undefined : json['mask_across_hosts_and_images'],
+        'mask_action': json['mask_action'],
         'result_ids': json['result_ids'],
         'scan_id': json['scan_id'],
         'scan_type': json['scan_type'],
@@ -118,10 +109,7 @@ export function ModelScanResultsMaskRequestToJSON(value?: ModelScanResultsMaskRe
     }
     return {
         
-        'entity_id': value.entity_id,
-        'image_name': value.image_name,
-        'image_tag': value.image_tag,
-        'mask_across_hosts_and_images': value.mask_across_hosts_and_images,
+        'mask_action': value.mask_action,
         'result_ids': value.result_ids,
         'scan_id': value.scan_id,
         'scan_type': value.scan_type,

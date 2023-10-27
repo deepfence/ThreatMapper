@@ -381,8 +381,6 @@ export const secretQueries = createQueryKeys('secret', {
             },
             tableData: resultSecretScanResponse.value.secrets ?? [],
             dockerImageName: resultSecretScanResponse.value.docker_image_name,
-            imageTag: resultSecretScanResponse.value.docker_image_name,
-            hostId: resultSecretScanResponse.value.node_id,
             pagination: {
               currentPage: page,
               totalRows: page * pageSize + resultCounts.value.count,
