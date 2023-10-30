@@ -421,7 +421,7 @@ const DeleteConfirmationModal = ({
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
-            Delete account
+            Delete scan
           </div>
         ) : undefined
       }
@@ -454,7 +454,7 @@ const DeleteConfirmationModal = ({
     >
       {!fetcher.data?.success ? (
         <div className="grid">
-          <span>The selected account will be deleted.</span>
+          <span>The selected account scan will be deleted.</span>
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (

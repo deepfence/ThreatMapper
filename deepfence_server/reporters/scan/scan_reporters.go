@@ -697,7 +697,11 @@ func GetScanResultDiff[T any](ctx context.Context, scan_type utils.Neo4jScanType
 	MATCH (n:` + string(scan_type) + `{node_id: $base_scan_id}) -[r:DETECTED]-> (d)
 	WHERE NOT EXISTS {MATCH (m:` + string(scan_type) + `{node_id: $compare_to_scan_id}) -[:DETECTED]-> (d)}
 	OPTIONAL MATCH (d) -[:IS]-> (e)
-	WITH apoc.map.merge( e{.*}, d{.*, masked: coalesce(d.masked or r.masked, false), name: coalesce(e.name, d.name, '')}) AS d` +
+	OPTIONAL MATCH (s) -[:SCANNED]-> (f)
+	OPTIONAL MATCH (c:ContainerImage{node_id: f.docker_image_id}) -[:ALIAS] ->(t)(t) -[ma:MASKED]-> (d)
+	WITH apoc.map.merge( e{.*}, 
+	d{.*, masked: coalesce(d.masked or r.masked or e.masked or head(collect(ma.masked)), false), 
+	name: coalesce(e.name, d.name, '')}) AS d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
 		ffCondition + ` RETURN d ` +
 		fw.FetchWindow2CypherQuery()
@@ -780,9 +784,13 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 	}
 
 	query = `
-		MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
+		MATCH (s:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
 		OPTIONAL MATCH (d) -[:IS]-> (e)
-	WITH apoc.map.merge( e{.*}, d{.*, masked: coalesce(d.masked or r.masked, false), name: coalesce(e.name, d.name, '')}) as d` +
+		OPTIONAL MATCH (s) -[:SCANNED]-> (n)
+		OPTIONAL MATCH (c:ContainerImage{node_id: n.docker_image_id}) -[:ALIAS] ->(t) -[m:MASKED]-> (d)
+		WITH apoc.map.merge( e{.*}, 
+		d{.*, masked: coalesce(d.masked or r.masked or e.masked or head(collect(m.masked)), false), 
+		name: coalesce(e.name, d.name, '')}) as d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
 		ffCondition + ` RETURN d ` +
 		fw.FetchWindow2CypherQuery()

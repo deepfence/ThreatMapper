@@ -288,6 +288,8 @@ export function getDiagnosisApiClient() {
   return {
     generateAgentDiagnosticLogs:
       diagnosisApi.generateAgentDiagnosticLogs.bind(diagnosisApi),
+    generateCloudScannerDiagnosticLogs:
+      diagnosisApi.generateCloudScannerDiagnosticLogs.bind(diagnosisApi),
     generateConsoleDiagnosticLogs:
       diagnosisApi.generateConsoleDiagnosticLogs.bind(diagnosisApi),
     getDiagnosticLogs: diagnosisApi.getDiagnosticLogs.bind(diagnosisApi),

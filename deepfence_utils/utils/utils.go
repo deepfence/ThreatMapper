@@ -455,27 +455,25 @@ func RecursiveZip(pathsToZip []string, excludePathPrefixes []string, destination
 }
 
 func UploadFile(url string, fileName string) ([]byte, int, error) {
-	r, err := os.Open(fileName)
+
+	buff, err := os.ReadFile(fileName)
 	if err != nil {
 		return nil, 0, err
 	}
-	buf := make([]byte, 512)
-	_, err = r.Read(buf)
-	if err != nil {
-		return nil, 0, err
-	}
-	r.Close()
 
 	client, err := NewHTTPClient()
 	if err != nil {
 		return nil, 0, err
 	}
-	r, err = os.Open(fileName)
-	req, err := http.NewRequest("PUT", url, r)
+
+	req, err := http.NewRequest("PUT", url, bytes.NewReader(buff))
 	if err != nil {
 		return nil, 0, err
 	}
-	req.Header.Add("Content-Type", http.DetectContentType(buf))
+
+	req.Header.Add("Content-Type", http.DetectContentType(buff))
+	req.Header.Add("Content-Length", strconv.Itoa(len(buff)))
+
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, 0, err

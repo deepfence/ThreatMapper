@@ -125,6 +125,7 @@ redis:
 
 fileserver:
   # Specifies whether a file server instance should be created
+  # set this to false if using S3
   create: true
   # if create false provide name of the existing secret
   # secret format refer templates/console-secrets/minio.yaml
@@ -153,6 +154,24 @@ fileserver:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+
+# these values are used if fileserver.create=false
+aws_s3_buckets:
+  # Specifies whether secret should be created
+  create: false
+  # if create false provide name of the existing secret
+  # secret format refer templates/deepfence-console-secrets/s3.yaml
+  secretName: ""
+  # public bucket with read permisons on objects for hosting vulnerability database
+  # S3 bucket permissions {"Version":"2012-10-17","Statement":[{"Sid":"database","Effect":"Allow","Principal":"*","Action":"s3:GetObject","Resource":["arn:aws:s3:::<bucket-name>/database/*","arn:aws:s3:::<bucket-name>/database"]}]}
+  vulnerability_db_bucket: ""
+  # prvate bucket to host reports, sbom, etc.
+  data_bucket: ""
+  # aws credentials to access buckets
+  access_key_id : ""
+  secret_access_key: ""
+  # region where the buckets are hosted ex: ap-south-1
+  region: ""
 
 neo4j:
   # Specifies whether a neo4j database instance should be created
@@ -440,6 +459,9 @@ console_agents:
     crioSock: false
     # Change if socket path is not the following
     crioSockPath: "/var/run/crio/crio.sock"
+    podmanSock: false
+    # Change if socket path is not the following
+    podmanSockPath: "/run/podman/podman.sock"
   agent:
     image:
       repository: deepfenceio/deepfence_agent_ce

@@ -46,14 +46,19 @@ export const settingQueries = createQueryKeys('setting', {
         const userApi = apiWrapper({
           fn: getSettingsApiClient().getUserActivityLogs,
         });
-        const userResponse = await userApi({
+        const userPromise = userApi({
           modelGetAuditLogsRequest: logsReq,
         });
 
         const logsCountApi = apiWrapper({
           fn: getSettingsApiClient().getUserActivityLogCount,
         });
-        const logsCount = await logsCountApi();
+        const logsCountPromise = logsCountApi();
+
+        const [userResponse, logsCount] = await Promise.all([
+          userPromise,
+          logsCountPromise,
+        ]);
 
         if (!logsCount.ok) {
           throw logsCount.error;

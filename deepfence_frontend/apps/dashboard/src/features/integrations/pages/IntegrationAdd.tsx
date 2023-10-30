@@ -381,6 +381,12 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
         return {
           message: r.error.message ?? 'Error in deleting integrations',
         };
+      } else if (r.error.response.status === 403) {
+        const message = await get403Message(r.error);
+        return {
+          message,
+          success: false,
+        };
       }
     }
     invalidateAllQueries();

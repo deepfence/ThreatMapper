@@ -152,6 +152,7 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
     nodeType: 'pseudo',
     count: 0,
     issuesCount: 0,
+    cloudId: 'NA',
     icon: {
       show: true,
       img: getNodeImage('pseudo')!,
@@ -170,6 +171,7 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
     nodesMap.set(cloudRootId, {
       id: cloudRootId,
       label: cloudKey === 'others' ? 'private cloud' : cloudKey,
+      cloudId: cloudKey,
       issuesCount:
         cloudObj.cloud_compliance_count +
         cloudObj.compliance_count +
@@ -198,6 +200,7 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
               nodesMap.set(node, {
                 id: node,
                 label: node,
+                cloudId: cloudKey,
               });
             }
             if (index) {
@@ -232,6 +235,7 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
               ...{ cursor: 'pointer' },
             },
             nodes: singleGraph.nodes,
+            cloudId: cloudKey,
             style: {
               cursor: 'pointer',
             },

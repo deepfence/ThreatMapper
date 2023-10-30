@@ -30,6 +30,7 @@ import (
 	"github.com/weaveworks/scope/probe/endpoint"
 	"github.com/weaveworks/scope/probe/host"
 	"github.com/weaveworks/scope/probe/kubernetes"
+	"github.com/weaveworks/scope/probe/podman"
 	"github.com/weaveworks/scope/probe/process"
 	"github.com/weaveworks/scope/report"
 )
@@ -301,6 +302,16 @@ endNestedIf:
 				log.Error().Msgf("CRI: failed to start registry: %v", err)
 			} else {
 				p.AddReporter(cri.NewReporter(runtimeClient, hostName, imageClient))
+				log.Debug().Msg("Attached cri report")
+			}
+		}
+
+		if flags.podmanEnabled {
+			podmanClient, err := podman.NewPodmanClient(flags.podmanEndpoint)
+			if err != nil {
+				log.Error().Msgf("CRI: failed to start registry: %v", err)
+			} else {
+				p.AddReporter(podman.NewReporter(podmanClient, hostName))
 				log.Debug().Msg("Attached cri report")
 			}
 		}

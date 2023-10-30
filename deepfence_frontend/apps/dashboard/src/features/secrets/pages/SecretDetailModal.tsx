@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
   Button,
@@ -13,10 +13,13 @@ import {
 
 import { ModelSecret } from '@/api/generated/models/ModelSecret';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { DFLink } from '@/components/DFLink';
 import { CheckIcon } from '@/components/icons/common/Check';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
+import { PopOutIcon } from '@/components/icons/common/PopOut';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
+import { ResourceDetailModal } from '@/features/secrets/components/ResourceDetailModal';
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
 import { replacebyUppercaseCharacters } from '@/utils/label';
@@ -122,6 +125,8 @@ const DetailsComponent = () => {
     data: { data: secrets },
   } = useGetSecretDetails();
 
+  const [showResourceModal, setShowResourceModal] = useState(false);
+
   if (!secrets.length) {
     return (
       <div className="flex items-center p-4 justify-center">
@@ -132,7 +137,7 @@ const DetailsComponent = () => {
 
   const secret = secrets[0];
 
-  const omitFields: (keyof ModelSecret)[] = ['name', 'level', 'score'];
+  const omitFields: (keyof ModelSecret)[] = ['name', 'level', 'score', 'resources'];
 
   return (
     <div className="flex flex-wrap gap-y-[30px] gap-x-[14px]">
@@ -171,6 +176,65 @@ const DetailsComponent = () => {
             </div>
           );
         })}
+      {secret.resources?.length ? (
+        <div className="flex flex-col grow basis-[100%] max-w-full gap-1 group">
+          <div className="basis-[45%] flex relative">
+            <div className="text-p3 dark:text-text-text-and-icon">Resources</div>
+            <CopyField value={JSON.stringify(secret.resources)} />
+          </div>
+          <div className="text-p1">
+            {secret.resources.map((resource) => {
+              if (!resource.node_id || !resource.node_type) {
+                return null;
+              }
+              if (resource.node_type === 'container_image') {
+                return (
+                  <>
+                    {showResourceModal && (
+                      <ResourceDetailModal
+                        open={showResourceModal}
+                        onClose={setShowResourceModal}
+                        nodeId={resource.node_id}
+                      />
+                    )}
+
+                    <button
+                      type="button"
+                      key={resource.node_id}
+                      onClick={() => {
+                        setShowResourceModal(true);
+                      }}
+                      className="text-p1 w-fit dark:text-accent-accent"
+                    >
+                      {resource.name}
+                    </button>
+                  </>
+                );
+              }
+              let redirectPath = '';
+              if (resource.node_type === 'host') {
+                redirectPath = `host?hosts=${resource.node_id}`;
+              } else if (resource.node_type === 'container') {
+                redirectPath = `container?containers=${resource.node_id}`;
+              }
+              return (
+                <DFLink
+                  key={resource.node_id}
+                  to={`/topology/table/${redirectPath}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-p2 flex items-center gap-3"
+                >
+                  <span className="h-4 w-4 shrink-0">
+                    <PopOutIcon />
+                  </span>
+                  <span className="truncate">{resource.name}</span>
+                </DFLink>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

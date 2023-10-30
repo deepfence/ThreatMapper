@@ -9,6 +9,7 @@ export type ThreatGraphNodeModelConfig = NodeConfig & {
   label: string;
   nodeType?: string;
   issuesCount?: number;
+  cloudId: 'NA' | string;
   nodes?: { [key: string]: GraphNodeInfo } | null;
 };
 

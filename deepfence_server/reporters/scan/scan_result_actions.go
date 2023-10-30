@@ -46,7 +46,6 @@ func UpdateScanResultNodeFields(ctx context.Context, scanType utils.Neo4jScanTyp
 }
 
 func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskRequest, value bool) error {
-	// (m:VulnerabilityScan) - [r:DETECTED] -> (n:Cve)
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -63,17 +62,50 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	}
 	defer tx.Close()
 
-	if req.MaskAcrossHostsAndImages {
+	switch req.MaskAction {
+	case utils.MASK_GLOBAL:
+		nodeTag := utils.ScanTypeDetectedNode[utils.Neo4jScanType(req.ScanType)]
 		_, err = tx.Run(`
-		MATCH (n:`+reporters.ScanResultMaskNode[utils.Neo4jScanType(req.ScanType)]+`)
-		WHERE n.node_id IN $node_ids
-		SET n.masked = $value`, map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
-	} else {
+        MATCH (o:`+nodeTag+`) -[:IS]-> (r)
+        WHERE o.node_id IN $node_ids
+        MATCH (n:`+nodeTag+`) -[:IS]-> (r)
+        MATCH (s) - [d:DETECTED] -> (n)
+        SET r.masked = $value, n.masked = $value, d.masked = $value
+        WITH s, n
+        MATCH (s) -[:SCANNED] ->(e)
+        MATCH (c:ContainerImage{node_id: e.docker_image_id}) -[:ALIAS] ->(t)
+        MERGE (t) -[m:MASKED]->(n)
+        SET m.masked = $value`,
+			map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
+
+	case utils.MASK_ALL_IMAGE_TAG, utils.MASK_ENTITY:
 		_, err = tx.Run(`
-		MATCH (m:`+string(req.ScanType)+`) -[:DETECTED] -> (n)
-		WHERE n.node_id IN $node_ids
-		SET n.masked = $value`, map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
+        MATCH (s:`+string(req.ScanType)+`) - [d:DETECTED] -> (n)
+        WHERE n.node_id IN $node_ids
+        SET n.masked = $value, d.masked = $value`,
+			map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
+
+	case utils.MASK_IMAGE_TAG:
+		_, err = tx.Run(`
+        MATCH (s:`+string(req.ScanType)+`) -[d:DETECTED] -> (n)
+        WHERE n.node_id IN $node_ids AND s.node_id=$scan_id
+        MATCH (s) -[:SCANNED] ->(e)
+        MATCH (c:ContainerImage{node_id: e.docker_image_id}) -[:ALIAS] ->(t)
+        MERGE (t) -[m:MASKED]->(n)
+        SET m.masked = $value, d.masked = $value`,
+			map[string]interface{}{"node_ids": req.ResultIDs, "value": value,
+				"scan_id": req.ScanID})
+
+	default:
+		_, err = tx.Run(`
+        MATCH (m:`+string(req.ScanType)+`) -[d:DETECTED] -> (n)
+        WHERE n.node_id IN $node_ids AND m.node_id=$scan_id
+        SET d.masked = $value`,
+			map[string]interface{}{"node_ids": req.ResultIDs, "value": value,
+				"scan_id": req.ScanID})
+
 	}
+
 	if err != nil {
 		return err
 	}
@@ -159,13 +191,13 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 			log.Error().Err(err).Msg("failed to get minio client")
 			return err
 		}
-		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(scanId)+".json.gz")
+		sbomFile := path.Join("/sbom", utils.ScanIdReplacer.Replace(scanId)+".json.gz")
 		err = mc.DeleteFile(ctx, sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to delete sbom for scan id %s", scanId)
 			return err
 		}
-		runtimeSbomFile := path.Join("sbom", "runtime-"+utils.ScanIdReplacer.Replace(scanId)+".json")
+		runtimeSbomFile := path.Join("/sbom", "runtime-"+utils.ScanIdReplacer.Replace(scanId)+".json")
 		err = mc.DeleteFile(ctx, runtimeSbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to delete runtime sbom for scan id %s", scanId)

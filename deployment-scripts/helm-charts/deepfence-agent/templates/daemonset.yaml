@@ -48,6 +48,16 @@ spec:
             type: Directory
           name: containers
         {{- end }}
+        {{- if .Values.mountContainerRuntimeSocket.podmanSock }}
+        - name: podman-sock
+          hostPath:
+            path: {{ .Values.mountContainerRuntimeSocket.podmanSockPath }}
+            type: Socket
+        - name: systemd
+          hostPath:
+            path: /run/systemd
+            type: Directory
+        {{- end }}
         - name: kernel-sys
           hostPath:
             path: /sys/kernel/debug
@@ -125,6 +135,10 @@ spec:
             - name: CRIO_SOCKET_PATH
               value: "{{ .Values.mountContainerRuntimeSocket.crioSockPath }}"
             {{ end }}
+            {{- if .Values.mountContainerRuntimeSocket.podmanSock }}
+            - name: PODMAN_SOCKET_PATH
+              value: "{{ .Values.mountContainerRuntimeSocket.podmanSockPath }}"
+            {{ end }}
           volumeMounts:
             {{- if .Values.mountContainerRuntimeSocket.dockerSock }}
             - mountPath: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
@@ -139,6 +153,12 @@ spec:
               name: crio-sock
             - mountPath: /var/lib/containers
               name: containers
+            {{ end }}
+            {{- if .Values.mountContainerRuntimeSocket.podmanSock }}
+            - mountPath: {{ .Values.mountContainerRuntimeSocket.podmanSockPath }}
+              name: podman-sock
+            - mountPath: /run/systemd
+              name: systemd
             {{ end }}
             - mountPath: /sys/kernel/debug
               name: kernel-sys

@@ -28,6 +28,12 @@ import {
 export interface ModelSecretScanResult {
     /**
      * 
+     * @type {string}
+     * @memberof ModelSecretScanResult
+     */
+    cloud_account_id: string;
+    /**
+     * 
      * @type {number}
      * @memberof ModelSecretScanResult
      */
@@ -105,6 +111,7 @@ export interface ModelSecretScanResult {
  */
 export function instanceOfModelSecretScanResult(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "cloud_account_id" in value;
     isInstance = isInstance && "created_at" in value;
     isInstance = isInstance && "docker_container_name" in value;
     isInstance = isInstance && "docker_image_name" in value;
@@ -131,6 +138,7 @@ export function ModelSecretScanResultFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
+        'cloud_account_id': json['cloud_account_id'],
         'created_at': json['created_at'],
         'docker_container_name': json['docker_container_name'],
         'docker_image_name': json['docker_image_name'],
@@ -155,6 +163,7 @@ export function ModelSecretScanResultToJSON(value?: ModelSecretScanResult | null
     }
     return {
         
+        'cloud_account_id': value.cloud_account_id,
         'created_at': value.created_at,
         'docker_container_name': value.docker_container_name,
         'docker_image_name': value.docker_image_name,

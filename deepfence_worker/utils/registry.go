@@ -34,6 +34,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecr"
 )
 
+const (
+	quayUsername = "$oauthtoken"
+	gcrUsername  = "_json_key"
+)
+
 type regCreds struct {
 	URL           string
 	UserName      string
@@ -54,6 +59,9 @@ func GetConfigFileFromRegistry(ctx context.Context, registryId string) (string, 
 		return "", regCreds{}, err
 	}
 	if rc.UserName == "" {
+		return "", rc, nil
+	}
+	if rc.UserName == "" && rc.Password == "" {
 		return "", rc, nil
 	}
 	authFile, err := createAuthFile(registryId, rc.URL, rc.UserName, rc.Password)
@@ -152,7 +160,7 @@ func gitlabCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) 
 		Password:      hub.Secret.GitlabToken,
 		NameSpace:     "",
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.GitlabRegistryURL),
-		SkipTLSVerify: false,
+		SkipTLSVerify: true,
 		UseHttp:       useHttp(hub.NonSecret.GitlabRegistryURL),
 	}, nil
 
@@ -289,13 +297,18 @@ func quayCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (r
 		log.Error().Msg(err.Error())
 	}
 
+	quayUser := quayUsername
+	if hub.Secret.QuayAccessToken == "" {
+		quayUser = ""
+	}
+
 	return regCreds{
 		URL:           hub.NonSecret.QuayRegistryURL,
-		UserName:      "$oauthtoken",
+		UserName:      quayUser,
 		Password:      hub.Secret.QuayAccessToken,
 		NameSpace:     hub.NonSecret.QuayNamespace,
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.QuayRegistryURL) + "/" + hub.NonSecret.QuayNamespace,
-		SkipTLSVerify: false,
+		SkipTLSVerify: true,
 		UseHttp:       useHttp(hub.NonSecret.QuayRegistryURL),
 	}, nil
 }
@@ -339,7 +352,7 @@ func gcrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (re
 
 	return regCreds{
 		URL:           hub.NonSecret.RegistryURL,
-		UserName:      "_json_key",
+		UserName:      gcrUsername,
 		Password:      hub.Extras.ServiceAccountJson,
 		NameSpace:     hub.NonSecret.ProjectId,
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.RegistryURL),
@@ -494,102 +507,6 @@ func jfrogCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (
 		SkipTLSVerify: true,
 		UseHttp:       useHttp(hub.NonSecret.JfrogRegistryURL),
 	}, nil
-}
-
-// todo: unused
-func GetDockerCredentials(registryData map[string]interface{}) (string, string, string) {
-	var registryType string
-	registryType, ok := registryData["registry_type"].(string)
-	if !ok {
-		return "", "", ""
-	}
-	switch registryType {
-	case "ecr":
-		var awsAccessKey, awsSecret, awsRegionName, registryId, targetAccountRoleARN string
-		var useIAMRole bool
-		if awsAccessKey, ok = registryData["aws_access_key_id"].(string); !ok {
-			awsAccessKey = ""
-		}
-		if awsSecret, ok = registryData["aws_secret_access_key"].(string); !ok {
-			awsSecret = ""
-		}
-		if awsRegionName, ok = registryData["aws_region_name"].(string); !ok {
-			return "", "", ""
-		}
-		if registryId, ok = registryData["registry_id"].(string); !ok {
-			registryId = ""
-		}
-		if useIAMRole, ok = registryData["use_iam_role"].(bool); !ok {
-			useIAMRole = false
-		}
-		if targetAccountRoleARN, ok = registryData["target_account_role_arn"].(string); !ok {
-			targetAccountRoleARN = ""
-		}
-		ecrProxyUrl, ecrAuth := getEcrCredentials(awsAccessKey, awsSecret, awsRegionName, registryId, useIAMRole, targetAccountRoleARN)
-		return ecrProxyUrl, ecrAuth, ""
-	case "docker_hub":
-		var dockerUsername, dockerPassword string
-		if dockerUsername, ok = registryData["docker_hub_username"].(string); !ok {
-			return "", "", ""
-		}
-		if dockerPassword, ok = registryData["docker_hub_password"].(string); !ok {
-			return "", "", ""
-		}
-		return "https://index.docker.io/v1/", dockerUsername, dockerPassword
-	case "docker_private_registry":
-		return getDefaultDockerCredentials(registryData, "docker_registry_url", "docker_username", "docker_password")
-	case "azure_container_registry":
-		return getDefaultDockerCredentials(registryData, "azure_registry_url", "azure_registry_username", "azure_registry_password")
-	case "google_container_registry":
-		var dockerPassword, registryUrl string
-		if dockerPassword, ok = registryData["service_account_json"].(string); !ok {
-			return "", "", ""
-		}
-		if registryUrl, ok = registryData["registry_hostname"].(string); !ok {
-			return "", "", ""
-		}
-		return registryUrl, "_json_key", dockerPassword
-	case "harbor":
-		return getDefaultDockerCredentials(registryData, "harbor_registry_url", "harbor_username", "harbor_password")
-	case "quay":
-		var dockerPassword, registryUrl string
-		if dockerPassword, ok = registryData["quay_access_token"].(string); !ok {
-			return "", "", ""
-		}
-		if registryUrl, ok = registryData["quay_registry_url"].(string); !ok {
-			return "", "", ""
-		}
-		return registryUrl, "$oauthtoken", dockerPassword
-	case "gitlab":
-		var dockerPassword, registryUrl string
-		if dockerPassword, ok = registryData["gitlab_access_token"].(string); !ok {
-			return "", "", ""
-		}
-		if registryUrl, ok = registryData["gitlab_registry_url"].(string); !ok {
-			return "", "", ""
-		}
-		return registryUrl, "gitlab-ci-token", dockerPassword
-	case "jfrog_container_registry":
-		return getDefaultDockerCredentials(registryData, "jfrog_registry_url", "jfrog_username", "jfrog_password")
-	default:
-		return "", "", ""
-	}
-}
-
-// todo: remove this!!!
-func getDefaultDockerCredentials(registryData map[string]interface{}, registryUrlKey, registryUsernameKey, registryPasswordKey string) (string, string, string) {
-	var dockerUsername, dockerPassword, dockerRegistryUrl string
-	var ok bool
-	if dockerUsername, ok = registryData[registryUsernameKey].(string); !ok {
-		return "", "", ""
-	}
-	if dockerPassword, ok = registryData[registryPasswordKey].(string); !ok {
-		return "", "", ""
-	}
-	if dockerRegistryUrl, ok = registryData[registryUrlKey].(string); !ok {
-		return "", "", ""
-	}
-	return dockerRegistryUrl, dockerUsername, dockerPassword
 }
 
 func createAuthFile(registryId, registryUrl, username, password string) (string, error) {

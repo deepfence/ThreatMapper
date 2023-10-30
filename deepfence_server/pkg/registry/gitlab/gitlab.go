@@ -17,8 +17,8 @@ func New(requestByte []byte) (*RegistryGitlab, error) {
 	return &r, nil
 }
 
-func (d *RegistryGitlab) ValidateFields(v *validator.Validate) error {
-	return v.Struct(d)
+func (e *RegistryGitlab) ValidateFields(v *validator.Validate) error {
+	return v.Struct(e)
 }
 
 func (e *RegistryGitlab) IsValidCredential() bool {

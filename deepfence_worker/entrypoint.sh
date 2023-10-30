@@ -23,16 +23,28 @@ do
 done
 
 # wait for file server to start
-until nc -z ${DEEPFENCE_MINIO_HOST} ${DEEPFENCE_MINIO_PORT};
-do
-  echo "file server is unavailable - sleeping"
-  sleep 5;
-done
+if [ "$DEEPFENCE_MINIO_HOST" != "s3.amazonaws.com" ]; then
+  until nc -z ${DEEPFENCE_MINIO_HOST} ${DEEPFENCE_MINIO_PORT};
+  do
+    echo "file server is unavailable - sleeping"
+    sleep 5;
+  done
+else
+  echo "S3 mode skip file server health check"
+fi
+
+# for aws s3
+export GRYPE_DB_UPDATE_URL="http://${DEEPFENCE_MINIO_HOST}:${DEEPFENCE_MINIO_PORT}/database/database/vulnerability/listing.json"
+if [ "$DEEPFENCE_MINIO_HOST" == "s3.amazonaws.com" ]; then
+  export GRYPE_DB_UPDATE_URL="https://${DEEPFENCE_MINIO_DB_BUCKET}.s3.${DEEPFENCE_MINIO_REGION}.amazonaws.com/database/vulnerability/listing.json"
+fi
 
 # update vulnerability databae
 if [ "$DEEPFENCE_MODE" == "worker" ]; then
   echo "update vulnerability database"
+  echo "db update url $GRYPE_DB_UPDATE_URL"
   /usr/local/bin/grype db update
+  echo "0 */2 * * * export GRYPE_DB_UPDATE_URL=${GRYPE_DB_UPDATE_URL} && /usr/local/bin/grype db update" >> /etc/crontabs/root
   /usr/sbin/crond
 fi
 

@@ -14,6 +14,8 @@ For Windows Server hosts, experimental support exists, but it is not suitable fo
 
 Install and start the latest release of the deepfence sensor.  Run the following command to start the sensor on the host, replacing the `CONSOLE_URL` and `DEEPFENCE_KEY` values:
 
+### Docker
+
 ```bash
 docker run -dit \
     --cpus=".2" \
@@ -33,6 +35,32 @@ docker run -dit \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
     deepfenceio/deepfence_agent_ce:2.0.0
+```
+
+### Podman
+
+Podman system service (API service) should be running before deploying the sensor (https://docs.podman.io/en/latest/markdown/podman-system-service.1.html)
+
+```bash
+sudo podman run -dit \
+    --cpus=".2" \
+    --name=deepfence-agent \
+    --restart on-failure \
+    --pid=host \
+    --net=host \
+    --log-driver json-file \
+    --log-opt max-size=50m \
+    --privileged=true \
+    -v /sys/kernel/debug:/sys/kernel/debug:rw \
+    -v /var/log/fenced \
+    -v /run/podman/podman.sock:/run/podman/podman.sock \
+    -v /run/systemd/:/run/systemd/ \
+    -v /:/fenced/mnt/host/:ro \
+    -e USER_DEFINED_TAGS="" \
+    -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
+    -e MGMT_CONSOLE_PORT="443" \
+    -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
+    docker.io/deepfenceio/deepfence_agent_ce:2.0.0
 ```
 
 :::tip

@@ -37,6 +37,7 @@ import {
 import { getScanResultsApiClient } from '@/api/api';
 import {
   ModelScanInfo,
+  ModelScanResultsMaskRequestMaskActionEnum,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
@@ -118,7 +119,7 @@ const action = async ({
   const ids = (formData.getAll('nodeIds[]') ?? []) as string[];
   const actionType = formData.get('actionType');
   const _scanId = scanId;
-  const mask = formData.get('maskHostAndImages');
+  const maskAction = formData.get('maskAction');
   if (!_scanId) {
     throw new Error('Scan ID is required');
   }
@@ -184,7 +185,7 @@ const action = async ({
     });
     const result = await apiFunctionApi({
       modelScanResultsMaskRequest: {
-        mask_across_hosts_and_images: mask === 'maskHostAndImages',
+        mask_action: maskAction as ModelScanResultsMaskRequestMaskActionEnum,
         result_ids: [...ids],
         scan_id: _scanId,
         scan_type: ScanTypeEnum.SecretScan,
@@ -632,7 +633,7 @@ const HistoryControls = () => {
   };
 
   return (
-    <div className="flex items-center relative flex-grow">
+    <div className="flex items-center relative flex-grow gap-2">
       {openStopScanModal && (
         <StopScanForm
           open={openStopScanModal}
@@ -732,7 +733,7 @@ const HistoryControls = () => {
         {!isScanInProgress(status ?? '') ? (
           <>
             <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
-            <div className="pl-1.5 flex">
+            <div className="flex">
               <IconButton
                 variant="flat"
                 icon={
@@ -807,33 +808,132 @@ const ActionDropdown = ({
   setIdsToDelete,
   setShowDeleteDialog,
   onTableAction,
+  nodeType,
+  isDockerImageNameEmpty,
 }: {
   ids: string[];
   trigger: React.ReactNode;
   setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  onTableAction: (ids: string[], actionType: string, maskHostAndImages?: string) => void;
+  onTableAction: (
+    ids: string[],
+    actionType: string,
+    maskAction?: ModelScanResultsMaskRequestMaskActionEnum,
+  ) => void;
+  nodeType: string;
+  isDockerImageNameEmpty: boolean;
 }) => {
+  const isHost = nodeType === 'host';
   return (
     <Dropdown
       triggerAsChild={true}
       align={'start'}
       content={
         <>
-          <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.MASK, '')}>
-            Mask secret
-          </DropdownItem>
+          {isHost ? (
+            <DropdownItem
+              onClick={() =>
+                onTableAction(
+                  ids,
+                  ActionEnumType.MASK,
+                  ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                )
+              }
+            >
+              Mask secret for this host
+            </DropdownItem>
+          ) : (
+            <>
+              {!isDockerImageNameEmpty && (
+                <>
+                  <DropdownItem
+                    onClick={() =>
+                      onTableAction(
+                        ids,
+                        ActionEnumType.MASK,
+                        ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
+                      )
+                    }
+                  >
+                    Mask secret for this image tag
+                  </DropdownItem>
+                  <DropdownItem
+                    onClick={() =>
+                      onTableAction(
+                        ids,
+                        ActionEnumType.MASK,
+                        ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
+                      )
+                    }
+                  >
+                    Mask secret for this image(all tags)
+                  </DropdownItem>
+                </>
+              )}
+            </>
+          )}
           <DropdownItem
-            onClick={() => onTableAction(ids, ActionEnumType.MASK, 'maskHostAndImages')}
+            onClick={() =>
+              onTableAction(
+                ids,
+                ActionEnumType.MASK,
+                ModelScanResultsMaskRequestMaskActionEnum.Global,
+              )
+            }
           >
             Mask secret across hosts and images
           </DropdownItem>
           <DropdownSeparator />
-          <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK, '')}>
-            Un-mask secret
-          </DropdownItem>
+          {isHost ? (
+            <DropdownItem
+              onClick={() =>
+                onTableAction(
+                  ids,
+                  ActionEnumType.UNMASK,
+                  ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                )
+              }
+            >
+              Un-mask secret for this host
+            </DropdownItem>
+          ) : (
+            <>
+              {!isDockerImageNameEmpty && (
+                <>
+                  <DropdownItem
+                    onClick={() =>
+                      onTableAction(
+                        ids,
+                        ActionEnumType.UNMASK,
+                        ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
+                      )
+                    }
+                  >
+                    Un-mask secret for this image tag
+                  </DropdownItem>
+                  <DropdownItem
+                    onClick={() =>
+                      onTableAction(
+                        ids,
+                        ActionEnumType.UNMASK,
+                        ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
+                      )
+                    }
+                  >
+                    Un-mask secret for this image(all tags)
+                  </DropdownItem>
+                </>
+              )}
+            </>
+          )}
           <DropdownItem
-            onClick={() => onTableAction(ids, ActionEnumType.UNMASK, 'maskHostAndImages')}
+            onClick={() =>
+              onTableAction(
+                ids,
+                ActionEnumType.UNMASK,
+                ModelScanResultsMaskRequestMaskActionEnum.Global,
+              )
+            }
           >
             Un-mask secret across hosts and images
           </DropdownItem>
@@ -872,9 +972,20 @@ const BulkActions = ({
   ids: string[];
   setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  onTableAction: (ids: string[], actionType: string, maskHostAndImages?: string) => void;
+  onTableAction: (
+    ids: string[],
+    actionType: string,
+    maskAction?: ModelScanResultsMaskRequestMaskActionEnum,
+  ) => void;
 }) => {
   const [openNotifyModal, setOpenNotifyModal] = useState<boolean>(false);
+
+  const { data } = useScanResults();
+  const { scanStatusResult, data: scanResults } = data;
+
+  const isHost = scanStatusResult?.node_type === 'host';
+  const isDockerImageNameEmpty = scanResults?.dockerImageName?.trim()?.length === 0;
+
   return (
     <>
       {openNotifyModal && (
@@ -886,11 +997,56 @@ const BulkActions = ({
         disabled={!ids.length}
         content={
           <>
-            <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.MASK, '')}>
-              Mask secrets
-            </DropdownItem>
+            {isHost ? (
+              <DropdownItem
+                onClick={() =>
+                  onTableAction(
+                    ids,
+                    ActionEnumType.MASK,
+                    ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                  )
+                }
+              >
+                Mask secrets for this host
+              </DropdownItem>
+            ) : (
+              <>
+                {!isDockerImageNameEmpty && (
+                  <>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.MASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
+                        )
+                      }
+                    >
+                      Mask secrets for this image tag
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.MASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
+                        )
+                      }
+                    >
+                      Mask secrets for this image(all tags)
+                    </DropdownItem>
+                  </>
+                )}
+              </>
+            )}
             <DropdownItem
-              onClick={() => onTableAction(ids, ActionEnumType.MASK, 'maskHostAndImages')}
+              onClick={() =>
+                onTableAction(
+                  ids,
+                  ActionEnumType.MASK,
+                  ModelScanResultsMaskRequestMaskActionEnum.Global,
+                )
+              }
             >
               Mask secrets across hosts and images
             </DropdownItem>
@@ -914,12 +1070,55 @@ const BulkActions = ({
         disabled={!ids.length}
         content={
           <>
-            <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK, '')}>
-              Un-mask secrets
-            </DropdownItem>
+            {isHost ? (
+              <DropdownItem
+                onClick={() =>
+                  onTableAction(
+                    ids,
+                    ActionEnumType.UNMASK,
+                    ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                  )
+                }
+              >
+                Un-mask secrets for this host
+              </DropdownItem>
+            ) : (
+              <>
+                {!isDockerImageNameEmpty && (
+                  <>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.UNMASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
+                        )
+                      }
+                    >
+                      Un-mask secrets for this image tag
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.UNMASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
+                        )
+                      }
+                    >
+                      Un-mask secrets for this image(all tags)
+                    </DropdownItem>
+                  </>
+                )}
+              </>
+            )}
             <DropdownItem
               onClick={() =>
-                onTableAction(ids, ActionEnumType.UNMASK, 'maskHostAndImages')
+                onTableAction(
+                  ids,
+                  ActionEnumType.UNMASK,
+                  ModelScanResultsMaskRequestMaskActionEnum.Global,
+                )
               }
             >
               Un-mask secrets across hosts and images
@@ -1149,7 +1348,7 @@ const SecretTable = ({
   rowSelectionState,
   setRowSelectionState,
 }: {
-  onTableAction: (ids: string[], actionType: string, maskHostAndImages?: string) => void;
+  onTableAction: (ids: string[], actionType: string) => void;
   setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   rowSelectionState: RowSelectionState;
@@ -1157,8 +1356,12 @@ const SecretTable = ({
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = useScanResults();
+  const { data: scanResultData, scanStatusResult } = data;
   const columnHelper = createColumnHelper<ModelSecret>();
   const [sort, setSort] = useSortingState();
+
+  const nodeType = scanStatusResult?.node_type ?? '';
+  const isDockerImageNameEmpty = scanResultData?.dockerImageName?.trim()?.length === 0;
 
   const columns = useMemo(() => {
     const columns = [
@@ -1176,6 +1379,8 @@ const SecretTable = ({
             setIdsToDelete={setIdsToDelete}
             setShowDeleteDialog={setShowDeleteDialog}
             onTableAction={onTableAction}
+            nodeType={nodeType}
+            isDockerImageNameEmpty={isDockerImageNameEmpty}
             trigger={
               <button className="p-1">
                 <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
@@ -1267,9 +1472,7 @@ const SecretTable = ({
     ];
 
     return columns;
-  }, [setSearchParams]);
-
-  const { data: scanResultData, scanStatusResult } = data;
+  }, [setSearchParams, nodeType]);
 
   return (
     <Table
@@ -1408,12 +1611,16 @@ const ScanResults = () => {
   const fetcher = useFetcher<ActionData>();
 
   const onTableAction = useCallback(
-    (ids: string[], actionType: string, maskHostAndImages?: string) => {
+    (
+      ids: string[],
+      actionType: string,
+      maskAction?: ModelScanResultsMaskRequestMaskActionEnum,
+    ) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
 
       if (actionType === ActionEnumType.MASK || actionType === ActionEnumType.UNMASK) {
-        formData.append('maskHostAndImages', maskHostAndImages ?? '');
+        formData.append('maskAction', maskAction?.toString() ?? '');
       }
 
       ids.forEach((item) => formData.append('nodeIds[]', item));
@@ -1431,12 +1638,14 @@ const ScanResults = () => {
   return (
     <div className="self-start">
       <div className="mt-4 h-12 flex items-center">
-        <BulkActions
-          ids={selectedIds}
-          onTableAction={onTableAction}
-          setIdsToDelete={setIdsToDelete}
-          setShowDeleteDialog={setShowDeleteDialog}
-        />
+        <Suspense>
+          <BulkActions
+            ids={selectedIds}
+            onTableAction={onTableAction}
+            setIdsToDelete={setIdsToDelete}
+            setShowDeleteDialog={setShowDeleteDialog}
+          />
+        </Suspense>
         <div className="pr-2 ml-auto flex items-center gap-1">
           <Button
             className="pr-0"

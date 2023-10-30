@@ -1,6 +1,7 @@
 package ingesters
 
 import (
+	"strings"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -29,8 +30,10 @@ func CommitFuncCloudCompliance(ns string, data []ingestersUtil.CloudCompliance) 
 
 	if _, err = tx.Run(`
 		UNWIND $batch as row
-		MERGE (n:CloudCompliance{node_id: row.scan_id + "--" + row.control_id + "--" + COALESCE(row.resource, row.account_id, ""), resource:row.resource, scan_id: row.scan_id, control_id: row.control_id})
-		SET n+= row
+		MERGE (n:CloudCompliance{node_id: row.node_id})
+		SET n+=row,
+			n.masked = COALESCE(n.masked, false),
+			n.updated_at = TIMESTAMP()
 		WITH n, row
 		OPTIONAL MATCH (m:CloudResource{arn: row.resource})
 		WITH n, m, CASE WHEN m IS NOT NULL THEN [1] ELSE [] END AS make_cat
@@ -50,7 +53,19 @@ func CommitFuncCloudCompliance(ns string, data []ingestersUtil.CloudCompliance) 
 func CloudCompliancesToMaps(ms []ingestersUtil.CloudCompliance) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
-		res = append(res, v.ToMap())
+		data := v.ToMap()
+
+		nodeIdElem := []string{data["control_id"].(string)}
+		if _, ok := data["resource"]; ok {
+			nodeIdElem = append(nodeIdElem, data["resource"].(string))
+		} else if _, ok := data["account_id"]; ok {
+			nodeIdElem = append(nodeIdElem, data["resource"].(string))
+		}
+
+		nodeIdElem = append(nodeIdElem, data["scan_id"].(string))
+		data["node_id"] = strings.Join(nodeIdElem, "--")
+
+		res = append(res, data)
 	}
 	return res
 }

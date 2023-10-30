@@ -73,22 +73,23 @@ func initSqlDatabase(ctx context.Context) error {
 	return nil
 }
 
-func InitMinioDatabase() error {
+func InitMinioDatabase() {
 	ctx := directory.NewContextWithNameSpace("database")
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		return err
+		return
 	}
 	retries := 3
 	for {
-		if err := mc.CreatePublicBucket(ctx); err != nil {
+		if err := mc.CreatePublicBucket(ctx, directory.MinioDatabaseBucket); err != nil {
 			log.Error().Err(err).Msgf("failed to create bucket")
 			retries -= 1
 			if retries != 0 {
 				continue
 			}
-			return err
+			// donot continue we need this step succesfull
+			panic(err)
 		}
 		break
 	}
@@ -96,5 +97,4 @@ func InitMinioDatabase() error {
 	// download vulnerability database once on init
 	vulnerability_db.DownloadDatabase()
 
-	return nil
 }

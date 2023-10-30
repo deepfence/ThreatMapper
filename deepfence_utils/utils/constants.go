@@ -4,6 +4,10 @@ const (
 	ErrorUserNotFound = "user not found"
 )
 
+const (
+	Project = "ThreatMapper"
+)
+
 // kafka topics
 const (
 	AUDIT_LOGS                   = "audit-logs"
@@ -212,4 +216,11 @@ type ReportType string
 const (
 	ReportXLSX ReportType = "xlsx"
 	ReportPDF  ReportType = "pdf"
+)
+
+const (
+	MASK_GLOBAL        = "mask_global"
+	MASK_ALL_IMAGE_TAG = "mask_all_image_tag"
+	MASK_ENTITY        = "mask_entity"
+	MASK_IMAGE_TAG     = "mask_image_tag"
 )

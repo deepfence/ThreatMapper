@@ -670,9 +670,12 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 		UNWIND $batch as row
 		MERGE (n:ContainerImage{node_id:row.node_id})
 		MERGE (s:ImageStub{node_id: row.docker_image_name, docker_image_name: row.docker_image_name})
+		MERGE (t:ImageTag{node_id: row.docker_image_name + "_" + row.docker_image_tag})
 		MERGE (n) -[:IS]-> (s)
+		MERGE (n) -[:ALIAS]-> (t)
 		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true, s.updated_at = TIMESTAMP(), n.docker_image_id=row.node_id,
-		s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`,
+		s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
+		n.updated_at = TIMESTAMP()`,
 		map[string]interface{}{"batch": batches.Container_image_batch}); err != nil {
 		return err
 	}

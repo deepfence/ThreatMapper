@@ -34,8 +34,19 @@ var (
 	grypeBin            = "grype"
 	minioHost           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_HOST", "deepfence-file-server")
 	minioPort           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_PORT", "9000")
-	GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=http://%s:%s/database/database/vulnerability/listing.json", minioHost, minioPort)
+	minioRegion         = os.Getenv("DEEPFENCE_MINIO_REGION")
+	minioBucket         = os.Getenv("DEEPFENCE_MINIO_DB_BUCKET")
+	GRYPE_DB_UPDATE_URL string
 )
+
+func init() {
+	// for aws s3
+	GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=https://%s.s3.%s.amazonaws.com/database/vulnerability/listing.json", minioBucket, minioRegion)
+	if minioHost != "s3.amazonaws.com" {
+		GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=http://%s:%s/database/database/vulnerability/listing.json", minioHost, minioPort)
+	}
+	log.Info().Msg(GRYPE_DB_UPDATE_URL)
+}
 
 type SbomParser struct {
 	ingestC chan *kgo.Record
@@ -99,6 +110,8 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
+	log.Info().Msgf("payload: %s ", string(task.Payload()))
+
 	var params utils.SbomParameters
 
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {
@@ -126,16 +139,15 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		},
 		time.Minute*20,
 	)
-	log.Info().Msgf("Adding scanid to map:%s", params.ScanId)
+
+	log.Info().Msgf("Adding scan id to map:%s", params.ScanId)
 	scanMap.Store(params.ScanId, scanCtx)
 	defer func() {
-		log.Info().Msgf("Removing scaind from map:%s", params.ScanId)
+		log.Info().Msgf("Removing scan id from map:%s", params.ScanId)
 		scanMap.Delete(params.ScanId)
 		res <- err
 		close(res)
 	}()
-
-	log.Info().Msgf("payload: %s ", string(task.Payload()))
 
 	// send inprogress status
 

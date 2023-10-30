@@ -13,5 +13,5 @@ type NonSecret struct {
 }
 
 type Secret struct {
-	GitlabToken string `json:"gitlab_access_token" validate:"required,min=2"`
+	GitlabToken string `json:"gitlab_access_token" validate:"omitempty,min=2"`
 }

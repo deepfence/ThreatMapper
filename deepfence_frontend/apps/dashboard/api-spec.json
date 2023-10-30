@@ -1133,6 +1133,106 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/diagnosis/cloud-scanner-logs": {
+      "post": {
+        "tags": ["Diagnosis"],
+        "summary": "Generate Cloud Scanner Diagnostic Logs",
+        "description": "Generate Cloud Scanner Diagnostic Logs",
+        "operationId": "generateCloudScannerDiagnosticLogs",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiagnosisGenerateCloudScannerDiagnosticLogsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": { "description": "Accepted" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/diagnosis/cloud-scanner-logs/status/{node_id}": {
+      "put": {
+        "tags": ["Diagnosis"],
+        "summary": "Update Cloud Scanner Diagnostic Logs Status",
+        "description": "Update cloud scanner diagnostic logs status",
+        "operationId": "updateCloudScannerDiagnosticLogsStatus",
+        "parameters": [
+          {
+            "name": "node_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DiagnosisDiagnosticLogsStatus" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/diagnosis/console-logs": {
       "post": {
         "tags": ["Diagnosis"],
@@ -10490,6 +10590,18 @@
           "tail": { "type": "integer" }
         }
       },
+      "DiagnosisGenerateCloudScannerDiagnosticLogsRequest": {
+        "required": ["node_ids", "tail"],
+        "type": "object",
+        "properties": {
+          "node_ids": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DiagnosisNodeIdentifier" },
+            "nullable": true
+          },
+          "tail": { "type": "integer" }
+        }
+      },
       "DiagnosisGenerateConsoleDiagnosticLogsRequest": {
         "required": ["tail"],
         "type": "object",
@@ -10499,6 +10611,11 @@
         "type": "object",
         "properties": {
           "agent_logs": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DiagnosisDiagnosticLogsLink" },
+            "nullable": true
+          },
+          "cloud_scanner_logs": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/DiagnosisDiagnosticLogsLink" },
             "nullable": true
@@ -10515,7 +10632,7 @@
         "type": "object",
         "properties": {
           "node_id": { "type": "string" },
-          "node_type": { "enum": ["host", "cluster"], "type": "string" }
+          "node_type": { "enum": ["host", "cluster", "cloud_account"], "type": "string" }
         }
       },
       "FormDataModelRegistryGCRAddReq": {
@@ -10752,7 +10869,6 @@
           "description": { "type": "string" },
           "doc_id": { "type": "string" },
           "group": { "type": "string" },
-          "masked": { "type": "boolean" },
           "reason": { "type": "string" },
           "region": { "type": "string" },
           "resource": { "type": "string" },
@@ -10911,7 +11027,6 @@
           "file_sev_score": { "type": "number" },
           "file_severity": { "type": "string" },
           "image_layer_id": { "type": "string" },
-          "masked": { "type": "boolean" },
           "meta": { "type": "array", "items": { "type": "string" }, "nullable": true },
           "meta_rules": { "$ref": "#/components/schemas/IngestersMetaRules" },
           "rule_name": { "type": "string" },
@@ -11076,7 +11191,6 @@
             "type": "object",
             "properties": { "level": { "type": "string" }, "score": { "type": "number" } }
           },
-          "masked": { "type": "boolean" },
           "scan_id": { "type": "string" }
         }
       },
@@ -11259,7 +11373,7 @@
           "resource": { "type": "string" },
           "resources": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": { "$ref": "#/components/schemas/ModelBasicNode" },
             "nullable": true
           },
           "service": { "type": "string" },
@@ -11312,6 +11426,7 @@
           "scan_id",
           "updated_at",
           "created_at",
+          "cloud_account_id",
           "benchmark_type",
           "status_counts",
           "compliance_percentage",
@@ -11324,6 +11439,7 @@
             "items": { "type": "string" },
             "nullable": true
           },
+          "cloud_account_id": { "type": "string" },
           "compliance_percentage": { "type": "number" },
           "compliances": {
             "type": "array",
@@ -11395,6 +11511,7 @@
             "items": { "$ref": "#/components/schemas/ModelCloudNodeCloudtrailTrail" },
             "nullable": true
           },
+          "log_action": { "$ref": "#/components/schemas/ControlsAction" },
           "refresh": { "type": "string" },
           "scans": {
             "type": "object",
@@ -11535,7 +11652,8 @@
           "node_id",
           "node_type",
           "masked",
-          "updated_at"
+          "updated_at",
+          "rule_id"
         ],
         "type": "object",
         "properties": {
@@ -11550,9 +11668,10 @@
           "resource": { "type": "string" },
           "resources": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": { "$ref": "#/components/schemas/ModelBasicNode" },
             "nullable": true
           },
+          "rule_id": { "type": "string" },
           "status": { "type": "string" },
           "test_category": { "type": "string" },
           "test_desc": { "type": "string" },
@@ -11632,6 +11751,7 @@
           "scan_id",
           "updated_at",
           "created_at",
+          "cloud_account_id",
           "benchmark_type",
           "status_counts",
           "compliance_percentage",
@@ -11644,6 +11764,7 @@
             "items": { "type": "string" },
             "nullable": true
           },
+          "cloud_account_id": { "type": "string" },
           "compliance_percentage": { "type": "number" },
           "compliances": {
             "type": "array",
@@ -12187,7 +12308,7 @@
           "node_id": { "type": "string" },
           "resources": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": { "$ref": "#/components/schemas/ModelBasicNode" },
             "nullable": true
           },
           "rule_id": { "type": "string" },
@@ -12228,11 +12349,13 @@
           "scan_id",
           "updated_at",
           "created_at",
+          "cloud_account_id",
           "malwares",
           "severity_counts"
         ],
         "type": "object",
         "properties": {
+          "cloud_account_id": { "type": "string" },
           "created_at": { "type": "integer", "format": "int64" },
           "docker_container_name": { "type": "string" },
           "docker_image_name": { "type": "string" },
@@ -12410,6 +12533,7 @@
         "required": [
           "node_id",
           "node_name",
+          "short_name",
           "pid",
           "cmdline",
           "ppid",
@@ -12432,6 +12556,7 @@
           "open_files_count": { "type": "integer" },
           "pid": { "type": "integer" },
           "ppid": { "type": "integer" },
+          "short_name": { "type": "string" },
           "threads": { "type": "integer" }
         }
       },
@@ -12758,10 +12883,12 @@
           "node_type",
           "scan_id",
           "updated_at",
-          "created_at"
+          "created_at",
+          "cloud_account_id"
         ],
         "type": "object",
         "properties": {
+          "cloud_account_id": { "type": "string" },
           "created_at": { "type": "integer", "format": "int64" },
           "docker_container_name": { "type": "string" },
           "docker_image_name": { "type": "string" },
@@ -12775,10 +12902,18 @@
         }
       },
       "ModelScanResultsMaskRequest": {
-        "required": ["scan_id", "result_ids", "scan_type"],
+        "required": ["scan_id", "result_ids", "scan_type", "mask_action"],
         "type": "object",
         "properties": {
-          "mask_across_hosts_and_images": { "type": "boolean" },
+          "mask_action": {
+            "enum": [
+              "mask_global",
+              "mask_all_image_tag",
+              "mask_entity",
+              "mask_image_tag"
+            ],
+            "type": "string"
+          },
           "result_ids": {
             "type": "array",
             "items": { "type": "string" },
@@ -12863,7 +12998,7 @@
           "relative_starting_index": { "type": "integer" },
           "resources": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": { "$ref": "#/components/schemas/ModelBasicNode" },
             "nullable": true
           },
           "rule_id": { "type": "integer" },
@@ -12898,11 +13033,13 @@
           "scan_id",
           "updated_at",
           "created_at",
+          "cloud_account_id",
           "secrets",
           "severity_counts"
         ],
         "type": "object",
         "properties": {
+          "cloud_account_id": { "type": "string" },
           "created_at": { "type": "integer", "format": "int64" },
           "docker_container_name": { "type": "string" },
           "docker_image_name": { "type": "string" },
@@ -13138,7 +13275,8 @@
           "cve_attack_vector",
           "urls",
           "exploit_poc",
-          "parsed_attack_vector"
+          "parsed_attack_vector",
+          "rule_id"
         ],
         "type": "object",
         "properties": {
@@ -13161,9 +13299,10 @@
           "parsed_attack_vector": { "type": "string" },
           "resources": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": { "$ref": "#/components/schemas/ModelBasicNode" },
             "nullable": true
           },
+          "rule_id": { "type": "string" },
           "updated_at": { "type": "integer" },
           "urls": { "type": "array", "items": {}, "nullable": true }
         }
@@ -13203,7 +13342,7 @@
           "parsed_attack_vector": { "type": "string" },
           "resources": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": { "$ref": "#/components/schemas/ModelBasicNode" },
             "nullable": true
           },
           "updated_at": { "type": "integer" },
@@ -13244,11 +13383,13 @@
           "scan_id",
           "updated_at",
           "created_at",
+          "cloud_account_id",
           "vulnerabilities",
           "severity_counts"
         ],
         "type": "object",
         "properties": {
+          "cloud_account_id": { "type": "string" },
           "created_at": { "type": "integer", "format": "int64" },
           "docker_container_name": { "type": "string" },
           "docker_image_name": { "type": "string" },
@@ -13389,6 +13530,7 @@
           "pseudo": { "type": "boolean" },
           "public_ip": { "type": "array", "items": { "type": "string" } },
           "resource_group": { "type": "string" },
+          "short_name": { "type": "string" },
           "tags": { "type": "array", "items": { "type": "string" } },
           "threads": { "type": "integer" },
           "timestamp": { "type": "string" },

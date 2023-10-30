@@ -13,12 +13,22 @@ x-service-variables: &common-creds
     DEEPFENCE_POSTGRES_USER_DB_PORT: 5432
     DEEPFENCE_POSTGRES_USER_DB_SSLMODE: disable
     DEEPFENCE_KAFKA_BROKERS: deepfence-kafka-broker:9092
-    DEEPFENCE_MINIO_BUCKET: deepfence
+    # public bucket with read permisons on objects for hosting vulnerability database
+    # S3 bucket permissions {"Version":"2012-10-17","Statement":[{"Sid":"database","Effect":"Allow","Principal":"*","Action":"s3:GetObject","Resource":["arn:aws:s3:::<bucket-name>/database/*","arn:aws:s3:::<bucket-name>/database"]}]}
+    DEEPFENCE_MINIO_DB_BUCKET: database
+    # prvate bucket to host reports, sbom, etc.
+    DEEPFENCE_MINIO_BUCKET: default
+    # set s3.amazonaws.com if using s3 buckets
     DEEPFENCE_MINIO_HOST: deepfence-file-server
-    DEEPFENCE_MINIO_PASSWORD: deepfence
     DEEPFENCE_MINIO_PORT: 9000
-    DEEPFENCE_MINIO_SECURE: "false"
+    # set access key if using s3 buckets
     DEEPFENCE_MINIO_USER: deepfence
+    # set secret key if using s3 buckets
+    DEEPFENCE_MINIO_PASSWORD: deepfence
+    # set true if using s3 buckets
+    DEEPFENCE_MINIO_SECURE: "false"
+    # set aws s3 buckets region if using s3 buckets
+    DEEPFENCE_MINIO_REGION: ""
     DEEPFENCE_REDIS_DB_NUMBER: 0
     DEEPFENCE_REDIS_HOST: deepfence-redis
     DEEPFENCE_REDIS_PORT: 6379
@@ -144,6 +154,7 @@ services:
       options:
         max-size: "100m"
 
+  # this service can be commented in case S3 is used
   deepfence-file-server:
     container_name: deepfence-file-server
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_file_server_ce:${DF_IMG_TAG:-2.0.0}
@@ -152,6 +163,9 @@ services:
     networks:
       - deepfence_net
     restart: unless-stopped
+    # environment:
+    #   - MINIO_ROOT_USER=deepfence
+    #   - MINIO_ROOT_PASSWORD=deepfence
     ports:
       - "127.0.0.1:9000:9000"
       - "127.0.0.1:9333:9333"
@@ -332,7 +346,7 @@ services:
     restart: unless-stopped
 
   deepfence-telemetry:
-    image: jaegertracing/all-in-one:1.42
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/jaegertracing-all-in-one:1.50
     hostname: deepfence-telemetry
     container_name: deepfence-telemetry
     ports:

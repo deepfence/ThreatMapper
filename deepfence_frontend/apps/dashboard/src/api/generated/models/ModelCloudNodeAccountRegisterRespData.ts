@@ -13,6 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ControlsAction } from './ControlsAction';
+import {
+    ControlsActionFromJSON,
+    ControlsActionFromJSONTyped,
+    ControlsActionToJSON,
+} from './ControlsAction';
 import type { ModelCloudComplianceScanDetails } from './ModelCloudComplianceScanDetails';
 import {
     ModelCloudComplianceScanDetailsFromJSON,
@@ -38,6 +44,12 @@ export interface ModelCloudNodeAccountRegisterRespData {
      * @memberof ModelCloudNodeAccountRegisterRespData
      */
     cloudtrail_trails?: Array<ModelCloudNodeCloudtrailTrail> | null;
+    /**
+     * 
+     * @type {ControlsAction}
+     * @memberof ModelCloudNodeAccountRegisterRespData
+     */
+    log_action?: ControlsAction;
     /**
      * 
      * @type {string}
@@ -72,6 +84,7 @@ export function ModelCloudNodeAccountRegisterRespDataFromJSONTyped(json: any, ig
     return {
         
         'cloudtrail_trails': !exists(json, 'cloudtrail_trails') ? undefined : (json['cloudtrail_trails'] === null ? null : (json['cloudtrail_trails'] as Array<any>).map(ModelCloudNodeCloudtrailTrailFromJSON)),
+        'log_action': !exists(json, 'log_action') ? undefined : ControlsActionFromJSON(json['log_action']),
         'refresh': !exists(json, 'refresh') ? undefined : json['refresh'],
         'scans': !exists(json, 'scans') ? undefined : (json['scans'] === null ? null : mapValues(json['scans'], ModelCloudComplianceScanDetailsFromJSON)),
     };
@@ -87,6 +100,7 @@ export function ModelCloudNodeAccountRegisterRespDataToJSON(value?: ModelCloudNo
     return {
         
         'cloudtrail_trails': value.cloudtrail_trails === undefined ? undefined : (value.cloudtrail_trails === null ? null : (value.cloudtrail_trails as Array<any>).map(ModelCloudNodeCloudtrailTrailToJSON)),
+        'log_action': ControlsActionToJSON(value.log_action),
         'refresh': value.refresh,
         'scans': value.scans === undefined ? undefined : (value.scans === null ? null : mapValues(value.scans, ModelCloudComplianceScanDetailsToJSON)),
     };

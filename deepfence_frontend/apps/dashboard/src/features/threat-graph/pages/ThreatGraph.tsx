@@ -17,6 +17,7 @@ const ThreatGraph = () => {
     label: string;
     nodeType: string;
     nodes?: { [key: string]: GraphNodeInfo } | null;
+    cloudId: string;
   }>();
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -42,8 +43,8 @@ const ThreatGraph = () => {
             onNodeClick={(model: ThreatGraphNodeModelConfig | undefined) => {
               if (!model) return;
               if (model.nonInteractive) return;
-              const { label, nodeType, nodes } = model;
-              if (nodeType) setModalData({ label, nodeType, nodes });
+              const { label, nodeType, nodes, cloudId } = model;
+              if (nodeType) setModalData({ label, nodeType, nodes, cloudId });
             }}
           />
         </Suspense>
@@ -59,6 +60,7 @@ const ThreatGraph = () => {
           nodes={modalData.nodes}
           label={modalData.label}
           nodeType={modalData.nodeType}
+          cloudId={modalData.cloudId}
         />
       )}
     </div>

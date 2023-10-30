@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"path/filepath"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
@@ -155,7 +156,8 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 			continue
 		}
 		fileName := "deepfence-agent-logs-" + nodeIdentifier.NodeId + fileNameSuffix
-		uploadUrl, err := mc.CreatePublicUploadURL(ctx, diagnosis.AgentDiagnosisFileServerPrefix+fileName, true, time.Minute*10, url.Values{})
+		uploadUrl, err := mc.CreatePublicUploadURL(ctx,
+			filepath.Join(diagnosis.AgentDiagnosisFileServerPrefix, fileName), true, time.Minute*10, url.Values{})
 		if err != nil {
 			return err
 		}
