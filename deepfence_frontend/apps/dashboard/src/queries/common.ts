@@ -99,7 +99,6 @@ export const commonQueries = createQueryKeys('common', {
     };
   },
   searchHostFilters: (filters: {
-    scanId?: string;
     fieldName: string;
     searchText: string;
     size: number;
@@ -107,12 +106,11 @@ export const commonQueries = createQueryKeys('common', {
     return {
       queryKey: [{ filters }],
       queryFn: async ({ pageParam = 0 }) => {
-        const { scanId, fieldName, searchText, size } = filters;
+        const { fieldName, searchText, size } = filters;
 
         const scanResultsReq: CompletionCompletionNodeFieldReq = {
           completion: searchText,
           field_name: fieldName,
-          scan_id: scanId,
           window: {
             offset: pageParam,
             size,
