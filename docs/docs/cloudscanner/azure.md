@@ -22,7 +22,7 @@ module "cloud-scanner_example_single-subscription" {
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
   name                = "deepfence-cloud-scanner"
-  image               = "quay.io/deepfenceio/cloud-scanner:2.0.0"
+  image               = "quay.io/deepfenceio/cloud-scanner:2.0.1"
 }
 
 ```

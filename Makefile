@@ -14,7 +14,7 @@ export DEEPFENCED=$(PWD)/deepfence_bootstrapper
 export IMAGE_REPOSITORY?=deepfenceio
 export DF_IMG_TAG?=latest
 export IS_DEV_BUILD?=false
-export VERSION?="2.0.0"
+export VERSION?="2.0.1"
 
 default: bootstrap console_plugins agent console
 

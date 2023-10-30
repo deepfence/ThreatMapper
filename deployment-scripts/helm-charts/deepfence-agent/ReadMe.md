@@ -13,7 +13,7 @@ helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=40.40.40.40 \
     --set deepfenceKey="" \
     --set clusterName="prod-cluster" \
-    --set global.imageTag="2.0.0" \
+    --set global.imageTag="2.0.1" \
     --namespace deepfence \
     --create-namespace
 ```
@@ -49,7 +49,7 @@ managementConsoleUrl: ""
 global:
   # this image tag is used every where for agents
   # to override set tag at agents level
-  imageTag: 2.0.0
+  imageTag: 2.0.1
 ```
 - Set deepfence auth key
 Set authentication key when it is enabled in management console

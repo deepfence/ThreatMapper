@@ -36,7 +36,7 @@ docker run -dit \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-    $ACC/deepfence_agent_ce:2.0.0
+    $ACC/deepfence_agent_ce:2.0.1
 ```
 
 ## Installing and Running the Sensor Agents in a Kubernetes Cluster

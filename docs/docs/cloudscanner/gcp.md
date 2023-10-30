@@ -18,7 +18,7 @@ module "cloud-scanner_example_single-project" {
   mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:2.0.0"
+  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:2.0.1"
   project_id          = "<PROJECT_ID>; ex. dev1-123456"
   region              = "<REGION_ID>; ex. asia-east1"
   #optional for private ip console
@@ -51,7 +51,7 @@ module "cloud-scanner_example_single-project" {
   mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:2.0.0"
+  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:2.0.1"
   project_id          = "<PROJECT_ID>; ex. dev1-123456"
   region              = "<REGION_ID>; ex. asia-east1"
   #optional for private ip console

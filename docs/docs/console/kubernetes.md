@@ -52,7 +52,7 @@ The following instructions explain how to install the ThreatMapper console on a 
     # helm show values deepfence/deepfence-console --version 2.0.1 | less
 
     helm install deepfence-console deepfence/deepfence-console \
-    --set global.imageTag=2.0.0 \
+    --set global.imageTag=2.0.1 \
     --set global.storageClass=gp3 \
     --namespace deepfence-console \
     --create-namespace \
