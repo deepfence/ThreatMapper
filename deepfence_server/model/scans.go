@@ -359,7 +359,7 @@ func (Vulnerability) NodeType() string {
 }
 
 func (Vulnerability) ExtendedField() string {
-	return ""
+	return "rule_id"
 }
 
 func (v Vulnerability) GetCategory() string {
@@ -433,7 +433,7 @@ func (Malware) NodeType() string {
 }
 
 func (Malware) ExtendedField() string {
-	return ""
+	return "rule_id"
 }
 
 func (v Malware) GetCategory() string {
@@ -501,7 +501,7 @@ func (Compliance) NodeType() string {
 }
 
 func (Compliance) ExtendedField() string {
-	return ""
+	return "rule_id"
 }
 
 func (v Compliance) GetCategory() string {
