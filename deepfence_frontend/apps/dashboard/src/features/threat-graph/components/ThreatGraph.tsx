@@ -1,6 +1,6 @@
 import '@/features/threat-graph/utils/threat-graph-custom-node';
 
-import { IEdge, INode } from '@antv/g6';
+import { IEdge, INode, Modes } from '@antv/g6';
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -10,7 +10,11 @@ import { GraphProviderThreatGraph, GraphThreatFiltersTypeEnum } from '@/api/gene
 import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
 import { useG6Graph } from '@/features/threat-graph/hooks/useG6Graph';
 import { ThreatGraphNodeModelConfig } from '@/features/threat-graph/utils/threat-graph-custom-node';
-import { G6GraphData, G6Node } from '@/features/topology/types/graph';
+import {
+  G6GraphData,
+  G6GraphOptionsWithoutContainer,
+  G6Node,
+} from '@/features/topology/types/graph';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
 import { queries } from '@/queries';
 
@@ -44,13 +48,15 @@ function highlihgtParentNodes(node: G6Node, value: boolean) {
 
 export const ThreatGraphComponent = ({
   onNodeClick,
+  options,
 }: {
   onNodeClick?: (model: ThreatGraphNodeModelConfig | undefined) => void;
+  options?: G6GraphOptionsWithoutContainer;
 }) => {
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
-  const { graph } = useG6Graph(container);
+  const { graph } = useG6Graph(container, options);
   const { data } = useThreatGraphData();
 
   useEffect(() => {

@@ -21,7 +21,20 @@ export const TopAttackPaths = () => {
         }}
       >
         <Suspense fallback={<CircleSpinner size="md" />}>
-          <ThreatGraphComponent />
+          <ThreatGraphComponent
+            options={{
+              modes: {
+                default: [
+                  'drag-canvas',
+                  {
+                    type: '',
+                    maxZoom: 0,
+                    minZoom: 0,
+                  },
+                ],
+              },
+            }}
+          />
         </Suspense>
       </div>
     </Card>
