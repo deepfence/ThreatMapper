@@ -49,14 +49,14 @@ The following instructions explain how to install the ThreatMapper console on a 
     ```bash
     helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 
-    # helm show values deepfence/deepfence-console --version 2.0.1 | less
+    # helm show values deepfence/deepfence-console --version 2.0.2 | less
 
     helm install deepfence-console deepfence/deepfence-console \
     --set global.imageTag=2.0.1 \
     --set global.storageClass=gp3 \
     --namespace deepfence-console \
     --create-namespace \
-    --version 2.0.1
+    --version 2.0.2
     ```
 
    ... and wait for the pods to start up:
@@ -91,7 +91,7 @@ Now proceed to the [Initial Configuration](initial-configuration).
 ### Console Helm Chart
 
 ```bash
-helm show values deepfence/deepfence-console --version 2.0.1 > deepfence_console_values.yaml
+helm show values deepfence/deepfence-console --version 2.0.2 > deepfence_console_values.yaml
 
 # Make the changes in this file and save
 vim deepfence_console_values.yaml
@@ -99,7 +99,7 @@ vim deepfence_console_values.yaml
 helm install -f deepfence_console_values.yaml deepfence-console deepfence/deepfence-console \
     --namespace deepfence-console \
     --create-namespace \
-    --version 2.0.1
+    --version 2.0.2
 ```
 
 ### Router Helm Chart

@@ -12,7 +12,7 @@
 
 ## :tada: Announcing ThreatMapper v2
 
-<!---  > [ThreatMapper 2.0.0](https://github.com/deepfence/ThreatMapper/releases/tag/v2.0.0) adds ThreatGraph, a rich visualization that uses runtime context such as network flows to prioritize threat scan results.  ThreatGraph enables organizations to narrow down attack path alerts from thousands to a handful of the most meaningful (and threatening). Release 2.0.0 also adds agentless cloud security posture management (CSPM) of cloud assets and agent-based posture management of hosts, evaluating posture against industry-standard compliance benchmarks. --->
+<!---  > [ThreatMapper 2.0.1](https://github.com/deepfence/ThreatMapper/releases/tag/v2.0.1) adds ThreatGraph, a rich visualization that uses runtime context such as network flows to prioritize threat scan results.  ThreatGraph enables organizations to narrow down attack path alerts from thousands to a handful of the most meaningful (and threatening). Release 2.0.1 also adds agentless cloud security posture management (CSPM) of cloud assets and agent-based posture management of hosts, evaluating posture against industry-standard compliance benchmarks. --->
 
 # ThreatMapper - Runtime Threat Management and Attack Path Enumeration for Cloud Native
 
@@ -94,7 +94,7 @@ docker run -dit \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-    deepfenceio/deepfence_agent_ce:2.0.0
+    deepfenceio/deepfence_agent_ce:2.0.1
 ```
 
 On a Kubernetes platform, the sensors are installed using [helm chart](https://community.deepfence.io/threatmapper/docs/v2.0/sensors/kubernetes/)
