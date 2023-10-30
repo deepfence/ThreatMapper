@@ -36,6 +36,7 @@ import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
+import { SearchableCloudAccountForHost } from '@/features/topology/data-components/tables/SearchableCloudAccountForHost';
 import { queries } from '@/queries';
 import {
   ComplianceScanNodeTypeEnum,
@@ -466,6 +467,26 @@ function Filters() {
             });
           }}
         />
+        <SearchableCloudAccountForHost
+          defaultSelectedAccounts={searchParams.getAll('cloudAccounts')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('cloudAccounts');
+              values.forEach((value) => {
+                prev.append('cloudAccounts', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('cloudAccounts');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
         <Combobox
           value={searchParams.getAll('agentRunning')}
           multiple
@@ -569,6 +590,7 @@ function useSearchHostsWithPagination() {
       agentRunning: searchParams
         .getAll('agentRunning')
         .map((value) => (value === 'On' ? true : false)),
+      cloudAccounts: searchParams.getAll('cloudAccounts'),
       clusterIds: searchParams.getAll('clusters'),
       hosts: searchParams.getAll('hosts'),
     }),
