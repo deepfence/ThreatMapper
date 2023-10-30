@@ -36,7 +36,7 @@ import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
-import { SearchableCloudAccount } from '@/features/topology/data-components/tables/SearchableCloudAccount';
+import { SearchableCloudAccountForHost } from '@/features/topology/data-components/tables/SearchableCloudAccountForHost';
 import { queries } from '@/queries';
 import {
   ComplianceScanNodeTypeEnum,
@@ -467,8 +467,7 @@ function Filters() {
             });
           }}
         />
-        <SearchableCloudAccount
-          scanId={''}
+        <SearchableCloudAccountForHost
           defaultSelectedAccounts={searchParams.getAll('cloudAccounts')}
           onChange={(values) => {
             setSearchParams((prev) => {

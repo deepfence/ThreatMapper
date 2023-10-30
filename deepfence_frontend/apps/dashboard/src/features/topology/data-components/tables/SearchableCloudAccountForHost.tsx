@@ -12,7 +12,6 @@ type SearchableCloudAccountProps = {
   triggerVariant?: 'select' | 'button';
   helperText?: string;
   color?: 'error' | 'default';
-  scanId: string;
 };
 
 const PAGE_SIZE = 15;
@@ -23,7 +22,6 @@ const SearchableCloudAccountId = ({
   triggerVariant,
   helperText,
   color,
-  scanId,
 }: SearchableCloudAccountProps) => {
   const [searchText, setSearchText] = useState('');
 
@@ -45,7 +43,6 @@ const SearchableCloudAccountId = ({
         size: PAGE_SIZE,
         searchText,
         fieldName: 'cloud_account_id',
-        scanId: scanId,
       }),
       keepPreviousData: true,
       getNextPageParam: (lastPage, allPages) => {
@@ -116,7 +113,7 @@ const SearchableCloudAccountId = ({
   );
 };
 
-export const SearchableCloudAccount = (props: SearchableCloudAccountProps) => {
+export const SearchableCloudAccountForHost = (props: SearchableCloudAccountProps) => {
   const { triggerVariant } = props;
   const isSelectVariantType = useMemo(() => {
     return triggerVariant === 'select';

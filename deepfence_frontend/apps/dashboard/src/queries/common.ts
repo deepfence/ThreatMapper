@@ -99,7 +99,7 @@ export const commonQueries = createQueryKeys('common', {
     };
   },
   searchHostFilters: (filters: {
-    scanId: string;
+    scanId?: string;
     fieldName: string;
     searchText: string;
     size: number;
