@@ -4,10 +4,15 @@ import {
   getCloudComplianceApiClient,
   getComplianceApiClient,
   getMalwareApiClient,
+  getScanResultCompletionApiClient,
   getSecretApiClient,
   getVulnerabilityApiClient,
 } from '@/api/api';
-import { ModelNodeIdentifierNodeTypeEnum, ModelScanListReq } from '@/api/generated';
+import {
+  CompletionCompletionNodeFieldReq,
+  ModelNodeIdentifierNodeTypeEnum,
+  ModelScanListReq,
+} from '@/api/generated';
 import { ScanTypeEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 
@@ -89,6 +94,47 @@ export const commonQueries = createQueryKeys('common', {
               nodeName: res.node_name,
             };
           }),
+        };
+      },
+    };
+  },
+  searchHostFilters: (filters: {
+    fieldName: string;
+    searchText: string;
+    size: number;
+  }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async ({ pageParam = 0 }) => {
+        const { fieldName, searchText, size } = filters;
+
+        const scanResultsReq: CompletionCompletionNodeFieldReq = {
+          completion: searchText,
+          field_name: fieldName,
+          window: {
+            offset: pageParam,
+            size,
+          },
+        };
+
+        const api = apiWrapper({
+          fn: getScanResultCompletionApiClient().completeHostInfo,
+        });
+        const response = await api({
+          completionCompletionNodeFieldReq: scanResultsReq,
+        });
+
+        if (!response.ok) {
+          throw response.error;
+        }
+
+        if (response.value === null) {
+          // TODO: handle this case with 404 status maybe
+          throw new Error('Error getting host filters');
+        }
+
+        return {
+          data: response.value.possible_values?.slice(0, size) || [],
         };
       },
     };
