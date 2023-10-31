@@ -131,6 +131,7 @@ const DetailsComponent = () => {
     'description',
     'control_id',
     'status',
+    'resources',
     // 'compliance_check_type',
   ];
 
@@ -179,6 +180,26 @@ const DetailsComponent = () => {
             </div>
           );
         })}
+      {cloudPosture.resources?.length ? (
+        <div className="flex flex-col grow basis-[100%] max-w-full gap-1 group">
+          <div className="basis-[45%] flex relative">
+            <div className="text-p3 dark:text-text-text-and-icon">Resources</div>
+            <CopyField value={JSON.stringify(cloudPosture.resources)} />
+          </div>
+          <div className="text-p1 flex flex-col">
+            {cloudPosture.resources.map((resource) => {
+              return (
+                <div
+                  key={resource.node_id}
+                  className="text-p1 dark:text-text-input-value break-words"
+                >
+                  {resource.name}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

@@ -13,8 +13,10 @@ import {
 
 import { ModelCompliance } from '@/api/generated';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { DFLink } from '@/components/DFLink';
 import { CheckIcon } from '@/components/icons/common/Check';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
+import { PopOutIcon } from '@/components/icons/common/PopOut';
 import { PostureStatusBadge } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { queries } from '@/queries';
@@ -125,7 +127,12 @@ const DetailsComponent = () => {
   }
   const posture = postures[0];
 
-  const omitFields: (keyof ModelCompliance)[] = ['test_number', 'status', 'description'];
+  const omitFields: (keyof ModelCompliance)[] = [
+    'test_number',
+    'status',
+    'description',
+    'resources',
+  ];
 
   return (
     <div className="flex flex-wrap gap-y-[30px] gap-x-[14px]">
@@ -172,6 +179,43 @@ const DetailsComponent = () => {
             </div>
           );
         })}
+      {posture.resources?.length ? (
+        <div className="flex flex-col grow basis-[100%] max-w-full gap-1 group">
+          <div className="basis-[45%] flex relative">
+            <div className="text-p3 dark:text-text-text-and-icon">Resources</div>
+            <CopyField value={JSON.stringify(posture.resources)} />
+          </div>
+          <div className="text-p1 flex flex-col">
+            {posture.resources.map((resource) => {
+              if (!resource.node_id || !resource.node_type) {
+                return null;
+              }
+              let redirectPath = '';
+              if (resource.node_type === 'host') {
+                redirectPath = `host?hosts=${resource.node_id}`;
+              } else if (resource.node_type === 'container') {
+                redirectPath = `container?containers=${resource.node_id}`;
+              } else if (resource.node_type === 'cluster') {
+                redirectPath = `kubernetes_cluster?clusters=${resource.node_id}`;
+              }
+              return (
+                <DFLink
+                  key={resource.node_id}
+                  to={`/topology/table/${redirectPath}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-p2 flex items-center gap-3"
+                >
+                  <span className="h-4 w-4 shrink-0">
+                    <PopOutIcon />
+                  </span>
+                  <span className="truncate">{resource.name}</span>
+                </DFLink>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

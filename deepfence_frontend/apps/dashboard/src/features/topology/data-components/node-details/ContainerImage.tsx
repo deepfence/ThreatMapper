@@ -46,7 +46,7 @@ export const ContainerImage = (props: ContainerImageModalProps) => {
       value: 'metadata',
     },
     {
-      label: 'Monitoring',
+      label: 'Security Scans',
       value: 'scan-results',
     },
     {
