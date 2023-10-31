@@ -183,9 +183,10 @@ neo4j:
   secrets:
     # format should be username/password
     NEO4J_AUTH: neo4j/e16908ffa5b9f8e9d4ed
-    AWS_ACCESS_KEY: ""
-    AWS_SECRET_KEY: ""
-    DF_S3_BUCKET_NAME: ""
+    # To enable periodic backup of neo4j database to S3, please set the values below
+    # AWS_ACCESS_KEY: ""
+    # AWS_SECRET_KEY: ""
+    # DF_REMOTE_BACKUP_ROOT: "" # S3 bucket name
   config:
     NEO4J_dbms_memory_pagecache_size: 2600m
     NEO4JLABS_PLUGINS: '["apoc"]'
