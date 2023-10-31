@@ -83,6 +83,7 @@ type ReportFilters struct {
 	NodeType              string                `json:"node_type" validate:"required" required:"true" enum:"host,container,container_image,linux,cluster,aws,gcp,azure"`
 	SeverityOrCheckType   []string              `json:"severity_or_check_type" enum:"critical,high,medium,low,cis,gdpr,nist,hipaa,pci,soc_2"`
 	IncludeDeadNode       bool                  `json:"include_dead_nodes"`
+	MostExploitableReport bool                  `json:"most_exploitable_report"`
 	AdvancedReportFilters AdvancedReportFilters `json:"advanced_report_filters,omitempty"`
 }
 
