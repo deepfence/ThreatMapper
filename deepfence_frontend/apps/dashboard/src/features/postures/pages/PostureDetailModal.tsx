@@ -190,37 +190,28 @@ const DetailsComponent = () => {
               if (!resource.node_id || !resource.node_type) {
                 return null;
               }
-              if (resource.node_type === 'kubernetes_cluster') {
-                return (
-                  <div
-                    key={resource.node_id}
-                    className="text-p1 dark:text-text-input-value break-words"
-                  >
-                    {resource.name}
-                  </div>
-                );
-              } else {
-                let redirectPath = '';
-                if (resource.node_type === 'host') {
-                  redirectPath = `host?hosts=${resource.node_id}`;
-                } else if (resource.node_type === 'container') {
-                  redirectPath = `container?containers=${resource.node_id}`;
-                }
-                return (
-                  <DFLink
-                    key={resource.node_id}
-                    to={`/topology/table/${redirectPath}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-p2 flex items-center gap-3"
-                  >
-                    <span className="h-4 w-4 shrink-0">
-                      <PopOutIcon />
-                    </span>
-                    <span className="truncate">{resource.name}</span>
-                  </DFLink>
-                );
+              let redirectPath = '';
+              if (resource.node_type === 'host') {
+                redirectPath = `host?hosts=${resource.node_id}`;
+              } else if (resource.node_type === 'container') {
+                redirectPath = `container?containers=${resource.node_id}`;
+              } else if (resource.node_type === 'cluster') {
+                redirectPath = `kubernetes_cluster?clusters=${resource.node_id}`;
               }
+              return (
+                <DFLink
+                  key={resource.node_id}
+                  to={`/topology/table/${redirectPath}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-p2 flex items-center gap-3"
+                >
+                  <span className="h-4 w-4 shrink-0">
+                    <PopOutIcon />
+                  </span>
+                  <span className="truncate">{resource.name}</span>
+                </DFLink>
+              );
             })}
           </div>
         </div>
