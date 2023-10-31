@@ -51,7 +51,7 @@ export const Host = (props: HostModalProps) => {
       value: 'metadata',
     },
     {
-      label: 'Monitoring',
+      label: 'Security Scans',
       value: 'scan-results',
     },
     {
