@@ -47,6 +47,7 @@ type regCreds struct {
 	ImagePrefix   string
 	SkipTLSVerify bool
 	UseHttp       bool
+	IsRegistry    bool
 }
 
 func useHttp(url string) bool {
@@ -162,6 +163,7 @@ func gitlabCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) 
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.GitlabRegistryURL),
 		SkipTLSVerify: true,
 		UseHttp:       useHttp(hub.NonSecret.GitlabRegistryURL),
+		IsRegistry:    true,
 	}, nil
 
 }
@@ -232,6 +234,7 @@ func ecrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (re
 		ImagePrefix:   "",
 		SkipTLSVerify: false,
 		UseHttp:       useHttp(*authData.ProxyEndpoint),
+		IsRegistry:    true,
 	}, nil
 }
 
@@ -268,6 +271,7 @@ func dockerHubCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AE
 		ImagePrefix:   hub.NonSecret.DockerHubNamespace,
 		SkipTLSVerify: false,
 		UseHttp:       false,
+		IsRegistry:    true,
 	}, nil
 }
 
@@ -310,6 +314,7 @@ func quayCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (r
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.QuayRegistryURL) + "/" + hub.NonSecret.QuayNamespace,
 		SkipTLSVerify: true,
 		UseHttp:       useHttp(hub.NonSecret.QuayRegistryURL),
+		IsRegistry:    true,
 	}, nil
 }
 
@@ -358,6 +363,7 @@ func gcrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (re
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.RegistryURL),
 		SkipTLSVerify: false,
 		UseHttp:       useHttp(hub.NonSecret.RegistryURL),
+		IsRegistry:    true,
 	}, nil
 }
 
@@ -395,6 +401,7 @@ func acrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (re
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.AzureRegistryURL),
 		SkipTLSVerify: false,
 		UseHttp:       useHttp(hub.NonSecret.AzureRegistryURL),
+		IsRegistry:    true,
 	}, nil
 }
 
@@ -432,6 +439,7 @@ func harborCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) 
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.HarborRegistryURL),
 		SkipTLSVerify: true,
 		UseHttp:       useHttp(hub.NonSecret.HarborRegistryURL),
+		IsRegistry:    true,
 	}, nil
 }
 
@@ -469,6 +477,7 @@ func dockerprivateCreds(reg postgresql_db.GetContainerRegistryRow, aes encryptio
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.DockerRegistryURL),
 		SkipTLSVerify: true,
 		UseHttp:       useHttp(hub.NonSecret.DockerRegistryURL),
+		IsRegistry:    true,
 	}, nil
 }
 
@@ -506,6 +515,7 @@ func jfrogCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.JfrogRegistryURL) + "/" + hub.NonSecret.JfrogRepository,
 		SkipTLSVerify: true,
 		UseHttp:       useHttp(hub.NonSecret.JfrogRegistryURL),
+		IsRegistry:    true,
 	}, nil
 }
 

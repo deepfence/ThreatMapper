@@ -162,6 +162,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 			SkipTLSVerify: creds.SkipTLSVerify,
 			UseHttp:       creds.UseHttp,
 		},
+		IsRegistry: creds.IsRegistry,
 	}
 
 	if params.ImageName != "" {
