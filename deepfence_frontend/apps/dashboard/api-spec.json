@@ -13734,6 +13734,7 @@
             "$ref": "#/components/schemas/UtilsAdvancedReportFilters"
           },
           "include_dead_nodes": { "type": "boolean" },
+          "most_exploitable_report": { "type": "boolean" },
           "node_type": {
             "enum": [
               "host",
