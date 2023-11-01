@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
 	"strconv"
 	"sync"
 	"time"
+
+	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
@@ -296,8 +297,8 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		if integration.IsMessagingFormat(integrationRow.IntegrationType) {
 			updatedResults = FormatForMessagingApps(results, integrationRow.Resource)
 		} else {
+			updatedResults = []map[string]interface{}{}
 			for _, r := range results {
-				updatedResults = []map[string]interface{}{}
 				updatedResults = append(updatedResults, utils.ToMap[T](r))
 			}
 		}
