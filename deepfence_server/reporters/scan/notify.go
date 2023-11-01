@@ -52,7 +52,10 @@ func Notify[T any](ctx context.Context, res []T, common model.ScanResultsCommon,
 		// add scantype
 		extras["scan_type"] = scanType
 
-		integrationModel.SendNotification(ctx, string(messageByte), extras)
+		err = integrationModel.SendNotification(ctx, string(messageByte), extras)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 	}
 
 	return nil
@@ -83,7 +86,7 @@ func injectNodeData[T any](results []T, common model.ScanResultsCommon,
 
 		if _, ok := m["updated_at"]; ok {
 			flag := integration.IsMessagingFormat(integrationType)
-			if flag == true {
+			if flag {
 				ts := m["updated_at"].(int64)
 				tm := time.Unix(0, ts*int64(time.Millisecond))
 				m["updated_at"] = tm

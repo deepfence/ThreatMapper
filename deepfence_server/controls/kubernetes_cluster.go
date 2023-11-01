@@ -113,10 +113,7 @@ func ExtractPendingKubernetesClusterUpgrade(ctx context.Context, nodeId string, 
 		return res, err
 	}
 
-	session, err := client.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		return res, err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))

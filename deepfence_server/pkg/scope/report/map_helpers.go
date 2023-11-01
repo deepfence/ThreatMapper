@@ -10,31 +10,6 @@ import (
 
 // Helper functions for ps.Map, without considering what is inside
 
-// Return a new map containing all the elements of the two input maps
-// and where the same Key is in both, pick 'b' where prefer(a,b) is true
-func mergeMaps(m, n *ps.Tree, prefer func(a, b interface{}) bool) *ps.Tree {
-	switch {
-	case m == nil:
-		return n
-	case n == nil:
-		return m
-	case m.Size() < n.Size():
-		m, n = n, m
-	}
-
-	n.ForEach(func(Key string, val interface{}) {
-		if existingVal, found := m.Lookup(Key); found {
-			if prefer(existingVal, val) {
-				m = m.Set(Key, val)
-			}
-		} else {
-			m = m.Set(Key, val)
-		}
-	})
-
-	return m
-}
-
 func mapEqual(m, n *ps.Tree, equalf func(a, b interface{}) bool) bool {
 	var mSize, nSize int
 	if m != nil {

@@ -172,7 +172,10 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	var report model.ExportReport
 	utils.FromMap(da.Props, &report)
 
-	httpext.JSON(w, http.StatusOK, report)
+	err = httpext.JSON(w, http.StatusOK, report)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
@@ -234,7 +237,10 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 		return reports[i].CreatedAt > reports[j].CreatedAt
 	})
 
-	httpext.JSON(w, http.StatusOK, reports)
+	err = httpext.JSON(w, http.StatusOK, reports)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
@@ -326,5 +332,8 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 
 	h.AuditUserActivity(r, EVENT_REPORTS, ACTION_CREATE, req, true)
 
-	httpext.JSON(w, http.StatusOK, model.GenerateReportResp{ReportID: report_id})
+	err = httpext.JSON(w, http.StatusOK, model.GenerateReportResp{ReportID: report_id})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }

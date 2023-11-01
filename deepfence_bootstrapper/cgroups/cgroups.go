@@ -71,6 +71,9 @@ func LoadCgroup(name string, cpulimit int64, memlimit int64) error {
 			},
 		}
 		m, err := cgroup2.LoadSystemd("/", name+".slice")
+		if err != nil {
+			return err
+		}
 		err = m.Update(&res)
 		if err != nil {
 			// This hack is needed inside containers
@@ -106,9 +109,9 @@ func AttachProcessToCgroup(name string, pid int) error {
 
 func UnloadAll() {
 	for _, v := range cgroups1 {
-		v.Delete()
+		_ = v.Delete()
 	}
 	for _, m := range cgroups2 {
-		m.DeleteSystemd()
+		_ = m.DeleteSystemd()
 	}
 }

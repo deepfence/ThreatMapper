@@ -5,6 +5,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -52,8 +53,14 @@ func (e *RegistryGitlab) FetchImagesFromRegistry() ([]model.IngestedContainerIma
 // getters
 func (e *RegistryGitlab) GetSecret() map[string]interface{} {
 	var secret map[string]interface{}
-	b, _ := json.Marshal(e.Secret)
-	json.Unmarshal(b, &secret)
+	b, err := json.Marshal(e.Secret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	err = json.Unmarshal(b, &secret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 	return secret
 }
 

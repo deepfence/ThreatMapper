@@ -25,10 +25,7 @@ func ScheduleAgentUpgrade(ctx context.Context, version string, nodeIds []string,
 		return err
 	}
 
-	session, err := client.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		return err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -69,10 +66,7 @@ func GetAgentVersionTarball(ctx context.Context, version string) (string, error)
 		return "", err
 	}
 
-	session, err := client.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return "", err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -83,7 +77,7 @@ func GetAgentVersionTarball(ctx context.Context, version string) (string, error)
 
 	res, err := tx.Run(`
 		MATCH (v:AgentVersion{node_id: $version})
-		return v.url`,
+		RETURN v.url`,
 		map[string]interface{}{
 			"version": version,
 		})
@@ -108,10 +102,7 @@ func GetAgentPluginVersionTarball(ctx context.Context, version, plugin_name stri
 		return "", err
 	}
 
-	session, err := client.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return "", err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -148,10 +139,7 @@ func hasPendingUpgradeOrNew(ctx context.Context, version string, nodeId string) 
 		return false, err
 	}
 
-	session, err := client.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return false, err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -199,10 +187,7 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) er
 		return err
 	}
 
-	session, err := client.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		return err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -248,10 +233,7 @@ func ScheduleAgentPluginEnable(ctx context.Context, version, plugin_name string,
 		return err
 	}
 
-	session, err := client.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		return err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -299,10 +281,7 @@ func ScheduleAgentPluginDisable(ctx context.Context, plugin_name string, nodeIds
 		return err
 	}
 
-	session, err := client.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		return err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))

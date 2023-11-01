@@ -892,10 +892,8 @@ func (nc *neo4jTopologyReporter) getContainerGraph(
 	if err != nil {
 		return res, err
 	}
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -933,10 +931,8 @@ func (nc *neo4jTopologyReporter) getPodGraph(
 	if err != nil {
 		return res, err
 	}
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -973,20 +969,23 @@ func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters
 	if err != nil {
 		return res, err
 	}
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	if !filters.SkipConnections {
 		connTx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
-		res.Connections, err = nc.GetKubernetesConnections(connTx, kubernetes_filter, host_filter)
 		if err != nil {
-			log.Error().Msgf("Topology get connections: %v", err)
+			log.Error().Msgf("Topology get transaction: %v", err)
 			res.SkippedConnections = true
+		} else {
+			res.Connections, err = nc.GetKubernetesConnections(connTx, kubernetes_filter, host_filter)
+			if err != nil {
+				log.Error().Msgf("Topology get connections: %v", err)
+				res.SkippedConnections = true
+			}
+			connTx.Close()
 		}
-		connTx.Close()
 	} else {
 		res.SkippedConnections = true
 	}
@@ -1032,20 +1031,23 @@ func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topol
 	if err != nil {
 		return res, err
 	}
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	if !filters.SkipConnections {
 		connTx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
-		res.Connections, err = nc.GetHostConnections(connTx, nil, nil)
 		if err != nil {
-			log.Error().Msgf("Topology get connections: %v", err)
+			log.Error().Msgf("Topology get transaction: %v", err)
 			res.SkippedConnections = true
+		} else {
+			res.Connections, err = nc.GetHostConnections(connTx, nil, nil)
+			if err != nil {
+				log.Error().Msgf("Topology get connections: %v", err)
+				res.SkippedConnections = true
+			}
+			connTx.Close()
 		}
-		connTx.Close()
 	} else {
 		res.SkippedConnections = true
 	}
@@ -1095,10 +1097,8 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 	if err != nil {
 		return res, err
 	}
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	if !filters.SkipConnections {
@@ -1196,10 +1196,8 @@ func GetTopologyDelta(ctx context.Context,
 		return deltaResp, err
 	}
 
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return deltaResp, err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
@@ -1224,10 +1222,10 @@ func GetTopologyDelta(ctx context.Context,
 			nodeType := record.Values[1].(string)
 			if isAdd {
 				deltaResp.Additions = append(deltaResp.Additions,
-					model.NodeIdentifier{nodeid, nodeType})
+					model.NodeIdentifier{NodeId: nodeid, NodeType: nodeType})
 			} else {
 				deltaResp.Deletions = append(deltaResp.Deletions,
-					model.NodeIdentifier{nodeid, nodeType})
+					model.NodeIdentifier{NodeId: nodeid, NodeType: nodeType})
 			}
 			ts := record.Values[2].(int64)
 			if ts > maxTime {
@@ -1259,7 +1257,7 @@ func GetTopologyDelta(ctx context.Context,
 		}
 	}
 
-	if deltaReq.Addition == true {
+	if deltaReq.Addition {
 		additionQuery := `MATCH (n) WHERE ` + nodeTypeQueryStr + `
 		AND n.active=true AND n.created_at > %d 
 		RETURN n.node_id, n.node_type, n.created_at`
@@ -1271,7 +1269,7 @@ func GetTopologyDelta(ctx context.Context,
 		}
 	}
 
-	if deltaReq.Deletion == true {
+	if deltaReq.Deletion {
 		deletionQuery := `MATCH (n) WHERE ` + nodeTypeQueryStr + `
         AND n.active=false AND n.updated_at > %d
         RETURN n.node_id, n.node_type, n.updated_at`

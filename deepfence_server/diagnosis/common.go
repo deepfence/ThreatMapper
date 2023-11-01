@@ -20,7 +20,6 @@ const (
 	ConsoleDiagnosisFileServerPrefix = "diagnosis/console-diagnosis/"
 	AgentDiagnosisFileServerPrefix   = "diagnosis/agent-diagnosis/"
 	CloudScannerDiagnosticLogsPrefix = "diagnosis/cloud-scanner-diagnosis/"
-
 )
 
 type DiagnosticNotification struct {
@@ -75,12 +74,16 @@ func GetDiagnosticLogs(ctx context.Context) (*GetDiagnosticLogsResponse, error) 
 	if err != nil {
 		return nil, err
 	}
+	diagLogs, err := getCloudScannerDiagnosticLogs(ctx, mc, CloudScannerDiagnosticLogsPrefix)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 	diagnosticLogs := GetDiagnosticLogsResponse{
 		ConsoleLogs:      getDiagnosticLogsHelper(ctx, mc, ConsoleDiagnosisFileServerPrefix),
 		AgentLogs:        getAgentDiagnosticLogs(ctx, mc, AgentDiagnosisFileServerPrefix),
-		CloudScannerLogs: getCloudScannerDiagnosticLogs(ctx, mc, CloudScannerDiagnosticLogsPrefix),
+		CloudScannerLogs: diagLogs,
 	}
-	return &diagnosticLogs, err
+	return &diagnosticLogs, nil
 }
 
 func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, pathPrefix string) []DiagnosticLogsLink {
@@ -129,9 +132,6 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 		return diagnosticLogs
 	}
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return diagnosticLogs
-	}
 	defer session.Close()
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
@@ -199,7 +199,7 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 	return diagnosticLogs
 }
 
-func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathPrefix string) []DiagnosticLogsLink {
+func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathPrefix string) ([]DiagnosticLogsLink, error) {
 	diagnosticLogs := getDiagnosticLogsHelper(ctx, mc, CloudScannerDiagnosticLogsPrefix)
 	minioAgentLogsKeys := make(map[string]int)
 	for i, log := range diagnosticLogs {
@@ -209,25 +209,29 @@ func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager
 	// Get in progress ones from neo4j
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return diagnosticLogs
+		return diagnosticLogs, err
 	}
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return diagnosticLogs
-	}
 	defer session.Close()
+
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return diagnosticLogs, err
+	}
 	defer tx.Close()
 
 	r, err := tx.Run(`
 		MATCH (n:CloudScannerDiagnosticLogs)-[:SCHEDULEDLOGS]->(m)
 		RETURN n.node_id, n.minio_file_name, n.message, n.status, n.updated_at, m.node_name`, map[string]interface{}{})
 	if err != nil {
-		return diagnosticLogs
+		return diagnosticLogs, err
 	}
 
 	nodeIdToName := make(map[string]string)
 	records, err := r.Collect()
+	if err != nil {
+		return diagnosticLogs, err
+	}
 	for _, rec := range records {
 		var nodeId, fileName, message, status, updatedAt, nodeName interface{}
 		var ok bool
@@ -271,5 +275,5 @@ func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager
 	sort.Slice(diagnosticLogs, func(i, j int) bool {
 		return diagnosticLogs[i].CreatedAt > diagnosticLogs[j].CreatedAt
 	})
-	return diagnosticLogs
+	return diagnosticLogs, nil
 }

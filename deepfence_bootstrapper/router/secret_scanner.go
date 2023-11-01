@@ -5,46 +5,20 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Jeffail/tunny"
 	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
-const (
-	defaultScanConcurrency = 1
-)
-
 var (
 	ebpfSocketPath = getDfInstallDir() + "/tmp/secret-scanner.sock"
-	ssEbpfLogPath  = getDfInstallDir() + "/var/log/fenced/secretScanner.log"
-	certPath       = getDfInstallDir() + "/etc/filebeat/filebeat.crt"
+	scanDir        string
 )
-
-var (
-	scanConcurrency    int
-	grpcScanWorkerPool *tunny.Pool
-	mgmtConsoleUrl     string
-	deepfenceKey       string
-	scanDir            string
-)
-
-type secretScanParameters struct {
-	client      pb.SecretScannerClient
-	req         *pb.FindRequest
-	controlArgs map[string]string
-	hostName    string
-}
 
 func init() {
-	mgmtConsoleUrl = os.Getenv("MGMT_CONSOLE_URL")
-	consolePort := os.Getenv("MGMT_CONSOLE_PORT")
-	if consolePort != "" && consolePort != "443" {
-		mgmtConsoleUrl += ":" + consolePort
-	}
-	deepfenceKey = os.Getenv("DEEPFENCE_KEY")
 	if os.Getenv("DF_SERVERLESS") == "true" {
 		scanDir = "/"
 	} else {
@@ -72,13 +46,13 @@ func StartSecretsScan(req ctl.StartSecretScanRequest) error {
 		}
 	case ctl.Host:
 		greq = pb.FindRequest{
-			Input:  &pb.FindRequest_Path{Path: "/fenced/mnt/host"},
+			Input:  &pb.FindRequest_Path{Path: scanDir},
 			ScanId: req.BinArgs["scan_id"],
 		}
 	}
 
 	conn, err := grpc.Dial("unix://"+ebpfSocketPath, grpc.WithAuthority("dummy"),
-		grpc.WithInsecure())
+		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		fmt.Printf("error in creating secret scanner client: %s\n", err.Error())
 		return err
@@ -99,7 +73,7 @@ func StartSecretsScan(req ctl.StartSecretScanRequest) error {
 
 func GetSecretScannerJobCount() int32 {
 	conn, err := grpc.Dial("unix://"+ebpfSocketPath, grpc.WithAuthority("dummy"),
-		grpc.WithInsecure())
+		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		fmt.Printf("error in creating secret scanner client: %s\n", err.Error())
 		return 0
@@ -116,7 +90,7 @@ func GetSecretScannerJobCount() int32 {
 func StopSecretScan(req ctl.StopSecretScanRequest) error {
 	fmt.Printf("Stop Secret Scan : %v\n", req)
 	conn, err := grpc.Dial("unix://"+ebpfSocketPath, grpc.WithAuthority("dummy"),
-		grpc.WithInsecure())
+		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		fmt.Printf("error in creating secret scanner client: %s\n", err.Error())
 		return err

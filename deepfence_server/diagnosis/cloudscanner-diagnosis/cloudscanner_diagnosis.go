@@ -3,7 +3,6 @@ package cloudscanner_diagnosis
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 	"time"
@@ -25,10 +24,6 @@ func getInProgressCloudScannerNodeIds(ctx context.Context, nodeIdentifiers []dia
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return inProgressNodeIds, err
-	}
-
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -77,7 +72,7 @@ func getInProgressCloudScannerNodeIds(ctx context.Context, nodeIdentifiers []dia
 	}
 
 	if len(missingNodes) > 0 {
-		return inProgressNodeIds, errors.New(fmt.Sprintf("could not find nodes %v", missingNodes))
+		return inProgressNodeIds, fmt.Errorf("could not find nodes %v", missingNodes)
 	}
 
 	return inProgressNodeIds, nil
@@ -89,11 +84,12 @@ func UpdateCloudScannerDiagnosticLogsStatus(ctx context.Context, status diagnosi
 		return err
 	}
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
-	defer session.Close()
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	defer tx.Close()
 
 	_, err = tx.Run(`
@@ -139,11 +135,11 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 		return err
 	}
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
-	defer session.Close()
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	defer tx.Close()
 
 	fileNameSuffix := "-" + time.Now().Format("2006-01-02-15-04-05") + ".zip"
@@ -189,12 +185,12 @@ func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context, nodeIDs []string) 
 		return ctl.Action{}, err
 	}
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return ctl.Action{}, err
-	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return ctl.Action{}, err
+	}
 	defer tx.Close()
 
 	res, err := tx.Run(`MATCH (n:CloudScannerDiagnosticLogs)
