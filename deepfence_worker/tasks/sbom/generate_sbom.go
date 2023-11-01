@@ -177,7 +177,10 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 
 	log.Debug().Msgf("config: %+v", cfg)
 
-	scanCtx.Checkpoint("Before generating SBOM")
+	err = scanCtx.Checkpoint("Before generating SBOM")
+	if err != nil {
+		return err
+	}
 
 	rawSbom, err := syft.GenerateSBOM(scanCtx.Context, cfg)
 	if err != nil {
@@ -193,7 +196,10 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 	}
 	gzipwriter.Close()
 
-	scanCtx.Checkpoint("Before storing to minio")
+	err = scanCtx.Checkpoint("Before storing to minio")
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 
 	// upload sbom to minio
 	mc, err := directory.MinioClient(ctx)
@@ -232,7 +238,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 			}
 		}
 
-		if logError == true {
+		if logError {
 			log.Error().Msg(err.Error())
 			return err
 		}

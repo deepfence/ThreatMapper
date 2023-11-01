@@ -40,7 +40,10 @@ func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
 	log.Info().Msg("Start agent version check")
 
 	res := []map[string]interface{}{}
-	getVersionMetadata("https://api.github.com/repos/deepfence/ThreatMapper/tags", &res)
+	err := getVersionMetadata("https://api.github.com/repos/deepfence/ThreatMapper/tags", &res)
+	if err != nil {
+		return err
+	}
 
 	tags_to_ingest := []string{}
 	for _, tag := range res {

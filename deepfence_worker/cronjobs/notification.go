@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
 	"strconv"
 	"sync"
 	"time"
+
+	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
@@ -133,7 +134,10 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 						},
 					}
 				}
-				pgClient.UpdateIntegrationStatus(ctx, params)
+				err = pgClient.UpdateIntegrationStatus(ctx, params)
+				if err != nil {
+					log.Error().Msg(err.Error())
+				}
 			}
 		}(integrationRow)
 	}
@@ -199,7 +203,7 @@ func injectNodeDatamap(results []map[string]interface{}, common model.ScanResult
 
 		if _, ok := r["updated_at"]; ok {
 			flag := integration.IsMessagingFormat(integrationType)
-			if flag == true {
+			if flag {
 				ts := r["updated_at"].(int64)
 				tm := time.Unix(0, ts*int64(time.Millisecond))
 				r["updated_at"] = tm
@@ -275,6 +279,9 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		results, common, err := reporters_scan.GetScanResults[T](ctx,
 			utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId,
 			filters.FieldsFilters, model.FetchWindow{})
+		if err != nil {
+			return err
+		}
 		totalQueryTime = totalQueryTime + time.Since(profileStart).Milliseconds()
 
 		if len(results) == 0 {

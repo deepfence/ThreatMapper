@@ -27,11 +27,9 @@ func init() {
 	neo4j_host := os.Getenv("DEEPFENCE_NEO4J_HOST")
 	go func() {
 		for {
-			select {
-			case <-wait:
-				breaker.Lock()
-				log.Info().Msgf("Breaker opened")
-			}
+			<-wait
+			breaker.Lock()
+			log.Info().Msgf("Breaker opened")
 			for {
 				err := utils.WaitServiceTcpConn(neo4j_host, neo4j_port, time.Second*30)
 				if err != nil {

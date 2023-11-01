@@ -55,11 +55,11 @@ func CleanUpReports(ctx context.Context, task *asynq.Task) error {
 	cleanup(minioReportsPrefix)
 
 	// delete the reports which are in failed state
-	deleteFailedReports(ctx, session)
+	err = deleteFailedReports(ctx, session)
 
 	log.Info().Msg("Complete reports cleanup")
 
-	return nil
+	return err
 }
 
 func deleteReport(ctx context.Context, session neo4j.Session, path string) error {
