@@ -9,6 +9,7 @@ import {
   ModelSecretScanTriggerReq,
   ReportersContainsFilter,
 } from '@/api/generated';
+import { ScheduleScanForm } from '@/components/scan-configure-forms/ScheduleScanForm';
 import { invalidateAllQueries } from '@/queries';
 import { SecretScanNodeTypeEnum } from '@/types/common';
 import { get403Message } from '@/utils/403';
@@ -59,6 +60,10 @@ export const scanSecretApiAction = async ({
   const nodeTypes = formData.get('_nodeTypes')?.toString().split(',') ?? [];
 
   const imageTag = formData.get('imageTag')?.toString() ?? '';
+
+  const scheduleOn = formData.get('scheduleOn') === 'on';
+  const scanImmediately = formData.get('scanImmediately') === 'on';
+  const scheduleDescription = formData.get('scheduleDescription');
 
   const getNodeType = (nodeType: SecretScanNodeTypeEnum | 'container_image') => {
     let _nodeType = nodeType as ModelNodeIdentifierNodeTypeEnum;
@@ -148,7 +153,15 @@ export const scanSecretApiAction = async ({
     throw startSecretScanResponse.error;
   }
 
-  toast.success('Scan started successfully');
+  // schedule scan
+  if (scheduleOn && scanImmediately) {
+    toast.success('Scan started and scheduled successfully');
+  } else if (scheduleOn) {
+    toast.success('Scan scheduled successfully');
+  } else {
+    toast.success('Scan started successfully');
+  }
+
   invalidateAllQueries();
   return {
     success: true,
@@ -247,6 +260,8 @@ export const SecretScanConfigureForm = ({
           )}
         </div>
       ) : null}
+
+      <ScheduleScanForm />
 
       {fetcherData?.message && (
         <p className="dark:text-status-error text-p7 mt-4">{fetcherData.message}</p>

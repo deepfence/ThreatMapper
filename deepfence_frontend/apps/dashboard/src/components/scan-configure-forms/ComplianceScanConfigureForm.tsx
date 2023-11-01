@@ -15,6 +15,7 @@ import { CircleSpinner, createColumnHelper, Switch, Table } from 'ui-components'
 import { getComplianceApiClient } from '@/api/api';
 import { ModelNodeIdentifierNodeTypeEnum } from '@/api/generated';
 import { ModelCloudNodeComplianceControl } from '@/api/generated/models/ModelCloudNodeComplianceControl';
+import { ScheduleScanForm } from '@/components/scan-configure-forms/ScheduleScanForm';
 import { TruncatedText } from '@/components/TruncatedText';
 import { ActionEnumType } from '@/features/postures/data-component/toggleControlApiAction';
 import { invalidateAllQueries, queries } from '@/queries';
@@ -85,6 +86,10 @@ export const scanPostureApiAction = async ({
     nodeType = 'cloud_account';
   }
 
+  const scheduleOn = formData.get('scheduleOn') === 'on';
+  const scanImmediately = formData.get('scanImmediately') === 'on';
+  const scheduleDescription = formData.get('scheduleDescription');
+
   const startComplianceScanApi = apiWrapper({
     fn: getComplianceApiClient().startComplianceScan,
   });
@@ -123,7 +128,15 @@ export const scanPostureApiAction = async ({
     }
     throw startComplianceScanResponse.error;
   }
-  toast.success('Scan started successfully');
+  // schedule scan
+  if (scheduleOn && scanImmediately) {
+    toast.success('Scan started and scheduled successfully');
+  } else if (scheduleOn) {
+    toast.success('Scan scheduled successfully');
+  } else {
+    toast.success('Scan started successfully');
+  }
+
   invalidateAllQueries();
   return {
     success: true,
@@ -466,6 +479,9 @@ export const ComplianceScanConfigureForm = ({
             Click on start scan to find compliance issues
           </span>
         ) : null}
+
+        <ScheduleScanForm />
+
         <div className="flex gap-3 mt-10">
           <Button
             disabled={selectedCheckTypes.length === 0 || state !== 'idle'}

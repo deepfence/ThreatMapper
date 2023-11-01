@@ -36,6 +36,8 @@ importers:
       '@vitejs/plugin-react': ^4.0.4
       '@vitest/coverage-c8': ^0.33.0
       autoprefixer: ^10.4.15
+      cron-converter: ^2.0.1
+      cronstrue: ^2.41.0
       dayjs: ^1.11.9
       echarts: ^5.4.3
       eslint: ^8.47.0
@@ -73,6 +75,8 @@ importers:
       '@suspensive/react': 1.11.6_react@18.2.0
       '@suspensive/react-query': 1.11.6_mtrmixnuil4ipbilqpq7buadam
       '@tanstack/react-query': 4.32.6_biqbaboplfbrettd7655fr4n2y
+      cron-converter: 2.0.1
+      cronstrue: 2.41.0
       dayjs: 1.11.9
       echarts: 5.4.3
       lodash-es: 4.17.21
@@ -168,6 +172,8 @@ importers:
       '@vitejs/plugin-react': ^4.0.4
       '@vitest/coverage-c8': ^0.33.0
       autoprefixer: ^10.4.15
+      cron-converter: ^2.0.1
+      cronstrue: ^2.41.0
       cva: npm:class-variance-authority@^0.7.0
       eslint: ^8.47.0
       eslint-config-prettier: ^9.0.0
@@ -207,6 +213,8 @@ importers:
       '@radix-ui/react-tabs': 1.0.4_gltvt74xzh7f5lvw2hzxriz5bu
       '@radix-ui/react-tooltip': 1.0.6_gltvt74xzh7f5lvw2hzxriz5bu
       '@tanstack/react-table': 8.9.3_biqbaboplfbrettd7655fr4n2y
+      cron-converter: 2.0.1
+      cronstrue: 2.41.0
       cva: /class-variance-authority/0.7.0
       lodash-es: 4.17.21
       react-use: 17.4.0_biqbaboplfbrettd7655fr4n2y
@@ -6523,6 +6531,17 @@ packages:
       path-type: 4.0.0
     dev: true
 
+  /cron-converter/2.0.1:
+    resolution: {integrity: sha512-2wjThrhVfy4OukXV9IPhqne11MnEqN0dzMvcR7m1cK2CJj/rC3S9Ns1AbA7pW+ao488V99Sk6vjo2119LcoGbA==}
+    dependencies:
+      luxon: 3.4.3
+    dev: false
+
+  /cronstrue/2.41.0:
+    resolution: {integrity: sha512-3ZS3eMJaxMRBGmDauKCKbyIRgVcph6uSpkhSbbZvvJWkelHiSTzGJbBqmu8io7Hspd2F45bQKnC1kzoNvtku2g==}
+    hasBin: true
+    dev: false
+
   /cross-spawn/7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
     engines: {node: '>= 8'}
@@ -9231,6 +9250,11 @@ packages:
     dependencies:
       yallist: 4.0.0
     dev: true
+
+  /luxon/3.4.3:
+    resolution: {integrity: sha512-tFWBiv3h7z+T/tDaoxA8rqTxy1CHV6gHS//QdaH4pulbq/JuBSGgQspQQqcgnwdAx6pNI7cmvz5Sv/addzHmUg==}
+    engines: {node: '>=12'}
+    dev: false
 
   /lz-string/1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
