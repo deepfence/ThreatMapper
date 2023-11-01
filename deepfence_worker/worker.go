@@ -71,13 +71,12 @@ func skipRetryCallbackWrapper(taskCallback wtils.WorkerHandler) wtils.WorkerHand
 func (w *Worker) AddRetryableHandler(
 	task string,
 	taskCallback wtils.WorkerHandler,
-) error {
+) {
 	w.mux.HandleFunc(
 		task,
 		contextInjectorCallbackWrapper(w.namespace,
 			telemetryCallbackWrapper(task, taskCallback)),
 	)
-	return nil
 }
 
 // CronJobHandler do not retry on failure
@@ -85,14 +84,13 @@ func (w *Worker) AddRetryableHandler(
 func (w *Worker) AddOneShotHandler(
 	task string,
 	taskCallback wtils.WorkerHandler,
-) error {
+) {
 	w.mux.HandleFunc(
 		task,
 		skipRetryCallbackWrapper(
 			contextInjectorCallbackWrapper(w.namespace,
 				telemetryCallbackWrapper(task, taskCallback))),
 	)
-	return nil
 }
 
 func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc, error) {

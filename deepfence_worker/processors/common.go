@@ -114,13 +114,16 @@ func StartKafkaProcessors(ctx context.Context) {
 		1_000)
 
 	for i := range processors {
-		processors[i].Start(ctx)
+		err := processors[i].Start(ctx)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 	}
 }
 
 func StopKafkaProcessors() {
 	for i := range processors {
-		processors[i].Stop()
+		_ = processors[i].Stop()
 	}
 }
 

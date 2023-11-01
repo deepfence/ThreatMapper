@@ -119,7 +119,10 @@ func xlsxSave(xlsx *excelize.File, params utils.ReportParams) (string, error) {
 
 func xlsxSetHeader(xlsx *excelize.File, sheet string, headers map[string]string) {
 	for k, v := range headers {
-		xlsx.SetCellValue(sheet, k, v)
+		err := xlsx.SetCellValue(sheet, k, v)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 	}
 }
 
@@ -165,7 +168,10 @@ func vulnerabilityXLSX(ctx context.Context, params utils.ReportParams) (string, 
 				nodeScanData.ScanInfo.CloudAccountID,
 				v.Masked,
 			}
-			xlsx.SetSheetRow("Sheet1", cellName, &value)
+			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
 		}
 		offset = offset + len(nodeScanData.ScanResults)
 	}
@@ -207,7 +213,10 @@ func secretXLSX(ctx context.Context, params utils.ReportParams) (string, error) 
 				nodeScanData.ScanInfo.KubernetesClusterName,
 				s.SignatureToMatch,
 			}
-			xlsx.SetSheetRow("Sheet1", cellName, &value)
+			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
 		}
 		offset = offset + len(nodeScanData.ScanResults)
 	}
@@ -251,7 +260,10 @@ func malwareXLSX(ctx context.Context, params utils.ReportParams) (string, error)
 				nodeScanData.ScanInfo.KubernetesClusterName,
 				nodeScanData.ScanInfo.NodeType,
 			}
-			xlsx.SetSheetRow("Sheet1", cellName, &value)
+			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
 		}
 		offset = offset + len(nodeScanData.ScanResults)
 	}
@@ -299,7 +311,10 @@ func complianceXLSX(ctx context.Context, params utils.ReportParams) (string, err
 				c.TestInfo,
 				c.TestNumber,
 			}
-			xlsx.SetSheetRow("Sheet1", cellName, &value)
+			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
 		}
 		offset = offset + len(nodeScanData.ScanResults)
 	}
@@ -346,7 +361,10 @@ func cloudComplianceXLSX(ctx context.Context, params utils.ReportParams) (string
 				c.Title,
 				c.ControlID,
 			}
-			xlsx.SetSheetRow("Sheet1", cellName, &value)
+			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
 		}
 	}
 

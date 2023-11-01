@@ -28,11 +28,8 @@ func CommitFuncCloudResource(ns string, cs []ingestersUtil.CloudResource) error 
 	if err != nil {
 		return err
 	}
-	session, err := driver.Session(neo4j.AccessModeWrite)
 
-	if err != nil {
-		return err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	batch, hosts, clusters := ResourceToMaps(cs)
@@ -173,11 +170,11 @@ func ResourceToMaps(ms []ingestersUtil.CloudResource) ([]map[string]interface{},
 // TODO: Call somewhere
 func LinkNodesWithCloudResources(ctx context.Context) error {
 	driver, err := directory.Neo4jClient(ctx)
-	session, err := driver.Session(neo4j.AccessModeWrite)
-
 	if err != nil {
 		return err
 	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))

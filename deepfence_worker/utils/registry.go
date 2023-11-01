@@ -542,39 +542,3 @@ func createAuthFile(registryId, registryUrl, username, password string) (string,
 	}
 	return authFilePath, nil
 }
-
-func getEcrCredentials(awsAccessKey, awsSecret, awsRegionName, registryId string, useIAMRole bool, targetAccountRoleARN string) (string, string) {
-	var awsConfig aws.Config
-	var svc *ecr.ECR
-	var creds *credentials.Credentials
-
-	if !useIAMRole {
-		awsConfig.WithCredentials(credentials.NewStaticCredentials(awsAccessKey, awsSecret, ""))
-	}
-	mySession := session.Must(session.NewSession(&awsConfig))
-
-	if useIAMRole {
-		creds = stscreds.NewCredentials(mySession, targetAccountRoleARN)
-		svc = ecr.New(mySession, &aws.Config{
-			Credentials: creds,
-			Region:      &awsRegionName,
-		})
-	} else {
-		svc = ecr.New(mySession, aws.NewConfig().WithRegion(awsRegionName))
-	}
-
-	var authorizationTokenRequestInput ecr.GetAuthorizationTokenInput
-	if registryId != "" {
-		authorizationTokenRequestInput.SetRegistryIds([]*string{&registryId})
-	}
-	authorizationTokenResponse, err := svc.GetAuthorizationToken(&authorizationTokenRequestInput)
-	if err != nil {
-		return "", ""
-	}
-	authorizationData := authorizationTokenResponse.AuthorizationData
-	if len(authorizationData) == 0 {
-		return "", ""
-	}
-	authData := *authorizationData[0]
-	return *authData.ProxyEndpoint, *authData.AuthorizationToken
-}

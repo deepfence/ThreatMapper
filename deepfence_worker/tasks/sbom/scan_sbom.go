@@ -9,7 +9,6 @@ import (
 	"io"
 	"os"
 	"path"
-	"regexp"
 	"time"
 
 	"github.com/anchore/syft/syft/formats"
@@ -29,7 +28,6 @@ import (
 )
 
 var (
-	attackVectorRegex   = regexp.MustCompile(`.*av:n.*`)
 	grypeConfig         = "/usr/local/bin/grype.yaml"
 	grypeBin            = "grype"
 	minioHost           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_HOST", "deepfence-file-server")
