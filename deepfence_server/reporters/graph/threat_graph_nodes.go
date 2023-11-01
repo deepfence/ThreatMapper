@@ -67,11 +67,7 @@ func GetIndividualThreatGraph[T reporters.Cypherable](ctx context.Context, graph
 		return individualThreatGraph, err
 	}
 
-	session, err := driver.Session(neo4j.AccessModeRead)
-
-	if err != nil {
-		return individualThreatGraph, err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(60 * time.Second))

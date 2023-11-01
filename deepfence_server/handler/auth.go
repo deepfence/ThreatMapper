@@ -9,6 +9,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
@@ -65,7 +66,10 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_TOKEN_AUTH, user, true)
 
-	httpext.JSON(w, http.StatusOK, accessTokenResponse)
+	err = httpext.JSON(w, http.StatusOK, accessTokenResponse)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +87,10 @@ func (h *Handler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, accessTokenResponse)
+	err = httpext.JSON(w, http.StatusOK, accessTokenResponse)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User, string, error) {
@@ -106,7 +113,7 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 	if err != nil {
 		return nil, "", err
 	}
-	if revoked == true {
+	if revoked {
 		return nil, "", &accessTokenRevokedError
 	}
 	userId, err := utils.GetInt64ValueFromInterfaceMap(claims, "user")
@@ -117,7 +124,7 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 	if err != nil {
 		return nil, "", err
 	}
-	if user.IsActive == false {
+	if !user.IsActive {
 		return nil, "", &userInactiveError
 	}
 	grantType, err := utils.GetStringValueFromInterfaceMap(claims, "grant_type")
@@ -147,7 +154,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		h.respondWithErrorCode(err, w, statusCode)
 		return
 	}
-	if u.IsActive == false {
+	if !u.IsActive {
 		h.respondError(&userInactiveError, w)
 		return
 	}
@@ -165,11 +172,14 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	u.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_LOGIN, u, true)
 
-	httpext.JSON(w, http.StatusOK, model.LoginResponse{
+	err = httpext.JSON(w, http.StatusOK, model.LoginResponse{
 		ResponseAccessToken: *accessTokenResponse,
 		OnboardingRequired:  model.IsOnboardingRequired(ctx),
 		PasswordInvalidated: u.PasswordInvalidated,
 	})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {

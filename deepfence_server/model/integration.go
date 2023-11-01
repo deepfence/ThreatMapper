@@ -39,7 +39,7 @@ func (i *IntegrationAddReq) IntegrationExists(ctx context.Context, pgClient *pos
 	}
 
 	var config map[string]interface{}
-	var found = false
+	var found bool
 
 	for _, integration := range integrations {
 		// json.rawmessage to map[string]interface{}

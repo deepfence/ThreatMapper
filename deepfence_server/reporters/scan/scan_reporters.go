@@ -833,7 +833,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 func GetFilters(ctx context.Context, having map[string]interface{}, detectedType string, filters []string) (map[string][]string, error) {
 	andQuery := "{"
 	index := 0
-	for key, _ := range having {
+	for key := range having {
 		if index == 0 {
 			andQuery += fmt.Sprintf("%s:$%s", key, key)
 		} else {

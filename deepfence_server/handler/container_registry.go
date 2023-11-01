@@ -65,8 +65,10 @@ func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 		registriesResponse = append(registriesResponse, registryResponse)
 	}
 
-	httpext.JSON(w, http.StatusOK, registriesResponse)
-
+	err = httpext.JSON(w, http.StatusOK, registriesResponse)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
@@ -104,7 +106,10 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 
 	// validate if registry credential is correct
 	if !registry.IsValidCredential() {
-		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryAuthFailed})
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryAuthFailed})
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
 		return
 	}
 
@@ -123,7 +128,11 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if registryExists {
-		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryExists})
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryExists})
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
+
 		return
 	}
 
@@ -171,7 +180,10 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	req.Secret = map[string]interface{}{}
 	h.AuditUserActivity(r, EVENT_REGISTRY, ACTION_CREATE, req, true)
 
-	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryCreated})
+	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryCreated})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 // update registry
@@ -187,7 +199,10 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 
 	idStr := chi.URLParam(r, "registry_id")
 	if idStr == "" {
-		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryIdMissing})
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryIdMissing})
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
 		return
 	}
 
@@ -214,7 +229,10 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !registryExists {
-		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryNotExists})
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryNotExists})
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
 		return
 	}
 
@@ -267,7 +285,10 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 
 	// validate if registry credential is correct
 	if !registry.IsValidCredential() {
-		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryAuthFailed})
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryAuthFailed})
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
 		return
 	}
 
@@ -294,7 +315,10 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	req.Secret = map[string]interface{}{}
 	h.AuditUserActivity(r, EVENT_REGISTRY, ACTION_UPDATE, req, true)
 
-	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryUpdated})
+	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryUpdated})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Request) {
@@ -313,7 +337,10 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	defer file.Close()
 
 	if (fileHeader.Header.Get("Content-Type")) != "application/json" {
-		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: "uploaded file is not json"})
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: "uploaded file is not json"})
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
 		return
 	}
 
@@ -325,13 +352,19 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 
 	registryName := r.FormValue("name")
 	if registryName == "" {
-		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: "registry name cannot be empty"})
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: "registry name cannot be empty"})
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
 		return
 	}
 
 	registryURL := r.FormValue("registry_url")
 	if registryName == "" {
-		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: "registry url cannot be empty"})
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: "registry url cannot be empty"})
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
 		return
 	}
 
@@ -374,7 +407,10 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 
 	// validate if registry credential is correct
 	if !registry.IsValidCredential() {
-		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryAuthFailed})
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryAuthFailed})
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
 		return
 	}
 
@@ -393,7 +429,10 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	if registryExists {
-		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryExists})
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryExists})
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
 		return
 	}
 
@@ -448,7 +487,10 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 
 	h.AuditUserActivity(r, EVENT_REGISTRY, ACTION_CREATE, req, true)
 
-	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryCreated})
+	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryCreated})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
@@ -519,11 +561,15 @@ func (h *Handler) RefreshRegistry(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if len(syncErrs) > 0 {
-		httpext.JSON(w, http.StatusInternalServerError,
+		err = httpext.JSON(w, http.StatusInternalServerError,
 			model.MessageResponse{Message: strings.Join(syncErrs, ",")})
+	} else {
+		err = httpext.JSON(w, http.StatusOK,
+			model.MessageResponse{Message: "started sync registry"})
 	}
-	httpext.JSON(w, http.StatusOK,
-		model.MessageResponse{Message: "started sync registry"})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) getImages(w http.ResponseWriter, r *http.Request) ([]model.ContainerImage, error) {
@@ -556,7 +602,10 @@ func (h *Handler) ListImages(w http.ResponseWriter, r *http.Request) {
 	images, err := h.getImages(w, r)
 
 	if err == nil {
-		httpext.JSON(w, http.StatusOK, images)
+		err = httpext.JSON(w, http.StatusOK, images)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 	}
 }
 
@@ -564,9 +613,12 @@ func (h *Handler) CountImages(w http.ResponseWriter, r *http.Request) {
 	images, err := h.getImages(w, r)
 
 	if err == nil {
-		httpext.JSON(w, http.StatusOK, model.RegistryCountResp{
+		err = httpext.JSON(w, http.StatusOK, model.RegistryCountResp{
 			Count: len(images),
 		})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 	}
 }
 
@@ -597,26 +649,26 @@ func (h *Handler) getImageStubs(w http.ResponseWriter, r *http.Request) ([]model
 func (h *Handler) ListImageStubs(w http.ResponseWriter, r *http.Request) {
 	images, err := h.getImageStubs(w, r)
 	if err == nil {
-		httpext.JSON(w, http.StatusOK, images)
+		err = httpext.JSON(w, http.StatusOK, images)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 	}
 }
 
 func (h *Handler) CountImageStubs(w http.ResponseWriter, r *http.Request) {
 	images, err := h.getImageStubs(w, r)
 	if err == nil {
-		httpext.JSON(w, http.StatusOK, model.RegistryCountResp{
+		err = httpext.JSON(w, http.StatusOK, model.RegistryCountResp{
 			Count: len(images),
 		})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 	}
 }
 
-func getIntPointer(val int32) *int32 {
-	return &val
-}
-
 func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
-
-	counts := model.Summary{}
 
 	req := model.RegistryIDPathReq{
 		RegistryId: chi.URLParam(r, "registry_id"),
@@ -628,7 +680,7 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// count registry resource
-	counts, err = model.RegistrySummary(r.Context(), mo.Some(req.RegistryId), mo.None[string]())
+	counts, err := model.RegistrySummary(r.Context(), mo.Some(req.RegistryId), mo.None[string]())
 	if err != nil {
 		log.Error().Msgf("failed registry summary: %v", err)
 		h.respondError(err, w)
@@ -637,12 +689,13 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 
 	log.Info().Msgf("registry %s summary %+v", req.RegistryId, counts)
 
-	httpext.JSON(w, http.StatusOK, counts)
+	err = httpext.JSON(w, http.StatusOK, counts)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) SummaryByRegistryType(w http.ResponseWriter, r *http.Request) {
-
-	counts := model.Summary{}
 
 	req := model.RegistryTypeReq{
 		RegistryType: chi.URLParam(r, "registry_type"),
@@ -654,7 +707,7 @@ func (h *Handler) SummaryByRegistryType(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// count registry resource
-	counts, err = model.RegistrySummary(r.Context(), mo.None[string](), mo.Some(req.RegistryType))
+	counts, err := model.RegistrySummary(r.Context(), mo.None[string](), mo.Some(req.RegistryType))
 	if err != nil {
 		log.Error().Msgf("failed registry summary: %v", err)
 		h.respondError(err, w)
@@ -663,12 +716,13 @@ func (h *Handler) SummaryByRegistryType(w http.ResponseWriter, r *http.Request) 
 
 	log.Info().Msgf("registries %s summary %+v", req.RegistryType, counts)
 
-	httpext.JSON(w, http.StatusOK, counts)
+	err = httpext.JSON(w, http.StatusOK, counts)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) Summary(w http.ResponseWriter, r *http.Request) {
-
-	counts := model.RegistrySummaryAllResp{}
 
 	// count registry resource
 	counts, err := model.RegistrySummaryAll(r.Context())
@@ -680,7 +734,10 @@ func (h *Handler) Summary(w http.ResponseWriter, r *http.Request) {
 
 	log.Info().Msgf("all registries summary %+v", counts)
 
-	httpext.JSON(w, http.StatusOK, counts)
+	err = httpext.JSON(w, http.StatusOK, counts)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) SyncRegistry(rCtx context.Context, pgID int32) error {

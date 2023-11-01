@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"net/http"
 	"net/http/httputil"
+
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 
 	cloudscanner_diagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/cloudscanner-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -19,7 +20,7 @@ import (
 )
 
 func (h *Handler) RegisterCloudNodeAccountCount(w http.ResponseWriter, r *http.Request) {
-	return
+	//TODO: Is this used?
 }
 
 func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
@@ -122,6 +123,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		if err != nil {
 			logrus.Infof("Error while upserting node: %+v", err)
 			h.complianceError(w, err.Error())
+			return
 		}
 		// get log request for cloudscanner, if any
 		logRequestAction, err := cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeId})
@@ -131,9 +133,12 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, nodeId)
 		if err != nil || len(pendingScansList.ScansInfo) == 0 {
 			logrus.Debugf("No pending scans found for node id: %s", nodeId)
-			httpext.JSON(w, http.StatusOK,
+			err = httpext.JSON(w, http.StatusOK,
 				model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
 					CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh, LogAction: logRequestAction}})
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
 			return
 		}
 		for _, scan := range pendingScansList.ScansInfo {
@@ -159,10 +164,12 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 	}
 	logrus.Debugf("Returning response: Scan List %+v cloudtrailTrails %+v Refresh %s", scanList, cloudtrailTrails, doRefresh)
 
-	httpext.JSON(w, http.StatusOK,
+	err = httpext.JSON(w, http.StatusOK,
 		model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
 			CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh, LogAction: logRequestAction}})
-	return
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) ListCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
@@ -191,7 +198,10 @@ func (h *Handler) ListCloudNodeAccountHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, infos)
+	err = httpext.JSON(w, http.StatusOK, infos)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) ListCloudNodeProvidersHandler(w http.ResponseWriter, r *http.Request) {
@@ -203,16 +213,14 @@ func (h *Handler) ListCloudNodeProvidersHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, model.CloudNodeProvidersListResp{Providers: providers})
+	err = httpext.JSON(w, http.StatusOK, model.CloudNodeProvidersListResp{Providers: providers})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) complianceError(w http.ResponseWriter, errorString string) {
-	err := h.respondError(errors.New(errorString), w)
-	if err != nil {
-		log.Error().Msgf("%v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(errorString))
-	}
+	h.respondError(errors.New(errorString), w)
 }
 
 func (h *Handler) extractCloudNodeDetails(w http.ResponseWriter, r *http.Request) (model.CloudNodeAccountRegisterReq, error) {

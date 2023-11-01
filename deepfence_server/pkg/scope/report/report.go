@@ -254,14 +254,14 @@ type TopologyNode struct {
 	Sets      *Sets    `json:"sets,omitempty"`
 }
 
-func (t TopologyNode) Merge(o TopologyNode) {
+func (t *TopologyNode) Merge(o TopologyNode) {
 	t.Metadata = o.Metadata
 	t.Adjacency = o.Adjacency
 	t.Parents = o.Parents
 	t.Sets = o.Sets
 }
 
-func (t TopologyNode) UnsafeMerge(o TopologyNode) {
+func (t *TopologyNode) UnsafeMerge(o TopologyNode) {
 	t.Metadata = o.Metadata
 	t.Adjacency = o.Adjacency
 	t.Parents = o.Parents
@@ -381,7 +381,7 @@ func (t TopologySets) UnsafeUnMerge(o TopologySets) {
 
 }
 
-func (p Parent) Merge(o Parent) {
+func (p *Parent) Merge(o Parent) {
 	p.CloudProvider = o.CloudProvider
 	p.CloudRegion = o.CloudRegion
 	p.KubernetesCluster = o.KubernetesCluster

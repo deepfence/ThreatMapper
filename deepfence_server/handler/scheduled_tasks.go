@@ -16,7 +16,10 @@ func (h *Handler) GetScheduledTask(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, scheduledTasks)
+	err = httpext.JSON(w, http.StatusOK, scheduledTasks)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) UpdateScheduledTask(w http.ResponseWriter, r *http.Request) {

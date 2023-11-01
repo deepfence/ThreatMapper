@@ -61,7 +61,10 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if integrationExists {
-		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrIntegrationExists})
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrIntegrationExists})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 		return
 	}
 
@@ -89,14 +92,20 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 
 	h.AuditUserActivity(r, EVENT_INTEGRATION, ACTION_CREATE, req, true)
 
-	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationCreated})
-
+	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationCreated})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var req model.IntegrationListReq
-	httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
 
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
@@ -147,7 +156,10 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 		integrationList = append(integrationList, newIntegration)
 	}
 
-	httpext.JSON(w, http.StatusOK, integrationList)
+	err = httpext.JSON(w, http.StatusOK, integrationList)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
@@ -155,6 +167,11 @@ func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 
 	// id to int32
 	idInt, err := strconv.ParseInt(id, 10, 32)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
 
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)

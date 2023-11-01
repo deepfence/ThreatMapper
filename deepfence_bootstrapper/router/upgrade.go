@@ -15,50 +15,60 @@ import (
 )
 
 func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
-	fmt.Printf("Fetching %v\n", req.HomeDirectoryUrl)
+	log.Info().Msgf("Fetching %v", req.HomeDirectoryUrl)
 	err := downloadFile("/tmp/deepfence.tar.gz", req.HomeDirectoryUrl)
 	if err != nil {
-		fmt.Printf("Download failed\n")
+		log.Info().Msgf("Download failed")
 		return err
 	}
-	fmt.Printf("Download done\n")
+	log.Info().Msgf("Download done")
 
-	Backup("/home/deepfence")
-	Backup("/usr/local/discovery")
+	err = Backup("/home/deepfence")
+	if err != nil {
+		return err
+	}
+	err = Backup("/usr/local/discovery")
+	if err != nil {
+		return err
+	}
 
-	fmt.Printf("Backup done\n")
+	log.Info().Msgf("Backup done")
 
 	pid, _, _ := syscall.Syscall(syscall.SYS_FORK, 0, 0, 0)
 	if pid == 0 {
 
-		fmt.Printf("Inside child\n")
+		log.Info().Msgf("Inside child\n")
 
 		c, err := supervisord.NewUnixSocketClient("/var/run/supervisor.sock")
 		if err != nil {
 			log.Fatal().Err(err)
 		}
 
-		fmt.Printf("Extract\n")
+		log.Info().Msgf("Extract")
 
 		err = extractTarGz("/tmp/deepfence.tar.gz", "/")
 		if err != nil {
 			log.Fatal().Err(err)
 		}
 
-		fmt.Printf("Kill\n")
-		c.SignalAllProcesses(syscall.SIGKILL)
-
-		fmt.Printf("Done\n")
+		log.Info().Msgf("Kill")
+		_, err = c.SignalAllProcesses(syscall.SIGKILL)
+		if err != nil {
+			log.Error().Msgf("Kill all err: %v", err)
+		}
+		log.Info().Msgf("Done")
 
 		os.Exit(0)
 	}
 
-	fmt.Printf("Child created: %v\n", pid)
+	log.Info().Msgf("Child created: %v\n", pid)
 
 	proc, err := os.FindProcess(int(pid))
-	proc.Wait()
+	if err == nil {
+		_, _ = proc.Wait()
+	}
 
-	fmt.Printf("Child dead\n")
+	log.Info().Msgf("Child dead\n")
 	os.Exit(0)
 
 	return nil
@@ -103,9 +113,16 @@ func extractTarGz(input_file, output_dir string) error {
 	return cmd.Run()
 }
 
-func Backup(dir string) {
+func Backup(dir string) error {
 	cmd := exec.Command("mv", dir, dir+".old")
-	cmd.Run()
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
 	cmd = exec.Command("mkdir", "-p", dir)
-	cmd.Run()
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
 }

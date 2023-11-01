@@ -3,7 +3,6 @@ package agent_diagnosis
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 	"path/filepath"
@@ -17,19 +16,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
-
-func missing(a, b []string) string {
-	ma := make(map[string]bool, len(a))
-	for _, ka := range a {
-		ma[ka] = true
-	}
-	for _, kb := range b {
-		if !ma[kb] {
-			return kb
-		}
-	}
-	return ""
-}
 
 func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier) (map[string]struct{}, error) {
 	inProgressNodeIds := map[string]struct{}{}
@@ -82,7 +68,7 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 		}
 	}
 	if len(missingNodes) > 0 {
-		return inProgressNodeIds, errors.New(fmt.Sprintf("could not find nodes %v", missingNodes))
+		return inProgressNodeIds, fmt.Errorf("could not find nodes %v", missingNodes)
 	}
 	return inProgressNodeIds, nil
 }
@@ -98,6 +84,9 @@ func UpdateAgentDiagnosticLogsStatus(ctx context.Context, status diagnosis.Diagn
 	}
 	defer session.Close()
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return err
+	}
 	defer tx.Close()
 
 	_, err = tx.Run(`
@@ -148,6 +137,9 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 	}
 	defer session.Close()
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return err
+	}
 	defer tx.Close()
 
 	fileNameSuffix := "-" + time.Now().Format("2006-01-02-15-04-05") + ".zip"
