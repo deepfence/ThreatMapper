@@ -10,11 +10,11 @@ A single ThreatMapper Console can manage multiple workload types, and on-premise
 
 ## Before You Begin
 
-Before you install the Sensors, obtain the Management Console URL and API key as described in the [Initial Configuration](/docs/v2.0/console/initial-configuration).
+Before you install the Sensors, obtain the Management Console URL and API key as described in the [Initial Configuration](/docs/console/initial-configuration).
 
 You should take care to install the sensor version that matches your Management Console version, as compatibility across versions is not guaranteed.
 
-Review the architecture for the Sensor Agent, as described in [Architecture: Sensor Agent](/docs/v2.0/architecture/sensors).
+Review the architecture for the Sensor Agent, as described in [Architecture: Sensor Agent](/docs/architecture/sensors).
 
 ## System Requirements
 

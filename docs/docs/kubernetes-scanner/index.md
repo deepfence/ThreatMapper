@@ -10,4 +10,4 @@ NSA & CISA Cybersecurity Technical Report describes the complexities of securely
 
 ## Configuring Kubernetes Scanner
 
-Deepfence Kubernetes Scanner is installed with agent sensors. Follow the documentation [here](/docs/v2.0/sensors/kubernetes) to install Deepfence agent sensors in the kubernetes cluster.
+Deepfence Kubernetes Scanner is installed with agent sensors. Follow the documentation [here](/docs/sensors/kubernetes) to install Deepfence agent sensors in the kubernetes cluster.
