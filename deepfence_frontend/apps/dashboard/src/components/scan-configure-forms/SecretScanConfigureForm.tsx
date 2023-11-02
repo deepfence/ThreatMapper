@@ -132,7 +132,13 @@ export const scanSecretApiAction = async ({
 
   const startWithoutSchedule = !scheduleOn && !scanImmediately;
   const scheduleWithStart = scheduleOn && scanImmediately;
-
+  let scanResponse = {
+    success: true,
+    data: {
+      bulkScanId: '',
+      nodeType,
+    },
+  };
   if (startWithoutSchedule || scheduleWithStart) {
     const startSecretScanApi = apiWrapper({
       fn: getSecretApiClient().startSecretScan,
@@ -159,7 +165,7 @@ export const scanSecretApiAction = async ({
       }
       throw startSecretScanResponse.error;
     }
-    return {
+    scanResponse = {
       success: true,
       data: {
         bulkScanId: startSecretScanResponse.value.bulk_scan_id,
@@ -211,9 +217,7 @@ export const scanSecretApiAction = async ({
   }
 
   invalidateAllQueries();
-  return {
-    success: true,
-  };
+  return scanResponse;
 };
 
 export const SecretScanConfigureForm = ({

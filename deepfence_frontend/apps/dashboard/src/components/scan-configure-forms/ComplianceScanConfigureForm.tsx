@@ -113,7 +113,13 @@ export const scanPostureApiAction = async ({
 
   const startWithoutSchedule = !scheduleOn && !scanImmediately;
   const scheduleWithStart = scheduleOn && scanImmediately;
-
+  let scanResponse = {
+    success: true,
+    data: {
+      bulkScanId: '',
+      nodeType,
+    },
+  };
   if (startWithoutSchedule || scheduleWithStart) {
     const startComplianceScanApi = apiWrapper({
       fn: getComplianceApiClient().startComplianceScan,
@@ -141,7 +147,7 @@ export const scanPostureApiAction = async ({
       throw startComplianceScanResponse.error;
     }
 
-    return {
+    scanResponse = {
       success: true,
       data: {
         bulkScanId: startComplianceScanResponse.value.bulk_scan_id,
@@ -195,9 +201,7 @@ export const scanPostureApiAction = async ({
   }
 
   invalidateAllQueries();
-  return {
-    success: true,
-  };
+  return scanResponse;
 };
 
 const toggleControls = ({

@@ -3,9 +3,11 @@ import { Suspense, useCallback, useMemo, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
+  Button,
   createColumnHelper,
   Dropdown,
   DropdownItem,
+  Modal,
   Table,
   TableSkeleton,
 } from 'ui-components';
@@ -13,7 +15,9 @@ import {
 import { getSettingsApiClient } from '@/api/api';
 import { PostgresqlDbScheduler } from '@/api/generated';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
+import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { TruncatedText } from '@/components/TruncatedText';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -22,6 +26,11 @@ import { formatMilliseconds } from '@/utils/date';
 export type ActionReturnType = {
   message?: string;
   success: boolean;
+};
+type ActionData = {
+  action: ActionEnumType;
+  success: boolean;
+  message?: string;
 };
 enum ActionEnumType {
   ENABLE_DISABLE = 'enable_disable',
@@ -64,11 +73,12 @@ export const action = async ({
 
     toast.success('Updated successfully');
   } else if (body.actionType === ActionEnumType.DELETE) {
+    const ids = (formData.getAll('ids[]') ?? []) as string[];
     const deleteApi = apiWrapper({
       fn: getSettingsApiClient().deleteScheduledTask,
     });
     const deleteResponse = await deleteApi({
-      id,
+      id: parseInt(ids[0], 10),
     });
     if (!deleteResponse.ok) {
       if (deleteResponse.error.response.status === 400) {
@@ -98,14 +108,100 @@ const useJobs = () => {
     ...queries.setting.listScheduledJobs(),
   });
 };
+const DeleteConfirmationModal = ({
+  showDialog,
+  ids,
+  setShowDialog,
+}: {
+  showDialog: boolean;
+  ids: string[];
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const fetcher = useFetcher<ActionData>();
+
+  const onDeleteAction = useCallback(
+    (actionType: string) => {
+      const formData = new FormData();
+      formData.append('actionType', actionType);
+      ids.forEach((item) => formData.append('ids[]', item));
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [ids, fetcher],
+  );
+
+  return (
+    <Modal
+      size="s"
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title={
+        !fetcher.data?.success ? (
+          <div className="flex gap-3 items-center dark:text-status-error">
+            <span className="h-6 w-6 shrink-0">
+              <ErrorStandardLineIcon />
+            </span>
+            Delete schedule job
+          </div>
+        ) : undefined
+      }
+      footer={
+        !fetcher.data?.success ? (
+          <div className={'flex gap-x-4 justify-end'}>
+            <Button
+              size="md"
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="md"
+              color="error"
+              loading={fetcher.state === 'submitting'}
+              disabled={fetcher.state === 'submitting'}
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteAction(ActionEnumType.DELETE);
+              }}
+            >
+              Delete
+            </Button>
+          </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.success ? (
+        <div className="grid">
+          <span>The selected schedule will be deleted.</span>
+          <br />
+          <span>Are you sure you want to delete?</span>
+          {fetcher.data?.message && (
+            <p className="text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+          )}
+          <div className="flex items-center justify-right gap-4"></div>
+        </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
+    </Modal>
+  );
+};
+
 const ActionDropdown = ({
   trigger,
   scheduler,
   onTableAction,
+  setIdsToDelete,
+  setShowDialog,
 }: {
   trigger: React.ReactNode;
   scheduler: PostgresqlDbScheduler;
   onTableAction: (scheduler: PostgresqlDbScheduler, actionType: ActionEnumType) => void;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   return (
     <Dropdown
@@ -119,8 +215,19 @@ const ActionDropdown = ({
             {scheduler.is_enabled ? 'Disable' : 'Enable'}
           </DropdownItem>
           {!scheduler.is_system ? (
-            <DropdownItem onClick={() => onTableAction(scheduler, ActionEnumType.DELETE)}>
-              Delete
+            <DropdownItem
+              onClick={() => {
+                if (scheduler.id) {
+                  setShowDialog(true);
+                  setIdsToDelete([scheduler.id.toString()]);
+                } else {
+                  console.warn('No schedule job to delete');
+                }
+              }}
+            >
+              <span className="dark:text-status-error dark:hover:text-[#C45268]">
+                Delete
+              </span>
             </DropdownItem>
           ) : null}
         </>
@@ -133,8 +240,12 @@ const ActionDropdown = ({
 
 const ScheduledJobsTable = ({
   onTableAction,
+  setIdsToDelete,
+  setShowDialog,
 }: {
   onTableAction: (scheduler: PostgresqlDbScheduler, actionType: ActionEnumType) => void;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const { data } = useJobs();
   const columnHelper = createColumnHelper<PostgresqlDbScheduler>();
@@ -152,6 +263,8 @@ const ScheduledJobsTable = ({
             <ActionDropdown
               scheduler={cell.row.original}
               onTableAction={onTableAction}
+              setShowDialog={setShowDialog}
+              setIdsToDelete={setIdsToDelete}
               trigger={
                 <button className="p-1">
                   <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
@@ -248,6 +361,8 @@ const ScheduledJobsTable = ({
 
 const ScheduledJobs = () => {
   const fetcher = useFetcher();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [idsToDelete, setIdsToDelete] = useState<string[]>([]);
 
   const onTableAction = useCallback(
     (scheduler: PostgresqlDbScheduler, actionType: ActionEnumType) => {
@@ -280,8 +395,19 @@ const ScheduledJobs = () => {
           <TableSkeleton columns={8} rows={5} size={'default'} className="mt-4" />
         }
       >
-        <ScheduledJobsTable onTableAction={onTableAction} />
+        <ScheduledJobsTable
+          onTableAction={onTableAction}
+          setIdsToDelete={setIdsToDelete}
+          setShowDialog={setShowDeleteDialog}
+        />
       </Suspense>
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          ids={idsToDelete}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
     </>
   );
 };
