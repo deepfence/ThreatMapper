@@ -172,8 +172,6 @@ importers:
       '@vitejs/plugin-react': ^4.0.4
       '@vitest/coverage-c8': ^0.33.0
       autoprefixer: ^10.4.15
-      cron-converter: ^2.0.1
-      cronstrue: ^2.41.0
       cva: npm:class-variance-authority@^0.7.0
       eslint: ^8.47.0
       eslint-config-prettier: ^9.0.0
@@ -213,8 +211,6 @@ importers:
       '@radix-ui/react-tabs': 1.0.4_gltvt74xzh7f5lvw2hzxriz5bu
       '@radix-ui/react-tooltip': 1.0.6_gltvt74xzh7f5lvw2hzxriz5bu
       '@tanstack/react-table': 8.9.3_biqbaboplfbrettd7655fr4n2y
-      cron-converter: 2.0.1
-      cronstrue: 2.41.0
       cva: /class-variance-authority/0.7.0
       lodash-es: 4.17.21
       react-use: 17.4.0_biqbaboplfbrettd7655fr4n2y
@@ -4642,7 +4638,7 @@ packages:
       dom-accessibility-api: 0.5.16
       lodash: 4.17.21
       redent: 3.0.0
-      vitest: 0.34.1_playwright@1.37.0
+      vitest: 0.34.1_jsdom@22.1.0+less@4.2.0
     dev: true
 
   /@testing-library/react/14.0.0_biqbaboplfbrettd7655fr4n2y:
@@ -5231,7 +5227,7 @@ packages:
       '@babel/plugin-transform-react-jsx-self': 7.22.5_@babel+core@7.22.10
       '@babel/plugin-transform-react-jsx-source': 7.22.5_@babel+core@7.22.10
       react-refresh: 0.14.0
-      vite: 4.4.9
+      vite: 4.4.9_less@4.2.0
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -5247,7 +5243,7 @@ packages:
       magic-string: 0.30.2
       picocolors: 1.0.0
       std-env: 3.3.3
-      vitest: 0.34.1_playwright@1.37.0
+      vitest: 0.34.1_jsdom@22.1.0+less@4.2.0
     dev: true
 
   /@vitest/expect/0.34.1:
