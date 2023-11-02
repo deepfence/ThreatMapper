@@ -49,11 +49,11 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
         checked={checked}
         defaultChecked={defaultChecked}
         onCheckedChange={(state) => {
+          setInternalChecked(state);
           if (onCheckedChange) {
             onCheckedChange(state);
             return;
           }
-          setInternalChecked(state);
         }}
         {...rest}
       >
