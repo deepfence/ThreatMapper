@@ -25,6 +25,7 @@ export type ActionReturnType = {
 };
 enum ActionEnumType {
   ENABLE_DISABLE = 'enable_disable',
+  DELETE = 'delete',
 }
 export const action = async ({
   request,
@@ -32,34 +33,61 @@ export const action = async ({
   const formData = await request.formData();
   const body = Object.fromEntries(formData);
   const id = Number(body.id);
-  const isEnabled = body.isEnabled === 'true';
 
-  const updateApi = apiWrapper({
-    fn: getSettingsApiClient().updateScheduledTask,
-  });
-  const updateResponse = await updateApi({
-    id,
-    modelUpdateScheduledTaskRequest: {
-      is_enabled: isEnabled,
-    },
-  });
-  if (!updateResponse.ok) {
-    if (updateResponse.error.response.status === 400) {
-      return {
-        success: false,
-        message: updateResponse.error.message,
-      };
-    } else if (updateResponse.error.response.status === 403) {
-      const message = await get403Message(updateResponse.error);
-      return {
-        success: false,
-        message,
-      };
+  if (body.actionType === ActionEnumType.ENABLE_DISABLE) {
+    const isEnabled = body.isEnabled === 'true';
+
+    const updateApi = apiWrapper({
+      fn: getSettingsApiClient().updateScheduledTask,
+    });
+    const updateResponse = await updateApi({
+      id,
+      modelUpdateScheduledTaskRequest: {
+        is_enabled: isEnabled,
+      },
+    });
+    if (!updateResponse.ok) {
+      if (updateResponse.error.response.status === 400) {
+        return {
+          success: false,
+          message: updateResponse.error.message,
+        };
+      } else if (updateResponse.error.response.status === 403) {
+        const message = await get403Message(updateResponse.error);
+        return {
+          success: false,
+          message,
+        };
+      }
+      throw updateResponse.error;
     }
-    throw updateResponse.error;
+
+    toast.success('Updated successfully');
+  } else if (body.actionType === ActionEnumType.DELETE) {
+    const deleteApi = apiWrapper({
+      fn: getSettingsApiClient().deleteScheduledTask,
+    });
+    const deleteResponse = await deleteApi({
+      id,
+    });
+    if (!deleteResponse.ok) {
+      if (deleteResponse.error.response.status === 400) {
+        return {
+          success: false,
+          message: deleteResponse.error.message,
+        };
+      } else if (deleteResponse.error.response.status === 403) {
+        const message = await get403Message(deleteResponse.error);
+        return {
+          success: false,
+          message,
+        };
+      }
+      throw deleteResponse.error;
+    }
+    toast.success('Deleted successfully');
   }
 
-  toast.success('Updated successfully');
   invalidateAllQueries();
   return {
     success: true,
@@ -77,7 +105,7 @@ const ActionDropdown = ({
 }: {
   trigger: React.ReactNode;
   scheduler: PostgresqlDbScheduler;
-  onTableAction: (scheduler: PostgresqlDbScheduler, actionType: string) => void;
+  onTableAction: (scheduler: PostgresqlDbScheduler, actionType: ActionEnumType) => void;
 }) => {
   return (
     <Dropdown
@@ -90,6 +118,11 @@ const ActionDropdown = ({
           >
             {scheduler.is_enabled ? 'Disable' : 'Enable'}
           </DropdownItem>
+          {!scheduler.is_system ? (
+            <DropdownItem onClick={() => onTableAction(scheduler, ActionEnumType.DELETE)}>
+              Delete
+            </DropdownItem>
+          ) : null}
         </>
       }
     >
@@ -101,7 +134,7 @@ const ActionDropdown = ({
 const ScheduledJobsTable = ({
   onTableAction,
 }: {
-  onTableAction: (scheduler: PostgresqlDbScheduler, actionType: string) => void;
+  onTableAction: (scheduler: PostgresqlDbScheduler, actionType: ActionEnumType) => void;
 }) => {
   const { data } = useJobs();
   const columnHelper = createColumnHelper<PostgresqlDbScheduler>();
@@ -196,6 +229,7 @@ const ScheduledJobsTable = ({
       ) : (
         <Table
           size="default"
+          getRowId={(row) => `${row.id}`}
           data={data.data ?? []}
           columns={columns}
           enableColumnResizing
@@ -216,11 +250,14 @@ const ScheduledJobs = () => {
   const fetcher = useFetcher();
 
   const onTableAction = useCallback(
-    (scheduler: PostgresqlDbScheduler, actionType: string) => {
+    (scheduler: PostgresqlDbScheduler, actionType: ActionEnumType) => {
       if (scheduler.id) {
         const formData = new FormData();
         formData.append('id', scheduler.id?.toString() ?? '');
-        formData.append('isEnabled', (!scheduler.is_enabled)?.toString() ?? '');
+        formData.append('actionType', actionType);
+        if (actionType === ActionEnumType.ENABLE_DISABLE) {
+          formData.append('isEnabled', (!scheduler.is_enabled)?.toString() ?? '');
+        }
         fetcher.submit(formData, {
           method: 'post',
         });

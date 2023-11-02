@@ -332,6 +332,8 @@ export function getSettingsApiClient() {
       settingsApi.uploadVulnerabilityDatabase.bind(settingsApi),
     getScheduledTasks: settingsApi.getScheduledTasks.bind(settingsApi),
     updateScheduledTask: settingsApi.updateScheduledTask.bind(settingsApi),
+    deleteScheduledTask: settingsApi.deleteScheduledTask.bind(settingsApi),
+    addScheduledTask: settingsApi.addScheduledTask.bind(settingsApi),
   };
 }
 

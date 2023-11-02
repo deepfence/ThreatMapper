@@ -3,9 +3,10 @@ import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button, Radio } from 'ui-components';
 
-import { getSecretApiClient } from '@/api/api';
+import { getSecretApiClient, getSettingsApiClient } from '@/api/api';
 import {
   ModelNodeIdentifierNodeTypeEnum,
+  ModelScanResultsActionRequestScanTypeEnum,
   ModelSecretScanTriggerReq,
   ReportersContainsFilter,
 } from '@/api/generated';
@@ -64,6 +65,7 @@ export const scanSecretApiAction = async ({
   const scheduleOn = formData.get('scheduleOn') === 'on';
   const scanImmediately = formData.get('scanImmediately') === 'on';
   const scheduleDescription = formData.get('scheduleDescription');
+  const scheduleCron = formData.get('scheduleCron');
 
   const getNodeType = (nodeType: SecretScanNodeTypeEnum | 'container_image') => {
     let _nodeType = nodeType as ModelNodeIdentifierNodeTypeEnum;
@@ -127,34 +129,80 @@ export const scanSecretApiAction = async ({
       ) as ModelNodeIdentifierNodeTypeEnum,
     })),
   };
-  const startSecretScanApi = apiWrapper({
-    fn: getSecretApiClient().startSecretScan,
-  });
 
-  const startSecretScanResponse = await startSecretScanApi({
-    modelSecretScanTriggerReq: requestBody,
-  });
-  if (!startSecretScanResponse.ok) {
-    if (
-      startSecretScanResponse.error.response.status === 400 ||
-      startSecretScanResponse.error.response.status === 409
-    ) {
-      return {
-        success: false,
-        message: startSecretScanResponse.error.message ?? '',
-      };
-    } else if (startSecretScanResponse.error.response.status === 403) {
-      const message = await get403Message(startSecretScanResponse.error);
-      return {
-        success: false,
-        message,
-      };
+  const startWithoutSchedule = !scheduleOn && !scanImmediately;
+  const scheduleWithStart = scheduleOn && scanImmediately;
+
+  if (startWithoutSchedule || scheduleWithStart) {
+    const startSecretScanApi = apiWrapper({
+      fn: getSecretApiClient().startSecretScan,
+    });
+
+    const startSecretScanResponse = await startSecretScanApi({
+      modelSecretScanTriggerReq: requestBody,
+    });
+    if (!startSecretScanResponse.ok) {
+      if (
+        startSecretScanResponse.error.response.status === 400 ||
+        startSecretScanResponse.error.response.status === 409
+      ) {
+        return {
+          success: false,
+          message: startSecretScanResponse.error.message ?? '',
+        };
+      } else if (startSecretScanResponse.error.response.status === 403) {
+        const message = await get403Message(startSecretScanResponse.error);
+        return {
+          success: false,
+          message,
+        };
+      }
+      throw startSecretScanResponse.error;
     }
-    throw startSecretScanResponse.error;
+    return {
+      success: true,
+      data: {
+        bulkScanId: startSecretScanResponse.value.bulk_scan_id,
+        nodeType, // for onboard page redirection
+      },
+    };
+  }
+  if (scheduleOn) {
+    const addScheduledTaskApi = apiWrapper({
+      fn: getSettingsApiClient().addScheduledTask,
+    });
+    const scheduleResponse = await addScheduledTaskApi({
+      modelAddScheduledTaskRequest: {
+        ...requestBody,
+        benchmark_types: null,
+        scan_config: null,
+        action: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+        cron_expr: scheduleCron?.toString(),
+        description: scheduleDescription?.toString(),
+      },
+    });
+    if (!scheduleResponse.ok) {
+      if (
+        scheduleResponse.error.response.status === 400 ||
+        scheduleResponse.error.response.status === 409
+      ) {
+        return {
+          success: false,
+          message: scheduleResponse.error.message ?? '',
+        };
+      } else if (scheduleResponse.error.response.status === 403) {
+        const message = await get403Message(scheduleResponse.error);
+        return {
+          success: false,
+          message,
+        };
+      }
+      throw scheduleResponse.error;
+    }
   }
 
   // schedule scan
-  if (scheduleOn && scanImmediately) {
+  if (scheduleWithStart) {
     toast.success('Scan started and scheduled successfully');
   } else if (scheduleOn) {
     toast.success('Scan scheduled successfully');
@@ -165,10 +213,6 @@ export const scanSecretApiAction = async ({
   invalidateAllQueries();
   return {
     success: true,
-    data: {
-      bulkScanId: startSecretScanResponse.value.bulk_scan_id,
-      nodeType, // for onboard page redirection
-    },
   };
 };
 
