@@ -99,20 +99,13 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req model.IntegrationListReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-	if err != nil {
-		h.respondError(&BadDecoding{err}, w)
-		return
-	}
-
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
+	req := model.IntegrationListReq{}
 	integrations, err := req.GetIntegrations(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
