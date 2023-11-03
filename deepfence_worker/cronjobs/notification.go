@@ -83,6 +83,8 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 	},
 }
 
+const DefaultNotificationErrorBackoff = 15 * time.Minute
+
 var notificationLock sync.Mutex
 
 func SendNotifications(ctx context.Context, task *asynq.Task) error {
@@ -103,6 +105,11 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 	wg := sync.WaitGroup{}
 	wg.Add(len(integrations))
 	for _, integrationRow := range integrations {
+		if integrationRow.ErrorMsg.String != "" && time.Since(integrationRow.LastSentTime.Time) < DefaultNotificationErrorBackoff {
+			log.Info().Msgf("Skipping integration for %s rowId: %d due to error: %s occured at last attempt, %s ago",
+				integrationRow.IntegrationType, integrationRow.ID, integrationRow.ErrorMsg.String, time.Since(integrationRow.LastSentTime.Time))
+			continue
+		}
 		go func(integration postgresql_db.Integration) {
 			defer wg.Done()
 			log.Info().Msgf("Processing integration for %s rowId: %d",
