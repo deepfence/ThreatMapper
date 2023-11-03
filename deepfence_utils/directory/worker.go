@@ -40,7 +40,7 @@ func new_asynq_client(endpoints DBConfigs) (*asyncq_clients, error) {
 	}, nil
 }
 
-func (ws WorkEnqueuer) Enqueue(task_enum string, data []byte) error {
+func (ws WorkEnqueuer) Enqueue(task_enum string, data []byte, opts ...asynq.Option) error {
 
 	client := ws.clients.client
 	inspector := ws.clients.inspector
@@ -62,7 +62,7 @@ func (ws WorkEnqueuer) Enqueue(task_enum string, data []byte) error {
 		return ErrExhaustedResources
 	}
 
-	_, err = client.Enqueue(asynq.NewTask(task_enum, data))
+	_, err = client.Enqueue(asynq.NewTask(task_enum, data), opts...)
 
 	return err
 }

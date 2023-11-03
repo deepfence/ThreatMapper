@@ -696,7 +696,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = worker.Enqueue(utils.ScanSBOMTask, payload)
+	err = worker.Enqueue(utils.ScanSBOMTask, payload, utils.DefaultTaskOpts()...)
 	if err != nil {
 		log.Error().Msgf("cannot publish message: %v", err)
 		h.respondError(err, w)
