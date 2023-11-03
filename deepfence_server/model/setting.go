@@ -3,12 +3,12 @@ package model
 import (
 	"context"
 	"crypto/aes"
+	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"

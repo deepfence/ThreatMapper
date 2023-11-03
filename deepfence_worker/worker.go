@@ -71,13 +71,12 @@ func skipRetryCallbackWrapper(taskCallback wtils.WorkerHandler) wtils.WorkerHand
 func (w *Worker) AddRetryableHandler(
 	task string,
 	taskCallback wtils.WorkerHandler,
-) error {
+) {
 	w.mux.HandleFunc(
 		task,
 		contextInjectorCallbackWrapper(w.namespace,
 			telemetryCallbackWrapper(task, taskCallback)),
 	)
-	return nil
 }
 
 // CronJobHandler do not retry on failure
@@ -85,14 +84,13 @@ func (w *Worker) AddRetryableHandler(
 func (w *Worker) AddOneShotHandler(
 	task string,
 	taskCallback wtils.WorkerHandler,
-) error {
+) {
 	w.mux.HandleFunc(
 		task,
 		skipRetryCallbackWrapper(
 			contextInjectorCallbackWrapper(w.namespace,
 				telemetryCallbackWrapper(task, taskCallback))),
 	)
-	return nil
 }
 
 func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc, error) {
@@ -113,11 +111,12 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 			Password: cfg.RedisPassword,
 		},
 		asynq.Config{
-			Concurrency: 10,
+			StrictPriority: true,
+			Concurrency:    cfg.TasksConcurrency,
 			Queues: map[string]int{
-				"critical": 6,
-				"default":  3,
-				"low":      1,
+				utils.Q_CRITICAL: 6,
+				utils.Q_DEFAULT:  3,
+				utils.Q_LOW:      1,
 			},
 			ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
 				retried, _ := asynq.GetRetryCount(ctx)
@@ -125,7 +124,7 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 				if retried >= maxRetry {
 					err = fmt.Errorf("retry exhausted for task %s: %w", task.Type(), err)
 				}
-				log.Error().Msgf("worker task error: %v", err)
+				log.Error().Err(err).Msgf("worker task %s, payload: %s", task.Type(), task.Payload())
 			}),
 		},
 	)

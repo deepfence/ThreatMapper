@@ -58,7 +58,7 @@ func cloudComplianceScanId(nodeId string) string {
 
 func bulkScanId() string {
 	random_id := uuid.New()
-	return fmt.Sprintf("%s", random_id.String())
+	return random_id.String()
 }
 
 func GetImageFromId(ctx context.Context, node_id string) (string, string, error) {
@@ -274,7 +274,10 @@ func (h *Handler) DiffAddVulnerabilityScan(w http.ResponseWriter, r *http.Reques
 		h.respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Vulnerability]{New: new})
+	err = httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Vulnerability]{New: new})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) DiffAddSecretScan(w http.ResponseWriter, r *http.Request) {
@@ -291,7 +294,10 @@ func (h *Handler) DiffAddSecretScan(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Secret]{New: new})
+	err = httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Secret]{New: new})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) DiffAddComplianceScan(w http.ResponseWriter, r *http.Request) {
@@ -308,7 +314,10 @@ func (h *Handler) DiffAddComplianceScan(w http.ResponseWriter, r *http.Request) 
 		h.respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Compliance]{New: new})
+	err = httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Compliance]{New: new})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) DiffAddMalwareScan(w http.ResponseWriter, r *http.Request) {
@@ -325,7 +334,10 @@ func (h *Handler) DiffAddMalwareScan(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Malware]{New: new})
+	err = httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.Malware]{New: new})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) DiffAddCloudComplianceScan(w http.ResponseWriter, r *http.Request) {
@@ -342,7 +354,10 @@ func (h *Handler) DiffAddCloudComplianceScan(w http.ResponseWriter, r *http.Requ
 		h.respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.CloudCompliance]{New: new})
+	err = httpext.JSON(w, http.StatusOK, model.ScanCompareRes[model.CloudCompliance]{New: new})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -502,11 +517,12 @@ func NewScanStatus(scanId, status, message string) map[string]interface{} {
 }
 
 func (h *Handler) SendScanStatus(
-	ctx context.Context, scanStatusType string, status map[string]interface{}) error {
+	ctx context.Context, scanStatusType string, status map[string]interface{}) {
 
 	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
-		return err
+		log.Error().Msg(err.Error())
+		return
 	}
 
 	rh := []kgo.RecordHeader{
@@ -516,15 +532,13 @@ func (h *Handler) SendScanStatus(
 	cb, err := json.Marshal(status)
 	if err != nil {
 		log.Error().Msg(err.Error())
-	} else {
-		h.IngestChan <- &kgo.Record{
-			Topic:   scanStatusType,
-			Value:   cb,
-			Headers: rh,
-		}
+		return
 	}
-
-	return nil
+	h.IngestChan <- &kgo.Record{
+		Topic:   scanStatusType,
+		Value:   cb,
+		Headers: rh,
+	}
 }
 
 func (h *Handler) StopVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -604,8 +618,11 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 
 	if params.ScanId == "" {
 		log.Error().Msgf("error scan id is empty, params: %+v", params)
-		httpext.JSON(w, http.StatusBadRequest,
+		err = httpext.JSON(w, http.StatusBadRequest,
 			model.ErrorResponse{Message: "scan_id is required to process sbom"})
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
 		return
 	}
 
@@ -646,7 +663,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		if logError == true {
+		if logError {
 			log.Error().Msg(err.Error())
 			h.respondError(err, w)
 			return
@@ -656,7 +673,11 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	// check if sbom has to be scanned
 	if params.SkipScan {
 		log.Info().Msgf("skip sbom scan for id %s", params.ScanId)
-		httpext.JSON(w, http.StatusOK, info)
+		err = httpext.JSON(w, http.StatusOK, info)
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
+		return
 	}
 
 	params.SBOMFilePath = sbomFile
@@ -675,15 +696,18 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = worker.Enqueue(utils.ScanSBOMTask, payload)
+	err = worker.Enqueue(utils.ScanSBOMTask, payload, utils.DefaultTaskOpts()...)
 	if err != nil {
-		log.Error().Msgf("cannot publish message:", err)
+		log.Error().Msgf("cannot publish message: %v", err)
 		h.respondError(err, w)
 		return
 	}
 
 	log.Info().Msgf("scan_id: %s, minio file info: %+v", params.ScanId, info)
-	httpext.JSON(w, http.StatusOK, info)
+	err = httpext.JSON(w, http.StatusOK, info)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) IngestVulnerabilityReportHandler(w http.ResponseWriter, r *http.Request) {
@@ -777,7 +801,10 @@ func ingest_scan_report_kafka[T any](
 
 	// respWrite.WriteHeader(http.StatusOK)
 	// fmt.Fprint(respWrite, "Ok")
-	httpext.JSON(respWrite, http.StatusOK, map[string]string{"status": "ok"})
+	err = httpext.JSON(respWrite, http.StatusOK, map[string]string{"status": "ok"})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) stopScan(w http.ResponseWriter, r *http.Request, tag string) {
@@ -868,7 +895,10 @@ func (h *Handler) statusScanHandler(w http.ResponseWriter, r *http.Request, scan
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, statuses)
+	err = httpext.JSON(w, http.StatusOK, statuses)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) complianceStatusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
@@ -894,7 +924,10 @@ func (h *Handler) complianceStatusScanHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, statuses)
+	err = httpext.JSON(w, http.StatusOK, statuses)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) ListVulnerabilityScansHandler(w http.ResponseWriter, r *http.Request) {
@@ -946,7 +979,10 @@ func (h *Handler) listScansHandler(w http.ResponseWriter, r *http.Request, scan_
 		}
 	}
 
-	httpext.JSON(w, http.StatusOK, infos)
+	err = httpext.JSON(w, http.StatusOK, infos)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) GetScanReportFields(w http.ResponseWriter, r *http.Request) {
@@ -1001,7 +1037,10 @@ func (h *Handler) GetScanReportFields(w http.ResponseWriter, r *http.Request) {
 		Malware:       malwareFields,
 	}
 
-	httpext.JSON(w, http.StatusOK, response)
+	err := httpext.JSON(w, http.StatusOK, response)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) ListVulnerabilityScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -1015,8 +1054,11 @@ func (h *Handler) ListVulnerabilityScanResultsHandler(w http.ResponseWriter, r *
 		log.Error().Err(err).Msg("Counts computation issue")
 	}
 
-	httpext.JSON(w, http.StatusOK, model.VulnerabilityScanResult{
+	err = httpext.JSON(w, http.StatusOK, model.VulnerabilityScanResult{
 		Vulnerabilities: entries, ScanResultsCommon: common, SeverityCounts: counts})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) ListSecretScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -1031,8 +1073,11 @@ func (h *Handler) ListSecretScanResultsHandler(w http.ResponseWriter, r *http.Re
 		log.Error().Err(err).Msg("Counts computation issue")
 	}
 
-	httpext.JSON(w, http.StatusOK, model.SecretScanResult{
+	err = httpext.JSON(w, http.StatusOK, model.SecretScanResult{
 		Secrets: entries, ScanResultsCommon: common, SeverityCounts: counts})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) ListSecretScanResultRulesHandler(w http.ResponseWriter, r *http.Request) {
@@ -1047,7 +1092,10 @@ func (h *Handler) ListSecretScanResultRulesHandler(w http.ResponseWriter, r *htt
 		rules = append(rules, e.Name)
 	}
 
-	httpext.JSON(w, http.StatusOK, model.SecretScanResultRules{Rules: lo.Uniq(rules)})
+	err = httpext.JSON(w, http.StatusOK, model.SecretScanResultRules{Rules: lo.Uniq(rules)})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) ListComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -1061,8 +1109,11 @@ func (h *Handler) ListComplianceScanResultsHandler(w http.ResponseWriter, r *htt
 		log.Error().Err(err).Msg("Counts computation issue")
 	}
 
-	httpext.JSON(w, http.StatusOK, model.ComplianceScanResult{Compliances: entries, ScanResultsCommon: common,
+	err = httpext.JSON(w, http.StatusOK, model.ComplianceScanResult{Compliances: entries, ScanResultsCommon: common,
 		ComplianceAdditionalInfo: additionalInfo})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -1077,7 +1128,10 @@ func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.R
 		log.Error().Err(err).Msg("Counts computation issue")
 	}
 
-	httpext.JSON(w, http.StatusOK, model.MalwareScanResult{Malwares: entries, ScanResultsCommon: common, SeverityCounts: counts})
+	err = httpext.JSON(w, http.StatusOK, model.MalwareScanResult{Malwares: entries, ScanResultsCommon: common, SeverityCounts: counts})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) ListMalwareScanResultRulesHandler(w http.ResponseWriter, r *http.Request) {
@@ -1092,7 +1146,10 @@ func (h *Handler) ListMalwareScanResultRulesHandler(w http.ResponseWriter, r *ht
 		rules = append(rules, e.RuleName)
 	}
 
-	httpext.JSON(w, http.StatusOK, model.MalwareScanResultRules{Rules: lo.Uniq(rules)})
+	err = httpext.JSON(w, http.StatusOK, model.MalwareScanResultRules{Rules: lo.Uniq(rules)})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) ListMalwareScanResultClassHandler(w http.ResponseWriter, r *http.Request) {
@@ -1107,7 +1164,10 @@ func (h *Handler) ListMalwareScanResultClassHandler(w http.ResponseWriter, r *ht
 		class = append(class, e.Class)
 	}
 
-	httpext.JSON(w, http.StatusOK, model.MalwareScanResultClass{Class: lo.Uniq(class)})
+	err = httpext.JSON(w, http.StatusOK, model.MalwareScanResultClass{Class: lo.Uniq(class)})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -1122,8 +1182,11 @@ func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r
 		log.Error().Err(err).Msg("Counts computation issue")
 	}
 
-	httpext.JSON(w, http.StatusOK, model.CloudComplianceScanResult{Compliances: entries, ScanResultsCommon: common,
+	err = httpext.JSON(w, http.StatusOK, model.CloudComplianceScanResult{Compliances: entries, ScanResultsCommon: common,
 		ComplianceAdditionalInfo: additionalInfo})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) CountVulnerabilityScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -1133,9 +1196,12 @@ func (h *Handler) CountVulnerabilityScanResultsHandler(w http.ResponseWriter, r 
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+	err = httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
 		Count: len(entries),
 	})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) CountSecretScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -1145,9 +1211,12 @@ func (h *Handler) CountSecretScanResultsHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+	err = httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
 		Count: len(entries),
 	})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) CountComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -1157,9 +1226,12 @@ func (h *Handler) CountComplianceScanResultsHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+	err = httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
 		Count: len(entries),
 	})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) CountMalwareScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -1169,9 +1241,12 @@ func (h *Handler) CountMalwareScanResultsHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+	err = httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
 		Count: len(entries),
 	})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) CountCloudComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -1181,9 +1256,12 @@ func (h *Handler) CountCloudComplianceScanResultsHandler(w http.ResponseWriter, 
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+	err = httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
 		Count: len(entries),
 	})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func groupSecrets(ctx context.Context) ([]reporters_search.ResultGroup, error) {
@@ -1244,9 +1322,12 @@ func (h *Handler) GroupSecretResultsHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
+	err = httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
 		Groups: groups,
 	})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func groupMalwares(ctx context.Context, byClass bool) ([]reporters_search.ResultGroup, error) {
@@ -1315,9 +1396,12 @@ func (h *Handler) GroupMalwareResultsHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
+	err = httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
 		Groups: groups,
 	})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) GroupMalwareClassResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -1329,9 +1413,12 @@ func (h *Handler) GroupMalwareClassResultsHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
+	err = httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
 		Groups: groups,
 	})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) CloudComplianceFiltersHandler(w http.ResponseWriter, r *http.Request) {
@@ -1347,7 +1434,10 @@ func (h *Handler) CloudComplianceFiltersHandler(w http.ResponseWriter, r *http.R
 		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
 	}
-	httpext.JSON(w, http.StatusOK, model.FiltersResult{Filters: res})
+	err = httpext.JSON(w, http.StatusOK, model.FiltersResult{Filters: res})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) ComplianceFiltersHandler(w http.ResponseWriter, r *http.Request) {
@@ -1363,7 +1453,10 @@ func (h *Handler) ComplianceFiltersHandler(w http.ResponseWriter, r *http.Reques
 		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
 	}
-	httpext.JSON(w, http.StatusOK, model.FiltersResult{Filters: res})
+	err = httpext.JSON(w, http.StatusOK, model.FiltersResult{Filters: res})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) ([]T, model.ScanResultsCommon, error) {
@@ -1595,7 +1688,10 @@ func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, ac
 			"attachment; filename="+strconv.Quote(utils.ScanIdReplacer.Replace(req.ScanID)+".json"))
 		w.Header().Set("Content-Type", "application/octet-stream")
 		w.WriteHeader(http.StatusOK)
-		w.Write(data)
+		_, err = w.Write(data)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 		h.AuditUserActivity(r, req.ScanType, ACTION_DOWNLOAD, req, true)
 
 	case "delete":
@@ -1694,7 +1790,10 @@ func (h *Handler) GetAllNodesInScanResultBulkHandler(w http.ResponseWriter, r *h
 		h.respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, resp)
+	err = httpext.JSON(w, http.StatusOK, resp)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action string) {
@@ -1734,7 +1833,10 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 			h.respondError(err, w)
 			return
 		}
-		httpext.JSON(w, http.StatusOK, sbom)
+		err = httpext.JSON(w, http.StatusOK, sbom)
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
 	case "download":
 		resp := model.DownloadReportResponse{}
 		sbomFile := path.Join("/sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json.gz")
@@ -1749,7 +1851,10 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 			return
 		}
 		resp.UrlLink = url
-		httpext.JSON(w, http.StatusOK, resp)
+		err = httpext.JSON(w, http.StatusOK, resp)
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
 		h.AuditUserActivity(r, EVENT_VULNERABILITY_SCAN, ACTION_DOWNLOAD, req, true)
 	}
 }
@@ -2159,9 +2264,7 @@ func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 		return []string{}, "", nil
 	}
 
-	var bulkId string
-
-	bulkId = bulkScanId()
+	bulkId := bulkScanId()
 	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
 	if reqs[0].NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || reqs[0].NodeType == controls.ResourceTypeToString(controls.Host) {
 		scanType = utils.NEO4J_COMPLIANCE_SCAN

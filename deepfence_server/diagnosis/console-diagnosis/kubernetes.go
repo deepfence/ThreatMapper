@@ -185,6 +185,10 @@ func (k *KubernetesConsoleDiagnosisHandler) CopyFromPod(pod *apiv1.Pod, srcPath 
 	}
 	return filepath.Walk(tmpFolder,
 		func(file string, fi os.FileInfo, err error) error {
+			if err != nil {
+				log.Error().Msg(err.Error())
+				return nil
+			}
 			if !fi.IsDir() {
 				// here number 3 has been used to cut some nested path values in tar writer
 				// like if path is /tmp/some1/some2/some3 then dir structure in tar will be /some2/some3

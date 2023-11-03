@@ -75,14 +75,14 @@ func (c *emailSenderCommon) getEmailBody(from string, recipients []string, subje
 	if withAttachments {
 		buf.WriteString(fmt.Sprintf("Content-Type: multipart/mixed; boundary=%s\r\n", boundary))
 		buf.WriteString(fmt.Sprintf("--%s\r\n", boundary))
-	} else if isPlainText == true {
+	} else if isPlainText {
 		buf.WriteString("Content-Type: text/plain; charset=utf-8\r\n")
 	} else {
 		buf.WriteString("Content-Type: text/html; charset=utf-8\r\n")
 	}
 
 	buf.WriteString("\r\n")
-	if isPlainText == true {
+	if isPlainText {
 		buf.WriteString(text)
 	} else {
 		buf.WriteString(html)

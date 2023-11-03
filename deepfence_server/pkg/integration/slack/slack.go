@@ -171,8 +171,12 @@ func (s Slack) SendNotification(ctx context.Context, message string, extras map[
 			errorMsg := ""
 			if resp.Body != nil {
 				buf := new(bytes.Buffer)
-				buf.ReadFrom(resp.Body)
-				errorMsg = buf.String()
+				_, err = buf.ReadFrom(resp.Body)
+				if err != nil {
+					errorMsg = err.Error()
+				} else {
+					errorMsg = buf.String()
+				}
 			}
 			resp.Body.Close()
 			return fmt.Errorf("failed to send notification batch %d, status code: %d , error: %s", i+1, resp.StatusCode, errorMsg)

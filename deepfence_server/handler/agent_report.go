@@ -110,11 +110,10 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) IngestSyncAgentReport(w http.ResponseWriter, r *http.Request) {
 	var (
-		buf    = &bytes.Buffer{}
-		reader = io.TeeReader(r.Body, buf)
+		buf = &bytes.Buffer{}
 	)
 
-	reader = io.TeeReader(r.Body, gzip.NewWriter(buf))
+	reader := io.TeeReader(r.Body, gzip.NewWriter(buf))
 
 	ctx := r.Context()
 

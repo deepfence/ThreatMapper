@@ -37,6 +37,9 @@ x-service-variables: &common-creds
     DF_ENABLE_DEBUG: ""
     DEEPFENCE_ENABLE_PPROF: ""
     DEEPFENCE_TELEMETRY_ENABLED: "true"
+    DEEPFENCE_TASKS_CONCURRENCY: 50
+    DEEPFENCE_TASKS_MAX_RETRIES: 3
+    DEEPFENCE_MAX_SCAN_WORKLOAD: 5
 
 services:
 
@@ -362,6 +365,23 @@ services:
       options:
         max-size: "100m"
     restart: unless-stopped
+
+  # deepfence-asynq-mon:
+  #   image: ${IMAGE_REPOSITORY:-deepfenceio}/asynqmon:latest
+  #   hostname: deepfence-asynq-mon
+  #   container_name: deepfence-asynq-mon
+  #   environment:
+  #     - PORT=8090
+  #     - REDIS_ADDR=deepfence-redis:6379
+  #   ports:
+  #     - "8090:8090"
+  #   networks:
+  #     - deepfence_net
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "100m"
+  #   restart: unless-stopped
 
 volumes:
   deepfence_data:

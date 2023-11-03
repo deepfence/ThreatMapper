@@ -65,22 +65,26 @@ func listCatalogRegistryV2(url, userName, password string) ([]string, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error().Msg(err.Error())
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Error().Msg(err.Error())
+		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("error bad status code %d", resp.StatusCode)
 		log.Error().Msg(err.Error())
+		return nil, err
 	}
 
 	var repos ReposResp
-	if err := json.Unmarshal(body, &repos); err != nil {
+	if err = json.Unmarshal(body, &repos); err != nil {
 		log.Error().Msg(err.Error())
+		return nil, err
 	}
 
 	repositories = append(repositories, repos.Repositories...)

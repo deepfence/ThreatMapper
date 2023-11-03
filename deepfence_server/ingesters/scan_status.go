@@ -115,7 +115,7 @@ func AddNewScan(tx WriteDBTransaction,
 		}
 	}
 	if rec.Values[1] != nil {
-		if rec.Values[1].(bool) == false {
+		if !rec.Values[1].(bool) {
 			return &AgentNotInstalledError{
 				NodeId: node_id,
 			}
@@ -291,7 +291,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		}
 	}
 	if rec.Values[1] != nil {
-		if rec.Values[1].(bool) == false {
+		if !rec.Values[1].(bool) {
 			return &AgentNotInstalledError{
 				NodeId: nodeId,
 			}

@@ -36,8 +36,11 @@ func (h *Handler) GetKubernetesClusterControls(w http.ResponseWriter, r *http.Re
 		}
 	}
 
-	httpext.JSON(w, http.StatusOK, ctl.AgentControls{
+	err = httpext.JSON(w, http.StatusOK, ctl.AgentControls{
 		BeatRateSec: 30,
 		Commands:    actions,
 	})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }

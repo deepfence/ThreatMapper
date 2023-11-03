@@ -16,6 +16,11 @@ func getGeneric[T any](h *Handler, w http.ResponseWriter, r *http.Request, gette
 	defer r.Body.Close()
 	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
+	}
 
 	hosts, err := getter(r.Context(), req)
 	if err != nil {
@@ -34,6 +39,11 @@ func (h *Handler) GetPods(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
+	}
 
 	pods, err := reporters_lookup.GetPodsReport(r.Context(), req)
 	if err != nil {
@@ -47,7 +57,7 @@ func (h *Handler) GetPods(w http.ResponseWriter, r *http.Request) {
 			Filters: reporters.FieldsFilters{
 				ContainsFilter: reporters.ContainsFilter{
 					FieldsValues: map[string][]interface{}{
-						"pod_name": []interface{}{pods[i].PodName},
+						"pod_name": {pods[i].PodName},
 					},
 				},
 			},

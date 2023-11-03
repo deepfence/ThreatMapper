@@ -213,11 +213,17 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 		NonSecret:       bNonSecret, // rawNonSecretJSON,
 		Extras:          bExtras,    // rawExtrasJSON,
 	})
+	if err != nil {
+		return 0, err
+	}
 
 	cr, err := pgClient.GetContainerRegistryByTypeAndName(ctx, postgresqlDb.GetContainerRegistryByTypeAndNameParams{
 		RegistryType: ra.RegistryType,
 		Name:         ra.Name,
 	})
+	if err != nil {
+		return 0, err
+	}
 
 	driver, err := directory.Neo4jClient(rContext)
 	if err != nil {

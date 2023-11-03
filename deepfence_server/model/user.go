@@ -300,6 +300,9 @@ func (u *User) CompareHashAndPassword(ctx context.Context, pgClient *postgresqlD
 func GetUserByID(ctx context.Context, userID int64) (*User, int, *postgresqlDb.Queries, error) {
 	user := User{ID: userID}
 	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return nil, 0, nil, err
+	}
 	err = user.LoadFromDbByID(ctx, pgClient)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, http.StatusNotFound, pgClient, errors.New(utils.ErrorUserNotFound)

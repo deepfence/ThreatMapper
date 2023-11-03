@@ -127,7 +127,10 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	}()
 
 	// send inprogress status
-	scanCtx.Checkpoint("After initialization")
+	err = scanCtx.Checkpoint("After initialization")
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 
 	// get registry credentials
 	authDir, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
@@ -186,7 +189,10 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 		return nil
 	}
 
-	scanCtx.Checkpoint("After skopeo download")
+	err = scanCtx.Checkpoint("After skopeo download")
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 
 	// init secret scan
 	scanResult, err := secretScan.ExtractAndScanFromTar(dir, imageName, scanCtx)

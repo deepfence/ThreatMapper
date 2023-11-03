@@ -12,8 +12,9 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
-	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
+	"github.com/hibiken/asynq"
 	"github.com/robfig/cron/v3"
 )
 
@@ -34,8 +35,9 @@ type Jobs struct {
 }
 
 type Scheduler struct {
-	cron *cron.Cron
-	jobs Jobs
+	cron            *cron.Cron
+	jobs            Jobs
+	tasksMaxRetries asynq.Option
 }
 
 func NewScheduler() (*Scheduler, error) {
@@ -50,6 +52,7 @@ func NewScheduler() (*Scheduler, error) {
 			CronJobs:      make(map[directory.NamespaceID]CronJobs),
 			ScheduledJobs: make(map[directory.NamespaceID]ScheduledJobs),
 		},
+		tasksMaxRetries: utils.TasksMaxRetries(),
 	}
 	return scheduler, nil
 }
@@ -152,8 +155,8 @@ func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
 	var newHashes []string
 	newJobHashToId := make(map[string]cron.EntryID)
 	for _, schedule := range schedules {
-		jobHash := sdkUtils.GetScheduledJobHash(schedule)
-		if sdkUtils.InSlice(jobHash, scheduledJobs.jobHashes) {
+		jobHash := utils.GetScheduledJobHash(schedule)
+		if utils.InSlice(jobHash, scheduledJobs.jobHashes) {
 			newHashes = append(newHashes, jobHash)
 			newJobHashToId[jobHash] = scheduledJobs.jobHashToId[jobHash]
 			continue
@@ -167,7 +170,7 @@ func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
 		newJobHashToId[jobHash] = jobId
 	}
 	for _, oldJobHash := range scheduledJobs.jobHashes {
-		if !sdkUtils.InSlice(oldJobHash, newHashes) {
+		if !utils.InSlice(oldJobHash, newHashes) {
 			log.Info().Msgf("Removing job from cron: %s", oldJobHash)
 			s.cron.Remove(scheduledJobs.jobHashToId[oldJobHash])
 		}
@@ -192,92 +195,92 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 
 	// Documentation: https://pkg.go.dev/github.com/robfig/cron#hdr-Usage
 	var jobID cron.EntryID
-	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, sdkUtils.TriggerConsoleActionsTask))
+	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, utils.TriggerConsoleActionsTask, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, sdkUtils.CleanUpGraphDBTask))
+	jobID, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, utils.CleanUpGraphDBTask, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, sdkUtils.ComputeThreatTask))
+	jobID, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, utils.ComputeThreatTask, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, sdkUtils.RetryFailedScansTask))
+	jobID, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, utils.RetryFailedScansTask, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 10m", s.enqueueTask(namespace, sdkUtils.RetryFailedUpgradesTask))
+	jobID, err = s.cron.AddFunc("@every 10m", s.enqueueTask(namespace, utils.RetryFailedUpgradesTask, utils.DefaultTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 5m", s.enqueueTask(namespace, sdkUtils.CleanUpPostgresqlTask))
+	jobID, err = s.cron.AddFunc("@every 5m", s.enqueueTask(namespace, utils.CleanUpPostgresqlTask, utils.DefaultTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.CleanupDiagnosisLogs))
+	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, utils.CleanupDiagnosisLogs, utils.DefaultTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	// Adding CloudComplianceTask only to ensure data is ingested if task fails on startup, Retry to be handled by watermill
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.CloudComplianceTask))
+	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, utils.CloudComplianceTask, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.CheckAgentUpgradeTask))
+	//jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, utils.CheckAgentUpgradeTask))
+	//if err != nil {
+	//	return err
+	//}
+	//jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 12h", s.enqueueTask(namespace, utils.SyncRegistryTask, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 12h", s.enqueueTask(namespace, sdkUtils.SyncRegistryTask))
+	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, utils.SendNotificationTask, utils.LowTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, sdkUtils.SendNotificationTask))
+	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, utils.ReportCleanUpTask, utils.DefaultTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, sdkUtils.ReportCleanUpTask))
+	jobID, err = s.cron.AddFunc("@every 15m", s.enqueueTask(namespace, utils.CachePostureProviders, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 15m", s.enqueueTask(namespace, sdkUtils.CachePostureProviders))
+	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, utils.LinkCloudResourceTask, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, sdkUtils.LinkCloudResourceTask))
-	if err != nil {
-		return err
-	}
-	jobIDs = append(jobIDs, jobID)
-
-	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, sdkUtils.LinkNodesTask))
+	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, utils.LinkNodesTask, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
@@ -305,11 +308,11 @@ func (s *Scheduler) startInitJobs(ctx context.Context) error {
 	}
 
 	log.Info().Msgf("Start immediate cronjobs for namespace %s", namespace)
-	s.enqueueTask(namespace, sdkUtils.CheckAgentUpgradeTask)()
-	s.enqueueTask(namespace, sdkUtils.SyncRegistryTask)()
-	s.enqueueTask(namespace, sdkUtils.CloudComplianceTask)()
-	s.enqueueTask(namespace, sdkUtils.ReportCleanUpTask)()
-	s.enqueueTask(namespace, sdkUtils.CachePostureProviders)()
+	//s.enqueueTask(namespace, utils.CheckAgentUpgradeTask)()
+	s.enqueueTask(namespace, utils.SyncRegistryTask, utils.CritialTaskOpts()...)()
+	s.enqueueTask(namespace, utils.CloudComplianceTask, utils.CritialTaskOpts()...)()
+	s.enqueueTask(namespace, utils.ReportCleanUpTask, utils.CritialTaskOpts()...)()
+	s.enqueueTask(namespace, utils.CachePostureProviders, utils.CritialTaskOpts()...)()
 
 	return nil
 }
@@ -337,14 +340,14 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID,
 			log.Error().Msg(err.Error())
 			return
 		}
-		err = worker.Enqueue(sdkUtils.ScheduledTasks, messageJson)
+		err = worker.Enqueue(utils.ScheduledTasks, messageJson, utils.DefaultTaskOpts()...)
 		if err != nil {
 			log.Error().Msg(err.Error())
 		}
 	}
 }
 
-func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string) func() {
+func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string, taskOpts ...asynq.Option) func() {
 	log.Info().Msgf("Registering task: %s for namespace %s", task, namespace)
 	return func() {
 		log.Info().Msgf("Enqueuing task: %s for namespace %s", task, namespace)
@@ -353,7 +356,7 @@ func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string) fu
 			log.Error().Msg(err.Error())
 			return
 		}
-		err = worker.Enqueue(task, []byte(strconv.FormatInt(sdkUtils.GetTimestamp(), 10)))
+		err = worker.Enqueue(task, []byte(strconv.FormatInt(utils.GetTimestamp(), 10)), taskOpts...)
 		if err != nil {
 			log.Error().Msg(err.Error())
 		}

@@ -104,7 +104,7 @@ func (h *Handler) AuditUserActivity(
 		namespace = user.CompanyNamespace
 	}
 
-	var resourceStr string = ""
+	var resourceStr string
 	if resources != nil {
 		rStr, err := json.Marshal(resources)
 		if err != nil {
@@ -139,10 +139,11 @@ func (h *Handler) AuditUserActivity(
 	go h.AddAuditLog(namespace, params)
 }
 
-func (h *Handler) AddAuditLog(namespace string, params postgresql_db.CreateAuditLogParams) error {
+func (h *Handler) AddAuditLog(namespace string, params postgresql_db.CreateAuditLogParams) {
 	data, err := json.Marshal(params)
 	if err != nil {
-		return err
+		log.Error().Msg(err.Error())
+		return
 	}
 
 	h.IngestChan <- &kgo.Record{
@@ -152,8 +153,6 @@ func (h *Handler) AddAuditLog(namespace string, params postgresql_db.CreateAudit
 			{Key: "namespace", Value: []byte(namespace)},
 		},
 	}
-
-	return nil
 }
 
 func (h *Handler) GetAuditLogsCount(w http.ResponseWriter, r *http.Request) {
@@ -172,9 +171,12 @@ func (h *Handler) GetAuditLogsCount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+	err = httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
 		Count: int(count),
 	})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) GetAuditLogs(w http.ResponseWriter, r *http.Request) {

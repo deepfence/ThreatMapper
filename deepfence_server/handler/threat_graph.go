@@ -33,6 +33,11 @@ func (h *Handler) GetThreatGraph(w http.ResponseWriter, r *http.Request) {
 		AzureFilter: reporters_graph.CloudProviderFilter{AccountIds: nil},
 	}
 	err = json.Unmarshal(body, &filters)
+	if err != nil {
+		log.Error().Msgf("Error Adding report: %v", err)
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
 
 	reporter, err := reporters_graph.NewThreatGraphReporter(ctx)
 
@@ -98,5 +103,5 @@ func (h *Handler) GetIndividualThreatGraph(w http.ResponseWriter, r *http.Reques
 		h.respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, individualThreatGraph)
+	_ = httpext.JSON(w, http.StatusOK, individualThreatGraph)
 }

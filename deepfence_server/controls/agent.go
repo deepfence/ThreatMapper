@@ -81,10 +81,7 @@ func GetPendingAgentScans(ctx context.Context, nodeId string, availableWorkload 
 		return res, err
 	}
 
-	session, err := client.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		return res, err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -134,10 +131,8 @@ func GetPendingAgentScans(ctx context.Context, nodeId string, availableWorkload 
 }
 
 func hasAgentDiagnosticLogRequests(client neo4j.Driver, nodeId string, nodeType controls.ScanResource, max_work int) (bool, error) {
-	session, err := client.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return false, err
-	}
+
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -178,10 +173,7 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, nodeT
 		return res, err
 	}
 
-	session, err := client.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		return res, err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -230,10 +222,7 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, nodeT
 }
 
 func hasPendingAgentScans(client neo4j.Driver, nodeId string, max_work int) (bool, error) {
-	session, err := client.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return false, err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -274,10 +263,7 @@ func ExtractStartingAgentScans(ctx context.Context, nodeId string,
 		return res, err
 	}
 
-	session, err := client.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		return res, err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -340,10 +326,7 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeId string,
 		return res, err
 	}
 
-	session, err := client.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		return res, err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -406,10 +389,7 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeId string,
 }
 
 func hasPendingAgentUpgrade(client neo4j.Driver, nodeId string, max_work int) (bool, error) {
-	session, err := client.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return false, err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -448,10 +428,7 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeId string, max_work int
 		return res, err
 	}
 
-	session, err := client.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		return res, err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -512,10 +489,7 @@ func CheckNodeExist(ctx context.Context, nodeId string) error {
 		return err
 	}
 
-	session, err := client.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return err
-	}
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
