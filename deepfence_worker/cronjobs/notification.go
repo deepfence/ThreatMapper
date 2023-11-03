@@ -303,8 +303,8 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		if integration.IsMessagingFormat(integrationRow.IntegrationType) {
 			updatedResults = FormatForMessagingApps(results, integrationRow.Resource)
 		} else {
+			updatedResults = []map[string]interface{}{}
 			for _, r := range results {
-				updatedResults = []map[string]interface{}{}
 				updatedResults = append(updatedResults, utils.ToMap[T](r))
 			}
 		}
