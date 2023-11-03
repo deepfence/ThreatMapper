@@ -46,6 +46,21 @@ func (h *Handler) UpdateScheduledTask(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func (h *Handler) DeleteCustomScheduledTask(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+	defer r.Body.Close()
+	err = model.DeleteCustomSchedule(r.Context(), id)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (h *Handler) AddScheduledTask(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 

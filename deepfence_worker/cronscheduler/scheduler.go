@@ -112,7 +112,7 @@ func (s *Scheduler) RemoveJobs(ctx context.Context) error {
 }
 
 func (s *Scheduler) updateScheduledJobs() {
-	ticker := time.NewTicker(15 * time.Minute)
+	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 
 	for range ticker.C {
@@ -158,12 +158,7 @@ func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
 			newJobHashToId[jobHash] = scheduledJobs.jobHashToId[jobHash]
 			continue
 		}
-		var payload map[string]string
-		err = json.Unmarshal(schedule.Payload, &payload)
-		if err != nil {
-			log.Error().Msg("addScheduledJobs payload: " + err.Error())
-			continue
-		}
+		payload := schedule.Payload
 		jobId, err := s.cron.AddFunc(schedule.CronExpr, s.enqueueScheduledTask(namespace, schedule, payload))
 		if err != nil {
 			return err
@@ -172,7 +167,8 @@ func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
 		newJobHashToId[jobHash] = jobId
 	}
 	for _, oldJobHash := range scheduledJobs.jobHashes {
-		if !sdkUtils.InSlice(oldJobHash, scheduledJobs.jobHashes) {
+		if !sdkUtils.InSlice(oldJobHash, newHashes) {
+			log.Info().Msgf("Removing job from cron: %s", oldJobHash)
 			s.cron.Remove(scheduledJobs.jobHashToId[oldJobHash])
 		}
 	}
@@ -322,7 +318,8 @@ func (s *Scheduler) Run() {
 	s.cron.Run()
 }
 
-func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID, schedule postgresqlDb.Scheduler, payload map[string]string) func() {
+func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID,
+	schedule postgresqlDb.Scheduler, payload json.RawMessage) func() {
 	log.Info().Msgf("Registering task: %s, %s for namespace %s", schedule.Description, schedule.CronExpr, namespace)
 	return func() {
 		log.Info().Msgf("Enqueuing task: %s, %s for namespace %s",
@@ -332,6 +329,7 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID, schedu
 			"id":          schedule.ID,
 			"payload":     payload,
 			"description": schedule.Description,
+			"is_system":   schedule.IsSystem,
 		}
 		messageJson, _ := json.Marshal(message)
 		worker, err := directory.Worker(directory.NewContextWithNameSpace(namespace))
