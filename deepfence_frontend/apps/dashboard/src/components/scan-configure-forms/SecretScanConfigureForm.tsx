@@ -65,7 +65,7 @@ export const scanSecretApiAction = async ({
   const scheduleOn = formData.get('scheduleOn') === 'on';
   const scanImmediately = formData.get('scanImmediately') === 'on';
   const scheduleDescription = formData.get('scheduleDescription');
-  const scheduleCron = formData.get('scheduleCron');
+  const scheduleCron = `0 ${formData.get('scheduleCron')}`;
 
   const getNodeType = (nodeType: SecretScanNodeTypeEnum | 'container_image') => {
     let _nodeType = nodeType as ModelNodeIdentifierNodeTypeEnum;
@@ -183,7 +183,7 @@ export const scanSecretApiAction = async ({
         benchmark_types: null,
         scan_config: null,
         action: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
-        cron_expr: scheduleCron?.toString(),
+        cron_expr: scheduleCron,
         description: scheduleDescription?.toString(),
       },
     });

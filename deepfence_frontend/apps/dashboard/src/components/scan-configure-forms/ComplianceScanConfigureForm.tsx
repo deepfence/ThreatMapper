@@ -94,7 +94,7 @@ export const scanPostureApiAction = async ({
   const scheduleOn = formData.get('scheduleOn') === 'on';
   const scanImmediately = formData.get('scanImmediately') === 'on';
   const scheduleDescription = formData.get('scheduleDescription');
-  const scheduleCron = formData.get('scheduleCron');
+  const scheduleCron = `0 ${formData.get('scheduleCron')}`;
 
   const requestBody: ModelComplianceScanTriggerReq = {
     benchmark_types: checkTypes.toLowerCase().split(','),
@@ -167,7 +167,7 @@ export const scanPostureApiAction = async ({
         action: isCloudScan
           ? ModelScanResultsActionRequestScanTypeEnum.CloudComplianceScan
           : ModelScanResultsActionRequestScanTypeEnum.ComplianceScan,
-        cron_expr: scheduleCron?.toString(),
+        cron_expr: scheduleCron,
         description: scheduleDescription?.toString(),
       },
     });

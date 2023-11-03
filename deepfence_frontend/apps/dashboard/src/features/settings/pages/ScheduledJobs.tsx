@@ -305,18 +305,18 @@ const ScheduledJobsTable = ({
         maxSize: 70,
       }),
       columnHelper.accessor('payload', {
-        cell: (cell) => cell.row.original.payload.node_type,
+        cell: (cell) => <TruncatedText text={cell.row.original.payload.node_type} />,
         header: () => 'Node Type',
         minSize: 30,
         size: 40,
         maxSize: 85,
       }),
       columnHelper.accessor('cron_expr', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
         header: () => <TruncatedText text="Cron Expression" />,
         minSize: 30,
-        size: 40,
-        maxSize: 85,
+        size: 50,
+        maxSize: 60,
       }),
       columnHelper.accessor('is_enabled', {
         cell: (cell) => (cell.getValue() ? <span>Yes</span> : <span>No</span>),
