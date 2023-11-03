@@ -55,7 +55,7 @@ var (
 
 func GetHttpClient() *http.Client {
 	once1.Do(func() {
-		secureClient = &http.Client{Timeout: time.Second * 30}
+		secureClient = &http.Client{Timeout: time.Second * 10}
 	})
 
 	return secureClient
@@ -65,7 +65,7 @@ func GetInsecureHttpClient() *http.Client {
 	once2.Do(func() {
 		tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
 		insecureClient = &http.Client{
-			Timeout: time.Second * 30,
+			Timeout: time.Second * 10,
 			Transport: &http.Transport{
 				TLSClientConfig: tlsConfig,
 				WriteBufferSize: 10240,

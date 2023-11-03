@@ -39,6 +39,8 @@ type config struct {
 	RedisDbNumber         int      `default:"0" split_words:"true"`
 	RedisPort             string   `default:"6379" split_words:"true"`
 	RedisPassword         string   `default:"" split_words:"true"`
+	TasksConcurrency      int      `default:"50" split_words:"true"`
+	TasksMaxRetries       int      `default:"3" split_words:"true"`
 }
 
 // build info
@@ -125,7 +127,7 @@ func main() {
 		log.Info().Msg("Starting scheduler")
 		go cs.InitMinioDatabase()
 		time.Sleep(10 * time.Second)
-		scheduler, err := cs.NewScheduler()
+		scheduler, err := cs.NewScheduler(cfg.TasksMaxRetries)
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return

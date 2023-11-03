@@ -111,7 +111,7 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 			Password: cfg.RedisPassword,
 		},
 		asynq.Config{
-			Concurrency: 10,
+			Concurrency: cfg.TasksConcurrency,
 			Queues: map[string]int{
 				"critical": 6,
 				"default":  3,
