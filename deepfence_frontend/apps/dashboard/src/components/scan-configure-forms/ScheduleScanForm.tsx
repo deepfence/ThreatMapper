@@ -127,7 +127,10 @@ export const ScheduleScanForm = () => {
               }}
             />
           </div>
-          <TextInputArea name="scheduleDescription" placeholder="Enter description" />
+          <TextInputArea
+            name="scheduleDescription"
+            placeholder="Enter schedule description"
+          />
           <Checkbox label="Scan now" name="scanImmediately" />
         </div>
       )}
