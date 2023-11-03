@@ -539,7 +539,7 @@ const DataTable = () => {
         minSize: 60,
         size: 100,
         maxSize: 300,
-        enableSorting: false,
+        enableSorting: true,
       }),
       columnHelper.accessor('account_id', {
         cell: (info) => {
