@@ -184,8 +184,7 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 	if _, err = tx.Run(`
 	MATCH (n:CloudComplianceControl)
 	MATCH (b:CloudComplianceBenchmark{benchmark_id:n.parent_control_hierarchy[0]})
-	WHERE NOT EXISTS((b)-[:PARENT]->(n))
-	CREATE (b)-[:PARENT]->(n)`, map[string]interface{}{}); err != nil {
+	MERGE (b)-[:PARENT]->(n)`, map[string]interface{}{}); err != nil {
 		log.Error().Msgf(err.Error())
 		return nil
 	}
