@@ -323,7 +323,7 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = worker.Enqueue(utils.ReportGeneratorTask, payload)
+	err = worker.Enqueue(utils.ReportGeneratorTask, payload, utils.TasksMaxRetries())
 	if err != nil {
 		log.Error().Msgf("failed to publish task: %+v", err)
 		h.respondError(err, w)

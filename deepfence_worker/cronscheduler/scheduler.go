@@ -12,6 +12,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 	"github.com/hibiken/asynq"
@@ -37,10 +38,10 @@ type Jobs struct {
 type Scheduler struct {
 	cron            *cron.Cron
 	jobs            Jobs
-	tasksMaxRetries int
+	tasksMaxRetries asynq.Option
 }
 
-func NewScheduler(maxRetries int) (*Scheduler, error) {
+func NewScheduler() (*Scheduler, error) {
 	logger := stdLogger.New(os.Stdout, "cron: ", stdLogger.LstdFlags)
 	scheduler := &Scheduler{
 		cron: cron.New(
@@ -52,7 +53,7 @@ func NewScheduler(maxRetries int) (*Scheduler, error) {
 			CronJobs:      make(map[directory.NamespaceID]CronJobs),
 			ScheduledJobs: make(map[directory.NamespaceID]ScheduledJobs),
 		},
-		tasksMaxRetries: maxRetries,
+		tasksMaxRetries: utils.TasksMaxRetries(),
 	}
 	return scheduler, nil
 }
@@ -342,7 +343,7 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID, schedu
 			log.Error().Msg(err.Error())
 			return
 		}
-		err = worker.Enqueue(sdkUtils.ScheduledTasks, messageJson)
+		err = worker.Enqueue(sdkUtils.ScheduledTasks, messageJson, s.tasksMaxRetries)
 		if err != nil {
 			log.Error().Msg(err.Error())
 		}
@@ -358,7 +359,7 @@ func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string) fu
 			log.Error().Msg(err.Error())
 			return
 		}
-		err = worker.Enqueue(task, []byte(strconv.FormatInt(sdkUtils.GetTimestamp(), 10)), asynq.MaxRetry(s.tasksMaxRetries))
+		err = worker.Enqueue(task, []byte(strconv.FormatInt(sdkUtils.GetTimestamp(), 10)), s.tasksMaxRetries)
 		if err != nil {
 			log.Error().Msg(err.Error())
 		}

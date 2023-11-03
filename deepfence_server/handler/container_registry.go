@@ -756,7 +756,7 @@ func (h *Handler) SyncRegistry(rCtx context.Context, pgID int32) error {
 		return err
 	}
 
-	err = worker.Enqueue(utils.SyncRegistryTask, payload)
+	err = worker.Enqueue(utils.SyncRegistryTask, payload, utils.TasksMaxRetries())
 	if err != nil {
 		log.Error().Msgf("cannot publish message: %v", err)
 		return err

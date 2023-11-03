@@ -32,6 +32,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 )
 
@@ -573,6 +574,18 @@ func GetEnvOrDefault(envVar string, defaultValue string) string {
 	return envValue
 }
 
+func GetEnvOrDefaultInt(envVar string, defaultValue int) int {
+	envValue := os.Getenv(envVar)
+	if len(envValue) == 0 {
+		return defaultValue
+	}
+	val, err := strconv.Atoi(envValue)
+	if err != nil {
+		return defaultValue
+	}
+	return val
+}
+
 func URLEncode(s string) string {
 	return url.QueryEscape(s)
 }
@@ -624,4 +637,8 @@ func SplitFullName(name string) (string, string) {
 		lastName = names[len(names)-1]
 	}
 	return firstName, lastName
+}
+
+func TasksMaxRetries() asynq.Option {
+	return asynq.MaxRetry(GetEnvOrDefaultInt("DEEPFENCE_TASKS_MAX_RETRIES", DefaultTaskMaxRetries))
 }

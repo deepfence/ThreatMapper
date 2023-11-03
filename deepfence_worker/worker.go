@@ -123,7 +123,7 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 				if retried >= maxRetry {
 					err = fmt.Errorf("retry exhausted for task %s: %w", task.Type(), err)
 				}
-				log.Error().Msgf("worker task error: %v", err)
+				log.Error().Err(err).Msgf("worker task %s, payload: %s", task.Type(), task.Payload())
 			}),
 		},
 	)

@@ -9,6 +9,7 @@ import (
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
@@ -117,7 +118,7 @@ func GetRegisterControlFunc[T ctl.StartVulnerabilityScanRequest | ctl.StartSecre
 			log.Error().Msg(err.Error())
 			return err
 		}
-		if err := worker.Enqueue(task, data); err != nil {
+		if err := worker.Enqueue(task, data, utils.TasksMaxRetries()); err != nil {
 			log.Error().Msg(err.Error())
 			return err
 		}
