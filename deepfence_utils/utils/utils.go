@@ -32,7 +32,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/google/uuid"
-	"github.com/hibiken/asynq"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 )
 
@@ -114,10 +113,7 @@ func UUIDFromString(uuidStr string) (uuid.UUID, error) {
 
 func IsUUIDValid(uuidStr string) bool {
 	_, err := UUIDFromString(uuidStr)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 
 func NewUUID() uuid.UUID {
@@ -197,7 +193,7 @@ func IsJWTExpired(token string) bool {
 func GetInt64ValueFromInterfaceMap(claims map[string]interface{}, key string) (int64, error) {
 	val, ok := claims[key]
 	if !ok {
-		return 0, errors.New(fmt.Sprintf("key %s not found in JWT claims", key))
+		return 0, fmt.Errorf("key %s not found in JWT claims", key)
 	}
 	number, err := InterfaceToInt(val)
 	if err != nil {
@@ -209,7 +205,7 @@ func GetInt64ValueFromInterfaceMap(claims map[string]interface{}, key string) (i
 func GetStringValueFromInterfaceMap(claims map[string]interface{}, key string) (string, error) {
 	val, ok := claims[key]
 	if !ok {
-		return "", errors.New(fmt.Sprintf("key %s not found in JWT claims", key))
+		return "", fmt.Errorf("key %s not found in JWT claims", key)
 	}
 	return fmt.Sprintf("%v", val), nil
 }
@@ -637,8 +633,4 @@ func SplitFullName(name string) (string, string) {
 		lastName = names[len(names)-1]
 	}
 	return firstName, lastName
-}
-
-func TasksMaxRetries() asynq.Option {
-	return asynq.MaxRetry(GetEnvOrDefaultInt("DEEPFENCE_TASKS_MAX_RETRIES", DefaultTaskMaxRetries))
 }

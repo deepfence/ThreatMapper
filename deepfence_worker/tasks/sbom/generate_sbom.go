@@ -256,7 +256,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		return nil
 	}
 
-	err = worker.Enqueue(utils.ScanSBOMTask, payload, utils.TasksMaxRetries())
+	err = worker.Enqueue(utils.ScanSBOMTask, payload, utils.DefaultTaskOpts()...)
 	if err != nil {
 		return err
 	}

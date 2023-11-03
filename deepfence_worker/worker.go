@@ -111,11 +111,12 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 			Password: cfg.RedisPassword,
 		},
 		asynq.Config{
-			Concurrency: cfg.TasksConcurrency,
+			StrictPriority: true,
+			Concurrency:    cfg.TasksConcurrency,
 			Queues: map[string]int{
-				"critical": 6,
-				"default":  3,
-				"low":      1,
+				utils.Q_CRITICAL: 6,
+				utils.Q_DEFAULT:  3,
+				utils.Q_LOW:      1,
 			},
 			ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
 				retried, _ := asynq.GetRetryCount(ctx)

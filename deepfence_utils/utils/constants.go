@@ -5,8 +5,7 @@ const (
 )
 
 const (
-	Project               = "ThreatMapper"
-	DefaultTaskMaxRetries = 3
+	Project = "ThreatMapper"
 )
 
 // kafka topics

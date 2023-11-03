@@ -98,14 +98,14 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			if ts == utils.NEO4J_CLOUD_COMPLIANCE_SCAN {
 				task = utils.UpdateCloudResourceScanStatusTask
 			}
-			if err := worker.Enqueue(task, b, utils.TasksMaxRetries()); err != nil {
+			if err := worker.Enqueue(task, b, utils.DefaultTaskOpts()...); err != nil {
 				log.Error().Err(err).Msgf("failed to enqueue %s", task)
 			}
 		}
 
 		if (ts == utils.NEO4J_COMPLIANCE_SCAN || ts == utils.NEO4J_CLOUD_COMPLIANCE_SCAN) && anyCompleted(others) {
 			err := worker.Enqueue(utils.CachePostureProviders,
-				[]byte(strconv.FormatInt(utils.GetTimestamp(), 10)), utils.TasksMaxRetries())
+				[]byte(strconv.FormatInt(utils.GetTimestamp(), 10)), utils.CritialTaskOpts()...)
 			if err != nil {
 				log.Error().Err(err).Msgf("failed to enqueue %s", utils.CachePostureProviders)
 			}

@@ -253,5 +253,5 @@ func (h *Handler) CachePostureProviders(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return worker.Enqueue(utils.CachePostureProviders, []byte{}, utils.TasksMaxRetries())
+	return worker.Enqueue(utils.CachePostureProviders, []byte{}, utils.CritialTaskOpts()...)
 }

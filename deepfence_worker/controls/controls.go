@@ -118,7 +118,7 @@ func GetRegisterControlFunc[T ctl.StartVulnerabilityScanRequest | ctl.StartSecre
 			log.Error().Msg(err.Error())
 			return err
 		}
-		if err := worker.Enqueue(task, data, utils.TasksMaxRetries()); err != nil {
+		if err := worker.Enqueue(task, data, utils.DefaultTaskOpts()...); err != nil {
 			log.Error().Msg(err.Error())
 			return err
 		}
