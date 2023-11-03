@@ -40,6 +40,7 @@ export const complianceType: {
 };
 export type ComplianceScanConfigureFormProps = {
   showAdvancedOptions: boolean;
+  showScheduleScanOptions: boolean;
   data: {
     nodeIds: string[];
     nodeType: ComplianceScanNodeTypeEnum;
@@ -470,6 +471,7 @@ export const ControlsTable = memo(
 
 export const ComplianceScanConfigureForm = ({
   showAdvancedOptions,
+  showScheduleScanOptions,
   onSuccess,
   data,
   onCancel,
@@ -537,7 +539,7 @@ export const ComplianceScanConfigureForm = ({
           </span>
         ) : null}
 
-        <ScheduleScanForm />
+        {showScheduleScanOptions && <ScheduleScanForm />}
 
         <div className="flex gap-3 mt-10">
           <Button

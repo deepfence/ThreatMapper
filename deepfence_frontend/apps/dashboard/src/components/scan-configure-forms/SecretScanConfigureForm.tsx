@@ -19,6 +19,7 @@ import { isNodeTypeARegistryTagType, isNodeTypeARegistryType } from '@/utils/reg
 
 export type SecretScanConfigureFormProps = {
   showAdvancedOptions: boolean;
+  showScheduleScanOptions: boolean;
   data:
     | {
         nodes: {
@@ -225,6 +226,7 @@ export const SecretScanConfigureForm = ({
   onSuccess,
   onCancel,
   showAdvancedOptions: wantAdvanceOptions,
+  showScheduleScanOptions,
 }: SecretScanConfigureFormProps) => {
   const [imageTag, setImageTag] = useState('latest');
   const fetcher = useFetcher<ScanActionReturnType>();
@@ -309,7 +311,7 @@ export const SecretScanConfigureForm = ({
         </div>
       ) : null}
 
-      <ScheduleScanForm />
+      {showScheduleScanOptions && <ScheduleScanForm />}
 
       {fetcherData?.message && (
         <p className="dark:text-status-error text-p7 mt-4">{fetcherData.message}</p>
