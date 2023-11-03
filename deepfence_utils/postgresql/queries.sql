@@ -638,3 +638,9 @@ WHERE id = $6;
 DELETE
 FROM scheduler
 WHERE id = $1;
+
+-- name: DeleteCustomSchedule :exec
+DELETE
+FROM scheduler
+WHERE id = $1
+	AND is_system='f';

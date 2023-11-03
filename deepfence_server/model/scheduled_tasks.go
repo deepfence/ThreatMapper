@@ -31,11 +31,20 @@ var (
 )
 
 type AddScheduledTaskRequest struct {
-	NodeType    string `json:"node_type"`
-	Action      string `json:"action"`
+	Action      string `json:"action" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 	Description string `json:"description"`
 	CronExpr    string `json:"cron_expr"`
-	Filters     string `json:"filters"`
+	ScheduleTaskPayload
+}
+
+type ScheduleTaskPayload struct {
+	ScanTriggerCommon
+	ScanConfigLanguages []VulnerabilityScanConfigLanguage `json:"scan_config" required:"true"`
+	ComplianceBenchmarkTypes
+}
+
+type ScheduleJobId struct {
+	ID int64 `path:"id"`
 }
 
 type UpdateScheduledTaskRequest struct {
@@ -76,15 +85,29 @@ func UpdateScheduledTask(ctx context.Context, id int64, updateScheduledTask Upda
 	})
 }
 
+func DeleteCustomSchedule(ctx context.Context, id int64) error {
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return err
+	}
+	return pgClient.DeleteCustomSchedule(ctx, id)
+}
+
 func AddScheduledTask(ctx context.Context, req AddScheduledTaskRequest) error {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return err
 	}
-	payload := make(map[string]string)
-	payload["node_type"] = req.NodeType
-	payload["filters"] = req.Filters
-	payloadJson, _ := json.Marshal(payload)
+
+	payload := ScheduleTaskPayload{}
+	payload.NodeIds = req.NodeIds
+	payload.Filters = req.Filters
+	payload.ScanConfigLanguages = req.ScanConfigLanguages
+	payload.BenchmarkTypes = req.BenchmarkTypes
+	payloadJson, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
 
 	params := postgresqlDb.CreateScheduleParams{}
 	params.Action = req.Action

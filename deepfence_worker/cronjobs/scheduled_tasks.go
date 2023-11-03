@@ -3,6 +3,7 @@ package cronjobs
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -25,17 +26,24 @@ func RunScheduledTasks(ctx context.Context, task *asynq.Task) error {
 	}
 
 	log.Info().Msgf("RunScheduledTasks: %s", messagePayload["description"])
+	log.Info().Msgf("RunScheduledTasks: %v", messagePayload)
 
 	scheduleId := int64(messagePayload["id"].(float64))
 	jobStatus := "Success"
-	err := runScheduledTasks(ctx, messagePayload)
+	isSystem := messagePayload["is_system"].(bool)
+	var err error
+	if isSystem {
+		err = runSystemScheduledTasks(ctx, messagePayload)
+	} else {
+		err = runCustomScheduledTasks(ctx, messagePayload)
+	}
 	if err != nil {
 		jobStatus = err.Error()
-		log.Error().Msg("runScheduledTasks: " + err.Error())
+		log.Error().Msg("RunScheduledTasks: " + err.Error())
 	}
 	err = saveJobStatus(ctx, scheduleId, jobStatus)
 	if err != nil {
-		log.Error().Msg("runScheduledTasks saveJobStatus: " + err.Error())
+		log.Error().Msg("RunScheduledTasks saveJobStatus: " + err.Error())
 	}
 	return nil
 }
@@ -48,43 +56,17 @@ var (
 	}
 )
 
-func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{}) error {
+func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]interface{}) error {
 	payload := messagePayload["payload"].(map[string]interface{})
 	nodeType := payload["node_type"].(string)
 
-	var searchFilter reporters_search.SearchFilter
-	_, ok := payload["filters"]
-	if ok {
-		filters := payload["filters"].(string)
-		err := json.Unmarshal([]byte(filters), &searchFilter)
-		if err != nil {
-			log.Error().Msgf("Error Unmarshaling filter: %v", err)
-			return err
-		}
-
-		fieldsValues := searchFilter.Filters.ContainsFilter.FieldsValues
-		if fieldsValues == nil {
-			fieldsValues = make(map[string][]interface{})
-		}
-
-		if _, ok := fieldsValues["pseudo"]; !ok {
-			fieldsValues["pseudo"] = append(make([]interface{}, 0), false)
-		}
-
-		if _, ok := fieldsValues["active"]; !ok {
-			fieldsValues["active"] = append(make([]interface{}, 0), true)
-		}
-
-		searchFilter.Filters.ContainsFilter.FieldsValues = fieldsValues
-	} else {
-		searchFilter = reporters_search.SearchFilter{
-			InFieldFilter: []string{"node_id"},
-			Filters: reporters.FieldsFilters{
-				ContainsFilter: reporters.ContainsFilter{
-					FieldsValues: map[string][]interface{}{"pseudo": {false}, "active": {true}},
-				},
+	searchFilter := reporters_search.SearchFilter{
+		InFieldFilter: []string{"node_id"},
+		Filters: reporters.FieldsFilters{
+			ContainsFilter: reporters.ContainsFilter{
+				FieldsValues: map[string][]interface{}{"pseudo": {false}, "active": {true}},
 			},
-		}
+		},
 	}
 
 	extSearchFilter := reporters_search.SearchFilter{}
@@ -161,6 +143,75 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 			return nil
 		}
 		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, benchmarkTypes)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]interface{}) error {
+	var payload model.ScheduleTaskPayload
+	val := messagePayload["payload"].(map[string]interface{})
+	payloadRaw, err := json.Marshal(val)
+	if err != nil {
+		log.Error().Msgf("Failed to marshal the payload, error:%v", err)
+		return err
+	}
+
+	err = json.Unmarshal(payloadRaw, &payload)
+	if err != nil {
+		return err
+	}
+
+	nodeIds := payload.NodeIds
+	scanFilter := payload.Filters
+	scheduleJobId := int64(messagePayload["id"].(float64))
+
+	if len(nodeIds) == 0 {
+		log.Info().Msgf("No nodes found for CustomScheduledTasks, jobid:%d, description:%s",
+			scheduleJobId, messagePayload["description"])
+		return nil
+	}
+
+	scanTrigger := model.ScanTriggerCommon{NodeIds: nodeIds, Filters: scanFilter}
+
+	action := utils.Neo4jScanType(messagePayload["action"].(string))
+
+	switch action {
+	case utils.NEO4J_VULNERABILITY_SCAN:
+		binArgs := make(map[string]string, 0)
+		if payload.ScanConfigLanguages != nil && len(payload.ScanConfigLanguages) > 0 {
+			languages := []string{}
+			for _, language := range payload.ScanConfigLanguages {
+				languages = append(languages, language.Language)
+			}
+			binArgs["scan_type"] = strings.Join(languages, ",")
+		}
+
+		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartVulnerabilityScan, binArgs)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_VULNERABILITY_SCAN, scanTrigger, actionBuilder)
+		if err != nil {
+			return err
+		}
+	case utils.NEO4J_SECRET_SCAN:
+		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartSecretScan, nil)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_SECRET_SCAN, scanTrigger, actionBuilder)
+		if err != nil {
+			return err
+		}
+	case utils.NEO4J_MALWARE_SCAN:
+		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartMalwareScan, nil)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_MALWARE_SCAN, scanTrigger, actionBuilder)
+		if err != nil {
+			return err
+		}
+	case utils.NEO4J_COMPLIANCE_SCAN, utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
+		if payload.BenchmarkTypes == nil || len(payload.BenchmarkTypes) == 0 {
+			log.Warn().Msgf("Invalid benchmarkType for compliance scan, job id: %d", scheduleJobId)
+			return nil
+		}
+		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, payload.BenchmarkTypes)
 		if err != nil {
 			return err
 		}
