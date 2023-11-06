@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -85,7 +86,26 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 
 const DefaultNotificationErrorBackoff = 15 * time.Minute
 
+var NotificationErrorBackoff time.Duration
 var notificationLock sync.Mutex
+
+func init() {
+	backoffTimeStr := os.Getenv("DEEPFENCE_NOTIFICATION_ERROR_BACKOFF_MINUTES")
+	status := false
+	if len(backoffTimeStr) > 0 {
+		value, err := strconv.Atoi(backoffTimeStr)
+		if err == nil && value > 0 {
+			NotificationErrorBackoff = time.Duration(value) * time.Minute
+			status = true
+		} else {
+			log.Warn().Msgf("Invalid value set for DEEPFENCE_NOTIFICATION_ERROR_BACKOFF_MINUTES env, setting to default")
+		}
+	}
+
+	if !status {
+		NotificationErrorBackoff = DefaultNotificationErrorBackoff
+	}
+}
 
 func SendNotifications(ctx context.Context, task *asynq.Task) error {
 	//This lock is to ensure only one notification handler runs at a time
@@ -110,6 +130,7 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 				integrationRow.IntegrationType, integrationRow.ID, integrationRow.ErrorMsg.String, time.Since(integrationRow.LastSentTime.Time))
 			continue
 		}
+
 		go func(integration postgresql_db.Integration) {
 			defer wg.Done()
 			log.Info().Msgf("Processing integration for %s rowId: %d",
