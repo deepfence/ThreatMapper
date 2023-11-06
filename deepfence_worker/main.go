@@ -40,6 +40,7 @@ type config struct {
 	RedisPort             string   `default:"6379" split_words:"true"`
 	RedisPassword         string   `default:"" split_words:"true"`
 	TasksConcurrency      int      `default:"50" split_words:"true"`
+	ProcessQueues         []string `split_words:"true"`
 }
 
 // build info
