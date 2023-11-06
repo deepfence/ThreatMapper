@@ -30,8 +30,9 @@ func init() {
 		numWorkload, err := strconv.Atoi(numWorkloadStr)
 		if err != nil {
 			MaxWorkload = DefaultMaxWorkload
+		} else {
+			MaxWorkload = numWorkload
 		}
-		MaxWorkload = numWorkload
 	}
 	ScanWorkloadAllocator = utils_ctl.NewWorkloadAllocator(DefaultMaxWorkload)
 }
