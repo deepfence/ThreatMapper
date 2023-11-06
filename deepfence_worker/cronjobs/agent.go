@@ -131,7 +131,7 @@ func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) (map[str
 			log.Error().Err(err).Msg("ReadFile")
 			continue
 		}
-		res, err := minio.UploadFile(ctx, out_file, b, m.PutObjectOptions{ContentType: "application/gzip"})
+		res, err := minio.UploadFile(ctx, out_file, b, false, m.PutObjectOptions{ContentType: "application/gzip"})
 		key := ""
 		if err != nil {
 			ape, ok := err.(directory.AlreadyPresentError)
@@ -249,7 +249,7 @@ func prepareAgentPluginReleases(ctx context.Context, tags_to_ingest []string) (m
 				log.Error().Err(err).Msg("ReadFile")
 				continue
 			}
-			res, err := minio.UploadFile(ctx, out_file, b, m.PutObjectOptions{ContentType: "application/gzip"})
+			res, err := minio.UploadFile(ctx, out_file, b, false, m.PutObjectOptions{ContentType: "application/gzip"})
 			key := ""
 			if err != nil {
 				ape, ok := err.(directory.AlreadyPresentError)

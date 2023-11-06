@@ -76,6 +76,7 @@ func (d *DockerConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.Conte
 	_, err = mc.UploadLocalFile(ctx,
 		filepath.Join(diagnosis.ConsoleDiagnosisFileServerPrefix, filepath.Base(zipFile.Name())),
 		zipFile.Name(),
+		true,
 		minio.PutObjectOptions{ContentType: "application/zip"})
 	if err != nil {
 		return err

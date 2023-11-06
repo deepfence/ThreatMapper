@@ -634,40 +634,12 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
-	info, err := mc.UploadFile(r.Context(), sbomFile, b64,
+	info, err := mc.UploadFile(r.Context(), sbomFile, b64, true,
 		minio.PutObjectOptions{ContentType: "application/gzip"})
-
 	if err != nil {
-		logError := true
-		if strings.Contains(err.Error(), "Already exists here") {
-			/*If the file already exists, we will delete the old file and upload the new one
-			  File can exists in 2 conditions:
-			  - When the earlier scan was stuck during the scan phase
-			  - When the service was restarted
-			  - Bug/Race conditon in the worker service
-			*/
-			log.Warn().Msg(err.Error() + ", Will try to overwrite the file: " + sbomFile)
-			err = mc.DeleteFile(r.Context(), sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
-			if err == nil {
-				info, err = mc.UploadFile(r.Context(), sbomFile, b64,
-					minio.PutObjectOptions{ContentType: "application/gzip"})
-
-				if err == nil {
-					log.Info().Msgf("Successfully overwritten the file: %s", sbomFile)
-					logError = false
-				} else {
-					log.Error().Msgf("Failed to upload the file, error is: %v", err)
-				}
-			} else {
-				log.Error().Msgf("Failed to delete the old file, error is: %v", err)
-			}
-		}
-
-		if logError {
-			log.Error().Msg(err.Error())
-			h.respondError(err, w)
-			return
-		}
+		log.Error().Err(err).Msg("failed to uplaod sbom")
+		h.respondError(err, w)
+		return
 	}
 
 	// check if sbom has to be scanned
