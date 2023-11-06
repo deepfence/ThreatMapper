@@ -86,8 +86,10 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 
 const DefaultNotificationErrorBackoff = 15 * time.Minute
 
-var NotificationErrorBackoff time.Duration
-var notificationLock sync.Mutex
+var (
+	NotificationErrorBackoff time.Duration
+	notificationLock         sync.Mutex
+)
 
 func init() {
 	backoffTimeStr := os.Getenv("DEEPFENCE_NOTIFICATION_ERROR_BACKOFF_MINUTES")
@@ -97,12 +99,14 @@ func init() {
 		if err == nil && value > 0 {
 			NotificationErrorBackoff = time.Duration(value) * time.Minute
 			status = true
-		} else {
-			log.Warn().Msgf("Invalid value set for DEEPFENCE_NOTIFICATION_ERROR_BACKOFF_MINUTES env, setting to default")
+			log.Info().Msgf("Setting notification err backoff to: %v",
+				NotificationErrorBackoff)
 		}
 	}
 
 	if !status {
+		log.Info().Msgf("Setting notification err backoff to default: %v",
+			DefaultNotificationErrorBackoff)
 		NotificationErrorBackoff = DefaultNotificationErrorBackoff
 	}
 }
@@ -125,9 +129,13 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 	wg := sync.WaitGroup{}
 	wg.Add(len(integrations))
 	for _, integrationRow := range integrations {
-		if integrationRow.ErrorMsg.String != "" && time.Since(integrationRow.LastSentTime.Time) < DefaultNotificationErrorBackoff {
-			log.Info().Msgf("Skipping integration for %s rowId: %d due to error: %s occured at last attempt, %s ago",
-				integrationRow.IntegrationType, integrationRow.ID, integrationRow.ErrorMsg.String, time.Since(integrationRow.LastSentTime.Time))
+		if integrationRow.ErrorMsg.String != "" &&
+			time.Since(integrationRow.LastSentTime.Time) < NotificationErrorBackoff {
+			log.Info().Msgf("Skipping integration for %s rowId: %d due to error: %s "+
+				"occured at last attempt, %s ago",
+				integrationRow.IntegrationType, integrationRow.ID,
+				integrationRow.ErrorMsg.String, time.Since(integrationRow.LastSentTime.Time))
+			wg.Done()
 			continue
 		}
 
