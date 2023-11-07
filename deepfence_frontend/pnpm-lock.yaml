@@ -36,6 +36,8 @@ importers:
       '@vitejs/plugin-react': ^4.0.4
       '@vitest/coverage-c8': ^0.33.0
       autoprefixer: ^10.4.15
+      cron-converter: ^2.0.1
+      cronstrue: ^2.41.0
       dayjs: ^1.11.9
       echarts: ^5.4.3
       eslint: ^8.47.0
@@ -73,6 +75,8 @@ importers:
       '@suspensive/react': 1.11.6_react@18.2.0
       '@suspensive/react-query': 1.11.6_mtrmixnuil4ipbilqpq7buadam
       '@tanstack/react-query': 4.32.6_biqbaboplfbrettd7655fr4n2y
+      cron-converter: 2.0.1
+      cronstrue: 2.41.0
       dayjs: 1.11.9
       echarts: 5.4.3
       lodash-es: 4.17.21
@@ -4634,7 +4638,7 @@ packages:
       dom-accessibility-api: 0.5.16
       lodash: 4.17.21
       redent: 3.0.0
-      vitest: 0.34.1_playwright@1.37.0
+      vitest: 0.34.1_jsdom@22.1.0+less@4.2.0
     dev: true
 
   /@testing-library/react/14.0.0_biqbaboplfbrettd7655fr4n2y:
@@ -5223,7 +5227,7 @@ packages:
       '@babel/plugin-transform-react-jsx-self': 7.22.5_@babel+core@7.22.10
       '@babel/plugin-transform-react-jsx-source': 7.22.5_@babel+core@7.22.10
       react-refresh: 0.14.0
-      vite: 4.4.9
+      vite: 4.4.9_less@4.2.0
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -5239,7 +5243,7 @@ packages:
       magic-string: 0.30.2
       picocolors: 1.0.0
       std-env: 3.3.3
-      vitest: 0.34.1_playwright@1.37.0
+      vitest: 0.34.1_jsdom@22.1.0+less@4.2.0
     dev: true
 
   /@vitest/expect/0.34.1:
@@ -6522,6 +6526,17 @@ packages:
       parse-json: 5.2.0
       path-type: 4.0.0
     dev: true
+
+  /cron-converter/2.0.1:
+    resolution: {integrity: sha512-2wjThrhVfy4OukXV9IPhqne11MnEqN0dzMvcR7m1cK2CJj/rC3S9Ns1AbA7pW+ao488V99Sk6vjo2119LcoGbA==}
+    dependencies:
+      luxon: 3.4.3
+    dev: false
+
+  /cronstrue/2.41.0:
+    resolution: {integrity: sha512-3ZS3eMJaxMRBGmDauKCKbyIRgVcph6uSpkhSbbZvvJWkelHiSTzGJbBqmu8io7Hspd2F45bQKnC1kzoNvtku2g==}
+    hasBin: true
+    dev: false
 
   /cross-spawn/7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
@@ -9231,6 +9246,11 @@ packages:
     dependencies:
       yallist: 4.0.0
     dev: true
+
+  /luxon/3.4.3:
+    resolution: {integrity: sha512-tFWBiv3h7z+T/tDaoxA8rqTxy1CHV6gHS//QdaH4pulbq/JuBSGgQspQQqcgnwdAx6pNI7cmvz5Sv/addzHmUg==}
+    engines: {node: '>=12'}
+    dev: false
 
   /lz-string/1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}

@@ -7049,6 +7049,50 @@
       }
     },
     "/deepfence/scheduled-task/{id}": {
+      "delete": {
+        "tags": ["Settings"],
+        "summary": "Delete Schedule task",
+        "description": "Delete Schedule task",
+        "operationId": "deleteScheduledTask",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      },
       "patch": {
         "tags": ["Settings"],
         "summary": "Update scheduled task",
@@ -11252,13 +11296,39 @@
         }
       },
       "ModelAddScheduledTaskRequest": {
+        "required": ["action", "node_ids", "filters", "scan_config", "benchmark_types"],
         "type": "object",
         "properties": {
-          "action": { "type": "string" },
+          "action": {
+            "enum": [
+              "SecretScan",
+              "VulnerabilityScan",
+              "MalwareScan",
+              "ComplianceScan",
+              "CloudComplianceScan"
+            ],
+            "type": "string"
+          },
+          "benchmark_types": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "cron_expr": { "type": "string" },
           "description": { "type": "string" },
-          "filters": { "type": "string" },
-          "node_type": { "type": "string" }
+          "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "node_ids": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
+            "nullable": true
+          },
+          "scan_config": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelVulnerabilityScanConfigLanguage"
+            },
+            "nullable": true
+          }
         }
       },
       "ModelAgentId": {

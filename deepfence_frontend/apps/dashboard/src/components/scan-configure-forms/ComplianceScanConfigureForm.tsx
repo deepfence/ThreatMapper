@@ -12,9 +12,14 @@ import { cn } from 'tailwind-preset';
 import { Button, TableSkeleton, Tabs } from 'ui-components';
 import { CircleSpinner, createColumnHelper, Switch, Table } from 'ui-components';
 
-import { getComplianceApiClient } from '@/api/api';
-import { ModelNodeIdentifierNodeTypeEnum } from '@/api/generated';
+import { getComplianceApiClient, getSettingsApiClient } from '@/api/api';
+import {
+  ModelComplianceScanTriggerReq,
+  ModelNodeIdentifierNodeTypeEnum,
+  ModelScanResultsActionRequestScanTypeEnum,
+} from '@/api/generated';
 import { ModelCloudNodeComplianceControl } from '@/api/generated/models/ModelCloudNodeComplianceControl';
+import { ScheduleScanForm } from '@/components/scan-configure-forms/ScheduleScanForm';
 import { TruncatedText } from '@/components/TruncatedText';
 import { ActionEnumType } from '@/features/postures/data-component/toggleControlApiAction';
 import { invalidateAllQueries, queries } from '@/queries';
@@ -35,6 +40,7 @@ export const complianceType: {
 };
 export type ComplianceScanConfigureFormProps = {
   showAdvancedOptions: boolean;
+  showScheduleScanOptions: boolean;
   data: {
     nodeIds: string[];
     nodeType: ComplianceScanNodeTypeEnum;
@@ -79,59 +85,122 @@ export const scanPostureApiAction = async ({
   let nodeType = body._nodeType.toString();
   const checkTypes = body._checkTypes.toString().replace('SOC2', 'soc_2');
 
+  const isCloudScan = CLOUDS.includes(nodeType as ComplianceScanNodeTypeEnum);
   if (nodeType === ComplianceScanNodeTypeEnum.kubernetes_cluster) {
     nodeType = 'cluster';
-  } else if (CLOUDS.includes(nodeType as ComplianceScanNodeTypeEnum)) {
+  } else if (isCloudScan) {
     nodeType = 'cloud_account';
   }
 
-  const startComplianceScanApi = apiWrapper({
-    fn: getComplianceApiClient().startComplianceScan,
-  });
-  const startComplianceScanResponse = await startComplianceScanApi({
-    modelComplianceScanTriggerReq: {
-      benchmark_types: checkTypes.toLowerCase().split(','),
-      filters: {
-        cloud_account_scan_filter: { filter_in: null },
-        kubernetes_cluster_scan_filter: { filter_in: null },
-        container_scan_filter: { filter_in: null },
-        host_scan_filter: { filter_in: null },
-        image_scan_filter: { filter_in: null },
-      },
-      node_ids: nodeIds.map((nodeId) => ({
-        node_id: nodeId,
-        node_type: nodeType as ModelNodeIdentifierNodeTypeEnum,
-      })),
-    },
-  });
+  const scheduleOn = formData.get('scheduleOn') === 'on';
+  const scanImmediately = formData.get('scanImmediately') === 'on';
+  const scheduleDescription = formData.get('scheduleDescription');
+  const scheduleCron = `0 ${formData.get('scheduleCron')}`;
 
-  if (!startComplianceScanResponse.ok) {
-    if (
-      startComplianceScanResponse.error.response.status === 400 ||
-      startComplianceScanResponse.error.response.status === 409
-    ) {
-      return {
-        success: false,
-        message: startComplianceScanResponse.error.message ?? '',
-      };
-    } else if (startComplianceScanResponse.error.response.status === 403) {
-      const message = await get403Message(startComplianceScanResponse.error);
-      return {
-        success: false,
-        message,
-      };
-    }
-    throw startComplianceScanResponse.error;
-  }
-  toast.success('Scan started successfully');
-  invalidateAllQueries();
-  return {
+  const requestBody: ModelComplianceScanTriggerReq = {
+    benchmark_types: checkTypes.toLowerCase().split(','),
+    filters: {
+      cloud_account_scan_filter: { filter_in: null },
+      kubernetes_cluster_scan_filter: { filter_in: null },
+      container_scan_filter: { filter_in: null },
+      host_scan_filter: { filter_in: null },
+      image_scan_filter: { filter_in: null },
+    },
+    node_ids: nodeIds.map((nodeId) => ({
+      node_id: nodeId,
+      node_type: nodeType as ModelNodeIdentifierNodeTypeEnum,
+    })),
+  };
+
+  let scanResponse = {
     success: true,
     data: {
-      bulkScanId: startComplianceScanResponse.value.bulk_scan_id,
+      bulkScanId: '',
       nodeType,
     },
   };
+  if (!scheduleOn || scanImmediately) {
+    const startComplianceScanApi = apiWrapper({
+      fn: getComplianceApiClient().startComplianceScan,
+    });
+    const startComplianceScanResponse = await startComplianceScanApi({
+      modelComplianceScanTriggerReq: requestBody,
+    });
+
+    if (!startComplianceScanResponse.ok) {
+      if (
+        startComplianceScanResponse.error.response.status === 400 ||
+        startComplianceScanResponse.error.response.status === 409
+      ) {
+        return {
+          success: false,
+          message: startComplianceScanResponse.error.message ?? '',
+        };
+      } else if (startComplianceScanResponse.error.response.status === 403) {
+        const message = await get403Message(startComplianceScanResponse.error);
+        return {
+          success: false,
+          message,
+        };
+      }
+      throw startComplianceScanResponse.error;
+    }
+
+    scanResponse = {
+      success: true,
+      data: {
+        bulkScanId: startComplianceScanResponse.value.bulk_scan_id,
+        nodeType,
+      },
+    };
+  }
+
+  if (scheduleOn) {
+    const addScheduledTaskApi = apiWrapper({
+      fn: getSettingsApiClient().addScheduledTask,
+    });
+    const scheduleResponse = await addScheduledTaskApi({
+      modelAddScheduledTaskRequest: {
+        ...requestBody,
+        scan_config: null,
+        action: isCloudScan
+          ? ModelScanResultsActionRequestScanTypeEnum.CloudComplianceScan
+          : ModelScanResultsActionRequestScanTypeEnum.ComplianceScan,
+        cron_expr: scheduleCron,
+        description: scheduleDescription?.toString(),
+      },
+    });
+    if (!scheduleResponse.ok) {
+      if (
+        scheduleResponse.error.response.status === 400 ||
+        scheduleResponse.error.response.status === 409
+      ) {
+        return {
+          success: false,
+          message: scheduleResponse.error.message ?? '',
+        };
+      } else if (scheduleResponse.error.response.status === 403) {
+        const message = await get403Message(scheduleResponse.error);
+        return {
+          success: false,
+          message,
+        };
+      }
+      throw scheduleResponse.error;
+    }
+  }
+
+  // schedule scan
+  if (scheduleOn && scanImmediately) {
+    toast.success('Scan started and scheduled successfully');
+  } else if (scheduleOn) {
+    toast.success('Scan scheduled successfully');
+  } else {
+    toast.success('Scan started successfully');
+  }
+
+  invalidateAllQueries();
+  return scanResponse;
 };
 
 const toggleControls = ({
@@ -400,6 +469,7 @@ export const ControlsTable = memo(
 
 export const ComplianceScanConfigureForm = ({
   showAdvancedOptions,
+  showScheduleScanOptions,
   onSuccess,
   data,
   onCancel,
@@ -466,6 +536,9 @@ export const ComplianceScanConfigureForm = ({
             Click on start scan to find compliance issues
           </span>
         ) : null}
+
+        {showScheduleScanOptions && <ScheduleScanForm />}
+
         <div className="flex gap-3 mt-10">
           <Button
             disabled={selectedCheckTypes.length === 0 || state !== 'idle'}
