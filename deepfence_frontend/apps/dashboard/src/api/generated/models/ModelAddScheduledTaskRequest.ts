@@ -70,6 +70,12 @@ export interface ModelAddScheduledTaskRequest {
     filters: ModelScanFilter;
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelAddScheduledTaskRequest
+     */
+    is_priority?: boolean;
+    /**
+     * 
      * @type {Array<ModelNodeIdentifier>}
      * @memberof ModelAddScheduledTaskRequest
      */
@@ -125,6 +131,7 @@ export function ModelAddScheduledTaskRequestFromJSONTyped(json: any, ignoreDiscr
         'cron_expr': !exists(json, 'cron_expr') ? undefined : json['cron_expr'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'filters': ModelScanFilterFromJSON(json['filters']),
+        'is_priority': !exists(json, 'is_priority') ? undefined : json['is_priority'],
         'node_ids': (json['node_ids'] === null ? null : (json['node_ids'] as Array<any>).map(ModelNodeIdentifierFromJSON)),
         'scan_config': (json['scan_config'] === null ? null : (json['scan_config'] as Array<any>).map(ModelVulnerabilityScanConfigLanguageFromJSON)),
     };
@@ -144,6 +151,7 @@ export function ModelAddScheduledTaskRequestToJSON(value?: ModelAddScheduledTask
         'cron_expr': value.cron_expr,
         'description': value.description,
         'filters': ModelScanFilterToJSON(value.filters),
+        'is_priority': value.is_priority,
         'node_ids': (value.node_ids === null ? null : (value.node_ids as Array<any>).map(ModelNodeIdentifierToJSON)),
         'scan_config': (value.scan_config === null ? null : (value.scan_config as Array<any>).map(ModelVulnerabilityScanConfigLanguageToJSON)),
     };

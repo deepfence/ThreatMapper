@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button, Radio } from 'ui-components';
+import { Button, Checkbox, Radio } from 'ui-components';
 
 import { getSecretApiClient, getSettingsApiClient } from '@/api/api';
 import {
@@ -52,6 +52,8 @@ type ScanActionReturnType = {
     bulkScanId: string;
   };
 };
+const shouldSetPriorityScan = (nodeType: SecretScanNodeTypeEnum) =>
+  nodeType !== SecretScanNodeTypeEnum.kubernetes_cluster;
 
 export const scanSecretApiAction = async ({
   request,
@@ -67,6 +69,8 @@ export const scanSecretApiAction = async ({
   const scanImmediately = formData.get('scanImmediately') === 'on';
   const scheduleDescription = formData.get('scheduleDescription');
   const scheduleCron = `0 ${formData.get('scheduleCron')}`;
+
+  const isPriorityScan = formData.get('isPriorityScan') === 'on';
 
   const getNodeType = (nodeType: SecretScanNodeTypeEnum | 'container_image') => {
     let _nodeType = nodeType as ModelNodeIdentifierNodeTypeEnum;
@@ -123,6 +127,7 @@ export const scanSecretApiAction = async ({
         filter_in,
       },
     },
+    is_priority: isPriorityScan,
     node_ids: nodeIds.map((nodeId, index) => ({
       node_id: nodeId,
       node_type: getNodeType(
@@ -306,6 +311,13 @@ export const SecretScanConfigureForm = ({
               }}
             />
           )}
+        </div>
+      ) : null}
+
+      {shouldSetPriorityScan(nodeType as SecretScanNodeTypeEnum) ? (
+        <div className="flex flex-col gap-y-2 mt-4">
+          <h6 className={'text-p3 dark:text-text-text-and-icon'}>Priority scan</h6>
+          <Checkbox name="isPriorityScan" label="Set priority scan" />
         </div>
       ) : null}
 
