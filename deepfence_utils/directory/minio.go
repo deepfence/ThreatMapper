@@ -48,6 +48,14 @@ func (e PathDoesNotExistsError) Error() string {
 	return fmt.Sprintf("Path doesnot exists here: %s", e.Path)
 }
 
+type FileDeleteError struct {
+	Path string
+}
+
+func (e FileDeleteError) Error() string {
+	return fmt.Sprintf("Failed to delete file: %s", e.Path)
+}
+
 type FileManager interface {
 	ListFiles(ctx context.Context, pathPrefix string, recursive bool, maxKeys int, skipDir bool) []ObjectInfo
 	UploadLocalFile(ctx context.Context, filename string, localFilename string, overwrite bool, extra interface{}) (UploadResult, error)
@@ -156,9 +164,11 @@ func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context,
 		if !overwrite {
 			return UploadResult{}, AlreadyPresentError{Path: key}
 		} else {
+			log.Info().Msgf("overwrite file %s", key)
 			err := mfm.DeleteFile(ctx, objectName, false, minio.RemoveObjectOptions{ForceDelete: true})
 			if err != nil {
-				return UploadResult{}, AlreadyPresentError{Path: key}
+				log.Error().Err(err).Msg("failed to delete file while overwriting")
+				return UploadResult{}, FileDeleteError{Path: key}
 			}
 		}
 	}
@@ -194,9 +204,11 @@ func (mfm *MinioFileManager) UploadFile(ctx context.Context,
 		if !overwrite {
 			return UploadResult{}, AlreadyPresentError{Path: key}
 		} else {
+			log.Info().Msgf("overwrite file %s", key)
 			err := mfm.DeleteFile(ctx, objectName, false, minio.RemoveObjectOptions{ForceDelete: true})
 			if err != nil {
-				return UploadResult{}, AlreadyPresentError{Path: key}
+				log.Error().Err(err).Msg("failed to delete file while overwriting")
+				return UploadResult{}, FileDeleteError{Path: key}
 			}
 		}
 	}
