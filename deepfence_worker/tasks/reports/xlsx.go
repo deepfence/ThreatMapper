@@ -3,6 +3,7 @@ package reports
 import (
 	"context"
 	"os"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -150,7 +151,7 @@ func vulnerabilityXLSX(ctx context.Context, params utils.ReportParams) (string, 
 				log.Error().Err(err).Msg("error generating cell name")
 			}
 			value := []interface{}{
-				nodeScanData.ScanInfo.UpdatedAt,
+				time.UnixMilli(nodeScanData.ScanInfo.UpdatedAt).String(),
 				v.Cve_attack_vector,
 				v.Cve_caused_by_package,
 				nodeScanData.ScanInfo.NodeName,
@@ -295,7 +296,7 @@ func complianceXLSX(ctx context.Context, params utils.ReportParams) (string, err
 				log.Error().Err(err).Msg("error generating cell name")
 			}
 			value := []interface{}{
-				nodeScanData.ScanInfo.UpdatedAt,
+				time.UnixMilli(nodeScanData.ScanInfo.UpdatedAt).String(),
 				c.ComplianceCheckType,
 				"",
 				"",
@@ -345,7 +346,7 @@ func cloudComplianceXLSX(ctx context.Context, params utils.ReportParams) (string
 				log.Error().Err(err).Msg("error generating cell name")
 			}
 			value := []interface{}{
-				data.ScanInfo.UpdatedAt,
+				time.UnixMilli(data.ScanInfo.UpdatedAt).String(),
 				c.ComplianceCheckType,
 				"",
 				"",
