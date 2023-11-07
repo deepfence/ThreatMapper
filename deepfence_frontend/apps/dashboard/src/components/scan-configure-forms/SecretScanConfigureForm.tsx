@@ -131,8 +131,6 @@ export const scanSecretApiAction = async ({
     })),
   };
 
-  const startWithoutSchedule = !scheduleOn && !scanImmediately;
-  const scheduleWithStart = scheduleOn && scanImmediately;
   let scanResponse = {
     success: true,
     data: {
@@ -140,7 +138,7 @@ export const scanSecretApiAction = async ({
       nodeType,
     },
   };
-  if (startWithoutSchedule || scheduleWithStart) {
+  if (!scheduleOn || scanImmediately) {
     const startSecretScanApi = apiWrapper({
       fn: getSecretApiClient().startSecretScan,
     });
@@ -209,7 +207,7 @@ export const scanSecretApiAction = async ({
   }
 
   // schedule scan
-  if (scheduleWithStart) {
+  if (scheduleOn && scanImmediately) {
     toast.success('Scan started and scheduled successfully');
   } else if (scheduleOn) {
     toast.success('Scan scheduled successfully');

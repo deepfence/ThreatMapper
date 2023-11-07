@@ -27,11 +27,7 @@ export type ActionReturnType = {
   message?: string;
   success: boolean;
 };
-type ActionData = {
-  action: ActionEnumType;
-  success: boolean;
-  message?: string;
-};
+
 enum ActionEnumType {
   ENABLE_DISABLE = 'enable_disable',
   DELETE = 'delete',
@@ -117,7 +113,7 @@ const DeleteConfirmationModal = ({
   ids: string[];
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const fetcher = useFetcher<ActionData>();
+  const fetcher = useFetcher<ActionReturnType>();
 
   const onDeleteAction = useCallback(
     (actionType: string) => {
