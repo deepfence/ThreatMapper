@@ -1,12 +1,10 @@
 import '@testing-library/jest-dom';
 
-import { Combobox } from '@headlessui/react';
-import { screen } from '@testing-library/react';
-import { fireEvent } from '@testing-library/react';
-import { useState } from 'react';
-import { describe, expect, it } from 'vitest';
+import { screen, fireEvent, act } from '@testing-library/react';
+import { useState, useEffect } from 'react';
+import { describe, expect, vi } from 'vitest';
 
-import { ComboboxOption } from '@/main';
+import { Combobox, ComboboxOption } from '@/main';
 import { renderUI } from '@/tests/utils';
 
 const OPTIONS = [
@@ -48,22 +46,12 @@ const OPTIONS = [
 ];
 
 describe('Combobox', () => {
-  it('Should be able to select item', async () => {
+  it('Should display selected item', async () => {
     const UI = () => {
       const [selected, setSelected] = useState<(typeof OPTIONS)[number] | null>(null);
-      const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
-      const [loading, setLoading] = useState(false);
-
+      const [options] = useState<typeof OPTIONS>([...OPTIONS]);
       const [query, setQuery] = useState('');
 
-      function fetchMoreData() {
-        // we can use query here as well
-        setLoading(true);
-        setTimeout(() => {
-          setOptions([...options, ...OPTIONS]);
-          setLoading(false);
-        }, 1000);
-      }
       return (
         <Combobox
           value={selected}
@@ -76,10 +64,108 @@ describe('Combobox', () => {
             setSelected(value);
           }}
           getDisplayValue={() => {
-            return 'PropertyName';
+            return selected?.name ?? 'PropertyName';
           }}
-          onEndReached={() => {
-            fetchMoreData();
+        >
+          {options.map((opt, index) => {
+            return (
+              <ComboboxOption key={`${opt.id}-${index}`} value={opt}>
+                {opt.name}
+              </ComboboxOption>
+            );
+          })}
+        </Combobox>
+      );
+    };
+    renderUI(<UI />);
+    const triggerBtn = screen.getByTestId('comboboxTriggerButtonId');
+    expect(triggerBtn).toHaveTextContent('PropertyName');
+    await act(async () => {
+      return triggerBtn.click();
+    });
+
+    const op1 = screen.getByRole('option', {
+      name: 'Jon',
+    });
+
+    expect(op1).toBeInTheDocument();
+    await act(async () => {
+      return op1.click();
+    });
+    expect(triggerBtn).toHaveTextContent('Jon');
+  });
+  it('Should display selected item with select variant', async () => {
+    const UI = () => {
+      const [selected, setSelected] = useState<(typeof OPTIONS)[number] | null>(null);
+      const [options] = useState<typeof OPTIONS>([...OPTIONS]);
+      const [query, setQuery] = useState('');
+
+      return (
+        <Combobox
+          triggerVariant="select"
+          value={selected}
+          nullable
+          onQueryChange={(query) => {
+            setQuery(query);
+          }}
+          label="Select your value"
+          onChange={(value) => {
+            setSelected(value);
+          }}
+          getDisplayValue={() => {
+            return selected?.name ?? 'PropertyName';
+          }}
+        >
+          {options.map((opt, index) => {
+            return (
+              <ComboboxOption key={`${opt.id}-${index}`} value={opt}>
+                {opt.name}
+              </ComboboxOption>
+            );
+          })}
+        </Combobox>
+      );
+    };
+    renderUI(<UI />);
+    const triggerBtn = screen.getByTestId('comboboxTriggerButtonId');
+    expect(triggerBtn).toHaveTextContent('PropertyName');
+    await act(async () => {
+      return triggerBtn.click();
+    });
+
+    const op1 = screen.getByRole('option', {
+      name: 'Jon',
+    });
+
+    expect(op1).toBeInTheDocument();
+    await act(async () => {
+      return op1.click();
+    });
+    expect(triggerBtn).toHaveTextContent('Jon');
+  });
+  it('Should display selected items badge count', async () => {
+    const UI = () => {
+      const [selected, setSelected] = useState<typeof OPTIONS>([]);
+      const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
+      const [loading, setLoading] = useState(false);
+
+      const [query, setQuery] = useState('');
+
+      return (
+        <Combobox
+          value={selected}
+          onQueryChange={(query) => {
+            setQuery(query);
+          }}
+          label="Select your value"
+          onChange={(value) => {
+            setSelected(value);
+          }}
+          clearAllElement="Clear filters"
+          multiple
+          nullable
+          getDisplayValue={() => {
+            return 'PropertyName';
           }}
           loading={loading}
         >
@@ -93,11 +179,96 @@ describe('Combobox', () => {
         </Combobox>
       );
     };
-    const { getByRole } = renderUI(<UI />);
-    // expect(
-    //   getByRole('button', {
-    //     name: 'People',
-    //   }),
-    // ).toBeInTheDocument();
+    renderUI(<UI />);
+    const triggerBtn = screen.getByTestId('comboboxTriggerButtonId');
+    expect(triggerBtn).toHaveTextContent('PropertyName');
+    await act(async () => {
+      return triggerBtn.click();
+    });
+
+    const op1 = screen.getByRole('option', {
+      name: 'Jon',
+    });
+
+    expect(op1).toBeInTheDocument();
+    await act(async () => {
+      return op1.click();
+    });
+    expect(triggerBtn).toHaveTextContent('1');
+  });
+  it('Should display filter list by search input', async () => {
+    const UI = () => {
+      const [selected, setSelected] = useState<typeof OPTIONS>([]);
+      const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
+      const [loading, setLoading] = useState(false);
+
+      const [query, setQuery] = useState('');
+
+      useEffect(() => {
+        if (query.length) {
+          setOptions(
+            OPTIONS.filter((opt) => {
+              return opt.name.toLowerCase().startsWith(query.toLowerCase());
+            }),
+          );
+        } else {
+          setOptions(OPTIONS);
+        }
+      }, [query]);
+
+      return (
+        <Combobox
+          multiple
+          nullable
+          value={selected}
+          onQueryChange={(query) => {
+            console.log('----', query);
+            setQuery(query);
+          }}
+          label="Select your value"
+          onChange={(value) => {
+            setSelected(value);
+          }}
+          clearAllElement="Clear filters"
+          getDisplayValue={() => {
+            return 'PropertyName';
+          }}
+          loading={loading}
+        >
+          {options.map((person, index) => {
+            return (
+              <ComboboxOption key={`${person.id}-${index}`} value={person}>
+                {person.name}
+              </ComboboxOption>
+            );
+          })}
+        </Combobox>
+      );
+    };
+    renderUI(<UI />);
+    const triggerBtn = screen.getByTestId('comboboxTriggerButtonId');
+    expect(triggerBtn).toHaveTextContent('PropertyName');
+    await act(async () => {
+      return triggerBtn.click();
+    });
+
+    const op1 = screen.getByRole('option', {
+      name: 'Jon',
+    });
+    expect(op1).toBeInTheDocument();
+
+    const comboboxSearchInputId = screen.getByTestId('comboboxTriggerButtonId');
+    expect(comboboxSearchInputId).toBeInTheDocument();
+
+    const onChange = vi.fn();
+
+    fireEvent.change(comboboxSearchInputId, { target: { value: 'Ja' } });
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(comboboxSearchInputId).toHaveValue('Ja');
+    const oldOption = screen.getByRole('option', {
+      name: 'Jon',
+    });
+    console.log('len', screen.getAllByRole('option').length);
+    expect(oldOption).not.toBeInTheDocument();
   });
 });

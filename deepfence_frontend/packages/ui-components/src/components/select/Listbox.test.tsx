@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom';
 
-import { screen } from '@testing-library/react';
-import { act, fireEvent } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 
@@ -47,7 +46,7 @@ const OPTIONS = [
 ];
 
 describe('Listbox', () => {
-  it('Should be able to select item and display selected string', async () => {
+  it('Should display selected item', async () => {
     const UI = () => {
       const [selected, setSelected] = useState<string>('');
 
@@ -75,14 +74,18 @@ describe('Listbox', () => {
     renderUI(<UI />);
     expect(screen.getByText('Select...')).toBeInTheDocument();
     expect(screen.getByText('Select your value')).toBeInTheDocument();
-
-    await screen.getByText('Select your value').click();
+    await act(async () => {
+      return screen.getByText('Select your value').click();
+    });
 
     expect(screen.getByText('Jon')).toBeInTheDocument();
-    await screen.getByText('Jon').click();
+
+    await act(async () => {
+      return screen.getByText('Jon').click();
+    });
     expect(screen.getByRole('button')).toHaveTextContent('Jon');
   });
-  it('Should be able to select more item and display count badge', async () => {
+  it('Should display selected items count in badge', async () => {
     const UI = () => {
       const [selected, setSelected] = useState<typeof OPTIONS>([]);
 
@@ -114,7 +117,9 @@ describe('Listbox', () => {
     renderUI(<UI />);
     expect(screen.getByText('Select...')).toBeInTheDocument();
     expect(screen.getByText('Select your value')).toBeInTheDocument();
-    await screen.getByText('Select your value').click();
+    await act(async () => {
+      return screen.getByText('Select your value').click();
+    });
 
     const op1 = screen.getByRole('option', {
       name: 'Jon',
@@ -126,11 +131,15 @@ describe('Listbox', () => {
 
     expect(op1).toBeInTheDocument();
     expect(op2).toBeInTheDocument();
-    await op1.click();
-    await op2.click();
+    await act(async () => {
+      return op1.click();
+    });
+    await act(async () => {
+      return op2.click();
+    });
     expect(screen.getByTestId('listboxCountBadgeId')).toHaveTextContent('2');
   });
-  it('Should be able to select item as object', async () => {
+  it('Should be able to to set select item as object', async () => {
     const UI = ({ onChange }: { onChange: (data: typeof OPTIONS | null) => void }) => {
       const [selected, setSelected] = useState<typeof OPTIONS | null>(null);
 
@@ -170,14 +179,18 @@ describe('Listbox', () => {
     );
     expect(screen.getByText('Select...')).toBeInTheDocument();
     expect(screen.getByText('Select your value')).toBeInTheDocument();
-    await screen.getByText('Select your value').click();
+    await act(async () => {
+      return screen.getByText('Select your value').click();
+    });
 
     const op1 = screen.getByRole('option', {
       name: 'Jon',
     });
 
     expect(op1).toBeInTheDocument();
-    await op1.click();
+    await act(async () => {
+      return op1.click();
+    });
   });
   it('Should be able to clear selected items using clear button', async () => {
     const UI = () => {
@@ -212,10 +225,13 @@ describe('Listbox', () => {
     expect(screen.getByText('Select...')).toBeInTheDocument();
     expect(screen.getByText('Select your value')).toBeInTheDocument();
 
-    await screen.getByText('Select your value').click();
-
+    await act(async () => {
+      return screen.getByText('Select your value').click();
+    });
     expect(screen.getByText('Jon')).toBeInTheDocument();
-    await screen.getByText('Jon').click();
+    await act(async () => {
+      return screen.getByText('Jon').click();
+    });
     expect(screen.getByText('1 selected')).toBeVisible();
 
     // clear
@@ -223,7 +239,9 @@ describe('Listbox', () => {
       name: 'clear',
     });
     expect(clearbtn).toBeInTheDocument();
-    await clearbtn.click();
+    await act(async () => {
+      return clearbtn.click();
+    });
     expect(screen.queryByText('1 selected')).not.toBeInTheDocument();
   });
 });
