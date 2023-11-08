@@ -31,6 +31,7 @@ require (
 	github.com/rs/zerolog v1.30.0
 	github.com/samber/lo v1.38.1
 	github.com/samber/mo v1.8.0
+	github.com/sashabaranov/go-openai v1.17.3
 	github.com/sirupsen/logrus v1.9.3
 	github.com/swaggest/openapi-go v0.2.39
 	github.com/twmb/franz-go v1.14.4

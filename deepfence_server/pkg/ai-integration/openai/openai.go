@@ -1,18 +1,17 @@
 package openai
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"io"
 	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-playground/validator/v10"
+	goopenai "github.com/sashabaranov/go-openai"
 )
 
 func New(ctx context.Context, apiKey string) (*OpenAI, error) {
@@ -76,67 +75,32 @@ func (o *OpenAI) GenerateVulnerabilityQuery(request model.AIIntegrationVulnerabi
 }
 
 func (o *OpenAI) Message(ctx context.Context, message string, dataChan chan []byte) error {
-	openAIReq := OpenAIRequest{
-		Model:       defaultModel,
-		Messages:    []OpenAIRequestMessage{{Role: messageRoleUser, Content: message}},
+	client := goopenai.NewClient(o.ApiKey)
+	req := goopenai.ChatCompletionRequest{
+		Model:       goopenai.GPT4,
+		Messages:    []goopenai.ChatCompletionMessage{{Role: goopenai.ChatMessageRoleUser, Content: message}},
 		Temperature: defaultModelTemperature,
+		Stream:      true,
 	}
-	openAIReqJson, err := json.Marshal(openAIReq)
+	stream, err := client.CreateChatCompletionStream(context.Background(), req)
 	if err != nil {
+		log.Warn().Msg(err.Error())
 		return err
 	}
-	req, err := http.NewRequest("POST", openAiChatURL, bytes.NewBuffer(openAIReqJson))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+o.ApiKey)
-	req.Header.Set("Connection", "keep-alive")
-
-	client := utils.GetHttpClientWithTimeout(httpRequestTimeout)
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
 	for {
-		data := make([]byte, 2048)
-		_, err = resp.Body.Read(data)
-		if err != nil {
-			log.Warn().Msg(err.Error())
+		receivedResponse, streamErr := stream.Recv()
+		if streamErr != nil {
+			if streamErr != io.EOF {
+				log.Warn().Msg(streamErr.Error())
+			}
 			break
 		}
-		data = bytes.Trim(data, "\x00")
-		dataLines := strings.Split(string(data), "\n")
-		for _, line := range dataLines {
-			if line == "" {
-				continue
-			}
-			line = strings.TrimPrefix(line, "data: ")
-			var openAiResp OpenAIResponse
-			err = json.Unmarshal([]byte(line), &openAiResp)
-			if err != nil {
-				log.Warn().Msg(err.Error())
-				return nil
-			}
-			for _, choice := range openAiResp.Choices {
-				response := model.AIIntegrationMessageResponse{Content: choice.Delta.Content}
-				if choice.FinishReason != nil {
-					response.FinishReason = fmt.Sprintf("%v", choice.FinishReason)
-				}
-				responseJson, err := json.Marshal(response)
-				if err != nil {
-					log.Warn().Msg(err.Error())
-					return nil
-				}
-				dataChan <- responseJson
-				if choice.FinishReason != nil {
-					return nil
-				}
+		for _, choice := range receivedResponse.Choices {
+			dataChan <- []byte(choice.Delta.Content)
+			if choice.FinishReason != "" {
+				break
 			}
 		}
 	}
-
 	return nil
 }

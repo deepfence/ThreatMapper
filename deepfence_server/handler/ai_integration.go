@@ -259,6 +259,7 @@ func (h *Handler) AIIntegrationCloudPostureQuery(w http.ResponseWriter, r *http.
 		h.respondError(err, w)
 		return
 	}
+
 	queryResponseChannel := make(chan []byte, 10)
 	flusher, ok := w.(http.Flusher)
 	if !ok {
@@ -270,23 +271,39 @@ func (h *Handler) AIIntegrationCloudPostureQuery(w http.ResponseWriter, r *http.
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 	w.WriteHeader(http.StatusOK)
+
 	go func() {
 		for {
 			for queryResponse := range queryResponseChannel {
 				_, err = w.Write(queryResponse)
 				if err != nil {
-					continue
+					log.Warn().Msg(err.Error())
+					return
 				}
 				flusher.Flush()
 			}
 		}
 	}()
-	err = integration.Message(ctx, query, queryResponseChannel)
-	if err != nil {
-		close(queryResponseChannel)
-		h.respondError(err, w)
-		return
-	}
+
+	go func() {
+		err = integration.Message(ctx, query, queryResponseChannel)
+		if err != nil {
+			log.Warn().Msg(err.Error())
+			h.respondError(err, w)
+		}
+		hj, ok := w.(http.Hijacker)
+		if !ok {
+			return
+		}
+		conn, _, err := hj.Hijack()
+		if err != nil {
+			log.Warn().Msg(err.Error())
+			return
+		}
+		conn.Close()
+	}()
+
+	<-ctx.Done()
 	close(queryResponseChannel)
 }
 

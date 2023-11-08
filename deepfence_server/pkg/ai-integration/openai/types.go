@@ -1,18 +1,7 @@
 package openai
 
-import (
-	"time"
-)
-
 const (
-	messageRoleUser         = "user"
-	defaultModel            = "gpt-4"
 	defaultModelTemperature = 0.7
-
-	httpRequestTimeout = 60 * time.Second
-
-	openAiEndpoint = "https://api.openai.com"
-	openAiChatURL  = openAiEndpoint + "/v1/chat/completions"
 
 	cloudPostureRemediationQuery  = "%s remediation script for %s %s control %s"
 	vulnerabilityRemediationQuery = "%s remediation script for vulnerability %s %s"
@@ -25,12 +14,6 @@ type OpenAI struct {
 type OpenAIRequestMessage struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
-}
-
-type OpenAIRequest struct {
-	Model       string                 `json:"model"`
-	Messages    []OpenAIRequestMessage `json:"messages"`
-	Temperature float64                `json:"temperature"`
 }
 
 type OpenAIResponse struct {
