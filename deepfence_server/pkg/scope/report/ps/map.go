@@ -155,8 +155,7 @@ func (self *Tree3) IsNil() bool {
 
 // clone returns an exact duplicate of a Tree3 node
 func (self *Tree3) clone() *Tree3 {
-	var m Tree3
-	m = *self
+	m := *self
 	return &m
 }
 
@@ -392,17 +391,6 @@ func (m *Tree3) deleteLeftmost() (*Tree3, *Tree3) {
 // isLeaf returns true if this is a leaf node
 func (m *Tree3) isLeaf() bool {
 	return m.Size() == 1
-}
-
-// returns the number of child subtrees we have
-func (m *Tree3) subtreeCount() int {
-	Count := 0
-	for _, t := range m.Children {
-		if t != nilMap {
-			Count++
-		}
-	}
-	return Count
 }
 
 func (m *Tree3) Lookup(Key string) (interface{}, bool) {

@@ -50,7 +50,10 @@ func startIngester(cfg config) error {
 	processors.StartKafkaProcessors(ctx)
 
 	// start audit log processor
-	processors.StartAuditLogProcessor(ctx)
+	err = processors.StartAuditLogProcessor(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 
 	// start kafka consumers for all given topics
 	err = processors.StartKafkaConsumers(

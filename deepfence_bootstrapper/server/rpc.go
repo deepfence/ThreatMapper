@@ -1,8 +1,10 @@
 package server
 
 import (
+	"context"
 	"net"
 	"net/rpc"
+	"os"
 
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/supervisor"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -29,21 +31,26 @@ func (s *Server) Stop(args *UpgradeArgs, _ *Reply) error {
 	return supervisor.StopProcess(args.Name)
 }
 
-func StartRPCServer(socket_path string, stop chan struct{}) error {
+func StartRPCServer(ctx context.Context, socket_path string) error {
 	rpcServer := rpc.NewServer()
 	server := &Server{}
-	rpcServer.Register(server)
+	err := rpcServer.Register(server)
+	if err != nil {
+		return err
+	}
+	_ = os.Remove(socket_path)
 	la, err := net.Listen("unix", socket_path)
 	if err != nil {
 		return err
 	}
 	go func() {
 		rpcServer.Accept(la)
-		select {
-		case <-stop:
-		}
-		la.Close()
 		log.Info().Msgf("Server exited.")
+	}()
+
+	go func() {
+		<-ctx.Done()
+		la.Close()
 	}()
 	return nil
 }

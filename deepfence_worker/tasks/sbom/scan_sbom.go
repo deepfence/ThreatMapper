@@ -9,7 +9,6 @@ import (
 	"io"
 	"os"
 	"path"
-	"regexp"
 	"time"
 
 	"github.com/anchore/syft/syft/formats"
@@ -29,7 +28,6 @@ import (
 )
 
 var (
-	attackVectorRegex   = regexp.MustCompile(`.*av:n.*`)
 	grypeConfig         = "/usr/local/bin/grype.yaml"
 	grypeBin            = "grype"
 	minioHost           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_HOST", "deepfence-file-server")
@@ -230,7 +228,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	}
 
 	runtimeSbomPath := path.Join("/sbom/", "runtime-"+utils.ScanIdReplacer.Replace(params.ScanId)+".json")
-	uploadInfo, err := mc.UploadFile(context.Background(), runtimeSbomPath, runtimeSbomBytes,
+	uploadInfo, err := mc.UploadFile(context.Background(), runtimeSbomPath, runtimeSbomBytes, true,
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to upload runtime sbom")

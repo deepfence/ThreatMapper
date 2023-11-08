@@ -9,6 +9,7 @@ import (
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
@@ -106,7 +107,7 @@ func GetRegisterControlFunc[T ctl.StartVulnerabilityScanRequest | ctl.StartSecre
 
 	controlFunc := func(ctx context.Context, req T) error {
 		BinArgs := ctl.GetBinArgs(req)
-		log.Info().Msgf("%s payload: %+v", task, BinArgs)
+		log.Info().Msgf("enqueue %s payload: %+v", task, BinArgs)
 		data, err := json.Marshal(BinArgs)
 		if err != nil {
 			log.Error().Msg(err.Error())
@@ -117,7 +118,7 @@ func GetRegisterControlFunc[T ctl.StartVulnerabilityScanRequest | ctl.StartSecre
 			log.Error().Msg(err.Error())
 			return err
 		}
-		if err := worker.Enqueue(task, data); err != nil {
+		if err := worker.Enqueue(task, data, utils.DefaultTaskOpts()...); err != nil {
 			log.Error().Msg(err.Error())
 			return err
 		}

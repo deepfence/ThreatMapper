@@ -55,7 +55,7 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 	}
 
 	var index int
-	if getProcesses == true {
+	if getProcesses {
 		processes, matched, err := getHostProcesses(ctx, hostIds)
 		if err == nil {
 			for _, process := range processes {
@@ -64,7 +64,7 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 			}
 		}
 	}
-	if getContainers == true {
+	if getContainers {
 		containers, matched, err := getHostContainers(ctx, hostIds)
 		if err == nil {
 			for _, container := range containers {
@@ -73,7 +73,7 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 			}
 		}
 	}
-	if getContainerImages == true {
+	if getContainerImages {
 		containerImages, matched, err := getHostContainerImages(ctx, hostIds)
 		if err == nil {
 			for _, containerImage := range containerImages {
@@ -82,7 +82,7 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 			}
 		}
 	}
-	if getPods == true {
+	if getPods {
 		pods, matched, err := getHostPods(ctx, hostIds)
 		if err == nil {
 			for _, pod := range pods {
@@ -91,7 +91,7 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 			}
 		}
 	}
-	if getConnections == true {
+	if getConnections {
 		inboundConnections, outboundConnections, err := getNodeConnections[model.Host](ctx, hostIds)
 		if err == nil {
 			for _, conn := range inboundConnections {
@@ -137,7 +137,7 @@ func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Cont
 	}
 
 	var index int
-	if getProcesses == true {
+	if getProcesses {
 		processes, matched, err := getContainerProcesses(ctx, containerIds)
 		if err == nil {
 			for _, process := range processes {
@@ -146,7 +146,7 @@ func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Cont
 			}
 		}
 	}
-	if getContainerImages == true {
+	if getContainerImages {
 		images, matched, err := getContainerContainerImages(ctx, containerIds)
 		if err == nil {
 			for _, image := range images {
@@ -194,7 +194,7 @@ func GetContainerImagesReport(ctx context.Context, filter LookupFilter) ([]model
 	}
 
 	var index int
-	if getContainers == true {
+	if getContainers {
 		containers, matched, err := getContainerImageContainers(ctx, imagesIds)
 		if err == nil {
 			for _, container := range containers {
@@ -226,7 +226,7 @@ func GetKubernetesClustersReport(ctx context.Context, filter LookupFilter) ([]mo
 	}
 
 	var index int
-	if getHosts == true {
+	if getHosts {
 		hosts, matched, err := getClusterHosts(ctx, clusterIds)
 		if err == nil {
 			for _, host := range hosts {
@@ -273,7 +273,7 @@ func GetRegistryAccountReport(ctx context.Context, filter LookupFilter) ([]model
 	}
 
 	var index int
-	if getImages == true {
+	if getImages {
 		images, matched, err := getRegistryImages(ctx, registryIds)
 		if err == nil {
 			for _, image := range images {
@@ -295,10 +295,7 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 		return res, err
 	}
 
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -415,10 +412,7 @@ func getNodeConnections[T reporters.Cypherable](ctx context.Context, ids []strin
 		return inbound, outbound, err
 	}
 
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return inbound, outbound, err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -471,10 +465,7 @@ func getIndirectFromIDs[T any](ctx context.Context, query string, ids []string) 
 		return res, matchedId, err
 	}
 
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, matchedId, err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))

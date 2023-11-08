@@ -382,9 +382,9 @@ const DataTable = ({
   const columns = useMemo(
     () => [
       getRowSelectionColumn(columnHelper, {
-        minSize: 50,
-        size: 50,
-        maxSize: 60,
+        minSize: 20,
+        size: 25,
+        maxSize: 40,
       }),
       columnHelper.accessor('node_name', {
         cell: (info) => {
@@ -434,18 +434,18 @@ const DataTable = ({
           );
         },
         header: () => 'Name',
-        minSize: 150,
-        size: 160,
-        maxSize: 170,
+        minSize: 180,
+        size: 190,
+        maxSize: 250,
       }),
       columnHelper.accessor('node_id', {
         cell: (info) => {
           return <TruncatedText text={info.getValue() ?? ''} />;
         },
         header: () => <span>Node Id</span>,
-        minSize: 150,
-        size: 160,
-        maxSize: 170,
+        minSize: 200,
+        size: 210,
+        maxSize: 250,
       }),
     ],
     [],

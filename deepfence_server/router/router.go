@@ -487,7 +487,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			r.Route("/scheduled-task", func(r chi.Router) {
 				r.Get("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetScheduledTask))
 				r.Patch("/{id}", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.UpdateScheduledTask))
-				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddScheduledTask))
+				r.Delete("/{id}", dfHandler.AuthHandler(ResourceAllUsers, PermissionDelete, dfHandler.DeleteCustomScheduledTask))
+
+				r.Post("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.AddScheduledTask))
 			})
 
 			// Integration

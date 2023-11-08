@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/sts"
 	"strings"
 	"time"
+
+	"github.com/aws/aws-sdk-go/service/sts"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -143,11 +144,7 @@ func getResourceForVulnerability(ctx context.Context, scanID, region, accountID 
 		return nil, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return nil, err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -173,18 +170,22 @@ func getResourceForVulnerability(ctx context.Context, scanID, region, accountID 
 		return nil, err
 	}
 
-	if len(records) > 0 {
-		for _, rec := range records {
-			if rec.Values[0].(string) != "aws" {
-				return nil, fmt.Errorf("not aws")
-			}
-			return []*securityhub.Resource{
-				{
-					Type: aws.String("AwsEc2Instance"),
-					Id:   aws.String(fmt.Sprintf("arn:aws:ec2:%s:%s:instance/%s", region, rec.Values[2].(string), rec.Values[1].(string))),
-				},
-			}, nil
+	if len(records) > 1 {
+		log.Error().Msgf("Too many results: %v", len(records))
+		return nil, fmt.Errorf("not aws")
+	}
+
+	if len(records) == 1 {
+		rec := records[0]
+		if rec.Values[0].(string) != "aws" {
+			return nil, fmt.Errorf("not aws")
 		}
+		return []*securityhub.Resource{
+			{
+				Type: aws.String("AwsEc2Instance"),
+				Id:   aws.String(fmt.Sprintf("arn:aws:ec2:%s:%s:instance/%s", region, rec.Values[2].(string), rec.Values[1].(string))),
+			},
+		}, nil
 	}
 
 	// query for containerImage
@@ -202,18 +203,22 @@ func getResourceForVulnerability(ctx context.Context, scanID, region, accountID 
 		return nil, err
 	}
 
-	if len(records) > 0 {
-		for _, rec := range records {
-			if rec.Values[1].(string) != "ecr" {
-				return nil, fmt.Errorf("not aws")
-			}
-			return []*securityhub.Resource{
-				{
-					Type: aws.String("AwsEcrContainerImage"),
-					Id:   aws.String(fmt.Sprintf("arn:aws:ecr:%s:%s:repository/%s", region, accountID, rec.Values[0].(string))),
-				},
-			}, nil
+	if len(records) > 1 {
+		log.Error().Msgf("Too many results: %v", len(records))
+		return nil, fmt.Errorf("not aws")
+	}
+
+	if len(records) == 1 {
+		rec := records[0]
+		if rec.Values[1].(string) != "ecr" {
+			return nil, fmt.Errorf("not aws")
 		}
+		return []*securityhub.Resource{
+			{
+				Type: aws.String("AwsEcrContainerImage"),
+				Id:   aws.String(fmt.Sprintf("arn:aws:ecr:%s:%s:repository/%s", region, accountID, rec.Values[0].(string))),
+			},
+		}, nil
 	}
 	return nil, fmt.Errorf("not aws")
 }
@@ -255,18 +260,22 @@ func getResourceForCompliance(ctx context.Context, scanID, region, accountID str
 		return nil, err
 	}
 
-	if len(records) > 0 {
-		for _, rec := range records {
-			if rec.Values[0].(string) != "aws" {
-				return nil, fmt.Errorf("not aws")
-			}
-			return []*securityhub.Resource{
-				{
-					Type: aws.String("AwsEc2Instance"),
-					Id:   aws.String(fmt.Sprintf("arn:aws:ec2:%s:%s:instance/%s", region, rec.Values[2].(string), rec.Values[1].(string))),
-				},
-			}, nil
+	if len(records) > 1 {
+		log.Error().Msgf("Too many results: %v", len(records))
+		return nil, fmt.Errorf("not aws")
+	}
+
+	if len(records) == 1 {
+		rec := records[0]
+		if rec.Values[0].(string) != "aws" {
+			return nil, fmt.Errorf("not aws")
 		}
+		return []*securityhub.Resource{
+			{
+				Type: aws.String("AwsEc2Instance"),
+				Id:   aws.String(fmt.Sprintf("arn:aws:ec2:%s:%s:instance/%s", region, rec.Values[2].(string), rec.Values[1].(string))),
+			},
+		}, nil
 	}
 	return nil, fmt.Errorf("not aws")
 }

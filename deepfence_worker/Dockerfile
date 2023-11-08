@@ -58,5 +58,7 @@ RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \
 
 RUN export GRYPE_DB_UPDATE_URL=https://threat-intel.deepfence.io/vulnerability-db/listing.json && grype db update
 
+COPY --from=builder-yara /go/bin/asynq /usr/local/bin/asynq
+
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/local/bin/deepfence_worker"]

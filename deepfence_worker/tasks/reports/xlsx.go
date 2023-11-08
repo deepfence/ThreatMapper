@@ -3,6 +3,7 @@ package reports
 import (
 	"context"
 	"os"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -119,7 +120,10 @@ func xlsxSave(xlsx *excelize.File, params utils.ReportParams) (string, error) {
 
 func xlsxSetHeader(xlsx *excelize.File, sheet string, headers map[string]string) {
 	for k, v := range headers {
-		xlsx.SetCellValue(sheet, k, v)
+		err := xlsx.SetCellValue(sheet, k, v)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 	}
 }
 
@@ -141,13 +145,14 @@ func vulnerabilityXLSX(ctx context.Context, params utils.ReportParams) (string, 
 
 	offset := 0
 	for _, nodeScanData := range data.NodeWiseData.ScanData {
+		updatedAt := time.UnixMilli(nodeScanData.ScanInfo.UpdatedAt).String()
 		for i, v := range nodeScanData.ScanResults {
 			cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
 			if err != nil {
 				log.Error().Err(err).Msg("error generating cell name")
 			}
 			value := []interface{}{
-				nodeScanData.ScanInfo.UpdatedAt,
+				updatedAt,
 				v.Cve_attack_vector,
 				v.Cve_caused_by_package,
 				nodeScanData.ScanInfo.NodeName,
@@ -165,7 +170,10 @@ func vulnerabilityXLSX(ctx context.Context, params utils.ReportParams) (string, 
 				nodeScanData.ScanInfo.CloudAccountID,
 				v.Masked,
 			}
-			xlsx.SetSheetRow("Sheet1", cellName, &value)
+			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
 		}
 		offset = offset + len(nodeScanData.ScanResults)
 	}
@@ -207,7 +215,10 @@ func secretXLSX(ctx context.Context, params utils.ReportParams) (string, error) 
 				nodeScanData.ScanInfo.KubernetesClusterName,
 				s.SignatureToMatch,
 			}
-			xlsx.SetSheetRow("Sheet1", cellName, &value)
+			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
 		}
 		offset = offset + len(nodeScanData.ScanResults)
 	}
@@ -251,7 +262,10 @@ func malwareXLSX(ctx context.Context, params utils.ReportParams) (string, error)
 				nodeScanData.ScanInfo.KubernetesClusterName,
 				nodeScanData.ScanInfo.NodeType,
 			}
-			xlsx.SetSheetRow("Sheet1", cellName, &value)
+			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
 		}
 		offset = offset + len(nodeScanData.ScanResults)
 	}
@@ -277,13 +291,14 @@ func complianceXLSX(ctx context.Context, params utils.ReportParams) (string, err
 
 	offset := 0
 	for _, nodeScanData := range data.NodeWiseData.ScanData {
+		updatedAt := time.UnixMilli(nodeScanData.ScanInfo.UpdatedAt).String()
 		for i, c := range nodeScanData.ScanResults {
 			cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
 			if err != nil {
 				log.Error().Err(err).Msg("error generating cell name")
 			}
 			value := []interface{}{
-				nodeScanData.ScanInfo.UpdatedAt,
+				updatedAt,
 				c.ComplianceCheckType,
 				"",
 				"",
@@ -299,7 +314,10 @@ func complianceXLSX(ctx context.Context, params utils.ReportParams) (string, err
 				c.TestInfo,
 				c.TestNumber,
 			}
-			xlsx.SetSheetRow("Sheet1", cellName, &value)
+			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
 		}
 		offset = offset + len(nodeScanData.ScanResults)
 	}
@@ -324,13 +342,14 @@ func cloudComplianceXLSX(ctx context.Context, params utils.ReportParams) (string
 	xlsxSetHeader(xlsx, "Sheet1", complianceHeader)
 
 	for _, data := range data.NodeWiseData.ScanData {
+		updatedAt := time.UnixMilli(data.ScanInfo.UpdatedAt).String()
 		for i, c := range data.ScanResults {
 			cellName, err := excelize.CoordinatesToCellName(1, i+2)
 			if err != nil {
 				log.Error().Err(err).Msg("error generating cell name")
 			}
 			value := []interface{}{
-				data.ScanInfo.UpdatedAt,
+				updatedAt,
 				c.ComplianceCheckType,
 				"",
 				"",
@@ -346,7 +365,10 @@ func cloudComplianceXLSX(ctx context.Context, params utils.ReportParams) (string
 				c.Title,
 				c.ControlID,
 			}
-			xlsx.SetSheetRow("Sheet1", cellName, &value)
+			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
 		}
 	}
 

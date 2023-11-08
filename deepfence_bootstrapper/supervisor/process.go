@@ -30,7 +30,7 @@ var (
 
 var (
 	processes = map[string]*procHandler{}
-	access    = sync.Mutex{}
+	access    = sync.RWMutex{}
 	log_root  string
 )
 
@@ -145,7 +145,7 @@ func (ph *procHandler) start() error {
 
 				select {
 				case <-stop:
-					cmd.Process.Signal(syscall.SIGTERM)
+					_ = cmd.Process.Signal(syscall.SIGTERM)
 					break loop
 				case restart := <-done:
 					if !restart {
@@ -181,11 +181,11 @@ func (ph *procHandler) start() error {
 }
 
 func (ph *procHandler) stop() error {
-	ph.kill()
+	_ = ph.kill()
 
 	ph.started = false
 
-	ph.wait()
+	_ = ph.wait()
 
 	return nil
 }
@@ -245,10 +245,13 @@ func UpgradeProcess(name, url string) error {
 		return selfUpgrade(url)
 	}
 
+	access.RLock()
 	process, has := processes[name]
 	if !has {
+		access.RUnlock()
 		return PathError
 	}
+	access.RUnlock()
 	process.access.Lock()
 	defer process.access.Unlock()
 
@@ -275,10 +278,13 @@ func UpgradeProcess(name, url string) error {
 }
 
 func StartProcess(name string) error {
+	access.RLock()
 	process, has := processes[name]
 	if !has {
+		access.RUnlock()
 		return PathError
 	}
+	access.RUnlock()
 	process.access.Lock()
 	defer process.access.Unlock()
 	if process.started {
@@ -288,10 +294,13 @@ func StartProcess(name string) error {
 }
 
 func StopProcess(name string) error {
+	access.RLock()
 	process, has := processes[name]
 	if !has {
+		access.RUnlock()
 		return PathError
 	}
+	access.RUnlock()
 	process.access.Lock()
 	defer process.access.Unlock()
 	if !process.started {
@@ -301,5 +310,7 @@ func StopProcess(name string) error {
 }
 
 func LoadProcess(name, path, command, env string, autorestart bool, cgroup string) {
+	access.Lock()
+	defer access.Unlock()
 	processes[name] = NewProcHandler(name, path, command, env, autorestart, cgroup)
 }

@@ -40,7 +40,10 @@ func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
 	log.Info().Msg("Start agent version check")
 
 	res := []map[string]interface{}{}
-	getVersionMetadata("https://api.github.com/repos/deepfence/ThreatMapper/tags", &res)
+	err := getVersionMetadata("https://api.github.com/repos/deepfence/ThreatMapper/tags", &res)
+	if err != nil {
+		return err
+	}
 
 	tags_to_ingest := []string{}
 	for _, tag := range res {
@@ -128,7 +131,7 @@ func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) (map[str
 			log.Error().Err(err).Msg("ReadFile")
 			continue
 		}
-		res, err := minio.UploadFile(ctx, out_file, b, m.PutObjectOptions{ContentType: "application/gzip"})
+		res, err := minio.UploadFile(ctx, out_file, b, false, m.PutObjectOptions{ContentType: "application/gzip"})
 		key := ""
 		if err != nil {
 			ape, ok := err.(directory.AlreadyPresentError)
@@ -246,7 +249,7 @@ func prepareAgentPluginReleases(ctx context.Context, tags_to_ingest []string) (m
 				log.Error().Err(err).Msg("ReadFile")
 				continue
 			}
-			res, err := minio.UploadFile(ctx, out_file, b, m.PutObjectOptions{ContentType: "application/gzip"})
+			res, err := minio.UploadFile(ctx, out_file, b, false, m.PutObjectOptions{ContentType: "application/gzip"})
 			key := ""
 			if err != nil {
 				ape, ok := err.(directory.AlreadyPresentError)

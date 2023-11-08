@@ -157,7 +157,7 @@ func formatOrderField(format string, input []OrderSpec, ignoreOrder bool, ignore
 		if _, has := severity_fields[input[i].FieldName]; has && !ignoreSort {
 			fieldName := "severity" + strconv.Itoa(sevSortFieldsNum)
 			sevSortFieldsNum += 1
-			orderByEntry = fmt.Sprintf("%s", extractOrderDescFormattedField(fieldName, input[i].Descending && !ignoreOrder))
+			orderByEntry = extractOrderDescFormattedField(fieldName, input[i].Descending && !ignoreOrder)
 		} else {
 			fieldName := input[i].FieldName
 			orderByEntry = fmt.Sprintf(format, extractOrderDescFormattedField(fieldName, input[i].Descending && !ignoreOrder))
@@ -279,7 +279,7 @@ func FieldFilterCypher(nodeName string, fields []string) string {
 		for i := range fields {
 			if fields[i] != "" {
 				if nodeName == "" {
-					tmp = append(tmp, fmt.Sprintf("%s", fields[i]))
+					tmp = append(tmp, fields[i])
 				} else {
 					tmp = append(tmp, fmt.Sprintf("%s.%s", nodeName, fields[i]))
 				}

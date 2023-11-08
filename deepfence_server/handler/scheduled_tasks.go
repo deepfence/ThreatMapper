@@ -16,7 +16,10 @@ func (h *Handler) GetScheduledTask(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, scheduledTasks)
+	err = httpext.JSON(w, http.StatusOK, scheduledTasks)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) UpdateScheduledTask(w http.ResponseWriter, r *http.Request) {
@@ -39,6 +42,21 @@ func (h *Handler) UpdateScheduledTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = model.UpdateScheduledTask(r.Context(), id, req)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) DeleteCustomScheduledTask(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+	defer r.Body.Close()
+	err = model.DeleteCustomSchedule(r.Context(), id)
 	if err != nil {
 		h.respondError(err, w)
 		return

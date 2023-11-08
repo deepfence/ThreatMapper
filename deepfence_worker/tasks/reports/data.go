@@ -121,6 +121,9 @@ func scanResultFilter(levelKey string, levelValues []string, masked []bool) repo
 
 func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Vulnerability], error) {
 
+	if params.Filters.MostExploitableReport {
+		return getMostExploitableVulnData(ctx, params)
+	}
 	searchFilter := searchScansFilter(params)
 
 	var (
@@ -167,6 +170,51 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 			ScanInfo:    common,
 			ScanResults: result,
 		}
+	}
+
+	data := Info[model.Vulnerability]{
+		ScanType:       VULNERABILITY,
+		Title:          "Vulnerability Scan Report",
+		StartTime:      start.Format(time.RFC3339),
+		EndTime:        end.Format(time.RFC3339),
+		AppliedFilters: updateFilters(ctx, params.Filters),
+		NodeWiseData:   nodeWiseData,
+	}
+
+	return &data, nil
+}
+
+func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Vulnerability], error) {
+	var req rptSearch.SearchNodeReq
+	req.ExtendedNodeFilter.Filters.OrderFilter.OrderFields = []reporters.OrderSpec{{FieldName: "cve_cvss_score", Descending: true}}
+	req.NodeFilter.Filters.ContainsFilter.FieldsValues = map[string][]interface{}{"exploitability_score": {1, 2, 3}}
+	req.NodeFilter.Filters.OrderFilter.OrderFields = []reporters.OrderSpec{{FieldName: "exploitability_score", Descending: true, Size: 1000}}
+	req.Window.Size = 1000
+	req.Window.Offset = 0
+	entries, err := rptSearch.SearchReport[model.Vulnerability](ctx, req.NodeFilter, req.ExtendedNodeFilter, req.IndirectFilters, req.Window)
+	if err != nil {
+		return nil, err
+	}
+	var (
+		end   time.Time = time.Now()
+		start time.Time = time.Now()
+	)
+	nodeWiseData := NodeWiseData[model.Vulnerability]{
+		SeverityCount: make(map[string]map[string]int32),
+		ScanData:      make(map[string]ScanData[model.Vulnerability]),
+	}
+	nodeKey := "most_exploitable_vulnerabilities"
+	nodeWiseData.SeverityCount[nodeKey] = make(map[string]int32)
+	nodeWiseData.ScanData[nodeKey] = ScanData[model.Vulnerability]{ScanResults: entries}
+	sevMap := nodeWiseData.SeverityCount[nodeKey]
+	for _, entry := range entries {
+		count, present := sevMap[entry.Cve_severity]
+		if !present {
+			count = 1
+		} else {
+			count += 1
+		}
+		sevMap[entry.Cve_severity] = count
 	}
 
 	data := Info[model.Vulnerability]{

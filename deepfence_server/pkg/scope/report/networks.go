@@ -5,6 +5,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/k-sone/critbitgo"
 )
 
@@ -82,7 +83,10 @@ func AddLocalBridge(name string) error {
 	}
 
 	for _, ipnet := range ipv4Nets(addrs) {
-		LocalNetworks.Add(ipnet)
+		err = LocalNetworks.Add(ipnet)
+		if err != nil {
+			log.Error().Msgf("Add local bridge err: %v", err)
+		}
 	}
 
 	return nil

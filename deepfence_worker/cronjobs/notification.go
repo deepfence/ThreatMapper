@@ -5,10 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
+	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
@@ -82,7 +84,32 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 	},
 }
 
-var notificationLock sync.Mutex
+const DefaultNotificationErrorBackoff = 15 * time.Minute
+
+var (
+	NotificationErrorBackoff time.Duration
+	notificationLock         sync.Mutex
+)
+
+func init() {
+	backoffTimeStr := os.Getenv("DEEPFENCE_NOTIFICATION_ERROR_BACKOFF_MINUTES")
+	status := false
+	if len(backoffTimeStr) > 0 {
+		value, err := strconv.Atoi(backoffTimeStr)
+		if err == nil && value > 0 {
+			NotificationErrorBackoff = time.Duration(value) * time.Minute
+			status = true
+			log.Info().Msgf("Setting notification err backoff to: %v",
+				NotificationErrorBackoff)
+		}
+	}
+
+	if !status {
+		log.Info().Msgf("Setting notification err backoff to default: %v",
+			DefaultNotificationErrorBackoff)
+		NotificationErrorBackoff = DefaultNotificationErrorBackoff
+	}
+}
 
 func SendNotifications(ctx context.Context, task *asynq.Task) error {
 	//This lock is to ensure only one notification handler runs at a time
@@ -102,6 +129,16 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 	wg := sync.WaitGroup{}
 	wg.Add(len(integrations))
 	for _, integrationRow := range integrations {
+		if integrationRow.ErrorMsg.String != "" &&
+			time.Since(integrationRow.LastSentTime.Time) < NotificationErrorBackoff {
+			log.Info().Msgf("Skipping integration for %s rowId: %d due to error: %s "+
+				"occured at last attempt, %s ago",
+				integrationRow.IntegrationType, integrationRow.ID,
+				integrationRow.ErrorMsg.String, time.Since(integrationRow.LastSentTime.Time))
+			wg.Done()
+			continue
+		}
+
 		go func(integration postgresql_db.Integration) {
 			defer wg.Done()
 			log.Info().Msgf("Processing integration for %s rowId: %d",
@@ -133,7 +170,10 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 						},
 					}
 				}
-				pgClient.UpdateIntegrationStatus(ctx, params)
+				err = pgClient.UpdateIntegrationStatus(ctx, params)
+				if err != nil {
+					log.Error().Msg(err.Error())
+				}
 			}
 		}(integrationRow)
 	}
@@ -199,7 +239,7 @@ func injectNodeDatamap(results []map[string]interface{}, common model.ScanResult
 
 		if _, ok := r["updated_at"]; ok {
 			flag := integration.IsMessagingFormat(integrationType)
-			if flag == true {
+			if flag {
 				ts := r["updated_at"].(int64)
 				tm := time.Unix(0, ts*int64(time.Millisecond))
 				r["updated_at"] = tm
@@ -275,6 +315,9 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		results, common, err := reporters_scan.GetScanResults[T](ctx,
 			utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId,
 			filters.FieldsFilters, model.FetchWindow{})
+		if err != nil {
+			return err
+		}
 		totalQueryTime = totalQueryTime + time.Since(profileStart).Milliseconds()
 
 		if len(results) == 0 {
@@ -296,8 +339,8 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		if integration.IsMessagingFormat(integrationRow.IntegrationType) {
 			updatedResults = FormatForMessagingApps(results, integrationRow.Resource)
 		} else {
+			updatedResults = []map[string]interface{}{}
 			for _, r := range results {
-				updatedResults = []map[string]interface{}{}
 				updatedResults = append(updatedResults, utils.ToMap[T](r))
 			}
 		}

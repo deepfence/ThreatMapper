@@ -235,6 +235,26 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 	return tx.Commit()
 }
 
+func getPostureProviderCache(ctx context.Context) []PostureProvider {
+
+	var postureProvidersCache []PostureProvider
+	rdb, err := directory.RedisClient(ctx)
+	if err != nil {
+		log.Error().Msgf("GetCloudProvidersList redis : %v", err)
+		return postureProvidersCache
+	}
+	postureProvidersStr, err := rdb.Get(ctx, constants.RedisKeyPostureProviders).Result()
+	if err != nil {
+		log.Error().Msgf("GetCloudProvidersList redis : %v", err)
+		return postureProvidersCache
+	}
+	err = json.Unmarshal([]byte(postureProvidersStr), &postureProvidersCache)
+	if err != nil {
+		log.Error().Msgf("GetCloudProvidersList redis : %v", err)
+	}
+	return postureProvidersCache
+}
+
 func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -253,18 +273,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 	}
 	defer tx.Close()
 
-	var postureProvidersCache []PostureProvider
-	rdb, err := directory.RedisClient(ctx)
-	if err == nil {
-		postureProvidersStr, err := rdb.Get(ctx, constants.RedisKeyPostureProviders).Result()
-		if err == nil {
-			json.Unmarshal([]byte(postureProvidersStr), &postureProvidersCache)
-		} else {
-			log.Warn().Msgf("GetCloudProvidersList redis : %v", err)
-		}
-	} else {
-		log.Warn().Msgf("GetCloudProvidersList redis : %v", err)
-	}
+	postureProvidersCache := getPostureProviderCache(ctx)
 
 	postureProviders := []PostureProvider{
 		{Name: PostureProviderAWS, NodeLabel: "Accounts"},
@@ -292,7 +301,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 		records, err := r.Collect()
 		if err == nil {
 			for _, record := range records {
-				if record.Values[0].(bool) == true {
+				if record.Values[0].(bool) {
 					postureProviders[providersIndex[PostureProviderLinux]].NodeCount = record.Values[1].(int64)
 				} else {
 					postureProviders[providersIndex[PostureProviderLinux]].NodeCountInactive = record.Values[1].(int64)
@@ -312,7 +321,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 		records, err := r.Collect()
 		if err == nil {
 			for _, record := range records {
-				if record.Values[0].(bool) == true {
+				if record.Values[0].(bool) {
 					postureProviders[providersIndex[PostureProviderKubernetes]].NodeCount = record.Values[1].(int64)
 				} else {
 					postureProviders[providersIndex[PostureProviderKubernetes]].NodeCountInactive = record.Values[1].(int64)
@@ -335,7 +344,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 				if slices.Contains([]string{PostureProviderAWSOrg, PostureProviderGCPOrg}, provider) {
 					continue
 				}
-				if record.Values[1].(bool) == true {
+				if record.Values[1].(bool) {
 					postureProviders[providersIndex[provider]].NodeCount = record.Values[2].(int64)
 				} else {
 					postureProviders[providersIndex[provider]].NodeCountInactive = record.Values[2].(int64)
@@ -448,6 +457,9 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		RETURN COUNT(*)`, neo4jNodeType),
 			map[string]interface{}{"cloud_provider": cloudProvider})
 	}
+	if err != nil {
+		return CloudNodeAccountsListResp{Total: 0}, err
+	}
 
 	countRec, err := countRes.Single()
 	if err != nil {
@@ -480,7 +492,7 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 
 	var res neo4j.Result
 	res, err = tx.Run(`
-		MATCH (n:CloudComplianceBenchmark) -[:INCLUDES]-> (m:CloudComplianceControl)
+		MATCH (n:CloudComplianceBenchmark) -[:PARENT]-> (m:CloudComplianceControl)
 		WHERE m.active = true
 		AND m.disabled = false
 		AND m.compliance_type IN $compliance_types

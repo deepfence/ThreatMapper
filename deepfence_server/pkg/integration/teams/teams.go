@@ -108,34 +108,29 @@ func (t Teams) enqueueNotification(payloads []map[string]interface{},
 
 func (t Teams) Sender(in chan *Payload, wg *sync.WaitGroup) {
 	defer wg.Done()
-	var payload *Payload
-	var ok bool
 
-SenderLoop:
 	for {
-		select {
-		case payload, ok = <-in:
-			if !ok {
-				break SenderLoop
-			}
+		payload, ok := <-in
+		if !ok {
+			break
 		}
 
 		payloadBytes, err := json.Marshal(payload)
 		if err != nil {
-			continue SenderLoop
+			continue
 		}
 
 		req, err := http.NewRequest("POST", t.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
 		if err != nil {
 			log.Info().Msgf("Failed to create HTTP request: %v", err)
-			continue SenderLoop
+			continue
 		}
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := t.client.Do(req)
 		if err != nil {
 			log.Info().Msgf("Failed to send data to Teams: %v", err)
-			continue SenderLoop
+			continue
 		}
 
 		if resp.StatusCode != http.StatusOK {

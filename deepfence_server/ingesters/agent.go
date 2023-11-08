@@ -78,15 +78,6 @@ type EndpointResolvers struct {
 	ipport_ippid map[string]string
 }
 
-func (er *EndpointResolvers) clean() {
-	for k := range er.network_map {
-		delete(er.network_map, k)
-	}
-	for k := range er.ipport_ippid {
-		delete(er.ipport_ippid, k)
-	}
-}
-
 type EndpointResolversCache struct {
 	rdb       *redis2.Client
 	net_cache sync.Map
@@ -928,11 +919,7 @@ func (nc *neo4jIngester) runDBPusher(
 		log.Error().Msgf("Failed to get client: %v", err)
 		return
 	}
-	session, err := driver.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		log.Error().Msgf("Failed to open session: %v", err)
-		return
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 
 	for batches := range db_pusher {
 		span := telemetry.NewSpan(context.Background(), "ingester", "PushAgentReportsToDB")
@@ -944,12 +931,8 @@ func (nc *neo4jIngester) runDBPusher(
 					log.Warn().Msg("Renew session")
 					new_driver, err := directory.Neo4jClient(ctx)
 					if err == nil {
-						new_session, err := new_driver.Session(neo4j.AccessModeWrite)
-						if err == nil {
-							driver = new_driver
-							session.Close()
-							session = new_session
-						}
+						_ = session.Close()
+						session = new_driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 					}
 				}
 				if batches.Retries == 2 || !isTransientError(err) {
@@ -1169,13 +1152,6 @@ func FetchPushBack(ctx context.Context) int32 {
 	return prev_push_back
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 func max(a, b int32) int32 {
 	if a < b {
 		return b
@@ -1215,11 +1191,7 @@ func UpdatePushBack(ctx context.Context, newValue *atomic.Int32, prev int32) err
 		return err
 	}
 
-	session, err := driver.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		log.Error().Msgf("Fail to get session for push back: %v", err)
-		return err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(5 * time.Second))
 	if err != nil {
@@ -1252,18 +1224,16 @@ func UpdatePushBack(ctx context.Context, newValue *atomic.Int32, prev int32) err
 		if err != nil {
 			return err
 		}
-		newValue.Store(int32(rec.Values[0].(int64)))
 	}
+	newValue.Store(int32(rec.Values[0].(int64)))
 
 	return tx.Commit()
 }
 
 func GetPushBack(driver neo4j.Driver) (int32, error) {
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return 0, err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
+
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(5 * time.Second))
 	if err != nil {
 		return 0, err

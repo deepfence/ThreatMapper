@@ -9,6 +9,7 @@ import (
 
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 )
@@ -36,9 +37,12 @@ func (h *Handler) GetCloudNodeControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, model.CloudNodeControlResp{
+	err = httpext.JSON(w, http.StatusOK, model.CloudNodeControlResp{
 		Controls: controls,
 	})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) EnableCloudNodeControls(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +68,10 @@ func (h *Handler) EnableCloudNodeControls(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessCloudControlsEnabled})
+	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessCloudControlsEnabled})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) DisableCloudNodeControls(w http.ResponseWriter, r *http.Request) {
@@ -90,5 +97,9 @@ func (h *Handler) DisableCloudNodeControls(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessCloudControlsDisabled})
+	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessCloudControlsDisabled})
+
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }

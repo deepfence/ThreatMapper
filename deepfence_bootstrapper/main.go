@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"errors"
 	"os"
@@ -57,6 +58,9 @@ func main() {
 	log.Info().Msgf("version: %s", Version)
 	log.Info().Msg("Starting bootstrapper")
 
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
 	var cfg config.Config
 	var err error
 	if enable_cluster_discovery {
@@ -67,11 +71,11 @@ func main() {
 	if err != nil {
 		log.Fatal().Msgf("%v", err)
 	}
-	c := make(chan os.Signal, 2)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
-	cc := make(chan struct{})
-	server.StartRPCServer("/tmp/deepfence_boot.sock", cc)
+	err = server.StartRPCServer(ctx, "/tmp/deepfence_boot.sock")
+	if err != nil {
+		log.Fatal().Msgf("%v", err)
+	}
 
 	if !enable_cluster_discovery {
 		for _, entry := range cfg.Cgroups {
@@ -137,18 +141,8 @@ func main() {
 	}
 
 	log.Info().Msg("Everything is up")
-loop:
-	for {
-		select {
-		case <-c:
-			select {
-			case cc <- struct{}{}:
-			default:
-			}
-			break loop
-		}
-	}
-
+	<-ctx.Done()
+	log.Info().Msgf("Signal received, wrapping up: %v", ctx.Err())
 	cgroups.UnloadAll()
 	os.Exit(0)
 

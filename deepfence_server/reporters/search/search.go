@@ -76,10 +76,7 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 		return res, err
 	}
 
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -201,10 +198,7 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 		return res, err
 	}
 
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -284,10 +278,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		return res, err
 	}
 
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -393,10 +384,7 @@ func getScanStatusMap(ctx context.Context, id string, cloudProvider string) (map
 		return res, err
 	}
 
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
@@ -435,10 +423,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		return res, err
 	}
 
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))

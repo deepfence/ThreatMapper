@@ -17,7 +17,7 @@ import (
 
 // Agent version to display in metadata
 var (
-	AgentVersionNo           = "v2.0.0"
+	AgentVersionNo           = "v2.0.1"
 	agentCommitID            = "Unknown"
 	agentBuildTime           = "0"
 	DockerSocketPath         = os.Getenv("DOCKER_SOCKET_PATH")

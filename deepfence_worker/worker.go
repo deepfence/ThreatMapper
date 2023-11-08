@@ -22,6 +22,14 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
+var (
+	DefaultQueues = map[string]int{
+		utils.Q_CRITICAL: 6,
+		utils.Q_DEFAULT:  3,
+		utils.Q_LOW:      1,
+	}
+)
+
 type Worker struct {
 	cfg       config
 	mux       *asynq.ServeMux
@@ -71,13 +79,12 @@ func skipRetryCallbackWrapper(taskCallback wtils.WorkerHandler) wtils.WorkerHand
 func (w *Worker) AddRetryableHandler(
 	task string,
 	taskCallback wtils.WorkerHandler,
-) error {
+) {
 	w.mux.HandleFunc(
 		task,
 		contextInjectorCallbackWrapper(w.namespace,
 			telemetryCallbackWrapper(task, taskCallback)),
 	)
-	return nil
 }
 
 // CronJobHandler do not retry on failure
@@ -85,14 +92,13 @@ func (w *Worker) AddRetryableHandler(
 func (w *Worker) AddOneShotHandler(
 	task string,
 	taskCallback wtils.WorkerHandler,
-) error {
+) {
 	w.mux.HandleFunc(
 		task,
 		skipRetryCallbackWrapper(
 			contextInjectorCallbackWrapper(w.namespace,
 				telemetryCallbackWrapper(task, taskCallback))),
 	)
-	return nil
 }
 
 func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc, error) {
@@ -106,28 +112,43 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 	ingestC := make(chan *kgo.Record, 10000)
 	go utils.StartKafkaProducer(kafkaCtx, cfg.KafkaBrokers, ingestC)
 
+	// worker config
+	qCfg := asynq.Config{
+		StrictPriority: true,
+		Concurrency:    cfg.TasksConcurrency,
+		ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
+			retried, _ := asynq.GetRetryCount(ctx)
+			maxRetry, _ := asynq.GetMaxRetry(ctx)
+			if retried >= maxRetry {
+				err = fmt.Errorf("retry exhausted for task %s: %w", task.Type(), err)
+			}
+			log.Error().Err(err).Msgf("worker task %s, payload: %s", task.Type(), task.Payload())
+		}),
+	}
+
+	if len(cfg.ProcessQueues) > 0 {
+		log.Info().Msgf("process mesages from queues %s", cfg.ProcessQueues)
+		processQueues := map[string]int{}
+		for _, qName := range cfg.ProcessQueues {
+			if val, found := DefaultQueues[qName]; found {
+				processQueues[qName] = val
+			} else {
+				log.Error().Msgf("unknown queue name %s", qName)
+			}
+		}
+		qCfg.Queues = processQueues
+	} else {
+		log.Info().Msg("process messages from all queues")
+		qCfg.Queues = DefaultQueues
+	}
+
 	srv := asynq.NewServer(
 		asynq.RedisClientOpt{
 			Addr:     fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort),
 			DB:       cfg.RedisDbNumber,
 			Password: cfg.RedisPassword,
 		},
-		asynq.Config{
-			Concurrency: 10,
-			Queues: map[string]int{
-				"critical": 6,
-				"default":  3,
-				"low":      1,
-			},
-			ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
-				retried, _ := asynq.GetRetryCount(ctx)
-				maxRetry, _ := asynq.GetMaxRetry(ctx)
-				if retried >= maxRetry {
-					err = fmt.Errorf("retry exhausted for task %s: %w", task.Type(), err)
-				}
-				log.Error().Msgf("worker task error: %v", err)
-			}),
-		},
+		qCfg,
 	)
 
 	mux := asynq.NewServeMux()

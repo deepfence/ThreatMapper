@@ -82,8 +82,14 @@ func (d *RegistryJfrog) FetchImagesFromRegistry() ([]model.IngestedContainerImag
 // getters
 func (d *RegistryJfrog) GetSecret() map[string]interface{} {
 	var secret map[string]interface{}
-	b, _ := json.Marshal(d.Secret)
-	json.Unmarshal(b, &secret)
+	b, err := json.Marshal(d.Secret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	err = json.Unmarshal(b, &secret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 	return secret
 }
 

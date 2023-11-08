@@ -178,11 +178,14 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, &user, true)
-	httpext.JSON(w, http.StatusOK, model.LoginResponse{
+	err = httpext.JSON(w, http.StatusOK, model.LoginResponse{
 		ResponseAccessToken: *accessTokenResponse,
 		OnboardingRequired:  model.IsOnboardingRequired(ctx),
 		PasswordInvalidated: user.PasswordInvalidated,
 	})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
@@ -205,6 +208,10 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	code, err := utils.UUIDFromString(registerRequest.Code)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
 	userInvite, err := pgClient.GetUserInviteByCode(ctx, code)
 	if errors.Is(err, sql.ErrNoRows) {
 		h.respondError(&userInviteInvalidCodeError, w)
@@ -219,6 +226,10 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	role, err := pgClient.GetRoleByID(ctx, userInvite.RoleID)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
 	user := model.User{
 		FirstName:           registerRequest.FirstName,
 		LastName:            registerRequest.LastName,
@@ -266,7 +277,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, &user, true)
 
-	httpext.JSON(w, http.StatusOK, model.LoginResponse{
+	_ = httpext.JSON(w, http.StatusOK, model.LoginResponse{
 		ResponseAccessToken: *accessTokenResponse,
 		OnboardingRequired:  model.IsOnboardingRequired(ctx),
 		PasswordInvalidated: user.PasswordInvalidated,
@@ -381,7 +392,7 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_INVITE, userInvite, true)
 
-	httpext.JSON(w, http.StatusOK, model.InviteUserResponse{InviteExpiryHours: 48, InviteURL: inviteURL, Message: "Invite sent"})
+	_ = httpext.JSON(w, http.StatusOK, model.InviteUserResponse{InviteExpiryHours: 48, InviteURL: inviteURL, Message: "Invite sent"})
 }
 
 func (h *Handler) userModel(pgUser postgresql_db.GetUsersRow) model.User {
@@ -418,7 +429,7 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 			users[i].CurrentUser = False
 		}
 	}
-	httpext.JSON(w, http.StatusOK, users)
+	_ = httpext.JSON(w, http.StatusOK, users)
 }
 
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
@@ -427,7 +438,7 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 		h.respondWithErrorCode(err, w, statusCode)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, user)
+	_ = httpext.JSON(w, http.StatusOK, user)
 }
 
 func (h *Handler) GetUserByUserID(w http.ResponseWriter, r *http.Request) {
@@ -441,7 +452,7 @@ func (h *Handler) GetUserByUserID(w http.ResponseWriter, r *http.Request) {
 		h.respondWithErrorCode(err, w, statusCode)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, user)
+	_ = httpext.JSON(w, http.StatusOK, user)
 }
 
 func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx context.Context, pgClient *postgresql_db.Queries, user *model.User, isCurrentUser bool) {
@@ -462,6 +473,10 @@ func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 	user.LastName = req.LastName
 	if user.Role != req.Role {
 		activeAdminUsersCount, err := pgClient.CountActiveAdminUsers(ctx)
+		if err != nil {
+			h.respondWithErrorCode(err, w, http.StatusInternalServerError)
+			return
+		}
 		if user.Role == model.AdminRole && activeAdminUsersCount < 2 {
 			h.respondWithErrorCode(deleteLastAdminError, w, http.StatusForbidden)
 			return
@@ -489,11 +504,14 @@ func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 		return
 	}
 	if toLogout {
-		LogoutHandler(ctx)
+		err = LogoutHandler(ctx)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 	}
 	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_UPDATE, user, true)
-	httpext.JSON(w, http.StatusOK, user)
+	_ = httpext.JSON(w, http.StatusOK, user)
 }
 
 func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -586,7 +604,10 @@ func (h *Handler) deleteUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 		return
 	}
 	if isCurrentUser {
-		LogoutHandler(ctx)
+		err = LogoutHandler(ctx)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 	}
 
 	user.Password = ""
@@ -640,13 +661,13 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	resetPasswordRequest.Email = strings.ToLower(resetPasswordRequest.Email)
 	if resetPasswordRequest.Email == constants.DeepfenceCommunityEmailId {
-		httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
+		_ = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 		return
 	}
 	ctx := directory.NewContextWithNameSpace(directory.FetchNamespace(resetPasswordRequest.Email))
 	user, statusCode, pgClient, err := model.GetUserByEmail(ctx, resetPasswordRequest.Email)
 	if errors.Is(err, model.UserNotFoundErr) {
-		httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
+		_ = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 		return
 	} else if err != nil {
 		h.respondWithErrorCode(err, w, statusCode)
@@ -692,7 +713,10 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 	if err != nil {
-		pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
+		e := pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
+		if e != nil {
+			log.Error().Msg(e.Error())
+		}
 		log.Error().Err(err).Msg("error rendering PasswordResetTemplate")
 		h.respondError(err, w)
 		return
@@ -706,7 +730,10 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		nil,
 	)
 	if err != nil {
-		pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
+		e := pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
+		if e != nil {
+			log.Error().Msg(e.Error())
+		}
 		log.Error().Err(err).Msg("error sending password reset email")
 		h.respondError(err, w)
 		return
@@ -714,7 +741,7 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_RESET_PASSWORD, resetPasswordRequest, true)
 
-	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
+	_ = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 }
 
 func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Request) {
@@ -737,6 +764,10 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	code, err := utils.UUIDFromString(passwordResetVerifyRequest.Code)
+	if err != nil {
+		h.respondWithErrorCode(err, w, http.StatusInternalServerError)
+		return
+	}
 	passwordReset, err := pgClient.GetPasswordResetByCode(ctx, code)
 	if errors.Is(err, sql.ErrNoRows) {
 		h.respondError(&passwordResetCodeNotFoundError, w)
@@ -789,7 +820,7 @@ func (h *Handler) GetApiTokens(w http.ResponseWriter, r *http.Request) {
 			CreatedAt:       apiToken.CreatedAt,
 		}
 	}
-	httpext.JSON(w, http.StatusOK, apiTokenResponse)
+	_ = httpext.JSON(w, http.StatusOK, apiTokenResponse)
 }
 
 func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
@@ -832,7 +863,7 @@ func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
 	}
 	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_VERIFY_PASSWORD, user, true)
-	httpext.JSON(w, http.StatusOK, apiTokenResponse)
+	_ = httpext.JSON(w, http.StatusOK, apiTokenResponse)
 }
 
 func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, int, *postgresql_db.Queries, error) {
@@ -869,5 +900,5 @@ func (h *Handler) GetApiTokenForConsoleAgent(w http.ResponseWriter, r *http.Requ
 		h.respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, model.ApiAuthRequest{ApiToken: model.GetApiToken(string(directory.NonSaaSDirKey), token)})
+	_ = httpext.JSON(w, http.StatusOK, model.ApiAuthRequest{ApiToken: model.GetApiToken(string(directory.NonSaaSDirKey), token)})
 }

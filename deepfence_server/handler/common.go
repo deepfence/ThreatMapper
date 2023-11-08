@@ -25,11 +25,14 @@ const (
 
 func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("pong"))
+	_, _ = w.Write([]byte("pong"))
 }
 
 func (h *Handler) EULAHandler(w http.ResponseWriter, r *http.Request) {
-	httpext.JSON(w, http.StatusOK, model.EULAResponse)
+	err := httpext.JSON(w, http.StatusOK, model.EULAResponse)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) OpenApiDocsHandler(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +41,10 @@ func (h *Handler) OpenApiDocsHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	httpext.JSONBytes(w, http.StatusOK, apiDocs)
+	err = httpext.JSONBytes(w, http.StatusOK, apiDocs)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func respondWith(ctx context.Context, w http.ResponseWriter, code int, response interface{}) {
@@ -122,7 +128,7 @@ func isTransientError(err error) bool {
 	return false
 }
 
-func (h *Handler) respondWithErrorCode(err error, w http.ResponseWriter, code int) error {
+func (h *Handler) respondWithErrorCode(err error, w http.ResponseWriter, code int) {
 	var errorFields map[string]string
 	var errMsg string
 	if code == http.StatusBadRequest {
@@ -131,13 +137,17 @@ func (h *Handler) respondWithErrorCode(err error, w http.ResponseWriter, code in
 		errMsg = err.Error()
 	}
 	if len(errorFields) > 0 {
-		return httpext.JSON(w, code, model.ErrorResponse{Message: "", ErrorFields: errorFields})
+		err = httpext.JSON(w, code, model.ErrorResponse{Message: "", ErrorFields: errorFields})
 	} else {
-		return httpext.JSON(w, code, model.ErrorResponse{Message: errMsg, ErrorFields: errorFields})
+		err = httpext.JSON(w, code, model.ErrorResponse{Message: errMsg, ErrorFields: errorFields})
+	}
+	if err != nil {
+		log.Error().Msg(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
-func (h *Handler) respondError(err error, w http.ResponseWriter) error {
+func (h *Handler) respondError(err error, w http.ResponseWriter) {
 	code := http.StatusInternalServerError
 	var errorFields map[string]string
 	errMsg := err.Error()
@@ -172,8 +182,12 @@ func (h *Handler) respondError(err error, w http.ResponseWriter) error {
 	}
 
 	if len(errorFields) > 0 {
-		return httpext.JSON(w, code, model.ErrorResponse{Message: "", ErrorFields: errorFields, ErrorIndex: errorIndex})
+		err = httpext.JSON(w, code, model.ErrorResponse{Message: "", ErrorFields: errorFields, ErrorIndex: errorIndex})
 	} else {
-		return httpext.JSON(w, code, model.ErrorResponse{Message: errMsg, ErrorFields: errorFields, ErrorIndex: errorIndex})
+		err = httpext.JSON(w, code, model.ErrorResponse{Message: errMsg, ErrorFields: errorFields, ErrorIndex: errorIndex})
+	}
+	if err != nil {
+		log.Error().Msg(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

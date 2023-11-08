@@ -105,7 +105,7 @@ func main() {
 		log.Fatal().Msg(err.Error())
 	}
 
-	if *resetPassword == true {
+	if *resetPassword {
 		if directory.IsNonSaaSDeployment() {
 			ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
 			err = resetUserPassword(ctx)

@@ -1,6 +1,6 @@
 module github.com/deepfence/ThreatMapper/deepfence_server
 
-go 1.21.0
+go 1.21
 
 replace github.com/deepfence/ThreatMapper/deepfence_utils => ../deepfence_utils
 

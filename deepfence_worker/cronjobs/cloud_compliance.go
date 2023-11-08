@@ -22,7 +22,8 @@ var BenchmarksAvailableMap = map[string][]string{
 	"gcp":        {"cis"},
 	"azure":      {"cis", "nist", "pci", "hipaa"},
 	"kubernetes": {"nsa-cisa"},
-	"linux":      {"hipaa", "nist", "pci", "gdpr"}}
+	"linux":      {"hipaa", "nist", "pci", "gdpr"},
+}
 
 type Benchmark struct {
 	BenchmarkId   string            `json:"benchmark_id"`
@@ -146,7 +147,7 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 		MERGE (n:CloudComplianceExecutable:CloudComplianceBenchmark{
 			node_id: row.benchmark_id
 		})
-		ON CREATE 
+		ON CREATE
 			SET n.benchmark_id = row.benchmark_id,
 			n.description = row.description,
 			n.title = row.title,
@@ -178,6 +179,14 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 				}
 			}
 		}
+	}
+	// connect controls to parent root benchmarks
+	if _, err = tx.Run(`
+	MATCH (n:CloudComplianceControl)
+	MATCH (b:CloudComplianceBenchmark{benchmark_id:n.parent_control_hierarchy[0]})
+	MERGE (b)-[:PARENT]->(n)`, map[string]interface{}{}); err != nil {
+		log.Error().Msgf(err.Error())
+		return nil
 	}
 	log.Info().Msgf("Updated Cloud Compliance Controls")
 	return tx.Commit()
@@ -258,10 +267,6 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 			RETURN count(distinct c)`
 
 		} else if postureProviderName == model.PostureProviderAWSOrg || postureProviderName == model.PostureProviderGCPOrg {
-			postureProviderName := model.PostureProviderGCP
-			if postureProviderName == model.PostureProviderAWSOrg {
-				postureProviderName = model.PostureProviderAWS
-			}
 			postureProvider.NodeLabel = "Organizations"
 
 			account_count_query = `

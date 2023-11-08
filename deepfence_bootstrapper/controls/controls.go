@@ -119,7 +119,10 @@ func SetAgentControls() {
 		func(req ctl.EnableAgentPluginRequest) error {
 			log.Info().Msg("Start & download Agent Plugin")
 			router.SetUpgrade()
-			supervisor.UpgradeProcess(req.PluginName, req.BinUrl)
+			err = supervisor.UpgradeProcess(req.PluginName, req.BinUrl)
+			if err != nil {
+				return err
+			}
 			return supervisor.StartProcess(req.PluginName)
 		})
 	if err != nil {
@@ -179,7 +182,7 @@ func SetAgentControls() {
 			var err error
 			if ok {
 				retVal := linuxScanner.StopScan(scanId)
-				if retVal == false {
+				if !retVal {
 					err = errors.New("Failed to stop scan")
 				}
 			} else {

@@ -59,3 +59,5 @@ RUN mkdir /home/deepfence
 COPY deepfence_agent/build_scripts/*.sh /home/deepfence/
 
 RUN apk add cmake fts-dev openssl-dev openssl-libs-static
+
+RUN go install github.com/hibiken/asynq/tools/asynq@latest

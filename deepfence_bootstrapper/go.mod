@@ -1,6 +1,6 @@
 module github.com/deepfence/ThreatMapper/deepfence_bootstrapper
 
-go 1.20
+go 1.21
 
 replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils/
 
@@ -13,7 +13,6 @@ replace github.com/deepfence/df-utils => ../deepfence_agent/tools/apache/deepfen
 replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/agent-plugins-grpc
 
 require (
-	github.com/Jeffail/tunny v0.1.4
 	github.com/abrander/go-supervisord v0.0.0-20210517172913-a5469a4c50e2
 	github.com/containerd/cgroups/v3 v3.0.2
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000

@@ -27,7 +27,7 @@ var (
 	invalidIntegerError = ValidatorError{
 		err: errors.New("value:must be integer"), skipOverwriteErrorMessage: true}
 	invalidEmailConfigTypeError = ValidatorError{
-		err: errors.New(fmt.Sprintf("email_provider:must be %s or %s", model.EmailSettingSMTP, model.EmailSettingSES)), skipOverwriteErrorMessage: true}
+		err: fmt.Errorf("email_provider:must be %s or %s", model.EmailSettingSMTP, model.EmailSettingSES), skipOverwriteErrorMessage: true}
 )
 
 func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) {
@@ -84,7 +84,10 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 	req.AmazonAccessKey = ""
 	req.AmazonSecretKey = ""
 	h.AuditUserActivity(r, EVENT_SETTINGS, ACTION_CREATE, req, true)
-	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessEmailConfigCreated})
+	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessEmailConfigCreated})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) GetEmailConfiguration(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +101,10 @@ func (h *Handler) GetEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 	resp := []model.EmailConfigurationResp{}
 	setting, err := pgClient.GetSetting(ctx, model.EmailConfigurationKey)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpext.JSON(w, http.StatusOK, resp)
+		err = httpext.JSON(w, http.StatusOK, resp)
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
 		return
 	} else if err != nil {
 		h.respondError(&InternalServerError{err}, w)
@@ -112,7 +118,10 @@ func (h *Handler) GetEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 	}
 	emailConfig.ID = setting.ID
 	resp = append(resp, emailConfig)
-	httpext.JSON(w, http.StatusOK, resp)
+	err = httpext.JSON(w, http.StatusOK, resp)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) DeleteEmailConfiguration(w http.ResponseWriter, r *http.Request) {
@@ -150,7 +159,10 @@ func (h *Handler) GetGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, settings)
+	err = httpext.JSON(w, http.StatusOK, settings)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 }
 
 func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {

@@ -19,6 +19,9 @@ func (h *Handler) NodeCountHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = httpext.JSON(w, http.StatusOK, counts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func SearchCountHandler[T reporters.CypherableAndCategorizable](w http.ResponseWriter, r *http.Request, h *Handler) {

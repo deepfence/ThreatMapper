@@ -1,6 +1,6 @@
 module github.com/deepfence/ThreatMapper/deepfence_worker
 
-go 1.21.0
+go 1.21
 
 replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_sdk/client/
 
