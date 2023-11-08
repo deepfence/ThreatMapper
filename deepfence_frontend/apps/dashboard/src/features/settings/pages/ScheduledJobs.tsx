@@ -71,7 +71,7 @@ export const action = async ({
   } else if (body.actionType === ActionEnumType.DELETE) {
     const ids = (formData.getAll('ids[]') ?? []) as string[];
     const deleteApi = apiWrapper({
-      fn: getSettingsApiClient().deleteScheduledTask,
+      fn: getSettingsApiClient().deleteCustomScheduledTask,
     });
     const deleteResponse = await deleteApi({
       id: parseInt(ids[0], 10),
