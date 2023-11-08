@@ -61,6 +61,10 @@ func GetHttpClient() *http.Client {
 	return secureClient
 }
 
+func GetHttpClientWithTimeout(duration time.Duration) *http.Client {
+	return &http.Client{Timeout: duration}
+}
+
 func GetInsecureHttpClient() *http.Client {
 	once2.Do(func() {
 		tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}

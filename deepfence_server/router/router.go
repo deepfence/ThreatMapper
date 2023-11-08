@@ -502,6 +502,20 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				})
 			})
 
+			// AI Integration
+			r.Route("/ai-integration", func(r chi.Router) {
+				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddAIIntegration))
+				r.Get("/", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GetAIIntegrations))
+				r.Route("/{integration_id}", func(r chi.Router) {
+					r.Delete("/", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteAIIntegration))
+				})
+
+				r.Route("/query", func(r chi.Router) {
+					r.Post("/cloud-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AIIntegrationCloudPostureQuery))
+					r.Post("/vulnerability", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AIIntegrationVulnerabilityQuery))
+				})
+			})
+
 			// vulnerability db management
 			r.Route("/database", func(r chi.Router) {
 				r.Put("/vulnerability", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadVulnerabilityDB))
