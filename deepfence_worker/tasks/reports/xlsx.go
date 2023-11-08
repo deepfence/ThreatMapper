@@ -145,13 +145,14 @@ func vulnerabilityXLSX(ctx context.Context, params utils.ReportParams) (string, 
 
 	offset := 0
 	for _, nodeScanData := range data.NodeWiseData.ScanData {
+		updatedAt := time.UnixMilli(nodeScanData.ScanInfo.UpdatedAt).String()
 		for i, v := range nodeScanData.ScanResults {
 			cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
 			if err != nil {
 				log.Error().Err(err).Msg("error generating cell name")
 			}
 			value := []interface{}{
-				time.UnixMilli(nodeScanData.ScanInfo.UpdatedAt).String(),
+				updatedAt,
 				v.Cve_attack_vector,
 				v.Cve_caused_by_package,
 				nodeScanData.ScanInfo.NodeName,
@@ -290,13 +291,14 @@ func complianceXLSX(ctx context.Context, params utils.ReportParams) (string, err
 
 	offset := 0
 	for _, nodeScanData := range data.NodeWiseData.ScanData {
+		updatedAt := time.UnixMilli(nodeScanData.ScanInfo.UpdatedAt).String()
 		for i, c := range nodeScanData.ScanResults {
 			cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
 			if err != nil {
 				log.Error().Err(err).Msg("error generating cell name")
 			}
 			value := []interface{}{
-				time.UnixMilli(nodeScanData.ScanInfo.UpdatedAt).String(),
+				updatedAt,
 				c.ComplianceCheckType,
 				"",
 				"",
@@ -340,13 +342,14 @@ func cloudComplianceXLSX(ctx context.Context, params utils.ReportParams) (string
 	xlsxSetHeader(xlsx, "Sheet1", complianceHeader)
 
 	for _, data := range data.NodeWiseData.ScanData {
+		updatedAt := time.UnixMilli(data.ScanInfo.UpdatedAt).String()
 		for i, c := range data.ScanResults {
 			cellName, err := excelize.CoordinatesToCellName(1, i+2)
 			if err != nil {
 				log.Error().Err(err).Msg("error generating cell name")
 			}
 			value := []interface{}{
-				time.UnixMilli(data.ScanInfo.UpdatedAt).String(),
+				updatedAt,
 				c.ComplianceCheckType,
 				"",
 				"",
