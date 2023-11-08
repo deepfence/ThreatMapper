@@ -445,7 +445,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.Host) {
-		scanIds, bulkId, err = StartMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
+		scanIds, bulkId, err = StartMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes, reqs.IsPriority)
 		scanStatusType = utils.CLOUD_COMPLIANCE_SCAN_STATUS
 	} else {
 		scanIds, bulkId, err = startMultiComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
@@ -2075,6 +2075,7 @@ func StartMultiScan(ctx context.Context,
 	if err != nil {
 		return nil, "", err
 	}
+	isPriority := req.IsPriority
 
 	regular, k8s, registry, pods := extractBulksNodes(req.NodeIds)
 
@@ -2157,6 +2158,7 @@ func StartMultiScan(ctx context.Context,
 			scanId,
 			ctl.StringToResourceType(req.NodeType),
 			req.NodeId,
+			isPriority,
 			action)
 
 		if err != nil {
@@ -2188,7 +2190,8 @@ func StartMultiScan(ctx context.Context,
 	return scanIds, bulkId, tx.Commit()
 }
 
-func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, benchmarkTypes []string) ([]string, string, error) {
+func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentifier,
+	benchmarkTypes []string, isPriority bool) ([]string, string, error) {
 	driver, err := directory.Neo4jClient(ctx)
 
 	if err != nil {
@@ -2216,7 +2219,8 @@ func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 			scanId,
 			benchmarkTypes,
 			req.NodeId,
-			reqs[0].NodeType)
+			reqs[0].NodeType,
+			isPriority)
 
 		if err != nil {
 			log.Info().Msgf("Error in AddNewCloudComplianceScan:%v", err)

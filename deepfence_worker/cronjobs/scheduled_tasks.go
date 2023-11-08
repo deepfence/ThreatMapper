@@ -59,6 +59,10 @@ var (
 func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]interface{}) error {
 	payload := messagePayload["payload"].(map[string]interface{})
 	nodeType := payload["node_type"].(string)
+	isPriority := false
+	if _, ok := payload["is_priority"]; ok {
+		isPriority = payload["is_priority"].(bool)
+	}
 
 	searchFilter := reporters_search.SearchFilter{
 		InFieldFilter: []string{"node_id"},
@@ -115,7 +119,8 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 		return nil
 	}
 
-	scanTrigger := model.ScanTriggerCommon{NodeIds: nodeIds, Filters: model.ScanFilter{}}
+	scanTrigger := model.ScanTriggerCommon{NodeIds: nodeIds,
+		Filters: model.ScanFilter{}, IsPriority: isPriority}
 
 	switch messagePayload["action"].(string) {
 	case utils.VULNERABILITY_SCAN:
@@ -142,7 +147,7 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 			log.Warn().Msgf("Unknown node type %s for compliance scan", nodeType)
 			return nil
 		}
-		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, benchmarkTypes)
+		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, benchmarkTypes, false)
 		if err != nil {
 			return err
 		}
@@ -174,7 +179,8 @@ func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]inte
 		return nil
 	}
 
-	scanTrigger := model.ScanTriggerCommon{NodeIds: nodeIds, Filters: scanFilter}
+	scanTrigger := model.ScanTriggerCommon{NodeIds: nodeIds,
+		Filters: scanFilter, IsPriority: payload.IsPriority}
 
 	action := utils.Neo4jScanType(messagePayload["action"].(string))
 
@@ -211,7 +217,7 @@ func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]inte
 			log.Warn().Msgf("Invalid benchmarkType for compliance scan, job id: %d", scheduleJobId)
 			return nil
 		}
-		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, payload.BenchmarkTypes)
+		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, payload.BenchmarkTypes, false)
 		if err != nil {
 			return err
 		}
