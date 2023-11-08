@@ -196,7 +196,7 @@ func (h *Handler) DeleteAIIntegration(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) AIIntegrationCloudPostureQuery(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req ai_integration.AIIntegrationCloudPostureRequest
+	var req model.AIIntegrationCloudPostureRequest
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		h.respondError(&BadDecoding{err}, w)
@@ -292,7 +292,7 @@ func (h *Handler) AIIntegrationCloudPostureQuery(w http.ResponseWriter, r *http.
 
 func (h *Handler) AIIntegrationVulnerabilityQuery(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req ai_integration.AIIntegrationVulnerabilityRequest
+	var req model.AIIntegrationVulnerabilityRequest
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		h.respondError(&BadDecoding{err}, w)

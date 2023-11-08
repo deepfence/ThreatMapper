@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	ai_integration "github.com/deepfence/ThreatMapper/deepfence_server/pkg/ai-integration"
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -45,11 +45,11 @@ func (o *OpenAI) DecryptSecret(aes encryption.AES) error {
 	return err
 }
 
-func (o *OpenAI) GeneratePostureQuery(request ai_integration.AIIntegrationCloudPostureRequest) (string, error) {
+func (o *OpenAI) GeneratePostureQuery(request model.AIIntegrationCloudPostureRequest) (string, error) {
 	var query string
-	if request.QueryType == ai_integration.QueryTypeRemediation {
+	if request.QueryType == model.QueryTypeRemediation {
 		remediationFormat := ""
-		if request.RemediationFormat != ai_integration.RemediationFormatAll {
+		if request.RemediationFormat != model.RemediationFormatAll {
 			remediationFormat = request.RemediationFormat
 		}
 		query = fmt.Sprintf(cloudPostureRemediationQuery, remediationFormat, request.CloudProvider, request.ComplianceCheckType, request.Title)
@@ -58,11 +58,11 @@ func (o *OpenAI) GeneratePostureQuery(request ai_integration.AIIntegrationCloudP
 	return query, nil
 }
 
-func (o *OpenAI) GenerateVulnerabilityQuery(request ai_integration.AIIntegrationVulnerabilityRequest) (string, error) {
+func (o *OpenAI) GenerateVulnerabilityQuery(request model.AIIntegrationVulnerabilityRequest) (string, error) {
 	var query string
-	if request.QueryType == ai_integration.QueryTypeRemediation {
+	if request.QueryType == model.QueryTypeRemediation {
 		remediationFormat := ""
-		if request.RemediationFormat != ai_integration.RemediationFormatAll {
+		if request.RemediationFormat != model.RemediationFormatAll {
 			remediationFormat = request.RemediationFormat
 		}
 		packageName := ""
@@ -121,7 +121,7 @@ func (o *OpenAI) Message(ctx context.Context, message string, dataChan chan []by
 				return nil
 			}
 			for _, choice := range openAiResp.Choices {
-				response := ai_integration.AIIntegrationMessageResponse{Content: choice.Delta.Content}
+				response := model.AIIntegrationMessageResponse{Content: choice.Delta.Content}
 				if choice.FinishReason != nil {
 					response.FinishReason = fmt.Sprintf("%v", choice.FinishReason)
 				}
