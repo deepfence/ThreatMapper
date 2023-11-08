@@ -19,6 +19,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws_key_id: ${{secrets.AWS_KEY_ID}}
+          aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: us-east-2
+
       - name: Build agent binaries
         run: |
           make agent
@@ -34,10 +41,4 @@ jobs:
           docker rm -v $id
 
       - name: Upload to S3
-        uses: shallwefootball/s3-upload-action@master
-        id: S3
-        with:
-          aws_key_id: ${{secrets.AWS_KEY_ID}}
-          aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          aws_bucket: deepfence-tm-binaries
-          source_dir: /tmp/binaries
+        run: aws s3 sync /tmp/binaries s3://deepfnece-tm-binaries
