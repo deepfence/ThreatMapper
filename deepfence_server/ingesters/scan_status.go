@@ -62,6 +62,7 @@ func AddNewScan(tx WriteDBTransaction,
 	scan_id string,
 	node_type controls.ScanResource,
 	node_id string,
+	isPriority bool,
 	action controls.Action) error {
 
 	res, err := tx.Run(fmt.Sprintf(`
@@ -128,14 +129,15 @@ func AddNewScan(tx WriteDBTransaction,
 	}
 
 	if _, err = tx.Run(fmt.Sprintf(`
-		MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, trigger_action: $action, updated_at: TIMESTAMP(), created_at: TIMESTAMP()})
+		MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, trigger_action: $action, updated_at: TIMESTAMP(), created_at: TIMESTAMP(), is_priority: $is_priority})
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCANNED]->(m)`, scan_type, controls.ResourceTypeToNeo4j(node_type)),
 		map[string]interface{}{
-			"scan_id": scan_id,
-			"status":  utils.SCAN_STATUS_STARTING,
-			"node_id": node_id,
-			"action":  string(b)}); err != nil {
+			"scan_id":     scan_id,
+			"status":      utils.SCAN_STATUS_STARTING,
+			"node_id":     node_id,
+			"action":      string(b),
+			"is_priority": isPriority}); err != nil {
 		return err
 	}
 
@@ -221,7 +223,8 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	scanId string,
 	benchmarkTypes []string,
 	nodeId string,
-	nodeType string) error {
+	nodeType string,
+	isPriority bool) error {
 
 	neo4jNodeType := "CloudNode"
 	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
@@ -311,7 +314,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		action, _ = json.Marshal(ctl.Action{ID: ctl.StartComplianceScan, RequestPayload: string(internalReq)})
 	}
 	if _, err = tx.Run(fmt.Sprintf(`
-		MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, updated_at: TIMESTAMP(), benchmark_types: $benchmark_types, trigger_action: $action, created_at:TIMESTAMP()})
+MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, updated_at: TIMESTAMP(), benchmark_types: $benchmark_types, trigger_action: $action, created_at:TIMESTAMP(), is_priority: $is_priority})
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCANNED]->(m)`, scanType, neo4jNodeType),
 		map[string]interface{}{
@@ -320,6 +323,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 			"node_id":         nodeId,
 			"benchmark_types": benchmarkTypes,
 			"action":          string(action),
+			"is_priority":     isPriority,
 		}); err != nil {
 		return err
 	}

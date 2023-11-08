@@ -104,6 +104,7 @@ func AddScheduledTask(ctx context.Context, req AddScheduledTaskRequest) error {
 	payload.Filters = req.Filters
 	payload.ScanConfigLanguages = req.ScanConfigLanguages
 	payload.BenchmarkTypes = req.BenchmarkTypes
+	payload.IsPriority = req.IsPriority
 	payloadJson, err := json.Marshal(payload)
 	if err != nil {
 		return err
