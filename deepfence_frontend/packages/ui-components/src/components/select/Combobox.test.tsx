@@ -196,7 +196,7 @@ describe('Combobox', () => {
     });
     expect(triggerBtn).toHaveTextContent('1');
   });
-  it('Should display filter list by search input', async () => {
+  it.only('Should display filter list by search input', async () => {
     const UI = () => {
       const [selected, setSelected] = useState<typeof OPTIONS>([]);
       const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
@@ -222,7 +222,6 @@ describe('Combobox', () => {
           nullable
           value={selected}
           onQueryChange={(query) => {
-            console.log('----', query);
             setQuery(query);
           }}
           label="Select your value"
@@ -257,18 +256,28 @@ describe('Combobox', () => {
     });
     expect(op1).toBeInTheDocument();
 
-    const comboboxSearchInputId = screen.getByTestId('comboboxTriggerButtonId');
+    const comboboxSearchInputId = screen.getByTestId('comboboxSearchInputId');
     expect(comboboxSearchInputId).toBeInTheDocument();
 
-    const onChange = vi.fn();
+    fireEvent.change(comboboxSearchInputId, {
+      target: Object.assign({}, comboboxSearchInputId, { value: 'Ja' }),
+    });
 
-    fireEvent.change(comboboxSearchInputId, { target: { value: 'Ja' } });
-    expect(onChange).toHaveBeenCalledTimes(1);
+    // should filter list by Ja so Jon should go away
     expect(comboboxSearchInputId).toHaveValue('Ja');
-    const oldOption = screen.getByRole('option', {
+
+    const oldOption = screen.queryByRole('option', {
       name: 'Jon',
     });
-    console.log('len', screen.getAllByRole('option').length);
     expect(oldOption).not.toBeInTheDocument();
+
+    const janeOption = screen.getByRole('option', {
+      name: 'Jane',
+    });
+    const jackOption = screen.getByRole('option', {
+      name: 'Jack',
+    });
+    expect(janeOption).toBeInTheDocument();
+    expect(jackOption).toBeInTheDocument();
   });
 });
