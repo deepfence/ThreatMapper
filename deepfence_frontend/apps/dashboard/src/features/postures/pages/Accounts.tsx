@@ -1069,7 +1069,7 @@ const Accounts = () => {
           }}
         />
       )}
-      <div className="mb-4">
+      <div className="mb-4 mx-4">
         <div className="flex h-12 items-center">
           <BulkActions
             disabled={Object.keys(rowSelectionState).length === 0}
@@ -1177,33 +1177,31 @@ const AccountWithTab = () => {
   return (
     <>
       <Header />
-      <div className="mx-4">
-        <Tabs
-          className="mt-2"
-          value={currentTab}
-          tabs={tabs}
-          onValueChange={(value) => {
-            if (currentTab === value) return;
-            let _nodeType = nodeType;
-            if (value === 'org-accounts') {
-              _nodeType = _nodeType + '_org';
-            } else {
-              _nodeType = _nodeType.split('_')[0];
-            }
-            setTab(value);
-            navigate(
-              generatePath('/posture/accounts/:nodeType', {
-                nodeType: _nodeType,
-              }),
-            );
-          }}
-          size="md"
-        >
-          <div className="mt-2">
-            <Accounts />
-          </div>
-        </Tabs>
-      </div>
+      <Tabs
+        className="mt-2"
+        value={currentTab}
+        tabs={tabs}
+        onValueChange={(value) => {
+          if (currentTab === value) return;
+          let _nodeType = nodeType;
+          if (value === 'org-accounts') {
+            _nodeType = _nodeType + '_org';
+          } else {
+            _nodeType = _nodeType.split('_')[0];
+          }
+          setTab(value);
+          navigate(
+            generatePath('/posture/accounts/:nodeType', {
+              nodeType: _nodeType,
+            }),
+          );
+        }}
+        size="md"
+      >
+        <div className="mt-2">
+          <Accounts />
+        </div>
+      </Tabs>
     </>
   );
 };
