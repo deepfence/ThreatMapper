@@ -92,6 +92,10 @@ func (h *Handler) AuditUserActivity(
 		}
 	} else {
 		claims = token.PrivateClaims()
+		if claims["email"] == nil || claims["role"] == nil || claims[directory.NamespaceKey] == nil {
+			log.Warn().Msg("AuditUserActivity claims value is nil")
+			return
+		}
 		userEmail = claims["email"].(string)
 		userRole = claims["role"].(string)
 		namespace = claims[directory.NamespaceKey].(string)
