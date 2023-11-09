@@ -17,8 +17,12 @@ var (
 const (
 	OpenAI = "openai"
 
-	CloudPostureQuery  = "cloud_posture"
-	VulnerabilityQuery = "vulnerability"
+	AiIntegrationExitMessage = "[DEEPFENCE_DONE]"
+
+	CloudPostureQuery      = "cloud_posture"
+	LinuxPostureQuery      = "linux_posture"
+	KubernetesPostureQuery = "kubernetes_posture"
+	VulnerabilityQuery     = "vulnerability"
 
 	QueryTypeRemediation = "remediation"
 	RemediationFormatAll = "all"
@@ -52,6 +56,9 @@ func (a AiIntegrationRequestCommon) GetQueryType() string {
 }
 
 func (a AiIntegrationRequestCommon) GetRemediationFormat() string {
+	if a.RemediationFormat == RemediationFormatAll {
+		return ""
+	}
 	return a.RemediationFormat
 }
 
@@ -70,6 +77,35 @@ func (a AiIntegrationCloudPostureRequest) GetFields() interface{} {
 
 func (a AiIntegrationCloudPostureRequest) GetRequestType() string {
 	return CloudPostureQuery
+}
+
+type AiIntegrationLinuxPostureRequest struct {
+	AiIntegrationRequestCommon
+	Description         string `json:"description" validate:"required" required:"true"`
+	TestNumber          string `json:"test_number" validate:"required" required:"true"`
+	ComplianceCheckType string `json:"compliance_check_type" validate:"required" required:"true"`
+}
+
+func (a AiIntegrationLinuxPostureRequest) GetFields() interface{} {
+	return a
+}
+
+func (a AiIntegrationLinuxPostureRequest) GetRequestType() string {
+	return LinuxPostureQuery
+}
+
+type AiIntegrationKubernetesPostureRequest struct {
+	AiIntegrationRequestCommon
+	Description         string `json:"description" validate:"required" required:"true"`
+	ComplianceCheckType string `json:"compliance_check_type" validate:"required" required:"true"`
+}
+
+func (a AiIntegrationKubernetesPostureRequest) GetFields() interface{} {
+	return a
+}
+
+func (a AiIntegrationKubernetesPostureRequest) GetRequestType() string {
+	return KubernetesPostureQuery
 }
 
 type AiIntegrationVulnerabilityRequest struct {

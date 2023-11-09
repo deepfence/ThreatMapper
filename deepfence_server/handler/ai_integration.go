@@ -233,6 +233,14 @@ func (h *Handler) AiIntegrationCloudPostureQuery(w http.ResponseWriter, r *http.
 	AiIntegrationQueryHandler[model.AiIntegrationCloudPostureRequest](w, r, h)
 }
 
+func (h *Handler) AiIntegrationLinuxPostureQuery(w http.ResponseWriter, r *http.Request) {
+	AiIntegrationQueryHandler[model.AiIntegrationLinuxPostureRequest](w, r, h)
+}
+
+func (h *Handler) AiIntegrationKubernetesPostureQuery(w http.ResponseWriter, r *http.Request) {
+	AiIntegrationQueryHandler[model.AiIntegrationKubernetesPostureRequest](w, r, h)
+}
+
 func (h *Handler) AiIntegrationVulnerabilityQuery(w http.ResponseWriter, r *http.Request) {
 	AiIntegrationQueryHandler[model.AiIntegrationVulnerabilityRequest](w, r, h)
 }
@@ -300,7 +308,11 @@ func AiIntegrationQueryHandler[T model.AiIntegrationRequest](w http.ResponseWrit
 	var query string
 	switch req.GetRequestType() {
 	case model.CloudPostureQuery:
-		query, err = integration.GeneratePostureQuery(req)
+		query, err = integration.GenerateCloudPostureQuery(req)
+	case model.LinuxPostureQuery:
+		query, err = integration.GenerateLinuxPostureQuery(req)
+	case model.KubernetesPostureQuery:
+		query, err = integration.GenerateKubernetesPostureQuery(req)
 	case model.VulnerabilityQuery:
 		query, err = integration.GenerateVulnerabilityQuery(req)
 	}
@@ -309,7 +321,7 @@ func AiIntegrationQueryHandler[T model.AiIntegrationRequest](w http.ResponseWrit
 		return
 	}
 
-	queryResponseChannel := make(chan []byte, 10)
+	queryResponseChannel := make(chan string, 20)
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		h.respondError(streamUnsupportedError, w)
@@ -321,10 +333,15 @@ func AiIntegrationQueryHandler[T model.AiIntegrationRequest](w http.ResponseWrit
 	w.Header().Set("Connection", "keep-alive")
 	w.WriteHeader(http.StatusOK)
 
+	writeDoneChannel := make(chan bool, 1)
 	go func() {
 		for {
 			for queryResponse := range queryResponseChannel {
-				_, err = w.Write(queryResponse)
+				if queryResponse == model.AiIntegrationExitMessage {
+					writeDoneChannel <- true
+					return
+				}
+				_, err = w.Write([]byte(queryResponse))
 				if err != nil {
 					log.Warn().Msg(err.Error())
 					return
@@ -338,20 +355,16 @@ func AiIntegrationQueryHandler[T model.AiIntegrationRequest](w http.ResponseWrit
 		err = integration.Message(ctx, query, queryResponseChannel)
 		if err != nil {
 			log.Warn().Msg(err.Error())
-			h.respondError(err, w)
 		}
-		hj, ok := w.(http.Hijacker)
-		if !ok {
-			return
-		}
-		conn, _, err := hj.Hijack()
-		if err != nil {
-			log.Warn().Msg(err.Error())
-			return
-		}
-		conn.Close()
+		queryResponseChannel <- model.AiIntegrationExitMessage
 	}()
 
-	<-ctx.Done()
-	close(queryResponseChannel)
+	for {
+		select {
+		case <-writeDoneChannel:
+			return
+		case <-ctx.Done():
+			return
+		}
+	}
 }

@@ -37,9 +37,11 @@ func NewAiIntegrationFromDbEntry(ctx context.Context, integrationType string, co
 // AiIntegration is the interface for all integrations
 type AiIntegration interface {
 	ValidateConfig(*validator.Validate) error
-	GeneratePostureQuery(model.AiIntegrationRequest) (string, error)
+	GenerateCloudPostureQuery(model.AiIntegrationRequest) (string, error)
+	GenerateLinuxPostureQuery(model.AiIntegrationRequest) (string, error)
+	GenerateKubernetesPostureQuery(model.AiIntegrationRequest) (string, error)
 	GenerateVulnerabilityQuery(model.AiIntegrationRequest) (string, error)
-	Message(ctx context.Context, message string, dataChan chan []byte) error
+	Message(ctx context.Context, message string, dataChan chan string) error
 	EncryptSecret(aes encryption.AES) error
 	DecryptSecret(aes encryption.AES) error
 }

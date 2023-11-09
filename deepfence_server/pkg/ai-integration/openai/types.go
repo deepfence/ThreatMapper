@@ -3,8 +3,10 @@ package openai
 const (
 	defaultModelTemperature = 0.7
 
-	cloudPostureRemediationQuery  = "%s remediation script for %s %s control %s"
-	vulnerabilityRemediationQuery = "%s remediation script for vulnerability %s %s"
+	cloudPostureRemediationQuery      = "%s remediation script for %s %s control %s"
+	linuxPostureRemediationQuery      = "%s remediation script for %s control %s %s"
+	kubernetesPostureRemediationQuery = "%s remediation script for %s control %s"
+	vulnerabilityRemediationQuery     = "%s remediation script for vulnerability %s %s"
 )
 
 type OpenAI struct {

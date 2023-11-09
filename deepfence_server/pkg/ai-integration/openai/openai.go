@@ -44,15 +44,31 @@ func (o *OpenAI) DecryptSecret(aes encryption.AES) error {
 	return err
 }
 
-func (o *OpenAI) GeneratePostureQuery(request model.AiIntegrationRequest) (string, error) {
+func (o *OpenAI) GenerateCloudPostureQuery(request model.AiIntegrationRequest) (string, error) {
 	var query string
 	if request.GetQueryType() == model.QueryTypeRemediation {
-		remediationFormat := ""
-		if request.GetRemediationFormat() != model.RemediationFormatAll {
-			remediationFormat = request.GetRemediationFormat()
-		}
 		req := request.GetFields().(model.AiIntegrationCloudPostureRequest)
-		query = fmt.Sprintf(cloudPostureRemediationQuery, remediationFormat, req.CloudProvider, req.ComplianceCheckType, req.Title)
+		query = fmt.Sprintf(cloudPostureRemediationQuery, request.GetRemediationFormat(), req.CloudProvider, req.ComplianceCheckType, req.Title)
+		query = strings.TrimSpace(query)
+	}
+	return query, nil
+}
+
+func (o *OpenAI) GenerateLinuxPostureQuery(request model.AiIntegrationRequest) (string, error) {
+	var query string
+	if request.GetQueryType() == model.QueryTypeRemediation {
+		req := request.GetFields().(model.AiIntegrationLinuxPostureRequest)
+		query = fmt.Sprintf(linuxPostureRemediationQuery, request.GetRemediationFormat(), req.ComplianceCheckType, req.TestNumber, req.Description)
+		query = strings.TrimSpace(query)
+	}
+	return query, nil
+}
+
+func (o *OpenAI) GenerateKubernetesPostureQuery(request model.AiIntegrationRequest) (string, error) {
+	var query string
+	if request.GetQueryType() == model.QueryTypeRemediation {
+		req := request.GetFields().(model.AiIntegrationKubernetesPostureRequest)
+		query = fmt.Sprintf(kubernetesPostureRemediationQuery, request.GetRemediationFormat(), req.ComplianceCheckType, req.Description)
 		query = strings.TrimSpace(query)
 	}
 	return query, nil
@@ -61,22 +77,18 @@ func (o *OpenAI) GeneratePostureQuery(request model.AiIntegrationRequest) (strin
 func (o *OpenAI) GenerateVulnerabilityQuery(request model.AiIntegrationRequest) (string, error) {
 	var query string
 	if request.GetQueryType() == model.QueryTypeRemediation {
-		remediationFormat := ""
-		if request.GetRemediationFormat() != model.RemediationFormatAll {
-			remediationFormat = request.GetRemediationFormat()
-		}
 		req := request.GetFields().(model.AiIntegrationVulnerabilityRequest)
 		packageName := ""
 		if req.CveCausedByPackage != "" {
 			packageName = "in package " + req.CveCausedByPackage
 		}
-		query = fmt.Sprintf(vulnerabilityRemediationQuery, remediationFormat, req.CveId, packageName)
+		query = fmt.Sprintf(vulnerabilityRemediationQuery, request.GetRemediationFormat(), req.CveId, packageName)
 		query = strings.TrimSpace(query)
 	}
 	return query, nil
 }
 
-func (o *OpenAI) Message(ctx context.Context, message string, dataChan chan []byte) error {
+func (o *OpenAI) Message(ctx context.Context, message string, dataChan chan string) error {
 	client := goopenai.NewClient(o.ApiKey)
 	req := goopenai.ChatCompletionRequest{
 		Model:       goopenai.GPT4,
@@ -98,9 +110,9 @@ func (o *OpenAI) Message(ctx context.Context, message string, dataChan chan []by
 			break
 		}
 		for _, choice := range receivedResponse.Choices {
-			dataChan <- []byte(choice.Delta.Content)
+			dataChan <- choice.Delta.Content
 			if choice.FinishReason != "" {
-				break
+				return nil
 			}
 		}
 	}

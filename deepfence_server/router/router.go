@@ -137,7 +137,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 	}
 
 	r.Use(otelchi.Middleware("deepfence-server", otelchi.WithChiRoutes(r)))
-
+	r.Use(middleware.Recoverer)
 	r.Use(middleware.Compress(5))
 
 	if enable_debug {
