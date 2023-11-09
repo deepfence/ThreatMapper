@@ -4,72 +4,65 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"os"
 	"os/exec"
-	"syscall"
+	"path/filepath"
 
-	"github.com/abrander/go-supervisord"
+	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/supervisor"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
+const (
+	binaires_file = "/tmp/binaries.tar.gz"
+)
+
 func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 	log.Info().Msgf("Fetching %v", req.HomeDirectoryUrl)
-	err := downloadFile("/tmp/deepfence.tar.gz", req.HomeDirectoryUrl)
+	err := downloadFile(binaires_file, req.HomeDirectoryUrl)
 	if err != nil {
-		log.Info().Msgf("Download failed")
 		return err
 	}
+	defer os.Remove(binaires_file)
 	log.Info().Msgf("Download done")
 
-	err = Backup("/home/deepfence")
+	dir, err := os.MkdirTemp("/tmp", "bins")
 	if err != nil {
 		return err
 	}
-	err = Backup("/usr/local/discovery")
+	defer os.Remove(dir)
+
+	err = extractTarGz(binaires_file, dir)
 	if err != nil {
 		return err
 	}
 
-	log.Info().Msgf("Backup done")
-
-	pid, _, _ := syscall.Syscall(syscall.SYS_FORK, 0, 0, 0)
-	if pid == 0 {
-
-		log.Info().Msgf("Inside child\n")
-
-		c, err := supervisord.NewUnixSocketClient("/var/run/supervisor.sock")
-		if err != nil {
-			log.Fatal().Err(err)
-		}
-
-		log.Info().Msgf("Extract")
-
-		err = extractTarGz("/tmp/deepfence.tar.gz", "/")
-		if err != nil {
-			log.Fatal().Err(err)
-		}
-
-		log.Info().Msgf("Kill")
-		_, err = c.SignalAllProcesses(syscall.SIGKILL)
-		if err != nil {
-			log.Error().Msgf("Kill all err: %v", err)
-		}
-		log.Info().Msgf("Done")
-
-		os.Exit(0)
+	type NamePath struct {
+		name string
+		path string
 	}
 
-	log.Info().Msgf("Child created: %v\n", pid)
+	plugins := []NamePath{}
+	err = filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		plugins = append(plugins, NamePath{name: filepath.Base(path), path: path})
+		return nil
+	})
 
-	proc, err := os.FindProcess(int(pid))
-	if err == nil {
-		_, _ = proc.Wait()
+	if err != nil {
+		return err
 	}
 
-	log.Info().Msgf("Child dead\n")
-	os.Exit(0)
+	for _, plugin := range plugins {
+		err = supervisor.UpgradeProcessFromFile(plugin.name, plugin.path)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}
 
 	return nil
 }

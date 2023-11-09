@@ -119,7 +119,7 @@ func SetAgentControls() {
 		func(req ctl.EnableAgentPluginRequest) error {
 			log.Info().Msg("Start & download Agent Plugin")
 			router.SetUpgrade()
-			err = supervisor.UpgradeProcess(req.PluginName, req.BinUrl)
+			err = supervisor.UpgradeProcessFromURL(req.PluginName, req.BinUrl)
 			if err != nil {
 				return err
 			}
