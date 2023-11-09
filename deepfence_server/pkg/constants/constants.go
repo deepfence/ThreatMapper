@@ -21,7 +21,7 @@ var RegistryTypes = []string{
 	ACR, DOCKER_HUB, DOCKER_PRIVATE, ECR, GCR, GITLAB, HARBOR, JFROG, QUAY,
 }
 
-// AIIntegration related consts
+// AiIntegration related consts
 const (
 	OpenAI = "openai"
 )

@@ -561,49 +561,49 @@ WITH deleted AS (
 SELECT count(*)
 FROM deleted;
 
--- name: CreateAIIntegration :one
+-- name: CreateAiIntegration :one
 INSERT INTO ai_integration (integration_type, config, created_by_user_id)
 VALUES ($1, $2, $3)
 RETURNING *;
 
--- name: UpdateAIIntegrationDefault :exec
+-- name: UpdateAiIntegrationDefault :exec
 UPDATE ai_integration
 SET default_integration = (CASE WHEN id = $1 THEN true ELSE false END);
 
--- name: UpdateAIIntegrationFirstRowDefault :exec
+-- name: UpdateAiIntegrationFirstRowDefault :exec
 UPDATE ai_integration
 SET default_integration= true
 WHERE ID = (SELECT ID FROM ai_integration ORDER BY ID LIMIT 1);
 
--- name: GetAIIntegrationFromID :one
+-- name: GetAiIntegrationFromID :one
 SELECT *
 FROM ai_integration
 WHERE id = $1
 LIMIT 1;
 
--- name: GetDefaultAIIntegration :one
+-- name: GetDefaultAiIntegration :one
 SELECT *
 FROM ai_integration
 WHERE default_integration = true
 LIMIT 1;
 
--- name: GetAIIntegrationFromType :one
+-- name: GetAiIntegrationFromType :one
 SELECT *
 FROM ai_integration
 WHERE integration_type = $1
 LIMIT 1;
 
--- name: GetAIIntegrations :many
+-- name: GetAiIntegrations :many
 SELECT *
 FROM ai_integration;
 
--- name: UpdateAIIntegrationStatus :exec
+-- name: UpdateAiIntegrationStatus :exec
 UPDATE ai_integration
 SET error_msg      = $2,
     last_sent_time = now()
 WHERE id = $1;
 
--- name: DeleteAIIntegration :one
+-- name: DeleteAiIntegration :one
 DELETE
 FROM ai_integration
 WHERE id = $1

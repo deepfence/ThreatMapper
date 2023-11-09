@@ -709,22 +709,25 @@ func (d *OpenApiDocs) AddIntegrationOperations() {
 		"Delete Integration", "Delete integration",
 		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
 
-	d.AddOperation("addAIIntegration", http.MethodPost, "/deepfence/ai-integration",
+	d.AddOperation("addAiIntegration", http.MethodPost, "/deepfence/ai-integration",
 		"Add AI Integration", "Add a new supported AI Integration",
-		http.StatusOK, []string{tagIntegration}, bearerToken, new(AddAIIntegrationRequest), new(MessageResponse))
-	d.AddOperation("listAIIntegration", http.MethodGet, "/deepfence/ai-integration",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(AddAiIntegrationRequest), new(MessageResponse))
+	d.AddOperation("listAiIntegration", http.MethodGet, "/deepfence/ai-integration",
 		"List AI Integrations", "List all the added AI Integrations",
-		http.StatusOK, []string{tagIntegration}, bearerToken, nil, new([]AIIntegrationListResponse))
-	d.AddOperation("deleteAIIntegration", http.MethodDelete, "/deepfence/ai-integration/{integration_id}",
+		http.StatusOK, []string{tagIntegration}, bearerToken, nil, new([]AiIntegrationListResponse))
+	d.AddOperation("deleteAiIntegration", http.MethodDelete, "/deepfence/ai-integration/{integration_id}",
 		"Delete AI Integration", "Delete AI integration",
 		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
+	d.AddOperation("setDefaultAiIntegration", http.MethodPut, "/deepfence/ai-integration/{integration_id}/default",
+		"Set Default AI Integration", "Set Default AI integration",
+		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
 
-	d.AddOperation("aIIntegrationCloudPostureQuery", http.MethodPost, "/deepfence/ai-integration/query/cloud-posture",
+	d.AddOperation("aiIntegrationCloudPostureQuery", http.MethodPost, "/deepfence/ai-integration/query/cloud-posture",
 		"Send Cloud Posture query to AI Integration", "Send Cloud Posture query to AI Integration",
-		http.StatusOK, []string{tagIntegration}, bearerToken, new(AIIntegrationCloudPostureRequest), new(AIIntegrationMessageResponse))
-	d.AddOperation("aIIntegrationVulnerabilityQuery", http.MethodPost, "/deepfence/ai-integration/query/vulnerability",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(AiIntegrationCloudPostureRequest), new(string))
+	d.AddOperation("aiIntegrationVulnerabilityQuery", http.MethodPost, "/deepfence/ai-integration/query/vulnerability",
 		"Send Vulnerability query to AI Integration", "Send Vulnerability query to AI Integration",
-		http.StatusOK, []string{tagIntegration}, bearerToken, new(AIIntegrationVulnerabilityRequest), new(AIIntegrationMessageResponse))
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(AiIntegrationVulnerabilityRequest), new(string))
 }
 
 func (d *OpenApiDocs) AddReportsOperations() {

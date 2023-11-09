@@ -16,7 +16,7 @@ var (
 	invalidIntegrationType = errors.New("invalid integration type")
 )
 
-func NewIntegration(ctx context.Context, integrationType string, apiKey string) (AIIntegration, error) {
+func NewAiIntegration(ctx context.Context, integrationType string, apiKey string) (AiIntegration, error) {
 	switch integrationType {
 	case constants.OpenAI:
 		return openai.New(ctx, apiKey)
@@ -25,7 +25,7 @@ func NewIntegration(ctx context.Context, integrationType string, apiKey string) 
 	}
 }
 
-func NewIntegrationFromDbEntry(ctx context.Context, integrationType string, config json.RawMessage) (AIIntegration, error) {
+func NewAiIntegrationFromDbEntry(ctx context.Context, integrationType string, config json.RawMessage) (AiIntegration, error) {
 	switch integrationType {
 	case constants.OpenAI:
 		return openai.NewFromDbEntry(ctx, config)
@@ -34,11 +34,11 @@ func NewIntegrationFromDbEntry(ctx context.Context, integrationType string, conf
 	}
 }
 
-// AIIntegration is the interface for all integrations
-type AIIntegration interface {
+// AiIntegration is the interface for all integrations
+type AiIntegration interface {
 	ValidateConfig(*validator.Validate) error
-	GeneratePostureQuery(model.AIIntegrationCloudPostureRequest) (string, error)
-	GenerateVulnerabilityQuery(model.AIIntegrationVulnerabilityRequest) (string, error)
+	GeneratePostureQuery(model.AiIntegrationRequest) (string, error)
+	GenerateVulnerabilityQuery(model.AiIntegrationRequest) (string, error)
 	Message(ctx context.Context, message string, dataChan chan []byte) error
 	EncryptSecret(aes encryption.AES) error
 	DecryptSecret(aes encryption.AES) error

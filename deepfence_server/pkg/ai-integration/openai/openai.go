@@ -20,12 +20,12 @@ func New(ctx context.Context, apiKey string) (*OpenAI, error) {
 }
 
 func NewFromDbEntry(ctx context.Context, config json.RawMessage) (*OpenAI, error) {
-	var openAIIntegration OpenAI
-	err := json.Unmarshal(config, &openAIIntegration)
+	var openAiIntegration OpenAI
+	err := json.Unmarshal(config, &openAiIntegration)
 	if err != nil {
 		return nil, err
 	}
-	return &openAIIntegration, nil
+	return &openAiIntegration, nil
 }
 
 func (o *OpenAI) ValidateConfig(validate *validator.Validate) error {
@@ -44,31 +44,33 @@ func (o *OpenAI) DecryptSecret(aes encryption.AES) error {
 	return err
 }
 
-func (o *OpenAI) GeneratePostureQuery(request model.AIIntegrationCloudPostureRequest) (string, error) {
+func (o *OpenAI) GeneratePostureQuery(request model.AiIntegrationRequest) (string, error) {
 	var query string
-	if request.QueryType == model.QueryTypeRemediation {
+	if request.GetQueryType() == model.QueryTypeRemediation {
 		remediationFormat := ""
-		if request.RemediationFormat != model.RemediationFormatAll {
-			remediationFormat = request.RemediationFormat
+		if request.GetRemediationFormat() != model.RemediationFormatAll {
+			remediationFormat = request.GetRemediationFormat()
 		}
-		query = fmt.Sprintf(cloudPostureRemediationQuery, remediationFormat, request.CloudProvider, request.ComplianceCheckType, request.Title)
+		req := request.GetFields().(model.AiIntegrationCloudPostureRequest)
+		query = fmt.Sprintf(cloudPostureRemediationQuery, remediationFormat, req.CloudProvider, req.ComplianceCheckType, req.Title)
 		query = strings.TrimSpace(query)
 	}
 	return query, nil
 }
 
-func (o *OpenAI) GenerateVulnerabilityQuery(request model.AIIntegrationVulnerabilityRequest) (string, error) {
+func (o *OpenAI) GenerateVulnerabilityQuery(request model.AiIntegrationRequest) (string, error) {
 	var query string
-	if request.QueryType == model.QueryTypeRemediation {
+	if request.GetQueryType() == model.QueryTypeRemediation {
 		remediationFormat := ""
-		if request.RemediationFormat != model.RemediationFormatAll {
-			remediationFormat = request.RemediationFormat
+		if request.GetRemediationFormat() != model.RemediationFormatAll {
+			remediationFormat = request.GetRemediationFormat()
 		}
+		req := request.GetFields().(model.AiIntegrationVulnerabilityRequest)
 		packageName := ""
-		if request.CveCausedByPackage != "" {
-			packageName = "in package " + request.CveCausedByPackage
+		if req.CveCausedByPackage != "" {
+			packageName = "in package " + req.CveCausedByPackage
 		}
-		query = fmt.Sprintf(vulnerabilityRemediationQuery, remediationFormat, request.CveId, packageName)
+		query = fmt.Sprintf(vulnerabilityRemediationQuery, remediationFormat, req.CveId, packageName)
 		query = strings.TrimSpace(query)
 	}
 	return query, nil

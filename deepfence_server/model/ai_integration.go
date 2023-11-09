@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	AIIntegrationTypeLabel = map[string]string{
+	AiIntegrationTypeLabel = map[string]string{
 		constants.OpenAI: "OpenAI",
 	}
 )
@@ -17,19 +17,46 @@ var (
 const (
 	OpenAI = "openai"
 
+	CloudPostureQuery  = "cloud_posture"
+	VulnerabilityQuery = "vulnerability"
+
 	QueryTypeRemediation = "remediation"
 	RemediationFormatAll = "all"
 )
 
-type AIIntegrationMessageResponse struct {
+type AiIntegrationMessageResponse struct {
 	Content      string `json:"content"`
 	FinishReason string `json:"finish_reason"`
 }
 
-type AIIntegrationCloudPostureRequest struct {
-	IntegrationType     string `json:"integration_type" validate:"omitempty,oneof=openai" enum:"openai"`
-	QueryType           string `json:"query_type" validate:"required,oneof=remediation" required:"true" enum:"remediation"`
-	RemediationFormat   string `json:"remediation_format" validate:"required,oneof=all cli pulumi terraform" required:"true" enum:"all,cli,pulumi,terraform"`
+type AiIntegrationRequest interface {
+	GetRequestType() string
+	GetFields() interface{}
+	GetIntegrationType() string
+	GetQueryType() string
+	GetRemediationFormat() string
+}
+
+type AiIntegrationRequestCommon struct {
+	IntegrationType   string `json:"integration_type" validate:"omitempty,oneof=openai" enum:"openai"`
+	QueryType         string `json:"query_type" validate:"required,oneof=remediation" required:"true" enum:"remediation"`
+	RemediationFormat string `json:"remediation_format" validate:"required,oneof=all cli pulumi terraform" required:"true" enum:"all,cli,pulumi,terraform"`
+}
+
+func (a AiIntegrationRequestCommon) GetIntegrationType() string {
+	return a.IntegrationType
+}
+
+func (a AiIntegrationRequestCommon) GetQueryType() string {
+	return a.QueryType
+}
+
+func (a AiIntegrationRequestCommon) GetRemediationFormat() string {
+	return a.RemediationFormat
+}
+
+type AiIntegrationCloudPostureRequest struct {
+	AiIntegrationRequestCommon
 	Group               string `json:"group"`
 	Service             string `json:"service"`
 	Title               string `json:"title" validate:"required" required:"true"`
@@ -37,21 +64,35 @@ type AIIntegrationCloudPostureRequest struct {
 	CloudProvider       string `json:"cloud_provider" validate:"required" required:"true"`
 }
 
-type AIIntegrationVulnerabilityRequest struct {
-	IntegrationType    string `json:"integration_type" validate:"omitempty,oneof=openai" enum:"openai"`
-	QueryType          string `json:"query_type" validate:"required,oneof=remediation" required:"true" enum:"remediation"`
-	RemediationFormat  string `json:"remediation_format" validate:"required,oneof=all cli pulumi terraform" required:"true" enum:"all,cli,pulumi,terraform"`
+func (a AiIntegrationCloudPostureRequest) GetFields() interface{} {
+	return a
+}
+
+func (a AiIntegrationCloudPostureRequest) GetRequestType() string {
+	return CloudPostureQuery
+}
+
+type AiIntegrationVulnerabilityRequest struct {
+	AiIntegrationRequestCommon
 	CveId              string `json:"cve_id" validate:"required" required:"true"`
 	CveType            string `json:"cve_type" validate:"required" required:"true"`
 	CveCausedByPackage string `json:"cve_caused_by_package" validate:"required" required:"true"`
 }
 
-type AddAIIntegrationRequest struct {
+func (a AiIntegrationVulnerabilityRequest) GetFields() interface{} {
+	return a
+}
+
+func (a AiIntegrationVulnerabilityRequest) GetRequestType() string {
+	return VulnerabilityQuery
+}
+
+type AddAiIntegrationRequest struct {
 	ApiKey          string `json:"api_key" validate:"required" required:"true"`
 	IntegrationType string `json:"integration_type" validate:"required,oneof=openai" required:"true" enum:"openai"`
 }
 
-type AIIntegrationListResponse struct {
+type AiIntegrationListResponse struct {
 	ID                 int32  `json:"id"`
 	IntegrationType    string `json:"integration_type"`
 	Label              string `json:"label"`
@@ -59,8 +100,8 @@ type AIIntegrationListResponse struct {
 	DefaultIntegration bool   `json:"default_integration"`
 }
 
-func (a *AddAIIntegrationRequest) IntegrationExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
-	_, err := pgClient.GetAIIntegrationFromType(ctx, a.IntegrationType)
+func (a *AddAiIntegrationRequest) IntegrationExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
+	_, err := pgClient.GetAiIntegrationFromType(ctx, a.IntegrationType)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return false, nil

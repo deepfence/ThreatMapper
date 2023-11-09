@@ -21,9 +21,9 @@ var (
 	streamUnsupportedError = errors.New("streaming unsupported")
 )
 
-func (h *Handler) AddAIIntegration(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) AddAiIntegration(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req model.AddAIIntegrationRequest
+	var req model.AddAiIntegrationRequest
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -38,7 +38,7 @@ func (h *Handler) AddAIIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	obj, err := ai_integration.NewIntegration(ctx, req.IntegrationType, req.ApiKey)
+	obj, err := ai_integration.NewAiIntegration(ctx, req.IntegrationType, req.ApiKey)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
@@ -100,19 +100,24 @@ func (h *Handler) AddAIIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	arg := postgresqlDb.CreateAIIntegrationParams{
+	arg := postgresqlDb.CreateAiIntegrationParams{
 		IntegrationType: req.IntegrationType,
 		Config:          bConfig,
 		CreatedByUserID: user.ID,
 	}
-	_, err = pgClient.CreateAIIntegration(ctx, arg)
+	dbIntegration, err := pgClient.CreateAiIntegration(ctx, arg)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_AI_INTEGRATION, ACTION_CREATE, req, true)
+	h.AuditUserActivity(r, EVENT_AI_INTEGRATION, ACTION_CREATE, map[string]interface{}{"integration_type": req.IntegrationType}, true)
+
+	err = pgClient.UpdateAiIntegrationDefault(ctx, dbIntegration.ID)
+	if err != nil {
+		log.Warn().Msgf(err.Error())
+	}
 
 	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationCreated})
 	if err != nil {
@@ -120,31 +125,31 @@ func (h *Handler) AddAIIntegration(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) GetAIIntegrations(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetAiIntegrations(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
-	aiIntegrations, err := pgClient.GetAIIntegrations(ctx)
+	aiIntegrations, err := pgClient.GetAiIntegrations(ctx)
 	if err != nil {
-		log.Error().Err(err).Msg("GetAIIntegrations")
+		log.Error().Err(err).Msg("GetAiIntegrations")
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
-	integrationList := []model.AIIntegrationListResponse{}
+	integrationList := []model.AiIntegrationListResponse{}
 
 	for _, integration := range aiIntegrations {
 		var integrationStatus string
 		if integration.ErrorMsg.Valid {
 			integrationStatus = integration.ErrorMsg.String
 		}
-		integrationList = append(integrationList, model.AIIntegrationListResponse{
+		integrationList = append(integrationList, model.AiIntegrationListResponse{
 			ID:                 integration.ID,
 			IntegrationType:    integration.IntegrationType,
-			Label:              model.AIIntegrationTypeLabel[integration.IntegrationType],
+			Label:              model.AiIntegrationTypeLabel[integration.IntegrationType],
 			LastErrorMsg:       integrationStatus,
 			DefaultIntegration: integration.DefaultIntegration,
 		})
@@ -156,7 +161,7 @@ func (h *Handler) GetAIIntegrations(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) DeleteAIIntegration(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) SetDefaultAiIntegration(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "integration_id")
 
 	// id to int32
@@ -174,7 +179,37 @@ func (h *Handler) DeleteAIIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deletedIntegration, err := pgClient.DeleteAIIntegration(ctx, int32(idInt))
+	err = pgClient.UpdateAiIntegrationDefault(ctx, int32(idInt))
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+
+	h.AuditUserActivity(r, EVENT_AI_INTEGRATION, ACTION_UPDATE,
+		map[string]interface{}{"integration_id": id}, true)
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) DeleteAiIntegration(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "integration_id")
+
+	// id to int32
+	idInt, err := strconv.ParseInt(id, 10, 32)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	ctx := r.Context()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+
+	deletedIntegration, err := pgClient.DeleteAiIntegration(ctx, int32(idInt))
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -184,7 +219,7 @@ func (h *Handler) DeleteAIIntegration(w http.ResponseWriter, r *http.Request) {
 		map[string]interface{}{"integration_id": id}, true)
 
 	if deletedIntegration.DefaultIntegration == true {
-		err = pgClient.UpdateAIIntegrationFirstRowDefault(ctx)
+		err = pgClient.UpdateAiIntegrationFirstRowDefault(ctx)
 		if err != nil {
 			log.Warn().Msg(err.Error())
 		}
@@ -194,9 +229,17 @@ func (h *Handler) DeleteAIIntegration(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handler) AIIntegrationCloudPostureQuery(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) AiIntegrationCloudPostureQuery(w http.ResponseWriter, r *http.Request) {
+	AiIntegrationQueryHandler[model.AiIntegrationCloudPostureRequest](w, r, h)
+}
+
+func (h *Handler) AiIntegrationVulnerabilityQuery(w http.ResponseWriter, r *http.Request) {
+	AiIntegrationQueryHandler[model.AiIntegrationVulnerabilityRequest](w, r, h)
+}
+
+func AiIntegrationQueryHandler[T model.AiIntegrationRequest](w http.ResponseWriter, r *http.Request, h *Handler) {
 	defer r.Body.Close()
-	var req model.AIIntegrationCloudPostureRequest
+	var req T
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		h.respondError(&BadDecoding{err}, w)
@@ -217,14 +260,14 @@ func (h *Handler) AIIntegrationCloudPostureQuery(w http.ResponseWriter, r *http.
 	}
 
 	var dbIntegration postgresqlDb.AiIntegration
-	if req.IntegrationType == "" {
-		dbIntegration, err = pgClient.GetDefaultAIIntegration(ctx)
+	if req.GetIntegrationType() == "" {
+		dbIntegration, err = pgClient.GetDefaultAiIntegration(ctx)
 		if err != nil {
 			h.respondError(err, w)
 			return
 		}
 	} else {
-		dbIntegration, err = pgClient.GetAIIntegrationFromType(ctx, req.IntegrationType)
+		dbIntegration, err = pgClient.GetAiIntegrationFromType(ctx, req.GetIntegrationType())
 		if err != nil {
 			h.respondError(err, w)
 			return
@@ -244,7 +287,7 @@ func (h *Handler) AIIntegrationCloudPostureQuery(w http.ResponseWriter, r *http.
 		h.respondError(err, w)
 		return
 	}
-	integration, err := ai_integration.NewIntegrationFromDbEntry(ctx, req.IntegrationType, dbIntegration.Config)
+	integration, err := ai_integration.NewAiIntegrationFromDbEntry(ctx, req.GetIntegrationType(), dbIntegration.Config)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -254,7 +297,13 @@ func (h *Handler) AIIntegrationCloudPostureQuery(w http.ResponseWriter, r *http.
 		h.respondError(err, w)
 		return
 	}
-	query, err := integration.GeneratePostureQuery(req)
+	var query string
+	switch req.GetRequestType() {
+	case model.CloudPostureQuery:
+		query, err = integration.GeneratePostureQuery(req)
+	case model.VulnerabilityQuery:
+		query, err = integration.GenerateVulnerabilityQuery(req)
+	}
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -305,20 +354,4 @@ func (h *Handler) AIIntegrationCloudPostureQuery(w http.ResponseWriter, r *http.
 
 	<-ctx.Done()
 	close(queryResponseChannel)
-}
-
-func (h *Handler) AIIntegrationVulnerabilityQuery(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req model.AIIntegrationVulnerabilityRequest
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-	if err != nil {
-		h.respondError(&BadDecoding{err}, w)
-		return
-	}
-	err = h.Validator.Struct(req)
-	if err != nil {
-		h.respondError(&ValidatorError{err: err}, w)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
 }

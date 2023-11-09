@@ -504,15 +504,16 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 
 			// AI Integration
 			r.Route("/ai-integration", func(r chi.Router) {
-				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddAIIntegration))
-				r.Get("/", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GetAIIntegrations))
+				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddAiIntegration))
+				r.Get("/", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GetAiIntegrations))
 				r.Route("/{integration_id}", func(r chi.Router) {
-					r.Delete("/", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteAIIntegration))
+					r.Put("/default", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.SetDefaultAiIntegration))
+					r.Delete("/", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteAiIntegration))
 				})
 
 				r.Route("/query", func(r chi.Router) {
-					r.Post("/cloud-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AIIntegrationCloudPostureQuery))
-					r.Post("/vulnerability", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AIIntegrationVulnerabilityQuery))
+					r.Post("/cloud-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationCloudPostureQuery))
+					r.Post("/vulnerability", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationVulnerabilityQuery))
 				})
 			})
 
