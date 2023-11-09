@@ -1,9 +1,11 @@
+import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense } from 'react';
 import { cn } from 'tailwind-preset';
 import { Breadcrumb, BreadcrumbLink, Button, Card, Separator } from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { SparkleLineIcon } from '@/components/icons/common/SparkleLine';
 import { DownloadReportIcon } from '@/components/icons/integration/DownloadReport';
 import { ElasticsearchIcon } from '@/components/icons/integration/Elasticsearch';
 import { EmailIcon } from '@/components/icons/integration/Email';
@@ -20,6 +22,7 @@ import { AmazonECRRegistryIcon } from '@/components/icons/registries/AmazonEcr';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
 import { IntegrationType } from '@/features/integrations/components/IntegrationForm';
 import { useGetReports } from '@/features/integrations/pages/DownloadReport';
+import { queries } from '@/queries';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 import { useListIntegrations } from './IntegrationAdd';
@@ -255,8 +258,10 @@ const Integrations = () => {
             </section>
           );
         })}
-        <Separator className="dark:bg-bg-grid-border h-px w-full" />
+        <Separator className="dark:bg-bg-grid-border h-px w-full mt-1" />
         <DownloadReport />
+        <Separator className="dark:bg-bg-grid-border h-px w-full mt-1" />
+        <GenerativeAI />
       </div>
     </>
   );
@@ -293,9 +298,11 @@ const DownloadReport = () => {
                 'dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF]',
               )}
             >
-              <span className="h-9 w-9 ">
-                <DownloadReportIcon />
-              </span>
+              <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
+                <span className="h-9 w-9">
+                  <DownloadReportIcon />
+                </span>
+              </div>
 
               <Suspense
                 fallback={
@@ -329,6 +336,68 @@ const DownloadReport = () => {
         >
           Create New Report
         </Button>
+      </div>
+    </div>
+  );
+};
+
+function useListAIIntegrations() {
+  return useSuspenseQuery({
+    ...queries.integration.listAIIntegrations(),
+  });
+}
+
+const AIIntegrationCount = () => {
+  const { data } = useListAIIntegrations();
+  const aiIntegrationCount = data?.length ?? 0;
+
+  return (
+    <div className="flex gap-x-2 items-center">
+      <span className="text-h1 dark:text-text-input-value">{aiIntegrationCount}</span>
+
+      <span className="text-p7">Connection{aiIntegrationCount > 1 ? 's' : ''}</span>
+    </div>
+  );
+};
+
+const GenerativeAI = () => {
+  return (
+    <div>
+      <h2 className="uppercase text-t3 dark:text-text-input-value">Generative AI</h2>
+      <div className="mt-2 flex gap-x-4 items-center">
+        <div className="flex flex-col w-fit min-w-[208px]">
+          <DFLink to={'/integrations/gen-ai'} className="h-[84px]" unstyled>
+            <Card
+              className={cn(
+                'p-3 flex shrink-0 items-center h-full gap-x-4',
+                'dark:text-text-text-and-icon',
+                'hover:ring dark:hover:ring-bg-hover-3 dark:hover:ring-1',
+                'dark:focus:ring-bg-hover-3 dark:focus:ring-1 cursor-pointer',
+                'dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF]',
+              )}
+            >
+              <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
+                <span className="h-9 w-9">
+                  <SparkleLineIcon />
+                </span>
+              </div>
+              <Suspense
+                fallback={
+                  <div className="animate-pulse flex gap-x-2 items-center">
+                    <div className="dark:bg-bg-grid-border rounded-md">
+                      <div className="w-4 h-6"></div>
+                    </div>
+                    <div className="dark:bg-bg-grid-border rounded-md">
+                      <div className="w-16 h-2"></div>
+                    </div>
+                  </div>
+                }
+              >
+                <AIIntegrationCount />
+              </Suspense>
+            </Card>
+          </DFLink>
+        </div>
       </div>
     </div>
   );

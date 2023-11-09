@@ -308,6 +308,7 @@ export function getIntegrationApiClient() {
     aIIntegrationVulnerabilityQuery:
       integrationApi.aIIntegrationVulnerabilityQueryRaw.bind(integrationApi),
     listAIIntegration: integrationApi.listAIIntegration.bind(integrationApi),
+    addAIIntegration: integrationApi.addAIIntegration.bind(integrationApi),
   };
 }
 

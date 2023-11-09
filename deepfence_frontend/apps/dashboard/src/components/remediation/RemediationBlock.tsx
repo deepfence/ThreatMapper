@@ -97,7 +97,8 @@ export const RemediationBlock = ({ meta }: RemediationBlockProps) => {
               <div className="h-4 w-4">{PROVIDER_MAP[integrationType].icon}</div>
             ) : null}{' '}
             <span>
-              Powered by {PROVIDER_MAP[integrationType ?? '']?.title ?? integrationType}
+              Remediations powered by{' '}
+              {PROVIDER_MAP[integrationType ?? '']?.title ?? integrationType}
             </span>
           </span>
           <div className="flex items-center gap-2">

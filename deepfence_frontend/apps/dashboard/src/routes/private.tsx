@@ -15,6 +15,8 @@ import { searchCloudFiltersApiLoader } from '@/features/common/data-component/se
 import { RootLayout } from '@/features/common/RootLayout';
 import { module as dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrationsLayout } from '@/features/integrations/layouts/IntegrationsLayout';
+import { module as aiIntegrationAdd } from '@/features/integrations/pages/AIIntegrationAdd';
+import { module as aiIntegrationList } from '@/features/integrations/pages/AIIntegrationList';
 import { module as createReport } from '@/features/integrations/pages/CreateReport';
 import { module as downloadReport } from '@/features/integrations/pages/DownloadReport';
 import { module as addIntegration } from '@/features/integrations/pages/IntegrationAdd';
@@ -296,6 +298,19 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'create',
             ...createReport,
             meta: { title: 'Create Report' },
+          },
+        ],
+      },
+      // Gen AI
+      {
+        path: 'integrations/gen-ai',
+        ...aiIntegrationList,
+        meta: { title: 'Gen AI Integrations' },
+        children: [
+          {
+            path: 'add',
+            ...aiIntegrationAdd,
+            meta: { title: 'Add Gen AI Integration' },
           },
         ],
       },
