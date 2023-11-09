@@ -66,6 +66,10 @@ export interface AddScheduledTaskRequest {
     modelAddScheduledTaskRequest?: ModelAddScheduledTaskRequest;
 }
 
+export interface DeleteCustomScheduledTaskRequest {
+    id: number;
+}
+
 export interface DeleteEmailConfigurationRequest {
     configId: string;
 }
@@ -126,6 +130,22 @@ export interface SettingsApiInterface {
      * Add scheduled task
      */
     addScheduledTask(requestParameters: AddScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Delete Custom Schedule task
+     * @summary Delete Custom Schedule task
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    deleteCustomScheduledTaskRaw(requestParameters: DeleteCustomScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Delete Custom Schedule task
+     * Delete Custom Schedule task
+     */
+    deleteCustomScheduledTask(requestParameters: DeleteCustomScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Delete Email Smtp / ses Configurations in system
@@ -351,6 +371,45 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      */
     async addScheduledTask(requestParameters: AddScheduledTaskRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.addScheduledTaskRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Delete Custom Schedule task
+     * Delete Custom Schedule task
+     */
+    async deleteCustomScheduledTaskRaw(requestParameters: DeleteCustomScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling deleteCustomScheduledTask.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scheduled-task/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete Custom Schedule task
+     * Delete Custom Schedule task
+     */
+    async deleteCustomScheduledTask(requestParameters: DeleteCustomScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.deleteCustomScheduledTaskRaw(requestParameters, initOverrides);
     }
 
     /**

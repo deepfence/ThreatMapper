@@ -68,6 +68,11 @@ models/IngestersSecretSeverity.ts
 models/IngestersVulnerability.ts
 models/IngestersVulnerabilityScanStatus.ts
 models/LookupLookupFilter.ts
+models/ModelAIIntegrationCloudPostureRequest.ts
+models/ModelAIIntegrationListResponse.ts
+models/ModelAIIntegrationMessageResponse.ts
+models/ModelAIIntegrationVulnerabilityRequest.ts
+models/ModelAddAIIntegrationRequest.ts
 models/ModelAddScheduledTaskRequest.ts
 models/ModelAgentId.ts
 models/ModelAgentPluginDisable.ts

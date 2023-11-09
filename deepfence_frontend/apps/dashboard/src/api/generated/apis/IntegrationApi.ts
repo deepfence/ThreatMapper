@@ -17,6 +17,11 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
+  ModelAIIntegrationCloudPostureRequest,
+  ModelAIIntegrationListResponse,
+  ModelAIIntegrationMessageResponse,
+  ModelAIIntegrationVulnerabilityRequest,
+  ModelAddAIIntegrationRequest,
   ModelIntegrationAddReq,
   ModelIntegrationListResp,
   ModelMessageResponse,
@@ -26,6 +31,16 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
+    ModelAIIntegrationCloudPostureRequestFromJSON,
+    ModelAIIntegrationCloudPostureRequestToJSON,
+    ModelAIIntegrationListResponseFromJSON,
+    ModelAIIntegrationListResponseToJSON,
+    ModelAIIntegrationMessageResponseFromJSON,
+    ModelAIIntegrationMessageResponseToJSON,
+    ModelAIIntegrationVulnerabilityRequestFromJSON,
+    ModelAIIntegrationVulnerabilityRequestToJSON,
+    ModelAddAIIntegrationRequestFromJSON,
+    ModelAddAIIntegrationRequestToJSON,
     ModelIntegrationAddReqFromJSON,
     ModelIntegrationAddReqToJSON,
     ModelIntegrationListRespFromJSON,
@@ -34,8 +49,24 @@ import {
     ModelMessageResponseToJSON,
 } from '../models';
 
+export interface AIIntegrationCloudPostureQueryRequest {
+    modelAIIntegrationCloudPostureRequest?: ModelAIIntegrationCloudPostureRequest;
+}
+
+export interface AIIntegrationVulnerabilityQueryRequest {
+    modelAIIntegrationVulnerabilityRequest?: ModelAIIntegrationVulnerabilityRequest;
+}
+
+export interface AddAIIntegrationRequest {
+    modelAddAIIntegrationRequest?: ModelAddAIIntegrationRequest;
+}
+
 export interface AddIntegrationRequest {
     modelIntegrationAddReq?: ModelIntegrationAddReq;
+}
+
+export interface DeleteAIIntegrationRequest {
+    integrationId: string;
 }
 
 export interface DeleteIntegrationRequest {
@@ -49,6 +80,54 @@ export interface DeleteIntegrationRequest {
  * @interface IntegrationApiInterface
  */
 export interface IntegrationApiInterface {
+    /**
+     * Send Cloud Posture query to AI Integration
+     * @summary Send Cloud Posture query to AI Integration
+     * @param {ModelAIIntegrationCloudPostureRequest} [modelAIIntegrationCloudPostureRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof IntegrationApiInterface
+     */
+    aIIntegrationCloudPostureQueryRaw(requestParameters: AIIntegrationCloudPostureQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelAIIntegrationMessageResponse>>;
+
+    /**
+     * Send Cloud Posture query to AI Integration
+     * Send Cloud Posture query to AI Integration
+     */
+    aIIntegrationCloudPostureQuery(requestParameters: AIIntegrationCloudPostureQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelAIIntegrationMessageResponse>;
+
+    /**
+     * Send Vulnerability query to AI Integration
+     * @summary Send Vulnerability query to AI Integration
+     * @param {ModelAIIntegrationVulnerabilityRequest} [modelAIIntegrationVulnerabilityRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof IntegrationApiInterface
+     */
+    aIIntegrationVulnerabilityQueryRaw(requestParameters: AIIntegrationVulnerabilityQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelAIIntegrationMessageResponse>>;
+
+    /**
+     * Send Vulnerability query to AI Integration
+     * Send Vulnerability query to AI Integration
+     */
+    aIIntegrationVulnerabilityQuery(requestParameters: AIIntegrationVulnerabilityQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelAIIntegrationMessageResponse>;
+
+    /**
+     * Add a new supported AI Integration
+     * @summary Add AI Integration
+     * @param {ModelAddAIIntegrationRequest} [modelAddAIIntegrationRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof IntegrationApiInterface
+     */
+    addAIIntegrationRaw(requestParameters: AddAIIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
+
+    /**
+     * Add a new supported AI Integration
+     * Add AI Integration
+     */
+    addAIIntegration(requestParameters: AddAIIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
+
     /**
      * Add a new supported integration
      * @summary Add Integration
@@ -66,6 +145,22 @@ export interface IntegrationApiInterface {
     addIntegration(requestParameters: AddIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
     /**
+     * Delete AI integration
+     * @summary Delete AI Integration
+     * @param {string} integrationId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof IntegrationApiInterface
+     */
+    deleteAIIntegrationRaw(requestParameters: DeleteAIIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Delete AI integration
+     * Delete AI Integration
+     */
+    deleteAIIntegration(requestParameters: DeleteAIIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
      * Delete integration
      * @summary Delete Integration
      * @param {string} integrationId 
@@ -80,6 +175,21 @@ export interface IntegrationApiInterface {
      * Delete Integration
      */
     deleteIntegration(requestParameters: DeleteIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * List all the added AI Integrations
+     * @summary List AI Integrations
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof IntegrationApiInterface
+     */
+    listAIIntegrationRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelAIIntegrationListResponse>>>;
+
+    /**
+     * List all the added AI Integrations
+     * List AI Integrations
+     */
+    listAIIntegration(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelAIIntegrationListResponse>>;
 
     /**
      * List all the added Integrations
@@ -102,6 +212,123 @@ export interface IntegrationApiInterface {
  * 
  */
 export class IntegrationApi extends runtime.BaseAPI implements IntegrationApiInterface {
+
+    /**
+     * Send Cloud Posture query to AI Integration
+     * Send Cloud Posture query to AI Integration
+     */
+    async aIIntegrationCloudPostureQueryRaw(requestParameters: AIIntegrationCloudPostureQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelAIIntegrationMessageResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/ai-integration/query/cloud-posture`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelAIIntegrationCloudPostureRequestToJSON(requestParameters.modelAIIntegrationCloudPostureRequest),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelAIIntegrationMessageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Send Cloud Posture query to AI Integration
+     * Send Cloud Posture query to AI Integration
+     */
+    async aIIntegrationCloudPostureQuery(requestParameters: AIIntegrationCloudPostureQueryRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelAIIntegrationMessageResponse> {
+        const response = await this.aIIntegrationCloudPostureQueryRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Send Vulnerability query to AI Integration
+     * Send Vulnerability query to AI Integration
+     */
+    async aIIntegrationVulnerabilityQueryRaw(requestParameters: AIIntegrationVulnerabilityQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelAIIntegrationMessageResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/ai-integration/query/vulnerability`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelAIIntegrationVulnerabilityRequestToJSON(requestParameters.modelAIIntegrationVulnerabilityRequest),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelAIIntegrationMessageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Send Vulnerability query to AI Integration
+     * Send Vulnerability query to AI Integration
+     */
+    async aIIntegrationVulnerabilityQuery(requestParameters: AIIntegrationVulnerabilityQueryRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelAIIntegrationMessageResponse> {
+        const response = await this.aIIntegrationVulnerabilityQueryRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Add a new supported AI Integration
+     * Add AI Integration
+     */
+    async addAIIntegrationRaw(requestParameters: AddAIIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/ai-integration`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelAddAIIntegrationRequestToJSON(requestParameters.modelAddAIIntegrationRequest),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Add a new supported AI Integration
+     * Add AI Integration
+     */
+    async addAIIntegration(requestParameters: AddAIIntegrationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.addAIIntegrationRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Add a new supported integration
@@ -143,6 +370,45 @@ export class IntegrationApi extends runtime.BaseAPI implements IntegrationApiInt
     }
 
     /**
+     * Delete AI integration
+     * Delete AI Integration
+     */
+    async deleteAIIntegrationRaw(requestParameters: DeleteAIIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.integrationId === null || requestParameters.integrationId === undefined) {
+            throw new runtime.RequiredError('integrationId','Required parameter requestParameters.integrationId was null or undefined when calling deleteAIIntegration.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/ai-integration/{integration_id}`.replace(`{${"integration_id"}}`, encodeURIComponent(String(requestParameters.integrationId))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete AI integration
+     * Delete AI Integration
+     */
+    async deleteAIIntegration(requestParameters: DeleteAIIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.deleteAIIntegrationRaw(requestParameters, initOverrides);
+    }
+
+    /**
      * Delete integration
      * Delete Integration
      */
@@ -179,6 +445,42 @@ export class IntegrationApi extends runtime.BaseAPI implements IntegrationApiInt
      */
     async deleteIntegration(requestParameters: DeleteIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.deleteIntegrationRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * List all the added AI Integrations
+     * List AI Integrations
+     */
+    async listAIIntegrationRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelAIIntegrationListResponse>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/ai-integration`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelAIIntegrationListResponseFromJSON));
+    }
+
+    /**
+     * List all the added AI Integrations
+     * List AI Integrations
+     */
+    async listAIIntegration(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelAIIntegrationListResponse>> {
+        const response = await this.listAIIntegrationRaw(initOverrides);
+        return await response.value();
     }
 
     /**

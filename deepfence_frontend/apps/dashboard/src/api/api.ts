@@ -303,6 +303,11 @@ export function getIntegrationApiClient() {
     addIntegration: integrationApi.addIntegration.bind(integrationApi),
     listIntegration: integrationApi.listIntegration.bind(integrationApi),
     deleteIntegration: integrationApi.deleteIntegration.bind(integrationApi),
+    aIIntegrationCloudPostureQuery:
+      integrationApi.aIIntegrationCloudPostureQueryRaw.bind(integrationApi),
+    aIIntegrationVulnerabilityQuery:
+      integrationApi.aIIntegrationVulnerabilityQueryRaw.bind(integrationApi),
+    listAIIntegration: integrationApi.listAIIntegration.bind(integrationApi),
   };
 }
 
