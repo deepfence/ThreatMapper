@@ -7051,9 +7051,9 @@
     "/deepfence/scheduled-task/{id}": {
       "delete": {
         "tags": ["Settings"],
-        "summary": "Delete Schedule task",
-        "description": "Delete Schedule task",
-        "operationId": "deleteScheduledTask",
+        "summary": "Delete Custom Schedule task",
+        "description": "Delete Custom Schedule task",
+        "operationId": "deleteCustomScheduledTask",
         "parameters": [
           {
             "name": "id",
@@ -11317,6 +11317,7 @@
           "cron_expr": { "type": "string" },
           "description": { "type": "string" },
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "is_priority": { "type": "boolean" },
           "node_ids": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
@@ -11879,6 +11880,7 @@
             "nullable": true
           },
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "is_priority": { "type": "boolean" },
           "node_ids": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
@@ -12467,6 +12469,7 @@
         "type": "object",
         "properties": {
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "is_priority": { "type": "boolean" },
           "node_ids": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
@@ -13144,6 +13147,7 @@
         "type": "object",
         "properties": {
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "is_priority": { "type": "boolean" },
           "node_ids": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
@@ -13487,6 +13491,7 @@
         "type": "object",
         "properties": {
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "is_priority": { "type": "boolean" },
           "node_ids": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
