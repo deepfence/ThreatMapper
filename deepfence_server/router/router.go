@@ -513,6 +513,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 
 				r.Route("/query", func(r chi.Router) {
 					r.Post("/cloud-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationCloudPostureQuery))
+					r.Post("/linux-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationLinuxPostureQuery))
+					r.Post("/kubernetes-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationKubernetesPostureQuery))
 					r.Post("/vulnerability", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationVulnerabilityQuery))
 				})
 			})

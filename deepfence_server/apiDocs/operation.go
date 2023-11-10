@@ -725,6 +725,12 @@ func (d *OpenApiDocs) AddIntegrationOperations() {
 	d.AddOperation("aiIntegrationCloudPostureQuery", http.MethodPost, "/deepfence/ai-integration/query/cloud-posture",
 		"Send Cloud Posture query to AI Integration", "Send Cloud Posture query to AI Integration",
 		http.StatusOK, []string{tagIntegration}, bearerToken, new(AiIntegrationCloudPostureRequest), new(string))
+	d.AddOperation("aiIntegrationLinuxPostureQuery", http.MethodPost, "/deepfence/ai-integration/query/linux-posture",
+		"Send Linux Posture query to AI Integration", "Send Linux Posture query to AI Integration",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(AiIntegrationLinuxPostureRequest), new(string))
+	d.AddOperation("aiIntegrationKubernetesPostureQuery", http.MethodPost, "/deepfence/ai-integration/query/kubernetes-posture",
+		"Send Kubernetes Posture query to AI Integration", "Send Kubernetes Posture query to AI Integration",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(AiIntegrationKubernetesPostureRequest), new(string))
 	d.AddOperation("aiIntegrationVulnerabilityQuery", http.MethodPost, "/deepfence/ai-integration/query/vulnerability",
 		"Send Vulnerability query to AI Integration", "Send Vulnerability query to AI Integration",
 		http.StatusOK, []string{tagIntegration}, bearerToken, new(AiIntegrationVulnerabilityRequest), new(string))
