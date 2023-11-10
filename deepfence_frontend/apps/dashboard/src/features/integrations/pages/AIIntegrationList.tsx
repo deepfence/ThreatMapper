@@ -350,9 +350,11 @@ const ActionDropdown = ({
       align={'start'}
       content={
         <>
-          <DropdownItem onClick={() => onTableAction(row, ActionEnumType.MAKE_DEFAULT)}>
-            Make default
-          </DropdownItem>
+          {!row.default_integration ? (
+            <DropdownItem onClick={() => onTableAction(row, ActionEnumType.MAKE_DEFAULT)}>
+              Make default
+            </DropdownItem>
+          ) : null}
           <DropdownItem
             onClick={() => onTableAction(row, ActionEnumType.DELETE)}
             className="dark:text-status-error dark:hover:text-[#C45268]"
