@@ -15,7 +15,7 @@ vendor: go.mod $(shell find ../deepfence_utils -path ../deepfence_utils/vendor -
 	go mod vendor
 
 deepfence_worker: vendor $(shell find . -path ./vendor -prune -o -name '*.go')
-	go build -buildvcs=false -ldflags="-s -w -X main.Version=${VERSION} -X main.Commit=${GIT_COMMIT} -X main.BuildTime=${BUILD_TIME}"
+	go build -buildvcs=false -buildmode=pie -ldflags="-s -w -X main.Version=${VERSION} -X main.Commit=${GIT_COMMIT} -X main.BuildTime=${BUILD_TIME}"
 
 clean:
 	-rm deepfence_worker
