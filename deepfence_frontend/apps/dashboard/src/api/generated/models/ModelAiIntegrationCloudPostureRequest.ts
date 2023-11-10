@@ -16,55 +16,55 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelAIIntegrationCloudPostureRequest
+ * @interface ModelAiIntegrationCloudPostureRequest
  */
-export interface ModelAIIntegrationCloudPostureRequest {
+export interface ModelAiIntegrationCloudPostureRequest {
     /**
      * 
      * @type {string}
-     * @memberof ModelAIIntegrationCloudPostureRequest
+     * @memberof ModelAiIntegrationCloudPostureRequest
      */
     cloud_provider: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelAIIntegrationCloudPostureRequest
+     * @memberof ModelAiIntegrationCloudPostureRequest
      */
     compliance_check_type: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelAIIntegrationCloudPostureRequest
+     * @memberof ModelAiIntegrationCloudPostureRequest
      */
     group?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelAIIntegrationCloudPostureRequest
+     * @memberof ModelAiIntegrationCloudPostureRequest
      */
-    integration_type?: ModelAIIntegrationCloudPostureRequestIntegrationTypeEnum;
+    integration_type?: ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum;
     /**
      * 
      * @type {string}
-     * @memberof ModelAIIntegrationCloudPostureRequest
+     * @memberof ModelAiIntegrationCloudPostureRequest
      */
-    query_type: ModelAIIntegrationCloudPostureRequestQueryTypeEnum;
+    query_type: ModelAiIntegrationCloudPostureRequestQueryTypeEnum;
     /**
      * 
      * @type {string}
-     * @memberof ModelAIIntegrationCloudPostureRequest
+     * @memberof ModelAiIntegrationCloudPostureRequest
      */
-    remediation_format: ModelAIIntegrationCloudPostureRequestRemediationFormatEnum;
+    remediation_format: ModelAiIntegrationCloudPostureRequestRemediationFormatEnum;
     /**
      * 
      * @type {string}
-     * @memberof ModelAIIntegrationCloudPostureRequest
+     * @memberof ModelAiIntegrationCloudPostureRequest
      */
     service?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelAIIntegrationCloudPostureRequest
+     * @memberof ModelAiIntegrationCloudPostureRequest
      */
     title: string;
 }
@@ -73,35 +73,35 @@ export interface ModelAIIntegrationCloudPostureRequest {
 /**
  * @export
  */
-export const ModelAIIntegrationCloudPostureRequestIntegrationTypeEnum = {
+export const ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum = {
     Openai: 'openai'
 } as const;
-export type ModelAIIntegrationCloudPostureRequestIntegrationTypeEnum = typeof ModelAIIntegrationCloudPostureRequestIntegrationTypeEnum[keyof typeof ModelAIIntegrationCloudPostureRequestIntegrationTypeEnum];
+export type ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum = typeof ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum[keyof typeof ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum];
 
 /**
  * @export
  */
-export const ModelAIIntegrationCloudPostureRequestQueryTypeEnum = {
+export const ModelAiIntegrationCloudPostureRequestQueryTypeEnum = {
     Remediation: 'remediation'
 } as const;
-export type ModelAIIntegrationCloudPostureRequestQueryTypeEnum = typeof ModelAIIntegrationCloudPostureRequestQueryTypeEnum[keyof typeof ModelAIIntegrationCloudPostureRequestQueryTypeEnum];
+export type ModelAiIntegrationCloudPostureRequestQueryTypeEnum = typeof ModelAiIntegrationCloudPostureRequestQueryTypeEnum[keyof typeof ModelAiIntegrationCloudPostureRequestQueryTypeEnum];
 
 /**
  * @export
  */
-export const ModelAIIntegrationCloudPostureRequestRemediationFormatEnum = {
+export const ModelAiIntegrationCloudPostureRequestRemediationFormatEnum = {
     All: 'all',
     Cli: 'cli',
     Pulumi: 'pulumi',
     Terraform: 'terraform'
 } as const;
-export type ModelAIIntegrationCloudPostureRequestRemediationFormatEnum = typeof ModelAIIntegrationCloudPostureRequestRemediationFormatEnum[keyof typeof ModelAIIntegrationCloudPostureRequestRemediationFormatEnum];
+export type ModelAiIntegrationCloudPostureRequestRemediationFormatEnum = typeof ModelAiIntegrationCloudPostureRequestRemediationFormatEnum[keyof typeof ModelAiIntegrationCloudPostureRequestRemediationFormatEnum];
 
 
 /**
- * Check if a given object implements the ModelAIIntegrationCloudPostureRequest interface.
+ * Check if a given object implements the ModelAiIntegrationCloudPostureRequest interface.
  */
-export function instanceOfModelAIIntegrationCloudPostureRequest(value: object): boolean {
+export function instanceOfModelAiIntegrationCloudPostureRequest(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "cloud_provider" in value;
     isInstance = isInstance && "compliance_check_type" in value;
@@ -112,11 +112,11 @@ export function instanceOfModelAIIntegrationCloudPostureRequest(value: object): 
     return isInstance;
 }
 
-export function ModelAIIntegrationCloudPostureRequestFromJSON(json: any): ModelAIIntegrationCloudPostureRequest {
-    return ModelAIIntegrationCloudPostureRequestFromJSONTyped(json, false);
+export function ModelAiIntegrationCloudPostureRequestFromJSON(json: any): ModelAiIntegrationCloudPostureRequest {
+    return ModelAiIntegrationCloudPostureRequestFromJSONTyped(json, false);
 }
 
-export function ModelAIIntegrationCloudPostureRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAIIntegrationCloudPostureRequest {
+export function ModelAiIntegrationCloudPostureRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAiIntegrationCloudPostureRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -133,7 +133,7 @@ export function ModelAIIntegrationCloudPostureRequestFromJSONTyped(json: any, ig
     };
 }
 
-export function ModelAIIntegrationCloudPostureRequestToJSON(value?: ModelAIIntegrationCloudPostureRequest | null): any {
+export function ModelAiIntegrationCloudPostureRequestToJSON(value?: ModelAiIntegrationCloudPostureRequest | null): any {
     if (value === undefined) {
         return undefined;
     }

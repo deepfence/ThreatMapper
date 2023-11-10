@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useCallback, useMemo } from 'react';
-import { Outlet, useFetcher, useNavigate } from 'react-router-dom';
+import { isNil } from 'lodash-es';
+import { Suspense, useCallback, useMemo, useState } from 'react';
+import { ActionFunctionArgs, Outlet, useFetcher, useNavigate } from 'react-router-dom';
 import {
   Breadcrumb,
   BreadcrumbLink,
@@ -14,7 +15,11 @@ import {
   TableSkeleton,
 } from 'ui-components';
 
-import { ModelAIIntegrationListResponse } from '@/api/generated';
+import { getIntegrationApiClient } from '@/api/api';
+import {
+  ApiDocsBadRequestResponse,
+  ModelAiIntegrationListResponse,
+} from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
@@ -22,7 +27,9 @@ import { PlusIcon } from '@/components/icons/common/Plus';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
 import { TruncatedText } from '@/components/TruncatedText';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { queries } from '@/queries';
+import { invalidateAllQueries, queries } from '@/queries';
+import { get403Message } from '@/utils/403';
+import { apiWrapper } from '@/utils/api';
 
 export const CLOUD_TRAIL_ALERT = 'CloudTrail Alert';
 export const USER_ACTIVITIES = 'User Activities';
@@ -38,34 +45,108 @@ export const useListIntegrations = () => {
   });
 };
 
-type ActionData = {
+interface ActionData {
+  success: boolean;
   message?: string;
-  success?: boolean;
+}
+
+const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
+  const formData = await request.formData();
+
+  const actionType = formData.get('_actionType')?.toString();
+
+  if (actionType === ActionEnumType.DELETE) {
+    const id = formData.get('id')?.toString() ?? '';
+
+    const deleteAIIntegration = apiWrapper({
+      fn: getIntegrationApiClient().deleteAIIntegration,
+    });
+
+    const response = await deleteAIIntegration({
+      integrationId: id,
+    });
+
+    if (!response.ok) {
+      if (response.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse =
+          await response.error.response.json();
+
+        return {
+          success: false,
+          message: modelResponse.message ?? '',
+        };
+      } else if (response.error.response.status === 403) {
+        const message = await get403Message(response.error);
+        return {
+          success: false,
+          message,
+        };
+      }
+      throw response.error;
+    }
+
+    invalidateAllQueries();
+    return {
+      success: true,
+    };
+  } else if (actionType === ActionEnumType.MAKE_DEFAULT) {
+    const id = formData.get('id')?.toString() ?? '';
+
+    const setDefaultAIIntegration = apiWrapper({
+      fn: getIntegrationApiClient().setDefaultAIIntegration,
+    });
+
+    const response = await setDefaultAIIntegration({
+      integrationId: id,
+    });
+
+    if (!response.ok) {
+      if (response.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse =
+          await response.error.response.json();
+
+        return {
+          success: false,
+          message: modelResponse.message ?? '',
+        };
+      } else if (response.error.response.status === 403) {
+        const message = await get403Message(response.error);
+        return {
+          success: false,
+          message,
+        };
+      }
+      throw response.error;
+    }
+
+    invalidateAllQueries();
+    return {
+      success: true,
+    };
+  }
+  throw new Error('invalid action type');
 };
 
 const DeleteConfirmationModal = ({
   showDialog,
-  row,
+  id,
   setShowDialog,
 }: {
   showDialog: boolean;
-  row: ModelAIIntegrationListResponse | undefined;
+  id: number;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher<ActionData>();
 
-  const onDeleteAction = useCallback(
-    (actionType: string) => {
-      const formData = new FormData();
-      formData.append('_actionType', actionType);
-      formData.append('id', row?.id?.toString() ?? '');
+  const onDeleteAction = useCallback(() => {
+    const formData = new FormData();
+    formData.append('_actionType', ActionEnumType.DELETE);
+    formData.append('id', String(id));
 
-      fetcher.submit(formData, {
-        method: 'post',
-      });
-    },
-    [fetcher, row],
-  );
+    fetcher.submit(formData, {
+      method: 'POST',
+    });
+  }, [fetcher, id]);
   return (
     <Modal
       size="s"
@@ -99,7 +180,7 @@ const DeleteConfirmationModal = ({
               disabled={fetcher.state === 'submitting'}
               onClick={(e) => {
                 e.preventDefault();
-                onDeleteAction(ActionEnumType.DELETE);
+                onDeleteAction();
               }}
             >
               Delete
@@ -119,6 +200,86 @@ const DeleteConfirmationModal = ({
         </div>
       ) : (
         <SuccessModalContent text="Deleted successfully!" />
+      )}
+    </Modal>
+  );
+};
+
+const MakeDefaultConfirmationModal = ({
+  showDialog,
+  id,
+  setShowDialog,
+}: {
+  showDialog: boolean;
+  id: number;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const fetcher = useFetcher<ActionData>();
+
+  const onDeleteAction = useCallback(() => {
+    const formData = new FormData();
+    formData.append('_actionType', ActionEnumType.MAKE_DEFAULT);
+    formData.append('id', String(id));
+
+    fetcher.submit(formData, {
+      method: 'POST',
+    });
+  }, [fetcher, id]);
+  return (
+    <Modal
+      size="s"
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title={
+        !fetcher.data?.success ? (
+          <div className="flex gap-3 items-center">
+            <span className="h-6 w-6 shrink-0">
+              <ErrorStandardLineIcon />
+            </span>
+            Mark this integration as default
+          </div>
+        ) : undefined
+      }
+      footer={
+        !fetcher.data?.success ? (
+          <div className={'flex gap-x-4 justify-end'}>
+            <Button
+              size="md"
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="md"
+              loading={fetcher.state === 'submitting'}
+              disabled={fetcher.state === 'submitting'}
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteAction();
+              }}
+            >
+              Make Default
+            </Button>
+          </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.success ? (
+        <div className="grid">
+          <span>
+            The selected integration will be marked as default for generating
+            remediations.
+          </span>
+          <br />
+          <span>Are you sure?</span>
+          {fetcher.data?.message ? (
+            <p className="mt-2 dark:text-status-error text-p7">{fetcher.data?.message}</p>
+          ) : null}
+        </div>
+      ) : (
+        <SuccessModalContent text="Marked successfully!" />
       )}
     </Modal>
   );
@@ -176,10 +337,10 @@ const ActionDropdown = ({
   trigger,
   onTableAction,
 }: {
-  row: ModelAIIntegrationListResponse;
+  row: ModelAiIntegrationListResponse;
   trigger: React.ReactNode;
   onTableAction: (
-    row: ModelAIIntegrationListResponse,
+    row: ModelAiIntegrationListResponse,
     actionType: ActionEnumType,
   ) => void;
 }) => {
@@ -208,9 +369,11 @@ const ActionDropdown = ({
 
 const AIIntegrationTable = () => {
   const { data } = useListAIIntegrations();
+  const [idToDelete, setIdToDelete] = useState<number | null>(null);
+  const [idToMakeDefault, setIdToMakeDefault] = useState<number | null>(null);
 
   const columns = useMemo(() => {
-    const columnHelper = createColumnHelper<ModelAIIntegrationListResponse>();
+    const columnHelper = createColumnHelper<ModelAiIntegrationListResponse>();
 
     const columns = [
       columnHelper.display({
@@ -225,7 +388,11 @@ const AIIntegrationTable = () => {
             <ActionDropdown
               row={cell.row.original}
               onTableAction={(row, actionType) => {
-                // todo
+                if (actionType === ActionEnumType.DELETE) {
+                  setIdToDelete(row.id!);
+                } else if (actionType === ActionEnumType.MAKE_DEFAULT) {
+                  setIdToMakeDefault(row.id!);
+                }
               }}
               trigger={
                 <button className="p-1">
@@ -288,17 +455,38 @@ const AIIntegrationTable = () => {
   }, []);
 
   return (
-    <Table
-      data={data}
-      columns={columns}
-      enableColumnResizing
-      noDataElement={
-        <TableNoDataElement text="No integrations found, please add new integration" />
-      }
-    />
+    <>
+      <Table
+        data={data}
+        columns={columns}
+        enableColumnResizing
+        noDataElement={
+          <TableNoDataElement text="No integrations found, please add new integration" />
+        }
+      />
+      {!isNil(idToDelete) ? (
+        <DeleteConfirmationModal
+          showDialog
+          id={idToDelete}
+          setShowDialog={(show) => {
+            if (!show) setIdToDelete(null);
+          }}
+        />
+      ) : null}
+      {!isNil(idToMakeDefault) ? (
+        <MakeDefaultConfirmationModal
+          showDialog
+          id={idToMakeDefault}
+          setShowDialog={(show) => {
+            if (!show) setIdToMakeDefault(null);
+          }}
+        />
+      ) : null}
+    </>
   );
 };
 
 export const module = {
   element: <AIIntegrationList />,
+  action,
 };

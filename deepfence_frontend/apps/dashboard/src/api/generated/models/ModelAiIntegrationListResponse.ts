@@ -16,55 +16,55 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelAIIntegrationListResponse
+ * @interface ModelAiIntegrationListResponse
  */
-export interface ModelAIIntegrationListResponse {
+export interface ModelAiIntegrationListResponse {
     /**
      * 
      * @type {boolean}
-     * @memberof ModelAIIntegrationListResponse
+     * @memberof ModelAiIntegrationListResponse
      */
     default_integration?: boolean;
     /**
      * 
      * @type {number}
-     * @memberof ModelAIIntegrationListResponse
+     * @memberof ModelAiIntegrationListResponse
      */
     id?: number;
     /**
      * 
      * @type {string}
-     * @memberof ModelAIIntegrationListResponse
+     * @memberof ModelAiIntegrationListResponse
      */
     integration_type?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelAIIntegrationListResponse
+     * @memberof ModelAiIntegrationListResponse
      */
     label?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelAIIntegrationListResponse
+     * @memberof ModelAiIntegrationListResponse
      */
     last_error_msg?: string;
 }
 
 /**
- * Check if a given object implements the ModelAIIntegrationListResponse interface.
+ * Check if a given object implements the ModelAiIntegrationListResponse interface.
  */
-export function instanceOfModelAIIntegrationListResponse(value: object): boolean {
+export function instanceOfModelAiIntegrationListResponse(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function ModelAIIntegrationListResponseFromJSON(json: any): ModelAIIntegrationListResponse {
-    return ModelAIIntegrationListResponseFromJSONTyped(json, false);
+export function ModelAiIntegrationListResponseFromJSON(json: any): ModelAiIntegrationListResponse {
+    return ModelAiIntegrationListResponseFromJSONTyped(json, false);
 }
 
-export function ModelAIIntegrationListResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAIIntegrationListResponse {
+export function ModelAiIntegrationListResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAiIntegrationListResponse {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -78,7 +78,7 @@ export function ModelAIIntegrationListResponseFromJSONTyped(json: any, ignoreDis
     };
 }
 
-export function ModelAIIntegrationListResponseToJSON(value?: ModelAIIntegrationListResponse | null): any {
+export function ModelAiIntegrationListResponseToJSON(value?: ModelAiIntegrationListResponse | null): any {
     if (value === undefined) {
         return undefined;
     }

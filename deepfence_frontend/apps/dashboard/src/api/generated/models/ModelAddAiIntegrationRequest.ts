@@ -16,37 +16,37 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelAddAIIntegrationRequest
+ * @interface ModelAddAiIntegrationRequest
  */
-export interface ModelAddAIIntegrationRequest {
+export interface ModelAddAiIntegrationRequest {
     /**
      * 
      * @type {string}
-     * @memberof ModelAddAIIntegrationRequest
+     * @memberof ModelAddAiIntegrationRequest
      */
     api_key: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelAddAIIntegrationRequest
+     * @memberof ModelAddAiIntegrationRequest
      */
-    integration_type: ModelAddAIIntegrationRequestIntegrationTypeEnum;
+    integration_type: ModelAddAiIntegrationRequestIntegrationTypeEnum;
 }
 
 
 /**
  * @export
  */
-export const ModelAddAIIntegrationRequestIntegrationTypeEnum = {
+export const ModelAddAiIntegrationRequestIntegrationTypeEnum = {
     Openai: 'openai'
 } as const;
-export type ModelAddAIIntegrationRequestIntegrationTypeEnum = typeof ModelAddAIIntegrationRequestIntegrationTypeEnum[keyof typeof ModelAddAIIntegrationRequestIntegrationTypeEnum];
+export type ModelAddAiIntegrationRequestIntegrationTypeEnum = typeof ModelAddAiIntegrationRequestIntegrationTypeEnum[keyof typeof ModelAddAiIntegrationRequestIntegrationTypeEnum];
 
 
 /**
- * Check if a given object implements the ModelAddAIIntegrationRequest interface.
+ * Check if a given object implements the ModelAddAiIntegrationRequest interface.
  */
-export function instanceOfModelAddAIIntegrationRequest(value: object): boolean {
+export function instanceOfModelAddAiIntegrationRequest(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "api_key" in value;
     isInstance = isInstance && "integration_type" in value;
@@ -54,11 +54,11 @@ export function instanceOfModelAddAIIntegrationRequest(value: object): boolean {
     return isInstance;
 }
 
-export function ModelAddAIIntegrationRequestFromJSON(json: any): ModelAddAIIntegrationRequest {
-    return ModelAddAIIntegrationRequestFromJSONTyped(json, false);
+export function ModelAddAiIntegrationRequestFromJSON(json: any): ModelAddAiIntegrationRequest {
+    return ModelAddAiIntegrationRequestFromJSONTyped(json, false);
 }
 
-export function ModelAddAIIntegrationRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAddAIIntegrationRequest {
+export function ModelAddAiIntegrationRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAddAiIntegrationRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -69,7 +69,7 @@ export function ModelAddAIIntegrationRequestFromJSONTyped(json: any, ignoreDiscr
     };
 }
 
-export function ModelAddAIIntegrationRequestToJSON(value?: ModelAddAIIntegrationRequest | null): any {
+export function ModelAddAiIntegrationRequestToJSON(value?: ModelAddAiIntegrationRequest | null): any {
     if (value === undefined) {
         return undefined;
     }

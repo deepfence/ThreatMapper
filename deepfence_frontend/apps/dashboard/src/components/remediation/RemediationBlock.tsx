@@ -8,9 +8,9 @@ import { Button, Dropdown, DropdownItem, Tooltip } from 'ui-components';
 
 import { getIntegrationApiClient } from '@/api/api';
 import {
-  ModelAIIntegrationCloudPostureRequest,
-  ModelAIIntegrationCloudPostureRequestIntegrationTypeEnum,
-  ModelAIIntegrationVulnerabilityRequest,
+  ModelAiIntegrationCloudPostureRequest,
+  ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum,
+  ModelAiIntegrationVulnerabilityRequest,
 } from '@/api/generated';
 import { CheckIcon } from '@/components/icons/common/Check';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -38,11 +38,11 @@ interface RemediationBlockProps {
   meta:
     | {
         type: 'postureCloud';
-        args: RemediationRequestWithoutCommonTypes<ModelAIIntegrationCloudPostureRequest>;
+        args: RemediationRequestWithoutCommonTypes<ModelAiIntegrationCloudPostureRequest>;
       }
     | {
         type: 'cve';
-        args: RemediationRequestWithoutCommonTypes<ModelAIIntegrationVulnerabilityRequest>;
+        args: RemediationRequestWithoutCommonTypes<ModelAiIntegrationVulnerabilityRequest>;
       };
 }
 
@@ -50,11 +50,11 @@ interface RemediationCompletionProps {
   meta:
     | {
         type: 'postureCloud';
-        args: ModelAIIntegrationCloudPostureRequest;
+        args: ModelAiIntegrationCloudPostureRequest;
       }
     | {
         type: 'cve';
-        args: ModelAIIntegrationVulnerabilityRequest;
+        args: ModelAiIntegrationVulnerabilityRequest;
       };
 }
 
@@ -78,7 +78,7 @@ export const RemediationBlock = ({ meta }: RemediationBlockProps) => {
       args: {
         ...meta.args,
         integration_type:
-          integrationType as ModelAIIntegrationCloudPostureRequestIntegrationTypeEnum,
+          integrationType as ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum,
         remediation_format: format,
       },
     } as RemediationCompletionProps['meta'];
@@ -280,7 +280,7 @@ async function getRemediation({
     });
     const response = await request(
       {
-        modelAIIntegrationCloudPostureRequest: meta.args,
+        modelAiIntegrationCloudPostureRequest: meta.args,
       },
       {
         signal,
@@ -293,7 +293,7 @@ async function getRemediation({
     });
     const response = await request(
       {
-        modelAIIntegrationVulnerabilityRequest: meta.args,
+        modelAiIntegrationVulnerabilityRequest: meta.args,
       },
       {
         signal,
