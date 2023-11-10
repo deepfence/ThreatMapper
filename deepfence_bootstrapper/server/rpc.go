@@ -20,7 +20,7 @@ type UpgradeArgs struct {
 type Reply struct{}
 
 func (s *Server) Upgrade(args *UpgradeArgs, _ *Reply) error {
-	return supervisor.UpgradeProcess(args.Name, args.Url)
+	return supervisor.UpgradeProcessFromURL(args.Name, args.Url)
 }
 
 func (s *Server) Start(args *UpgradeArgs, _ *Reply) error {

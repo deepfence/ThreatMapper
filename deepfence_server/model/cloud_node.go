@@ -492,7 +492,7 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 
 	var res neo4j.Result
 	res, err = tx.Run(`
-		MATCH (n:CloudComplianceBenchmark) -[:INCLUDES]-> (m:CloudComplianceControl)
+		MATCH (n:CloudComplianceBenchmark) -[:PARENT]-> (m:CloudComplianceControl)
 		WHERE m.active = true
 		AND m.disabled = false
 		AND m.compliance_type IN $compliance_types

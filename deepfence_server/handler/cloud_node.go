@@ -162,7 +162,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		}
 		logrus.Debugf("Pending scans for node: %+v", scanList)
 	}
-	logrus.Debugf("Returning response: Scan List %+v cloudtrailTrails %+v Refresh %s", scanList, cloudtrailTrails, doRefresh)
+	log.Debug().Msgf("Returning response: Scan List %+v cloudtrailTrails %+v Refresh %s", scanList, cloudtrailTrails, doRefresh)
 
 	err = httpext.JSON(w, http.StatusOK,
 		model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
@@ -253,5 +253,5 @@ func (h *Handler) CachePostureProviders(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return worker.Enqueue(utils.CachePostureProviders, []byte{})
+	return worker.Enqueue(utils.CachePostureProviders, []byte{}, utils.CritialTaskOpts()...)
 }

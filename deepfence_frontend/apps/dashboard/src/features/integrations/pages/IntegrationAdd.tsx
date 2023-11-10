@@ -541,7 +541,7 @@ const IntegrationAdd = () => {
 
   return (
     <div className="m-4">
-      <div className="flex gapx-8">
+      <div className="flex gap-x-2">
         <Button
           variant="flat"
           startIcon={<PlusIcon />}

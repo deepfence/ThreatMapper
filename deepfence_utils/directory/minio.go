@@ -48,10 +48,18 @@ func (e PathDoesNotExistsError) Error() string {
 	return fmt.Sprintf("Path doesnot exists here: %s", e.Path)
 }
 
+type FileDeleteError struct {
+	Path string
+}
+
+func (e FileDeleteError) Error() string {
+	return fmt.Sprintf("Failed to delete file: %s", e.Path)
+}
+
 type FileManager interface {
 	ListFiles(ctx context.Context, pathPrefix string, recursive bool, maxKeys int, skipDir bool) []ObjectInfo
-	UploadLocalFile(ctx context.Context, filename string, localFilename string, extra interface{}) (UploadResult, error)
-	UploadFile(ctx context.Context, filename string, data []byte, extra interface{}) (UploadResult, error)
+	UploadLocalFile(ctx context.Context, filename string, localFilename string, overwrite bool, extra interface{}) (UploadResult, error)
+	UploadFile(ctx context.Context, filename string, data []byte, overwrite bool, extra interface{}) (UploadResult, error)
 	DeleteFile(ctx context.Context, filename string, addFilePathPrefix bool, extra interface{}) error
 	DownloadFile(ctx context.Context, remoteFile string, localFile string, extra interface{}) error
 	DownloadFileTo(ctx context.Context, remoteFile string, localFile io.WriteCloser, extra interface{}) error
@@ -141,7 +149,9 @@ func (mfm *MinioFileManager) ListFiles(ctx context.Context, pathPrefix string, r
 	return objectsInfo
 }
 
-func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context, filename string, localFilename string, extra interface{}) (UploadResult, error) {
+func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context,
+	filename string, localFilename string, overwrite bool, extra interface{}) (UploadResult, error) {
+
 	err := mfm.createBucketIfNeeded(ctx)
 	if err != nil {
 		return UploadResult{}, err
@@ -149,8 +159,18 @@ func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context, filename strin
 
 	objectName := mfm.addNamespacePrefix(filename)
 
-	if key, has := checkIfFileExists(ctx, mfm.client, mfm.bucket, objectName); has {
-		return UploadResult{}, AlreadyPresentError{Path: key}
+	key, has := checkIfFileExists(ctx, mfm.client, mfm.bucket, objectName)
+	if has {
+		if !overwrite {
+			return UploadResult{}, AlreadyPresentError{Path: key}
+		} else {
+			log.Info().Msgf("overwrite file %s", key)
+			err := mfm.DeleteFile(ctx, objectName, false, minio.RemoveObjectOptions{ForceDelete: true})
+			if err != nil {
+				log.Error().Err(err).Msg("failed to delete file while overwriting")
+				return UploadResult{}, FileDeleteError{Path: key}
+			}
+		}
 	}
 
 	info, err := mfm.client.FPutObject(ctx, mfm.bucket, objectName, localFilename, extra.(minio.PutObjectOptions))
@@ -169,7 +189,9 @@ func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context, filename strin
 	}, nil
 }
 
-func (mfm *MinioFileManager) UploadFile(ctx context.Context, filename string, data []byte, extra interface{}) (UploadResult, error) {
+func (mfm *MinioFileManager) UploadFile(ctx context.Context,
+	filename string, data []byte, overwrite bool, extra interface{}) (UploadResult, error) {
+
 	err := mfm.createBucketIfNeeded(ctx)
 	if err != nil {
 		return UploadResult{}, err
@@ -177,8 +199,18 @@ func (mfm *MinioFileManager) UploadFile(ctx context.Context, filename string, da
 
 	objectName := mfm.addNamespacePrefix(filename)
 
-	if key, has := checkIfFileExists(ctx, mfm.client, mfm.bucket, objectName); has {
-		return UploadResult{}, AlreadyPresentError{Path: key}
+	key, has := checkIfFileExists(ctx, mfm.client, mfm.bucket, objectName)
+	if has {
+		if !overwrite {
+			return UploadResult{}, AlreadyPresentError{Path: key}
+		} else {
+			log.Info().Msgf("overwrite file %s", key)
+			err := mfm.DeleteFile(ctx, objectName, false, minio.RemoveObjectOptions{ForceDelete: true})
+			if err != nil {
+				log.Error().Err(err).Msg("failed to delete file while overwriting")
+				return UploadResult{}, FileDeleteError{Path: key}
+			}
+		}
 	}
 
 	info, err := mfm.client.PutObject(ctx, mfm.bucket, objectName, bytes.NewReader(data), int64(len(data)), extra.(minio.PutObjectOptions))

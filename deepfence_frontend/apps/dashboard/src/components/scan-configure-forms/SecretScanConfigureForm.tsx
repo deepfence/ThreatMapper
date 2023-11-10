@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button, Radio } from 'ui-components';
+import { Button, Checkbox, Radio } from 'ui-components';
 
-import { getSecretApiClient } from '@/api/api';
+import { getSecretApiClient, getSettingsApiClient } from '@/api/api';
 import {
   ModelNodeIdentifierNodeTypeEnum,
+  ModelScanResultsActionRequestScanTypeEnum,
   ModelSecretScanTriggerReq,
   ReportersContainsFilter,
 } from '@/api/generated';
+import { ScheduleScanForm } from '@/components/scan-configure-forms/ScheduleScanForm';
 import { invalidateAllQueries } from '@/queries';
 import { SecretScanNodeTypeEnum } from '@/types/common';
 import { get403Message } from '@/utils/403';
@@ -17,6 +19,7 @@ import { isNodeTypeARegistryTagType, isNodeTypeARegistryType } from '@/utils/reg
 
 export type SecretScanConfigureFormProps = {
   showAdvancedOptions: boolean;
+  showScheduleScanOptions: boolean;
   data:
     | {
         nodes: {
@@ -49,6 +52,8 @@ type ScanActionReturnType = {
     bulkScanId: string;
   };
 };
+const shouldSetPriorityScan = (nodeType: SecretScanNodeTypeEnum) =>
+  nodeType !== SecretScanNodeTypeEnum.kubernetes_cluster;
 
 export const scanSecretApiAction = async ({
   request,
@@ -59,6 +64,13 @@ export const scanSecretApiAction = async ({
   const nodeTypes = formData.get('_nodeTypes')?.toString().split(',') ?? [];
 
   const imageTag = formData.get('imageTag')?.toString() ?? '';
+
+  const scheduleOn = formData.get('scheduleOn') === 'on';
+  const scanImmediately = formData.get('scanImmediately') === 'on';
+  const scheduleDescription = formData.get('scheduleDescription');
+  const scheduleCron = `0 ${formData.get('scheduleCron')}`;
+
+  const isPriorityScan = formData.get('isPriorityScan') === 'on';
 
   const getNodeType = (nodeType: SecretScanNodeTypeEnum | 'container_image') => {
     let _nodeType = nodeType as ModelNodeIdentifierNodeTypeEnum;
@@ -115,6 +127,7 @@ export const scanSecretApiAction = async ({
         filter_in,
       },
     },
+    is_priority: isPriorityScan,
     node_ids: nodeIds.map((nodeId, index) => ({
       node_id: nodeId,
       node_type: getNodeType(
@@ -122,41 +135,93 @@ export const scanSecretApiAction = async ({
       ) as ModelNodeIdentifierNodeTypeEnum,
     })),
   };
-  const startSecretScanApi = apiWrapper({
-    fn: getSecretApiClient().startSecretScan,
-  });
 
-  const startSecretScanResponse = await startSecretScanApi({
-    modelSecretScanTriggerReq: requestBody,
-  });
-  if (!startSecretScanResponse.ok) {
-    if (
-      startSecretScanResponse.error.response.status === 400 ||
-      startSecretScanResponse.error.response.status === 409
-    ) {
-      return {
-        success: false,
-        message: startSecretScanResponse.error.message ?? '',
-      };
-    } else if (startSecretScanResponse.error.response.status === 403) {
-      const message = await get403Message(startSecretScanResponse.error);
-      return {
-        success: false,
-        message,
-      };
-    }
-    throw startSecretScanResponse.error;
-  }
-
-  toast.success('Scan started successfully');
-  invalidateAllQueries();
-  return {
+  let scanResponse = {
     success: true,
     data: {
-      bulkScanId: startSecretScanResponse.value.bulk_scan_id,
-      nodeType, // for onboard page redirection
+      bulkScanId: '',
+      nodeType,
     },
   };
+  if (!scheduleOn || scanImmediately) {
+    const startSecretScanApi = apiWrapper({
+      fn: getSecretApiClient().startSecretScan,
+    });
+
+    const startSecretScanResponse = await startSecretScanApi({
+      modelSecretScanTriggerReq: requestBody,
+    });
+    if (!startSecretScanResponse.ok) {
+      if (
+        startSecretScanResponse.error.response.status === 400 ||
+        startSecretScanResponse.error.response.status === 409
+      ) {
+        return {
+          success: false,
+          message: startSecretScanResponse.error.message ?? '',
+        };
+      } else if (startSecretScanResponse.error.response.status === 403) {
+        const message = await get403Message(startSecretScanResponse.error);
+        return {
+          success: false,
+          message,
+        };
+      }
+      throw startSecretScanResponse.error;
+    }
+    scanResponse = {
+      success: true,
+      data: {
+        bulkScanId: startSecretScanResponse.value.bulk_scan_id,
+        nodeType, // for onboard page redirection
+      },
+    };
+  }
+  if (scheduleOn) {
+    const addScheduledTaskApi = apiWrapper({
+      fn: getSettingsApiClient().addScheduledTask,
+    });
+    const scheduleResponse = await addScheduledTaskApi({
+      modelAddScheduledTaskRequest: {
+        ...requestBody,
+        benchmark_types: null,
+        scan_config: null,
+        action: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+        cron_expr: scheduleCron,
+        description: scheduleDescription?.toString(),
+      },
+    });
+    if (!scheduleResponse.ok) {
+      if (
+        scheduleResponse.error.response.status === 400 ||
+        scheduleResponse.error.response.status === 409
+      ) {
+        return {
+          success: false,
+          message: scheduleResponse.error.message ?? '',
+        };
+      } else if (scheduleResponse.error.response.status === 403) {
+        const message = await get403Message(scheduleResponse.error);
+        return {
+          success: false,
+          message,
+        };
+      }
+      throw scheduleResponse.error;
+    }
+  }
+
+  // schedule scan
+  if (scheduleOn && scanImmediately) {
+    toast.success('Scan started and scheduled successfully');
+  } else if (scheduleOn) {
+    toast.success('Scan scheduled successfully');
+  } else {
+    toast.success('Scan started successfully');
+  }
+
+  invalidateAllQueries();
+  return scanResponse;
 };
 
 export const SecretScanConfigureForm = ({
@@ -164,6 +229,7 @@ export const SecretScanConfigureForm = ({
   onSuccess,
   onCancel,
   showAdvancedOptions: wantAdvanceOptions,
+  showScheduleScanOptions,
 }: SecretScanConfigureFormProps) => {
   const [imageTag, setImageTag] = useState('latest');
   const fetcher = useFetcher<ScanActionReturnType>();
@@ -247,6 +313,15 @@ export const SecretScanConfigureForm = ({
           )}
         </div>
       ) : null}
+
+      {shouldSetPriorityScan(nodeType as SecretScanNodeTypeEnum) ? (
+        <div className="flex flex-col gap-y-2 mt-4">
+          <h6 className={'text-p3 dark:text-text-text-and-icon'}>Priority scan</h6>
+          <Checkbox name="isPriorityScan" label="Priority scan" />
+        </div>
+      ) : null}
+
+      {showScheduleScanOptions && <ScheduleScanForm />}
 
       {fetcherData?.message && (
         <p className="dark:text-status-error text-p7 mt-4">{fetcherData.message}</p>

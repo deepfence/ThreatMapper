@@ -114,7 +114,7 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 
 	reportName := path.Join("/report", reportFileName(params))
 	res, err := mc.UploadLocalFile(ctx, reportName,
-		localReportPath, putOpts(sdkUtils.ReportType(params.ReportType)))
+		localReportPath, false, putOpts(sdkUtils.ReportType(params.ReportType)))
 	if err != nil {
 		log.Error().Err(err).Msg("failed to upload file to minio")
 		return nil
