@@ -12,19 +12,19 @@ import {
   ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum,
   ModelAiIntegrationVulnerabilityRequest,
 } from '@/api/generated';
+import { CaretDown } from '@/components/icons/common/CaretDown';
 import { CheckIcon } from '@/components/icons/common/Check';
-import { FilterIcon } from '@/components/icons/common/Filter';
-import { InfoIcon } from '@/components/icons/common/Info';
+import { InfoStandardIcon } from '@/components/icons/common/InfoStandard';
 import { OpenAIIcon } from '@/components/icons/integration/OpenAI';
+import { RemediationNoIntegration } from '@/components/remediation/RemediationNoIntegration';
 import { RemediationPre } from '@/components/remediation/RemediationPre';
 import { queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 
 const textDecoder = new TextDecoder('utf-8');
 
-const PROVIDER_MAP: Record<string, { title: string; icon: ReactNode }> = {
+const PROVIDER_MAP: Record<string, { icon: ReactNode }> = {
   openai: {
-    title: 'OpenAI',
     icon: <OpenAIIcon />,
   },
 };
@@ -85,31 +85,18 @@ export const RemediationBlock = ({ meta }: RemediationBlockProps) => {
   }, [integrationType, format]);
 
   if (!data.length || !integrationType) {
-    return <div>No integrations added.</div>;
+    return <RemediationNoIntegration />;
   }
 
   return (
     <div className="h-full flex flex-col gap-4">
-      <div className="flex flex-col gap-2 px-5 pt-1">
+      <div className="flex flex-col gap-4 px-5 pt-2">
         <div className="flex justify-between items-center">
           <span className="flex items-center gap-2">
             {PROVIDER_MAP[integrationType] ? (
               <div className="h-4 w-4">{PROVIDER_MAP[integrationType].icon}</div>
             ) : null}{' '}
-            <span>
-              Remediations powered by{' '}
-              {PROVIDER_MAP[integrationType ?? '']?.title ?? integrationType}
-            </span>
-          </span>
-          <div className="flex items-center gap-2">
-            <Tooltip content="The suggestions and remediation steps proposed by Generative AI are derived from the analysis of existing information and may not encompass the most recent updates or evolving best practices in cloud security. This information is not a substitute for professional advice or guidance from certified experts in the field of cybersecurity and cloud compliance. The accuracy, applicability, and relevance of the generated content can vary depending on the specific nature of the compliance issue or CVE. Therefore, it is crucial to cross-reference and verify any generated remediation steps with current industry standards, official documentation from the cloud service provider, or consult with qualified professionals before implementation.">
-              <div className="flex items-center gap-1">
-                <div className="h-3 w-3 flex items-center">
-                  <InfoIcon />
-                </div>
-                <span className="text-p9">Disclaimer</span>
-              </div>
-            </Tooltip>
+            <span>Remediations powered by </span>
             <Dropdown
               align="end"
               content={data.map((integration) => {
@@ -125,22 +112,31 @@ export const RemediationBlock = ({ meta }: RemediationBlockProps) => {
                         <CheckIcon />
                       </div>
                     ) : null}
-                    {PROVIDER_MAP[integration.integration_type ?? '']?.title ??
-                      integration.integration_type}
+                    {integration.label ?? integration.integration_type}
                   </DropdownItem>
                 );
               })}
             >
-              <Button
-                color="default"
-                variant="flat"
-                size="sm"
-                startIcon={<FilterIcon />}
-                type="button"
-              >
-                Options
-              </Button>
+              <button type="button" className="font-semibold flex gap-1 items-center">
+                <span>
+                  {data.find((int) => int.integration_type === integrationType)?.label ??
+                    integrationType}
+                </span>
+                <div className="dark:text-accent-accent h-4 w-4">
+                  <CaretDown />
+                </div>
+              </button>
             </Dropdown>
+          </span>
+          <div className="flex items-center gap-2">
+            <Tooltip content="The suggestions and remediation steps proposed by Generative AI are derived from the analysis of existing information and may not encompass the most recent updates or evolving best practices in cloud security. This information is not a substitute for professional advice or guidance from certified experts in the field of cybersecurity and cloud compliance. The accuracy, applicability, and relevance of the generated content can vary depending on the specific nature of the compliance issue or CVE. Therefore, it is crucial to cross-reference and verify any generated remediation steps with current industry standards, official documentation from the cloud service provider, or consult with qualified professionals before implementation.">
+              <div className="flex items-center gap-1">
+                <div className="h-4 w-4 flex items-center">
+                  <InfoStandardIcon />
+                </div>
+                <span className="text-p5">Disclaimer</span>
+              </div>
+            </Tooltip>
           </div>
         </div>
         <div className="flex items-center overflow-x-auto gap-2">

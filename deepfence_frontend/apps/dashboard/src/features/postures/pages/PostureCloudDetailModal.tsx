@@ -15,8 +15,8 @@ import { ModelCloudCompliance } from '@/api/generated';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
 import { CheckIcon } from '@/components/icons/common/Check';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
-import { SparkleLineIcon } from '@/components/icons/common/SparkleLine';
 import { RemediationBlock } from '@/components/remediation/RemediationBlock';
+import { RemediationButton } from '@/components/remediation/RemediationButton';
 import { PostureStatusBadge } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { TruncatedText } from '@/components/TruncatedText';
@@ -73,19 +73,6 @@ const Header = ({
 
           <div className="flex items-center gap-2">
             <Button
-              variant={isRemediationOpen ? undefined : 'flat'}
-              size="sm"
-              className="ml-auto"
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                setIsRemediationOpen((prevOpen) => !prevOpen);
-              }}
-              startIcon={<SparkleLineIcon />}
-            >
-              Redmediation
-            </Button>
-            <Button
               variant="flat"
               size="sm"
               className="ml-auto"
@@ -96,6 +83,17 @@ const Header = ({
             >
               {isCopied ? 'Copied JSON' : 'Copy JSON'}
             </Button>
+            <RemediationButton
+              className="ml-auto"
+              active={isRemediationOpen}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setIsRemediationOpen((prevOpen) => !prevOpen);
+              }}
+            >
+              Redmediation
+            </RemediationButton>
           </div>
         </div>
       </div>
@@ -164,11 +162,9 @@ const DetailsComponent = ({ isRemediationOpen }: { isRemediationOpen: boolean })
     return (
       <Suspense
         fallback={
-          <SlidingModalContent>
-            <div className="h-full w-full flex items-center justify-center">
-              <CircleSpinner size="lg" />
-            </div>
-          </SlidingModalContent>
+          <div className="h-full w-full flex items-center justify-center">
+            <CircleSpinner size="lg" />
+          </div>
         }
       >
         <RemediationBlock
@@ -268,7 +264,7 @@ const PostureCloudDetailModal = () => {
       onOpenChange={() => {
         navigate(`..?${searchParams.toString()}`);
       }}
-      size="l"
+      size="xl"
     >
       <SlidingModalCloseButton />
       <Suspense
