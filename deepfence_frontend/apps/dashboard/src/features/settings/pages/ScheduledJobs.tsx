@@ -19,7 +19,7 @@ import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLi
 import { TruncatedText } from '@/components/TruncatedText';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
-import { get403Message } from '@/utils/403';
+import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 
@@ -53,9 +53,10 @@ export const action = async ({
     });
     if (!updateResponse.ok) {
       if (updateResponse.error.response.status === 400) {
+        const { message } = await getResponseErrors(updateResponse.error);
         return {
           success: false,
-          message: updateResponse.error.message,
+          message,
         };
       } else if (updateResponse.error.response.status === 403) {
         const message = await get403Message(updateResponse.error);
@@ -78,9 +79,10 @@ export const action = async ({
     });
     if (!deleteResponse.ok) {
       if (deleteResponse.error.response.status === 400) {
+        const { message } = await getResponseErrors(deleteResponse.error);
         return {
           success: false,
-          message: deleteResponse.error.message,
+          message,
         };
       } else if (deleteResponse.error.response.status === 403) {
         const message = await get403Message(deleteResponse.error);

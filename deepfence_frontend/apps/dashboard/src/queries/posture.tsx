@@ -17,7 +17,7 @@ import {
   SearchSearchNodeReq,
 } from '@/api/generated';
 import { ScanStatusEnum } from '@/types/common';
-import { get403Message } from '@/utils/403';
+import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { ComplianceScanGroupedStatus } from '@/utils/scan';
 import { COMPLIANCE_SCAN_STATUS_GROUPS } from '@/utils/scan';
@@ -201,8 +201,9 @@ export const postureQueries = createQueryKeys('posture', {
         });
         if (!statusResult.ok) {
           if (statusResult.error.response.status === 400) {
+            const { message } = await getResponseErrors(statusResult.error);
             return {
-              message: statusResult.error.message,
+              message,
             };
           }
           throw statusResult.error;
@@ -285,8 +286,9 @@ export const postureQueries = createQueryKeys('posture', {
             result.error.response.status === 400 ||
             result.error.response.status === 404
           ) {
+            const { message } = await getResponseErrors(result.error);
             return {
-              message: result.error.message ?? '',
+              message,
             };
           }
           throw result.error;
@@ -297,8 +299,9 @@ export const postureQueries = createQueryKeys('posture', {
             resultCounts.error.response.status === 400 ||
             resultCounts.error.response.status === 404
           ) {
+            const { message } = await getResponseErrors(resultCounts.error);
             return {
-              message: resultCounts.error.message ?? '',
+              message,
             };
           }
           throw resultCounts.error;
@@ -387,8 +390,9 @@ export const postureQueries = createQueryKeys('posture', {
 
         if (!statusResult.ok) {
           if (statusResult.error.response.status === 400) {
+            const { message } = await getResponseErrors(statusResult.error);
             return {
-              message: statusResult.error.message,
+              message,
             };
           }
           throw statusResult.error;
@@ -478,8 +482,9 @@ export const postureQueries = createQueryKeys('posture', {
             result.error.response.status === 400 ||
             result.error.response.status === 404
           ) {
+            const { message } = await getResponseErrors(result.error);
             return {
-              message: result.error.message ?? '',
+              message,
             };
           }
           throw result.error;
@@ -490,8 +495,9 @@ export const postureQueries = createQueryKeys('posture', {
             resultCounts.error.response.status === 400 ||
             resultCounts.error.response.status === 404
           ) {
+            const { message } = await getResponseErrors(resultCounts.error);
             return {
-              message: resultCounts.error.message ?? '',
+              message,
             };
           }
           throw resultCounts.error;
@@ -554,8 +560,10 @@ export const postureQueries = createQueryKeys('posture', {
         });
         if (!result.ok) {
           if (result.error.response.status === 400) {
+            const { message } = await getResponseErrors(result.error);
+
             return {
-              message: result.error.message,
+              message,
               controls: [],
             };
           }
@@ -690,9 +698,10 @@ export const postureQueries = createQueryKeys('posture', {
         ]);
 
         if (!addScanResponse.ok) {
+          const { message } = await getResponseErrors(addScanResponse.error);
           return {
             error: 'Error getting scan diff',
-            message: addScanResponse.error.message,
+            message,
             ...results,
           };
         }
@@ -704,9 +713,10 @@ export const postureQueries = createQueryKeys('posture', {
         const addedScans = addScanResponse.value._new;
 
         if (!deletedScanResponse.ok) {
+          const { message } = await getResponseErrors(deletedScanResponse.error);
           return {
             error: 'Error getting scan diff',
-            message: deletedScanResponse.error.message,
+            message,
             ...results,
           };
         }
@@ -793,9 +803,10 @@ export const postureQueries = createQueryKeys('posture', {
         ]);
 
         if (!addScanResponse.ok) {
+          const { message } = await getResponseErrors(addScanResponse.error);
           return {
             error: 'Error getting scan diff',
-            message: addScanResponse.error.message,
+            message,
             ...results,
           };
         }
@@ -807,9 +818,10 @@ export const postureQueries = createQueryKeys('posture', {
         const addedScans = addScanResponse.value._new;
 
         if (!deletedScanResponse.ok) {
+          const { message } = await getResponseErrors(deletedScanResponse.error);
           return {
             error: 'Error getting scan diff',
-            message: deletedScanResponse.error.message,
+            message,
             ...results,
           };
         }

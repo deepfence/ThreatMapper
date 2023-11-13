@@ -13,7 +13,7 @@ import {
 import { ScheduleScanForm } from '@/components/scan-configure-forms/ScheduleScanForm';
 import { invalidateAllQueries } from '@/queries';
 import { SecretScanNodeTypeEnum } from '@/types/common';
-import { get403Message } from '@/utils/403';
+import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { isNodeTypeARegistryTagType, isNodeTypeARegistryType } from '@/utils/registry';
 
@@ -156,9 +156,10 @@ export const scanSecretApiAction = async ({
         startSecretScanResponse.error.response.status === 400 ||
         startSecretScanResponse.error.response.status === 409
       ) {
+        const { message } = await getResponseErrors(startSecretScanResponse.error);
         return {
           success: false,
-          message: startSecretScanResponse.error.message ?? '',
+          message,
         };
       } else if (startSecretScanResponse.error.response.status === 403) {
         const message = await get403Message(startSecretScanResponse.error);
@@ -196,9 +197,10 @@ export const scanSecretApiAction = async ({
         scheduleResponse.error.response.status === 400 ||
         scheduleResponse.error.response.status === 409
       ) {
+        const { message } = await getResponseErrors(scheduleResponse.error);
         return {
           success: false,
-          message: scheduleResponse.error.message ?? '',
+          message,
         };
       } else if (scheduleResponse.error.response.status === 403) {
         const message = await get403Message(scheduleResponse.error);
