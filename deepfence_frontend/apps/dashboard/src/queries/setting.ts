@@ -2,7 +2,7 @@ import { createQueryKeys } from '@lukemorales/query-key-factory';
 
 import { getDiagnosisApiClient, getSettingsApiClient, getUserApiClient } from '@/api/api';
 import { ModelGetAuditLogsRequest } from '@/api/generated';
-import { get403Message } from '@/utils/403';
+import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
 export const settingQueries = createQueryKeys('setting', {
@@ -66,8 +66,9 @@ export const settingQueries = createQueryKeys('setting', {
 
         if (!userResponse.ok) {
           if (userResponse.error.response.status === 400) {
+            const { message } = await getResponseErrors(userResponse.error);
             return {
-              message: userResponse.error.message,
+              message,
             };
           } else if (userResponse.error.response.status === 403) {
             const message = await get403Message(userResponse.error);
@@ -98,8 +99,9 @@ export const settingQueries = createQueryKeys('setting', {
         const settingsResponse = await settingsApi();
         if (!settingsResponse.ok) {
           if (settingsResponse.error.response.status === 400) {
+            const { message } = await getResponseErrors(settingsResponse.error);
             return {
-              message: settingsResponse.error.message,
+              message,
             };
           } else if (settingsResponse.error.response.status === 403) {
             const message = await get403Message(settingsResponse.error);
@@ -129,8 +131,9 @@ export const settingQueries = createQueryKeys('setting', {
             emailResponse.error.response.status === 400 ||
             emailResponse.error.response.status === 409
           ) {
+            const { message } = await getResponseErrors(emailResponse.error);
             return {
-              message: emailResponse.error.message,
+              message,
             };
           } else if (emailResponse.error.response.status === 403) {
             const message = await get403Message(emailResponse.error);

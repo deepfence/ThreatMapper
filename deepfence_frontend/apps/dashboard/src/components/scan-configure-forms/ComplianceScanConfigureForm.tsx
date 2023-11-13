@@ -24,7 +24,7 @@ import { TruncatedText } from '@/components/TruncatedText';
 import { ActionEnumType } from '@/features/postures/data-component/toggleControlApiAction';
 import { invalidateAllQueries, queries } from '@/queries';
 import { ComplianceScanNodeTypeEnum, isCloudNode, isCloudOrgNode } from '@/types/common';
-import { get403Message } from '@/utils/403';
+import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
 export const complianceType: {
@@ -138,9 +138,10 @@ export const scanPostureApiAction = async ({
         startComplianceScanResponse.error.response.status === 400 ||
         startComplianceScanResponse.error.response.status === 409
       ) {
+        const { message } = await getResponseErrors(startComplianceScanResponse.error);
         return {
           success: false,
-          message: startComplianceScanResponse.error.message ?? '',
+          message,
         };
       } else if (startComplianceScanResponse.error.response.status === 403) {
         const message = await get403Message(startComplianceScanResponse.error);
@@ -181,9 +182,10 @@ export const scanPostureApiAction = async ({
         scheduleResponse.error.response.status === 400 ||
         scheduleResponse.error.response.status === 409
       ) {
+        const { message } = await getResponseErrors(scheduleResponse.error);
         return {
           success: false,
-          message: scheduleResponse.error.message ?? '',
+          message,
         };
       } else if (scheduleResponse.error.response.status === 403) {
         const message = await get403Message(scheduleResponse.error);
