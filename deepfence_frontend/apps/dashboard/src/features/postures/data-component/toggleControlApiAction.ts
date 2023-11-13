@@ -43,6 +43,7 @@ export const toggleControlApiAction = async ({
       if (result.error.response.status === 400 || result.error.response.status === 409) {
         const { message } = await getResponseErrors(result.error);
         toast.error(message);
+        return null;
       }
     }
     toast.success(
