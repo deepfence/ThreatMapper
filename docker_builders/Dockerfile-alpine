@@ -14,6 +14,7 @@ RUN apk add --no-cache \
     openssl \
     file \
     jansson \
+    jansson-static \
     bison \
     tini \
     su-exec
@@ -30,6 +31,8 @@ RUN apk add --no-cache -t .build-deps py-setuptools \
     flex \
     git \
     libmagic \
+    libmagic-static \
+    libcrypto3 \
     linux-headers
 
 RUN cd /root \
