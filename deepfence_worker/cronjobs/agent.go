@@ -1,16 +1,14 @@
 package cronjobs
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"io"
+	"net/http"
 	url2 "net/url"
-	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/hibiken/asynq"
@@ -19,44 +17,49 @@ import (
 )
 
 var (
-	bucket = aws.String("deepfence-tm-binaries")
+	listing_url = "https://threat-intel.deepfence.io/release/threatmapper/listing.json"
 )
+
+type ListingFormat struct {
+	Available []struct {
+		Built    time.Time `json:"built"`
+		Version  string    `json:"version"`
+		URL      string    `json:"url"`
+		Checksum string    `json:"checksum"`
+	} `json:"available"`
+}
 
 func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
 	log.Info().Msg("Start agent version check")
 
-	sess, _ := session.NewSession(&aws.Config{
-		Region: aws.String("us-east-2"), Credentials: credentials.AnonymousCredentials},
-	)
-
-	svc := s3.New(sess)
-
-	resp, err := svc.ListObjects(&s3.ListObjectsInput{
-		Bucket: bucket,
-	})
-
+	resp, err := http.Get(listing_url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
-	downloader := s3manager.NewDownloaderWithClient(svc)
+	var listing ListingFormat
+	json.Unmarshal(body, &listing)
 
-	versioned_tarball := map[string]*aws.WriteAtBuffer{}
-	for _, item := range resp.Contents {
-		buf := []byte{}
-		b := aws.NewWriteAtBuffer(buf)
-		_, err := downloader.Download(b,
-			&s3.GetObjectInput{
-				Bucket: bucket,
-				Key:    item.Key,
-			})
+	versioned_tarball := map[string]*bytes.Buffer{}
+	for _, version := range listing.Available {
+		tar_resp, err := http.Get(version.URL)
 		if err != nil {
-			log.Error().Msgf("S3 download of %v failed: %v", *item.Key, err)
+			log.Error().Msgf("Skipping %v, %v", version, err)
+			continue
+		}
+		defer tar_resp.Body.Close()
+		tarball, err := io.ReadAll(tar_resp.Body)
+		if err != nil {
+			log.Error().Msgf("Skipping %v, err: %v", version, err)
 			continue
 		}
 
-		key := (*item.Key)[:strings.IndexByte(*item.Key, '/')]
-		versioned_tarball[key] = b
+		versioned_tarball[version.Version] = bytes.NewBuffer(tarball)
 	}
 
 	tags_with_urls, err := prepareAgentBinariesReleases(ctx, versioned_tarball)
@@ -68,7 +71,7 @@ func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
 	return err
 }
 
-func prepareAgentBinariesReleases(ctx context.Context, versioned_tarball map[string]*aws.WriteAtBuffer) (map[string]string, error) {
+func prepareAgentBinariesReleases(ctx context.Context, versioned_tarball map[string]*bytes.Buffer) (map[string]string, error) {
 	processed_tags := map[string]string{}
 	minio, err := directory.MinioClient(ctx)
 	if err != nil {
@@ -128,7 +131,7 @@ func ingestAgentVersion(ctx context.Context, tags_to_url map[string]string) erro
 	if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:AgentVersion{node_id: row.tag})
-		ON CREATE SET n.url = row.url`,
+		SET n.url = row.url`,
 		map[string]interface{}{"batch": tags_to_ingest}); err != nil {
 		return err
 	}

@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	self_id                  = "self"
+	Self_id                  = "self"
 	log_root_env             = "${DF_INSTALL_DIR}/var/log/deepfenced/"
 	EXIT_CODE_BASH_NOT_FOUND = 127
 )
@@ -288,7 +288,7 @@ func WriteTo(dst, org string) error {
 }
 
 func UpgradeProcessFromFile(name, path string) error {
-	if name == self_id {
+	if name == Self_id {
 		return selfUpgradeFromFile(path)
 	}
 
@@ -325,7 +325,7 @@ func UpgradeProcessFromFile(name, path string) error {
 }
 
 func UpgradeProcessFromURL(name, url string) error {
-	if name == self_id {
+	if name == Self_id {
 		return selfUpgradeFromUrl(url)
 	}
 
@@ -391,6 +391,21 @@ func StopProcess(name string) error {
 		return NotRunningError
 	}
 	return process.stop()
+}
+
+func StopAllProcesses() []error {
+
+	access.RLock()
+	defer access.RUnlock()
+
+	errs := []error{}
+	for _, process := range processes {
+		err := process.stop()
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errs
 }
 
 func LoadProcess(name, path, command, env string, autorestart bool, cgroup string) {
