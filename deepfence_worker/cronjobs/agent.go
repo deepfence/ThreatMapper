@@ -131,7 +131,7 @@ func ingestAgentVersion(ctx context.Context, tags_to_url map[string]string) erro
 	if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:AgentVersion{node_id: row.tag})
-		ON CREATE SET n.url = row.url`,
+		SET n.url = row.url`,
 		map[string]interface{}{"batch": tags_to_ingest}); err != nil {
 		return err
 	}

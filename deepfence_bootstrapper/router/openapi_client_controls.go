@@ -134,6 +134,10 @@ func SetUpgrade() {
 	upgrade.Store(true)
 }
 
+func UnsetUpgrade() {
+	upgrade.Store(false)
+}
+
 func getUpgradeWorkload() int32 {
 	if upgrade.Load() {
 		return MAX_AGENT_WORKLOAD
