@@ -10,6 +10,7 @@ on:
 
 env:
   DF_BIN_VER: ${{ inputs.ver }}
+  VERSION: ${{ inputs.ver }}
 
 jobs:
   docker:
@@ -35,12 +36,14 @@ jobs:
           mkdir -p /tmp/binaries/$DF_BIN_VER
           cd /tmp/binaries/$DF_BIN_VER
           id=$(docker create deepfenceio/deepfence_agent_ce:latest)
-          docker cp $id:/usr/local/bin/syft - > syft
-          docker cp $id:/home/deepfence/bin/yara-hunter/YaraHunter - > YaraHunter
-          docker cp $id:/home/deepfence/bin/secret-scanner/SecretScanner - > SecretScanner
-          docker cp $id:/usr/local/discovery/deepfence-discovery - > deepfence-discovery
-          docker cp $id:/opt/td-agent-bit/bin/fluent-bit - > fluent-bit
-          docker cp $id:/usr/local/bin/compliance_check/compliance - > compliance
+          docker cp $id:/bin/deepfenced self
+          docker cp $id:/home/deepfence/bin/package-scanner package_scanner
+          docker cp $id:/home/deepfence/bin/yara-hunter/YaraHunter malware_scanner
+          docker cp $id:/home/deepfence/bin/secret-scanner/SecretScanner secret_scanner
+          docker cp $id:/usr/local/discovery/deepfence-discovery discovery
+          docker cp $id:/opt/td-agent-bit/bin/fluent-bit fluentbit
+          docker cp $id:/usr/local/bin/syft syft
+          docker cp $id:/usr/local/bin/compliance_check/compliance compliance
           tar zcvf binaries.tar.gz ./*
           docker rm -v $id
 

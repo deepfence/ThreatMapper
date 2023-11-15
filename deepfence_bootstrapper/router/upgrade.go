@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/supervisor"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
@@ -49,6 +50,9 @@ func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 		if err != nil {
 			return err
 		}
+		if info.IsDir() {
+			return nil
+		}
 		plugins = append(plugins, NamePath{name: filepath.Base(path), path: path})
 		return nil
 	})
@@ -57,14 +61,34 @@ func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 		return err
 	}
 
+	restart := false
 	for _, plugin := range plugins {
 		err = supervisor.UpgradeProcessFromFile(plugin.name, plugin.path)
 		if err != nil {
-			log.Error().Msg(err.Error())
+			log.Error().Msgf("plugin: %v, path: %v, err: %v", plugin.name, plugin.path, err)
+		} else if plugin.name == supervisor.Self_id {
+			restart = true
 		}
 	}
 
+	if restart {
+		log.Info().Msgf("Restart self")
+		restartSelf()
+	}
+
 	return nil
+}
+
+func restartSelf() error {
+	errs := supervisor.StopAllProcesses()
+	for i := range errs {
+		log.Error().Msg(errs[i].Error())
+	}
+	argv0, err := exec.LookPath(os.Args[0])
+	if err != nil {
+		return err
+	}
+	return syscall.Exec(argv0, os.Args, os.Environ())
 }
 
 func downloadFile(filepath string, url string) (err error) {
