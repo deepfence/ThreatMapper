@@ -1,0 +1,43 @@
+ARG VECTORSCAN_IMG_TAG=latest
+ARG VECTORSCAN_IMAGE_REPOSITORY=deepfenceio
+FROM $VECTORSCAN_IMAGE_REPOSITORY/deepfence_vectorscan_build:$VECTORSCAN_IMG_TAG AS vectorscan
+
+ARG DF_IMG_TAG=latest
+ARG IMAGE_REPOSITORY=deepfenceio
+
+FROM golang:1.21-bookworm
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update
+RUN apt-get install -y
+RUN apt-get -qq -y --no-install-recommends install \
+    build-essential automake libtool make gcc pkg-config libssl-dev git protoc-gen-go \
+    bash make git gcc libc-dev lsb-release software-properties-common libz-dev apt-utils\
+    protobuf-compiler ca-certificates libpcap-dev time file shellcheck curl \
+    libjansson-dev libmagic-dev \
+    cmake flex bison libyaml-dev
+
+RUN cd /root  \
+    && wget https://github.com/VirusTotal/yara/archive/refs/tags/v4.3.2.tar.gz \
+    && tar -zxf v4.3.2.tar.gz \
+    && cd yara-4.3.2 \
+    && ./bootstrap.sh \
+    && ./configure --prefix=/usr/local/yara --disable-dotnet --enable-magic --enable-cuckoo \
+    && make \
+    && make install \
+    && cd /usr/local/ \
+    && tar -czf yara.tar.gz yara
+
+COPY --from=vectorscan /vectorscan.tar.bz2 /
+RUN tar -xjf /vectorscan.tar.bz2 -C / && rm /vectorscan.tar.bz2
+
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.30.0
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+
+RUN mkdir /home/deepfence
+COPY deepfence_agent/build_scripts/*.sh /home/deepfence/
+
+ARG DF_AGENT_SRC=/go/src/github.com/deepfence/deepfence_agent
+WORKDIR $DF_AGENT_SRC
+
+ENV GOWORK=off
