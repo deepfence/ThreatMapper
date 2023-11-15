@@ -2,7 +2,7 @@ module github.com/deepfence/ThreatMapper/deepfence_worker
 
 go 1.21.0
 
-toolchain go1.21.3
+toolchain go1.21.1
 
 replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_sdk/client/
 

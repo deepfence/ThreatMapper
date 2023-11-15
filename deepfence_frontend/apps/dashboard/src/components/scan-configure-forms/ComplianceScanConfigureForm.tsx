@@ -9,7 +9,7 @@ import {
 } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from 'tailwind-preset';
-import { Button, TableSkeleton, Tabs } from 'ui-components';
+import { Button, Checkbox, TableSkeleton, Tabs } from 'ui-components';
 import { CircleSpinner, createColumnHelper, Switch, Table } from 'ui-components';
 
 import { getComplianceApiClient, getSettingsApiClient } from '@/api/api';
@@ -23,8 +23,8 @@ import { ScheduleScanForm } from '@/components/scan-configure-forms/ScheduleScan
 import { TruncatedText } from '@/components/TruncatedText';
 import { ActionEnumType } from '@/features/postures/data-component/toggleControlApiAction';
 import { invalidateAllQueries, queries } from '@/queries';
-import { ComplianceScanNodeTypeEnum } from '@/types/common';
-import { get403Message } from '@/utils/403';
+import { ComplianceScanNodeTypeEnum, isCloudNode, isCloudOrgNode } from '@/types/common';
+import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
 export const complianceType: {
@@ -76,6 +76,9 @@ export const CLOUDS = [
   ComplianceScanNodeTypeEnum.gcp_org,
 ];
 
+const isKubernetesNode = (nodeType: ComplianceScanNodeTypeEnum) =>
+  nodeType == ComplianceScanNodeTypeEnum.kubernetes_cluster;
+
 export const scanPostureApiAction = async ({
   request,
 }: ActionFunctionArgs): Promise<ScanActionReturnType> => {
@@ -86,7 +89,7 @@ export const scanPostureApiAction = async ({
   const checkTypes = body._checkTypes.toString().replace('SOC2', 'soc_2');
 
   const isCloudScan = CLOUDS.includes(nodeType as ComplianceScanNodeTypeEnum);
-  if (nodeType === ComplianceScanNodeTypeEnum.kubernetes_cluster) {
+  if (isKubernetesNode(nodeType as ComplianceScanNodeTypeEnum)) {
     nodeType = 'cluster';
   } else if (isCloudScan) {
     nodeType = 'cloud_account';
@@ -97,6 +100,8 @@ export const scanPostureApiAction = async ({
   const scheduleDescription = formData.get('scheduleDescription');
   const scheduleCron = `0 ${formData.get('scheduleCron')}`;
 
+  const isPriorityScan = formData.get('isPriorityScan') === 'on';
+
   const requestBody: ModelComplianceScanTriggerReq = {
     benchmark_types: checkTypes.toLowerCase().split(','),
     filters: {
@@ -106,6 +111,7 @@ export const scanPostureApiAction = async ({
       host_scan_filter: { filter_in: null },
       image_scan_filter: { filter_in: null },
     },
+    is_priority: isPriorityScan,
     node_ids: nodeIds.map((nodeId) => ({
       node_id: nodeId,
       node_type: nodeType as ModelNodeIdentifierNodeTypeEnum,
@@ -132,9 +138,10 @@ export const scanPostureApiAction = async ({
         startComplianceScanResponse.error.response.status === 400 ||
         startComplianceScanResponse.error.response.status === 409
       ) {
+        const { message } = await getResponseErrors(startComplianceScanResponse.error);
         return {
           success: false,
-          message: startComplianceScanResponse.error.message ?? '',
+          message,
         };
       } else if (startComplianceScanResponse.error.response.status === 403) {
         const message = await get403Message(startComplianceScanResponse.error);
@@ -175,9 +182,10 @@ export const scanPostureApiAction = async ({
         scheduleResponse.error.response.status === 400 ||
         scheduleResponse.error.response.status === 409
       ) {
+        const { message } = await getResponseErrors(scheduleResponse.error);
         return {
           success: false,
-          message: scheduleResponse.error.message ?? '',
+          message,
         };
       } else if (scheduleResponse.error.response.status === 403) {
         const message = await get403Message(scheduleResponse.error);
@@ -535,6 +543,15 @@ export const ComplianceScanConfigureForm = ({
           <span className="text-p4 dark:text-text-text-and-icon">
             Click on start scan to find compliance issues
           </span>
+        ) : null}
+
+        {!isCloudNode(nodeType) &&
+        !isCloudOrgNode(nodeType) &&
+        !isKubernetesNode(nodeType) ? (
+          <div className="flex flex-col gap-y-2 mt-4">
+            <h6 className={'text-p3 dark:text-text-text-and-icon'}>Priority scan</h6>
+            <Checkbox name="isPriorityScan" label="Priority scan" />
+          </div>
         ) : null}
 
         {showScheduleScanOptions && <ScheduleScanForm />}

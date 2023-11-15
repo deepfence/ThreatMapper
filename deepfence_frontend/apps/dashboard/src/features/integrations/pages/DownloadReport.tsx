@@ -14,7 +14,7 @@ import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations
 import { ReportTable } from '@/features/integrations/components/ReportsTable';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
-import { get403Message } from '@/utils/403';
+import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { download } from '@/utils/download';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -108,8 +108,9 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     });
     if (!r.ok) {
       if (r.error.response.status === 400) {
+        const { message } = await getResponseErrors(r.error);
         return {
-          message: r.error.message ?? 'Error in deleting report',
+          message: message ?? 'Error in deleting report',
           success: false,
         };
       } else if (r.error.response.status === 403) {

@@ -16,7 +16,6 @@ ADD deepfence_utils/postgresql/migrate /usr/local/postgresql-migrate
 RUN apk add --no-cache curl kafkacat docker-cli openrc bash skopeo jansson-dev \
         libmagic libstdc++ libx11 libxrender libxext libssl1.1 ca-certificates \
         fontconfig freetype ttf-droid ttf-freefont ttf-liberation postgresql15-client
-RUN apk add hyperscan --repository=https://dl-cdn.alpinelinux.org/alpine/v3.13/community
 
 RUN curl -fsSL https://raw.githubusercontent.com/pressly/goose/master/install.sh | sh
 

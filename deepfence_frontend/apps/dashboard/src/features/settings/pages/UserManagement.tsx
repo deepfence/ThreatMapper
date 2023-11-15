@@ -40,7 +40,7 @@ import { RefreshIcon } from '@/components/icons/common/Refresh';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
-import { get403Message, getFieldErrors } from '@/utils/403';
+import { get403Message, getFieldErrors, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -110,9 +110,10 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     });
     if (!deleteResponse.ok) {
       if (deleteResponse.error.response.status === 400) {
+        const { message } = await getResponseErrors(deleteResponse.error);
         return {
           success: false,
-          message: deleteResponse.error.message,
+          message,
         };
       } else if (deleteResponse.error.response.status === 403) {
         const message = await get403Message(deleteResponse.error);

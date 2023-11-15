@@ -57,8 +57,9 @@ type ScanFilter struct {
 }
 
 type ScanTriggerCommon struct {
-	NodeIds []NodeIdentifier `json:"node_ids" required:"true"`
-	Filters ScanFilter       `json:"filters" required:"true"`
+	NodeIds    []NodeIdentifier `json:"node_ids" required:"true"`
+	Filters    ScanFilter       `json:"filters" required:"true"`
+	IsPriority bool             `json:"is_priority"`
 }
 
 type NodeIdentifier struct {
