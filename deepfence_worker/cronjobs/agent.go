@@ -9,11 +9,14 @@ import (
 	url2 "net/url"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
 	m "github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"golang.org/x/mod/semver"
 )
 
 var (
@@ -68,7 +71,10 @@ func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
 	}
 
 	err = ingestAgentVersion(ctx, tags_with_urls)
-	return err
+	if err != nil {
+		return err
+	}
+	return scheduleAutoUpgradeForPatchChanges(ctx, getLatestVersionByMajorMinor(versioned_tarball))
 }
 
 func prepareAgentBinariesReleases(ctx context.Context, versioned_tarball map[string]*bytes.Buffer) (map[string]string, error) {
@@ -137,4 +143,69 @@ func ingestAgentVersion(ctx context.Context, tags_to_url map[string]string) erro
 	}
 
 	return tx.Commit()
+}
+
+func scheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]string) error {
+	nc, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	tags_to_ingest := []map[string]string{}
+	for k, v := range latest {
+		action, err := controls.PrepareAgentUpgradeAction(ctx, v)
+		if err != nil {
+			log.Error().Msg(err.Error())
+			continue
+		}
+
+		action_str, err := json.Marshal(action)
+		if err != nil {
+			return err
+		}
+		tags_to_ingest = append(tags_to_ingest,
+			map[string]string{
+				"major_minor": k,
+				"latest":      v,
+				"action":      string(action_str)})
+	}
+
+	if _, err = tx.Run(`
+		UNWIND $batch as row
+		MATCH (vnew:AgentVersion{node_id: row.latest})
+		MATCH (v:AgentVersion) <-[:VERSIONED]- (n:Node)
+		WHERE v.node_id STARTS WITH row.major_minor
+		AND v.node_id <> row.latest
+		MERGE (vnew) -[:SCHEDULED{status: $status, retries: 0, trigger_action: row.action, updated_at: TIMESTAMP()}]-> (n)`,
+		map[string]interface{}{
+			"status": utils.SCAN_STATUS_STARTING,
+			"batch":  tags_to_ingest}); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func getLatestVersionByMajorMinor(versions map[string]*bytes.Buffer) map[string]string {
+	latest_patches := map[string]string{}
+	all_versions := map[string][]string{}
+
+	for k := range versions {
+		all_versions[semver.MajorMinor(k)] =
+			append(all_versions[semver.MajorMinor(k)],
+				k)
+	}
+	for k, v := range all_versions {
+		semver.Sort(v)
+		latest_patches[k] = v[len(v)-1]
+	}
+	return latest_patches
 }

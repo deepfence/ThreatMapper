@@ -7,9 +7,11 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"golang.org/x/mod/semver"
 )
 
 const (
@@ -17,6 +19,29 @@ const (
 	DEFAULT_AGENT_IMAGE_TAG  = "thomas"
 	DEFAULT_AGENT_VERSION    = "0.0.1"
 )
+
+func PrepareAgentUpgradeAction(ctx context.Context, version string) (ctl.Action, error) {
+
+	url, err := GetAgentVersionTarball(ctx, version)
+	if err != nil {
+		return ctl.Action{}, err
+	}
+
+	internal_req := ctl.StartAgentUpgradeRequest{
+		HomeDirectoryUrl: url,
+		Version:          version,
+	}
+
+	b, err := json.Marshal(internal_req)
+	if err != nil {
+		return ctl.Action{}, err
+	}
+
+	return ctl.Action{
+		ID:             ctl.StartAgentUpgrade,
+		RequestPayload: string(b),
+	}, nil
+}
 
 func ScheduleAgentUpgrade(ctx context.Context, version string, nodeIds []string, action controls.Action) error {
 
@@ -170,6 +195,41 @@ func hasPendingUpgradeOrNew(ctx context.Context, version string, nodeId string) 
 	return r.Values[0].(bool), nil
 }
 
+func wasAttachedToNewer(ctx context.Context, version string, nodeId string) (bool, string, error) {
+	client, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return false, "", err
+	}
+
+	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return false, "", err
+	}
+	defer tx.Close()
+
+	res, err := tx.Run(`
+		MATCH (n:Node{node_id:$node_id}) -[old:VERSIONED]-> (v)
+		RETURN v.node_id`,
+		map[string]interface{}{
+			"node_id": nodeId,
+		})
+	if err != nil {
+		return false, "", err
+	}
+
+	rec, err := res.Single()
+	if err != nil {
+		return false, "", nil
+	}
+
+	prev_ver := rec.Values[0].(string)
+
+	return semver.Compare(prev_ver, version) == 1, prev_ver, nil
+}
+
 func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) error {
 
 	has, err := hasPendingUpgradeOrNew(ctx, version, nodeId)
@@ -180,6 +240,11 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) er
 
 	if !has {
 		return nil
+	}
+
+	newer, prev_ver, err := wasAttachedToNewer(ctx, version, nodeId)
+	if err != nil {
+		return err
 	}
 
 	client, err := directory.Neo4jClient(ctx)
@@ -222,8 +287,24 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) er
 		return err
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
 
+	// If attached to newer, schedule an ugprade
+	if newer {
+		action, err := PrepareAgentUpgradeAction(ctx, prev_ver)
+		if err != nil {
+			return err
+		}
+		err = ScheduleAgentUpgrade(ctx, prev_ver, []string{nodeId}, action)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func ScheduleAgentPluginEnable(ctx context.Context, version, plugin_name string, nodeIds []string, action controls.Action) error {
