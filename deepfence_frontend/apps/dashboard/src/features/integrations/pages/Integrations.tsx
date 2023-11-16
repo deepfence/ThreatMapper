@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense } from 'react';
+import { ReactNode, Suspense } from 'react';
 import { cn } from 'tailwind-preset';
 import { Breadcrumb, BreadcrumbLink, Button, Card, Separator } from 'ui-components';
 
@@ -12,6 +12,7 @@ import { EmailIcon } from '@/components/icons/integration/Email';
 import { GoogleChronicleIcon } from '@/components/icons/integration/GoogleChronicle';
 import { HttpIcon } from '@/components/icons/integration/Http';
 import { JiraIcon } from '@/components/icons/integration/Jira';
+import { OpenAIIcon } from '@/components/icons/integration/OpenAI';
 import { PagerDutyIcon } from '@/components/icons/integration/PagerDuty';
 import { S3ArchivalIcon } from '@/components/icons/integration/S3Archival';
 import { SlackIcon } from '@/components/icons/integration/Slack';
@@ -149,6 +150,12 @@ const IntegrationsData = [
   },
 ];
 
+const AIIntegrationsData: Record<string, { icon: ReactNode }> = {
+  openai: {
+    icon: <OpenAIIcon />,
+  },
+};
+
 const Count = ({
   type,
   data,
@@ -258,10 +265,9 @@ const Integrations = () => {
             </section>
           );
         })}
+        <GenerativeAI />
         <Separator className="dark:bg-bg-grid-border h-px w-full mt-1" />
         <DownloadReport />
-        <Separator className="dark:bg-bg-grid-border h-px w-full mt-1" />
-        <GenerativeAI />
       </div>
     </>
   );
@@ -347,59 +353,56 @@ function useListAIIntegrations() {
   });
 }
 
-const AIIntegrationCount = () => {
+const AIIntegrations = () => {
   const { data } = useListAIIntegrations();
-  const aiIntegrationCount = data?.length ?? 0;
+
+  const sortedAIIntegrations = [...data].sort((a, b) =>
+    (a.label ?? '').localeCompare(b.label ?? ''),
+  );
 
   return (
-    <div className="flex gap-x-2 items-center">
-      <span className="text-h1 dark:text-text-input-value">{aiIntegrationCount}</span>
+    <div className="mt-2 flex flex-wrap gap-4">
+      {sortedAIIntegrations.map((type) => {
+        return (
+          <DFLink to="/integrations/gen-ai" unstyled key={type.integration_type}>
+            <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-bg-hover-3 dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:ring-1 cursor-pointer">
+              <div className="flex items-center gap-x-6">
+                <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
+                  <span className="h-9 w-9">
+                    {AIIntegrationsData[type.integration_type ?? '']?.icon ?? (
+                      <SparkleLineIcon />
+                    )}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <h4 className="text-t4 uppercase dark:text-text-input-value">
+                    {type.label}
+                  </h4>
 
-      <span className="text-p7">Connection{aiIntegrationCount > 1 ? 's' : ''}</span>
+                  <div className="flex items-center gap-x-2 mt-2">
+                    <span className="text-h1 dark:text-text-input-value">1</span>
+                    <span className="text-p4 dark:text-text-text-and-icon">
+                      {`Connection`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </DFLink>
+        );
+      })}
     </div>
   );
 };
 
 const GenerativeAI = () => {
   return (
-    <div>
-      <h2 className="uppercase text-t3 dark:text-text-input-value">Generative AI</h2>
-      <div className="mt-2 flex gap-x-4 items-center">
-        <div className="flex flex-col w-fit min-w-[208px]">
-          <DFLink to={'/integrations/gen-ai'} className="h-[84px]" unstyled>
-            <Card
-              className={cn(
-                'p-3 flex shrink-0 items-center h-full gap-x-4',
-                'dark:text-text-text-and-icon',
-                'hover:ring dark:hover:ring-bg-hover-3 dark:hover:ring-1',
-                'dark:focus:ring-bg-hover-3 dark:focus:ring-1 cursor-pointer',
-                'dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF]',
-              )}
-            >
-              <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
-                <span className="h-9 w-9">
-                  <SparkleLineIcon />
-                </span>
-              </div>
-              <Suspense
-                fallback={
-                  <div className="animate-pulse flex gap-x-2 items-center">
-                    <div className="dark:bg-bg-grid-border rounded-md">
-                      <div className="w-4 h-6"></div>
-                    </div>
-                    <div className="dark:bg-bg-grid-border rounded-md">
-                      <div className="w-16 h-2"></div>
-                    </div>
-                  </div>
-                }
-              >
-                <AIIntegrationCount />
-              </Suspense>
-            </Card>
-          </DFLink>
-        </div>
-      </div>
-    </div>
+    <section className="flex flex-col">
+      <h2 className="uppercase text-t3 dark:text-text-input-value">Gnerative AI</h2>
+      <Suspense fallback={<Skeleton count={1} />}>
+        <AIIntegrations />
+      </Suspense>
+    </section>
   );
 };
 

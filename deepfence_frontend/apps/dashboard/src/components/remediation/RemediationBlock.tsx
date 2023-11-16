@@ -10,6 +10,8 @@ import { getIntegrationApiClient } from '@/api/api';
 import {
   ModelAiIntegrationCloudPostureRequest,
   ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum,
+  ModelAiIntegrationKubernetesPostureRequest,
+  ModelAiIntegrationLinuxPostureRequest,
   ModelAiIntegrationVulnerabilityRequest,
 } from '@/api/generated';
 import { CaretDown } from '@/components/icons/common/CaretDown';
@@ -41,6 +43,14 @@ interface RemediationBlockProps {
         args: RemediationRequestWithoutCommonTypes<ModelAiIntegrationCloudPostureRequest>;
       }
     | {
+        type: 'postureLinux';
+        args: RemediationRequestWithoutCommonTypes<ModelAiIntegrationLinuxPostureRequest>;
+      }
+    | {
+        type: 'postureKubernetes';
+        args: RemediationRequestWithoutCommonTypes<ModelAiIntegrationKubernetesPostureRequest>;
+      }
+    | {
         type: 'cve';
         args: RemediationRequestWithoutCommonTypes<ModelAiIntegrationVulnerabilityRequest>;
       };
@@ -51,6 +61,14 @@ interface RemediationCompletionProps {
     | {
         type: 'postureCloud';
         args: ModelAiIntegrationCloudPostureRequest;
+      }
+    | {
+        type: 'postureLinux';
+        args: ModelAiIntegrationLinuxPostureRequest;
+      }
+    | {
+        type: 'postureKubernetes';
+        args: ModelAiIntegrationKubernetesPostureRequest;
       }
     | {
         type: 'cve';
@@ -277,6 +295,32 @@ async function getRemediation({
     const response = await request(
       {
         modelAiIntegrationCloudPostureRequest: meta.args,
+      },
+      {
+        signal,
+      },
+    );
+    return response;
+  } else if (meta.type === 'postureLinux') {
+    const request = apiWrapper({
+      fn: getIntegrationApiClient().aiIntegrationLinuxPostureQuery,
+    });
+    const response = await request(
+      {
+        modelAiIntegrationLinuxPostureRequest: meta.args,
+      },
+      {
+        signal,
+      },
+    );
+    return response;
+  } else if (meta.type === 'postureKubernetes') {
+    const request = apiWrapper({
+      fn: getIntegrationApiClient().aiIntegrationKubernetesPostureQuery,
+    });
+    const response = await request(
+      {
+        modelAiIntegrationKubernetesPostureRequest: meta.args,
       },
       {
         signal,

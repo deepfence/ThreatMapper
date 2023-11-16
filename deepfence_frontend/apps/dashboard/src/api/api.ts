@@ -307,6 +307,10 @@ export function getIntegrationApiClient() {
       integrationApi.aiIntegrationCloudPostureQueryRaw.bind(integrationApi),
     aIIntegrationVulnerabilityQuery:
       integrationApi.aiIntegrationVulnerabilityQueryRaw.bind(integrationApi),
+    aiIntegrationLinuxPostureQuery:
+      integrationApi.aiIntegrationLinuxPostureQueryRaw.bind(integrationApi),
+    aiIntegrationKubernetesPostureQuery:
+      integrationApi.aiIntegrationKubernetesPostureQueryRaw.bind(integrationApi),
     listAIIntegration: integrationApi.listAiIntegration.bind(integrationApi),
     addAIIntegration: integrationApi.addAiIntegration.bind(integrationApi),
     deleteAIIntegration: integrationApi.deleteAiIntegration.bind(integrationApi),
