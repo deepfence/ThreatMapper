@@ -762,6 +762,10 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 		"Delete Custom Schedule task", "Delete Custom Schedule task",
 		http.StatusNoContent, []string{tagSettings}, bearerToken, new(ScheduleJobId), nil)
 
+	d.AddOperation("uploadAgentVersion", http.MethodPut, "/deepfence/agent/version",
+		"Upload New agent version", "Upload Agent version",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, nil)
+
 	// Database upload
 	d.AddOperation("uploadVulnerabilityDatabase", http.MethodPut, "/deepfence/database/vulnerability",
 		"Upload Vulnerability Database", "Upload Vulnerability Database for use in vulnerability scans",

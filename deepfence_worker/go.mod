@@ -53,7 +53,6 @@ require (
 	go.opentelemetry.io/otel/exporters/jaeger v1.16.0
 	go.opentelemetry.io/otel/sdk v1.18.0
 	go.opentelemetry.io/otel/trace v1.18.0
-	golang.org/x/mod v0.13.0
 )
 
 require (
@@ -250,6 +249,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.18.0 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/exp v0.0.0-20230202163644-54bba9f4231b // indirect
+	golang.org/x/mod v0.13.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/oauth2 v0.10.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
