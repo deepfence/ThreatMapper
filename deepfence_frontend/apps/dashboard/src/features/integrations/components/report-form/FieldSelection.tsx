@@ -1,13 +1,17 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
+import {
+  ModelScanReportFieldsResponse,
+  UtilsReportFiltersScanTypeEnum,
+} from '@/api/generated';
 import { queries } from '@/queries';
 
 export const FieldSelection = ({
   notificationType,
 }: {
-  notificationType: 'vulnerability';
+  notificationType: UtilsReportFiltersScanTypeEnum;
 }) => {
   return (
     <div className="flex flex-col col-span-2">
@@ -44,11 +48,16 @@ function useNotificationFields() {
 const FieldSelectionDropdown = ({
   notificationType,
 }: {
-  notificationType: 'vulnerability';
+  notificationType: UtilsReportFiltersScanTypeEnum;
 }) => {
   const { data } = useNotificationFields();
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const list = useMemo(() => {
+    return data[notificationType as keyof ModelScanReportFieldsResponse];
+  }, [notificationType]);
+
   return (
     <Combobox
       name="reportingFields"
@@ -66,7 +75,7 @@ const FieldSelectionDropdown = ({
         return `${items.length} fields selected`;
       }}
     >
-      {data[notificationType as 'vulnerability']
+      {list
         ?.filter((field) => {
           return field.toLowerCase().includes(searchQuery);
         })

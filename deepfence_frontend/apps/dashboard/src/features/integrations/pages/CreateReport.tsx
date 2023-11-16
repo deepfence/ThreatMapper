@@ -24,6 +24,7 @@ import { AdvancedFilter } from '@/features/integrations/components/report-form/A
 import { CloudComplianceForm } from '@/features/integrations/components/report-form/CloudComplianceForm';
 import { CommonForm } from '@/features/integrations/components/report-form/CommonForm';
 import { ComplianceForm } from '@/features/integrations/components/report-form/ComplianceForm';
+import { FieldSelection } from '@/features/integrations/components/report-form/FieldSelection';
 import { NODE_TYPES } from '@/features/integrations/pages/DownloadReport';
 import { ActionEnumType } from '@/features/integrations/pages/IntegrationAdd';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
@@ -175,6 +176,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     advanced_report_filters.masked = _masked;
   }
 
+  const customFields = getArrayTypeValuesFromFormData(formData, 'reportingFields');
+
   const generateReportApi = apiWrapper({
     fn: getReportsApiClient().generateReport,
   });
@@ -226,11 +229,20 @@ const Header = () => {
     </SlidingModalHeader>
   );
 };
+
+const isXlsxType = (downloadType: ModelGenerateReportReqReportTypeEnum | null) => {
+  return downloadType?.toLowerCase() === ModelGenerateReportReqReportTypeEnum.Xlsx;
+};
+const isScanTypeVulnerability = (scanType: UtilsReportFiltersScanTypeEnum | null) => {
+  return scanType?.toLowerCase() === UtilsReportFiltersScanTypeEnum.Vulnerability;
+};
+
 const ReportForm = () => {
   const [resource, setResource] = useState('');
   const [provider, setProvider] = useState('');
   const [duration, setDuration] = useState('');
-  const [downloadType, setDownloadType] = useState('');
+  const [downloadType, setDownloadType] =
+    useState<ModelGenerateReportReqReportTypeEnum | null>(null);
   const [deadNodes, setIncludeDeadNodes] = useState(false);
 
   const { navigate } = usePageNavigation();
@@ -342,7 +354,7 @@ const ReportForm = () => {
               }}
               placeholder="Download type"
               getDisplayValue={(item) => {
-                return downloadType;
+                return downloadType ?? '';
               }}
               required
             >
@@ -373,6 +385,16 @@ const ReportForm = () => {
             resourceType={resource}
             deadNodes={deadNodes}
           />
+          {isXlsxType(downloadType) &&
+          isScanTypeVulnerability(resource as UtilsReportFiltersScanTypeEnum) ? (
+            <div className="mt-4">
+              <FieldSelection
+                notificationType={
+                  resource.toLowerCase() as UtilsReportFiltersScanTypeEnum
+                }
+              />
+            </div>
+          ) : null}
 
           {data?.message ? (
             <p className="mt-4 text-p7 dark:text-status-error">{data?.message}</p>
