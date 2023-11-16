@@ -1,4 +1,4 @@
-VERSION?=`git describe --tags`
+VERSION?=v`git describe --tags`
 
 all: deepfence_bootstrapper
 
