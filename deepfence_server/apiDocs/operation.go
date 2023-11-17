@@ -766,6 +766,10 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 		"Upload New agent version", "Upload Agent version",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, nil)
 
+	d.AddOperation("getAgentVersions", http.MethodGet, "/deepfence/agent/versions",
+		"Get available agent versions", "Get available agent versions",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(ListAgentVersionResp))
+
 	// Database upload
 	d.AddOperation("uploadVulnerabilityDatabase", http.MethodPut, "/deepfence/database/vulnerability",
 		"Upload Vulnerability Database", "Upload Vulnerability Database for use in vulnerability scans",
