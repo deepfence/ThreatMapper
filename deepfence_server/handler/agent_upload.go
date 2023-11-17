@@ -15,6 +15,7 @@ import (
 	m "github.com/minio/minio-go/v7"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -212,4 +213,51 @@ func GetLatestVersionByMajorMinor(versions map[string]*bytes.Buffer) map[string]
 		latest_patches[k] = v[len(v)-1]
 	}
 	return latest_patches
+}
+
+func (h *Handler) ListAgentVersion(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	list, err := GetAgentVersionList(r.Context())
+	if err != nil {
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	_ = httpext.JSON(w, http.StatusOK, model.ListAgentVersionResp{Versions: list})
+}
+
+func GetAgentVersionList(ctx context.Context) ([]string, error) {
+	nc, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Close()
+
+	res, err := tx.Run(`
+		MATCH (n:AgentVersion) 
+		RETURN n.node_id`,
+		map[string]interface{}{})
+	if err != nil {
+		return nil, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return nil, err
+	}
+
+	versions := []string{}
+	for _, rec := range recs {
+		versions = append(versions, rec.Values[0].(string))
+	}
+
+	return versions, nil
 }

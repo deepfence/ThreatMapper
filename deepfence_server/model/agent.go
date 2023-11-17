@@ -25,3 +25,7 @@ type AgentPluginDisable struct {
 	PluginName string `json:"plugin_name" required:"true"`
 	NodeId     string `json:"node_id" required:"true"`
 }
+
+type ListAgentVersionResp struct {
+	Versions []string `json:"versions" required:"true"`
+}
