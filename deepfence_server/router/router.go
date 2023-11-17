@@ -137,7 +137,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 	}
 
 	r.Use(otelchi.Middleware("deepfence-server", otelchi.WithChiRoutes(r)))
-
+	r.Use(middleware.Recoverer)
 	r.Use(middleware.Compress(5))
 
 	if enable_debug {
@@ -501,6 +501,23 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Route("/{integration_id}", func(r chi.Router) {
 					r.Delete("/", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteIntegration))
 					r.Put("/", dfHandler.AuthHandler(ResourceIntegration, PermissionUpdate, doNothingHandler))
+				})
+			})
+
+			// AI Integration
+			r.Route("/ai-integration", func(r chi.Router) {
+				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddAiIntegration))
+				r.Get("/", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GetAiIntegrations))
+				r.Route("/{integration_id}", func(r chi.Router) {
+					r.Put("/default", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.SetDefaultAiIntegration))
+					r.Delete("/", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteAiIntegration))
+				})
+
+				r.Route("/query", func(r chi.Router) {
+					r.Post("/cloud-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationCloudPostureQuery))
+					r.Post("/linux-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationLinuxPostureQuery))
+					r.Post("/kubernetes-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationKubernetesPostureQuery))
+					r.Post("/vulnerability", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationVulnerabilityQuery))
 				})
 			})
 

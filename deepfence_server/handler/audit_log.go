@@ -24,6 +24,7 @@ const (
 	EVENT_SECRET_SCAN        = string(utils.NEO4J_SECRET_SCAN)
 	EVENT_MALWARE_SCAN       = string(utils.NEO4J_MALWARE_SCAN)
 	EVENT_INTEGRATION        = "integration"
+	EVENT_AI_INTEGRATION     = "ai-integration"
 	EVENT_AUTH               = "auth"
 	EVENT_REPORTS            = "reports"
 	EVENT_SETTINGS           = "settings"

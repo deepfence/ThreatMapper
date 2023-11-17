@@ -12,6 +12,18 @@ import (
 	"github.com/google/uuid"
 )
 
+type AiIntegration struct {
+	ID                 int32           `json:"id"`
+	IntegrationType    string          `json:"integration_type"`
+	LastSentTime       sql.NullTime    `json:"last_sent_time"`
+	Config             json.RawMessage `json:"config"`
+	ErrorMsg           sql.NullString  `json:"error_msg"`
+	DefaultIntegration bool            `json:"default_integration"`
+	CreatedByUserID    int64           `json:"created_by_user_id"`
+	CreatedAt          time.Time       `json:"created_at"`
+	UpdatedAt          time.Time       `json:"updated_at"`
+}
+
 type ApiToken struct {
 	ID              int64     `json:"id"`
 	ApiToken        uuid.UUID `json:"api_token"`

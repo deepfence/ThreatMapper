@@ -561,6 +561,54 @@ WITH deleted AS (
 SELECT count(*)
 FROM deleted;
 
+-- name: CreateAiIntegration :one
+INSERT INTO ai_integration (integration_type, config, created_by_user_id)
+VALUES ($1, $2, $3)
+RETURNING *;
+
+-- name: UpdateAiIntegrationDefault :exec
+UPDATE ai_integration
+SET default_integration = (CASE WHEN id = $1 THEN true ELSE false END);
+
+-- name: UpdateAiIntegrationFirstRowDefault :exec
+UPDATE ai_integration
+SET default_integration= true
+WHERE ID = (SELECT ID FROM ai_integration ORDER BY ID LIMIT 1);
+
+-- name: GetAiIntegrationFromID :one
+SELECT *
+FROM ai_integration
+WHERE id = $1
+LIMIT 1;
+
+-- name: GetDefaultAiIntegration :one
+SELECT *
+FROM ai_integration
+WHERE default_integration = true
+LIMIT 1;
+
+-- name: GetAiIntegrationFromType :one
+SELECT *
+FROM ai_integration
+WHERE integration_type = $1
+LIMIT 1;
+
+-- name: GetAiIntegrations :many
+SELECT *
+FROM ai_integration;
+
+-- name: UpdateAiIntegrationStatus :exec
+UPDATE ai_integration
+SET error_msg      = $2,
+    last_sent_time = now()
+WHERE id = $1;
+
+-- name: DeleteAiIntegration :one
+DELETE
+FROM ai_integration
+WHERE id = $1
+RETURNING *;
+
 -- name: CreateIntegration :one
 INSERT INTO integration (resource, filters, integration_type, interval_minutes, config, created_by_user_id)
 VALUES ($1, $2, $3, $4, $5, $6)
@@ -643,4 +691,4 @@ WHERE id = $1;
 DELETE
 FROM scheduler
 WHERE id = $1
-	AND is_system='f';
+  AND is_system = 'f';

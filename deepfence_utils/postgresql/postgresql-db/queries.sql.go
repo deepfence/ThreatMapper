@@ -90,6 +90,35 @@ func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const createAiIntegration = `-- name: CreateAiIntegration :one
+INSERT INTO ai_integration (integration_type, config, created_by_user_id)
+VALUES ($1, $2, $3)
+RETURNING id, integration_type, last_sent_time, config, error_msg, default_integration, created_by_user_id, created_at, updated_at
+`
+
+type CreateAiIntegrationParams struct {
+	IntegrationType string          `json:"integration_type"`
+	Config          json.RawMessage `json:"config"`
+	CreatedByUserID int64           `json:"created_by_user_id"`
+}
+
+func (q *Queries) CreateAiIntegration(ctx context.Context, arg CreateAiIntegrationParams) (AiIntegration, error) {
+	row := q.db.QueryRowContext(ctx, createAiIntegration, arg.IntegrationType, arg.Config, arg.CreatedByUserID)
+	var i AiIntegration
+	err := row.Scan(
+		&i.ID,
+		&i.IntegrationType,
+		&i.LastSentTime,
+		&i.Config,
+		&i.ErrorMsg,
+		&i.DefaultIntegration,
+		&i.CreatedByUserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createApiToken = `-- name: CreateApiToken :one
 INSERT INTO api_token (api_token, name, company_id, role_id, group_id, created_by_user_id)
 VALUES ($1, $2, $3, $4, $5, $6)
@@ -488,6 +517,30 @@ func (q *Queries) CreateUserInvite(ctx context.Context, arg CreateUserInvitePara
 	return i, err
 }
 
+const deleteAiIntegration = `-- name: DeleteAiIntegration :one
+DELETE
+FROM ai_integration
+WHERE id = $1
+RETURNING id, integration_type, last_sent_time, config, error_msg, default_integration, created_by_user_id, created_at, updated_at
+`
+
+func (q *Queries) DeleteAiIntegration(ctx context.Context, id int32) (AiIntegration, error) {
+	row := q.db.QueryRowContext(ctx, deleteAiIntegration, id)
+	var i AiIntegration
+	err := row.Scan(
+		&i.ID,
+		&i.IntegrationType,
+		&i.LastSentTime,
+		&i.Config,
+		&i.ErrorMsg,
+		&i.DefaultIntegration,
+		&i.CreatedByUserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const deleteApiToken = `-- name: DeleteApiToken :exec
 DELETE
 FROM api_token
@@ -553,7 +606,7 @@ const deleteCustomSchedule = `-- name: DeleteCustomSchedule :exec
 DELETE
 FROM scheduler
 WHERE id = $1
-	AND is_system='f'
+  AND is_system = 'f'
 `
 
 func (q *Queries) DeleteCustomSchedule(ctx context.Context, id int64) error {
@@ -845,6 +898,92 @@ func (q *Queries) GetActiveUsersByCompanyID(ctx context.Context, companyID int32
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.CompanyNamespace,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAiIntegrationFromID = `-- name: GetAiIntegrationFromID :one
+SELECT id, integration_type, last_sent_time, config, error_msg, default_integration, created_by_user_id, created_at, updated_at
+FROM ai_integration
+WHERE id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetAiIntegrationFromID(ctx context.Context, id int32) (AiIntegration, error) {
+	row := q.db.QueryRowContext(ctx, getAiIntegrationFromID, id)
+	var i AiIntegration
+	err := row.Scan(
+		&i.ID,
+		&i.IntegrationType,
+		&i.LastSentTime,
+		&i.Config,
+		&i.ErrorMsg,
+		&i.DefaultIntegration,
+		&i.CreatedByUserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getAiIntegrationFromType = `-- name: GetAiIntegrationFromType :one
+SELECT id, integration_type, last_sent_time, config, error_msg, default_integration, created_by_user_id, created_at, updated_at
+FROM ai_integration
+WHERE integration_type = $1
+LIMIT 1
+`
+
+func (q *Queries) GetAiIntegrationFromType(ctx context.Context, integrationType string) (AiIntegration, error) {
+	row := q.db.QueryRowContext(ctx, getAiIntegrationFromType, integrationType)
+	var i AiIntegration
+	err := row.Scan(
+		&i.ID,
+		&i.IntegrationType,
+		&i.LastSentTime,
+		&i.Config,
+		&i.ErrorMsg,
+		&i.DefaultIntegration,
+		&i.CreatedByUserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getAiIntegrations = `-- name: GetAiIntegrations :many
+SELECT id, integration_type, last_sent_time, config, error_msg, default_integration, created_by_user_id, created_at, updated_at
+FROM ai_integration
+`
+
+func (q *Queries) GetAiIntegrations(ctx context.Context) ([]AiIntegration, error) {
+	rows, err := q.db.QueryContext(ctx, getAiIntegrations)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []AiIntegration
+	for rows.Next() {
+		var i AiIntegration
+		if err := rows.Scan(
+			&i.ID,
+			&i.IntegrationType,
+			&i.LastSentTime,
+			&i.Config,
+			&i.ErrorMsg,
+			&i.DefaultIntegration,
+			&i.CreatedByUserID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -1513,6 +1652,30 @@ func (q *Queries) GetContainerRegistrySafe(ctx context.Context, id int32) (GetCo
 		&i.Name,
 		&i.RegistryType,
 		&i.NonSecret,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getDefaultAiIntegration = `-- name: GetDefaultAiIntegration :one
+SELECT id, integration_type, last_sent_time, config, error_msg, default_integration, created_by_user_id, created_at, updated_at
+FROM ai_integration
+WHERE default_integration = true
+LIMIT 1
+`
+
+func (q *Queries) GetDefaultAiIntegration(ctx context.Context) (AiIntegration, error) {
+	row := q.db.QueryRowContext(ctx, getDefaultAiIntegration)
+	var i AiIntegration
+	err := row.Scan(
+		&i.ID,
+		&i.IntegrationType,
+		&i.LastSentTime,
+		&i.Config,
+		&i.ErrorMsg,
+		&i.DefaultIntegration,
+		&i.CreatedByUserID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -2332,6 +2495,44 @@ func (q *Queries) GetVisibleSettings(ctx context.Context) ([]Setting, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateAiIntegrationDefault = `-- name: UpdateAiIntegrationDefault :exec
+UPDATE ai_integration
+SET default_integration = (CASE WHEN id = $1 THEN true ELSE false END)
+`
+
+func (q *Queries) UpdateAiIntegrationDefault(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, updateAiIntegrationDefault, id)
+	return err
+}
+
+const updateAiIntegrationFirstRowDefault = `-- name: UpdateAiIntegrationFirstRowDefault :exec
+UPDATE ai_integration
+SET default_integration= true
+WHERE ID = (SELECT ID FROM ai_integration ORDER BY ID LIMIT 1)
+`
+
+func (q *Queries) UpdateAiIntegrationFirstRowDefault(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, updateAiIntegrationFirstRowDefault)
+	return err
+}
+
+const updateAiIntegrationStatus = `-- name: UpdateAiIntegrationStatus :exec
+UPDATE ai_integration
+SET error_msg      = $2,
+    last_sent_time = now()
+WHERE id = $1
+`
+
+type UpdateAiIntegrationStatusParams struct {
+	ID       int32          `json:"id"`
+	ErrorMsg sql.NullString `json:"error_msg"`
+}
+
+func (q *Queries) UpdateAiIntegrationStatus(ctx context.Context, arg UpdateAiIntegrationStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateAiIntegrationStatus, arg.ID, arg.ErrorMsg)
+	return err
 }
 
 const updateContainerRegistry = `-- name: UpdateContainerRegistry :one
