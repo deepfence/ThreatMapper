@@ -29,6 +29,398 @@
     { "name": "Vulnerability" }
   ],
   "paths": {
+    "/deepfence/ai-integration": {
+      "get": {
+        "tags": ["Integration"],
+        "summary": "List AI Integrations",
+        "description": "List all the added AI Integrations",
+        "operationId": "listAiIntegration",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ModelAiIntegrationListResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      },
+      "post": {
+        "tags": ["Integration"],
+        "summary": "Add AI Integration",
+        "description": "Add a new supported AI Integration",
+        "operationId": "addAiIntegration",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelAddAiIntegrationRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelMessageResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/ai-integration/query/cloud-posture": {
+      "post": {
+        "tags": ["Integration"],
+        "summary": "Send Cloud Posture query to AI Integration",
+        "description": "Send Cloud Posture query to AI Integration",
+        "operationId": "aiIntegrationCloudPostureQuery",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelAiIntegrationCloudPostureRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "string" } } }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/ai-integration/query/kubernetes-posture": {
+      "post": {
+        "tags": ["Integration"],
+        "summary": "Send Kubernetes Posture query to AI Integration",
+        "description": "Send Kubernetes Posture query to AI Integration",
+        "operationId": "aiIntegrationKubernetesPostureQuery",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelAiIntegrationKubernetesPostureRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "string" } } }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/ai-integration/query/linux-posture": {
+      "post": {
+        "tags": ["Integration"],
+        "summary": "Send Linux Posture query to AI Integration",
+        "description": "Send Linux Posture query to AI Integration",
+        "operationId": "aiIntegrationLinuxPostureQuery",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelAiIntegrationLinuxPostureRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "string" } } }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/ai-integration/query/vulnerability": {
+      "post": {
+        "tags": ["Integration"],
+        "summary": "Send Vulnerability query to AI Integration",
+        "description": "Send Vulnerability query to AI Integration",
+        "operationId": "aiIntegrationVulnerabilityQuery",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelAiIntegrationVulnerabilityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "string" } } }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/ai-integration/{integration_id}": {
+      "delete": {
+        "tags": ["Integration"],
+        "summary": "Delete AI Integration",
+        "description": "Delete AI integration",
+        "operationId": "deleteAiIntegration",
+        "parameters": [
+          {
+            "name": "integration_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/ai-integration/{integration_id}/default": {
+      "put": {
+        "tags": ["Integration"],
+        "summary": "Set Default AI Integration",
+        "description": "Set Default AI integration",
+        "operationId": "setDefaultAiIntegration",
+        "parameters": [
+          {
+            "name": "integration_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/api-token": {
       "get": {
         "tags": ["User"],
@@ -11295,6 +11687,14 @@
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
+      "ModelAddAiIntegrationRequest": {
+        "required": ["api_key", "integration_type"],
+        "type": "object",
+        "properties": {
+          "api_key": { "type": "string" },
+          "integration_type": { "enum": ["openai"], "type": "string" }
+        }
+      },
       "ModelAddScheduledTaskRequest": {
         "required": ["action", "node_ids", "filters", "scan_config", "benchmark_types"],
         "type": "object",
@@ -11361,6 +11761,100 @@
         "required": ["version", "node_id"],
         "type": "object",
         "properties": { "node_id": { "type": "string" }, "version": { "type": "string" } }
+      },
+      "ModelAiIntegrationCloudPostureRequest": {
+        "required": [
+          "query_type",
+          "remediation_format",
+          "title",
+          "compliance_check_type",
+          "cloud_provider"
+        ],
+        "type": "object",
+        "properties": {
+          "cloud_provider": { "type": "string" },
+          "compliance_check_type": { "type": "string" },
+          "group": { "type": "string" },
+          "integration_type": { "enum": ["openai"], "type": "string" },
+          "query_type": { "enum": ["remediation"], "type": "string" },
+          "remediation_format": {
+            "enum": ["all", "cli", "pulumi", "terraform"],
+            "type": "string"
+          },
+          "service": { "type": "string" },
+          "title": { "type": "string" }
+        }
+      },
+      "ModelAiIntegrationKubernetesPostureRequest": {
+        "required": [
+          "query_type",
+          "remediation_format",
+          "description",
+          "compliance_check_type"
+        ],
+        "type": "object",
+        "properties": {
+          "compliance_check_type": { "type": "string" },
+          "description": { "type": "string" },
+          "integration_type": { "enum": ["openai"], "type": "string" },
+          "query_type": { "enum": ["remediation"], "type": "string" },
+          "remediation_format": {
+            "enum": ["all", "cli", "pulumi", "terraform"],
+            "type": "string"
+          }
+        }
+      },
+      "ModelAiIntegrationLinuxPostureRequest": {
+        "required": [
+          "query_type",
+          "remediation_format",
+          "description",
+          "test_number",
+          "compliance_check_type"
+        ],
+        "type": "object",
+        "properties": {
+          "compliance_check_type": { "type": "string" },
+          "description": { "type": "string" },
+          "integration_type": { "enum": ["openai"], "type": "string" },
+          "query_type": { "enum": ["remediation"], "type": "string" },
+          "remediation_format": {
+            "enum": ["all", "cli", "pulumi", "terraform"],
+            "type": "string"
+          },
+          "test_number": { "type": "string" }
+        }
+      },
+      "ModelAiIntegrationListResponse": {
+        "type": "object",
+        "properties": {
+          "default_integration": { "type": "boolean" },
+          "id": { "type": "integer" },
+          "integration_type": { "type": "string" },
+          "label": { "type": "string" },
+          "last_error_msg": { "type": "string" }
+        }
+      },
+      "ModelAiIntegrationVulnerabilityRequest": {
+        "required": [
+          "query_type",
+          "remediation_format",
+          "cve_id",
+          "cve_type",
+          "cve_caused_by_package"
+        ],
+        "type": "object",
+        "properties": {
+          "cve_caused_by_package": { "type": "string" },
+          "cve_id": { "type": "string" },
+          "cve_type": { "type": "string" },
+          "integration_type": { "enum": ["openai"], "type": "string" },
+          "query_type": { "enum": ["remediation"], "type": "string" },
+          "remediation_format": {
+            "enum": ["all", "cli", "pulumi", "terraform"],
+            "type": "string"
+          }
+        }
       },
       "ModelApiAuthRequest": {
         "required": ["api_token"],

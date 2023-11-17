@@ -1,15 +1,18 @@
-import { Suspense } from 'react';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { ReactNode, Suspense } from 'react';
 import { cn } from 'tailwind-preset';
 import { Breadcrumb, BreadcrumbLink, Button, Card, Separator } from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { SparkleLineIcon } from '@/components/icons/common/SparkleLine';
 import { DownloadReportIcon } from '@/components/icons/integration/DownloadReport';
 import { ElasticsearchIcon } from '@/components/icons/integration/Elasticsearch';
 import { EmailIcon } from '@/components/icons/integration/Email';
 import { GoogleChronicleIcon } from '@/components/icons/integration/GoogleChronicle';
 import { HttpIcon } from '@/components/icons/integration/Http';
 import { JiraIcon } from '@/components/icons/integration/Jira';
+import { OpenAIIcon } from '@/components/icons/integration/OpenAI';
 import { PagerDutyIcon } from '@/components/icons/integration/PagerDuty';
 import { S3ArchivalIcon } from '@/components/icons/integration/S3Archival';
 import { SlackIcon } from '@/components/icons/integration/Slack';
@@ -20,6 +23,7 @@ import { AmazonECRRegistryIcon } from '@/components/icons/registries/AmazonEcr';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
 import { IntegrationType } from '@/features/integrations/components/IntegrationForm';
 import { useGetReports } from '@/features/integrations/pages/DownloadReport';
+import { queries } from '@/queries';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 import { useListIntegrations } from './IntegrationAdd';
@@ -146,6 +150,12 @@ const IntegrationsData = [
   },
 ];
 
+const AIIntegrationsData: Record<string, { icon: ReactNode }> = {
+  openai: {
+    icon: <OpenAIIcon />,
+  },
+};
+
 const Count = ({
   type,
   data,
@@ -255,7 +265,8 @@ const Integrations = () => {
             </section>
           );
         })}
-        <Separator className="dark:bg-bg-grid-border h-px w-full" />
+        <GenerativeAI />
+        <Separator className="dark:bg-bg-grid-border h-px w-full mt-1" />
         <DownloadReport />
       </div>
     </>
@@ -293,9 +304,11 @@ const DownloadReport = () => {
                 'dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF]',
               )}
             >
-              <span className="h-9 w-9 ">
-                <DownloadReportIcon />
-              </span>
+              <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
+                <span className="h-9 w-9">
+                  <DownloadReportIcon />
+                </span>
+              </div>
 
               <Suspense
                 fallback={
@@ -331,6 +344,65 @@ const DownloadReport = () => {
         </Button>
       </div>
     </div>
+  );
+};
+
+function useListAIIntegrations() {
+  return useSuspenseQuery({
+    ...queries.integration.listAIIntegrations(),
+  });
+}
+
+const AIIntegrations = () => {
+  const { data } = useListAIIntegrations();
+
+  const sortedAIIntegrations = [...data].sort((a, b) =>
+    (a.label ?? '').localeCompare(b.label ?? ''),
+  );
+
+  return (
+    <div className="mt-2 flex flex-wrap gap-4">
+      {sortedAIIntegrations.map((type) => {
+        return (
+          <DFLink to="/integrations/gen-ai" unstyled key={type.integration_type}>
+            <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-bg-hover-3 dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:ring-1 cursor-pointer">
+              <div className="flex items-center gap-x-6">
+                <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
+                  <span className="h-9 w-9">
+                    {AIIntegrationsData[type.integration_type ?? '']?.icon ?? (
+                      <SparkleLineIcon />
+                    )}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <h4 className="text-t4 uppercase dark:text-text-input-value">
+                    {type.label}
+                  </h4>
+
+                  <div className="flex items-center gap-x-2 mt-2">
+                    <span className="text-h1 dark:text-text-input-value">1</span>
+                    <span className="text-p4 dark:text-text-text-and-icon">
+                      {`Connection`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </DFLink>
+        );
+      })}
+    </div>
+  );
+};
+
+const GenerativeAI = () => {
+  return (
+    <section className="flex flex-col">
+      <h2 className="uppercase text-t3 dark:text-text-input-value">Gnerative AI</h2>
+      <Suspense fallback={<Skeleton count={1} />}>
+        <AIIntegrations />
+      </Suspense>
+    </section>
   );
 };
 

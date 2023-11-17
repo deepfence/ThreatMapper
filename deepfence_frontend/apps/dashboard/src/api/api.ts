@@ -303,6 +303,18 @@ export function getIntegrationApiClient() {
     addIntegration: integrationApi.addIntegration.bind(integrationApi),
     listIntegration: integrationApi.listIntegration.bind(integrationApi),
     deleteIntegration: integrationApi.deleteIntegration.bind(integrationApi),
+    aIIntegrationCloudPostureQuery:
+      integrationApi.aiIntegrationCloudPostureQueryRaw.bind(integrationApi),
+    aIIntegrationVulnerabilityQuery:
+      integrationApi.aiIntegrationVulnerabilityQueryRaw.bind(integrationApi),
+    aiIntegrationLinuxPostureQuery:
+      integrationApi.aiIntegrationLinuxPostureQueryRaw.bind(integrationApi),
+    aiIntegrationKubernetesPostureQuery:
+      integrationApi.aiIntegrationKubernetesPostureQueryRaw.bind(integrationApi),
+    listAIIntegration: integrationApi.listAiIntegration.bind(integrationApi),
+    addAIIntegration: integrationApi.addAiIntegration.bind(integrationApi),
+    deleteAIIntegration: integrationApi.deleteAiIntegration.bind(integrationApi),
+    setDefaultAIIntegration: integrationApi.setDefaultAiIntegration.bind(integrationApi),
   };
 }
 

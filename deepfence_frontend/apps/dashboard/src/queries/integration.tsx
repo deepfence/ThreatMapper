@@ -71,4 +71,19 @@ export const integrationQueries = createQueryKeys('integration', {
       },
     };
   },
+  listAIIntegrations: () => {
+    return {
+      queryKey: ['listAIIntegrations'],
+      queryFn: async () => {
+        const listAIIntegration = apiWrapper({
+          fn: getIntegrationApiClient().listAIIntegration,
+        });
+        const listAIIntegrationResponse = await listAIIntegration();
+        if (!listAIIntegrationResponse.ok) {
+          throw listAIIntegrationResponse.error;
+        }
+        return listAIIntegrationResponse.value;
+      },
+    };
+  },
 });

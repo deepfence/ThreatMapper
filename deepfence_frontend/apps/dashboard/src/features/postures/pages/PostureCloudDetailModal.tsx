@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
   Button,
@@ -15,8 +15,11 @@ import { ModelCloudCompliance } from '@/api/generated';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
 import { CheckIcon } from '@/components/icons/common/Check';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
+import { RemediationBlock } from '@/components/remediation/RemediationBlock';
+import { RemediationButton } from '@/components/remediation/RemediationButton';
 import { PostureStatusBadge } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
+import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
 import { PostureSeverityType } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
@@ -35,7 +38,13 @@ const timeFormatKey = {
   updated_at: 'updated_at',
 };
 
-const Header = () => {
+const Header = ({
+  isRemediationOpen,
+  setIsRemediationOpen,
+}: {
+  isRemediationOpen: boolean;
+  setIsRemediationOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   const {
     data: { data: cloudPostures },
   } = useGetComplianceDetails();
@@ -50,26 +59,42 @@ const Header = () => {
           <div className="h-4 w-4 shrink-0">
             <PostureIcon />
           </div>
-          <h3 className="text-h3">{data?.control_id ?? '-'}</h3>
+          <h3 className="text-h3 grow-0 overflow-hidden pr-5">
+            <TruncatedText text={data?.title ?? '-'} />
+          </h3>
         </div>
-        <div className="py-[18px] flex">
+        <div className="py-[18px] flex justify-between">
           <div className="ml-[10px]">
             <PostureStatusBadge
               className="w-full max-w-none"
               status={data?.status as PostureSeverityType}
             />
           </div>
-          <Button
-            variant="flat"
-            size="sm"
-            className="ml-auto"
-            onClick={() => {
-              copy(JSON.stringify(data ?? {}));
-            }}
-            startIcon={<CopyLineIcon />}
-          >
-            {isCopied ? 'Copied JSON' : 'Copy JSON'}
-          </Button>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="flat"
+              size="sm"
+              className="ml-auto"
+              onClick={() => {
+                copy(JSON.stringify(data ?? {}));
+              }}
+              startIcon={<CopyLineIcon />}
+            >
+              {isCopied ? 'Copied JSON' : 'Copy JSON'}
+            </Button>
+            <RemediationButton
+              className="ml-auto"
+              active={isRemediationOpen}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setIsRemediationOpen((prevOpen) => !prevOpen);
+              }}
+            >
+              Redmediation
+            </RemediationButton>
+          </div>
         </div>
       </div>
     </SlidingModalHeader>
@@ -112,7 +137,7 @@ const CopyField = ({ value }: { value: string }) => {
   );
 };
 
-const DetailsComponent = () => {
+const DetailsComponent = ({ isRemediationOpen }: { isRemediationOpen: boolean }) => {
   const {
     data: { data: cloudPostures },
   } = useGetComplianceDetails();
@@ -129,14 +154,38 @@ const DetailsComponent = () => {
 
   const omitFields: (keyof ModelCloudCompliance)[] = [
     'description',
-    'control_id',
     'status',
     'resources',
-    // 'compliance_check_type',
   ];
 
+  if (isRemediationOpen) {
+    return (
+      <Suspense
+        fallback={
+          <div className="h-full w-full flex items-center justify-center">
+            <CircleSpinner size="lg" />
+          </div>
+        }
+      >
+        <RemediationBlock
+          meta={{
+            type: 'postureCloud',
+            args: {
+              cloud_provider: cloudPosture.cloud_provider,
+              compliance_check_type: cloudPosture.compliance_check_type,
+              query_type: 'remediation',
+              title: cloudPosture.title,
+              group: cloudPosture.group,
+              service: cloudPosture.service,
+            },
+          }}
+        />
+      </Suspense>
+    );
+  }
+
   return (
-    <div className="flex flex-wrap gap-y-[30px] gap-x-[14px]">
+    <div className="flex flex-wrap gap-y-[30px] gap-x-[14px] py-[18px] px-5">
       <div
         className="text-sm leading-5 dark:text-text-text-and-icon max-h-64 overflow-y-auto"
         style={{
@@ -207,13 +256,15 @@ const DetailsComponent = () => {
 const PostureCloudDetailModal = () => {
   const { navigate } = usePageNavigation();
   const [searchParams] = useSearchParams();
+  const [isRemediationOpen, setIsRemediationOpen] = useState(false);
+
   return (
     <SlidingModal
       open={true}
       onOpenChange={() => {
         navigate(`..?${searchParams.toString()}`);
       }}
-      size="l"
+      size="xl"
     >
       <SlidingModalCloseButton />
       <Suspense
@@ -225,10 +276,13 @@ const PostureCloudDetailModal = () => {
           </SlidingModalContent>
         }
       >
-        <Header />
+        <Header
+          isRemediationOpen={isRemediationOpen}
+          setIsRemediationOpen={setIsRemediationOpen}
+        />
         <SlidingModalContent>
-          <div className="py-[18px] px-5">
-            <DetailsComponent />
+          <div className="h-full">
+            <DetailsComponent isRemediationOpen={isRemediationOpen} />
           </div>
         </SlidingModalContent>
       </Suspense>
