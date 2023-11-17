@@ -96,7 +96,9 @@ func GetPendingAgentScans(ctx context.Context, nodeId string, availableWorkload 
 		AND s.retries < 3
 		SET s.retries = s.retries + 1
 		WITH s
-		RETURN s.trigger_action`, map[string]interface{}{"id": nodeId})
+		RETURN s.trigger_action
+		ORDER BY s.is_priority DESC, s.updated_at ASC`,
+		map[string]interface{}{"id": nodeId})
 
 	if err != nil {
 		return res, err
@@ -275,7 +277,7 @@ func ExtractStartingAgentScans(ctx context.Context, nodeId string,
 	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
 		WHERE s.status = '`+utils.SCAN_STATUS_STARTING+`'
 		AND s.retries < 3
-		WITH s LIMIT $max_work
+		WITH s ORDER BY s.is_priority DESC, s.updated_at ASC LIMIT $max_work
 		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`', s.updated_at = TIMESTAMP()
 		WITH s
 		RETURN s.trigger_action`,

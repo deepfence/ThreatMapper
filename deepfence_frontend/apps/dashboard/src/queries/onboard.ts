@@ -30,6 +30,7 @@ import {
   SecretSeverityType,
   VulnerabilitySeverityType,
 } from '@/types/common';
+import { getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { getRegistryDisplayId } from '@/utils/registry';
 
@@ -419,8 +420,9 @@ export const onboardQueries = createQueryKeys('onboard', {
           },
         });
         if (!statusResponse.ok) {
+          const { message } = await getResponseErrors(statusResponse.error);
           return {
-            message: statusResponse.error.message,
+            message,
             data: [],
           };
         }

@@ -16,7 +16,7 @@ building_image(){
     fi
 
     echo "Prepare Fluentbit"
-    docker run --rm --workdir /go/src/github.com/deepfence/deepfence_agent  -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_glibc_builder_ce:$DF_IMG_TAG bash -c "\
+    docker run --rm --workdir /go/src/github.com/deepfence/deepfence_agent  -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_go_builder_ce:$DF_IMG_TAG bash -c "\
         mkdir -p plugins/fluent-bit/build && \
         cd plugins/fluent-bit/build && \
         cmake \
@@ -41,7 +41,7 @@ building_image(){
     fi
 
     echo "Building Fluentbit deepfence output plugin"
-    docker run --rm --workdir /go/src/github.com/deepfence/deepfence_agent  -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_glibc_builder_ce:$DF_IMG_TAG bash -c "cd plugins/fluent-bit/plugins/out_deepfence && make out_deepfence.a"
+    docker run --rm --workdir /go/src/github.com/deepfence/deepfence_agent  -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_go_builder_ce:$DF_IMG_TAG bash -c "cd plugins/fluent-bit/plugins/out_deepfence && make out_deepfence.a"
     build_result=$?
     if [ $build_result -ne 0 ]
     then
@@ -50,7 +50,7 @@ building_image(){
     fi
 
     echo "Building Fluentbit"
-    docker run --rm --workdir /go/src/github.com/deepfence/deepfence_agent  -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_glibc_builder_ce:$DF_IMG_TAG bash -c "cd plugins/fluent-bit/build \
+    docker run --rm --workdir /go/src/github.com/deepfence/deepfence_agent  -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_go_builder_ce:$DF_IMG_TAG bash -c "cd plugins/fluent-bit/build \
         && make flb-plugin-out_deepfence\
         && cp ../plugins/out_deepfence/out_deepfence.a ./library/libflb-plugin-out_deepfence.a\
         && make"

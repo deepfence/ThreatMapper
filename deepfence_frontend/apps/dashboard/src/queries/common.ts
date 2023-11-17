@@ -14,6 +14,7 @@ import {
   ModelScanListReq,
 } from '@/api/generated';
 import { ScanTypeEnum } from '@/types/common';
+import { getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
 export const commonQueries = createQueryKeys('common', {
@@ -72,9 +73,10 @@ export const commonQueries = createQueryKeys('common', {
 
         if (!result.ok) {
           console.error(result.error);
+          const { message } = await getResponseErrors(result.error);
           return {
             error: 'Error getting scan history',
-            message: result.error.message,
+            message,
             data: [],
           };
         }

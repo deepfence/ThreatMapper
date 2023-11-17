@@ -16,6 +16,7 @@ import {
 } from '@/api/generated';
 import { SecretsCountsCardData } from '@/features/secrets/components/landing/SecretsCountsCard';
 import { ScanStatusEnum } from '@/types/common';
+import { getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { SECRET_SCAN_STATUS_GROUPS, SecretScanGroupedStatus } from '@/utils/scan';
 
@@ -262,7 +263,8 @@ export const secretQueries = createQueryKeys('secret', {
         });
         if (!statusSecretScanResponse.ok) {
           if (statusSecretScanResponse.error.response.status === 400) {
-            return { message: statusSecretScanResponse.error.message };
+            const { message } = await getResponseErrors(statusSecretScanResponse.error);
+            return { message };
           }
           throw statusSecretScanResponse.error;
         }
@@ -1112,9 +1114,10 @@ export const secretQueries = createQueryKeys('secret', {
         ]);
 
         if (!addScanResponse.ok) {
+          const { message } = await getResponseErrors(addScanResponse.error);
           return {
             error: 'Error getting scan diff',
-            message: addScanResponse.error.message,
+            message,
             ...results,
           };
         }
@@ -1126,9 +1129,10 @@ export const secretQueries = createQueryKeys('secret', {
         const addedScans = addScanResponse.value._new;
 
         if (!deletedScanResponse.ok) {
+          const { message } = await getResponseErrors(deletedScanResponse.error);
           return {
             error: 'Error getting scan diff',
-            message: deletedScanResponse.error.message,
+            message,
             ...results,
           };
         }

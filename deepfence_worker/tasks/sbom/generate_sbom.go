@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"os"
 	"path"
-	"strings"
 	"sync"
 	"time"
 
@@ -209,39 +208,11 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 	}
 
 	sbomFile := path.Join("/sbom/", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
-	info, err := mc.UploadFile(ctx, sbomFile, gzpb64Sbom.Bytes(),
+	info, err := mc.UploadFile(ctx, sbomFile, gzpb64Sbom.Bytes(), true,
 		minio.PutObjectOptions{ContentType: "application/gzip"})
-
 	if err != nil {
-		logError := true
-		if strings.Contains(err.Error(), "Already exists here") {
-			/*If the file already exists, we will delete the old file and upload the new one
-			File can exists in 2 conditions:
-			- When the earlier scan was stuck during the scan phase
-			- When the service was restarted
-			- Bug/Race conditon in the worker service
-			*/
-			log.Warn().Msg(err.Error() + ", Will try to overwrite the file: " + sbomFile)
-			err = mc.DeleteFile(ctx, sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
-			if err == nil {
-				info, err = mc.UploadFile(ctx, sbomFile, gzpb64Sbom.Bytes(),
-					minio.PutObjectOptions{ContentType: "application/gzip"})
-
-				if err == nil {
-					log.Info().Msgf("Successfully overwritten the file: %s", sbomFile)
-					logError = false
-				} else {
-					log.Error().Msgf("Failed to upload the file, error is: %v", err)
-				}
-			} else {
-				log.Error().Msgf("Failed to delete the old file, error is: %v", err)
-			}
-		}
-
-		if logError {
-			log.Error().Msg(err.Error())
-			return err
-		}
+		log.Error().Err(err).Msg("failed to uplaod sbom")
+		return err
 	}
 
 	log.Info().Msgf("sbom file uploaded %+v", info)
@@ -256,7 +227,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		return nil
 	}
 
-	err = worker.Enqueue(utils.ScanSBOMTask, payload)
+	err = worker.Enqueue(utils.ScanSBOMTask, payload, utils.DefaultTaskOpts()...)
 	if err != nil {
 		return err
 	}

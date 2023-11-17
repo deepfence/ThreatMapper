@@ -1,4 +1,5 @@
 import G6 from '@antv/g6';
+import { merge } from 'lodash-es';
 import { useEffect, useState } from 'react';
 import { useUpdateEffect } from 'react-use';
 import { preset } from 'tailwind-preset';
@@ -190,8 +191,7 @@ export const useG6Graph = (
     const width = graphContainer.offsetWidth;
     const height = graphContainer.offsetHeight;
     const g6Graph = new G6.Graph({
-      ...getDefaultOptions(mode),
-      ...options,
+      ...merge(getDefaultOptions(mode), options),
       container: graphContainer,
       width,
       height,

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFetcher, useParams } from 'react-router-dom';
 import { useDebounce, useEffectOnce, useHoverDirty, useMeasure } from 'react-use';
 import { cn } from 'tailwind-preset';
@@ -7,6 +7,7 @@ import { CircleSpinner } from 'ui-components';
 import { DFLink } from '@/components/DFLink';
 import { DetailsLineIcon } from '@/components/icons/common/DetailsLine';
 import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
+import { ResizeDownIcon } from '@/components/icons/common/ResizeDown';
 import { ResizeUpIcon } from '@/components/icons/common/ResizeUp';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import {
@@ -208,7 +209,9 @@ export const TopologyGraph = () => {
           ref={tooltipRef}
         >
           <GraphTooltip
+            visible={debouncedTooltipLoc.show}
             item={debouncedTooltipLoc.item}
+            isNodeExpanded={graphDataManagerFunctions.isNodeExpanded}
             onExpandCollapseClick={(model) => {
               setDebouncedTooltipLoc((prev) => {
                 return { ...prev, show: false };
@@ -282,15 +285,27 @@ const GraphTooltip = ({
   item,
   onExpandCollapseClick,
   onViewDetailsClick,
+  isNodeExpanded,
+  visible,
 }: {
   item: G6Node | null;
   onExpandCollapseClick: (model: NodeModel) => void;
   onViewDetailsClick: (model: NodeModel) => void;
+  isNodeExpanded: ({ nodeId, nodeType }: { nodeId: string; nodeType: string }) => boolean;
+  visible: boolean;
 }) => {
   const model = item?.getModel() as NodeModel | undefined;
   if (!model) return null;
   const expands = itemExpands(model.df_data);
   const hasDetails = itemHasDetails(model.df_data);
+
+  const expanded = useMemo(() => {
+    if (model.df_data?.id && model.df_data.type) {
+      return isNodeExpanded({ nodeId: model.df_data.id, nodeType: model.df_data.type });
+    }
+    return false;
+  }, [model.df_data, isNodeExpanded, visible]);
+
   return (
     <div
       role="tooltip"
@@ -317,9 +332,9 @@ const GraphTooltip = ({
                 className="px-2.5 text-p6 py-1 hover:dark:bg-[#A1AFB9] flex items-center gap-2 w-full"
               >
                 <div className="h-4 w-4 shrink-0">
-                  <ResizeUpIcon />
+                  {expanded ? <ResizeDownIcon /> : <ResizeUpIcon />}
                 </div>
-                <div>Expand / Collapse</div>
+                <div>{expanded ? 'Collapse' : 'Expand'}</div>
               </button>
             </div>
           )}

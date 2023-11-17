@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 
 import { getControlsApiClient } from '@/api/api';
 import { invalidateAllQueries } from '@/queries';
+import { getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
 export enum ActionEnumType {
@@ -40,7 +41,9 @@ export const toggleControlApiAction = async ({
     });
     if (!result.ok) {
       if (result.error.response.status === 400 || result.error.response.status === 409) {
-        toast.error(result.error.message);
+        const { message } = await getResponseErrors(result.error);
+        toast.error(message);
+        return null;
       }
     }
     toast.success(

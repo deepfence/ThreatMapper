@@ -55,17 +55,21 @@ var (
 
 func GetHttpClient() *http.Client {
 	once1.Do(func() {
-		secureClient = &http.Client{Timeout: time.Second * 30}
+		secureClient = &http.Client{Timeout: time.Second * 10}
 	})
 
 	return secureClient
+}
+
+func GetHttpClientWithTimeout(duration time.Duration) *http.Client {
+	return &http.Client{Timeout: duration}
 }
 
 func GetInsecureHttpClient() *http.Client {
 	once2.Do(func() {
 		tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
 		insecureClient = &http.Client{
-			Timeout: time.Second * 30,
+			Timeout: time.Second * 10,
 			Transport: &http.Transport{
 				TLSClientConfig: tlsConfig,
 				WriteBufferSize: 10240,
@@ -113,10 +117,7 @@ func UUIDFromString(uuidStr string) (uuid.UUID, error) {
 
 func IsUUIDValid(uuidStr string) bool {
 	_, err := UUIDFromString(uuidStr)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 
 func NewUUID() uuid.UUID {
@@ -196,7 +197,7 @@ func IsJWTExpired(token string) bool {
 func GetInt64ValueFromInterfaceMap(claims map[string]interface{}, key string) (int64, error) {
 	val, ok := claims[key]
 	if !ok {
-		return 0, errors.New(fmt.Sprintf("key %s not found in JWT claims", key))
+		return 0, fmt.Errorf("key %s not found in JWT claims", key)
 	}
 	number, err := InterfaceToInt(val)
 	if err != nil {
@@ -208,7 +209,7 @@ func GetInt64ValueFromInterfaceMap(claims map[string]interface{}, key string) (i
 func GetStringValueFromInterfaceMap(claims map[string]interface{}, key string) (string, error) {
 	val, ok := claims[key]
 	if !ok {
-		return "", errors.New(fmt.Sprintf("key %s not found in JWT claims", key))
+		return "", fmt.Errorf("key %s not found in JWT claims", key)
 	}
 	return fmt.Sprintf("%v", val), nil
 }
@@ -571,6 +572,18 @@ func GetEnvOrDefault(envVar string, defaultValue string) string {
 		return defaultValue
 	}
 	return envValue
+}
+
+func GetEnvOrDefaultInt(envVar string, defaultValue int) int {
+	envValue := os.Getenv(envVar)
+	if len(envValue) == 0 {
+		return defaultValue
+	}
+	val, err := strconv.Atoi(envValue)
+	if err != nil {
+		return defaultValue
+	}
+	return val
 }
 
 func URLEncode(s string) string {

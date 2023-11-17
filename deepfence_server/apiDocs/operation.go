@@ -708,6 +708,32 @@ func (d *OpenApiDocs) AddIntegrationOperations() {
 	d.AddOperation("deleteIntegration", http.MethodDelete, "/deepfence/integration/{integration_id}",
 		"Delete Integration", "Delete integration",
 		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
+
+	d.AddOperation("addAiIntegration", http.MethodPost, "/deepfence/ai-integration",
+		"Add AI Integration", "Add a new supported AI Integration",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(AddAiIntegrationRequest), new(MessageResponse))
+	d.AddOperation("listAiIntegration", http.MethodGet, "/deepfence/ai-integration",
+		"List AI Integrations", "List all the added AI Integrations",
+		http.StatusOK, []string{tagIntegration}, bearerToken, nil, new([]AiIntegrationListResponse))
+	d.AddOperation("deleteAiIntegration", http.MethodDelete, "/deepfence/ai-integration/{integration_id}",
+		"Delete AI Integration", "Delete AI integration",
+		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
+	d.AddOperation("setDefaultAiIntegration", http.MethodPut, "/deepfence/ai-integration/{integration_id}/default",
+		"Set Default AI Integration", "Set Default AI integration",
+		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
+
+	d.AddOperation("aiIntegrationCloudPostureQuery", http.MethodPost, "/deepfence/ai-integration/query/cloud-posture",
+		"Send Cloud Posture query to AI Integration", "Send Cloud Posture query to AI Integration",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(AiIntegrationCloudPostureRequest), new(string))
+	d.AddOperation("aiIntegrationLinuxPostureQuery", http.MethodPost, "/deepfence/ai-integration/query/linux-posture",
+		"Send Linux Posture query to AI Integration", "Send Linux Posture query to AI Integration",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(AiIntegrationLinuxPostureRequest), new(string))
+	d.AddOperation("aiIntegrationKubernetesPostureQuery", http.MethodPost, "/deepfence/ai-integration/query/kubernetes-posture",
+		"Send Kubernetes Posture query to AI Integration", "Send Kubernetes Posture query to AI Integration",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(AiIntegrationKubernetesPostureRequest), new(string))
+	d.AddOperation("aiIntegrationVulnerabilityQuery", http.MethodPost, "/deepfence/ai-integration/query/vulnerability",
+		"Send Vulnerability query to AI Integration", "Send Vulnerability query to AI Integration",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(AiIntegrationVulnerabilityRequest), new(string))
 }
 
 func (d *OpenApiDocs) AddReportsOperations() {
@@ -758,6 +784,17 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 	d.AddOperation("addScheduledTask", http.MethodPost, "/deepfence/scheduled-task",
 		"Add scheduled task", "Add scheduled task",
 		http.StatusNoContent, []string{tagSettings}, bearerToken, new(AddScheduledTaskRequest), nil)
+	d.AddOperation("deleteCustomScheduledTask", http.MethodDelete, "/deepfence/scheduled-task/{id}",
+		"Delete Custom Schedule task", "Delete Custom Schedule task",
+		http.StatusNoContent, []string{tagSettings}, bearerToken, new(ScheduleJobId), nil)
+
+	d.AddOperation("uploadAgentVersion", http.MethodPut, "/deepfence/agent/version",
+		"Upload New agent version", "Upload Agent version",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, nil)
+
+	d.AddOperation("getAgentVersions", http.MethodGet, "/deepfence/agent/versions",
+		"Get available agent versions", "Get available agent versions",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(ListAgentVersionResp))
 
 	// Database upload
 	d.AddOperation("uploadVulnerabilityDatabase", http.MethodPut, "/deepfence/database/vulnerability",

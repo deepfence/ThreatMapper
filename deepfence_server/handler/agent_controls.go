@@ -103,27 +103,10 @@ func (h *Handler) ScheduleAgentUpgrade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := controls.GetAgentVersionTarball(ctx, agentUp.Version)
+	action, err := controls.PrepareAgentUpgradeAction(ctx, agentUp.Version)
 	if err != nil {
-		respondWith(ctx, w, http.StatusBadRequest, err)
+		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return
-	}
-
-	internal_req := ctl.StartAgentUpgradeRequest{
-		HomeDirectoryUrl: url,
-		Version:          agentUp.Version,
-	}
-
-	b, err := json.Marshal(internal_req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-		return
-	}
-
-	action := ctl.Action{
-		ID:             ctl.StartAgentUpgrade,
-		RequestPayload: string(b),
 	}
 
 	err = controls.ScheduleAgentUpgrade(ctx, agentUp.Version, []string{agentUp.NodeId}, action)

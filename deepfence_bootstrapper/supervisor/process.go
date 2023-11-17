@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	self_id                  = "self"
+	Self_id                  = "self"
 	log_root_env             = "${DF_INSTALL_DIR}/var/log/deepfenced/"
 	EXIT_CODE_BASH_NOT_FOUND = 127
 )
@@ -192,7 +192,36 @@ func (ph *procHandler) stop() error {
 
 var selfAccess sync.Mutex
 
-func selfUpgrade(url string) error {
+func selfUpgradeFromFile(path string) error {
+	selfAccess.Lock()
+	defer selfAccess.Unlock()
+
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+
+	tries := 3
+	for {
+		if tries == 0 {
+			break
+		}
+		tries -= 1
+
+		err = selfupdate.Apply(f, selfupdate.Options{})
+		if err != nil {
+			rollerr := selfupdate.RollbackError(err)
+			if rollerr != nil {
+				return rollerr
+			}
+		} else {
+			break
+		}
+	}
+	return err
+}
+
+func selfUpgradeFromUrl(url string) error {
 	selfAccess.Lock()
 	defer selfAccess.Unlock()
 
@@ -240,9 +269,64 @@ func downloadAndWrite(path, url string) error {
 	return err
 }
 
-func UpgradeProcess(name, url string) error {
-	if name == self_id {
-		return selfUpgrade(url)
+func WriteTo(dst, org string) error {
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	in, err := os.Open(org)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	_, err = io.Copy(out, in)
+
+	return err
+}
+
+func UpgradeProcessFromFile(name, path string) error {
+	if name == Self_id {
+		return selfUpgradeFromFile(path)
+	}
+
+	access.RLock()
+	process, has := processes[name]
+	if !has {
+		access.RUnlock()
+		return PathError
+	}
+	access.RUnlock()
+	process.access.Lock()
+	defer process.access.Unlock()
+
+	restart := false
+	if process.started {
+		log.Debug().Msg("Stop process")
+		err := process.stop()
+		if err != nil {
+			return err
+		}
+		restart = true
+	}
+
+	err := WriteTo(process.path, path)
+	if err != nil {
+		return err
+	}
+
+	if restart {
+		log.Debug().Msg("Restart process")
+		err = process.start()
+	}
+	return err
+}
+
+func UpgradeProcessFromURL(name, url string) error {
+	if name == Self_id {
+		return selfUpgradeFromUrl(url)
 	}
 
 	access.RLock()
@@ -307,6 +391,21 @@ func StopProcess(name string) error {
 		return NotRunningError
 	}
 	return process.stop()
+}
+
+func StopAllProcesses() []error {
+
+	access.RLock()
+	defer access.RUnlock()
+
+	errs := []error{}
+	for _, process := range processes {
+		err := process.stop()
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errs
 }
 
 func LoadProcess(name, path, command, env string, autorestart bool, cgroup string) {

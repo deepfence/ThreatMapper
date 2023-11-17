@@ -125,6 +125,7 @@ func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.C
 	_, err = mc.UploadLocalFile(ctx,
 		filepath.Join(diagnosis.ConsoleDiagnosisFileServerPrefix, filepath.Base(zipFile.Name())),
 		zipFile.Name(),
+		true,
 		minio.PutObjectOptions{ContentType: "application/zip"})
 	if err != nil {
 		return err

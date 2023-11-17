@@ -2,6 +2,8 @@ package cronjobs
 
 import (
 	"context"
+	"os"
+	"strconv"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	utils_ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
@@ -11,13 +13,29 @@ import (
 )
 
 const (
-	ConsoleAgentId = "deepfence-console-cron"
-	MaxWorkload    = 5
+	ConsoleAgentId     = "deepfence-console-cron"
+	DefaultMaxWorkload = 5
 )
 
 var (
-	ScanWorkloadAllocator = utils_ctl.NewWorkloadAllocator(MaxWorkload)
+	MaxWorkload           int
+	ScanWorkloadAllocator *utils_ctl.WorkloadAllocator
 )
+
+func init() {
+	numWorkloadStr := os.Getenv("DEEPFENCE_MAX_SCAN_WORKLOAD")
+	if len(numWorkloadStr) == 0 {
+		MaxWorkload = DefaultMaxWorkload
+	} else {
+		numWorkload, err := strconv.Atoi(numWorkloadStr)
+		if err != nil {
+			MaxWorkload = DefaultMaxWorkload
+		} else {
+			MaxWorkload = numWorkload
+		}
+	}
+	ScanWorkloadAllocator = utils_ctl.NewWorkloadAllocator(DefaultMaxWorkload)
+}
 
 /*
 While this functon is a cron job, it is running on the worker's address space

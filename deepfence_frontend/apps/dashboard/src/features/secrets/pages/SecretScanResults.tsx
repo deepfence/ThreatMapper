@@ -77,7 +77,7 @@ import { SecretsCompare } from '@/features/secrets/components/scan-results/Secre
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
-import { get403Message } from '@/utils/403';
+import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
@@ -144,10 +144,11 @@ const action = async ({
     });
     if (!result.ok) {
       if (result.error.response.status === 400 || result.error.response.status === 409) {
+        const { message } = await getResponseErrors(result.error);
         return {
           action: actionType,
           success: false,
-          message: result.error.message ?? '',
+          message,
         };
       } else if (result.error.response.status === 403) {
         const message = await get403Message(result.error);
@@ -193,10 +194,11 @@ const action = async ({
     });
     if (!result.ok) {
       if (result.error.response.status === 400 || result.error.response.status === 409) {
+        const { message } = await getResponseErrors(result.error);
         return {
           action: actionType,
           success: false,
-          message: result.error.message ?? '',
+          message,
         };
       } else if (result.error.response.status === 403) {
         const message = await get403Message(result.error);

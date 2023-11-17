@@ -137,7 +137,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 	}
 
 	r.Use(otelchi.Middleware("deepfence-server", otelchi.WithChiRoutes(r)))
-
+	r.Use(middleware.Recoverer)
 	r.Use(middleware.Compress(5))
 
 	if enable_debug {
@@ -217,6 +217,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/email", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.AddEmailConfiguration))
 				r.Get("/email", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetEmailConfiguration))
 				r.Delete("/email/{config_id}", dfHandler.AuthHandler(ResourceSettings, PermissionDelete, dfHandler.DeleteEmailConfiguration))
+				r.Put("/agent/version", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadAgentBinaries))
+				r.Get("/agent/versions", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadAgentBinaries))
 			})
 
 			r.Route("/graph", func(r chi.Router) {
@@ -487,7 +489,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			r.Route("/scheduled-task", func(r chi.Router) {
 				r.Get("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetScheduledTask))
 				r.Patch("/{id}", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.UpdateScheduledTask))
-				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddScheduledTask))
+				r.Delete("/{id}", dfHandler.AuthHandler(ResourceAllUsers, PermissionDelete, dfHandler.DeleteCustomScheduledTask))
+
+				r.Post("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.AddScheduledTask))
 			})
 
 			// Integration
@@ -497,6 +501,23 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Route("/{integration_id}", func(r chi.Router) {
 					r.Delete("/", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteIntegration))
 					r.Put("/", dfHandler.AuthHandler(ResourceIntegration, PermissionUpdate, doNothingHandler))
+				})
+			})
+
+			// AI Integration
+			r.Route("/ai-integration", func(r chi.Router) {
+				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddAiIntegration))
+				r.Get("/", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GetAiIntegrations))
+				r.Route("/{integration_id}", func(r chi.Router) {
+					r.Put("/default", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.SetDefaultAiIntegration))
+					r.Delete("/", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteAiIntegration))
+				})
+
+				r.Route("/query", func(r chi.Router) {
+					r.Post("/cloud-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationCloudPostureQuery))
+					r.Post("/linux-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationLinuxPostureQuery))
+					r.Post("/kubernetes-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationKubernetesPostureQuery))
+					r.Post("/vulnerability", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationVulnerabilityQuery))
 				})
 			})
 

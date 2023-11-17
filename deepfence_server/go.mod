@@ -1,6 +1,6 @@
 module github.com/deepfence/ThreatMapper/deepfence_server
 
-go 1.21.0
+go 1.21
 
 replace github.com/deepfence/ThreatMapper/deepfence_utils => ../deepfence_utils
 
@@ -31,6 +31,7 @@ require (
 	github.com/rs/zerolog v1.30.0
 	github.com/samber/lo v1.38.1
 	github.com/samber/mo v1.8.0
+	github.com/sashabaranov/go-openai v1.17.3
 	github.com/sirupsen/logrus v1.9.3
 	github.com/swaggest/openapi-go v0.2.39
 	github.com/twmb/franz-go v1.14.4
@@ -40,6 +41,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.18.0
 	go.opentelemetry.io/otel/trace v1.18.0
 	golang.org/x/crypto v0.12.0
+	golang.org/x/mod v0.10.0
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.28.0
 	k8s.io/apimachinery v0.28.0
@@ -128,7 +130,6 @@ require (
 	go.opentelemetry.io/contrib v1.0.0 // indirect
 	go.opentelemetry.io/otel/metric v1.18.0 // indirect
 	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
-	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect

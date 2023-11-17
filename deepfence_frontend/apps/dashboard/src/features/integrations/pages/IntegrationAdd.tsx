@@ -23,7 +23,7 @@ import { PlusIcon } from '@/components/icons/common/Plus';
 import { integrationTypeToNameMapping } from '@/features/integrations/pages/Integrations';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
-import { get403Message } from '@/utils/403';
+import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { getArrayTypeValuesFromFormData } from '@/utils/formData';
 
@@ -378,8 +378,10 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
     });
     if (!r.ok) {
       if (r.error.response.status === 400) {
+        const { message } = await getResponseErrors(r.error);
         return {
-          message: r.error.message ?? 'Error in deleting integrations',
+          success: false,
+          message: message ?? 'Error in deleting integrations',
         };
       } else if (r.error.response.status === 403) {
         const message = await get403Message(r.error);
@@ -541,7 +543,7 @@ const IntegrationAdd = () => {
 
   return (
     <div className="m-4">
-      <div className="flex gapx-8">
+      <div className="flex gap-x-2">
         <Button
           variant="flat"
           startIcon={<PlusIcon />}

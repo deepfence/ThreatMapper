@@ -136,6 +136,16 @@ export const VulnerabilityThreatGraph = ({
       ranksep: 40,
       preventOverlap: true,
     },
+    modes: {
+      default: [
+        'drag-canvas',
+        {
+          type: '',
+          maxZoom: 0,
+          minZoom: 0,
+        },
+      ],
+    },
   });
   const { data } = useVulnerabilityThreatGraphData(nodeIds);
 

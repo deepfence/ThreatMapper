@@ -2,6 +2,8 @@ module github.com/deepfence/ThreatMapper/deepfence_worker
 
 go 1.21.0
 
+toolchain go1.21.1
+
 replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_sdk/client/
 
 replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils
@@ -211,6 +213,7 @@ require (
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/samber/lo v1.38.1 // indirect
 	github.com/samber/mo v1.8.0 // indirect
+	github.com/sashabaranov/go-openai v1.17.3 // indirect
 	github.com/scylladb/go-set v1.0.3-0.20200225121959-cc7b2070d91e // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect

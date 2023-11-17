@@ -21,6 +21,11 @@ var RegistryTypes = []string{
 	ACR, DOCKER_HUB, DOCKER_PRIVATE, ECR, GCR, GITLAB, HARBOR, JFROG, QUAY,
 }
 
+// AiIntegration related consts
+const (
+	OpenAI = "openai"
+)
+
 // Integration related consts
 const (
 	Slack           = "slack"

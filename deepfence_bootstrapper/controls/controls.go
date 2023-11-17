@@ -35,6 +35,7 @@ func SetClusterAgentControls(k8sClusterName string) {
 		func(req ctl.StartAgentUpgradeRequest) error {
 			log.Info().Msg("Start Cluster Agent Upgrade")
 			router.SetUpgrade()
+			defer router.UnsetUpgrade()
 			return StartClusterAgentUpgrade(req)
 		})
 	if err != nil {
@@ -110,6 +111,7 @@ func SetAgentControls() {
 		func(req ctl.StartAgentUpgradeRequest) error {
 			log.Info().Msg("Start Agent Upgrade")
 			router.SetUpgrade()
+			defer router.UnsetUpgrade()
 			return router.StartAgentUpgrade(req)
 		})
 	if err != nil {
@@ -119,7 +121,8 @@ func SetAgentControls() {
 		func(req ctl.EnableAgentPluginRequest) error {
 			log.Info().Msg("Start & download Agent Plugin")
 			router.SetUpgrade()
-			err = supervisor.UpgradeProcess(req.PluginName, req.BinUrl)
+			defer router.UnsetUpgrade()
+			err = supervisor.UpgradeProcessFromURL(req.PluginName, req.BinUrl)
 			if err != nil {
 				return err
 			}

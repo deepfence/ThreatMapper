@@ -11717,6 +11717,7 @@
           "cron_expr": { "type": "string" },
           "description": { "type": "string" },
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "is_priority": { "type": "boolean" },
           "node_ids": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
@@ -12373,6 +12374,7 @@
             "nullable": true
           },
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "is_priority": { "type": "boolean" },
           "node_ids": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
@@ -12961,6 +12963,7 @@
         "type": "object",
         "properties": {
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "is_priority": { "type": "boolean" },
           "node_ids": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
@@ -13638,6 +13641,7 @@
         "type": "object",
         "properties": {
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "is_priority": { "type": "boolean" },
           "node_ids": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
@@ -13981,6 +13985,7 @@
         "type": "object",
         "properties": {
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "is_priority": { "type": "boolean" },
           "node_ids": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },

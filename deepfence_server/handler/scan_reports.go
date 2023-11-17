@@ -445,7 +445,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.Host) {
-		scanIds, bulkId, err = StartMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
+		scanIds, bulkId, err = StartMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes, reqs.IsPriority)
 		scanStatusType = utils.CLOUD_COMPLIANCE_SCAN_STATUS
 	} else {
 		scanIds, bulkId, err = startMultiComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
@@ -634,40 +634,12 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
-	info, err := mc.UploadFile(r.Context(), sbomFile, b64,
+	info, err := mc.UploadFile(r.Context(), sbomFile, b64, true,
 		minio.PutObjectOptions{ContentType: "application/gzip"})
-
 	if err != nil {
-		logError := true
-		if strings.Contains(err.Error(), "Already exists here") {
-			/*If the file already exists, we will delete the old file and upload the new one
-			  File can exists in 2 conditions:
-			  - When the earlier scan was stuck during the scan phase
-			  - When the service was restarted
-			  - Bug/Race conditon in the worker service
-			*/
-			log.Warn().Msg(err.Error() + ", Will try to overwrite the file: " + sbomFile)
-			err = mc.DeleteFile(r.Context(), sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
-			if err == nil {
-				info, err = mc.UploadFile(r.Context(), sbomFile, b64,
-					minio.PutObjectOptions{ContentType: "application/gzip"})
-
-				if err == nil {
-					log.Info().Msgf("Successfully overwritten the file: %s", sbomFile)
-					logError = false
-				} else {
-					log.Error().Msgf("Failed to upload the file, error is: %v", err)
-				}
-			} else {
-				log.Error().Msgf("Failed to delete the old file, error is: %v", err)
-			}
-		}
-
-		if logError {
-			log.Error().Msg(err.Error())
-			h.respondError(err, w)
-			return
-		}
+		log.Error().Err(err).Msg("failed to uplaod sbom")
+		h.respondError(err, w)
+		return
 	}
 
 	// check if sbom has to be scanned
@@ -696,7 +668,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = worker.Enqueue(utils.ScanSBOMTask, payload)
+	err = worker.Enqueue(utils.ScanSBOMTask, payload, utils.DefaultTaskOpts()...)
 	if err != nil {
 		log.Error().Msgf("cannot publish message: %v", err)
 		h.respondError(err, w)
@@ -2103,6 +2075,7 @@ func StartMultiScan(ctx context.Context,
 	if err != nil {
 		return nil, "", err
 	}
+	isPriority := req.IsPriority
 
 	regular, k8s, registry, pods := extractBulksNodes(req.NodeIds)
 
@@ -2185,6 +2158,7 @@ func StartMultiScan(ctx context.Context,
 			scanId,
 			ctl.StringToResourceType(req.NodeType),
 			req.NodeId,
+			isPriority,
 			action)
 
 		if err != nil {
@@ -2216,7 +2190,8 @@ func StartMultiScan(ctx context.Context,
 	return scanIds, bulkId, tx.Commit()
 }
 
-func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, benchmarkTypes []string) ([]string, string, error) {
+func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentifier,
+	benchmarkTypes []string, isPriority bool) ([]string, string, error) {
 	driver, err := directory.Neo4jClient(ctx)
 
 	if err != nil {
@@ -2244,7 +2219,8 @@ func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 			scanId,
 			benchmarkTypes,
 			req.NodeId,
-			reqs[0].NodeType)
+			reqs[0].NodeType,
+			isPriority)
 
 		if err != nil {
 			log.Info().Msgf("Error in AddNewCloudComplianceScan:%v", err)
