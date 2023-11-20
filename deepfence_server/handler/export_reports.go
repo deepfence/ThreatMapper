@@ -260,10 +260,11 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	// report task params
 	report_id := uuid.New().String()
 	params := utils.ReportParams{
-		ReportID:   report_id,
-		ReportType: req.ReportType,
-		Duration:   req.Duration,
-		Filters:    req.Filters,
+		ReportID:     report_id,
+		ReportType:   req.ReportType,
+		Duration:     req.Duration,
+		Filters:      req.Filters,
+		CustomFields: req.CustomFields,
 	}
 
 	worker, err := directory.Worker(r.Context())
@@ -294,14 +295,15 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	defer tx.Close()
 
 	query := `
-	CREATE (n:Report{created_at:TIMESTAMP(), type:$type, report_id:$uid, status:$status, filters:$filters, duration:$duration})
+	CREATE (n:Report{created_at:TIMESTAMP(), type:$type, report_id:$uid, status:$status, filters:$filters, duration:$duration, custom_fields:$custom_fields})
 	RETURN n`
 	vars := map[string]interface{}{
-		"type":     req.ReportType,
-		"uid":      report_id,
-		"status":   utils.SCAN_STATUS_STARTING,
-		"filters":  req.Filters.String(),
-		"duration": req.Duration,
+		"type":          req.ReportType,
+		"uid":           report_id,
+		"status":        utils.SCAN_STATUS_STARTING,
+		"filters":       req.Filters.String(),
+		"duration":      req.Duration,
+		"custom_fields": req.CustomFields,
 	}
 
 	_, err = tx.Run(query, vars)
