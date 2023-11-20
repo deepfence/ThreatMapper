@@ -17,28 +17,28 @@ import (
 )
 
 const (
-	Self_id                  = "self"
-	log_root_env             = "${DF_INSTALL_DIR}/var/log/deepfenced/"
-	EXIT_CODE_BASH_NOT_FOUND = 127
+	SelfID               = "self"
+	logRootEnv           = "${DF_INSTALL_DIR}/var/log/deepfenced/"
+	ExitCodeBashNotFound = 127
 )
 
 var (
-	PathError           = errors.New("No paths")
-	AlreadyRunningError = errors.New("Already running")
-	NotRunningError     = errors.New("Not running")
+	ErrPath           = errors.New("no paths")
+	ErrAlreadyRunning = errors.New("already running")
+	ErrNotRunning     = errors.New("not running")
 )
 
 var (
 	processes = map[string]*procHandler{}
 	access    = sync.RWMutex{}
-	log_root  string
+	logRoot   string
 )
 
 func init() {
-	log_root = os.ExpandEnv(log_root_env)
-	err := os.Mkdir(log_root, os.ModeDir)
+	logRoot = os.ExpandEnv(logRootEnv)
+	err := os.Mkdir(logRoot, os.ModeDir)
 	if err != nil {
-		log.Error().Msgf("Failed to create %v: %v", log_root, err)
+		log.Error().Msgf("Failed to create %v: %v", logRoot, err)
 	}
 }
 
@@ -57,25 +57,25 @@ type procHandler struct {
 
 func NewProcHandler(name, path, command, env string, autorestart bool, cgroup string) *procHandler {
 	envs := strings.Split(env, ",")
-	expanded_envs := os.Environ()
+	expandedEnvs := os.Environ()
 	for i := range envs {
-		expanded_envs = append(expanded_envs, os.ExpandEnv(envs[i]))
+		expandedEnvs = append(expandedEnvs, os.ExpandEnv(envs[i]))
 	}
 	return &procHandler{
 		name:        name,
 		path:        os.ExpandEnv(path),
 		started:     false,
-		wait:        func() error { return NotRunningError },
-		kill:        func() error { return NotRunningError },
+		wait:        func() error { return ErrNotRunning },
+		kill:        func() error { return ErrNotRunning },
 		autorestart: autorestart,
 		cgroup:      cgroup,
 		command:     os.ExpandEnv(command),
-		env:         expanded_envs,
+		env:         expandedEnvs,
 	}
 }
 
 func startLogging(name string, cmd *exec.Cmd) {
-	f, err := os.OpenFile(log_root+name+".log", os.O_WRONLY|os.O_CREATE|os.O_APPEND|os.O_SYNC, 0666)
+	f, err := os.OpenFile(logRoot+name+".log", os.O_WRONLY|os.O_CREATE|os.O_APPEND|os.O_SYNC, 0666)
 	if err != nil {
 		log.Error().Msgf("Cannot start logging: %v", err)
 		return
@@ -86,7 +86,7 @@ func startLogging(name string, cmd *exec.Cmd) {
 
 func (ph *procHandler) start() error {
 	if ph.started {
-		return AlreadyRunningError
+		return ErrAlreadyRunning
 	}
 	cmd := exec.Command("/bin/bash", "-c", ph.command)
 	cmd.Env = ph.env
@@ -134,7 +134,7 @@ func (ph *procHandler) start() error {
 					err = cmd.Wait()
 					if err != nil {
 						if e, is := err.(*exec.ExitError); is {
-							if e.ExitCode() == EXIT_CODE_BASH_NOT_FOUND {
+							if e.ExitCode() == ExitCodeBashNotFound {
 								done <- false
 							}
 						}
@@ -221,7 +221,7 @@ func selfUpgradeFromFile(path string) error {
 	return err
 }
 
-func selfUpgradeFromUrl(url string) error {
+func selfUpgradeFromURL(url string) error {
 	selfAccess.Lock()
 	defer selfAccess.Unlock()
 
@@ -288,7 +288,7 @@ func WriteTo(dst, org string) error {
 }
 
 func UpgradeProcessFromFile(name, path string) error {
-	if name == Self_id {
+	if name == SelfID {
 		return selfUpgradeFromFile(path)
 	}
 
@@ -296,7 +296,7 @@ func UpgradeProcessFromFile(name, path string) error {
 	process, has := processes[name]
 	if !has {
 		access.RUnlock()
-		return PathError
+		return ErrPath
 	}
 	access.RUnlock()
 	process.access.Lock()
@@ -325,15 +325,15 @@ func UpgradeProcessFromFile(name, path string) error {
 }
 
 func UpgradeProcessFromURL(name, url string) error {
-	if name == Self_id {
-		return selfUpgradeFromUrl(url)
+	if name == SelfID {
+		return selfUpgradeFromURL(url)
 	}
 
 	access.RLock()
 	process, has := processes[name]
 	if !has {
 		access.RUnlock()
-		return PathError
+		return ErrPath
 	}
 	access.RUnlock()
 	process.access.Lock()
@@ -366,13 +366,13 @@ func StartProcess(name string) error {
 	process, has := processes[name]
 	if !has {
 		access.RUnlock()
-		return PathError
+		return ErrPath
 	}
 	access.RUnlock()
 	process.access.Lock()
 	defer process.access.Unlock()
 	if process.started {
-		return AlreadyRunningError
+		return ErrAlreadyRunning
 	}
 	return process.start()
 }
@@ -382,13 +382,13 @@ func StopProcess(name string) error {
 	process, has := processes[name]
 	if !has {
 		access.RUnlock()
-		return PathError
+		return ErrPath
 	}
 	access.RUnlock()
 	process.access.Lock()
 	defer process.access.Unlock()
 	if !process.started {
-		return NotRunningError
+		return ErrNotRunning
 	}
 	return process.stop()
 }

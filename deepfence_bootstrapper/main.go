@@ -23,14 +23,14 @@ import (
 var authCheckPeriod = time.Second * 10
 
 //go:embed assets/config.ini
-var config_file []byte
+var configFile []byte
 
 //go:embed assets/config-cluster.ini
-var config_cluster_file []byte
+var configClusterFile []byte
 
-var enable_cluster_discovery bool
+var enableClusterDiscovery bool
 
-var enable_debug bool
+var enableDebug bool
 
 var hostname string
 
@@ -38,7 +38,7 @@ var Version string
 
 func init() {
 	var err error
-	enable_cluster_discovery = os.Getenv("DF_ENABLE_CLUSTER_DISCOVERY") != ""
+	enableClusterDiscovery = os.Getenv("DF_ENABLE_CLUSTER_DISCOVERY") != ""
 	if hostname = os.Getenv("SCOPE_HOSTNAME"); hostname == "" {
 		hostname, err = os.Hostname()
 		if err != nil {
@@ -47,8 +47,8 @@ func init() {
 	}
 
 	verbosity := "info"
-	enable_debug = os.Getenv("DF_ENABLE_DEBUG") != ""
-	if enable_debug {
+	enableDebug = os.Getenv("DF_ENABLE_DEBUG") != ""
+	if enableDebug {
 		verbosity = "debug"
 	}
 	log.Initialize(verbosity)
@@ -63,29 +63,28 @@ func main() {
 
 	var cfg config.Config
 	var err error
-	if enable_cluster_discovery {
-		cfg, err = config.NewIniConfig(config_cluster_file)
+	if enableClusterDiscovery {
+		cfg, err = config.NewIniConfig(configClusterFile)
 	} else {
-		cfg, err = config.NewIniConfig(config_file)
+		cfg, err = config.NewIniConfig(configFile)
 	}
 	if err != nil {
-		log.Fatal().Msgf("%v", err)
+		log.Panic().Msgf("%v", err)
 	}
 
 	err = server.StartRPCServer(ctx, "/tmp/deepfence_boot.sock")
 	if err != nil {
-		log.Fatal().Msgf("%v", err)
+		log.Panic().Msgf("%v", err)
 	}
 
-	if !enable_cluster_discovery {
+	if !enableClusterDiscovery {
 		for _, entry := range cfg.Cgroups {
 			err := cgroups.LoadCgroup(entry.Name, int64(entry.MaxCPU), int64(entry.MaxMem))
-			if err == cgroups.FailUpdateError {
-				log.Error().Msgf("Failed to update %s", entry.Name)
-			} else if err == cgroups.FailCreateError {
-				log.Fatal().Msgf("Failed to create %s", entry.Name)
-			} else if err != nil {
-				log.Error().Err(err).Msg("Error on cgroup")
+			if err != nil {
+				log.Error().Err(err).Str("entry_name", entry.Name).Msg("Error on cgroup")
+				if errors.Is(err, cgroups.ErrFailCreate) {
+					panic(cgroups.ErrFailCreate)
+				}
 			}
 		}
 	}
@@ -105,7 +104,7 @@ func main() {
 		}
 	}
 
-	if enable_cluster_discovery {
+	if enableClusterDiscovery {
 		_, k8sClusterName, _, _, _ := dfUtils.GetKubernetesDetails()
 		controls.SetClusterAgentControls(k8sClusterName)
 	} else {
@@ -117,18 +116,19 @@ func main() {
 		consoleClient, err = router.NewOpenapiClient()
 		if err == nil {
 			break
-		} else if errors.Is(err, router.ConnError) {
+		}
+		if errors.Is(err, router.ErrConn) {
 			log.Warn().Msg("Failed to authenticate. Retrying...")
 			time.Sleep(authCheckPeriod)
 		} else {
-			log.Fatal().Msgf("Fatal: %v", err)
+			log.Panic().Msgf("Fatal: %v", err)
 		}
 	}
 	for {
-		if enable_cluster_discovery {
-			k8sClusterId, _, _, _, _ := dfUtils.GetKubernetesDetails()
-			err = consoleClient.StartControlsWatching(k8sClusterId, true, Version)
-			log.Info().Msgf("cluster agent mode: %s", k8sClusterId)
+		if enableClusterDiscovery {
+			k8sClusterID, _, _, _, _ := dfUtils.GetKubernetesDetails()
+			err = consoleClient.StartControlsWatching(k8sClusterID, true, Version)
+			log.Info().Msgf("cluster agent mode: %s", k8sClusterID)
 		} else {
 			err = consoleClient.StartControlsWatching(hostname, false, Version)
 			log.Info().Msgf("regular agent mode: %s", hostname)
@@ -144,6 +144,4 @@ func main() {
 	<-ctx.Done()
 	log.Info().Msgf("Signal received, wrapping up: %v", ctx.Err())
 	cgroups.UnloadAll()
-	os.Exit(0)
-
 }

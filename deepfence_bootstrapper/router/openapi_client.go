@@ -19,7 +19,7 @@ type OpenapiClient struct {
 	rawClient            *http.Client
 }
 
-var PushBackError = errors.New("Server push back")
+var ErrPushBack = errors.New("server push back")
 
 func NewOpenapiClient() (*OpenapiClient, error) {
 	openapiClient, err := NewClient()
@@ -46,7 +46,7 @@ func (ct *OpenapiClient) PublishInterval() int32 {
 }
 
 var (
-	ConnError = errors.New("Connection error")
+	ErrConn = errors.New("connection error")
 )
 
 func NewClient() (*openapi.OpenapiHttpClient, error) {
@@ -59,23 +59,23 @@ func NewClient() (*openapi.OpenapiHttpClient, error) {
 		return nil, errors.New("MGMT_CONSOLE_PORT not set")
 	}
 
-	api_token := os.Getenv("DEEPFENCE_KEY")
-	if strings.Trim(api_token, "\"") == "" && openapi.IsConsoleAgent(url) {
+	apiToken := os.Getenv("DEEPFENCE_KEY")
+	if strings.Trim(apiToken, "\"") == "" && openapi.IsConsoleAgent(url) {
 		internalURL := os.Getenv("MGMT_CONSOLE_URL_INTERNAL")
 		internalPort := os.Getenv("MGMT_CONSOLE_PORT_INTERNAL")
 		log.Info().Msg("fetch console agent token")
 		var err error
-		if api_token, err = openapi.GetConsoleApiToken(internalURL, internalPort); err != nil {
+		if apiToken, err = openapi.GetConsoleApiToken(internalURL, internalPort); err != nil {
 			return nil, err
 		}
-	} else if api_token == "" {
+	} else if apiToken == "" {
 		return nil, errors.New("DEEPFENCE_KEY not set")
 	}
 
-	https_client := openapi.NewHttpsConsoleClient(url, port)
-	err := https_client.APITokenAuthenticate(api_token)
+	httpsClient := openapi.NewHttpsConsoleClient(url, port)
+	err := httpsClient.APITokenAuthenticate(apiToken)
 	if err != nil {
-		return nil, ConnError
+		return nil, ErrConn
 	}
-	return https_client, nil
+	return httpsClient, nil
 }

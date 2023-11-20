@@ -11,10 +11,15 @@ import (
 
 const (
 	HostMountDir = "/fenced/mnt/host"
+
+	NodeTypeHost           = "host"
+	NodeTypeContainer      = "container"
+	NodeTypeContainerImage = "container_image"
+	NodeTypePod            = "pod"
 )
 
 var controls map[ctl.ActionID]func(req []byte) error
-var controls_guard sync.RWMutex
+var controlsGuard sync.RWMutex
 
 func RegisterControl[T ctl.StartVulnerabilityScanRequest |
 	ctl.StartSecretScanRequest |
@@ -29,10 +34,10 @@ func RegisterControl[T ctl.StartVulnerabilityScanRequest |
 	ctl.StopVulnerabilityScanRequest |
 	ctl.StopComplianceScanRequest](id ctl.ActionID, callback func(req T) error) error {
 
-	controls_guard.Lock()
-	defer controls_guard.Unlock()
+	controlsGuard.Lock()
+	defer controlsGuard.Unlock()
 	if controls[id] != nil {
-		return fmt.Errorf("Action %v already registered", id)
+		return fmt.Errorf("action %v already registered", id)
 	}
 	controls[id] = func(req []byte) error {
 		var typedReq T
@@ -47,8 +52,8 @@ func RegisterControl[T ctl.StartVulnerabilityScanRequest |
 }
 
 func ApplyControl(req openapi.ControlsAction) error {
-	controls_guard.RLock()
-	defer controls_guard.RUnlock()
+	controlsGuard.RLock()
+	defer controlsGuard.RUnlock()
 	return controls[ctl.ActionID(req.GetId())]([]byte(req.GetRequestPayload()))
 }
 

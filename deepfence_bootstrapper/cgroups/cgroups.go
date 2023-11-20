@@ -14,12 +14,12 @@ import (
 )
 
 var (
-	cgroups1            = map[string]cgroup1.Cgroup{}
-	cgroups2            = map[string]*cgroup2.Manager{}
-	FailUpdateError     = errors.New("Failed to update")
-	FailCreateError     = errors.New("Failed to create")
-	CgroupNotExistError = errors.New("Cgroup does not exist")
-	cgroupV2            bool
+	cgroups1          = map[string]cgroup1.Cgroup{}
+	cgroups2          = map[string]*cgroup2.Manager{}
+	ErrFailUpdate     = errors.New("failed to update")
+	ErrFailCreate     = errors.New("failed to create")
+	ErrCgroupNotExist = errors.New("cgroup does not exist")
+	cgroupV2          bool
 )
 
 func init() {
@@ -39,7 +39,7 @@ func LoadCgroup(name string, cpulimit int64, memlimit int64) error {
 					Shares: &shares,
 				},
 			}); err != nil {
-				return FailUpdateError
+				return ErrFailUpdate
 			}
 		} else {
 			control, err = cgroup1.New(path, &specs.LinuxResources{
@@ -52,14 +52,14 @@ func LoadCgroup(name string, cpulimit int64, memlimit int64) error {
 			})
 			if err != nil {
 				log.Error().Err(err).Msg("create")
-				return FailCreateError
+				return ErrFailCreate
 			}
 		}
 		cgroups1[name] = control
 	} else {
 		cpuperiod := uint64(100000) // 100 ms
-		total_cpu := int64(1000000 * runtime.NumCPU())
-		cpulimit *= total_cpu
+		totalCPU := int64(1000000 * runtime.NumCPU())
+		cpulimit *= totalCPU
 		cpulimit /= 100
 
 		res := cgroup2.Resources{
@@ -95,13 +95,13 @@ func AttachProcessToCgroup(name string, pid int) error {
 	if !cgroupV2 {
 		control, has := cgroups1[name]
 		if !has {
-			return CgroupNotExistError
+			return ErrCgroupNotExist
 		}
 		return control.Add(cgroup1.Process{Pid: pid})
 	} else {
 		m, has := cgroups2[name]
 		if !has {
-			return CgroupNotExistError
+			return ErrCgroupNotExist
 		}
 		return m.AddProc(uint64(pid))
 	}

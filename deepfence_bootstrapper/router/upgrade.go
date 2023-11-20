@@ -17,16 +17,16 @@ import (
 )
 
 const (
-	binaires_file = "/tmp/binaries.tar.gz"
+	binariesFile = "/tmp/binaries.tar.gz"
 )
 
 func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 	log.Info().Msgf("Fetching %v", req.HomeDirectoryUrl)
-	err := downloadFile(binaires_file, req.HomeDirectoryUrl)
+	err := downloadFile(binariesFile, req.HomeDirectoryUrl)
 	if err != nil {
 		return err
 	}
-	defer os.Remove(binaires_file)
+	defer os.Remove(binariesFile)
 	log.Info().Msgf("Download done")
 
 	dir, err := os.MkdirTemp("/tmp", "bins")
@@ -35,7 +35,7 @@ func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 	}
 	defer os.Remove(dir)
 
-	err = extractTarGz(binaires_file, dir)
+	err = extractTarGz(binariesFile, dir)
 	if err != nil {
 		return err
 	}
@@ -66,17 +66,17 @@ func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 		err = supervisor.UpgradeProcessFromFile(plugin.name, plugin.path)
 		if err != nil {
 			log.Error().Msgf("plugin: %v, path: %v, err: %v", plugin.name, plugin.path, err)
-		} else if plugin.name == supervisor.Self_id {
+		} else if plugin.name == supervisor.SelfID {
 			restart = true
 		}
 	}
 
 	if restart {
 		log.Info().Msgf("Restart self")
-		restartSelf()
+		err = restartSelf()
 	}
 
-	return nil
+	return err
 }
 
 func restartSelf() error {
@@ -125,8 +125,8 @@ func downloadFile(filepath string, url string) (err error) {
 	return nil
 }
 
-func extractTarGz(input_file, output_dir string) error {
-	cmd := exec.Command("tar", "xf", input_file, "-C", output_dir)
+func extractTarGz(inputFile, outputDir string) error {
+	cmd := exec.Command("tar", "xf", inputFile, "-C", outputDir)
 	return cmd.Run()
 }
 

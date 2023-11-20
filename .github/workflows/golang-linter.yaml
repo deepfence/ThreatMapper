@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.CI_PAT }}
+          # token: ${{ secrets.CI_PAT }}
           submodules: recursive
           fetch-depth: "0"
       - uses: actions/setup-go@v4

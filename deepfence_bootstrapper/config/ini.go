@@ -37,12 +37,12 @@ func NewIniConfig(input []byte) (Config, error) {
 	processEntries := []ProcessEntry{}
 	cgroupEntries := []CgroupEntry{}
 	for _, section := range cfg.Sections() {
-		type_name := strings.Split(section.Name(), ":")
-		if len(type_name) != 2 {
+		typeName := strings.Split(section.Name(), ":")
+		if len(typeName) != 2 {
 			log.Warn().Msgf("Illformed section name: %s", section.Name())
 			continue
 		}
-		if type_name[0] == "process" {
+		if typeName[0] == "process" {
 			processEntries = append(processEntries, ProcessEntry{
 				Autorestart: section.Key("autorestart").MustBool(),
 				Autostart:   section.Key("autostart").MustBool(),
@@ -50,13 +50,13 @@ func NewIniConfig(input []byte) (Config, error) {
 				Cgroup:      section.Key("cgroup").String(),
 				Command:     section.Key("command").String(),
 				Env:         section.Key("environment").String(),
-				Name:        type_name[1],
+				Name:        typeName[1],
 			})
-		} else if type_name[0] == "cgroup" {
+		} else if typeName[0] == "cgroup" {
 			cgroupEntries = append(cgroupEntries, CgroupEntry{
 				MaxCPU: section.Key("maxcpu").MustInt(),
 				MaxMem: section.Key("maxmem").MustInt(),
-				Name:   type_name[1],
+				Name:   typeName[1],
 			})
 		}
 	}

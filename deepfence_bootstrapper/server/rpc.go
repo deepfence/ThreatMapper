@@ -14,13 +14,13 @@ type Server struct{}
 
 type UpgradeArgs struct {
 	Name string
-	Url  string
+	URL  string
 }
 
 type Reply struct{}
 
 func (s *Server) Upgrade(args *UpgradeArgs, _ *Reply) error {
-	return supervisor.UpgradeProcessFromURL(args.Name, args.Url)
+	return supervisor.UpgradeProcessFromURL(args.Name, args.URL)
 }
 
 func (s *Server) Start(args *UpgradeArgs, _ *Reply) error {
@@ -31,15 +31,15 @@ func (s *Server) Stop(args *UpgradeArgs, _ *Reply) error {
 	return supervisor.StopProcess(args.Name)
 }
 
-func StartRPCServer(ctx context.Context, socket_path string) error {
+func StartRPCServer(ctx context.Context, socketPath string) error {
 	rpcServer := rpc.NewServer()
 	server := &Server{}
 	err := rpcServer.Register(server)
 	if err != nil {
 		return err
 	}
-	_ = os.Remove(socket_path)
-	la, err := net.Listen("unix", socket_path)
+	_ = os.Remove(socketPath)
+	la, err := net.Listen("unix", socketPath)
 	if err != nil {
 		return err
 	}
