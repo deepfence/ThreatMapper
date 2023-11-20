@@ -46,12 +46,6 @@ export interface ModelComplianceScanTriggerReq {
     filters: ModelScanFilter;
     /**
      * 
-     * @type {boolean}
-     * @memberof ModelComplianceScanTriggerReq
-     */
-    is_priority?: boolean;
-    /**
-     * 
      * @type {Array<ModelNodeIdentifier>}
      * @memberof ModelComplianceScanTriggerReq
      */
@@ -82,7 +76,6 @@ export function ModelComplianceScanTriggerReqFromJSONTyped(json: any, ignoreDisc
         
         'benchmark_types': json['benchmark_types'],
         'filters': ModelScanFilterFromJSON(json['filters']),
-        'is_priority': !exists(json, 'is_priority') ? undefined : json['is_priority'],
         'node_ids': (json['node_ids'] === null ? null : (json['node_ids'] as Array<any>).map(ModelNodeIdentifierFromJSON)),
     };
 }
@@ -98,7 +91,6 @@ export function ModelComplianceScanTriggerReqToJSON(value?: ModelComplianceScanT
         
         'benchmark_types': value.benchmark_types,
         'filters': ModelScanFilterToJSON(value.filters),
-        'is_priority': value.is_priority,
         'node_ids': (value.node_ids === null ? null : (value.node_ids as Array<any>).map(ModelNodeIdentifierToJSON)),
     };
 }

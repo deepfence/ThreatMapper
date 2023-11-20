@@ -194,7 +194,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
           sev.toLowerCase(),
         ) as UtilsReportFiltersSeverityOrCheckTypeEnum,
       },
-
+      custom_fields: customFields,
       report_type: _reportType,
     },
   });

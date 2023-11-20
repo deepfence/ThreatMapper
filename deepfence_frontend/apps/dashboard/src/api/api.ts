@@ -16,6 +16,7 @@ import {
   LookupApi,
   MalwareScanApi,
   RegistryApi,
+  ReportsApi,
   ScanResultsApi,
   SearchApi,
   SecretScanApi,
@@ -26,8 +27,6 @@ import {
   VulnerabilityApi,
 } from '@/api/generated';
 import storage from '@/utils/storage';
-
-import { ReportsApi } from './generated/apis/ReportsApi';
 
 const configuration = new Configuration({
   basePath: `${window.location.protocol}//${window.location.host}`,

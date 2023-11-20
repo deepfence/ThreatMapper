@@ -28,6 +28,12 @@ import {
 export interface ModelGenerateReportReq {
     /**
      * 
+     * @type {Array<string>}
+     * @memberof ModelGenerateReportReq
+     */
+    custom_fields?: Array<string> | null;
+    /**
+     * 
      * @type {number}
      * @memberof ModelGenerateReportReq
      */
@@ -91,6 +97,7 @@ export function ModelGenerateReportReqFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
+        'custom_fields': !exists(json, 'custom_fields') ? undefined : json['custom_fields'],
         'duration': !exists(json, 'duration') ? undefined : json['duration'],
         'filters': !exists(json, 'filters') ? undefined : UtilsReportFiltersFromJSON(json['filters']),
         'report_type': json['report_type'],
@@ -106,6 +113,7 @@ export function ModelGenerateReportReqToJSON(value?: ModelGenerateReportReq | nu
     }
     return {
         
+        'custom_fields': value.custom_fields,
         'duration': value.duration,
         'filters': UtilsReportFiltersToJSON(value.filters),
         'report_type': value.report_type,
