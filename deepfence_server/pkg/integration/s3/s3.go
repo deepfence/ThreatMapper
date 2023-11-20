@@ -2,12 +2,13 @@ package s3
 
 import (
 	"bytes"
-	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/klauspost/compress/gzip"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -21,6 +22,8 @@ func New(ctx context.Context, b []byte) (*S3, error) {
 	if err != nil {
 		return &s, err
 	}
+
+	s.Buffer = new(bytes.Buffer)
 	return &s, nil
 }
 
@@ -63,15 +66,21 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 		fmt.Println("Failed to marshal JSON data", err)
 		return err
 	}
-	buf := &bytes.Buffer{}
-	gzWriter := gzip.NewWriter(buf)
+
+	s.Buffer.Reset()
+	gzWriter, err := gzip.NewWriterLevel(s.Buffer, gzip.DefaultCompression)
+	if err != nil {
+		fmt.Println("Failed to get the gzip writer", err)
+		return err
+	}
+
 	gzWriter.Write(jsonBytes)
 	gzWriter.Close()
 	// Upload the JSON data to S3
 	svc := s3.New(sess)
 	// Default timeout of aws client is 30 sec
 	_, err = svc.PutObject(&s3.PutObjectInput{
-		Body:            bytes.NewReader(buf.Bytes()),
+		Body:            bytes.NewReader(s.Buffer.Bytes()),
 		Bucket:          aws.String(s.Config.S3BucketName),
 		ContentEncoding: aws.String("gzip"),
 		Key:             aws.String(s.Config.S3FolderName + "/" + utils.GetDatetimeNow() + ".json"),

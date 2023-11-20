@@ -21,6 +21,7 @@ require (
 	github.com/google/uuid v1.3.1
 	github.com/json-iterator/go v1.1.12
 	github.com/k-sone/critbitgo v1.4.0
+	github.com/klauspost/compress v1.17.3
 	github.com/lestrrat-go/jwx/v2 v2.0.12
 	github.com/minio/minio-go/v7 v7.0.63
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.7
@@ -89,7 +90,6 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
