@@ -723,9 +723,9 @@ const HistoryControls = () => {
           <>
             <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
             <div className="pl-1.5 flex">
-              <IconButton
+              <Button
                 variant="flat"
-                icon={
+                startIcon={
                   <span className="h-3 w-3">
                     <DownloadLineIcon />
                   </span>
@@ -739,22 +739,26 @@ const HistoryControls = () => {
                     nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
                   });
                 }}
-              />
-              <IconButton
+              >
+                Download
+              </Button>
+              <Button
                 variant="flat"
-                icon={
+                startIcon={
                   <span className="h-3 w-3">
                     <TrashLineIcon />
                   </span>
                 }
                 disabled={fetchStatus !== 'idle'}
                 onClick={() => setScanIdToDelete(scan_id ?? '')}
-              />
+              >
+                Delete
+              </Button>
               <>
                 {isScanComplete(status ?? '') && (
-                  <IconButton
+                  <Button
                     variant="flat"
-                    icon={
+                    startIcon={
                       <span className="h-3 w-3">
                         <BalanceLineIcon />
                       </span>
@@ -767,7 +771,9 @@ const HistoryControls = () => {
                         showScanTimeModal: true,
                       });
                     }}
-                  />
+                  >
+                    Compare scan
+                  </Button>
                 )}
               </>
             </div>
