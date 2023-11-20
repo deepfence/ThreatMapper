@@ -1,0 +1,11 @@
+linters:
+  enable:
+  - stylecheck
+  - gocritic
+  # - dupl
+  - durationcheck
+  # - goconst
+  - gofmt
+  - goimports
+  # - misspell
+  # - nestif
