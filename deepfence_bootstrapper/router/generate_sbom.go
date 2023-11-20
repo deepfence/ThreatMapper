@@ -39,7 +39,7 @@ func createPackageScannerConn() (*grpc.ClientConn, error) {
 	return conn, nil
 }
 
-func GenerateSbomForVulnerabilityScan(nodeType, imageName, imageId, scanId, containerId,
+func GenerateSbomForVulnerabilityScan(nodeType, imageName, imageID, scanID, containerID,
 	kubernetesClusterName, containerName, scanType string) error {
 	ctx := context.Background()
 
@@ -53,19 +53,18 @@ func GenerateSbomForVulnerabilityScan(nodeType, imageName, imageId, scanId, cont
 
 	packageScannerClient := pb.NewPackageScannerClient(conn)
 	var source string
-	if nodeType == "host" {
+	switch nodeType {
+	case NodeTypeHost:
 		source = scanPath
-	} else if nodeType == "container_image" {
+	case NodeTypeContainerImage:
+		source = imageID
 		if imageName != "" {
 			source = imageName
-		} else {
-			source = imageId
 		}
-	} else if nodeType == "container" {
-		if containerId != "" {
-			source = containerId
-		} else {
-			source = containerName
+	case NodeTypeContainer:
+		source = containerName
+		if containerID != "" {
+			source = containerID
 		}
 	}
 	sbomRequest := &pb.SBOMRequest{
@@ -73,12 +72,12 @@ func GenerateSbomForVulnerabilityScan(nodeType, imageName, imageId, scanId, cont
 		ScanType:              scanType,
 		ContainerName:         containerName,
 		KubernetesClusterName: kubernetesClusterName,
-		ImageId:               imageId,
-		ScanId:                scanId,
+		ImageId:               imageID,
+		ScanId:                scanID,
 		NodeType:              nodeType,
 		HostName:              hostName,
 		RegistryId:            "",
-		ContainerId:           containerId,
+		ContainerId:           containerID,
 	}
 	_, err = packageScannerClient.GenerateSBOM(ctx, sbomRequest)
 	if err != nil {
@@ -90,61 +89,61 @@ func GenerateSbomForVulnerabilityScan(nodeType, imageName, imageId, scanId, cont
 func StartVulnerabilityScan(req ctl.StartVulnerabilityScanRequest) error {
 	var (
 		imageName             = "host"
-		imageId               = ""
-		scanId                = ""
+		imageID               = ""
+		scanID                = ""
 		kubernetesClusterName = ""
 		containerName         = ""
-		containerId           = ""
+		containerID           = ""
 		scanType              = "all"
-		node_type             = ""
-		node_id               = ""
+		nodeType              = ""
+		nodeID                = ""
 	)
 
-	if node_type_Arg, ok := req.BinArgs["node_type"]; ok {
-		node_type = node_type_Arg
+	if nodeTypeArg, ok := req.BinArgs["node_type"]; ok {
+		nodeType = nodeTypeArg
 	}
 
-	if node_id_Arg, ok := req.BinArgs["node_id"]; ok {
-		node_id = node_id_Arg
+	if nodeIDArg, ok := req.BinArgs["node_id"]; ok {
+		nodeID = nodeIDArg
 	}
 
-	if image_name_Arg, ok := req.BinArgs["image_name"]; ok {
-		imageName = image_name_Arg
+	if imageNameArg, ok := req.BinArgs["image_name"]; ok {
+		imageName = imageNameArg
 	}
 
-	if scan_type_Arg, ok := req.BinArgs["scan_type"]; ok {
-		scanType = scan_type_Arg
+	if scanTypeArg, ok := req.BinArgs["scan_type"]; ok {
+		scanType = scanTypeArg
 	}
 
-	switch node_type {
+	switch nodeType {
 	case "container":
-		containerId = node_id
+		containerID = nodeID
 	case "container_image":
-		imageId = node_id
+		imageID = nodeID
 	case "image":
-		imageId = node_id
-		node_type = "container_image"
+		imageID = nodeID
+		nodeType = "container_image"
 	}
 
 	if kubernetesClusterNameArg, ok := req.BinArgs["kubernetes_cluster_name"]; ok {
 		kubernetesClusterName = kubernetesClusterNameArg
 	}
-	if (node_type == "container" && containerId == "") ||
-		(node_type == "container_image" && (imageId == "" || imageName == "")) {
+	if (nodeType == "container" && containerID == "") ||
+		(nodeType == "container_image" && (imageID == "" || imageName == "")) {
 		return errors.New("image_id/image_name/container_id is required for container/image vulnerability scan")
 	}
 	if scanTypeArg, ok := req.BinArgs["scan_type"]; ok {
 		scanType = scanTypeArg
 	}
-	if scanIdArg, ok := req.BinArgs["scan_id"]; ok {
-		scanId = scanIdArg
+	if scanIDArg, ok := req.BinArgs["scan_id"]; ok {
+		scanID = scanIDArg
 	}
 	log.Info().Msgf("vulnerability scan request: %v", req)
 	log.Info().Msgf("uploading %s sbom to console...", imageName)
 	// call package scanner plugin
 	go func() {
-		err := GenerateSbomForVulnerabilityScan(node_type, imageName, imageId, scanId,
-			containerId, kubernetesClusterName, containerName, scanType)
+		err := GenerateSbomForVulnerabilityScan(nodeType, imageName, imageID, scanID,
+			containerID, kubernetesClusterName, containerName, scanType)
 		if err != nil {
 			log.Error().Msgf("%v", err)
 		}

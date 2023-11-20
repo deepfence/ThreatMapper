@@ -13,7 +13,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent bool, version string) error {
+func (ct *OpenapiClient) StartControlsWatching(nodeID string, isClusterAgent bool, version string) error {
 	if isClusterAgent {
 
 	} else {
@@ -21,7 +21,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 		req = req.ModelInitAgentReq(
 			*openapi.NewModelInitAgentReq(
 				getMaxAllocatable(),
-				nodeId,
+				nodeID,
 				version,
 			),
 		)
@@ -45,8 +45,8 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 	if isClusterAgent {
 		go func() {
 			req := ct.API().ControlsAPI.GetKubernetesClusterControls(context.Background())
-			agentId := openapi.NewModelAgentId(getMaxAllocatable(), nodeId)
-			req = req.ModelAgentId(*agentId)
+			agentID := openapi.NewModelAgentId(getMaxAllocatable(), nodeID)
+			req = req.ModelAgentId(*agentID)
 			ticker := time.NewTicker(time.Second * time.Duration(ct.PublishInterval()/2))
 			for {
 				ticker.Reset(time.Second * time.Duration(ct.PublishInterval()/2))
@@ -55,8 +55,8 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				case <-ct.stopControlListening:
 					break
 				}
-				agentId.SetAvailableWorkload(getMaxAllocatable())
-				req = req.ModelAgentId(*agentId)
+				agentID.SetAvailableWorkload(getMaxAllocatable())
+				req = req.ModelAgentId(*agentID)
 				ctl, _, err := ct.API().ControlsAPI.GetKubernetesClusterControlsExecute(req)
 				if err != nil {
 					log.Error().Msgf("Getting controls failed: %v\n", err)
@@ -77,8 +77,8 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 	} else {
 		go func() {
 			req := ct.API().ControlsAPI.GetAgentControls(context.Background())
-			agentId := openapi.NewModelAgentId(getMaxAllocatable(), nodeId)
-			req = req.ModelAgentId(*agentId)
+			agentID := openapi.NewModelAgentId(getMaxAllocatable(), nodeID)
+			req = req.ModelAgentId(*agentID)
 			ticker := time.NewTicker(time.Second * time.Duration(ct.PublishInterval()/2))
 			for {
 				ticker.Reset(time.Second * time.Duration(ct.PublishInterval()/2))
@@ -87,8 +87,8 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				case <-ct.stopControlListening:
 					break
 				}
-				agentId.SetAvailableWorkload(getMaxAllocatable())
-				req = req.ModelAgentId(*agentId)
+				agentID.SetAvailableWorkload(getMaxAllocatable())
+				req = req.ModelAgentId(*agentID)
 				ctl, _, err := ct.API().ControlsAPI.GetAgentControlsExecute(req)
 				if err != nil {
 					log.Error().Msgf("Getting controls failed: %v\n", err)
@@ -114,7 +114,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 }
 
 const (
-	MAX_AGENT_WORKLOAD = 2
+	MaxAgentWorkload = 2
 )
 
 func GetScannersWorkloads() int32 {
@@ -140,13 +140,13 @@ func UnsetUpgrade() {
 
 func getUpgradeWorkload() int32 {
 	if upgrade.Load() {
-		return MAX_AGENT_WORKLOAD
+		return MaxAgentWorkload
 	}
 	return 0
 }
 
 func getMaxAllocatable() int32 {
-	workload := MAX_AGENT_WORKLOAD - GetScannersWorkloads() - getUpgradeWorkload()
+	workload := MaxAgentWorkload - GetScannersWorkloads() - getUpgradeWorkload()
 	if workload <= 0 {
 		workload = 0
 	}

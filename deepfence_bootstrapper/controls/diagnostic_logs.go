@@ -41,8 +41,8 @@ func SendAgentDiagnosticLogs(req ctl.SendAgentDiagnosticLogsRequest, pathsToZip 
 	return publishDiagnosticLogsStatus(ctx, httpsClient.Client(), req.NodeId, utils.SCAN_STATUS_SUCCESS, "")
 }
 
-func publishDiagnosticLogsStatus(ctx context.Context, httpsClient *client.APIClient, nodeId string, status string, message string) error {
-	httpReq := httpsClient.DiagnosisAPI.UpdateAgentDiagnosticLogsStatus(ctx, nodeId)
+func publishDiagnosticLogsStatus(ctx context.Context, httpsClient *client.APIClient, nodeID string, status string, message string) error {
+	httpReq := httpsClient.DiagnosisAPI.UpdateAgentDiagnosticLogsStatus(ctx, nodeID)
 	httpReq = httpReq.DiagnosisDiagnosticLogsStatus(client.DiagnosisDiagnosticLogsStatus{
 		Message: &message,
 		Status:  status,
