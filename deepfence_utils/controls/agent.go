@@ -20,6 +20,7 @@ const (
 	StopMalwareScan
 	StopVulnerabilityScan
 	StopComplianceScan
+	RefreshResources
 )
 
 type ScanResource int
@@ -118,6 +119,11 @@ type StartMalwareScanRequest struct {
 	NodeID   string            `json:"node_id" required:"true"`
 	NodeType ScanResource      `json:"node_type" required:"true"`
 	BinArgs  map[string]string `json:"bin_args" required:"true"`
+}
+
+type RefreshResourcesRequest struct {
+	NodeId   string       `json:"node_id" required:"true"`
+	NodeType ScanResource `json:"node_type" required:"true"`
 }
 
 type StopSecretScanRequest StartSecretScanRequest

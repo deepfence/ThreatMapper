@@ -190,3 +190,54 @@ func SetAgentControls() {
 		log.Error().Err(err).Msg("set controls")
 	}
 }
+
+func SetCloudScannerControls() {
+	err := router.RegisterControl(ctl.StartComplianceScan,
+		router.StartCloudComplianceScan)
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+
+	err = router.RegisterControl(ctl.StopComplianceScan,
+		router.StopCloudComplianceScan)
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+
+	err = router.RegisterControl(ctl.RefreshResources,
+		router.RefreshResources)
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+	err = router.RegisterControl(ctl.StartAgentUpgrade,
+		func(req ctl.StartAgentUpgradeRequest) error {
+			log.Info().Msg("Start Agent Upgrade")
+			router.SetUpgrade()
+			return router.StartAgentUpgrade(req)
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+	err = router.RegisterControl(ctl.StartAgentPlugin,
+		func(req ctl.EnableAgentPluginRequest) error {
+			log.Info().Msg("Start & download Agent Plugin")
+			router.SetUpgrade()
+			err = supervisor.UpgradeProcessFromURL(req.PluginName, req.BinUrl)
+			if err != nil {
+				return err
+			}
+			return supervisor.StartProcess(req.PluginName)
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+	err = router.RegisterControl(ctl.StopAgentPlugin,
+		func(req ctl.DisableAgentPluginRequest) error {
+			log.Info().Msg("Stop Agent Plugin")
+			return supervisor.StopProcess(req.PluginName)
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+
+}
