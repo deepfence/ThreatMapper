@@ -150,16 +150,16 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		SyftBinPath:           syftBin,
 		HostName:              params.HostName,
 		NodeType:              "container_image", // this is required by package scanner
-		NodeId:                params.NodeId,
+		NodeID:                params.NodeId,
 		KubernetesClusterName: params.KubernetesClusterName,
-		ScanId:                params.ScanId,
-		ImageId:               params.ImageId,
+		ScanID:                params.ScanId,
+		ImageID:               params.ImageId,
 		ContainerName:         params.ContainerName,
-		RegistryId:            params.RegistryId,
+		RegistryID:            params.RegistryId,
 		RegistryCreds: psUtils.RegistryCreds{
 			AuthFilePath:  authFile,
 			SkipTLSVerify: creds.SkipTLSVerify,
-			UseHttp:       creds.UseHttp,
+			UseHTTP:       creds.UseHttp,
 		},
 		IsRegistry: creds.IsRegistry,
 	}

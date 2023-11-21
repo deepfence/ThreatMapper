@@ -35,7 +35,8 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 	"cve_fixed_in":          "CVE Fixed In",
 	"cve_cvss_score":        "CVSS Score",
 	"cve_caused_by_package": "CVE Caused By Package",
-	"node_id":               "Node ID"},
+	"node_id":               "Node ID",
+	"updated_at":            "updated_at"},
 	utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]: {
 		"node_id":            "Node ID",
 		"full_filename":      "File Name",
@@ -45,7 +46,8 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 		"rule_id":            "Rule",
 		"name":               "Name",
 		"part":               "Part",
-		"signature_to_match": "Matched Signature"},
+		"signature_to_match": "Matched Signature",
+		"updated_at":         "updated_at"},
 	utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]: {"class": "Class",
 		"complete_filename": "File Name",
 		"file_sev_score":    "File Severity Score",
@@ -56,7 +58,8 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 		"rule_name":         "Rule Name",
 		"author":            "Author",
 		"severity_score":    "Severity Score",
-		"summary":           "Summary"},
+		"summary":           "Summary",
+		"updated_at":        "updated_at"},
 	utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]: {
 		"compliance_check_type": "Compliance Check Type",
 		"resource":              "Resource",
@@ -237,12 +240,36 @@ func injectNodeDatamap(results []map[string]interface{}, common model.ScanResult
 			r["kubernetes_cluster_name"] = common.KubernetesClusterName
 		}
 
+		timeStampFunc := func(timestamp any) int64 {
+			var ts int64
+			switch t := timestamp.(type) {
+			case int64:
+				ts = t
+			case int32:
+				ts = int64(t)
+			case uint32:
+				ts = int64(t)
+			case uint64:
+				ts = int64(t)
+			}
+			return ts
+		}
+
 		if _, ok := r["updated_at"]; ok {
 			flag := integration.IsMessagingFormat(integrationType)
 			if flag {
-				ts := r["updated_at"].(int64)
-				tm := time.Unix(0, ts*int64(time.Millisecond))
-				r["updated_at"] = tm
+				ts := timeStampFunc(r["updated_at"])
+				tm := time.Unix(0, ts*int64(time.Millisecond)).In(time.UTC)
+				r["updated_at"] = tm.Format("02-01-2006 15:04:05 MST")
+			}
+		}
+
+		if _, ok := r["created_at"]; ok {
+			flag := integration.IsMessagingFormat(integrationType)
+			if flag {
+				ts := timeStampFunc(r["created_at"])
+				tm := time.Unix(0, ts*int64(time.Millisecond)).In(time.UTC)
+				r["created_at"] = tm.Format("02-01-2006 15:04:05 MST")
 			}
 		}
 
