@@ -26,7 +26,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends bash git ca-certificates nano logrotate sudo supervisor \
     #&& apt-get install -y --no-install-recommends postgresql-client-15 \
     && useradd -rm -d /home/deepfence -s /bin/bash -g root -G sudo -u 1001 deepfence \
-    && mkdir /opt/steampipe \
+    && mkdir -p /opt/steampipe /var/log/deepfenced \
     && chown deepfence /opt/steampipe
 
 # Installing FluentBit
