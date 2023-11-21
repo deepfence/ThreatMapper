@@ -79,6 +79,15 @@ building_image(){
         exit 1
     fi
 
+    echo "Building Cloud Agent Image"
+    docker build --network host --rm=true --tag=$IMAGE_REPOSITORY/deepfence_cloud_scanner_ce:$DF_IMG_TAG -f Dockerfile.cloud-agent .
+    build_result=$?
+    if [ $build_result -ne 0 ]
+    then
+        echo "Deepfence cloud agent building failed, bailing out"
+        exit 1
+    fi
+
     echo "Building Agent Image"
     docker build --network host --rm=true --build-arg DF_IMG_TAG="${DF_IMG_TAG}" --build-arg IMAGE_REPOSITORY="${IMAGE_REPOSITORY}" --tag=$IMAGE_REPOSITORY/deepfence_agent_ce:$DF_IMG_TAG -f Dockerfile .
     build_result=$?
