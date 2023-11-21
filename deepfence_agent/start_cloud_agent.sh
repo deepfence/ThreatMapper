@@ -14,9 +14,9 @@ echoerr() { echo "$@" 1>&2; }
 configure_cron() {
   #Setup cron jobs for misc tasks, it needs to be killed and restarted
   #doesnt work smoothly inside docker!
-  service cron start
-  chmod 600 /etc/logrotate.d/fenced_logrotate.conf
-  (echo "*/5 * * * * /usr/sbin/logrotate /etc/logrotate.d/fenced_logrotate.conf") | crontab -
+  sudo service cron start
+  sudo chmod 600 /etc/logrotate.d/fenced_logrotate.conf
+  (echo "*/5 * * * * /usr/sbin/logrotate /etc/logrotate.d/fenced_logrotate.conf") | sudo crontab -
 }
 
 launch_deepfenced() {
