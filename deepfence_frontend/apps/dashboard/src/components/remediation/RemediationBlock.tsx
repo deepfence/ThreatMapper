@@ -10,10 +10,12 @@ import { getIntegrationApiClient } from '@/api/api';
 import {
   ModelAiIntegrationCloudPostureRequest,
   ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum,
+  ModelAiIntegrationCloudPostureRequestRemediationFormatEnum,
   ModelAiIntegrationKubernetesPostureRequest,
   ModelAiIntegrationLinuxPostureRequest,
   ModelAiIntegrationVulnerabilityRequest,
 } from '@/api/generated';
+import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { CheckIcon } from '@/components/icons/common/Check';
 import { InfoStandardIcon } from '@/components/icons/common/InfoStandard';
@@ -54,6 +56,7 @@ interface RemediationBlockProps {
         type: 'cve';
         args: RemediationRequestWithoutCommonTypes<ModelAiIntegrationVulnerabilityRequest>;
       };
+  onBackButtonClick?: () => void;
 }
 
 interface RemediationCompletionProps {
@@ -76,7 +79,7 @@ interface RemediationCompletionProps {
       };
 }
 
-export const RemediationBlock = ({ meta }: RemediationBlockProps) => {
+export const RemediationBlock = ({ meta, onBackButtonClick }: RemediationBlockProps) => {
   const { data } = useListAIIntegrations();
 
   const [integrationType, setIntegrationType] = useState<string | undefined>(() => {
@@ -88,7 +91,8 @@ export const RemediationBlock = ({ meta }: RemediationBlockProps) => {
     return defaultIntegration?.integration_type;
   });
 
-  const [format, setFormat] = useState<'all' | 'cli' | 'terraform' | 'pulumi'>('all');
+  const [format, setFormat] =
+    useState<ModelAiIntegrationCloudPostureRequestRemediationFormatEnum>('all');
 
   const memoedMeta = useMemo(() => {
     return {
@@ -103,14 +107,25 @@ export const RemediationBlock = ({ meta }: RemediationBlockProps) => {
   }, [integrationType, format]);
 
   if (!data.length || !integrationType) {
-    return <RemediationNoIntegration />;
+    return <RemediationNoIntegration onBackButtonClick={onBackButtonClick} />;
   }
 
   return (
     <div className="h-full flex flex-col gap-4">
-      <div className="flex flex-col gap-4 px-5 pt-2">
+      <div className="flex flex-col gap-4 px-5 pt-4">
         <div className="flex justify-between items-center">
-          <span className="flex items-center gap-2">
+          <span className="flex items-center text-p6 gap-2 dark:text-text-input-value">
+            {onBackButtonClick && (
+              <button
+                type="button"
+                className="h-4 w-4 text-text-link -rotate-90"
+                onClick={() => {
+                  onBackButtonClick();
+                }}
+              >
+                <ArrowLine />
+              </button>
+            )}
             {PROVIDER_MAP[integrationType] ? (
               <div className="h-4 w-4">{PROVIDER_MAP[integrationType].icon}</div>
             ) : null}{' '}
@@ -135,7 +150,7 @@ export const RemediationBlock = ({ meta }: RemediationBlockProps) => {
                 );
               })}
             >
-              <button type="button" className="font-semibold flex gap-1 items-center">
+              <button type="button" className="text-p3 flex gap-1 items-center">
                 <span>
                   {data.find((int) => int.integration_type === integrationType)?.label ??
                     integrationType}
@@ -356,17 +371,18 @@ function RemediationCompletion({ meta }: RemediationCompletionProps) {
     meta,
   });
 
-  const markdownWrapperRef = useRef<HTMLDivElement>(null);
+  const markdownEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (markdownWrapperRef.current) {
-      markdownWrapperRef.current.scrollTop = markdownWrapperRef.current.scrollHeight;
+    if (markdownEndRef.current) {
+      markdownEndRef.current.scrollIntoView({
+        behavior: 'smooth',
+      });
     }
   }, [markdownText]);
 
   return (
     <div
-      ref={markdownWrapperRef}
       className={cn(
         'pb-2 px-5 h-full overflow-y-auto',
         'prose-invert max-w-none space-y-2',
@@ -387,6 +403,7 @@ function RemediationCompletion({ meta }: RemediationCompletionProps) {
       >
         {markdownText}
       </Markdown>
+      <div ref={markdownEndRef}></div>
     </div>
   );
 }
