@@ -315,27 +315,27 @@ func (IngestedContainerImage) GetJsonCategory() string {
 }
 
 type ContainerImage struct {
-	ID                        string                 `json:"node_id" required:"true"`
-	ImageNodeID               string                 `json:"image_node_id" required:"true"`
-	NodeName                  string                 `json:"node_name" required:"true"`
-	Name                      string                 `json:"docker_image_name" required:"true"`
-	Tag                       string                 `json:"docker_image_tag" required:"true"`
-	Size                      string                 `json:"docker_image_size" required:"true"`
-	DockerImageCreatedAt      string                 `json:"docker_image_created_at" required:"true"`
-	DockerImageVirtualSize    string                 `json:"docker_image_virtual_size" required:"true"`
-	DockerImageID             string                 `json:"docker_image_id" required:"true"`
-	DockerImageTagList        []string               `json:"docker_image_tag_list" required:"true"`
-	Metadata                  map[string]interface{} `json:"metadata"`
-	VulnerabilitiesCount      int64                  `json:"vulnerabilities_count" required:"true"`
-	VulnerabilityScanStatus   string                 `json:"vulnerability_scan_status" required:"true"`
-	VulnerabilityLatestScanId string                 `json:"vulnerability_latest_scan_id" required:"true"`
-	SecretsCount              int64                  `json:"secrets_count" required:"true"`
-	SecretScanStatus          string                 `json:"secret_scan_status" required:"true"`
-	SecretLatestScanId        string                 `json:"secret_latest_scan_id" required:"true"`
-	MalwaresCount             int64                  `json:"malwares_count" required:"true"`
-	MalwareScanStatus         string                 `json:"malware_scan_status" required:"true"`
-	MalwareLatestScanId       string                 `json:"malware_latest_scan_id" required:"true"`
-	Containers                []Container            `json:"containers" required:"true"`
+	ID                        string      `json:"node_id" required:"true"`
+	ImageNodeID               string      `json:"image_node_id" required:"true"`
+	NodeName                  string      `json:"node_name" required:"true"`
+	Name                      string      `json:"docker_image_name" required:"true"`
+	Tag                       string      `json:"docker_image_tag" required:"true"`
+	Size                      string      `json:"docker_image_size" required:"true"`
+	DockerImageCreatedAt      string      `json:"docker_image_created_at" required:"true"`
+	DockerImageVirtualSize    string      `json:"docker_image_virtual_size" required:"true"`
+	DockerImageID             string      `json:"docker_image_id" required:"true"`
+	DockerImageTagList        []string    `json:"docker_image_tag_list" required:"true"`
+	Metadata                  Metadata    `json:"metadata" nested_json:"true"`
+	VulnerabilitiesCount      int64       `json:"vulnerabilities_count" required:"true"`
+	VulnerabilityScanStatus   string      `json:"vulnerability_scan_status" required:"true"`
+	VulnerabilityLatestScanId string      `json:"vulnerability_latest_scan_id" required:"true"`
+	SecretsCount              int64       `json:"secrets_count" required:"true"`
+	SecretScanStatus          string      `json:"secret_scan_status" required:"true"`
+	SecretLatestScanId        string      `json:"secret_latest_scan_id" required:"true"`
+	MalwaresCount             int64       `json:"malwares_count" required:"true"`
+	MalwareScanStatus         string      `json:"malware_scan_status" required:"true"`
+	MalwareLatestScanId       string      `json:"malware_latest_scan_id" required:"true"`
+	Containers                []Container `json:"containers" required:"true"`
 }
 
 func (ContainerImage) NodeType() string {
