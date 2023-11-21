@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/server"
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/supervisor"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	cloud_util "github.com/deepfence/cloud-scanner/util"
 
 	dfUtils "github.com/deepfence/df-utils"
 )
@@ -28,7 +30,12 @@ var config_file []byte
 //go:embed assets/config-cluster.ini
 var config_cluster_file []byte
 
+//go:embed assets/config-cloud.ini
+var config_cloud_file []byte
+
 var enable_cluster_discovery bool
+
+var enableCloudNode bool
 
 var enable_debug bool
 
@@ -39,6 +46,7 @@ var Version string
 func init() {
 	var err error
 	enable_cluster_discovery = os.Getenv("DF_ENABLE_CLUSTER_DISCOVERY") != ""
+	enableCloudNode = os.Getenv("DF_ENABLE_CLOUD_NODE") != ""
 	if hostname = os.Getenv("SCOPE_HOSTNAME"); hostname == "" {
 		hostname, err = os.Hostname()
 		if err != nil {
@@ -65,6 +73,8 @@ func main() {
 	var err error
 	if enable_cluster_discovery {
 		cfg, err = config.NewIniConfig(config_cluster_file)
+	} else if enableCloudNode {
+		cfg, err = config.NewIniConfig(config_cloud_file)
 	} else {
 		cfg, err = config.NewIniConfig(config_file)
 	}
@@ -108,6 +118,8 @@ func main() {
 	if enable_cluster_discovery {
 		_, k8sClusterName, _, _, _ := dfUtils.GetKubernetesDetails()
 		controls.SetClusterAgentControls(k8sClusterName)
+	} else if enableCloudNode {
+		controls.SetCloudScannerControls()
 	} else {
 		controls.SetAgentControls()
 	}
@@ -129,6 +141,25 @@ func main() {
 			k8sClusterId, _, _, _, _ := dfUtils.GetKubernetesDetails()
 			err = consoleClient.StartControlsWatching(k8sClusterId, true, Version)
 			log.Info().Msgf("cluster agent mode: %s", k8sClusterId)
+		} else if enableCloudNode {
+			cloudProvider := os.Getenv("CLOUD_PROVIDER")
+			cloudAccountID := os.Getenv("CLOUD_ACCOUNT_ID")
+			cloudMetadata, err := cloud_util.GetCloudMetadata()
+			if err == nil {
+				cloudProvider = cloudMetadata.CloudProvider
+				if cloudMetadata.ID != "" {
+					cloudAccountID = cloudMetadata.ID
+				}
+			}
+			cloudNodeId := cloud_util.GetNodeId(cloudProvider, cloudAccountID)
+			cloudConfig := cloud_util.Config{
+				CloudProvider:      cloudProvider,
+				CloudMetadata:      cloudMetadata,
+				OrgAccountId:       os.Getenv("DF_ORG_ACC_ID"),
+				MultipleAccountIds: strings.Split(os.Getenv("DF_MULTI_ACC_ID"), ","),
+			}
+			err = consoleClient.StartCloudControlsWatching(cloudNodeId, Version, cloudConfig)
+			log.Info().Msgf("cloud node mode: %s", cloudNodeId)
 		} else {
 			err = consoleClient.StartControlsWatching(hostname, false, Version)
 			log.Info().Msgf("regular agent mode: %s", hostname)

@@ -3,6 +3,8 @@ package router
 import (
 	"encoding/json"
 	"fmt"
+	cloud_util "github.com/deepfence/cloud-scanner/util"
+	"os"
 	"sync"
 
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
@@ -27,7 +29,9 @@ func RegisterControl[T ctl.StartVulnerabilityScanRequest |
 	ctl.StopSecretScanRequest |
 	ctl.StopMalwareScanRequest |
 	ctl.StopVulnerabilityScanRequest |
-	ctl.StopComplianceScanRequest](id ctl.ActionID, callback func(req T) error) error {
+	ctl.StopComplianceScanRequest |
+	cloud_util.PendingScan |
+	ctl.RefreshResourcesRequest](id ctl.ActionID, callback func(req T) error) error {
 
 	controls_guard.Lock()
 	defer controls_guard.Unlock()
@@ -54,4 +58,13 @@ func ApplyControl(req openapi.ControlsAction) error {
 
 func init() {
 	controls = map[ctl.ActionID]func(req []byte) error{}
+}
+
+func getDfInstallDir() string {
+	installDir, exists := os.LookupEnv("DF_INSTALL_DIR")
+	if exists {
+		return installDir
+	} else {
+		return ""
+	}
 }
