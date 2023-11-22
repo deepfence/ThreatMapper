@@ -5,7 +5,7 @@ FROM $VECTORSCAN_IMAGE_REPOSITORY/deepfence_vectorscan_build:$VECTORSCAN_IMG_TAG
 ARG DF_IMG_TAG=latest
 ARG IMAGE_REPOSITORY=deepfenceio
 
-FROM golang:1.21-bookworm
+FROM golang:1.20-bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
