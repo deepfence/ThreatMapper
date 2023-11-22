@@ -20,6 +20,7 @@ import { CaretDown } from '@/components/icons/common/CaretDown';
 import { CheckIcon } from '@/components/icons/common/Check';
 import { InfoStandardIcon } from '@/components/icons/common/InfoStandard';
 import { OpenAIIcon } from '@/components/icons/integration/OpenAI';
+import { RemediationError } from '@/components/remediation/RemediationError';
 import { RemediationNoIntegration } from '@/components/remediation/RemediationNoIntegration';
 import { RemediationPre } from '@/components/remediation/RemediationPre';
 import { queries } from '@/queries';
@@ -80,7 +81,9 @@ interface RemediationCompletionProps {
 }
 
 export const RemediationBlock = ({ meta, onBackButtonClick }: RemediationBlockProps) => {
-  const { data } = useListAIIntegrations();
+  const {
+    data: { data, message: errorMessage },
+  } = useListAIIntegrations();
 
   const [integrationType, setIntegrationType] = useState<string | undefined>(() => {
     const defaultIntegration =
@@ -105,6 +108,15 @@ export const RemediationBlock = ({ meta, onBackButtonClick }: RemediationBlockPr
       },
     } as RemediationCompletionProps['meta'];
   }, [integrationType, format]);
+
+  if (errorMessage?.length) {
+    return (
+      <RemediationError
+        errorMessage={errorMessage}
+        onBackButtonClick={onBackButtonClick}
+      />
+    );
+  }
 
   if (!data.length || !integrationType) {
     return <RemediationNoIntegration onBackButtonClick={onBackButtonClick} />;

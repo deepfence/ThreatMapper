@@ -374,7 +374,13 @@ const AI_INTEGRATION_TYPES = [
 ];
 
 const AIIntegrations = () => {
-  const { data } = useListAIIntegrations();
+  const {
+    data: { data, message },
+  } = useListAIIntegrations();
+
+  if (message && message.length) {
+    return <p className="text-p7 dark:text-status-error">{message}</p>;
+  }
 
   return (
     <div className="mt-2 flex flex-wrap gap-4">

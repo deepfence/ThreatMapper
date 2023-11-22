@@ -80,9 +80,18 @@ export const integrationQueries = createQueryKeys('integration', {
         });
         const listAIIntegrationResponse = await listAIIntegration();
         if (!listAIIntegrationResponse.ok) {
+          if (listAIIntegrationResponse.error.response.status === 403) {
+            const message = await get403Message(listAIIntegrationResponse.error);
+            return {
+              message,
+              data: [],
+            };
+          }
           throw listAIIntegrationResponse.error;
         }
-        return listAIIntegrationResponse.value;
+        return {
+          data: listAIIntegrationResponse.value,
+        };
       },
     };
   },
