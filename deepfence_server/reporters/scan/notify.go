@@ -88,8 +88,8 @@ func injectNodeData[T any](results []T, common model.ScanResultsCommon,
 			flag := integration.IsMessagingFormat(integrationType)
 			if flag {
 				ts := m["updated_at"].(int64)
-				tm := time.Unix(0, ts*int64(time.Millisecond))
-				m["updated_at"] = tm
+				tm := time.Unix(0, ts*int64(time.Millisecond)).In(time.UTC)
+				m["updated_at"] = tm.Format("02-01-2006 15:04:05 MST")
 			}
 		}
 
