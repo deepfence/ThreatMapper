@@ -35,23 +35,17 @@ type GenerativeAiIntegrationMessageResponse struct {
 type GenerativeAiIntegrationRequest interface {
 	GetRequestType() string
 	GetFields() interface{}
-	GetIntegrationType() string
 	GetIntegrationID() int32
 	GetQueryType() string
 }
 
 type GenerativeAiIntegrationRequestCommon struct {
-	IntegrationType string `json:"integration_type" validate:"omitempty,oneof=openai amazon-bedrock" enum:"openai,amazon-bedrock"`
-	IntegrationID   int32  `json:"integration_id"`
-	QueryType       string `json:"query_type" validate:"required,oneof=remediation" required:"true" enum:"remediation"`
+	IntegrationID int32  `json:"integration_id"`
+	QueryType     string `json:"query_type" validate:"required,oneof=remediation" required:"true" enum:"remediation"`
 }
 
 func (a GenerativeAiIntegrationRequestCommon) GetIntegrationID() int32 {
 	return a.IntegrationID
-}
-
-func (a GenerativeAiIntegrationRequestCommon) GetIntegrationType() string {
-	return a.IntegrationType
 }
 
 func (a GenerativeAiIntegrationRequestCommon) GetQueryType() string {

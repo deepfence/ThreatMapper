@@ -312,7 +312,7 @@ func GenerativeAiIntegrationQueryHandler[T model.GenerativeAiIntegrationRequest]
 		h.respondError(err, w)
 		return
 	}
-	integration, err := generative_ai_integration.NewGenerativeAiIntegrationFromDbEntry(ctx, req.GetIntegrationType(), dbIntegration.Config)
+	integration, err := generative_ai_integration.NewGenerativeAiIntegrationFromDbEntry(ctx, dbIntegration.IntegrationType, dbIntegration.Config)
 	if err != nil {
 		h.respondError(err, w)
 		return

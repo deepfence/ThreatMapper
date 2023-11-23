@@ -13,7 +13,7 @@ import (
 )
 
 func New(ctx context.Context, req model.AddGenerativeAiOpenAIIntegration) (*OpenAI, error) {
-	openApi := OpenAI{ApiKey: req.ApiKey}
+	openApi := OpenAI{ApiKey: req.ApiKey, ModelID: req.ModelID}
 	return &openApi, nil
 }
 
