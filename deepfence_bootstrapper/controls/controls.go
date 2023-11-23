@@ -72,8 +72,8 @@ func SetAgentControls() {
 			scanner, err := linuxScanner.NewComplianceScanner(
 				linuxScannerUtil.Config{
 					ComplianceCheckTypes:      strings.Split(req.BinArgs["benchmark_types"], ","),
-					ScanId:                    req.BinArgs["scan_id"],
-					NodeId:                    req.NodeId,
+					ScanID:                    req.BinArgs["scan_id"],
+					NodeID:                    req.NodeId,
 					NodeName:                  req.NodeId,
 					ComplianceResultsFilePath: fmt.Sprintf("/var/log/fenced/compliance/%s.log", req.BinArgs["scan_id"]),
 					ComplianceStatusFilePath:  "/var/log/fenced/compliance-scan-logs/status.log",
