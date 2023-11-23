@@ -709,31 +709,41 @@ func (d *OpenApiDocs) AddIntegrationOperations() {
 		"Delete Integration", "Delete integration",
 		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
 
-	d.AddOperation("addAiIntegration", http.MethodPost, "/deepfence/ai-integration",
-		"Add AI Integration", "Add a new supported AI Integration",
-		http.StatusOK, []string{tagIntegration}, bearerToken, new(AddAiIntegrationRequest), new(MessageResponse))
-	d.AddOperation("listAiIntegration", http.MethodGet, "/deepfence/ai-integration",
-		"List AI Integrations", "List all the added AI Integrations",
-		http.StatusOK, []string{tagIntegration}, bearerToken, nil, new([]AiIntegrationListResponse))
-	d.AddOperation("deleteAiIntegration", http.MethodDelete, "/deepfence/ai-integration/{integration_id}",
-		"Delete AI Integration", "Delete AI integration",
-		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
-	d.AddOperation("setDefaultAiIntegration", http.MethodPut, "/deepfence/ai-integration/{integration_id}/default",
-		"Set Default AI Integration", "Set Default AI integration",
-		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
+	d.AddOperation("addGenerativeAiIntegrationOpenAI", http.MethodPost, "/deepfence/generative-ai-integration/openai",
+		"Add OpenAI Generative AI Integration", "Add a new OpenAI Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(AddGenerativeAiOpenAIIntegration), new(MessageResponse))
+	d.AddOperation("addGenerativeAiIntegrationBedrock", http.MethodPost, "/deepfence/generative-ai-integration/bedrock",
+		"Add AWS Bedrock Generative AI Integration", "Add a new AWS Bedrock Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(AddGenerativeAiBedrockIntegration), new(MessageResponse))
 
-	d.AddOperation("aiIntegrationCloudPostureQuery", http.MethodPost, "/deepfence/ai-integration/query/cloud-posture",
-		"Send Cloud Posture query to AI Integration", "Send Cloud Posture query to AI Integration",
-		http.StatusOK, []string{tagIntegration}, bearerToken, new(AiIntegrationCloudPostureRequest), new(string))
-	d.AddOperation("aiIntegrationLinuxPostureQuery", http.MethodPost, "/deepfence/ai-integration/query/linux-posture",
-		"Send Linux Posture query to AI Integration", "Send Linux Posture query to AI Integration",
-		http.StatusOK, []string{tagIntegration}, bearerToken, new(AiIntegrationLinuxPostureRequest), new(string))
-	d.AddOperation("aiIntegrationKubernetesPostureQuery", http.MethodPost, "/deepfence/ai-integration/query/kubernetes-posture",
-		"Send Kubernetes Posture query to AI Integration", "Send Kubernetes Posture query to AI Integration",
-		http.StatusOK, []string{tagIntegration}, bearerToken, new(AiIntegrationKubernetesPostureRequest), new(string))
-	d.AddOperation("aiIntegrationVulnerabilityQuery", http.MethodPost, "/deepfence/ai-integration/query/vulnerability",
-		"Send Vulnerability query to AI Integration", "Send Vulnerability query to AI Integration",
-		http.StatusOK, []string{tagIntegration}, bearerToken, new(AiIntegrationVulnerabilityRequest), new(string))
+	d.AddOperation("listGenerativeAiIntegration", http.MethodGet, "/deepfence/generative-ai-integration",
+		"List Generative AI Integrations", "List all the added Generative AI Integrations",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, nil, new([]GenerativeAiIntegrationListResponse))
+	d.AddOperation("deleteGenerativeAiIntegration", http.MethodDelete, "/deepfence/generative-ai-integration/{integration_id}",
+		"Delete Generative AI Integration", "Delete Generative AI integration",
+		http.StatusNoContent, []string{tagGenerativeAi}, bearerToken, new(IntegrationIDPathReq), nil)
+	d.AddOperation("setDefaultGenerativeAiIntegration", http.MethodPut, "/deepfence/generative-ai-integration/{integration_id}/default",
+		"Set Default Generative AI Integration", "Set Default Generative AI integration",
+		http.StatusNoContent, []string{tagGenerativeAi}, bearerToken, new(IntegrationIDPathReq), nil)
+
+	d.AddOperation("generativeAiIntegrationCloudPostureQuery", http.MethodPost, "/deepfence/generative-ai-integration/query/cloud-posture",
+		"Send Cloud Posture query to Generative AI Integration", "Send Cloud Posture query to Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(GenerativeAiIntegrationCloudPostureRequest), new(string))
+	d.AddOperation("generativeAiIntegrationLinuxPostureQuery", http.MethodPost, "/deepfence/generative-ai-integration/query/linux-posture",
+		"Send Linux Posture query to Generative AI Integration", "Send Linux Posture query to Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(GenerativeAiIntegrationLinuxPostureRequest), new(string))
+	d.AddOperation("generativeAiIntegrationKubernetesPostureQuery", http.MethodPost, "/deepfence/generative-ai-integration/query/kubernetes-posture",
+		"Send Kubernetes Posture query to Generative AI Integration", "Send Kubernetes Posture query to Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(GenerativeAiIntegrationKubernetesPostureRequest), new(string))
+	d.AddOperation("generativeAiIntegrationVulnerabilityQuery", http.MethodPost, "/deepfence/generative-ai-integration/query/vulnerability",
+		"Send Vulnerability query to Generative AI Integration", "Send Vulnerability query to Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(GenerativeAiIntegrationVulnerabilityRequest), new(string))
+	d.AddOperation("generativeAiIntegrationSecretQuery", http.MethodPost, "/deepfence/generative-ai-integration/query/secret",
+		"Send Secret query to Generative AI Integration", "Send Secret query to Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(GenerativeAiIntegrationSecretRequest), new(string))
+	d.AddOperation("generativeAiIntegrationMalwareQuery", http.MethodPost, "/deepfence/generative-ai-integration/query/malware",
+		"Send Malware query to Generative AI Integration", "Send Malware query to Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(GenerativeAiIntegrationMalwareRequest), new(string))
 }
 
 func (d *OpenApiDocs) AddReportsOperations() {

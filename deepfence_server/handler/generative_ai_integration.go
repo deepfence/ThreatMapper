@@ -8,7 +8,7 @@ import (
 
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	ai_integration "github.com/deepfence/ThreatMapper/deepfence_server/pkg/ai-integration"
+	generative_ai_integration "github.com/deepfence/ThreatMapper/deepfence_server/pkg/generative-ai-integration"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -21,9 +21,17 @@ var (
 	streamUnsupportedError = errors.New("streaming unsupported")
 )
 
-func (h *Handler) AddAiIntegration(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) AddOpenAiIntegration(w http.ResponseWriter, r *http.Request) {
+	AddGenerativeAiIntegration[model.AddGenerativeAiOpenAIIntegration](w, r, h)
+}
+
+func (h *Handler) AddBedrockIntegration(w http.ResponseWriter, r *http.Request) {
+	AddGenerativeAiIntegration[model.AddGenerativeAiBedrockIntegration](w, r, h)
+}
+
+func AddGenerativeAiIntegration[T model.AddGenerativeAiIntegrationRequest](w http.ResponseWriter, r *http.Request, h *Handler) {
 	defer r.Body.Close()
-	var req model.AddAiIntegrationRequest
+	var req T
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -38,7 +46,7 @@ func (h *Handler) AddAiIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	obj, err := ai_integration.NewAiIntegration(ctx, req.IntegrationType, req.ApiKey)
+	obj, err := generative_ai_integration.NewGenerativeAiIntegration(ctx, req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
@@ -100,21 +108,22 @@ func (h *Handler) AddAiIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	arg := postgresqlDb.CreateAiIntegrationParams{
-		IntegrationType: req.IntegrationType,
+	arg := postgresqlDb.CreateGenerativeAiIntegrationParams{
+		IntegrationType: req.GetIntegrationType(),
+		Label:           req.GetLabel(),
 		Config:          bConfig,
 		CreatedByUserID: user.ID,
 	}
-	dbIntegration, err := pgClient.CreateAiIntegration(ctx, arg)
+	dbIntegration, err := pgClient.CreateGenerativeAiIntegration(ctx, arg)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_AI_INTEGRATION, ACTION_CREATE, map[string]interface{}{"integration_type": req.IntegrationType}, true)
+	h.AuditUserActivity(r, EVENT_GENERATIVE_AI_INTEGRATION, ACTION_CREATE, map[string]interface{}{"integration_type": req.GetIntegrationType()}, true)
 
-	err = pgClient.UpdateAiIntegrationDefault(ctx, dbIntegration.ID)
+	err = pgClient.UpdateGenerativeAiIntegrationDefault(ctx, dbIntegration.ID)
 	if err != nil {
 		log.Warn().Msgf(err.Error())
 	}
@@ -125,31 +134,31 @@ func (h *Handler) AddAiIntegration(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) GetAiIntegrations(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetGenerativeAiIntegrations(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
-	aiIntegrations, err := pgClient.GetAiIntegrations(ctx)
+	aiIntegrations, err := pgClient.GetGenerativeAiIntegrations(ctx)
 	if err != nil {
-		log.Error().Err(err).Msg("GetAiIntegrations")
+		log.Error().Err(err).Msg("GetGenerativeAiIntegrations")
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
-	integrationList := []model.AiIntegrationListResponse{}
+	integrationList := []model.GenerativeAiIntegrationListResponse{}
 
 	for _, integration := range aiIntegrations {
 		var integrationStatus string
 		if integration.ErrorMsg.Valid {
 			integrationStatus = integration.ErrorMsg.String
 		}
-		integrationList = append(integrationList, model.AiIntegrationListResponse{
+		integrationList = append(integrationList, model.GenerativeAiIntegrationListResponse{
 			ID:                 integration.ID,
 			IntegrationType:    integration.IntegrationType,
-			Label:              model.AiIntegrationTypeLabel[integration.IntegrationType],
+			Label:              integration.Label,
 			LastErrorMsg:       integrationStatus,
 			DefaultIntegration: integration.DefaultIntegration,
 		})
@@ -161,7 +170,7 @@ func (h *Handler) GetAiIntegrations(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) SetDefaultAiIntegration(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) SetDefaultGenerativeAiIntegration(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "integration_id")
 
 	// id to int32
@@ -179,19 +188,19 @@ func (h *Handler) SetDefaultAiIntegration(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = pgClient.UpdateAiIntegrationDefault(ctx, int32(idInt))
+	err = pgClient.UpdateGenerativeAiIntegrationDefault(ctx, int32(idInt))
 	if err != nil {
 		h.respondError(err, w)
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_AI_INTEGRATION, ACTION_UPDATE,
+	h.AuditUserActivity(r, EVENT_GENERATIVE_AI_INTEGRATION, ACTION_UPDATE,
 		map[string]interface{}{"integration_id": id}, true)
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *Handler) DeleteAiIntegration(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteGenerativeAiIntegration(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "integration_id")
 
 	// id to int32
@@ -209,17 +218,17 @@ func (h *Handler) DeleteAiIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deletedIntegration, err := pgClient.DeleteAiIntegration(ctx, int32(idInt))
+	deletedIntegration, err := pgClient.DeleteGenerativeAiIntegration(ctx, int32(idInt))
 	if err != nil {
 		h.respondError(err, w)
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_AI_INTEGRATION, ACTION_DELETE,
+	h.AuditUserActivity(r, EVENT_GENERATIVE_AI_INTEGRATION, ACTION_DELETE,
 		map[string]interface{}{"integration_id": id}, true)
 
 	if deletedIntegration.DefaultIntegration == true {
-		err = pgClient.UpdateAiIntegrationFirstRowDefault(ctx)
+		err = pgClient.UpdateGenerativeAiIntegrationFirstRowDefault(ctx)
 		if err != nil {
 			log.Warn().Msg(err.Error())
 		}
@@ -229,23 +238,31 @@ func (h *Handler) DeleteAiIntegration(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handler) AiIntegrationCloudPostureQuery(w http.ResponseWriter, r *http.Request) {
-	AiIntegrationQueryHandler[model.AiIntegrationCloudPostureRequest](w, r, h)
+func (h *Handler) GenerativeAiIntegrationCloudPostureQuery(w http.ResponseWriter, r *http.Request) {
+	GenerativeAiIntegrationQueryHandler[model.GenerativeAiIntegrationCloudPostureRequest](w, r, h)
 }
 
-func (h *Handler) AiIntegrationLinuxPostureQuery(w http.ResponseWriter, r *http.Request) {
-	AiIntegrationQueryHandler[model.AiIntegrationLinuxPostureRequest](w, r, h)
+func (h *Handler) GenerativeAiIntegrationLinuxPostureQuery(w http.ResponseWriter, r *http.Request) {
+	GenerativeAiIntegrationQueryHandler[model.GenerativeAiIntegrationLinuxPostureRequest](w, r, h)
 }
 
-func (h *Handler) AiIntegrationKubernetesPostureQuery(w http.ResponseWriter, r *http.Request) {
-	AiIntegrationQueryHandler[model.AiIntegrationKubernetesPostureRequest](w, r, h)
+func (h *Handler) GenerativeAiIntegrationKubernetesPostureQuery(w http.ResponseWriter, r *http.Request) {
+	GenerativeAiIntegrationQueryHandler[model.GenerativeAiIntegrationKubernetesPostureRequest](w, r, h)
 }
 
-func (h *Handler) AiIntegrationVulnerabilityQuery(w http.ResponseWriter, r *http.Request) {
-	AiIntegrationQueryHandler[model.AiIntegrationVulnerabilityRequest](w, r, h)
+func (h *Handler) GenerativeAiIntegrationVulnerabilityQuery(w http.ResponseWriter, r *http.Request) {
+	GenerativeAiIntegrationQueryHandler[model.GenerativeAiIntegrationVulnerabilityRequest](w, r, h)
 }
 
-func AiIntegrationQueryHandler[T model.AiIntegrationRequest](w http.ResponseWriter, r *http.Request, h *Handler) {
+func (h *Handler) GenerativeAiIntegrationSecretQuery(w http.ResponseWriter, r *http.Request) {
+	GenerativeAiIntegrationQueryHandler[model.GenerativeAiIntegrationSecretRequest](w, r, h)
+}
+
+func (h *Handler) GenerativeAiIntegrationMalwareQuery(w http.ResponseWriter, r *http.Request) {
+	GenerativeAiIntegrationQueryHandler[model.GenerativeAiIntegrationMalwareRequest](w, r, h)
+}
+
+func GenerativeAiIntegrationQueryHandler[T model.GenerativeAiIntegrationRequest](w http.ResponseWriter, r *http.Request, h *Handler) {
 	defer r.Body.Close()
 	var req T
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
@@ -267,15 +284,15 @@ func AiIntegrationQueryHandler[T model.AiIntegrationRequest](w http.ResponseWrit
 		return
 	}
 
-	var dbIntegration postgresqlDb.AiIntegration
-	if req.GetIntegrationType() == "" {
-		dbIntegration, err = pgClient.GetDefaultAiIntegration(ctx)
+	var dbIntegration postgresqlDb.GenerativeAiIntegration
+	if req.GetIntegrationID() == 0 {
+		dbIntegration, err = pgClient.GetDefaultGenerativeAiIntegration(ctx)
 		if err != nil {
 			h.respondError(err, w)
 			return
 		}
 	} else {
-		dbIntegration, err = pgClient.GetAiIntegrationFromType(ctx, req.GetIntegrationType())
+		dbIntegration, err = pgClient.GetGenerativeAiIntegrationFromID(ctx, req.GetIntegrationID())
 		if err != nil {
 			h.respondError(err, w)
 			return
@@ -295,7 +312,7 @@ func AiIntegrationQueryHandler[T model.AiIntegrationRequest](w http.ResponseWrit
 		h.respondError(err, w)
 		return
 	}
-	integration, err := ai_integration.NewAiIntegrationFromDbEntry(ctx, req.GetIntegrationType(), dbIntegration.Config)
+	integration, err := generative_ai_integration.NewGenerativeAiIntegrationFromDbEntry(ctx, req.GetIntegrationType(), dbIntegration.Config)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -315,6 +332,10 @@ func AiIntegrationQueryHandler[T model.AiIntegrationRequest](w http.ResponseWrit
 		query, err = integration.GenerateKubernetesPostureQuery(req)
 	case model.VulnerabilityQuery:
 		query, err = integration.GenerateVulnerabilityQuery(req)
+	case model.SecretQuery:
+		query, err = integration.GenerateSecretQuery(req)
+	case model.MalwareQuery:
+		query, err = integration.GenerateMalwareQuery(req)
 	}
 	if err != nil {
 		h.respondError(err, w)
@@ -337,7 +358,7 @@ func AiIntegrationQueryHandler[T model.AiIntegrationRequest](w http.ResponseWrit
 	go func() {
 		for {
 			for queryResponse := range queryResponseChannel {
-				if queryResponse == model.AiIntegrationExitMessage {
+				if queryResponse == model.GenerativeAiIntegrationExitMessage {
 					writeDoneChannel <- true
 					return
 				}
@@ -356,7 +377,7 @@ func AiIntegrationQueryHandler[T model.AiIntegrationRequest](w http.ResponseWrit
 		if err != nil {
 			log.Warn().Msg(err.Error())
 		}
-		queryResponseChannel <- model.AiIntegrationExitMessage
+		queryResponseChannel <- model.GenerativeAiIntegrationExitMessage
 	}()
 
 	for {

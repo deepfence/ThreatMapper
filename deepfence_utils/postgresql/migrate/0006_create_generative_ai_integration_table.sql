@@ -1,10 +1,13 @@
 -- +goose Up
 
 -- +goose StatementBegin
-CREATE TABLE public.ai_integration
+DROP TABLE IF EXISTS ai_integration;
+
+CREATE TABLE public.generative_ai_integration
 (
     id                  SERIAL PRIMARY KEY,
-    integration_type    character varying(64) unique                       NOT NULL,
+    integration_type    character varying(64)                              NOT NULL,
+    label               character varying(128) UNIQUE                      NOT NULL,
     --  integration_type: openai / azure-openai / amazon-bedrock, etc
     last_sent_time      timestamp with time zone                           NULL,
     config              jsonb                                              NOT NULL,
@@ -19,9 +22,9 @@ CREATE TABLE public.ai_integration
             ON DELETE CASCADE
 );
 
-CREATE TRIGGER ai_integration_updated_at
+CREATE TRIGGER generative_ai_integration_updated_at
     BEFORE UPDATE
-    ON ai_integration
+    ON generative_ai_integration
     FOR EACH ROW
 EXECUTE PROCEDURE update_modified_column();
 -- +goose StatementEnd
@@ -29,5 +32,5 @@ EXECUTE PROCEDURE update_modified_column();
 -- +goose Down
 
 -- +goose StatementBegin
-DROP TABLE IF EXISTS ai_integration;
+DROP TABLE IF EXISTS generative_ai_integration;
 -- +goose StatementEnd
