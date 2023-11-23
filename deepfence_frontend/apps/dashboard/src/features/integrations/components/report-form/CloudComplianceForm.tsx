@@ -1,7 +1,12 @@
+import { upperCase } from 'lodash-es';
 import { useEffect, useState } from 'react';
 import { Listbox, ListboxOption } from 'ui-components';
 
-import { getReportBenchmarkList } from '@/features/integrations/pages/DownloadReport';
+import { UtilsReportFiltersScanTypeEnum } from '@/api/generated';
+import {
+  getReportBenchmarkList,
+  getReportNodeType,
+} from '@/features/integrations/pages/DownloadReport';
 
 export const CloudComplianceForm = ({
   setProvider,
@@ -27,21 +32,19 @@ export const CloudComplianceForm = ({
           setProvider(value);
         }}
         getDisplayValue={() => {
-          return (
-            ['Aws', 'Gcp', 'Azure'].find((_provider) => {
-              return _provider === provider;
-            }) ?? ''
-          );
+          return upperCase(provider);
         }}
         placeholder="Select Provider"
       >
-        {['Aws', 'Gcp', 'Azure'].map((resource) => {
-          return (
-            <ListboxOption value={resource} key={resource}>
-              {resource}
-            </ListboxOption>
-          );
-        })}
+        {getReportNodeType(UtilsReportFiltersScanTypeEnum.CloudCompliance).map(
+          (resource) => {
+            return (
+              <ListboxOption value={resource} key={resource}>
+                {upperCase(resource)}
+              </ListboxOption>
+            );
+          },
+        )}
       </Listbox>
 
       {provider && (

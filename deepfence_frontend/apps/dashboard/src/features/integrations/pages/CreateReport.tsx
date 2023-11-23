@@ -1,3 +1,4 @@
+import { upperFirst } from 'lodash-es';
 import { useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import {
@@ -24,7 +25,6 @@ import { AdvancedFilter } from '@/features/integrations/components/report-form/A
 import { CloudComplianceForm } from '@/features/integrations/components/report-form/CloudComplianceForm';
 import { CommonForm } from '@/features/integrations/components/report-form/CommonForm';
 import { ComplianceForm } from '@/features/integrations/components/report-form/ComplianceForm';
-import { NODE_TYPES } from '@/features/integrations/pages/DownloadReport';
 import { ActionEnumType } from '@/features/integrations/pages/IntegrationAdd';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries } from '@/queries';
@@ -42,13 +42,13 @@ export const DURATION: { [k: string]: ModelGenerateReportReqDurationEnum } = {
   'Last 180 Days': ModelGenerateReportReqDurationEnum.NUMBER_180,
   'All Documents': 0 as ModelGenerateReportReqDurationEnum,
 };
-const RESOURCES: { [k: string]: UtilsReportFiltersScanTypeEnum } = {
-  Vulnerability: UtilsReportFiltersScanTypeEnum.Vulnerability,
-  Secret: UtilsReportFiltersScanTypeEnum.Secret,
-  Malware: UtilsReportFiltersScanTypeEnum.Malware,
-  Compliance: UtilsReportFiltersScanTypeEnum.Compliance,
-  'Cloud Compliance': UtilsReportFiltersScanTypeEnum.CloudCompliance,
-};
+const RESOURCES = [
+  UtilsReportFiltersScanTypeEnum.Vulnerability,
+  UtilsReportFiltersScanTypeEnum.Secret,
+  UtilsReportFiltersScanTypeEnum.Malware,
+  UtilsReportFiltersScanTypeEnum.Compliance,
+  UtilsReportFiltersScanTypeEnum.CloudCompliance,
+];
 const REPORT_TYPES: { [k: string]: ModelGenerateReportReqReportTypeEnum } = {
   PDF: ModelGenerateReportReqReportTypeEnum.Pdf,
   XLSX: ModelGenerateReportReqReportTypeEnum.Xlsx,
@@ -67,14 +67,10 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const reportType = body.downloadType.toString();
   const _reportType: ModelGenerateReportReqReportTypeEnum = REPORT_TYPES[reportType];
 
-  const resource = body.resource.toString();
-  const _resource: UtilsReportFiltersScanTypeEnum = RESOURCES[resource];
+  const _resource = body.resource as UtilsReportFiltersScanTypeEnum;
 
-  let nodeType = body.nodeType.toString();
-  if (nodeType.toString() === 'Kubernetes') {
-    nodeType = 'Cluster';
-  }
-  const _nodeType: UtilsReportFiltersNodeTypeEnum = NODE_TYPES[nodeType];
+  const _nodeType: UtilsReportFiltersNodeTypeEnum =
+    body.nodeType as UtilsReportFiltersNodeTypeEnum;
 
   const masked = formData.getAll('mask[]');
   const status = formData.getAll('status[]');
@@ -226,6 +222,14 @@ const Header = () => {
     </SlidingModalHeader>
   );
 };
+
+const getResourceDisplayValue = (resource: string) => {
+  if (resource === UtilsReportFiltersScanTypeEnum.CloudCompliance) {
+    return 'Cloud Compliance';
+  }
+  return resource;
+};
+
 const ReportForm = () => {
   const [resource, setResource] = useState('');
   const [provider, setProvider] = useState('');
@@ -263,21 +267,21 @@ const ReportForm = () => {
                 setProvider('');
               }}
               getDisplayValue={(item) => {
-                return Object.keys(RESOURCES).find((resource) => resource === item) ?? '';
+                return item ? upperFirst(getResourceDisplayValue(item)) : '';
               }}
               placeholder="Select resource"
               required
             >
-              {Object.keys(RESOURCES).map((resource) => {
+              {RESOURCES.map((resource) => {
                 return (
                   <ListboxOption value={resource} key={resource}>
-                    {resource}
+                    {upperFirst(getResourceDisplayValue(resource))}
                   </ListboxOption>
                 );
               })}
             </Listbox>
 
-            {resource === 'Compliance' ? (
+            {resource === UtilsReportFiltersScanTypeEnum.Compliance ? (
               <ComplianceForm
                 setProvider={setProvider}
                 provider={provider}
@@ -285,11 +289,12 @@ const ReportForm = () => {
               />
             ) : null}
 
-            {resource === 'CloudCompliance' ? (
+            {resource === UtilsReportFiltersScanTypeEnum.CloudCompliance ? (
               <CloudComplianceForm setProvider={setProvider} provider={provider} />
             ) : null}
 
-            {resource !== 'CloudCompliance' && resource !== 'Compliance' ? (
+            {resource !== UtilsReportFiltersScanTypeEnum.CloudCompliance &&
+            resource !== UtilsReportFiltersScanTypeEnum.Compliance ? (
               <CommonForm
                 setProvider={setProvider}
                 resource={resource}
@@ -341,7 +346,7 @@ const ReportForm = () => {
                 setDownloadType(value);
               }}
               placeholder="Download type"
-              getDisplayValue={(item) => {
+              getDisplayValue={() => {
                 return downloadType;
               }}
               required

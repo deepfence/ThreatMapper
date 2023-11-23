@@ -1,10 +1,19 @@
+import { upperCase, upperFirst } from 'lodash-es';
 import { useEffect, useState } from 'react';
 import { Listbox, ListboxOption } from 'ui-components';
 
+import { UtilsReportFiltersScanTypeEnum } from '@/api/generated';
 import {
   getReportBenchmarkList,
   getReportNodeType,
 } from '@/features/integrations/pages/DownloadReport';
+
+const getDisplayNodeTypeValue = (resource: string, nodeType: string) => {
+  if (resource === UtilsReportFiltersScanTypeEnum.CloudCompliance) {
+    return upperCase(nodeType);
+  }
+  return upperFirst(nodeType);
+};
 
 export const ComplianceForm = ({
   setProvider,
@@ -33,13 +42,13 @@ export const ComplianceForm = ({
         }}
         placeholder="Select node type"
         getDisplayValue={() => {
-          return provider;
+          return getDisplayNodeTypeValue(resource, provider) ?? '';
         }}
       >
-        {Object.keys(getReportNodeType(resource)).map((resource) => {
+        {getReportNodeType(resource).map((resource) => {
           return (
             <ListboxOption value={resource} key={resource}>
-              {resource}
+              {getDisplayNodeTypeValue(resource, resource)}
             </ListboxOption>
           );
         })}
