@@ -194,6 +194,8 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       _notificationType = 'CloudTrailAlert';
     } else if (_notificationType === 'User Activities') {
       _notificationType = 'UserActivities';
+    } else if (_notificationType === 'Cloud Compliance') {
+      _notificationType = 'CloudCompliance';
     }
 
     // filters
@@ -265,6 +267,8 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       node_ids: [],
     };
 
+    const accountIds = getArrayTypeValuesFromFormData(formData, 'cloudAccountsFilter');
+
     const nodeIds = [];
 
     if (hostFilter.length) {
@@ -309,6 +313,17 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       );
       nodeIds.push(..._clusters);
     }
+    if (accountIds.length) {
+      const _accounts: ModelNodeIdentifier[] = accountIds.map<ModelNodeIdentifier>(
+        (id) => {
+          return {
+            node_id: id,
+            node_type: ModelNodeIdentifierNodeTypeEnum.CloudAccount,
+          };
+        },
+      );
+      nodeIds.push(..._accounts);
+    }
     if (severityFilter.length) {
       const filters = _filters.fields_filters.contains_filter.filter_in;
       const newFilter = {
@@ -327,6 +342,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       };
       _filters.fields_filters.contains_filter.filter_in = newFilter;
     }
+
     if (intervalFilter) {
       // TODO Add filters
     }
