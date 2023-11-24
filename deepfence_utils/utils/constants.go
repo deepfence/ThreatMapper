@@ -55,6 +55,7 @@ const (
 	StopVulnerabilityScanTask         = "task_stop_vulnerability_scan"
 	UpdateCloudResourceScanStatusTask = "update_cloud_resource_scan_status"
 	UpdatePodScanStatusTask           = "update_pod_scan_status"
+	BulkDeleteScans                   = "bulk_delete_scans"
 )
 
 const (
@@ -218,6 +219,10 @@ const (
 	ReportPDF  ReportType = "pdf"
 )
 
+// mask_global : This is to mask gobally. (same as previous mask_across_hosts_and_images flag)
+// mask_all_image_tag: This is to mask for all tags of an image.
+// mask_entity: This is to mask for an entity other than container/container image. E.g. Host.
+// mask_image_tag: This is to apply mask for an image and tag.
 const (
 	MASK_GLOBAL        = "mask_global"
 	MASK_ALL_IMAGE_TAG = "mask_all_image_tag"

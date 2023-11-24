@@ -216,5 +216,7 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 
 	worker.AddRetryableHandler(utils.UpdatePodScanStatusTask, scans.UpdatePodScanStatus)
 
+	worker.AddOneShotHandler(utils.BulkDeleteScans, scans.BulkDeleteScans)
+
 	return worker, cancel, nil
 }

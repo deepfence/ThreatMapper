@@ -176,6 +176,7 @@ func StartKafkaConsumers(
 		kgo.ClientID(group),
 		kgo.FetchMinBytes(1e3),
 		kgo.WithLogger(kgoLogger),
+		kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()),
 	}
 
 	kc, err := kgo.NewClient(opts...)
