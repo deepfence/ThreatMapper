@@ -718,7 +718,7 @@ func (d *OpenApiDocs) AddIntegrationOperations() {
 
 	d.AddOperation("listGenerativeAiIntegration", http.MethodGet, "/deepfence/generative-ai-integration",
 		"List Generative AI Integrations", "List all the added Generative AI Integrations",
-		http.StatusOK, []string{tagGenerativeAi}, bearerToken, nil, new([]GenerativeAiIntegrationListResponse))
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(GenerativeAiIntegrationListRequest), new([]GenerativeAiIntegrationListResponse))
 	d.AddOperation("deleteGenerativeAiIntegration", http.MethodDelete, "/deepfence/generative-ai-integration/{integration_id}",
 		"Delete Generative AI Integration", "Delete Generative AI integration",
 		http.StatusNoContent, []string{tagGenerativeAi}, bearerToken, new(IntegrationIDPathReq), nil)

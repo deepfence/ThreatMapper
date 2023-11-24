@@ -204,6 +204,10 @@ func (a AddGenerativeAiBedrockIntegration) IntegrationExists(ctx context.Context
 	return count > 0, nil
 }
 
+type GenerativeAiIntegrationListRequest struct {
+	IntegrationType string `query:"integration_type" validate:"omitempty,oneof=openai amazon-bedrock" enum:"openai,amazon-bedrock"`
+}
+
 type GenerativeAiIntegrationListResponse struct {
 	ID                 int32  `json:"id"`
 	IntegrationType    string `json:"integration_type"`

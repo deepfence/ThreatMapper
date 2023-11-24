@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -136,12 +137,29 @@ func AddGenerativeAiIntegration[T model.AddGenerativeAiIntegrationRequest](w htt
 
 func (h *Handler) GetGenerativeAiIntegrations(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	request := model.GenerativeAiIntegrationListRequest{
+		IntegrationType: r.URL.Query().Get("integration_type"),
+	}
+	err := h.Validator.Struct(request)
+	if err != nil {
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
-	aiIntegrations, err := pgClient.GetGenerativeAiIntegrations(ctx)
+
+	var generativeAiIntegrations []postgresqlDb.GenerativeAiIntegration
+
+	if request.IntegrationType == "" {
+		generativeAiIntegrations, err = pgClient.GetGenerativeAiIntegrations(ctx)
+	} else {
+		generativeAiIntegrations, err = pgClient.GetGenerativeAiIntegrationByType(ctx, request.IntegrationType)
+	}
 	if err != nil {
 		log.Error().Err(err).Msg("GetGenerativeAiIntegrations")
 		h.respondError(&InternalServerError{err}, w)
@@ -150,7 +168,7 @@ func (h *Handler) GetGenerativeAiIntegrations(w http.ResponseWriter, r *http.Req
 
 	integrationList := []model.GenerativeAiIntegrationListResponse{}
 
-	for _, integration := range aiIntegrations {
+	for _, integration := range generativeAiIntegrations {
 		var integrationStatus string
 		if integration.ErrorMsg.Valid {
 			integrationStatus = integration.ErrorMsg.String
@@ -376,6 +394,25 @@ func GenerativeAiIntegrationQueryHandler[T model.GenerativeAiIntegrationRequest]
 		err = integration.Message(ctx, query, queryResponseChannel)
 		if err != nil {
 			log.Warn().Msg(err.Error())
+
+			err = pgClient.UpdateGenerativeAiIntegrationStatus(ctx, postgresqlDb.UpdateGenerativeAiIntegrationStatusParams{
+				ID: dbIntegration.ID,
+				ErrorMsg: sql.NullString{
+					String: err.Error(),
+					Valid:  true,
+				},
+			})
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
+		} else {
+			err = pgClient.UpdateGenerativeAiIntegrationStatus(ctx, postgresqlDb.UpdateGenerativeAiIntegrationStatusParams{
+				ID:       dbIntegration.ID,
+				ErrorMsg: sql.NullString{},
+			})
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
 		}
 		queryResponseChannel <- model.GenerativeAiIntegrationExitMessage
 	}()

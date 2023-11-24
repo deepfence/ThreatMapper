@@ -1,8 +1,6 @@
 -- +goose Up
 
 -- +goose StatementBegin
-DROP TABLE IF EXISTS ai_integration;
-
 CREATE TABLE public.generative_ai_integration
 (
     id                  SERIAL PRIMARY KEY,
