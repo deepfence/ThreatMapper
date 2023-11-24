@@ -12,11 +12,13 @@ replace github.com/deepfence/df-utils => ../deepfence_agent/tools/apache/deepfen
 
 replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/agent-plugins-grpc
 
+replace github.com/deepfence/compliance => ../deepfence_agent/plugins/compliance
+
 require (
 	github.com/containerd/cgroups/v3 v3.0.2
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/agent-plugins-grpc v1.1.0
-	github.com/deepfence/compliance v0.1.3-0.20231122143511-e2f9b4836eb0
+	github.com/deepfence/compliance v0.0.0-00010101000000-000000000000
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-00010101000000-000000000000
