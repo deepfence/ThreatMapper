@@ -520,8 +520,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 					r.Post("/linux-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GenerativeAiIntegrationLinuxPostureQuery))
 					r.Post("/kubernetes-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GenerativeAiIntegrationKubernetesPostureQuery))
 					r.Post("/vulnerability", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GenerativeAiIntegrationVulnerabilityQuery))
-					r.Post("/secret", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GenerativeAiIntegrationVulnerabilityQuery))
-					r.Post("/malware", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GenerativeAiIntegrationVulnerabilityQuery))
+					r.Post("/secret", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GenerativeAiIntegrationSecretQuery))
+					r.Post("/malware", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GenerativeAiIntegrationMalwareQuery))
 				})
 			})
 
