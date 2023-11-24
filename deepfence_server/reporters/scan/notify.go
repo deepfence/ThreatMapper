@@ -23,7 +23,12 @@ func Notify[T any](ctx context.Context, res []T, common model.ScanResultsCommon,
 		return err
 	}
 
+	neo4jScanType := utils.StringToNeo4jScanType(scanType)
 	for _, integrationRow := range integrations {
+		if utils.ScanTypeDetectedNode[neo4jScanType] != integrationRow.Resource {
+			continue
+		}
+
 		log.Info().Msgf("Processing integration for %s rowId: %d",
 			integrationRow.IntegrationType, integrationRow.ID)
 
