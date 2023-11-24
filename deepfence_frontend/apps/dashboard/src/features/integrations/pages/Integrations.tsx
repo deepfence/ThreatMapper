@@ -401,7 +401,7 @@ const AIIntegrations = () => {
                   <span className="h-9 w-9">{type.icon}</span>
                 </div>
                 <div className="flex flex-col">
-                  <h4 className="text-t4 dark:text-text-input-value">{type.label}</h4>
+                  <h4 className="text-h6 dark:text-text-input-value">{type.label}</h4>
 
                   <div className="flex items-center gap-x-2 mt-2">
                     <span className="text-h1 dark:text-text-input-value">{count}</span>
