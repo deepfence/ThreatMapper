@@ -91,6 +91,9 @@ interface RemediationCompletionProps {
       };
 }
 
+const FORMAT_SELECTION_DISABLED_TYPES: Array<RemediationCompletionProps['meta']['type']> =
+  ['secret', 'malware'];
+
 export const RemediationBlock = ({ meta, onBackButtonClick }: RemediationBlockProps) => {
   const {
     data: { data, message: errorMessage },
@@ -193,60 +196,62 @@ export const RemediationBlock = ({ meta, onBackButtonClick }: RemediationBlockPr
             </Tooltip>
           </div>
         </div>
-        <div className="flex items-center overflow-x-auto gap-2">
-          <Button
-            className="normal-case"
-            color="default"
-            variant={format !== 'all' ? 'outline' : undefined}
-            size="sm"
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              setFormat('all');
-            }}
-          >
-            Any
-          </Button>
-          <Button
-            className="normal-case"
-            color="default"
-            variant={format !== 'cli' ? 'outline' : undefined}
-            size="sm"
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              setFormat('cli');
-            }}
-          >
-            CLI
-          </Button>
-          <Button
-            className="normal-case"
-            color="default"
-            variant={format !== 'terraform' ? 'outline' : undefined}
-            size="sm"
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              setFormat('terraform');
-            }}
-          >
-            Terraform
-          </Button>
-          <Button
-            className="normal-case"
-            color="default"
-            variant={format !== 'pulumi' ? 'outline' : undefined}
-            size="sm"
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              setFormat('pulumi');
-            }}
-          >
-            Pulumi
-          </Button>
-        </div>
+        {!FORMAT_SELECTION_DISABLED_TYPES.includes(meta.type) ? (
+          <div className="flex items-center overflow-x-auto gap-2">
+            <Button
+              className="normal-case"
+              color="default"
+              variant={format !== 'all' ? 'outline' : undefined}
+              size="sm"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setFormat('all');
+              }}
+            >
+              Any
+            </Button>
+            <Button
+              className="normal-case"
+              color="default"
+              variant={format !== 'cli' ? 'outline' : undefined}
+              size="sm"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setFormat('cli');
+              }}
+            >
+              CLI
+            </Button>
+            <Button
+              className="normal-case"
+              color="default"
+              variant={format !== 'terraform' ? 'outline' : undefined}
+              size="sm"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setFormat('terraform');
+              }}
+            >
+              Terraform
+            </Button>
+            <Button
+              className="normal-case"
+              color="default"
+              variant={format !== 'pulumi' ? 'outline' : undefined}
+              size="sm"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setFormat('pulumi');
+              }}
+            >
+              Pulumi
+            </Button>
+          </div>
+        ) : null}
       </div>
       <div className="flex-1 overflow-hidden">
         <RemediationCompletion meta={memoedMeta} />
