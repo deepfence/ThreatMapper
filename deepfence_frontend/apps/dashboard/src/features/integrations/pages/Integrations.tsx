@@ -33,6 +33,7 @@ import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations
 import { IntegrationType } from '@/features/integrations/components/IntegrationForm';
 import { useGetReports } from '@/features/integrations/pages/DownloadReport';
 import { queries } from '@/queries';
+import { GenerativeAIIntegrationType } from '@/types/common';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 import { useListIntegrations } from './IntegrationAdd';
@@ -159,14 +160,22 @@ const IntegrationsData = [
   },
 ];
 
-const AIIntegrationsData: Record<string, { icon: ReactNode }> = {
-  openai: {
+const AI_INTEGRATION_TYPES: Array<{
+  type: GenerativeAIIntegrationType;
+  label: string;
+  icon: ReactNode;
+}> = [
+  {
+    type: 'openai',
+    label: 'OpenAI',
     icon: <OpenAIIcon />,
   },
-  bedrock: {
+  {
+    type: 'amazon-bedrock',
+    label: 'Amazon Bedrock',
     icon: <BedrockIcon />,
   },
-};
+];
 
 const Count = ({
   type,
@@ -362,17 +371,6 @@ function useListAIIntegrations() {
   });
 }
 
-const AI_INTEGRATION_TYPES = [
-  {
-    type: 'openai',
-    label: 'OpenAI',
-  },
-  {
-    type: 'bedrock',
-    label: 'Amazon Bedrock',
-  },
-];
-
 const AIIntegrations = () => {
   const {
     data: { data, message },
@@ -382,28 +380,31 @@ const AIIntegrations = () => {
     return <p className="text-p7 dark:text-status-error">{message}</p>;
   }
 
+  const groupedData = data.reduce<Record<string, number>>((prev, current) => {
+    if (!prev[current.integration_type ?? '']) {
+      prev[current.integration_type ?? ''] = 1;
+    } else {
+      prev[current.integration_type ?? ''] += 1;
+    }
+    return prev;
+  }, {});
+
   return (
     <div className="mt-2 flex flex-wrap gap-4">
       {AI_INTEGRATION_TYPES.map((type) => {
-        const integrationType = data.find((i) => i.integration_type === type.type);
+        const count = groupedData[type.type] ?? 0;
         return (
           <DFLink to="/integrations/gen-ai" unstyled key={type.type}>
             <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-bg-hover-3 dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:ring-1 cursor-pointer">
               <div className="flex items-center gap-x-6">
                 <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
-                  <span className="h-9 w-9">
-                    {AIIntegrationsData[type.type ?? '']?.icon ?? <SparkleLineIcon />}
-                  </span>
+                  <span className="h-9 w-9">{type.icon}</span>
                 </div>
                 <div className="flex flex-col">
-                  <h4 className="text-t4 dark:text-text-input-value">
-                    {integrationType?.label ?? type.label}
-                  </h4>
+                  <h4 className="text-t4 dark:text-text-input-value">{type.label}</h4>
 
                   <div className="flex items-center gap-x-2 mt-2">
-                    <span className="text-h1 dark:text-text-input-value">
-                      {integrationType ? 1 : 0}
-                    </span>
+                    <span className="text-h1 dark:text-text-input-value">{count}</span>
                     <span className="text-p4 dark:text-text-text-and-icon">
                       {`Connection`}
                     </span>

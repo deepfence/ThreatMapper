@@ -17,8 +17,11 @@ import { DFLink } from '@/components/DFLink';
 import { CheckIcon } from '@/components/icons/common/Check';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { PopOutIcon } from '@/components/icons/common/PopOut';
+import { RemediationBlock } from '@/components/remediation/RemediationBlock';
+import { RemediationButton } from '@/components/remediation/RemediationButton';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
+import { TruncatedText } from '@/components/TruncatedText';
 import { ResourceDetailModal } from '@/features/secrets/components/ResourceDetailModal';
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
@@ -38,7 +41,11 @@ const timeFormatKey = {
   updated_at: 'updated_at',
 };
 
-const Header = () => {
+const Header = ({
+  setIsRemediationOpen,
+}: {
+  setIsRemediationOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   const {
     data: { data: secrets },
   } = useGetSecretDetails();
@@ -48,11 +55,21 @@ const Header = () => {
   return (
     <SlidingModalHeader>
       <div className="pt-5 px-5 pb-4 dark:bg-bg-breadcrumb-bar">
-        <div className="flex items-center gap-2 dark:text-text-text-and-icon">
+        <div className="flex items-center gap-2 dark:text-text-text-and-icon pr-8">
           <div className="h-4 w-4 shrink-0">
             <SecretsIcon />
           </div>
-          <h3 className="text-h3">{data?.name ?? '-'}</h3>
+          <h3 className="text-h3  grow-0 overflow-hidden">
+            <TruncatedText text={data?.name ?? '-'} />
+          </h3>
+          <RemediationButton
+            className="ml-auto"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              setIsRemediationOpen((prevOpen) => !prevOpen);
+            }}
+          />
         </div>
         <div className="mt-[18px] flex">
           <div className="px-4 flex flex-col gap-2">
@@ -120,7 +137,13 @@ const CopyField = ({ value }: { value: string }) => {
   );
 };
 
-const DetailsComponent = () => {
+const DetailsComponent = ({
+  isRemediationOpen,
+  setIsRemediationOpen,
+}: {
+  isRemediationOpen: boolean;
+  setIsRemediationOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   const {
     data: { data: secrets },
   } = useGetSecretDetails();
@@ -139,8 +162,33 @@ const DetailsComponent = () => {
 
   const omitFields: (keyof ModelSecret)[] = ['name', 'level', 'score', 'resources'];
 
+  if (isRemediationOpen) {
+    return (
+      <Suspense
+        fallback={
+          <div className="h-full w-full flex items-center justify-center">
+            <CircleSpinner size="lg" />
+          </div>
+        }
+      >
+        <RemediationBlock
+          meta={{
+            type: 'secret',
+            args: {
+              query_type: 'remediation',
+              name: secret.name,
+            },
+          }}
+          onBackButtonClick={() => {
+            setIsRemediationOpen(false);
+          }}
+        />
+      </Suspense>
+    );
+  }
+
   return (
-    <div className="flex flex-wrap gap-y-[30px] gap-x-[14px]">
+    <div className="flex flex-wrap gap-y-[30px] gap-x-[14px] py-[18px] px-5">
       {Object.keys(secret ?? {})
         .filter((key) => {
           if (omitFields.includes(key as keyof ModelSecret)) return false;
@@ -242,13 +290,15 @@ const DetailsComponent = () => {
 const SecretDetailModals = () => {
   const { navigate } = usePageNavigation();
   const [searchParams] = useSearchParams();
+  const [isRemediationOpen, setIsRemediationOpen] = useState(false);
+
   return (
     <SlidingModal
       open={true}
       onOpenChange={() => {
         navigate(`..?${searchParams.toString()}`);
       }}
-      size="l"
+      size="xl"
     >
       <SlidingModalCloseButton />
       <Suspense
@@ -260,10 +310,13 @@ const SecretDetailModals = () => {
           </SlidingModalContent>
         }
       >
-        <Header />
+        <Header setIsRemediationOpen={setIsRemediationOpen} />
         <SlidingModalContent>
-          <div className="py-[18px] px-5">
-            <DetailsComponent />
+          <div className="h-full">
+            <DetailsComponent
+              isRemediationOpen={isRemediationOpen}
+              setIsRemediationOpen={setIsRemediationOpen}
+            />
           </div>
         </SlidingModalContent>
       </Suspense>

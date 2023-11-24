@@ -103,7 +103,7 @@ export interface ModelContainerImage {
      * @type {{ [key: string]: any; }}
      * @memberof ModelContainerImage
      */
-    metadata?: { [key: string]: any; };
+    metadata?: { [key: string]: any; } | null;
     /**
      * 
      * @type {string}

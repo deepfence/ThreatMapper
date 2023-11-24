@@ -16,43 +16,43 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelAiIntegrationLinuxPostureRequest
+ * @interface ModelGenerativeAiIntegrationLinuxPostureRequest
  */
-export interface ModelAiIntegrationLinuxPostureRequest {
+export interface ModelGenerativeAiIntegrationLinuxPostureRequest {
     /**
      * 
      * @type {string}
-     * @memberof ModelAiIntegrationLinuxPostureRequest
+     * @memberof ModelGenerativeAiIntegrationLinuxPostureRequest
      */
     compliance_check_type: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelAiIntegrationLinuxPostureRequest
+     * @memberof ModelGenerativeAiIntegrationLinuxPostureRequest
      */
     description: string;
     /**
      * 
-     * @type {string}
-     * @memberof ModelAiIntegrationLinuxPostureRequest
+     * @type {number}
+     * @memberof ModelGenerativeAiIntegrationLinuxPostureRequest
      */
-    integration_type?: ModelAiIntegrationLinuxPostureRequestIntegrationTypeEnum;
+    integration_id?: number;
     /**
      * 
      * @type {string}
-     * @memberof ModelAiIntegrationLinuxPostureRequest
+     * @memberof ModelGenerativeAiIntegrationLinuxPostureRequest
      */
-    query_type: ModelAiIntegrationLinuxPostureRequestQueryTypeEnum;
+    query_type: ModelGenerativeAiIntegrationLinuxPostureRequestQueryTypeEnum;
     /**
      * 
      * @type {string}
-     * @memberof ModelAiIntegrationLinuxPostureRequest
+     * @memberof ModelGenerativeAiIntegrationLinuxPostureRequest
      */
-    remediation_format: ModelAiIntegrationLinuxPostureRequestRemediationFormatEnum;
+    remediation_format: ModelGenerativeAiIntegrationLinuxPostureRequestRemediationFormatEnum;
     /**
      * 
      * @type {string}
-     * @memberof ModelAiIntegrationLinuxPostureRequest
+     * @memberof ModelGenerativeAiIntegrationLinuxPostureRequest
      */
     test_number: string;
 }
@@ -61,35 +61,27 @@ export interface ModelAiIntegrationLinuxPostureRequest {
 /**
  * @export
  */
-export const ModelAiIntegrationLinuxPostureRequestIntegrationTypeEnum = {
-    Openai: 'openai'
-} as const;
-export type ModelAiIntegrationLinuxPostureRequestIntegrationTypeEnum = typeof ModelAiIntegrationLinuxPostureRequestIntegrationTypeEnum[keyof typeof ModelAiIntegrationLinuxPostureRequestIntegrationTypeEnum];
-
-/**
- * @export
- */
-export const ModelAiIntegrationLinuxPostureRequestQueryTypeEnum = {
+export const ModelGenerativeAiIntegrationLinuxPostureRequestQueryTypeEnum = {
     Remediation: 'remediation'
 } as const;
-export type ModelAiIntegrationLinuxPostureRequestQueryTypeEnum = typeof ModelAiIntegrationLinuxPostureRequestQueryTypeEnum[keyof typeof ModelAiIntegrationLinuxPostureRequestQueryTypeEnum];
+export type ModelGenerativeAiIntegrationLinuxPostureRequestQueryTypeEnum = typeof ModelGenerativeAiIntegrationLinuxPostureRequestQueryTypeEnum[keyof typeof ModelGenerativeAiIntegrationLinuxPostureRequestQueryTypeEnum];
 
 /**
  * @export
  */
-export const ModelAiIntegrationLinuxPostureRequestRemediationFormatEnum = {
+export const ModelGenerativeAiIntegrationLinuxPostureRequestRemediationFormatEnum = {
     All: 'all',
     Cli: 'cli',
     Pulumi: 'pulumi',
     Terraform: 'terraform'
 } as const;
-export type ModelAiIntegrationLinuxPostureRequestRemediationFormatEnum = typeof ModelAiIntegrationLinuxPostureRequestRemediationFormatEnum[keyof typeof ModelAiIntegrationLinuxPostureRequestRemediationFormatEnum];
+export type ModelGenerativeAiIntegrationLinuxPostureRequestRemediationFormatEnum = typeof ModelGenerativeAiIntegrationLinuxPostureRequestRemediationFormatEnum[keyof typeof ModelGenerativeAiIntegrationLinuxPostureRequestRemediationFormatEnum];
 
 
 /**
- * Check if a given object implements the ModelAiIntegrationLinuxPostureRequest interface.
+ * Check if a given object implements the ModelGenerativeAiIntegrationLinuxPostureRequest interface.
  */
-export function instanceOfModelAiIntegrationLinuxPostureRequest(value: object): boolean {
+export function instanceOfModelGenerativeAiIntegrationLinuxPostureRequest(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "compliance_check_type" in value;
     isInstance = isInstance && "description" in value;
@@ -100,11 +92,11 @@ export function instanceOfModelAiIntegrationLinuxPostureRequest(value: object): 
     return isInstance;
 }
 
-export function ModelAiIntegrationLinuxPostureRequestFromJSON(json: any): ModelAiIntegrationLinuxPostureRequest {
-    return ModelAiIntegrationLinuxPostureRequestFromJSONTyped(json, false);
+export function ModelGenerativeAiIntegrationLinuxPostureRequestFromJSON(json: any): ModelGenerativeAiIntegrationLinuxPostureRequest {
+    return ModelGenerativeAiIntegrationLinuxPostureRequestFromJSONTyped(json, false);
 }
 
-export function ModelAiIntegrationLinuxPostureRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAiIntegrationLinuxPostureRequest {
+export function ModelGenerativeAiIntegrationLinuxPostureRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelGenerativeAiIntegrationLinuxPostureRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -112,14 +104,14 @@ export function ModelAiIntegrationLinuxPostureRequestFromJSONTyped(json: any, ig
         
         'compliance_check_type': json['compliance_check_type'],
         'description': json['description'],
-        'integration_type': !exists(json, 'integration_type') ? undefined : json['integration_type'],
+        'integration_id': !exists(json, 'integration_id') ? undefined : json['integration_id'],
         'query_type': json['query_type'],
         'remediation_format': json['remediation_format'],
         'test_number': json['test_number'],
     };
 }
 
-export function ModelAiIntegrationLinuxPostureRequestToJSON(value?: ModelAiIntegrationLinuxPostureRequest | null): any {
+export function ModelGenerativeAiIntegrationLinuxPostureRequestToJSON(value?: ModelGenerativeAiIntegrationLinuxPostureRequest | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -130,7 +122,7 @@ export function ModelAiIntegrationLinuxPostureRequestToJSON(value?: ModelAiInteg
         
         'compliance_check_type': value.compliance_check_type,
         'description': value.description,
-        'integration_type': value.integration_type,
+        'integration_id': value.integration_id,
         'query_type': value.query_type,
         'remediation_format': value.remediation_format,
         'test_number': value.test_number,

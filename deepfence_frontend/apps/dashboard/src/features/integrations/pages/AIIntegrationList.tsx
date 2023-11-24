@@ -15,10 +15,10 @@ import {
   TableSkeleton,
 } from 'ui-components';
 
-import { getIntegrationApiClient } from '@/api/api';
+import { getGenerativeAIIntegraitonClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
-  ModelAiIntegrationListResponse,
+  ModelGenerativeAiIntegrationListResponse,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
@@ -59,7 +59,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     const id = formData.get('id')?.toString() ?? '';
 
     const deleteAIIntegration = apiWrapper({
-      fn: getIntegrationApiClient().deleteAIIntegration,
+      fn: getGenerativeAIIntegraitonClient().deleteGenerativeAiIntegration,
     });
 
     const response = await deleteAIIntegration({
@@ -93,7 +93,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     const id = formData.get('id')?.toString() ?? '';
 
     const setDefaultAIIntegration = apiWrapper({
-      fn: getIntegrationApiClient().setDefaultAIIntegration,
+      fn: getGenerativeAIIntegraitonClient().setDefaultGenerativeAiIntegration,
     });
 
     const response = await setDefaultAIIntegration({
@@ -337,10 +337,10 @@ const ActionDropdown = ({
   trigger,
   onTableAction,
 }: {
-  row: ModelAiIntegrationListResponse;
+  row: ModelGenerativeAiIntegrationListResponse;
   trigger: React.ReactNode;
   onTableAction: (
-    row: ModelAiIntegrationListResponse,
+    row: ModelGenerativeAiIntegrationListResponse,
     actionType: ActionEnumType,
   ) => void;
 }) => {
@@ -375,7 +375,7 @@ const AIIntegrationTable = () => {
   const [idToMakeDefault, setIdToMakeDefault] = useState<number | null>(null);
 
   const columns = useMemo(() => {
-    const columnHelper = createColumnHelper<ModelAiIntegrationListResponse>();
+    const columnHelper = createColumnHelper<ModelGenerativeAiIntegrationListResponse>();
 
     const columns = [
       columnHelper.display({
@@ -412,12 +412,6 @@ const AIIntegrationTable = () => {
         maxSize: 35,
         enableResizing: false,
       }),
-      columnHelper.accessor('id', {
-        header: () => 'ID',
-        size: 50,
-        minSize: 50,
-        maxSize: 50,
-      }),
       columnHelper.accessor('integration_type', {
         header: () => 'Type',
         size: 100,
@@ -426,9 +420,9 @@ const AIIntegrationTable = () => {
       }),
       columnHelper.accessor('label', {
         header: () => 'Label',
-        size: 100,
-        minSize: 50,
-        maxSize: 150,
+        size: 150,
+        minSize: 100,
+        maxSize: 300,
       }),
       columnHelper.accessor('default_integration', {
         header: () => 'Is Default?',
@@ -459,7 +453,7 @@ const AIIntegrationTable = () => {
   return (
     <>
       <Table
-        data={data}
+        data={data.data}
         columns={columns}
         enableColumnResizing
         noDataElement={

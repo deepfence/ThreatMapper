@@ -1,25 +1,26 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { range } from 'lodash-es';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 import { cn } from 'tailwind-preset';
 import { Button, Dropdown, DropdownItem, Tooltip } from 'ui-components';
 
-import { getIntegrationApiClient } from '@/api/api';
+import { getGenerativeAIIntegraitonClient } from '@/api/api';
 import {
-  ModelAiIntegrationCloudPostureRequest,
-  ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum,
-  ModelAiIntegrationCloudPostureRequestRemediationFormatEnum,
-  ModelAiIntegrationKubernetesPostureRequest,
-  ModelAiIntegrationLinuxPostureRequest,
-  ModelAiIntegrationVulnerabilityRequest,
+  ModelGenerativeAiIntegrationCloudPostureRequest,
+  ModelGenerativeAiIntegrationCloudPostureRequestRemediationFormatEnum,
+  ModelGenerativeAiIntegrationKubernetesPostureRequest,
+  ModelGenerativeAiIntegrationLinuxPostureRequest,
+  ModelGenerativeAiIntegrationMalwareRequest,
+  ModelGenerativeAiIntegrationSecretRequest,
+  ModelGenerativeAiIntegrationVulnerabilityRequest,
 } from '@/api/generated';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { CheckIcon } from '@/components/icons/common/Check';
 import { InfoStandardIcon } from '@/components/icons/common/InfoStandard';
-import { OpenAIIcon } from '@/components/icons/integration/OpenAI';
 import { RemediationError } from '@/components/remediation/RemediationError';
 import { RemediationNoIntegration } from '@/components/remediation/RemediationNoIntegration';
 import { RemediationPre } from '@/components/remediation/RemediationPre';
@@ -28,34 +29,36 @@ import { apiWrapper } from '@/utils/api';
 
 const textDecoder = new TextDecoder('utf-8');
 
-const PROVIDER_MAP: Record<string, { icon: ReactNode }> = {
-  openai: {
-    icon: <OpenAIIcon />,
-  },
-};
-
 type RemediationRequestWithoutCommonTypes<T> = Omit<
   T,
-  'integration_type' | 'remediation_format'
+  'integration_id' | 'remediation_format'
 >;
 
 interface RemediationBlockProps {
   meta:
     | {
         type: 'postureCloud';
-        args: RemediationRequestWithoutCommonTypes<ModelAiIntegrationCloudPostureRequest>;
+        args: RemediationRequestWithoutCommonTypes<ModelGenerativeAiIntegrationCloudPostureRequest>;
       }
     | {
         type: 'postureLinux';
-        args: RemediationRequestWithoutCommonTypes<ModelAiIntegrationLinuxPostureRequest>;
+        args: RemediationRequestWithoutCommonTypes<ModelGenerativeAiIntegrationLinuxPostureRequest>;
       }
     | {
         type: 'postureKubernetes';
-        args: RemediationRequestWithoutCommonTypes<ModelAiIntegrationKubernetesPostureRequest>;
+        args: RemediationRequestWithoutCommonTypes<ModelGenerativeAiIntegrationKubernetesPostureRequest>;
       }
     | {
         type: 'cve';
-        args: RemediationRequestWithoutCommonTypes<ModelAiIntegrationVulnerabilityRequest>;
+        args: RemediationRequestWithoutCommonTypes<ModelGenerativeAiIntegrationVulnerabilityRequest>;
+      }
+    | {
+        type: 'secret';
+        args: RemediationRequestWithoutCommonTypes<ModelGenerativeAiIntegrationSecretRequest>;
+      }
+    | {
+        type: 'malware';
+        args: RemediationRequestWithoutCommonTypes<ModelGenerativeAiIntegrationMalwareRequest>;
       };
   onBackButtonClick?: () => void;
 }
@@ -64,19 +67,27 @@ interface RemediationCompletionProps {
   meta:
     | {
         type: 'postureCloud';
-        args: ModelAiIntegrationCloudPostureRequest;
+        args: ModelGenerativeAiIntegrationCloudPostureRequest;
       }
     | {
         type: 'postureLinux';
-        args: ModelAiIntegrationLinuxPostureRequest;
+        args: ModelGenerativeAiIntegrationLinuxPostureRequest;
       }
     | {
         type: 'postureKubernetes';
-        args: ModelAiIntegrationKubernetesPostureRequest;
+        args: ModelGenerativeAiIntegrationKubernetesPostureRequest;
       }
     | {
         type: 'cve';
-        args: ModelAiIntegrationVulnerabilityRequest;
+        args: ModelGenerativeAiIntegrationVulnerabilityRequest;
+      }
+    | {
+        type: 'secret';
+        args: ModelGenerativeAiIntegrationSecretRequest;
+      }
+    | {
+        type: 'malware';
+        args: ModelGenerativeAiIntegrationMalwareRequest;
       };
 }
 
@@ -85,29 +96,28 @@ export const RemediationBlock = ({ meta, onBackButtonClick }: RemediationBlockPr
     data: { data, message: errorMessage },
   } = useListAIIntegrations();
 
-  const [integrationType, setIntegrationType] = useState<string | undefined>(() => {
+  const [integrationId, setIntegrationId] = useState<number>(() => {
     const defaultIntegration =
       data.find((integration) => {
         return !!integration.default_integration;
       }) ?? data?.[0];
 
-    return defaultIntegration?.integration_type;
+    return defaultIntegration?.id ?? 0;
   });
 
   const [format, setFormat] =
-    useState<ModelAiIntegrationCloudPostureRequestRemediationFormatEnum>('all');
+    useState<ModelGenerativeAiIntegrationCloudPostureRequestRemediationFormatEnum>('all');
 
   const memoedMeta = useMemo(() => {
     return {
       ...meta,
       args: {
         ...meta.args,
-        integration_type:
-          integrationType as ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum,
+        integration_id: integrationId,
         remediation_format: format,
       },
     } as RemediationCompletionProps['meta'];
-  }, [integrationType, format]);
+  }, [integrationId, format]);
 
   if (errorMessage?.length) {
     return (
@@ -118,7 +128,7 @@ export const RemediationBlock = ({ meta, onBackButtonClick }: RemediationBlockPr
     );
   }
 
-  if (!data.length || !integrationType) {
+  if (!data.length || !integrationId) {
     return <RemediationNoIntegration onBackButtonClick={onBackButtonClick} />;
   }
 
@@ -138,25 +148,25 @@ export const RemediationBlock = ({ meta, onBackButtonClick }: RemediationBlockPr
                 <ArrowLine />
               </button>
             )}
-            {PROVIDER_MAP[integrationType] ? (
-              <div className="h-4 w-4">{PROVIDER_MAP[integrationType].icon}</div>
-            ) : null}{' '}
             <span>Remediations powered by </span>
             <Dropdown
               align="end"
+              triggerAsChild
               content={data.map((integration) => {
                 return (
                   <DropdownItem
                     key={integration.id}
                     onClick={() => {
-                      setIntegrationType(integration.integration_type);
+                      setIntegrationId(integration.id ?? 0);
                     }}
                   >
-                    {integrationType === integration.integration_type ? (
+                    {integrationId === integration.id ? (
                       <div className="h-4 w-4">
                         <CheckIcon />
                       </div>
-                    ) : null}
+                    ) : (
+                      <div className="h-4 w-4" />
+                    )}
                     {integration.label ?? integration.integration_type}
                   </DropdownItem>
                 );
@@ -164,8 +174,7 @@ export const RemediationBlock = ({ meta, onBackButtonClick }: RemediationBlockPr
             >
               <button type="button" className="text-p3 flex gap-1 items-center">
                 <span>
-                  {data.find((int) => int.integration_type === integrationType)?.label ??
-                    integrationType}
+                  {data.find((int) => int.id === integrationId)?.label ?? integrationId}
                 </span>
                 <div className="dark:text-accent-accent h-4 w-4">
                   <CaretDown />
@@ -249,6 +258,7 @@ export const RemediationBlock = ({ meta, onBackButtonClick }: RemediationBlockPr
 function useAIIntegration({ meta }: { meta: RemediationCompletionProps['meta'] }) {
   const mountedRef = useRef<string | null>(null);
   const [remediationMd, setRemediationMd] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     mountedRef.current = 'mounted';
@@ -260,8 +270,10 @@ function useAIIntegration({ meta }: { meta: RemediationCompletionProps['meta'] }
   useEffect(() => {
     let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
     const abortController = new AbortController();
+    setIsLoading(true);
     (async () => {
       const response = await getRemediation({ meta, signal: abortController.signal });
+      setIsLoading(false);
       if (!response.ok) {
         console.error(response.error);
         throw new Error('Response from ai integration is not ok');
@@ -302,10 +314,11 @@ function useAIIntegration({ meta }: { meta: RemediationCompletionProps['meta'] }
       abortController?.abort();
 
       setRemediationMd('');
+      setIsLoading(false);
     };
   }, [meta]);
 
-  return { remediationMd };
+  return { remediationMd, isLoading };
 }
 
 async function getRemediation({
@@ -317,11 +330,11 @@ async function getRemediation({
 }) {
   if (meta.type === 'postureCloud') {
     const request = apiWrapper({
-      fn: getIntegrationApiClient().aIIntegrationCloudPostureQuery,
+      fn: getGenerativeAIIntegraitonClient().generativeAiIntegrationCloudPostureQuery,
     });
     const response = await request(
       {
-        modelAiIntegrationCloudPostureRequest: meta.args,
+        modelGenerativeAiIntegrationCloudPostureRequest: meta.args,
       },
       {
         signal,
@@ -330,11 +343,11 @@ async function getRemediation({
     return response;
   } else if (meta.type === 'postureLinux') {
     const request = apiWrapper({
-      fn: getIntegrationApiClient().aiIntegrationLinuxPostureQuery,
+      fn: getGenerativeAIIntegraitonClient().generativeAiIntegrationLinuxPostureQuery,
     });
     const response = await request(
       {
-        modelAiIntegrationLinuxPostureRequest: meta.args,
+        modelGenerativeAiIntegrationLinuxPostureRequest: meta.args,
       },
       {
         signal,
@@ -343,11 +356,12 @@ async function getRemediation({
     return response;
   } else if (meta.type === 'postureKubernetes') {
     const request = apiWrapper({
-      fn: getIntegrationApiClient().aiIntegrationKubernetesPostureQuery,
+      fn: getGenerativeAIIntegraitonClient()
+        .generativeAiIntegrationKubernetesPostureQuery,
     });
     const response = await request(
       {
-        modelAiIntegrationKubernetesPostureRequest: meta.args,
+        modelGenerativeAiIntegrationKubernetesPostureRequest: meta.args,
       },
       {
         signal,
@@ -356,11 +370,37 @@ async function getRemediation({
     return response;
   } else if (meta.type === 'cve') {
     const request = apiWrapper({
-      fn: getIntegrationApiClient().aIIntegrationVulnerabilityQuery,
+      fn: getGenerativeAIIntegraitonClient().generativeAiIntegrationVulnerabilityQuery,
     });
     const response = await request(
       {
-        modelAiIntegrationVulnerabilityRequest: meta.args,
+        modelGenerativeAiIntegrationVulnerabilityRequest: meta.args,
+      },
+      {
+        signal,
+      },
+    );
+    return response;
+  } else if (meta.type === 'secret') {
+    const request = apiWrapper({
+      fn: getGenerativeAIIntegraitonClient().generativeAiIntegrationSecretQuery,
+    });
+    const response = await request(
+      {
+        modelGenerativeAiIntegrationSecretRequest: meta.args,
+      },
+      {
+        signal,
+      },
+    );
+    return response;
+  } else if (meta.type === 'malware') {
+    const request = apiWrapper({
+      fn: getGenerativeAIIntegraitonClient().generativeAiIntegrationMalwareQuery,
+    });
+    const response = await request(
+      {
+        modelGenerativeAiIntegrationMalwareRequest: meta.args,
       },
       {
         signal,
@@ -379,9 +419,11 @@ function useListAIIntegrations() {
 }
 
 function RemediationCompletion({ meta }: RemediationCompletionProps) {
-  const { remediationMd: markdownText } = useAIIntegration({
+  const { remediationMd: markdownText, isLoading } = useAIIntegration({
     meta,
   });
+
+  const loadingText = useThinkingText(isLoading);
 
   const markdownEndRef = useRef<HTMLDivElement>(null);
 
@@ -400,6 +442,7 @@ function RemediationCompletion({ meta }: RemediationCompletionProps) {
         'prose-invert max-w-none space-y-2',
         'prose-ol:list-decimal prose-ol:list-inside',
         'prose-ul:list-disc prose-ul:list-inside',
+        'prose-p:break-words',
         'prose-pre:mb-1 prose-pre:rounded-md dark:prose-pre:bg-slate-950',
         'prose-code:rounded-sm dark:prose-code:bg-slate-950 prose-code:px-1 prose-code:py-0.5',
         'dark:prose-a:text-text-link dark:prose-a:hover:underline dark:prose-a:focus:underline dark:prose-a:visited:text-purple-600 dark:prose-a:dark:visited:text-purple-500',
@@ -413,9 +456,35 @@ function RemediationCompletion({ meta }: RemediationCompletionProps) {
           pre: RemediationPre,
         }}
       >
-        {markdownText}
+        {isLoading ? loadingText : markdownText}
       </Markdown>
       <div ref={markdownEndRef}></div>
     </div>
   );
+}
+
+function useThinkingText(shouldAnimate: boolean) {
+  const [numDots, setNumDots] = useState(1);
+
+  useEffect(() => {
+    let intervalId: any;
+    if (shouldAnimate) {
+      intervalId = setInterval(() => {
+        setNumDots((prevDots) => {
+          if (prevDots === 3) {
+            return 1;
+          }
+          return prevDots + 1;
+        });
+      }, 300);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [shouldAnimate]);
+
+  return `Thinking${range(0, numDots)
+    .map(() => '.')
+    .join('')}`;
 }

@@ -16,55 +16,55 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelAiIntegrationCloudPostureRequest
+ * @interface ModelGenerativeAiIntegrationCloudPostureRequest
  */
-export interface ModelAiIntegrationCloudPostureRequest {
+export interface ModelGenerativeAiIntegrationCloudPostureRequest {
     /**
      * 
      * @type {string}
-     * @memberof ModelAiIntegrationCloudPostureRequest
+     * @memberof ModelGenerativeAiIntegrationCloudPostureRequest
      */
     cloud_provider: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelAiIntegrationCloudPostureRequest
+     * @memberof ModelGenerativeAiIntegrationCloudPostureRequest
      */
     compliance_check_type: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelAiIntegrationCloudPostureRequest
+     * @memberof ModelGenerativeAiIntegrationCloudPostureRequest
      */
     group?: string;
     /**
      * 
-     * @type {string}
-     * @memberof ModelAiIntegrationCloudPostureRequest
+     * @type {number}
+     * @memberof ModelGenerativeAiIntegrationCloudPostureRequest
      */
-    integration_type?: ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum;
+    integration_id?: number;
     /**
      * 
      * @type {string}
-     * @memberof ModelAiIntegrationCloudPostureRequest
+     * @memberof ModelGenerativeAiIntegrationCloudPostureRequest
      */
-    query_type: ModelAiIntegrationCloudPostureRequestQueryTypeEnum;
+    query_type: ModelGenerativeAiIntegrationCloudPostureRequestQueryTypeEnum;
     /**
      * 
      * @type {string}
-     * @memberof ModelAiIntegrationCloudPostureRequest
+     * @memberof ModelGenerativeAiIntegrationCloudPostureRequest
      */
-    remediation_format: ModelAiIntegrationCloudPostureRequestRemediationFormatEnum;
+    remediation_format: ModelGenerativeAiIntegrationCloudPostureRequestRemediationFormatEnum;
     /**
      * 
      * @type {string}
-     * @memberof ModelAiIntegrationCloudPostureRequest
+     * @memberof ModelGenerativeAiIntegrationCloudPostureRequest
      */
     service?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelAiIntegrationCloudPostureRequest
+     * @memberof ModelGenerativeAiIntegrationCloudPostureRequest
      */
     title: string;
 }
@@ -73,35 +73,27 @@ export interface ModelAiIntegrationCloudPostureRequest {
 /**
  * @export
  */
-export const ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum = {
-    Openai: 'openai'
-} as const;
-export type ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum = typeof ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum[keyof typeof ModelAiIntegrationCloudPostureRequestIntegrationTypeEnum];
-
-/**
- * @export
- */
-export const ModelAiIntegrationCloudPostureRequestQueryTypeEnum = {
+export const ModelGenerativeAiIntegrationCloudPostureRequestQueryTypeEnum = {
     Remediation: 'remediation'
 } as const;
-export type ModelAiIntegrationCloudPostureRequestQueryTypeEnum = typeof ModelAiIntegrationCloudPostureRequestQueryTypeEnum[keyof typeof ModelAiIntegrationCloudPostureRequestQueryTypeEnum];
+export type ModelGenerativeAiIntegrationCloudPostureRequestQueryTypeEnum = typeof ModelGenerativeAiIntegrationCloudPostureRequestQueryTypeEnum[keyof typeof ModelGenerativeAiIntegrationCloudPostureRequestQueryTypeEnum];
 
 /**
  * @export
  */
-export const ModelAiIntegrationCloudPostureRequestRemediationFormatEnum = {
+export const ModelGenerativeAiIntegrationCloudPostureRequestRemediationFormatEnum = {
     All: 'all',
     Cli: 'cli',
     Pulumi: 'pulumi',
     Terraform: 'terraform'
 } as const;
-export type ModelAiIntegrationCloudPostureRequestRemediationFormatEnum = typeof ModelAiIntegrationCloudPostureRequestRemediationFormatEnum[keyof typeof ModelAiIntegrationCloudPostureRequestRemediationFormatEnum];
+export type ModelGenerativeAiIntegrationCloudPostureRequestRemediationFormatEnum = typeof ModelGenerativeAiIntegrationCloudPostureRequestRemediationFormatEnum[keyof typeof ModelGenerativeAiIntegrationCloudPostureRequestRemediationFormatEnum];
 
 
 /**
- * Check if a given object implements the ModelAiIntegrationCloudPostureRequest interface.
+ * Check if a given object implements the ModelGenerativeAiIntegrationCloudPostureRequest interface.
  */
-export function instanceOfModelAiIntegrationCloudPostureRequest(value: object): boolean {
+export function instanceOfModelGenerativeAiIntegrationCloudPostureRequest(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "cloud_provider" in value;
     isInstance = isInstance && "compliance_check_type" in value;
@@ -112,11 +104,11 @@ export function instanceOfModelAiIntegrationCloudPostureRequest(value: object): 
     return isInstance;
 }
 
-export function ModelAiIntegrationCloudPostureRequestFromJSON(json: any): ModelAiIntegrationCloudPostureRequest {
-    return ModelAiIntegrationCloudPostureRequestFromJSONTyped(json, false);
+export function ModelGenerativeAiIntegrationCloudPostureRequestFromJSON(json: any): ModelGenerativeAiIntegrationCloudPostureRequest {
+    return ModelGenerativeAiIntegrationCloudPostureRequestFromJSONTyped(json, false);
 }
 
-export function ModelAiIntegrationCloudPostureRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAiIntegrationCloudPostureRequest {
+export function ModelGenerativeAiIntegrationCloudPostureRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelGenerativeAiIntegrationCloudPostureRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -125,7 +117,7 @@ export function ModelAiIntegrationCloudPostureRequestFromJSONTyped(json: any, ig
         'cloud_provider': json['cloud_provider'],
         'compliance_check_type': json['compliance_check_type'],
         'group': !exists(json, 'group') ? undefined : json['group'],
-        'integration_type': !exists(json, 'integration_type') ? undefined : json['integration_type'],
+        'integration_id': !exists(json, 'integration_id') ? undefined : json['integration_id'],
         'query_type': json['query_type'],
         'remediation_format': json['remediation_format'],
         'service': !exists(json, 'service') ? undefined : json['service'],
@@ -133,7 +125,7 @@ export function ModelAiIntegrationCloudPostureRequestFromJSONTyped(json: any, ig
     };
 }
 
-export function ModelAiIntegrationCloudPostureRequestToJSON(value?: ModelAiIntegrationCloudPostureRequest | null): any {
+export function ModelGenerativeAiIntegrationCloudPostureRequestToJSON(value?: ModelGenerativeAiIntegrationCloudPostureRequest | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -145,7 +137,7 @@ export function ModelAiIntegrationCloudPostureRequestToJSON(value?: ModelAiInteg
         'cloud_provider': value.cloud_provider,
         'compliance_check_type': value.compliance_check_type,
         'group': value.group,
-        'integration_type': value.integration_type,
+        'integration_id': value.integration_id,
         'query_type': value.query_type,
         'remediation_format': value.remediation_format,
         'service': value.service,

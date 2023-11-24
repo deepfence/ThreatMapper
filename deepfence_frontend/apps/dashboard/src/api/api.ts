@@ -12,6 +12,7 @@ import {
   ControlsApi,
   DiagnosisApi,
   DiffAddApi,
+  GenerativeAIApi,
   IntegrationApi,
   LookupApi,
   MalwareScanApi,
@@ -303,18 +304,37 @@ export function getIntegrationApiClient() {
     addIntegration: integrationApi.addIntegration.bind(integrationApi),
     listIntegration: integrationApi.listIntegration.bind(integrationApi),
     deleteIntegration: integrationApi.deleteIntegration.bind(integrationApi),
-    aIIntegrationCloudPostureQuery:
-      integrationApi.aiIntegrationCloudPostureQueryRaw.bind(integrationApi),
-    aIIntegrationVulnerabilityQuery:
-      integrationApi.aiIntegrationVulnerabilityQueryRaw.bind(integrationApi),
-    aiIntegrationLinuxPostureQuery:
-      integrationApi.aiIntegrationLinuxPostureQueryRaw.bind(integrationApi),
-    aiIntegrationKubernetesPostureQuery:
-      integrationApi.aiIntegrationKubernetesPostureQueryRaw.bind(integrationApi),
-    listAIIntegration: integrationApi.listAiIntegration.bind(integrationApi),
-    addAIIntegration: integrationApi.addAiIntegration.bind(integrationApi),
-    deleteAIIntegration: integrationApi.deleteAiIntegration.bind(integrationApi),
-    setDefaultAIIntegration: integrationApi.setDefaultAiIntegration.bind(integrationApi),
+  };
+}
+
+export function getGenerativeAIIntegraitonClient() {
+  const generativeAiApi = new GenerativeAIApi(configuration);
+
+  return {
+    generativeAiIntegrationCloudPostureQuery:
+      generativeAiApi.generativeAiIntegrationCloudPostureQueryRaw.bind(generativeAiApi),
+    generativeAiIntegrationVulnerabilityQuery:
+      generativeAiApi.generativeAiIntegrationVulnerabilityQueryRaw.bind(generativeAiApi),
+    generativeAiIntegrationLinuxPostureQuery:
+      generativeAiApi.generativeAiIntegrationLinuxPostureQueryRaw.bind(generativeAiApi),
+    generativeAiIntegrationKubernetesPostureQuery:
+      generativeAiApi.generativeAiIntegrationKubernetesPostureQueryRaw.bind(
+        generativeAiApi,
+      ),
+    generativeAiIntegrationSecretQuery:
+      generativeAiApi.generativeAiIntegrationSecretQueryRaw.bind(generativeAiApi),
+    generativeAiIntegrationMalwareQuery:
+      generativeAiApi.generativeAiIntegrationMalwareQueryRaw.bind(generativeAiApi),
+    listGenerativeAiIntegration:
+      generativeAiApi.listGenerativeAiIntegration.bind(generativeAiApi),
+    addGenerativeAiIntegrationOpenAI:
+      generativeAiApi.addGenerativeAiIntegrationOpenAI.bind(generativeAiApi),
+    addGenerativeAiIntegrationBedrock:
+      generativeAiApi.addGenerativeAiIntegrationBedrock.bind(generativeAiApi),
+    deleteGenerativeAiIntegration:
+      generativeAiApi.deleteGenerativeAiIntegration.bind(generativeAiApi),
+    setDefaultGenerativeAiIntegration:
+      generativeAiApi.setDefaultGenerativeAiIntegration.bind(generativeAiApi),
   };
 }
 

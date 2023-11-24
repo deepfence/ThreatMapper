@@ -2,9 +2,11 @@ import { createQueryKeys } from '@lukemorales/query-key-factory';
 
 import {
   getCommonApiClient,
+  getGenerativeAIIntegraitonClient,
   getIntegrationApiClient,
   getReportsApiClient,
 } from '@/api/api';
+import { ModelGenerativeAiIntegrationListResponse } from '@/api/generated';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
@@ -74,23 +76,28 @@ export const integrationQueries = createQueryKeys('integration', {
   listAIIntegrations: () => {
     return {
       queryKey: ['listAIIntegrations'],
-      queryFn: async () => {
-        const listAIIntegration = apiWrapper({
-          fn: getIntegrationApiClient().listAIIntegration,
+      queryFn: async (): Promise<{
+        message?: string;
+        data: ModelGenerativeAiIntegrationListResponse[];
+      }> => {
+        const listGenerativeAiIntegration = apiWrapper({
+          fn: getGenerativeAIIntegraitonClient().listGenerativeAiIntegration,
         });
-        const listAIIntegrationResponse = await listAIIntegration();
-        if (!listAIIntegrationResponse.ok) {
-          if (listAIIntegrationResponse.error.response.status === 403) {
-            const message = await get403Message(listAIIntegrationResponse.error);
+        const listGenerativeAiIntegrationResponse = await listGenerativeAiIntegration();
+        if (!listGenerativeAiIntegrationResponse.ok) {
+          if (listGenerativeAiIntegrationResponse.error.response.status === 403) {
+            const message = await get403Message(
+              listGenerativeAiIntegrationResponse.error,
+            );
             return {
               message,
               data: [],
             };
           }
-          throw listAIIntegrationResponse.error;
+          throw listGenerativeAiIntegrationResponse.error;
         }
         return {
-          data: listAIIntegrationResponse.value,
+          data: listGenerativeAiIntegrationResponse.value,
         };
       },
     };
