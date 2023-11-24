@@ -17,13 +17,13 @@ import (
 
 func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgId int32) error {
 	// set registry account syncing
-	err := setRegistryAccountSyncing(ctx, true, r)
+	err := SetRegistryAccountSyncing(ctx, true, r)
 	if err != nil {
 		return err
 	}
 
 	defer func() {
-		err := setRegistryAccountSyncing(ctx, false, r)
+		err := SetRegistryAccountSyncing(ctx, false, r)
 		if err != nil {
 			log.Error().Msgf("failed to set registry account syncing to false, err: %v", err)
 		}
@@ -145,7 +145,7 @@ func convertStructFieldToJSONString(bb map[string]interface{}, key string) map[s
 	return bb
 }
 
-func setRegistryAccountSyncing(ctx context.Context, syncing bool, r registry.Registry) error {
+func SetRegistryAccountSyncing(ctx context.Context, syncing bool, r registry.Registry) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
