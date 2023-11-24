@@ -16,60 +16,60 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelAddAiIntegrationRequest
+ * @interface ModelAddGenerativeAiOpenAIIntegration
  */
-export interface ModelAddAiIntegrationRequest {
+export interface ModelAddGenerativeAiOpenAIIntegration {
     /**
      * 
      * @type {string}
-     * @memberof ModelAddAiIntegrationRequest
+     * @memberof ModelAddGenerativeAiOpenAIIntegration
      */
     api_key: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelAddAiIntegrationRequest
+     * @memberof ModelAddGenerativeAiOpenAIIntegration
      */
-    integration_type: ModelAddAiIntegrationRequestIntegrationTypeEnum;
+    model_id: ModelAddGenerativeAiOpenAIIntegrationModelIdEnum;
 }
 
 
 /**
  * @export
  */
-export const ModelAddAiIntegrationRequestIntegrationTypeEnum = {
-    Openai: 'openai'
+export const ModelAddGenerativeAiOpenAIIntegrationModelIdEnum = {
+    Gpt4: 'gpt-4'
 } as const;
-export type ModelAddAiIntegrationRequestIntegrationTypeEnum = typeof ModelAddAiIntegrationRequestIntegrationTypeEnum[keyof typeof ModelAddAiIntegrationRequestIntegrationTypeEnum];
+export type ModelAddGenerativeAiOpenAIIntegrationModelIdEnum = typeof ModelAddGenerativeAiOpenAIIntegrationModelIdEnum[keyof typeof ModelAddGenerativeAiOpenAIIntegrationModelIdEnum];
 
 
 /**
- * Check if a given object implements the ModelAddAiIntegrationRequest interface.
+ * Check if a given object implements the ModelAddGenerativeAiOpenAIIntegration interface.
  */
-export function instanceOfModelAddAiIntegrationRequest(value: object): boolean {
+export function instanceOfModelAddGenerativeAiOpenAIIntegration(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "api_key" in value;
-    isInstance = isInstance && "integration_type" in value;
+    isInstance = isInstance && "model_id" in value;
 
     return isInstance;
 }
 
-export function ModelAddAiIntegrationRequestFromJSON(json: any): ModelAddAiIntegrationRequest {
-    return ModelAddAiIntegrationRequestFromJSONTyped(json, false);
+export function ModelAddGenerativeAiOpenAIIntegrationFromJSON(json: any): ModelAddGenerativeAiOpenAIIntegration {
+    return ModelAddGenerativeAiOpenAIIntegrationFromJSONTyped(json, false);
 }
 
-export function ModelAddAiIntegrationRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAddAiIntegrationRequest {
+export function ModelAddGenerativeAiOpenAIIntegrationFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAddGenerativeAiOpenAIIntegration {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
         'api_key': json['api_key'],
-        'integration_type': json['integration_type'],
+        'model_id': json['model_id'],
     };
 }
 
-export function ModelAddAiIntegrationRequestToJSON(value?: ModelAddAiIntegrationRequest | null): any {
+export function ModelAddGenerativeAiOpenAIIntegrationToJSON(value?: ModelAddGenerativeAiOpenAIIntegration | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -79,7 +79,7 @@ export function ModelAddAiIntegrationRequestToJSON(value?: ModelAddAiIntegration
     return {
         
         'api_key': value.api_key,
-        'integration_type': value.integration_type,
+        'model_id': value.model_id,
     };
 }
 

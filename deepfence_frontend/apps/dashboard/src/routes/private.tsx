@@ -305,7 +305,7 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'integrations/gen-ai',
         ...aiIntegrationList,
-        meta: { title: 'Gen AI Integrations' },
+        meta: { title: 'ThreatRx - Generative AI Integrations' },
         children: [
           {
             path: 'add',

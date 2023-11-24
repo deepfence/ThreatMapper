@@ -40,10 +40,8 @@ const timeFormatKey = {
   updated_at: 'updated_at',
 };
 const Header = ({
-  isRemediationOpen,
   setIsRemediationOpen,
 }: {
-  isRemediationOpen: boolean;
   setIsRemediationOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const {
@@ -55,13 +53,21 @@ const Header = ({
   return (
     <SlidingModalHeader>
       <div className="pt-5 px-5 dark:bg-[linear-gradient(to_bottom,_#15253e_96px,_transparent_0)]">
-        <div className="flex items-center gap-2 dark:text-text-text-and-icon">
+        <div className="flex items-center gap-2 dark:text-text-text-and-icon pr-8">
           <div className="h-4 w-4 shrink-0">
             <PostureIcon />
           </div>
-          <h3 className="text-h3 grow-0 overflow-hidden pr-5">
+          <h3 className="text-h3 grow-0 overflow-hidden">
             <TruncatedText text={data?.test_number ?? '-'} />
           </h3>
+          <RemediationButton
+            className="ml-auto"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              setIsRemediationOpen((prevOpen) => !prevOpen);
+            }}
+          />
         </div>
         <div className="py-[18px] flex justify-between">
           <div className="ml-[10px]">
@@ -83,17 +89,6 @@ const Header = ({
             >
               {isCopied ? 'Copied JSON' : 'Copy JSON'}
             </Button>
-            <RemediationButton
-              className="ml-auto"
-              active={isRemediationOpen}
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                setIsRemediationOpen((prevOpen) => !prevOpen);
-              }}
-            >
-              Redmediation
-            </RemediationButton>
           </div>
         </div>
       </div>
@@ -137,7 +132,13 @@ const CopyField = ({ value }: { value: string }) => {
   );
 };
 
-const DetailsComponent = ({ isRemediationOpen }: { isRemediationOpen: boolean }) => {
+const DetailsComponent = ({
+  isRemediationOpen,
+  setIsRemediationOpen,
+}: {
+  isRemediationOpen: boolean;
+  setIsRemediationOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   const {
     data: { data: postures },
   } = useGetComplianceDetails();
@@ -188,6 +189,9 @@ const DetailsComponent = ({ isRemediationOpen }: { isRemediationOpen: boolean })
                   },
                 }
           }
+          onBackButtonClick={() => {
+            setIsRemediationOpen(false);
+          }}
         />
       </Suspense>
     );
@@ -302,13 +306,13 @@ const PostureDetailModals = () => {
           </SlidingModalContent>
         }
       >
-        <Header
-          isRemediationOpen={isRemediationOpen}
-          setIsRemediationOpen={setIsRemediationOpen}
-        />
+        <Header setIsRemediationOpen={setIsRemediationOpen} />
         <SlidingModalContent>
           <div className="h-full">
-            <DetailsComponent isRemediationOpen={isRemediationOpen} />
+            <DetailsComponent
+              isRemediationOpen={isRemediationOpen}
+              setIsRemediationOpen={setIsRemediationOpen}
+            />
           </div>
         </SlidingModalContent>
       </Suspense>

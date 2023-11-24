@@ -1,11 +1,20 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { ReactNode, Suspense } from 'react';
 import { cn } from 'tailwind-preset';
-import { Breadcrumb, BreadcrumbLink, Button, Card, Separator } from 'ui-components';
+import {
+  Breadcrumb,
+  BreadcrumbLink,
+  Button,
+  Card,
+  Separator,
+  Tooltip,
+} from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { InfoStandardIcon } from '@/components/icons/common/InfoStandard';
 import { SparkleLineIcon } from '@/components/icons/common/SparkleLine';
+import { BedrockIcon } from '@/components/icons/integration/Bedrock';
 import { DownloadReportIcon } from '@/components/icons/integration/DownloadReport';
 import { ElasticsearchIcon } from '@/components/icons/integration/Elasticsearch';
 import { EmailIcon } from '@/components/icons/integration/Email';
@@ -24,14 +33,15 @@ import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations
 import { IntegrationType } from '@/features/integrations/components/IntegrationForm';
 import { useGetReports } from '@/features/integrations/pages/DownloadReport';
 import { queries } from '@/queries';
+import { GenerativeAIIntegrationType } from '@/types/common';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 import { useListIntegrations } from './IntegrationAdd';
 
-export const integrationTypeToNameMapping: { [key: string]: string } = {
+export const integrationTypeToNameMapping: Record<string, string> = {
   slack: 'Slack',
   teams: 'Microsoft Teams',
-  pagerduty: 'Pager Duty',
+  pagerduty: 'PagerDuty',
   http_endpoint: 'HTTP Endpoint',
   jira: 'Jira',
   s3: 'S3',
@@ -43,17 +53,17 @@ export const integrationTypeToNameMapping: { [key: string]: string } = {
   email: 'Email',
 };
 
-type Type = {
+interface Type {
   name: string;
   id: string;
   icon: JSX.Element;
   path: string;
-};
+}
 
-type IIntegrationType = {
+interface IIntegrationType {
   name: string;
   types: Type[];
-};
+}
 
 const IntegrationsData = [
   {
@@ -150,11 +160,22 @@ const IntegrationsData = [
   },
 ];
 
-const AIIntegrationsData: Record<string, { icon: ReactNode }> = {
-  openai: {
+const AI_INTEGRATION_TYPES: Array<{
+  type: GenerativeAIIntegrationType;
+  label: string;
+  icon: ReactNode;
+}> = [
+  {
+    type: 'openai',
+    label: 'OpenAI',
     icon: <OpenAIIcon />,
   },
-};
+  {
+    type: 'amazon-bedrock',
+    label: 'Amazon Bedrock',
+    icon: <BedrockIcon />,
+  },
+];
 
 const Count = ({
   type,
@@ -166,7 +187,7 @@ const Count = ({
   const len = data?.filter((integration) => integration.integration_type === type.id)
     .length;
   return (
-    <div className="flex items-center gap-x-2 mt-2">
+    <div className="flex items-center gap-x-2 mt-1">
       <span className="text-h1 dark:text-text-input-value">{len}</span>
       <span className="text-p4 dark:text-text-text-and-icon">
         {`Connection${len && len > 1 ? 's' : ''}`}
@@ -183,8 +204,7 @@ const CardContent = ({
 }) => {
   return (
     <div className="flex flex-col">
-      <h4 className="text-t4 uppercase dark:text-text-input-value">{type.name}</h4>
-
+      <h4 className="text-h6 dark:text-text-input-value">{type.name}</h4>
       <Count type={type} data={data} />
     </div>
   );
@@ -201,7 +221,7 @@ const IntegrationTypes = ({ integration }: { integration: IIntegrationType }) =>
         return (
           <DFLink to={type.path} unstyled key={type.name}>
             <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-bg-hover-3 dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:ring-1 cursor-pointer">
-              <div className="flex items-center gap-x-6">
+              <div className="flex items-center gap-x-4">
                 <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
                   <span className="h-9 w-9">{type.icon}</span>
                 </div>
@@ -251,12 +271,11 @@ const Integrations = () => {
         </Breadcrumb>
       </div>
       <div className="m-4 gap-y-6 flex flex-col">
+        <ThreatRx />
         {IntegrationsData.map((integration, index) => {
           return (
             <section key={integration.name} className="flex flex-col">
-              <h2 className="uppercase text-t3 dark:text-text-input-value">
-                {integration.name}
-              </h2>
+              <h2 className="text-t3 dark:text-text-input-value">{integration.name}</h2>
               <Suspense
                 fallback={<Skeleton count={IntegrationsData[index].types.length} />}
               >
@@ -265,7 +284,6 @@ const Integrations = () => {
             </section>
           );
         })}
-        <GenerativeAI />
         <Separator className="dark:bg-bg-grid-border h-px w-full mt-1" />
         <DownloadReport />
       </div>
@@ -291,7 +309,7 @@ const DownloadReport = () => {
 
   return (
     <div>
-      <h2 className="uppercase text-t3 dark:text-text-input-value">Download reports</h2>
+      <h2 className="text-t3 dark:text-text-input-value">Download reports</h2>
       <div className="mt-2 flex gap-x-4 items-center">
         <div className="flex flex-col w-fit min-w-[208px]">
           <DFLink to={'/integrations/download/report'} className="h-[84px]" unstyled>
@@ -354,33 +372,39 @@ function useListAIIntegrations() {
 }
 
 const AIIntegrations = () => {
-  const { data } = useListAIIntegrations();
+  const {
+    data: { data, message },
+  } = useListAIIntegrations();
 
-  const sortedAIIntegrations = [...data].sort((a, b) =>
-    (a.label ?? '').localeCompare(b.label ?? ''),
-  );
+  if (message && message.length) {
+    return <p className="text-p7 dark:text-status-error">{message}</p>;
+  }
+
+  const groupedData = data.reduce<Record<string, number>>((prev, current) => {
+    if (!prev[current.integration_type ?? '']) {
+      prev[current.integration_type ?? ''] = 1;
+    } else {
+      prev[current.integration_type ?? ''] += 1;
+    }
+    return prev;
+  }, {});
 
   return (
     <div className="mt-2 flex flex-wrap gap-4">
-      {sortedAIIntegrations.map((type) => {
+      {AI_INTEGRATION_TYPES.map((type) => {
+        const count = groupedData[type.type] ?? 0;
         return (
-          <DFLink to="/integrations/gen-ai" unstyled key={type.integration_type}>
+          <DFLink to="/integrations/gen-ai" unstyled key={type.type}>
             <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-bg-hover-3 dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:ring-1 cursor-pointer">
               <div className="flex items-center gap-x-6">
                 <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
-                  <span className="h-9 w-9">
-                    {AIIntegrationsData[type.integration_type ?? '']?.icon ?? (
-                      <SparkleLineIcon />
-                    )}
-                  </span>
+                  <span className="h-9 w-9">{type.icon}</span>
                 </div>
                 <div className="flex flex-col">
-                  <h4 className="text-t4 uppercase dark:text-text-input-value">
-                    {type.label}
-                  </h4>
+                  <h4 className="text-h6 dark:text-text-input-value">{type.label}</h4>
 
                   <div className="flex items-center gap-x-2 mt-2">
-                    <span className="text-h1 dark:text-text-input-value">1</span>
+                    <span className="text-h1 dark:text-text-input-value">{count}</span>
                     <span className="text-p4 dark:text-text-text-and-icon">
                       {`Connection`}
                     </span>
@@ -395,11 +419,21 @@ const AIIntegrations = () => {
   );
 };
 
-const GenerativeAI = () => {
+const ThreatRx = () => {
   return (
     <section className="flex flex-col">
-      <h2 className="uppercase text-t3 dark:text-text-input-value">Gnerative AI</h2>
-      <Suspense fallback={<Skeleton count={1} />}>
+      <h2 className="flex items-center gap-2 text-h5 animate-text-gradient text-transparent bg-gradient-to-r from-pink-400 via-orange-400 to-fuchsia-300 bg-clip-text">
+        <div className="h-4 w-4 dark:text-orange-400">
+          <SparkleLineIcon />
+        </div>
+        ThreatRx
+        <Tooltip placement="right" content="Remediations powered by Generative AI">
+          <div className="h-4 w-4 text-text-text-and-icon">
+            <InfoStandardIcon />
+          </div>
+        </Tooltip>
+      </h2>
+      <Suspense fallback={<Skeleton count={2} />}>
         <AIIntegrations />
       </Suspense>
     </section>
