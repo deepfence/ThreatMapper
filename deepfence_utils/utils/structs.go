@@ -71,10 +71,11 @@ type MalwareScanParameters struct {
 }
 
 type ReportParams struct {
-	ReportID   string        `json:"report_id"`
-	ReportType string        `json:"report_type"`
-	Duration   int           `json:"duration"`
-	Filters    ReportFilters `json:"filters"`
+	ReportID     string        `json:"report_id"`
+	ReportType   string        `json:"report_type"`
+	Duration     int           `json:"duration"`
+	Filters      ReportFilters `json:"filters"`
+	CustomFields []string      `json:"custom_fields"`
 }
 
 type ReportFilters struct {

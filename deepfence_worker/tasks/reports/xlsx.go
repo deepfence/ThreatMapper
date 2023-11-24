@@ -3,6 +3,7 @@ package reports
 import (
 	"context"
 	"os"
+	"reflect"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -73,6 +74,20 @@ var (
 	}
 )
 
+func customFieldsToMap(customFields []string) map[string]string {
+	result := make(map[string]string)
+
+	for i, field := range customFields {
+		// Convert index to corresponding column letter
+		colLetter := string(rune('A' + i))
+
+		// Create map entry with the column letter as key and field as value
+		result[colLetter+"1"] = field
+	}
+
+	return result
+}
+
 func generateXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
 
 	var (
@@ -127,6 +142,45 @@ func xlsxSetHeader(xlsx *excelize.File, sheet string, headers map[string]string)
 	}
 }
 
+func getMatchingValues(v interface{}, scanInfo interface{}, customFields []string) ([]interface{}, error) {
+	var matchingValues []interface{}
+
+	vValue := reflect.ValueOf(v)
+	scanInfoValue := reflect.ValueOf(scanInfo)
+
+	for _, field := range customFields {
+		// Get field values using reflection and JSON tags
+		vFieldValue := getFieldByJSONTag(vValue, field)
+		scanInfoFieldValue := getFieldByJSONTag(scanInfoValue, field)
+
+		// Check which field has valid value
+		if vFieldValue.IsValid() && !vFieldValue.IsZero() {
+			matchingValues = append(matchingValues, vFieldValue.Interface())
+			continue
+		}
+
+		if scanInfoFieldValue.IsValid() && !scanInfoFieldValue.IsZero() {
+			matchingValues = append(matchingValues, scanInfoFieldValue.Interface())
+			continue
+		}
+	}
+
+	return matchingValues, nil
+}
+
+// getFieldByJSONTag retrieves a field value by its JSON tag
+func getFieldByJSONTag(value reflect.Value, jsonTag string) reflect.Value {
+	for i := 0; i < value.NumField(); i++ {
+		field := value.Type().Field(i)
+		tag := field.Tag.Get("json")
+
+		if tag == jsonTag {
+			return value.Field(i)
+		}
+	}
+	return reflect.Value{}
+}
+
 func vulnerabilityXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
 	data, err := getVulnerabilityData(ctx, params)
 	if err != nil {
@@ -141,6 +195,12 @@ func vulnerabilityXLSX(ctx context.Context, params utils.ReportParams) (string, 
 		}
 	}()
 
+	if len(params.CustomFields) > 0 {
+		// make vulnerabilityHeader according to custom fields
+		vulnerabilityHeader = customFieldsToMap(params.CustomFields)
+	}
+	log.Info().Msgf("vulnerabilityHeader: %+v", vulnerabilityHeader)
+
 	xlsxSetHeader(xlsx, "Sheet1", vulnerabilityHeader)
 
 	offset := 0
@@ -151,24 +211,32 @@ func vulnerabilityXLSX(ctx context.Context, params utils.ReportParams) (string, 
 			if err != nil {
 				log.Error().Err(err).Msg("error generating cell name")
 			}
-			value := []interface{}{
-				updatedAt,
-				v.Cve_attack_vector,
-				v.Cve_caused_by_package,
-				nodeScanData.ScanInfo.NodeName,
-				nodeScanData.ScanInfo.ScanID,
-				nodeScanData.ScanInfo.NodeID,
-				v.Cve_cvss_score,
-				v.Cve_description,
-				v.Cve_fixed_in,
-				v.Cve_id,
-				v.Cve_link,
-				v.Cve_severity,
-				v.Cve_overall_score,
-				v.Cve_type,
-				nodeScanData.ScanInfo.HostName,
-				nodeScanData.ScanInfo.CloudAccountID,
-				v.Masked,
+			var value []interface{}
+			if len(params.CustomFields) > 0 {
+				value, err = getMatchingValues(v, nodeScanData.ScanInfo, params.CustomFields)
+				if err != nil {
+					log.Error().Err(err).Msg("error getting matching values")
+				}
+			} else {
+				value = []interface{}{
+					updatedAt,
+					v.Cve_attack_vector,
+					v.Cve_caused_by_package,
+					nodeScanData.ScanInfo.NodeName,
+					nodeScanData.ScanInfo.ScanID,
+					nodeScanData.ScanInfo.NodeID,
+					v.Cve_cvss_score,
+					v.Cve_description,
+					v.Cve_fixed_in,
+					v.Cve_id,
+					v.Cve_link,
+					v.Cve_severity,
+					v.Cve_overall_score,
+					v.Cve_type,
+					nodeScanData.ScanInfo.HostName,
+					nodeScanData.ScanInfo.CloudAccountID,
+					v.Masked,
+				}
 			}
 			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
 			if err != nil {
