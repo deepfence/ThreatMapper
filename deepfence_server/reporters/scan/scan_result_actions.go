@@ -65,44 +65,56 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	switch req.MaskAction {
 	case utils.MASK_GLOBAL:
 		nodeTag := utils.ScanTypeDetectedNode[utils.Neo4jScanType(req.ScanType)]
-		_, err = tx.Run(`
-        MATCH (o:`+nodeTag+`) -[:IS]-> (r)
+		globalQuery := `
+        MATCH (o:` + nodeTag + `) -[:IS]-> (r)
         WHERE o.node_id IN $node_ids
-        MATCH (n:`+nodeTag+`) -[:IS]-> (r)
+        MATCH (n:` + nodeTag + `) -[:IS]-> (r)
         MATCH (s) - [d:DETECTED] -> (n)
         SET r.masked = $value, n.masked = $value, d.masked = $value
         WITH s, n
         MATCH (s) -[:SCANNED] ->(e)
         MATCH (c:ContainerImage{node_id: e.docker_image_id}) -[:ALIAS] ->(t)
         MERGE (t) -[m:MASKED]->(n)
-        SET m.masked = $value`,
-			map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
+        SET m.masked = $value`
+
+		log.Debug().Msgf("mask_global query: %s", globalQuery)
+
+		_, err = tx.Run(globalQuery, map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
 
 	case utils.MASK_ALL_IMAGE_TAG, utils.MASK_ENTITY:
-		_, err = tx.Run(`
-        MATCH (s:`+string(req.ScanType)+`) - [d:DETECTED] -> (n)
+		entityQuery := `
+        MATCH (s:` + string(req.ScanType) + `) - [d:DETECTED] -> (n)
         WHERE n.node_id IN $node_ids
-        SET n.masked = $value, d.masked = $value`,
-			map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
+        SET n.masked = $value, d.masked = $value`
+
+		log.Debug().Msgf("mask_entity/mask_all_image_tag query: %s", entityQuery)
+
+		_, err = tx.Run(entityQuery, map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
 
 	case utils.MASK_IMAGE_TAG:
-		_, err = tx.Run(`
-        MATCH (s:`+string(req.ScanType)+`) -[d:DETECTED] -> (n)
+		maskImageTagQuery := `
+        MATCH (s:` + string(req.ScanType) + `) -[d:DETECTED] -> (n)
         WHERE n.node_id IN $node_ids AND s.node_id=$scan_id
         MATCH (s) -[:SCANNED] ->(e)
         MATCH (c:ContainerImage{node_id: e.docker_image_id}) -[:ALIAS] ->(t)
         MERGE (t) -[m:MASKED]->(n)
-        SET m.masked = $value, d.masked = $value`,
-			map[string]interface{}{"node_ids": req.ResultIDs, "value": value,
-				"scan_id": req.ScanID})
+        SET m.masked = $value, d.masked = $value`
+
+		log.Debug().Msgf("mask_image_tag query: %s", maskImageTagQuery)
+
+		_, err = tx.Run(maskImageTagQuery,
+			map[string]interface{}{"node_ids": req.ResultIDs, "value": value, "scan_id": req.ScanID})
 
 	default:
-		_, err = tx.Run(`
-        MATCH (m:`+string(req.ScanType)+`) -[d:DETECTED] -> (n)
+		defaultMaskQuery := `
+        MATCH (m:` + string(req.ScanType) + `) -[d:DETECTED] -> (n)
         WHERE n.node_id IN $node_ids AND m.node_id=$scan_id
-        SET d.masked = $value`,
-			map[string]interface{}{"node_ids": req.ResultIDs, "value": value,
-				"scan_id": req.ScanID})
+        SET d.masked = $value`
+
+		log.Debug().Msgf("mask_image_tag query: %s", defaultMaskQuery)
+
+		_, err = tx.Run(defaultMaskQuery,
+			map[string]interface{}{"node_ids": req.ResultIDs, "value": value, "scan_id": req.ScanID})
 
 	}
 
