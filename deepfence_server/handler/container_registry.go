@@ -14,6 +14,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/gcr"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registrysync"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -170,7 +171,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.SyncRegistry(r.Context(), pgID)
+	err = h.SyncRegistry(r.Context(), pgID, registry)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
@@ -479,7 +480,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = h.SyncRegistry(r.Context(), pgID)
+	err = h.SyncRegistry(r.Context(), pgID, registry)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
@@ -556,7 +557,7 @@ func (h *Handler) RefreshRegistry(w http.ResponseWriter, r *http.Request) {
 	}
 	syncErrs := []string{}
 	for _, p := range pgIds {
-		if err := h.SyncRegistry(r.Context(), int32(p)); err != nil {
+		if err := h.SyncRegistry(r.Context(), int32(p), nil); err != nil {
 			syncErrs = append(syncErrs, err.Error())
 		}
 	}
@@ -740,8 +741,18 @@ func (h *Handler) Summary(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) SyncRegistry(rCtx context.Context, pgID int32) error {
+func (h *Handler) SyncRegistry(rCtx context.Context, pgID int32, registry registry.Registry) error {
 	log.Info().Msgf("sync registry with id=%d", pgID)
+
+	// Set sync=true. Otherwise, the status in UI will be "Ready to scan" when an account was just added,
+	// because the asynq job may take some time to start
+	if registry != nil {
+		err := registrysync.SetRegistryAccountSyncing(rCtx, true, registry)
+		if err != nil {
+			log.Warn().Msgf(err.Error())
+		}
+	}
+
 	payload, err := json.Marshal(utils.RegistrySyncParams{
 		PgID: pgID,
 	})

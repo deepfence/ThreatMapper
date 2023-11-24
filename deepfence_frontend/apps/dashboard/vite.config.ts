@@ -53,7 +53,7 @@ export default defineConfig(({ mode }) => {
           target: viteEnv.VITE_DEV_API_BASE_URL,
           changeOrigin: true,
           secure: false,
-          proxyTimeout: 60000,
+          proxyTimeout: 300000,
         },
       },
     },
