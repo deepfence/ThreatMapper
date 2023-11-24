@@ -505,19 +505,23 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			})
 
 			// AI Integration
-			r.Route("/ai-integration", func(r chi.Router) {
-				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddAiIntegration))
-				r.Get("/", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GetAiIntegrations))
+			r.Route("/generative-ai-integration", func(r chi.Router) {
+				r.Post("/openai", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddOpenAiIntegration))
+				r.Post("/bedrock", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddBedrockIntegration))
+
+				r.Get("/", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GetGenerativeAiIntegrations))
 				r.Route("/{integration_id}", func(r chi.Router) {
-					r.Put("/default", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.SetDefaultAiIntegration))
-					r.Delete("/", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteAiIntegration))
+					r.Put("/default", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.SetDefaultGenerativeAiIntegration))
+					r.Delete("/", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteGenerativeAiIntegration))
 				})
 
 				r.Route("/query", func(r chi.Router) {
-					r.Post("/cloud-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationCloudPostureQuery))
-					r.Post("/linux-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationLinuxPostureQuery))
-					r.Post("/kubernetes-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationKubernetesPostureQuery))
-					r.Post("/vulnerability", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.AiIntegrationVulnerabilityQuery))
+					r.Post("/cloud-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GenerativeAiIntegrationCloudPostureQuery))
+					r.Post("/linux-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GenerativeAiIntegrationLinuxPostureQuery))
+					r.Post("/kubernetes-posture", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GenerativeAiIntegrationKubernetesPostureQuery))
+					r.Post("/vulnerability", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GenerativeAiIntegrationVulnerabilityQuery))
+					r.Post("/secret", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GenerativeAiIntegrationSecretQuery))
+					r.Post("/malware", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GenerativeAiIntegrationMalwareQuery))
 				})
 			})
 

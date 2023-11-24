@@ -29,6 +29,7 @@ const (
 	tagRegistry          = "Registry"
 	tagInternal          = "Internal"
 	tagIntegration       = "Integration"
+	tagGenerativeAi      = "Generative AI"
 	tagReports           = "Reports"
 	tagSettings          = "Settings"
 	tagDiffAdd           = "Diff Add"

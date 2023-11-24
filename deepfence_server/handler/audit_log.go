@@ -19,35 +19,35 @@ import (
 )
 
 const (
-	EVENT_COMPLIANCE_SCAN    = string(utils.NEO4J_COMPLIANCE_SCAN)
-	EVENT_VULNERABILITY_SCAN = string(utils.NEO4J_VULNERABILITY_SCAN)
-	EVENT_SECRET_SCAN        = string(utils.NEO4J_SECRET_SCAN)
-	EVENT_MALWARE_SCAN       = string(utils.NEO4J_MALWARE_SCAN)
-	EVENT_INTEGRATION        = "integration"
-	EVENT_AI_INTEGRATION     = "ai-integration"
-	EVENT_AUTH               = "auth"
-	EVENT_REPORTS            = "reports"
-	EVENT_SETTINGS           = "settings"
-	EVENT_REGISTRY           = "registry"
-	ACTION_START             = "start"
-	ACTION_STOP              = "stop"
-	ACTION_LOGOUT            = "logout"
-	ACTION_LOGIN             = "login"
-	ACTION_INVITE            = "invite"
-	ACTION_INTERRUPT         = "interrupt"
-	ACTION_CREATE            = "create"
-	ACTION_UPDATE            = "update"
-	ACTION_DELETE            = "delete"
-	ACTION_ENABLE            = "enable"
-	ACTION_DISABLE           = "disable"
-	ACTION_BULK              = "bulk"
-	ACTION_DOWNLOAD          = "download"
-	ACTION_NOTIFY            = "notify"
-	ACTION_RESET_PASSWORD    = "reset_password"
-	ACTION_VERIFY_PASSWORD   = "verify_password"
-	ACTION_RESET_TOKEN       = "reset_token"
-	ACTION_TOKEN_AUTH        = "token_auth"
-	ACTION_LOGS              = "logs"
+	EVENT_COMPLIANCE_SCAN           = string(utils.NEO4J_COMPLIANCE_SCAN)
+	EVENT_VULNERABILITY_SCAN        = string(utils.NEO4J_VULNERABILITY_SCAN)
+	EVENT_SECRET_SCAN               = string(utils.NEO4J_SECRET_SCAN)
+	EVENT_MALWARE_SCAN              = string(utils.NEO4J_MALWARE_SCAN)
+	EVENT_INTEGRATION               = "integration"
+	EVENT_GENERATIVE_AI_INTEGRATION = "generative-ai-integration"
+	EVENT_AUTH                      = "auth"
+	EVENT_REPORTS                   = "reports"
+	EVENT_SETTINGS                  = "settings"
+	EVENT_REGISTRY                  = "registry"
+	ACTION_START                    = "start"
+	ACTION_STOP                     = "stop"
+	ACTION_LOGOUT                   = "logout"
+	ACTION_LOGIN                    = "login"
+	ACTION_INVITE                   = "invite"
+	ACTION_INTERRUPT                = "interrupt"
+	ACTION_CREATE                   = "create"
+	ACTION_UPDATE                   = "update"
+	ACTION_DELETE                   = "delete"
+	ACTION_ENABLE                   = "enable"
+	ACTION_DISABLE                  = "disable"
+	ACTION_BULK                     = "bulk"
+	ACTION_DOWNLOAD                 = "download"
+	ACTION_NOTIFY                   = "notify"
+	ACTION_RESET_PASSWORD           = "reset_password"
+	ACTION_VERIFY_PASSWORD          = "verify_password"
+	ACTION_RESET_TOKEN              = "reset_token"
+	ACTION_TOKEN_AUTH               = "token_auth"
+	ACTION_LOGS                     = "logs"
 )
 
 func GetTokenFromRequest(ja *jwtauth.JWTAuth, r *http.Request) (jwt.Token, error) {

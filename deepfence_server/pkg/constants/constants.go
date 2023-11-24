@@ -23,7 +23,8 @@ var RegistryTypes = []string{
 
 // AiIntegration related consts
 const (
-	OpenAI = "openai"
+	OpenAI  = "openai"
+	Bedrock = "amazon-bedrock"
 )
 
 // Integration related consts
