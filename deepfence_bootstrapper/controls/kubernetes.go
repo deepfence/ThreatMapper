@@ -14,8 +14,8 @@ func StartComplianceScan(req ctl.StartComplianceScanRequest) error {
 		k8sscannerutil.Config{
 			ComplianceCheckType:       k8sscannerutil.NsaCisaCheckType,
 			ScanId:                    req.BinArgs["scan_id"],
-			NodeId:                    req.NodeId,
-			NodeName:                  req.NodeId,
+			NodeId:                    req.NodeID,
+			NodeName:                  req.NodeID,
 			ComplianceResultsFilePath: fmt.Sprintf("/var/log/fenced/compliance/%s.log", req.BinArgs["scan_id"]),
 			ComplianceStatusFilePath:  "/var/log/fenced/compliance-scan-logs/status.log",
 		})

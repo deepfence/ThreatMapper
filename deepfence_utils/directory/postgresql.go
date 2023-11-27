@@ -57,7 +57,7 @@ func PostgresClient(ctx context.Context) (*postgresqlDb.Queries, error) {
 	return driver, err
 }
 
-func NewSqlConnection(ctx context.Context) (*sql.DB, error) {
+func NewSQLConnection(ctx context.Context) (*sql.DB, error) {
 	endpoints, err := GetDatabaseConfig(ctx)
 	if err != nil {
 		return nil, err

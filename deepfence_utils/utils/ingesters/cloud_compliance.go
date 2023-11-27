@@ -26,7 +26,7 @@ type CloudComplianceScanStatus struct {
 }
 
 type CloudCompliance struct {
-	DocId               string `json:"doc_id"`
+	DocID               string `json:"doc_id"`
 	Timestamp           string `json:"@timestamp"`
 	Count               int    `json:"count,omitempty"`
 	Reason              string `json:"reason"`

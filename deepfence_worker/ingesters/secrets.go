@@ -81,14 +81,14 @@ func secretsToMaps(data []ingestersUtil.Secret,
 		if _, ok := secret["scan_id"]; ok {
 			scanId := secret["scan_id"].(string)
 			var err error
-			entityId, err = getEntityIdFromScanID(scanId, string(utils.NEO4J_SECRET_SCAN), tx)
+			entityId, err = getEntityIdFromScanID(scanId, string(utils.NEO4JSecretScan), tx)
 			if err != nil {
 				log.Error().Msgf("Error in getting entityId: %v", err)
 				return nil, err
 			}
 		}
 
-		nodeId := utils.ScanIdReplacer.Replace(fmt.Sprintf("%v:%v",
+		nodeId := utils.ScanIDReplacer.Replace(fmt.Sprintf("%v:%v",
 			i.Rule.ID, i.Match.FullFilename))
 		if len(entityId) > 0 {
 			nodeId = nodeId + "_" + entityId

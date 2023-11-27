@@ -38,7 +38,7 @@ func (tc *CloudResourceIngester) Ingest(
 			log.Error().Msg(err.Error())
 		} else {
 			ingestC <- &kgo.Record{
-				Topic:   utils.CLOUD_RESOURCE,
+				Topic:   utils.CloudResource,
 				Value:   cb,
 				Headers: rh,
 			}

@@ -35,7 +35,7 @@ func CreateMissingTopics(
 	topics []string,
 	partitions int32,
 	replicas int16,
-	retention_ms string,
+	retentionMS string,
 ) error {
 
 	log.Info().Msgf("create topics with partitions=%d and replicas=%d", partitions, replicas)
@@ -57,7 +57,7 @@ func CreateMissingTopics(
 	defer adminClient.Close()
 
 	topicConfig := map[string]*string{
-		"retention.ms": kadm.StringPtr(retention_ms),
+		"retention.ms": kadm.StringPtr(retentionMS),
 	}
 
 	resp, err := adminClient.CreateTopics(context.Background(),

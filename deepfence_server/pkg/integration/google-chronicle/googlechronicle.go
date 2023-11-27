@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"net/http"
+
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
 func New(ctx context.Context, b []byte) (*GoogleChronicle, error) {
@@ -40,7 +41,7 @@ func (g GoogleChronicle) SendNotification(ctx context.Context, message string, e
 	req.Header.Set("Content-Type", "application/json")
 
 	// Make the HTTP request.
-	client := utils.GetHttpClient()
+	client := utils.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		return err

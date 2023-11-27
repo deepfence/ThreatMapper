@@ -34,7 +34,8 @@ func GetKubernetesClusterActions(ctx context.Context, nodeId string, workNumToEx
 	}
 
 	diagnosticLogActions, scan_err := ExtractAgentDiagnosticLogRequests(ctx, nodeId, controls.KubernetesCluster, workNumToExtract)
-	workNumToExtract -= len(diagnosticLogActions)
+
+	workNumToExtract -= len(diagnosticLogActions) //nolint:ineffassign
 	if scan_err == nil {
 		actions = append(actions, diagnosticLogActions...)
 	}
@@ -66,10 +67,10 @@ func ExtractStartingKubernetesClusterScans(ctx context.Context, nodeId string, m
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:KubernetesCluster{node_id:$id})
-		WHERE s.status = '`+utils.SCAN_STATUS_STARTING+`'
+		WHERE s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work
-		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
+		SET s.status = '`+utils.ScanStatusInProgress+`'
 		WITH s
 		RETURN s.trigger_action`,
 		map[string]interface{}{"id": nodeId, "max_work": max_work})
@@ -123,10 +124,10 @@ func ExtractPendingKubernetesClusterUpgrade(ctx context.Context, nodeId string, 
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s:AgentVersion) -[r:SCHEDULED]-> (n:KubernetesCluster{node_id:$id})
-		WHERE r.status = '`+utils.SCAN_STATUS_STARTING+`'
+		WHERE r.status = '`+utils.ScanStatusStarting+`'
 		AND r.retries < 3
 		WITH r LIMIT $max_work
-		SET r.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
+		SET r.status = '`+utils.ScanStatusInProgress+`'
 		WITH r
 		RETURN r.trigger_action`,
 		map[string]interface{}{"id": nodeId, "max_work": max_work})

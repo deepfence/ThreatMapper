@@ -44,7 +44,7 @@ func (t Teams) FormatMessage(message map[string]interface{}, position int, entir
 }
 
 func (t Teams) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
-	t.client = utils.GetHttpClient()
+	t.client = utils.GetHTTPClient()
 
 	var msg []map[string]interface{}
 	d := json.NewDecoder(strings.NewReader(message))

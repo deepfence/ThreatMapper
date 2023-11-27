@@ -92,7 +92,7 @@ func GetPendingAgentScans(ctx context.Context, nodeId string, availableWorkload 
 
 	r, err := tx.Run(`
 		MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
-		WHERE s.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
+		WHERE s.status = '`+utils.ScanStatusInProgress+`'
 		AND s.retries < 3
 		SET s.retries = s.retries + 1
 		WITH s
@@ -145,7 +145,7 @@ func hasAgentDiagnosticLogRequests(client neo4j.Driver, nodeId string, nodeType 
 
 	r, err := tx.Run(`MATCH (s:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n{node_id:$id})
 		WHERE (n:`+controls.ResourceTypeToNeo4j(nodeType)+`)
-		AND s.status = '`+utils.SCAN_STATUS_STARTING+`'
+		AND s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work
 		WITH s
@@ -186,10 +186,10 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, nodeT
 
 	r, err := tx.Run(`MATCH (s:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n{node_id:$id})
 		WHERE (n:`+controls.ResourceTypeToNeo4j(nodeType)+`)
-		AND s.status = '`+utils.SCAN_STATUS_STARTING+`'
+		AND s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work
-		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
+		SET s.status = '`+utils.ScanStatusInProgress+`'
 		WITH s
 		RETURN s.trigger_action`,
 		map[string]interface{}{"id": nodeId, "max_work": max_work})
@@ -234,7 +234,7 @@ func hasPendingAgentScans(client neo4j.Driver, nodeId string, max_work int) (boo
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
-		WHERE s.status = '`+utils.SCAN_STATUS_STARTING+`'
+		WHERE s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work
 		RETURN s.trigger_action`,
@@ -275,10 +275,10 @@ func ExtractStartingAgentScans(ctx context.Context, nodeId string,
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
-		WHERE s.status = '`+utils.SCAN_STATUS_STARTING+`'
+		WHERE s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
 		WITH s ORDER BY s.is_priority DESC, s.updated_at ASC LIMIT $max_work
-		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`', s.updated_at = TIMESTAMP()
+		SET s.status = '`+utils.ScanStatusInProgress+`', s.updated_at = TIMESTAMP()
 		WITH s
 		RETURN s.trigger_action`,
 		map[string]interface{}{"id": nodeId, "max_work": max_work})
@@ -338,9 +338,9 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeId string,
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
-		WHERE s.status = '`+utils.SCAN_STATUS_CANCEL_PENDING+`'
+		WHERE s.status = '`+utils.ScanStatusCancelPending+`'
 		WITH s LIMIT $max_work
-        SET s.status = '`+utils.SCAN_STATUS_CANCELLING+`', s.updated_at = TIMESTAMP()
+        SET s.status = '`+utils.ScanStatusCancelling+`', s.updated_at = TIMESTAMP()
 		WITH s
 		RETURN s.trigger_action`,
 		map[string]interface{}{"id": nodeId, "max_work": max_work})
@@ -401,7 +401,7 @@ func hasPendingAgentUpgrade(client neo4j.Driver, nodeId string, max_work int) (b
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s:AgentVersion) -[r:SCHEDULED]-> (n:Node{node_id:$id})
-		WHERE r.status = '`+utils.SCAN_STATUS_STARTING+`'
+		WHERE r.status = '`+utils.ScanStatusStarting+`'
 		AND r.retries < 3
 		WITH r LIMIT $max_work
 		RETURN r.trigger_action`,
@@ -440,10 +440,10 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeId string, max_work int
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s:AgentVersion) -[r:SCHEDULED]-> (n:Node{node_id:$id})
-		WHERE r.status = '`+utils.SCAN_STATUS_STARTING+`'
+		WHERE r.status = '`+utils.ScanStatusStarting+`'
 		AND r.retries < 3
 		WITH r LIMIT $max_work
-		SET r.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
+		SET r.status = '`+utils.ScanStatusInProgress+`'
 		WITH r
 		RETURN r.trigger_action`,
 		map[string]interface{}{"id": nodeId, "max_work": max_work})
@@ -516,5 +516,4 @@ func CheckNodeExist(ctx context.Context, nodeId string) error {
 	}
 
 	return nil
-
 }

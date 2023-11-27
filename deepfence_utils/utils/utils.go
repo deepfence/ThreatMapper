@@ -35,25 +35,21 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwt"
 )
 
-var ScanIdReplacer = strings.NewReplacer("/", "_", ":", "_", ".", "_")
+const ansi = "[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))"
 
 var (
+	ScanIDReplacer = strings.NewReplacer("/", "_", ":", "_", ".", "_")
+
 	matchFirstCap                = regexp.MustCompile("(.)([A-Z][a-z]+)")
 	matchAllCap                  = regexp.MustCompile("([a-z0-9])([A-Z])")
 	once1, once2                 sync.Once
 	secureClient, insecureClient *http.Client
-)
 
-const (
-	ansi = "[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))"
-)
-
-var (
 	removeAnsiColorRegex = regexp.MustCompile(ansi)
 	emptyStrByte         = []byte("")
 )
 
-func GetHttpClient() *http.Client {
+func GetHTTPClient() *http.Client {
 	once1.Do(func() {
 		secureClient = &http.Client{Timeout: time.Second * 10}
 	})
@@ -61,11 +57,11 @@ func GetHttpClient() *http.Client {
 	return secureClient
 }
 
-func GetHttpClientWithTimeout(duration time.Duration) *http.Client {
+func GetHTTPClientWithTimeout(duration time.Duration) *http.Client {
 	return &http.Client{Timeout: duration}
 }
 
-func GetInsecureHttpClient() *http.Client {
+func GetInsecureHTTPClient() *http.Client {
 	once2.Do(func() {
 		tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
 		insecureClient = &http.Client{
@@ -152,7 +148,7 @@ func GetCustomerNamespace(s string) (string, error) {
 	}
 	lastCharPos := len(namespace) - 1
 	if '0' <= namespace[lastCharPos] && namespace[lastCharPos] <= '9' || namespace[lastCharPos] == '-' {
-		namespace = namespace + "-c"
+		namespace += "-c"
 	}
 	if len(namespace) > 63 {
 		return "", errors.New("at most 63 characters allowed")
@@ -160,10 +156,10 @@ func GetCustomerNamespace(s string) (string, error) {
 	return namespace, nil
 }
 
-func RemoveURLPath(inUrl string) (string, error) {
-	u, err := url.Parse(inUrl)
+func RemoveURLPath(inURL string) (string, error) {
+	u, err := url.Parse(inURL)
 	if err != nil {
-		return inUrl, err
+		return inURL, err
 	}
 	u.Path = ""
 	u.User = nil
@@ -218,7 +214,7 @@ func StructToMap[T any](c T) map[string]interface{} {
 	t := reflect.TypeOf(c)
 	v := reflect.ValueOf(c)
 
-	num_fields := 0
+	numFields := 0
 	for i := 0; i < t.NumField(); i++ {
 		key := t.Field(i).Tag.Get("json")
 		if strings.HasSuffix(key, ",omitempty") {
@@ -226,10 +222,10 @@ func StructToMap[T any](c T) map[string]interface{} {
 				continue
 			}
 		}
-		num_fields += 1
+		numFields += 1
 	}
 
-	bb := make(map[string]interface{}, num_fields)
+	bb := make(map[string]interface{}, numFields)
 
 	for i := 0; i < t.NumField(); i++ {
 		key := t.Field(i).Tag.Get("json")
@@ -296,15 +292,16 @@ func FromMap(bb map[string]interface{}, c interface{}) {
 		}
 		if t.Field(i).Tag.Get("nested_json") == "true" {
 			tmp := map[string]interface{}{}
-			json.Unmarshal([]byte(data.(string)), &tmp)
+			_ = json.Unmarshal([]byte(data.(string)), &tmp)
 			data = tmp
 		}
-		if t.Field(i).Type.Kind() == reflect.Slice {
+		switch t.Field(i).Type.Kind() {
+		case reflect.Slice:
 			slice, ok := data.([]map[string]interface{})
 			if !ok {
 				if t.Field(i).Type.Elem().Kind() == reflect.String {
-					//We are not able to convert the []interface{} to []string
-					//Hence we need to have this special handling
+					// We are not able to convert the []interface{} to []string
+					// Hence we need to have this special handling
 					var outStr []string
 					rv := reflect.ValueOf(data)
 					for i := 0; i < rv.Len(); i++ {
@@ -326,7 +323,7 @@ func FromMap(bb map[string]interface{}, c interface{}) {
 				tmp = reflect.Append(tmp, reflect.Indirect(tmp2))
 			}
 			v.Field(i).Set(tmp)
-		} else if t.Field(i).Type.Kind() == reflect.Struct {
+		case reflect.Struct:
 			struc, ok := data.(map[string]interface{})
 			if !ok {
 				continue
@@ -334,7 +331,7 @@ func FromMap(bb map[string]interface{}, c interface{}) {
 			tmp := reflect.New(t.Field(i).Type)
 			FromMap(struc, tmp.Interface())
 			v.Field(i).Set(reflect.Indirect(tmp))
-		} else {
+		default:
 			vv := reflect.ValueOf(data).Convert(t.Field(i).Type)
 			v.Field(i).Set(vv)
 		}
@@ -548,7 +545,7 @@ func BoolArrayToInterfaceArray(a []bool) []interface{} {
 
 func GetScheduledJobHash(schedule postgresqlDb.Scheduler) string {
 	var payload map[string]string
-	json.Unmarshal(schedule.Payload, &payload)
+	_ = json.Unmarshal(schedule.Payload, &payload)
 	message := map[string]interface{}{"action": schedule.Action, "payload": payload, "cron": schedule.CronExpr}
 	scheduleStr, _ := json.Marshal(message)
 	return GenerateHashFromString(string(scheduleStr))
@@ -594,12 +591,12 @@ func URLDecode(s string) (string, error) {
 	return url.QueryUnescape(s)
 }
 
-func GetErrorRedirectUrl(consoleUrl, errorMessage string) string {
-	return consoleUrl + "/?errorMessage=" + URLEncode(errorMessage)
+func GetErrorRedirectURL(consoleURL, errorMessage string) string {
+	return consoleURL + "/?errorMessage=" + URLEncode(errorMessage)
 }
 
-func GetInfoRedirectUrl(consoleUrl, message string) string {
-	return consoleUrl + "/auth/sso?message=" + URLEncode(message)
+func GetInfoRedirectURL(urlPath, message string) string {
+	return urlPath + "?message=" + URLEncode(message)
 }
 
 func RandomString(nByte int) (string, error) {

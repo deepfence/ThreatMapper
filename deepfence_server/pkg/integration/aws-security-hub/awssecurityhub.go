@@ -129,9 +129,9 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 }
 
 func getResource(ctx context.Context, scanType, scanID, region, accountID string) ([]*securityhub.Resource, error) {
-	if scanType == utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN] {
+	if scanType == utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan] {
 		return getResourceForVulnerability(ctx, scanID, region, accountID)
-	} else if scanType == utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN] {
+	} else if scanType == utils.ScanTypeDetectedNode[utils.NEO4JComplianceScan] {
 		return getResourceForCompliance(ctx, scanID, region, accountID)
 	}
 	return nil, fmt.Errorf("not aws")
@@ -282,7 +282,7 @@ func getResourceForCompliance(ctx context.Context, scanID, region, accountID str
 
 func (a AwsSecurityHub) mapPayloadToFindings(msg []map[string]interface{}, resource []*securityhub.Resource, accountID string) *securityhub.BatchImportFindingsInput {
 	findings := securityhub.BatchImportFindingsInput{}
-	if a.Resource == utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN] {
+	if a.Resource == utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan] {
 		for _, m := range msg {
 			accID, found := m["cloud_account_id"]
 			if !found {
@@ -363,7 +363,7 @@ func (a AwsSecurityHub) mapPayloadToFindings(msg []map[string]interface{}, resou
 				}})
 			findings.SetFindings(append(findings.Findings, &finding))
 		}
-	} else if a.Resource == utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN] {
+	} else if a.Resource == utils.ScanTypeDetectedNode[utils.NEO4JComplianceScan] {
 		for _, m := range msg {
 			accID, found := m["cloud_account_id"]
 			if !found {

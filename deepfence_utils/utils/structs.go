@@ -13,8 +13,8 @@ type MinioError struct {
 	Key        string   `xml:"Key"`
 	BucketName string   `xml:"BucketName"`
 	Resource   string   `xml:"Resource"`
-	RequestId  string   `xml:"RequestId"`
-	HostId     string   `xml:"HostId"`
+	RequestID  string   `xml:"RequestID"`
+	HostID     string   `xml:"HostID"`
 }
 
 type ScanSbomRequest struct {
@@ -24,17 +24,17 @@ type ScanSbomRequest struct {
 
 type SbomParameters struct {
 	ImageName             string `json:"image_name"`
-	ImageId               string `json:"image_id"`
-	ScanId                string `json:"scan_id" required:"true"`
+	ImageID               string `json:"image_id"`
+	ScanID                string `json:"scan_id" required:"true"`
 	KubernetesClusterName string `json:"kubernetes_cluster_name"`
 	HostName              string `json:"host_name"`
-	NodeId                string `json:"node_id"`
+	NodeID                string `json:"node_id"`
 	NodeType              string `json:"node_type"`
 	ScanType              string `json:"scan_type"`
 	ContainerName         string `json:"container_name"`
 	SBOMFilePath          string `json:"sbom_file_path"`
 	Mode                  string `json:"mode,omitempty"`
-	RegistryId            string `json:"registry_id,omitempty"`
+	RegistryID            string `json:"registry_id,omitempty"`
 	SkipScan              bool   `json:"skip_scan,omitempty"`
 }
 
@@ -44,30 +44,30 @@ type SbomBody struct {
 
 type SecretScanParameters struct {
 	ImageName             string `json:"image_name"`
-	ImageId               string `json:"image_id"`
-	ScanId                string `json:"scan_id" required:"true"`
+	ImageID               string `json:"image_id"`
+	ScanID                string `json:"scan_id" required:"true"`
 	KubernetesClusterName string `json:"kubernetes_cluster_name"`
 	HostName              string `json:"host_name"`
-	NodeId                string `json:"node_id"`
+	NodeID                string `json:"node_id"`
 	NodeType              string `json:"node_type"`
 	ScanType              string `json:"scan_type"`
 	ContainerName         string `json:"container_name"`
 	Mode                  string `json:"mode,omitempty"`
-	RegistryId            string `json:"registry_id,omitempty"`
+	RegistryID            string `json:"registry_id,omitempty"`
 }
 
 type MalwareScanParameters struct {
 	ImageName             string `json:"image_name"`
-	ImageId               string `json:"image_id"`
-	ScanId                string `json:"scan_id" required:"true"`
+	ImageID               string `json:"image_id"`
+	ScanID                string `json:"scan_id" required:"true"`
 	KubernetesClusterName string `json:"kubernetes_cluster_name"`
 	HostName              string `json:"host_name"`
-	NodeId                string `json:"node_id"`
+	NodeID                string `json:"node_id"`
 	NodeType              string `json:"node_type"`
 	ScanType              string `json:"scan_type"`
 	ContainerName         string `json:"container_name"`
 	Mode                  string `json:"mode,omitempty"`
-	RegistryId            string `json:"registry_id,omitempty"`
+	RegistryID            string `json:"registry_id,omitempty"`
 }
 
 type ReportParams struct {
@@ -78,8 +78,8 @@ type ReportParams struct {
 }
 
 type ReportFilters struct {
-	ScanId                string                `json:"scan_id"`
-	ScanType              string                `json:"scan_type" validate:"required" required:"true" enum:"vulnerability,secret,malware,compliance,cloud_compliance"`
+	ScanID                string                `json:"scan_id"`
+	ScanType              string                `json:"scan_type" validate:"required" required:"true" enum:"vulnerability,secret,malware,compliance,cloud_compliance,alert"`
 	NodeType              string                `json:"node_type" validate:"required" required:"true" enum:"host,container,container_image,linux,cluster,aws,gcp,azure"`
 	SeverityOrCheckType   []string              `json:"severity_or_check_type" enum:"critical,high,medium,low,cis,gdpr,nist,hipaa,pci,soc_2"`
 	IncludeDeadNode       bool                  `json:"include_dead_nodes"`
@@ -98,7 +98,7 @@ type AdvancedReportFilters struct {
 	ContainerName         []string `json:"container_name,omitempty"`
 	ImageName             []string `json:"image_name,omitempty"`
 	HostName              []string `json:"host_name,omitempty"`
-	AccountId             []string `json:"account_id,omitempty"`
+	AccountID             []string `json:"account_id,omitempty"`
 	KubernetesClusterName []string `json:"kubernetes_cluster_name,omitempty"`
 }
 

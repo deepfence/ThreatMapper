@@ -45,8 +45,8 @@ func getInProgressCloudScannerNodeIds(ctx context.Context, nodeIdentifiers []dia
 		RETURN n.node_id,a.status`,
 		map[string]interface{}{
 			"node_ids": nodeIds,
-			"complete": utils.SCAN_STATUS_SUCCESS,
-			"failed":   utils.SCAN_STATUS_FAILED})
+			"complete": utils.ScanStatusSuccess,
+			"failed":   utils.ScanStatusFailed})
 	if err != nil {
 		return inProgressNodeIds, err
 	}
@@ -114,7 +114,7 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 
 	actionBuilder := func(nodeIdentifier diagnosis.NodeIdentifier, uploadUrl string, fileName string, tail string) (ctl.Action, error) {
 		req := ctl.SendAgentDiagnosticLogsRequest{
-			NodeId:    nodeIdentifier.NodeId,
+			NodeID:    nodeIdentifier.NodeId,
 			NodeType:  ctl.StringToResourceType(nodeIdentifier.NodeType),
 			UploadURL: uploadUrl,
 			Tail:      tail,
@@ -167,7 +167,7 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCHEDULEDLOGS]->(m)`, controls.ResourceTypeToNeo4j(controls.StringToResourceType(nodeIdentifier.NodeType))),
 			map[string]interface{}{
-				"status":          utils.SCAN_STATUS_STARTING,
+				"status":          utils.ScanStatusStarting,
 				"node_id":         nodeIdentifier.NodeId,
 				"action":          string(b),
 				"minio_file_name": fileName,
@@ -197,7 +197,7 @@ func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context, nodeIDs []string) 
 		WHERE n.status = $status and n.node_id in $node_ids
 		RETURN n.trigger_action
 		ORDER BY n.updated_at ASC LIMIT 1`,
-		map[string]interface{}{"status": utils.SCAN_STATUS_STARTING, "node_ids": nodeIDs})
+		map[string]interface{}{"status": utils.ScanStatusStarting, "node_ids": nodeIDs})
 
 	if err != nil {
 		return ctl.Action{}, err

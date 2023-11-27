@@ -36,7 +36,7 @@ func BulkDeleteScans(ctx context.Context, task *asynq.Task) error {
 		}
 	}
 
-	if len(scansList.ScansInfo) > 0 && (scanType == utils.NEO4J_COMPLIANCE_SCAN || scanType == utils.NEO4J_CLOUD_COMPLIANCE_SCAN) {
+	if len(scansList.ScansInfo) > 0 && (scanType == utils.NEO4JComplianceScan || scanType == utils.NEO4JCloudComplianceScan) {
 		worker, err := directory.Worker(ctx)
 		if err != nil {
 			return err

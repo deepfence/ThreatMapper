@@ -78,7 +78,7 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 
 	recs, err := res.Collect()
 	if err != nil {
-		return model.ScanStatusResp{}, reporters.NotFoundErr
+		return model.ScanStatusResp{}, reporters.ErrNotFound
 	}
 
 	return model.ScanStatusResp{Statuses: extractStatuses(recs)}, nil
@@ -538,7 +538,7 @@ func processScansListQuery(query string, nodeIds []string, tx neo4j.Transaction)
 
 	recs, err := res.Collect()
 	if err != nil {
-		return scansInfo, reporters.NotFoundErr
+		return scansInfo, reporters.ErrNotFound
 	}
 
 	for _, rec := range recs {
@@ -578,7 +578,7 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 		MATCH (m:`+string(scanType)+`) -[:SCANNED]-> (n:CloudNode{node_id: $node_id})
 		WHERE m.status = $starting
 		RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.updated_at, n.node_name ORDER BY m.updated_at`,
-		map[string]interface{}{"node_id": nodeId, "starting": utils.SCAN_STATUS_STARTING})
+		map[string]interface{}{"node_id": nodeId, "starting": utils.ScanStatusStarting})
 	if err != nil {
 		return model.CloudComplianceScanListResp{}, err
 	}
@@ -600,8 +600,8 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
         RETURN m.node_id, m.status, m.status_message, 
 		n.node_id, m.updated_at, n.node_name ORDER BY m.updated_at`,
 			map[string]interface{}{"node_id": nodeId,
-				"cancel_pending": utils.SCAN_STATUS_CANCEL_PENDING,
-				"cancelling":     utils.SCAN_STATUS_CANCELLING})
+				"cancel_pending": utils.ScanStatusCancelPending,
+				"cancelling":     utils.ScanStatusCancelling})
 		if err != nil {
 			log.Info().Msgf("Failed to get stopping scan list for node:%s, error is:%v", nodeId, err)
 		} else {
@@ -883,15 +883,15 @@ func GetFilters(ctx context.Context, having map[string]interface{}, detectedType
 
 func scanResultId_field(scan_type utils.Neo4jScanType) string {
 	switch scan_type {
-	case utils.NEO4J_VULNERABILITY_SCAN:
+	case utils.NEO4JVulnerabilityScan:
 		return "cve_id"
-	case utils.NEO4J_SECRET_SCAN:
+	case utils.NEO4JSecretScan:
 		return "node_id"
-	case utils.NEO4J_MALWARE_SCAN:
+	case utils.NEO4JMalwareScan:
 		return "node_id"
-	case utils.NEO4J_COMPLIANCE_SCAN:
+	case utils.NEO4JComplianceScan:
 		return "test_number"
-	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
+	case utils.NEO4JCloudComplianceScan:
 		return "control_id"
 	}
 	return ""
@@ -899,15 +899,15 @@ func scanResultId_field(scan_type utils.Neo4jScanType) string {
 
 func type2sev_field(scan_type utils.Neo4jScanType) string {
 	switch scan_type {
-	case utils.NEO4J_VULNERABILITY_SCAN:
+	case utils.NEO4JVulnerabilityScan:
 		return "cve_severity"
-	case utils.NEO4J_SECRET_SCAN:
+	case utils.NEO4JSecretScan:
 		return "level"
-	case utils.NEO4J_MALWARE_SCAN:
+	case utils.NEO4JMalwareScan:
 		return "file_severity"
-	case utils.NEO4J_COMPLIANCE_SCAN:
+	case utils.NEO4JComplianceScan:
 		return "status"
-	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
+	case utils.NEO4JCloudComplianceScan:
 		return "status"
 	}
 	return "error_sev_field_unknown"
@@ -933,7 +933,7 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	defer tx.Close()
 
 	query := `
-	MATCH (m:` + string(scan_type) + `{node_id: $scan_id, status: "` + utils.SCAN_STATUS_SUCCESS + `"}) -[r:DETECTED]-> (d)
+	MATCH (m:` + string(scan_type) + `{node_id: $scan_id, status: "` + utils.ScanStatusSuccess + `"}) -[r:DETECTED]-> (d)
 	WHERE r.masked = false
 	RETURN d.` + type2sev_field(scan_type) + `, COUNT(*)`
 
@@ -1058,7 +1058,7 @@ func GetCloudComplianceStats(ctx context.Context, scanId string, neo4jCompliance
 	additionalInfo.BenchmarkTypes = benchmarkTypes
 
 	cloudComplianceFields := ""
-	if neo4jComplianceType == utils.NEO4J_CLOUD_COMPLIANCE_SCAN {
+	if neo4jComplianceType == utils.NEO4JCloudComplianceScan {
 		cloudComplianceFields = "DISTINCT d.control_id AS control_id, d.resource AS resource,"
 	}
 	nres, err := tx.Run(`
@@ -1147,7 +1147,7 @@ func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 
 	recs, err := neo_res.Collect()
 	if err != nil {
-		return scan_ids, reporters.NotFoundErr
+		return scan_ids, reporters.ErrNotFound
 	}
 
 	return model.ScanStatusResp{

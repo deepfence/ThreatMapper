@@ -97,25 +97,25 @@ func StringToResourceType(s string) ScanResource {
 }
 
 type StartVulnerabilityScanRequest struct {
-	NodeId   string            `json:"node_id" required:"true"`
+	NodeID   string            `json:"node_id" required:"true"`
 	NodeType ScanResource      `json:"node_type" required:"true"`
 	BinArgs  map[string]string `json:"bin_args" required:"true"`
 }
 
 type StartSecretScanRequest struct {
-	NodeId   string            `json:"node_id" required:"true"`
+	NodeID   string            `json:"node_id" required:"true"`
 	NodeType ScanResource      `json:"node_type" required:"true"`
 	BinArgs  map[string]string `json:"bin_args" required:"true"`
 }
 
 type StartComplianceScanRequest struct {
-	NodeId   string            `json:"node_id" required:"true"`
+	NodeID   string            `json:"node_id" required:"true"`
 	NodeType ScanResource      `json:"node_type" required:"true"`
 	BinArgs  map[string]string `json:"bin_args" required:"true"`
 }
 
 type StartMalwareScanRequest struct {
-	NodeId   string            `json:"node_id" required:"true"`
+	NodeID   string            `json:"node_id" required:"true"`
 	NodeType ScanResource      `json:"node_type" required:"true"`
 	BinArgs  map[string]string `json:"bin_args" required:"true"`
 }
@@ -126,7 +126,7 @@ type StopVulnerabilityScanRequest StartSecretScanRequest
 type StopComplianceScanRequest StartSecretScanRequest
 
 type SendAgentDiagnosticLogsRequest struct {
-	NodeId    string       `json:"node_id" required:"true"`
+	NodeID    string       `json:"node_id" required:"true"`
 	NodeType  ScanResource `json:"node_type" required:"true"`
 	UploadURL string       `json:"upload_url" required:"true"`
 	FileName  string       `json:"file_name" required:"true"`
@@ -134,14 +134,14 @@ type SendAgentDiagnosticLogsRequest struct {
 }
 
 type StartAgentUpgradeRequest struct {
-	HomeDirectoryUrl string `json:"home_directory_url" required:"true"`
+	HomeDirectoryURL string `json:"home_directory_url" required:"true"`
 	Version          string `json:"version" required:"true"`
 }
 
 type EnableAgentPluginRequest struct {
 	PluginName string `json:"plugin_name" required:"true"`
 	Version    string `json:"version" required:"true"`
-	BinUrl     string `json:"bin_url" required:"true"`
+	BinURL     string `json:"bin_url" required:"true"`
 }
 
 type DisableAgentPluginRequest struct {
@@ -166,22 +166,22 @@ func (ac AgentControls) ToBytes() ([]byte, error) {
 	return json.Marshal(ac)
 }
 
-func GetBinArgs(T interface{}) map[string]string {
-	switch T.(type) {
+func GetBinArgs(t interface{}) map[string]string {
+	switch val := t.(type) {
 	case StartVulnerabilityScanRequest:
-		return T.(StartVulnerabilityScanRequest).BinArgs
+		return val.BinArgs
 	case StartSecretScanRequest:
-		return T.(StartSecretScanRequest).BinArgs
+		return val.BinArgs
 	case StartComplianceScanRequest:
-		return T.(StartComplianceScanRequest).BinArgs
+		return val.BinArgs
 	case StartMalwareScanRequest:
-		return T.(StartMalwareScanRequest).BinArgs
+		return val.BinArgs
 	case StopSecretScanRequest:
-		return T.(StopSecretScanRequest).BinArgs
+		return val.BinArgs
 	case StopMalwareScanRequest:
-		return T.(StopVulnerabilityScanRequest).BinArgs
+		return val.BinArgs
 	case StopVulnerabilityScanRequest:
-		return T.(StopVulnerabilityScanRequest).BinArgs
+		return val.BinArgs
 	}
 	return nil
 }

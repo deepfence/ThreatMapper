@@ -19,10 +19,10 @@ import (
 )
 
 const (
-	EVENT_COMPLIANCE_SCAN           = string(utils.NEO4J_COMPLIANCE_SCAN)
-	EVENT_VULNERABILITY_SCAN        = string(utils.NEO4J_VULNERABILITY_SCAN)
-	EVENT_SECRET_SCAN               = string(utils.NEO4J_SECRET_SCAN)
-	EVENT_MALWARE_SCAN              = string(utils.NEO4J_MALWARE_SCAN)
+	EVENT_COMPLIANCE_SCAN           = string(utils.NEO4JComplianceScan)
+	EVENT_VULNERABILITY_SCAN        = string(utils.NEO4JVulnerabilityScan)
+	EVENT_SECRET_SCAN               = string(utils.NEO4JSecretScan)
+	EVENT_MALWARE_SCAN              = string(utils.NEO4JMalwareScan)
 	EVENT_INTEGRATION               = "integration"
 	EVENT_GENERATIVE_AI_INTEGRATION = "generative-ai-integration"
 	EVENT_AUTH                      = "auth"
@@ -152,7 +152,7 @@ func (h *Handler) AddAuditLog(namespace string, params postgresql_db.CreateAudit
 	}
 
 	h.IngestChan <- &kgo.Record{
-		Topic: utils.AUDIT_LOGS,
+		Topic: utils.AuditLogs,
 		Value: data,
 		Headers: []kgo.RecordHeader{
 			{Key: "namespace", Value: []byte(namespace)},

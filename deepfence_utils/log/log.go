@@ -14,7 +14,7 @@ import (
 type LogErrorWriter struct{}
 
 func (LogErrorWriter) Write(b []byte) (int, error) {
-	if len(b) <= 0 {
+	if len(b) == 0 {
 		return 0, nil
 	}
 	log.Error().CallerSkipFrame(3).Msg(strings.TrimSpace(string(b)))
@@ -24,7 +24,7 @@ func (LogErrorWriter) Write(b []byte) (int, error) {
 type LogInfoWriter struct{}
 
 func (LogInfoWriter) Write(b []byte) (int, error) {
-	if len(b) <= 0 {
+	if len(b) == 0 {
 		return 0, nil
 	}
 	log.Info().CallerSkipFrame(3).Msg(strings.TrimSpace(string(b)))
@@ -46,9 +46,9 @@ func init() {
 	).With().Caller().Logger()
 }
 
-func Initialize(log_level string) {
+func Initialize(logLevel string) {
 
-	switch log_level {
+	switch logLevel {
 	case zerolog.LevelTraceValue:
 		zerolog.SetGlobalLevel(zerolog.TraceLevel)
 	case zerolog.LevelDebugValue:

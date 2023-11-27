@@ -94,11 +94,11 @@ func (CloudNodeAccountInfo) ExtendedField() string {
 func (v CloudNodeAccountInfo) ScanType() utils.Neo4jScanType {
 	switch v.CloudProvider {
 	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg:
-		return utils.NEO4J_CLOUD_COMPLIANCE_SCAN
+		return utils.NEO4JCloudComplianceScan
 	case PostureProviderKubernetes, PostureProviderLinux:
-		return utils.NEO4J_COMPLIANCE_SCAN
+		return utils.NEO4JComplianceScan
 	default:
-		return utils.NEO4J_CLOUD_COMPLIANCE_SCAN
+		return utils.NEO4JCloudComplianceScan
 	}
 }
 

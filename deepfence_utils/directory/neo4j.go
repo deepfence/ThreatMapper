@@ -15,10 +15,10 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
-var neo4j_clients_pool sync.Map
+var neo4jClientsPool sync.Map
 
 func init() {
-	neo4j_clients_pool = sync.Map{}
+	neo4jClientsPool = sync.Map{}
 }
 
 type CypherTransaction struct {
@@ -93,10 +93,7 @@ func (cd CypherDriver) NewSession(config neo4j.SessionConfig) neo4j.Session {
 	return CypherSession{impl: cd.impl.NewSession(config)}
 }
 func (cd CypherDriver) Session(accessMode neo4j.AccessMode, bookmarks ...string) (neo4j.Session, error) {
-	s, err := cd.impl.Session(accessMode, bookmarks...)
-	if err != nil {
-		return nil, err
-	}
+	s := cd.impl.NewSession(neo4j.SessionConfig{Bookmarks: bookmarks})
 	return CypherSession{impl: s}, nil
 }
 func (cd CypherDriver) VerifyConnectivity() error {
@@ -106,9 +103,9 @@ func (cd CypherDriver) Close() error {
 	return cd.impl.Close()
 }
 
-func new_neo4j_client(endpoints DBConfigs) (*CypherDriver, error) {
+func newNeo4JClient(endpoints DBConfigs) (*CypherDriver, error) {
 	if endpoints.Neo4j == nil {
-		return nil, errors.New("No defined Neo4j config")
+		return nil, errors.New("no defined Neo4j config")
 	}
 	driver, err := neo4j.NewDriver(endpoints.Neo4j.Endpoint,
 		neo4j.BasicAuth(endpoints.Neo4j.Username, endpoints.Neo4j.Password, ""),
@@ -123,7 +120,7 @@ func new_neo4j_client(endpoints DBConfigs) (*CypherDriver, error) {
 }
 
 func Neo4jClient(ctx context.Context) (neo4j.Driver, error) {
-	driver, err := getClient(ctx, &neo4j_clients_pool, new_neo4j_client)
+	driver, err := getClient(ctx, &neo4jClientsPool, newNeo4JClient)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +128,7 @@ func Neo4jClient(ctx context.Context) (neo4j.Driver, error) {
 	err = driver.VerifyConnectivity()
 	if err != nil {
 		key, _ := ExtractNamespace(ctx)
-		old, has := neo4j_clients_pool.LoadAndDelete(key)
+		old, has := neo4jClientsPool.LoadAndDelete(key)
 		if has {
 			old.(*CypherDriver).Close()
 		}

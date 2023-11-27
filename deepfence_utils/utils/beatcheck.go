@@ -10,7 +10,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
-func tcp_connect(host string, port string, timeout time.Duration) error {
+func tcpConnect(host string, port string, timeout time.Duration) error {
 	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, port), timeout)
 	if err != nil {
 		return err
@@ -21,13 +21,13 @@ func tcp_connect(host string, port string, timeout time.Duration) error {
 	return nil
 }
 
-func WaitServiceTcpConn(host string, port string, timeout time.Duration) error {
+func WaitServiceTCPConn(host string, port string, timeout time.Duration) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	op := func() error {
-		return tcp_connect(host, port, 5*time.Second)
+		return tcpConnect(host, port, 5*time.Second)
 	}
 
 	notify := func(err error, d time.Duration) {

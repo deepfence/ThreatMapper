@@ -24,9 +24,9 @@ import (
 
 var (
 	DefaultQueues = map[string]int{
-		utils.Q_CRITICAL: 6,
-		utils.Q_DEFAULT:  3,
-		utils.Q_LOW:      1,
+		utils.QCritical: 6,
+		utils.QDefault:  3,
+		utils.QLow:      1,
 	}
 )
 

@@ -15,7 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          # token: ${{ secrets.CI_PAT }}
           submodules: recursive
           fetch-depth: "0"
       - uses: actions/setup-go@v4
@@ -28,3 +27,22 @@ jobs:
           version: v1.55
           only-new-issues: true
           working-directory: deepfence_bootstrapper
+
+  lint-utils:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: "0"
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: false
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.55
+          only-new-issues: true
+          working-directory: deepfence_utils
+          args: --timeout=30m

@@ -88,7 +88,7 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// skip report file delete, in case of error we don't save the file
-	if report.Status != utils.SCAN_STATUS_FAILED {
+	if report.Status != utils.ScanStatusFailed {
 		err = mc.DeleteFile(r.Context(), report.StoragePath, false, minio.RemoveObjectOptions{ForceDelete: true})
 		if err != nil {
 			h.respondError(err, w)
@@ -299,7 +299,7 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	vars := map[string]interface{}{
 		"type":     req.ReportType,
 		"uid":      report_id,
-		"status":   utils.SCAN_STATUS_STARTING,
+		"status":   utils.ScanStatusStarting,
 		"filters":  req.Filters.String(),
 		"duration": req.Duration,
 	}
