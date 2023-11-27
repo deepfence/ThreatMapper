@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFetcher, useParams } from 'react-router-dom';
 import {
   Button,
@@ -114,6 +114,14 @@ const isJiraIntegration = (integrationType: string) => {
   return integrationType && integrationType === IntegrationType.jira;
 };
 
+const isCloudComplianceNotification = (notificationType: string) => {
+  return notificationType && notificationType === 'Cloud Compliance';
+};
+
+const isComplianceNotification = (notificationType: string) => {
+  return notificationType && notificationType === 'Compliance';
+};
+
 const API_SCAN_TYPE_MAP: {
   [key: string]: ScanTypeEnum;
 } = {
@@ -124,7 +132,13 @@ const API_SCAN_TYPE_MAP: {
 };
 
 const scanTypes = ['Secret', 'Vulnerability', 'Malware'];
-const AdvancedFilters = ({ notificationType }: { notificationType: string }) => {
+const AdvancedFilters = ({
+  notificationType,
+  cloudProvider,
+}: {
+  notificationType: string;
+  cloudProvider?: string;
+}) => {
   // severity
   const [selectedSeverity, setSelectedSeverity] = useState([]);
 
@@ -137,65 +151,98 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
   const [containers, setContainers] = useState<string[]>([]);
   const [clusters, setClusters] = useState<string[]>([]);
 
+  const [selectedCloudAccounts, setSelectedCloudAccounts] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSelectedSeverity([]);
+    setSelectedStatus([]);
+    setHosts([]);
+    setImages([]);
+    setContainers([]);
+    setClusters([]);
+    setSelectedCloudAccounts([]);
+  }, [notificationType, cloudProvider]);
+
   return (
     <div className="col-span-2 mt-6">
       <div className="flex dark:text-text-input-value ">
         <div className="text-h5">Advanced Filter (Optional)</div>
       </div>
       <div className="grid grid-cols-2 gap-y-8 gap-x-8 pt-4">
-        <SearchableHostList
-          scanType={API_SCAN_TYPE_MAP[notificationType]}
-          triggerVariant="select"
-          defaultSelectedHosts={hosts}
-          onChange={(value) => {
-            setHosts(value);
-          }}
-          onClearAll={() => {
-            setHosts([]);
-          }}
-          agentRunning={false}
-          active={false}
-        />
+        {isCloudComplianceNotification(notificationType) && cloudProvider ? (
+          <SearchableCloudAccountsList
+            label={`${cloudProvider} Account`}
+            triggerVariant="select"
+            defaultSelectedAccounts={selectedCloudAccounts}
+            cloudProvider={cloudProvider.toLowerCase() as 'aws' | 'gcp' | 'azure'}
+            onClearAll={() => {
+              setSelectedCloudAccounts([]);
+            }}
+            onChange={(value) => {
+              setSelectedCloudAccounts(value);
+            }}
+          />
+        ) : (
+          <SearchableHostList
+            scanType={API_SCAN_TYPE_MAP[notificationType]}
+            triggerVariant="select"
+            defaultSelectedHosts={hosts}
+            onChange={(value) => {
+              setHosts(value);
+            }}
+            onClearAll={() => {
+              setHosts([]);
+            }}
+            agentRunning={false}
+            active={false}
+          />
+        )}
+        {!isComplianceNotification(notificationType) &&
+          !isCloudComplianceNotification(notificationType) && (
+            <SearchableContainerList
+              scanType={API_SCAN_TYPE_MAP[notificationType]}
+              triggerVariant="select"
+              defaultSelectedContainers={containers}
+              onChange={(value) => {
+                setContainers(value);
+              }}
+              onClearAll={() => {
+                setContainers([]);
+              }}
+              active={false}
+            />
+          )}
+        {!isComplianceNotification(notificationType) &&
+          !isCloudComplianceNotification(notificationType) && (
+            <SearchableImageList
+              scanType={API_SCAN_TYPE_MAP[notificationType]}
+              triggerVariant="select"
+              defaultSelectedImages={images}
+              onChange={(value) => {
+                setImages(value);
+              }}
+              onClearAll={() => {
+                setImages([]);
+              }}
+            />
+          )}
+        {!isCloudComplianceNotification(notificationType) && (
+          <SearchableClusterList
+            triggerVariant="select"
+            defaultSelectedClusters={clusters}
+            onChange={(value) => {
+              setClusters(value);
+            }}
+            onClearAll={() => {
+              setClusters([]);
+            }}
+            agentRunning={false}
+            active={false}
+          />
+        )}
 
-        <SearchableContainerList
-          scanType={API_SCAN_TYPE_MAP[notificationType]}
-          triggerVariant="select"
-          defaultSelectedContainers={containers}
-          onChange={(value) => {
-            setContainers(value);
-          }}
-          onClearAll={() => {
-            setContainers([]);
-          }}
-          active={false}
-        />
-
-        <SearchableImageList
-          scanType={API_SCAN_TYPE_MAP[notificationType]}
-          triggerVariant="select"
-          defaultSelectedImages={images}
-          onChange={(value) => {
-            setImages(value);
-          }}
-          onClearAll={() => {
-            setImages([]);
-          }}
-        />
-
-        <SearchableClusterList
-          triggerVariant="select"
-          defaultSelectedClusters={clusters}
-          onChange={(value) => {
-            setClusters(value);
-          }}
-          onClearAll={() => {
-            setClusters([]);
-          }}
-          agentRunning={false}
-          active={false}
-        />
-
-        {notificationType === 'Compliance' || notificationType === 'CloudCompliance' ? (
+        {isComplianceNotification(notificationType) ||
+        isCloudComplianceNotification(notificationType) ? (
           <>
             <input
               type="text"
@@ -204,39 +251,64 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
               readOnly
               value={selectedStatus.length}
             />
-            <Listbox
-              variant="underline"
-              value={selectedStatus}
-              name="statusFilter"
-              onChange={(value) => {
-                setSelectedStatus(value);
-              }}
-              placeholder="Select status"
-              label="Select status"
-              multiple
-              clearAll="Clear"
-              onClearAll={() => setSelectedStatus([])}
-              getDisplayValue={(value) => {
-                return value && value.length ? `${value.length} selected` : '';
-              }}
-            >
-              <div className="px-3 pt-2 text-p3 text-gray-900 dark:text-text-text-and-icon">
-                Host
-              </div>
-              <ListboxOption value={'Alarm'}>Alarm</ListboxOption>
-              <ListboxOption value={'Note'}>Note</ListboxOption>
-              <ListboxOption value={'Ok'}>Ok</ListboxOption>
-              <div className="px-3 pt-4 text-p3 text-gray-900 dark:text-text-text-and-icon">
-                Cloud / Kubernetes
-              </div>
-              <ListboxOption value={'Pass'}>Pass</ListboxOption>
-              <ListboxOption value={'Skip'}>Skip</ListboxOption>
-              <ListboxOption value={'Warn'}>Warn</ListboxOption>
-              <div className="px-3 pt-4 text-p3 text-gray-900 dark:text-text-text-and-icon">
-                Common
-              </div>
-              <ListboxOption value={'Info'}>Info</ListboxOption>
-            </Listbox>
+            {isComplianceNotification(notificationType) && (
+              <Listbox
+                variant="underline"
+                value={selectedStatus}
+                name="statusFilter"
+                onChange={(value) => {
+                  setSelectedStatus(value);
+                }}
+                placeholder="Select status"
+                label="Select status"
+                multiple
+                clearAll="Clear"
+                onClearAll={() => setSelectedStatus([])}
+                getDisplayValue={(value) => {
+                  return value && value.length ? `${value.length} selected` : '';
+                }}
+              >
+                <div className="px-3 pt-2 text-p3 text-gray-900 dark:text-text-text-and-icon">
+                  Host
+                </div>
+                <ListboxOption value={'Alarm'}>Alarm</ListboxOption>
+                <ListboxOption value={'Note'}>Note</ListboxOption>
+                <ListboxOption value={'Ok'}>Ok</ListboxOption>
+                <div className="px-3 pt-4 text-p3 text-gray-900 dark:text-text-text-and-icon">
+                  Kubernetes
+                </div>
+                <ListboxOption value={'Pass'}>Pass</ListboxOption>
+                <ListboxOption value={'Skip'}>Skip</ListboxOption>
+                <ListboxOption value={'Warn'}>Warn</ListboxOption>
+                <div className="px-3 pt-4 text-p3 text-gray-900 dark:text-text-text-and-icon">
+                  Common
+                </div>
+                <ListboxOption value={'Info'}>Info</ListboxOption>
+              </Listbox>
+            )}
+            {isCloudComplianceNotification(notificationType) && (
+              <Listbox
+                variant="underline"
+                value={selectedStatus}
+                name="statusFilter"
+                onChange={(value) => {
+                  setSelectedStatus(value);
+                }}
+                placeholder="Select status"
+                label="Select status"
+                multiple
+                clearAll="Clear"
+                onClearAll={() => setSelectedStatus([])}
+                getDisplayValue={(value) => {
+                  return value && value.length ? `${value.length} selected` : '';
+                }}
+              >
+                <ListboxOption value={'Pass'}>Pass</ListboxOption>
+                <ListboxOption value={'Skip'}>Skip</ListboxOption>
+                <ListboxOption value={'Warn'}>Warn</ListboxOption>
+                <ListboxOption value={'Info'}>Info</ListboxOption>
+              </Listbox>
+            )}
           </>
         ) : null}
 
@@ -277,10 +349,17 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
   );
 };
 
-const notificationTypeList = ['Vulnerability', 'Secret', 'Malware', 'Compliance'];
+const notificationTypeList = [
+  'Vulnerability',
+  'Secret',
+  'Malware',
+  'Compliance',
+  'Cloud Compliance',
+];
 
 const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string> }) => {
   const [notificationType, setNotificationType] = useState<ScanTypeEnum | string>('');
+  const [cloud, setCloud] = useState<string>('AWS');
 
   const { integrationType } = useParams() as {
     integrationType: string;
@@ -328,6 +407,30 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
         ) : null} */}
       </Listbox>
 
+      {isCloudComplianceNotification(notificationType) && (
+        <Listbox
+          variant="underline"
+          label="Select Provider"
+          value={cloud}
+          name="cloudType"
+          onChange={(value) => {
+            setCloud(value);
+          }}
+          placeholder="Select provider"
+          getDisplayValue={() => {
+            return cloud;
+          }}
+        >
+          {['AWS', 'GCP', 'AZURE'].map((cloud) => {
+            return (
+              <ListboxOption value={cloud} key={cloud}>
+                {cloud}
+              </ListboxOption>
+            );
+          })}
+        </Listbox>
+      )}
+
       {isCloudTrailNotification(notificationType) && <>Add Cloud trails here</>}
 
       {isUserActivityNotification(notificationType) && (
@@ -344,7 +447,7 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
       {notificationType &&
       !isCloudTrailNotification(notificationType) &&
       !isUserActivityNotification(notificationType) ? (
-        <AdvancedFilters notificationType={notificationType} />
+        <AdvancedFilters notificationType={notificationType} cloudProvider={cloud} />
       ) : null}
       {notificationType &&
       isVulnerabilityNotification(notificationType) &&
