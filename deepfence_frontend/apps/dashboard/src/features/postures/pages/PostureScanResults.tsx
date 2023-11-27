@@ -1523,7 +1523,7 @@ const StatusesCount = ({
 }) => {
   return (
     <div className="col-span-6">
-      <div className="gap-24 flex justify-center">
+      <div className="flex justify-evenly gap-8">
         {Object.keys(statusCounts)?.map((key: string) => {
           return (
             <div key={key} className="col-span-2 dark:text-text-text-and-icon">

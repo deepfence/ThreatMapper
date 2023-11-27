@@ -444,6 +444,9 @@ const Filters = () => {
           getDisplayValue={() => FILTER_SEARCHPARAMS['secretScanStatus']}
         >
           {SCAN_STATUS_GROUPS.filter((item) => {
+            if (item.value === 'neverScanned') {
+              return false;
+            }
             if (!secretScanStatusSearchText.length) return true;
             return item.label
               .toLowerCase()
