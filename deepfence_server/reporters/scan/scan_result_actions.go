@@ -77,9 +77,24 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
         MERGE (t) -[m:MASKED]->(n)
         SET m.masked = $value`
 
+		if utils.Neo4jScanType(req.ScanType) == utils.NEO4J_CLOUD_COMPLIANCE_SCAN {
+			globalQuery = `
+			MATCH (o:CloudCompliance)
+			WHERE o.node_id IN $node_ids
+			WITH distinct(o.full_control_id) as control_ids
+				MATCH (n:CloudCompliance) <-[d:DETECTED]- (s:CloudComplianceScan)
+				WHERE n.full_control_id IN control_ids
+				SET n.masked=$value, d.masked=$value
+			WITH control_ids
+				MATCH (c:CloudComplianceControl)
+				WHERE c.control_id IN control_ids
+				SET c.active=$active
+			`
+		}
+
 		log.Debug().Msgf("mask_global query: %s", globalQuery)
 
-		_, err = tx.Run(globalQuery, map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
+		_, err = tx.Run(globalQuery, map[string]interface{}{"node_ids": req.ResultIDs, "value": value, "active": !value})
 
 	case utils.MASK_ALL_IMAGE_TAG, utils.MASK_ENTITY:
 		entityQuery := `
