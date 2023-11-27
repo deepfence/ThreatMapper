@@ -289,7 +289,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		SET n.status = $new_status`,
 		map[string]interface{}{
 			"time_ms":    dbScanTimeout.Milliseconds(),
-			"new_status": utils.SCAN_STATUS_FAILED,
+			"new_status": utils.ScanStatusFailed,
 		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -302,7 +302,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		SET n.status = $new_status`,
 		map[string]interface{}{
 			"time_ms":    dbUpgradeTimeout.Milliseconds(),
-			"new_status": utils.SCAN_STATUS_FAILED,
+			"new_status": utils.ScanStatusFailed,
 		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -636,8 +636,8 @@ func RetryScansDB(ctx context.Context, task *asynq.Task) error {
 		SET n.retries = n.retries + 1, n.status=$new_status`,
 		map[string]interface{}{
 			"time_ms":    dbScanTimeout.Milliseconds(),
-			"old_status": utils.SCAN_STATUS_INPROGRESS,
-			"new_status": utils.SCAN_STATUS_STARTING,
+			"old_status": utils.ScanStatusInProgress,
+			"new_status": utils.ScanStatusStarting,
 		}); err != nil {
 		return err
 	}
@@ -651,8 +651,8 @@ func RetryScansDB(ctx context.Context, task *asynq.Task) error {
 		SET a.retries = a.retries + 1, a.status=$new_status`,
 		map[string]interface{}{
 			"time_ms":    dbScanTimeout.Milliseconds(),
-			"old_status": utils.SCAN_STATUS_INPROGRESS,
-			"new_status": utils.SCAN_STATUS_STARTING,
+			"old_status": utils.ScanStatusInProgress,
+			"new_status": utils.ScanStatusStarting,
 		}); err != nil {
 		return err
 	}
@@ -688,8 +688,8 @@ func RetryUpgradeAgent(ctx context.Context, task *asynq.Task) error {
 		SET n.retries = n.retries + 1, n.status=$new_status`,
 		map[string]interface{}{
 			"time_ms":    dbScanTimeout.Milliseconds(),
-			"old_status": utils.SCAN_STATUS_INPROGRESS,
-			"new_status": utils.SCAN_STATUS_STARTING,
+			"old_status": utils.ScanStatusInProgress,
+			"new_status": utils.ScanStatusStarting,
 		}); err != nil {
 		return err
 	}

@@ -46,7 +46,7 @@ func StopVulnerabilityScan(ctx context.Context, task *asynq.Task) error {
 		return nil
 	}
 
-	scanID := params.ScanId
+	scanID := params.ScanID
 	cancelFnObj, found := scanMap.Load(scanID)
 	logMsg := ""
 	if found {
@@ -89,37 +89,37 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		return err
 	}
 
-	res, scanCtx := tasks.StartStatusReporter(params.ScanId,
+	res, scanCtx := tasks.StartStatusReporter(params.ScanID,
 		func(status tasks.ScanStatus) error {
 			sb, err := json.Marshal(status)
 			if err != nil {
 				return err
 			}
 			s.ingestC <- &kgo.Record{
-				Topic:   utils.VULNERABILITY_SCAN_STATUS,
+				Topic:   utils.VulnerabilityScanStatus,
 				Value:   sb,
 				Headers: rh,
 			}
 			return nil
 		}, tasks.StatusValues{
-			IN_PROGRESS: utils.SCAN_STATUS_INPROGRESS,
-			CANCELLED:   utils.SCAN_STATUS_CANCELLED,
-			FAILED:      utils.SCAN_STATUS_FAILED,
-			SUCCESS:     utils.SCAN_STATUS_SUCCESS,
+			IN_PROGRESS: utils.ScanStatusInProgress,
+			CANCELLED:   utils.ScanStatusCancelled,
+			FAILED:      utils.ScanStatusFailed,
+			SUCCESS:     utils.ScanStatusSuccess,
 		},
 		time.Minute*20,
 	)
 
-	log.Info().Msgf("Adding scan id to map:%s", params.ScanId)
-	scanMap.Store(params.ScanId, scanCtx)
+	log.Info().Msgf("Adding scan id to map:%s", params.ScanID)
+	scanMap.Store(params.ScanID, scanCtx)
 	defer func() {
-		log.Info().Msgf("Removing scan id from map:%s", params.ScanId)
-		scanMap.Delete(params.ScanId)
+		log.Info().Msgf("Removing scan id from map:%s", params.ScanID)
+		scanMap.Delete(params.ScanID)
 		res <- err
 		close(res)
 	}()
 
-	if params.RegistryId == "" {
+	if params.RegistryID == "" {
 		log.Error().Msgf("registry id is empty in params %+v", params)
 		return err
 	}
@@ -130,7 +130,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 	}
 
 	// get registry credentials
-	authFile, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
+	authFile, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryID)
 	if err != nil {
 		return err
 	}
@@ -150,12 +150,12 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		SyftBinPath:           syftBin,
 		HostName:              params.HostName,
 		NodeType:              "container_image", // this is required by package scanner
-		NodeID:                params.NodeId,
+		NodeID:                params.NodeID,
 		KubernetesClusterName: params.KubernetesClusterName,
-		ScanID:                params.ScanId,
-		ImageID:               params.ImageId,
+		ScanID:                params.ScanID,
+		ImageID:               params.ImageID,
 		ContainerName:         params.ContainerName,
-		RegistryID:            params.RegistryId,
+		RegistryID:            params.RegistryID,
 		RegistryCreds: psUtils.RegistryCreds{
 			AuthFilePath:  authFile,
 			SkipTLSVerify: creds.SkipTLSVerify,
@@ -171,7 +171,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 			cfg.Source = params.ImageName
 		}
 	} else {
-		cfg.Source = params.ImageId
+		cfg.Source = params.ImageID
 	}
 
 	log.Debug().Msgf("config: %+v", cfg)
@@ -207,7 +207,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		return err
 	}
 
-	sbomFile := path.Join("/sbom/", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
+	sbomFile := path.Join("/sbom/", utils.ScanIDReplacer.Replace(params.ScanID)+".json.gz")
 	info, err := mc.UploadFile(ctx, sbomFile, gzpb64Sbom.Bytes(), true,
 		minio.PutObjectOptions{ContentType: "application/gzip"})
 	if err != nil {

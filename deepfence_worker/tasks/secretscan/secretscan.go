@@ -3,7 +3,7 @@ package secretscan
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io/ioutil" //nolint:staticcheck
 	"os"
 	"os/exec"
 	"sync"
@@ -50,7 +50,7 @@ func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error 
 		return nil
 	}
 
-	scanID := params.ScanId
+	scanID := params.ScanID
 
 	obj, found := ScanMap.Load(scanID)
 	if !found {
@@ -88,7 +88,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 		return nil
 	}
 
-	if params.RegistryId == "" {
+	if params.RegistryID == "" {
 		log.Error().Msgf("registry id is empty in params %+v", params)
 		return nil
 	}
@@ -96,32 +96,32 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	//Set this "hardErr" variable to appropriate error if
 	//an error has caused used to abort/return from this function
 	var hardErr error
-	res, scanCtx := tasks.StartStatusReporter(params.ScanId,
+	res, scanCtx := tasks.StartStatusReporter(params.ScanID,
 		func(status tasks.ScanStatus) error {
 			sb, err := json.Marshal(status)
 			if err != nil {
 				return err
 			}
 			s.ingestC <- &kgo.Record{
-				Topic:   utils.SECRET_SCAN_STATUS,
+				Topic:   utils.SecretScanStatus,
 				Value:   sb,
 				Headers: []kgo.RecordHeader{{Key: "namespace", Value: []byte(tenantID)}},
 			}
 			return nil
 		}, tasks.StatusValues{
-			IN_PROGRESS: utils.SCAN_STATUS_INPROGRESS,
-			CANCELLED:   utils.SCAN_STATUS_CANCELLED,
-			FAILED:      utils.SCAN_STATUS_FAILED,
-			SUCCESS:     utils.SCAN_STATUS_SUCCESS,
+			IN_PROGRESS: utils.ScanStatusInProgress,
+			CANCELLED:   utils.ScanStatusCancelled,
+			FAILED:      utils.ScanStatusFailed,
+			SUCCESS:     utils.ScanStatusSuccess,
 		},
 		time.Minute*20,
 	)
 
-	ScanMap.Store(params.ScanId, scanCtx)
+	ScanMap.Store(params.ScanID, scanCtx)
 
 	defer func() {
-		log.Info().Msgf("Removing from scan map, scan_id: %s", params.ScanId)
-		ScanMap.Delete(params.ScanId)
+		log.Info().Msgf("Removing from scan map, scan_id: %s", params.ScanID)
+		ScanMap.Delete(params.ScanID)
 		res <- hardErr
 		close(res)
 	}()
@@ -133,7 +133,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	}
 
 	// get registry credentials
-	authDir, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
+	authDir, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryID)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		hardErr = err
@@ -159,7 +159,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 			imageName = params.ImageName
 		}
 	} else {
-		imageName = params.ImageId
+		imageName = params.ImageID
 	}
 
 	dir, err := ioutil.TempDir("/tmp", "secretscan-*")
@@ -210,13 +210,13 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	for _, c := range output.SecretsToSecretInfos(scanResult.Secrets) {
 		var r secretScanResult
 		r.SecretScanParameters = params
-		r.SecretInfo = *c
-		cb, err := json.Marshal(r)
+		r.SecretInfo = *c          //nolint:govet
+		cb, err := json.Marshal(r) //nolint:govet
 		if err != nil {
 			log.Error().Msg(err.Error())
 		} else {
 			s.ingestC <- &kgo.Record{
-				Topic:   utils.SECRET_SCAN,
+				Topic:   utils.SecretScan,
 				Value:   cb,
 				Headers: []kgo.RecordHeader{{Key: "namespace", Value: []byte(tenantID)}},
 			}

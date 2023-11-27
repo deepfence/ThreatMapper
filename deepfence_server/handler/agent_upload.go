@@ -191,7 +191,7 @@ func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]s
 		AND v.node_id <> row.latest
 		MERGE (vnew) -[:SCHEDULED{status: $status, retries: 0, trigger_action: row.action, updated_at: TIMESTAMP()}]-> (n)`,
 		map[string]interface{}{
-			"status": utils.SCAN_STATUS_STARTING,
+			"status": utils.ScanStatusStarting,
 			"batch":  tags_to_ingest}); err != nil {
 		return err
 	}

@@ -117,32 +117,32 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		return nil
 	}
 
-	res, scanCtx := tasks.StartStatusReporter(params.ScanId,
+	res, scanCtx := tasks.StartStatusReporter(params.ScanID,
 		func(status tasks.ScanStatus) error {
 			sb, err := json.Marshal(status)
 			if err != nil {
 				return err
 			}
 			s.ingestC <- &kgo.Record{
-				Topic:   utils.VULNERABILITY_SCAN_STATUS,
+				Topic:   utils.VulnerabilityScanStatus,
 				Value:   sb,
 				Headers: rh,
 			}
 			return nil
 		}, tasks.StatusValues{
-			IN_PROGRESS: utils.SCAN_STATUS_INPROGRESS,
-			CANCELLED:   utils.SCAN_STATUS_CANCELLED,
-			FAILED:      utils.SCAN_STATUS_FAILED,
-			SUCCESS:     utils.SCAN_STATUS_SUCCESS,
+			IN_PROGRESS: utils.ScanStatusInProgress,
+			CANCELLED:   utils.ScanStatusCancelled,
+			FAILED:      utils.ScanStatusFailed,
+			SUCCESS:     utils.ScanStatusSuccess,
 		},
 		time.Minute*20,
 	)
 
-	log.Info().Msgf("Adding scan id to map:%s", params.ScanId)
-	scanMap.Store(params.ScanId, scanCtx)
+	log.Info().Msgf("Adding scan id to map:%s", params.ScanID)
+	scanMap.Store(params.ScanID, scanCtx)
 	defer func() {
-		log.Info().Msgf("Removing scan id from map:%s", params.ScanId)
-		scanMap.Delete(params.ScanId)
+		log.Info().Msgf("Removing scan id from map:%s", params.ScanID)
+		scanMap.Delete(params.ScanID)
 		res <- err
 		close(res)
 	}()
@@ -155,7 +155,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	sbomFilePath := path.Join("/tmp", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
+	sbomFilePath := path.Join("/tmp", utils.ScanIDReplacer.Replace(params.ScanID)+".json")
 	f, err := os.Create(sbomFilePath)
 	if err != nil {
 		return err
@@ -183,10 +183,10 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	cfg := psUtils.Config{
 		HostName:              params.HostName,
 		NodeType:              params.NodeType,
-		NodeID:                params.NodeId,
+		NodeID:                params.NodeID,
 		KubernetesClusterName: params.KubernetesClusterName,
-		ScanID:                params.ScanId,
-		ImageID:               params.ImageId,
+		ScanID:                params.ScanID,
+		ImageID:               params.ImageID,
 		ContainerName:         params.ContainerName,
 	}
 
@@ -198,7 +198,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 
 	details := psOutput.CountBySeverity(&report)
 
-	log.Info().Msgf("scan-id=%s vulnerabilities=%d severities=%v", params.ScanId, len(report), details.Severity)
+	log.Info().Msgf("scan-id=%s vulnerabilities=%d severities=%v", params.ScanID, len(report), details.Severity)
 
 	// write reports and status to kafka ingester will process from there
 	for _, c := range report {
@@ -207,7 +207,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 			log.Error().Msg(err.Error())
 		} else {
 			s.ingestC <- &kgo.Record{
-				Topic:   utils.VULNERABILITY_SCAN,
+				Topic:   utils.VulnerabilityScan,
 				Value:   cb,
 				Headers: rh,
 			}
@@ -227,7 +227,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	runtimeSbomPath := path.Join("/sbom/", "runtime-"+utils.ScanIdReplacer.Replace(params.ScanId)+".json")
+	runtimeSbomPath := path.Join("/sbom/", "runtime-"+utils.ScanIDReplacer.Replace(params.ScanID)+".json")
 	uploadInfo, err := mc.UploadFile(context.Background(), runtimeSbomPath, runtimeSbomBytes, true,
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
@@ -235,7 +235,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	log.Info().Msgf("scan_id: %s, runtime sbom minio file info: %+v", params.ScanId, uploadInfo)
+	log.Info().Msgf("scan_id: %s, runtime sbom minio file info: %+v", params.ScanID, uploadInfo)
 
 	return nil
 }

@@ -12,8 +12,8 @@ type SpanWrapper struct {
 	impl trace.Span
 }
 
-func NewSpan(ctx context.Context, tracer_name string, operation_name string) SpanWrapper {
-	_, span := otel.Tracer(tracer_name).Start(ctx, operation_name)
+func NewSpan(ctx context.Context, tracerName string, operationName string) SpanWrapper {
+	_, span := otel.Tracer(tracerName).Start(ctx, operationName)
 	return SpanWrapper{impl: span}
 }
 

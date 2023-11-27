@@ -201,23 +201,23 @@ func (h *Handler) SearchVulnerabilityRules(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *Handler) SearchVulnerabilityScans(w http.ResponseWriter, r *http.Request) {
-	h.SearchScans(w, r, utils.NEO4J_VULNERABILITY_SCAN)
+	h.SearchScans(w, r, utils.NEO4JVulnerabilityScan)
 }
 
 func (h *Handler) SearchSecretScans(w http.ResponseWriter, r *http.Request) {
-	h.SearchScans(w, r, utils.NEO4J_SECRET_SCAN)
+	h.SearchScans(w, r, utils.NEO4JSecretScan)
 }
 
 func (h *Handler) SearchMalwareScans(w http.ResponseWriter, r *http.Request) {
-	h.SearchScans(w, r, utils.NEO4J_MALWARE_SCAN)
+	h.SearchScans(w, r, utils.NEO4JMalwareScan)
 }
 
 func (h *Handler) SearchComplianceScans(w http.ResponseWriter, r *http.Request) {
-	h.SearchScans(w, r, utils.NEO4J_COMPLIANCE_SCAN)
+	h.SearchScans(w, r, utils.NEO4JComplianceScan)
 }
 
 func (h *Handler) SearchCloudComplianceScans(w http.ResponseWriter, r *http.Request) {
-	h.SearchScans(w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
+	h.SearchScans(w, r, utils.NEO4JCloudComplianceScan)
 }
 
 func (h *Handler) SearchCloudNodes(w http.ResponseWriter, r *http.Request) {
@@ -293,23 +293,23 @@ func (h *Handler) SearchVulnerabilityRulesCount(w http.ResponseWriter, r *http.R
 }
 
 func (h *Handler) SearchVulnerabilityScansCount(w http.ResponseWriter, r *http.Request) {
-	h.SearchScansCount(w, r, utils.NEO4J_VULNERABILITY_SCAN)
+	h.SearchScansCount(w, r, utils.NEO4JVulnerabilityScan)
 }
 
 func (h *Handler) SearchSecretScansCount(w http.ResponseWriter, r *http.Request) {
-	h.SearchScansCount(w, r, utils.NEO4J_SECRET_SCAN)
+	h.SearchScansCount(w, r, utils.NEO4JSecretScan)
 }
 
 func (h *Handler) SearchMalwareScansCount(w http.ResponseWriter, r *http.Request) {
-	h.SearchScansCount(w, r, utils.NEO4J_MALWARE_SCAN)
+	h.SearchScansCount(w, r, utils.NEO4JMalwareScan)
 }
 
 func (h *Handler) SearchComplianceScansCount(w http.ResponseWriter, r *http.Request) {
-	h.SearchScansCount(w, r, utils.NEO4J_COMPLIANCE_SCAN)
+	h.SearchScansCount(w, r, utils.NEO4JComplianceScan)
 }
 
 func (h *Handler) SearchCloudComplianceScansCount(w http.ResponseWriter, r *http.Request) {
-	h.SearchScansCount(w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
+	h.SearchScansCount(w, r, utils.NEO4JCloudComplianceScan)
 }
 
 func (h *Handler) SearchScans(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {

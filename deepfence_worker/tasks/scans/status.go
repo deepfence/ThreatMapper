@@ -88,7 +88,7 @@ func UpdateCloudResourceScanStatus(ctx context.Context, task *asynq.Task) error 
 		MATCH (cr:CloudResource{arn: arn})
 		SET cr.` + ingestersUtil.ScanCountField[event.ScanType] + `=count,
 			cr.` + ingestersUtil.ScanStatusField[event.ScanType] + `=status,
-			cr.` + ingestersUtil.LatestScanIdField[event.ScanType] + `=scan_id`
+			cr.` + ingestersUtil.LatestScanIDField[event.ScanType] + `=scan_id`
 
 	log.Debug().Msgf("query: %v", query)
 	_, err = session.Run(query,

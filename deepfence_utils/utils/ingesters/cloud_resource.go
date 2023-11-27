@@ -41,7 +41,7 @@ type CloudResource struct {
 	InstanceID                     string           `json:"instance_id"`
 	NetworkMode                    string           `json:"network_mode,omitempty"`
 	Scheme                         string           `json:"scheme,omitempty"`
-	DbClusterIdentifier            string           `json:"db_cluster_identifier,omitempty"`
+	DDClusterIDentifier            string           `json:"db_cluster_identifier,omitempty"`
 	Connectivity                   string           `json:"connectivity,omitempty"`
 	Group                          string           `json:"group,omitempty"`
 	ServiceName                    string           `json:"service_name,omitempty"`
@@ -51,16 +51,16 @@ type CloudResource struct {
 	VpcID                          string           `json:"vpc_id,omitempty"`
 	AllowBlobPublicAccess          bool             `json:"allow_blob_public_access,omitempty"`
 	PublicAccess                   string           `json:"public_access,omitempty"`
-	GroupId                        string           `json:"group_id,omitempty"`
+	GroupID                        string           `json:"group_id,omitempty"`
 	CidrIpv4                       string           `json:"cidr_ipv4,omitempty"`
 	PublicNetworkAccess            string           `json:"public_network_access,omitempty"`
 	StorageAccountName             string           `json:"storage_account_name,omitempty"`
 	IamInstanceProfileArn          string           `json:"iam_instance_profile_arn,omitempty"`
-	IamInstanceProfileId           string           `json:"iam_instance_profile_id,omitempty"`
-	PublicIpAddress                string           `json:"public_ip_address"`
-	PrivateIpAddress               string           `json:"private_ip_address,omitempty"`
+	IamInstanceProfileID           string           `json:"iam_instance_profile_id,omitempty"`
+	PublicIPAddress                string           `json:"public_ip_address"`
+	PrivateIPAddress               string           `json:"private_ip_address,omitempty"`
 	InstanceType                   string           `json:"instance_type,omitempty"`
-	PrivateDnsName                 string           `json:"private_dns_name,omitempty"`
+	PrivateDNSName                 string           `json:"private_dns_name,omitempty"`
 	Tags                           *json.RawMessage `json:"tags,omitempty"`
 	PolicyStd                      *json.RawMessage `json:"policy_std,omitempty"`
 	Containers                     *json.RawMessage `json:"containers,omitempty"`
@@ -70,7 +70,7 @@ type CloudResource struct {
 	PublicIps                      *json.RawMessage `json:"public_ips,omitempty"`
 	NetworkInterfaces              *json.RawMessage `json:"network_interfaces,omitempty"`
 	IamPolicy                      *json.RawMessage `json:"iam_policy,omitempty"`
-	IpConfiguration                *json.RawMessage `json:"ip_configuration,omitempty"`
+	IPConfiguration                *json.RawMessage `json:"ip_configuration,omitempty"`
 	IngressSettings                string           `json:"ingress_settings,omitempty"`
 	SecurityGroups                 *json.RawMessage `json:"security_groups,omitempty"`
 	VpcSecurityGroups              *json.RawMessage `json:"vpc_security_groups,omitempty"`
@@ -83,19 +83,19 @@ type CloudResource struct {
 	Groups                         *json.RawMessage `json:"groups"`
 	InlinePolicies                 *json.RawMessage `json:"inline_policies"`
 	Path                           string           `json:"path"`
-	UserId                         string           `json:"user_id"`
+	UserID                         string           `json:"user_id"`
 	AccessLevel                    string           `json:"access_level"`
 	Action                         string           `json:"action"`
 	Description                    string           `json:"description"`
 	Privilege                      string           `json:"privilege"`
-	OrganizationId                 string           `json:"organization_id"`
+	OrganizationID                 string           `json:"organization_id"`
 	OrganizationMasterAccountArn   string           `json:"organization_master_account_arn"`
 	OrganizationMasterAccountEmail string           `json:"organization_master_account_email"`
 	TargetHealthDescriptions       *json.RawMessage `json:"target_health_descriptions"`
 	InstanceProfileArns            *json.RawMessage `json:"instance_profile_arns"`
 	Instances                      *json.RawMessage `json:"instances"`
 	TargetGroupArn                 string           `json:"target_group_arn"`
-	VpcSecurityGroupIds            *json.RawMessage `json:"vpc_security_group_ids"`
+	VpcSecurityGroupIDs            *json.RawMessage `json:"vpc_security_group_ids"`
 	Users                          *json.RawMessage `json:"users"`
 	UserGroups                     *json.RawMessage `json:"user-groups"`
 	ResourcesVpcConfig             *json.RawMessage `json:"resources_vpc_config"`
@@ -139,37 +139,38 @@ func (c *CloudResource) ToMap() (map[string]interface{}, error) {
 	bb = convertStructFieldToJSONString(bb, "resources_vpc_config")
 	bb = convertStructFieldToJSONString(bb, "tags")
 
-	if strings.Contains("azure", bb["resource_id"].(string)) {
+	if strings.Contains(bb["resource_id"].(string), "azure") {
 		if bb["resource_id"].(string) == "azure_compute_virtual_machine" {
 			bb["node_id"] = bb["vm_id"]
 		} else {
 			bb["node_id"] = bb["name"]
 		}
 	} else {
-		if bb["arn"] != nil {
+		switch {
+		case bb["arn"] != nil:
 			bb["node_id"] = bb["arn"]
-		} else if bb["id"] != nil {
+		case bb["id"] != nil:
 			bb["node_id"] = bb["id"]
-		} else if bb["resource_id"] != nil {
+		case bb["resource_id"] != nil:
 			bb["node_id"] = bb["resource_id"]
-		} else {
+		default:
 			bb["node_id"] = "error"
 		}
 	}
-	accountId, present := bb["account_id"]
+	accountID, present := bb["account_id"]
 	if present {
-		splits := strings.Split(fmt.Sprintf("%v", accountId), "-")
+		splits := strings.Split(fmt.Sprintf("%v", accountID), "-")
 		if len(splits) > 2 {
 			bb["cloud_provider"] = splits[2]
 		}
 	}
 
 	bb["node_type"] = bb["resource_id"]
-	cloud_region := "global"
+	cloudRegion := "global"
 	if v, has := bb["region"]; has && v != nil {
-		cloud_region = v.(string)
+		cloudRegion = v.(string)
 	}
-	bb["cloud_region"] = cloud_region
+	bb["cloud_region"] = cloudRegion
 	bb["node_name"] = bb["name"]
 
 	return bb, nil

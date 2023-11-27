@@ -63,7 +63,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	defer tx.Close()
 
 	switch req.MaskAction {
-	case utils.MASK_GLOBAL:
+	case utils.MaskGlobal:
 		nodeTag := utils.ScanTypeDetectedNode[utils.Neo4jScanType(req.ScanType)]
 		globalQuery := `
         MATCH (o:` + nodeTag + `) -[:IS]-> (r)
@@ -81,7 +81,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 
 		_, err = tx.Run(globalQuery, map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
 
-	case utils.MASK_ALL_IMAGE_TAG, utils.MASK_ENTITY:
+	case utils.MaskAllImageTag, utils.MaskEntity:
 		entityQuery := `
         MATCH (s:` + string(req.ScanType) + `) - [d:DETECTED] -> (n)
         WHERE n.node_id IN $node_ids
@@ -91,7 +91,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 
 		_, err = tx.Run(entityQuery, map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
 
-	case utils.MASK_IMAGE_TAG:
+	case utils.MaskImageTag:
 		maskImageTagQuery := `
         MATCH (s:` + string(req.ScanType) + `) -[d:DETECTED] -> (n)
         WHERE n.node_id IN $node_ids AND s.node_id=$scan_id
@@ -179,7 +179,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 	if err != nil {
 		return err
 	}
-	if scanType == utils.NEO4J_VULNERABILITY_SCAN {
+	if scanType == utils.NEO4JVulnerabilityScan {
 		tx3, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 		if err != nil {
 			return err
@@ -203,13 +203,13 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 			log.Error().Err(err).Msg("failed to get minio client")
 			return err
 		}
-		sbomFile := path.Join("/sbom", utils.ScanIdReplacer.Replace(scanId)+".json.gz")
+		sbomFile := path.Join("/sbom", utils.ScanIDReplacer.Replace(scanId)+".json.gz")
 		err = mc.DeleteFile(ctx, sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to delete sbom for scan id %s", scanId)
 			return err
 		}
-		runtimeSbomFile := path.Join("/sbom", "runtime-"+utils.ScanIdReplacer.Replace(scanId)+".json")
+		runtimeSbomFile := path.Join("/sbom", "runtime-"+utils.ScanIDReplacer.Replace(scanId)+".json")
 		err = mc.DeleteFile(ctx, runtimeSbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to delete runtime sbom for scan id %s", scanId)
@@ -220,27 +220,27 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 	// update nodes scan result
 	query := ""
 	switch scanType {
-	case utils.NEO4J_VULNERABILITY_SCAN:
+	case utils.NEO4JVulnerabilityScan:
 		query = `MATCH (n)
 		WHERE (n:Node OR n:Container or n:ContainerImage)
 		AND n.vulnerability_latest_scan_id="%s"
 		SET n.vulnerability_latest_scan_id="", n.vulnerabilities_count=0, n.vulnerability_scan_status=""`
-	case utils.NEO4J_SECRET_SCAN:
+	case utils.NEO4JSecretScan:
 		query = `MATCH (n)
 		WHERE (n:Node OR n:Container or n:ContainerImage)
 		AND n.secret_latest_scan_id="%s"
 		SET n.secret_latest_scan_id="", n.secrets_count=0, n.secret_scan_status=""`
-	case utils.NEO4J_MALWARE_SCAN:
+	case utils.NEO4JMalwareScan:
 		query = `MATCH (n)
 		WHERE (n:Node OR n:Container or n:ContainerImage)
 		AND n.malware_latest_scan_id="%s"
 		SET n.malware_latest_scan_id="", n.malwares_count=0, n.malware_scan_status=""`
-	case utils.NEO4J_COMPLIANCE_SCAN:
+	case utils.NEO4JComplianceScan:
 		query = `MATCH (n)
 		WHERE (n:Node OR n:KubernetesCluster)
 		AND n.compliance_latest_scan_id="%s"
 		SET n.compliance_latest_scan_id="", n.compliances_count=0, n.compliance_scan_status=""`
-	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
+	case utils.NEO4JCloudComplianceScan:
 		query = `MATCH (n)
 		WHERE (n:CloudResource)
 		AND n.cloud_compliance_latest_scan_id="%s"
@@ -291,8 +291,8 @@ func StopCloudComplianceScan(ctx context.Context, scanIds []string) error {
 		if _, err = tx.Run(query,
 			map[string]interface{}{
 				"scan_id":        scanid,
-				"in_progress":    utils.SCAN_STATUS_INPROGRESS,
-				"cancel_pending": utils.SCAN_STATUS_CANCEL_PENDING,
+				"in_progress":    utils.ScanStatusInProgress,
+				"cancel_pending": utils.ScanStatusCancelPending,
 			}); err != nil {
 			log.Error().Msgf("StopCloudComplianceScan: Error in setting the state in neo4j: %v", err)
 			return err
@@ -329,10 +329,10 @@ func StopScan(ctx context.Context, scanType string, scanIds []string) error {
 		if _, err = tx.Run(queryStr,
 			map[string]interface{}{
 				"scan_id":        scanid,
-				"starting":       utils.SCAN_STATUS_STARTING,
-				"in_progress":    utils.SCAN_STATUS_INPROGRESS,
-				"cancel_pending": utils.SCAN_STATUS_CANCEL_PENDING,
-				"cancelled":      utils.SCAN_STATUS_CANCELLED,
+				"starting":       utils.ScanStatusStarting,
+				"in_progress":    utils.ScanStatusInProgress,
+				"cancel_pending": utils.ScanStatusCancelPending,
+				"cancelled":      utils.ScanStatusCancelled,
 			}); err != nil {
 			return err
 		}
@@ -342,7 +342,7 @@ func StopScan(ctx context.Context, scanType string, scanIds []string) error {
 
 func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId string, scanIDs []string) error {
 	switch scanType {
-	case utils.NEO4J_VULNERABILITY_SCAN:
+	case utils.NEO4JVulnerabilityScan:
 		res, common, err := GetSelectedScanResults[model.Vulnerability](ctx, scanType, scanId, scanIDs)
 		if err != nil {
 			return err
@@ -350,7 +350,7 @@ func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 		if err := Notify[model.Vulnerability](ctx, res, common, string(scanType)); err != nil {
 			return err
 		}
-	case utils.NEO4J_SECRET_SCAN:
+	case utils.NEO4JSecretScan:
 		res, common, err := GetSelectedScanResults[model.Secret](ctx, scanType, scanId, scanIDs)
 		if err != nil {
 			return err
@@ -358,7 +358,7 @@ func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 		if err := Notify[model.Secret](ctx, res, common, string(scanType)); err != nil {
 			return err
 		}
-	case utils.NEO4J_MALWARE_SCAN:
+	case utils.NEO4JMalwareScan:
 		res, common, err := GetSelectedScanResults[model.Malware](ctx, scanType, scanId, scanIDs)
 		if err != nil {
 			return err
@@ -366,7 +366,7 @@ func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 		if err := Notify[model.Malware](ctx, res, common, string(scanType)); err != nil {
 			return err
 		}
-	case utils.NEO4J_COMPLIANCE_SCAN:
+	case utils.NEO4JComplianceScan:
 		res, common, err := GetSelectedScanResults[model.Compliance](ctx, scanType, scanId, scanIDs)
 		if err != nil {
 			return err
@@ -374,7 +374,7 @@ func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 		if err := Notify[model.Compliance](ctx, res, common, string(scanType)); err != nil {
 			return err
 		}
-	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
+	case utils.NEO4JCloudComplianceScan:
 		res, common, err := GetSelectedScanResults[model.CloudCompliance](ctx, scanType, scanId, scanIDs)
 		if err != nil {
 			return err

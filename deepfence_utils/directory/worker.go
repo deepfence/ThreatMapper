@@ -9,38 +9,38 @@ import (
 )
 
 const (
-	max_size = 500 * 1024 * 1024 // 500 MB
+	maxSize = 500 * 1024 * 1024 // 500 MB
 )
 
-var ErrExhaustedResources = errors.New("Exhausted worker resources")
+var ErrExhaustedResources = errors.New("exhausted worker resources")
 
-type asyncq_clients struct {
+type asynqClients struct {
 	client    *asynq.Client
 	inspector *asynq.Inspector
 }
 
 type WorkEnqueuer struct {
-	clients asyncq_clients
+	clients asynqClients
 }
 
-var worker_clients_pool sync.Map
+var workerClientsPool sync.Map
 
 func init() {
-	worker_clients_pool = sync.Map{}
+	workerClientsPool = sync.Map{}
 }
 
-func new_asynq_client(endpoints DBConfigs) (*asyncq_clients, error) {
+func newAsynqClient(endpoints DBConfigs) (*asynqClients, error) {
 	if endpoints.Redis == nil {
-		return nil, errors.New("No defined Redis config")
+		return nil, errors.New("no defined Redis config")
 	}
 	redisCfg := asynq.RedisClientOpt{Addr: endpoints.Redis.Endpoint}
-	return &asyncq_clients{
+	return &asynqClients{
 		client:    asynq.NewClient(redisCfg),
 		inspector: asynq.NewInspector(redisCfg),
 	}, nil
 }
 
-func (ws WorkEnqueuer) Enqueue(task_enum string, data []byte, opts ...asynq.Option) error {
+func (ws WorkEnqueuer) Enqueue(taskEnum string, data []byte, opts ...asynq.Option) error {
 
 	client := ws.clients.client
 	inspector := ws.clients.inspector
@@ -58,17 +58,17 @@ func (ws WorkEnqueuer) Enqueue(task_enum string, data []byte, opts ...asynq.Opti
 		size += res.Size
 	}
 
-	if size >= max_size {
+	if size >= maxSize {
 		return ErrExhaustedResources
 	}
 
-	_, err = client.Enqueue(asynq.NewTask(task_enum, data), opts...)
+	_, err = client.Enqueue(asynq.NewTask(taskEnum, data), opts...)
 
 	return err
 }
 
 func Worker(ctx context.Context) (WorkEnqueuer, error) {
-	client, err := getClient(ctx, &worker_clients_pool, new_asynq_client)
+	client, err := getClient(ctx, &workerClientsPool, newAsynqClient)
 	if err != nil {
 		return WorkEnqueuer{}, err
 	}

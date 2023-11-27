@@ -7,8 +7,8 @@ type VulnerabilityScanStatus struct {
 }
 
 type Vulnerability struct {
-	ScanId                  string   `json:"scan_id"`
-	CveId                   string   `json:"cve_id"`
+	ScanID                  string   `json:"scan_id"`
+	CveID                   string   `json:"cve_id"`
 	CveType                 string   `json:"cve_type"`
 	CveSeverity             string   `json:"cve_severity"`
 	CveCausedByPackage      string   `json:"cve_caused_by_package"`
@@ -29,7 +29,7 @@ type Vulnerability struct {
 }
 
 type VulnerabilityRule struct {
-	CveId              string   `json:"cve_id"`
+	CveID              string   `json:"cve_id"`
 	CveType            string   `json:"cve_type"`
 	CveSeverity        string   `json:"cve_severity"`
 	CveFixedIn         string   `json:"cve_fixed_in"`
@@ -44,7 +44,7 @@ type VulnerabilityRule struct {
 }
 
 type VulnerabilityData struct {
-	CveId                   string `json:"cve_id"`
+	CveID                   string `json:"cve_id"`
 	CveSeverity             string `json:"cve_severity"`
 	CveCausedByPackage      string `json:"cve_caused_by_package"`
 	CveCausedByPackagePath  string `json:"cve_caused_by_package_path"`
@@ -57,7 +57,7 @@ type VulnerabilityData struct {
 
 func (c Vulnerability) Split() (VulnerabilityData, VulnerabilityRule) {
 	return VulnerabilityData{
-			CveId:                   c.CveId,
+			CveID:                   c.CveID,
 			CveSeverity:             c.CveSeverity,
 			CveCausedByPackage:      c.CveCausedByPackage,
 			CveCausedByPackagePath:  c.CveCausedByPackagePath,
@@ -67,7 +67,7 @@ func (c Vulnerability) Split() (VulnerabilityData, VulnerabilityRule) {
 			InitExploitabilityScore: c.InitExploitabilityScore,
 			HasLiveConnection:       c.HasLiveConnection,
 		}, VulnerabilityRule{
-			CveId:              c.CveId,
+			CveID:              c.CveID,
 			CveType:            c.CveType,
 			CveSeverity:        c.CveSeverity,
 			CveFixedIn:         c.CveFixedIn,

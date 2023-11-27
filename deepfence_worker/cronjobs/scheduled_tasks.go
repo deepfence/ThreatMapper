@@ -123,25 +123,25 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 		Filters: model.ScanFilter{}, IsPriority: isPriority}
 
 	switch messagePayload["action"].(string) {
-	case utils.VULNERABILITY_SCAN:
+	case utils.VulnerabilityScan:
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartVulnerabilityScan, map[string]string{"scan_type": "all"})
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_VULNERABILITY_SCAN, scanTrigger, actionBuilder)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4JVulnerabilityScan, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
-	case utils.SECRET_SCAN:
+	case utils.SecretScan:
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartSecretScan, nil)
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_SECRET_SCAN, scanTrigger, actionBuilder)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4JSecretScan, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
-	case utils.MALWARE_SCAN:
+	case utils.MalwareScan:
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartMalwareScan, nil)
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_MALWARE_SCAN, scanTrigger, actionBuilder)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4JMalwareScan, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
-	case utils.COMPLIANCE_SCAN, utils.CLOUD_COMPLIANCE_SCAN:
+	case utils.ComplianceScan, utils.CloudComplianceScan:
 		benchmarkTypes, ok := complianceBenchmarkTypes[nodeType]
 		if !ok {
 			log.Warn().Msgf("Unknown node type %s for compliance scan", nodeType)
@@ -185,7 +185,7 @@ func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]inte
 	action := utils.Neo4jScanType(messagePayload["action"].(string))
 
 	switch action {
-	case utils.NEO4J_VULNERABILITY_SCAN:
+	case utils.NEO4JVulnerabilityScan:
 		binArgs := make(map[string]string, 0)
 		if payload.ScanConfigLanguages != nil && len(payload.ScanConfigLanguages) > 0 {
 			languages := []string{}
@@ -196,23 +196,23 @@ func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]inte
 		}
 
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartVulnerabilityScan, binArgs)
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_VULNERABILITY_SCAN, scanTrigger, actionBuilder)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4JVulnerabilityScan, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
-	case utils.NEO4J_SECRET_SCAN:
+	case utils.NEO4JSecretScan:
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartSecretScan, nil)
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_SECRET_SCAN, scanTrigger, actionBuilder)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4JSecretScan, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
-	case utils.NEO4J_MALWARE_SCAN:
+	case utils.NEO4JMalwareScan:
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartMalwareScan, nil)
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_MALWARE_SCAN, scanTrigger, actionBuilder)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4JMalwareScan, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
-	case utils.NEO4J_COMPLIANCE_SCAN, utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
+	case utils.NEO4JComplianceScan, utils.NEO4JCloudComplianceScan:
 		if payload.BenchmarkTypes == nil || len(payload.BenchmarkTypes) == 0 {
 			log.Warn().Msgf("Invalid benchmarkType for compliance scan, job id: %d", scheduleJobId)
 			return nil

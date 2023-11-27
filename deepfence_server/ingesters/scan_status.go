@@ -96,9 +96,9 @@ func AddNewScan(tx WriteDBTransaction,
 		RETURN n.node_id, m.agent_running`, controls.ResourceTypeToNeo4j(node_type), scan_type),
 		map[string]interface{}{
 			"node_id":   node_id,
-			"complete":  utils.SCAN_STATUS_SUCCESS,
-			"failed":    utils.SCAN_STATUS_FAILED,
-			"cancelled": utils.SCAN_STATUS_CANCELLED})
+			"complete":  utils.ScanStatusSuccess,
+			"failed":    utils.ScanStatusFailed,
+			"cancelled": utils.ScanStatusCancelled})
 	if err != nil {
 		return err
 	}
@@ -134,14 +134,14 @@ func AddNewScan(tx WriteDBTransaction,
 		MERGE (n)-[:SCANNED]->(m)`, scan_type, controls.ResourceTypeToNeo4j(node_type)),
 		map[string]interface{}{
 			"scan_id":     scan_id,
-			"status":      utils.SCAN_STATUS_STARTING,
+			"status":      utils.ScanStatusStarting,
 			"node_id":     node_id,
 			"action":      string(b),
 			"is_priority": isPriority}); err != nil {
 		return err
 	}
 
-	latestScanIDFieldName := ingestersUtil.LatestScanIdField[scan_type]
+	latestScanIDFieldName := ingestersUtil.LatestScanIDField[scan_type]
 	scanStatusFieldName := ingestersUtil.ScanStatusField[scan_type]
 
 	if _, err = tx.Run(fmt.Sprintf(`
@@ -155,7 +155,7 @@ func AddNewScan(tx WriteDBTransaction,
 		scan_type, scanStatusFieldName, latestScanIDFieldName),
 		map[string]interface{}{
 			"scan_id": scan_id,
-			"status":  utils.SCAN_STATUS_STARTING}); err != nil {
+			"status":  utils.ScanStatusStarting}); err != nil {
 		return err
 	}
 
@@ -196,7 +196,7 @@ func AddNewScan(tx WriteDBTransaction,
 		if _, err = tx.Run(fmt.Sprintf(podQuery, scanStatusFieldName),
 			map[string]interface{}{
 				"node_id": node_id,
-				"status":  utils.SCAN_STATUS_STARTING}); err != nil {
+				"status":  utils.ScanStatusStarting}); err != nil {
 			return err
 		}
 	case controls.Image:
@@ -227,13 +227,13 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	isPriority bool) error {
 
 	neo4jNodeType := "CloudNode"
-	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
+	scanType := utils.NEO4JCloudComplianceScan
 	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
 		neo4jNodeType = "KubernetesCluster"
-		scanType = utils.NEO4J_COMPLIANCE_SCAN
+		scanType = utils.NEO4JComplianceScan
 	} else if nodeType == controls.ResourceTypeToString(controls.Host) {
 		neo4jNodeType = "Node"
-		scanType = utils.NEO4J_COMPLIANCE_SCAN
+		scanType = utils.NEO4JComplianceScan
 	}
 	res, err := tx.Run(fmt.Sprintf(`
 		OPTIONAL MATCH (n:%s{node_id:$node_id})
@@ -272,9 +272,9 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		RETURN n.node_id, m.agent_running`, neo4jNodeType, scanType),
 		map[string]interface{}{
 			"node_id":         nodeId,
-			"complete":        utils.SCAN_STATUS_SUCCESS,
-			"failed":          utils.SCAN_STATUS_FAILED,
-			"cancelled":       utils.SCAN_STATUS_CANCELLED,
+			"complete":        utils.ScanStatusSuccess,
+			"failed":          utils.ScanStatusFailed,
+			"cancelled":       utils.ScanStatusCancelled,
 			"benchmark_types": benchmarkTypes,
 		})
 	if err != nil {
@@ -305,7 +305,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		nt = ctl.Host
 	}
 	internalReq, _ := json.Marshal(ctl.StartComplianceScanRequest{
-		NodeId:   nodeId,
+		NodeID:   nodeId,
 		NodeType: nt,
 		BinArgs:  map[string]string{"scan_id": scanId, "benchmark_types": strings.Join(benchmarkTypes, ",")},
 	})
@@ -319,7 +319,7 @@ MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, 
 		MERGE (n)-[:SCANNED]->(m)`, scanType, neo4jNodeType),
 		map[string]interface{}{
 			"scan_id":         scanId,
-			"status":          utils.SCAN_STATUS_STARTING,
+			"status":          utils.ScanStatusStarting,
 			"node_id":         nodeId,
 			"benchmark_types": benchmarkTypes,
 			"action":          string(action),
@@ -328,7 +328,7 @@ MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, 
 		return err
 	}
 
-	latestScanIDFieldName := ingestersUtil.LatestScanIdField[scanType]
+	latestScanIDFieldName := ingestersUtil.LatestScanIDField[scanType]
 	scanStatusFieldName := ingestersUtil.ScanStatusField[scanType]
 
 	if _, err = tx.Run(fmt.Sprintf(`
@@ -342,7 +342,7 @@ MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, 
 		scanType, scanStatusFieldName, latestScanIDFieldName),
 		map[string]interface{}{
 			"scan_id": scanId,
-			"status":  utils.SCAN_STATUS_STARTING}); err != nil {
+			"status":  utils.ScanStatusStarting}); err != nil {
 		return err
 	}
 

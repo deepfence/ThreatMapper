@@ -73,8 +73,8 @@ func SetAgentControls() {
 				linuxScannerUtil.Config{
 					ComplianceCheckTypes:      strings.Split(req.BinArgs["benchmark_types"], ","),
 					ScanID:                    req.BinArgs["scan_id"],
-					NodeID:                    req.NodeId,
-					NodeName:                  req.NodeId,
+					NodeID:                    req.NodeID,
+					NodeName:                  req.NodeID,
 					ComplianceResultsFilePath: fmt.Sprintf("/var/log/fenced/compliance/%s.log", req.BinArgs["scan_id"]),
 					ComplianceStatusFilePath:  "/var/log/fenced/compliance-scan-logs/status.log",
 				})
@@ -115,7 +115,7 @@ func SetAgentControls() {
 			log.Info().Msg("Start & download Agent Plugin")
 			router.SetUpgrade()
 			defer router.UnsetUpgrade()
-			err = supervisor.UpgradeProcessFromURL(req.PluginName, req.BinUrl)
+			err = supervisor.UpgradeProcessFromURL(req.PluginName, req.BinURL)
 			if err != nil {
 				return err
 			}

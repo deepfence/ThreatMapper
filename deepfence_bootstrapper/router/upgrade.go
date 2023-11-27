@@ -21,8 +21,8 @@ const (
 )
 
 func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
-	log.Info().Msgf("Fetching %v", req.HomeDirectoryUrl)
-	err := downloadFile(binariesFile, req.HomeDirectoryUrl)
+	log.Info().Msgf("Fetching %v", req.HomeDirectoryURL)
+	err := downloadFile(binariesFile, req.HomeDirectoryURL)
 	if err != nil {
 		return err
 	}

@@ -96,7 +96,7 @@ func createPagerDutyEvent(pagerDutyAPIToken string, event pagerduty.V2Event) err
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Token token="+pagerDutyAPIToken)
 
-	client := utils.GetHttpClient()
+	client := utils.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -145,7 +145,7 @@ func IsValidCreds(p PagerDuty) (bool, error) {
 	req.Header.Set("Content-Type", "application/json")
 
 	// Make the HTTP request.
-	client := utils.GetHttpClient()
+	client := utils.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		return false, err

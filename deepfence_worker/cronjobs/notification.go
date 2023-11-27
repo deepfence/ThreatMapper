@@ -23,7 +23,7 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]: {
+var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
 	"cve_severity":          "Severity",
 	"cve_id":                "CVE Id",
 	"cve_description":       "Description",
@@ -37,7 +37,7 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 	"cve_caused_by_package": "CVE Caused By Package",
 	"node_id":               "Node ID",
 	"updated_at":            "updated_at"},
-	utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]: {
+	utils.ScanTypeDetectedNode[utils.NEO4JSecretScan]: {
 		"node_id":            "Node ID",
 		"full_filename":      "File Name",
 		"matched_content":    "Matched Content",
@@ -48,7 +48,7 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 		"part":               "Part",
 		"signature_to_match": "Matched Signature",
 		"updated_at":         "updated_at"},
-	utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]: {"class": "Class",
+	utils.ScanTypeDetectedNode[utils.NEO4JMalwareScan]: {"class": "Class",
 		"complete_filename": "File Name",
 		"file_sev_score":    "File Severity Score",
 		"file_severity":     "File Severity",
@@ -60,7 +60,7 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 		"severity_score":    "Severity Score",
 		"summary":           "Summary",
 		"updated_at":        "updated_at"},
-	utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]: {
+	utils.ScanTypeDetectedNode[utils.NEO4JComplianceScan]: {
 		"compliance_check_type": "Compliance Check Type",
 		"resource":              "Resource",
 		"status":                "Test Status",
@@ -68,7 +68,7 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 		"description":           "Description",
 		"test_number":           "Test ID",
 		"test_desc":             "Info"},
-	utils.ScanTypeDetectedNode[utils.NEO4J_CLOUD_COMPLIANCE_SCAN]: {
+	utils.ScanTypeDetectedNode[utils.NEO4JCloudComplianceScan]: {
 		"title":                 "Title",
 		"reason":                "Reason",
 		"resource":              "Resource",
@@ -187,16 +187,16 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 
 func processIntegrationRow(integrationRow postgresql_db.Integration, ctx context.Context, task *asynq.Task) error {
 	switch integrationRow.Resource {
-	case utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]:
+	case utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]:
 		return processIntegration[model.Vulnerability](ctx, task, integrationRow)
-	case utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]:
+	case utils.ScanTypeDetectedNode[utils.NEO4JSecretScan]:
 		return processIntegration[model.Secret](ctx, task, integrationRow)
-	case utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]:
+	case utils.ScanTypeDetectedNode[utils.NEO4JMalwareScan]:
 		return processIntegration[model.Malware](ctx, task, integrationRow)
-	case utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]:
+	case utils.ScanTypeDetectedNode[utils.NEO4JComplianceScan]:
 		err1 := processIntegration[model.Compliance](ctx, task, integrationRow)
 		// cloud compliance scans
-		integrationRow.Resource = utils.ScanTypeDetectedNode[utils.NEO4J_CLOUD_COMPLIANCE_SCAN]
+		integrationRow.Resource = utils.ScanTypeDetectedNode[utils.NEO4JCloudComplianceScan]
 		err2 := processIntegration[model.CloudCompliance](ctx, task, integrationRow)
 		return errors.Join(err1, err2)
 	}
@@ -307,7 +307,7 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		},
 	)
 	filters.FieldsFilters.ContainsFilter = reporters.ContainsFilter{
-		FieldsValues: map[string][]interface{}{"status": {utils.SCAN_STATUS_SUCCESS}},
+		FieldsValues: map[string][]interface{}{"status": {utils.ScanStatusSuccess}},
 	}
 
 	profileStart := time.Now()

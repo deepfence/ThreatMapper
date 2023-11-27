@@ -30,6 +30,8 @@ func Injector(next http.Handler) http.Handler {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		//nolint:staticcheck
 		ctx := context.WithValue(r.Context(), NamespaceKey, NamespaceID(namespace))
 		// Token is authenticated, pass it through
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -38,20 +40,24 @@ func Injector(next http.Handler) http.Handler {
 
 func NewGlobalContext() context.Context {
 	ctx := context.Background()
+	//nolint:staticcheck
 	ctx = context.WithValue(ctx, NamespaceKey, GlobalDirKey)
 	return ctx
 }
 
 func WithGlobalContext(ctx context.Context) context.Context {
+	//nolint:staticcheck
 	return context.WithValue(ctx, NamespaceKey, GlobalDirKey)
 }
 
 func WithDatabaseContext(ctx context.Context) context.Context {
+	//nolint:staticcheck
 	return context.WithValue(ctx, NamespaceKey, DatabaseDirKey)
 }
 
 func NewContextWithNameSpace(ns NamespaceID) context.Context {
 	ctx := context.Background()
+	//nolint:staticcheck
 	ctx = context.WithValue(ctx, NamespaceKey, ns)
 	return ctx
 }

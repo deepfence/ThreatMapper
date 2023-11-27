@@ -143,7 +143,7 @@ func (h *Handler) ScheduleAgentPluginsEnable(w http.ResponseWriter, r *http.Requ
 	}
 
 	internal_req := ctl.EnableAgentPluginRequest{
-		BinUrl:     url,
+		BinURL:     url,
 		Version:    agentUp.Version,
 		PluginName: agentUp.PluginName,
 	}

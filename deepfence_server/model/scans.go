@@ -91,9 +91,9 @@ type ComplianceScanInfo struct {
 }
 
 const (
-	SCAN_STATUS_SUCCESS    = utils.SCAN_STATUS_SUCCESS
-	SCAN_STATUS_STARTING   = utils.SCAN_STATUS_STARTING
-	SCAN_STATUS_INPROGRESS = utils.SCAN_STATUS_INPROGRESS
+	SCAN_STATUS_SUCCESS    = utils.ScanStatusSuccess
+	SCAN_STATUS_STARTING   = utils.ScanStatusStarting
+	SCAN_STATUS_INPROGRESS = utils.ScanStatusInProgress
 )
 
 type ScanTriggerResp struct {

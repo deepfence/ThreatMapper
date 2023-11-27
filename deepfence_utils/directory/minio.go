@@ -266,7 +266,7 @@ func (mfm *MinioFileManager) DownloadFileContexts(ctx context.Context, remoteFil
 
 func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error) {
 	// Force browser to download file - url.Values{"response-content-disposition": []string{"attachment; filename=\"b.txt\""}},
-	consoleIp, err := GetManagementHost(ctx)
+	consoleIP, err := GetManagementHost(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -280,7 +280,7 @@ func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, ad
 
 	headers := http.Header{}
 	if !strings.Contains(mfm.client.EndpointURL().Hostname(), "s3.amazonaws.com") {
-		headers.Add("Host", consoleIp)
+		headers.Add("Host", consoleIP)
 	}
 
 	urlLink, err := mfm.client.PresignHeader(
@@ -296,18 +296,18 @@ func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, ad
 		return "", err
 	}
 
-	return updateURL(urlLink.String(), consoleIp), nil
+	return updateURL(urlLink.String(), consoleIP), nil
 }
 
 func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error) {
-	consoleIp, err := GetManagementHost(ctx)
+	consoleIP, err := GetManagementHost(ctx)
 	if err != nil {
 		return "", err
 	}
 
 	headers := http.Header{}
 	if !strings.Contains(mfm.client.EndpointURL().Hostname(), "s3.amazonaws.com") {
-		headers.Add("Host", consoleIp)
+		headers.Add("Host", consoleIP)
 	}
 
 	urlLink, err := mfm.client.PresignHeader(
@@ -323,7 +323,7 @@ func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath
 		return "", err
 	}
 
-	return updateURL(urlLink.String(), consoleIp), nil
+	return updateURL(urlLink.String(), consoleIP), nil
 }
 
 func (mfm *MinioFileManager) Client() interface{} {
@@ -378,13 +378,13 @@ func (mfm *MinioFileManager) CleanNamespace(ctx context.Context) error {
 	return nil
 }
 
-func updateURL(url string, consoleIp string) string {
+func updateURL(url string, consoleIP string) string {
 	minioHost := utils.GetEnvOrDefault("DEEPFENCE_MINIO_HOST", "deepfence-file-server")
 	minioPort := utils.GetEnvOrDefault("DEEPFENCE_MINIO_PORT", "9000")
 
 	updated := strings.ReplaceAll(url,
 		fmt.Sprintf("%s:%s", minioHost, minioPort),
-		fmt.Sprintf("%s/file-server", consoleIp),
+		fmt.Sprintf("%s/file-server", consoleIP),
 	)
 
 	return strings.ReplaceAll(updated, "http://", "https://")

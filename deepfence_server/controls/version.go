@@ -28,7 +28,7 @@ func PrepareAgentUpgradeAction(ctx context.Context, version string) (ctl.Action,
 	}
 
 	internal_req := ctl.StartAgentUpgradeRequest{
-		HomeDirectoryUrl: url,
+		HomeDirectoryURL: url,
 		Version:          version,
 	}
 
@@ -72,7 +72,7 @@ func ScheduleAgentUpgrade(ctx context.Context, version string, nodeIds []string,
 		map[string]interface{}{
 			"version":  version,
 			"node_ids": nodeIds,
-			"status":   utils.SCAN_STATUS_STARTING,
+			"status":   utils.ScanStatusStarting,
 			"action":   string(action_str),
 		})
 
@@ -343,7 +343,7 @@ func ScheduleAgentPluginEnable(ctx context.Context, version, plugin_name string,
 		map[string]interface{}{
 			"version":  version,
 			"node_ids": nodeIds,
-			"status":   utils.SCAN_STATUS_STARTING,
+			"status":   utils.ScanStatusStarting,
 			"action":   string(action_str),
 		})
 
@@ -385,7 +385,7 @@ func ScheduleAgentPluginDisable(ctx context.Context, plugin_name string, nodeIds
 	_, err = tx.Run(query,
 		map[string]interface{}{
 			"node_ids": nodeIds,
-			"status":   utils.SCAN_STATUS_STARTING,
+			"status":   utils.ScanStatusStarting,
 			"action":   string(action_str),
 		})
 

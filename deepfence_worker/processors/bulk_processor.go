@@ -31,7 +31,7 @@ func init() {
 			breaker.Lock()
 			log.Info().Msgf("Breaker opened")
 			for {
-				err := utils.WaitServiceTcpConn(neo4j_host, neo4j_port, time.Second*30)
+				err := utils.WaitServiceTCPConn(neo4j_host, neo4j_port, time.Second*30)
 				if err != nil {
 					log.Error().Msgf("err: %v", err)
 					continue

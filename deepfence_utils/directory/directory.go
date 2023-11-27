@@ -142,7 +142,7 @@ func FetchNamespace(email string) NamespaceID {
 	namespaces := GetAllNamespaces()
 	if len(namespaces) == 1 && namespaces[0] == NonSaaSDirKey {
 		return NonSaaSDirKey
-	} else {
+	} else { //nolint:staticcheck
 		// TODO: Fetch namespace for SaaS tenant
 	}
 	return ""
@@ -169,19 +169,19 @@ func initRedis() RedisConfig {
 	}
 	redisEndpoint := redisHost + ":" + redisPort
 	redisPassword := os.Getenv("DEEPFENCE_REDIS_PASSWORD")
-	redisDbNumber := 0
+	redisDBNumber := 0
 	var err error
-	redisDbNumberStr := os.Getenv("DEEPFENCE_REDIS_DB_NUMBER")
-	if redisDbNumberStr != "" {
-		redisDbNumber, err = strconv.Atoi(redisDbNumberStr)
+	redisDBNumberStr := os.Getenv("DEEPFENCE_REDIS_DB_NUMBER")
+	if redisDBNumberStr != "" {
+		redisDBNumber, err = strconv.Atoi(redisDBNumberStr)
 		if err != nil {
-			redisDbNumber = 0
+			redisDBNumber = 0
 		}
 	}
 	return RedisConfig{
 		Endpoint: redisEndpoint,
 		Password: redisPassword,
-		Database: redisDbNumber,
+		Database: redisDBNumber,
 	}
 }
 

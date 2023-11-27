@@ -576,7 +576,7 @@ func toScansCount(scans []interface{}) Summary {
 		counts.ScansTotal++
 		l := n.(string)
 		switch l {
-		case utils.SCAN_STATUS_SUCCESS, utils.SCAN_STATUS_FAILED:
+		case utils.ScanStatusSuccess, utils.ScanStatusFailed:
 			counts.ScansComplete++
 		default:
 			counts.ScansInProgress++
@@ -639,7 +639,7 @@ func RegistrySummary(ctx context.Context, registryId mo.Option[string], registry
 	)
 	if regId, ok := registryId.Get(); ok {
 		if result, err = tx.Run(queryPerRegistry, map[string]interface{}{"id": regId}); err != nil {
-			log.Error().Err(err).Msgf("failed to query summary for registry id %d", regId)
+			log.Error().Err(err).Msgf("failed to query summary for registry id %v", regId)
 			return count, err
 		}
 	} else if regType, ok := registryType.Get(); ok {

@@ -159,7 +159,7 @@ func (s Slack) SendNotification(ctx context.Context, message string, extras map[
 		req.Header.Set("Content-Type", "application/json")
 
 		// Make the HTTP request.
-		client := utils.GetHttpClient()
+		client := utils.GetHTTPClient()
 		resp, err := client.Do(req)
 		if err != nil {
 			return err

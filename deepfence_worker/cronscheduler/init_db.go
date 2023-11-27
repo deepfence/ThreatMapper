@@ -17,7 +17,7 @@ func applyDatabaseMigrations(ctx context.Context) error {
 	log.Info().Msg("apply database migrations")
 	defer log.Info().Msg("complete database migrations")
 
-	conn, err := directory.NewSqlConnection(ctx)
+	conn, err := directory.NewSQLConnection(ctx)
 	if err != nil {
 		return err
 	}

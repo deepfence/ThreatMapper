@@ -176,7 +176,7 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 		}
 		updatedAtTime := time.UnixMilli(updatedAt.(int64))
 		nodeIdToName[nodeId.(string)] = nodeName.(string)
-		if message.(string) == "" && status.(string) != utils.SCAN_STATUS_SUCCESS {
+		if message.(string) == "" && status.(string) != utils.ScanStatusSuccess {
 			message = status.(string)
 		}
 
@@ -255,7 +255,7 @@ func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager
 		}
 		updatedAtTime := time.UnixMilli(updatedAt.(int64))
 		nodeIdToName[nodeId.(string)] = nodeName.(string)
-		if message.(string) == "" && status.(string) != utils.SCAN_STATUS_SUCCESS {
+		if message.(string) == "" && status.(string) != utils.ScanStatusSuccess {
 			message = status.(string)
 		}
 

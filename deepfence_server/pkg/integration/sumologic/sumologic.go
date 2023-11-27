@@ -40,7 +40,7 @@ func (s SumoLogic) FormatMessage(message []map[string]interface{}) (bytes.Buffer
 
 func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[string]interface{}) error {
 	// Create an HTTP client with a timeout
-	client := utils.GetHttpClient()
+	client := utils.GetHTTPClient()
 
 	var d []map[string]interface{}
 	dec := json.NewDecoder(strings.NewReader(data))

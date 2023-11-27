@@ -43,8 +43,8 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 		WHERE NOT a.status = $complete AND NOT a.status = $failed
 		RETURN n.node_id,a.status`,
 		map[string]interface{}{"node_ids": nodeIds,
-			"complete": utils.SCAN_STATUS_SUCCESS,
-			"failed":   utils.SCAN_STATUS_FAILED})
+			"complete": utils.ScanStatusSuccess,
+			"failed":   utils.ScanStatusFailed})
 	if err != nil {
 		return inProgressNodeIds, err
 	}
@@ -111,7 +111,7 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 
 	actionBuilder := func(nodeIdentifier diagnosis.NodeIdentifier, uploadUrl string, fileName string, tail string) (ctl.Action, error) {
 		req := ctl.SendAgentDiagnosticLogsRequest{
-			NodeId:    nodeIdentifier.NodeId,
+			NodeID:    nodeIdentifier.NodeId,
 			NodeType:  ctl.StringToResourceType(nodeIdentifier.NodeType),
 			UploadURL: uploadUrl,
 			Tail:      tail,
@@ -168,7 +168,7 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCHEDULEDLOGS]->(m)`, controls.ResourceTypeToNeo4j(controls.StringToResourceType(nodeIdentifier.NodeType))),
 			map[string]interface{}{
-				"status":          utils.SCAN_STATUS_STARTING,
+				"status":          utils.ScanStatusStarting,
 				"node_id":         nodeIdentifier.NodeId,
 				"action":          string(b),
 				"minio_file_name": fileName,
