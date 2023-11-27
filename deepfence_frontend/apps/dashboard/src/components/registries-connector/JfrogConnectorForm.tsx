@@ -1,4 +1,5 @@
-import { TextInput } from 'ui-components';
+import { useState } from 'react';
+import { Checkbox, TextInput } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
@@ -20,6 +21,8 @@ sample json
 */
 
 export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormProps) => {
+  const [isPublic, setIsPublic] = useState(false);
+
   return (
     <>
       <div className="text-p4 dark:text-text-input-value">
@@ -70,24 +73,38 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
           helperText={fieldErrors?.['jfrog_repository']}
           required
         />
-        <TextInput
-          className="w-3/4 min-[200px] max-w-xs"
-          label="Username"
-          type={'text'}
-          name="non_secret.jfrog_username"
-          placeholder="Username"
-          color={fieldErrors?.['jfrog_username'] ? 'error' : 'default'}
-          helperText={fieldErrors?.['jfrog_username']}
-        />
-        <TextInput
-          className="w-3/4 min-[200px] max-w-xs"
-          label="Password"
-          type={'password'}
-          name="secret.jfrog_password"
-          placeholder="••••••••"
-          color={fieldErrors?.['jfrog_password'] ? 'error' : 'default'}
-          helperText={fieldErrors?.['jfrog_password']}
-        />
+        <div>
+          <input hidden value={String(isPublic)} />
+          <Checkbox
+            label="Public Registry"
+            checked={isPublic}
+            onCheckedChange={(checked: boolean) => {
+              setIsPublic(checked);
+            }}
+          />
+        </div>
+        {!isPublic && (
+          <>
+            <TextInput
+              className="w-3/4 min-[200px] max-w-xs"
+              label="Username"
+              type={'text'}
+              name="non_secret.jfrog_username"
+              placeholder="Username"
+              color={fieldErrors?.['jfrog_username'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['jfrog_username']}
+            />
+            <TextInput
+              className="w-3/4 min-[200px] max-w-xs"
+              label="Password"
+              type={'password'}
+              name="secret.jfrog_password"
+              placeholder="••••••••"
+              color={fieldErrors?.['jfrog_password'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['jfrog_password']}
+            />
+          </>
+        )}
 
         <div className="mt-2 text-p7 dark:text-text-input-value">
           Supported Versions: 6.19.1 and above
