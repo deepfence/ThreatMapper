@@ -2,8 +2,12 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
+	"hash/fnv"
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 
@@ -23,6 +27,13 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	req.Config["filter_hash"], err = GetFilterHash(req.Filters)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
@@ -185,4 +196,18 @@ func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 
+}
+
+func GetFilterHash(filters model.IntegrationFilters) (string, error) {
+	b, err := json.Marshal(filters)
+	if err != nil {
+		return "", err
+
+	}
+	str := strings.Split(string(b), "")
+	sort.Strings(str)
+	strSorted := strings.Join(str, "")
+	h := fnv.New32a()
+	h.Write([]byte(strSorted))
+	return fmt.Sprint(h.Sum32()), nil
 }
