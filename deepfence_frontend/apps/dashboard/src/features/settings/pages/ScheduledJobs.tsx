@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { upperFirst } from 'lodash-es';
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -67,8 +68,6 @@ export const action = async ({
       }
       throw updateResponse.error;
     }
-
-    toast.success('Updated successfully');
   } else if (body.actionType === ActionEnumType.DELETE) {
     const ids = (formData.getAll('ids[]') ?? []) as string[];
     const deleteApi = apiWrapper({
@@ -235,6 +234,23 @@ const ActionDropdown = ({
     </Dropdown>
   );
 };
+const getNodeTypeColumn = (column: PostgresqlDbScheduler) => {
+  const isSystem = column.is_system;
+  if (isSystem) {
+    return column.payload.node_type;
+  }
+  const nodeIds: {
+    node_type: string;
+  }[] = column.payload?.node_ids ?? [];
+
+  const nodes = nodeIds
+    .map((node) => {
+      return upperFirst(node.node_type);
+    })
+    .join(', ');
+
+  return nodes;
+};
 
 const ScheduledJobsTable = ({
   onTableAction,
@@ -303,7 +319,7 @@ const ScheduledJobsTable = ({
         maxSize: 70,
       }),
       columnHelper.accessor('payload', {
-        cell: (cell) => <TruncatedText text={cell.row.original.payload.node_type} />,
+        cell: (cell) => <TruncatedText text={getNodeTypeColumn(cell.row.original)} />,
         header: () => 'Node Type',
         minSize: 30,
         size: 40,
