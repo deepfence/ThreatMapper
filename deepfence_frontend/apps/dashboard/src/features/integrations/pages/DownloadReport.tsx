@@ -4,7 +4,10 @@ import { ActionFunctionArgs, Outlet, useFetcher } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbLink, Button, Modal, TableSkeleton } from 'ui-components';
 
 import { getReportsApiClient } from '@/api/api';
-import { UtilsReportFiltersNodeTypeEnum } from '@/api/generated';
+import {
+  UtilsReportFiltersNodeTypeEnum,
+  UtilsReportFiltersScanTypeEnum,
+} from '@/api/generated';
 import { ModelExportReport } from '@/api/generated/models/ModelExportReport';
 import { DFLink } from '@/components/DFLink';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
@@ -27,48 +30,37 @@ export enum ActionEnumType {
 }
 export const getReportBenchmarkList = (nodeType: string) => {
   switch (nodeType) {
-    case 'Aws':
+    case UtilsReportFiltersNodeTypeEnum.Aws:
       return complianceType.aws;
-    case 'Gcp':
+    case UtilsReportFiltersNodeTypeEnum.Gcp:
       return complianceType.gcp;
-    case 'Azure':
+    case UtilsReportFiltersNodeTypeEnum.Azure:
       return complianceType.azure;
-    case 'Host':
+    case UtilsReportFiltersNodeTypeEnum.Host:
       return complianceType.host;
-    case 'Kubernetes':
+    case UtilsReportFiltersNodeTypeEnum.Cluster:
       return complianceType.kubernetes_cluster;
     default:
       console.error('Provider type should be matched');
       return [];
   }
 };
-export const NODE_TYPES: { [k: string]: UtilsReportFiltersNodeTypeEnum } = {
-  AWS: UtilsReportFiltersNodeTypeEnum.Aws,
-  AZURE: UtilsReportFiltersNodeTypeEnum.Azure,
-  GCP: UtilsReportFiltersNodeTypeEnum.Gcp,
-  Host: UtilsReportFiltersNodeTypeEnum.Host,
-  Cluster: UtilsReportFiltersNodeTypeEnum.Cluster,
-  'Container Image': UtilsReportFiltersNodeTypeEnum.ContainerImage,
-  Container: UtilsReportFiltersNodeTypeEnum.Container,
-};
+
 export const getReportNodeType = (resourceType: string) => {
-  if (resourceType === 'Cloud Compliance') {
-    return {
-      AWS: NODE_TYPES.AWS,
-      AZURE: NODE_TYPES.AZURE,
-      GCP: NODE_TYPES.GCP,
-    };
-  } else if (resourceType === 'Compliance') {
-    return {
-      Host: NODE_TYPES.Host,
-      Kubernetes: NODE_TYPES.Cluster,
-    };
+  if (resourceType === UtilsReportFiltersScanTypeEnum.CloudCompliance) {
+    return [
+      UtilsReportFiltersNodeTypeEnum.Aws,
+      UtilsReportFiltersNodeTypeEnum.Azure,
+      UtilsReportFiltersNodeTypeEnum.Gcp,
+    ];
+  } else if (resourceType === UtilsReportFiltersScanTypeEnum.Compliance) {
+    return [UtilsReportFiltersNodeTypeEnum.Host, UtilsReportFiltersNodeTypeEnum.Cluster];
   }
-  return {
-    Host: NODE_TYPES.Host,
-    Container: NODE_TYPES.Container,
-    'Container Image': NODE_TYPES['Container Image'],
-  };
+  return [
+    UtilsReportFiltersNodeTypeEnum.Host,
+    UtilsReportFiltersNodeTypeEnum.Container,
+    UtilsReportFiltersNodeTypeEnum.ContainerImage,
+  ];
 };
 
 export const useGetReports = () => {

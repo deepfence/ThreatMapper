@@ -1,9 +1,17 @@
+import { upperFirst } from 'lodash-es';
 import { useEffect, useMemo, useState } from 'react';
 import { Listbox, ListboxOption } from 'ui-components';
 
+import { UtilsReportFiltersNodeTypeEnum } from '@/api/generated';
 import { getReportNodeType } from '@/features/integrations/pages/DownloadReport';
 
 const severities = ['Critical', 'High', 'Medium', 'Low'];
+const getDisplayNodeTypeValue = (nodeType: string) => {
+  if (nodeType === UtilsReportFiltersNodeTypeEnum.ContainerImage) {
+    return 'Container Image';
+  }
+  return upperFirst(nodeType);
+};
 export const CommonForm = ({
   setProvider,
   resource,
@@ -21,7 +29,7 @@ export const CommonForm = ({
     setSeverity([]);
   }, [resource, provider]);
 
-  const nodeType = useMemo(() => {
+  const nodeTypes = useMemo(() => {
     return getReportNodeType(resource);
   }, [resource]);
 
@@ -39,14 +47,14 @@ export const CommonForm = ({
         }}
         placeholder="Select node type"
         getDisplayValue={() => {
-          return provider;
+          return getDisplayNodeTypeValue(provider) ?? '';
         }}
         required
       >
-        {Object.keys(nodeType).map((resource) => {
+        {nodeTypes.map((type) => {
           return (
-            <ListboxOption value={resource} key={resource}>
-              {resource}
+            <ListboxOption value={type} key={type}>
+              {getDisplayNodeTypeValue(type)}
             </ListboxOption>
           );
         })}
