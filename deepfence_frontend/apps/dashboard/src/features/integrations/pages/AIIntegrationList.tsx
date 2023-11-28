@@ -370,7 +370,10 @@ const ActionDropdown = ({
 };
 
 const AIIntegrationTable = () => {
-  const { data } = useListAIIntegrations();
+  const {
+    data: { data, message },
+  } = useListAIIntegrations();
+
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
   const [idToMakeDefault, setIdToMakeDefault] = useState<number | null>(null);
 
@@ -450,10 +453,14 @@ const AIIntegrationTable = () => {
     return columns;
   }, []);
 
+  if (message && message.length) {
+    return <p className="text-p7 dark:text-status-error">{message}</p>;
+  }
+
   return (
     <>
       <Table
-        data={data.data}
+        data={data}
         columns={columns}
         enableColumnResizing
         noDataElement={
