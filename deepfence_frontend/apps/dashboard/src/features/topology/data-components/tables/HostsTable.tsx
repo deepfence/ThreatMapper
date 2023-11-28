@@ -718,6 +718,15 @@ const DataTable = ({
         size: 60,
         maxSize: 120,
       }),
+      columnHelper.accessor('agent_running', {
+        cell: (info) => {
+          return <TruncatedText text={info.getValue() ? 'Yes' : 'No'} />;
+        },
+        header: () => <TruncatedText text="Agent Running?" />,
+        minSize: 50,
+        size: 60,
+        maxSize: 120,
+      }),
       columnHelper.accessor('version', {
         cell: (info) => {
           return <TruncatedText text={info.getValue() ?? ''} />;
