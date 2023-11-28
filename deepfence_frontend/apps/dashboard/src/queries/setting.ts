@@ -60,10 +60,6 @@ export const settingQueries = createQueryKeys('setting', {
           logsCountPromise,
         ]);
 
-        if (!logsCount.ok) {
-          throw logsCount.error;
-        }
-
         if (!userResponse.ok) {
           if (userResponse.error.response.status === 400) {
             const { message } = await getResponseErrors(userResponse.error);
@@ -77,6 +73,21 @@ export const settingQueries = createQueryKeys('setting', {
             };
           }
           throw userResponse.error;
+        }
+
+        if (!logsCount.ok) {
+          if (logsCount.error.response.status === 400) {
+            const { message } = await getResponseErrors(logsCount.error);
+            return {
+              message,
+            };
+          } else if (logsCount.error.response.status === 403) {
+            const message = await get403Message(logsCount.error);
+            return {
+              message,
+            };
+          }
+          throw logsCount.error;
         }
 
         return {
