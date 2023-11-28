@@ -3,7 +3,6 @@ package router
 import (
 	"encoding/json"
 	"fmt"
-	cloud_util "github.com/deepfence/cloud-scanner/util"
 	"os"
 	"sync"
 
@@ -27,6 +26,7 @@ func RegisterControl[T ctl.StartVulnerabilityScanRequest |
 	ctl.StartSecretScanRequest |
 	ctl.StartComplianceScanRequest |
 	ctl.StartMalwareScanRequest |
+	ctl.StartCloudComplianceScanRequest |
 	ctl.StartAgentUpgradeRequest |
 	ctl.SendAgentDiagnosticLogsRequest |
 	ctl.DisableAgentPluginRequest |
@@ -35,7 +35,7 @@ func RegisterControl[T ctl.StartVulnerabilityScanRequest |
 	ctl.StopMalwareScanRequest |
 	ctl.StopVulnerabilityScanRequest |
 	ctl.StopComplianceScanRequest |
-	cloud_util.PendingScan |
+	ctl.StopCloudComplianceScanRequest |
 	ctl.RefreshResourcesRequest](id ctl.ActionID, callback func(req T) error) error {
 
 	controlsGuard.Lock()

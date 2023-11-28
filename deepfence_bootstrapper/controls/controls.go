@@ -192,13 +192,13 @@ func SetAgentControls() {
 }
 
 func SetCloudScannerControls() {
-	err := router.RegisterControl(ctl.StartComplianceScan,
+	err := router.RegisterControl(ctl.StartCloudComplianceScan,
 		router.StartCloudComplianceScan)
 	if err != nil {
 		log.Error().Msgf("set controls: %v", err)
 	}
 
-	err = router.RegisterControl(ctl.StopComplianceScan,
+	err = router.RegisterControl(ctl.StopCloudComplianceScan,
 		router.StopCloudComplianceScan)
 	if err != nil {
 		log.Error().Msgf("set controls: %v", err)

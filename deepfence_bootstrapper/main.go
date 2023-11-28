@@ -6,7 +6,6 @@ import (
 	"errors"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -17,8 +16,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/server"
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/supervisor"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	cloud_util "github.com/deepfence/cloud-scanner/util"
-
 	dfUtils "github.com/deepfence/df-utils"
 )
 
@@ -52,6 +49,10 @@ func init() {
 		if err != nil {
 			hostname = "(unknown)"
 		}
+	}
+	err = os.Setenv("DF_HOST_ID", hostname)
+	if err != nil {
+		log.Error().Msgf("Failed to set DF_HOST_ID: %v", err)
 	}
 
 	verbosity := "info"
@@ -139,29 +140,14 @@ func main() {
 	for {
 		if enableClusterDiscovery {
 			k8sClusterID, _, _, _, _ := dfUtils.GetKubernetesDetails()
-			err = consoleClient.StartControlsWatching(k8sClusterID, true, Version)
+			err = consoleClient.StartControlsWatching(k8sClusterID, true, Version, "k8s")
 			log.Info().Msgf("cluster agent mode: %s", k8sClusterID)
 		} else if enableCloudNode {
-			cloudProvider := os.Getenv("CLOUD_PROVIDER")
-			cloudAccountID := os.Getenv("CLOUD_ACCOUNT_ID")
-			cloudMetadata, err := cloud_util.GetCloudMetadata()
-			if err == nil {
-				cloudProvider = cloudMetadata.CloudProvider
-				if cloudMetadata.ID != "" {
-					cloudAccountID = cloudMetadata.ID
-				}
-			}
-			cloudNodeId := cloud_util.GetNodeId(cloudProvider, cloudAccountID)
-			cloudConfig := cloud_util.Config{
-				CloudProvider:      cloudProvider,
-				CloudMetadata:      cloudMetadata,
-				OrgAccountId:       os.Getenv("DF_ORG_ACC_ID"),
-				MultipleAccountIds: strings.Split(os.Getenv("DF_MULTI_ACC_ID"), ","),
-			}
-			err = consoleClient.StartCloudControlsWatching(cloudNodeId, Version, cloudConfig)
-			log.Info().Msgf("cloud node mode: %s", cloudNodeId)
+			hostname = "cloud-agent-" + hostname
+			err = consoleClient.StartControlsWatching(hostname, false, Version, "cloud_agent")
+			log.Info().Msgf("cloud agent mode: %s", hostname)
 		} else {
-			err = consoleClient.StartControlsWatching(hostname, false, Version)
+			err = consoleClient.StartControlsWatching(hostname, false, Version, "host")
 			log.Info().Msgf("regular agent mode: %s", hostname)
 		}
 		if err == nil {

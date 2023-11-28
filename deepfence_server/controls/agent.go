@@ -373,6 +373,8 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeID string, maxWrok int) 
 			action.ID = controls.StopVulnerabilityScan
 		case controls.StartComplianceScan:
 			action.ID = controls.StopComplianceScan
+		case controls.StartCloudComplianceScan:
+			action.ID = controls.StopCloudComplianceScan
 		default:
 			log.Info().Msgf("Stop functionality not implemented for action: %d", action.ID)
 			continue
