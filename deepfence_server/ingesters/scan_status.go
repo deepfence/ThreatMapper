@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"strings"
 	"time"
 
@@ -330,13 +329,13 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		if err != nil {
 			return err
 		}
-		scanNodeDetails := model.CloudNodeAccountInfo{
-			NodeId:        rec.Values[0].(string),
+		scanNodeDetails := ctl.CloudScanNodeDetails{
+			AgentNodeId:   rec.Values[0].(string),
 			CloudProvider: rec.Values[1].(string),
 			NodeName:      rec.Values[2].(string),
 		}
-		hostNodeId = scanNodeDetails.NodeId
-		benchmarks, err := model.GetActiveCloudControls(tx, benchmarkTypes, scanNodeDetails.CloudProvider)
+		hostNodeId = scanNodeDetails.AgentNodeId
+		benchmarks, err := GetActiveCloudControls(tx, benchmarkTypes, scanNodeDetails.CloudProvider)
 		if err != nil {
 			log.Error().Msgf("Error getting controls for compliance type: %+v", benchmarkTypes)
 		}
@@ -450,4 +449,44 @@ func AddBulkScan(tx WriteDBTransaction, scan_type utils.Neo4jScanType, bulk_scan
 	}
 
 	return nil
+}
+
+func GetActiveCloudControls(tx WriteDBTransaction, complianceTypes []string, cloudProvider string) ([]ctl.CloudComplianceScanBenchmark, error) {
+	var benchmarks []ctl.CloudComplianceScanBenchmark
+	var res neo4j.Result
+	res, err := tx.Run(`
+		MATCH (n:CloudComplianceBenchmark) -[:PARENT]-> (m:CloudComplianceControl)
+		WHERE m.active = true
+		AND m.disabled = false
+		AND m.compliance_type IN $compliance_types
+		AND n.cloud_provider = $cloud_provider
+		RETURN  n.benchmark_id, n.compliance_type, collect(m.control_id)
+		ORDER BY n.compliance_type`,
+		map[string]interface{}{
+			"cloud_provider":   cloudProvider,
+			"compliance_types": complianceTypes,
+		})
+	if err != nil {
+		return benchmarks, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return benchmarks, err
+	}
+
+	for _, rec := range recs {
+		var controls []string
+		for _, rVal := range rec.Values[2].([]interface{}) {
+			controls = append(controls, rVal.(string))
+		}
+		benchmark := ctl.CloudComplianceScanBenchmark{
+			Id:             rec.Values[0].(string),
+			ComplianceType: rec.Values[1].(string),
+			Controls:       controls,
+		}
+		benchmarks = append(benchmarks, benchmark)
+	}
+
+	return benchmarks, nil
 }

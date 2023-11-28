@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"time"
 
 	"k8s.io/utils/strings/slices"
@@ -470,44 +469,4 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	total = int(countRec.Values[0].(int64))
 
 	return CloudNodeAccountsListResp{CloudNodeAccountInfo: cloud_node_accounts_info, Total: total}, nil
-}
-
-func GetActiveCloudControls(tx ingesters.WriteDBTransaction, complianceTypes []string, cloudProvider string) ([]ctl.CloudComplianceScanBenchmark, error) {
-	var benchmarks []ctl.CloudComplianceScanBenchmark
-	var res neo4j.Result
-	res, err := tx.Run(`
-		MATCH (n:CloudComplianceBenchmark) -[:PARENT]-> (m:CloudComplianceControl)
-		WHERE m.active = true
-		AND m.disabled = false
-		AND m.compliance_type IN $compliance_types
-		AND n.cloud_provider = $cloud_provider
-		RETURN  n.benchmark_id, n.compliance_type, collect(m.control_id)
-		ORDER BY n.compliance_type`,
-		map[string]interface{}{
-			"cloud_provider":   cloudProvider,
-			"compliance_types": complianceTypes,
-		})
-	if err != nil {
-		return benchmarks, err
-	}
-
-	recs, err := res.Collect()
-	if err != nil {
-		return benchmarks, err
-	}
-
-	for _, rec := range recs {
-		var controls []string
-		for _, rVal := range rec.Values[2].([]interface{}) {
-			controls = append(controls, rVal.(string))
-		}
-		benchmark := ctl.CloudComplianceScanBenchmark{
-			Id:             rec.Values[0].(string),
-			ComplianceType: rec.Values[1].(string),
-			Controls:       controls,
-		}
-		benchmarks = append(benchmarks, benchmark)
-	}
-
-	return benchmarks, nil
 }

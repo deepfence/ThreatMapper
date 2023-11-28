@@ -132,6 +132,12 @@ type CloudComplianceScanDetails struct {
 	Benchmarks []CloudComplianceScanBenchmark `json:"benchmarks" required:"true"`
 }
 
+type CloudScanNodeDetails struct {
+	AgentNodeId   string `json:"agent_node_id"`
+	NodeName      string `json:"node_name"`
+	CloudProvider string `json:"cloud_provider"`
+}
+
 type CloudComplianceScanBenchmark struct {
 	Id             string   `json:"id" required:"true"`
 	ComplianceType string   `json:"compliance_type" required:"true"`
