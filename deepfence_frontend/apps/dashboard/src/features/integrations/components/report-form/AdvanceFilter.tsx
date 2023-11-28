@@ -122,7 +122,7 @@ export const AdvancedFilter = ({
                     onClearAll={() => {
                       setImages([]);
                     }}
-                    active={false}
+                    active={!deadNodes}
                   />
                 </div>
               </>

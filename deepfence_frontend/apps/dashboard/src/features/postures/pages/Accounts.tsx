@@ -546,7 +546,7 @@ const ActionDropdown = ({
           <>
             <DropdownItem
               disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
-              onClick={() => {
+              onSelect={() => {
                 if (!nodeId) {
                   throw new Error('Node id is required to start scan');
                 }
@@ -586,6 +586,7 @@ const ActionDropdown = ({
               <span
                 className={cn('flex items-center gap-x-2', {
                   'text-red-700 dark:text-status-error': scanId,
+                  'dark:text-df-gray-600': !scanId || !nodeType,
                 })}
               >
                 Delete latest scan
