@@ -61,14 +61,20 @@ export const AmazonECRConnectorForm = ({
               setIsPublic(checked);
             }}
           />
-          <input hidden value={String(useIAMRole)} name="non_secret.use_iam_role" />
-          <Checkbox
-            label="Use AWS IAM Role"
-            checked={useIAMRole}
-            onCheckedChange={(checked: boolean) => {
-              setUseIAMRole(checked);
-            }}
-          />
+          <>
+            {!isPublic && (
+              <>
+                <input hidden value={String(useIAMRole)} name="non_secret.use_iam_role" />
+                <Checkbox
+                  label="Use AWS IAM Role"
+                  checked={useIAMRole}
+                  onCheckedChange={(checked: boolean) => {
+                    setUseIAMRole(checked);
+                  }}
+                />
+              </>
+            )}
+          </>
         </div>
         <div className="flex flex-row gap-8 flex-wrap">
           {!isPublic && !useIAMRole && (
@@ -95,7 +101,7 @@ export const AmazonECRConnectorForm = ({
               />
             </>
           )}
-          {useIAMRole && (
+          {!isPublic && useIAMRole && (
             <>
               <TextInput
                 className="grow min-[200px] max-w-xs"
@@ -129,6 +135,7 @@ export const AmazonECRConnectorForm = ({
             placeholder="AWS Region"
             color={fieldErrors?.['aws_region_name'] ? 'error' : 'default'}
             helperText={fieldErrors?.['aws_region_name']}
+            required
           />
         </div>
       </div>
