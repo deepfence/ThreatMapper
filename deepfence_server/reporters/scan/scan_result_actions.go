@@ -77,7 +77,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
         MERGE (t) -[m:MASKED]->(n)
         SET m.masked = $value`
 
-		if utils.Neo4jScanType(req.ScanType) == utils.NEO4J_CLOUD_COMPLIANCE_SCAN {
+		if utils.Neo4jScanType(req.ScanType) == utils.NEO4JCloudComplianceScan {
 			globalQuery = `
 			MATCH (o:CloudCompliance)
 			WHERE o.node_id IN $node_ids
