@@ -234,10 +234,10 @@ const ActionDropdown = ({
     </Dropdown>
   );
 };
-const getNodeTypeColumn = (column: PostgresqlDbScheduler) => {
+const getFormattedNodeType = (column: PostgresqlDbScheduler) => {
   const isSystem = column.is_system;
   if (isSystem) {
-    return column.payload.node_type;
+    return column.payload.node_type ?? '';
   }
   const nodeIds: {
     node_type: string;
@@ -319,7 +319,7 @@ const ScheduledJobsTable = ({
         maxSize: 70,
       }),
       columnHelper.accessor('payload', {
-        cell: (cell) => <TruncatedText text={getNodeTypeColumn(cell.row.original)} />,
+        cell: (cell) => <TruncatedText text={getFormattedNodeType(cell.row.original)} />,
         header: () => 'Node Type',
         minSize: 30,
         size: 40,
