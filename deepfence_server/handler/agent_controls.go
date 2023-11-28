@@ -63,7 +63,7 @@ func (h *Handler) GetAgentInitControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = controls.CompleteAgentUpgrade(ctx, agentId.Version, agentId.NodeId)
+	err = controls.CompleteAgentUpgrade(ctx, agentId.Version, agentId.NodeId, agentId.NodeType)
 	if err != nil {
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return

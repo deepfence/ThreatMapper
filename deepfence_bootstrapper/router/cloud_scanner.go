@@ -3,18 +3,12 @@ package router
 import (
 	"encoding/json"
 	"fmt"
-	cloud_util "github.com/deepfence/cloud-scanner/util"
 	"net"
 	"os"
+	"time"
 
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-)
-
-const (
-	START_SCAN        = "start_scan"
-	STOP_SCAN         = "stop_scan"
-	REFRESH_RESOURCES = "refresh_resources"
 )
 
 var (
@@ -33,7 +27,7 @@ func init() {
 	}
 }
 
-func StartCloudComplianceScan(req cloud_util.PendingScan) error {
+func StartCloudComplianceScan(req ctl.StartCloudComplianceScanRequest) error {
 	log.Info().Msgf("Start Cloud Compliance scan: %v\n", req)
 	conn, err := net.Dial("unix", CloudScannerSocketPath)
 	if err != nil {
@@ -42,7 +36,7 @@ func StartCloudComplianceScan(req cloud_util.PendingScan) error {
 	}
 	defer conn.Close()
 	scanReq := map[string]interface{}{
-		"action": START_SCAN,
+		"action": ctl.StartCloudComplianceScan,
 		"args":   req,
 	}
 	scanReqBytes, err := json.Marshal(scanReq)
@@ -58,7 +52,7 @@ func StartCloudComplianceScan(req cloud_util.PendingScan) error {
 	return nil
 }
 
-func StopCloudComplianceScan(req ctl.StopComplianceScanRequest) error {
+func StopCloudComplianceScan(req ctl.StopCloudComplianceScanRequest) error {
 	fmt.Printf("Stop Cloud Compliance Scan : %v\n", req)
 	conn, err := net.Dial("unix", CloudScannerSocketPath)
 	if err != nil {
@@ -67,7 +61,7 @@ func StopCloudComplianceScan(req ctl.StopComplianceScanRequest) error {
 	}
 	defer conn.Close()
 	scanReq := map[string]interface{}{
-		"action": STOP_SCAN,
+		"action": ctl.StopCloudComplianceScan,
 		"args": map[string]interface{}{
 			"scan_id": req.BinArgs["scan_id"],
 		},
@@ -94,7 +88,7 @@ func RefreshResources(req ctl.RefreshResourcesRequest) error {
 	}
 	defer conn.Close()
 	refreshReq := map[string]interface{}{
-		"action": REFRESH_RESOURCES,
+		"action": ctl.RefreshResources,
 		"args":   req,
 	}
 	refreshReqBytes, err := json.Marshal(refreshReq)
@@ -108,4 +102,43 @@ func RefreshResources(req ctl.RefreshResourcesRequest) error {
 		return err
 	}
 	return nil
+}
+
+func GetCloudScannerJobCount() int32 {
+	conn, err := net.Dial("unix", CloudScannerSocketPath)
+	if err != nil {
+		log.Error().Msgf("GetCloudScannerJobCount::error in creating cloud compliance scanner client with socket %s: %s\n", CloudScannerSocketPath, err.Error())
+		return 0
+	}
+	defer conn.Close()
+
+	jobCountReq := map[string]interface{}{
+		"action": ctl.CloudScannerJobCount,
+	}
+	jobCountReqBytes, err := json.Marshal(jobCountReq)
+	if err != nil {
+		fmt.Printf("GetCloudScannerJobCount::error in converting request into valid json: %s\n", err.Error())
+		return 0
+	}
+	_, err = conn.Write(jobCountReqBytes)
+	if err != nil {
+		fmt.Printf("GetCloudScannerJobCount::error in writing data to unix socket %s: %s\n", CloudScannerSocketPath, err.Error())
+		return 0
+	}
+	responseTimeout := 10 * time.Second
+	deadline := time.Now().Add(responseTimeout)
+	buf := make([]byte, 1024)
+	for {
+		conn.SetReadDeadline(deadline)
+		n, err := conn.Read(buf[:])
+		if err != nil {
+			return 0
+		}
+		var jobCount int32
+		count, err := fmt.Sscan(string(buf[0:n]), &jobCount)
+		if err != nil || count != 1 {
+			return 0
+		}
+		return jobCount
+	}
 }

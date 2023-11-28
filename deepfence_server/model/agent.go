@@ -2,7 +2,8 @@ package model
 
 type InitAgentReq struct {
 	AgentId
-	Version string `json:"version" required:"true"`
+	Version  string `json:"version" required:"true"`
+	NodeType string `json:"node_type" required:"true"`
 }
 
 type AgentId struct {

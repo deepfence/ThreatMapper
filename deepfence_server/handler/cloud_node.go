@@ -11,7 +11,6 @@ import (
 
 	cloudscanner_diagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/cloudscanner-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -62,7 +61,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			"node_name":      orgAccountId,
 			"version":        req.Version,
 		}
-		err = model.UpsertCloudComplianceNode(ctx, node, "")
+		err = model.UpsertCloudComplianceNode(ctx, node, "", req.HostNodeId)
 		if err != nil {
 			h.complianceError(w, err.Error())
 			return
@@ -77,33 +76,10 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 				"organization_id": orgNodeId,
 				"version":         req.Version,
 			}
-			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeId)
+			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeId, req.HostNodeId)
 			if err != nil {
 				h.complianceError(w, err.Error())
 				return
-			}
-			pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, monitoredNodeId)
-			if err != nil {
-				continue
-			}
-			for _, scan := range pendingScansList.ScansInfo {
-				benchmarks, err := model.GetActiveCloudControls(ctx, scan.BenchmarkTypes, req.CloudProvider)
-				if err != nil {
-					log.Error().Msgf("Error getting controls for compliance type: %+v", scan.BenchmarkTypes)
-				}
-				stopRequested := false
-				if scan.Status == utils.SCAN_STATUS_CANCELLING {
-					stopRequested = true
-				}
-
-				scanDetail := model.CloudComplianceScanDetails{
-					ScanId:        scan.ScanId,
-					ScanTypes:     scan.BenchmarkTypes,
-					AccountId:     monitoredAccountId,
-					Benchmarks:    benchmarks,
-					StopRequested: stopRequested,
-				}
-				scanList[scan.ScanId] = scanDetail
 			}
 		}
 		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, append(monitoredNodeIds, nodeId))
@@ -119,53 +95,23 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			"version":        req.Version,
 		}
 		logrus.Debugf("Node for upsert: %+v", node)
-		err = model.UpsertCloudComplianceNode(ctx, node, "")
+		err = model.UpsertCloudComplianceNode(ctx, node, "", req.HostNodeId)
 		if err != nil {
 			logrus.Infof("Error while upserting node: %+v", err)
 			h.complianceError(w, err.Error())
 			return
 		}
 		// get log request for cloudscanner, if any
-		logRequestAction, err := cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeId})
+		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeId})
 		if err != nil {
 			log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
-		}
-		pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, nodeId)
-		if err != nil || len(pendingScansList.ScansInfo) == 0 {
-			logrus.Debugf("No pending scans found for node id: %s", nodeId)
-			err = httpext.JSON(w, http.StatusOK,
-				model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
-					CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh, LogAction: logRequestAction}})
-			if err != nil {
-				log.Error().Msg(err.Error())
-			}
-			return
-		}
-		for _, scan := range pendingScansList.ScansInfo {
-			benchmarks, err := model.GetActiveCloudControls(ctx, scan.BenchmarkTypes, req.CloudProvider)
-			if err != nil {
-				log.Error().Msgf("Error getting controls for compliance type: %+v", scan.BenchmarkTypes)
-			}
-
-			stopRequested := false
-			if scan.Status == utils.SCAN_STATUS_CANCELLING {
-				stopRequested = true
-			}
-			scanDetail := model.CloudComplianceScanDetails{
-				ScanId:        scan.ScanId,
-				ScanTypes:     scan.BenchmarkTypes,
-				AccountId:     req.CloudAccount,
-				Benchmarks:    benchmarks,
-				StopRequested: stopRequested,
-			}
-			scanList[scan.ScanId] = scanDetail
 		}
 		logrus.Debugf("Pending scans for node: %+v", scanList)
 	}
 	log.Debug().Msgf("Returning response: Scan List %+v cloudtrailTrails %+v Refresh %s", scanList, cloudtrailTrails, doRefresh)
 
 	err = httpext.JSON(w, http.StatusOK,
-		model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
+		model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{
 			CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh, LogAction: logRequestAction}})
 	if err != nil {
 		log.Error().Msg(err.Error())

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"time"
 
 	"k8s.io/utils/strings/slices"
@@ -31,6 +32,7 @@ var SupportedPostureProviders = []string{PostureProviderAWS, PostureProviderGCP,
 
 type CloudNodeAccountRegisterReq struct {
 	NodeId              string            `json:"node_id" required:"true"`
+	HostNodeId          string            `json:"host_node_id"`
 	CloudAccount        string            `json:"cloud_account" required:"true"`
 	CloudProvider       string            `json:"cloud_provider" required:"true"  enum:"aws,gcp,azure"`
 	MonitoredAccountIds map[string]string `json:"monitored_account_ids"`
@@ -43,10 +45,9 @@ type CloudNodeAccountRegisterResp struct {
 }
 
 type CloudNodeAccountRegisterRespData struct {
-	Scans            map[string]CloudComplianceScanDetails `json:"scans"`
-	CloudtrailTrails []CloudNodeCloudtrailTrail            `json:"cloudtrail_trails"`
-	Refresh          string                                `json:"refresh"`
-	LogAction        ctl.Action                            `json:"log_action"`
+	CloudtrailTrails []CloudNodeCloudtrailTrail `json:"cloudtrail_trails"`
+	Refresh          string                     `json:"refresh"`
+	LogAction        ctl.Action                 `json:"log_action"`
 }
 
 type CloudNodeAccountsListReq struct {
@@ -132,18 +133,12 @@ func (CloudNodeAccountInfo) GetJsonCategory() string {
 	return "cloud_provider"
 }
 
-type CloudComplianceBenchmark struct {
-	Id             string   `json:"id"`
-	ComplianceType string   `json:"compliance_type"`
-	Controls       []string `json:"controls"`
-}
-
 type CloudComplianceScanDetails struct {
-	ScanId        string                     `json:"scan_id"`
-	ScanTypes     []string                   `json:"scan_types"`
-	AccountId     string                     `json:"account_id"`
-	Benchmarks    []CloudComplianceBenchmark `json:"benchmarks"`
-	StopRequested bool                       `json:"stop_requested"`
+	ScanId        string                             `json:"scan_id"`
+	ScanTypes     []string                           `json:"scan_types"`
+	AccountId     string                             `json:"account_id"`
+	Benchmarks    []ctl.CloudComplianceScanBenchmark `json:"benchmarks"`
+	StopRequested bool                               `json:"stop_requested"`
 }
 
 type CloudNodeCloudtrailTrail struct {
@@ -192,7 +187,7 @@ type PostureProvider struct {
 	ResourceCount        int64   `json:"resource_count"`
 }
 
-func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]interface{}, parentNodeId string) error {
+func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]interface{}, parentNodeId, hostNodeId string) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -211,22 +206,28 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 		if _, err := tx.Run(`
 			WITH $param as row
 			MERGE (n:CloudNode{node_id:row.node_id})
+			MERGE (r:Node{node_id:host_node_id, node_type: "cloud_agent"})
+			MERGE (r) -[:HOSTS]-> (n)
 			SET n+= row, n.active = true, n.updated_at = TIMESTAMP(), n.version = row.version`,
 			map[string]interface{}{
-				"param": nodeDetails,
+				"param":        nodeDetails,
+				"host_node_id": hostNodeId,
 			}); err != nil {
 			return err
 		}
 	} else {
 		if _, err := tx.Run(`
+			MERGE (r:Node{node_id:host_node_id, node_type: "cloud_agent"})
 			MERGE (m:CloudNode{node_id: $parent_node_id})
 			WITH $param as row, m
 			MERGE (n:CloudNode{node_id:row.node_id})
 			MERGE (m) -[:IS_CHILD]-> (n)
+			MERGE (r) -[:HOSTS]-> (n)
 			SET n+= row, n.active = true, n.updated_at = TIMESTAMP(), n.version = row.version`,
 			map[string]interface{}{
 				"param":          nodeDetails,
 				"parent_node_id": parentNodeId,
+				"host_node_id":   hostNodeId,
 			}); err != nil {
 			return err
 		}
@@ -471,27 +472,10 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	return CloudNodeAccountsListResp{CloudNodeAccountInfo: cloud_node_accounts_info, Total: total}, nil
 }
 
-func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloudProvider string) ([]CloudComplianceBenchmark, error) {
-	var benchmarks []CloudComplianceBenchmark
-	driver, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		return benchmarks, err
-	}
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return benchmarks, err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
-	if err != nil {
-		return benchmarks, err
-	}
-	defer tx.Close()
-
+func GetActiveCloudControls(tx ingesters.WriteDBTransaction, complianceTypes []string, cloudProvider string) ([]ctl.CloudComplianceScanBenchmark, error) {
+	var benchmarks []ctl.CloudComplianceScanBenchmark
 	var res neo4j.Result
-	res, err = tx.Run(`
+	res, err := tx.Run(`
 		MATCH (n:CloudComplianceBenchmark) -[:PARENT]-> (m:CloudComplianceControl)
 		WHERE m.active = true
 		AND m.disabled = false
@@ -517,7 +501,7 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 		for _, rVal := range rec.Values[2].([]interface{}) {
 			controls = append(controls, rVal.(string))
 		}
-		benchmark := CloudComplianceBenchmark{
+		benchmark := ctl.CloudComplianceScanBenchmark{
 			Id:             rec.Values[0].(string),
 			ComplianceType: rec.Values[1].(string),
 			Controls:       controls,

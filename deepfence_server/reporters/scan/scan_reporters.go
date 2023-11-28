@@ -3,6 +3,7 @@ package reporters_scan
 import (
 	"context"
 	"fmt"
+	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"strings"
 	"time"
 
@@ -125,7 +126,7 @@ func GetComplianceScanStatus(ctx context.Context, scanType utils.Neo4jScanType, 
 	query := fmt.Sprintf(`
 	MATCH (m:%s) -[:SCANNED]-> (n:CloudNode)
 	WHERE m.node_id IN $scan_ids
-	RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.updated_at, n.node_name`, scanType)
+	RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.updated_at, n.node_name, n.cloud_provider`, scanType)
 
 	res, err := tx.Run(query, map[string]interface{}{"scan_ids": scanIds})
 	if err != nil {
@@ -160,6 +161,7 @@ func extractStatusesWithBenchmarks(recs []*db.Record) []model.ComplianceScanInfo
 				NodeName:      rec.Values[6].(string),
 			},
 			BenchmarkTypes: benchmarkTypes,
+			CloudProvider:  rec.Values[7].(string),
 		}
 		statuses = append(statuses, tmp)
 	}
@@ -556,28 +558,11 @@ func processScansListQuery(query string, nodeIds []string, tx neo4j.Transaction)
 	return scansInfo, nil
 }
 
-func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4jScanType, nodeId string) (model.CloudComplianceScanListResp, error) {
-	driver, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		return model.CloudComplianceScanListResp{}, err
-	}
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return model.CloudComplianceScanListResp{}, err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
-	if err != nil {
-		return model.CloudComplianceScanListResp{}, err
-	}
-	defer tx.Close()
-
+func GetCloudCompliancePendingScansList(tx ingesters.WriteDBTransaction, scanType utils.Neo4jScanType, nodeId string) (model.CloudComplianceScanListResp, error) {
 	res, err := tx.Run(`
 		MATCH (m:`+string(scanType)+`) -[:SCANNED]-> (n:CloudNode{node_id: $node_id})
 		WHERE m.status = $starting
-		RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.updated_at, n.node_name ORDER BY m.updated_at`,
+		RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.updated_at, n.node_name, n.cloud_provider ORDER BY m.updated_at`,
 		map[string]interface{}{"node_id": nodeId, "starting": utils.SCAN_STATUS_STARTING})
 	if err != nil {
 		return model.CloudComplianceScanListResp{}, err
@@ -598,7 +583,7 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 		SET m.status = $cancelling, m.updated_at = TIMESTAMP()
 		WITH m,n
         RETURN m.node_id, m.status, m.status_message, 
-		n.node_id, m.updated_at, n.node_name ORDER BY m.updated_at`,
+		n.node_id, m.updated_at, n.node_name, n.cloud_provider ORDER BY m.updated_at`,
 			map[string]interface{}{"node_id": nodeId,
 				"cancel_pending": utils.SCAN_STATUS_CANCEL_PENDING,
 				"cancelling":     utils.SCAN_STATUS_CANCELLING})
@@ -624,6 +609,7 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 						NodeName:      rec.Values[5].(string),
 					},
 					BenchmarkTypes: nil,
+					CloudProvider:  rec.Values[6].(string),
 				}
 				stoppingScansInfo = append(stoppingScansInfo, tmp)
 			}
@@ -634,7 +620,6 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 		}
 	}
 
-	err = tx.Commit()
 	pendScanResp := model.CloudComplianceScanListResp{ScansInfo: scansInfo}
 
 	return pendScanResp, err
@@ -1201,7 +1186,7 @@ func GetComplianceBulkScans(ctx context.Context, scanType utils.Neo4jScanType, s
 
 	neo_res, err := tx.Run(`
 		MATCH (m:Bulk`+string(scanType)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scanType)+`) -[:SCANNED]-> (n:CloudNode)
-		RETURN d.node_id, d.benchmark_types, d.status, d.status_message, n.node_id, d.updated_at, n.node_name`,
+		RETURN d.node_id, d.benchmark_types, d.status, d.status_message, n.node_id, d.updated_at, n.node_name, n.cloud_provider`,
 		map[string]interface{}{"scan_id": scanId})
 	if err != nil {
 		log.Error().Msgf("Compliance bulk scans status query failed: %+v", err)
