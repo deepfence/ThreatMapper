@@ -144,9 +144,6 @@ const AIIntegrationAdd = () => {
       <SlidingModalContent>
         {!fetcher.data?.success ? (
           <fetcher.Form method="POST" className="flex flex-col gap-8 m-4">
-            {fetcher.data?.message && (
-              <p className="dark:text-status-error text-p7">{fetcher.data?.message}</p>
-            )}
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="genAIProviders"
@@ -181,7 +178,11 @@ const AIIntegrationAdd = () => {
               <AmazonBedrockFormFields fetcherData={fetcher.data} />
             )}
 
-            <div className="mt-2 flex gap-x-2 p-1">
+            {fetcher.data?.message && (
+              <p className="dark:text-status-error text-p7">{fetcher.data?.message}</p>
+            )}
+
+            <div className="flex gap-x-2 p-1">
               <Button
                 size="md"
                 color="default"
