@@ -64,7 +64,7 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.Password = ""
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_TOKEN_AUTH, user, true)
+	//h.AuditUserActivity(r, EVENT_AUTH, ACTION_TOKEN_AUTH, user, true)
 
 	err = httpext.JSON(w, http.StatusOK, accessTokenResponse)
 	if err != nil {
