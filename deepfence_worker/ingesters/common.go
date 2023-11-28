@@ -46,7 +46,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			n.status_message = row.scan_message,
 			n.updated_at = TIMESTAMP()
 		WITH n
-		OPTIONAL MATCH (m) -[:DETECTED]- (n)
+		OPTIONAL MATCH (n) -[:DETECTED]-> (m)
 		WITH n, count(m) as m_count
 		MATCH (n) -[:SCANNED]- (r)
 		SET r.` + ingestersUtil.ScanStatusField[ts] + `=n.status,
@@ -214,10 +214,10 @@ func getEntityIdFromScanID(scanId, scanType string,
 	entityId := ""
 	query := `MATCH (s:` + scanType + `{node_id:'` + scanId + `'}) - [:SCANNED] -> (n)
 		WITH labels(n) as label, n
-		RETURN 
-		CASE 
-    		WHEN 'ContainerImage' IN label or 'Container' in label 
-			THEN [(ci:ContainerImage{node_id:n.docker_image_id}) - [:IS] -> (cis) | cis.node_id] 
+		RETURN
+		CASE
+    		WHEN 'ContainerImage' IN label or 'Container' in label
+			THEN [(ci:ContainerImage{node_id:n.docker_image_id}) - [:IS] -> (cis) | cis.node_id]
     		ELSE [n.node_id]
 		END`
 	res, err := tx.Run(query, map[string]interface{}{})

@@ -12,6 +12,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 )
 
 const (
@@ -219,7 +220,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	if _, err = session.Run(`
 		MATCH (n:ContainerImage)
 		WHERE n.active = false
-		AND ((NOT exists((n) <-[:SCANNED]-()) 
+		AND ((NOT exists((n) <-[:SCANNED]-())
 		AND n.updated_at < TIMESTAMP() - $delete_threshold_ms)
 		OR n.updated_at < TIMESTAMP()-$old_time_ms)
 		WITH n LIMIT 10000
@@ -235,8 +236,8 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	if _, err = session.Run(`
 		MATCH (n:Container)
 		WHERE n.active = false
-		AND ((NOT exists((n) <-[:SCANNED]-()) 
-		AND n.updated_at < TIMESTAMP() - $delete_threshold_ms) 
+		AND ((NOT exists((n) <-[:SCANNED]-())
+		AND n.updated_at < TIMESTAMP() - $delete_threshold_ms)
 		OR n.updated_at < TIMESTAMP()-$old_time_ms)
 		WITH n LIMIT 10000
 		DETACH DELETE n`,
@@ -282,17 +283,21 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
-		MATCH (n) -[:SCANNED]-> ()
-		WHERE n.retries >= 3
-		WITH n LIMIT 10000
-		SET n.status = $new_status`,
-		map[string]interface{}{
-			"time_ms":    dbScanTimeout.Milliseconds(),
-			"new_status": utils.ScanStatusFailed,
-		}, txConfig); err != nil {
-		log.Error().Msgf("Error in Clean up DB task: %v", err)
-		return err
+	for ts := range ingestersUtil.ScanStatusField {
+		if _, err = session.Run(`
+			MATCH (n:`+string(ts)+`) -[:SCANNED]-> (r)
+			WHERE n.retries >= 3
+			WITH n, r LIMIT 10000
+			SET n.status = $new_status,
+				r.`+ingestersUtil.ScanStatusField[ts]+`=n.status,
+				r.`+ingestersUtil.LatestScanIDField[ts]+`=n.node_id`,
+			map[string]interface{}{
+				"time_ms":    dbScanTimeout.Milliseconds(),
+				"new_status": utils.ScanStatusFailed,
+			}, txConfig); err != nil {
+			log.Error().Msgf("Error in Clean up DB task: %v", err)
+			return err
+		}
 	}
 
 	if _, err = session.Run(`
