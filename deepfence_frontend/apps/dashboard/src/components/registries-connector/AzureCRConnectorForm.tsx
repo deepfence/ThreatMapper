@@ -75,6 +75,7 @@ export const AzureCRConnectorForm = ({
           placeholder="••••••••"
           color={fieldErrors?.['azure_registry_password'] ? 'error' : 'default'}
           helperText={fieldErrors?.['azure_registry_password']}
+          required
         />
       </div>
       {errorMessage && (

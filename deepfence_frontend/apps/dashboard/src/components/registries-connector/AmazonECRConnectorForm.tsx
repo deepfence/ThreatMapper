@@ -61,17 +61,23 @@ export const AmazonECRConnectorForm = ({
               setIsPublic(checked);
             }}
           />
-          <input hidden value={String(useIAMRole)} name="non_secret.use_iam_role" />
-          <Checkbox
-            label="Use AWS IAM Role"
-            checked={useIAMRole}
-            onCheckedChange={(checked: boolean) => {
-              setUseIAMRole(checked);
-            }}
-          />
+          <>
+            {!isPublic && (
+              <>
+                <input hidden value={String(useIAMRole)} name="non_secret.use_iam_role" />
+                <Checkbox
+                  label="Use AWS IAM Role"
+                  checked={useIAMRole}
+                  onCheckedChange={(checked: boolean) => {
+                    setUseIAMRole(checked);
+                  }}
+                />
+              </>
+            )}
+          </>
         </div>
         <div className="flex flex-row gap-8 flex-wrap">
-          {!useIAMRole ? (
+          {!isPublic && !useIAMRole && (
             <>
               <TextInput
                 className="grow min-[200px] max-w-xs"
@@ -81,6 +87,7 @@ export const AmazonECRConnectorForm = ({
                 placeholder="AWS Access Key"
                 color={fieldErrors?.['aws_access_key_id'] ? 'error' : 'default'}
                 helperText={fieldErrors?.['aws_access_key_id']}
+                required
               />
               <TextInput
                 className="grow min-[200px] max-w-xs"
@@ -90,9 +97,11 @@ export const AmazonECRConnectorForm = ({
                 placeholder="AWS Secret Key"
                 color={fieldErrors?.['aws_secret_access_key'] ? 'error' : 'default'}
                 helperText={fieldErrors?.['aws_secret_access_key']}
+                required
               />
             </>
-          ) : (
+          )}
+          {!isPublic && useIAMRole && (
             <>
               <TextInput
                 className="grow min-[200px] max-w-xs"
@@ -103,6 +112,7 @@ export const AmazonECRConnectorForm = ({
                 info="(Optional) Pull from registries belonging to other AWS Accounts"
                 color={fieldErrors?.['aws_account_id'] ? 'error' : 'default'}
                 helperText={fieldErrors?.['aws_account_id']}
+                required
               />
               <TextInput
                 className="grow min-[200px] max-w-xs"
@@ -113,6 +123,7 @@ export const AmazonECRConnectorForm = ({
                 info="(Optional) Pull from registries belonging to other AWS Accounts"
                 color={fieldErrors?.['target_account_role_arn'] ? 'error' : 'default'}
                 helperText={fieldErrors?.['target_account_role_arn']}
+                required
               />
             </>
           )}
@@ -124,6 +135,7 @@ export const AmazonECRConnectorForm = ({
             placeholder="AWS Region"
             color={fieldErrors?.['aws_region_name'] ? 'error' : 'default'}
             helperText={fieldErrors?.['aws_region_name']}
+            required
           />
         </div>
       </div>

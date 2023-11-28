@@ -1,4 +1,5 @@
-import { TextInput } from 'ui-components';
+import { useState } from 'react';
+import { Checkbox, TextInput } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
@@ -20,6 +21,8 @@ sample json
 */
 
 export const HarborConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormProps) => {
+  const [isPublic, setIsPublic] = useState(false);
+
   return (
     <>
       <div className="text-p4 dark:text-text-input-value">
@@ -68,24 +71,39 @@ export const HarborConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           helperText={fieldErrors?.['harbor_project_name']}
           required
         />
-        <TextInput
-          className="w-3/4 min-[200px] max-w-xs"
-          label="Username"
-          type={'text'}
-          name="non_secret.harbor_username"
-          placeholder="Username"
-          color={fieldErrors?.['harbor_username'] ? 'error' : 'default'}
-          helperText={fieldErrors?.['harbor_username']}
-        />
-        <TextInput
-          className="w-3/4 min-[200px] max-w-xs"
-          label="Password"
-          type={'password'}
-          name="secret.harbor_password"
-          placeholder="••••••••"
-          color={fieldErrors?.['harbor_password'] ? 'error' : 'default'}
-          helperText={fieldErrors?.['harbor_password']}
-        />
+        <div>
+          <input hidden value={String(isPublic)} />
+          <Checkbox
+            label="Public Registry"
+            checked={isPublic}
+            onCheckedChange={(checked: boolean) => {
+              setIsPublic(checked);
+            }}
+          />
+        </div>
+        {!isPublic && (
+          <>
+            <TextInput
+              className="w-3/4 min-[200px] max-w-xs"
+              label="Username"
+              type={'text'}
+              name="non_secret.harbor_username"
+              placeholder="Username"
+              color={fieldErrors?.['harbor_username'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['harbor_username']}
+            />
+            <TextInput
+              className="w-3/4 min-[200px] max-w-xs"
+              label="Password"
+              type={'password'}
+              name="secret.harbor_password"
+              placeholder="••••••••"
+              color={fieldErrors?.['harbor_password'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['harbor_password']}
+            />
+          </>
+        )}
+
         <div className="mt-2 text-p7 dark:text-text-input-value">
           Supported Versions: 1.8.2 and above
         </div>
