@@ -226,7 +226,7 @@ const action = async ({
     }
     invalidateAllQueries();
     if (actionType === ActionEnumType.MASK) {
-      toast.success('Masked successfully');
+      toast.success('Masked Successfully and disabled the Control');
     } else if (actionType === ActionEnumType.UNMASK) {
       toast.success('Unmasked successfully');
     }
