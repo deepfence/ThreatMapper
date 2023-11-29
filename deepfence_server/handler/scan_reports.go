@@ -271,6 +271,7 @@ func (h *Handler) DiffAddVulnerabilityScan(w http.ResponseWriter, r *http.Reques
 
 	new, err := reporters_scan.GetScanResultDiff[model.Vulnerability](r.Context(), utils.NEO4JVulnerabilityScan, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
 	if err != nil {
+		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
 		return
 	}
@@ -291,6 +292,7 @@ func (h *Handler) DiffAddSecretScan(w http.ResponseWriter, r *http.Request) {
 
 	new, err := reporters_scan.GetScanResultDiff[model.Secret](r.Context(), utils.NEO4JSecretScan, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
 	if err != nil {
+		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
 		return
 	}
@@ -311,6 +313,7 @@ func (h *Handler) DiffAddComplianceScan(w http.ResponseWriter, r *http.Request) 
 
 	new, err := reporters_scan.GetScanResultDiff[model.Compliance](r.Context(), utils.NEO4JComplianceScan, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
 	if err != nil {
+		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
 		return
 	}
@@ -331,6 +334,7 @@ func (h *Handler) DiffAddMalwareScan(w http.ResponseWriter, r *http.Request) {
 
 	new, err := reporters_scan.GetScanResultDiff[model.Malware](r.Context(), utils.NEO4JMalwareScan, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
 	if err != nil {
+		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
 		return
 	}
@@ -351,6 +355,7 @@ func (h *Handler) DiffAddCloudComplianceScan(w http.ResponseWriter, r *http.Requ
 
 	new, err := reporters_scan.GetScanResultDiff[model.CloudCompliance](r.Context(), utils.NEO4JCloudComplianceScan, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
 	if err != nil {
+		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
 		return
 	}

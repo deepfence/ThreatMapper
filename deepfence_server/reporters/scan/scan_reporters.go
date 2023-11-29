@@ -694,11 +694,13 @@ func GetScanResultDiff[T any](ctx context.Context, scan_type utils.Neo4jScanType
 	}
 
 	query = `
-	MATCH (n:` + string(scan_type) + `{node_id: $base_scan_id}) -[r:DETECTED]-> (d)
-	WHERE NOT EXISTS {MATCH (m:` + string(scan_type) + `{node_id: $compare_to_scan_id}) -[:DETECTED]-> (d)}
+	MATCH (m:` + string(scan_type) + `{node_id: $base_scan_id}) -[r:DETECTED]-> (d2)
+	WITH collect(d2) as dset
+	MATCH (n:` + string(scan_type) + `{node_id: $compare_to_scan_id}) -[r:DETECTED]-> (d)
+	WHERE NOT d in dset
 	OPTIONAL MATCH (d) -[:IS]-> (e)
-	OPTIONAL MATCH (s) -[:SCANNED]-> (f)
-	OPTIONAL MATCH (c:ContainerImage{node_id: f.docker_image_id}) -[:ALIAS] ->(t)(t) -[ma:MASKED]-> (d)
+	OPTIONAL MATCH (n) -[:SCANNED]-> (f)
+	OPTIONAL MATCH (c:ContainerImage{node_id: f.docker_image_id}) -[:ALIAS] ->(t) -[ma:MASKED]-> (d)
 	WITH apoc.map.merge( e{.*}, 
 	d{.*, masked: coalesce(d.masked or r.masked or e.masked or head(collect(ma.masked)), false), 
 	name: coalesce(e.name, d.name, '')}) AS d` +

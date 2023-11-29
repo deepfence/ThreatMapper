@@ -62,7 +62,7 @@ func CloudCompliancesToMaps(ms []ingestersUtil.CloudCompliance) []map[string]int
 			nodeIdElem = append(nodeIdElem, data["resource"].(string))
 		}
 
-		nodeIdElem = append(nodeIdElem, data["scan_id"].(string))
+		// nodeIdElem = append(nodeIdElem, data["scan_id"].(string))
 		data["node_id"] = strings.Join(nodeIdElem, "--")
 
 		cp, cpFound := data["cloud_provider"]
