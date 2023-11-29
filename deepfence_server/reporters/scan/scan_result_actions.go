@@ -1,4 +1,4 @@
-package reporters_scan
+package reporters_scan //nolint:stylecheck
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-func UpdateScanResultNodeFields(ctx context.Context, scanType utils.Neo4jScanType, scanId string, nodeIds []string, key, value string) error {
+func UpdateScanResultNodeFields(ctx context.Context, scanType utils.Neo4jScanType, scanID string, nodeIDs []string, key, value string) error {
 	// (m:VulnerabilityScan) - [r:DETECTED] -> (n:Cve)
 	// update fields of "Cve" node
 	driver, err := directory.Neo4jClient(ctx)
@@ -38,7 +38,7 @@ func UpdateScanResultNodeFields(ctx context.Context, scanType utils.Neo4jScanTyp
 	_, err = tx.Run(`
 		MATCH (m:`+string(scanType)+`) -[r:DETECTED]-> (n)
 		WHERE n.node_id IN $node_ids AND m.node_id = $scan_id
-		SET n.`+key+` = $value`, map[string]interface{}{"node_ids": nodeIds, "value": value, "scan_id": scanId})
+		SET n.`+key+` = $value`, map[string]interface{}{"node_ids": nodeIDs, "value": value, "scan_id": scanID})
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	return tx.Commit()
 }
 
-func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string, docIds []string) error {
+func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string, docIds []string) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 		_, err = tx.Run(`
 		MATCH (m:`+string(scanType)+`) -[r:DETECTED]-> (n)
 		WHERE n.node_id IN $node_ids AND m.node_id = $scan_id
-		DELETE r`, map[string]interface{}{"node_ids": docIds, "scan_id": scanId})
+		DELETE r`, map[string]interface{}{"node_ids": docIds, "scan_id": scanID})
 		if err != nil {
 			return err
 		}
@@ -168,7 +168,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 		_, err = tx.Run(`
 		MATCH (m:`+string(scanType)+`{node_id: $scan_id})
 		OPTIONAL MATCH (m)-[r:DETECTED]-> (n:`+utils.ScanTypeDetectedNode[scanType]+`)
-		DETACH DELETE m,r`, map[string]interface{}{"scan_id": scanId})
+		DETACH DELETE m,r`, map[string]interface{}{"scan_id": scanID})
 		if err != nil {
 			return err
 		}
@@ -218,16 +218,16 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 			log.Error().Err(err).Msg("failed to get minio client")
 			return err
 		}
-		sbomFile := path.Join("/sbom", utils.ScanIDReplacer.Replace(scanId)+".json.gz")
+		sbomFile := path.Join("/sbom", utils.ScanIDReplacer.Replace(scanID)+".json.gz")
 		err = mc.DeleteFile(ctx, sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
 		if err != nil {
-			log.Error().Err(err).Msgf("failed to delete sbom for scan id %s", scanId)
+			log.Error().Err(err).Msgf("failed to delete sbom for scan id %s", scanID)
 			return err
 		}
-		runtimeSbomFile := path.Join("/sbom", "runtime-"+utils.ScanIDReplacer.Replace(scanId)+".json")
+		runtimeSbomFile := path.Join("/sbom", "runtime-"+utils.ScanIDReplacer.Replace(scanID)+".json")
 		err = mc.DeleteFile(ctx, runtimeSbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
 		if err != nil {
-			log.Error().Err(err).Msgf("failed to delete runtime sbom for scan id %s", scanId)
+			log.Error().Err(err).Msgf("failed to delete runtime sbom for scan id %s", scanID)
 			return err
 		}
 	}
@@ -271,7 +271,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 		return err
 	}
 	defer tx4.Close()
-	_, err = tx4.Run(fmt.Sprintf(query, scanId), map[string]interface{}{})
+	_, err = tx4.Run(fmt.Sprintf(query, scanID), map[string]interface{}{})
 	if err != nil {
 		return err
 	}
@@ -355,10 +355,10 @@ func StopScan(ctx context.Context, scanType string, scanIds []string) error {
 	return tx.Commit()
 }
 
-func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId string, scanIDs []string) error {
+func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanID string, scanIDs []string) error {
 	switch scanType {
 	case utils.NEO4JVulnerabilityScan:
-		res, common, err := GetSelectedScanResults[model.Vulnerability](ctx, scanType, scanId, scanIDs)
+		res, common, err := GetSelectedScanResults[model.Vulnerability](ctx, scanType, scanID, scanIDs)
 		if err != nil {
 			return err
 		}
@@ -366,7 +366,7 @@ func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 			return err
 		}
 	case utils.NEO4JSecretScan:
-		res, common, err := GetSelectedScanResults[model.Secret](ctx, scanType, scanId, scanIDs)
+		res, common, err := GetSelectedScanResults[model.Secret](ctx, scanType, scanID, scanIDs)
 		if err != nil {
 			return err
 		}
@@ -374,7 +374,7 @@ func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 			return err
 		}
 	case utils.NEO4JMalwareScan:
-		res, common, err := GetSelectedScanResults[model.Malware](ctx, scanType, scanId, scanIDs)
+		res, common, err := GetSelectedScanResults[model.Malware](ctx, scanType, scanID, scanIDs)
 		if err != nil {
 			return err
 		}
@@ -382,7 +382,7 @@ func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 			return err
 		}
 	case utils.NEO4JComplianceScan:
-		res, common, err := GetSelectedScanResults[model.Compliance](ctx, scanType, scanId, scanIDs)
+		res, common, err := GetSelectedScanResults[model.Compliance](ctx, scanType, scanID, scanIDs)
 		if err != nil {
 			return err
 		}
@@ -390,7 +390,7 @@ func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 			return err
 		}
 	case utils.NEO4JCloudComplianceScan:
-		res, common, err := GetSelectedScanResults[model.CloudCompliance](ctx, scanType, scanId, scanIDs)
+		res, common, err := GetSelectedScanResults[model.CloudCompliance](ctx, scanType, scanID, scanIDs)
 		if err != nil {
 			return err
 		}
@@ -402,7 +402,7 @@ func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 	return nil
 }
 
-func GetSelectedScanResults[T any](ctx context.Context, scanType utils.Neo4jScanType, scanId string, scanIDs []string) ([]T, model.ScanResultsCommon, error) {
+func GetSelectedScanResults[T any](ctx context.Context, scanType utils.Neo4jScanType, scanID string, scanIDs []string) ([]T, model.ScanResultsCommon, error) {
 	res := []T{}
 	common := model.ScanResultsCommon{}
 	driver, err := directory.Neo4jClient(ctx)
@@ -423,7 +423,7 @@ func GetSelectedScanResults[T any](ctx context.Context, scanType utils.Neo4jScan
 		AND n.node_id = $scan_id
 		RETURN m{.*}`
 
-	result, err := tx.Run(fmt.Sprintf(query, scanType), map[string]interface{}{"scan_ids": scanIDs, "scan_id": scanId})
+	result, err := tx.Run(fmt.Sprintf(query, scanType), map[string]interface{}{"scan_ids": scanIDs, "scan_id": scanID})
 	if err != nil {
 		log.Error().Msgf("NotifyScanResult: Error in getting the scan result nodes from neo4j: %v", err)
 		return res, common, err
@@ -444,7 +444,7 @@ func GetSelectedScanResults[T any](ctx context.Context, scanType utils.Neo4jScan
 	ncommonres, err := tx.Run(`
 	MATCH (m:`+string(scanType)+`{node_id: $scan_id}) -[:SCANNED]-> (n)
 	RETURN n{.*, scan_id: m.node_id, updated_at:m.updated_at, created_at:m.created_at}`,
-		map[string]interface{}{"scan_id": scanId})
+		map[string]interface{}{"scan_id": scanID})
 	if err != nil {
 		return res, common, err
 	}

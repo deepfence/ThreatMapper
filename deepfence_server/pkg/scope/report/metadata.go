@@ -36,7 +36,7 @@ type Metadata struct {
 	PublicIP         []string `json:"public_ip,omitempty"`
 	PrivateIP        []string `json:"private_ip,omitempty"`
 	AvailabilityZone string   `json:"availability_zone,omitempty"`
-	KernelId         string   `json:"kernel_id,omitempty"`
+	KernelID         string   `json:"kernel_id,omitempty"`
 	CloudRegion      string   `json:"cloud_region,omitempty"`
 	ResourceGroup    string   `json:"resource_group,omitempty"`
 	Tags             []string `json:"tags,omitempty"`
@@ -45,8 +45,8 @@ type Metadata struct {
 	Uptime          int      `json:"uptime,omitempty"`
 	Pseudo          bool     `json:"pseudo"`
 	UserDefinedTags []string `json:"user_defined_tags,omitempty"`
-	CpuMax          float64  `json:"cpu_max,omitempty"`
-	CpuUsage        float64  `json:"cpu_usage,omitempty"`
+	CPUMax          float64  `json:"cpu_max,omitempty"`
+	CPUUsage        float64  `json:"cpu_usage,omitempty"`
 	MemoryMax       int64    `json:"memory_max,omitempty"`
 	MemoryUsage     int64    `json:"memory_usage,omitempty"`
 	OpenFilesCount  int      `json:"open_files_count,omitempty"`
@@ -59,9 +59,9 @@ type Metadata struct {
 	Os             string   `json:"os,omitempty"`
 	LocalNetworks  []string `json:"local_networks,omitempty"`
 	InterfaceNames []string `json:"interface_names,omitempty"`
-	InterfaceIps   []string `json:"interface_ips,omitempty"`
-	InterfaceIpMap string   `json:"interface_ip_map,omitempty"`
-	IsConsoleVm    bool     `json:"is_console_vm,omitempty"`
+	InterfaceIPs   []string `json:"interface_ips,omitempty"`
+	InterfaceIPMap string   `json:"interface_ip_map,omitempty"`
+	IsConsoleVM    bool     `json:"is_console_vm,omitempty"`
 	LocalCIDRs     []string `json:"local_cidr,omitempty"`
 
 	// docker
@@ -109,7 +109,7 @@ type Metadata struct {
 	KubernetesIsInHostNetwork bool     `json:"kubernetes_is_in_host_network,omitempty"`
 	KubernetesType            string   `json:"kubernetes_type,omitempty"`
 	KubernetesPorts           []string `json:"kubernetes_ports,omitempty"`
-	KubernetesClusterId       string   `json:"kubernetes_cluster_id"`
+	KubernetesClusterID       string   `json:"kubernetes_cluster_id"`
 	KubernetesClusterName     string   `json:"kubernetes_cluster_name"`
 }
 

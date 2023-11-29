@@ -57,23 +57,23 @@ func (h *Handler) UploadAgentBinaries(w http.ResponseWriter, r *http.Request) {
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}
-	versioned_tarball := map[string]*bytes.Buffer{
+	versionedTarball := map[string]*bytes.Buffer{
 		vername: bytes.NewBuffer(tarball),
 	}
 
-	tags_with_urls, err := PrepareAgentBinariesReleases(ctx, versioned_tarball)
+	tagsWithURLs, err := PrepareAgentBinariesReleases(ctx, versionedTarball)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
-	err = IngestAgentVersion(ctx, tags_with_urls)
+	err = IngestAgentVersion(ctx, tagsWithURLs)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
-	err = ScheduleAutoUpgradeForPatchChanges(ctx, GetLatestVersionByMajorMinor(versioned_tarball))
+	err = ScheduleAutoUpgradeForPatchChanges(ctx, GetLatestVersionByMajorMinor(versionedTarball))
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
@@ -82,14 +82,14 @@ func (h *Handler) UploadAgentBinaries(w http.ResponseWriter, r *http.Request) {
 	_ = httpext.JSON(w, http.StatusOK, nil)
 }
 
-func PrepareAgentBinariesReleases(ctx context.Context, versioned_tarball map[string]*bytes.Buffer) (map[string]string, error) {
-	processed_tags := map[string]string{}
+func PrepareAgentBinariesReleases(ctx context.Context, versionedTarball map[string]*bytes.Buffer) (map[string]string, error) {
+	processedTags := map[string]string{}
 	minio, err := directory.MinioClient(ctx)
 	if err != nil {
-		return processed_tags, err
+		return processedTags, err
 	}
 
-	for version, b := range versioned_tarball {
+	for version, b := range versionedTarball {
 		res, err := minio.UploadFile(ctx,
 			version,
 			b.Bytes(),
@@ -115,12 +115,12 @@ func PrepareAgentBinariesReleases(ctx context.Context, versioned_tarball map[str
 			continue
 		}
 		log.Debug().Msgf("Exposed URL: %v", url)
-		processed_tags[version] = url
+		processedTags[version] = url
 	}
-	return processed_tags, nil
+	return processedTags, nil
 }
 
-func IngestAgentVersion(ctx context.Context, tags_to_url map[string]string) error {
+func IngestAgentVersion(ctx context.Context, tagsToURL map[string]string) error {
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -134,16 +134,16 @@ func IngestAgentVersion(ctx context.Context, tags_to_url map[string]string) erro
 	}
 	defer tx.Close()
 
-	tags_to_ingest := []map[string]string{}
-	for k, v := range tags_to_url {
-		tags_to_ingest = append(tags_to_ingest, map[string]string{"tag": k, "url": v})
+	tagsToIngest := []map[string]string{}
+	for k, v := range tagsToURL {
+		tagsToIngest = append(tagsToIngest, map[string]string{"tag": k, "url": v})
 	}
 
 	if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:AgentVersion{node_id: row.tag})
 		SET n.url = row.url`,
-		map[string]interface{}{"batch": tags_to_ingest}); err != nil {
+		map[string]interface{}{"batch": tagsToIngest}); err != nil {
 		return err
 	}
 
@@ -164,7 +164,7 @@ func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]s
 	}
 	defer tx.Close()
 
-	tags_to_ingest := []map[string]string{}
+	tagsToIngest := []map[string]string{}
 	for k, v := range latest {
 		action, err := controls.PrepareAgentUpgradeAction(ctx, v)
 		if err != nil {
@@ -172,15 +172,15 @@ func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]s
 			continue
 		}
 
-		action_str, err := json.Marshal(action)
+		actionStr, err := json.Marshal(action)
 		if err != nil {
 			return err
 		}
-		tags_to_ingest = append(tags_to_ingest,
+		tagsToIngest = append(tagsToIngest,
 			map[string]string{
 				"major_minor": k,
 				"latest":      v,
-				"action":      string(action_str)})
+				"action":      string(actionStr)})
 	}
 
 	if _, err = tx.Run(`
@@ -192,7 +192,7 @@ func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]s
 		MERGE (vnew) -[:SCHEDULED{status: $status, retries: 0, trigger_action: row.action, updated_at: TIMESTAMP()}]-> (n)`,
 		map[string]interface{}{
 			"status": utils.ScanStatusStarting,
-			"batch":  tags_to_ingest}); err != nil {
+			"batch":  tagsToIngest}); err != nil {
 		return err
 	}
 
@@ -200,19 +200,19 @@ func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]s
 }
 
 func GetLatestVersionByMajorMinor(versions map[string]*bytes.Buffer) map[string]string {
-	latest_patches := map[string]string{}
-	all_versions := map[string][]string{}
+	latestPatches := map[string]string{}
+	allVersions := map[string][]string{}
 
 	for k := range versions {
-		all_versions[semver.MajorMinor(k)] =
-			append(all_versions[semver.MajorMinor(k)],
+		allVersions[semver.MajorMinor(k)] =
+			append(allVersions[semver.MajorMinor(k)],
 				k)
 	}
-	for k, v := range all_versions {
+	for k, v := range allVersions {
 		semver.Sort(v)
-		latest_patches[k] = v[len(v)-1]
+		latestPatches[k] = v[len(v)-1]
 	}
-	return latest_patches
+	return latestPatches
 }
 
 func (h *Handler) ListAgentVersion(w http.ResponseWriter, r *http.Request) {

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
-	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -15,35 +14,35 @@ import (
 )
 
 const (
-	DEFAULT_AGENT_IMAGE_NAME = "deepfence.io"
-	DEFAULT_AGENT_IMAGE_TAG  = "thomas"
-	DEFAULT_AGENT_VERSION    = "0.0.1"
+	DefaultAgentImageName = "deepfence.io"
+	DefaultAgentImageTag  = "thomas"
+	DefaultAgentVersion   = "0.0.1"
 )
 
-func PrepareAgentUpgradeAction(ctx context.Context, version string) (ctl.Action, error) {
+func PrepareAgentUpgradeAction(ctx context.Context, version string) (controls.Action, error) {
 
 	url, err := GetAgentVersionTarball(ctx, version)
 	if err != nil {
-		return ctl.Action{}, err
+		return controls.Action{}, err
 	}
 
-	internal_req := ctl.StartAgentUpgradeRequest{
+	internalReq := controls.StartAgentUpgradeRequest{
 		HomeDirectoryURL: url,
 		Version:          version,
 	}
 
-	b, err := json.Marshal(internal_req)
+	b, err := json.Marshal(internalReq)
 	if err != nil {
-		return ctl.Action{}, err
+		return controls.Action{}, err
 	}
 
-	return ctl.Action{
-		ID:             ctl.StartAgentUpgrade,
+	return controls.Action{
+		ID:             controls.StartAgentUpgrade,
 		RequestPayload: string(b),
 	}, nil
 }
 
-func ScheduleAgentUpgrade(ctx context.Context, version string, nodeIds []string, action controls.Action) error {
+func ScheduleAgentUpgrade(ctx context.Context, version string, nodeIDs []string, action controls.Action) error {
 
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -59,7 +58,7 @@ func ScheduleAgentUpgrade(ctx context.Context, version string, nodeIds []string,
 	}
 	defer tx.Close()
 
-	action_str, err := json.Marshal(action)
+	actionStr, err := json.Marshal(action)
 	if err != nil {
 		return err
 	}
@@ -71,9 +70,9 @@ func ScheduleAgentUpgrade(ctx context.Context, version string, nodeIds []string,
 		MERGE (v) -[:SCHEDULED{status: $status, retries: 0, trigger_action: $action, updated_at: TIMESTAMP()}]-> (n)`,
 		map[string]interface{}{
 			"version":  version,
-			"node_ids": nodeIds,
+			"node_ids": nodeIDs,
 			"status":   utils.ScanStatusStarting,
-			"action":   string(action_str),
+			"action":   string(actionStr),
 		})
 
 	if err != nil {
@@ -120,7 +119,7 @@ func GetAgentVersionTarball(ctx context.Context, version string) (string, error)
 	return r.Values[0].(string), nil
 }
 
-func GetAgentPluginVersionTarball(ctx context.Context, version, plugin_name string) (string, error) {
+func GetAgentPluginVersionTarball(ctx context.Context, version, pluginName string) (string, error) {
 
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -138,7 +137,7 @@ func GetAgentPluginVersionTarball(ctx context.Context, version, plugin_name stri
 
 	query := fmt.Sprintf(`
 		MATCH (v:AgentVersion{node_id: $version})
-		return v.url_%s`, plugin_name)
+		return v.url_%s`, pluginName)
 	res, err := tx.Run(query,
 		map[string]interface{}{
 			"version": version,
@@ -157,7 +156,7 @@ func GetAgentPluginVersionTarball(ctx context.Context, version, plugin_name stri
 	return r.Values[0].(string), nil
 }
 
-func hasPendingUpgradeOrNew(ctx context.Context, version string, nodeId string) (bool, error) {
+func hasPendingUpgradeOrNew(ctx context.Context, version string, nodeID string) (bool, error) {
 
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -180,7 +179,7 @@ func hasPendingUpgradeOrNew(ctx context.Context, version string, nodeId string) 
 		OPTIONAL MATCH (n) -[rv:VERSIONED]-> (v)
 		RETURN rs IS NOT NULL OR rv IS NULL`,
 		map[string]interface{}{
-			"node_id": nodeId,
+			"node_id": nodeID,
 			"version": version,
 		})
 	if err != nil {
@@ -195,7 +194,7 @@ func hasPendingUpgradeOrNew(ctx context.Context, version string, nodeId string) 
 	return r.Values[0].(bool), nil
 }
 
-func wasAttachedToNewer(ctx context.Context, version string, nodeId string) (bool, string, error) {
+func wasAttachedToNewer(ctx context.Context, version string, nodeID string) (bool, string, error) {
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return false, "", err
@@ -214,7 +213,7 @@ func wasAttachedToNewer(ctx context.Context, version string, nodeId string) (boo
 		MATCH (n:Node{node_id:$node_id}) -[old:VERSIONED]-> (v)
 		RETURN v.node_id`,
 		map[string]interface{}{
-			"node_id": nodeId,
+			"node_id": nodeID,
 		})
 	if err != nil {
 		return false, "", err
@@ -225,14 +224,14 @@ func wasAttachedToNewer(ctx context.Context, version string, nodeId string) (boo
 		return false, "", nil
 	}
 
-	prev_ver := rec.Values[0].(string)
+	prevVer := rec.Values[0].(string)
 
-	return semver.Compare(prev_ver, version) == 1, prev_ver, nil
+	return semver.Compare(prevVer, version) == 1, prevVer, nil
 }
 
-func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) error {
+func CompleteAgentUpgrade(ctx context.Context, version string, nodeID string) error {
 
-	has, err := hasPendingUpgradeOrNew(ctx, version, nodeId)
+	has, err := hasPendingUpgradeOrNew(ctx, version, nodeID)
 
 	if err != nil {
 		return err
@@ -242,7 +241,7 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) er
 		return nil
 	}
 
-	newer, prev_ver, err := wasAttachedToNewer(ctx, version, nodeId)
+	newer, prevVer, err := wasAttachedToNewer(ctx, version, nodeID)
 	if err != nil {
 		return err
 	}
@@ -265,7 +264,7 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) er
 		OPTIONAL MATCH (n:Node{node_id:$node_id}) -[old:VERSIONED]-> (v)
 		DELETE old`,
 		map[string]interface{}{
-			"node_id": nodeId,
+			"node_id": nodeID,
 		})
 	if err != nil {
 		return err
@@ -280,7 +279,7 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) er
 		DELETE r`,
 		map[string]interface{}{
 			"version": version,
-			"node_id": nodeId,
+			"node_id": nodeID,
 		})
 
 	if err != nil {
@@ -294,11 +293,11 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) er
 
 	// If attached to newer, schedule an ugprade
 	if newer {
-		action, err := PrepareAgentUpgradeAction(ctx, prev_ver)
+		action, err := PrepareAgentUpgradeAction(ctx, prevVer)
 		if err != nil {
 			return err
 		}
-		err = ScheduleAgentUpgrade(ctx, prev_ver, []string{nodeId}, action)
+		err = ScheduleAgentUpgrade(ctx, prevVer, []string{nodeID}, action)
 		if err != nil {
 			return err
 		}
@@ -307,7 +306,7 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) er
 	return nil
 }
 
-func ScheduleAgentPluginEnable(ctx context.Context, version, plugin_name string, nodeIds []string, action controls.Action) error {
+func ScheduleAgentPluginEnable(ctx context.Context, version, pluginName string, nodeIDs []string, action controls.Action) error {
 
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -323,7 +322,7 @@ func ScheduleAgentPluginEnable(ctx context.Context, version, plugin_name string,
 	}
 	defer tx.Close()
 
-	action_str, err := json.Marshal(action)
+	actionStr, err := json.Marshal(action)
 	if err != nil {
 		return err
 	}
@@ -331,20 +330,20 @@ func ScheduleAgentPluginEnable(ctx context.Context, version, plugin_name string,
 	query := fmt.Sprintf(`
 		MATCH (v:%sVersion{node_id: $version})
 		MATCH (n:Node)
-		WHERE n.node_id IN $nonternal_req := ctl.EnableAgentPluginRequest{
+		WHERE n.node_id IN $nonternal_req := controls.EnableAgentPluginRequest{
 		BinUrl:     url,
 		Version:    agentUp.Version,
 		PluginName: agentUp.PluginName,
 		}
 		de_ids
-		MERGE (v) -[:SCHEDULED{status: $status, retries: 0, trigger_action: $action, updated_at: TIMESTAMP()}]-> (n)`, plugin_name)
+		MERGE (v) -[:SCHEDULED{status: $status, retries: 0, trigger_action: $action, updated_at: TIMESTAMP()}]-> (n)`, pluginName)
 
 	_, err = tx.Run(query,
 		map[string]interface{}{
 			"version":  version,
-			"node_ids": nodeIds,
+			"node_ids": nodeIDs,
 			"status":   utils.ScanStatusStarting,
-			"action":   string(action_str),
+			"action":   string(actionStr),
 		})
 
 	if err != nil {
@@ -355,7 +354,7 @@ func ScheduleAgentPluginEnable(ctx context.Context, version, plugin_name string,
 
 }
 
-func ScheduleAgentPluginDisable(ctx context.Context, plugin_name string, nodeIds []string, action controls.Action) error {
+func ScheduleAgentPluginDisable(ctx context.Context, pluginName string, nodeIDs []string, action controls.Action) error {
 
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -371,7 +370,7 @@ func ScheduleAgentPluginDisable(ctx context.Context, plugin_name string, nodeIds
 	}
 	defer tx.Close()
 
-	action_str, err := json.Marshal(action)
+	actionStr, err := json.Marshal(action)
 	if err != nil {
 		return err
 	}
@@ -380,13 +379,13 @@ func ScheduleAgentPluginDisable(ctx context.Context, plugin_name string, nodeIds
 		MATCH (n:Node) -[:USES]-> (v:%sVersion)
 		WHERE n.node_id IN $node_ids
 		MERGE (v) -[:SCHEDULED{status: $status, retries: 0, trigger_action: $action, updated_at: TIMESTAMP()}]-> (n)
-		SET n.status_%s = 'disabling'`, plugin_name, plugin_name)
+		SET n.status_%s = 'disabling'`, pluginName, pluginName)
 
 	_, err = tx.Run(query,
 		map[string]interface{}{
-			"node_ids": nodeIds,
+			"node_ids": nodeIDs,
 			"status":   utils.ScanStatusStarting,
-			"action":   string(action_str),
+			"action":   string(actionStr),
 		})
 
 	if err != nil {

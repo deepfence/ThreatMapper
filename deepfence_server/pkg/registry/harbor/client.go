@@ -37,7 +37,7 @@ func listImages(url, project, username, password string) ([]model.IngestedContai
 			log.Error().Msg(err.Error())
 			continue
 		}
-		log.Debug().Msgf("tags for image %s/%s are %s", repo.ProjectID, repo.Name, artifacts)
+		log.Debug().Msgf("tags for image %d/%s are %v", repo.ProjectID, repo.Name, artifacts)
 
 		images = append(images, getImageWithTags(repo, artifacts)...)
 	}
@@ -51,9 +51,9 @@ func listRepos(url, project, username, password string) ([]Repository, error) {
 		err          error
 	)
 
-	listReposUrl := "%s/api/v2.0/projects/%s/repositories"
-	queryURl := fmt.Sprintf(listReposUrl, url, project)
-	req, err := http.NewRequest(http.MethodGet, queryURl, nil)
+	listReposURL := "%s/api/v2.0/projects/%s/repositories"
+	queryURL := fmt.Sprintf(listReposURL, url, project)
+	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
@@ -94,9 +94,9 @@ func listArtifacts(url, username, password, project, repo string) ([]Artifact, e
 		artifacts []Artifact
 	)
 
-	listRepoTagsUrl := "%s/api/v2.0/projects/%s/repositories/%s/artifacts"
-	queryURl := fmt.Sprintf(listRepoTagsUrl, url, project, strings.TrimPrefix(repo, project))
-	req, err := http.NewRequest(http.MethodGet, queryURl, nil)
+	listRepoTagsURL := "%s/api/v2.0/projects/%s/repositories/%s/artifacts"
+	queryURL := fmt.Sprintf(listRepoTagsURL, url, project, strings.TrimPrefix(repo, project))
+	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return artifacts, err

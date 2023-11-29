@@ -14,7 +14,7 @@ type Jira struct {
 }
 
 type Config struct {
-	JiraSiteUrl    string   `json:"jiraSiteUrl" validate:"required,url" required:"true"`
+	JiraSiteURL    string   `json:"jiraSiteUrl" validate:"required,url" required:"true"`
 	Username       string   `json:"username" validate:"required,min=1" required:"true"`
 	Password       string   `json:"password" validate:"omitempty,min=8,max=100,jira_auth_key"`
 	JiraProjectKey string   `json:"jiraProjectKey" validate:"required,min=1" required:"true"`

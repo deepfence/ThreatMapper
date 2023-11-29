@@ -26,23 +26,23 @@ func GetRegistry(rType string, requestByte []byte) (Registry, error) {
 	err := errors.Errorf("registry type: %s, not supported", rType)
 
 	switch rType {
-	case constants.DOCKER_HUB:
+	case constants.DockerHub:
 		r, err = dockerhub.New(requestByte)
-	case constants.QUAY:
+	case constants.Quay:
 		r, err = quay.New(requestByte)
 	case constants.GCR:
 		r, err = gcr.New(requestByte)
 	case constants.ACR:
 		r, err = acr.New(requestByte)
-	case constants.DOCKER_PRIVATE:
+	case constants.DockerPrivate:
 		r, err = dockerprivate.New(requestByte)
-	case constants.HARBOR:
+	case constants.Harbor:
 		r, err = harbor.New(requestByte)
-	case constants.JFROG:
+	case constants.Jfrog:
 		r, err = jfrog.New(requestByte)
 	case constants.ECR:
 		r, err = ecr.New(requestByte)
-	case constants.GITLAB:
+	case constants.Gitlab:
 		r, err = gitlab.New(requestByte)
 	}
 
@@ -54,7 +54,7 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 	err := errors.Errorf("registry type: %s, not supported", row.RegistryType)
 
 	switch row.RegistryType {
-	case constants.DOCKER_HUB:
+	case constants.DockerHub:
 		var nonSecret map[string]string
 		var secret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
@@ -77,7 +77,7 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 			},
 		}
 		return r, nil
-	case constants.QUAY:
+	case constants.Quay:
 		var nonSecret map[string]string
 		var secret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
@@ -121,13 +121,13 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 			Name:         row.Name,
 			NonSecret: gcr.NonSecret{
 				RegistryURL: nonSecret["registry_url"],
-				ProjectId:   nonSecret["project_id"],
+				ProjectID:   nonSecret["project_id"],
 			},
 			Secret: gcr.Secret{
-				PrivateKeyId: secret["private_key_id"],
+				PrivateKeyID: secret["private_key_id"],
 			},
 			Extras: gcr.Extras{
-				ServiceAccountJson: extras["service_account_json"],
+				ServiceAccountJSON: extras["service_account_json"],
 			},
 		}
 		return r, nil
@@ -154,7 +154,7 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 			},
 		}
 		return r, nil
-	case constants.DOCKER_PRIVATE:
+	case constants.DockerPrivate:
 		var nonSecret map[string]string
 		var secret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
@@ -177,7 +177,7 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 			},
 		}
 		return r, nil
-	case constants.HARBOR:
+	case constants.Harbor:
 		var nonSecret map[string]string
 		var secret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
@@ -201,7 +201,7 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 			},
 		}
 		return r, nil
-	case constants.JFROG:
+	case constants.Jfrog:
 		var nonSecret map[string]string
 		var secret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
@@ -254,7 +254,7 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 		}
 		return r, err
 
-	case constants.GITLAB:
+	case constants.Gitlab:
 		var nonSecret map[string]string
 		var secret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
@@ -288,7 +288,7 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 	err := errors.Errorf("registry type: %s, not supported", row.RegistryType)
 
 	switch row.RegistryType {
-	case constants.DOCKER_HUB:
+	case constants.DockerHub:
 		var nonSecret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
 		if err != nil {
@@ -303,7 +303,7 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 			},
 		}
 		return r, nil
-	case constants.QUAY:
+	case constants.Quay:
 		var nonSecret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
 		if err != nil {
@@ -329,7 +329,7 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 			Name:         row.Name,
 			NonSecret: gcr.NonSecret{
 				RegistryURL: nonSecret["registry_url"],
-				ProjectId:   nonSecret["project_id"],
+				ProjectID:   nonSecret["project_id"],
 			},
 		}
 		return r, nil
@@ -348,7 +348,7 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 			},
 		}
 		return r, nil
-	case constants.DOCKER_PRIVATE:
+	case constants.DockerPrivate:
 		var nonSecret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
 		if err != nil {
@@ -363,7 +363,7 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 			},
 		}
 		return r, nil
-	case constants.HARBOR:
+	case constants.Harbor:
 		var nonSecret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
 		if err != nil {
@@ -379,7 +379,7 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 			},
 		}
 		return r, nil
-	case constants.JFROG:
+	case constants.Jfrog:
 		var nonSecret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
 		if err != nil {
@@ -414,7 +414,7 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 			},
 		}
 		return r, nil
-	case constants.GITLAB:
+	case constants.Gitlab:
 		var nonSecret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
 		if err != nil {

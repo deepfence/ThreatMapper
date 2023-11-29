@@ -24,7 +24,7 @@ func InternalRoutes(r *chi.Mux, ingestC chan *kgo.Record) error {
 	r.Route("/deepfence/internal", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Route("/console-api-token", func(r chi.Router) {
-				r.Get("/", dfHandler.GetApiTokenForConsoleAgent)
+				r.Get("/", dfHandler.GetAPITokenForConsoleAgent)
 			})
 		})
 	})

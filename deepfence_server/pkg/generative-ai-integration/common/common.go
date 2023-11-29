@@ -7,8 +7,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 )
 
-type GenerativeAiIntegrationCommon struct {
-}
+type GenerativeAiIntegrationCommon struct{}
 
 func (g *GenerativeAiIntegrationCommon) GenerateCloudPostureQuery(request model.GenerativeAiIntegrationRequest) (string, error) {
 	var query string
@@ -48,7 +47,7 @@ func (g *GenerativeAiIntegrationCommon) GenerateVulnerabilityQuery(request model
 		if req.CveCausedByPackage != "" {
 			packageName = "in package " + req.CveCausedByPackage
 		}
-		query = fmt.Sprintf(vulnerabilityRemediationQuery, GetRemediationFormat(req.RemediationFormat), req.CveId, packageName)
+		query = fmt.Sprintf(vulnerabilityRemediationQuery, GetRemediationFormat(req.RemediationFormat), req.CveID, packageName)
 		query = strings.TrimSpace(query)
 	}
 	return query, nil

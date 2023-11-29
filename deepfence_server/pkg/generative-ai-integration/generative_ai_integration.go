@@ -1,4 +1,4 @@
-package generative_ai_integration
+package generative_ai_integration //nolint:stylecheck
 
 import (
 	"context"
@@ -13,9 +13,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-var (
-	invalidIntegrationType = errors.New("invalid integration type")
-)
+var ErrInvalidIntegrationType = errors.New("invalid integration type")
 
 func NewGenerativeAiIntegration(ctx context.Context, req model.AddGenerativeAiIntegrationRequest) (GenerativeAiIntegration, error) {
 	switch req.GetIntegrationType() {
@@ -24,18 +22,18 @@ func NewGenerativeAiIntegration(ctx context.Context, req model.AddGenerativeAiIn
 	case constants.Bedrock:
 		return bedrock.New(ctx, req.GetFields().(model.AddGenerativeAiBedrockIntegration))
 	default:
-		return nil, invalidIntegrationType
+		return nil, ErrInvalidIntegrationType
 	}
 }
 
-func NewGenerativeAiIntegrationFromDbEntry(ctx context.Context, integrationType string, config json.RawMessage) (GenerativeAiIntegration, error) {
+func NewGenerativeAiIntegrationFromDBEntry(ctx context.Context, integrationType string, config json.RawMessage) (GenerativeAiIntegration, error) {
 	switch integrationType {
 	case constants.OpenAI:
-		return openai.NewFromDbEntry(ctx, config)
+		return openai.NewFromDBEntry(ctx, config)
 	case constants.Bedrock:
-		return bedrock.NewFromDbEntry(ctx, config)
+		return bedrock.NewFromDBEntry(ctx, config)
 	default:
-		return nil, invalidIntegrationType
+		return nil, ErrInvalidIntegrationType
 	}
 }
 

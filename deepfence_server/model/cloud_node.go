@@ -30,11 +30,11 @@ var SupportedPostureProviders = []string{PostureProviderAWS, PostureProviderGCP,
 	PostureProviderAzure, PostureProviderLinux, PostureProviderKubernetes}
 
 type CloudNodeAccountRegisterReq struct {
-	NodeId              string            `json:"node_id" required:"true"`
+	NodeID              string            `json:"node_id" required:"true"`
 	CloudAccount        string            `json:"cloud_account" required:"true"`
 	CloudProvider       string            `json:"cloud_provider" required:"true"  enum:"aws,gcp,azure"`
-	MonitoredAccountIds map[string]string `json:"monitored_account_ids"`
-	OrgAccountId        string            `json:"org_acc_id"`
+	MonitoredAccountIDs map[string]string `json:"monitored_account_ids"`
+	OrgAccountID        string            `json:"org_acc_id"`
 	Version             string            `json:"version"`
 }
 
@@ -66,12 +66,12 @@ type CloudNodeAccountsListResp struct {
 }
 
 type CloudNodeAccountInfo struct {
-	NodeId               string           `json:"node_id"`
+	NodeID               string           `json:"node_id"`
 	NodeName             string           `json:"node_name"`
 	CloudProvider        string           `json:"cloud_provider"`
 	CompliancePercentage float64          `json:"compliance_percentage"`
 	Active               bool             `json:"active"`
-	LastScanId           string           `json:"last_scan_id"`
+	LastScanID           string           `json:"last_scan_id"`
 	LastScanStatus       string           `json:"last_scan_status"`
 	ScanStatusMap        map[string]int64 `json:"scan_status_map"`
 	Version              string           `json:"version"`
@@ -128,45 +128,45 @@ func (v CloudNodeAccountInfo) GetCategory() string {
 	return v.CloudProvider
 }
 
-func (CloudNodeAccountInfo) GetJsonCategory() string {
+func (CloudNodeAccountInfo) GetJSONCategory() string {
 	return "cloud_provider"
 }
 
 type CloudComplianceBenchmark struct {
-	Id             string   `json:"id"`
+	ID             string   `json:"id"`
 	ComplianceType string   `json:"compliance_type"`
 	Controls       []string `json:"controls"`
 }
 
 type CloudComplianceScanDetails struct {
-	ScanId        string                     `json:"scan_id"`
+	ScanID        string                     `json:"scan_id"`
 	ScanTypes     []string                   `json:"scan_types"`
-	AccountId     string                     `json:"account_id"`
+	AccountID     string                     `json:"account_id"`
 	Benchmarks    []CloudComplianceBenchmark `json:"benchmarks"`
 	StopRequested bool                       `json:"stop_requested"`
 }
 
 type CloudNodeCloudtrailTrail struct {
-	AccountId string `json:"account_id"`
+	AccountID string `json:"account_id"`
 	TrailName string `json:"trail_name"`
 }
 
 type PendingCloudComplianceScan struct {
-	ScanId    string   `json:"scan_id"`
+	ScanID    string   `json:"scan_id"`
 	ScanType  string   `json:"scan_type"`
 	Controls  []string `json:"controls"`
-	AccountId string   `json:"account_id"`
+	AccountID string   `json:"account_id"`
 }
 
 type CloudNodeControlReq struct {
-	NodeId         string `json:"node_id"`
+	NodeID         string `json:"node_id"`
 	CloudProvider  string `json:"cloud_provider" required:"true" enum:"aws,gcp,azure,linux,kubernetes"`
 	ComplianceType string `json:"compliance_type" required:"true"`
 }
 
 type CloudNodeEnableDisableReq struct {
-	NodeId      string   `json:"node_id"`
-	ControlsIds []string `json:"control_ids"`
+	NodeID      string   `json:"node_id"`
+	ControlsIDs []string `json:"control_ids"`
 }
 
 type CloudNodeControlResp struct {
@@ -174,7 +174,7 @@ type CloudNodeControlResp struct {
 }
 
 type CloudNodeComplianceControl struct {
-	ControlId         string   `json:"control_id"`
+	ControlID         string   `json:"control_id"`
 	Title             string   `json:"title"`
 	Description       string   `json:"description"`
 	Service           string   `json:"service"`
@@ -192,7 +192,7 @@ type PostureProvider struct {
 	ResourceCount        int64   `json:"resource_count"`
 }
 
-func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]interface{}, parentNodeId string) error {
+func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]interface{}, parentNodeID string) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -207,7 +207,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 	}
 	defer tx.Close()
 
-	if parentNodeId == "" {
+	if parentNodeID == "" {
 		if _, err := tx.Run(`
 			WITH $param as row
 			MERGE (n:CloudNode{node_id:row.node_id})
@@ -226,7 +226,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			SET n+= row, n.active = true, n.updated_at = TIMESTAMP(), n.version = row.version`,
 			map[string]interface{}{
 				"param":          nodeDetails,
-				"parent_node_id": parentNodeId,
+				"parent_node_id": parentNodeID,
 			}); err != nil {
 			return err
 		}
@@ -378,21 +378,23 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	isOrgListing := false
 	neo4jNodeType := "CloudNode"
 	passStatus := []string{"ok", "info", "skip"}
-	if cloudProvider == PostureProviderAWSOrg {
+	switch cloudProvider {
+	case PostureProviderAWSOrg:
 		cloudProvider = PostureProviderAWS
 		isOrgListing = true
-	} else if cloudProvider == PostureProviderGCPOrg {
+	case PostureProviderGCPOrg:
 		cloudProvider = PostureProviderGCP
 		isOrgListing = true
-	} else if cloudProvider == PostureProviderKubernetes {
+	case PostureProviderKubernetes:
 		neo4jNodeType = "KubernetesCluster"
-	} else if cloudProvider == PostureProviderLinux {
+	case PostureProviderLinux:
 		neo4jNodeType = "Node"
 		passStatus = []string{"warn", "pass"}
 	}
 	var res neo4j.Result
 	var query string
-	if cloudProvider == PostureProviderKubernetes || cloudProvider == PostureProviderLinux {
+	switch {
+	case cloudProvider == PostureProviderKubernetes || cloudProvider == PostureProviderLinux:
 		nonKubeFilter := ""
 		if cloudProvider == PostureProviderLinux {
 			nonKubeFilter = "{kubernetes_cluster_id:''}"
@@ -402,12 +404,12 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		WHERE n.pseudo=false
 		RETURN n.node_id, n.node_name, $cloud_provider, n.active, n.updated_at, COALESCE(n.compliance_latest_scan_id, ''), COALESCE(n.compliance_latest_scan_status, '')
 		ORDER BY n.updated_at` + fw.FetchWindow2CypherQuery()
-	} else if isOrgListing {
+	case isOrgListing:
 		query = `
 		MATCH (m:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (n:` + string(neo4jNodeType) + `)
 		RETURN  n.node_id, n.node_name, $cloud_provider, n.active, n.updated_at, COALESCE(n.cloud_compliance_latest_scan_id, ''), COALESCE(n.cloud_compliance_latest_scan_status, '')
 		ORDER BY n.updated_at` + fw.FetchWindow2CypherQuery()
-	} else {
+	default:
 		query = `
 		MATCH (n:` + string(neo4jNodeType) + `{cloud_provider: $cloud_provider})
 		RETURN n.node_id, n.node_name, $cloud_provider, n.active, n.updated_at, COALESCE(n.cloud_compliance_latest_scan_id, ''), COALESCE(n.cloud_compliance_latest_scan_status, '')
@@ -430,21 +432,21 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		return CloudNodeAccountsListResp{Total: 0}, err
 	}
 
-	cloud_node_accounts_info := []CloudNodeAccountInfo{}
+	cloudNodeAccountsInfo := []CloudNodeAccountInfo{}
 	for _, rec := range recs {
 		tmp := CloudNodeAccountInfo{
-			NodeId:               rec.Values[0].(string),
+			NodeID:               rec.Values[0].(string),
 			NodeName:             rec.Values[1].(string),
 			CloudProvider:        rec.Values[2].(string),
 			CompliancePercentage: 0,
 			Active:               rec.Values[3].(bool),
-			LastScanId:           rec.Values[5].(string),
+			LastScanID:           rec.Values[5].(string),
 			LastScanStatus:       rec.Values[6].(string),
 		}
-		cloud_node_accounts_info = append(cloud_node_accounts_info, tmp)
+		cloudNodeAccountsInfo = append(cloudNodeAccountsInfo, tmp)
 	}
 
-	total := fw.Offset + len(cloud_node_accounts_info)
+	total := fw.Offset + len(cloudNodeAccountsInfo)
 	var countRes neo4j.Result
 	if isOrgListing {
 		countRes, err = tx.Run(`
@@ -463,12 +465,12 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 
 	countRec, err := countRes.Single()
 	if err != nil {
-		return CloudNodeAccountsListResp{CloudNodeAccountInfo: cloud_node_accounts_info, Total: total}, nil
+		return CloudNodeAccountsListResp{CloudNodeAccountInfo: cloudNodeAccountsInfo, Total: total}, nil
 	}
 
 	total = int(countRec.Values[0].(int64))
 
-	return CloudNodeAccountsListResp{CloudNodeAccountInfo: cloud_node_accounts_info, Total: total}, nil
+	return CloudNodeAccountsListResp{CloudNodeAccountInfo: cloudNodeAccountsInfo, Total: total}, nil
 }
 
 func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloudProvider string) ([]CloudComplianceBenchmark, error) {
@@ -518,7 +520,7 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 			controls = append(controls, rVal.(string))
 		}
 		benchmark := CloudComplianceBenchmark{
-			Id:             rec.Values[0].(string),
+			ID:             rec.Values[0].(string),
 			ComplianceType: rec.Values[1].(string),
 			Controls:       controls,
 		}

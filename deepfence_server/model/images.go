@@ -12,12 +12,12 @@ import (
 )
 
 func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, rType, ns string) ([]ContainerImage, error) {
-	var registryId string
+	var registryID string
 	var query string
 	var images []ContainerImage
 
 	if rType != "" && ns != "" {
-		registryId = GetRegistryID(rType, ns)
+		registryID = GetRegistryID(rType, ns)
 	}
 
 	driver, err := directory.Neo4jClient(ctx)
@@ -37,13 +37,13 @@ func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, rType, ns s
 	}
 	defer tx.Close()
 
-	if registryId != "" {
+	if registryID != "" {
 		query = "MATCH (n:RegistryAccount{node_id: $node_id})-[r:HOSTS]->(m:ContainerImage) RETURN m"
 	} else {
 		query = "MATCH (n:RegistryAccount{})-[r:HOSTS]->(m:ContainerImage) RETURN m"
 	}
 
-	res, err := tx.Run(query, map[string]interface{}{"node_id": registryId})
+	res, err := tx.Run(query, map[string]interface{}{"node_id": registryID})
 	if err != nil {
 		return nil, err
 	}

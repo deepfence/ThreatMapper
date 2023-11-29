@@ -31,7 +31,7 @@ func (h *Handler) GetCloudNodeControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	controls, err := controls.GetCloudNodeComplianceControls(ctx, cloudNodeControl.NodeId, cloudNodeControl.CloudProvider, cloudNodeControl.ComplianceType)
+	controls, err := controls.GetCloudNodeComplianceControls(ctx, cloudNodeControl.NodeID, cloudNodeControl.CloudProvider, cloudNodeControl.ComplianceType)
 	if err != nil {
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return
@@ -62,7 +62,7 @@ func (h *Handler) EnableCloudNodeControls(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = controls.EnableCloudNodeComplianceControls(ctx, cloudNodeControl.NodeId, cloudNodeControl.ControlsIds)
+	err = controls.EnableCloudNodeComplianceControls(ctx, cloudNodeControl.NodeID, cloudNodeControl.ControlsIDs)
 	if err != nil {
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return
@@ -91,7 +91,7 @@ func (h *Handler) DisableCloudNodeControls(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = controls.DisableCloudNodeComplianceControls(ctx, cloudNodeControl.NodeId, cloudNodeControl.ControlsIds)
+	err = controls.DisableCloudNodeComplianceControls(ctx, cloudNodeControl.NodeID, cloudNodeControl.ControlsIDs)
 	if err != nil {
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return

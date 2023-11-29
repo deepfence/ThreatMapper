@@ -36,7 +36,7 @@ func listImagesRegistryV2(url, repository, userName, password string) ([]model.I
 			log.Error().Msg(err.Error())
 			continue
 		}
-		log.Debug().Msgf("tags for image %s/%s are %s", repo, repoTags.Tags)
+		log.Debug().Msgf("tags for image %s are %s", repo, repoTags.Tags)
 
 		images = append(images, getImageWithTags(url, repository, userName, password, repo, repoTags)...)
 	}
@@ -183,10 +183,10 @@ func getManifestsV2(url, repository, userName, password, repoName, tag string) (
 func getTagInfo(url, repository, userName, password, repoName, tag string) (TagInfo, error) {
 	var info TagInfo
 
-	infoUrl := "%s/artifactory/api/storage/%s/%s/%s"
-	queryUrl := fmt.Sprintf(infoUrl, url, repository, repoName, tag)
+	infoURL := "%s/artifactory/api/storage/%s/%s/%s"
+	queryURL := fmt.Sprintf(infoURL, url, repository, repoName, tag)
 
-	req, err := http.NewRequest(http.MethodGet, queryUrl, nil)
+	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return info, err
@@ -222,7 +222,7 @@ func getTagInfo(url, repository, userName, password, repoName, tag string) (TagI
 
 func getImageWithTags(url, repository, userName, password, repoName string, repoTags RepoTagsResp) []model.IngestedContainerImage {
 	var imageAndTag []model.IngestedContainerImage
-	//ISO8601 format
+	// ISO8601 format
 	dateFormat := "2006-01-02T15:04:05.000Z"
 
 	for _, tag := range repoTags.Tags {

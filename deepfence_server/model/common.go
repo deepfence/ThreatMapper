@@ -17,7 +17,7 @@ const (
 )
 
 var (
-	UserNotFoundErr = errors.New("user not found")
+	ErrUserNotFound = errors.New("user not found")
 	EULAResponse    = MessageResponse{Message: constants.EndUserLicenceAgreement}
 )
 

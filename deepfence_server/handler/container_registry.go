@@ -52,13 +52,13 @@ func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 			log.Error().Err(err).Msgf("Fail to unmarshal registry from DB")
 			continue
 		}
-		registryId := model.GetRegistryID(reg.GetRegistryType(), reg.GetNamespace())
+		registryID := model.GetRegistryID(reg.GetRegistryType(), reg.GetNamespace())
 		registryResponse := model.RegistryListResp{
 			ID:           r.ID,
-			NodeID:       registryId,
+			NodeID:       registryID,
 			Name:         r.Name,
 			RegistryType: r.RegistryType,
-			IsSyncing:    req.IsRegistrySyncing(ctx, registryId),
+			IsSyncing:    req.IsRegistrySyncing(ctx, registryID),
 			NonSecret:    r.NonSecret,
 			CreatedAt:    r.CreatedAt.Unix(),
 			UpdatedAt:    r.UpdatedAt.Unix(),
@@ -179,7 +179,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 
 	// don't log secrets in audit logs
 	req.Secret = map[string]interface{}{}
-	h.AuditUserActivity(r, EVENT_REGISTRY, ACTION_CREATE, req, true)
+	h.AuditUserActivity(r, EventRegistry, ActionCreate, req, true)
 
 	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryCreated})
 	if err != nil {
@@ -200,7 +200,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 
 	idStr := chi.URLParam(r, "registry_id")
 	if idStr == "" {
-		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryIdMissing})
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryIDMissing})
 		if err != nil {
 			log.Error().Msgf("%v", err)
 		}
@@ -314,7 +314,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 
 	// don't log secrets in audit logs
 	req.Secret = map[string]interface{}{}
-	h.AuditUserActivity(r, EVENT_REGISTRY, ACTION_UPDATE, req, true)
+	h.AuditUserActivity(r, EventRegistry, ActionUpdate, req, true)
 
 	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryUpdated})
 	if err != nil {
@@ -369,7 +369,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var sa gcr.ServiceAccountJson
+	var sa gcr.ServiceAccountJSON
 	if err := json.Unmarshal(fileBytes, &sa); err != nil {
 		h.respondError(&BadDecoding{err}, w)
 		return
@@ -486,7 +486,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_REGISTRY, ACTION_CREATE, req, true)
+	h.AuditUserActivity(r, EventRegistry, ActionCreate, req, true)
 
 	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryCreated})
 	if err != nil {
@@ -514,7 +514,7 @@ func (h *Handler) DeleteRegistryBulk(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_REGISTRY, ACTION_DELETE,
+	h.AuditUserActivity(r, EventRegistry, ActionDelete,
 		map[string][]string{"registry_ids": req.RegistryIds}, true)
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -534,15 +534,14 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_REGISTRY, ACTION_DELETE,
+	h.AuditUserActivity(r, EventRegistry, ActionDelete,
 		map[string]interface{}{"registry_id": id}, true)
 
 	w.WriteHeader(http.StatusNoContent)
 
 }
-
-func (h *Handler) deleteRegistryHelper(ctx context.Context, nodeIds []string) error {
-	pgIds, err := model.GetRegistryPgIds(ctx, nodeIds)
+func (h *Handler) deleteRegistryHelper(ctx context.Context, nodeIDs []string) error {
+	pgIDs, err := model.GetRegistryPgIDs(ctx, nodeIDs)
 	if err != nil {
 		return &NotFoundError{err}
 	}
@@ -552,13 +551,13 @@ func (h *Handler) deleteRegistryHelper(ctx context.Context, nodeIds []string) er
 		return err
 	}
 
-	log.Info().Msgf("delete registry ID's: %v and registry account %v", pgIds, nodeIds)
+	log.Info().Msgf("delete registry ID's: %v and registry account %s", pgIDs, nodeIDs)
 
-	if err = model.DeleteRegistryAccount(ctx, nodeIds); err != nil {
+	if err := model.DeleteRegistryAccount(ctx, nodeIDs); err != nil {
 		return err
 	}
 
-	for _, id := range pgIds {
+	for _, id := range pgIDs {
 		err = model.DeleteRegistry(ctx, pgClient, int32(id))
 		if err != nil {
 			return err
@@ -575,7 +574,7 @@ func (h *Handler) RefreshRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pgIds, err := model.GetRegistryPgIds(r.Context(), []string{id})
+	pgIds, err := model.GetRegistryPgIDs(r.Context(), []string{id})
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(&NotFoundError{err}, w)
@@ -613,14 +612,14 @@ func (h *Handler) getImages(w http.ResponseWriter, r *http.Request) ([]model.Con
 		return images, err
 	}
 
-	images, err = model.ListImages(r.Context(), req.RegistryId, req.ImageFilter, req.Window)
+	images, err = model.ListImages(r.Context(), req.RegistryID, req.ImageFilter, req.Window)
 	if err != nil {
 		log.Error().Msgf("failed list images: %v", err)
 		h.respondError(err, w)
 		return images, err
 	}
 
-	log.Info().Msgf("get images for registry id %s found %d images", req.RegistryId, len(images))
+	log.Info().Msgf("get images for registry id %s found %d images", req.RegistryID, len(images))
 
 	return images, nil
 }
@@ -663,7 +662,7 @@ func (h *Handler) getImageStubs(w http.ResponseWriter, r *http.Request) ([]model
 		return images, err
 	}
 
-	images, err = model.ListImageStubs(r.Context(), req.RegistryId, req.ImageFilter, req.Window)
+	images, err = model.ListImageStubs(r.Context(), req.RegistryID, req.ImageFilter, req.Window)
 	if err != nil {
 		log.Error().Msgf("failed get stubs %v", err)
 		h.respondError(err, w)
@@ -698,7 +697,7 @@ func (h *Handler) CountImageStubs(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 
 	req := model.RegistryIDPathReq{
-		RegistryId: chi.URLParam(r, "registry_id"),
+		RegistryID: chi.URLParam(r, "registry_id"),
 	}
 	err := h.Validator.Struct(req)
 	if err != nil {
@@ -707,14 +706,14 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// count registry resource
-	counts, err := model.RegistrySummary(r.Context(), mo.Some(req.RegistryId), mo.None[string]())
+	counts, err := model.RegistrySummary(r.Context(), mo.Some(req.RegistryID), mo.None[string]())
 	if err != nil {
 		log.Error().Msgf("failed registry summary: %v", err)
 		h.respondError(err, w)
 		return
 	}
 
-	log.Info().Msgf("registry %s summary %+v", req.RegistryId, counts)
+	log.Info().Msgf("registry %s summary %+v", req.RegistryID, counts)
 
 	err = httpext.JSON(w, http.StatusOK, counts)
 	if err != nil {

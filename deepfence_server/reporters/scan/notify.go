@@ -1,4 +1,4 @@
-package reporters_scan
+package reporters_scan //nolint:stylecheck
 
 import (
 	"context"

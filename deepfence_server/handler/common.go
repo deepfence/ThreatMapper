@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	RevokedAccessTokenIdPrefix = "Revoked-AccessTokenID-"
+	RevokedAccessTokenIDPrefix = "Revoked-AccessTokenID-"
 	UserInviteSendEmail        = "send-invite-email"
 	UserInviteGetLink          = "get-invite-link"
 )
@@ -35,8 +35,8 @@ func (h *Handler) EULAHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) OpenApiDocsHandler(w http.ResponseWriter, r *http.Request) {
-	apiDocs, err := h.OpenApiDocs.Json()
+func (h *Handler) OpenAPIDocsHandler(w http.ResponseWriter, r *http.Request) {
+	apiDocs, err := h.OpenAPIDocs.JSON()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

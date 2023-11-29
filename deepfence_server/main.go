@@ -34,7 +34,7 @@ import (
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
-	"golang.org/x/crypto/ssh/terminal"
+	terminal "golang.org/x/term"
 )
 
 var (
@@ -42,9 +42,9 @@ var (
 	resetPassword         = flag.Bool("reset-password", false, "reset password for a user")
 	exportOpenapiDocsPath = flag.String("export-api-docs-path", "", "export openapi documentation to file path")
 	serveOpenapiDocs      = flag.Bool("api-docs", true, "serve openapi documentation")
-	enableHttpLogs        = flag.Bool("http-logs", false, "enable request logs")
+	enableHTTPLogs        = flag.Bool("http-logs", false, "enable request logs")
 	kafkaBrokers          string
-	enable_debug          bool
+	enableDebug           bool
 )
 
 // build info
@@ -55,15 +55,15 @@ var (
 )
 
 type Config struct {
-	HttpListenEndpoint     string
+	HTTPListenEndpoint     string
 	InternalListenEndpoint string
 	Orchestrator           string
 }
 
 func init() {
 	debug := "debug"
-	enable_debug = os.Getenv("DF_ENABLE_DEBUG") != ""
-	if enable_debug {
+	enableDebug = os.Getenv("DF_ENABLE_DEBUG") != ""
+	if enableDebug {
 		verbosity = &debug
 	}
 }
@@ -73,26 +73,26 @@ func main() {
 	log.Info().Msgf("\n version: %s\n commit: %s\n build-time: %s\n",
 		Version, Commit, BuildTime)
 
-	if enable_debug {
+	if enableDebug {
 		runtime.SetBlockProfileRate(1)
 		runtime.SetMutexProfileFraction(1)
 	}
 
 	flag.Parse()
 
-	openApiDocs := apiDocs.InitializeOpenAPIReflector()
-	initializeOpenApiDocs(openApiDocs)
-	initializeInternalOpenApiDocs(openApiDocs)
+	openAPIDocs := apiDocs.InitializeOpenAPIReflector()
+	initializeOpenAPIDocs(openAPIDocs)
+	initializeInternalOpenAPIDocs(openAPIDocs)
 
 	if *exportOpenapiDocsPath != "" {
 		if *exportOpenapiDocsPath != filepath.Clean(*exportOpenapiDocsPath) {
 			log.Fatal().Msgf("File path %s is not valid", *exportOpenapiDocsPath)
 		}
-		openApiYaml, err := openApiDocs.Yaml()
+		openAPIYaml, err := openAPIDocs.Yaml()
 		if err != nil {
 			log.Fatal().Msg(err.Error())
 		}
-		err = os.WriteFile(*exportOpenapiDocsPath, openApiYaml, 0666)
+		err = os.WriteFile(*exportOpenapiDocsPath, openAPIYaml, 0666)
 		if err != nil {
 			log.Fatal().Msg(err.Error())
 		}
@@ -132,7 +132,7 @@ func main() {
 
 	mux := chi.NewRouter()
 	mux.Use(middleware.Recoverer)
-	if *enableHttpLogs {
+	if *enableHTTPLogs {
 		mux.Use(
 			middleware.RequestLogger(
 				&middleware.DefaultLogFormatter{
@@ -145,7 +145,7 @@ func main() {
 
 	internalMux := chi.NewRouter()
 	internalMux.Use(middleware.Recoverer)
-	if *enableHttpLogs {
+	if *enableHTTPLogs {
 		internalMux.Use(
 			middleware.RequestLogger(
 				&middleware.DefaultLogFormatter{
@@ -162,7 +162,7 @@ func main() {
 	go utils.StartKafkaProducer(ctx, strings.Split(kafkaBrokers, ","), ingestC)
 
 	err = router.SetupRoutes(mux,
-		config.HttpListenEndpoint, *serveOpenapiDocs, ingestC, openApiDocs, config.Orchestrator,
+		config.HTTPListenEndpoint, *serveOpenapiDocs, ingestC, openAPIDocs, config.Orchestrator,
 	)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -176,7 +176,7 @@ func main() {
 	}
 
 	httpServer := http.Server{
-		Addr:     config.HttpListenEndpoint,
+		Addr:     config.HTTPListenEndpoint,
 		Handler:  mux,
 		ErrorLog: log.NewStdLoggerWithLevel(zerolog.ErrorLevel),
 	}
@@ -208,7 +208,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		log.Info().Msgf("start http server at %s", config.HttpListenEndpoint)
+		log.Info().Msgf("start http server at %s", config.HTTPListenEndpoint)
 		if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
 			log.Error().Msgf("http server ListenAndServe error: %v", err)
 			return
@@ -246,7 +246,7 @@ func initialize() (*Config, error) {
 	}
 
 	return &Config{
-		HttpListenEndpoint:     ":" + httpListenEndpoint,
+		HTTPListenEndpoint:     ":" + httpListenEndpoint,
 		InternalListenEndpoint: ":8081",
 		Orchestrator:           orchestrator,
 	}, nil
@@ -254,8 +254,8 @@ func initialize() (*Config, error) {
 
 func resetUserPassword(ctx context.Context) error {
 	fmt.Println("\nEnter your email id:")
-	var emailId string
-	fmt.Scanln(&emailId)
+	var emailID string
+	fmt.Scanln(&emailID)
 	fmt.Println("\nEnter new password: (should contain at least one upper case, lower case, digit and special character)")
 	password, err := terminal.ReadPassword(0)
 	if err != nil {
@@ -270,7 +270,7 @@ func resetUserPassword(ctx context.Context) error {
 		return errors.New("passwords do not match")
 	}
 
-	req := model.LoginRequest{Email: emailId, Password: string(password)}
+	req := model.LoginRequest{Email: emailID, Password: string(password)}
 	inputValidator, translator, err := handler.NewValidator()
 	if err != nil {
 		return err
@@ -289,7 +289,7 @@ func resetUserPassword(ctx context.Context) error {
 		return nil
 	}
 
-	user, statusCode, pgClient, err := model.GetUserByEmail(ctx, emailId)
+	user, statusCode, pgClient, err := model.GetUserByEmail(ctx, emailID)
 	if err != nil {
 		if statusCode == http.StatusNotFound {
 			return errors.New("user not found with provided email id")
@@ -308,27 +308,27 @@ func resetUserPassword(ctx context.Context) error {
 	return nil
 }
 
-func initializeOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
-	openApiDocs.AddUserAuthOperations()
-	openApiDocs.AddUserOperations()
-	openApiDocs.AddGraphOperations()
-	openApiDocs.AddLookupOperations()
-	openApiDocs.AddSearchOperations()
-	openApiDocs.AddControlsOperations()
-	openApiDocs.AddIngestersOperations()
-	openApiDocs.AddScansOperations()
-	openApiDocs.AddDiagnosisOperations()
-	openApiDocs.AddCloudNodeOperations()
-	openApiDocs.AddRegistryOperations()
-	openApiDocs.AddIntegrationOperations()
-	openApiDocs.AddReportsOperations()
-	openApiDocs.AddSettingsOperations()
-	openApiDocs.AddDiffAddOperations()
-	openApiDocs.AddCompletionOperations()
+func initializeOpenAPIDocs(openAPIDocs *apiDocs.OpenAPIDocs) {
+	openAPIDocs.AddUserAuthOperations()
+	openAPIDocs.AddUserOperations()
+	openAPIDocs.AddGraphOperations()
+	openAPIDocs.AddLookupOperations()
+	openAPIDocs.AddSearchOperations()
+	openAPIDocs.AddControlsOperations()
+	openAPIDocs.AddIngestersOperations()
+	openAPIDocs.AddScansOperations()
+	openAPIDocs.AddDiagnosisOperations()
+	openAPIDocs.AddCloudNodeOperations()
+	openAPIDocs.AddRegistryOperations()
+	openAPIDocs.AddIntegrationOperations()
+	openAPIDocs.AddReportsOperations()
+	openAPIDocs.AddSettingsOperations()
+	openAPIDocs.AddDiffAddOperations()
+	openAPIDocs.AddCompletionOperations()
 }
 
-func initializeInternalOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
-	openApiDocs.AddInternalAuthOperations()
+func initializeInternalOpenAPIDocs(openAPIDocs *apiDocs.OpenAPIDocs) {
+	openAPIDocs.AddInternalAuthOperations()
 }
 
 func initializeKafka() error {

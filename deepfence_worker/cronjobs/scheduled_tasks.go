@@ -84,7 +84,7 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 			return err
 		}
 		for _, node := range nodes {
-			nodeIds = append(nodeIds, model.NodeIdentifier{NodeId: node.ID, NodeType: controls.ResourceTypeToString(controls.Host)})
+			nodeIds = append(nodeIds, model.NodeIdentifier{NodeID: node.ID, NodeType: controls.ResourceTypeToString(controls.Host)})
 		}
 	case utils.NodeTypeContainer:
 		nodes, err := reporters_search.SearchReport[model.Container](ctx, searchFilter, extSearchFilter, nil, fetchWindow)
@@ -92,7 +92,7 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 			return err
 		}
 		for _, node := range nodes {
-			nodeIds = append(nodeIds, model.NodeIdentifier{NodeId: node.ID, NodeType: controls.ResourceTypeToString(controls.Container)})
+			nodeIds = append(nodeIds, model.NodeIdentifier{NodeID: node.ID, NodeType: controls.ResourceTypeToString(controls.Container)})
 		}
 	case utils.NodeTypeContainerImage:
 		nodes, err := reporters_search.SearchReport[model.ContainerImage](ctx, searchFilter, extSearchFilter, nil, fetchWindow)
@@ -100,7 +100,7 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 			return err
 		}
 		for _, node := range nodes {
-			nodeIds = append(nodeIds, model.NodeIdentifier{NodeId: node.ID, NodeType: controls.ResourceTypeToString(controls.Image)})
+			nodeIds = append(nodeIds, model.NodeIdentifier{NodeID: node.ID, NodeType: controls.ResourceTypeToString(controls.Image)})
 		}
 	case utils.NodeTypeKubernetesCluster:
 		searchFilter.Filters.ContainsFilter.FieldsValues["agent_running"] = []interface{}{true}
@@ -109,7 +109,7 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 			return err
 		}
 		for _, node := range nodes {
-			nodeIds = append(nodeIds, model.NodeIdentifier{NodeId: node.ID, NodeType: controls.ResourceTypeToString(controls.KubernetesCluster)})
+			nodeIds = append(nodeIds, model.NodeIdentifier{NodeID: node.ID, NodeType: controls.ResourceTypeToString(controls.KubernetesCluster)})
 		}
 	case utils.NodeTypeCloudNode:
 	}
@@ -119,7 +119,7 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 		return nil
 	}
 
-	scanTrigger := model.ScanTriggerCommon{NodeIds: nodeIds,
+	scanTrigger := model.ScanTriggerCommon{NodeIDs: nodeIds,
 		Filters: model.ScanFilter{}, IsPriority: isPriority}
 
 	switch messagePayload["action"].(string) {
@@ -169,7 +169,7 @@ func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]inte
 		return err
 	}
 
-	nodeIds := payload.NodeIds
+	nodeIds := payload.NodeIDs
 	scanFilter := payload.Filters
 	scheduleJobId := int64(messagePayload["id"].(float64))
 
@@ -179,7 +179,7 @@ func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]inte
 		return nil
 	}
 
-	scanTrigger := model.ScanTriggerCommon{NodeIds: nodeIds,
+	scanTrigger := model.ScanTriggerCommon{NodeIDs: nodeIds,
 		Filters: scanFilter, IsPriority: payload.IsPriority}
 
 	action := utils.Neo4jScanType(messagePayload["action"].(string))

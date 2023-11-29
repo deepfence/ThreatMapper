@@ -18,16 +18,16 @@ import (
 )
 
 var (
-	parseRefreshTokenError  = errors.New("cannot parse refresh token")
-	accessTokenRevokedError = ForbiddenError{errors.New("access token is revoked")}
-	userInactiveError       = ValidatorError{
+	errParseRefreshToken  = errors.New("cannot parse refresh token")
+	errAccessTokenRevoked = ForbiddenError{errors.New("access token is revoked")}
+	errUserInactive       = ValidatorError{
 		err:                       errors.New("email:user is not active"),
 		skipOverwriteErrorMessage: true,
 	}
 )
 
-func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
-	var apiAuthRequest model.ApiAuthRequest
+func (h *Handler) APIAuthHandler(w http.ResponseWriter, r *http.Request) {
+	var apiAuthRequest model.APIAuthRequest
 	defer r.Body.Close()
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &apiAuthRequest)
 	if err != nil {
@@ -39,7 +39,7 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	tokenSplit := strings.Split(apiAuthRequest.ApiToken, ":")
+	tokenSplit := strings.Split(apiAuthRequest.APIToken, ":")
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tokenSplit[0]))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
@@ -51,7 +51,7 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	apiToken := &model.ApiToken{ApiToken: parsedUUID}
+	apiToken := &model.APIToken{APIToken: parsedUUID}
 	user, err := apiToken.GetUser(ctx, pgClient)
 	if err != nil {
 		h.respondError(err, w)
@@ -64,7 +64,7 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.Password = ""
-	//h.AuditUserActivity(r, EVENT_AUTH, ACTION_TOKEN_AUTH, user, true)
+	// h.AuditUserActivity(r, EventAuth, ActionTokenAuth, user, true)
 
 	err = httpext.JSON(w, http.StatusOK, accessTokenResponse)
 	if err != nil {
@@ -103,7 +103,7 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 		return nil, "", err
 	}
 	if tokenType != "refresh_token" {
-		return nil, "", parseRefreshTokenError
+		return nil, "", errParseRefreshToken
 	}
 	accessTokenID, err := utils.GetStringValueFromInterfaceMap(claims, "token_id")
 	if err != nil {
@@ -114,18 +114,18 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 		return nil, "", err
 	}
 	if revoked {
-		return nil, "", &accessTokenRevokedError
+		return nil, "", &errAccessTokenRevoked
 	}
-	userId, err := utils.GetInt64ValueFromInterfaceMap(claims, "user")
+	userID, err := utils.GetInt64ValueFromInterfaceMap(claims, "user")
 	if err != nil {
 		return nil, "", err
 	}
-	user, _, _, err := model.GetUserByID(requestContext, userId)
+	user, _, _, err := model.GetUserByID(requestContext, userID)
 	if err != nil {
 		return nil, "", err
 	}
 	if !user.IsActive {
-		return nil, "", &userInactiveError
+		return nil, "", &errUserInactive
 	}
 	grantType, err := utils.GetStringValueFromInterfaceMap(claims, "grant_type")
 	if err != nil {
@@ -155,7 +155,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !u.IsActive {
-		h.respondError(&userInactiveError, w)
+		h.respondError(&errUserInactive, w)
 		return
 	}
 	passwordValid, err := u.CompareHashAndPassword(ctx, pgClient, loginRequest.Password)
@@ -170,7 +170,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u.Password = ""
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_LOGIN, u, true)
+	h.AuditUserActivity(r, EventAuth, ActionLogin, u, true)
 
 	err = httpext.JSON(w, http.StatusOK, model.LoginResponse{
 		ResponseAccessToken: *accessTokenResponse,
@@ -188,7 +188,7 @@ func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_LOGOUT, nil, true)
+	h.AuditUserActivity(r, EventAuth, ActionLogout, nil, true)
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -197,7 +197,7 @@ func IsAccessTokenRevoked(ctx context.Context, accessTokenID string) (bool, erro
 	if err != nil {
 		return false, err
 	}
-	val, err := redisClient.Get(ctx, RevokedAccessTokenIdPrefix+accessTokenID).Bool()
+	val, err := redisClient.Get(ctx, RevokedAccessTokenIDPrefix+accessTokenID).Bool()
 	if err == redis.Nil {
 		return false, nil
 	} else if err != nil {
@@ -211,7 +211,7 @@ func RevokeAccessToken(ctx context.Context, accessTokenID string) error {
 	if err != nil {
 		return err
 	}
-	return redisClient.Set(ctx, RevokedAccessTokenIdPrefix+accessTokenID, true, model.RefreshTokenExpiry).Err()
+	return redisClient.Set(ctx, RevokedAccessTokenIDPrefix+accessTokenID, true, model.RefreshTokenExpiry).Err()
 }
 
 func LogoutHandler(requestContext context.Context) error {

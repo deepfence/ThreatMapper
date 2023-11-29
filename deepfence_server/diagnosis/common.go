@@ -35,7 +35,7 @@ type GenerateConsoleDiagnosticLogsRequest struct {
 }
 
 type NodeIdentifier struct {
-	NodeId   string `json:"node_id" validate:"required,min=1" required:"true"`
+	NodeID   string `json:"node_id" validate:"required,min=1" required:"true"`
 	NodeType string `json:"node_type" required:"true" validate:"required,oneof=host cluster cloud_account" enum:"host,cluster,cloud_account"`
 }
 
@@ -56,7 +56,7 @@ type DiagnosticLogsStatus struct {
 }
 
 type DiagnosticLogsLink struct {
-	UrlLink   string `json:"url_link"`
+	URLLink   string `json:"url_link"`
 	Label     string `json:"label"`
 	FileName  string `json:"-"`
 	Message   string `json:"message"`
@@ -106,7 +106,7 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 		}
 		fileName := filepath.Base(obj.Key)
 		diagnosticLogsResponse[i] = DiagnosticLogsLink{
-			UrlLink:   urlLink,
+			URLLink:   urlLink,
 			FileName:  fileName,
 			Label:     strings.TrimSuffix(strings.TrimPrefix(fileName, "deepfence-agent-logs-"), ".zip"),
 			Message:   message,
@@ -147,17 +147,17 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 		return diagnosticLogs
 	}
 
-	nodeIdToName := make(map[string]string)
+	nodeIDToName := make(map[string]string)
 	records, err := r.Collect()
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return diagnosticLogs
 	}
 	for _, rec := range records {
-		var nodeId, fileName, message, status, updatedAt, nodeName interface{}
+		var nodeID, fileName, message, status, updatedAt, nodeName interface{}
 		var ok bool
-		if nodeId, ok = rec.Get("n.node_id"); !ok || nodeId == nil {
-			nodeId = ""
+		if nodeID, ok = rec.Get("n.node_id"); !ok || nodeID == nil {
+			nodeID = ""
 		}
 		if fileName, ok = rec.Get("n.minio_file_name"); !ok || fileName == nil {
 			fileName = ""
@@ -175,7 +175,7 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 			nodeName = ""
 		}
 		updatedAtTime := time.UnixMilli(updatedAt.(int64))
-		nodeIdToName[nodeId.(string)] = nodeName.(string)
+		nodeIDToName[nodeID.(string)] = nodeName.(string)
 		if message.(string) == "" && status.(string) != utils.ScanStatusSuccess {
 			message = status.(string)
 		}
@@ -185,7 +185,7 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 			diagnosticLogs[pos].Message = message.(string)
 		} else {
 			diagnosticLogs = append(diagnosticLogs, DiagnosticLogsLink{
-				UrlLink:   "",
+				URLLink:   "",
 				FileName:  fileName.(string),
 				Label:     nodeName.(string),
 				Message:   message.(string),
@@ -227,16 +227,16 @@ func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager
 		return diagnosticLogs, err
 	}
 
-	nodeIdToName := make(map[string]string)
+	nodeIDToName := make(map[string]string)
 	records, err := r.Collect()
 	if err != nil {
 		return diagnosticLogs, err
 	}
 	for _, rec := range records {
-		var nodeId, fileName, message, status, updatedAt, nodeName interface{}
+		var nodeID, fileName, message, status, updatedAt, nodeName interface{}
 		var ok bool
-		if nodeId, ok = rec.Get("n.node_id"); !ok || nodeId == nil {
-			nodeId = ""
+		if nodeID, ok = rec.Get("n.node_id"); !ok || nodeID == nil {
+			nodeID = ""
 		}
 		if fileName, ok = rec.Get("n.minio_file_name"); !ok || fileName == nil {
 			fileName = ""
@@ -254,7 +254,7 @@ func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager
 			nodeName = ""
 		}
 		updatedAtTime := time.UnixMilli(updatedAt.(int64))
-		nodeIdToName[nodeId.(string)] = nodeName.(string)
+		nodeIDToName[nodeID.(string)] = nodeName.(string)
 		if message.(string) == "" && status.(string) != utils.ScanStatusSuccess {
 			message = status.(string)
 		}
@@ -264,7 +264,7 @@ func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager
 			diagnosticLogs[pos].Message = message.(string)
 		} else {
 			diagnosticLogs = append(diagnosticLogs, DiagnosticLogsLink{
-				UrlLink:   "",
+				URLLink:   "",
 				FileName:  fileName.(string),
 				Label:     nodeName.(string),
 				Message:   message.(string),

@@ -340,7 +340,7 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 	for _, scan := range list.ScansInfo {
 		profileStart = time.Now()
 		results, common, err := reporters_scan.GetScanResults[T](ctx,
-			utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId,
+			utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanID,
 			filters.FieldsFilters, model.FetchWindow{})
 		if err != nil {
 			return err
@@ -348,7 +348,7 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		totalQueryTime = totalQueryTime + time.Since(profileStart).Milliseconds()
 
 		if len(results) == 0 {
-			log.Info().Msgf("No Results filtered for scan id: %s with filters %+v", scan.ScanId, filters)
+			log.Info().Msgf("No Results filtered for scan id: %s with filters %+v", scan.ScanID, filters)
 			continue
 		}
 

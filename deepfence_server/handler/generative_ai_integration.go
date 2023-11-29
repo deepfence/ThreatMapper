@@ -18,9 +18,7 @@ import (
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
-var (
-	streamUnsupportedError = errors.New("streaming unsupported")
-)
+var ErrStreamUnsupported = errors.New("streaming unsupported")
 
 func (h *Handler) AddOpenAiIntegration(w http.ResponseWriter, r *http.Request) {
 	AddGenerativeAiIntegration[model.AddGenerativeAiOpenAIIntegration](w, r, h)
@@ -122,7 +120,7 @@ func AddGenerativeAiIntegration[T model.AddGenerativeAiIntegrationRequest](w htt
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_GENERATIVE_AI_INTEGRATION, ACTION_CREATE, map[string]interface{}{"integration_type": req.GetIntegrationType()}, true)
+	h.AuditUserActivity(r, EventGenerativeAIIntegration, ActionCreate, map[string]interface{}{"integration_type": req.GetIntegrationType()}, true)
 
 	err = pgClient.UpdateGenerativeAiIntegrationDefault(ctx, dbIntegration.ID)
 	if err != nil {
@@ -212,7 +210,7 @@ func (h *Handler) SetDefaultGenerativeAiIntegration(w http.ResponseWriter, r *ht
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_GENERATIVE_AI_INTEGRATION, ACTION_UPDATE,
+	h.AuditUserActivity(r, EventGenerativeAIIntegration, ActionUpdate,
 		map[string]interface{}{"integration_id": id}, true)
 
 	w.WriteHeader(http.StatusNoContent)
@@ -242,10 +240,10 @@ func (h *Handler) DeleteGenerativeAiIntegration(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_GENERATIVE_AI_INTEGRATION, ACTION_DELETE,
+	h.AuditUserActivity(r, EventGenerativeAIIntegration, ActionDelete,
 		map[string]interface{}{"integration_id": id}, true)
 
-	if deletedIntegration.DefaultIntegration == true {
+	if deletedIntegration.DefaultIntegration {
 		err = pgClient.UpdateGenerativeAiIntegrationFirstRowDefault(ctx)
 		if err != nil {
 			log.Warn().Msg(err.Error())
@@ -330,7 +328,7 @@ func GenerativeAiIntegrationQueryHandler[T model.GenerativeAiIntegrationRequest]
 		h.respondError(err, w)
 		return
 	}
-	integration, err := generative_ai_integration.NewGenerativeAiIntegrationFromDbEntry(ctx, dbIntegration.IntegrationType, dbIntegration.Config)
+	integration, err := generative_ai_integration.NewGenerativeAiIntegrationFromDBEntry(ctx, dbIntegration.IntegrationType, dbIntegration.Config)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -363,7 +361,7 @@ func GenerativeAiIntegrationQueryHandler[T model.GenerativeAiIntegrationRequest]
 	queryResponseChannel := make(chan string, 20)
 	flusher, ok := w.(http.Flusher)
 	if !ok {
-		h.respondError(streamUnsupportedError, w)
+		h.respondError(ErrStreamUnsupported, w)
 		return
 	}
 
