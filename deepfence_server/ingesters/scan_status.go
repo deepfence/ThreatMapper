@@ -305,9 +305,10 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		nt = controls.Host
 	}
 	var action []byte
-	var hostNodeId string
+	var hostNodeId, hostNeo4jNodeType string
 	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || nodeType == controls.ResourceTypeToString(controls.Host) {
 		hostNodeId = nodeID
+		hostNeo4jNodeType = neo4jNodeType
 		internalReq, _ := json.Marshal(ctl.StartComplianceScanRequest{
 			NodeID:   nodeID,
 			NodeType: nt,
@@ -315,9 +316,10 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		})
 		action, _ = json.Marshal(ctl.Action{ID: ctl.StartComplianceScan, RequestPayload: string(internalReq)})
 	} else { // if nodeType == controls.ResourceTypeToString(controls.CloudAccount)
+		hostNeo4jNodeType = "Node"
 		res, err = tx.Run(fmt.Sprintf(`
-			MATCH (n:Node) -[:HOSTS]-> (m:%s{node_id: $node_id})
-			RETURN  n.node_id, m.cloud_provider, m.node_name`, neo4jNodeType),
+			MATCH (n:%s) -[:HOSTS]-> (m:%s{node_id: $node_id})
+			RETURN  n.node_id, m.cloud_provider, m.node_name`, hostNeo4jNodeType, neo4jNodeType),
 			map[string]interface{}{
 				"node_id": nodeId,
 			})
@@ -388,7 +390,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	if _, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
 		MATCH (m:%s{node_id:$node_id})
-		MERGE (n)-[:SCHEDULED]->(m)`, scanType, neo4jNodeType),
+		MERGE (n)-[:SCHEDULED]->(m)`, scanType, hostNeo4jNodeType),
 		map[string]interface{}{
 			"scan_id": scanID,
 			"node_id": hostNodeId,
