@@ -56,6 +56,10 @@ type RegistryImagesReq struct {
 	Window      FetchWindow             `json:"window" required:"true"`
 }
 
+type DeleteRegistryBulkReq struct {
+	RegistryIds []string `json:"registry_ids" validate:"required" required:"true"`
+}
+
 type RegistryImageStubsReq struct {
 	RegistryId  string                  `json:"registry_id" validate:"required" required:"true"`
 	ImageFilter reporters.FieldsFilters `json:"image_filter" required:"true"`
@@ -505,7 +509,7 @@ func checkRegistryExists(tx neo4j.Transaction, node_id string) error {
 	return nil
 }
 
-func GetRegistryPgIds(ctx context.Context, node_id string) ([]int64, error) {
+func GetRegistryPgIds(ctx context.Context, node_ids []string) ([]int64, error) {
 
 	res := []int64{}
 	driver, err := directory.Neo4jClient(ctx)
@@ -522,27 +526,30 @@ func GetRegistryPgIds(ctx context.Context, node_id string) ([]int64, error) {
 	}
 	defer tx.Close()
 	query := `
-	MATCH (n:RegistryAccount{node_id: $id})
+	MATCH (n:RegistryAccount)
+	WHERE n.node_id in $ids
 	RETURN n.container_registry_ids`
 
-	r, err := tx.Run(query, map[string]interface{}{"id": node_id})
+	r, err := tx.Run(query, map[string]interface{}{"ids": node_ids})
 	if err != nil {
 		return res, err
 	}
 
-	record, err := r.Single()
+	records, err := r.Collect()
 	if err != nil {
 		return res, err
 	}
 
-	for _, rec := range record.Values[0].([]interface{}) {
-		res = append(res, rec.(int64))
+	for _, record := range records {
+		for _, rec := range record.Values[0].([]interface{}) {
+			res = append(res, rec.(int64))
+		}
 	}
 
 	return res, err
 }
 
-func DeleteRegistryAccount(ctx context.Context, node_id string) error {
+func DeleteRegistryAccount(ctx context.Context, nodeIds []string) error {
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -558,10 +565,11 @@ func DeleteRegistryAccount(ctx context.Context, node_id string) error {
 	}
 	defer tx.Close()
 
-	query := fmt.Sprintf("MATCH (n:RegistryAccount{node_id:'%s'}) DETACH DELETE n", node_id)
-	log.Info().Msgf("delete registry account query: %s", query)
-
-	_, err = tx.Run(query, map[string]interface{}{})
+	query := fmt.Sprintf(`
+		MATCH (n:RegistryAccount)
+		WHERE n.node_id IN $ids
+		DETACH DELETE n`)
+	_, err = tx.Run(query, map[string]interface{}{"ids": nodeIds})
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		return err

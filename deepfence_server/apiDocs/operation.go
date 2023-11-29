@@ -672,6 +672,9 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 	d.AddOperation("deleteRegistry", http.MethodDelete, "/deepfence/registryaccount/{registry_id}",
 		"Delete Registry", "Delete registry",
 		http.StatusNoContent, []string{tagRegistry}, bearerToken, new(RegistryIDPathReq), nil)
+	d.AddOperation("deleteRegistryBulk", http.MethodPatch, "/deepfence/registryaccount/delete",
+		"Batch Delete Registry", "Batch Delete registry",
+		http.StatusNoContent, []string{tagRegistry}, bearerToken, new(DeleteRegistryBulkReq), nil)
 	d.AddOperation("syncRegistry", http.MethodPost, "/deepfence/registryaccount/{registry_id}/sync",
 		"Sync Registry", "synchronize registry images",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryIDPathReq), new(MessageResponse))

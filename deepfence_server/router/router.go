@@ -455,6 +455,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 					r.Get("/summary", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.RegistrySummary))
 					r.Post("/sync", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.RefreshRegistry))
 				})
+				r.Patch("/delete", dfHandler.AuthHandler(ResourceRegistry, PermissionDelete, dfHandler.DeleteRegistryBulk))
 				r.Post("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImages))
 				r.Post("/stubs", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImageStubs))
 				// count api

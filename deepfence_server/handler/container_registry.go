@@ -494,6 +494,31 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	}
 }
 
+func (h *Handler) DeleteRegistryBulk(w http.ResponseWriter, r *http.Request) {
+	var req model.DeleteRegistryBulkReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	err = h.deleteRegistryHelper(r.Context(), req.RegistryIds)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+		return
+	}
+
+	h.AuditUserActivity(r, EVENT_REGISTRY, ACTION_DELETE,
+		map[string][]string{"registry_ids": req.RegistryIds}, true)
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.URLDecode(chi.URLParam(r, "registry_id"))
 	if err != nil {
@@ -502,36 +527,11 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pgIds, err := model.GetRegistryPgIds(r.Context(), id)
+	err = h.deleteRegistryHelper(r.Context(), []string{id})
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		h.respondError(&NotFoundError{err}, w)
+		h.respondError(err, w)
 		return
-	}
-
-	ctx := r.Context()
-	pgClient, err := directory.PostgresClient(ctx)
-	if err != nil {
-		log.Error().Msgf("%v", err)
-		h.respondError(&InternalServerError{err}, w)
-		return
-	}
-
-	log.Info().Msgf("delete registry ID's: %v and registry account %s", pgIds, id)
-
-	if err := model.DeleteRegistryAccount(r.Context(), id); err != nil {
-		log.Error().Msgf("%v", err)
-		h.respondError(&InternalServerError{err}, w)
-		return
-	}
-
-	for _, id := range pgIds {
-		err = model.DeleteRegistry(ctx, pgClient, int32(id))
-		if err != nil {
-			log.Error().Msgf("%v", err)
-			h.respondError(&InternalServerError{err}, w)
-			return
-		}
 	}
 
 	h.AuditUserActivity(r, EVENT_REGISTRY, ACTION_DELETE,
@@ -539,6 +539,32 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 
+}
+
+func (h *Handler) deleteRegistryHelper(ctx context.Context, nodeIds []string) error {
+	pgIds, err := model.GetRegistryPgIds(ctx, nodeIds)
+	if err != nil {
+		return &NotFoundError{err}
+	}
+
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	log.Info().Msgf("delete registry ID's: %v and registry account %v", pgIds, nodeIds)
+
+	if err = model.DeleteRegistryAccount(ctx, nodeIds); err != nil {
+		return err
+	}
+
+	for _, id := range pgIds {
+		err = model.DeleteRegistry(ctx, pgClient, int32(id))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (h *Handler) RefreshRegistry(w http.ResponseWriter, r *http.Request) {
@@ -549,7 +575,7 @@ func (h *Handler) RefreshRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pgIds, err := model.GetRegistryPgIds(r.Context(), id)
+	pgIds, err := model.GetRegistryPgIds(r.Context(), []string{id})
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(&NotFoundError{err}, w)
