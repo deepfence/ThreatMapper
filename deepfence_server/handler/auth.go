@@ -149,6 +149,17 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	loginRequest.Email = strings.ToLower(loginRequest.Email)
 	ctx := directory.NewContextWithNameSpace(directory.FetchNamespace(loginRequest.Email))
+
+	// if it is a fresh setup, there won't be any users in the system
+	freshSetup, err := model.IsFreshSetup(ctx)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	if freshSetup {
+		h.respondError(&NotFoundError{errors.New("For a new console installation, registration by the user is required")}, w)
+		return
+	}
 	u, statusCode, pgClient, err := model.GetUserByEmail(ctx, loginRequest.Email)
 	if err != nil {
 		h.respondWithErrorCode(err, w, statusCode)
