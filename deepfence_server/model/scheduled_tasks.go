@@ -13,11 +13,11 @@ import (
 )
 
 const (
-	VULNERABILITY_SCAN_CRON    = "0 0 0 * * 0"
-	SECRET_SCAN_CRON           = "0 0 0 * * 1"
-	MALWARE_SCAN_CRON          = "0 0 0 * * 2"
-	COMPLIANCE_SCAN_CRON       = "0 0 0 * * 3"
-	CLOUD_COMPLIANCE_SCAN_CRON = "0 0 0 * * 4"
+	VulnerabilityScanCron   = "0 0 0 * * 0"
+	SecretScanCron          = "0 0 0 * * 1"
+	MalwareScanCron         = "0 0 0 * * 2"
+	ComplianceScanCron      = "0 0 0 * * 3"
+	CloudComplianceScanCron = "0 0 0 * * 4"
 )
 
 var (
@@ -43,7 +43,7 @@ type ScheduleTaskPayload struct {
 	ComplianceBenchmarkTypes
 }
 
-type ScheduleJobId struct {
+type ScheduleJobID struct {
 	ID int64 `path:"id"`
 }
 
@@ -100,12 +100,12 @@ func AddScheduledTask(ctx context.Context, req AddScheduledTaskRequest) error {
 	}
 
 	payload := ScheduleTaskPayload{}
-	payload.NodeIds = req.NodeIds
+	payload.NodeIDs = req.NodeIDs
 	payload.Filters = req.Filters
 	payload.ScanConfigLanguages = req.ScanConfigLanguages
 	payload.BenchmarkTypes = req.BenchmarkTypes
 	payload.IsPriority = req.IsPriority
-	payloadJson, err := json.Marshal(payload)
+	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func AddScheduledTask(ctx context.Context, req AddScheduledTaskRequest) error {
 	params.Description = req.Description
 	params.IsEnabled = true
 	params.IsSystem = false
-	params.Payload = payloadJson
+	params.Payload = payloadJSON
 
 	_, err = pgClient.CreateSchedule(ctx, params)
 	return err
@@ -137,17 +137,17 @@ func InitializeScheduledTasks(ctx context.Context, pgClient *postgresqlDb.Querie
 	for _, nodeType := range []string{utils.NodeTypeHost, utils.NodeTypeContainer} {
 		payload := map[string]string{"node_type": nodeType}
 
-		scheduleStr, _ := json.Marshal(map[string]interface{}{"action": utils.VulnerabilityScan, "payload": payload, "cron": VULNERABILITY_SCAN_CRON})
+		scheduleStr, _ := json.Marshal(map[string]interface{}{"action": utils.VulnerabilityScan, "payload": payload, "cron": VulnerabilityScanCron})
 		if utils.InSlice(utils.GenerateHashFromString(string(scheduleStr)), jobHashes) {
 			continue
 		}
 
-		payloadJson, _ := json.Marshal(payload)
+		payloadJSON, _ := json.Marshal(payload)
 		_, err = pgClient.CreateSchedule(ctx, postgresqlDb.CreateScheduleParams{
 			Action:      utils.VulnerabilityScan,
 			Description: fmt.Sprintf("Vulnerability scan on all %ss", nodeTypeLabels[nodeType]),
-			CronExpr:    VULNERABILITY_SCAN_CRON,
-			Payload:     payloadJson,
+			CronExpr:    VulnerabilityScanCron,
+			Payload:     payloadJSON,
 			IsEnabled:   false,
 			IsSystem:    true,
 		})
@@ -160,17 +160,17 @@ func InitializeScheduledTasks(ctx context.Context, pgClient *postgresqlDb.Querie
 	for _, nodeType := range []string{utils.NodeTypeHost, utils.NodeTypeContainer} {
 		payload := map[string]string{"node_type": nodeType}
 
-		scheduleStr, _ := json.Marshal(map[string]interface{}{"action": utils.SecretScan, "payload": payload, "cron": SECRET_SCAN_CRON})
+		scheduleStr, _ := json.Marshal(map[string]interface{}{"action": utils.SecretScan, "payload": payload, "cron": SecretScanCron})
 		if utils.InSlice(utils.GenerateHashFromString(string(scheduleStr)), jobHashes) {
 			continue
 		}
 
-		payloadJson, _ := json.Marshal(payload)
+		payloadJSON, _ := json.Marshal(payload)
 		_, err = pgClient.CreateSchedule(ctx, postgresqlDb.CreateScheduleParams{
 			Action:      utils.SecretScan,
 			Description: fmt.Sprintf("Secret scan on all %ss", nodeTypeLabels[nodeType]),
-			CronExpr:    SECRET_SCAN_CRON,
-			Payload:     payloadJson,
+			CronExpr:    SecretScanCron,
+			Payload:     payloadJSON,
 			IsEnabled:   false,
 			IsSystem:    true,
 		})
@@ -183,17 +183,17 @@ func InitializeScheduledTasks(ctx context.Context, pgClient *postgresqlDb.Querie
 	for _, nodeType := range []string{utils.NodeTypeHost, utils.NodeTypeContainer} {
 		payload := map[string]string{"node_type": nodeType}
 
-		scheduleStr, _ := json.Marshal(map[string]interface{}{"action": utils.MalwareScan, "payload": payload, "cron": MALWARE_SCAN_CRON})
+		scheduleStr, _ := json.Marshal(map[string]interface{}{"action": utils.MalwareScan, "payload": payload, "cron": MalwareScanCron})
 		if utils.InSlice(utils.GenerateHashFromString(string(scheduleStr)), jobHashes) {
 			continue
 		}
 
-		payloadJson, _ := json.Marshal(payload)
+		payloadJSON, _ := json.Marshal(payload)
 		_, err = pgClient.CreateSchedule(ctx, postgresqlDb.CreateScheduleParams{
 			Action:      utils.MalwareScan,
 			Description: fmt.Sprintf("Malware scan on all %ss", nodeTypeLabels[nodeType]),
-			CronExpr:    MALWARE_SCAN_CRON,
-			Payload:     payloadJson,
+			CronExpr:    MalwareScanCron,
+			Payload:     payloadJSON,
 			IsEnabled:   false,
 			IsSystem:    true,
 		})
@@ -206,17 +206,17 @@ func InitializeScheduledTasks(ctx context.Context, pgClient *postgresqlDb.Querie
 	for _, nodeType := range []string{utils.NodeTypeHost, utils.NodeTypeKubernetesCluster} {
 		payload := map[string]string{"node_type": nodeType}
 
-		scheduleStr, _ := json.Marshal(map[string]interface{}{"action": utils.ComplianceScan, "payload": payload, "cron": COMPLIANCE_SCAN_CRON})
+		scheduleStr, _ := json.Marshal(map[string]interface{}{"action": utils.ComplianceScan, "payload": payload, "cron": ComplianceScanCron})
 		if utils.InSlice(utils.GenerateHashFromString(string(scheduleStr)), jobHashes) {
 			continue
 		}
 
-		payloadJson, _ := json.Marshal(payload)
+		payloadJSON, _ := json.Marshal(payload)
 		_, err = pgClient.CreateSchedule(ctx, postgresqlDb.CreateScheduleParams{
 			Action:      utils.ComplianceScan,
 			Description: fmt.Sprintf("Compliance scan on all %ss", nodeTypeLabels[nodeType]),
-			CronExpr:    COMPLIANCE_SCAN_CRON,
-			Payload:     payloadJson,
+			CronExpr:    ComplianceScanCron,
+			Payload:     payloadJSON,
 			IsEnabled:   false,
 			IsSystem:    true,
 		})

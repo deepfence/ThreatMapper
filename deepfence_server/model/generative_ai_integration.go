@@ -104,7 +104,7 @@ func (a GenerativeAiIntegrationKubernetesPostureRequest) GetRequestType() string
 type GenerativeAiIntegrationVulnerabilityRequest struct {
 	GenerativeAiIntegrationRequestCommon
 	RemediationFormat  string `json:"remediation_format" validate:"required,oneof=all cli pulumi terraform" required:"true" enum:"all,cli,pulumi,terraform"`
-	CveId              string `json:"cve_id" validate:"required" required:"true"`
+	CveID              string `json:"cve_id" validate:"required" required:"true"`
 	CveType            string `json:"cve_type" validate:"required" required:"true"`
 	CveCausedByPackage string `json:"cve_caused_by_package" validate:"required" required:"true"`
 }
@@ -152,7 +152,7 @@ type AddGenerativeAiIntegrationRequest interface {
 }
 
 type AddGenerativeAiOpenAIIntegration struct {
-	ApiKey  string `json:"api_key" validate:"required" required:"true"`
+	APIKey  string `json:"api_key" validate:"required" required:"true"`
 	ModelID string `json:"model_id" validate:"required,oneof=gpt-4" required:"true" enum:"gpt-4"`
 }
 

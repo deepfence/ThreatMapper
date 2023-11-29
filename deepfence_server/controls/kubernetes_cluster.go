@@ -3,7 +3,6 @@ package controls
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
@@ -13,7 +12,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-func GetKubernetesClusterActions(ctx context.Context, nodeId string, workNumToExtract int) ([]controls.Action, []error) {
+func GetKubernetesClusterActions(ctx context.Context, nodeID string, workNumToExtract int) ([]controls.Action, []error) {
 	// Append more actions here
 	var actions []controls.Action
 
@@ -21,32 +20,32 @@ func GetKubernetesClusterActions(ctx context.Context, nodeId string, workNumToEx
 		return actions, []error{nil, nil}
 	}
 
-	upgradeActions, upgradeErr := ExtractPendingKubernetesClusterUpgrade(ctx, nodeId, workNumToExtract)
+	upgradeActions, upgradeErr := ExtractPendingKubernetesClusterUpgrade(ctx, nodeID, workNumToExtract)
 	workNumToExtract -= len(upgradeActions)
 	if upgradeErr == nil {
 		actions = append(actions, upgradeActions...)
 	}
 
-	scanActions, scanErr := ExtractStartingKubernetesClusterScans(ctx, nodeId, workNumToExtract)
+	scanActions, scanErr := ExtractStartingKubernetesClusterScans(ctx, nodeID, workNumToExtract)
 	workNumToExtract -= len(scanActions)
 	if scanErr == nil {
 		actions = append(actions, scanActions...)
 	}
 
-	diagnosticLogActions, scan_err := ExtractAgentDiagnosticLogRequests(ctx, nodeId, controls.KubernetesCluster, workNumToExtract)
+	diagnosticLogActions, scanErr := ExtractAgentDiagnosticLogRequests(ctx, nodeID, controls.KubernetesCluster, workNumToExtract)
 
 	workNumToExtract -= len(diagnosticLogActions) //nolint:ineffassign
-	if scan_err == nil {
+	if scanErr == nil {
 		actions = append(actions, diagnosticLogActions...)
 	}
 
 	return actions, []error{scanErr, upgradeErr}
 }
 
-func ExtractStartingKubernetesClusterScans(ctx context.Context, nodeId string, max_work int) ([]controls.Action, error) {
+func ExtractStartingKubernetesClusterScans(ctx context.Context, nodeID string, maxWork int) ([]controls.Action, error) {
 	var res []controls.Action
-	if len(nodeId) == 0 {
-		return res, errors.New("Missing node_id")
+	if len(nodeID) == 0 {
+		return res, ErrMissingNodeID
 	}
 
 	client, err := directory.Neo4jClient(ctx)
@@ -73,7 +72,7 @@ func ExtractStartingKubernetesClusterScans(ctx context.Context, nodeId string, m
 		SET s.status = '`+utils.ScanStatusInProgress+`'
 		WITH s
 		RETURN s.trigger_action`,
-		map[string]interface{}{"id": nodeId, "max_work": max_work})
+		map[string]interface{}{"id": nodeID, "max_work": maxWork})
 
 	if err != nil {
 		return res, err
@@ -103,10 +102,10 @@ func ExtractStartingKubernetesClusterScans(ctx context.Context, nodeId string, m
 
 }
 
-func ExtractPendingKubernetesClusterUpgrade(ctx context.Context, nodeId string, max_work int) ([]controls.Action, error) {
+func ExtractPendingKubernetesClusterUpgrade(ctx context.Context, nodeID string, maxWork int) ([]controls.Action, error) {
 	var res []controls.Action
-	if len(nodeId) == 0 {
-		return res, errors.New("Missing node_id")
+	if len(nodeID) == 0 {
+		return res, ErrMissingNodeID
 	}
 
 	client, err := directory.Neo4jClient(ctx)
@@ -130,7 +129,7 @@ func ExtractPendingKubernetesClusterUpgrade(ctx context.Context, nodeId string, 
 		SET r.status = '`+utils.ScanStatusInProgress+`'
 		WITH r
 		RETURN r.trigger_action`,
-		map[string]interface{}{"id": nodeId, "max_work": max_work})
+		map[string]interface{}{"id": nodeID, "max_work": maxWork})
 
 	if err != nil {
 		return res, err

@@ -116,14 +116,14 @@ func getAuthTokenAndCookies(u, p string) (string, []*http.Cookie, error) {
 	}
 
 	// read json http response
-	jsonDataFromHttp, err := io.ReadAll(resp.Body)
+	jsonDataFromHTTP, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", nil, err
 	}
 
 	var dAuth map[string]string
 
-	err = json.Unmarshal([]byte(jsonDataFromHttp), &dAuth)
+	err = json.Unmarshal([]byte(jsonDataFromHTTP), &dAuth)
 	if err != nil {
 		return "", nil, err
 	}

@@ -28,10 +28,10 @@ func BulkDeleteScans(ctx context.Context, task *asynq.Task) error {
 	}
 
 	for _, s := range scansList.ScansInfo {
-		log.Info().Msgf("delete scan %s %s", req.ScanType, s.ScanId)
-		err = reporters_scan.DeleteScan(ctx, scanType, s.ScanId, []string{})
+		log.Info().Msgf("delete scan %s %s", req.ScanType, s.ScanID)
+		err = reporters_scan.DeleteScan(ctx, scanType, s.ScanID, []string{})
 		if err != nil {
-			log.Error().Err(err).Msgf("failed to delete scan id %s", s.ScanId)
+			log.Error().Err(err).Msgf("failed to delete scan id %s", s.ScanID)
 			continue
 		}
 	}

@@ -1,24 +1,24 @@
 package constants
 
 const (
-	ACR            = "azure_container_registry"
-	DOCKER_HUB     = "docker_hub"
-	DOCKER_PRIVATE = "docker_private_registry"
-	ECR            = "ecr"
-	ECR_PUBLIC     = "ecr-public"
-	GCR            = "google_container_registry"
-	GITLAB         = "gitlab"
-	HARBOR         = "harbor"
-	JFROG          = "jfrog_container_registry"
-	QUAY           = "quay"
+	ACR           = "azure_container_registry"
+	DockerHub     = "docker_hub"
+	DockerPrivate = "docker_private_registry"
+	ECR           = "ecr"
+	ECRPublic     = "ecr-public"
+	GCR           = "google_container_registry"
+	Gitlab        = "gitlab"
+	Harbor        = "harbor"
+	Jfrog         = "jfrog_container_registry"
+	Quay          = "quay"
 )
 
 const (
-	REDIS_JWT_SIGN_KEY = "SERVER_JWT_SIGN_KEY"
+	RedisJWTSignKey = "SERVER_JWT_SIGN_KEY"
 )
 
 var RegistryTypes = []string{
-	ACR, DOCKER_HUB, DOCKER_PRIVATE, ECR, GCR, GITLAB, HARBOR, JFROG, QUAY,
+	ACR, DockerHub, DockerPrivate, ECR, GCR, Gitlab, Harbor, Jfrog, Quay,
 }
 
 // AiIntegration related consts
@@ -49,7 +49,7 @@ const (
 	IntegrationKey = "integration_key"
 	APIKey         = "api_key"
 
-	DeepfenceCommunityEmailId = "community@deepfence.io"
+	DeepfenceCommunityEmailID = "community@deepfence.io"
 )
 
 var SensitiveFields = map[string]struct{}{

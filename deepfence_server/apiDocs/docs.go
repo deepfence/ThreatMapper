@@ -1,4 +1,5 @@
-package apiDocs
+//nolint:staticcheck
+package apiDocs //nolint:stylecheck
 
 import (
 	"net/http"
@@ -54,37 +55,37 @@ type BadRequestResponse struct {
 	ErrorIndex  *map[string][]int  `json:"error_index"`
 }
 
-type OpenApiDocs struct {
+type OpenAPIDocs struct {
 	reflector          *openapi3.Reflector
 	badRequestResponse *BadRequestResponse
 	failureResponse    *FailureResponse
 }
 
-func InitializeOpenAPIReflector() *OpenApiDocs {
+func InitializeOpenAPIReflector() *OpenAPIDocs {
 	// OpenAPI generation
 	description := "Deepfence Runtime API provides programmatic control over Deepfence microservice securing your container, kubernetes and cloud deployments. The API abstracts away underlying infrastructure details like cloud provider, \ncontainer distros, container orchestrator and type of deployment. This is one uniform API to manage and control security alerts, policies and response to alerts for microservices running anywhere i.e. managed pure greenfield container deployments or a mix of containers, VMs and serverless paradigms like AWS Fargate."
 	tos := "/tos"
 	contactName := "Deepfence Support"
-	contactUrl := "https://deepfence.io"
+	contactURL := "https://deepfence.io"
 	contactEmail := "community@deepfence.io"
-	licenseUrl := "https://www.apache.org/licenses/LICENSE-2.0"
+	licenseURL := "https://www.apache.org/licenses/LICENSE-2.0"
 	externalDocsDesc := "Deepfence Community"
 
 	reflector := &openapi3.Reflector{
 		Spec: &openapi3.Spec{
 			Openapi: "3.0.3",
 			Info: openapi3.Info{
-				Title:          "Deepfence ThreatMapper",
+				Title:          "Deepfence ThreatStryker",
 				Description:    &description,
 				TermsOfService: &tos,
 				Contact: &openapi3.Contact{
 					Name:  &contactName,
-					URL:   &contactUrl,
+					URL:   &contactURL,
 					Email: &contactEmail,
 				},
 				License: &openapi3.License{
 					Name: "Apache 2.0",
-					URL:  &licenseUrl,
+					URL:  &licenseURL,
 				},
 				Version: "2.0.0",
 			},
@@ -113,18 +114,18 @@ func InitializeOpenAPIReflector() *OpenApiDocs {
 			},
 		)
 
-	return &OpenApiDocs{reflector: reflector, failureResponse: &FailureResponse{Success: false}, badRequestResponse: &BadRequestResponse{Success: false}}
+	return &OpenAPIDocs{reflector: reflector, failureResponse: &FailureResponse{Success: false}, badRequestResponse: &BadRequestResponse{Success: false}}
 }
 
-func (d *OpenApiDocs) Json() ([]byte, error) {
+func (d *OpenAPIDocs) JSON() ([]byte, error) {
 	return d.reflector.Spec.MarshalJSON()
 }
 
-func (d *OpenApiDocs) Yaml() ([]byte, error) {
+func (d *OpenAPIDocs) Yaml() ([]byte, error) {
 	return d.reflector.Spec.MarshalYAML()
 }
 
-func (d *OpenApiDocs) AddOperation(id, method, path, summary, description string, successStatusCode int, tags []string,
+func (d *OpenAPIDocs) AddOperation(id, method, path, summary, description string, successStatusCode int, tags []string,
 	security []map[string][]string, request interface{}, response interface{}) {
 	operation := openapi3.Operation{
 		Tags:        tags,
@@ -148,7 +149,7 @@ func (d *OpenApiDocs) AddOperation(id, method, path, summary, description string
 	}
 }
 
-func (d *OpenApiDocs) addResponses(operation *openapi3.Operation, method, path string) {
+func (d *OpenAPIDocs) addResponses(operation *openapi3.Operation, method, path string) {
 	err := d.reflector.SetupResponse(openapi3.OperationContext{Operation: operation, HTTPStatus: http.StatusUnauthorized})
 	if err != nil {
 		log.Error().Msgf("Docs - unauthorized %s %s: %s", method, path, err.Error())
@@ -171,7 +172,7 @@ func (d *OpenApiDocs) addResponses(operation *openapi3.Operation, method, path s
 	}
 }
 
-func (d *OpenApiDocs) AddNonJsonOperation(id, method, path, summary, description string, successStatusCode int, tags []string,
+func (d *OpenAPIDocs) AddNonJSONOperation(id, method, path, summary, description string, successStatusCode int, tags []string,
 	security []map[string][]string, request interface{}, respContentType string) {
 	operation := openapi3.Operation{
 		Tags:        tags,

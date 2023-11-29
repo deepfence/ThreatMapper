@@ -63,14 +63,14 @@ const (
 // }
 
 var (
-	enable_debug bool
+	enableDebug bool
 
-	JwtSignKeyNotFoundError = errors.New("jwt sign key not found")
+	ErrJwtSignKeyNotFound = errors.New("jwt sign key not found")
 )
 
 func init() {
-	enable_debug_str := os.Getenv("DF_ENABLE_DEBUG")
-	enable_debug = enable_debug_str != ""
+	enableDebugStr := os.Getenv("DF_ENABLE_DEBUG")
+	enableDebug = enableDebugStr != ""
 }
 
 func getJWTAuthSignKey() (string, error) {
@@ -81,15 +81,15 @@ func getJWTAuthSignKey() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		err = redisClient.SetArgs(ctx, constants.REDIS_JWT_SIGN_KEY, signKey, redis.SetArgs{Mode: "NX"}).Err()
+		err = redisClient.SetArgs(ctx, constants.RedisJWTSignKey, signKey, redis.SetArgs{Mode: "NX"}).Err()
 		if err == redis.Nil {
 			// Key already exists, nothing to do
 		} else if err != nil {
 			return "", err
 		}
-		val, err := redisClient.Get(ctx, constants.REDIS_JWT_SIGN_KEY).Result()
+		val, err := redisClient.Get(ctx, constants.RedisJWTSignKey).Result()
 		if err == redis.Nil {
-			return "", JwtSignKeyNotFoundError
+			return "", ErrJwtSignKeyNotFound
 		} else if err != nil {
 			return "", err
 		}
@@ -99,7 +99,7 @@ func getJWTAuthSignKey() (string, error) {
 	}
 }
 
-func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC chan *kgo.Record, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
+func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC chan *kgo.Record, openAPIDocs *apiDocs.OpenAPIDocs, orchestrator string) error {
 
 	var tokenAuth *jwtauth.JWTAuth
 
@@ -128,7 +128,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 	dfHandler := &handler.Handler{
 		TokenAuth:        tokenAuth,
 		AuthEnforcer:     authEnforcer,
-		OpenApiDocs:      openApiDocs,
+		OpenAPIDocs:      openAPIDocs,
 		SaasDeployment:   IsSaasDeployment(),
 		Validator:        apiValidator,
 		Translator:       translator,
@@ -140,7 +140,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Compress(5))
 
-	if enable_debug {
+	if enableDebug {
 		r.Mount("/debug", middleware.Profiler())
 	}
 
@@ -158,14 +158,14 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			r.Post("/user/reset-password/verify", dfHandler.ResetPasswordVerification)
 
 			// Get access token for api key
-			r.Post("/auth/token", dfHandler.ApiAuthHandler)
+			r.Post("/auth/token", dfHandler.APIAuthHandler)
 
 			r.Get("/end-user-license-agreement", dfHandler.EULAHandler)
 
 			if serveOpenapiDocs {
 				log.Info().Msgf("OpenAPI documentation: http://0.0.0.0%s/deepfence/openapi.json", serverPort)
 				log.Info().Msgf("Swagger UI : http://0.0.0.0%s/deepfence/swagger-ui/", serverPort)
-				r.Get("/openapi.json", dfHandler.OpenApiDocsHandler)
+				r.Get("/openapi.json", dfHandler.OpenAPIDocsHandler)
 				r.Handle("/swagger-ui/*",
 					http.StripPrefix("/deepfence/swagger-ui",
 						http.FileServer(http.Dir("/usr/local/share/swagger-ui/"))))
@@ -187,8 +187,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			})
 
 			r.Route("/api-token", func(r chi.Router) {
-				r.Get("/", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.GetApiTokens))
-				r.Post("/reset", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.ResetApiToken))
+				r.Get("/", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.GetAPITokens))
+				r.Post("/reset", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.ResetAPIToken))
 			})
 
 			// Generate new access token using refresh token
@@ -530,7 +530,6 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			r.Route("/database", func(r chi.Router) {
 				r.Put("/vulnerability", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadVulnerabilityDB))
 			})
-
 		})
 	})
 

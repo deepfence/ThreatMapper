@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
-	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
@@ -16,37 +15,37 @@ import (
 )
 
 type AlreadyRunningScanError struct {
-	ScanId   string
+	ScanID   string
 	ScanType string
-	NodeId   string
+	nodeID   string
 }
 
 func (ve *AlreadyRunningScanError) Error() string {
-	return fmt.Sprintf("Scan of type %s already running for %s, id: %s", ve.ScanType, ve.NodeId, ve.ScanId)
+	return fmt.Sprintf("Scan of type %s already running for %s, id: %s", ve.ScanType, ve.nodeID, ve.ScanID)
 }
 
 type AgentNotInstalledError struct {
-	NodeId string
+	nodeID string
 }
 
 func (ve *AgentNotInstalledError) Error() string {
-	return fmt.Sprintf("Agent sensor not installed in %s", ve.NodeId)
+	return fmt.Sprintf("Agent sensor not installed in %s", ve.nodeID)
 }
 
 type NodeNotFoundError struct {
-	NodeId string
+	NodeID string
 }
 
 func (ve *NodeNotFoundError) Error() string {
-	return fmt.Sprintf("Node %v not found", ve.NodeId)
+	return fmt.Sprintf("Node %v not found", ve.NodeID)
 }
 
 type NodeNotActiveError struct {
-	NodeId string
+	NodeID string
 }
 
 func (ve *NodeNotActiveError) Error() string {
-	return fmt.Sprintf("Node %v is currently not active", ve.NodeId)
+	return fmt.Sprintf("Node %v is currently not active", ve.NodeID)
 }
 
 type WriteDBTransaction struct {
@@ -58,19 +57,19 @@ func (t WriteDBTransaction) Run(cypher string, params map[string]interface{}) (n
 }
 
 func AddNewScan(tx WriteDBTransaction,
-	scan_type utils.Neo4jScanType,
-	scan_id string,
-	node_type controls.ScanResource,
-	node_id string,
+	scanType utils.Neo4jScanType,
+	scanID string,
+	nodeType controls.ScanResource,
+	nodeID string,
 	isPriority bool,
 	action controls.Action) error {
 
 	res, err := tx.Run(fmt.Sprintf(`
 		OPTIONAL MATCH (n:%s{node_id:$node_id})
 		RETURN n IS NOT NULL AS Exists`,
-		controls.ResourceTypeToNeo4j(node_type)),
+		controls.ResourceTypeToNeo4j(nodeType)),
 		map[string]interface{}{
-			"node_id": node_id,
+			"node_id": nodeID,
 		})
 	if err != nil {
 		return err
@@ -83,7 +82,7 @@ func AddNewScan(tx WriteDBTransaction,
 
 	if !rec.Values[0].(bool) {
 		return &NodeNotFoundError{
-			NodeId: node_id,
+			NodeID: nodeID,
 		}
 	}
 
@@ -93,9 +92,9 @@ func AddNewScan(tx WriteDBTransaction,
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
 		AND not n.status = $cancelled
-		RETURN n.node_id, m.agent_running`, controls.ResourceTypeToNeo4j(node_type), scan_type),
+		RETURN n.node_id, m.agent_running`, controls.ResourceTypeToNeo4j(nodeType), scanType),
 		map[string]interface{}{
-			"node_id":   node_id,
+			"node_id":   nodeID,
 			"complete":  utils.ScanStatusSuccess,
 			"failed":    utils.ScanStatusFailed,
 			"cancelled": utils.ScanStatusCancelled})
@@ -110,15 +109,15 @@ func AddNewScan(tx WriteDBTransaction,
 
 	if rec.Values[0] != nil {
 		return &AlreadyRunningScanError{
-			ScanId:   rec.Values[0].(string),
-			NodeId:   node_id,
-			ScanType: string(scan_type),
+			ScanID:   rec.Values[0].(string),
+			nodeID:   nodeID,
+			ScanType: string(scanType),
 		}
 	}
 	if rec.Values[1] != nil {
 		if !rec.Values[1].(bool) {
 			return &AgentNotInstalledError{
-				NodeId: node_id,
+				nodeID: nodeID,
 			}
 		}
 	}
@@ -131,18 +130,18 @@ func AddNewScan(tx WriteDBTransaction,
 	if _, err = tx.Run(fmt.Sprintf(`
 		MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, trigger_action: $action, updated_at: TIMESTAMP(), created_at: TIMESTAMP(), is_priority: $is_priority})
 		MERGE (m:%s{node_id:$node_id})
-		MERGE (n)-[:SCANNED]->(m)`, scan_type, controls.ResourceTypeToNeo4j(node_type)),
+		MERGE (n)-[:SCANNED]->(m)`, scanType, controls.ResourceTypeToNeo4j(nodeType)),
 		map[string]interface{}{
-			"scan_id":     scan_id,
+			"scan_id":     scanID,
 			"status":      utils.ScanStatusStarting,
-			"node_id":     node_id,
+			"node_id":     nodeID,
 			"action":      string(b),
 			"is_priority": isPriority}); err != nil {
 		return err
 	}
 
-	latestScanIDFieldName := ingestersUtil.LatestScanIDField[scan_type]
-	scanStatusFieldName := ingestersUtil.ScanStatusField[scan_type]
+	latestScanIDFieldName := ingestersUtil.LatestScanIDField[scanType]
+	scanStatusFieldName := ingestersUtil.ScanStatusField[scanType]
 
 	if _, err = tx.Run(fmt.Sprintf(`
 		MERGE (n:%s{node_id: $scan_id})
@@ -152,22 +151,22 @@ func AddNewScan(tx WriteDBTransaction,
 		WITH n
 		MATCH (n) -[:SCANNED]- (r)
 		SET r.%s=n.status, r.%s=n.node_id`,
-		scan_type, scanStatusFieldName, latestScanIDFieldName),
+		scanType, scanStatusFieldName, latestScanIDFieldName),
 		map[string]interface{}{
-			"scan_id": scan_id,
+			"scan_id": scanID,
 			"status":  utils.ScanStatusStarting}); err != nil {
 		return err
 	}
 
-	switch node_type {
+	switch nodeType {
 	case controls.Host:
 		if _, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
 		MATCH (m:Node{node_id:$node_id})
-		MERGE (n)-[:SCHEDULED]->(m)`, scan_type),
+		MERGE (n)-[:SCHEDULED]->(m)`, scanType),
 			map[string]interface{}{
-				"scan_id": scan_id,
-				"node_id": node_id,
+				"scan_id": scanID,
+				"node_id": nodeID,
 			}); err != nil {
 			return err
 		}
@@ -175,18 +174,18 @@ func AddNewScan(tx WriteDBTransaction,
 		if _, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
 		MATCH (m:Node) -[:HOSTS]-> (:Container{node_id:$node_id})
-		MERGE (n)-[:SCHEDULED]->(m)`, scan_type),
+		MERGE (n)-[:SCHEDULED]->(m)`, scanType),
 			map[string]interface{}{
-				"scan_id": scan_id,
-				"node_id": node_id,
+				"scan_id": scanID,
+				"node_id": nodeID,
 			}); err != nil {
 			return err
 		}
 
-		podQuery := `MATCH (n:Pod) 
-			CALL { 
-				MATCH (c:Container) 
-				WHERE c.node_id=$node_id 
+		podQuery := `MATCH (n:Pod)
+			CALL {
+				MATCH (c:Container)
+				WHERE c.node_id=$node_id
 				RETURN c.pod_id AS pod_id
 			}
 			WITH n
@@ -195,7 +194,7 @@ func AddNewScan(tx WriteDBTransaction,
 
 		if _, err = tx.Run(fmt.Sprintf(podQuery, scanStatusFieldName),
 			map[string]interface{}{
-				"node_id": node_id,
+				"node_id": nodeID,
 				"status":  utils.ScanStatusStarting}); err != nil {
 			return err
 		}
@@ -208,10 +207,10 @@ func AddNewScan(tx WriteDBTransaction,
 		LIMIT 1
 		MATCH (l:Node{node_id: "deepfence-console-cron"})
 		WITH coalesce(m, l) as exec, n
-		MERGE (n)-[:SCHEDULED]->(exec)`, scan_type),
+		MERGE (n)-[:SCHEDULED]->(exec)`, scanType),
 			map[string]interface{}{
-				"scan_id": scan_id,
-				"node_id": node_id,
+				"scan_id": scanID,
+				"node_id": nodeID,
 			}); err != nil {
 			return err
 		}
@@ -220,9 +219,9 @@ func AddNewScan(tx WriteDBTransaction,
 }
 
 func AddNewCloudComplianceScan(tx WriteDBTransaction,
-	scanId string,
+	scanID string,
 	benchmarkTypes []string,
-	nodeId string,
+	nodeID string,
 	nodeType string,
 	isPriority bool) error {
 
@@ -239,7 +238,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		OPTIONAL MATCH (n:%s{node_id:$node_id})
 		RETURN n IS NOT NULL AS Exists, n.active`, neo4jNodeType),
 		map[string]interface{}{
-			"node_id": nodeId,
+			"node_id": nodeID,
 		})
 	if err != nil {
 		return err
@@ -252,13 +251,13 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 
 	if !rec.Values[0].(bool) {
 		return &NodeNotFoundError{
-			NodeId: nodeId,
+			NodeID: nodeID,
 		}
 	}
 
 	if !rec.Values[1].(bool) {
 		return &NodeNotActiveError{
-			NodeId: nodeId,
+			NodeID: nodeID,
 		}
 	}
 
@@ -271,7 +270,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		AND n.benchmark_types = $benchmark_types
 		RETURN n.node_id, m.agent_running`, neo4jNodeType, scanType),
 		map[string]interface{}{
-			"node_id":         nodeId,
+			"node_id":         nodeID,
 			"complete":        utils.ScanStatusSuccess,
 			"failed":          utils.ScanStatusFailed,
 			"cancelled":       utils.ScanStatusCancelled,
@@ -288,39 +287,39 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 
 	if rec.Values[0] != nil {
 		return &AlreadyRunningScanError{
-			ScanId:   rec.Values[0].(string),
-			NodeId:   nodeId,
+			ScanID:   rec.Values[0].(string),
+			nodeID:   nodeID,
 			ScanType: string(scanType),
 		}
 	}
 	if rec.Values[1] != nil {
 		if !rec.Values[1].(bool) {
 			return &AgentNotInstalledError{
-				NodeId: nodeId,
+				nodeID: nodeID,
 			}
 		}
 	}
-	nt := ctl.KubernetesCluster
+	nt := controls.KubernetesCluster
 	if nodeType == controls.ResourceTypeToString(controls.Host) {
-		nt = ctl.Host
+		nt = controls.Host
 	}
-	internalReq, _ := json.Marshal(ctl.StartComplianceScanRequest{
-		NodeID:   nodeId,
+	internalReq, _ := json.Marshal(controls.StartComplianceScanRequest{
+		NodeID:   nodeID,
 		NodeType: nt,
-		BinArgs:  map[string]string{"scan_id": scanId, "benchmark_types": strings.Join(benchmarkTypes, ",")},
+		BinArgs:  map[string]string{"scan_id": scanID, "benchmark_types": strings.Join(benchmarkTypes, ",")},
 	})
 	action, _ := json.Marshal("{}")
 	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || nodeType == controls.ResourceTypeToString(controls.Host) {
-		action, _ = json.Marshal(ctl.Action{ID: ctl.StartComplianceScan, RequestPayload: string(internalReq)})
+		action, _ = json.Marshal(controls.Action{ID: controls.StartComplianceScan, RequestPayload: string(internalReq)})
 	}
 	if _, err = tx.Run(fmt.Sprintf(`
 MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, updated_at: TIMESTAMP(), benchmark_types: $benchmark_types, trigger_action: $action, created_at:TIMESTAMP(), is_priority: $is_priority})
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCANNED]->(m)`, scanType, neo4jNodeType),
 		map[string]interface{}{
-			"scan_id":         scanId,
+			"scan_id":         scanID,
 			"status":          utils.ScanStatusStarting,
-			"node_id":         nodeId,
+			"node_id":         nodeID,
 			"benchmark_types": benchmarkTypes,
 			"action":          string(action),
 			"is_priority":     isPriority,
@@ -341,7 +340,7 @@ MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, 
 		SET r.%s=n.status, r.%s=n.node_id`,
 		scanType, scanStatusFieldName, latestScanIDFieldName),
 		map[string]interface{}{
-			"scan_id": scanId,
+			"scan_id": scanID,
 			"status":  utils.ScanStatusStarting}); err != nil {
 		return err
 	}
@@ -351,8 +350,8 @@ MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, 
 		MATCH (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCHEDULED]->(m)`, scanType, neo4jNodeType),
 		map[string]interface{}{
-			"scan_id": scanId,
-			"node_id": nodeId,
+			"scan_id": scanID,
+			"node_id": nodeID,
 		}); err != nil {
 		return err
 	}
@@ -360,7 +359,7 @@ MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, 
 	return nil
 }
 
-func UpdateScanStatus(ctx context.Context, scan_type string, scan_id string, status, message string) error {
+func UpdateScanStatus(ctx context.Context, scanType string, scanID string, status, message string) error {
 
 	driver, err := directory.Neo4jClient(ctx)
 
@@ -382,9 +381,9 @@ func UpdateScanStatus(ctx context.Context, scan_type string, scan_id string, sta
 
 	if _, err = tx.Run(fmt.Sprintf(`
 		MERGE (n:%s{node_id: $scan_id})
-		SET n.status = $status, n.status_message = $message, n.updated_at = TIMESTAMP()`, scan_type),
+		SET n.status = $status, n.status_message = $message, n.updated_at = TIMESTAMP()`, scanType),
 		map[string]interface{}{
-			"scan_id": scan_id,
+			"scan_id": scanID,
 			"message": message,
 			"status":  status}); err != nil {
 		return err
@@ -393,7 +392,7 @@ func UpdateScanStatus(ctx context.Context, scan_type string, scan_id string, sta
 	return tx.Commit()
 }
 
-func AddBulkScan(tx WriteDBTransaction, scan_type utils.Neo4jScanType, bulk_scan_id string, scan_ids []string) error {
+func AddBulkScan(tx WriteDBTransaction, scanType utils.Neo4jScanType, bulkScanID string, scanIDs []string) error {
 
 	if _, err := tx.Run(fmt.Sprintf(`
 		MERGE (n:Bulk%s{node_id: $bscan_id})
@@ -401,10 +400,10 @@ func AddBulkScan(tx WriteDBTransaction, scan_type utils.Neo4jScanType, bulk_scan
 		WITH n
 		MATCH (m:%s)
 		WHERE m.node_id IN $scan_ids
-		MERGE (n) -[:BATCH]-> (m)`, scan_type, scan_type),
+		MERGE (n) -[:BATCH]-> (m)`, scanType, scanType),
 		map[string]interface{}{
-			"bscan_id": bulk_scan_id,
-			"scan_ids": scan_ids}); err != nil {
+			"bscan_id": bulkScanID,
+			"scan_ids": scanIDs}); err != nil {
 		return err
 	}
 

@@ -37,7 +37,7 @@ type CypherableAndCategorizable interface {
 
 type Categorizable interface {
 	GetCategory() string
-	GetJsonCategory() string
+	GetJSONCategory() string
 }
 
 func GetCategoryCounts[T Categorizable](entries []T) map[string]int32 {

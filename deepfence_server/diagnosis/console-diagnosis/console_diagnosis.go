@@ -1,4 +1,4 @@
-package console_diagnosis
+package console_diagnosis //nolint:stylecheck
 
 import (
 	"context"

@@ -44,50 +44,50 @@ func NewList() List {
 	return nilList
 }
 
-func (self *list) IsNil() bool {
-	return self == nilList
+func (l *list) IsNil() bool {
+	return l == nilList
 }
 
-func (self *list) Size() int {
-	return self.depth
+func (l *list) Size() int {
+	return l.depth
 }
 
-func (tail *list) Cons(val interface{}) List {
+func (l *list) Cons(val interface{}) List {
 	var xs list
-	xs.depth = tail.depth + 1
+	xs.depth = l.depth + 1
 	xs.value = val
-	xs.tail = tail
+	xs.tail = l
 	return &xs
 }
 
-func (self *list) Head() interface{} {
-	if self.IsNil() {
+func (l *list) Head() interface{} {
+	if l.IsNil() {
 		panic("Called Head() on an empty list")
 	}
 
-	return self.value
+	return l.value
 }
 
-func (self *list) Tail() List {
-	if self.IsNil() {
+func (l *list) Tail() List {
+	if l.IsNil() {
 		panic("Called Tail() on an empty list")
 	}
 
-	return self.tail
+	return l.tail
 }
 
 // ForEach executes a callback for each value in the list
-func (self *list) ForEach(f func(interface{})) {
-	if self.IsNil() {
+func (l *list) ForEach(f func(interface{})) {
+	if l.IsNil() {
 		return
 	}
-	f(self.Head())
-	self.Tail().ForEach(f)
+	f(l.Head())
+	l.Tail().ForEach(f)
 }
 
 // Reverse returns a list with elements in opposite order as this list
-func (self *list) Reverse() List {
+func (l *list) Reverse() List {
 	reversed := NewList()
-	self.ForEach(func(v interface{}) { reversed = reversed.Cons(v) })
+	l.ForEach(func(v interface{}) { reversed = reversed.Cons(v) })
 	return reversed
 }

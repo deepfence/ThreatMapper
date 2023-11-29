@@ -31,18 +31,18 @@ var (
 	True  = new(bool)
 	False = new(bool)
 
-	emailNotConfiguredError = ValidatorError{
+	ErrEmailNotConfigured = ValidatorError{
 		err:                       errors.New("email:Not configured to send emails. Please configure it in Settings->Email Configuration"),
 		skipOverwriteErrorMessage: true,
 	}
-	incorrectOldPasswordError = ValidatorError{
+	ErrIncorrectOldPassword = ValidatorError{
 		err:                       errors.New("old_password:incorrect old password"),
 		skipOverwriteErrorMessage: true,
 	}
-	deleteLastAdminError           = errors.New("at least one active admin user required")
-	passwordResetCodeNotFoundError = NotFoundError{errors.New("code not found")}
-	userInviteInvalidCodeError     = BadDecoding{errors.New("Invalid code")}
-	registrationDoneError          = ForbiddenError{errors.New("Cannot register. Please contact your administrator for an invite")}
+	ErrdeleteLastAdmin           = errors.New("at least one active admin user required")
+	ErrpasswordResetCodeNotFound = NotFoundError{errors.New("code not found")}
+	ErruserInviteInvalidCode     = BadDecoding{errors.New("invalid code")}
+	ErrregistrationDone          = ForbiddenError{errors.New("cannot register. Please contact your administrator for an invite")}
 )
 
 func init() {
@@ -87,27 +87,27 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 			Company:          registerRequest.Company,
 			CompanyNamespace: string(namespace),
 		}
-		h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, &u, false)
-		h.respondError(&registrationDoneError, w)
+		h.AuditUserActivity(r, EventAuth, ActionCreate, &u, false)
+		h.respondError(&ErrregistrationDone, w)
 		return
 	}
 
-	consoleUrl, err := utils.RemoveURLPath(registerRequest.ConsoleURL)
+	consoleURL, err := utils.RemoveURLPath(registerRequest.ConsoleURL)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		h.respondError(err, w)
 		return
 	}
-	consoleUrlSetting := model.Setting{
+	consoleURLSetting := model.Setting{
 		Key: model.ConsoleURLSettingKey,
 		Value: &model.SettingValue{
 			Label:       "Deepfence Console URL",
-			Value:       consoleUrl,
+			Value:       consoleURL,
 			Description: "Deepfence Console URL used for sending emails with links to the console",
 		},
-		IsVisibleOnUi: true,
+		IsVisibleOnUI: true,
 	}
-	_, err = consoleUrlSetting.Create(ctx, pgClient)
+	_, err = consoleURLSetting.Create(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		h.respondError(err, w)
@@ -164,12 +164,13 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.ID = createdUser.ID
-	_, err = user.CreateApiToken(ctx, pgClient, user.RoleID, &c)
+	_, err = user.CreateAPIToken(ctx, pgClient, user.RoleID, &c)
 	if err != nil {
 		log.Error().Msg("createApiToken: " + err.Error())
 		h.respondError(err, w)
 		return
 	}
+
 	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypePassword)
 	if err != nil {
 		log.Error().Msg("GetAccessToken: " + err.Error())
@@ -177,7 +178,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.Password = ""
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, &user, true)
+	h.AuditUserActivity(r, EventAuth, ActionCreate, &user, true)
 	err = httpext.JSON(w, http.StatusOK, model.LoginResponse{
 		ResponseAccessToken: *accessTokenResponse,
 		OnboardingRequired:  model.IsOnboardingRequired(ctx),
@@ -214,7 +215,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 	}
 	userInvite, err := pgClient.GetUserInviteByCode(ctx, code)
 	if errors.Is(err, sql.ErrNoRows) {
-		h.respondError(&userInviteInvalidCodeError, w)
+		h.respondError(&ErruserInviteInvalidCode, w)
 		return
 	} else if err != nil {
 		h.respondError(err, w)
@@ -261,12 +262,13 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.ID = createdUser.ID
-	_, err = user.CreateApiToken(ctx, pgClient, user.RoleID, company)
+	_, err = user.CreateAPIToken(ctx, pgClient, user.RoleID, company)
 	if err != nil {
 		log.Error().Msg("createApiToken: " + err.Error())
 		h.respondError(err, w)
 		return
 	}
+
 	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypePassword)
 	if err != nil {
 		log.Error().Msg("GetAccessToken: " + err.Error())
@@ -275,7 +277,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.Password = ""
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, &user, true)
+	h.AuditUserActivity(r, EventAuth, ActionCreate, &user, true)
 
 	_ = httpext.JSON(w, http.StatusOK, model.LoginResponse{
 		ResponseAccessToken: *accessTokenResponse,
@@ -313,7 +315,8 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 	expiry := utils.GetCurrentDatetime().Add(48 * time.Hour)
 	inviteUserRequest.Email = strings.ToLower(inviteUserRequest.Email)
 	userInvite, err = pgClient.GetUserInviteByEmail(ctx, inviteUserRequest.Email)
-	if errors.Is(err, sql.ErrNoRows) {
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
 		userInvite, err = pgClient.CreateUserInvite(ctx, postgresql_db.CreateUserInviteParams{
 			Email:           inviteUserRequest.Email,
 			Code:            code,
@@ -327,10 +330,10 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 			h.respondError(err, w)
 			return
 		}
-	} else if err != nil {
+	case err != nil:
 		h.respondError(err, w)
 		return
-	} else {
+	default:
 		userInvite, err = pgClient.UpdateUserInvite(ctx, postgresql_db.UpdateUserInviteParams{
 			Code:            code,
 			CreatedByUserID: user.ID,
@@ -345,16 +348,16 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	consoleUrl, err := model.GetManagementConsoleURL(ctx, pgClient)
+	consoleURL, err := model.GetManagementConsoleURL(ctx, pgClient)
 	if err != nil {
 		h.respondError(err, w)
 		return
 	}
-	inviteURL := fmt.Sprintf("%s/auth/invite-accept?invite_code=%s&namespace=%s", consoleUrl, code, user.CompanyNamespace)
+	inviteURL := fmt.Sprintf("%s/auth/invite-accept?invite_code=%s&namespace=%s", consoleURL, code, user.CompanyNamespace)
 	if inviteUserRequest.Action == UserInviteSendEmail {
 		emailSender, err := sendemail.NewEmailSender(ctx)
 		if errors.Is(err, sql.ErrNoRows) {
-			h.respondError(&emailNotConfiguredError, w)
+			h.respondError(&ErrEmailNotConfigured, w)
 			return
 		} else if err != nil {
 			h.respondError(err, w)
@@ -390,7 +393,7 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_INVITE, userInvite, true)
+	h.AuditUserActivity(r, EventAuth, ActionInvite, userInvite, true)
 
 	_ = httpext.JSON(w, http.StatusOK, model.InviteUserResponse{InviteExpiryHours: 48, InviteURL: inviteURL, Message: "Invite sent"})
 }
@@ -442,12 +445,12 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetUserByUserID(w http.ResponseWriter, r *http.Request) {
-	userId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	userID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}
-	user, statusCode, _, err := model.GetUserByID(r.Context(), userId)
+	user, statusCode, _, err := model.GetUserByID(r.Context(), userID)
 	if err != nil {
 		h.respondWithErrorCode(err, w, statusCode)
 		return
@@ -478,7 +481,7 @@ func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 			return
 		}
 		if user.Role == model.AdminRole && activeAdminUsersCount < 2 {
-			h.respondWithErrorCode(deleteLastAdminError, w, http.StatusForbidden)
+			h.respondWithErrorCode(ErrdeleteLastAdmin, w, http.StatusForbidden)
 			return
 		}
 		if isCurrentUser {
@@ -510,7 +513,7 @@ func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 		}
 	}
 	user.Password = ""
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_UPDATE, user, true)
+	h.AuditUserActivity(r, EventAuth, ActionUpdate, user, true)
 	_ = httpext.JSON(w, http.StatusOK, user)
 }
 
@@ -525,13 +528,13 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateUserByUserID(w http.ResponseWriter, r *http.Request) {
-	userId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	userID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	ctx := r.Context()
-	user, statusCode, pgClient, err := model.GetUserByID(ctx, userId)
+	user, statusCode, pgClient, err := model.GetUserByID(ctx, userID)
 	if err != nil {
 		h.respondWithErrorCode(err, w, statusCode)
 		return
@@ -563,13 +566,13 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 		h.respondWithErrorCode(err, w, statusCode)
 		return
 	}
-	if user.Email == constants.DeepfenceCommunityEmailId {
+	if user.Email == constants.DeepfenceCommunityEmailID {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 	passwordValid, err := user.CompareHashAndPassword(ctx, pgClient, req.OldPassword)
 	if err != nil || !passwordValid {
-		h.respondError(&incorrectOldPasswordError, w)
+		h.respondError(&ErrIncorrectOldPassword, w)
 		return
 	}
 	err = user.SetPassword(req.NewPassword)
@@ -583,7 +586,7 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.Password = ""
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_RESET_PASSWORD, user, true)
+	h.AuditUserActivity(r, EventAuth, ActionResetPassword, user, true)
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -595,7 +598,7 @@ func (h *Handler) deleteUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 		return
 	}
 	if user.Role == model.AdminRole && activeAdminUsersCount < 2 {
-		h.respondWithErrorCode(deleteLastAdminError, w, http.StatusForbidden)
+		h.respondWithErrorCode(ErrdeleteLastAdmin, w, http.StatusForbidden)
 		return
 	}
 	err = user.Delete(ctx, pgClient)
@@ -611,7 +614,7 @@ func (h *Handler) deleteUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 	}
 
 	user.Password = ""
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_DELETE, user, true)
+	h.AuditUserActivity(r, EventAuth, ActionDelete, user, true)
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -627,13 +630,13 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteUserByUserID(w http.ResponseWriter, r *http.Request) {
-	userId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	userID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	ctx := r.Context()
-	user, statusCode, pgClient, err := model.GetUserByID(ctx, userId)
+	user, statusCode, pgClient, err := model.GetUserByID(ctx, userID)
 	if err != nil {
 		h.respondWithErrorCode(err, w, statusCode)
 		return
@@ -660,13 +663,13 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	resetPasswordRequest.Email = strings.ToLower(resetPasswordRequest.Email)
-	if resetPasswordRequest.Email == constants.DeepfenceCommunityEmailId {
+	if resetPasswordRequest.Email == constants.DeepfenceCommunityEmailID {
 		_ = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 		return
 	}
 	ctx := directory.NewContextWithNameSpace(directory.FetchNamespace(resetPasswordRequest.Email))
 	user, statusCode, pgClient, err := model.GetUserByEmail(ctx, resetPasswordRequest.Email)
-	if errors.Is(err, model.UserNotFoundErr) {
+	if errors.Is(err, model.ErrUserNotFound) {
 		_ = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 		return
 	} else if err != nil {
@@ -676,7 +679,7 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 
 	emailSender, err := sendemail.NewEmailSender(ctx)
 	if errors.Is(err, sql.ErrNoRows) {
-		h.respondError(&emailNotConfiguredError, w)
+		h.respondError(&ErrEmailNotConfigured, w)
 		return
 	} else if err != nil {
 		h.respondError(err, w)
@@ -697,12 +700,12 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	consoleUrl, err := model.GetManagementConsoleURL(ctx, pgClient)
+	consoleURL, err := model.GetManagementConsoleURL(ctx, pgClient)
 	if err != nil {
 		h.respondError(err, w)
 		return
 	}
-	resetPasswordURL := fmt.Sprintf("%s/auth/reset-password?code=%s&namespace=%s", consoleUrl, resetCode, user.CompanyNamespace)
+	resetPasswordURL := fmt.Sprintf("%s/auth/reset-password?code=%s&namespace=%s", consoleURL, resetCode, user.CompanyNamespace)
 
 	htmlEmail, err := sendemail.RenderEmailTemplate(
 		sendemail.PasswordResetTemplate,
@@ -739,7 +742,7 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_RESET_PASSWORD, resetPasswordRequest, true)
+	h.AuditUserActivity(r, EventAuth, ActionResetPassword, resetPasswordRequest, true)
 
 	_ = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 }
@@ -770,14 +773,14 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 	}
 	passwordReset, err := pgClient.GetPasswordResetByCode(ctx, code)
 	if errors.Is(err, sql.ErrNoRows) {
-		h.respondError(&passwordResetCodeNotFoundError, w)
+		h.respondError(&ErrpasswordResetCodeNotFound, w)
 		return
 	} else if err != nil {
 		h.respondError(err, w)
 		return
 	}
 	user := model.User{ID: passwordReset.UserID}
-	err = user.LoadFromDbByID(ctx, pgClient)
+	err = user.LoadFromDBByID(ctx, pgClient)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -793,11 +796,11 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	user.Password = ""
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_VERIFY_PASSWORD, user, true)
+	h.AuditUserActivity(r, EventAuth, ActionVerifyPassword, user, true)
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *Handler) GetApiTokens(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetAPITokens(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
@@ -809,11 +812,11 @@ func (h *Handler) GetApiTokens(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	apiTokenResponse := make([]model.ApiTokenResponse, len(apiTokens))
+	apiTokenResponse := make([]model.APITokenResponse, len(apiTokens))
 	for i, apiToken := range apiTokens {
-		apiTokenResponse[i] = model.ApiTokenResponse{
+		apiTokenResponse[i] = model.APITokenResponse{
 			ID:              apiToken.ID,
-			ApiToken:        model.GetApiToken(user.CompanyNamespace, apiToken.ApiToken),
+			APIToken:        model.GetAPIToken(user.CompanyNamespace, apiToken.ApiToken),
 			Name:            apiToken.Name,
 			CompanyID:       apiToken.CompanyID,
 			CreatedByUserID: apiToken.CreatedByUserID,
@@ -823,7 +826,7 @@ func (h *Handler) GetApiTokens(w http.ResponseWriter, r *http.Request) {
 	_ = httpext.JSON(w, http.StatusOK, apiTokenResponse)
 }
 
-func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ResetAPIToken(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
@@ -840,7 +843,7 @@ func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	_, err = user.CreateApiToken(ctx, pgClient, user.RoleID, company)
+	_, err = user.CreateAPIToken(ctx, pgClient, user.RoleID, company)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -850,11 +853,11 @@ func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	apiTokenResponse := make([]model.ApiTokenResponse, len(apiTokens))
+	apiTokenResponse := make([]model.APITokenResponse, len(apiTokens))
 	for i, apiToken := range apiTokens {
-		apiTokenResponse[i] = model.ApiTokenResponse{
+		apiTokenResponse[i] = model.APITokenResponse{
 			ID:              apiToken.ID,
-			ApiToken:        model.GetApiToken(user.CompanyNamespace, apiToken.ApiToken),
+			APIToken:        model.GetAPIToken(user.CompanyNamespace, apiToken.ApiToken),
 			Name:            apiToken.Name,
 			CompanyID:       apiToken.CompanyID,
 			CreatedByUserID: apiToken.CreatedByUserID,
@@ -862,7 +865,7 @@ func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	user.Password = ""
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_VERIFY_PASSWORD, user, true)
+	h.AuditUserActivity(r, EventAuth, ActionVerifyPassword, user, true)
 	_ = httpext.JSON(w, http.StatusOK, apiTokenResponse)
 }
 
@@ -871,18 +874,18 @@ func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, i
 	if err != nil {
 		return nil, http.StatusBadRequest, nil, err
 	}
-	userId, err := utils.GetInt64ValueFromInterfaceMap(claims, "user_id")
+	userID, err := utils.GetInt64ValueFromInterfaceMap(claims, "user_id")
 	if err != nil {
 		return nil, http.StatusInternalServerError, nil, err
 	}
-	user, statusCode, pgClient, err := model.GetUserByID(requestContext, userId)
+	user, statusCode, pgClient, err := model.GetUserByID(requestContext, userID)
 	if err != nil {
 		return nil, statusCode, pgClient, err
 	}
 	return user, http.StatusOK, pgClient, nil
 }
 
-func (h *Handler) GetApiTokenForConsoleAgent(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetAPITokenForConsoleAgent(w http.ResponseWriter, r *http.Request) {
 	var ctx context.Context
 	if directory.IsNonSaaSDeployment() {
 		ctx = directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
@@ -900,5 +903,5 @@ func (h *Handler) GetApiTokenForConsoleAgent(w http.ResponseWriter, r *http.Requ
 		h.respondError(err, w)
 		return
 	}
-	_ = httpext.JSON(w, http.StatusOK, model.ApiAuthRequest{ApiToken: model.GetApiToken(string(directory.NonSaaSDirKey), token)})
+	_ = httpext.JSON(w, http.StatusOK, model.APIAuthRequest{APIToken: model.GetAPIToken(string(directory.NonSaaSDirKey), token)})
 }

@@ -13,11 +13,11 @@ import (
 )
 
 func New(ctx context.Context, req model.AddGenerativeAiOpenAIIntegration) (*OpenAI, error) {
-	openApi := OpenAI{ApiKey: req.ApiKey, ModelID: req.ModelID}
-	return &openApi, nil
+	openAPI := OpenAI{APIKey: req.APIKey, ModelID: req.ModelID}
+	return &openAPI, nil
 }
 
-func NewFromDbEntry(ctx context.Context, config json.RawMessage) (*OpenAI, error) {
+func NewFromDBEntry(ctx context.Context, config json.RawMessage) (*OpenAI, error) {
 	var openAiIntegration OpenAI
 	err := json.Unmarshal(config, &openAiIntegration)
 	if err != nil {
@@ -32,18 +32,18 @@ func (o *OpenAI) ValidateConfig(validate *validator.Validate) error {
 
 func (o *OpenAI) EncryptSecret(aes encryption.AES) error {
 	var err error
-	o.ApiKey, err = aes.Encrypt(o.ApiKey)
+	o.APIKey, err = aes.Encrypt(o.APIKey)
 	return err
 }
 
 func (o *OpenAI) DecryptSecret(aes encryption.AES) error {
 	var err error
-	o.ApiKey, err = aes.Decrypt(o.ApiKey)
+	o.APIKey, err = aes.Decrypt(o.APIKey)
 	return err
 }
 
 func (o *OpenAI) Message(ctx context.Context, message string, dataChan chan string) error {
-	client := goopenai.NewClient(o.ApiKey)
+	client := goopenai.NewClient(o.APIKey)
 	req := goopenai.ChatCompletionRequest{
 		Model:       o.ModelID,
 		Messages:    []goopenai.ChatCompletionMessage{{Role: goopenai.ChatMessageRoleUser, Content: message}},

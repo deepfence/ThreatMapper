@@ -74,7 +74,7 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 		return err
 	}
 
-	gzWriter.Write(jsonBytes)
+	_, _ = gzWriter.Write(jsonBytes)
 	gzWriter.Close()
 	// Upload the JSON data to S3
 	svc := s3.New(sess)

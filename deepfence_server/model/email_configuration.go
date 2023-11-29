@@ -13,7 +13,7 @@ import (
 
 type EmailConfigurationSMTP struct {
 	EmailID  string `json:"email_id" validate:"required,email"`
-	Smtp     string `json:"smtp" validate:"required,min=3,max=128"`
+	SMTP     string `json:"smtp" validate:"required,min=3,max=128"`
 	Port     string `json:"port" validate:"required,min=1,max=5,number"`
 	Password string `json:"password" validate:"required,min=3,max=128"`
 }
@@ -29,7 +29,7 @@ type EmailConfigurationAdd struct {
 	EmailProvider   string `json:"email_provider"`
 	CreatedByUserID int64  `json:"created_by_user_id"`
 	EmailID         string `json:"email_id"`
-	Smtp            string `json:"smtp"`
+	SMTP            string `json:"smtp"`
 	Port            string `json:"port"`
 	Password        string `json:"password"`
 	AmazonAccessKey string `json:"amazon_access_key"`
@@ -42,7 +42,7 @@ type EmailConfigurationResp struct {
 	EmailProvider   string `json:"email_provider"`
 	CreatedByUserID int64  `json:"created_by_user_id"`
 	EmailID         string `json:"email_id"`
-	Smtp            string `json:"smtp"`
+	SMTP            string `json:"smtp"`
 	Port            string `json:"port"`
 	SesRegion       string `json:"ses_region"`
 }
@@ -53,14 +53,16 @@ type ConfigIDPathReq struct {
 
 func (e *EmailConfigurationAdd) Create(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	_, err := pgClient.GetSetting(ctx, EmailConfigurationKey)
-	if errors.Is(err, sql.ErrNoRows) {
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
 		// valid case
-	} else if err != nil {
+	case err != nil:
 		log.Error().Msgf(err.Error())
 		return err
-	} else {
+	default:
 		return errors.New("email Configuration already exists")
 	}
+
 	aesValue, err := GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())

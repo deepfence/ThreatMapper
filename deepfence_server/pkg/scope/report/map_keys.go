@@ -98,7 +98,7 @@ const (
 	KubernetesCloneVolumeSnapshot  = "kubernetes_clone_volume_snapshot"
 	KubernetesDeleteVolumeSnapshot = "kubernetes_delete_volume_snapshot"
 	KubernetesDescribe             = "kubernetes_describe"
-	KubernetesClusterId            = "kubernetes_cluster_id"
+	KubernetesClusterID            = "kubernetes_cluster_id"
 	KubernetesClusterName          = "kubernetes_cluster_name"
 	// probe/awsecs
 	ECSCluster             = "ecs_cluster"

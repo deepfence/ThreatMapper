@@ -101,7 +101,7 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_INTEGRATION, ACTION_CREATE, req, true)
+	h.AuditUserActivity(r, EventIntegration, ActionCreate, req, true)
 
 	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationCreated})
 	if err != nil {
@@ -191,7 +191,7 @@ func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 	}
 
-	h.AuditUserActivity(r, EVENT_INTEGRATION, ACTION_DELETE,
+	h.AuditUserActivity(r, EventIntegration, ActionDelete,
 		map[string]interface{}{"integration_id": id}, true)
 
 	w.WriteHeader(http.StatusNoContent)

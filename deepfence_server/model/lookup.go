@@ -29,7 +29,7 @@ func (KubernetesCluster) GetCategory() string {
 	return ""
 }
 
-func (KubernetesCluster) GetJsonCategory() string {
+func (KubernetesCluster) GetJSONCategory() string {
 	return ""
 }
 
@@ -42,7 +42,7 @@ func (kc KubernetesCluster) id() string {
 }
 
 type BasicNode struct {
-	NodeId   string `json:"node_id" required:"true"`
+	NodeID   string `json:"node_id" required:"true"`
 	Name     string `json:"name" required:"true"`
 	NodeType string `json:"node_type" required:"true"`
 	HostName string `json:"host_name" required:"true"`
@@ -50,14 +50,14 @@ type BasicNode struct {
 
 type Connection struct {
 	NodeName string `json:"node_name"`
-	NodeId   string `json:"node_id"`
+	NodeID   string `json:"node_id"`
 	Count    int64  `json:"count"`
 }
 
 type ConnectionQueryResp struct {
-	FromNodeId string `json:"from_node_id"`
+	FromNodeID string `json:"from_node_id"`
 	NodeName   string `json:"node_name"`
-	NodeId     string `json:"node_id"`
+	NodeID     string `json:"node_id"`
 	Count      int64  `json:"count"`
 }
 
@@ -73,7 +73,7 @@ type Host struct {
 	Uptime                    int              `json:"uptime" required:"true"`
 	Version                   string           `json:"version" required:"true"`
 	AgentRunning              bool             `json:"agent_running" required:"true"`
-	IsConsoleVm               bool             `json:"is_console_vm" required:"true"`
+	IsConsoleVM               bool             `json:"is_console_vm" required:"true"`
 	LocalCIDRs                []interface{}    `json:"local_cidr" required:"true"`
 	Os                        string           `json:"os" required:"true"`
 	LocalNetworks             []interface{}    `json:"local_networks" required:"true"`
@@ -84,25 +84,25 @@ type Host struct {
 	PublicIP                  []interface{}    `json:"public_ip" required:"true"`
 	PrivateIP                 []interface{}    `json:"private_ip" required:"true"`
 	AvailabilityZone          string           `json:"availability_zone" required:"true"`
-	KernelId                  string           `json:"kernel_id" required:"true"`
+	KernelID                  string           `json:"kernel_id" required:"true"`
 	CloudRegion               string           `json:"cloud_region" required:"true"`
 	ResourceGroup             string           `json:"resource_group" required:"true"`
-	CpuMax                    float64          `json:"cpu_max" required:"true"`
-	CpuUsage                  float64          `json:"cpu_usage" required:"true"`
+	CPUMax                    float64          `json:"cpu_max" required:"true"`
+	CPUUsage                  float64          `json:"cpu_usage" required:"true"`
 	MemoryMax                 int64            `json:"memory_max" required:"true"`
 	MemoryUsage               int64            `json:"memory_usage" required:"true"`
 	VulnerabilitiesCount      int64            `json:"vulnerabilities_count" required:"true"`
 	VulnerabilityScanStatus   string           `json:"vulnerability_scan_status" required:"true"`
-	VulnerabilityLatestScanId string           `json:"vulnerability_latest_scan_id" required:"true"`
+	VulnerabilityLatestScanID string           `json:"vulnerability_latest_scan_id" required:"true"`
 	SecretsCount              int64            `json:"secrets_count" required:"true"`
 	SecretScanStatus          string           `json:"secret_scan_status" required:"true"`
-	SecretLatestScanId        string           `json:"secret_latest_scan_id" required:"true"`
+	SecretLatestScanID        string           `json:"secret_latest_scan_id" required:"true"`
 	MalwaresCount             int64            `json:"malwares_count" required:"true"`
 	MalwareScanStatus         string           `json:"malware_scan_status" required:"true"`
-	MalwareLatestScanId       string           `json:"malware_latest_scan_id" required:"true"`
+	MalwareLatestScanID       string           `json:"malware_latest_scan_id" required:"true"`
 	CompliancesCount          int64            `json:"compliances_count" required:"true"`
 	ComplianceScanStatus      string           `json:"compliance_scan_status" required:"true"`
-	ComplianceLatestScanId    string           `json:"compliance_latest_scan_id" required:"true"`
+	ComplianceLatestScanID    string           `json:"compliance_latest_scan_id" required:"true"`
 	InboundConnections        []Connection     `json:"inbound_connections" required:"true"`
 	OutboundConnections       []Connection     `json:"outbound_connections" required:"true"`
 }
@@ -119,7 +119,7 @@ func (Host) GetCategory() string {
 	return ""
 }
 
-func (Host) GetJsonCategory() string {
+func (Host) GetJSONCategory() string {
 	return ""
 }
 
@@ -145,7 +145,7 @@ func (RegistryAccount) GetCategory() string {
 	return ""
 }
 
-func (RegistryAccount) GetJsonCategory() string {
+func (RegistryAccount) GetJSONCategory() string {
 	return ""
 }
 
@@ -167,7 +167,7 @@ type Pod struct {
 	Containers                []Container            `json:"containers" required:"true"`
 	Processes                 []Process              `json:"processes" required:"true"`
 	KubernetesClusterName     string                 `json:"kubernetes_cluster_name" required:"true"`
-	KubernetesClusterId       string                 `json:"kubernetes_cluster_id" required:"true"`
+	KubernetesClusterID       string                 `json:"kubernetes_cluster_id" required:"true"`
 	KubernetesState           string                 `json:"kubernetes_state" required:"true"`
 	KubernetesIP              string                 `json:"kubernetes_ip" required:"true"`
 	KubernetesIsInHostNetwork bool                   `json:"kubernetes_is_in_host_network" required:"true"`
@@ -190,7 +190,7 @@ func (Pod) GetCategory() string {
 	return ""
 }
 
-func (Pod) GetJsonCategory() string {
+func (Pod) GetJSONCategory() string {
 	return ""
 }
 
@@ -215,19 +215,19 @@ type Container struct {
 	DockerContainerCreated     string                 `json:"docker_container_created" required:"true"`
 	DockerContainerPorts       string                 `json:"docker_container_ports" required:"true"`
 	Uptime                     int                    `json:"uptime" required:"true"`
-	CpuMax                     float64                `json:"cpu_max" required:"true"`
-	CpuUsage                   float64                `json:"cpu_usage" required:"true"`
+	CPUMax                     float64                `json:"cpu_max" required:"true"`
+	CPUUsage                   float64                `json:"cpu_usage" required:"true"`
 	MemoryMax                  int64                  `json:"memory_max" required:"true"`
 	MemoryUsage                int64                  `json:"memory_usage" required:"true"`
 	VulnerabilitiesCount       int64                  `json:"vulnerabilities_count" required:"true"`
 	VulnerabilityScanStatus    string                 `json:"vulnerability_scan_status" required:"true"`
-	VulnerabilityLatestScanId  string                 `json:"vulnerability_latest_scan_id" required:"true"`
+	VulnerabilityLatestScanID  string                 `json:"vulnerability_latest_scan_id" required:"true"`
 	SecretsCount               int64                  `json:"secrets_count" required:"true"`
 	SecretScanStatus           string                 `json:"secret_scan_status" required:"true"`
-	SecretLatestScanId         string                 `json:"secret_latest_scan_id" required:"true"`
+	SecretLatestScanID         string                 `json:"secret_latest_scan_id" required:"true"`
 	MalwaresCount              int64                  `json:"malwares_count" required:"true"`
 	MalwareScanStatus          string                 `json:"malware_scan_status" required:"true"`
-	MalwareLatestScanId        string                 `json:"malware_latest_scan_id" required:"true"`
+	MalwareLatestScanID        string                 `json:"malware_latest_scan_id" required:"true"`
 }
 
 func (Container) NodeType() string {
@@ -242,7 +242,7 @@ func (Container) GetCategory() string {
 	return ""
 }
 
-func (Container) GetJsonCategory() string {
+func (Container) GetJSONCategory() string {
 	return ""
 }
 
@@ -258,8 +258,8 @@ type Process struct {
 	Command        string  `json:"cmdline" required:"true"`
 	PPID           int     `json:"ppid" required:"true"`
 	ThreadNumber   int     `json:"threads" required:"true"`
-	CpuMax         float64 `json:"cpu_max" required:"true"`
-	CpuUsage       float64 `json:"cpu_usage" required:"true"`
+	CPUMax         float64 `json:"cpu_max" required:"true"`
+	CPUUsage       float64 `json:"cpu_usage" required:"true"`
 	MemoryMax      int64   `json:"memory_max" required:"true"`
 	MemoryUsage    int64   `json:"memory_usage" required:"true"`
 	OpenFilesCount int     `json:"open_files_count" required:"true"`
@@ -277,7 +277,7 @@ func (Process) GetCategory() string {
 	return ""
 }
 
-func (Process) GetJsonCategory() string {
+func (Process) GetJSONCategory() string {
 	return ""
 }
 
@@ -310,7 +310,7 @@ func (IngestedContainerImage) GetCategory() string {
 	return ""
 }
 
-func (IngestedContainerImage) GetJsonCategory() string {
+func (IngestedContainerImage) GetJSONCategory() string {
 	return ""
 }
 
@@ -328,13 +328,13 @@ type ContainerImage struct {
 	Metadata                  map[string]interface{} `json:"metadata" nested_json:"true"`
 	VulnerabilitiesCount      int64                  `json:"vulnerabilities_count" required:"true"`
 	VulnerabilityScanStatus   string                 `json:"vulnerability_scan_status" required:"true"`
-	VulnerabilityLatestScanId string                 `json:"vulnerability_latest_scan_id" required:"true"`
+	VulnerabilityLatestScanID string                 `json:"vulnerability_latest_scan_id" required:"true"`
 	SecretsCount              int64                  `json:"secrets_count" required:"true"`
 	SecretScanStatus          string                 `json:"secret_scan_status" required:"true"`
-	SecretLatestScanId        string                 `json:"secret_latest_scan_id" required:"true"`
+	SecretLatestScanID        string                 `json:"secret_latest_scan_id" required:"true"`
 	MalwaresCount             int64                  `json:"malwares_count" required:"true"`
 	MalwareScanStatus         string                 `json:"malware_scan_status" required:"true"`
-	MalwareLatestScanId       string                 `json:"malware_latest_scan_id" required:"true"`
+	MalwareLatestScanID       string                 `json:"malware_latest_scan_id" required:"true"`
 	Containers                []Container            `json:"containers" required:"true"`
 }
 
@@ -350,7 +350,7 @@ func (ContainerImage) GetCategory() string {
 	return ""
 }
 
-func (ContainerImage) GetJsonCategory() string {
+func (ContainerImage) GetJSONCategory() string {
 	return ""
 }
 
@@ -363,12 +363,12 @@ type CloudResource struct {
 	Name                        string `json:"node_name" required:"true"`
 	Type                        string `json:"node_type" required:"true"`
 	TypeLabel                   string `json:"type_label" required:"true"`
-	AccountId                   string `json:"account_id" required:"true"`
+	AccountID                   string `json:"account_id" required:"true"`
 	CloudProvider               string `json:"cloud_provider" required:"true"`
 	CloudRegion                 string `json:"cloud_region" required:"true"`
 	CloudCompliancesCount       int64  `json:"cloud_compliances_count" required:"true"`
 	CloudComplianceScanStatus   string `json:"cloud_compliance_scan_status" required:"true"`
-	CloudComplianceLatestScanId string `json:"cloud_compliance_latest_scan_id" required:"true"`
+	CloudComplianceLatestScanID string `json:"cloud_compliance_latest_scan_id" required:"true"`
 }
 
 func (CloudResource) NodeType() string {
@@ -379,7 +379,7 @@ func (CloudResource) GetCategory() string {
 	return ""
 }
 
-func (CloudResource) GetJsonCategory() string {
+func (CloudResource) GetJSONCategory() string {
 	return ""
 }
 
@@ -397,7 +397,7 @@ type CloudNode struct {
 	CloudProvider               string `json:"cloud_provider" required:"true"`
 	CloudCompliancesCount       int64  `json:"cloud_compliances_count" required:"true"`
 	CloudComplianceScanStatus   string `json:"cloud_compliance_scan_status" required:"true"`
-	CloudComplianceLatestScanId string `json:"cloud_compliance_latest_scan_id" required:"true"`
+	CloudComplianceLatestScanID string `json:"cloud_compliance_latest_scan_id" required:"true"`
 }
 
 func (CloudNode) NodeType() string {
@@ -408,7 +408,7 @@ func (CloudNode) GetCategory() string {
 	return ""
 }
 
-func (CloudNode) GetJsonCategory() string {
+func (CloudNode) GetJSONCategory() string {
 	return ""
 }
 

@@ -35,17 +35,17 @@ func SearchCountHandler[T reporters.CypherableAndCategorizable](w http.ResponseW
 
 	// Optimize query for counting
 	var dummy T
-	dummy_ff := reporters_search.SearchFilter{
-		InFieldFilter: []string{dummy.GetJsonCategory()},
+	dummyFF := reporters_search.SearchFilter{
+		InFieldFilter: []string{dummy.GetJSONCategory()},
 		Filters:       req.NodeFilter.Filters,
 	}
 
-	dummy_ext_ff := reporters_search.SearchFilter{
-		InFieldFilter: []string{dummy.GetJsonCategory()},
+	dummyExtFF := reporters_search.SearchFilter{
+		InFieldFilter: []string{dummy.GetJSONCategory()},
 		Filters:       req.ExtendedNodeFilter.Filters,
 	}
 
-	entries, err := reporters_search.SearchReport[T](r.Context(), dummy_ff, dummy_ext_ff, req.IndirectFilters, req.Window)
+	entries, err := reporters_search.SearchReport[T](r.Context(), dummyFF, dummyExtFF, req.IndirectFilters, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -95,11 +95,11 @@ func SearchCloudNodeCountHandler[T reporters.CypherableAndCategorizable](w http.
 		return
 	}
 
-	dummy_ff := reporters_search.SearchFilter{
+	dummyFF := reporters_search.SearchFilter{
 		Filters: req.NodeFilter.Filters,
 	}
 
-	entries, err := reporters_search.SearchCloudNodeReport[T](r.Context(), dummy_ff, req.Window)
+	entries, err := reporters_search.SearchCloudNodeReport[T](r.Context(), dummyFF, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -312,7 +312,7 @@ func (h *Handler) SearchCloudComplianceScansCount(w http.ResponseWriter, r *http
 	h.SearchScansCount(w, r, utils.NEO4JCloudComplianceScan)
 }
 
-func (h *Handler) SearchScans(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
+func (h *Handler) SearchScans(w http.ResponseWriter, r *http.Request, scanType utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req reporters_search.SearchScanReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
@@ -321,7 +321,7 @@ func (h *Handler) SearchScans(w http.ResponseWriter, r *http.Request, scan_type 
 		return
 	}
 
-	hosts, err := reporters_search.SearchScansReport(r.Context(), req, scan_type)
+	hosts, err := reporters_search.SearchScansReport(r.Context(), req, scanType)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -334,7 +334,7 @@ func (h *Handler) SearchScans(w http.ResponseWriter, r *http.Request, scan_type 
 	}
 }
 
-func (h *Handler) SearchScansCount(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
+func (h *Handler) SearchScansCount(w http.ResponseWriter, r *http.Request, scanType utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req reporters_search.SearchScanReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
@@ -343,7 +343,7 @@ func (h *Handler) SearchScansCount(w http.ResponseWriter, r *http.Request, scan_
 		return
 	}
 
-	hosts, err := reporters_search.SearchScansReport(r.Context(), req, scan_type)
+	hosts, err := reporters_search.SearchScansReport(r.Context(), req, scanType)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)

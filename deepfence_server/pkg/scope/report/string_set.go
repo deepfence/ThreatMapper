@@ -12,7 +12,7 @@ var emptyStringSet StringSet
 
 // MakeStringSet makes a new StringSet with the given strings.
 func MakeStringSet(strs ...string) StringSet {
-	if len(strs) <= 0 {
+	if len(strs) == 0 {
 		return nil
 	}
 	result := make([]string, len(strs))
@@ -84,9 +84,9 @@ func (s StringSet) Add(strs ...string) StringSet {
 // Second return value is true if the return value is s
 func (s StringSet) Merge(other StringSet) (StringSet, bool) {
 	switch {
-	case len(other) <= 0: // Optimise special case, to avoid allocating
+	case len(other) == 0: // Optimise special case, to avoid allocating
 		return s, true // (note unit test DeepEquals breaks if we don't do this)
-	case len(s) <= 0:
+	case len(s) == 0:
 		return other, false
 	}
 

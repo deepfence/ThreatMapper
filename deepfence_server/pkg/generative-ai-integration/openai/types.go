@@ -12,6 +12,6 @@ const (
 
 type OpenAI struct {
 	common.GenerativeAiIntegrationCommon
-	ApiKey  string `json:"api_key" validate:"required" required:"true"`
+	APIKey  string `json:"api_key" validate:"required" required:"true"`
 	ModelID string `json:"model_id" validate:"required,oneof=gpt-4" required:"true" enum:"gpt-4"`
 }

@@ -42,21 +42,21 @@ func init() {
 	}
 }
 
-type ApiTokenResponse struct {
+type APITokenResponse struct {
 	ID              int64     `json:"id"`
-	ApiToken        string    `json:"api_token"`
+	APIToken        string    `json:"api_token"`
 	Name            string    `json:"name"`
 	CompanyID       int32     `json:"company_id"`
 	CreatedByUserID int64     `json:"created_by_user_id"`
 	CreatedAt       time.Time `json:"created_at"`
 }
 
-func GetApiToken(namespace string, apiToken uuid.UUID) string {
+func GetAPIToken(namespace string, apiToken uuid.UUID) string {
 	return namespace + ":" + apiToken.String()
 }
 
-type ApiToken struct {
-	ApiToken         uuid.UUID `json:"api_token" required:"true"`
+type APIToken struct {
+	APIToken         uuid.UUID `json:"api_token" required:"true"`
 	ID               int64     `json:"id" required:"true"`
 	Name             string    `json:"name" required:"true"`
 	CompanyID        int32     `json:"company_id" required:"true"`
@@ -66,8 +66,8 @@ type ApiToken struct {
 	CompanyNamespace string    `json:"company_namespace" required:"true"`
 }
 
-func (a *ApiToken) GetUser(ctx context.Context, pgClient *postgresqlDb.Queries) (*User, error) {
-	token, err := pgClient.GetApiTokenByToken(ctx, a.ApiToken)
+func (a *APIToken) GetUser(ctx context.Context, pgClient *postgresqlDb.Queries) (*User, error) {
+	token, err := pgClient.GetApiTokenByToken(ctx, a.APIToken)
 	if err != nil {
 		return nil, err
 	}
@@ -87,9 +87,9 @@ func (a *ApiToken) GetUser(ctx context.Context, pgClient *postgresqlDb.Queries) 
 	return &u, nil
 }
 
-func (a *ApiToken) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.ApiToken, error) {
+func (a *APIToken) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.ApiToken, error) {
 	apiToken, err := pgClient.CreateApiToken(ctx, postgresqlDb.CreateApiTokenParams{
-		ApiToken:        a.ApiToken,
+		ApiToken:        a.APIToken,
 		Name:            a.Name,
 		CompanyID:       a.CompanyID,
 		RoleID:          a.RoleID,
@@ -190,8 +190,8 @@ type LoginRequest struct {
 	Password string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
 }
 
-type ApiAuthRequest struct {
-	ApiToken string `json:"api_token" validate:"required,api_token" required:"true"`
+type APIAuthRequest struct {
+	APIToken string `json:"api_token" validate:"required,api_token" required:"true"`
 }
 
 type UserRegisterRequest struct {
@@ -235,7 +235,7 @@ type PasswordResetVerifyRequest struct {
 	Password  string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
 }
 
-type UserIdRequest struct {
+type UserIDRequest struct {
 	ID int64 `path:"id"`
 }
 
@@ -251,7 +251,7 @@ type UpdateUserRequest struct {
 	Role      string `json:"role" validate:"required,oneof=admin standard-user read-only-user" enum:"admin,standard-user,read-only-user"`
 }
 
-type UpdateUserIdRequest struct {
+type UpdateUserIDRequest struct {
 	ID        int64  `path:"id" validate:"required"`
 	FirstName string `json:"first_name" validate:"required,user_name,min=2,max=32"`
 	LastName  string `json:"last_name" validate:"required,user_name,min=2,max=32"`
@@ -303,7 +303,7 @@ func GetUserByID(ctx context.Context, userID int64) (*User, int, *postgresqlDb.Q
 	if err != nil {
 		return nil, 0, nil, err
 	}
-	err = user.LoadFromDbByID(ctx, pgClient)
+	err = user.LoadFromDBByID(ctx, pgClient)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, http.StatusNotFound, pgClient, errors.New(utils.ErrorUserNotFound)
 	} else if err != nil {
@@ -312,7 +312,7 @@ func GetUserByID(ctx context.Context, userID int64) (*User, int, *postgresqlDb.Q
 	return &user, http.StatusOK, pgClient, nil
 }
 
-func (u *User) LoadFromDbByID(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+func (u *User) LoadFromDBByID(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	// Set ID field and load other fields from db
 	var err error
 	var user postgresqlDb.GetUserRow
@@ -341,16 +341,16 @@ func GetUserByEmail(ctx context.Context, email string) (*User, int, *postgresqlD
 	if err != nil {
 		return nil, http.StatusInternalServerError, pgClient, err
 	}
-	err = user.LoadFromDbByEmail(ctx, pgClient)
+	err = user.LoadFromDBByEmail(ctx, pgClient)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, http.StatusNotFound, pgClient, UserNotFoundErr
+		return nil, http.StatusNotFound, pgClient, ErrUserNotFound
 	} else if err != nil {
 		return nil, http.StatusInternalServerError, pgClient, err
 	}
 	return &user, http.StatusOK, pgClient, nil
 }
 
-func (u *User) LoadFromDbByEmail(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+func (u *User) LoadFromDBByEmail(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	// Set email field and load other fields from db
 	var err error
 	var user postgresqlDb.GetUserByEmailRow
@@ -484,9 +484,9 @@ func (u *User) CreateRefreshToken(tokenAuth *jwtauth.JWTAuth, accessTokenID stri
 	return refreshToken, nil
 }
 
-func (u *User) CreateApiToken(ctx context.Context, pgClient *postgresqlDb.Queries, roleID int32, company *Company) (*postgresqlDb.ApiToken, error) {
-	apiToken := ApiToken{
-		ApiToken:        utils.NewUUID(),
+func (u *User) CreateAPIToken(ctx context.Context, pgClient *postgresqlDb.Queries, roleID int32, company *Company) (*postgresqlDb.ApiToken, error) {
+	apiToken := APIToken{
+		APIToken:        utils.NewUUID(),
 		Name:            u.Email,
 		CompanyID:       u.CompanyID,
 		RoleID:          roleID,

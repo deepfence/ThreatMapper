@@ -48,7 +48,7 @@ type FieldsFilters struct {
 	CompareFilters        []CompareFilter `json:"compare_filter" required:"true"`
 }
 
-var severity_fields = map[string]struct{}{"cve_severity": {}, "file_severity": {}, "level": {}}
+var severityFields = map[string]struct{}{"cve_severity": {}, "file_severity": {}, "level": {}}
 
 var (
 	nodeTypeCondition = map[string]bool{
@@ -66,9 +66,9 @@ var (
 func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilter, in bool, isArrayProperty bool) []string {
 	conditions := []string{}
 
-	reverse_operator := ""
+	reverseOperator := ""
 	if !in {
-		reverse_operator = " NOT "
+		reverseOperator = " NOT "
 	}
 	for k, vs := range filter.FieldsValues {
 		if k == "node_type" && nodeTypeCondition[k] {
@@ -76,18 +76,18 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 			for i := range vs {
 				switch vs[i] {
 				case "host":
-					labels = append(labels, fmt.Sprintf("%s%s:Node", reverse_operator, cypherNodeName))
+					labels = append(labels, fmt.Sprintf("%s%s:Node", reverseOperator, cypherNodeName))
 				case "image":
-					labels = append(labels, fmt.Sprintf("%s%s:ContainerImage", reverse_operator, cypherNodeName))
+					labels = append(labels, fmt.Sprintf("%s%s:ContainerImage", reverseOperator, cypherNodeName))
 				case "container_image":
-					labels = append(labels, fmt.Sprintf("%s%s:ContainerImage", reverse_operator, cypherNodeName))
+					labels = append(labels, fmt.Sprintf("%s%s:ContainerImage", reverseOperator, cypherNodeName))
 				case "container":
-					labels = append(labels, fmt.Sprintf("%s%s:Container", reverse_operator, cypherNodeName))
+					labels = append(labels, fmt.Sprintf("%s%s:Container", reverseOperator, cypherNodeName))
 				case "cluster":
-					labels = append(labels, fmt.Sprintf("%s%s:KubernetesCluster", reverse_operator, cypherNodeName))
+					labels = append(labels, fmt.Sprintf("%s%s:KubernetesCluster", reverseOperator, cypherNodeName))
 				case "aws", "gcp", "azure":
-					labels = append(labels, fmt.Sprintf("%s%s:CloudNode", reverse_operator, cypherNodeName))
-					conditions = append(conditions, fmt.Sprintf("%s%s.cloud_provider = '%s' ", reverse_operator, cypherNodeName, vs[i]))
+					labels = append(labels, fmt.Sprintf("%s%s:CloudNode", reverseOperator, cypherNodeName))
+					conditions = append(conditions, fmt.Sprintf("%s%s.cloud_provider = '%s' ", reverseOperator, cypherNodeName, vs[i]))
 				}
 			}
 			if in {
@@ -154,7 +154,7 @@ func formatOrderField(format string, input []OrderSpec, ignoreOrder bool, ignore
 			continue
 		}
 		orderByEntry := ""
-		if _, has := severity_fields[input[i].FieldName]; has && !ignoreSort {
+		if _, has := severityFields[input[i].FieldName]; has && !ignoreSort {
 			fieldName := "severity" + strconv.Itoa(sevSortFieldsNum)
 			sevSortFieldsNum += 1
 			orderByEntry = extractOrderDescFormattedField(fieldName, input[i].Descending && !ignoreOrder)
@@ -169,7 +169,7 @@ func formatOrderField(format string, input []OrderSpec, ignoreOrder bool, ignore
 }
 
 func severityCypherValues(cypherNodeName, field string, num *int) string {
-	if _, has := severity_fields[field]; has {
+	if _, has := severityFields[field]; has {
 		res := `,CASE ` + cypherNodeName + `.` + field + ` WHEN 'low' THEN 0 WHEN 'medium' THEN 1 WHEN 'high' THEN 2 WHEN 'critical' THEN 3 ELSE -1 END AS severity` + strconv.Itoa(*num)
 		*num += 1
 		return res
@@ -177,7 +177,7 @@ func severityCypherValues(cypherNodeName, field string, num *int) string {
 	return ""
 }
 
-func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter, otherNodes []string) string {
+func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter, allNodes []string) string {
 	if len(filter.OrderFields) == 0 {
 		return ""
 	}
@@ -197,16 +197,16 @@ func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter, othe
 		return ""
 	}
 
-	all_nodes := append(otherNodes, cypherNodeName)
+	allNodes = append(allNodes, cypherNodeName)
 
 	var list2 []string
 	sevNum := 0
 	for i, orderby := range list {
 		size := filter.OrderFields[i].Size
 		if size != 0 {
-			list2 = append(list2, fmt.Sprintf(" WITH %s%s ORDER BY %s LIMIT %d ", strings.Join(all_nodes, ","), severityCypherValues(cypherNodeName, filter.OrderFields[i].FieldName, &sevNum), orderby, size))
+			list2 = append(list2, fmt.Sprintf(" WITH %s%s ORDER BY %s LIMIT %d ", strings.Join(allNodes, ","), severityCypherValues(cypherNodeName, filter.OrderFields[i].FieldName, &sevNum), orderby, size))
 		} else {
-			list2 = append(list2, fmt.Sprintf(" WITH %s%s ORDER BY %s ", strings.Join(all_nodes, ","), severityCypherValues(cypherNodeName, filter.OrderFields[i].FieldName, &sevNum), orderby))
+			list2 = append(list2, fmt.Sprintf(" WITH %s%s ORDER BY %s ", strings.Join(allNodes, ","), severityCypherValues(cypherNodeName, filter.OrderFields[i].FieldName, &sevNum), orderby))
 		}
 	}
 
@@ -221,7 +221,7 @@ func orderFilter2CypherWhere(cypherNodeName string, filter OrderFilter) []string
 	return formatOrderField(cypherNodeName+".%s IS NOT NULL", filter.OrderFields, true, true)
 }
 
-func ParseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.Option[FieldsFilters], starts_where_clause bool) string {
+func ParseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.Option[FieldsFilters], startsWhereClause bool) string {
 
 	f, has := filters.Get()
 	if !has {
@@ -246,15 +246,15 @@ func ParseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.O
 		return ""
 	}
 
-	first_clause := " AND "
-	if starts_where_clause {
-		first_clause = " WHERE "
+	firstClause := " AND "
+	if startsWhereClause {
+		firstClause = " WHERE "
 	}
 
-	return fmt.Sprintf("%s %s", first_clause, strings.Join(conditions, " AND "))
+	return fmt.Sprintf("%s %s", firstClause, strings.Join(conditions, " AND "))
 }
 
-func ContainsFilter2CypherWhereConditions(cypherNodeName string, filter ContainsFilter, starts_where_clause bool) string {
+func ContainsFilter2CypherWhereConditions(cypherNodeName string, filter ContainsFilter, startsWhereClause bool) string {
 	if len(filter.FieldsValues) == 0 {
 		return ""
 	}
@@ -265,12 +265,12 @@ func ContainsFilter2CypherWhereConditions(cypherNodeName string, filter Contains
 		return ""
 	}
 
-	first_clause := " AND "
-	if starts_where_clause {
-		first_clause = " WHERE "
+	firstClause := " AND "
+	if startsWhereClause {
+		firstClause = " WHERE "
 	}
 
-	return fmt.Sprintf("%s %s", first_clause, strings.Join(conditions, " AND "))
+	return fmt.Sprintf("%s %s", firstClause, strings.Join(conditions, " AND "))
 }
 
 func FieldFilterCypher(nodeName string, fields []string) string {

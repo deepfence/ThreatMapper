@@ -24,9 +24,9 @@ import (
 )
 
 var (
-	NoEmailRecipientsError = errors.New("no email recipients")
-	NoEmailSubjectError    = errors.New("no email subject")
-	NoEmailBodyError       = errors.New("no email body")
+	ErrNoEmailRecipients = errors.New("no email recipients")
+	ErrNoEmailSubject    = errors.New("no email subject")
+	ErrNoEmailBody       = errors.New("no email body")
 )
 
 type EmailSender interface {
@@ -72,12 +72,13 @@ func (c *emailSenderCommon) getEmailBody(from string, recipients []string, subje
 	buf.WriteString(fmt.Sprintf("To: %s\r\n", strings.Join(recipients, ",")))
 	writer := multipart.NewWriter(buf)
 	boundary := writer.Boundary()
-	if withAttachments {
+	switch {
+	case withAttachments:
 		buf.WriteString(fmt.Sprintf("Content-Type: multipart/mixed; boundary=%s\r\n", boundary))
 		buf.WriteString(fmt.Sprintf("--%s\r\n", boundary))
-	} else if isPlainText {
+	case isPlainText:
 		buf.WriteString("Content-Type: text/plain; charset=utf-8\r\n")
-	} else {
+	default:
 		buf.WriteString("Content-Type: text/html; charset=utf-8\r\n")
 	}
 
@@ -107,13 +108,13 @@ func (c *emailSenderCommon) getEmailBody(from string, recipients []string, subje
 
 func (c *emailSenderCommon) validateSendParams(recipients []string, subject string, text string, html string, attachments map[string][]byte) error {
 	if len(recipients) == 0 {
-		return NoEmailRecipientsError
+		return ErrNoEmailRecipients
 	}
 	if subject == "" {
-		return NoEmailSubjectError
+		return ErrNoEmailSubject
 	}
 	if text == "" && html == "" {
-		return NoEmailBodyError
+		return ErrNoEmailBody
 	}
 	return nil
 }
@@ -192,8 +193,8 @@ func (e *emailSenderSMTP) Send(recipients []string, subject string, text string,
 	}
 
 	err = smtp.SendMail(
-		e.emailConfig.Smtp+":"+e.emailConfig.Port,
-		smtp.PlainAuth("", e.emailConfig.EmailID, e.emailConfig.Password, e.emailConfig.Smtp),
+		e.emailConfig.SMTP+":"+e.emailConfig.Port,
+		smtp.PlainAuth("", e.emailConfig.EmailID, e.emailConfig.Password, e.emailConfig.SMTP),
 		e.emailConfig.EmailID,
 		recipients,
 		e.getEmailBody(e.emailConfig.EmailID, recipients, subject, text, html, attachments),
@@ -218,10 +219,10 @@ func (e *emailSenderSMTP) SendCustom(recipients []string, subject string, text s
 		subject, text, html, attachments)
 
 	// Connect to the SMTP Server
-	servername := e.emailConfig.Smtp + ":" + e.emailConfig.Port
-	host := e.emailConfig.Smtp
+	servername := e.emailConfig.SMTP + ":" + e.emailConfig.Port
+	host := e.emailConfig.SMTP
 
-	auth := smtp.PlainAuth("", e.emailConfig.EmailID, e.emailConfig.Password, e.emailConfig.Smtp)
+	auth := smtp.PlainAuth("", e.emailConfig.EmailID, e.emailConfig.Password, e.emailConfig.SMTP)
 
 	// TLS config
 	tlsconfig := &tls.Config{

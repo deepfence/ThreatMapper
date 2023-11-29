@@ -39,7 +39,7 @@ func (d *RegistryGCR) IsValidCredential() bool {
 		return false
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.SetBasicAuth("_json_key", d.Extras.ServiceAccountJson)
+	req.SetBasicAuth("_json_key", d.Extras.ServiceAccountJSON)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -57,31 +57,31 @@ func (d *RegistryGCR) IsValidCredential() bool {
 
 func (d *RegistryGCR) EncryptSecret(aes encryption.AES) error {
 	var err error
-	d.Secret.PrivateKeyId, err = aes.Encrypt(d.Secret.PrivateKeyId)
+	d.Secret.PrivateKeyID, err = aes.Encrypt(d.Secret.PrivateKeyID)
 	return err
 }
 
 func (d *RegistryGCR) DecryptSecret(aes encryption.AES) error {
 	var err error
-	d.Secret.PrivateKeyId, err = aes.Decrypt(d.Secret.PrivateKeyId)
+	d.Secret.PrivateKeyID, err = aes.Decrypt(d.Secret.PrivateKeyID)
 	return err
 }
 
 func (d *RegistryGCR) EncryptExtras(aes encryption.AES) error {
 	var err error
-	d.Extras.ServiceAccountJson, err = aes.Encrypt(d.Extras.ServiceAccountJson)
+	d.Extras.ServiceAccountJSON, err = aes.Encrypt(d.Extras.ServiceAccountJSON)
 	return err
 }
 
 func (d *RegistryGCR) DecryptExtras(aes encryption.AES) error {
 	var err error
-	d.Extras.ServiceAccountJson, err = aes.Decrypt(d.Extras.ServiceAccountJson)
+	d.Extras.ServiceAccountJSON, err = aes.Decrypt(d.Extras.ServiceAccountJSON)
 	return err
 }
 
 func (d *RegistryGCR) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
-	return listImagesRegistryV2(d.NonSecret.RegistryURL, d.NonSecret.ProjectId,
-		"_json_key", d.Extras.ServiceAccountJson)
+	return listImagesRegistryV2(d.NonSecret.RegistryURL, d.NonSecret.ProjectID,
+		"_json_key", d.Extras.ServiceAccountJSON)
 }
 
 // getters
@@ -114,7 +114,7 @@ func (d *RegistryGCR) GetExtras() map[string]interface{} {
 }
 
 func (d *RegistryGCR) GetNamespace() string {
-	return d.NonSecret.ProjectId
+	return d.NonSecret.ProjectID
 }
 
 func (d *RegistryGCR) GetRegistryType() string {

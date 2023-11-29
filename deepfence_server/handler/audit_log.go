@@ -19,35 +19,35 @@ import (
 )
 
 const (
-	EVENT_COMPLIANCE_SCAN           = string(utils.NEO4JComplianceScan)
-	EVENT_VULNERABILITY_SCAN        = string(utils.NEO4JVulnerabilityScan)
-	EVENT_SECRET_SCAN               = string(utils.NEO4JSecretScan)
-	EVENT_MALWARE_SCAN              = string(utils.NEO4JMalwareScan)
-	EVENT_INTEGRATION               = "integration"
-	EVENT_GENERATIVE_AI_INTEGRATION = "generative-ai-integration"
-	EVENT_AUTH                      = "auth"
-	EVENT_REPORTS                   = "reports"
-	EVENT_SETTINGS                  = "settings"
-	EVENT_REGISTRY                  = "registry"
-	ACTION_START                    = "start"
-	ACTION_STOP                     = "stop"
-	ACTION_LOGOUT                   = "logout"
-	ACTION_LOGIN                    = "login"
-	ACTION_INVITE                   = "invite"
-	ACTION_INTERRUPT                = "interrupt"
-	ACTION_CREATE                   = "create"
-	ACTION_UPDATE                   = "update"
-	ACTION_DELETE                   = "delete"
-	ACTION_ENABLE                   = "enable"
-	ACTION_DISABLE                  = "disable"
-	ACTION_BULK                     = "bulk"
-	ACTION_DOWNLOAD                 = "download"
-	ACTION_NOTIFY                   = "notify"
-	ACTION_RESET_PASSWORD           = "reset_password"
-	ACTION_VERIFY_PASSWORD          = "verify_password"
-	ACTION_RESET_TOKEN              = "reset_token"
-	ACTION_TOKEN_AUTH               = "token_auth"
-	ACTION_LOGS                     = "logs"
+	EventComplianceScan          = string(utils.NEO4JComplianceScan)
+	EventVulnerabilityScan       = string(utils.NEO4JVulnerabilityScan)
+	EventSecretScan              = string(utils.NEO4JSecretScan)
+	EventMalwareScan             = string(utils.NEO4JMalwareScan)
+	EventIntegration             = "integration"
+	EventGenerativeAIIntegration = "generative-ai-integration"
+	EventAuth                    = "auth"
+	EventReports                 = "reports"
+	EventSettings                = "settings"
+	EventRegistry                = "registry"
+	ActionStart                  = "start"
+	ActionStop                   = "stop"
+	ActionLogout                 = "logout"
+	ActionLogin                  = "login"
+	ActionInvite                 = "invite"
+	ActionInterrupt              = "interrupt"
+	ActionCreate                 = "create"
+	ActionUpdate                 = "update"
+	ActionDelete                 = "delete"
+	ActionEnable                 = "enable"
+	ActionDisable                = "disable"
+	ActionBulk                   = "bulk"
+	ActionDownload               = "download"
+	ActionNotify                 = "notify"
+	ActionResetPassword          = "reset_password"
+	ActionVerifyPassword         = "verify_password"
+	ActionResetToken             = "reset_token"
+	ActionTokenAuth              = "token_auth"
+	ActionLogs                   = "logs"
 )
 
 func GetTokenFromRequest(ja *jwtauth.JWTAuth, r *http.Request) (jwt.Token, error) {
@@ -102,7 +102,7 @@ func (h *Handler) AuditUserActivity(
 		namespace = claims[directory.NamespaceKey].(string)
 	}
 
-	if event == EVENT_AUTH && (action == ACTION_LOGIN || action == ACTION_TOKEN_AUTH || action == ACTION_CREATE) {
+	if event == EventAuth && (action == ActionLogin || action == ActionTokenAuth || action == ActionCreate) {
 		user := resources.(*model.User)
 		userEmail = user.Email
 		userRole = user.Role
@@ -212,7 +212,7 @@ func (h *Handler) GetAuditLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(auditLogs) == 0 {
-		//This is to handle when there's no data in DB
+		// This is to handle when there's no data in DB
 		auditLogs = make([]postgresql_db.GetAuditLogsRow, 0)
 	}
 

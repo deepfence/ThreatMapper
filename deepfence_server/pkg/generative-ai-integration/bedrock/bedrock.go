@@ -24,7 +24,7 @@ func New(ctx context.Context, req model.AddGenerativeAiBedrockIntegration) (*Bed
 	return &bedrockIntegration, nil
 }
 
-func NewFromDbEntry(ctx context.Context, config json.RawMessage) (*Bedrock, error) {
+func NewFromDBEntry(ctx context.Context, config json.RawMessage) (*Bedrock, error) {
 	var bedrockIntegration Bedrock
 	err := json.Unmarshal(config, &bedrockIntegration)
 	if err != nil {

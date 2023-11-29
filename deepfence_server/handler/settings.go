@@ -20,13 +20,13 @@ import (
 )
 
 var (
-	invalidIdError = ValidatorError{
+	errInvalidID = ValidatorError{
 		err: errors.New("id:invalid id"), skipOverwriteErrorMessage: true}
-	invalidUrlError = ValidatorError{
+	errInvalidURL = ValidatorError{
 		err: errors.New("value:invalid url"), skipOverwriteErrorMessage: true}
-	invalidIntegerError = ValidatorError{
+	errInvalidInteger = ValidatorError{
 		err: errors.New("value:must be integer"), skipOverwriteErrorMessage: true}
-	invalidEmailConfigTypeError = ValidatorError{
+	errInvalidEmailConfigType = ValidatorError{
 		err: fmt.Errorf("email_provider:must be %s or %s", model.EmailSettingSMTP, model.EmailSettingSES), skipOverwriteErrorMessage: true}
 )
 
@@ -39,22 +39,23 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}
-	if req.EmailProvider == model.EmailSettingSMTP {
+	switch req.EmailProvider {
+	case model.EmailSettingSMTP:
 		err = h.Validator.Struct(model.EmailConfigurationSMTP{
 			EmailID:  req.EmailID,
-			Smtp:     req.Smtp,
+			SMTP:     req.SMTP,
 			Port:     req.Port,
 			Password: req.Password,
 		})
-	} else if req.EmailProvider == model.EmailSettingSES {
+	case model.EmailSettingSES:
 		err = h.Validator.Struct(model.EmailConfigurationSES{
 			EmailID:         req.EmailID,
 			AmazonAccessKey: req.AmazonAccessKey,
 			AmazonSecretKey: req.AmazonSecretKey,
 			SesRegion:       req.SesRegion,
 		})
-	} else {
-		h.respondError(&invalidEmailConfigTypeError, w)
+	default:
+		h.respondError(&errInvalidEmailConfigType, w)
 		return
 	}
 	if err != nil {
@@ -83,7 +84,7 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 	req.Password = ""
 	req.AmazonAccessKey = ""
 	req.AmazonSecretKey = ""
-	h.AuditUserActivity(r, EVENT_SETTINGS, ACTION_CREATE, req, true)
+	h.AuditUserActivity(r, EventSettings, ActionCreate, req, true)
 	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessEmailConfigCreated})
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -132,18 +133,18 @@ func (h *Handler) DeleteEmailConfiguration(w http.ResponseWriter, r *http.Reques
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
-	configId, err := strconv.ParseInt(chi.URLParam(r, "config_id"), 10, 64)
+	configID, err := strconv.ParseInt(chi.URLParam(r, "config_id"), 10, 64)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
-	err = pgClient.DeleteSettingByID(ctx, configId)
+	err = pgClient.DeleteSettingByID(ctx, configID)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
-	h.AuditUserActivity(r, EVENT_SETTINGS, ACTION_DELETE,
-		map[string]interface{}{"config_id": configId}, true)
+	h.AuditUserActivity(r, EventSettings, ActionDelete,
+		map[string]interface{}{"config_id": configID}, true)
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -172,7 +173,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	settingId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	settingID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		h.respondError(&BadDecoding{err}, w)
 		return
@@ -184,7 +185,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	req.ID = settingId
+	req.ID = settingID
 	err = h.Validator.Struct(req)
 	if err != nil {
 		h.respondError(&ValidatorError{err: err}, w)
@@ -196,24 +197,26 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if req.ID != currentSettings.ID {
-		h.respondError(&invalidIdError, w)
+		h.respondError(&errInvalidID, w)
 		return
 	}
 	var value interface{}
 	switch currentSettings.Key {
 	case model.ConsoleURLSettingKey:
-		var parsedUrl *url.URL
-		if parsedUrl, err = url.ParseRequestURI(strings.TrimSpace(req.Value)); err != nil {
-			h.respondError(&invalidUrlError, w)
+		var parsedURL *url.URL
+		if parsedURL, err = url.ParseRequestURI(strings.TrimSpace(req.Value)); err != nil {
+			h.respondError(&errInvalidURL, w)
 			return
 		}
-		value = parsedUrl.Scheme + "://" + parsedUrl.Host
+		value = parsedURL.Scheme + "://" + parsedURL.Host
 	case model.InactiveNodesDeleteScanResultsKey:
 		value, err = strconv.ParseInt(strings.TrimSpace(req.Value), 10, 64)
 		if err != nil {
-			h.respondError(&invalidIntegerError, w)
+			h.respondError(&errInvalidInteger, w)
 			return
 		}
+	default:
+		value = req.Value
 	}
 	setting := model.Setting{
 		ID:  req.ID,
@@ -223,13 +226,13 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 			Value:       value,
 			Description: currentSettings.Value.Description,
 		},
-		IsVisibleOnUi: currentSettings.IsVisibleOnUi,
+		IsVisibleOnUI: currentSettings.IsVisibleOnUI,
 	}
 	err = setting.Update(ctx, pgClient)
 	if err != nil {
 		h.respondError(err, w)
 		return
 	}
-	h.AuditUserActivity(r, EVENT_SETTINGS, ACTION_UPDATE, setting, true)
+	h.AuditUserActivity(r, EventSettings, ActionUpdate, setting, true)
 	w.WriteHeader(http.StatusNoContent)
 }

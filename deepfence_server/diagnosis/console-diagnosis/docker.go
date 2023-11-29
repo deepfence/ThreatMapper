@@ -1,4 +1,4 @@
-package console_diagnosis
+package console_diagnosis //nolint:stylecheck
 
 import (
 	"archive/tar"
@@ -131,8 +131,8 @@ func (d *DockerConsoleDiagnosisHandler) getContainers(ctx context.Context, optio
 	return containers
 }
 
-func (d *DockerConsoleDiagnosisHandler) CopyFromContainer(ctx context.Context, containerId string, containerName string, srcPath string, zipWriter *zip.Writer) error {
-	tarStream, _, err := d.dockerCli.CopyFromContainer(ctx, containerId, srcPath)
+func (d *DockerConsoleDiagnosisHandler) CopyFromContainer(ctx context.Context, containerID string, containerName string, srcPath string, zipWriter *zip.Writer) error {
+	tarStream, _, err := d.dockerCli.CopyFromContainer(ctx, containerID, srcPath)
 	if err != nil {
 		return err
 	}

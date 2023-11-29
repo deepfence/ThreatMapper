@@ -157,13 +157,13 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.Vulnerability](
-			ctx, sdkUtils.NEO4JVulnerabilityScan, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4JVulnerabilityScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
-			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
+			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
 		sort.Slice(result[:], func(i, j int) bool {
-			return result[i].Cve_severity < result[j].Cve_severity
+			return result[i].CveSeverity < result[j].CveSeverity
 		})
 		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
 		nodeWiseData.ScanData[s.NodeName] = ScanData[model.Vulnerability]{
@@ -208,13 +208,13 @@ func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParam
 	nodeWiseData.ScanData[nodeKey] = ScanData[model.Vulnerability]{ScanResults: entries}
 	sevMap := nodeWiseData.SeverityCount[nodeKey]
 	for _, entry := range entries {
-		count, present := sevMap[entry.Cve_severity]
+		count, present := sevMap[entry.CveSeverity]
 		if !present {
 			count = 1
 		} else {
 			count += 1
 		}
-		sevMap[entry.Cve_severity] = count
+		sevMap[entry.CveSeverity] = count
 	}
 
 	data := Info[model.Vulnerability]{
@@ -264,9 +264,9 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.Secret](
-			ctx, sdkUtils.NEO4JSecretScan, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4JSecretScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
-			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
+			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
 		sort.Slice(result[:], func(i, j int) bool {
@@ -325,9 +325,9 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.Malware](
-			ctx, sdkUtils.NEO4JMalwareScan, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4JMalwareScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
-			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
+			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
 		sort.Slice(result[:], func(i, j int) bool {
@@ -386,9 +386,9 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.Compliance](
-			ctx, sdkUtils.NEO4JComplianceScan, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4JComplianceScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
-			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
+			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
 		sort.Slice(result[:], func(i, j int) bool {
@@ -448,9 +448,9 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.CloudCompliance](
-			ctx, sdkUtils.NEO4JCloudComplianceScan, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4JCloudComplianceScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
-			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
+			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
 		sort.Slice(result[:], func(i, j int) bool {

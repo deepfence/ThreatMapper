@@ -1,4 +1,4 @@
-package reporters_search
+package reporters_search //nolint:stylecheck
 
 import (
 	"testing"
@@ -17,7 +17,7 @@ func TestIndirectFilters(t *testing.T) {
 			},
 		},
 		Window: model.FetchWindow{},
-		},
+	},
 		SearchFilter{
 			InFieldFilter: []string{},
 			Filters:       reporters.FieldsFilters{},

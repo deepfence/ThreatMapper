@@ -26,7 +26,7 @@ type Config struct {
 type Payload struct {
 	Parse       string `json:"parse,omitempty"`
 	Username    string `json:"username,omitempty"`
-	IconUrl     string `json:"icon_url,omitempty"`
+	IconURL     string `json:"icon_url,omitempty"`
 	IconEmoji   string `json:"icon_emoji,omitempty"`
 	Channel     string `json:"channel,omitempty"`
 	Text        string `json:"text,omitempty"`

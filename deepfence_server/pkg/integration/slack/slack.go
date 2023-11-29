@@ -39,41 +39,41 @@ func (s Slack) FormatMessage(message []map[string]interface{}, index int) []map[
 
 		switch s.Resource {
 		case "Malware":
-			fileSeverity, ok := v["file_severity"].(string)
-			if ok {
-				if fileSeverity == "critical" {
+			if fileSeverity, ok := v["file_severity"].(string); ok {
+				switch fileSeverity {
+				case "critical":
 					emojiColor = ":large_red_square:" // Red color for high severity
-				} else if fileSeverity == "high" {
+				case "high":
 					emojiColor = ":large_orange_square:" // Orange color for medium severity
-				} else if fileSeverity == "medium" {
+				case "medium":
 					emojiColor = ":large_yellow_square:" // Dark green color for low severity
-				} else if fileSeverity == "low" {
+				case "low":
 					emojiColor = ":large_blue_square:" // Dark green color for low severity
 				}
 			}
 		case "Secret":
-			level, ok := v["level"].(string)
-			if ok {
-				if level == "critical" {
+			if level, ok := v["level"].(string); ok {
+				switch level {
+				case "critical":
 					emojiColor = ":large_red_square:" // Red color for high level
-				} else if level == "high" {
+				case "high":
 					emojiColor = ":large_orange_square:" // Orange color for medium level
-				} else if level == "medium" {
+				case "medium":
 					emojiColor = ":large_yellow_square:" // Dark green color for low level
-				} else if level == "low" {
+				case "low":
 					emojiColor = ":large_blue_square:" // Dark green color for low level
 				}
 			}
 		case "Vulnerability":
-			cveSeverity, ok := v["cve_severity"].(string)
-			if ok {
-				if cveSeverity == "critical" {
+			if cveSeverity, ok := v["cve_severity"].(string); ok {
+				switch cveSeverity {
+				case "critical":
 					emojiColor = ":large_red_square:" // Red color for high CVE severity
-				} else if cveSeverity == "high" {
+				case "high":
 					emojiColor = ":large_orange_square:" // Orange color for medium CVE severity
-				} else if cveSeverity == "medium" {
+				case "medium":
 					emojiColor = ":large_yellow_square:" // Dark green color for low CVE severity
-				} else if cveSeverity == "low" {
+				case "low":
 					emojiColor = ":large_blue_square:" // Dark green color for low CVE severity
 				}
 			}
@@ -85,9 +85,10 @@ func (s Slack) FormatMessage(message []map[string]interface{}, index int) []map[
 
 		for key, val := range v {
 			// text shouldn't be more than 3000 characters
-			if key == "file_severity" || key == "level" || key == "cve_severity" {
+			switch {
+			case key == "file_severity" || key == "level" || key == "cve_severity":
 				text = fmt.Sprintf("%s\n*%s*: %s %v", text, key, emojiColor, val)
-			} else if key == "urls" {
+			case key == "urls":
 				// check if urls is a list
 				urls, ok := val.([]interface{})
 				if ok {
@@ -99,10 +100,9 @@ func (s Slack) FormatMessage(message []map[string]interface{}, index int) []map[
 				} else {
 					text = fmt.Sprintf("%s\n*%s*: %v", text, key, val)
 				}
-			} else {
+			default:
 				text = fmt.Sprintf("%s\n*%s*: %v", text, key, val)
 			}
-
 		}
 
 		blocks = append(blocks, map[string]interface{}{

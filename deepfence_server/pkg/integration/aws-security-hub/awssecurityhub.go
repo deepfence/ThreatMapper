@@ -19,7 +19,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-const MAX_FINDINGS_PER_BATCH = 100
+const MaxFindingsPerBatch = 100
 
 var compAsff = map[string]string{
 	"hipaa": "Software and Configuration Checks/Industry and Regulatory Standards/HIPAA Controls (USA)",
@@ -103,8 +103,8 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 
 	// Split the JSON data into batches of 100
 	var batches []*securityhub.BatchImportFindingsInput
-	for i := 0; i < len(fs.Findings); i += MAX_FINDINGS_PER_BATCH {
-		end := i + MAX_FINDINGS_PER_BATCH
+	for i := 0; i < len(fs.Findings); i += MaxFindingsPerBatch {
+		end := i + MaxFindingsPerBatch
 		if end > len(fs.Findings) {
 			end = len(fs.Findings)
 		}
@@ -154,7 +154,7 @@ func getResourceForVulnerability(ctx context.Context, scanID, region, accountID 
 	}
 	defer tx.Close()
 
-	//query for Host/Node
+	// query for Host/Node
 	query := `MATCH (m:VulnerabilityScan{node_id: $id})-[:SCHEDULED|SCANNED]->(o:Node) WHERE o.pseudo <> true RETURN o.cloud_provider as cp, o.instance_id as instanceID, o.cloud_account_id as cloudAccountID`
 	vars := map[string]interface{}{"id": scanID}
 	r, err := tx.Run(query, vars)
@@ -244,7 +244,7 @@ func getResourceForCompliance(ctx context.Context, scanID, region, accountID str
 	}
 	defer tx.Close()
 
-	//query for Host/Node
+	// query for Host/Node
 	query := `MATCH (m:ComplianceScan{node_id: $id})-[:SCHEDULED|SCANNED]->(o:Node) WHERE o.pseudo <> true RETURN o.cloud_provider as cp, o.instance_id as instanceID, o.cloud_account_id as cloudAccountID`
 	vars := map[string]interface{}{"id": scanID}
 	r, err := tx.Run(query, vars)
@@ -288,7 +288,7 @@ func (a AwsSecurityHub) mapPayloadToFindings(msg []map[string]interface{}, resou
 			if !found {
 				accID = accountID
 			}
-			if !utils.InSlice(accID.(string), a.Config.AWSAccountId) {
+			if !utils.InSlice(accID.(string), a.Config.AWSAccountID) {
 				fmt.Println("Skipping result as not in list of selected account IDs:", accID)
 				continue
 			}
@@ -297,10 +297,10 @@ func (a AwsSecurityHub) mapPayloadToFindings(msg []map[string]interface{}, resou
 			var pkgName, pkgVersion string
 			pkgNameWithVersion, ok := m["cve_caused_by_package"].(string)
 			if ok {
-				package_split := strings.Split(pkgNameWithVersion, ":")
-				if len(package_split) > 1 {
-					pkgName = package_split[0]
-					pkgVersion = package_split[1]
+				packageSplit := strings.Split(pkgNameWithVersion, ":")
+				if len(packageSplit) > 1 {
+					pkgName = packageSplit[0]
+					pkgVersion = packageSplit[1]
 				}
 			}
 			updatedAt, ok := m["updated_at"].(int64)
@@ -342,7 +342,7 @@ func (a AwsSecurityHub) mapPayloadToFindings(msg []map[string]interface{}, resou
 			finding.SetTitle(m["cve_id"].(string))
 			finding.SetDescription(cveDescription)
 			finding.SetGeneratorId("deepfence-vulnerability-mapper-v2-0")
-			finding.SetId(fmt.Sprintf("%s/%s/%s", a.Config.AWSRegion, a.Config.AWSAccountId, m["cve_id"].(string)))
+			finding.SetId(fmt.Sprintf("%s/%s/%s", a.Config.AWSRegion, a.Config.AWSAccountID, m["cve_id"].(string)))
 			finding.SetResources(resource)
 			finding.SetSchemaVersion("2018-10-08")
 			finding.SetSeverity(&securityhub.Severity{
@@ -369,7 +369,7 @@ func (a AwsSecurityHub) mapPayloadToFindings(msg []map[string]interface{}, resou
 			if !found {
 				accID = accountID
 			}
-			if !utils.InSlice(accID.(string), a.Config.AWSAccountId) {
+			if !utils.InSlice(accID.(string), a.Config.AWSAccountID) {
 				fmt.Println("Skipping result as not in list of selected account IDs:", accID)
 				continue
 			}
@@ -408,7 +408,7 @@ func (a AwsSecurityHub) mapPayloadToFindings(msg []map[string]interface{}, resou
 			finding.SetTitle(m["test_category"].(string))
 			finding.SetDescription(compDescription)
 			finding.SetGeneratorId("deepfence-compliance-v2-0")
-			finding.SetId(fmt.Sprintf("%s/%s/%s", a.Config.AWSRegion, a.Config.AWSAccountId, m["node_id"].(string)))
+			finding.SetId(fmt.Sprintf("%s/%s/%s", a.Config.AWSRegion, a.Config.AWSAccountID, m["node_id"].(string)))
 			finding.SetResources(resource)
 			finding.SetSchemaVersion("2018-10-08")
 			finding.SetSeverity(&securityhub.Severity{
