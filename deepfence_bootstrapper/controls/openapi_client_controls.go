@@ -94,7 +94,7 @@ func (ct *ControlsClient) API() *client.APIClient {
 	return ct.client.Client()
 }
 
-func (ct *ControlsClient) StartControlsWatching(nodeId string, isClusterAgent bool) error {
+func (ct *ControlsClient) StartControlsWatching(nodeId string, isClusterAgent bool, nodeType string) error {
 	if isClusterAgent {
 
 	} else {
@@ -104,6 +104,7 @@ func (ct *ControlsClient) StartControlsWatching(nodeId string, isClusterAgent bo
 				getMaxAllocatable(),
 				nodeId,
 				version,
+				nodeType,
 			),
 		)
 		ctl, _, err := ct.API().ControlsAPI.GetAgentInitControlsExecute(req)
