@@ -135,7 +135,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 
   const advanced_report_filters: {
     masked?: boolean[];
-    account_id?: string[];
+    node_id?: string[];
     host_name?: string[];
     image_name?: string[];
     container_name?: string[];
@@ -144,7 +144,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     scan_status?: string[];
   } = {};
   if (accountIds.length > 0) {
-    advanced_report_filters.account_id = accountIds as string[];
+    advanced_report_filters.node_id = accountIds as string[];
   }
 
   if (hostIds.length > 0) {
