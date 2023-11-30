@@ -24,12 +24,6 @@ export interface UtilsAdvancedReportFilters {
      * @type {Array<string>}
      * @memberof UtilsAdvancedReportFilters
      */
-    account_id?: Array<string>;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof UtilsAdvancedReportFilters
-     */
     container_name?: Array<string>;
     /**
      * 
@@ -55,6 +49,12 @@ export interface UtilsAdvancedReportFilters {
      * @memberof UtilsAdvancedReportFilters
      */
     masked?: Array<boolean>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof UtilsAdvancedReportFilters
+     */
+    node_id?: Array<string>;
     /**
      * 
      * @type {Array<string>}
@@ -88,12 +88,12 @@ export function UtilsAdvancedReportFiltersFromJSONTyped(json: any, ignoreDiscrim
     }
     return {
         
-        'account_id': !exists(json, 'account_id') ? undefined : json['account_id'],
         'container_name': !exists(json, 'container_name') ? undefined : json['container_name'],
         'host_name': !exists(json, 'host_name') ? undefined : json['host_name'],
         'image_name': !exists(json, 'image_name') ? undefined : json['image_name'],
         'kubernetes_cluster_name': !exists(json, 'kubernetes_cluster_name') ? undefined : json['kubernetes_cluster_name'],
         'masked': !exists(json, 'masked') ? undefined : json['masked'],
+        'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
         'pod_name': !exists(json, 'pod_name') ? undefined : json['pod_name'],
         'scan_status': !exists(json, 'scan_status') ? undefined : json['scan_status'],
     };
@@ -108,12 +108,12 @@ export function UtilsAdvancedReportFiltersToJSON(value?: UtilsAdvancedReportFilt
     }
     return {
         
-        'account_id': value.account_id,
         'container_name': value.container_name,
         'host_name': value.host_name,
         'image_name': value.image_name,
         'kubernetes_cluster_name': value.kubernetes_cluster_name,
         'masked': value.masked,
+        'node_id': value.node_id,
         'pod_name': value.pod_name,
         'scan_status': value.scan_status,
     };
