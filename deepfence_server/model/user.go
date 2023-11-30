@@ -350,6 +350,18 @@ func GetUserByEmail(ctx context.Context, email string) (*User, int, *postgresqlD
 	return &user, http.StatusOK, pgClient, nil
 }
 
+func IsFreshSetup(ctx context.Context) (bool, error) {
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return false, err
+	}
+	uc, err := pgClient.CountUsers(ctx)
+	if err != nil {
+		return false, err
+	}
+	return uc == 0, nil
+}
+
 func (u *User) LoadFromDBByEmail(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	// Set email field and load other fields from db
 	var err error
