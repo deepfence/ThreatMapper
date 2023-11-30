@@ -256,6 +256,18 @@ func ToMap[T any](c T) map[string]interface{} {
 	return bb
 }
 
+func Base64RawDecode(s string) (string, error) {
+	decodedStr, err := base64.RawStdEncoding.DecodeString(s)
+	if err != nil {
+		return s, err
+	}
+	return string(decodedStr), nil
+}
+
+func Base64RawEncode(s string) string {
+	return base64.RawStdEncoding.EncodeToString([]byte(s))
+}
+
 // FromMap Convert map[string]interface{} into structs
 // e.g:
 //

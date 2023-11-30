@@ -34,6 +34,7 @@ func (h *Handler) APIAuthHandler(w http.ResponseWriter, r *http.Request) {
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}
+	apiAuthRequest.APIToken, _ = utils.Base64RawDecode(apiAuthRequest.APIToken)
 	err = h.Validator.Struct(apiAuthRequest)
 	if err != nil {
 		h.respondError(&ValidatorError{err: err}, w)
