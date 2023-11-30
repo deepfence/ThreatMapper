@@ -355,12 +355,12 @@ func IsFreshSetup(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	_, err = pgClient.GetUsers(ctx)
+	uc, err := pgClient.CountUsers(ctx)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return true, nil
-		}
 		return false, err
+	}
+	if uc == 0 {
+		return true, nil
 	}
 	return false, nil
 }
