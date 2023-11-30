@@ -423,9 +423,13 @@ const Filters = () => {
             })}
         </Combobox>
         <Combobox
-          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
-            return groupStatus.value === searchParams.get('secretScanStatus');
-          })}
+          value={
+            searchParams.get('secretScanStatus')?.length
+              ? SCAN_STATUS_GROUPS.find((groupStatus) => {
+                  return groupStatus.value === searchParams.get('secretScanStatus');
+                })
+              : null
+          }
           nullable
           onQueryChange={(query) => {
             setSecretScanStatusSearchText(query);
