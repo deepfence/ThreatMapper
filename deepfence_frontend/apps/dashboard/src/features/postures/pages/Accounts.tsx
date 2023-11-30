@@ -269,9 +269,13 @@ const Filters = () => {
             })}
         </Combobox>
         <Combobox
-          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
-            return groupStatus.value === searchParams.get('complianceScanStatus');
-          })}
+          value={
+            searchParams.get('complianceScanStatus')
+              ? SCAN_STATUS_GROUPS.find((groupStatus) => {
+                  return groupStatus.value === searchParams.get('complianceScanStatus');
+                })
+              : null
+          }
           nullable
           onQueryChange={(query) => {
             setComplianceScanStatusSearchText(query);
