@@ -183,10 +183,10 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	cfg := psUtils.Config{
 		HostName:              params.HostName,
 		NodeType:              params.NodeType,
-		NodeId:                params.NodeId,
+		NodeID:                params.NodeId,
 		KubernetesClusterName: params.KubernetesClusterName,
-		ScanId:                params.ScanId,
-		ImageId:               params.ImageId,
+		ScanID:                params.ScanId,
+		ImageID:               params.ImageId,
 		ContainerName:         params.ContainerName,
 	}
 
@@ -264,7 +264,7 @@ type cveInfo struct {
 func mapVulnerabilities(vulnerabilities []ps.VulnerabilityScanReport) map[string]cveInfo {
 	vMap := map[string]cveInfo{}
 	for _, v := range vulnerabilities {
-		vMap[v.CveCausedByPackage] = cveInfo{CveID: v.CveId, Severity: v.CveSeverity}
+		vMap[v.CveCausedByPackage] = cveInfo{CveID: v.CveID, Severity: v.CveSeverity}
 	}
 	return vMap
 }

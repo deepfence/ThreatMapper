@@ -321,13 +321,13 @@ func TestMatchFilter2CypherWhereConditions(t *testing.T) {
 		FieldsValues: map[string][]interface{}{},
 	}
 
-	cypher := matchFilter2CypherConditions(node_name, ff)
+	cypher := matchFilter2CypherConditions(node_name, ff, false)
 	assert.Equal(t, len(cypher), 0, "should be equal")
 
 	ff = MatchFilter{
 		FieldsValues: map[string][]interface{}{"toto": {"foo", "bar"}},
 	}
 
-	cypher = matchFilter2CypherConditions(node_name, ff)
+	cypher = matchFilter2CypherConditions(node_name, ff, false)
 	assert.Equal(t, cypher[0], "n.toto =~ '(.*foo.*|.*bar.*)'", "should be equal")
 }
