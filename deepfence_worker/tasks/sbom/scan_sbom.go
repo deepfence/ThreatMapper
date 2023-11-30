@@ -17,6 +17,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	workerUtil "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/deepfence/golang_deepfence_sdk/utils/tasks"
 	psOutput "github.com/deepfence/package-scanner/output"
 	ps "github.com/deepfence/package-scanner/scanner"
@@ -24,6 +25,7 @@ import (
 	psUtils "github.com/deepfence/package-scanner/utils"
 	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -214,8 +216,30 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		}
 	}
 
+	// generate runtime sbom needs entity Id
+	driver, err := directory.Neo4jClient(directory.NewContextWithNameSpace(directory.NamespaceID(tenantID)))
+	if err != nil {
+		return err
+	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	entityID, err := workerUtil.GetEntityIdFromScanID(params.ScanID, string(utils.NEO4JVulnerabilityScan), tx)
+	if err != nil {
+		log.Error().Msgf("Error in getting entityId: %v", err)
+	}
+
 	// generate runtime sbom
-	runtimeSbom, err := generateRuntimeSBOM(sbomFilePath, report)
+	runtimeSbom, err := generateRuntimeSBOM(sbomFilePath, report, entityID)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to generate runtime sbom")
 		return err
@@ -256,21 +280,26 @@ func readSBOM(path string) (*sbom.SBOM, error) {
 }
 
 type cveInfo struct {
-	CveID    string
-	Severity string
+	CveCausedByPackage string
+	CveID              string
+	Severity           string
 }
 
 // generate map of package:version with severity
 func mapVulnerabilities(vulnerabilities []ps.VulnerabilityScanReport) map[string]cveInfo {
 	vMap := map[string]cveInfo{}
 	for _, v := range vulnerabilities {
-		vMap[v.CveCausedByPackage] = cveInfo{CveID: v.CveID, Severity: v.CveSeverity}
+		vMap[v.CveCausedByPackage] = cveInfo{
+			CveCausedByPackage: v.CveCausedByPackage,
+			CveID:              v.CveID,
+			Severity:           v.CveSeverity,
+		}
 	}
 	return vMap
 }
 
 // generate runtime sbom format
-func generateRuntimeSBOM(path string, vulnerabilities []ps.VulnerabilityScanReport) (*[]model.SbomResponse, error) {
+func generateRuntimeSBOM(path string, vulnerabilities []ps.VulnerabilityScanReport, entityID string) (*[]model.SbomResponse, error) {
 	var (
 		runSBOM = make([]model.SbomResponse, 0)
 		err     error
@@ -289,15 +318,19 @@ func generateRuntimeSBOM(path string, vulnerabilities []ps.VulnerabilityScanRepo
 		for _, l := range item.Licenses.ToSlice() {
 			licenses = append(licenses, l.Value)
 		}
-		runSBOM = append(runSBOM, model.SbomResponse{
+		entry := model.SbomResponse{
 			PackageName: item.Name,
 			Version:     item.Version,
 			Locations:   item.Locations.CoordinateSet().Paths(),
 			Licenses:    licenses,
 			CveID:       cveInfo.CveID,
 			Severity:    cveInfo.Severity,
-		})
+		}
+		if len(cveInfo.CveID) > 0 {
+			entry.CveNodeID = workerUtil.GetVulnerabilityNodeID(cveInfo.CveCausedByPackage, cveInfo.CveID, entityID)
+		}
 
+		runSBOM = append(runSBOM, entry)
 	}
 
 	return &runSBOM, err

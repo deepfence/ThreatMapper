@@ -191,6 +191,7 @@ type SbomResponse struct {
 	Licenses    []string `json:"licenses,omitempty"`
 	CveID       string   `json:"cve_id,omitempty"`
 	Severity    string   `json:"severity,omitempty"`
+	CveNodeID   string   `json:"cve_node_id,omitempty"`
 }
 
 type ScanResultsReq struct {
