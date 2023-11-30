@@ -71,6 +71,7 @@ COPY plugins/compliance/scripts /usr/local/bin/compliance_check/scripts
 COPY plugins/compliance/config.json /usr/local/bin/compliance_check/config.json
 COPY supervisord.conf /home/deepfence/supervisord.conf
 COPY run_discovery.sh /home/deepfence/
+COPY plugins/etc/run_fluentbit.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
 RUN mkdir -p /home/deepfence/bin && mkdir -p /home/deepfence/bin/secret-scanner && mkdir -p /home/deepfence/bin/yara-hunter
 COPY plugins/yara-rules /home/deepfence/bin/yara-hunter/yara-rules
