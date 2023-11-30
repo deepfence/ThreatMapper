@@ -94,7 +94,8 @@ export const UtilsReportFiltersScanTypeEnum = {
     Secret: 'secret',
     Malware: 'malware',
     Compliance: 'compliance',
-    CloudCompliance: 'cloud_compliance'
+    CloudCompliance: 'cloud_compliance',
+    Alert: 'alert'
 } as const;
 export type UtilsReportFiltersScanTypeEnum = typeof UtilsReportFiltersScanTypeEnum[keyof typeof UtilsReportFiltersScanTypeEnum];
 

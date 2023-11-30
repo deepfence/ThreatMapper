@@ -16,32 +16,32 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelApiAuthRequest
+ * @interface ModelAPIAuthRequest
  */
-export interface ModelApiAuthRequest {
+export interface ModelAPIAuthRequest {
     /**
      * 
      * @type {string}
-     * @memberof ModelApiAuthRequest
+     * @memberof ModelAPIAuthRequest
      */
     api_token: string;
 }
 
 /**
- * Check if a given object implements the ModelApiAuthRequest interface.
+ * Check if a given object implements the ModelAPIAuthRequest interface.
  */
-export function instanceOfModelApiAuthRequest(value: object): boolean {
+export function instanceOfModelAPIAuthRequest(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "api_token" in value;
 
     return isInstance;
 }
 
-export function ModelApiAuthRequestFromJSON(json: any): ModelApiAuthRequest {
-    return ModelApiAuthRequestFromJSONTyped(json, false);
+export function ModelAPIAuthRequestFromJSON(json: any): ModelAPIAuthRequest {
+    return ModelAPIAuthRequestFromJSONTyped(json, false);
 }
 
-export function ModelApiAuthRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelApiAuthRequest {
+export function ModelAPIAuthRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAPIAuthRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -51,7 +51,7 @@ export function ModelApiAuthRequestFromJSONTyped(json: any, ignoreDiscriminator:
     };
 }
 
-export function ModelApiAuthRequestToJSON(value?: ModelApiAuthRequest | null): any {
+export function ModelAPIAuthRequestToJSON(value?: ModelAPIAuthRequest | null): any {
     if (value === undefined) {
         return undefined;
     }

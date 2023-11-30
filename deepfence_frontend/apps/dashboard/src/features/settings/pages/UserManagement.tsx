@@ -26,7 +26,7 @@ import { getUserApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
   ModelInviteUserRequestActionEnum,
-  ModelUpdateUserIdRequestRoleEnum,
+  ModelUpdateUserIDRequestRoleEnum,
 } from '@/api/generated';
 import { ModelUser } from '@/api/generated/models/ModelUser';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
@@ -169,9 +169,9 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     invalidateAllQueries();
   } else if (_actionType === ActionEnumType.INVITE_USER) {
     const body = Object.fromEntries(formData);
-    const role = body.role as keyof typeof ModelUpdateUserIdRequestRoleEnum;
-    const _role: ModelUpdateUserIdRequestRoleEnum =
-      ModelUpdateUserIdRequestRoleEnum[role];
+    const role = body.role as keyof typeof ModelUpdateUserIDRequestRoleEnum;
+    const _role: ModelUpdateUserIDRequestRoleEnum =
+      ModelUpdateUserIDRequestRoleEnum[role];
 
     const inviteApi = apiWrapper({
       fn: getUserApiClient().inviteUser,
@@ -219,16 +219,16 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   } else if (_actionType === ActionEnumType.EDIT_USER) {
     const body = Object.fromEntries(formData);
 
-    const role = body.role as keyof typeof ModelUpdateUserIdRequestRoleEnum;
-    const _role: ModelUpdateUserIdRequestRoleEnum =
-      ModelUpdateUserIdRequestRoleEnum[role];
+    const role = body.role as keyof typeof ModelUpdateUserIDRequestRoleEnum;
+    const _role: ModelUpdateUserIDRequestRoleEnum =
+      ModelUpdateUserIDRequestRoleEnum[role];
 
     const updateApi = apiWrapper({
       fn: getUserApiClient().updateUser,
     });
     const updateResponse = await updateApi({
       id: Number(body.id),
-      modelUpdateUserIdRequest: {
+      modelUpdateUserIDRequest: {
         first_name: body.firstName as string,
         last_name: body.lastName as string,
         role: _role,
@@ -407,12 +407,12 @@ const InviteUserModal = ({
                 _setRole(item);
               }}
               getDisplayValue={() => {
-                return Object.keys(ModelUpdateUserIdRequestRoleEnum).filter((item) => {
+                return Object.keys(ModelUpdateUserIDRequestRoleEnum).filter((item) => {
                   return item === _role;
                 })[0];
               }}
             >
-              {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
+              {Object.keys(ModelUpdateUserIDRequestRoleEnum).map((role) => {
                 return (
                   <ListboxOption value={role} key={role}>
                     {role}
@@ -483,7 +483,7 @@ const EditUserModal = ({
   const fetcher = useFetcher<ActionData>();
   const { data } = fetcher;
 
-  const role = Object.entries(ModelUpdateUserIdRequestRoleEnum).find(
+  const role = Object.entries(ModelUpdateUserIDRequestRoleEnum).find(
     ([, val]) => val === user.role,
   )?.[0];
   const [_role, _setRole] = useState(role);
@@ -540,13 +540,13 @@ const EditUserModal = ({
               }}
               getDisplayValue={() => {
                 return (
-                  Object.keys(ModelUpdateUserIdRequestRoleEnum).find((item) => {
+                  Object.keys(ModelUpdateUserIDRequestRoleEnum).find((item) => {
                     return item === _role;
                   }) ?? ''
                 );
               }}
             >
-              {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
+              {Object.keys(ModelUpdateUserIDRequestRoleEnum).map((role) => {
                 return (
                   <ListboxOption value={role} key={role}>
                     {role}

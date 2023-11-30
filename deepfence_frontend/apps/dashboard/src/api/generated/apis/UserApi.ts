@@ -17,7 +17,7 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
-  ModelApiTokenResponse,
+  ModelAPITokenResponse,
   ModelInviteUserRequest,
   ModelInviteUserResponse,
   ModelLoginResponse,
@@ -25,7 +25,7 @@ import type {
   ModelPasswordResetRequest,
   ModelPasswordResetVerifyRequest,
   ModelRegisterInvitedUserRequest,
-  ModelUpdateUserIdRequest,
+  ModelUpdateUserIDRequest,
   ModelUpdateUserPasswordRequest,
   ModelUpdateUserRequest,
   ModelUser,
@@ -36,8 +36,8 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    ModelApiTokenResponseFromJSON,
-    ModelApiTokenResponseToJSON,
+    ModelAPITokenResponseFromJSON,
+    ModelAPITokenResponseToJSON,
     ModelInviteUserRequestFromJSON,
     ModelInviteUserRequestToJSON,
     ModelInviteUserResponseFromJSON,
@@ -52,8 +52,8 @@ import {
     ModelPasswordResetVerifyRequestToJSON,
     ModelRegisterInvitedUserRequestFromJSON,
     ModelRegisterInvitedUserRequestToJSON,
-    ModelUpdateUserIdRequestFromJSON,
-    ModelUpdateUserIdRequestToJSON,
+    ModelUpdateUserIDRequestFromJSON,
+    ModelUpdateUserIDRequestToJSON,
     ModelUpdateUserPasswordRequestFromJSON,
     ModelUpdateUserPasswordRequestToJSON,
     ModelUpdateUserRequestFromJSON,
@@ -98,7 +98,7 @@ export interface UpdatePasswordRequest {
 
 export interface UpdateUserRequest {
     id: number;
-    modelUpdateUserIdRequest?: ModelUpdateUserIdRequest;
+    modelUpdateUserIDRequest?: ModelUpdateUserIDRequest;
 }
 
 export interface VerifyResetPasswordRequestRequest {
@@ -150,13 +150,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    getApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelApiTokenResponse>>>;
+    getApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelAPITokenResponse>>>;
 
     /**
      * Get logged in user\'s API Tokens
      * Get User\'s API Tokens
      */
-    getApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelApiTokenResponse>>;
+    getApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelAPITokenResponse>>;
 
     /**
      * Get logged in user information
@@ -259,13 +259,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    resetApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelApiTokenResponse>>>;
+    resetApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelAPITokenResponse>>>;
 
     /**
      * Reset user\'s API Tokens
      * Reset User\'s API Tokens
      */
-    resetApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelApiTokenResponse>>;
+    resetApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelAPITokenResponse>>;
 
     /**
      * Request for resetting the password
@@ -319,7 +319,7 @@ export interface UserApiInterface {
      * Update User by User ID
      * @summary Update User by User ID
      * @param {number} id 
-     * @param {ModelUpdateUserIdRequest} [modelUpdateUserIdRequest] 
+     * @param {ModelUpdateUserIDRequest} [modelUpdateUserIDRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof UserApiInterface
@@ -433,7 +433,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Get logged in user\'s API Tokens
      * Get User\'s API Tokens
      */
-    async getApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelApiTokenResponse>>> {
+    async getApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelAPITokenResponse>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -453,14 +453,14 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelApiTokenResponseFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelAPITokenResponseFromJSON));
     }
 
     /**
      * Get logged in user\'s API Tokens
      * Get User\'s API Tokens
      */
-    async getApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelApiTokenResponse>> {
+    async getApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelAPITokenResponse>> {
         const response = await this.getApiTokensRaw(initOverrides);
         return await response.value();
     }
@@ -682,7 +682,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Reset user\'s API Tokens
      * Reset User\'s API Tokens
      */
-    async resetApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelApiTokenResponse>>> {
+    async resetApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelAPITokenResponse>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -702,14 +702,14 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelApiTokenResponseFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelAPITokenResponseFromJSON));
     }
 
     /**
      * Reset user\'s API Tokens
      * Reset User\'s API Tokens
      */
-    async resetApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelApiTokenResponse>> {
+    async resetApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelAPITokenResponse>> {
         const response = await this.resetApiTokensRaw(initOverrides);
         return await response.value();
     }
@@ -850,7 +850,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
             method: 'PUT',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelUpdateUserIdRequestToJSON(requestParameters.modelUpdateUserIdRequest),
+            body: ModelUpdateUserIDRequestToJSON(requestParameters.modelUpdateUserIDRequest),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ModelUserFromJSON(jsonValue));

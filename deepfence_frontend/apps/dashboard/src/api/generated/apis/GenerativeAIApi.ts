@@ -91,6 +91,10 @@ export interface GenerativeAiIntegrationVulnerabilityQueryRequest {
     modelGenerativeAiIntegrationVulnerabilityRequest?: ModelGenerativeAiIntegrationVulnerabilityRequest;
 }
 
+export interface ListGenerativeAiIntegrationRequest {
+    integrationType?: ListGenerativeAiIntegrationIntegrationTypeEnum;
+}
+
 export interface SetDefaultGenerativeAiIntegrationRequest {
     integrationId: string;
 }
@@ -249,17 +253,18 @@ export interface GenerativeAIApiInterface {
     /**
      * List all the added Generative AI Integrations
      * @summary List Generative AI Integrations
+     * @param {'openai' | 'amazon-bedrock'} [integrationType] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof GenerativeAIApiInterface
      */
-    listGenerativeAiIntegrationRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelGenerativeAiIntegrationListResponse>>>;
+    listGenerativeAiIntegrationRaw(requestParameters: ListGenerativeAiIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelGenerativeAiIntegrationListResponse>>>;
 
     /**
      * List all the added Generative AI Integrations
      * List Generative AI Integrations
      */
-    listGenerativeAiIntegration(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelGenerativeAiIntegrationListResponse>>;
+    listGenerativeAiIntegration(requestParameters: ListGenerativeAiIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelGenerativeAiIntegrationListResponse>>;
 
     /**
      * Set Default Generative AI integration
@@ -639,8 +644,12 @@ export class GenerativeAIApi extends runtime.BaseAPI implements GenerativeAIApiI
      * List all the added Generative AI Integrations
      * List Generative AI Integrations
      */
-    async listGenerativeAiIntegrationRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelGenerativeAiIntegrationListResponse>>> {
+    async listGenerativeAiIntegrationRaw(requestParameters: ListGenerativeAiIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelGenerativeAiIntegrationListResponse>>> {
         const queryParameters: any = {};
+
+        if (requestParameters.integrationType !== undefined) {
+            queryParameters['integration_type'] = requestParameters.integrationType;
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -666,8 +675,8 @@ export class GenerativeAIApi extends runtime.BaseAPI implements GenerativeAIApiI
      * List all the added Generative AI Integrations
      * List Generative AI Integrations
      */
-    async listGenerativeAiIntegration(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelGenerativeAiIntegrationListResponse>> {
-        const response = await this.listGenerativeAiIntegrationRaw(initOverrides);
+    async listGenerativeAiIntegration(requestParameters: ListGenerativeAiIntegrationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelGenerativeAiIntegrationListResponse>> {
+        const response = await this.listGenerativeAiIntegrationRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -711,3 +720,12 @@ export class GenerativeAIApi extends runtime.BaseAPI implements GenerativeAIApiI
     }
 
 }
+
+/**
+ * @export
+ */
+export const ListGenerativeAiIntegrationIntegrationTypeEnum = {
+    Openai: 'openai',
+    AmazonBedrock: 'amazon-bedrock'
+} as const;
+export type ListGenerativeAiIntegrationIntegrationTypeEnum = typeof ListGenerativeAiIntegrationIntegrationTypeEnum[keyof typeof ListGenerativeAiIntegrationIntegrationTypeEnum];

@@ -18,6 +18,7 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ModelContainerImage,
+  ModelDeleteRegistryBulkReq,
   ModelImageStub,
   ModelMessageResponse,
   ModelRegistryAddReq,
@@ -35,6 +36,8 @@ import {
     ApiDocsFailureResponseToJSON,
     ModelContainerImageFromJSON,
     ModelContainerImageToJSON,
+    ModelDeleteRegistryBulkReqFromJSON,
+    ModelDeleteRegistryBulkReqToJSON,
     ModelImageStubFromJSON,
     ModelImageStubToJSON,
     ModelMessageResponseFromJSON,
@@ -75,6 +78,10 @@ export interface CountImagesRequest {
 
 export interface DeleteRegistryRequest {
     registryId: string;
+}
+
+export interface DeleteRegistryBulkRequest {
+    modelDeleteRegistryBulkReq?: ModelDeleteRegistryBulkReq;
 }
 
 export interface GetRegistrySummaryRequest {
@@ -190,6 +197,22 @@ export interface RegistryApiInterface {
      * Delete Registry
      */
     deleteRegistry(requestParameters: DeleteRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Batch Delete registry
+     * @summary Batch Delete Registry
+     * @param {ModelDeleteRegistryBulkReq} [modelDeleteRegistryBulkReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RegistryApiInterface
+     */
+    deleteRegistryBulkRaw(requestParameters: DeleteRegistryBulkRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Batch Delete registry
+     * Batch Delete Registry
+     */
+    deleteRegistryBulk(requestParameters: DeleteRegistryBulkRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * get summary of registry scans, images and tags
@@ -556,6 +579,44 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
      */
     async deleteRegistry(requestParameters: DeleteRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.deleteRegistryRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Batch Delete registry
+     * Batch Delete Registry
+     */
+    async deleteRegistryBulkRaw(requestParameters: DeleteRegistryBulkRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/registryaccount/delete`,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelDeleteRegistryBulkReqToJSON(requestParameters.modelDeleteRegistryBulkReq),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Batch Delete registry
+     * Batch Delete Registry
+     */
+    async deleteRegistryBulk(requestParameters: DeleteRegistryBulkRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.deleteRegistryBulkRaw(requestParameters, initOverrides);
     }
 
     /**
