@@ -125,7 +125,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/ModelApiTokenResponse" }
+                  "items": { "$ref": "#/components/schemas/ModelAPITokenResponse" }
                 }
               }
             }
@@ -173,7 +173,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/ModelApiTokenResponse" }
+                  "items": { "$ref": "#/components/schemas/ModelAPITokenResponse" }
                 }
               }
             }
@@ -217,7 +217,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelApiAuthRequest" }
+              "schema": { "$ref": "#/components/schemas/ModelAPIAuthRequest" }
             }
           }
         },
@@ -638,7 +638,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelAgentId" }
+              "schema": { "$ref": "#/components/schemas/ModelAgentID" }
             }
           }
         },
@@ -1019,7 +1019,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelAgentId" }
+              "schema": { "$ref": "#/components/schemas/ModelAgentID" }
             }
           }
         },
@@ -1884,6 +1884,13 @@
         "summary": "List Generative AI Integrations",
         "description": "List all the added Generative AI Integrations",
         "operationId": "listGenerativeAiIntegration",
+        "parameters": [
+          {
+            "name": "integration_type",
+            "in": "query",
+            "schema": { "enum": ["openai", "amazon-bedrock"], "type": "string" }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -3689,7 +3696,7 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ModelApiAuthRequest" }
+                "schema": { "$ref": "#/components/schemas/ModelAPIAuthRequest" }
               }
             }
           },
@@ -4609,6 +4616,51 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/registryaccount/delete": {
+      "patch": {
+        "tags": ["Registry"],
+        "summary": "Batch Delete Registry",
+        "description": "Batch Delete registry",
+        "operationId": "deleteRegistryBulk",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelDeleteRegistryBulkReq" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "No Content" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -11089,7 +11141,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelUpdateUserIdRequest" }
+              "schema": { "$ref": "#/components/schemas/ModelUpdateUserIDRequest" }
             }
           }
         },
@@ -11928,6 +11980,22 @@
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
+      "ModelAPIAuthRequest": {
+        "required": ["api_token"],
+        "type": "object",
+        "properties": { "api_token": { "type": "string" } }
+      },
+      "ModelAPITokenResponse": {
+        "type": "object",
+        "properties": {
+          "api_token": { "type": "string" },
+          "company_id": { "type": "integer" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "created_by_user_id": { "type": "integer" },
+          "id": { "type": "integer" },
+          "name": { "type": "string" }
+        }
+      },
       "ModelAddGenerativeAiBedrockIntegration": {
         "required": ["aws_region", "model_id"],
         "type": "object",
@@ -12026,7 +12094,7 @@
           }
         }
       },
-      "ModelAgentId": {
+      "ModelAgentID": {
         "required": ["node_id", "available_workload"],
         "type": "object",
         "properties": {
@@ -12055,22 +12123,6 @@
         "required": ["version", "node_id"],
         "type": "object",
         "properties": { "node_id": { "type": "string" }, "version": { "type": "string" } }
-      },
-      "ModelApiAuthRequest": {
-        "required": ["api_token"],
-        "type": "object",
-        "properties": { "api_token": { "type": "string" } }
-      },
-      "ModelApiTokenResponse": {
-        "type": "object",
-        "properties": {
-          "api_token": { "type": "string" },
-          "company_id": { "type": "integer" },
-          "created_at": { "type": "string", "format": "date-time" },
-          "created_by_user_id": { "type": "integer" },
-          "id": { "type": "integer" },
-          "name": { "type": "string" }
-        }
       },
       "ModelBasicNode": {
         "required": ["node_id", "name", "node_type", "host_name"],
@@ -12717,6 +12769,17 @@
           "vulnerabilities_count": { "type": "integer" },
           "vulnerability_latest_scan_id": { "type": "string" },
           "vulnerability_scan_status": { "type": "string" }
+        }
+      },
+      "ModelDeleteRegistryBulkReq": {
+        "required": ["registry_ids"],
+        "type": "object",
+        "properties": {
+          "registry_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          }
         }
       },
       "ModelDownloadReportResponse": {
@@ -13558,6 +13621,7 @@
         "type": "object",
         "properties": {
           "cve_id": { "type": "string" },
+          "cve_node_id": { "type": "string" },
           "licenses": { "type": "array", "items": { "type": "string" } },
           "locations": { "type": "array", "items": { "type": "string" } },
           "package_name": { "type": "string" },
@@ -14065,7 +14129,7 @@
         "type": "object",
         "properties": { "is_enabled": { "type": "boolean" } }
       },
-      "ModelUpdateUserIdRequest": {
+      "ModelUpdateUserIDRequest": {
         "type": "object",
         "properties": {
           "first_name": { "type": "string" },
@@ -14643,7 +14707,8 @@
               "secret",
               "malware",
               "compliance",
-              "cloud_compliance"
+              "cloud_compliance",
+              "alert"
             ],
             "type": "string"
           },

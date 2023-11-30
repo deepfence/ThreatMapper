@@ -16,61 +16,61 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelUpdateUserIdRequest
+ * @interface ModelUpdateUserIDRequest
  */
-export interface ModelUpdateUserIdRequest {
+export interface ModelUpdateUserIDRequest {
     /**
      * 
      * @type {string}
-     * @memberof ModelUpdateUserIdRequest
+     * @memberof ModelUpdateUserIDRequest
      */
     first_name?: string;
     /**
      * 
      * @type {boolean}
-     * @memberof ModelUpdateUserIdRequest
+     * @memberof ModelUpdateUserIDRequest
      */
     is_active?: boolean;
     /**
      * 
      * @type {string}
-     * @memberof ModelUpdateUserIdRequest
+     * @memberof ModelUpdateUserIDRequest
      */
     last_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelUpdateUserIdRequest
+     * @memberof ModelUpdateUserIDRequest
      */
-    role?: ModelUpdateUserIdRequestRoleEnum;
+    role?: ModelUpdateUserIDRequestRoleEnum;
 }
 
 
 /**
  * @export
  */
-export const ModelUpdateUserIdRequestRoleEnum = {
+export const ModelUpdateUserIDRequestRoleEnum = {
     Admin: 'admin',
     StandardUser: 'standard-user',
     ReadOnlyUser: 'read-only-user'
 } as const;
-export type ModelUpdateUserIdRequestRoleEnum = typeof ModelUpdateUserIdRequestRoleEnum[keyof typeof ModelUpdateUserIdRequestRoleEnum];
+export type ModelUpdateUserIDRequestRoleEnum = typeof ModelUpdateUserIDRequestRoleEnum[keyof typeof ModelUpdateUserIDRequestRoleEnum];
 
 
 /**
- * Check if a given object implements the ModelUpdateUserIdRequest interface.
+ * Check if a given object implements the ModelUpdateUserIDRequest interface.
  */
-export function instanceOfModelUpdateUserIdRequest(value: object): boolean {
+export function instanceOfModelUpdateUserIDRequest(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function ModelUpdateUserIdRequestFromJSON(json: any): ModelUpdateUserIdRequest {
-    return ModelUpdateUserIdRequestFromJSONTyped(json, false);
+export function ModelUpdateUserIDRequestFromJSON(json: any): ModelUpdateUserIDRequest {
+    return ModelUpdateUserIDRequestFromJSONTyped(json, false);
 }
 
-export function ModelUpdateUserIdRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelUpdateUserIdRequest {
+export function ModelUpdateUserIDRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelUpdateUserIDRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -83,7 +83,7 @@ export function ModelUpdateUserIdRequestFromJSONTyped(json: any, ignoreDiscrimin
     };
 }
 
-export function ModelUpdateUserIdRequestToJSON(value?: ModelUpdateUserIdRequest | null): any {
+export function ModelUpdateUserIDRequestToJSON(value?: ModelUpdateUserIDRequest | null): any {
     if (value === undefined) {
         return undefined;
     }

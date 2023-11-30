@@ -27,6 +27,12 @@ export interface ModelSbomResponse {
     cve_id?: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelSbomResponse
+     */
+    cve_node_id?: string;
+    /**
+     * 
      * @type {Array<string>}
      * @memberof ModelSbomResponse
      */
@@ -77,6 +83,7 @@ export function ModelSbomResponseFromJSONTyped(json: any, ignoreDiscriminator: b
     return {
         
         'cve_id': !exists(json, 'cve_id') ? undefined : json['cve_id'],
+        'cve_node_id': !exists(json, 'cve_node_id') ? undefined : json['cve_node_id'],
         'licenses': !exists(json, 'licenses') ? undefined : json['licenses'],
         'locations': !exists(json, 'locations') ? undefined : json['locations'],
         'package_name': !exists(json, 'package_name') ? undefined : json['package_name'],
@@ -95,6 +102,7 @@ export function ModelSbomResponseToJSON(value?: ModelSbomResponse | null): any {
     return {
         
         'cve_id': value.cve_id,
+        'cve_node_id': value.cve_node_id,
         'licenses': value.licenses,
         'locations': value.locations,
         'package_name': value.package_name,

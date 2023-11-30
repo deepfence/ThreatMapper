@@ -16,61 +16,61 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelApiTokenResponse
+ * @interface ModelAPITokenResponse
  */
-export interface ModelApiTokenResponse {
+export interface ModelAPITokenResponse {
     /**
      * 
      * @type {string}
-     * @memberof ModelApiTokenResponse
+     * @memberof ModelAPITokenResponse
      */
     api_token?: string;
     /**
      * 
      * @type {number}
-     * @memberof ModelApiTokenResponse
+     * @memberof ModelAPITokenResponse
      */
     company_id?: number;
     /**
      * 
      * @type {Date}
-     * @memberof ModelApiTokenResponse
+     * @memberof ModelAPITokenResponse
      */
     created_at?: Date;
     /**
      * 
      * @type {number}
-     * @memberof ModelApiTokenResponse
+     * @memberof ModelAPITokenResponse
      */
     created_by_user_id?: number;
     /**
      * 
      * @type {number}
-     * @memberof ModelApiTokenResponse
+     * @memberof ModelAPITokenResponse
      */
     id?: number;
     /**
      * 
      * @type {string}
-     * @memberof ModelApiTokenResponse
+     * @memberof ModelAPITokenResponse
      */
     name?: string;
 }
 
 /**
- * Check if a given object implements the ModelApiTokenResponse interface.
+ * Check if a given object implements the ModelAPITokenResponse interface.
  */
-export function instanceOfModelApiTokenResponse(value: object): boolean {
+export function instanceOfModelAPITokenResponse(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function ModelApiTokenResponseFromJSON(json: any): ModelApiTokenResponse {
-    return ModelApiTokenResponseFromJSONTyped(json, false);
+export function ModelAPITokenResponseFromJSON(json: any): ModelAPITokenResponse {
+    return ModelAPITokenResponseFromJSONTyped(json, false);
 }
 
-export function ModelApiTokenResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelApiTokenResponse {
+export function ModelAPITokenResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAPITokenResponse {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -85,7 +85,7 @@ export function ModelApiTokenResponseFromJSONTyped(json: any, ignoreDiscriminato
     };
 }
 
-export function ModelApiTokenResponseToJSON(value?: ModelApiTokenResponse | null): any {
+export function ModelAPITokenResponseToJSON(value?: ModelAPITokenResponse | null): any {
     if (value === undefined) {
         return undefined;
     }

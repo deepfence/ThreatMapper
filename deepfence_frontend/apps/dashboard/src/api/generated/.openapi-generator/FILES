@@ -69,15 +69,15 @@ models/IngestersSecretSeverity.ts
 models/IngestersVulnerability.ts
 models/IngestersVulnerabilityScanStatus.ts
 models/LookupLookupFilter.ts
+models/ModelAPIAuthRequest.ts
+models/ModelAPITokenResponse.ts
 models/ModelAddGenerativeAiBedrockIntegration.ts
 models/ModelAddGenerativeAiOpenAIIntegration.ts
 models/ModelAddScheduledTaskRequest.ts
-models/ModelAgentId.ts
+models/ModelAgentID.ts
 models/ModelAgentPluginDisable.ts
 models/ModelAgentPluginEnable.ts
 models/ModelAgentUpgrade.ts
-models/ModelApiAuthRequest.ts
-models/ModelApiTokenResponse.ts
 models/ModelBasicNode.ts
 models/ModelBulkDeleteScansRequest.ts
 models/ModelCloudCompliance.ts
@@ -106,6 +106,7 @@ models/ModelComplianceScanTriggerReq.ts
 models/ModelConnection.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts
+models/ModelDeleteRegistryBulkReq.ts
 models/ModelDownloadReportResponse.ts
 models/ModelDownloadScanResultsResponse.ts
 models/ModelEmailConfigurationAdd.ts
@@ -193,7 +194,7 @@ models/ModelSummary.ts
 models/ModelTopologyDeltaReq.ts
 models/ModelTopologyDeltaResponse.ts
 models/ModelUpdateScheduledTaskRequest.ts
-models/ModelUpdateUserIdRequest.ts
+models/ModelUpdateUserIDRequest.ts
 models/ModelUpdateUserPasswordRequest.ts
 models/ModelUpdateUserRequest.ts
 models/ModelUser.ts

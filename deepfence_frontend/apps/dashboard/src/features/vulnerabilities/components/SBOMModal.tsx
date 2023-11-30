@@ -108,22 +108,20 @@ const ModalContent = ({ scanId }: { scanId: string }) => {
       }),
       columnHelper.accessor('cve_id', {
         cell: (info) => {
-          const _package = info.row.original.package_name ?? '';
-          const _version = info.row.original.version;
-          const _cveId = info.row.original.cve_id;
-          const link = `${_package}:${_version}${_cveId}`;
+          const cveNodeId = info.row.original.cve_node_id ?? '';
 
-          return _package && _version && _cveId ? (
+          if (!info.getValue()?.length) {
+            return '-';
+          }
+          return (
             <DFLink
               to={generatePath('/vulnerability/unique-vulnerabilities/:cveId', {
-                cveId: encodeURIComponent(link),
+                cveId: encodeURIComponent(cveNodeId),
               })}
               target="_blank"
             >
               <TruncatedText text={info.getValue() ?? ''} />
             </DFLink>
-          ) : (
-            '-'
           );
         },
         header: () => 'Top CVE',
