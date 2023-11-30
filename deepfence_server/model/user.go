@@ -52,7 +52,7 @@ type APITokenResponse struct {
 }
 
 func GetAPIToken(namespace string, apiToken uuid.UUID) string {
-	return namespace + ":" + apiToken.String()
+	return utils.Base64RawEncode(namespace + ":" + apiToken.String())
 }
 
 type APIToken struct {
