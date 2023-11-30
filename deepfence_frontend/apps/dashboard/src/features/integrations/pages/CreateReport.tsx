@@ -246,7 +246,7 @@ const ReportForm = () => {
   return (
     <>
       {!data?.success ? (
-        <fetcher.Form method="post" className="m-4">
+        <fetcher.Form method="post" className="m-4 overflow-auto">
           <input
             type="text"
             name="_actionType"
