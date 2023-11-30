@@ -79,7 +79,7 @@ func searchScansFilter(params sdkUtils.ReportParams) rptSearch.SearchScanReq {
 	}
 
 	if len(params.Filters.AdvancedReportFilters.AccountID) > 0 {
-		filters.NodeFilter.Filters.ContainsFilter.FieldsValues["account_id"] = sdkUtils.StringArrayToInterfaceArray(params.Filters.AdvancedReportFilters.AccountID)
+		filters.NodeFilter.Filters.ContainsFilter.FieldsValues["node_id"] = sdkUtils.StringArrayToInterfaceArray(params.Filters.AdvancedReportFilters.AccountID)
 	}
 
 	if len(params.Filters.ScanID) > 0 {
