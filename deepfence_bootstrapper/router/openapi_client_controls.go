@@ -45,8 +45,8 @@ func (ct *OpenapiClient) StartControlsWatching(nodeID string, isClusterAgent boo
 	if isClusterAgent {
 		go func() {
 			req := ct.API().ControlsAPI.GetKubernetesClusterControls(context.Background())
-			agentID := openapi.NewModelAgentId(getMaxAllocatable(), nodeID)
-			req = req.ModelAgentId(*agentID)
+			agentID := openapi.NewModelAgentID(getMaxAllocatable(), nodeID)
+			req = req.ModelAgentID(*agentID)
 			ticker := time.NewTicker(time.Second * time.Duration(ct.PublishInterval()/2))
 			for {
 				ticker.Reset(time.Second * time.Duration(ct.PublishInterval()/2))
@@ -56,7 +56,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeID string, isClusterAgent boo
 					break
 				}
 				agentID.SetAvailableWorkload(getMaxAllocatable())
-				req = req.ModelAgentId(*agentID)
+				req = req.ModelAgentID(*agentID)
 				ctl, _, err := ct.API().ControlsAPI.GetKubernetesClusterControlsExecute(req)
 				if err != nil {
 					log.Error().Msgf("Getting controls failed: %v\n", err)
@@ -77,8 +77,8 @@ func (ct *OpenapiClient) StartControlsWatching(nodeID string, isClusterAgent boo
 	} else {
 		go func() {
 			req := ct.API().ControlsAPI.GetAgentControls(context.Background())
-			agentID := openapi.NewModelAgentId(getMaxAllocatable(), nodeID)
-			req = req.ModelAgentId(*agentID)
+			agentID := openapi.NewModelAgentID(getMaxAllocatable(), nodeID)
+			req = req.ModelAgentID(*agentID)
 			ticker := time.NewTicker(time.Second * time.Duration(ct.PublishInterval()/2))
 			for {
 				ticker.Reset(time.Second * time.Duration(ct.PublishInterval()/2))
@@ -88,7 +88,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeID string, isClusterAgent boo
 					break
 				}
 				agentID.SetAvailableWorkload(getMaxAllocatable())
-				req = req.ModelAgentId(*agentID)
+				req = req.ModelAgentID(*agentID)
 				ctl, _, err := ct.API().ControlsAPI.GetAgentControlsExecute(req)
 				if err != nil {
 					log.Error().Msgf("Getting controls failed: %v\n", err)

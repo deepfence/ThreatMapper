@@ -35,7 +35,7 @@ require (
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/YaraHunter v0.0.0-00010101000000-000000000000
 	github.com/deepfence/agent-plugins-grpc v1.1.0
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20231030062708-5506162b00b7
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20231201162830-c15be6d96147
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
 	github.com/hibiken/asynq v0.24.1
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -112,7 +112,7 @@ require (
 	github.com/felixge/fgprof v0.9.3 // indirect
 	github.com/flier/gohs v1.2.2 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/github/go-spdx/v2 v2.2.0 // indirect
 	github.com/go-chi/chi/v5 v5.0.8 // indirect
 	github.com/go-chi/jwtauth/v5 v5.1.1 // indirect

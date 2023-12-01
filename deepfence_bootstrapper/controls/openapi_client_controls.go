@@ -121,24 +121,24 @@ func (ct *ControlsClient) StartControlsWatching(nodeID string, isClusterAgent bo
 		}
 	}
 
-	var getControls func(client.ModelAgentId) (*client.ControlsAgentControls, error)
+	var getControls func(client.ModelAgentID) (*client.ControlsAgentControls, error)
 	if isClusterAgent {
-		getControls = func(agentId client.ModelAgentId) (*client.ControlsAgentControls, error) {
+		getControls = func(agentId client.ModelAgentID) (*client.ControlsAgentControls, error) {
 			req := ct.API().ControlsAPI.GetKubernetesClusterControls(context.Background())
-			req = req.ModelAgentId(agentId)
+			req = req.ModelAgentID(agentId)
 			ctl, _, err := ct.API().ControlsAPI.GetKubernetesClusterControlsExecute(req)
 			return ctl, err
 		}
 	} else {
-		getControls = func(agentId client.ModelAgentId) (*client.ControlsAgentControls, error) {
+		getControls = func(agentId client.ModelAgentID) (*client.ControlsAgentControls, error) {
 			req := ct.API().ControlsAPI.GetAgentControls(context.Background())
-			req = req.ModelAgentId(agentId)
+			req = req.ModelAgentID(agentId)
 			ctl, _, err := ct.API().ControlsAPI.GetAgentControlsExecute(req)
 			return ctl, err
 		}
 	}
 	go func() {
-		agentID := client.NewModelAgentId(getMaxAllocatable(), nodeID)
+		agentID := client.NewModelAgentID(getMaxAllocatable(), nodeID)
 		ticker := time.NewTicker(time.Second * time.Duration(ct.publishInterval.Load()/2))
 		for {
 			ticker.Reset(time.Second * time.Duration(ct.publishInterval.Load()/2))
