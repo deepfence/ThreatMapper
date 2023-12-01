@@ -50,7 +50,7 @@ require (
 	github.com/google/uuid v1.3.1 // indirect
 	github.com/gorilla/websocket v0.0.0-20160221213430-5c91b59efa23 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.4 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.5 // indirect
 	github.com/hibiken/asynq v0.24.1 // indirect
 	github.com/k-sone/critbitgo v1.2.0 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
