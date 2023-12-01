@@ -75,7 +75,7 @@ func InitializeOpenAPIReflector() *OpenAPIDocs {
 		Spec: &openapi3.Spec{
 			Openapi: "3.0.3",
 			Info: openapi3.Info{
-				Title:          "Deepfence ThreatStryker",
+				Title:          "Deepfence ThreatMapper",
 				Description:    &description,
 				TermsOfService: &tos,
 				Contact: &openapi3.Contact{
