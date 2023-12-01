@@ -97,7 +97,7 @@ func (d *RegistryACR) GetExtras() map[string]interface{} {
 }
 
 func (d *RegistryACR) GetNamespace() string {
-	return d.NonSecret.AzureRegistryURL + "_" + d.NonSecret.AzureRegistryUsername
+	return d.NonSecret.AzureRegistryUsername
 }
 
 func (d *RegistryACR) GetRegistryType() string {

@@ -98,7 +98,7 @@ func (d *RegistryJfrog) GetExtras() map[string]interface{} {
 }
 
 func (d *RegistryJfrog) GetNamespace() string {
-	return d.NonSecret.JfrogRepository + "_" + d.NonSecret.JfrogUsername
+	return d.NonSecret.JfrogRepository
 }
 
 func (d *RegistryJfrog) GetRegistryType() string {

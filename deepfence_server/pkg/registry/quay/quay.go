@@ -98,7 +98,7 @@ func (d *RegistryQuay) GetExtras() map[string]interface{} {
 }
 
 func (d *RegistryQuay) GetNamespace() string {
-	return d.NonSecret.QuayNamespace + "_" + d.NonSecret.QuayRegistryURL
+	return d.NonSecret.QuayNamespace
 }
 
 func (d *RegistryQuay) GetRegistryType() string {

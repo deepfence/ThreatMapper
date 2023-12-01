@@ -97,7 +97,7 @@ func (d *RegistryDockerPrivate) GetExtras() map[string]interface{} {
 }
 
 func (d *RegistryDockerPrivate) GetNamespace() string {
-	return d.NonSecret.DockerRegistryURL + "_" + d.NonSecret.DockerUsername
+	return d.NonSecret.DockerUsername
 }
 
 func (d *RegistryDockerPrivate) GetRegistryType() string {
