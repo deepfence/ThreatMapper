@@ -131,13 +131,17 @@ export function apiWrapper<F extends Func<any[], any>>({
 export const retryUntilResponseHasValue = async <F extends Func<any[], any>>(
   fn: F,
   fnParams: Parameters<F>,
-  checkResponseHasValue: (response: Awaited<ReturnType<F>>) => Promise<boolean>,
+  checkResponseHasValue: (
+    response: Awaited<ReturnType<F>>,
+    show: boolean,
+  ) => Promise<boolean>,
+  showToast: boolean,
 ): Promise<ReturnType<F>> => {
   const response = await fn(...fnParams);
-  const isPresent = await checkResponseHasValue(response);
+  const isPresent = await checkResponseHasValue(response, showToast);
   if (!isPresent) {
     await sleep(3000);
-    return retryUntilResponseHasValue(fn, fnParams, checkResponseHasValue);
+    return retryUntilResponseHasValue(fn, fnParams, checkResponseHasValue, isPresent);
   }
   return response;
 };
