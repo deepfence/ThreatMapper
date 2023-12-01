@@ -90,8 +90,12 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 	// Get completed files from minio
 	objects := mc.ListFiles(ctx, pathPrefix, false, 0, true)
 	log.Debug().Msgf("diagnosis logs at %s: %v", pathPrefix, objects)
-	diagnosticLogsResponse := make([]DiagnosticLogsLink, len(objects))
-	for i, obj := range objects {
+	diagnosticLogsResponse := make([]DiagnosticLogsLink, 0, len(objects))
+	for _, obj := range objects {
+		if len(obj.Key) == 0 {
+			continue
+		}
+
 		message := ""
 		urlLink, err := mc.ExposeFile(ctx, obj.Key, false, DiagnosisLinkExpiry, url.Values{})
 		if err != nil {
@@ -105,13 +109,13 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 			}
 		}
 		fileName := filepath.Base(obj.Key)
-		diagnosticLogsResponse[i] = DiagnosticLogsLink{
+		diagnosticLogsResponse = append(diagnosticLogsResponse, DiagnosticLogsLink{
 			URLLink:   urlLink,
 			FileName:  fileName,
 			Label:     strings.TrimSuffix(strings.TrimPrefix(fileName, "deepfence-agent-logs-"), ".zip"),
 			Message:   message,
 			CreatedAt: obj.LastModified.Format("2006-01-02 15:04:05"),
-		}
+		})
 	}
 	sort.Slice(diagnosticLogsResponse, func(i, j int) bool {
 		return diagnosticLogsResponse[i].CreatedAt > diagnosticLogsResponse[j].CreatedAt
