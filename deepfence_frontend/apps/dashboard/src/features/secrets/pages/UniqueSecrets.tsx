@@ -245,10 +245,10 @@ const UniqueTable = () => {
             <div className="w-4 h-4 shrink-0 dark:text-text-text-and-icon">
               <SecretsIcon />
             </div>
-            <TruncatedText text={info.getValue() ?? ''} />
+            <TruncatedText text={info.row.original.name ?? info.getValue() ?? ''} />
           </DFLink>
         ),
-        header: () => <TruncatedText text="ID" />,
+        header: () => <TruncatedText text="Name" />,
         minSize: 100,
         size: 120,
         maxSize: 130,
@@ -264,7 +264,7 @@ const UniqueTable = () => {
         enableSorting: false,
         enableResizing: true,
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
-        header: () => <TruncatedText text="Match Content" />,
+        header: () => <TruncatedText text="Matched Content" />,
         minSize: 100,
         size: 120,
         maxSize: 130,
@@ -273,8 +273,8 @@ const UniqueTable = () => {
         enableResizing: true,
         cell: (info) => <SeverityBadge severity={info.getValue()} />,
         header: () => <TruncatedText text="Severity" />,
-        minSize: 80,
-        size: 90,
+        minSize: 40,
+        size: 50,
         maxSize: 100,
       }),
       columnHelper.accessor('signature_to_match', {
@@ -286,13 +286,13 @@ const UniqueTable = () => {
         size: 140,
         maxSize: 145,
       }),
-      columnHelper.accessor('name', {
+      columnHelper.accessor('part', {
         enableSorting: false,
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
-        header: () => <TruncatedText text="Description" />,
-        minSize: 100,
-        size: 120,
-        maxSize: 250,
+        header: () => <TruncatedText text="Part" />,
+        minSize: 40,
+        size: 50,
+        maxSize: 100,
       }),
     ];
 

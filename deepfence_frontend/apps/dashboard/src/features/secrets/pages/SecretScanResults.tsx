@@ -1399,7 +1399,7 @@ const SecretTable = ({
           />
         ),
         header: () => '',
-        size: 55,
+        size: 45,
         minSize: 40,
         maxSize: 55,
         enableResizing: false,
@@ -1416,34 +1416,34 @@ const SecretTable = ({
             <div className="w-4 h-4 shrink-0 dark:text-text-text-and-icon">
               <SecretsIcon />
             </div>
-            <div className="truncate">{info.getValue()}</div>
+            <TruncatedText text={info.row.original.name ?? info.getValue() ?? ''} />
           </DFLink>
         ),
-        header: () => 'ID',
-        minSize: 100,
-        size: 120,
+        header: () => 'Name',
+        minSize: 80,
+        size: 100,
         maxSize: 130,
       }),
       columnHelper.accessor('full_filename', {
         cell: (info) => <TruncatedText text={info.getValue()} />,
         header: () => <TruncatedText text="File name" />,
-        minSize: 80,
-        size: 90,
-        maxSize: 110,
+        minSize: 100,
+        size: 110,
+        maxSize: 140,
       }),
       columnHelper.accessor('matched_content', {
         cell: (info) => <TruncatedText text={info.getValue()} />,
         header: () => 'Matched Content',
-        minSize: 150,
-        size: 160,
+        minSize: 130,
+        size: 140,
         maxSize: 165,
       }),
       columnHelper.accessor('level', {
         cell: (info) => <SeverityBadge severity={info.getValue()} />,
         header: () => 'Severity',
-        minSize: 80,
-        size: 90,
-        maxSize: 100,
+        minSize: 30,
+        size: 50,
+        maxSize: 70,
       }),
       columnHelper.accessor('signature_to_match', {
         enableSorting: false,
@@ -1452,8 +1452,8 @@ const SecretTable = ({
         },
         header: () => <TruncatedText text="Signature to match" />,
         minSize: 70,
-        size: 80,
-        maxSize: 100,
+        size: 100,
+        maxSize: 150,
       }),
       columnHelper.accessor('resources', {
         enableSorting: false,
@@ -1462,20 +1462,18 @@ const SecretTable = ({
           return <TruncatedText text={info.getValue()?.join(', ') ?? ''} />;
         },
         header: () => <TruncatedText text="Affected Resources" />,
-        minSize: 180,
-        size: 180,
-        maxSize: 190,
-      }),
-      columnHelper.accessor('name', {
-        enableSorting: false,
-        enableResizing: true,
-        cell: (info) => (
-          <TruncatedText text={info.getValue() || 'No description available'} />
-        ),
-        header: () => <TruncatedText text="Description" />,
         minSize: 100,
         size: 120,
-        maxSize: 250,
+        maxSize: 190,
+      }),
+      columnHelper.accessor('part', {
+        enableSorting: false,
+        enableResizing: true,
+        cell: (info) => <TruncatedText text={info.getValue() || '-'} />,
+        header: () => <TruncatedText text="Part" />,
+        minSize: 40,
+        size: 50,
+        maxSize: 70,
       }),
     ];
 

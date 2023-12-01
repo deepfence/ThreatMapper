@@ -11,7 +11,6 @@ import {
   SlidingModalHeader,
 } from 'ui-components';
 
-import { ModelCloudCompliance } from '@/api/generated';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
 import { CheckIcon } from '@/components/icons/common/Check';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
@@ -23,6 +22,7 @@ import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
 import { PostureSeverityType } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
+import { getFieldsKeyValue } from '@/utils/detailsPanel';
 import { replacebyUppercaseCharacters } from '@/utils/label';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -153,12 +153,6 @@ const DetailsComponent = ({
 
   const cloudPosture = cloudPostures[0];
 
-  const omitFields: (keyof ModelCloudCompliance)[] = [
-    'description',
-    'status',
-    'resources',
-  ];
-
   if (isRemediationOpen) {
     return (
       <Suspense
@@ -188,6 +182,33 @@ const DetailsComponent = ({
     );
   }
 
+  const keyValues = getFieldsKeyValue(cloudPosture ?? {}, {
+    hiddenFields: [
+      'status',
+      'description',
+      'node_name',
+      'severity',
+      'type',
+      'count',
+      'node_id',
+      'resources',
+    ],
+    priorityFields: [
+      'cloud_provider',
+      'region',
+      'account_id',
+      'compliance_check_type',
+      'control_id',
+      'group',
+      'title',
+      'service',
+      'reason',
+      'resource',
+      'masked',
+      'updated_at',
+    ],
+  });
+
   return (
     <div className="flex flex-wrap gap-y-[30px] gap-x-[14px] py-[18px] px-5">
       <div
@@ -198,41 +219,33 @@ const DetailsComponent = ({
       >
         {cloudPosture?.description ?? '-'}
       </div>
-      {Object.keys(cloudPosture ?? {})
-        .filter((key) => {
-          if (omitFields.includes(key as keyof ModelCloudCompliance)) return false;
-          return true;
-        })
-        .map((key) => {
-          const label = processLabel(key);
-          const value = (cloudPosture ?? {})[key as keyof ModelCloudCompliance];
-          let valueAsStr = '-';
-          if (Array.isArray(value)) {
-            valueAsStr = value.length ? value.join(', ') : '-';
-          } else if (typeof value === 'string') {
-            valueAsStr = value?.length ? value : '-';
-          } else if (value === undefined) {
-            valueAsStr = '-';
-          } else {
-            valueAsStr = String(value);
-          }
-          return (
-            <div
-              key={key}
-              className="flex flex-col grow basis-[45%] max-w-full gap-1 group"
-            >
-              <div className="flex relative">
-                <div className="text-p3 dark:text-text-text-and-icon first-letter:capitalize">
-                  {label}
-                </div>
-                <CopyField value={valueAsStr} />
+      {keyValues.map(({ key, value }) => {
+        const label = processLabel(key);
+        let valueAsStr = '-';
+        if (Array.isArray(value)) {
+          valueAsStr = value.join(', ');
+        } else if (typeof value === 'string') {
+          valueAsStr = value;
+        } else {
+          valueAsStr = String(value);
+        }
+        return (
+          <div
+            key={key}
+            className="flex flex-col grow basis-[45%] max-w-full gap-1 group"
+          >
+            <div className="flex relative">
+              <div className="text-p3 dark:text-text-text-and-icon first-letter:capitalize">
+                {label}
               </div>
-              <div className="text-p1 dark:text-text-input-value break-words">
-                {key in timeFormatKey ? formatMilliseconds(+valueAsStr) : valueAsStr}
-              </div>
+              <CopyField value={valueAsStr} />
             </div>
-          );
-        })}
+            <div className="text-p1 dark:text-text-input-value break-words">
+              {key in timeFormatKey ? formatMilliseconds(+valueAsStr) : valueAsStr}
+            </div>
+          </div>
+        );
+      })}
       {cloudPosture.resources?.length ? (
         <div className="flex flex-col grow basis-[100%] max-w-full gap-1 group">
           <div className="basis-[45%] flex relative">
