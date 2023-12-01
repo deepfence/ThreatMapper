@@ -1,7 +1,12 @@
 package model
 
 import (
+	"fmt"
 	"strings"
+)
+
+var (
+	registryNamespaceReplacer = strings.NewReplacer("/", "_", ":", "_", "+", "_")
 )
 
 func DigestToID(digest string) (string, string) {
@@ -15,10 +20,10 @@ func DigestToID(digest string) (string, string) {
 	return imageID, shortImageID
 }
 
-func GetRegistryID(registryType, ns string) string {
-	return registryType + "_" + EscapeSlashToUnderscore(ns)
+func GetRegistryID(registryType, ns string, pgID int32) string {
+	return fmt.Sprintf("%s-%s-%d", registryType, EscapeSpecialCharToUnderscore(ns), pgID)
 }
 
-func EscapeSlashToUnderscore(s string) string {
-	return strings.ReplaceAll(s, "/", "_")
+func EscapeSpecialCharToUnderscore(s string) string {
+	return registryNamespaceReplacer.Replace(s)
 }

@@ -103,7 +103,7 @@ func (d *RegistryDockerHub) GetExtras() map[string]interface{} {
 }
 
 func (d *RegistryDockerHub) GetNamespace() string {
-	return d.NonSecret.DockerHubNamespace
+	return d.NonSecret.DockerHubNamespace + "_" + d.NonSecret.DockerHubUsername
 }
 
 func (d *RegistryDockerHub) GetRegistryType() string {

@@ -99,7 +99,7 @@ func (d *RegistryHarbor) GetExtras() map[string]interface{} {
 }
 
 func (d *RegistryHarbor) GetNamespace() string {
-	return d.NonSecret.HarborProjectName
+	return d.NonSecret.HarborProjectName + "_" + d.NonSecret.HarborUsername
 }
 
 func (d *RegistryHarbor) GetRegistryType() string {

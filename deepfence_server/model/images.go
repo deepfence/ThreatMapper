@@ -11,13 +11,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, rType, ns string) ([]ContainerImage, error) {
+func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, registryType, namespace string, pgID int32) ([]ContainerImage, error) {
 	var registryID string
 	var query string
 	var images []ContainerImage
 
-	if rType != "" && ns != "" {
-		registryID = GetRegistryID(rType, ns)
+	if registryType != "" && namespace != "" && pgID > 0 {
+		registryID = GetRegistryID(registryType, namespace, pgID)
 	}
 
 	driver, err := directory.Neo4jClient(ctx)
