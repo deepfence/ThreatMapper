@@ -11,7 +11,6 @@ import {
   SlidingModalHeader,
 } from 'ui-components';
 
-import { ModelSecret } from '@/api/generated/models/ModelSecret';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
 import { DFLink } from '@/components/DFLink';
 import { CheckIcon } from '@/components/icons/common/Check';
@@ -25,6 +24,7 @@ import { TruncatedText } from '@/components/TruncatedText';
 import { ResourceDetailModal } from '@/features/secrets/components/ResourceDetailModal';
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
+import { getFieldsKeyValue } from '@/utils/detailsPanel';
 import { replacebyUppercaseCharacters } from '@/utils/label';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -160,8 +160,6 @@ const DetailsComponent = ({
 
   const secret = secrets[0];
 
-  const omitFields: (keyof ModelSecret)[] = ['name', 'level', 'score', 'resources'];
-
   if (isRemediationOpen) {
     return (
       <Suspense
@@ -187,43 +185,57 @@ const DetailsComponent = ({
     );
   }
 
+  const keyValues = getFieldsKeyValue(secret ?? {}, {
+    hiddenFields: [
+      'starting_index',
+      'score',
+      'rule_id',
+      'node_id',
+      'resources',
+      'name',
+      'level',
+    ],
+    priorityFields: [
+      'full_filename',
+      'matched_content',
+      'part',
+      'relative_starting_index',
+      'relative_ending_index',
+      'signature_to_match',
+      'masked',
+      'updated_at',
+    ],
+  });
+
   return (
     <div className="flex flex-wrap gap-y-[30px] gap-x-[14px] py-[18px] px-5">
-      {Object.keys(secret ?? {})
-        .filter((key) => {
-          if (omitFields.includes(key as keyof ModelSecret)) return false;
-          return true;
-        })
-        .map((key) => {
-          const label = processLabel(key);
-          const value = (secret ?? {})[key as keyof ModelSecret];
-          let valueAsStr = '-';
-          if (Array.isArray(value)) {
-            valueAsStr = value.length ? value.join(', ') : '-';
-          } else if (typeof value === 'string') {
-            valueAsStr = value?.length ? value : '-';
-          } else if (value === undefined) {
-            valueAsStr = '-';
-          } else {
-            valueAsStr = String(value);
-          }
-          return (
-            <div
-              key={key}
-              className="flex flex-col grow basis-[45%] max-w-full gap-1 group"
-            >
-              <div className="flex relative">
-                <div className="text-p3 dark:text-text-text-and-icon first-letter:capitalize">
-                  {label}
-                </div>
-                <CopyField value={valueAsStr} />
+      {keyValues.map(({ key, value }) => {
+        const label = processLabel(key);
+        let valueAsStr = '-';
+        if (Array.isArray(value)) {
+          valueAsStr = value.join(', ');
+        } else if (typeof value === 'string') {
+          valueAsStr = value;
+        } else {
+          valueAsStr = String(value);
+        }
+        return (
+          <div
+            key={key}
+            className="flex flex-col grow basis-[45%] max-w-full gap-1 group"
+          >
+            <div className="flex relative">
+              <div className="text-p3 dark:text-text-text-and-icon first-letter:capitalize">
+                {label}
               </div>
-              <div className="text-p1 dark:text-text-input-value break-words">
-                {key in timeFormatKey ? formatMilliseconds(+valueAsStr) : valueAsStr}
-              </div>
+              <CopyField value={valueAsStr} />
             </div>
-          );
-        })}
+            <div className="text-p1 dark:text-text-input-value break-words">
+              {key in timeFormatKey ? formatMilliseconds(+valueAsStr) : valueAsStr}
+            </div>
+          </div>
+        );
+      })}
       {secret.resources?.length ? (
         <div className="flex flex-col grow basis-[100%] max-w-full gap-1 group">
           <div className="basis-[45%] flex relative">

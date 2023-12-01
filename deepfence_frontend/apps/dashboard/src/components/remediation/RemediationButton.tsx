@@ -21,7 +21,7 @@ export const RemediationButton = ({
           'text-gray-900 rounded group bg-gradient-to-br from-purple-500',
           'to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500',
           'hover:text-white dark:text-white',
-          'focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800',
+          'focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 shrink-0',
           buttonProps.className,
         )}
       >
