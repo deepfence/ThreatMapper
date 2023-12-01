@@ -135,7 +135,7 @@ export const retryUntilResponseHasValue = async <F extends Func<any[], any>>(
     response: Awaited<ReturnType<F>>,
     show: boolean,
   ) => Promise<boolean>,
-  showToast: boolean,
+  showToast = true,
 ): Promise<ReturnType<F>> => {
   const response = await fn(...fnParams);
   const isPresent = await checkResponseHasValue(response, showToast);
