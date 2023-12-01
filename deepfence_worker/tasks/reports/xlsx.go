@@ -43,16 +43,14 @@ var (
 	}
 	malwareHeader = map[string]string{
 		"A1": "Rule Name",
-		"B1": "Severity",
-		"C1": "Meta",
-		"D1": "Meta Rules",
-		"E1": "File Severity Score",
-		"F1": "File Severity",
-		"G1": "Summary",
-		"H1": "Node Name",
-		"I1": "Container Name",
-		"J1": "Kubernetes Cluster Name",
-		"K1": "NodeType",
+		"B1": "Class",
+		"C1": "File Name",
+		"D1": "Summary",
+		"E1": "Severity",
+		"F1": "Node Name",
+		"G1": "NodeType",
+		"H1": "Container Name",
+		"I1": "Kubernetes Cluster Name",
 	}
 	complianceHeader = map[string]string{
 		"A1": "@timestamp",
@@ -251,16 +249,14 @@ func malwareXLSX(ctx context.Context, params utils.ReportParams) (string, error)
 			}
 			value := []interface{}{
 				m.RuleName,
-				m.SeverityScore,
-				"",
-				m.RuleID,
-				m.FileSevScore,
-				m.FileSeverity,
+				m.Class,
+				m.CompleteFilename,
 				m.Summary,
+				m.FileSeverity,
 				nodeScanData.ScanInfo.NodeName,
+				nodeScanData.ScanInfo.NodeType,
 				nodeScanData.ScanInfo.ContainerName,
 				nodeScanData.ScanInfo.KubernetesClusterName,
-				nodeScanData.ScanInfo.NodeType,
 			}
 			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
 			if err != nil {
