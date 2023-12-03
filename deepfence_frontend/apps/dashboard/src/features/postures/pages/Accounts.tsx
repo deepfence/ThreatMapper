@@ -492,7 +492,10 @@ const ActionDropdown = ({
 }) => {
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
-  const { downloadScan } = useDownloadScan();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { downloadScan } = useDownloadScan((state) => {
+    setIsSubmitting(state === 'submitting');
+  });
   const [openStopScanModal, setOpenStopScanModal] = useState(false);
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -578,7 +581,9 @@ const ActionDropdown = ({
                 onDownloadAction();
               }}
             >
-              Download latest report
+              <span className="flex text-center gap-x-2">
+                {isSubmitting && <CircleSpinner size="sm" />} Download latest report
+              </span>
             </DropdownItem>
             <DropdownItem
               disabled={!scanId || !nodeType}

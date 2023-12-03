@@ -270,7 +270,10 @@ const ActionDropdown = ({
 }) => {
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
-  const { downloadScan } = useDownloadScan();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { downloadScan } = useDownloadScan((state) => {
+    setIsSubmitting(state === 'submitting');
+  });
   const [openStopScanModal, setOpenStopScanModal] = useState(false);
 
   const onDownloadAction = useCallback(() => {
@@ -309,9 +312,11 @@ const ActionDropdown = ({
                 e.preventDefault();
                 onDownloadAction();
               }}
-              disabled={!isScanComplete(scanStatus)}
+              disabled={!isScanComplete(scanStatus) || isSubmitting}
             >
-              <span>Download report</span>
+              <span className="flex text-center gap-x-2">
+                {isSubmitting && <CircleSpinner size="sm" />}Download report
+              </span>
             </DropdownItem>
             <DropdownItem
               onClick={(e) => {
