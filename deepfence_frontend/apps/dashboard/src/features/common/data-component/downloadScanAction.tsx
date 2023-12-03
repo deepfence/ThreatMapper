@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -76,7 +77,7 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<null> => 
   const reportResponse = await retryUntilResponseHasValue(
     getReportApi,
     [{ reportId }],
-    async (response) => {
+    async (response, showToast) => {
       if (response.ok) {
         if (response.value.status === 'ERROR') {
           toast.error(
@@ -85,7 +86,7 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<null> => 
           return true;
         }
         const url = response.value.url;
-        if (!url) {
+        if (!url && showToast) {
           toast.message(
             'Download in progress, it may take some time however you can always find it on Integrations > Report Downloads',
           );
@@ -105,6 +106,7 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<null> => 
         return true;
       }
     },
+    true,
   );
 
   if (reportResponse.ok) {
@@ -119,8 +121,13 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<null> => 
   return null;
 };
 
-export const useDownloadScan = () => {
+export const useDownloadScan = (isDownloading?: (state: string) => void) => {
   const fetcher = useFetcher<null>();
+
+  useEffect(() => {
+    isDownloading?.(fetcher.state);
+  }, [fetcher.state]);
+
   return {
     downloadScan: ({
       scanId,

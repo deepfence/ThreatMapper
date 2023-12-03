@@ -572,11 +572,14 @@ const ScanHistory = () => {
   );
 };
 const HistoryControls = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { data, fetchStatus } = useScanResults();
   const { nodeType = '' } = useParams();
   const { scanStatusResult } = data;
   const { navigate, goBack } = usePageNavigation();
-  const { downloadScan } = useDownloadScan();
+  const { downloadScan } = useDownloadScan((state) => {
+    setIsSubmitting(state === 'submitting');
+  });
 
   const [openStopScanModal, setOpenStopScanModal] = useState(false);
   const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
@@ -734,7 +737,8 @@ const HistoryControls = () => {
                     <DownloadLineIcon />
                   </span>
                 }
-                disabled={fetchStatus !== 'idle'}
+                disabled={fetchStatus !== 'idle' || isSubmitting}
+                loading={isSubmitting}
                 size="md"
                 onClick={() => {
                   downloadScan({
