@@ -1,0 +1,75 @@
+{{ define "piechart" }}
+<h3>Overall Summary:</h3>
+
+{{ if .NodeWiseData.OverallSeverityCounts }}
+<style>
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .item {
+        margin: auto;
+    }
+</style>
+
+<div class="container">
+    <div class="item" id="severityChart" style="width:900px;height:500px;"></div>
+</div>
+<div class="page-break"></div>
+
+<script type="text/javascript">
+    "use strict";
+    var severityPieChart = echarts.init(document.getElementById('severityChart'), "white");
+    var severityChart_option = {
+        "animation": true,
+        "color": ["#ee6666", "#91cc75", "#fac858", "#5470c6", "#73c0de", "#3ba272", "#fc8452", "#9a60b4", "#ea7ccc"],
+        "legend": {
+            "show": true,
+            "type": ""
+        },
+        "series": [{
+            "name": "Severity",
+            "type": "pie",
+            "smooth": false,
+            "connectNulls": false,
+            "showSymbol": false,
+            "waveAnimation": false,
+            "renderLabelForZeroData": false,
+            "selectedMode": false,
+            "animation": false,
+            "data": [{
+                "name": "Critical ({{ .NodeWiseData.OverallSeverityCounts.critical }})",
+                "value": {{ .NodeWiseData.OverallSeverityCounts.critical }}
+            },{
+                "name": "High ({{ .NodeWiseData.OverallSeverityCounts.high }})",
+                "value": {{ .NodeWiseData.OverallSeverityCounts.high }}
+            }, {
+                "name": "Medium ({{ .NodeWiseData.OverallSeverityCounts.medium }})",
+                "value": {{ .NodeWiseData.OverallSeverityCounts.medium }}
+            }, {
+                "name": "Low ({{ .NodeWiseData.OverallSeverityCounts.low }})",
+                "value": {{ .NodeWiseData.OverallSeverityCounts.low }}
+            }, {
+                "name": "Unknown ({{ .NodeWiseData.OverallSeverityCounts.unknown }})",
+                "value": {{ .NodeWiseData.OverallSeverityCounts.unknown }}
+            }],
+            "label": {
+                "show": true,
+                "position": "top",
+                "formatter": "{b} {d}%"
+            }
+        }],
+        "title": {
+            "text": "Unique Severity"
+        },
+        "tooltip": {
+            "show": false
+        }
+    };
+
+    severityPieChart.setOption(severityChart_option);
+</script>
+{{ end }}
+{{ end }}
