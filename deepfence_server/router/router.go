@@ -218,7 +218,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Get("/email", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetEmailConfiguration))
 				r.Delete("/email/{config_id}", dfHandler.AuthHandler(ResourceSettings, PermissionDelete, dfHandler.DeleteEmailConfiguration))
 				r.Put("/agent/version", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadAgentBinaries))
-				r.Get("/agent/versions", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadAgentBinaries))
+				r.Get("/agent/versions", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.ListAgentVersion))
 			})
 
 			r.Route("/graph", func(r chi.Router) {
