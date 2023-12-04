@@ -92,9 +92,11 @@ func injectNodeData[T any](results []T, common model.ScanResultsCommon,
 		if _, ok := m["updated_at"]; ok {
 			flag := integration.IsMessagingFormat(integrationType)
 			if flag {
-				ts := m["updated_at"].(int64)
-				tm := time.Unix(0, ts*int64(time.Millisecond)).In(time.UTC)
-				m["updated_at"] = tm.Format("02-01-2006 15:04:05 MST")
+				if ts, err := utils.TimeStampFormat(m["updated_at"], time.Millisecond); err == nil {
+					m["updated_at"] = ts
+				} else {
+					log.Error().Err(err).Msg("Error formatting timestamp")
+				}
 			}
 		}
 

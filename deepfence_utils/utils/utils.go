@@ -647,3 +647,24 @@ func SplitFullName(name string) (string, string) {
 	}
 	return firstName, lastName
 }
+
+// UNIX timestamp to common readable format
+func TimeStampFormat(timestamp interface{}, unit time.Duration) (string, error) {
+	var ts int64
+
+	switch t := timestamp.(type) {
+	case int64:
+		ts = t
+	case int32:
+		ts = int64(t)
+	case uint32:
+		ts = int64(t)
+	case uint64:
+		ts = int64(t)
+	default:
+		return "", errors.New("Unsupported timestamp type")
+	}
+
+	tm := time.Unix(0, ts*int64(unit)).In(time.UTC)
+	return tm.Format(time.RFC3339), nil
+}

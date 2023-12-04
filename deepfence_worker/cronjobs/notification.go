@@ -240,36 +240,25 @@ func injectNodeDatamap(results []map[string]interface{}, common model.ScanResult
 			r["kubernetes_cluster_name"] = common.KubernetesClusterName
 		}
 
-		timeStampFunc := func(timestamp any) int64 {
-			var ts int64
-			switch t := timestamp.(type) {
-			case int64:
-				ts = t
-			case int32:
-				ts = int64(t)
-			case uint32:
-				ts = int64(t)
-			case uint64:
-				ts = int64(t)
-			}
-			return ts
-		}
-
 		if _, ok := r["updated_at"]; ok {
 			flag := integration.IsMessagingFormat(integrationType)
 			if flag {
-				ts := timeStampFunc(r["updated_at"])
-				tm := time.Unix(0, ts*int64(time.Millisecond)).In(time.UTC)
-				r["updated_at"] = tm.Format("02-01-2006 15:04:05 MST")
+				if ts, err := utils.TimeStampFormat(r["updated_at"], time.Millisecond); err == nil {
+					r["updated_at"] = ts
+				} else {
+					log.Error().Err(err).Msg("Error formatting timestamp")
+				}
 			}
 		}
 
 		if _, ok := r["created_at"]; ok {
 			flag := integration.IsMessagingFormat(integrationType)
 			if flag {
-				ts := timeStampFunc(r["created_at"])
-				tm := time.Unix(0, ts*int64(time.Millisecond)).In(time.UTC)
-				r["created_at"] = tm.Format("02-01-2006 15:04:05 MST")
+				if ts, err := utils.TimeStampFormat(r["created_at"], time.Millisecond); err == nil {
+					r["created_at"] = ts
+				} else {
+					log.Error().Err(err).Msg("Error formatting timestamp")
+				}
 			}
 		}
 
