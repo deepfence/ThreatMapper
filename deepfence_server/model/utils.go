@@ -14,11 +14,3 @@ func DigestToID(digest string) (string, string) {
 	}
 	return imageID, shortImageID
 }
-
-func GetRegistryID(registryType, ns string) string {
-	return registryType + "_" + EscapeSlashToUnderscore(ns)
-}
-
-func EscapeSlashToUnderscore(s string) string {
-	return strings.ReplaceAll(s, "/", "_")
-}

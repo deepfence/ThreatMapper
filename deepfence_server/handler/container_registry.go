@@ -52,7 +52,7 @@ func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 			log.Error().Err(err).Msgf("Fail to unmarshal registry from DB")
 			continue
 		}
-		registryID := model.GetRegistryID(reg.GetRegistryType(), reg.GetNamespace())
+		registryID := utils.GetRegistryID(reg.GetRegistryType(), reg.GetNamespace(), r.ID)
 		registryResponse := model.RegistryListResp{
 			ID:           r.ID,
 			NodeID:       registryID,
@@ -772,7 +772,7 @@ func (h *Handler) SyncRegistry(rCtx context.Context, pgID int32, registry regist
 	// Set sync=true. Otherwise, the status in UI will be "Ready to scan" when an account was just added,
 	// because the asynq job may take some time to start
 	if registry != nil {
-		err := registrysync.SetRegistryAccountSyncing(rCtx, true, registry)
+		err := registrysync.SetRegistryAccountSyncing(rCtx, true, registry, pgID)
 		if err != nil {
 			log.Warn().Msgf(err.Error())
 		}

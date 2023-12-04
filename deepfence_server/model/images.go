@@ -6,18 +6,19 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 	"github.com/rs/zerolog/log"
 )
 
-func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, rType, ns string) ([]ContainerImage, error) {
+func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, registryType, namespace string, pgID int32) ([]ContainerImage, error) {
 	var registryID string
 	var query string
 	var images []ContainerImage
 
-	if rType != "" && ns != "" {
-		registryID = GetRegistryID(rType, ns)
+	if registryType != "" && namespace != "" && pgID > 0 {
+		registryID = utils.GetRegistryID(registryType, namespace, pgID)
 	}
 
 	driver, err := directory.Neo4jClient(ctx)

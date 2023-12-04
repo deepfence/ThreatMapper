@@ -183,6 +183,8 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 
 	worker.AddRetryableHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry)
 
+	worker.AddRetryableHandler(utils.DeleteOldRegistryTask, cronjobs.DeleteOldRegistry)
+
 	worker.AddRetryableHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
 
 	worker.AddOneShotHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders)
