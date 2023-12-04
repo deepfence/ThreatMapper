@@ -109,7 +109,7 @@ func (h *Handler) ScheduleAgentUpgrade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = controls.ScheduleAgentUpgrade(ctx, agentUp.Version, []string{agentUp.NodeID}, action)
+	err = controls.ScheduleAgentUpgrade(ctx, agentUp.Version, agentUp.NodeIDs, action)
 	if err != nil {
 		log.Error().Msgf("Cannot schedule agent upgrade: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)

@@ -11,8 +11,8 @@ type AgentID struct {
 }
 
 type AgentUpgrade struct {
-	Version string `json:"version" required:"true"`
-	NodeID  string `json:"node_id" required:"true"`
+	Version string   `json:"version" required:"true"`
+	NodeIDs []string `json:"node_ids" required:"true"`
 }
 
 type AgentPluginEnable struct {
