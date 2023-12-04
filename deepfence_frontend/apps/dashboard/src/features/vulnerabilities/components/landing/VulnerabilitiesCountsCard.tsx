@@ -11,6 +11,7 @@ import { CardHeader } from '@/features/vulnerabilities/components/landing/CardHe
 import { queries } from '@/queries';
 import { VulnerabilitySeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 function getChartOptions({
   data,
@@ -126,7 +127,7 @@ const UniqueVulnerabilitiesCardContent = () => {
     ...queries.vulnerability.uniqueVulnerabilitiesCount(),
   });
 
-  return <CardContent data={data} />;
+  return <CardContent data={data} link="/vulnerability/unique-vulnerabilities" />;
 };
 
 const MostExploitableVulnerabilitiesCardContent = () => {
@@ -134,14 +135,21 @@ const MostExploitableVulnerabilitiesCardContent = () => {
     ...queries.vulnerability.mostExploitableVulnerabilitiesCount(),
   });
 
-  return <CardContent data={data} />;
+  return <CardContent data={data} link="/vulnerability/most-exploitable" />;
 };
 
-const CardContent = ({ data }: { data: VulnerabilitiesCountsCardData }) => {
+const CardContent = ({
+  data,
+  link,
+}: {
+  data: VulnerabilitiesCountsCardData;
+  link: string;
+}) => {
   const chartOptions = getChartOptions({
     data: data.severityBreakdown,
     total: data.total,
   });
+  const { navigate } = usePageNavigation();
 
   return (
     <div className="flex-1 flex flex-col items-center">
@@ -155,7 +163,12 @@ const CardContent = ({ data }: { data: VulnerabilitiesCountsCardData }) => {
               key={severity}
               className="flex items-center w-full justify-between py-[3px] pr-2"
             >
-              <SeverityLegend severity={severity} />
+              <SeverityLegend
+                severity={severity}
+                onClick={() => {
+                  navigate(`${link}?severity=${severity}`);
+                }}
+              />
               <div className="dark:text-text-input-value text-p7">
                 {abbreviateNumber(
                   data.severityBreakdown[severity as keyof typeof data.severityBreakdown],

@@ -1,3 +1,4 @@
+import { upperFirst } from 'lodash-es';
 import { cn } from 'tailwind-preset';
 
 import { SeverityScoreIcon } from '@/components/icons/common/SeverityScore';
@@ -81,10 +82,12 @@ export const SeverityLegend = ({
   severity,
   className,
   iconClassName,
+  onClick,
 }: {
   severity: string;
   className?: string;
   iconClassName?: string;
+  onClick?: () => void;
 }) => {
   return (
     <div
@@ -105,7 +108,15 @@ export const SeverityLegend = ({
           iconClassName,
         )}
       ></div>
-      <div>{severity}</div>
+      <button
+        className={cn({
+          'cursor-pointer': onClick !== undefined,
+          'cursor-auto': onClick === undefined,
+        })}
+        onClick={onClick}
+      >
+        {upperFirst(severity)}
+      </button>
     </div>
   );
 };

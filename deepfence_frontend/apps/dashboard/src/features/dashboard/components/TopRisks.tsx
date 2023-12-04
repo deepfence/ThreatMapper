@@ -13,6 +13,7 @@ import { CardHeader } from '@/features/dashboard/components/CardHeader';
 import { queries } from '@/queries';
 import { VulnerabilitySeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 function useSummary(type: 'vulnerability' | 'secret' | 'malware') {
   if (type === 'vulnerability') {
@@ -54,7 +55,13 @@ const RISK_TYPES: {
   },
 };
 
-export const TopRisks = ({ type }: { type: 'vulnerability' | 'secret' | 'malware' }) => {
+export const TopRisks = ({
+  type,
+  link,
+}: {
+  type: 'vulnerability' | 'secret' | 'malware';
+  link: string;
+}) => {
   return (
     <Card className="rounded-[5px] flex flex-col h-full">
       <CardHeader
@@ -64,15 +71,22 @@ export const TopRisks = ({ type }: { type: 'vulnerability' | 'secret' | 'malware
       />
       <div className="flex-1 flex items-center justify-center">
         <Suspense fallback={<CircleSpinner size="md" />}>
-          <TopRisksContent type={type} />
+          <TopRisksContent type={type} link={link} />
         </Suspense>
       </div>
     </Card>
   );
 };
 
-const TopRisksContent = ({ type }: { type: 'vulnerability' | 'secret' | 'malware' }) => {
+const TopRisksContent = ({
+  type,
+  link,
+}: {
+  type: 'vulnerability' | 'secret' | 'malware';
+  link: string;
+}) => {
   const { data } = useSummary(type);
+  const { navigate } = usePageNavigation();
   if (!data) throw new Error('data is empty');
   const chartOptions = getChartOptions({
     data: data.severityBreakdown,
@@ -90,7 +104,13 @@ const TopRisksContent = ({ type }: { type: 'vulnerability' | 'secret' | 'malware
               key={severity}
               className="flex items-center w-full justify-between py-[3px] pr-2"
             >
-              <SeverityLegend severity={severity} className="text-p4" />
+              <SeverityLegend
+                severity={severity}
+                className="text-p4"
+                onClick={() => {
+                  navigate(`${link}?severity=${severity}`);
+                }}
+              />
               <div className="dark:text-text-input-value text-p7">
                 {abbreviateNumber(
                   data.severityBreakdown[severity as keyof typeof data.severityBreakdown],

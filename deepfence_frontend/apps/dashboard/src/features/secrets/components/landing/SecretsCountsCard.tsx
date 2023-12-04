@@ -11,6 +11,7 @@ import { CardHeader } from '@/features/secrets/components/landing/CardHeader';
 import { queries } from '@/queries';
 import { SecretSeverityType, VulnerabilitySeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 function getChartOptions({
   data,
@@ -126,7 +127,7 @@ const UniqueSecretsCardContent = () => {
     ...queries.secret.uniqueSecretsCount(),
   });
 
-  return <CardContent data={data} />;
+  return <CardContent data={data} link="/secret/unique-secrets" />;
 };
 
 const MostExploitableSecretsCardContent = () => {
@@ -134,14 +135,15 @@ const MostExploitableSecretsCardContent = () => {
     ...queries.secret.mostExploitableSecretsCount(),
   });
 
-  return <CardContent data={data} />;
+  return <CardContent data={data} link="/secret/most-exploitable" />;
 };
 
-const CardContent = ({ data }: { data: SecretsCountsCardData }) => {
+const CardContent = ({ data, link }: { data: SecretsCountsCardData; link: string }) => {
   const chartOptions = getChartOptions({
     data: data.severityBreakdown,
     total: data.total,
   });
+  const { navigate } = usePageNavigation();
 
   return (
     <div className="flex-1 flex flex-col items-center">
@@ -155,7 +157,12 @@ const CardContent = ({ data }: { data: SecretsCountsCardData }) => {
               key={severity}
               className="flex items-center w-full justify-between py-[3px] pr-2"
             >
-              <SeverityLegend severity={severity} />
+              <SeverityLegend
+                severity={severity}
+                onClick={() => {
+                  navigate(`${link}?severity=${severity}`);
+                }}
+              />
               <div className="dark:text-text-input-value text-p7">
                 {abbreviateNumber(
                   data.severityBreakdown[severity as keyof typeof data.severityBreakdown],

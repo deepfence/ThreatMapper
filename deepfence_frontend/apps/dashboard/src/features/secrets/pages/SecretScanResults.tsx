@@ -25,7 +25,6 @@ import {
   DropdownItem,
   DropdownSeparator,
   getRowSelectionColumn,
-  IconButton,
   Modal,
   RowSelectionState,
   SortingState,
@@ -1710,6 +1709,8 @@ const SeverityCounts = ({
     [k: string]: number;
   };
 }) => {
+  const [, setSearchParams] = useSearchParams();
+
   return (
     <>
       {Object.keys(severityCounts)?.map((key) => {
@@ -1721,7 +1722,19 @@ const SeverityCounts = ({
                 backgroundColor: SEVERITY_COLORS[key.toLowerCase() as SecretSeverityType],
               }}
             ></div>
-            <div className="capitalize text-p7 dark:text-text-text-and-icon">{key}</div>
+            <button
+              className="capitalize text-p7 dark:text-text-text-and-icon"
+              onClick={() => {
+                setSearchParams((prev) => {
+                  prev.delete('severity');
+                  prev.append('severity', key.toLowerCase());
+                  prev.delete('page');
+                  return prev;
+                });
+              }}
+            >
+              {key}
+            </button>
             <div className="ml-auto text-p7 dark:text-text-input-value">
               {abbreviateNumber(severityCounts?.[key] ?? 0)}
             </div>
