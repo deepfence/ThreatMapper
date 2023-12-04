@@ -12120,9 +12120,16 @@
         }
       },
       "ModelAgentUpgrade": {
-        "required": ["version", "node_id"],
+        "required": ["version", "node_ids"],
         "type": "object",
-        "properties": { "node_id": { "type": "string" }, "version": { "type": "string" } }
+        "properties": {
+          "node_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "version": { "type": "string" }
+        }
       },
       "ModelBasicNode": {
         "required": ["node_id", "name", "node_type", "host_name"],
@@ -14707,8 +14714,7 @@
               "secret",
               "malware",
               "compliance",
-              "cloud_compliance",
-              "alert"
+              "cloud_compliance"
             ],
             "type": "string"
           },

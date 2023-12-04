@@ -241,6 +241,7 @@ export function getControlsApiClient() {
     listControls: controlsApi.getCloudNodeControls.bind(controlsApi),
     enableControl: controlsApi.enableCloudNodeControls.bind(controlsApi),
     disableControl: controlsApi.disableCloudNodeControls.bind(controlsApi),
+    upgradeAgentVersion: controlsApi.upgradeAgentVersion.bind(controlsApi),
   };
 }
 
@@ -366,6 +367,7 @@ export function getSettingsApiClient() {
     updateScheduledTask: settingsApi.updateScheduledTask.bind(settingsApi),
     deleteCustomScheduledTask: settingsApi.deleteCustomScheduledTask.bind(settingsApi),
     addScheduledTask: settingsApi.addScheduledTask.bind(settingsApi),
+    getAgentVersions: settingsApi.getAgentVersions.bind(settingsApi),
   };
 }
 

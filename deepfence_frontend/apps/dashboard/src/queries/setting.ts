@@ -223,4 +223,35 @@ export const settingQueries = createQueryKeys('setting', {
       },
     };
   },
+  listAgentVersion: () => {
+    return {
+      queryKey: ['listAgentVersion'],
+      queryFn: async () => {
+        const api = apiWrapper({
+          fn: getSettingsApiClient().getAgentVersions,
+        });
+        const response = await api();
+
+        if (!response.ok) {
+          if (response.error.response.status === 400) {
+            const { message } = await getResponseErrors(response.error);
+            return {
+              message,
+            };
+          } else if (response.error.response.status === 403) {
+            const message = await get403Message(response.error);
+            return {
+              message,
+            };
+          }
+          throw response.error;
+        }
+
+        return {
+          versions: response.value.versions || [],
+          message: '',
+        };
+      },
+    };
+  },
 });

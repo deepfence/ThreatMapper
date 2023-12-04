@@ -37,6 +37,7 @@ import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerabili
 import { TruncatedText } from '@/components/TruncatedText';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { SearchableCloudAccountForHost } from '@/features/topology/data-components/tables/SearchableCloudAccountForHost';
+import { UpgrageAgentModal } from '@/features/topology/data-components/UpgradeAgentModal';
 import { queries } from '@/queries';
 import {
   ComplianceScanNodeTypeEnum,
@@ -118,6 +119,7 @@ const BulkActions = ({
 }) => {
   const [scanOptions, setScanOptions] =
     useState<ConfigureScanModalProps['scanOptions']>();
+  const [upgradeModal, setUpgradeModal] = useState(false);
   const nodesWithAgentRunning = nodes.filter((node) => node.agentRunning);
   return (
     <>
@@ -203,6 +205,15 @@ const BulkActions = ({
             >
               Start Posture Scan
             </DropdownItem>
+            <DropdownItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setUpgradeModal(true);
+              }}
+              icon={<PostureIcon />}
+            >
+              Upgrage Agent
+            </DropdownItem>
           </>
         }
       >
@@ -221,6 +232,12 @@ const BulkActions = ({
           open
           onOpenChange={() => setScanOptions(undefined)}
           scanOptions={scanOptions}
+        />
+      )}
+      {upgradeModal && (
+        <UpgrageAgentModal
+          nodes={nodesWithAgentRunning}
+          setShowDialog={setUpgradeModal}
         />
       )}
     </>
