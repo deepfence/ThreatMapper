@@ -20,10 +20,10 @@ export interface SideNavigationRootProps {
   onExpandedChange: (expanded: boolean) => void;
 }
 
-type MenuSubItem = {
+interface MenuSubItem {
   title: string;
   to: string;
-};
+}
 
 type MenuItem =
   | {
@@ -114,16 +114,16 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
   return (
     <nav
       className={cn(
-        'overflow-y-auto',
+        'overflow-y-auto overflow-x-hidden',
         'bg-white dark:bg-bg-left-nav',
         'transition-[width]',
-        'fixed left-0 top-0 z-10 scrolling-touch',
+        'fixed left-0 z-10 scrolling-touch',
         'border-r dark:border-bg-top-header',
       )}
       style={{
-        marginTop: '56px',
+        top: '56px',
         width: expanded ? '240px' : '61px',
-        height: '100%',
+        height: 'calc(100vh - 56px)',
       }}
     >
       <ul className={cn('flex flex-col')}>
