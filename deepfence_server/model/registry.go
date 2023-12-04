@@ -79,6 +79,7 @@ type RegistryListReq struct{}
 type RegistryImageListReq struct {
 	ResourceType string `json:"resource_type,omitempty"`
 	Namespace    string `json:"namespace,omitempty"`
+	ID           int32  `json:"id"`
 }
 
 type RegistryImages struct {
@@ -209,7 +210,7 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 		return 0, err
 	}
 
-	_, err = pgClient.CreateContainerRegistry(ctx, postgresqlDb.CreateContainerRegistryParams{
+	containerRegistry, err := pgClient.CreateContainerRegistry(ctx, postgresqlDb.CreateContainerRegistryParams{
 		Name:            ra.Name,
 		RegistryType:    ra.RegistryType,
 		EncryptedSecret: bSecret,    // rawSecretJSON,
@@ -242,7 +243,7 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 	}
 	defer tx.Close()
 
-	registryID := GetRegistryID(ra.RegistryType, ns)
+	registryID := utils.GetRegistryID(ra.RegistryType, ns, containerRegistry.ID)
 	query := `
 		MERGE (m:RegistryAccount{node_id: $node_id })
 		SET m.registry_type = $registry_type,
@@ -334,7 +335,7 @@ func GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Querie
 }
 
 func (r *RegistryImageListReq) GetRegistryImages(ctx context.Context) ([]ContainerImage, error) {
-	return GetContainerImagesFromRegistryAndNamespace(ctx, r.ResourceType, r.Namespace)
+	return GetContainerImagesFromRegistryAndNamespace(ctx, r.ResourceType, r.Namespace, r.ID)
 }
 
 type ImageStub struct {

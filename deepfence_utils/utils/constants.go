@@ -35,6 +35,7 @@ const (
 	GenerateSBOMTask                  = "tasks_generate_sbom"
 	CheckAgentUpgradeTask             = "tasks_check_agent_upgrade"
 	SyncRegistryTask                  = "task_sync_registry"
+	DeleteOldRegistryTask             = "delete_old_registry"
 	TriggerConsoleActionsTask         = "trigger_console_actions"
 	ScheduledTasks                    = "scheduled_tasks"
 	SecretScanTask                    = "task_secret_scan"

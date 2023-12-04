@@ -309,6 +309,7 @@ func (s *Scheduler) startInitJobs(ctx context.Context) error {
 
 	log.Info().Msgf("Start immediate cronjobs for namespace %s", namespace)
 	s.enqueueTask(namespace, utils.CheckAgentUpgradeTask)()
+	s.enqueueTask(namespace, utils.DeleteOldRegistryTask, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.SyncRegistryTask, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.CloudComplianceTask, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.ReportCleanUpTask, utils.CritialTaskOpts()...)()

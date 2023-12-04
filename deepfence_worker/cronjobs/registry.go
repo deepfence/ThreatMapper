@@ -3,7 +3,10 @@ package cronjobs
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry"
 	sync "github.com/deepfence/ThreatMapper/deepfence_server/pkg/registrysync"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -11,6 +14,7 @@ import (
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 func SyncRegistry(ctx context.Context, task *asynq.Task) error {
@@ -62,6 +66,12 @@ func SyncRegistry(ctx context.Context, task *asynq.Task) error {
 		}
 	}
 
+	syncRegistry(ctx, pgClient, registries)
+
+	return nil
+}
+
+func syncRegistry(ctx context.Context, pgClient *postgresql_db.Queries, registries []postgresql_db.GetContainerRegistriesRow) {
 	for _, row := range registries {
 		r, err := registry.GetRegistryWithRegistryRow(row)
 		if err != nil {
@@ -75,5 +85,87 @@ func SyncRegistry(ctx context.Context, task *asynq.Task) error {
 			continue
 		}
 	}
+}
+
+func DeleteOldRegistry(ctx context.Context, task *asynq.Task) error {
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		log.Error().Msgf("unable to get postgres client: %v", err)
+		return nil
+	}
+
+	var registries []postgresql_db.GetContainerRegistriesRow
+	var registriesByID map[string]postgresql_db.GetContainerRegistriesRow
+
+	registries, err = pgClient.GetContainerRegistries(ctx)
+	if err != nil {
+		log.Error().Msgf("unable to get registries: %v", err)
+	}
+
+	var pgRegistryIDs map[string]bool
+	for _, row := range registries {
+		reg, err := registry.GetRegistryWithRegistryRow(row)
+		if err != nil {
+			log.Error().Err(err).Msgf("Fail to unmarshal registry from DB")
+			continue
+		}
+		registryID := utils.GetRegistryID(reg.GetRegistryType(), reg.GetNamespace(), row.ID)
+		pgRegistryIDs[registryID] = true
+		registriesByID[registryID] = row
+	}
+
+	nc, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	query := "MATCH (n:RegistryAccount) RETURN n.node_id"
+
+	res, err := tx.Run(query, map[string]interface{}{})
+	if err != nil {
+		return err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return err
+	}
+
+	var neo4jRegistryIDs map[string]bool
+	for _, rec := range recs {
+		neo4jRegistryIDs[fmt.Sprintf("%v", rec.Values[0])] = true
+	}
+
+	// Registry ID present in neo4j but not in postgres has to be deleted
+	var deleteRegistryIDs []string
+	for id, _ := range neo4jRegistryIDs {
+		if pgRegistryIDs[id] == false {
+			deleteRegistryIDs = append(deleteRegistryIDs, id)
+		}
+	}
+
+	err = model.DeleteRegistryAccount(ctx, deleteRegistryIDs)
+	if err != nil {
+		return err
+	}
+
+	// Registry ID present in postgres but not in neo4j has to be synchronized
+	var syncRegistries []postgresql_db.GetContainerRegistriesRow
+	for id, _ := range pgRegistryIDs {
+		if neo4jRegistryIDs[id] == false {
+			syncRegistries = append(syncRegistries, registriesByID[id])
+		}
+	}
+
+	syncRegistry(ctx, pgClient, syncRegistries)
+
 	return nil
 }
