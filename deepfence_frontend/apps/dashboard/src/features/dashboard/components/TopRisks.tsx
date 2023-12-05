@@ -13,7 +13,6 @@ import { CardHeader } from '@/features/dashboard/components/CardHeader';
 import { queries } from '@/queries';
 import { VulnerabilitySeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 function useSummary(type: 'vulnerability' | 'secret' | 'malware') {
   if (type === 'vulnerability') {
@@ -57,10 +56,10 @@ const RISK_TYPES: {
 
 export const TopRisks = ({
   type,
-  link,
+  to,
 }: {
   type: 'vulnerability' | 'secret' | 'malware';
-  link: string;
+  to: string;
 }) => {
   return (
     <Card className="rounded-[5px] flex flex-col h-full">
@@ -71,7 +70,7 @@ export const TopRisks = ({
       />
       <div className="flex-1 flex items-center justify-center">
         <Suspense fallback={<CircleSpinner size="md" />}>
-          <TopRisksContent type={type} link={link} />
+          <TopRisksContent type={type} to={to} />
         </Suspense>
       </div>
     </Card>
@@ -80,13 +79,12 @@ export const TopRisks = ({
 
 const TopRisksContent = ({
   type,
-  link,
+  to,
 }: {
   type: 'vulnerability' | 'secret' | 'malware';
-  link: string;
+  to: string;
 }) => {
   const { data } = useSummary(type);
-  const { navigate } = usePageNavigation();
   if (!data) throw new Error('data is empty');
   const chartOptions = getChartOptions({
     data: data.severityBreakdown,
@@ -107,9 +105,7 @@ const TopRisksContent = ({
               <SeverityLegend
                 severity={severity}
                 className="text-p4"
-                onClick={() => {
-                  navigate(`${link}?severity=${severity}`);
-                }}
+                to={`${to}?severity=${severity}`}
               />
               <div className="dark:text-text-input-value text-p7">
                 {abbreviateNumber(

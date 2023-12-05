@@ -1537,9 +1537,11 @@ const StatusesCount = ({
                 className="flex flex-1 max-w-[160px] gap-1 items-center"
                 onClick={() => {
                   setSearchParams((prev) => {
-                    prev.delete('status');
-                    prev.append('status', key.toLowerCase());
                     prev.delete('page');
+                    Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                      prev.delete(key);
+                    });
+                    prev.append('status', key.toLowerCase());
                     return prev;
                   });
                 }}

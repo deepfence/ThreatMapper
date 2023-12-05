@@ -1726,9 +1726,11 @@ const SeverityCounts = ({
               className="capitalize text-p7 dark:text-text-text-and-icon"
               onClick={() => {
                 setSearchParams((prev) => {
-                  prev.delete('severity');
-                  prev.append('severity', key.toLowerCase());
                   prev.delete('page');
+                  Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                    prev.delete(key);
+                  });
+                  prev.append('severity', key.toLowerCase());
                   return prev;
                 });
               }}
