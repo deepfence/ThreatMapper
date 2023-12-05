@@ -62,7 +62,7 @@ const useGetAgentVersions = () => {
   });
 };
 
-const Agents = ({
+const AgentVersion = ({
   setVersion,
 }: {
   setVersion: React.Dispatch<React.SetStateAction<string>>;
@@ -173,14 +173,14 @@ export const UpgrageAgentModal = ({
               />
             }
           >
-            <Agents setVersion={setVersion} />
+            <AgentVersion setVersion={setVersion} />
           </Suspense>
           {fetcher.data?.message && (
             <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (
-        <SuccessModalContent text="Updated successfully" />
+        <SuccessModalContent text="Upgraded successfully" />
       )}
     </Modal>
   );
