@@ -502,7 +502,7 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/agent/versions`,
+            path: `/deepfence/settings/agent/versions`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -805,7 +805,7 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/agent/version`,
+            path: `/deepfence/settings/agent/version`,
             method: 'PUT',
             headers: headerParameters,
             query: queryParameters,

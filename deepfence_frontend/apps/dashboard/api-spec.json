@@ -29,89 +29,6 @@
     { "name": "Vulnerability" }
   ],
   "paths": {
-    "/deepfence/agent/version": {
-      "put": {
-        "tags": ["Settings"],
-        "summary": "Upload New agent version",
-        "description": "Upload Agent version",
-        "operationId": "uploadAgentVersion",
-        "responses": {
-          "200": { "description": "OK" },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
-              }
-            }
-          },
-          "401": { "description": "Unauthorized" },
-          "403": { "description": "Forbidden" },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          }
-        },
-        "security": [{ "bearer_token": [] }]
-      }
-    },
-    "/deepfence/agent/versions": {
-      "get": {
-        "tags": ["Settings"],
-        "summary": "Get available agent versions",
-        "description": "Get available agent versions",
-        "operationId": "getAgentVersions",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ModelListAgentVersionResp" }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
-              }
-            }
-          },
-          "401": { "description": "Unauthorized" },
-          "403": { "description": "Forbidden" },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          }
-        },
-        "security": [{ "bearer_token": [] }]
-      }
-    },
     "/deepfence/api-token": {
       "get": {
         "tags": ["User"],
@@ -10122,6 +10039,89 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/settings/agent/version": {
+      "put": {
+        "tags": ["Settings"],
+        "summary": "Upload New agent version",
+        "description": "Upload Agent version",
+        "operationId": "uploadAgentVersion",
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/settings/agent/versions": {
+      "get": {
+        "tags": ["Settings"],
+        "summary": "Get available agent versions",
+        "description": "Get available agent versions",
+        "operationId": "getAgentVersions",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelListAgentVersionResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/settings/email": {
       "get": {
         "tags": ["Settings"],
@@ -12120,9 +12120,16 @@
         }
       },
       "ModelAgentUpgrade": {
-        "required": ["version", "node_id"],
+        "required": ["version", "node_ids"],
         "type": "object",
-        "properties": { "node_id": { "type": "string" }, "version": { "type": "string" } }
+        "properties": {
+          "node_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "version": { "type": "string" }
+        }
       },
       "ModelBasicNode": {
         "required": ["node_id", "name", "node_type", "host_name"],
@@ -14707,8 +14714,7 @@
               "secret",
               "malware",
               "compliance",
-              "cloud_compliance",
-              "alert"
+              "cloud_compliance"
             ],
             "type": "string"
           },

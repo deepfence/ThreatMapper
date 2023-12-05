@@ -75,6 +75,7 @@ import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as topologyLoader } from '@/features/topology/data-components/topologyLoader';
+import { action as agentUpgradeAction } from '@/features/topology/data-components/UpgradeAgentModal';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
 import { module as topologyTable } from '@/features/topology/pages/Table';
 import { module as topology } from '@/features/topology/pages/Topology';
@@ -629,6 +630,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'malware/classes/scan/:scanId',
         ...malwareClassesForScan,
+      },
+      {
+        path: 'controls/agent-upgrade',
+        action: agentUpgradeAction,
       },
     ],
   },
