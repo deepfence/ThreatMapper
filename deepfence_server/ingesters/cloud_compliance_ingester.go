@@ -38,7 +38,7 @@ func (tc *CloudComplianceIngester) Ingest(
 			log.Error().Msg(err.Error())
 		} else {
 			ingestC <- &kgo.Record{
-				Topic:   utils.CLOUD_COMPLIANCE_SCAN,
+				Topic:   utils.CloudComplianceScan,
 				Value:   cb,
 				Headers: rh,
 			}
@@ -75,7 +75,7 @@ func (tc *CloudComplianceScanStatusIngester) Ingest(
 			log.Error().Msg(err.Error())
 		} else {
 			ingestC <- &kgo.Record{
-				Topic:   utils.CLOUD_COMPLIANCE_SCAN_STATUS,
+				Topic:   utils.CloudComplianceScanStatus,
 				Value:   cb,
 				Headers: rh,
 			}

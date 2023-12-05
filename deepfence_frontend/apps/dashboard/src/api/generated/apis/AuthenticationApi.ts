@@ -17,7 +17,7 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
-  ModelApiAuthRequest,
+  ModelAPIAuthRequest,
   ModelLoginRequest,
   ModelLoginResponse,
   ModelResponseAccessToken,
@@ -27,8 +27,8 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    ModelApiAuthRequestFromJSON,
-    ModelApiAuthRequestToJSON,
+    ModelAPIAuthRequestFromJSON,
+    ModelAPIAuthRequestToJSON,
     ModelLoginRequestFromJSON,
     ModelLoginRequestToJSON,
     ModelLoginResponseFromJSON,
@@ -38,7 +38,7 @@ import {
 } from '../models';
 
 export interface AuthTokenRequest {
-    modelApiAuthRequest?: ModelApiAuthRequest;
+    modelAPIAuthRequest?: ModelAPIAuthRequest;
 }
 
 export interface LoginRequest {
@@ -55,7 +55,7 @@ export interface AuthenticationApiInterface {
     /**
      * Get access token for programmatic API access, by providing API Token
      * @summary Get Access Token for API Token
-     * @param {ModelApiAuthRequest} [modelApiAuthRequest] 
+     * @param {ModelAPIAuthRequest} [modelAPIAuthRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AuthenticationApiInterface
@@ -137,7 +137,7 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelApiAuthRequestToJSON(requestParameters.modelApiAuthRequest),
+            body: ModelAPIAuthRequestToJSON(requestParameters.modelAPIAuthRequest),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ModelResponseAccessTokenFromJSON(jsonValue));

@@ -20,8 +20,8 @@ type Compliance struct {
 	TestDesc            string `json:"test_desc"`
 	Status              string `json:"status"`
 	ComplianceCheckType string `json:"compliance_check_type"`
-	ScanId              string `json:"scan_id"`
-	NodeId              string `json:"node_id"`
+	ScanID              string `json:"scan_id"`
+	NodeID              string `json:"node_id"`
 	NodeType            string `json:"node_type"`
 }
 
@@ -34,7 +34,7 @@ type ComplianceData struct {
 	TestSeverity        string `json:"test_severity"`
 	Status              string `json:"status"`
 	ComplianceCheckType string `json:"compliance_check_type"`
-	NodeId              string `json:"node_id"`
+	NodeID              string `json:"node_id"`
 	NodeType            string `json:"node_type"`
 }
 
@@ -57,7 +57,7 @@ func (c Compliance) Split() (ComplianceData, ComplianceRule) {
 			TestSeverity:        c.TestSeverity,
 			Status:              c.Status,
 			ComplianceCheckType: c.ComplianceCheckType,
-			NodeId:              c.NodeId,
+			NodeID:              c.NodeID,
 			NodeType:            c.NodeType,
 		}, ComplianceRule{
 			TestCategory:  c.TestCategory,

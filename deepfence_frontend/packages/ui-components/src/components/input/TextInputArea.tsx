@@ -1,7 +1,10 @@
+import './input.css';
+
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { cva, VariantProps } from 'cva';
 import { isNil } from 'lodash-es';
 import { ComponentProps, forwardRef, useId } from 'react';
+import { cn } from 'tailwind-preset';
 
 import HelperText from '@/components/input/HelperText';
 import { ObjectWithNonNullableValues } from '@/types/utils';
@@ -17,55 +20,66 @@ export interface TextInputAreaProps
 
 const inputElementClassnames = cva(
   [
-    'block ring-1 rounded-lg',
-    'font-normal',
+    'text-p4 px-2 pt-[5px] df-input block w-full disabled:cursor-not-allowed',
     'focus:outline-none',
-    'disabled:cursor-not-allowed',
+    'border-b',
+    'dark:bg-transparent',
+    'transition-[background-size] duration-[0.2s] ease-[ease]',
   ],
   {
     variants: {
       color: {
         default: [
-          // ring styles
-          'ring-gray-300 focus:ring-blue-600',
-          'dark:ring-gray-600 dark:focus:ring-blue-600',
-          // bg styles
-          'bg-gray-50',
-          'dark:bg-gray-700',
-          // placeholder styles
-          'placeholder-gray-500 disabled:placeholder-gray-400',
-          'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
-          // text styles
-          'text-gray-900 disabled:text-gray-700',
-          'dark:text-white dark:disabled:text-gray-200',
+          cn(
+            // border
+            'dark:border-text-text-and-icon',
+            // placeholder styles
+            'placeholder-df-gray-500 disabled:placeholder-df-gray-600',
+            'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
+            // text styles
+            'text-gray-900 dark:text-text-input-value',
+            // disabled text color
+            'disabled:text-gray-700 dark:disabled:text-df-gray-600',
+            // focus style
+            'dark:bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
+            'dark:focus:border-b-accent-accent',
+            // dark and bg styles
+            'dark:bg-no-repeat',
+            'dark:focus:bg-no-repeat',
+            // 'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]',
+            // 'dark:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]',
+          ),
         ],
         error: [
-          // ring styles
-          'ring-red-200 focus:ring-red-500',
-          'dark:ring-red-800 dark:focus:ring-red-500',
-          // bg styles
-          'bg-red-50',
-          'dark:bg-gray-700',
-          // placeholder styles
-          'placeholder-red-400 disabled:placeholder-red-300',
-          'dark:placeholder-red-700 dark:disabled:placeholder-red-800',
-          // text styles
-          'text-red-700 disabled:text-red-500',
-          'dark:text-red-500 dark:disabled:text-red-700',
+          cn(
+            // border
+            'dark:border-chart-red df-error',
+            // placeholder styles
+            'placeholder-df-gray-500 disabled:placeholder-df-gray-600',
+            'dark:placeholder-df-gray-400 dark:disabled:placeholder-df-gray-500',
+            // text font
+            // text styles
+            'text-gray-900 dark:text-text-input-value',
+            // disabled text color
+            'disabled:text-gray-700 dark:disabled:text-df-gray-600',
+            // focus style
+            'dark:bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
+            'dark:focus:border-b-chart-red',
+            // dark and bg styles
+            'dark:bg-no-repeat',
+            'dark:focus:bg-no-repeat',
+            // 'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#F55B47_95%)]',
+            // 'dark:bg-[linear-gradient(to_bottom,_transparent_95%,_#F55B47_95%)]',
+          ),
         ],
       },
-      sizing: {
-        sm: `text-sm px-4 py-2`,
-        md: `text-sm leading-tight px-4 py-3`,
-        lg: `text-base px-4 py-3.5`,
-      },
+
       isFullWidth: {
         true: 'w-full',
       },
     },
     defaultVariants: {
       color: 'default',
-      sizing: 'md',
       isFullWidth: false,
     },
   },
@@ -74,7 +88,7 @@ const inputElementClassnames = cva(
 const COLOR_DEFAULT = 'default';
 
 export const TextInputArea = forwardRef<HTMLTextAreaElement, TextInputAreaProps>(
-  ({ label, id, sizing, cols, helperText, color = COLOR_DEFAULT, ...rest }, ref) => {
+  ({ label, id, cols, helperText, color = COLOR_DEFAULT, ...rest }, ref) => {
     const internalId = useId();
     const _id = id ? id : internalId;
 
@@ -90,11 +104,12 @@ export const TextInputArea = forwardRef<HTMLTextAreaElement, TextInputAreaProps>
         )}
         <div>
           <textarea
-            className={inputElementClassnames({
-              color,
-              sizing,
-              isFullWidth: isNil(cols),
-            })}
+            className={cn(
+              inputElementClassnames({
+                color,
+                isFullWidth: isNil(cols),
+              }),
+            )}
             id={_id}
             ref={ref}
             data-testid={`textinputarea-${_id}`}

@@ -83,7 +83,7 @@ import {
   PostureSeverityType,
   ScanTypeEnum,
 } from '@/types/common';
-import { get403Message } from '@/utils/403';
+import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
@@ -149,10 +149,11 @@ const action = async ({
     });
     if (!result.ok) {
       if (result.error.response.status === 400 || result.error.response.status === 409) {
+        const { message } = await getResponseErrors(result.error);
         return {
           action: actionType,
           success: false,
-          message: result.error.message,
+          message,
         };
       } else if (result.error.response.status === 403) {
         const message = await get403Message(result.error);
@@ -568,12 +569,15 @@ const ScanHistory = () => {
 };
 
 const HistoryControls = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { data, fetchStatus } = useScanResults();
   const { nodeType = '' } = useParams();
   const { scanStatusResult } = data;
   const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
   const { navigate, goBack } = usePageNavigation();
-  const { downloadScan } = useDownloadScan();
+  const { downloadScan } = useDownloadScan((state) => {
+    setIsSubmitting(state === 'submitting');
+  });
 
   const [openStopScanModal, setOpenStopScanModal] = useState(false);
 
@@ -722,14 +726,15 @@ const HistoryControls = () => {
           <>
             <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
             <div className="pl-1.5 flex">
-              <IconButton
+              <Button
                 variant="flat"
-                icon={
+                startIcon={
                   <span className="h-3 w-3">
                     <DownloadLineIcon />
                   </span>
                 }
-                disabled={fetchStatus !== 'idle'}
+                disabled={fetchStatus !== 'idle' || isSubmitting}
+                loading={isSubmitting}
                 size="md"
                 onClick={() => {
                   downloadScan({
@@ -738,22 +743,26 @@ const HistoryControls = () => {
                     nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
                   });
                 }}
-              />
-              <IconButton
+              >
+                Download
+              </Button>
+              <Button
                 variant="flat"
-                icon={
+                startIcon={
                   <span className="h-3 w-3">
                     <TrashLineIcon />
                   </span>
                 }
                 disabled={fetchStatus !== 'idle'}
                 onClick={() => setScanIdToDelete(scan_id ?? '')}
-              />
+              >
+                Delete
+              </Button>
               <>
                 {isScanComplete(status ?? '') && (
-                  <IconButton
+                  <Button
                     variant="flat"
-                    icon={
+                    startIcon={
                       <span className="h-3 w-3">
                         <BalanceLineIcon />
                       </span>
@@ -766,7 +775,9 @@ const HistoryControls = () => {
                         showScanTimeModal: true,
                       });
                     }}
-                  />
+                  >
+                    Compare scan
+                  </Button>
                 )}
               </>
             </div>
@@ -1371,7 +1382,7 @@ const PostureTable = ({
     ];
 
     return columns;
-  }, []);
+  }, [setSearchParams]);
 
   const { data: scanResultData, scanStatusResult } = data;
 
@@ -1516,7 +1527,7 @@ const StatusesCount = ({
 }) => {
   return (
     <div className="col-span-6">
-      <div className="gap-24 flex justify-center">
+      <div className="flex justify-evenly gap-8">
         {Object.keys(statusCounts)?.map((key: string) => {
           return (
             <div key={key} className="col-span-2 dark:text-text-text-and-icon">

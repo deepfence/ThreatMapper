@@ -1,4 +1,4 @@
-package api_messages
+package api_messages //nolint:stylecheck
 
 const (
 	SuccessRegistryUpdated       = "registry updated successfully"

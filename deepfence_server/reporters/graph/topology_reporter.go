@@ -1,4 +1,4 @@
-package reporters_graph
+package reporters_graph //nolint:stylecheck
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	cloud_resource_limit = 1000
+	cloudResourceLimit = 1000
 )
 
 type TopologyReporter interface {
@@ -45,11 +45,11 @@ type NodeStub struct {
 type ResourceStub struct {
 	NodeStub
 	ResourceType string   `json:"resource-type"`
-	AccountId    string   `json:"account_id"`
+	AccountID    string   `json:"account_id"`
 	IDs          []NodeID `json:"ids"`
 }
 
-func (nc *neo4jTopologyReporter) GetProcessConnections(tx neo4j.Transaction, hosts []string) ([]ConnectionSummary, error) {
+func (ntp *neo4jTopologyReporter) GetProcessConnections(tx neo4j.Transaction, hosts []string) ([]ConnectionSummary, error) {
 
 	res := []ConnectionSummary{}
 	hosts = append(hosts, "in-the-internet")
@@ -73,8 +73,8 @@ func (nc *neo4jTopologyReporter) GetProcessConnections(tx neo4j.Transaction, hos
 	if err != nil {
 		return []ConnectionSummary{}, err
 	}
-	edges, err := r.Collect()
 
+	edges, err := r.Collect()
 	if err != nil {
 		return []ConnectionSummary{}, err
 	}
@@ -85,9 +85,9 @@ func (nc *neo4jTopologyReporter) GetProcessConnections(tx neo4j.Transaction, hos
 			continue
 		}
 		if edge.Values[2].(string) != edge.Values[6].(string) {
-			left_pids := edge.Values[3].([]interface{})
-			right_pids := edge.Values[7].([]interface{})
-			for i := range left_pids {
+			leftPIDs := edge.Values[3].([]interface{})
+			rightPIDs := edge.Values[7].([]interface{})
+			for i := range leftPIDs {
 				buf.Reset()
 				buf.WriteString(edge.Values[0].(string))
 				buf.WriteByte(';')
@@ -95,7 +95,7 @@ func (nc *neo4jTopologyReporter) GetProcessConnections(tx neo4j.Transaction, hos
 				buf.WriteByte(';')
 				buf.WriteString(edge.Values[2].(string))
 				buf.WriteByte(';')
-				buf.WriteString(strconv.Itoa(int(left_pids[i].(int64))))
+				buf.WriteString(strconv.Itoa(int(leftPIDs[i].(int64))))
 				src := buf.String()
 				buf.Reset()
 				buf.WriteString(edge.Values[4].(string))
@@ -104,7 +104,7 @@ func (nc *neo4jTopologyReporter) GetProcessConnections(tx neo4j.Transaction, hos
 				buf.WriteByte(';')
 				buf.WriteString(edge.Values[6].(string))
 				buf.WriteByte(';')
-				buf.WriteString(strconv.Itoa(int(right_pids[i].(int64))))
+				buf.WriteString(strconv.Itoa(int(rightPIDs[i].(int64))))
 				target := buf.String()
 				res = append(res, ConnectionSummary{Source: src, Target: target})
 			}
@@ -114,10 +114,10 @@ func (nc *neo4jTopologyReporter) GetProcessConnections(tx neo4j.Transaction, hos
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) GetHostConnections(tx neo4j.Transaction, region_k8s, not_hosts []string) ([]ConnectionSummary, error) {
+func (ntp *neo4jTopologyReporter) GetHostConnections(tx neo4j.Transaction, regionK8s, notHosts []string) ([]ConnectionSummary, error) {
 
 	res := []ConnectionSummary{}
-	if len(region_k8s) == 0 {
+	if len(regionK8s) == 0 {
 		return res, nil
 	}
 
@@ -130,7 +130,7 @@ func (nc *neo4jTopologyReporter) GetHostConnections(tx neo4j.Transaction, region
 	MATCH (n) -[r:CONNECTS]-> (m:Node)
 	RETURN n.cloud_provider, CASE WHEN coalesce(n.kubernetes_cluster_id, '') <> '' THEN n.kubernetes_cluster_id ELSE n.cloud_region END AS left_region, n.node_id,
 		   m.cloud_provider, CASE WHEN coalesce(m.kubernetes_cluster_id, '') <> '' THEN m.kubernetes_cluster_id ELSE m.cloud_region END AS right_region, m.node_id`,
-		map[string]interface{}{"region_k8s": region_k8s, "not_hosts": not_hosts})
+		map[string]interface{}{"region_k8s": regionK8s, "not_hosts": notHosts})
 
 	if err != nil {
 		return []ConnectionSummary{}, err
@@ -169,7 +169,7 @@ func (nc *neo4jTopologyReporter) GetHostConnections(tx neo4j.Transaction, region
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) GetKubernetesClusterConnections(tx neo4j.Transaction, not_hosts []string) ([]ConnectionSummary, error) {
+func (ntp *neo4jTopologyReporter) GetKubernetesClusterConnections(tx neo4j.Transaction, notHosts []string) ([]ConnectionSummary, error) {
 
 	res := []ConnectionSummary{}
 
@@ -179,7 +179,7 @@ func (nc *neo4jTopologyReporter) GetKubernetesClusterConnections(tx neo4j.Transa
 	MATCH (n) -[r:CONNECTS]-> (m:Node)
 	RETURN n.cloud_provider, n.kubernetes_cluster_id, n.node_id,
 		   m.cloud_provider, m.kubernetes_cluster_id, m.node_id`,
-		map[string]interface{}{"not_hosts": not_hosts})
+		map[string]interface{}{"not_hosts": notHosts})
 
 	if err != nil {
 		return []ConnectionSummary{}, err
@@ -218,10 +218,10 @@ func (nc *neo4jTopologyReporter) GetKubernetesClusterConnections(tx neo4j.Transa
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) GetRegionClusterConnections(tx neo4j.Transaction, cloud_provider, not_region_cluster []string) ([]ConnectionSummary, error) {
+func (ntp *neo4jTopologyReporter) GetRegionClusterConnections(tx neo4j.Transaction, cloudProvider, notRegionCluster []string) ([]ConnectionSummary, error) {
 
 	res := []ConnectionSummary{}
-	if len(cloud_provider) == 0 {
+	if len(cloudProvider) == 0 {
 		return res, nil
 	}
 
@@ -235,7 +235,7 @@ func (nc *neo4jTopologyReporter) GetRegionClusterConnections(tx neo4j.Transactio
 	RETURN distinct n.cloud_provider, CASE WHEN coalesce(n.kubernetes_cluster_id, '') <> '' THEN n.kubernetes_cluster_id ELSE n.cloud_region END AS left_region,
 		            m.cloud_provider, CASE WHEN coalesce(m.kubernetes_cluster_id, '') <> '' THEN m.kubernetes_cluster_id ELSE m.cloud_region END AS right_region`,
 
-		map[string]interface{}{"cloud_providers": cloud_provider, "not_region_cluster": not_region_cluster})
+		map[string]interface{}{"cloud_providers": cloudProvider, "not_region_cluster": notRegionCluster})
 
 	if err != nil {
 		return []ConnectionSummary{}, err
@@ -272,69 +272,69 @@ func (nc *neo4jTopologyReporter) GetRegionClusterConnections(tx neo4j.Transactio
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction,
-	cloud_provider,
-	cloud_region,
-	k8s_cluster,
+func (ntp *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction,
+	cloudProvider,
+	cloudRegion,
+	k8sCluster,
 	hosts []string) ([]ConnectionSummary, error) {
 
 	start := time.Now()
 	res := []ConnectionSummary{}
-	proc_conn, err := nc.GetProcessConnections(tx, hosts)
+	procConn, err := ntp.GetProcessConnections(tx, hosts)
 	if err != nil {
 		return res, err
 	}
-	log.Info().Msgf("Proc: %v / %v", time.Since(start), len(proc_conn))
-	res = append(res, proc_conn...)
-	host_conn, err := nc.GetHostConnections(tx, append(cloud_region, k8s_cluster...), hosts)
+	log.Info().Msgf("Proc: %v / %v", time.Since(start), len(procConn))
+	res = append(res, procConn...)
+	hostConn, err := ntp.GetHostConnections(tx, append(cloudRegion, k8sCluster...), hosts)
 	if err != nil {
 		return res, err
 	}
-	res = append(res, host_conn...)
-	log.Info().Msgf("Hosts: %v / %v", time.Since(start), len(host_conn))
-	rc_conn, err := nc.GetRegionClusterConnections(tx, cloud_provider, append(cloud_region, k8s_cluster...))
+	res = append(res, hostConn...)
+	log.Info().Msgf("Hosts: %v / %v", time.Since(start), len(hostConn))
+	rcConn, err := ntp.GetRegionClusterConnections(tx, cloudProvider, append(cloudRegion, k8sCluster...))
 	if err != nil {
 		return res, err
 	}
-	res = append(res, rc_conn...)
-	log.Info().Msgf("RC: %v / %v", time.Since(start), len(rc_conn))
+	res = append(res, rcConn...)
+	log.Info().Msgf("RC: %v / %v", time.Since(start), len(rcConn))
 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) GetKubernetesConnections(tx neo4j.Transaction,
-	k8s_cluster,
+func (ntp *neo4jTopologyReporter) GetKubernetesConnections(tx neo4j.Transaction,
+	k8sCluster,
 	hosts []string) ([]ConnectionSummary, error) {
 
 	start := time.Now()
 	res := []ConnectionSummary{}
-	proc_conn, err := nc.GetProcessConnections(tx, hosts)
+	procConn, err := ntp.GetProcessConnections(tx, hosts)
 	if err != nil {
 		return res, err
 	}
-	log.Info().Msgf("Proc: %v / %v", time.Since(start), len(proc_conn))
-	res = append(res, proc_conn...)
-	host_conn, err := nc.GetHostConnections(tx, k8s_cluster, hosts)
+	log.Info().Msgf("Proc: %v / %v", time.Since(start), len(procConn))
+	res = append(res, procConn...)
+	hostConn, err := ntp.GetHostConnections(tx, k8sCluster, hosts)
 	if err != nil {
 		return res, err
 	}
-	res = append(res, host_conn...)
-	log.Info().Msgf("Hosts: %v / %v", time.Since(start), len(host_conn))
-	rc_conn, err := nc.GetKubernetesClusterConnections(tx, hosts)
+	res = append(res, hostConn...)
+	log.Info().Msgf("Hosts: %v / %v", time.Since(start), len(hostConn))
+	rcConn, err := ntp.GetKubernetesClusterConnections(tx, hosts)
 	if err != nil {
 		return res, err
 	}
-	res = append(res, rc_conn...)
-	log.Info().Msgf("K8s: %v / %v", time.Since(start), len(rc_conn))
+	res = append(res, rcConn...)
+	log.Info().Msgf("K8s: %v / %v", time.Since(start), len(rcConn))
 
 	return res, nil
 }
 
-func nodeIds2nodeId(node_ids []NodeID) string {
+func nodeIDs2nodeID(nodeIDs []NodeID) string {
 	h := sha256.New()
 	v := []string{}
-	for i := range node_ids {
-		v = append(v, string(node_ids[i]))
+	for i := range nodeIDs {
+		v = append(v, string(nodeIDs[i]))
 	}
 	sort.Strings(v)
 
@@ -344,11 +344,11 @@ func nodeIds2nodeId(node_ids []NodeID) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(
+func (ntp *neo4jTopologyReporter) GetNonPublicCloudResources(
 	tx neo4j.Transaction,
-	cloud_provider []string,
-	cloud_regions []string,
-	cloud_services []string,
+	cloudProvider []string,
+	cloudRegions []string,
+	cloudServices []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
 	res := map[NodeID][]ResourceStub{}
 	r, err := tx.Run(`
@@ -360,9 +360,9 @@ func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(
 		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
 		RETURN collect(s.node_id),s.cloud_provider,s.region,s.account_id,s.node_type`,
 		filterNil(map[string]interface{}{
-			"providers": cloud_provider,
-			"services":  cloud_services,
-			"regions":   cloud_regions,
+			"providers": cloudProvider,
+			"services":  cloudServices,
+			"regions":   cloudRegions,
 		}))
 	if err != nil {
 		return res, err
@@ -374,27 +374,27 @@ func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(
 	}
 
 	for _, record := range records {
-		//provider := record.Values[0].(string)
+		// provider := record.Values[0].(string)
 		if record.Values[0] == nil || record.Values[1] == nil {
 			continue
 		}
-		node_ids := extractResourceNodeIds(record.Values[0].([]interface{}))
+		nodeIDs := extractResourceNodeIds(record.Values[0].([]interface{}))
 		region := NodeID(record.Values[2].(string))
-		account_id := NodeID(record.Values[3].(string))
-		node_type := NodeID(record.Values[4].(string))
-		key := NodeID(string(region) + ":" + string(node_type))
+		accountID := NodeID(record.Values[3].(string))
+		nodeType := NodeID(record.Values[4].(string))
+		key := NodeID(string(region) + ":" + string(nodeType))
 		if _, present := res[key]; !present {
 			res[key] = []ResourceStub{}
 		}
 
 		res[key] = append(res[key], ResourceStub{
 			NodeStub: NodeStub{
-				ID:   NodeID(nodeIds2nodeId(node_ids)),
-				Name: string(node_type),
+				ID:   NodeID(nodeIDs2nodeID(nodeIDs)),
+				Name: string(nodeType),
 			},
-			IDs:          node_ids,
-			ResourceType: string(node_type),
-			AccountId:    string(account_id),
+			IDs:          nodeIDs,
+			ResourceType: string(nodeType),
+			AccountID:    string(accountID),
 		})
 	}
 	return res, nil
@@ -409,10 +409,10 @@ func extractResourceNodeIds(ids []interface{}) []NodeID {
 	return res
 }
 
-func (nc *neo4jTopologyReporter) GetCloudServices(
+func (ntp *neo4jTopologyReporter) GetCloudServices(
 	tx neo4j.Transaction,
-	cloud_provider []string,
-	cloud_regions []string,
+	cloudProvider []string,
+	cloudRegions []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
 
 	res := map[NodeID][]ResourceStub{}
@@ -422,13 +422,13 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 		MATCH (cp) -[:HOSTS]-> (cr: CloudRegion)
 		WHERE CASE WHEN $regions IS NULL THEN true ELSE cr.node_id IN $regions END
 		MATCH (cr) -[:HOSTS]-> (s:CloudResource)
-		WITH s LIMIT `+strconv.Itoa(cloud_resource_limit)+`
+		WITH s LIMIT `+strconv.Itoa(cloudResourceLimit)+`
 		WHERE s.node_type IN $resource_types `+
 		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
 		RETURN collect(s.node_id), s.cloud_region, s.node_type`,
 		filterNil(map[string]interface{}{
-			"providers":      cloud_provider,
-			"regions":        cloud_regions,
+			"providers":      cloudProvider,
+			"regions":        cloudRegions,
 			"resource_types": ingestersUtil.TopologyCloudResourceTypes,
 		}))
 
@@ -442,17 +442,17 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 	}
 
 	for _, record := range records {
-		node_ids := extractResourceNodeIds(record.Values[0].([]interface{}))
+		nodeIDs := extractResourceNodeIds(record.Values[0].([]interface{}))
 		region := record.Values[1].(string)
 		service := record.Values[2].(string)
 
 		res[NodeID(region)] = append(res[NodeID(region)],
 			ResourceStub{
 				NodeStub: NodeStub{
-					ID:   NodeID(nodeIds2nodeId(node_ids)),
+					ID:   NodeID(nodeIDs2nodeID(nodeIDs)),
 					Name: service,
 				},
-				IDs:          node_ids,
+				IDs:          nodeIDs,
 				ResourceType: service,
 			})
 	}
@@ -460,11 +460,11 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 
 }
 
-func (nc *neo4jTopologyReporter) GetPublicCloudResources(
+func (ntp *neo4jTopologyReporter) GetPublicCloudResources(
 	tx neo4j.Transaction,
-	cloud_provider []string,
-	cloud_regions []string,
-	cloud_services []string,
+	cloudProvider []string,
+	cloudRegions []string,
+	cloudServices []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
 	res := map[NodeID][]ResourceStub{}
 	r, err := tx.Run(`
@@ -481,9 +481,9 @@ func (nc *neo4jTopologyReporter) GetPublicCloudResources(
 		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
 		RETURN collect(s.node_id),s.cloud_provider,s.region,s.account_id,s.node_type`,
 		filterNil(map[string]interface{}{
-			"providers": cloud_provider,
-			"services":  cloud_services,
-			"regions":   cloud_regions,
+			"providers": cloudProvider,
+			"services":  cloudServices,
+			"regions":   cloudRegions,
 		}))
 	if err != nil {
 		return res, err
@@ -495,34 +495,34 @@ func (nc *neo4jTopologyReporter) GetPublicCloudResources(
 	}
 
 	for _, record := range records {
-		//provider := record.Values[0].(string)
+		// provider := record.Values[0].(string)
 		if record.Values[0] == nil || record.Values[1] == nil {
 			continue
 		}
-		node_ids := extractResourceNodeIds(record.Values[0].([]interface{}))
+		nodeIDs := extractResourceNodeIds(record.Values[0].([]interface{}))
 		region := NodeID(record.Values[2].(string))
-		account_id := NodeID(record.Values[3].(string))
-		node_type := NodeID(record.Values[4].(string))
-		key := NodeID(string(region) + ":" + string(node_type))
+		accountID := NodeID(record.Values[3].(string))
+		nodeType := NodeID(record.Values[4].(string))
+		key := NodeID(string(region) + ":" + string(nodeType))
 		if _, present := res[key]; !present {
 			res[key] = []ResourceStub{}
 		}
 
 		res[key] = append(res[key], ResourceStub{
 			NodeStub: NodeStub{
-				ID:   NodeID(nodeIds2nodeId(node_ids)),
-				Name: string(node_type),
+				ID:   NodeID(nodeIDs2nodeID(nodeIDs)),
+				Name: string(nodeType),
 			},
-			IDs:          node_ids,
-			ResourceType: string(node_type),
-			AccountId:    string(account_id),
+			IDs:          nodeIDs,
+			ResourceType: string(nodeType),
+			AccountID:    string(accountID),
 		})
 	}
 	return res, nil
 
 }
 
-func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]NodeStub, error) {
+func (ntp *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]NodeStub, error) {
 	res := []NodeStub{}
 	r, err := tx.Run(`
 		MATCH (n:CloudProvider)
@@ -546,7 +546,7 @@ func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]Node
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_provider []string) (map[NodeID][]NodeStub, error) {
+func (ntp *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloudProvider []string) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(`
 		MATCH (cr:CloudProvider)
@@ -554,7 +554,7 @@ func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_pro
 		MATCH (cr) -[:HOSTS]-> (n:CloudRegion)
 		WHERE n.active = true
 		RETURN cr.node_id, n.node_id`,
-		filterNil(map[string]interface{}{"providers": cloud_provider}))
+		filterNil(map[string]interface{}{"providers": cloudProvider}))
 
 	if err != nil {
 		return res, err
@@ -577,9 +577,9 @@ func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_pro
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getCloudKubernetes(
+func (ntp *neo4jTopologyReporter) getCloudKubernetes(
 	tx neo4j.Transaction,
-	cloud_provider []string,
+	cloudProvider []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(`
@@ -590,7 +590,7 @@ func (nc *neo4jTopologyReporter) getCloudKubernetes(
 		WITH DISTINCT cr.node_id as cloud_provider, n
 		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
 		RETURN cloud_provider, n.node_id, n.node_name`,
-		filterNil(map[string]interface{}{"providers": cloud_provider}))
+		filterNil(map[string]interface{}{"providers": cloudProvider}))
 
 	if err != nil {
 		return res, err
@@ -623,9 +623,9 @@ func filterNil(params map[string]interface{}) map[string]interface{} {
 	return params
 }
 
-func (nc *neo4jTopologyReporter) getHosts(
+func (ntp *neo4jTopologyReporter) getHosts(
 	tx neo4j.Transaction,
-	cloud_provider, cloud_regions, cloud_kubernetes []string,
+	cloudProvider, cloudRegions, cloudKubernetes []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 
@@ -640,7 +640,7 @@ func (nc *neo4jTopologyReporter) getHosts(
 	` + reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false) + `
 	RETURN n.cloud_provider, n.cloud_region, n.node_id`
 
-	params := filterNil(map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions})
+	params := filterNil(map[string]interface{}{"providers": cloudProvider, "regions": cloudRegions})
 
 	r, err := tx.Run(query, params)
 	if err != nil {
@@ -654,17 +654,17 @@ func (nc *neo4jTopologyReporter) getHosts(
 	}
 
 	for _, record := range records {
-		//provider := record.Values[0].(string)
+		// provider := record.Values[0].(string)
 		if record.Values[1] == nil || record.Values[2] == nil {
 			continue
 		}
 		parent := NodeID(record.Values[1].(string))
-		host_id := NodeID(record.Values[2].(string))
+		hostID := NodeID(record.Values[2].(string))
 		if _, present := res[parent]; !present {
 			res[parent] = []NodeStub{}
 		}
 
-		res[parent] = append(res[parent], NodeStub{ID: host_id, Name: string(host_id)})
+		res[parent] = append(res[parent], NodeStub{ID: hostID, Name: string(hostID)})
 	}
 
 	r, err = tx.Run(`
@@ -673,7 +673,7 @@ func (nc *neo4jTopologyReporter) getHosts(
 		AND n.active = true
 		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
 		RETURN n.cloud_provider, n.kubernetes_cluster_id, n.node_id`,
-		filterNil(map[string]interface{}{"kubernetes": cloud_kubernetes}))
+		filterNil(map[string]interface{}{"kubernetes": cloudKubernetes}))
 	if err != nil {
 		return res, err
 	}
@@ -685,23 +685,23 @@ func (nc *neo4jTopologyReporter) getHosts(
 	}
 
 	for _, record := range records {
-		//provider := record.Values[0].(string)
+		// provider := record.Values[0].(string)
 		if record.Values[1] == nil || record.Values[2] == nil {
 			continue
 		}
 		parent := NodeID(record.Values[1].(string))
-		host_id := NodeID(record.Values[2].(string))
+		hostID := NodeID(record.Values[2].(string))
 		if _, present := res[parent]; !present {
 			res[parent] = []NodeStub{}
 		}
 
-		res[parent] = append(res[parent], NodeStub{ID: host_id, Name: string(host_id)})
+		res[parent] = append(res[parent], NodeStub{ID: hostID, Name: string(hostID)})
 	}
 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getProcesses(
+func (ntp *neo4jTopologyReporter) getProcesses(
 	tx neo4j.Transaction, hosts,
 	containers []string) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
@@ -722,13 +722,13 @@ func (nc *neo4jTopologyReporter) getProcesses(
 	}
 
 	for _, record := range records {
-		host_id := NodeID(record.Values[0].(string))
-		process_id := NodeID(record.Values[1].(string))
-		process_name := record.Values[2].(string)
-		if _, present := res[host_id]; !present {
-			res[host_id] = []NodeStub{}
+		hostID := NodeID(record.Values[0].(string))
+		processID := NodeID(record.Values[1].(string))
+		processName := record.Values[2].(string)
+		if _, present := res[hostID]; !present {
+			res[hostID] = []NodeStub{}
 		}
-		res[host_id] = append(res[host_id], NodeStub{ID: process_id, Name: process_name})
+		res[hostID] = append(res[hostID], NodeStub{ID: processID, Name: processName})
 	}
 
 	// Note that this code is overwritting
@@ -750,19 +750,19 @@ func (nc *neo4jTopologyReporter) getProcesses(
 	}
 
 	for _, record := range records {
-		host_id := NodeID(record.Values[0].(string))
-		process_id := NodeID(record.Values[1].(string))
-		process_name := record.Values[2].(string)
-		if _, present := res[host_id]; !present {
-			res[host_id] = []NodeStub{}
+		hostID := NodeID(record.Values[0].(string))
+		processID := NodeID(record.Values[1].(string))
+		processName := record.Values[2].(string)
+		if _, present := res[hostID]; !present {
+			res[hostID] = []NodeStub{}
 		}
-		res[host_id] = append(res[host_id], NodeStub{ID: process_id, Name: process_name})
+		res[hostID] = append(res[hostID], NodeStub{ID: processID, Name: processName})
 	}
 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getPods(
+func (ntp *neo4jTopologyReporter) getPods(
 	tx neo4j.Transaction,
 	hosts []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
@@ -785,19 +785,19 @@ func (nc *neo4jTopologyReporter) getPods(
 	}
 
 	for _, record := range records {
-		host_id := NodeID(record.Values[0].(string))
-		pod_id := NodeID(record.Values[1].(string))
-		pod_name := record.Values[2].(string)
-		if _, present := res[host_id]; !present {
-			res[host_id] = []NodeStub{}
+		hostID := NodeID(record.Values[0].(string))
+		podID := NodeID(record.Values[1].(string))
+		podName := record.Values[2].(string)
+		if _, present := res[hostID]; !present {
+			res[hostID] = []NodeStub{}
 		}
-		res[host_id] = append(res[host_id], NodeStub{ID: pod_id, Name: pod_name})
+		res[hostID] = append(res[hostID], NodeStub{ID: podID, Name: podName})
 	}
 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getContainers(
+func (ntp *neo4jTopologyReporter) getContainers(
 	tx neo4j.Transaction,
 	hosts, pods []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
@@ -824,13 +824,13 @@ func (nc *neo4jTopologyReporter) getContainers(
 	}
 
 	for _, record := range records {
-		parent_id := NodeID(record.Values[0].(string))
-		container_id := NodeID(record.Values[1].(string))
-		container_name := record.Values[2].(string)
-		if _, present := res[parent_id]; !present {
-			res[parent_id] = []NodeStub{}
+		parentID := NodeID(record.Values[0].(string))
+		containerID := NodeID(record.Values[1].(string))
+		containerName := record.Values[2].(string)
+		if _, present := res[parentID]; !present {
+			res[parentID] = []NodeStub{}
 		}
-		res[parent_id] = append(res[parent_id], NodeStub{ID: container_id, Name: container_name})
+		res[parentID] = append(res[parentID], NodeStub{ID: containerID, Name: containerName})
 	}
 
 	return res, nil
@@ -850,8 +850,8 @@ type RenderedGraph struct {
 	Regions     map[NodeID][]NodeStub `json:"regions" required:"true"`
 	Kubernetes  map[NodeID][]NodeStub `json:"kubernetes" required:"true"`
 	Connections []ConnectionSummary   `json:"connections" required:"true"`
-	//PublicCloudResources    map[NodeID][]ResourceStub `json:"public-cloud-resources" required:"true"`
-	//NonPublicCloudResources map[NodeID][]ResourceStub `json:"non-public-cloud-resources" required:"true"`
+	// PublicCloudResources    map[NodeID][]ResourceStub `json:"public-cloud-resources" required:"true"`
+	// NonPublicCloudResources map[NodeID][]ResourceStub `json:"non-public-cloud-resources" required:"true"`
 	CloudServices      map[NodeID][]ResourceStub `json:"cloud-services" required:"true"`
 	SkippedConnections bool                      `json:"skipped_connections" required:"true"`
 }
@@ -880,10 +880,10 @@ type ThreatFilters struct {
 }
 
 const (
-	root_node_id = ""
+	rootNodeID = ""
 )
 
-func (nc *neo4jTopologyReporter) getContainerGraph(
+func (ntp *neo4jTopologyReporter) getContainerGraph(
 	ctx context.Context,
 	filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
@@ -902,17 +902,17 @@ func (nc *neo4jTopologyReporter) getContainerGraph(
 	}
 	defer tx.Close()
 
-	tmp, err := nc.getContainers(tx, nil, nil, mo.Some(filters.FieldFilter))
+	tmp, err := ntp.getContainers(tx, nil, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
 	}
 	// Regroup all hosts into one root host
 	res.Containers = map[NodeID][]NodeStub{}
 	for _, containers := range tmp {
-		res.Containers[root_node_id] = append(res.Containers[root_node_id], containers...)
+		res.Containers[rootNodeID] = append(res.Containers[rootNodeID], containers...)
 	}
 
-	res.Processes, err = nc.getProcesses(tx, []string{}, filters.ContainerFilter)
+	res.Processes, err = ntp.getProcesses(tx, []string{}, filters.ContainerFilter)
 	if err != nil {
 		return res, err
 	}
@@ -920,12 +920,12 @@ func (nc *neo4jTopologyReporter) getContainerGraph(
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getPodGraph(
+func (ntp *neo4jTopologyReporter) getPodGraph(
 	ctx context.Context,
 	filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
 
-	pod_filter := filters.PodFilter
+	podFilter := filters.PodFilter
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -941,16 +941,16 @@ func (nc *neo4jTopologyReporter) getPodGraph(
 	}
 	defer tx.Close()
 
-	tmp, err := nc.getPods(tx, nil, mo.Some(filters.FieldFilter))
+	tmp, err := ntp.getPods(tx, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
 	}
 	// Regroup all hosts into one root host
 	res.Pods = map[NodeID][]NodeStub{}
 	for _, pods := range tmp {
-		res.Pods[root_node_id] = append(res.Pods[root_node_id], pods...)
+		res.Pods[rootNodeID] = append(res.Pods[rootNodeID], pods...)
 	}
-	res.Containers, err = nc.getContainers(tx, []string{}, pod_filter, mo.None[reporters.FieldsFilters]())
+	res.Containers, err = ntp.getContainers(tx, []string{}, podFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -958,12 +958,12 @@ func (nc *neo4jTopologyReporter) getPodGraph(
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+func (ntp *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
 
-	kubernetes_filter := filters.KubernetesFilter
-	host_filter := filters.HostFilter
-	pod_filter := filters.PodFilter
+	kubernetesFilter := filters.KubernetesFilter
+	hostFilter := filters.HostFilter
+	podFilter := filters.PodFilter
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -979,7 +979,7 @@ func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters
 			log.Error().Msgf("Topology get transaction: %v", err)
 			res.SkippedConnections = true
 		} else {
-			res.Connections, err = nc.GetKubernetesConnections(connTx, kubernetes_filter, host_filter)
+			res.Connections, err = ntp.GetKubernetesConnections(connTx, kubernetesFilter, hostFilter)
 			if err != nil {
 				log.Error().Msgf("Topology get connections: %v", err)
 				res.SkippedConnections = true
@@ -996,24 +996,24 @@ func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters
 	}
 	defer tx.Close()
 
-	tmp, err := nc.getCloudKubernetes(tx, nil, mo.Some(filters.FieldFilter))
+	tmp, err := ntp.getCloudKubernetes(tx, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
 	}
 	// Regroup all providers into one root provider
 	res.Kubernetes = map[NodeID][]NodeStub{}
 	for _, kubs := range tmp {
-		res.Kubernetes[root_node_id] = append(res.Kubernetes[root_node_id], kubs...)
+		res.Kubernetes[rootNodeID] = append(res.Kubernetes[rootNodeID], kubs...)
 	}
-	res.Hosts, err = nc.getHosts(tx, nil, []string{}, kubernetes_filter, mo.None[reporters.FieldsFilters]())
+	res.Hosts, err = ntp.getHosts(tx, nil, []string{}, kubernetesFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = nc.getPods(tx, host_filter, mo.None[reporters.FieldsFilters]())
+	res.Pods, err = ntp.getPods(tx, hostFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter, mo.None[reporters.FieldsFilters]())
+	res.Containers, err = ntp.getContainers(tx, hostFilter, podFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -1021,11 +1021,11 @@ func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+func (ntp *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
 
-	host_filter := filters.HostFilter
-	pod_filter := filters.PodFilter
+	hostFilter := filters.HostFilter
+	podFilter := filters.PodFilter
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -1041,7 +1041,7 @@ func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topol
 			log.Error().Msgf("Topology get transaction: %v", err)
 			res.SkippedConnections = true
 		} else {
-			res.Connections, err = nc.GetHostConnections(connTx, nil, nil)
+			res.Connections, err = ntp.GetHostConnections(connTx, nil, nil)
 			if err != nil {
 				log.Error().Msgf("Topology get connections: %v", err)
 				res.SkippedConnections = true
@@ -1058,24 +1058,24 @@ func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topol
 	}
 	defer tx.Close()
 
-	tmp, err := nc.getHosts(tx, nil, nil, nil, mo.Some(filters.FieldFilter))
+	tmp, err := ntp.getHosts(tx, nil, nil, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
 	}
 	// Regroup all regions into one root region
 	res.Hosts = map[NodeID][]NodeStub{}
 	for _, hosts := range tmp {
-		res.Hosts[root_node_id] = append(res.Hosts[root_node_id], hosts...)
+		res.Hosts[rootNodeID] = append(res.Hosts[rootNodeID], hosts...)
 	}
-	res.Processes, err = nc.getProcesses(tx, host_filter, []string{})
+	res.Processes, err = ntp.getProcesses(tx, hostFilter, []string{})
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = nc.getPods(tx, host_filter, mo.None[reporters.FieldsFilters]())
+	res.Pods, err = ntp.getPods(tx, hostFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter, mo.None[reporters.FieldsFilters]())
+	res.Containers, err = ntp.getContainers(tx, hostFilter, podFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -1083,15 +1083,15 @@ func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topol
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+func (ntp *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
 
-	cloud_filter := filters.CloudFilter
-	region_filter := filters.RegionFilter
-	kubernetes_filter := filters.KubernetesFilter
-	host_filter := filters.HostFilter
-	pod_filter := filters.PodFilter
-	container_filter := filters.ContainerFilter
+	cloudFilter := filters.CloudFilter
+	regionFilter := filters.RegionFilter
+	kubernetesFilter := filters.KubernetesFilter
+	hostFilter := filters.HostFilter
+	podFilter := filters.PodFilter
+	containerFilter := filters.ContainerFilter
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -1106,7 +1106,7 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 		if err != nil {
 			return res, err
 		}
-		res.Connections, err = nc.GetConnections(connTx, cloud_filter, region_filter, kubernetes_filter, host_filter)
+		res.Connections, err = ntp.GetConnections(connTx, cloudFilter, regionFilter, kubernetesFilter, hostFilter)
 		if err != nil {
 			log.Error().Msgf("Topology get connections: %v", err)
 			res.SkippedConnections = true
@@ -1122,35 +1122,35 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 	}
 	defer tx.Close()
 
-	res.Providers, err = nc.getCloudProviders(tx)
+	res.Providers, err = ntp.getCloudProviders(tx)
 	if err != nil {
 		return res, err
 	}
-	res.Regions, err = nc.getCloudRegions(tx, cloud_filter)
+	res.Regions, err = ntp.getCloudRegions(tx, cloudFilter)
 	if err != nil {
 		return res, err
 	}
-	res.Kubernetes, err = nc.getCloudKubernetes(tx, cloud_filter, mo.None[reporters.FieldsFilters]())
+	res.Kubernetes, err = ntp.getCloudKubernetes(tx, cloudFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Hosts, err = nc.getHosts(tx, cloud_filter, region_filter, kubernetes_filter, mo.None[reporters.FieldsFilters]())
+	res.Hosts, err = ntp.getHosts(tx, cloudFilter, regionFilter, kubernetesFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Processes, err = nc.getProcesses(tx, host_filter, container_filter)
+	res.Processes, err = ntp.getProcesses(tx, hostFilter, containerFilter)
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = nc.getPods(tx, host_filter, mo.None[reporters.FieldsFilters]())
+	res.Pods, err = ntp.getPods(tx, hostFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter, mo.None[reporters.FieldsFilters]())
+	res.Containers, err = ntp.getContainers(tx, hostFilter, podFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.CloudServices, err = nc.GetCloudServices(tx, cloud_filter, region_filter, mo.None[reporters.FieldsFilters]())
+	res.CloudServices, err = ntp.GetCloudServices(tx, cloudFilter, regionFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -1158,24 +1158,24 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) Graph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
-	return nc.getGraph(ctx, filters)
+func (ntp *neo4jTopologyReporter) Graph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+	return ntp.getGraph(ctx, filters)
 }
 
-func (nc *neo4jTopologyReporter) HostGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
-	return nc.getHostGraph(ctx, filters)
+func (ntp *neo4jTopologyReporter) HostGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+	return ntp.getHostGraph(ctx, filters)
 }
 
-func (nc *neo4jTopologyReporter) PodGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
-	return nc.getPodGraph(ctx, filters)
+func (ntp *neo4jTopologyReporter) PodGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+	return ntp.getPodGraph(ctx, filters)
 }
 
-func (nc *neo4jTopologyReporter) ContainerGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
-	return nc.getContainerGraph(ctx, filters)
+func (ntp *neo4jTopologyReporter) ContainerGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+	return ntp.getContainerGraph(ctx, filters)
 }
 
-func (nc *neo4jTopologyReporter) KubernetesGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
-	return nc.getKubernetesGraph(ctx, filters)
+func (ntp *neo4jTopologyReporter) KubernetesGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+	return ntp.getKubernetesGraph(ctx, filters)
 }
 
 func NewNeo4jCollector(ctx context.Context) (TopologyReporter, error) {
@@ -1222,10 +1222,10 @@ func GetTopologyDelta(ctx context.Context,
 			nodeType := record.Values[1].(string)
 			if isAdd {
 				deltaResp.Additions = append(deltaResp.Additions,
-					model.NodeIdentifier{NodeId: nodeid, NodeType: nodeType})
+					model.NodeIdentifier{NodeID: nodeid, NodeType: nodeType})
 			} else {
 				deltaResp.Deletions = append(deltaResp.Deletions,
-					model.NodeIdentifier{NodeId: nodeid, NodeType: nodeType})
+					model.NodeIdentifier{NodeID: nodeid, NodeType: nodeType})
 			}
 			ts := record.Values[2].(int64)
 			if ts > maxTime {
@@ -1234,7 +1234,7 @@ func GetTopologyDelta(ctx context.Context,
 		}
 
 		if maxTime == 0 {
-			//Set it to previous timestamp
+			// Set it to previous timestamp
 			maxTime = timestamp
 		}
 
@@ -1249,11 +1249,11 @@ func GetTopologyDelta(ctx context.Context,
 
 	nodeTypeQueryStr := "("
 	for idx, entity := range deltaReq.EntityTypes {
-		nodeTypeQueryStr = nodeTypeQueryStr + "n:" + entity
+		nodeTypeQueryStr += "n:" + entity
 		if idx < (len(deltaReq.EntityTypes) - 1) {
-			nodeTypeQueryStr = nodeTypeQueryStr + " OR "
+			nodeTypeQueryStr += " OR "
 		} else {
-			nodeTypeQueryStr = nodeTypeQueryStr + ")"
+			nodeTypeQueryStr += ")"
 		}
 	}
 

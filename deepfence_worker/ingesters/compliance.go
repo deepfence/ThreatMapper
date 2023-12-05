@@ -57,7 +57,7 @@ func CompliancesToMaps(ms []ingestersUtil.Compliance) []map[string]interface{} {
 		res = append(res, map[string]interface{}{
 			"rule":    utils.ToMap(rule),
 			"data":    utils.ToMap(data),
-			"scan_id": v.ScanId,
+			"scan_id": v.ScanID,
 		})
 	}
 	return res

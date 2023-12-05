@@ -232,9 +232,15 @@ const Filters = () => {
     <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
       <div className="flex gap-2">
         <Combobox
-          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
-            return groupStatus.value === searchParams.get('vulnerabilityScanStatus');
-          })}
+          value={
+            searchParams.get('vulnerabilityScanStatus')
+              ? SCAN_STATUS_GROUPS.find((groupStatus) => {
+                  return (
+                    groupStatus.value === searchParams.get('vulnerabilityScanStatus')
+                  );
+                })
+              : null
+          }
           nullable
           onQueryChange={(query) => {
             setVulnerabilityScanStatusSearchText(query);
@@ -266,9 +272,13 @@ const Filters = () => {
           })}
         </Combobox>
         <Combobox
-          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
-            return groupStatus.value === searchParams.get('secretScanStatus');
-          })}
+          value={
+            searchParams.get('secretScanStatus')
+              ? SCAN_STATUS_GROUPS.find((groupStatus) => {
+                  return groupStatus.value === searchParams.get('secretScanStatus');
+                })
+              : null
+          }
           nullable
           onQueryChange={(query) => {
             setSecretScanStatusSearchText(query);
@@ -300,9 +310,13 @@ const Filters = () => {
           })}
         </Combobox>
         <Combobox
-          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
-            return groupStatus.value === searchParams.get('malwareScanStatus');
-          })}
+          value={
+            searchParams.get('malwareScanStatus')
+              ? SCAN_STATUS_GROUPS.find((groupStatus) => {
+                  return groupStatus.value === searchParams.get('malwareScanStatus');
+                })
+              : null
+          }
           nullable
           onQueryChange={(query) => {
             setMalwareScanStatusSearchText(query);

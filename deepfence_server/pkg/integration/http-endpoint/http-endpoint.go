@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"net/http"
+
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
 // todo: add support for batch size
@@ -43,7 +44,7 @@ func (h HTTPEndpoint) SendNotification(ctx context.Context, message string, extr
 	req.Header.Set("Content-Type", "application/json")
 
 	// Make the HTTP request.
-	client := utils.GetHttpClient()
+	client := utils.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		return err

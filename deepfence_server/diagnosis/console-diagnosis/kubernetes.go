@@ -1,4 +1,4 @@
-package console_diagnosis
+package console_diagnosis //nolint:stylecheck
 
 import (
 	"archive/zip"
@@ -17,7 +17,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/minio/minio-go/v7"
-	apiv1 "k8s.io/api/core/v1"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -104,7 +103,7 @@ func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.C
 	if err != nil {
 		return err
 	}
-	podLogOptions := apiv1.PodLogOptions{TailLines: &tailLimit}
+	podLogOptions := coreV1.PodLogOptions{TailLines: &tailLimit}
 
 	for _, pod := range pods {
 		err = k.addPodLogs(ctx, &pod, &podLogOptions, zipWriter)
@@ -125,6 +124,7 @@ func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.C
 	_, err = mc.UploadLocalFile(ctx,
 		filepath.Join(diagnosis.ConsoleDiagnosisFileServerPrefix, filepath.Base(zipFile.Name())),
 		zipFile.Name(),
+		true,
 		minio.PutObjectOptions{ContentType: "application/zip"})
 	if err != nil {
 		return err
@@ -132,7 +132,7 @@ func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.C
 	return nil
 }
 
-func (k *KubernetesConsoleDiagnosisHandler) addPodLogs(ctx context.Context, pod *apiv1.Pod, podLogOptions *apiv1.PodLogOptions, zipWriter *zip.Writer) error {
+func (k *KubernetesConsoleDiagnosisHandler) addPodLogs(ctx context.Context, pod *coreV1.Pod, podLogOptions *coreV1.PodLogOptions, zipWriter *zip.Writer) error {
 	req := k.kubeCli.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, podLogOptions)
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
@@ -170,7 +170,7 @@ func (k *KubernetesConsoleDiagnosisHandler) GetPods(ctx context.Context, options
 	return pods.Items, nil
 }
 
-func (k *KubernetesConsoleDiagnosisHandler) CopyFromPod(pod *apiv1.Pod, srcPath string, zipWriter *zip.Writer) error {
+func (k *KubernetesConsoleDiagnosisHandler) CopyFromPod(pod *coreV1.Pod, srcPath string, zipWriter *zip.Writer) error {
 	randID := utils.NewUUIDString()
 	tmpFolder := "/tmp/" + randID + "/" + pod.Name
 	var err error

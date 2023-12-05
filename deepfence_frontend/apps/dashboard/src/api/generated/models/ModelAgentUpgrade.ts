@@ -21,10 +21,10 @@ import { exists, mapValues } from '../runtime';
 export interface ModelAgentUpgrade {
     /**
      * 
-     * @type {string}
+     * @type {Array<string>}
      * @memberof ModelAgentUpgrade
      */
-    node_id: string;
+    node_ids: Array<string> | null;
     /**
      * 
      * @type {string}
@@ -38,7 +38,7 @@ export interface ModelAgentUpgrade {
  */
 export function instanceOfModelAgentUpgrade(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_ids" in value;
     isInstance = isInstance && "version" in value;
 
     return isInstance;
@@ -54,7 +54,7 @@ export function ModelAgentUpgradeFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'node_id': json['node_id'],
+        'node_ids': json['node_ids'],
         'version': json['version'],
     };
 }
@@ -68,7 +68,7 @@ export function ModelAgentUpgradeToJSON(value?: ModelAgentUpgrade | null): any {
     }
     return {
         
-        'node_id': value.node_id,
+        'node_ids': value.node_ids,
         'version': value.version,
     };
 }

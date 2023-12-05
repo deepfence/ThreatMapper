@@ -9,7 +9,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-func GetCloudNodeComplianceControls(ctx context.Context, nodeId, cloudProvider, complianceType string) ([]model.CloudNodeComplianceControl, error) {
+func GetCloudNodeComplianceControls(ctx context.Context, nodeID, cloudProvider, complianceType string) ([]model.CloudNodeComplianceControl, error) {
 	var controls []model.CloudNodeComplianceControl
 
 	client, err := directory.Neo4jClient(ctx)
@@ -55,7 +55,7 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeId, cloudProvider, 
 			}
 		}
 		control := model.CloudNodeComplianceControl{
-			ControlId:         rec.Values[0].(string),
+			ControlID:         rec.Values[0].(string),
 			Title:             rec.Values[1].(string),
 			Description:       rec.Values[2].(string),
 			Service:           rec.Values[3].(string),
@@ -68,7 +68,7 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeId, cloudProvider, 
 	return controls, tx.Commit()
 }
 
-func EnableCloudNodeComplianceControls(ctx context.Context, nodeId string, controlIds []string) error {
+func EnableCloudNodeComplianceControls(ctx context.Context, nodeID string, controlIds []string) error {
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -97,7 +97,7 @@ func EnableCloudNodeComplianceControls(ctx context.Context, nodeId string, contr
 	return tx.Commit()
 }
 
-func DisableCloudNodeComplianceControls(ctx context.Context, nodeId string, controlIds []string) error {
+func DisableCloudNodeComplianceControls(ctx context.Context, nodeID string, controlIDs []string) error {
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -118,7 +118,7 @@ func DisableCloudNodeComplianceControls(ctx context.Context, nodeId string, cont
 	_, err = tx.Run(`MATCH (n:CloudComplianceControl {})
 		WHERE n.node_id IN $control_ids
 		SET n.active = false`,
-		map[string]interface{}{"control_ids": controlIds})
+		map[string]interface{}{"control_ids": controlIDs})
 	if err != nil {
 		return err
 	}

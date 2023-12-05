@@ -17,12 +17,12 @@ import (
 )
 
 var (
-	CompanyRegex       = regexp.MustCompile("^[A-Za-z][a-zA-Z0-9-\\s@\\.#&!]+$")
-	UserNameRegex      = regexp.MustCompile("^[A-Za-z][A-Za-z .'-]+$")
+	CompanyRegex       = regexp.MustCompile("^[A-Za-z][a-zA-Z0-9-\\s@\\.#&!]+$") //nolint:gosimple
+	UserNameRegex      = regexp.MustCompile("^[A-Za-z][A-Za-z .'-]+$")           //nolint:gosimple
 	MinNamespaceLength = 3
 	MaxNamespaceLength = 32
 	NamespaceRegex     = regexp.MustCompile(fmt.Sprintf("^[a-z][a-z0-9-]{%d,%d}$", MinNamespaceLength-1, MaxNamespaceLength-1))
-	ApiTokenRegex      = regexp.MustCompile(fmt.Sprintf("^[a-z][a-z0-9-]{%d,%d}\\:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", MinNamespaceLength-1, MaxNamespaceLength-1))
+	APITokenRegex      = regexp.MustCompile(fmt.Sprintf("^[a-z][a-z0-9-]{%d,%d}\\:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", MinNamespaceLength-1, MaxNamespaceLength-1))
 )
 
 func NewValidator() (*validator.Validate, ut.Translator, error) {
@@ -217,13 +217,14 @@ func NewValidator() (*validator.Validate, ut.Translator, error) {
 	}
 
 	for _, t := range translations {
-		if t.customTransFunc != nil && t.customRegisFunc != nil {
+		switch {
+		case t.customTransFunc != nil && t.customRegisFunc != nil:
 			err = apiValidator.RegisterTranslation(t.tag, trans, t.customRegisFunc, t.customTransFunc)
-		} else if t.customTransFunc != nil && t.customRegisFunc == nil {
+		case t.customTransFunc != nil && t.customRegisFunc == nil:
 			err = apiValidator.RegisterTranslation(t.tag, trans, registrationFunc(t.tag, t.translation, t.override), t.customTransFunc)
-		} else if t.customTransFunc == nil && t.customRegisFunc != nil {
+		case t.customTransFunc == nil && t.customRegisFunc != nil:
 			err = apiValidator.RegisterTranslation(t.tag, trans, t.customRegisFunc, translateFunc)
-		} else {
+		default:
 			err = apiValidator.RegisterTranslation(t.tag, trans, registrationFunc(t.tag, t.translation, t.override), translateFunc)
 		}
 		if err != nil {
@@ -247,7 +248,7 @@ func NewValidator() (*validator.Validate, ut.Translator, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	err = apiValidator.RegisterValidation("api_token", ValidateApiToken)
+	err = apiValidator.RegisterValidation("api_token", ValidateAPIToken)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -318,8 +319,8 @@ func ValidateNamespace(fl validator.FieldLevel) bool {
 	return NamespaceRegex.MatchString(fl.Field().String())
 }
 
-func ValidateApiToken(fl validator.FieldLevel) bool {
-	return ApiTokenRegex.MatchString(fl.Field().String())
+func ValidateAPIToken(fl validator.FieldLevel) bool {
+	return APITokenRegex.MatchString(fl.Field().String())
 }
 
 func ValidatePassword(fl validator.FieldLevel) bool {

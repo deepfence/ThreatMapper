@@ -5,9 +5,7 @@ import (
 	"sync"
 )
 
-var (
-	NotEnoughRoomError = errors.New("Not enough room")
-)
+var ErrNotEnoughRoom = errors.New("not enough room")
 
 type WorkloadAllocator struct {
 	currentWorkload int32

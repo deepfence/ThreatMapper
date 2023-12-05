@@ -3,7 +3,6 @@ package sendemail
 import (
 	"bytes"
 	"embed"
-	_ "embed"
 	"html/template"
 
 	"github.com/Masterminds/sprig/v3"

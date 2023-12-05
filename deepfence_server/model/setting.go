@@ -47,7 +47,7 @@ type Setting struct {
 	ID            int64         `json:"id"`
 	Key           string        `json:"key"`
 	Value         *SettingValue `json:"value"`
-	IsVisibleOnUi bool          `json:"is_visible_on_ui"`
+	IsVisibleOnUI bool          `json:"is_visible_on_ui"`
 }
 
 type SettingsResponse struct {
@@ -76,7 +76,7 @@ func (s *Setting) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*
 	setting, err := pgClient.CreateSetting(ctx, postgresqlDb.CreateSettingParams{
 		Key:           s.Key,
 		Value:         settingVal,
-		IsVisibleOnUi: s.IsVisibleOnUi,
+		IsVisibleOnUi: s.IsVisibleOnUI,
 	})
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ func (s *Setting) Update(ctx context.Context, pgClient *postgresqlDb.Queries) er
 	return pgClient.UpdateSettingById(ctx, postgresqlDb.UpdateSettingByIdParams{
 		ID:            s.ID,
 		Value:         settingVal,
-		IsVisibleOnUi: s.IsVisibleOnUi,
+		IsVisibleOnUi: s.IsVisibleOnUI,
 	})
 }
 
@@ -146,7 +146,7 @@ func GetSettingByKey(ctx context.Context, pgClient *postgresqlDb.Queries, key st
 		ID:            setting.ID,
 		Key:           setting.Key,
 		Value:         &sValue,
-		IsVisibleOnUi: setting.IsVisibleOnUi,
+		IsVisibleOnUI: setting.IsVisibleOnUi,
 	}, nil
 }
 
@@ -160,7 +160,7 @@ func SetScanResultsDeletionSetting(ctx context.Context, pgClient *postgresqlDb.Q
 				Value:       30, // 30 days
 				Description: "Scan results deletion interval (in days) for nodes that are not active",
 			},
-			IsVisibleOnUi: true,
+			IsVisibleOnUI: true,
 		}
 		_, err = s.Create(ctx, pgClient)
 		if err != nil {
@@ -187,7 +187,7 @@ func SetConsoleIDSetting(ctx context.Context, pgClient *postgresqlDb.Queries) er
 				Value:       randomInt,
 				Description: "Unique ID for console",
 			},
-			IsVisibleOnUi: false,
+			IsVisibleOnUI: false,
 		}
 		_, err = s.Create(ctx, pgClient)
 		if err != nil {
@@ -204,7 +204,7 @@ func InitializeAESSetting(ctx context.Context, pgClient *postgresqlDb.Queries) e
 	// set aes_secret in setting table, if !exists
 	// TODO
 	// generate aes and aes-iv
-	_, err := pgClient.GetSetting(ctx, common.AES_SECRET)
+	_, err := pgClient.GetSetting(ctx, common.AESSecret)
 	if err != nil {
 		key := make([]byte, 32) // 32 bytes for AES-256
 		iv := make([]byte, aes.BlockSize)
@@ -234,7 +234,7 @@ func InitializeAESSetting(ctx context.Context, pgClient *postgresqlDb.Queries) e
 		rawMessageAES := json.RawMessage(rawAES)
 
 		_, err = pgClient.CreateSetting(ctx, postgresqlDb.CreateSettingParams{
-			Key:           common.AES_SECRET,
+			Key:           common.AESSecret,
 			Value:         rawMessageAES,
 			IsVisibleOnUi: false,
 		})

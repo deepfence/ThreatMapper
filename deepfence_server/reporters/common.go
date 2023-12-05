@@ -8,20 +8,20 @@ import (
 )
 
 var (
-	NotFoundErr        = errors.New("Resource not found")
+	ErrNotFound        = errors.New("resource not found")
 	ScanResultMaskNode = map[utils.Neo4jScanType]string{
-		utils.NEO4J_VULNERABILITY_SCAN:    "VulnerabilityStub",
-		utils.NEO4J_SECRET_SCAN:           "Secret",
-		utils.NEO4J_MALWARE_SCAN:          "Malware",
-		utils.NEO4J_COMPLIANCE_SCAN:       "Compliance",
-		utils.NEO4J_CLOUD_COMPLIANCE_SCAN: "CloudCompliance",
+		utils.NEO4JVulnerabilityScan:   "VulnerabilityStub",
+		utils.NEO4JSecretScan:          "Secret",
+		utils.NEO4JMalwareScan:         "Malware",
+		utils.NEO4JComplianceScan:      "Compliance",
+		utils.NEO4JCloudComplianceScan: "CloudCompliance",
 	}
 	ScanResultIDField = map[utils.Neo4jScanType]string{
-		utils.NEO4J_VULNERABILITY_SCAN:    "cve_id",
-		utils.NEO4J_SECRET_SCAN:           "node_id",
-		utils.NEO4J_MALWARE_SCAN:          "node_id",
-		utils.NEO4J_COMPLIANCE_SCAN:       "node_id",
-		utils.NEO4J_CLOUD_COMPLIANCE_SCAN: "node_id",
+		utils.NEO4JVulnerabilityScan:   "cve_id",
+		utils.NEO4JSecretScan:          "node_id",
+		utils.NEO4JMalwareScan:         "node_id",
+		utils.NEO4JComplianceScan:      "node_id",
+		utils.NEO4JCloudComplianceScan: "node_id",
 	}
 )
 
@@ -37,7 +37,7 @@ type CypherableAndCategorizable interface {
 
 type Categorizable interface {
 	GetCategory() string
-	GetJsonCategory() string
+	GetJSONCategory() string
 }
 
 func GetCategoryCounts[T Categorizable](entries []T) map[string]int32 {

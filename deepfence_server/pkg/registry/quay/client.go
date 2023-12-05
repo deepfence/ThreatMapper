@@ -30,7 +30,7 @@ func listImages(url, namespace, token string) ([]model.IngestedContainerImage, e
 			log.Error().Msg(err.Error())
 			continue
 		}
-		log.Debug().Msgf("tags for image %s/%s are %s", repo.Namespace, repo.Name, tags)
+		log.Debug().Msgf("tags for image %s/%s are %v", repo.Namespace, repo.Name, tags)
 
 		images = append(images, getImageWithTags(repo, tags)...)
 	}
@@ -46,9 +46,9 @@ func listRepos(url, namespace, token string) ([]Repositories, error) {
 
 	for {
 		nextPageToken := ""
-		listReposUrl := "%s/api/v1/repository?repo_kind=image&public=true&last_modified=true&namespace=%s&next_page=%s"
-		queryURl := fmt.Sprintf(listReposUrl, url, namespace, nextPageToken)
-		req, err := http.NewRequest(http.MethodGet, queryURl, nil)
+		listReposURL := "%s/api/v1/repository?repo_kind=image&public=true&last_modified=true&namespace=%s&next_page=%s"
+		queryURL := fmt.Sprintf(listReposURL, url, namespace, nextPageToken)
+		req, err := http.NewRequest(http.MethodGet, queryURL, nil)
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return nil, err
@@ -101,9 +101,9 @@ func listRepoTags(url, namespace, token, repoName string) (Tags, error) {
 		tags Tags
 	)
 
-	listRepoTagsUrl := "%s/api/v1/repository/%s/%s?includeTags=true&includeStats=false"
-	queryURl := fmt.Sprintf(listRepoTagsUrl, url, namespace, repoName)
-	req, err := http.NewRequest(http.MethodGet, queryURl, nil)
+	listRepoTagsURL := "%s/api/v1/repository/%s/%s?includeTags=true&includeStats=false"
+	queryURL := fmt.Sprintf(listRepoTagsURL, url, namespace, repoName)
+	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return tags, err

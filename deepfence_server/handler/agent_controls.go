@@ -16,26 +16,26 @@ import (
 func (h *Handler) GetAgentControls(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var agentId model.AgentId
+	var agentID model.AgentID
 	decoder := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
-	err := decoder.Decode(&agentId)
+	err := decoder.Decode(&agentID)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
 
-	actions, errs := controls.GetAgentActions(ctx, agentId.NodeId, agentId.AvailableWorkload)
+	actions, errs := controls.GetAgentActions(ctx, agentID.NodeID, agentID.AvailableWorkload)
 	for _, err := range errs {
 		if err != nil {
 			log.Warn().Msgf("Cannot process some actions for %s: %v, skipping",
-				agentId.NodeId, err)
+				agentID.NodeID, err)
 		}
 	}
 
 	res := ctl.AgentControls{
-		BeatRateSec: 30 * ingesters.Push_back.Load(),
+		BeatRateSec: 30 * ingesters.PushBack.Load(),
 		Commands:    actions,
 	}
 	err = httpext.JSON(w, http.StatusOK, res)
@@ -55,27 +55,27 @@ func (h *Handler) GetAgentInitControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var agentId model.InitAgentReq
+	var agentID model.InitAgentReq
 
-	err = json.Unmarshal(data, &agentId)
+	err = json.Unmarshal(data, &agentID)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
 
-	err = controls.CompleteAgentUpgrade(ctx, agentId.Version, agentId.NodeId)
+	err = controls.CompleteAgentUpgrade(ctx, agentID.Version, agentID.NodeID)
 	if err != nil {
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
 
-	actions, err := controls.GetPendingAgentScans(ctx, agentId.NodeId, agentId.AvailableWorkload)
+	actions, err := controls.GetPendingAgentScans(ctx, agentID.NodeID, agentID.AvailableWorkload)
 	if err != nil {
 		log.Warn().Msgf("Cannot get actions: %s, skipping", err)
 	}
 
 	res := ctl.AgentControls{
-		BeatRateSec: 30 * ingesters.Push_back.Load(),
+		BeatRateSec: 30 * ingesters.PushBack.Load(),
 		Commands:    actions,
 	}
 	err = httpext.JSON(w, http.StatusOK, res)
@@ -103,30 +103,13 @@ func (h *Handler) ScheduleAgentUpgrade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := controls.GetAgentVersionTarball(ctx, agentUp.Version)
+	action, err := controls.PrepareAgentUpgradeAction(ctx, agentUp.Version)
 	if err != nil {
-		respondWith(ctx, w, http.StatusBadRequest, err)
+		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
 
-	internal_req := ctl.StartAgentUpgradeRequest{
-		HomeDirectoryUrl: url,
-		Version:          agentUp.Version,
-	}
-
-	b, err := json.Marshal(internal_req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-		return
-	}
-
-	action := ctl.Action{
-		ID:             ctl.StartAgentUpgrade,
-		RequestPayload: string(b),
-	}
-
-	err = controls.ScheduleAgentUpgrade(ctx, agentUp.Version, []string{agentUp.NodeId}, action)
+	err = controls.ScheduleAgentUpgrade(ctx, agentUp.Version, agentUp.NodeIDs, action)
 	if err != nil {
 		log.Error().Msgf("Cannot schedule agent upgrade: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)
@@ -159,13 +142,13 @@ func (h *Handler) ScheduleAgentPluginsEnable(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	internal_req := ctl.EnableAgentPluginRequest{
-		BinUrl:     url,
+	internalReq := ctl.EnableAgentPluginRequest{
+		BinURL:     url,
 		Version:    agentUp.Version,
 		PluginName: agentUp.PluginName,
 	}
 
-	b, err := json.Marshal(internal_req)
+	b, err := json.Marshal(internalReq)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -177,7 +160,7 @@ func (h *Handler) ScheduleAgentPluginsEnable(w http.ResponseWriter, r *http.Requ
 		RequestPayload: string(b),
 	}
 
-	err = controls.ScheduleAgentPluginEnable(ctx, agentUp.Version, agentUp.PluginName, []string{agentUp.NodeId}, action)
+	err = controls.ScheduleAgentPluginEnable(ctx, agentUp.Version, agentUp.PluginName, []string{agentUp.NodeID}, action)
 	if err != nil {
 		log.Error().Msgf("Cannot schedule agent upgrade: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)
@@ -204,11 +187,11 @@ func (h *Handler) ScheduleAgentPluginsDisable(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	internal_req := ctl.DisableAgentPluginRequest{
+	internalReq := ctl.DisableAgentPluginRequest{
 		PluginName: agentUp.PluginName,
 	}
 
-	b, err := json.Marshal(internal_req)
+	b, err := json.Marshal(internalReq)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -220,7 +203,7 @@ func (h *Handler) ScheduleAgentPluginsDisable(w http.ResponseWriter, r *http.Req
 		RequestPayload: string(b),
 	}
 
-	err = controls.ScheduleAgentPluginDisable(ctx, agentUp.PluginName, []string{agentUp.NodeId}, action)
+	err = controls.ScheduleAgentPluginDisable(ctx, agentUp.PluginName, []string{agentUp.NodeID}, action)
 	if err != nil {
 		log.Error().Msgf("Cannot schedule agent upgrade: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)

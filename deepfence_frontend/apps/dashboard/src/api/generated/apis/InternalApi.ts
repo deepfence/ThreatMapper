@@ -17,15 +17,15 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
-  ModelApiAuthRequest,
+  ModelAPIAuthRequest,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    ModelApiAuthRequestFromJSON,
-    ModelApiAuthRequestToJSON,
+    ModelAPIAuthRequestFromJSON,
+    ModelAPIAuthRequestToJSON,
 } from '../models';
 
 /**
@@ -42,13 +42,13 @@ export interface InternalApiInterface {
      * @throws {RequiredError}
      * @memberof InternalApiInterface
      */
-    getConsoleApiTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelApiAuthRequest>>;
+    getConsoleApiTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelAPIAuthRequest>>;
 
     /**
      * Get api-token for console agent
      * Get api-token for console agent
      */
-    getConsoleApiToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelApiAuthRequest>;
+    getConsoleApiToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelAPIAuthRequest>;
 
 }
 
@@ -61,7 +61,7 @@ export class InternalApi extends runtime.BaseAPI implements InternalApiInterface
      * Get api-token for console agent
      * Get api-token for console agent
      */
-    async getConsoleApiTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelApiAuthRequest>> {
+    async getConsoleApiTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelAPIAuthRequest>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -73,14 +73,14 @@ export class InternalApi extends runtime.BaseAPI implements InternalApiInterface
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelApiAuthRequestFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelAPIAuthRequestFromJSON(jsonValue));
     }
 
     /**
      * Get api-token for console agent
      * Get api-token for console agent
      */
-    async getConsoleApiToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelApiAuthRequest> {
+    async getConsoleApiToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelAPIAuthRequest> {
         const response = await this.getConsoleApiTokenRaw(initOverrides);
         return await response.value();
     }

@@ -46,11 +46,11 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			n.status_message = row.scan_message,
 			n.updated_at = TIMESTAMP()
 		WITH n
-		OPTIONAL MATCH (m) -[:DETECTED]- (n)
+		OPTIONAL MATCH (n) -[:DETECTED]-> (m)
 		WITH n, count(m) as m_count
 		MATCH (n) -[:SCANNED]- (r)
 		SET r.` + ingestersUtil.ScanStatusField[ts] + `=n.status,
-			r.` + ingestersUtil.LatestScanIdField[ts] + `=n.node_id,
+			r.` + ingestersUtil.LatestScanIDField[ts] + `=n.node_id,
 			r.` + ingestersUtil.ScanCountField[ts] + `=m_count`
 
 		recordMap := statusesToMaps(data)
@@ -59,7 +59,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			log.Debug().Msgf("query: %v", query)
 			if _, err = tx.Run(query, map[string]interface{}{
 				"batch":         in_progress,
-				"cancel_states": []string{utils.SCAN_STATUS_CANCELLING, utils.SCAN_STATUS_CANCEL_PENDING}}); err != nil {
+				"cancel_states": []string{utils.ScanStatusCancelling, utils.ScanStatusCancelPending}}); err != nil {
 				log.Error().Msgf("Error while updating scan status: %+v", err)
 				return err
 			}
@@ -85,7 +85,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			return err
 		}
 
-		if ts != utils.NEO4J_COMPLIANCE_SCAN {
+		if ts != utils.NEO4JComplianceScan {
 			event := scans.UpdateScanEvent{
 				ScanType:  ts,
 				RecordMap: recordMap,
@@ -95,7 +95,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 				return err
 			}
 			task := utils.UpdatePodScanStatusTask
-			if ts == utils.NEO4J_CLOUD_COMPLIANCE_SCAN {
+			if ts == utils.NEO4JCloudComplianceScan {
 				task = utils.UpdateCloudResourceScanStatusTask
 			}
 			if err := worker.Enqueue(task, b, utils.DefaultTaskOpts()...); err != nil {
@@ -103,7 +103,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			}
 		}
 
-		if (ts == utils.NEO4J_COMPLIANCE_SCAN || ts == utils.NEO4J_CLOUD_COMPLIANCE_SCAN) && anyCompleted(others) {
+		if (ts == utils.NEO4JComplianceScan || ts == utils.NEO4JCloudComplianceScan) && anyCompleted(others) {
 			err := worker.Enqueue(utils.CachePostureProviders,
 				[]byte(strconv.FormatInt(utils.GetTimestamp(), 10)), utils.CritialTaskOpts()...)
 			if err != nil {
@@ -143,8 +143,8 @@ func statusesToMaps[T any](data []T) []map[string]interface{} {
 				continue
 			}
 			if new_status != old_status {
-				if new_status == utils.SCAN_STATUS_SUCCESS ||
-					new_status == utils.SCAN_STATUS_FAILED || new_status == utils.SCAN_STATUS_CANCELLED {
+				if new_status == utils.ScanStatusSuccess ||
+					new_status == utils.ScanStatusFailed || new_status == utils.ScanStatusCancelled {
 					statusBuff[scan_id] = new
 				}
 			}
@@ -169,7 +169,7 @@ func splitInprogressStatus(data []map[string]interface{}) ([]map[string]interfac
 			continue
 		}
 
-		if status == utils.SCAN_STATUS_INPROGRESS {
+		if status == utils.ScanStatusInProgress {
 			in_progress = append(in_progress, data[i])
 		} else {
 			others = append(others, data[i])
@@ -199,45 +199,11 @@ func anyCompleted(data []map[string]interface{}) bool {
 			continue
 		}
 
-		if status == utils.SCAN_STATUS_SUCCESS {
+		if status == utils.ScanStatusSuccess {
 			complete = true
 			break
 		}
 	}
 
 	return complete
-}
-
-func getEntityIdFromScanID(scanId, scanType string,
-	tx neo4j.Transaction) (string, error) {
-
-	entityId := ""
-	query := `MATCH (s:` + scanType + `{node_id:'` + scanId + `'}) - [:SCANNED] -> (n)
-		WITH labels(n) as label, n
-		RETURN 
-		CASE 
-    		WHEN 'ContainerImage' IN label or 'Container' in label 
-			THEN [(ci:ContainerImage{node_id:n.docker_image_id}) - [:IS] -> (cis) | cis.node_id] 
-    		ELSE [n.node_id]
-		END`
-	res, err := tx.Run(query, map[string]interface{}{})
-	if err != nil {
-		return "", err
-	}
-
-	rec, err := res.Single()
-	if err != nil {
-		return "", err
-	}
-
-	values := rec.Values[0].([]interface{})
-	if len(values) > 0 {
-		entityId = values[0].(string)
-	}
-
-	if len(entityId) == 0 {
-		entityId = scanId
-	}
-
-	return entityId, nil
 }

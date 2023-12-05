@@ -10,6 +10,7 @@ import (
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 
 	cloudscanner_diagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/cloudscanner-diagnosis"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -26,63 +27,68 @@ func (h *Handler) RegisterCloudNodeAccountCount(w http.ResponseWriter, r *http.R
 func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
 	req, err := h.extractCloudNodeDetails(w, r)
 	if err != nil {
+		log.Error().Msgf("Errored out extracting cloud node details error")
 		h.complianceError(w, "Extract cloud node details error")
 		return
 	}
 
-	logrus.Debugf("Register Cloud Node Account Request: %+v", req)
+	log.Debug().Msgf("Register Cloud Node Account Request: %+v", req)
 
 	var logRequestAction ctl.Action
-	monitoredAccountIds := req.MonitoredAccountIds
-	orgAccountId := req.OrgAccountId
+	monitoredAccountIDs := req.MonitoredAccountIDs
+	orgAccountID := req.OrgAccountID
 	scanList := map[string]model.CloudComplianceScanDetails{}
 	cloudtrailTrails := []model.CloudNodeCloudtrailTrail{}
-	nodeId := req.NodeId
+	nodeID := req.NodeID
 
 	ctx := r.Context()
 
 	doRefresh := "false"
 
-	logrus.Debugf("Monitored account ids count: %d", len(monitoredAccountIds))
-	if len(monitoredAccountIds) != 0 {
-		logrus.Debugf("More than 1 account to be monitored: %+v", monitoredAccountIds)
-		if orgAccountId == "" {
+	log.Debug().Msgf("Monitored account ids count: %d", len(monitoredAccountIDs))
+	if len(monitoredAccountIDs) != 0 {
+		logrus.Debugf("More than 1 account to be monitored: %+v", monitoredAccountIDs)
+		if orgAccountID == "" {
 			h.complianceError(w, "Org account id is needed for multi account setup")
 			return
 		}
-		monitoredAccountIds[req.CloudAccount] = nodeId
-		orgNodeId := fmt.Sprintf("%s-%s-cloud-org", req.CloudProvider, orgAccountId)
+		monitoredAccountIDs[req.CloudAccount] = nodeID
+		orgNodeID := fmt.Sprintf("%s-%s-cloud-org", req.CloudProvider, orgAccountID)
+		nodeType := model.PostureProviderGCP
 		orgCloudProvider := model.PostureProviderGCPOrg
 		if req.CloudProvider == model.PostureProviderAWS {
 			orgCloudProvider = model.PostureProviderAWSOrg
+			nodeType = model.PostureProviderAWS
 		}
 		node := map[string]interface{}{
-			"node_id":        orgNodeId,
+			"node_id":        orgNodeID,
 			"cloud_provider": orgCloudProvider,
-			"node_name":      orgAccountId,
+			"node_name":      orgAccountID,
 			"version":        req.Version,
+			"node_type":      nodeType,
 		}
 		err = model.UpsertCloudComplianceNode(ctx, node, "")
 		if err != nil {
 			h.complianceError(w, err.Error())
 			return
 		}
-		monitoredNodeIds := make([]string, 0, len(monitoredAccountIds))
-		for monitoredAccountId, monitoredNodeId := range monitoredAccountIds {
-			monitoredNodeIds = append(monitoredNodeIds, monitoredNodeId)
+		monitoredNodeIds := make([]string, 0, len(monitoredAccountIDs))
+		for monitoredAccountID, monitoredNodeID := range monitoredAccountIDs {
+			monitoredNodeIds = append(monitoredNodeIds, monitoredNodeID)
 			monitoredNode := map[string]interface{}{
-				"node_id":         monitoredNodeId,
+				"node_id":         monitoredNodeID,
 				"cloud_provider":  req.CloudProvider,
-				"node_name":       monitoredAccountId,
-				"organization_id": orgNodeId,
+				"node_name":       monitoredAccountID,
+				"organization_id": orgNodeID,
 				"version":         req.Version,
+				"node_type":       nodeType,
 			}
-			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeId)
+			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeID)
 			if err != nil {
 				h.complianceError(w, err.Error())
 				return
 			}
-			pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, monitoredNodeId)
+			pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4JCloudComplianceScan, monitoredNodeID)
 			if err != nil {
 				continue
 			}
@@ -92,47 +98,47 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 					log.Error().Msgf("Error getting controls for compliance type: %+v", scan.BenchmarkTypes)
 				}
 				stopRequested := false
-				if scan.Status == utils.SCAN_STATUS_CANCELLING {
+				if scan.Status == utils.ScanStatusCancelling {
 					stopRequested = true
 				}
 
 				scanDetail := model.CloudComplianceScanDetails{
-					ScanId:        scan.ScanId,
+					ScanID:        scan.ScanID,
 					ScanTypes:     scan.BenchmarkTypes,
-					AccountId:     monitoredAccountId,
+					AccountID:     monitoredAccountID,
 					Benchmarks:    benchmarks,
 					StopRequested: stopRequested,
 				}
-				scanList[scan.ScanId] = scanDetail
+				scanList[scan.ScanID] = scanDetail
 			}
 		}
-		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, append(monitoredNodeIds, nodeId))
+		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, append(monitoredNodeIds, nodeID))
 		if err != nil {
 			log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
 		}
 	} else {
-		logrus.Debugf("Single account monitoring for node: %s", nodeId)
+		log.Debug().Msgf("Single account monitoring for node: %s", nodeID)
 		node := map[string]interface{}{
-			"node_id":        nodeId,
+			"node_id":        nodeID,
 			"cloud_provider": req.CloudProvider,
 			"node_name":      req.CloudAccount,
 			"version":        req.Version,
+			"node_type":      req.CloudProvider,
 		}
-		logrus.Debugf("Node for upsert: %+v", node)
+		log.Debug().Msgf("Node for upsert: %+v", node)
 		err = model.UpsertCloudComplianceNode(ctx, node, "")
 		if err != nil {
-			logrus.Infof("Error while upserting node: %+v", err)
+			log.Error().Msgf("Error while upserting node: %+v", err)
 			h.complianceError(w, err.Error())
 			return
 		}
 		// get log request for cloudscanner, if any
-		logRequestAction, err := cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeId})
+		logRequestAction, err := cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeID})
 		if err != nil {
 			log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
 		}
-		pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, nodeId)
+		pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4JCloudComplianceScan, nodeID)
 		if err != nil || len(pendingScansList.ScansInfo) == 0 {
-			logrus.Debugf("No pending scans found for node id: %s", nodeId)
 			err = httpext.JSON(w, http.StatusOK,
 				model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
 					CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh, LogAction: logRequestAction}})
@@ -148,22 +154,21 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			}
 
 			stopRequested := false
-			if scan.Status == utils.SCAN_STATUS_CANCELLING {
+			if scan.Status == utils.ScanStatusCancelling {
 				stopRequested = true
 			}
 			scanDetail := model.CloudComplianceScanDetails{
-				ScanId:        scan.ScanId,
+				ScanID:        scan.ScanID,
 				ScanTypes:     scan.BenchmarkTypes,
-				AccountId:     req.CloudAccount,
+				AccountID:     req.CloudAccount,
 				Benchmarks:    benchmarks,
 				StopRequested: stopRequested,
 			}
-			scanList[scan.ScanId] = scanDetail
+			scanList[scan.ScanID] = scanDetail
 		}
-		logrus.Debugf("Pending scans for node: %+v", scanList)
+		log.Debug().Msgf("Pending scans for node: %+v", scanList)
 	}
 	log.Debug().Msgf("Returning response: Scan List %+v cloudtrailTrails %+v Refresh %s", scanList, cloudtrailTrails, doRefresh)
-
 	err = httpext.JSON(w, http.StatusOK,
 		model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
 			CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh, LogAction: logRequestAction}})

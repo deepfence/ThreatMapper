@@ -13,7 +13,7 @@ import (
 type Handler struct {
 	TokenAuth        *jwtauth.JWTAuth
 	AuthEnforcer     *casbin.Enforcer
-	OpenApiDocs      *apiDocs.OpenApiDocs
+	OpenAPIDocs      *apiDocs.OpenAPIDocs
 	SaasDeployment   bool
 	Validator        *validator.Validate
 	Translator       ut.Translator

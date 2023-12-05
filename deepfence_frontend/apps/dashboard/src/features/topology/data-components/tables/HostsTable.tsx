@@ -26,6 +26,7 @@ import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
@@ -37,6 +38,7 @@ import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerabili
 import { TruncatedText } from '@/components/TruncatedText';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { SearchableCloudAccountForHost } from '@/features/topology/data-components/tables/SearchableCloudAccountForHost';
+import { UpgrageAgentModal } from '@/features/topology/data-components/UpgradeAgentModal';
 import { queries } from '@/queries';
 import {
   ComplianceScanNodeTypeEnum,
@@ -118,6 +120,7 @@ const BulkActions = ({
 }) => {
   const [scanOptions, setScanOptions] =
     useState<ConfigureScanModalProps['scanOptions']>();
+  const [agentUpgradeModal, setAgentUpgradeModal] = useState(false);
   const nodesWithAgentRunning = nodes.filter((node) => node.agentRunning);
   return (
     <>
@@ -203,6 +206,15 @@ const BulkActions = ({
             >
               Start Posture Scan
             </DropdownItem>
+            <DropdownItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setAgentUpgradeModal(true);
+              }}
+              icon={<ArrowLine />}
+            >
+              Upgrade Agent
+            </DropdownItem>
           </>
         }
       >
@@ -221,6 +233,12 @@ const BulkActions = ({
           open
           onOpenChange={() => setScanOptions(undefined)}
           scanOptions={scanOptions}
+        />
+      )}
+      {agentUpgradeModal && (
+        <UpgrageAgentModal
+          nodes={nodesWithAgentRunning}
+          setShowDialog={setAgentUpgradeModal}
         />
       )}
     </>
@@ -714,6 +732,15 @@ const DataTable = ({
           return <TruncatedText text={info.getValue() ?? ''} />;
         },
         header: () => <span>OS</span>,
+        minSize: 50,
+        size: 60,
+        maxSize: 120,
+      }),
+      columnHelper.accessor('agent_running', {
+        cell: (info) => {
+          return <TruncatedText text={info.getValue() ? 'Yes' : 'No'} />;
+        },
+        header: () => <TruncatedText text="Agent Running?" />,
         minSize: 50,
         size: 60,
         maxSize: 120,

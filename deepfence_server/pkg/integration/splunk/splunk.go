@@ -31,7 +31,7 @@ func New(ctx context.Context, b []byte) (Splunk, error) {
 }
 
 func (s Splunk) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
-	s.client = utils.GetInsecureHttpClient()
+	s.client = utils.GetInsecureHTTPClient()
 	var msg []map[string]interface{}
 	d := json.NewDecoder(strings.NewReader(message))
 	if err := d.Decode(&msg); err != nil {

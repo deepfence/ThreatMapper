@@ -37,7 +37,7 @@ func (tc *ComplianceIngester) Ingest(
 			log.Error().Msg(err.Error())
 		} else {
 			ingestC <- &kgo.Record{
-				Topic:   utils.COMPLIANCE_SCAN,
+				Topic:   utils.ComplianceScan,
 				Value:   cb,
 				Headers: rh,
 			}
@@ -73,7 +73,7 @@ func (tc *ComplianceScanStatusIngester) Ingest(
 			log.Error().Msg(err.Error())
 		} else {
 			ingestC <- &kgo.Record{
-				Topic:   utils.COMPLIANCE_SCAN_STATUS,
+				Topic:   utils.ComplianceScanStatus,
 				Value:   cb,
 				Headers: rh,
 			}

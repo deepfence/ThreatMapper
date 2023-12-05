@@ -1,0 +1,51 @@
+name: Build & Publish agent binaries
+
+on:
+  workflow_dispatch:
+    inputs:
+      ver:
+        description: "Binaries Version"
+        required: true
+        type: string
+
+env:
+  DF_BIN_VER: ${{ inputs.ver }}
+  VERSION: ${{ inputs.ver }}
+
+jobs:
+  docker:
+    runs-on: ['self-hosted']
+    steps:
+
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{secrets.AWS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: us-east-2
+
+      - name: Build agent binaries
+        run: |
+          make agent
+
+      - name: Extract agent binaries
+        run: |
+          mkdir -p /tmp/binaries/$DF_BIN_VER
+          cd /tmp/binaries/$DF_BIN_VER
+          id=$(docker create deepfenceio/deepfence_agent_ce:latest)
+          docker cp $id:/bin/deepfenced self
+          docker cp $id:/home/deepfence/bin/package-scanner package_scanner
+          docker cp $id:/home/deepfence/bin/yara-hunter/YaraHunter malware_scanner
+          docker cp $id:/home/deepfence/bin/secret-scanner/SecretScanner secret_scanner
+          docker cp $id:/usr/local/discovery/deepfence-discovery discovery
+          docker cp $id:/opt/td-agent-bit/bin/fluent-bit fluentbit
+          docker cp $id:/usr/local/bin/syft syft
+          docker cp $id:/usr/local/bin/compliance_check/compliance compliance
+          tar zcvf binaries.tar.gz ./*
+          docker rm -v $id
+
+      - name: Upload to S3
+        run: aws s3 sync --exclude "*" --include "*.tar.gz" /tmp/binaries s3://deepfence-tm-agent-binaries

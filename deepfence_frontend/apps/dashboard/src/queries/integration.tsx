@@ -2,9 +2,11 @@ import { createQueryKeys } from '@lukemorales/query-key-factory';
 
 import {
   getCommonApiClient,
+  getGenerativeAIIntegraitonClient,
   getIntegrationApiClient,
   getReportsApiClient,
 } from '@/api/api';
+import { ModelGenerativeAiIntegrationListResponse } from '@/api/generated';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
@@ -68,6 +70,35 @@ export const integrationQueries = createQueryKeys('integration', {
           throw reportFieldsResponse.error;
         }
         return reportFieldsResponse.value;
+      },
+    };
+  },
+  listAIIntegrations: () => {
+    return {
+      queryKey: ['listAIIntegrations'],
+      queryFn: async (): Promise<{
+        message?: string;
+        data: ModelGenerativeAiIntegrationListResponse[];
+      }> => {
+        const listGenerativeAiIntegration = apiWrapper({
+          fn: getGenerativeAIIntegraitonClient().listGenerativeAiIntegration,
+        });
+        const listGenerativeAiIntegrationResponse = await listGenerativeAiIntegration();
+        if (!listGenerativeAiIntegrationResponse.ok) {
+          if (listGenerativeAiIntegrationResponse.error.response.status === 403) {
+            const message = await get403Message(
+              listGenerativeAiIntegrationResponse.error,
+            );
+            return {
+              message,
+              data: [],
+            };
+          }
+          throw listGenerativeAiIntegrationResponse.error;
+        }
+        return {
+          data: listGenerativeAiIntegrationResponse.value,
+        };
       },
     };
   },

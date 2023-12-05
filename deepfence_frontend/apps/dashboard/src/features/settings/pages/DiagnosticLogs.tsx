@@ -166,10 +166,13 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     });
     if (!logsResponse.ok) {
       if (logsResponse.error.response.status === 400) {
-        toast.error(logsResponse.error.message);
+        const { message } = await getResponseErrors(logsResponse.error);
+        toast.error(message);
+        return null;
       } else if (logsResponse.error.response.status === 403) {
         const message = await get403Message(logsResponse.error);
         toast.error(message);
+        return null;
       }
       throw logsResponse.error;
     }

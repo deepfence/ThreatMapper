@@ -1,4 +1,5 @@
-import { TextInput } from 'ui-components';
+import { useState } from 'react';
+import { Checkbox, TextInput } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
@@ -19,6 +20,8 @@ sample json
 */
 
 export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormProps) => {
+  const [isPublic, setIsPublic] = useState(false);
+
   return (
     <>
       <div className="text-p4 dark:text-text-input-value">
@@ -69,16 +72,28 @@ export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPro
           helperText={fieldErrors?.['quay_namespace']}
           required
         />
-        <TextInput
-          className="w-3/4 min-[200px] max-w-xs"
-          label="OAuth 2 Access Token (Optional)"
-          type={'password'}
-          info="(Optional) It is needed only for private images"
-          name="secret.quay_access_token"
-          placeholder="OAuth Access Token"
-          color={fieldErrors?.['quay_access_token'] ? 'error' : 'default'}
-          helperText={fieldErrors?.['quay_access_token']}
-        />
+        <div>
+          <input hidden value={String(isPublic)} />
+          <Checkbox
+            label="Public Registry"
+            checked={isPublic}
+            onCheckedChange={(checked: boolean) => {
+              setIsPublic(checked);
+            }}
+          />
+        </div>
+        {!isPublic && (
+          <TextInput
+            className="w-3/4 min-[200px] max-w-xs"
+            label="OAuth 2 Access Token (Optional)"
+            type={'password'}
+            info="(Optional) It is needed only for private images"
+            name="secret.quay_access_token"
+            placeholder="OAuth Access Token"
+            color={fieldErrors?.['quay_access_token'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['quay_access_token']}
+          />
+        )}
 
         {errorMessage && (
           <p className="mt-4 dark:text-status-error text-p7">{errorMessage}</p>

@@ -9,9 +9,9 @@ import (
 const (
 	DefaultTaskMaxRetries = 3
 
-	Q_CRITICAL = "critical"
-	Q_DEFAULT  = "default"
-	Q_LOW      = "low"
+	QCritical = "critical"
+	QDefault  = "default"
+	QLow      = "low"
 )
 
 var (
@@ -35,13 +35,13 @@ func TaskOptions(queue string, opts ...asynq.Option) []asynq.Option {
 }
 
 func CritialTaskOpts(opts ...asynq.Option) []asynq.Option {
-	return TaskOptions(Q_CRITICAL, append(opts, TasksMaxRetries())...)
+	return TaskOptions(QCritical, append(opts, TasksMaxRetries())...)
 }
 
 func DefaultTaskOpts(opts ...asynq.Option) []asynq.Option {
-	return TaskOptions(Q_DEFAULT, append(opts, TasksMaxRetries())...)
+	return TaskOptions(QDefault, append(opts, TasksMaxRetries())...)
 }
 
 func LowTaskOpts(opts ...asynq.Option) []asynq.Option {
-	return TaskOptions(Q_LOW, append(opts, TasksMaxRetries())...)
+	return TaskOptions(QLow, append(opts, TasksMaxRetries())...)
 }

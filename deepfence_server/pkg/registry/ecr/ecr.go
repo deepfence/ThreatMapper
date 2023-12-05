@@ -18,8 +18,8 @@ func New(requestByte []byte) (*RegistryECR, error) {
 	return &r, nil
 }
 
-func (d *RegistryECR) ValidateFields(v *validator.Validate) error {
-	return v.Struct(d)
+func (e *RegistryECR) ValidateFields(v *validator.Validate) error {
+	return v.Struct(e)
 }
 
 func (e *RegistryECR) IsValidCredential() bool {
@@ -78,10 +78,8 @@ func (e *RegistryECR) GetNamespace() string {
 			return e.NonSecret.AWSAccountID
 		}
 		return e.NonSecret.AWSAccessKeyID
-	} else {
-		if e.NonSecret.UseIAMRole == "true" {
-			return e.NonSecret.AWSRegionName + "_" + e.NonSecret.AWSAccountID
-		}
+	} else if e.NonSecret.UseIAMRole == "true" {
+		return e.NonSecret.AWSRegionName + "_" + e.NonSecret.AWSAccountID
 	}
 	return e.NonSecret.AWSRegionName + "_" + e.NonSecret.AWSAccessKeyID
 }

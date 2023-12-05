@@ -48,10 +48,18 @@ func (e PathDoesNotExistsError) Error() string {
 	return fmt.Sprintf("Path doesnot exists here: %s", e.Path)
 }
 
+type FileDeleteError struct {
+	Path string
+}
+
+func (e FileDeleteError) Error() string {
+	return fmt.Sprintf("Failed to delete file: %s", e.Path)
+}
+
 type FileManager interface {
 	ListFiles(ctx context.Context, pathPrefix string, recursive bool, maxKeys int, skipDir bool) []ObjectInfo
-	UploadLocalFile(ctx context.Context, filename string, localFilename string, extra interface{}) (UploadResult, error)
-	UploadFile(ctx context.Context, filename string, data []byte, extra interface{}) (UploadResult, error)
+	UploadLocalFile(ctx context.Context, filename string, localFilename string, overwrite bool, extra interface{}) (UploadResult, error)
+	UploadFile(ctx context.Context, filename string, data []byte, overwrite bool, extra interface{}) (UploadResult, error)
 	DeleteFile(ctx context.Context, filename string, addFilePathPrefix bool, extra interface{}) error
 	DownloadFile(ctx context.Context, remoteFile string, localFile string, extra interface{}) error
 	DownloadFileTo(ctx context.Context, remoteFile string, localFile io.WriteCloser, extra interface{}) error
@@ -141,7 +149,9 @@ func (mfm *MinioFileManager) ListFiles(ctx context.Context, pathPrefix string, r
 	return objectsInfo
 }
 
-func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context, filename string, localFilename string, extra interface{}) (UploadResult, error) {
+func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context,
+	filename string, localFilename string, overwrite bool, extra interface{}) (UploadResult, error) {
+
 	err := mfm.createBucketIfNeeded(ctx)
 	if err != nil {
 		return UploadResult{}, err
@@ -149,8 +159,18 @@ func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context, filename strin
 
 	objectName := mfm.addNamespacePrefix(filename)
 
-	if key, has := checkIfFileExists(ctx, mfm.client, mfm.bucket, objectName); has {
-		return UploadResult{}, AlreadyPresentError{Path: key}
+	key, has := checkIfFileExists(ctx, mfm.client, mfm.bucket, objectName)
+	if has {
+		if !overwrite {
+			return UploadResult{}, AlreadyPresentError{Path: key}
+		} else {
+			log.Info().Msgf("overwrite file %s", key)
+			err := mfm.DeleteFile(ctx, objectName, false, minio.RemoveObjectOptions{ForceDelete: true})
+			if err != nil {
+				log.Error().Err(err).Msg("failed to delete file while overwriting")
+				return UploadResult{}, FileDeleteError{Path: key}
+			}
+		}
 	}
 
 	info, err := mfm.client.FPutObject(ctx, mfm.bucket, objectName, localFilename, extra.(minio.PutObjectOptions))
@@ -169,7 +189,9 @@ func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context, filename strin
 	}, nil
 }
 
-func (mfm *MinioFileManager) UploadFile(ctx context.Context, filename string, data []byte, extra interface{}) (UploadResult, error) {
+func (mfm *MinioFileManager) UploadFile(ctx context.Context,
+	filename string, data []byte, overwrite bool, extra interface{}) (UploadResult, error) {
+
 	err := mfm.createBucketIfNeeded(ctx)
 	if err != nil {
 		return UploadResult{}, err
@@ -177,8 +199,18 @@ func (mfm *MinioFileManager) UploadFile(ctx context.Context, filename string, da
 
 	objectName := mfm.addNamespacePrefix(filename)
 
-	if key, has := checkIfFileExists(ctx, mfm.client, mfm.bucket, objectName); has {
-		return UploadResult{}, AlreadyPresentError{Path: key}
+	key, has := checkIfFileExists(ctx, mfm.client, mfm.bucket, objectName)
+	if has {
+		if !overwrite {
+			return UploadResult{}, AlreadyPresentError{Path: key}
+		} else {
+			log.Info().Msgf("overwrite file %s", key)
+			err := mfm.DeleteFile(ctx, objectName, false, minio.RemoveObjectOptions{ForceDelete: true})
+			if err != nil {
+				log.Error().Err(err).Msg("failed to delete file while overwriting")
+				return UploadResult{}, FileDeleteError{Path: key}
+			}
+		}
 	}
 
 	info, err := mfm.client.PutObject(ctx, mfm.bucket, objectName, bytes.NewReader(data), int64(len(data)), extra.(minio.PutObjectOptions))
@@ -234,7 +266,7 @@ func (mfm *MinioFileManager) DownloadFileContexts(ctx context.Context, remoteFil
 
 func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error) {
 	// Force browser to download file - url.Values{"response-content-disposition": []string{"attachment; filename=\"b.txt\""}},
-	consoleIp, err := GetManagementHost(ctx)
+	consoleIP, err := GetManagementHost(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -248,7 +280,7 @@ func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, ad
 
 	headers := http.Header{}
 	if !strings.Contains(mfm.client.EndpointURL().Hostname(), "s3.amazonaws.com") {
-		headers.Add("Host", consoleIp)
+		headers.Add("Host", consoleIP)
 	}
 
 	urlLink, err := mfm.client.PresignHeader(
@@ -264,18 +296,18 @@ func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, ad
 		return "", err
 	}
 
-	return updateURL(urlLink.String(), consoleIp), nil
+	return updateURL(urlLink.String(), consoleIP), nil
 }
 
 func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error) {
-	consoleIp, err := GetManagementHost(ctx)
+	consoleIP, err := GetManagementHost(ctx)
 	if err != nil {
 		return "", err
 	}
 
 	headers := http.Header{}
 	if !strings.Contains(mfm.client.EndpointURL().Hostname(), "s3.amazonaws.com") {
-		headers.Add("Host", consoleIp)
+		headers.Add("Host", consoleIP)
 	}
 
 	urlLink, err := mfm.client.PresignHeader(
@@ -291,7 +323,7 @@ func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath
 		return "", err
 	}
 
-	return updateURL(urlLink.String(), consoleIp), nil
+	return updateURL(urlLink.String(), consoleIP), nil
 }
 
 func (mfm *MinioFileManager) Client() interface{} {
@@ -346,13 +378,13 @@ func (mfm *MinioFileManager) CleanNamespace(ctx context.Context) error {
 	return nil
 }
 
-func updateURL(url string, consoleIp string) string {
+func updateURL(url string, consoleIP string) string {
 	minioHost := utils.GetEnvOrDefault("DEEPFENCE_MINIO_HOST", "deepfence-file-server")
 	minioPort := utils.GetEnvOrDefault("DEEPFENCE_MINIO_PORT", "9000")
 
 	updated := strings.ReplaceAll(url,
 		fmt.Sprintf("%s:%s", minioHost, minioPort),
-		fmt.Sprintf("%s/file-server", consoleIp),
+		fmt.Sprintf("%s/file-server", consoleIP),
 	)
 
 	return strings.ReplaceAll(updated, "http://", "https://")

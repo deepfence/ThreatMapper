@@ -110,7 +110,7 @@ const (
 	WebSecurityScanner    = "websecurityscanner"
 	// Azure
 	ActiveDirectory         = "azure_active_directory"
-	AzureApiManagement      = "azure_api_management"
+	AzureAPIManagement      = "azure_api_management"
 	AzureBlobStorage        = "azure_blob_storage"
 	AzureCDN                = "azure_cdn"
 	AzureCloudServices      = "azure_cloud_services"
@@ -341,11 +341,11 @@ func (t TopologyAdjacency) UnsafeUnMerge(o TopologyAdjacency) {
 
 }
 
-func (t TopologyAdjacency) AddAdjacency(nodeId string, id string) {
-	if _, ok := t[nodeId]; !ok {
-		t[nodeId] = *MakeIDList(id)
+func (t TopologyAdjacency) AddAdjacency(nodeID string, id string) {
+	if _, ok := t[nodeID]; !ok {
+		t[nodeID] = *MakeIDList(id)
 	} else {
-		t[nodeId] = t[nodeId].Add(id)
+		t[nodeID] = t[nodeID].Add(id)
 	}
 }
 
@@ -359,8 +359,8 @@ func MakeTopologySets() TopologySets {
 	return make(map[string]Sets)
 }
 
-func (p TopologySets) AddSet(nodeId string, sets Sets) {
-	p[nodeId] = sets
+func (t TopologySets) AddSet(nodeID string, sets Sets) {
+	t[nodeID] = sets
 }
 
 func (t TopologySets) Copy() TopologySets {
@@ -604,7 +604,7 @@ func (r *Report) UnsafeMerge(other Report) {
 		r.TS = other.TS
 	}
 	r.DNS = r.DNS.Merge(other.DNS)
-	r.Window = r.Window + other.Window
+	r.Window += other.Window
 	r.WalkPairedTopologies(&other, func(ourTopology, theirTopology *Topology) {
 		ourTopology.UnsafeMerge(*theirTopology)
 	})
@@ -614,7 +614,7 @@ func (r *Report) UnsafeMerge(other Report) {
 // The original is modified.
 func (r *Report) UnsafeUnMerge(other Report) {
 	// TODO: DNS, Sampling, Plugins
-	r.Window = r.Window - other.Window
+	r.Window -= other.Window
 	r.WalkPairedTopologies(&other, func(ourTopology, theirTopology *Topology) {
 		ourTopology.UnsafeUnMerge(*theirTopology)
 	})

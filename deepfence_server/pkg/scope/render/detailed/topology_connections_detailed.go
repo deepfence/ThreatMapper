@@ -1,8 +1,8 @@
 package detailed
 
 type NodeFilters struct {
-	TopologyId string `json:"topology_id"`
-	NodeId     string `json:"node_id"`
+	TopologyID string `json:"topology_id"`
+	NodeID     string `json:"node_id"`
 	Children   []struct {
 		TopologyID string            `json:"topology_id"`
 		Filters    map[string]string `json:"filters"`

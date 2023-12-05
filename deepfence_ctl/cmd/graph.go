@@ -89,7 +89,7 @@ var graphTopologySubCmd = &cobra.Command{
 
 		root, _ := cmd.Flags().GetString("root")
 
-		var res *deepfence_server_client.ApiDocsGraphResult
+		var res *deepfence_server_client.ModelGraphResult
 		var rh *stdhttp.Response
 		switch root {
 		case "":

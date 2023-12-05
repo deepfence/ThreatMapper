@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"mime/multipart"
 	"strings"
 	"time"
@@ -34,11 +33,11 @@ type RegistryAddReq struct {
 type RegistryGCRAddReq struct {
 	Name               string         `formData:"name" json:"name" validate:"required,min=2,max=64" required:"true"`
 	RegistryURL        string         `formData:"registry_url" json:"registry_url" validate:"required,url" required:"true"`
-	ServiceAccountJson multipart.File `formData:"service_account_json" json:"service_account_json" validate:"required" required:"true"`
+	ServiceAccountJSON multipart.File `formData:"service_account_json" json:"service_account_json" validate:"required" required:"true"`
 }
 
 type RegistryUpdateReq struct {
-	Id           string                 `path:"registry_id" validate:"required" required:"true"`
+	ID           string                 `path:"registry_id" validate:"required" required:"true"`
 	Name         string                 `json:"name" validate:"required,min=2,max=64" required:"true"`
 	NonSecret    map[string]interface{} `json:"non_secret"`
 	Secret       map[string]interface{} `json:"secret"`
@@ -47,17 +46,21 @@ type RegistryUpdateReq struct {
 }
 
 type RegistryIDPathReq struct {
-	RegistryId string `path:"registry_id" validate:"required" required:"true"`
+	RegistryID string `path:"registry_id" validate:"required" required:"true"`
 }
 
 type RegistryImagesReq struct {
-	RegistryId  string                  `json:"registry_id" validate:"required" required:"true"`
+	RegistryID  string                  `json:"registry_id" validate:"required" required:"true"`
 	ImageFilter reporters.FieldsFilters `json:"image_filter" required:"true"`
 	Window      FetchWindow             `json:"window" required:"true"`
 }
 
+type DeleteRegistryBulkReq struct {
+	RegistryIds []string `json:"registry_ids" validate:"required" required:"true"`
+}
+
 type RegistryImageStubsReq struct {
-	RegistryId  string                  `json:"registry_id" validate:"required" required:"true"`
+	RegistryID  string                  `json:"registry_id" validate:"required" required:"true"`
 	ImageFilter reporters.FieldsFilters `json:"image_filter" required:"true"`
 	Window      FetchWindow             `json:"window" required:"true"`
 }
@@ -76,6 +79,7 @@ type RegistryListReq struct{}
 type RegistryImageListReq struct {
 	ResourceType string `json:"resource_type,omitempty"`
 	Namespace    string `json:"namespace,omitempty"`
+	ID           int32  `json:"id"`
 }
 
 type RegistryImages struct {
@@ -206,7 +210,7 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 		return 0, err
 	}
 
-	_, err = pgClient.CreateContainerRegistry(ctx, postgresqlDb.CreateContainerRegistryParams{
+	containerRegistry, err := pgClient.CreateContainerRegistry(ctx, postgresqlDb.CreateContainerRegistryParams{
 		Name:            ra.Name,
 		RegistryType:    ra.RegistryType,
 		EncryptedSecret: bSecret,    // rawSecretJSON,
@@ -239,7 +243,7 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 	}
 	defer tx.Close()
 
-	registryID := GetRegistryID(ra.RegistryType, ns)
+	registryID := utils.GetRegistryID(ra.RegistryType, ns, containerRegistry.ID)
 	query := `
 		MERGE (m:RegistryAccount{node_id: $node_id })
 		SET m.registry_type = $registry_type,
@@ -317,7 +321,7 @@ func (ru *RegistryUpdateReq) RegistryExists(ctx context.Context, pgClient *postg
 }
 
 func GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
-	aes, err := GetSettingByKey(ctx, pgClient, commonConstants.AES_SECRET)
+	aes, err := GetSettingByKey(ctx, pgClient, commonConstants.AESSecret)
 	if err != nil {
 		return nil, err
 	}
@@ -331,7 +335,7 @@ func GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Querie
 }
 
 func (r *RegistryImageListReq) GetRegistryImages(ctx context.Context) ([]ContainerImage, error) {
-	return GetContainerImagesFromRegistryAndNamespace(ctx, r.ResourceType, r.Namespace)
+	return GetContainerImagesFromRegistryAndNamespace(ctx, r.ResourceType, r.Namespace, r.ID)
 }
 
 type ImageStub struct {
@@ -345,7 +349,7 @@ func (i *ImageStub) AddTags(tags ...string) ImageStub {
 	return *i
 }
 
-func ListImageStubs(ctx context.Context, registryId string, filter reporters.FieldsFilters, fw FetchWindow) ([]ImageStub, error) {
+func ListImageStubs(ctx context.Context, registryID string, filter reporters.FieldsFilters, fw FetchWindow) ([]ImageStub, error) {
 
 	images := []ImageStub{}
 
@@ -363,7 +367,7 @@ func ListImageStubs(ctx context.Context, registryId string, filter reporters.Fie
 	}
 	defer tx.Close()
 
-	err = checkRegistryExists(tx, registryId)
+	err = checkRegistryExists(tx, registryID)
 	if err != nil {
 		return images, err
 	}
@@ -375,7 +379,7 @@ func ListImageStubs(ctx context.Context, registryId string, filter reporters.Fie
 	RETURN name, tags, id
 	ORDER BY name
 	` + fw.FetchWindow2CypherQuery()
-	r, err := tx.Run(query, map[string]interface{}{"id": registryId})
+	r, err := tx.Run(query, map[string]interface{}{"id": registryID})
 	if err != nil {
 		return images, err
 	}
@@ -405,7 +409,7 @@ func ListImageStubs(ctx context.Context, registryId string, filter reporters.Fie
 	return images, nil
 }
 
-func ListImages(ctx context.Context, registryId string, filter reporters.FieldsFilters, fw FetchWindow) ([]ContainerImage, error) {
+func ListImages(ctx context.Context, registryID string, filter reporters.FieldsFilters, fw FetchWindow) ([]ContainerImage, error) {
 
 	res := []ContainerImage{}
 
@@ -423,18 +427,18 @@ func ListImages(ctx context.Context, registryId string, filter reporters.FieldsF
 	}
 	defer tx.Close()
 
-	err = checkRegistryExists(tx, registryId)
+	err = checkRegistryExists(tx, registryID)
 	if err != nil {
 		return res, err
 	}
 
 	query := `
 	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub) <-[:IS]- (m:ContainerImage)
-	` + reporters.ParseFieldFilters2CypherWhereConditions("l", mo.Some(filter), true) + `
+	` + reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(filter), true) + `
 	RETURN l, m
 	` + fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("query: %v", query)
-	r, err := tx.Run(query, map[string]interface{}{"id": registryId})
+	r, err := tx.Run(query, map[string]interface{}{"id": registryID})
 	if err != nil {
 		return res, err
 	}
@@ -488,24 +492,24 @@ func ListImages(ctx context.Context, registryId string, filter reporters.FieldsF
 	return res, nil
 }
 
-func checkRegistryExists(tx neo4j.Transaction, node_id string) error {
+func checkRegistryExists(tx neo4j.Transaction, nodeID string) error {
 	query := `
 	MATCH (n:RegistryAccount{node_id: $id})
 	RETURN n.node_id`
 
-	r, err := tx.Run(query, map[string]interface{}{"id": node_id})
+	r, err := tx.Run(query, map[string]interface{}{"id": nodeID})
 	if err != nil {
 		return err
 	}
 
 	_, err = r.Single()
 	if err != nil {
-		return &ingesters.NodeNotFoundError{NodeId: node_id}
+		return &ingesters.NodeNotFoundError{NodeID: nodeID}
 	}
 	return nil
 }
 
-func GetRegistryPgIds(ctx context.Context, node_id string) ([]int64, error) {
+func GetRegistryPgIDs(ctx context.Context, nodeIDs []string) ([]int64, error) {
 
 	res := []int64{}
 	driver, err := directory.Neo4jClient(ctx)
@@ -522,27 +526,30 @@ func GetRegistryPgIds(ctx context.Context, node_id string) ([]int64, error) {
 	}
 	defer tx.Close()
 	query := `
-	MATCH (n:RegistryAccount{node_id: $id})
+	MATCH (n:RegistryAccount)
+	WHERE n.node_id in $ids
 	RETURN n.container_registry_ids`
 
-	r, err := tx.Run(query, map[string]interface{}{"id": node_id})
+	r, err := tx.Run(query, map[string]interface{}{"ids": nodeIDs})
 	if err != nil {
 		return res, err
 	}
 
-	record, err := r.Single()
+	records, err := r.Collect()
 	if err != nil {
 		return res, err
 	}
 
-	for _, rec := range record.Values[0].([]interface{}) {
-		res = append(res, rec.(int64))
+	for _, record := range records {
+		for _, rec := range record.Values[0].([]interface{}) {
+			res = append(res, rec.(int64))
+		}
 	}
 
 	return res, err
 }
 
-func DeleteRegistryAccount(ctx context.Context, node_id string) error {
+func DeleteRegistryAccount(ctx context.Context, nodeIDs []string) error {
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -558,10 +565,11 @@ func DeleteRegistryAccount(ctx context.Context, node_id string) error {
 	}
 	defer tx.Close()
 
-	query := fmt.Sprintf("MATCH (n:RegistryAccount{node_id:'%s'}) DETACH DELETE n", node_id)
-	log.Info().Msgf("delete registry account query: %s", query)
-
-	_, err = tx.Run(query, map[string]interface{}{})
+	query := `
+		MATCH (n:RegistryAccount)
+		WHERE n.node_id IN $ids
+		DETACH DELETE n`
+	_, err = tx.Run(query, map[string]interface{}{"ids": nodeIDs})
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		return err
@@ -576,7 +584,7 @@ func toScansCount(scans []interface{}) Summary {
 		counts.ScansTotal++
 		l := n.(string)
 		switch l {
-		case utils.SCAN_STATUS_SUCCESS, utils.SCAN_STATUS_FAILED:
+		case utils.ScanStatusSuccess, utils.ScanStatusFailed:
 			counts.ScansComplete++
 		default:
 			counts.ScansInProgress++
@@ -585,7 +593,7 @@ func toScansCount(scans []interface{}) Summary {
 	return counts
 }
 
-func RegistrySummary(ctx context.Context, registryId mo.Option[string], registryType mo.Option[string]) (Summary, error) {
+func RegistrySummary(ctx context.Context, registryID mo.Option[string], registryType mo.Option[string]) (Summary, error) {
 
 	count := Summary{}
 
@@ -637,9 +645,9 @@ func RegistrySummary(ctx context.Context, registryId mo.Option[string], registry
 	var (
 		result neo4j.Result
 	)
-	if regId, ok := registryId.Get(); ok {
-		if result, err = tx.Run(queryPerRegistry, map[string]interface{}{"id": regId}); err != nil {
-			log.Error().Err(err).Msgf("failed to query summary for registry id %d", regId)
+	if regID, ok := registryID.Get(); ok {
+		if result, err = tx.Run(queryPerRegistry, map[string]interface{}{"id": regID}); err != nil {
+			log.Error().Err(err).Msgf("failed to query summary for registry id %v", regID)
 			return count, err
 		}
 	} else if regType, ok := registryType.Get(); ok {

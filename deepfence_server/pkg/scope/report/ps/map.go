@@ -61,14 +61,14 @@ type Tree struct {
 }
 
 // Delete implements Map
-func (t *Tree) Delete(Key string) *Tree {
-	delete(t.Map, Key)
+func (t *Tree) Delete(key string) *Tree {
+	delete(t.Map, key)
 	return t
 
 }
 
 // ForEach implements Map
-func (t *Tree) ForEach(f func(Key string, val interface{})) {
+func (t *Tree) ForEach(f func(key string, val interface{})) {
 	for k, v := range t.Map {
 		f(k, v)
 	}
@@ -89,14 +89,14 @@ func (t *Tree) Keys() []string {
 }
 
 // Lookup implements Map
-func (t *Tree) Lookup(Key string) (interface{}, bool) {
-	v, ok := t.Map[Key]
+func (t *Tree) Lookup(key string) (interface{}, bool) {
+	v, ok := t.Map[key]
 	return v, ok
 }
 
 // Set implements Map
-func (t *Tree) Set(Key string, Value interface{}) *Tree {
-	t.Map[Key] = Value
+func (t *Tree) Set(key string, value interface{}) *Tree {
+	t.Map[key] = value
 	return t
 }
 
@@ -111,8 +111,8 @@ func (t *Tree) String() string {
 }
 
 // UnsafeMutableSet implements Map
-func (t *Tree) UnsafeMutableSet(Key string, Value interface{}) *Tree {
-	t.Map[Key] = Value
+func (t *Tree) UnsafeMutableSet(key string, value interface{}) *Tree {
+	t.Map[key] = value
 	return t
 }
 
@@ -149,13 +149,13 @@ func NewMap() *Tree {
 	}
 }
 
-func (self *Tree3) IsNil() bool {
-	return self == nilMap
+func (t *Tree3) IsNil() bool {
+	return t == nilMap
 }
 
 // clone returns an exact duplicate of a Tree3 node
-func (self *Tree3) clone() *Tree3 {
-	m := *self
+func (t *Tree3) clone() *Tree3 {
+	m := *t
 	return &m
 }
 
@@ -192,45 +192,45 @@ func bytesView(v string) []byte {
 }
 
 // hashKey returns a Hash code for a given string
-func hashKey(Key string) uint64 {
-	Hash := offset64
+func hashKey(key string) uint64 {
+	hash := offset64
 
-	for _, b := range bytesView(Key) {
-		Hash ^= uint64(b)
-		Hash *= prime64
+	for _, b := range bytesView(key) {
+		hash ^= uint64(b)
+		hash *= prime64
 	}
-	return Hash
+	return hash
 }
 
 // Set returns a new map similar to this one but with Key and Value
 // associated.  If the Key didn't exist, it's created; otherwise, the
 // associated Value is changed.
-func (self *Tree3) Set(Key string, Value interface{}) *Tree3 {
-	Hash := hashKey(Key)
-	return setLowLevel(self, Hash, Hash, Key, Value)
+func (t *Tree3) Set(key string, value interface{}) *Tree3 {
+	hash := hashKey(key)
+	return setLowLevel(t, hash, hash, key, value)
 }
 
-func setLowLevel(self *Tree3, partialHash, Hash uint64, Key string, Value interface{}) *Tree3 {
+func setLowLevel(self *Tree3, partialHash, hash uint64, key string, value interface{}) *Tree3 {
 	if self == nil {
 		m := nilMap
 		m.Count = 1
-		m.Hash = Hash
-		m.Key = Key
-		m.Value = Value
+		m.Hash = hash
+		m.Key = key
+		m.Value = value
 		return m
 	} else if self.IsNil() { // an empty Tree3 is easy
 		m := self.clone()
 		m.Count = 1
-		m.Hash = Hash
-		m.Key = Key
-		m.Value = Value
+		m.Hash = hash
+		m.Key = key
+		m.Value = value
 		return m
 	}
 
-	if Hash != self.Hash {
+	if hash != self.Hash {
 		m := self.clone()
 		i := partialHash % childCount
-		m.Children[i] = setLowLevel(self.Children[i], partialHash>>shiftSize, Hash, Key, Value)
+		m.Children[i] = setLowLevel(self.Children[i], partialHash>>shiftSize, hash, key, value)
 		// update Count if we added a new object
 		if m.Children[i].Count > self.Children[i].Count {
 			m.Count++
@@ -239,99 +239,99 @@ func setLowLevel(self *Tree3, partialHash, Hash uint64, Key string, Value interf
 	}
 
 	// did we find a Hash collision?
-	if Key != self.Key {
-		oops := fmt.Sprintf("Hash collision between: '%s' and '%s'.  Please report to https://github.com/mndrix/ps/issues/new", self.Key, Key)
+	if key != self.Key {
+		oops := fmt.Sprintf("Hash collision between: '%s' and '%s'.  Please report to https://github.com/mndrix/ps/issues/new", self.Key, key)
 		panic(oops)
 	}
 
 	// replacing a Key's previous Value
 	m := self.clone()
-	m.Value = Value
+	m.Value = value
 	return m
 }
 
 // UnsafeMutableSet is the in-place mutable version of Set. Only use if
 // you are the only reference-holder of the Map.
-func (self *Tree3) UnsafeMutableSet(Key string, Value interface{}) *Tree3 {
-	Hash := hashKey(Key)
-	return mutableSetLowLevel(self, Hash, Hash, Key, Value)
+func (t *Tree3) UnsafeMutableSet(key string, value interface{}) *Tree3 {
+	hash := hashKey(key)
+	return mutableSetLowLevel(t, hash, hash, key, value)
 }
 
-func mutableSetLowLevel(self *Tree3, partialHash, Hash uint64, Key string, Value interface{}) *Tree3 {
-	if self == nil {
+func mutableSetLowLevel(t *Tree3, partialHash, hash uint64, key string, value interface{}) *Tree3 {
+	if t == nil {
 		m := nilMap
 		m.Count = 1
-		m.Hash = Hash
-		m.Key = Key
-		m.Value = Value
+		m.Hash = hash
+		m.Key = key
+		m.Value = value
 		return m
-	} else if self.IsNil() { // an empty Tree3 is easy
-		m := self.clone()
+	} else if t.IsNil() { // an empty Tree3 is easy
+		m := t.clone()
 		m.Count = 1
-		m.Hash = Hash
-		m.Key = Key
-		m.Value = Value
+		m.Hash = hash
+		m.Key = key
+		m.Value = value
 		return m
 	}
 
-	if Hash != self.Hash {
+	if hash != t.Hash {
 		i := partialHash % childCount
-		oldChildCount := self.Children[i].Count
-		self.Children[i] = mutableSetLowLevel(self.Children[i], partialHash>>shiftSize, Hash, Key, Value)
+		oldChildCount := t.Children[i].Count
+		t.Children[i] = mutableSetLowLevel(t.Children[i], partialHash>>shiftSize, hash, key, value)
 		// update Count if we added a new object
-		if oldChildCount < self.Children[i].Count {
-			self.Count++
+		if oldChildCount < t.Children[i].Count {
+			t.Count++
 		}
-		return self
+		return t
 	}
 
 	// did we find a Hash collision?
-	if Key != self.Key {
-		oops := fmt.Sprintf("Hash collision between: '%s' and '%s'.  Please report to https://github.com/mndrix/ps/issues/new", self.Key, Key)
+	if key != t.Key {
+		oops := fmt.Sprintf("Hash collision between: '%s' and '%s'.  Please report to https://github.com/mndrix/ps/issues/new", t.Key, key)
 		panic(oops)
 	}
 
 	// replacing a Key's previous Value
-	self.Value = Value
-	return self
+	t.Value = value
+	return t
 }
 
 // modifies a map by recalculating its Key Count based on the counts
 // of its subtrees
-func recalculateCount(m *Tree3) {
-	Count := 0
-	for _, t := range m.Children {
-		Count += t.Size()
+func recalculateCount(t *Tree3) {
+	count := 0
+	for _, t := range t.Children {
+		count += t.Size()
 	}
-	m.Count = Count + 1 // add one to Count ourself
+	t.Count = count + 1 // add one to Count ourself
 }
 
-func (m *Tree3) Delete(Key string) *Tree3 {
-	Hash := hashKey(Key)
-	newMap, _ := deleteLowLevel(m, Hash, Hash)
+func (t *Tree3) Delete(key string) *Tree3 {
+	hash := hashKey(key)
+	newMap, _ := deleteLowLevel(t, hash, hash)
 	return newMap
 }
 
-func deleteLowLevel(self *Tree3, partialHash, Hash uint64) (*Tree3, bool) {
+func deleteLowLevel(t *Tree3, partialHash, hash uint64) (*Tree3, bool) {
 	// empty trees are easy
-	if self.IsNil() || self == nil {
-		return self, false
+	if t.IsNil() || t == nil {
+		return t, false
 	}
 
-	if Hash != self.Hash {
+	if hash != t.Hash {
 		i := partialHash % childCount
-		child, found := deleteLowLevel(self.Children[i], partialHash>>shiftSize, Hash)
+		child, found := deleteLowLevel(t.Children[i], partialHash>>shiftSize, hash)
 		if !found {
-			return self, false
+			return t, false
 		}
-		newMap := self.clone()
+		newMap := t.clone()
 		newMap.Children[i] = child
 		recalculateCount(newMap)
 		return newMap, true // ? this wasn't in the original code
 	}
 
 	// we must delete our own node
-	if self.isLeaf() { // we have no Children
+	if t.isLeaf() { // we have no Children
 		return nilMap, true
 	}
 	/*
@@ -348,7 +348,7 @@ func deleteLowLevel(self *Tree3, partialHash, Hash uint64) (*Tree3, bool) {
 	// find a node to replace us
 	i := -1
 	size := -1
-	for j, t := range self.Children {
+	for j, t := range t.Children {
 		if t.Size() > size {
 			i = j
 			size = t.Size()
@@ -356,13 +356,13 @@ func deleteLowLevel(self *Tree3, partialHash, Hash uint64) (*Tree3, bool) {
 	}
 
 	// make chosen leaf smaller
-	replacement, child := self.Children[i].deleteLeftmost()
+	replacement, child := t.Children[i].deleteLeftmost()
 	newMap := replacement.clone()
-	for j := range self.Children {
+	for j := range t.Children {
 		if j == i {
 			newMap.Children[j] = child
 		} else {
-			newMap.Children[j] = self.Children[j]
+			newMap.Children[j] = t.Children[j]
 		}
 	}
 	recalculateCount(newMap)
@@ -371,15 +371,15 @@ func deleteLowLevel(self *Tree3, partialHash, Hash uint64) (*Tree3, bool) {
 
 // delete the leftmost node in a Tree3 returning the node that
 // was deleted and the Tree3 left over after its deletion
-func (m *Tree3) deleteLeftmost() (*Tree3, *Tree3) {
-	if m.isLeaf() {
-		return m, nilMap
+func (t *Tree3) deleteLeftmost() (*Tree3, *Tree3) {
+	if t.isLeaf() {
+		return t, nilMap
 	}
 
-	for i, t := range m.Children {
+	for i, t := range t.Children {
 		if t != nilMap {
 			deleted, child := t.deleteLeftmost()
-			newMap := m.clone()
+			newMap := t.clone()
 			newMap.Children[i] = child
 			recalculateCount(newMap)
 			return deleted, newMap
@@ -389,53 +389,53 @@ func (m *Tree3) deleteLeftmost() (*Tree3, *Tree3) {
 }
 
 // isLeaf returns true if this is a leaf node
-func (m *Tree3) isLeaf() bool {
-	return m.Size() == 1
+func (t *Tree3) isLeaf() bool {
+	return t.Size() == 1
 }
 
-func (m *Tree3) Lookup(Key string) (interface{}, bool) {
-	Hash := hashKey(Key)
-	return lookupLowLevel(m, Hash, Hash)
+func (t *Tree3) Lookup(key string) (interface{}, bool) {
+	hash := hashKey(key)
+	return lookupLowLevel(t, hash, hash)
 }
 
-func lookupLowLevel(self *Tree3, partialHash, Hash uint64) (interface{}, bool) {
-	if self.IsNil() || self == nil { // an empty Tree3 is easy
+func lookupLowLevel(t *Tree3, partialHash, hash uint64) (interface{}, bool) {
+	if t.IsNil() || t == nil { // an empty Tree3 is easy
 		return nil, false
 	}
 
-	if Hash != self.Hash {
+	if hash != t.Hash {
 		i := partialHash % childCount
-		return lookupLowLevel(self.Children[i], partialHash>>shiftSize, Hash)
+		return lookupLowLevel(t.Children[i], partialHash>>shiftSize, hash)
 	}
 
 	// we found it
-	return self.Value, true
+	return t.Value, true
 }
 
-func (m *Tree3) Size() int {
-	return m.Count
+func (t *Tree3) Size() int {
+	return t.Count
 }
 
-func (m *Tree3) ForEach(f func(Key string, val interface{})) {
-	if m.IsNil() || m == nil {
+func (t *Tree3) ForEach(f func(key string, val interface{})) {
+	if t.IsNil() || t == nil {
 		return
 	}
 
 	// ourself
-	f(m.Key, m.Value)
+	f(t.Key, t.Value)
 
 	// Children
-	for _, t := range m.Children {
+	for _, t := range t.Children {
 		if t != nilMap {
 			t.ForEach(f)
 		}
 	}
 }
 
-func (m *Tree3) Keys() []string {
-	keys := make([]string, m.Size())
+func (t *Tree3) Keys() []string {
+	keys := make([]string, t.Size())
 	i := 0
-	m.ForEach(func(k string, v interface{}) {
+	t.ForEach(func(k string, v interface{}) {
 		keys[i] = k
 		i++
 	})
@@ -443,35 +443,13 @@ func (m *Tree3) Keys() []string {
 }
 
 // make it easier to display maps for debugging
-func (m *Tree3) String() string {
-	keys := m.Keys()
+func (t *Tree3) String() string {
+	keys := t.Keys()
 	buf := bytes.NewBufferString("{")
 	for _, Key := range keys {
-		val, _ := m.Lookup(Key)
+		val, _ := t.Lookup(Key)
 		fmt.Fprintf(buf, "%s: %s, ", Key, val)
 	}
 	fmt.Fprintf(buf, "}\n")
 	return buf.String()
 }
-
-//func (m *Tree3) MarshalJSON() ([]byte, error) {
-//	tmp := map[string]interface{}{}
-//	m.ForEach(func(k string, v interface{}) {
-//		tmp[k] = v
-//	})
-//	return json.Marshal(tmp)
-//}
-//
-//// UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead
-//func (m *Tree3) UnmarshalJSON(b []byte) error {
-//	tmp := map[string]interface{}{}
-//	err := json.Unmarshal(b, &tmp)
-//	if err != nil {
-//		return err
-//	}
-//	m = &Tree3{}
-//	for k, v := range tmp {
-//		m = m.Set(k, v)
-//	}
-//	return nil
-//}

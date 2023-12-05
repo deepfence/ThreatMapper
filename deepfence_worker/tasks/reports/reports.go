@@ -91,13 +91,13 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 	}
 	defer session.Close()
 
-	updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.SCAN_STATUS_INPROGRESS)
+	updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.ScanStatusInProgress)
 
 	// generate reportName
 	localReportPath, err := generateReport(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to generate report with params %+v", params)
-		updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.SCAN_STATUS_FAILED)
+		updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.ScanStatusFailed)
 		return nil
 	}
 	log.Info().Msgf("report file path %s", localReportPath)
@@ -114,7 +114,7 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 
 	reportName := path.Join("/report", reportFileName(params))
 	res, err := mc.UploadLocalFile(ctx, reportName,
-		localReportPath, putOpts(sdkUtils.ReportType(params.ReportType)))
+		localReportPath, false, putOpts(sdkUtils.ReportType(params.ReportType)))
 	if err != nil {
 		log.Error().Err(err).Msg("failed to upload file to minio")
 		return nil
@@ -131,7 +131,7 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 	}
 	log.Info().Msgf("exposed report URL: %s", url)
 
-	updateReportState(ctx, session, params.ReportID, url, res.Key, sdkUtils.SCAN_STATUS_SUCCESS)
+	updateReportState(ctx, session, params.ReportID, url, res.Key, sdkUtils.ScanStatusSuccess)
 
 	return nil
 }

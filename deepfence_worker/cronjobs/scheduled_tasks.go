@@ -59,6 +59,10 @@ var (
 func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]interface{}) error {
 	payload := messagePayload["payload"].(map[string]interface{})
 	nodeType := payload["node_type"].(string)
+	isPriority := false
+	if _, ok := payload["is_priority"]; ok {
+		isPriority = payload["is_priority"].(bool)
+	}
 
 	searchFilter := reporters_search.SearchFilter{
 		InFieldFilter: []string{"node_id"},
@@ -80,7 +84,7 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 			return err
 		}
 		for _, node := range nodes {
-			nodeIds = append(nodeIds, model.NodeIdentifier{NodeId: node.ID, NodeType: controls.ResourceTypeToString(controls.Host)})
+			nodeIds = append(nodeIds, model.NodeIdentifier{NodeID: node.ID, NodeType: controls.ResourceTypeToString(controls.Host)})
 		}
 	case utils.NodeTypeContainer:
 		nodes, err := reporters_search.SearchReport[model.Container](ctx, searchFilter, extSearchFilter, nil, fetchWindow)
@@ -88,7 +92,7 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 			return err
 		}
 		for _, node := range nodes {
-			nodeIds = append(nodeIds, model.NodeIdentifier{NodeId: node.ID, NodeType: controls.ResourceTypeToString(controls.Container)})
+			nodeIds = append(nodeIds, model.NodeIdentifier{NodeID: node.ID, NodeType: controls.ResourceTypeToString(controls.Container)})
 		}
 	case utils.NodeTypeContainerImage:
 		nodes, err := reporters_search.SearchReport[model.ContainerImage](ctx, searchFilter, extSearchFilter, nil, fetchWindow)
@@ -96,7 +100,7 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 			return err
 		}
 		for _, node := range nodes {
-			nodeIds = append(nodeIds, model.NodeIdentifier{NodeId: node.ID, NodeType: controls.ResourceTypeToString(controls.Image)})
+			nodeIds = append(nodeIds, model.NodeIdentifier{NodeID: node.ID, NodeType: controls.ResourceTypeToString(controls.Image)})
 		}
 	case utils.NodeTypeKubernetesCluster:
 		searchFilter.Filters.ContainsFilter.FieldsValues["agent_running"] = []interface{}{true}
@@ -105,7 +109,7 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 			return err
 		}
 		for _, node := range nodes {
-			nodeIds = append(nodeIds, model.NodeIdentifier{NodeId: node.ID, NodeType: controls.ResourceTypeToString(controls.KubernetesCluster)})
+			nodeIds = append(nodeIds, model.NodeIdentifier{NodeID: node.ID, NodeType: controls.ResourceTypeToString(controls.KubernetesCluster)})
 		}
 	case utils.NodeTypeCloudNode:
 	}
@@ -115,34 +119,35 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 		return nil
 	}
 
-	scanTrigger := model.ScanTriggerCommon{NodeIds: nodeIds, Filters: model.ScanFilter{}}
+	scanTrigger := model.ScanTriggerCommon{NodeIDs: nodeIds,
+		Filters: model.ScanFilter{}, IsPriority: isPriority}
 
 	switch messagePayload["action"].(string) {
-	case utils.VULNERABILITY_SCAN:
+	case utils.VulnerabilityScan:
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartVulnerabilityScan, map[string]string{"scan_type": "all"})
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_VULNERABILITY_SCAN, scanTrigger, actionBuilder)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4JVulnerabilityScan, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
-	case utils.SECRET_SCAN:
+	case utils.SecretScan:
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartSecretScan, nil)
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_SECRET_SCAN, scanTrigger, actionBuilder)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4JSecretScan, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
-	case utils.MALWARE_SCAN:
+	case utils.MalwareScan:
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartMalwareScan, nil)
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_MALWARE_SCAN, scanTrigger, actionBuilder)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4JMalwareScan, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
-	case utils.COMPLIANCE_SCAN, utils.CLOUD_COMPLIANCE_SCAN:
+	case utils.ComplianceScan, utils.CloudComplianceScan:
 		benchmarkTypes, ok := complianceBenchmarkTypes[nodeType]
 		if !ok {
 			log.Warn().Msgf("Unknown node type %s for compliance scan", nodeType)
 			return nil
 		}
-		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, benchmarkTypes)
+		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, benchmarkTypes, false)
 		if err != nil {
 			return err
 		}
@@ -164,7 +169,7 @@ func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]inte
 		return err
 	}
 
-	nodeIds := payload.NodeIds
+	nodeIds := payload.NodeIDs
 	scanFilter := payload.Filters
 	scheduleJobId := int64(messagePayload["id"].(float64))
 
@@ -174,12 +179,13 @@ func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]inte
 		return nil
 	}
 
-	scanTrigger := model.ScanTriggerCommon{NodeIds: nodeIds, Filters: scanFilter}
+	scanTrigger := model.ScanTriggerCommon{NodeIDs: nodeIds,
+		Filters: scanFilter, IsPriority: payload.IsPriority}
 
 	action := utils.Neo4jScanType(messagePayload["action"].(string))
 
 	switch action {
-	case utils.NEO4J_VULNERABILITY_SCAN:
+	case utils.NEO4JVulnerabilityScan:
 		binArgs := make(map[string]string, 0)
 		if payload.ScanConfigLanguages != nil && len(payload.ScanConfigLanguages) > 0 {
 			languages := []string{}
@@ -190,28 +196,28 @@ func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]inte
 		}
 
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartVulnerabilityScan, binArgs)
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_VULNERABILITY_SCAN, scanTrigger, actionBuilder)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4JVulnerabilityScan, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
-	case utils.NEO4J_SECRET_SCAN:
+	case utils.NEO4JSecretScan:
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartSecretScan, nil)
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_SECRET_SCAN, scanTrigger, actionBuilder)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4JSecretScan, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
-	case utils.NEO4J_MALWARE_SCAN:
+	case utils.NEO4JMalwareScan:
 		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartMalwareScan, nil)
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_MALWARE_SCAN, scanTrigger, actionBuilder)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4JMalwareScan, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
-	case utils.NEO4J_COMPLIANCE_SCAN, utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
+	case utils.NEO4JComplianceScan, utils.NEO4JCloudComplianceScan:
 		if payload.BenchmarkTypes == nil || len(payload.BenchmarkTypes) == 0 {
 			log.Warn().Msgf("Invalid benchmarkType for compliance scan, job id: %d", scheduleJobId)
 			return nil
 		}
-		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, payload.BenchmarkTypes)
+		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, payload.BenchmarkTypes, false)
 		if err != nil {
 			return err
 		}

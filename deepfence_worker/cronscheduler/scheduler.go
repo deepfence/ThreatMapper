@@ -244,11 +244,11 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	//jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, utils.CheckAgentUpgradeTask))
-	//if err != nil {
-	//	return err
-	//}
-	//jobIDs = append(jobIDs, jobID)
+	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, utils.CheckAgentUpgradeTask))
+	if err != nil {
+		return err
+	}
+	jobIDs = append(jobIDs, jobID)
 
 	jobID, err = s.cron.AddFunc("@every 12h", s.enqueueTask(namespace, utils.SyncRegistryTask, utils.CritialTaskOpts()...))
 	if err != nil {
@@ -308,7 +308,8 @@ func (s *Scheduler) startInitJobs(ctx context.Context) error {
 	}
 
 	log.Info().Msgf("Start immediate cronjobs for namespace %s", namespace)
-	//s.enqueueTask(namespace, utils.CheckAgentUpgradeTask)()
+	s.enqueueTask(namespace, utils.CheckAgentUpgradeTask)()
+	s.enqueueTask(namespace, utils.DeleteOldRegistryTask, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.SyncRegistryTask, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.CloudComplianceTask, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.ReportCleanUpTask, utils.CritialTaskOpts()...)()

@@ -1,4 +1,4 @@
-package console_diagnosis
+package console_diagnosis //nolint:stylecheck
 
 import (
 	"archive/tar"
@@ -76,6 +76,7 @@ func (d *DockerConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.Conte
 	_, err = mc.UploadLocalFile(ctx,
 		filepath.Join(diagnosis.ConsoleDiagnosisFileServerPrefix, filepath.Base(zipFile.Name())),
 		zipFile.Name(),
+		true,
 		minio.PutObjectOptions{ContentType: "application/zip"})
 	if err != nil {
 		return err
@@ -130,8 +131,8 @@ func (d *DockerConsoleDiagnosisHandler) getContainers(ctx context.Context, optio
 	return containers
 }
 
-func (d *DockerConsoleDiagnosisHandler) CopyFromContainer(ctx context.Context, containerId string, containerName string, srcPath string, zipWriter *zip.Writer) error {
-	tarStream, _, err := d.dockerCli.CopyFromContainer(ctx, containerId, srcPath)
+func (d *DockerConsoleDiagnosisHandler) CopyFromContainer(ctx context.Context, containerID string, containerName string, srcPath string, zipWriter *zip.Writer) error {
+	tarStream, _, err := d.dockerCli.CopyFromContainer(ctx, containerID, srcPath)
 	if err != nil {
 		return err
 	}

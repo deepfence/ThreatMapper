@@ -105,6 +105,7 @@ const ScanConfigureForm = () => {
         {scanType === ScanTypeEnum.VulnerabilityScan && (
           <VulnerabilityScanConfigureForm
             showAdvancedOptions={false}
+            showScheduleScanOptions={false}
             data={
               {
                 nodes: state.map((node) => {
@@ -136,6 +137,7 @@ const ScanConfigureForm = () => {
         {scanType === ScanTypeEnum.SecretScan && (
           <SecretScanConfigureForm
             showAdvancedOptions={false}
+            showScheduleScanOptions={false}
             data={
               {
                 nodes: state.map((node) => {
@@ -167,6 +169,7 @@ const ScanConfigureForm = () => {
         {scanType === ScanTypeEnum.MalwareScan && (
           <MalwareScanConfigureForm
             showAdvancedOptions={false}
+            showScheduleScanOptions={false}
             data={
               {
                 nodes: state.map((node) => {
@@ -199,6 +202,7 @@ const ScanConfigureForm = () => {
           scanType === ScanTypeEnum.CloudComplianceScan) && (
           <ComplianceScanConfigureForm
             showAdvancedOptions={true}
+            showScheduleScanOptions={false}
             data={{
               nodeIds: state.map((node) => node.urlId),
               nodeType: state[0].urlType as ComplianceScanNodeTypeEnum,

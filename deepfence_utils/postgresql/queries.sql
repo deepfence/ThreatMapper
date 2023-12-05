@@ -561,6 +561,59 @@ WITH deleted AS (
 SELECT count(*)
 FROM deleted;
 
+-- name: CreateGenerativeAiIntegration :one
+INSERT INTO generative_ai_integration (integration_type, label, config, created_by_user_id)
+VALUES ($1, $2, $3, $4)
+RETURNING *;
+
+-- name: UpdateGenerativeAiIntegrationDefault :exec
+UPDATE generative_ai_integration
+SET default_integration = (CASE WHEN id = $1 THEN true ELSE false END);
+
+-- name: UpdateGenerativeAiIntegrationFirstRowDefault :exec
+UPDATE generative_ai_integration
+SET default_integration= true
+WHERE ID = (SELECT ID FROM generative_ai_integration ORDER BY ID LIMIT 1);
+
+-- name: GetGenerativeAiIntegrationFromID :one
+SELECT *
+FROM generative_ai_integration
+WHERE id = $1
+LIMIT 1;
+
+-- name: GetDefaultGenerativeAiIntegration :one
+SELECT *
+FROM generative_ai_integration
+WHERE default_integration = true
+LIMIT 1;
+
+-- name: GetGenerativeAiIntegrationByType :many
+SELECT *
+FROM generative_ai_integration
+WHERE integration_type = $1;
+
+-- name: CountGenerativeAiIntegrationByLabel :one
+SELECT COUNT(*)
+FROM generative_ai_integration
+WHERE label = $1
+LIMIT 1;
+
+-- name: GetGenerativeAiIntegrations :many
+SELECT *
+FROM generative_ai_integration;
+
+-- name: UpdateGenerativeAiIntegrationStatus :exec
+UPDATE generative_ai_integration
+SET error_msg      = $2,
+    last_sent_time = now()
+WHERE id = $1;
+
+-- name: DeleteGenerativeAiIntegration :one
+DELETE
+FROM generative_ai_integration
+WHERE id = $1
+RETURNING *;
+
 -- name: CreateIntegration :one
 INSERT INTO integration (resource, filters, integration_type, interval_minutes, config, created_by_user_id)
 VALUES ($1, $2, $3, $4, $5, $6)
@@ -643,4 +696,4 @@ WHERE id = $1;
 DELETE
 FROM scheduler
 WHERE id = $1
-	AND is_system='f';
+  AND is_system = 'f';

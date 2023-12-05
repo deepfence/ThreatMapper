@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"os"
 	"path"
-	"strings"
 	"sync"
 	"time"
 
@@ -47,7 +46,7 @@ func StopVulnerabilityScan(ctx context.Context, task *asynq.Task) error {
 		return nil
 	}
 
-	scanID := params.ScanId
+	scanID := params.ScanID
 	cancelFnObj, found := scanMap.Load(scanID)
 	logMsg := ""
 	if found {
@@ -90,37 +89,37 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		return err
 	}
 
-	res, scanCtx := tasks.StartStatusReporter(params.ScanId,
+	res, scanCtx := tasks.StartStatusReporter(params.ScanID,
 		func(status tasks.ScanStatus) error {
 			sb, err := json.Marshal(status)
 			if err != nil {
 				return err
 			}
 			s.ingestC <- &kgo.Record{
-				Topic:   utils.VULNERABILITY_SCAN_STATUS,
+				Topic:   utils.VulnerabilityScanStatus,
 				Value:   sb,
 				Headers: rh,
 			}
 			return nil
 		}, tasks.StatusValues{
-			IN_PROGRESS: utils.SCAN_STATUS_INPROGRESS,
-			CANCELLED:   utils.SCAN_STATUS_CANCELLED,
-			FAILED:      utils.SCAN_STATUS_FAILED,
-			SUCCESS:     utils.SCAN_STATUS_SUCCESS,
+			IN_PROGRESS: utils.ScanStatusInProgress,
+			CANCELLED:   utils.ScanStatusCancelled,
+			FAILED:      utils.ScanStatusFailed,
+			SUCCESS:     utils.ScanStatusSuccess,
 		},
 		time.Minute*20,
 	)
 
-	log.Info().Msgf("Adding scan id to map:%s", params.ScanId)
-	scanMap.Store(params.ScanId, scanCtx)
+	log.Info().Msgf("Adding scan id to map:%s", params.ScanID)
+	scanMap.Store(params.ScanID, scanCtx)
 	defer func() {
-		log.Info().Msgf("Removing scan id from map:%s", params.ScanId)
-		scanMap.Delete(params.ScanId)
+		log.Info().Msgf("Removing scan id from map:%s", params.ScanID)
+		scanMap.Delete(params.ScanID)
 		res <- err
 		close(res)
 	}()
 
-	if params.RegistryId == "" {
+	if params.RegistryID == "" {
 		log.Error().Msgf("registry id is empty in params %+v", params)
 		return err
 	}
@@ -131,7 +130,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 	}
 
 	// get registry credentials
-	authFile, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
+	authFile, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryID)
 	if err != nil {
 		return err
 	}
@@ -151,16 +150,16 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		SyftBinPath:           syftBin,
 		HostName:              params.HostName,
 		NodeType:              "container_image", // this is required by package scanner
-		NodeId:                params.NodeId,
+		NodeID:                params.NodeID,
 		KubernetesClusterName: params.KubernetesClusterName,
-		ScanId:                params.ScanId,
-		ImageId:               params.ImageId,
+		ScanID:                params.ScanID,
+		ImageID:               params.ImageID,
 		ContainerName:         params.ContainerName,
-		RegistryId:            params.RegistryId,
+		RegistryID:            params.RegistryID,
 		RegistryCreds: psUtils.RegistryCreds{
 			AuthFilePath:  authFile,
 			SkipTLSVerify: creds.SkipTLSVerify,
-			UseHttp:       creds.UseHttp,
+			UseHTTP:       creds.UseHttp,
 		},
 		IsRegistry: creds.IsRegistry,
 	}
@@ -172,7 +171,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 			cfg.Source = params.ImageName
 		}
 	} else {
-		cfg.Source = params.ImageId
+		cfg.Source = params.ImageID
 	}
 
 	log.Debug().Msgf("config: %+v", cfg)
@@ -208,40 +207,12 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		return err
 	}
 
-	sbomFile := path.Join("/sbom/", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
-	info, err := mc.UploadFile(ctx, sbomFile, gzpb64Sbom.Bytes(),
+	sbomFile := path.Join("/sbom/", utils.ScanIDReplacer.Replace(params.ScanID)+".json.gz")
+	info, err := mc.UploadFile(ctx, sbomFile, gzpb64Sbom.Bytes(), true,
 		minio.PutObjectOptions{ContentType: "application/gzip"})
-
 	if err != nil {
-		logError := true
-		if strings.Contains(err.Error(), "Already exists here") {
-			/*If the file already exists, we will delete the old file and upload the new one
-			File can exists in 2 conditions:
-			- When the earlier scan was stuck during the scan phase
-			- When the service was restarted
-			- Bug/Race conditon in the worker service
-			*/
-			log.Warn().Msg(err.Error() + ", Will try to overwrite the file: " + sbomFile)
-			err = mc.DeleteFile(ctx, sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
-			if err == nil {
-				info, err = mc.UploadFile(ctx, sbomFile, gzpb64Sbom.Bytes(),
-					minio.PutObjectOptions{ContentType: "application/gzip"})
-
-				if err == nil {
-					log.Info().Msgf("Successfully overwritten the file: %s", sbomFile)
-					logError = false
-				} else {
-					log.Error().Msgf("Failed to upload the file, error is: %v", err)
-				}
-			} else {
-				log.Error().Msgf("Failed to delete the old file, error is: %v", err)
-			}
-		}
-
-		if logError {
-			log.Error().Msg(err.Error())
-			return err
-		}
+		log.Error().Err(err).Msg("failed to uplaod sbom")
+		return err
 	}
 
 	log.Info().Msgf("sbom file uploaded %+v", info)

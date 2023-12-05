@@ -112,11 +112,11 @@ func ResourceToMaps(ms []ingestersUtil.CloudResource) ([]map[string]interface{},
 
 		if v.ResourceID == AwsEc2ResourceId || v.ResourceID == GcpComputeResourceId || v.ResourceID == AzureComputeResourceId {
 			var publicIP, privateIP []string
-			if v.PublicIpAddress != "" {
-				publicIP = []string{v.PublicIpAddress}
+			if v.PublicIPAddress != "" {
+				publicIP = []string{v.PublicIPAddress}
 			}
-			if v.PrivateIpAddress != "" {
-				privateIP = []string{v.PrivateIpAddress}
+			if v.PrivateIPAddress != "" {
+				privateIP = []string{v.PrivateIPAddress}
 			}
 			var k8sClusterName string
 			var tags map[string]interface{}

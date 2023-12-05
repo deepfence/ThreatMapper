@@ -72,7 +72,7 @@ import {
   isCloudOrgNode,
   ScanTypeEnum,
 } from '@/types/common';
-import { get403Message } from '@/utils/403';
+import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatPercentage } from '@/utils/number';
 import {
@@ -164,9 +164,10 @@ const action = async ({
     });
     if (!result.ok) {
       if (result.error.response.status === 400 || result.error.response.status === 409) {
+        const { message } = await getResponseErrors(result.error);
         return {
           success: false,
-          message: result.error.message,
+          message,
         };
       } else if (result.error.response.status === 403) {
         const message = await get403Message(result.error);
@@ -268,9 +269,13 @@ const Filters = () => {
             })}
         </Combobox>
         <Combobox
-          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
-            return groupStatus.value === searchParams.get('complianceScanStatus');
-          })}
+          value={
+            searchParams.get('complianceScanStatus')
+              ? SCAN_STATUS_GROUPS.find((groupStatus) => {
+                  return groupStatus.value === searchParams.get('complianceScanStatus');
+                })
+              : null
+          }
           nullable
           onQueryChange={(query) => {
             setComplianceScanStatusSearchText(query);
@@ -487,7 +492,10 @@ const ActionDropdown = ({
 }) => {
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
-  const { downloadScan } = useDownloadScan();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { downloadScan } = useDownloadScan((state) => {
+    setIsSubmitting(state === 'submitting');
+  });
   const [openStopScanModal, setOpenStopScanModal] = useState(false);
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -545,7 +553,7 @@ const ActionDropdown = ({
           <>
             <DropdownItem
               disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
-              onClick={() => {
+              onSelect={() => {
                 if (!nodeId) {
                   throw new Error('Node id is required to start scan');
                 }
@@ -573,7 +581,9 @@ const ActionDropdown = ({
                 onDownloadAction();
               }}
             >
-              Download latest report
+              <span className="flex text-center gap-x-2">
+                {isSubmitting && <CircleSpinner size="sm" />} Download latest report
+              </span>
             </DropdownItem>
             <DropdownItem
               disabled={!scanId || !nodeType}
@@ -585,6 +595,7 @@ const ActionDropdown = ({
               <span
                 className={cn('flex items-center gap-x-2', {
                   'text-red-700 dark:text-status-error': scanId,
+                  'dark:text-df-gray-600': !scanId || !nodeType,
                 })}
               >
                 Delete latest scan
@@ -1069,7 +1080,7 @@ const Accounts = () => {
           }}
         />
       )}
-      <div className="mb-4">
+      <div className="mb-4 mx-4">
         <div className="flex h-12 items-center">
           <BulkActions
             disabled={Object.keys(rowSelectionState).length === 0}
@@ -1177,33 +1188,31 @@ const AccountWithTab = () => {
   return (
     <>
       <Header />
-      <div className="mx-4">
-        <Tabs
-          className="mt-2"
-          value={currentTab}
-          tabs={tabs}
-          onValueChange={(value) => {
-            if (currentTab === value) return;
-            let _nodeType = nodeType;
-            if (value === 'org-accounts') {
-              _nodeType = _nodeType + '_org';
-            } else {
-              _nodeType = _nodeType.split('_')[0];
-            }
-            setTab(value);
-            navigate(
-              generatePath('/posture/accounts/:nodeType', {
-                nodeType: _nodeType,
-              }),
-            );
-          }}
-          size="md"
-        >
-          <div className="mt-2">
-            <Accounts />
-          </div>
-        </Tabs>
-      </div>
+      <Tabs
+        className="mt-2"
+        value={currentTab}
+        tabs={tabs}
+        onValueChange={(value) => {
+          if (currentTab === value) return;
+          let _nodeType = nodeType;
+          if (value === 'org-accounts') {
+            _nodeType = _nodeType + '_org';
+          } else {
+            _nodeType = _nodeType.split('_')[0];
+          }
+          setTab(value);
+          navigate(
+            generatePath('/posture/accounts/:nodeType', {
+              nodeType: _nodeType,
+            }),
+          );
+        }}
+        size="md"
+      >
+        <div className="mt-2">
+          <Accounts />
+        </div>
+      </Tabs>
     </>
   );
 };

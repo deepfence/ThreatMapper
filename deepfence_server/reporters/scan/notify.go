@@ -1,4 +1,4 @@
-package reporters_scan
+package reporters_scan //nolint:stylecheck
 
 import (
 	"context"
@@ -23,7 +23,12 @@ func Notify[T any](ctx context.Context, res []T, common model.ScanResultsCommon,
 		return err
 	}
 
+	neo4jScanType := utils.StringToNeo4jScanType(scanType)
 	for _, integrationRow := range integrations {
+		if utils.ScanTypeDetectedNode[neo4jScanType] != integrationRow.Resource {
+			continue
+		}
+
 		log.Info().Msgf("Processing integration for %s rowId: %d",
 			integrationRow.IntegrationType, integrationRow.ID)
 
@@ -88,8 +93,8 @@ func injectNodeData[T any](results []T, common model.ScanResultsCommon,
 			flag := integration.IsMessagingFormat(integrationType)
 			if flag {
 				ts := m["updated_at"].(int64)
-				tm := time.Unix(0, ts*int64(time.Millisecond))
-				m["updated_at"] = tm
+				tm := time.Unix(0, ts*int64(time.Millisecond)).In(time.UTC)
+				m["updated_at"] = tm.Format("02-01-2006 15:04:05 MST")
 			}
 		}
 

@@ -1,4 +1,4 @@
-package cloudscanner_diagnosis
+package cloudscanner_diagnosis //nolint:stylecheck
 
 import (
 	"context"
@@ -9,7 +9,6 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
-	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -33,9 +32,9 @@ func getInProgressCloudScannerNodeIds(ctx context.Context, nodeIdentifiers []dia
 
 	defer tx.Close()
 
-	nodeIds := make([]string, len(nodeIdentifiers))
+	nodeIDs := make([]string, len(nodeIdentifiers))
 	for i, n := range nodeIdentifiers {
-		nodeIds[i] = n.NodeId
+		nodeIDs[i] = n.NodeID
 	}
 
 	res, err := tx.Run(`MATCH (n:CloudNode)
@@ -44,9 +43,9 @@ func getInProgressCloudScannerNodeIds(ctx context.Context, nodeIdentifiers []dia
 		WHERE NOT a.status = $complete AND NOT a.status = $failed
 		RETURN n.node_id,a.status`,
 		map[string]interface{}{
-			"node_ids": nodeIds,
-			"complete": utils.SCAN_STATUS_SUCCESS,
-			"failed":   utils.SCAN_STATUS_FAILED})
+			"node_ids": nodeIDs,
+			"complete": utils.ScanStatusSuccess,
+			"failed":   utils.ScanStatusFailed})
 	if err != nil {
 		return inProgressNodeIds, err
 	}
@@ -56,18 +55,18 @@ func getInProgressCloudScannerNodeIds(ctx context.Context, nodeIdentifiers []dia
 		return inProgressNodeIds, err
 	}
 
-	var foundNodeIds []string
+	var foundNodeIDs []string
 	for i := range rec {
-		foundNodeIds = append(foundNodeIds, rec[i].Values[0].(string))
+		foundNodeIDs = append(foundNodeIDs, rec[i].Values[0].(string))
 		if rec[i].Values[1] != nil {
 			inProgressNodeIds[rec[i].Values[0].(string)] = struct{}{}
 		}
 	}
 
 	var missingNodes []string
-	for _, nodeId := range nodeIds {
-		if !utils.InSlice(nodeId, foundNodeIds) {
-			missingNodes = append(missingNodes, nodeId)
+	for _, nodeID := range nodeIDs {
+		if !utils.InSlice(nodeID, foundNodeIDs) {
+			missingNodes = append(missingNodes, nodeID)
 		}
 	}
 
@@ -112,20 +111,20 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 		return err
 	}
 
-	actionBuilder := func(nodeIdentifier diagnosis.NodeIdentifier, uploadUrl string, fileName string, tail string) (ctl.Action, error) {
-		req := ctl.SendAgentDiagnosticLogsRequest{
-			NodeId:    nodeIdentifier.NodeId,
-			NodeType:  ctl.StringToResourceType(nodeIdentifier.NodeType),
+	actionBuilder := func(nodeIdentifier diagnosis.NodeIdentifier, uploadUrl string, fileName string, tail string) (controls.Action, error) {
+		req := controls.SendAgentDiagnosticLogsRequest{
+			NodeID:    nodeIdentifier.NodeID,
+			NodeType:  controls.StringToResourceType(nodeIdentifier.NodeType),
 			UploadURL: uploadUrl,
 			Tail:      tail,
 			FileName:  fileName,
 		}
 		b, err := json.Marshal(req)
 		if err != nil {
-			return ctl.Action{}, err
+			return controls.Action{}, err
 		}
-		return ctl.Action{
-			ID:             ctl.SendAgentDiagnosticLogs,
+		return controls.Action{
+			ID:             controls.SendAgentDiagnosticLogs,
 			RequestPayload: string(b),
 		}, nil
 	}
@@ -144,15 +143,15 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 
 	fileNameSuffix := "-" + time.Now().Format("2006-01-02-15-04-05") + ".zip"
 	for _, nodeIdentifier := range nodeIdentifiers {
-		if _, ok := inProgressNodeIds[nodeIdentifier.NodeId]; ok {
+		if _, ok := inProgressNodeIds[nodeIdentifier.NodeID]; ok {
 			continue
 		}
-		fileName := "deepfence-cloudscanner-logs-" + nodeIdentifier.NodeId + fileNameSuffix
-		uploadUrl, err := mc.CreatePublicUploadURL(ctx, diagnosis.CloudScannerDiagnosticLogsPrefix+fileName, true, time.Minute*10, url.Values{})
+		fileName := "deepfence-cloudscanner-logs-" + nodeIdentifier.NodeID + fileNameSuffix
+		uploadURL, err := mc.CreatePublicUploadURL(ctx, diagnosis.CloudScannerDiagnosticLogsPrefix+fileName, true, time.Minute*10, url.Values{})
 		if err != nil {
 			return err
 		}
-		action, err := actionBuilder(nodeIdentifier, uploadUrl, fileName, tail)
+		action, err := actionBuilder(nodeIdentifier, uploadURL, fileName, tail)
 		if err != nil {
 			log.Error().Err(err)
 			return err
@@ -167,8 +166,8 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCHEDULEDLOGS]->(m)`, controls.ResourceTypeToNeo4j(controls.StringToResourceType(nodeIdentifier.NodeType))),
 			map[string]interface{}{
-				"status":          utils.SCAN_STATUS_STARTING,
-				"node_id":         nodeIdentifier.NodeId,
+				"status":          utils.ScanStatusStarting,
+				"node_id":         nodeIdentifier.NodeID,
 				"action":          string(b),
 				"minio_file_name": fileName,
 			}); err != nil {
@@ -179,17 +178,17 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 
 }
 
-func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context, nodeIDs []string) (ctl.Action, error) {
+func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context, nodeIDs []string) (controls.Action, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return ctl.Action{}, err
+		return controls.Action{}, err
 	}
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
-		return ctl.Action{}, err
+		return controls.Action{}, err
 	}
 	defer tx.Close()
 
@@ -197,24 +196,24 @@ func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context, nodeIDs []string) 
 		WHERE n.status = $status and n.node_id in $node_ids
 		RETURN n.trigger_action
 		ORDER BY n.updated_at ASC LIMIT 1`,
-		map[string]interface{}{"status": utils.SCAN_STATUS_STARTING, "node_ids": nodeIDs})
+		map[string]interface{}{"status": utils.ScanStatusStarting, "node_ids": nodeIDs})
 
 	if err != nil {
-		return ctl.Action{}, err
+		return controls.Action{}, err
 	}
 
 	rec, err := res.Collect()
 	if err != nil {
-		return ctl.Action{}, err
+		return controls.Action{}, err
 	}
 
 	if len(rec) == 0 {
-		return ctl.Action{}, nil
+		return controls.Action{}, nil
 	}
 
-	var action ctl.Action
+	var action controls.Action
 	if err := json.Unmarshal([]byte(rec[0].Values[0].(string)), &action); err != nil {
-		return ctl.Action{}, err
+		return controls.Action{}, err
 	}
 
 	return action, nil

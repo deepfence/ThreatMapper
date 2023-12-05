@@ -37,7 +37,7 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 		auth.Password = strings.TrimSpace(j.Config.Password)
 	}
 
-	client, err := jira.NewClient(auth.Client(), strings.TrimSpace(j.Config.JiraSiteUrl))
+	client, err := jira.NewClient(auth.Client(), strings.TrimSpace(j.Config.JiraSiteURL))
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return err

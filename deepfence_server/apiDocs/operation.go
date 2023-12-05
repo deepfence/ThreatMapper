@@ -1,15 +1,15 @@
-package apiDocs
+package apiDocs //nolint:stylecheck
 
 import (
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
-	. "github.com/deepfence/ThreatMapper/deepfence_server/model"
-	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/completion"
-	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
-	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/lookup"
-	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
+	. "github.com/deepfence/ThreatMapper/deepfence_server/model"                //nolint:stylecheck
+	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/completion" //nolint:stylecheck
+	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"      //nolint:stylecheck
+	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/lookup"     //nolint:stylecheck
+	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"     //nolint:stylecheck
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	postgresqldb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/report"
@@ -18,13 +18,13 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 )
 
-func (d *OpenApiDocs) AddUserAuthOperations() {
+func (d *OpenAPIDocs) AddUserAuthOperations() {
 	d.AddOperation("registerUser", http.MethodPost, "/deepfence/user/register",
 		"Register User", "First user registration. Further users needs to be invited.",
 		http.StatusOK, []string{tagUser}, nil, new(UserRegisterRequest), new(LoginResponse))
 	d.AddOperation("authToken", http.MethodPost, "/deepfence/auth/token",
 		"Get Access Token for API Token", "Get access token for programmatic API access, by providing API Token",
-		http.StatusOK, []string{tagAuthentication}, nil, new(ApiAuthRequest), new(ResponseAccessToken))
+		http.StatusOK, []string{tagAuthentication}, nil, new(APIAuthRequest), new(ResponseAccessToken))
 	d.AddOperation("authTokenRefresh", http.MethodPost, "/deepfence/auth/token/refresh",
 		"Refresh access token", "Reissue access token using refresh token",
 		http.StatusOK, []string{tagAuthentication}, bearerToken, nil, new(ResponseAccessToken))
@@ -36,7 +36,7 @@ func (d *OpenApiDocs) AddUserAuthOperations() {
 		http.StatusNoContent, []string{tagAuthentication}, bearerToken, nil, nil)
 }
 
-func (d *OpenApiDocs) AddUserOperations() {
+func (d *OpenAPIDocs) AddUserOperations() {
 	d.AddOperation("getCurrentUser", http.MethodGet, "/deepfence/user",
 		"Get Current User", "Get logged in user information",
 		http.StatusOK, []string{tagUser}, bearerToken, nil, new(User))
@@ -55,20 +55,20 @@ func (d *OpenApiDocs) AddUserOperations() {
 		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]User))
 	d.AddOperation("getUser", http.MethodGet, "/deepfence/users/{id}",
 		"Get User by User ID", "Get User by User ID",
-		http.StatusOK, []string{tagUser}, bearerToken, new(UserIdRequest), new(User))
+		http.StatusOK, []string{tagUser}, bearerToken, new(UserIDRequest), new(User))
 	d.AddOperation("updateUser", http.MethodPut, "/deepfence/users/{id}",
 		"Update User by User ID", "Update User by User ID",
-		http.StatusOK, []string{tagUser}, bearerToken, new(UpdateUserIdRequest), new(User))
+		http.StatusOK, []string{tagUser}, bearerToken, new(UpdateUserIDRequest), new(User))
 	d.AddOperation("deleteUser", http.MethodDelete, "/deepfence/users/{id}",
 		"Delete User by User ID", "Delete User by User ID",
-		http.StatusNoContent, []string{tagUser}, bearerToken, new(UserIdRequest), nil)
+		http.StatusNoContent, []string{tagUser}, bearerToken, new(UserIDRequest), nil)
 
 	d.AddOperation("getApiTokens", http.MethodGet, "/deepfence/api-token",
 		"Get User's API Tokens", "Get logged in user's API Tokens",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]ApiTokenResponse))
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]APITokenResponse))
 	d.AddOperation("resetApiTokens", http.MethodPost, "/deepfence/api-token/reset",
 		"Reset User's API Tokens", "Reset user's API Tokens",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]ApiTokenResponse))
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]APITokenResponse))
 
 	d.AddOperation("resetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/request",
 		"Reset Password Request", "Request for resetting the password",
@@ -89,7 +89,7 @@ func (d *OpenApiDocs) AddUserOperations() {
 		http.StatusOK, []string{tagCommon}, nil, nil, new(MessageResponse))
 }
 
-func (d *OpenApiDocs) AddGraphOperations() {
+func (d *OpenAPIDocs) AddGraphOperations() {
 	d.AddOperation("getTopologyGraph", http.MethodPost, "/deepfence/graph/topology/",
 		"Get Topology Graph", "Retrieve the full topology graph associated with the account",
 		http.StatusOK, []string{tagTopology}, bearerToken, new(TopologyFilters), new(GraphResult))
@@ -123,7 +123,7 @@ func (d *OpenApiDocs) AddGraphOperations() {
 		http.StatusOK, []string{tagThreat}, bearerToken, new(IndividualThreatGraphRequest), new([]IndividualThreatGraph))
 }
 
-func (d *OpenApiDocs) AddLookupOperations() {
+func (d *OpenAPIDocs) AddLookupOperations() {
 	d.AddOperation("getHosts", http.MethodPost, "/deepfence/lookup/hosts",
 		"Retrieve Hosts data", "Retrieve all the data associated with hosts",
 		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]Host))
@@ -177,7 +177,7 @@ func (d *OpenApiDocs) AddLookupOperations() {
 		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]CloudCompliance))
 }
 
-func (d *OpenApiDocs) AddSearchOperations() {
+func (d *OpenAPIDocs) AddSearchOperations() {
 	// Search APIs
 	d.AddOperation("searchHosts", http.MethodPost, "/deepfence/search/hosts",
 		"Search hosts", "Search across all data associated with hosts",
@@ -361,14 +361,14 @@ func (d *OpenApiDocs) AddSearchOperations() {
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 }
 
-func (d *OpenApiDocs) AddControlsOperations() {
+func (d *OpenAPIDocs) AddControlsOperations() {
 	d.AddOperation("getAgentControls", http.MethodPost, "/deepfence/controls/agent",
 		"Fetch Agent Actions", "Fetch actions for a given agent",
-		http.StatusOK, []string{tagControls}, bearerToken, new(AgentId), new(controls.AgentControls))
+		http.StatusOK, []string{tagControls}, bearerToken, new(AgentID), new(controls.AgentControls))
 
 	d.AddOperation("getKubernetesClusterControls", http.MethodPost, "/deepfence/controls/kubernetes-cluster",
 		"Fetch Kubernetes Cluster Actions", "Fetch actions for a given Kubernetes Cluster",
-		http.StatusOK, []string{tagControls}, bearerToken, new(AgentId), new(controls.AgentControls))
+		http.StatusOK, []string{tagControls}, bearerToken, new(AgentID), new(controls.AgentControls))
 
 	d.AddOperation("getAgentInitControls", http.MethodPost, "/deepfence/controls/agent-init",
 		"Fetch Agent Init Actions", "Fetch initial actions for a given agent after it started",
@@ -399,7 +399,7 @@ func (d *OpenApiDocs) AddControlsOperations() {
 		http.StatusOK, []string{tagControls}, bearerToken, new(CloudNodeEnableDisableReq), nil)
 }
 
-func (d *OpenApiDocs) AddCloudNodeOperations() {
+func (d *OpenAPIDocs) AddCloudNodeOperations() {
 	d.AddOperation("registerCloudNodeAccount", http.MethodPost, "/deepfence/cloud-node/account",
 		"Register Cloud Node Account", "Register Cloud Node Account and return any pending compliance scans from console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountRegisterReq), new(CloudNodeAccountRegisterResp))
@@ -413,7 +413,7 @@ func (d *OpenApiDocs) AddCloudNodeOperations() {
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeProvidersListReq), new(CloudNodeProvidersListResp))
 }
 
-func (d *OpenApiDocs) AddIngestersOperations() {
+func (d *OpenAPIDocs) AddIngestersOperations() {
 	d.AddOperation("ingestAgentReport", http.MethodPost, "/deepfence/ingest/report",
 		"Ingest Topology Data", "Ingest data reported by one Agent",
 		http.StatusOK, []string{tagTopology}, bearerToken, new(report.RawReport), new(controls.AgentBeat))
@@ -471,7 +471,7 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 		http.StatusOK, []string{tagCloudResources}, bearerToken, new([]ingestersUtil.CloudResource), nil)
 }
 
-func (d *OpenApiDocs) AddScansOperations() {
+func (d *OpenAPIDocs) AddScansOperations() {
 	// List scan result fields
 	d.AddOperation("getScanReportFields", http.MethodGet, "/deepfence/scan/results/fields",
 		"Get Scan Report Fields", "Get all the fields available in all the scan reports",
@@ -632,7 +632,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusOK, []string{tagVulnerability}, bearerToken, new(SbomRequest), new(DownloadReportResponse))
 }
 
-func (d *OpenApiDocs) AddDiagnosisOperations() {
+func (d *OpenAPIDocs) AddDiagnosisOperations() {
 	d.AddOperation("diagnosticNotification", http.MethodGet, "/deepfence/diagnosis/notification",
 		"Get Diagnostic Notification", "Get Diagnostic Notification",
 		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new([]diagnosis.DiagnosticNotification))
@@ -656,7 +656,7 @@ func (d *OpenApiDocs) AddDiagnosisOperations() {
 		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new(diagnosis.GetDiagnosticLogsResponse))
 }
 
-func (d *OpenApiDocs) AddRegistryOperations() {
+func (d *OpenAPIDocs) AddRegistryOperations() {
 	d.AddOperation("listRegistry", http.MethodGet, "/deepfence/registryaccount",
 		"List Registries", "List all the added Registries",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryListReq), new([]RegistryListResp))
@@ -672,6 +672,9 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 	d.AddOperation("deleteRegistry", http.MethodDelete, "/deepfence/registryaccount/{registry_id}",
 		"Delete Registry", "Delete registry",
 		http.StatusNoContent, []string{tagRegistry}, bearerToken, new(RegistryIDPathReq), nil)
+	d.AddOperation("deleteRegistryBulk", http.MethodPatch, "/deepfence/registryaccount/delete",
+		"Batch Delete Registry", "Batch Delete registry",
+		http.StatusNoContent, []string{tagRegistry}, bearerToken, new(DeleteRegistryBulkReq), nil)
 	d.AddOperation("syncRegistry", http.MethodPost, "/deepfence/registryaccount/{registry_id}/sync",
 		"Sync Registry", "synchronize registry images",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryIDPathReq), new(MessageResponse))
@@ -698,7 +701,7 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImageStubsReq), new(RegistryCountResp))
 }
 
-func (d *OpenApiDocs) AddIntegrationOperations() {
+func (d *OpenAPIDocs) AddIntegrationOperations() {
 	d.AddOperation("addIntegration", http.MethodPost, "/deepfence/integration",
 		"Add Integration", "Add a new supported integration",
 		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationAddReq), new(MessageResponse))
@@ -708,9 +711,48 @@ func (d *OpenApiDocs) AddIntegrationOperations() {
 	d.AddOperation("deleteIntegration", http.MethodDelete, "/deepfence/integration/{integration_id}",
 		"Delete Integration", "Delete integration",
 		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
+
+	d.AddOperation("addGenerativeAiIntegrationOpenAI", http.MethodPost, "/deepfence/generative-ai-integration/openai",
+		"Add OpenAI Generative AI Integration", "Add a new OpenAI Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(AddGenerativeAiOpenAIIntegration), new(MessageResponse))
+	d.AddOperation("addGenerativeAiIntegrationBedrock", http.MethodPost, "/deepfence/generative-ai-integration/bedrock",
+		"Add AWS Bedrock Generative AI Integration", "Add a new AWS Bedrock Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(AddGenerativeAiBedrockIntegration), new(MessageResponse))
+	d.AddOperation("autoAddGenerativeAiIntegrationBedrock", http.MethodPost, "/deepfence/generative-ai-integration/bedrock/auto-add",
+		"Automatically add AWS Bedrock Generative AI Integration", "Automatically add AWS Bedrock Generative AI Integrations using IAM role",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(AutoAddGenerativeAiBedrockIntegration), new(MessageResponse))
+
+	d.AddOperation("listGenerativeAiIntegration", http.MethodGet, "/deepfence/generative-ai-integration",
+		"List Generative AI Integrations", "List all the added Generative AI Integrations",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(GenerativeAiIntegrationListRequest), new([]GenerativeAiIntegrationListResponse))
+	d.AddOperation("deleteGenerativeAiIntegration", http.MethodDelete, "/deepfence/generative-ai-integration/{integration_id}",
+		"Delete Generative AI Integration", "Delete Generative AI integration",
+		http.StatusNoContent, []string{tagGenerativeAi}, bearerToken, new(IntegrationIDPathReq), nil)
+	d.AddOperation("setDefaultGenerativeAiIntegration", http.MethodPut, "/deepfence/generative-ai-integration/{integration_id}/default",
+		"Set Default Generative AI Integration", "Set Default Generative AI integration",
+		http.StatusNoContent, []string{tagGenerativeAi}, bearerToken, new(IntegrationIDPathReq), nil)
+
+	d.AddOperation("generativeAiIntegrationCloudPostureQuery", http.MethodPost, "/deepfence/generative-ai-integration/query/cloud-posture",
+		"Send Cloud Posture query to Generative AI Integration", "Send Cloud Posture query to Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(GenerativeAiIntegrationCloudPostureRequest), new(string))
+	d.AddOperation("generativeAiIntegrationLinuxPostureQuery", http.MethodPost, "/deepfence/generative-ai-integration/query/linux-posture",
+		"Send Linux Posture query to Generative AI Integration", "Send Linux Posture query to Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(GenerativeAiIntegrationLinuxPostureRequest), new(string))
+	d.AddOperation("generativeAiIntegrationKubernetesPostureQuery", http.MethodPost, "/deepfence/generative-ai-integration/query/kubernetes-posture",
+		"Send Kubernetes Posture query to Generative AI Integration", "Send Kubernetes Posture query to Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(GenerativeAiIntegrationKubernetesPostureRequest), new(string))
+	d.AddOperation("generativeAiIntegrationVulnerabilityQuery", http.MethodPost, "/deepfence/generative-ai-integration/query/vulnerability",
+		"Send Vulnerability query to Generative AI Integration", "Send Vulnerability query to Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(GenerativeAiIntegrationVulnerabilityRequest), new(string))
+	d.AddOperation("generativeAiIntegrationSecretQuery", http.MethodPost, "/deepfence/generative-ai-integration/query/secret",
+		"Send Secret query to Generative AI Integration", "Send Secret query to Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(GenerativeAiIntegrationSecretRequest), new(string))
+	d.AddOperation("generativeAiIntegrationMalwareQuery", http.MethodPost, "/deepfence/generative-ai-integration/query/malware",
+		"Send Malware query to Generative AI Integration", "Send Malware query to Generative AI Integration",
+		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(GenerativeAiIntegrationMalwareRequest), new(string))
 }
 
-func (d *OpenApiDocs) AddReportsOperations() {
+func (d *OpenAPIDocs) AddReportsOperations() {
 	d.AddOperation("generateReport", http.MethodPost, "/deepfence/reports",
 		"Generate Report", "generate report for given type and filters",
 		http.StatusOK, []string{tagReports}, bearerToken, new(GenerateReportReq), new(GenerateReportResp))
@@ -725,7 +767,7 @@ func (d *OpenApiDocs) AddReportsOperations() {
 		http.StatusNoContent, []string{tagReports}, bearerToken, new(ReportReq), nil)
 }
 
-func (d *OpenApiDocs) AddSettingsOperations() {
+func (d *OpenAPIDocs) AddSettingsOperations() {
 	d.AddOperation("addEmailConfiguration", http.MethodPost, "/deepfence/settings/email",
 		"Add Email Configuration", "This email configuration is used to send email notifications",
 		http.StatusOK, []string{tagSettings}, bearerToken, new(EmailConfigurationAdd), new(MessageResponse))
@@ -760,7 +802,15 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 		http.StatusNoContent, []string{tagSettings}, bearerToken, new(AddScheduledTaskRequest), nil)
 	d.AddOperation("deleteCustomScheduledTask", http.MethodDelete, "/deepfence/scheduled-task/{id}",
 		"Delete Custom Schedule task", "Delete Custom Schedule task",
-		http.StatusNoContent, []string{tagSettings}, bearerToken, new(ScheduleJobId), nil)
+		http.StatusNoContent, []string{tagSettings}, bearerToken, new(ScheduleJobID), nil)
+
+	d.AddOperation("uploadAgentVersion", http.MethodPut, "/deepfence/settings/agent/version",
+		"Upload New agent version", "Upload Agent version",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, nil)
+
+	d.AddOperation("getAgentVersions", http.MethodGet, "/deepfence/settings/agent/versions",
+		"Get available agent versions", "Get available agent versions",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(ListAgentVersionResp))
 
 	// Database upload
 	d.AddOperation("uploadVulnerabilityDatabase", http.MethodPut, "/deepfence/database/vulnerability",
@@ -768,7 +818,7 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 		http.StatusOK, []string{tagSettings}, bearerToken, new(vulnerability_db.DBUploadRequest), new(MessageResponse))
 }
 
-func (d *OpenApiDocs) AddDiffAddOperations() {
+func (d *OpenAPIDocs) AddDiffAddOperations() {
 	d.AddOperation("diffAddVulnerability", http.MethodPost, "/deepfence/diff-add/vulnerability",
 		"Get Vulnerability Diff", "Get Vulnerability Diff between two scans",
 		http.StatusOK, []string{tagDiffAdd}, bearerToken, new(ScanCompareReq), new(ScanCompareResVulnerability))
@@ -786,7 +836,7 @@ func (d *OpenApiDocs) AddDiffAddOperations() {
 		http.StatusOK, []string{tagDiffAdd}, bearerToken, new(ScanCompareReq), new(ScanCompareResCloudCompliance))
 }
 
-func (d *OpenApiDocs) AddCompletionOperations() {
+func (d *OpenAPIDocs) AddCompletionOperations() {
 	d.AddOperation("completeProcessInfo", http.MethodPost, "/deepfence/complete/process",
 		"Get Completion for process fields", "Complete process info",
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))

@@ -1,4 +1,5 @@
-import { TextInput } from 'ui-components';
+import { useState } from 'react';
+import { Checkbox, TextInput } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
@@ -19,6 +20,8 @@ sample json
 */
 
 export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormProps) => {
+  const [isPublic, setIsPublic] = useState(false);
+
   return (
     <>
       <div className="text-p4 dark:text-text-input-value">
@@ -69,15 +72,28 @@ export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           helperText={fieldErrors?.['gitlab_registry_url']}
           required
         />
-        <TextInput
-          className="w-3/4 min-[200px] max-w-xs"
-          label="Gitlab Access Token"
-          type={'password'}
-          name="secret.gitlab_access_token"
-          placeholder="Gitlab Access Token"
-          color={fieldErrors?.['gitlab_access_token'] ? 'error' : 'default'}
-          helperText={fieldErrors?.['gitlab_access_token']}
-        />
+        <div>
+          <input hidden value={String(isPublic)} />
+          <Checkbox
+            label="Public Registry"
+            checked={isPublic}
+            onCheckedChange={(checked: boolean) => {
+              setIsPublic(checked);
+            }}
+          />
+        </div>
+        {!isPublic && (
+          <TextInput
+            className="w-3/4 min-[200px] max-w-xs"
+            label="Gitlab Access Token"
+            type={'password'}
+            name="secret.gitlab_access_token"
+            placeholder="Gitlab Access Token"
+            color={fieldErrors?.['gitlab_access_token'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['gitlab_access_token']}
+          />
+        )}
+
         <div className="mt-2 text-p7 dark:text-text-input-value">
           Supported Versions: 11.8 and above
         </div>

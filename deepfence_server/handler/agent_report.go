@@ -19,10 +19,10 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
-var agent_report_ingesters sync.Map
+var agentReportIngesters sync.Map
 
 func init() {
-	agent_report_ingesters = sync.Map{}
+	agentReportIngesters = sync.Map{}
 }
 
 func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[report.CompressedReport], error) {
@@ -31,19 +31,19 @@ func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[report.Com
 		return nil, err
 	}
 
-	ing, has := agent_report_ingesters.Load(nid)
+	ing, has := agentReportIngesters.Load(nid)
 	if has {
 		return ing.(*ingesters.Ingester[report.CompressedReport]), nil
 	}
-	new_entry, err := ingesters.NewNeo4jCollector(ctx)
+	newEntry, err := ingesters.NewNeo4jCollector(ctx)
 	if err != nil {
 		return nil, err
 	}
-	true_new_entry, loaded := agent_report_ingesters.LoadOrStore(nid, &new_entry)
+	trueNewEntry, loaded := agentReportIngesters.LoadOrStore(nid, &newEntry)
 	if loaded {
-		new_entry.Close()
+		newEntry.Close()
 	}
-	return true_new_entry.(*ingesters.Ingester[report.CompressedReport]), nil
+	return trueNewEntry.(*ingesters.Ingester[report.CompressedReport]), nil
 }
 
 var bufferPool = sync.Pool{
@@ -97,7 +97,7 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := controls.AgentBeat{
-		BeatRateSec: 30 * ingesters.Push_back.Load(),
+		BeatRateSec: 30 * ingesters.PushBack.Load(),
 	}
 	err = httpext.JSON(w, http.StatusOK, res)
 
@@ -109,10 +109,7 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) IngestSyncAgentReport(w http.ResponseWriter, r *http.Request) {
-	var (
-		buf = &bytes.Buffer{}
-	)
-
+	buf := &bytes.Buffer{}
 	reader := io.TeeReader(r.Body, gzip.NewWriter(buf))
 
 	ctx := r.Context()
@@ -123,7 +120,6 @@ func (h *Handler) IngestSyncAgentReport(w http.ResponseWriter, r *http.Request) 
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
-
 	var rpt ingesters.ReportIngestionData
 
 	err = jsoniter.Unmarshal(data, &rpt)
@@ -132,17 +128,17 @@ func (h *Handler) IngestSyncAgentReport(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	//TODO
-	//ingester, err := getAgentReportIngester(ctx)
-	//if err != nil {
-	//	respondWith(ctx, w, http.StatusBadRequest, err)
-	//	return
+	// TODO
+	// ingester, err := getAgentReportIngester(ctx)
+	// if err != nil {
+	//      respondWith(ctx, w, http.StatusBadRequest, err)
+	//      return
+	//}
+	// if err := (*ingester).PushToDB(rpt); err != nil {
+	//      log.Error().Msgf("Error pushing report: %v", err)
+	//      respondWith(ctx, w, http.StatusInternalServerError, err)
+	//      return
 	//}
 
-	//if err := (*ingester).PushToDB(rpt); err != nil {
-	//	log.Error().Msgf("Error pushing report: %v", err)
-	//	respondWith(ctx, w, http.StatusInternalServerError, err)
-	//	return
-	//}
 	w.WriteHeader(http.StatusOK)
 }

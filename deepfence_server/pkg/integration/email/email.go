@@ -40,7 +40,7 @@ func (e Email) FormatMessage(message []map[string]interface{}) string {
 	entiremsg.WriteString(e.Resource)
 	entiremsg.WriteString("*\n\n")
 
-	//Prepare the sorted keys so that the output has the records in same order
+	// Prepare the sorted keys so that the output has the records in same order
 	var keys []string
 	if len(message) > 0 {
 		keys = make([]string, 0, len(message[0]))
@@ -69,8 +69,8 @@ func (e Email) FormatMessage(message []map[string]interface{}) string {
 			}
 		}
 
-		//This is to handle if we have unprocessed data in the map
-		//Possilbe if all the records are not uniform
+		// This is to handle if we have unprocessed data in the map
+		// Possilbe if all the records are not uniform
 		for key, val := range v {
 			fmtVal := ""
 			if val != nil {
@@ -101,7 +101,7 @@ func (e Email) SendNotification(ctx context.Context, message string, extras map[
 	if err != nil {
 		return err
 	}
-	return emailSender.Send([]string{e.Config.EmailId}, "Deepfence Subscription", m, "", nil)
+	return emailSender.Send([]string{e.Config.EmailID}, "Deepfence Subscription", m, "", nil)
 }
 
 func (e Email) IsEmailConfigured(ctx context.Context) bool {

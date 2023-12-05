@@ -27,6 +27,7 @@ import { DFLink } from '@/components/DFLink';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { PlusIcon } from '@/components/icons/common/Plus';
+import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { ImageIcon } from '@/components/icons/image';
 import { InProgressIcon } from '@/components/icons/registries/InProgress';
 import { StartScanIcon } from '@/components/icons/registries/StartScan';
@@ -114,10 +115,14 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const actionType = formData.get('actionType');
 
   if (actionType === ActionEnumType.DELETE) {
-    const id = formData.get('nodeIds')?.toString() ?? '';
-    const deleteRegistry = apiWrapper({ fn: getRegistriesApiClient().deleteRegistry });
-    const r = await deleteRegistry({
-      registryId: id,
+    const ids = formData.getAll('nodeIds[]');
+    const deleteRegistryBulk = apiWrapper({
+      fn: getRegistriesApiClient().deleteRegistryBulk,
+    });
+    const r = await deleteRegistryBulk({
+      modelDeleteRegistryBulkReq: {
+        registry_ids: ids as string[],
+      },
     });
 
     if (!r.ok) {
@@ -186,13 +191,13 @@ const useCounts = () => {
   });
 };
 const DeleteConfirmationModal = ({
-  id,
+  ids,
   showDialog,
   setShowDialog,
   onDeleteSuccess,
 }: {
   showDialog: boolean;
-  id: string;
+  ids: string[];
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
   onDeleteSuccess: () => void;
 }) => {
@@ -202,13 +207,13 @@ const DeleteConfirmationModal = ({
     (actionType: string) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
-      formData.append('nodeIds', id);
+      ids.forEach((id) => formData.append('nodeIds[]', id));
 
       fetcher.submit(formData, {
         method: 'post',
       });
     },
-    [fetcher, id],
+    [fetcher, ids],
   );
 
   useEffect(() => {
@@ -232,7 +237,7 @@ const DeleteConfirmationModal = ({
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
-            Delete registry
+            {`Delete registr${ids.length === 1 ? 'y' : 'ies'}`}
           </div>
         ) : undefined
       }
@@ -265,7 +270,9 @@ const DeleteConfirmationModal = ({
     >
       {!fetcher.data?.success ? (
         <div className="grid">
-          <span>The selected registry will be deleted.</span>
+          <span>
+            {`The selected registr${ids.length === 1 ? 'y' : 'ies'} will be deleted`}.
+          </span>
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
@@ -393,12 +400,16 @@ const Widgets = () => {
 };
 const BulkActions = ({
   ids,
+  setIdsToDelete,
   onTableAction,
   setAddRegistryModal,
+  setShowDeleteDialog,
 }: {
   ids: string[];
   onTableAction: (ids: string[], scanType: RegistryScanType, actionType: string) => void;
   setAddRegistryModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   return (
     <>
@@ -458,6 +469,22 @@ const BulkActions = ({
           Start scan
         </Button>
       </Dropdown>
+      <Button
+        variant="flat"
+        color="error"
+        startIcon={
+          <span className="h-3 w-3">
+            <TrashLineIcon />
+          </span>
+        }
+        disabled={ids.length == 0}
+        onClick={() => {
+          setIdsToDelete(ids);
+          setShowDeleteDialog(true);
+        }}
+      >
+        Delete
+      </Button>
     </>
   );
 };
@@ -469,7 +496,7 @@ const RegistryAccountsResults = () => {
     | typeof ScanTypeEnum.MalwareScan
   >();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [idsToDelete, setIdsToDelete] = useState<string>('');
+  const [idsToDelete, setIdsToDelete] = useState<string[]>([]);
   const [nodeIdsToScan, setNodeIdsToScan] = useState<string[]>([]);
   const fetcher = useFetcher<ActionData>();
 
@@ -500,6 +527,8 @@ const RegistryAccountsResults = () => {
           ids={Object.keys(rowSelectionState)}
           onTableAction={onTableAction}
           setAddRegistryModal={setAddRegistryModal}
+          setIdsToDelete={setIdsToDelete}
+          setShowDeleteDialog={setShowDeleteDialog}
         />
         <ConfigureScanModal
           open={!!selectedScanType}
@@ -521,7 +550,7 @@ const RegistryAccountsResults = () => {
       {showDeleteDialog && (
         <DeleteConfirmationModal
           showDialog={showDeleteDialog}
-          id={idsToDelete}
+          ids={idsToDelete}
           setShowDialog={setShowDeleteDialog}
           onDeleteSuccess={() => {
             setRowSelectionState({});

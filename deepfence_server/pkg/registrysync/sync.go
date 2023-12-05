@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -15,15 +16,15 @@ import (
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 )
 
-func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgId int32) error {
+func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgID int32) error {
 	// set registry account syncing
-	err := setRegistryAccountSyncing(ctx, true, r)
+	err := SetRegistryAccountSyncing(ctx, true, r, pgID)
 	if err != nil {
 		return err
 	}
 
 	defer func() {
-		err := setRegistryAccountSyncing(ctx, false, r)
+		err := SetRegistryAccountSyncing(ctx, false, r, pgID)
 		if err != nil {
 			log.Error().Msgf("failed to set registry account syncing to false, err: %v", err)
 		}
@@ -56,11 +57,11 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	if err != nil {
 		return err
 	}
-	log.Info().Msgf("sync registry id=%d type=%s found %d images", pgId, r.GetRegistryType(), len(list))
-	return insertToNeo4j(ctx, list, r, pgId)
+	log.Info().Msgf("sync registry id=%d type=%s found %d images", pgID, r.GetRegistryType(), len(list))
+	return insertToNeo4j(ctx, list, r, pgID)
 }
 
-func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r registry.Registry, pgId int32) error {
+func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r registry.Registry, pgID int32) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -79,7 +80,7 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r
 	defer tx.Close()
 
 	imageMap := RegistryImagesToMaps(images)
-	registryId := model.GetRegistryID(r.GetRegistryType(), r.GetNamespace())
+	registryID := utils.GetRegistryID(r.GetRegistryType(), r.GetNamespace(), pgID)
 	_, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:ContainerImage{node_id:row.node_id})
@@ -103,8 +104,8 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r
 		s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
 		t.updated_at = TIMESTAMP()`,
 		map[string]interface{}{
-			"batch": imageMap, "registry_id": registryId,
-			"pgId": pgId, "registry_type": r.GetRegistryType(),
+			"batch": imageMap, "registry_id": registryID,
+			"pgId": pgID, "registry_type": r.GetRegistryType(),
 		})
 	if err != nil {
 		return err
@@ -145,7 +146,7 @@ func convertStructFieldToJSONString(bb map[string]interface{}, key string) map[s
 	return bb
 }
 
-func setRegistryAccountSyncing(ctx context.Context, syncing bool, r registry.Registry) error {
+func SetRegistryAccountSyncing(ctx context.Context, syncing bool, r registry.Registry, pgID int32) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -162,12 +163,12 @@ func setRegistryAccountSyncing(ctx context.Context, syncing bool, r registry.Reg
 	}
 	defer tx.Close()
 
-	registryId := model.GetRegistryID(r.GetRegistryType(), r.GetNamespace())
+	registryID := utils.GetRegistryID(r.GetRegistryType(), r.GetNamespace(), pgID)
 	_, err = tx.Run(`
 		MATCH (m:RegistryAccount{node_id:$registry_id})
 		SET m.syncing=$syncing`,
 		map[string]interface{}{
-			"registry_id": registryId,
+			"registry_id": registryID,
 			"syncing":     syncing,
 		})
 	if err != nil {

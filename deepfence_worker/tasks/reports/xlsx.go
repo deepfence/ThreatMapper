@@ -3,6 +3,7 @@ package reports
 import (
 	"context"
 	"os"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -42,16 +43,14 @@ var (
 	}
 	malwareHeader = map[string]string{
 		"A1": "Rule Name",
-		"B1": "Severity",
-		"C1": "Meta",
-		"D1": "Meta Rules",
-		"E1": "File Severity Score",
-		"F1": "File Severity",
-		"G1": "Summary",
-		"H1": "Node Name",
-		"I1": "Container Name",
-		"J1": "Kubernetes Cluster Name",
-		"K1": "NodeType",
+		"B1": "Class",
+		"C1": "File Name",
+		"D1": "Summary",
+		"E1": "Severity",
+		"F1": "Node Name",
+		"G1": "NodeType",
+		"H1": "Container Name",
+		"I1": "Kubernetes Cluster Name",
 	}
 	complianceHeader = map[string]string{
 		"A1": "@timestamp",
@@ -144,26 +143,27 @@ func vulnerabilityXLSX(ctx context.Context, params utils.ReportParams) (string, 
 
 	offset := 0
 	for _, nodeScanData := range data.NodeWiseData.ScanData {
+		updatedAt := time.UnixMilli(nodeScanData.ScanInfo.UpdatedAt).String()
 		for i, v := range nodeScanData.ScanResults {
 			cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
 			if err != nil {
 				log.Error().Err(err).Msg("error generating cell name")
 			}
 			value := []interface{}{
-				nodeScanData.ScanInfo.UpdatedAt,
-				v.Cve_attack_vector,
-				v.Cve_caused_by_package,
+				updatedAt,
+				v.CveAttackVector,
+				v.CveCausedByPackage,
 				nodeScanData.ScanInfo.NodeName,
 				nodeScanData.ScanInfo.ScanID,
 				nodeScanData.ScanInfo.NodeID,
-				v.Cve_cvss_score,
-				v.Cve_description,
-				v.Cve_fixed_in,
-				v.Cve_id,
-				v.Cve_link,
-				v.Cve_severity,
-				v.Cve_overall_score,
-				v.Cve_type,
+				v.CveCVSSScore,
+				v.CveDescription,
+				v.CveFixedIn,
+				v.CveID,
+				v.CveLink,
+				v.CveSeverity,
+				v.CveOverallScore,
+				v.CveType,
 				nodeScanData.ScanInfo.HostName,
 				nodeScanData.ScanInfo.CloudAccountID,
 				v.Masked,
@@ -249,16 +249,14 @@ func malwareXLSX(ctx context.Context, params utils.ReportParams) (string, error)
 			}
 			value := []interface{}{
 				m.RuleName,
-				m.SeverityScore,
-				"",
-				m.RuleID,
-				m.FileSevScore,
-				m.FileSeverity,
+				m.Class,
+				m.CompleteFilename,
 				m.Summary,
+				m.FileSeverity,
 				nodeScanData.ScanInfo.NodeName,
+				nodeScanData.ScanInfo.NodeType,
 				nodeScanData.ScanInfo.ContainerName,
 				nodeScanData.ScanInfo.KubernetesClusterName,
-				nodeScanData.ScanInfo.NodeType,
 			}
 			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
 			if err != nil {
@@ -289,20 +287,21 @@ func complianceXLSX(ctx context.Context, params utils.ReportParams) (string, err
 
 	offset := 0
 	for _, nodeScanData := range data.NodeWiseData.ScanData {
+		updatedAt := time.UnixMilli(nodeScanData.ScanInfo.UpdatedAt).String()
 		for i, c := range nodeScanData.ScanResults {
 			cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
 			if err != nil {
 				log.Error().Err(err).Msg("error generating cell name")
 			}
 			value := []interface{}{
-				nodeScanData.ScanInfo.UpdatedAt,
+				updatedAt,
 				c.ComplianceCheckType,
 				"",
 				"",
 				nodeScanData.ScanInfo.HostName,
 				nodeScanData.ScanInfo.CloudAccountID,
 				c.Masked,
-				c.ComplianceNodeId,
+				c.ComplianceNodeID,
 				nodeScanData.ScanInfo.NodeName,
 				c.ComplianceNodeType,
 				c.Status,
@@ -339,13 +338,14 @@ func cloudComplianceXLSX(ctx context.Context, params utils.ReportParams) (string
 	xlsxSetHeader(xlsx, "Sheet1", complianceHeader)
 
 	for _, data := range data.NodeWiseData.ScanData {
+		updatedAt := time.UnixMilli(data.ScanInfo.UpdatedAt).String()
 		for i, c := range data.ScanResults {
 			cellName, err := excelize.CoordinatesToCellName(1, i+2)
 			if err != nil {
 				log.Error().Err(err).Msg("error generating cell name")
 			}
 			value := []interface{}{
-				data.ScanInfo.UpdatedAt,
+				updatedAt,
 				c.ComplianceCheckType,
 				"",
 				"",

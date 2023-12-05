@@ -6,18 +6,19 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 	"github.com/rs/zerolog/log"
 )
 
-func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, rType, ns string) ([]ContainerImage, error) {
-	var registryId string
+func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, registryType, namespace string, pgID int32) ([]ContainerImage, error) {
+	var registryID string
 	var query string
 	var images []ContainerImage
 
-	if rType != "" && ns != "" {
-		registryId = GetRegistryID(rType, ns)
+	if registryType != "" && namespace != "" && pgID > 0 {
+		registryID = utils.GetRegistryID(registryType, namespace, pgID)
 	}
 
 	driver, err := directory.Neo4jClient(ctx)
@@ -37,13 +38,13 @@ func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, rType, ns s
 	}
 	defer tx.Close()
 
-	if registryId != "" {
+	if registryID != "" {
 		query = "MATCH (n:RegistryAccount{node_id: $node_id})-[r:HOSTS]->(m:ContainerImage) RETURN m"
 	} else {
 		query = "MATCH (n:RegistryAccount{})-[r:HOSTS]->(m:ContainerImage) RETURN m"
 	}
 
-	res, err := tx.Run(query, map[string]interface{}{"node_id": registryId})
+	res, err := tx.Run(query, map[string]interface{}{"node_id": registryID})
 	if err != nil {
 		return nil, err
 	}

@@ -17,6 +17,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	workerUtil "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/deepfence/golang_deepfence_sdk/utils/tasks"
 	psOutput "github.com/deepfence/package-scanner/output"
 	ps "github.com/deepfence/package-scanner/scanner"
@@ -24,6 +25,7 @@ import (
 	psUtils "github.com/deepfence/package-scanner/utils"
 	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -117,32 +119,32 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		return nil
 	}
 
-	res, scanCtx := tasks.StartStatusReporter(params.ScanId,
+	res, scanCtx := tasks.StartStatusReporter(params.ScanID,
 		func(status tasks.ScanStatus) error {
 			sb, err := json.Marshal(status)
 			if err != nil {
 				return err
 			}
 			s.ingestC <- &kgo.Record{
-				Topic:   utils.VULNERABILITY_SCAN_STATUS,
+				Topic:   utils.VulnerabilityScanStatus,
 				Value:   sb,
 				Headers: rh,
 			}
 			return nil
 		}, tasks.StatusValues{
-			IN_PROGRESS: utils.SCAN_STATUS_INPROGRESS,
-			CANCELLED:   utils.SCAN_STATUS_CANCELLED,
-			FAILED:      utils.SCAN_STATUS_FAILED,
-			SUCCESS:     utils.SCAN_STATUS_SUCCESS,
+			IN_PROGRESS: utils.ScanStatusInProgress,
+			CANCELLED:   utils.ScanStatusCancelled,
+			FAILED:      utils.ScanStatusFailed,
+			SUCCESS:     utils.ScanStatusSuccess,
 		},
 		time.Minute*20,
 	)
 
-	log.Info().Msgf("Adding scan id to map:%s", params.ScanId)
-	scanMap.Store(params.ScanId, scanCtx)
+	log.Info().Msgf("Adding scan id to map:%s", params.ScanID)
+	scanMap.Store(params.ScanID, scanCtx)
 	defer func() {
-		log.Info().Msgf("Removing scan id from map:%s", params.ScanId)
-		scanMap.Delete(params.ScanId)
+		log.Info().Msgf("Removing scan id from map:%s", params.ScanID)
+		scanMap.Delete(params.ScanID)
 		res <- err
 		close(res)
 	}()
@@ -155,7 +157,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	sbomFilePath := path.Join("/tmp", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
+	sbomFilePath := path.Join("/tmp", utils.ScanIDReplacer.Replace(params.ScanID)+".json")
 	f, err := os.Create(sbomFilePath)
 	if err != nil {
 		return err
@@ -183,10 +185,10 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	cfg := psUtils.Config{
 		HostName:              params.HostName,
 		NodeType:              params.NodeType,
-		NodeId:                params.NodeId,
+		NodeID:                params.NodeID,
 		KubernetesClusterName: params.KubernetesClusterName,
-		ScanId:                params.ScanId,
-		ImageId:               params.ImageId,
+		ScanID:                params.ScanID,
+		ImageID:               params.ImageID,
 		ContainerName:         params.ContainerName,
 	}
 
@@ -198,7 +200,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 
 	details := psOutput.CountBySeverity(&report)
 
-	log.Info().Msgf("scan-id=%s vulnerabilities=%d severities=%v", params.ScanId, len(report), details.Severity)
+	log.Info().Msgf("scan-id=%s vulnerabilities=%d severities=%v", params.ScanID, len(report), details.Severity)
 
 	// write reports and status to kafka ingester will process from there
 	for _, c := range report {
@@ -207,15 +209,37 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 			log.Error().Msg(err.Error())
 		} else {
 			s.ingestC <- &kgo.Record{
-				Topic:   utils.VULNERABILITY_SCAN,
+				Topic:   utils.VulnerabilityScan,
 				Value:   cb,
 				Headers: rh,
 			}
 		}
 	}
 
+	// generate runtime sbom needs entity Id
+	driver, err := directory.Neo4jClient(directory.NewContextWithNameSpace(directory.NamespaceID(tenantID)))
+	if err != nil {
+		return err
+	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	entityID, err := workerUtil.GetEntityIdFromScanID(params.ScanID, string(utils.NEO4JVulnerabilityScan), tx)
+	if err != nil {
+		log.Error().Msgf("Error in getting entityId: %v", err)
+	}
+
 	// generate runtime sbom
-	runtimeSbom, err := generateRuntimeSBOM(sbomFilePath, report)
+	runtimeSbom, err := generateRuntimeSBOM(sbomFilePath, report, entityID)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to generate runtime sbom")
 		return err
@@ -227,15 +251,15 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	runtimeSbomPath := path.Join("/sbom/", "runtime-"+utils.ScanIdReplacer.Replace(params.ScanId)+".json")
-	uploadInfo, err := mc.UploadFile(context.Background(), runtimeSbomPath, runtimeSbomBytes,
+	runtimeSbomPath := path.Join("/sbom/", "runtime-"+utils.ScanIDReplacer.Replace(params.ScanID)+".json")
+	uploadInfo, err := mc.UploadFile(context.Background(), runtimeSbomPath, runtimeSbomBytes, true,
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to upload runtime sbom")
 		return err
 	}
 
-	log.Info().Msgf("scan_id: %s, runtime sbom minio file info: %+v", params.ScanId, uploadInfo)
+	log.Info().Msgf("scan_id: %s, runtime sbom minio file info: %+v", params.ScanID, uploadInfo)
 
 	return nil
 }
@@ -256,21 +280,26 @@ func readSBOM(path string) (*sbom.SBOM, error) {
 }
 
 type cveInfo struct {
-	CveID    string
-	Severity string
+	CveCausedByPackage string
+	CveID              string
+	Severity           string
 }
 
 // generate map of package:version with severity
 func mapVulnerabilities(vulnerabilities []ps.VulnerabilityScanReport) map[string]cveInfo {
 	vMap := map[string]cveInfo{}
 	for _, v := range vulnerabilities {
-		vMap[v.CveCausedByPackage] = cveInfo{CveID: v.CveId, Severity: v.CveSeverity}
+		vMap[v.CveCausedByPackage] = cveInfo{
+			CveCausedByPackage: v.CveCausedByPackage,
+			CveID:              v.CveID,
+			Severity:           v.CveSeverity,
+		}
 	}
 	return vMap
 }
 
 // generate runtime sbom format
-func generateRuntimeSBOM(path string, vulnerabilities []ps.VulnerabilityScanReport) (*[]model.SbomResponse, error) {
+func generateRuntimeSBOM(path string, vulnerabilities []ps.VulnerabilityScanReport, entityID string) (*[]model.SbomResponse, error) {
 	var (
 		runSBOM = make([]model.SbomResponse, 0)
 		err     error
@@ -289,15 +318,19 @@ func generateRuntimeSBOM(path string, vulnerabilities []ps.VulnerabilityScanRepo
 		for _, l := range item.Licenses.ToSlice() {
 			licenses = append(licenses, l.Value)
 		}
-		runSBOM = append(runSBOM, model.SbomResponse{
+		entry := model.SbomResponse{
 			PackageName: item.Name,
 			Version:     item.Version,
 			Locations:   item.Locations.CoordinateSet().Paths(),
 			Licenses:    licenses,
 			CveID:       cveInfo.CveID,
 			Severity:    cveInfo.Severity,
-		})
+		}
+		if len(cveInfo.CveID) > 0 {
+			entry.CveNodeID = workerUtil.GetVulnerabilityNodeID(cveInfo.CveCausedByPackage, cveInfo.CveID, entityID)
+		}
 
+		runSBOM = append(runSBOM, entry)
 	}
 
 	return &runSBOM, err

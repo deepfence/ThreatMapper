@@ -107,7 +107,7 @@ func GetRegisterControlFunc[T ctl.StartVulnerabilityScanRequest | ctl.StartSecre
 
 	controlFunc := func(ctx context.Context, req T) error {
 		BinArgs := ctl.GetBinArgs(req)
-		log.Info().Msgf("%s payload: %+v", task, BinArgs)
+		log.Info().Msgf("enqueue %s payload: %+v", task, BinArgs)
 		data, err := json.Marshal(BinArgs)
 		if err != nil {
 			log.Error().Msg(err.Error())

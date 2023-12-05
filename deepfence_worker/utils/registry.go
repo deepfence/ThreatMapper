@@ -104,23 +104,23 @@ func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCred
 	}
 
 	switch reg.RegistryType {
-	case constants.DOCKER_HUB:
+	case constants.DockerHub:
 		return dockerHubCreds(reg, aes)
-	case constants.QUAY:
+	case constants.Quay:
 		return quayCreds(reg, aes)
 	case constants.GCR:
 		return gcrCreds(reg, aes)
 	case constants.ACR:
 		return acrCreds(reg, aes)
-	case constants.HARBOR:
+	case constants.Harbor:
 		return harborCreds(reg, aes)
-	case constants.DOCKER_PRIVATE:
+	case constants.DockerPrivate:
 		return dockerprivateCreds(reg, aes)
-	case constants.JFROG:
+	case constants.Jfrog:
 		return jfrogCreds(reg, aes)
 	case constants.ECR:
 		return ecrCreds(reg, aes)
-	case constants.GITLAB:
+	case constants.Gitlab:
 		return gitlabCreds(reg, aes)
 	default:
 		return regCreds{}, nil
@@ -358,8 +358,8 @@ func gcrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (re
 	return regCreds{
 		URL:           hub.NonSecret.RegistryURL,
 		UserName:      gcrUsername,
-		Password:      hub.Extras.ServiceAccountJson,
-		NameSpace:     hub.NonSecret.ProjectId,
+		Password:      hub.Extras.ServiceAccountJSON,
+		NameSpace:     hub.NonSecret.ProjectID,
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.RegistryURL),
 		SkipTLSVerify: false,
 		UseHttp:       useHttp(hub.NonSecret.RegistryURL),

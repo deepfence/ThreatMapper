@@ -55,6 +55,19 @@ type ContainerRegistry struct {
 	UpdatedAt       time.Time       `json:"updated_at"`
 }
 
+type GenerativeAiIntegration struct {
+	ID                 int32           `json:"id"`
+	IntegrationType    string          `json:"integration_type"`
+	Label              string          `json:"label"`
+	LastSentTime       sql.NullTime    `json:"last_sent_time"`
+	Config             json.RawMessage `json:"config"`
+	ErrorMsg           sql.NullString  `json:"error_msg"`
+	DefaultIntegration bool            `json:"default_integration"`
+	CreatedByUserID    int64           `json:"created_by_user_id"`
+	CreatedAt          time.Time       `json:"created_at"`
+	UpdatedAt          time.Time       `json:"updated_at"`
+}
+
 type Integration struct {
 	ID              int32           `json:"id"`
 	Resource        string          `json:"resource"`

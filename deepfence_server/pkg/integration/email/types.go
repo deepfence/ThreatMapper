@@ -15,7 +15,7 @@ type Email struct {
 }
 
 type Config struct {
-	EmailId string `json:"email_id"  validate:"required,email" required:"true"`
+	EmailID string `json:"email_id"  validate:"required,email" required:"true"`
 }
 
 func (e Email) ValidateConfig(validate *validator.Validate) error {

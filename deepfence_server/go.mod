@@ -1,6 +1,6 @@
 module github.com/deepfence/ThreatMapper/deepfence_server
 
-go 1.21.0
+go 1.21
 
 replace github.com/deepfence/ThreatMapper/deepfence_utils => ../deepfence_utils
 
@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.0
 	github.com/PagerDuty/go-pagerduty v1.7.0
 	github.com/andygrunwald/go-jira v1.16.0
-	github.com/aws/aws-sdk-go v1.44.325
+	github.com/aws/aws-sdk-go v1.48.12
 	github.com/casbin/casbin/v2 v2.75.0
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/docker/docker v24.0.5+incompatible
@@ -21,6 +21,7 @@ require (
 	github.com/google/uuid v1.3.1
 	github.com/json-iterator/go v1.1.12
 	github.com/k-sone/critbitgo v1.4.0
+	github.com/klauspost/compress v1.17.3
 	github.com/lestrrat-go/jwx/v2 v2.0.12
 	github.com/minio/minio-go/v7 v7.0.63
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.7
@@ -31,6 +32,7 @@ require (
 	github.com/rs/zerolog v1.30.0
 	github.com/samber/lo v1.38.1
 	github.com/samber/mo v1.8.0
+	github.com/sashabaranov/go-openai v1.17.3
 	github.com/sirupsen/logrus v1.9.3
 	github.com/swaggest/openapi-go v0.2.39
 	github.com/twmb/franz-go v1.14.4
@@ -39,7 +41,9 @@ require (
 	go.opentelemetry.io/otel/exporters/jaeger v1.16.0
 	go.opentelemetry.io/otel/sdk v1.18.0
 	go.opentelemetry.io/otel/trace v1.18.0
-	golang.org/x/crypto v0.12.0
+	golang.org/x/crypto v0.14.0
+	golang.org/x/mod v0.10.0
+	golang.org/x/term v0.13.0
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.28.0
 	k8s.io/apimachinery v0.28.0
@@ -87,7 +91,6 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
@@ -128,12 +131,10 @@ require (
 	go.opentelemetry.io/contrib v1.0.0 // indirect
 	go.opentelemetry.io/otel/metric v1.18.0 // indirect
 	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
-	golang.org/x/mod v0.10.0 // indirect
-	golang.org/x/net v0.14.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
-	golang.org/x/term v0.11.0 // indirect
-	golang.org/x/text v0.12.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.8.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect

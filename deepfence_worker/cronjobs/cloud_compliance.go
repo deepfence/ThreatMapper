@@ -248,13 +248,13 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 			scan_count_query = `
 			MATCH (n:` + string(neo4jNodeType) + `)
 			WHERE n.pseudo=false and n.agent_running=true
-			MATCH (n) <-[:SCANNED]- (m:` + string(utils.NEO4J_COMPLIANCE_SCAN) + `)
+			MATCH (n) <-[:SCANNED]- (m:` + string(utils.NEO4JComplianceScan) + `)
 			RETURN count(distinct n)`
 
 			success_count_query = `
 			MATCH (n:` + string(neo4jNodeType) + `)
 			WHERE n.pseudo=false and n.active=true and n.agent_running=true
-			MATCH (n) <-[:SCANNED]- (m:` + string(utils.NEO4J_COMPLIANCE_SCAN) + `) -[:DETECTED]-> (c:Compliance)
+			MATCH (n) <-[:SCANNED]- (m:` + string(utils.NEO4JComplianceScan) + `) -[:DETECTED]-> (c:Compliance)
 			MATCH (m) -[:DETECTED] -> (c:Compliance)
 			WHERE c.status IN $passStatus
 			RETURN count(distinct c)`
@@ -262,7 +262,7 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 			global_count_query = `
 			MATCH (n:` + string(neo4jNodeType) + `)
 			WHERE n.pseudo=false and n.active=true and n.agent_running=true
-			MATCH (n) <-[:SCANNED]- (m:` + string(utils.NEO4J_COMPLIANCE_SCAN) + `) -[:DETECTED]-> (c:Compliance)
+			MATCH (n) <-[:SCANNED]- (m:` + string(utils.NEO4JComplianceScan) + `) -[:DETECTED]-> (c:Compliance)
 			MATCH (m) -[:DETECTED] -> (c:Compliance)
 			RETURN count(distinct c)`
 
@@ -281,14 +281,14 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 			scan_count_query = `
 			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:` + string(neo4jNodeType) + `)
 			AND m.organization_id IS NOT NULL
-			MATCH (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
+			MATCH (n:` + string(utils.NEO4JCloudComplianceScan) + `)-[:SCANNED]->(m)
 			RETURN count(distinct m)`
 
 			success_count_query = `
 			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:` + string(neo4jNodeType) + `)
 			WHERE o.active=true
 			AND m.organization_id IS NOT NULL
-			MATCH (c:CloudCompliance) <-[:DETECTED]- (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
+			MATCH (c:CloudCompliance) <-[:DETECTED]- (n:` + string(utils.NEO4JCloudComplianceScan) + `)-[:SCANNED]->(m)
 			WHERE c.status IN $passStatus
 			RETURN count(distinct c)`
 
@@ -296,7 +296,7 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 			MATCH (o:` + string(neo4jNodeType) + `{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:` + string(neo4jNodeType) + `)
 			WHERE o.active=true
 			AND m.organization_id IS NOT NULL
-			MATCH (c:CloudCompliance) <-[:DETECTED]- (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
+			MATCH (c:CloudCompliance) <-[:DETECTED]- (n:` + string(utils.NEO4JCloudComplianceScan) + `)-[:SCANNED]->(m)
 			RETURN count(distinct c)`
 
 		} else {
@@ -312,20 +312,20 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 
 			scan_count_query = `
 			MATCH (m:` + string(neo4jNodeType) + `{cloud_provider: $cloud_provider})
-			MATCH (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
+			MATCH (n:` + string(utils.NEO4JCloudComplianceScan) + `)-[:SCANNED]->(m)
 			RETURN count(distinct m)`
 
 			success_count_query = `
 			MATCH (m:` + string(neo4jNodeType) + `{cloud_provider: $cloud_provider})
 			WHERE m.active=true
-			MATCH (c:CloudCompliance) <-[:DETECTED]- (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
+			MATCH (c:CloudCompliance) <-[:DETECTED]- (n:` + string(utils.NEO4JCloudComplianceScan) + `)-[:SCANNED]->(m)
 			WHERE c.status IN $passStatus
 			RETURN count(distinct c)`
 
 			global_count_query = `
 			MATCH (m:` + string(neo4jNodeType) + `{cloud_provider: $cloud_provider})
 			WHERE m.active=true
-			MATCH (c:CloudCompliance) <-[:DETECTED]- (n:` + string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) + `)-[:SCANNED]->(m)
+			MATCH (c:CloudCompliance) <-[:DETECTED]- (n:` + string(utils.NEO4JCloudComplianceScan) + `)-[:SCANNED]->(m)
 			RETURN count(distinct c)`
 		}
 

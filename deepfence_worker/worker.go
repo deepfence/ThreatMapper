@@ -22,6 +22,14 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
+var (
+	DefaultQueues = map[string]int{
+		utils.QCritical: 6,
+		utils.QDefault:  3,
+		utils.QLow:      1,
+	}
+)
+
 type Worker struct {
 	cfg       config
 	mux       *asynq.ServeMux
@@ -104,29 +112,43 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 	ingestC := make(chan *kgo.Record, 10000)
 	go utils.StartKafkaProducer(kafkaCtx, cfg.KafkaBrokers, ingestC)
 
+	// worker config
+	qCfg := asynq.Config{
+		StrictPriority: true,
+		Concurrency:    cfg.TasksConcurrency,
+		ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
+			retried, _ := asynq.GetRetryCount(ctx)
+			maxRetry, _ := asynq.GetMaxRetry(ctx)
+			if retried >= maxRetry {
+				err = fmt.Errorf("retry exhausted for task %s: %w", task.Type(), err)
+			}
+			log.Error().Err(err).Msgf("worker task %s, payload: %s", task.Type(), task.Payload())
+		}),
+	}
+
+	if len(cfg.ProcessQueues) > 0 {
+		log.Info().Msgf("process mesages from queues %s", cfg.ProcessQueues)
+		processQueues := map[string]int{}
+		for _, qName := range cfg.ProcessQueues {
+			if val, found := DefaultQueues[qName]; found {
+				processQueues[qName] = val
+			} else {
+				log.Error().Msgf("unknown queue name %s", qName)
+			}
+		}
+		qCfg.Queues = processQueues
+	} else {
+		log.Info().Msg("process messages from all queues")
+		qCfg.Queues = DefaultQueues
+	}
+
 	srv := asynq.NewServer(
 		asynq.RedisClientOpt{
 			Addr:     fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort),
 			DB:       cfg.RedisDbNumber,
 			Password: cfg.RedisPassword,
 		},
-		asynq.Config{
-			StrictPriority: true,
-			Concurrency:    cfg.TasksConcurrency,
-			Queues: map[string]int{
-				utils.Q_CRITICAL: 6,
-				utils.Q_DEFAULT:  3,
-				utils.Q_LOW:      1,
-			},
-			ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
-				retried, _ := asynq.GetRetryCount(ctx)
-				maxRetry, _ := asynq.GetMaxRetry(ctx)
-				if retried >= maxRetry {
-					err = fmt.Errorf("retry exhausted for task %s: %w", task.Type(), err)
-				}
-				log.Error().Err(err).Msgf("worker task %s, payload: %s", task.Type(), task.Payload())
-			}),
-		},
+		qCfg,
 	)
 
 	mux := asynq.NewServeMux()
@@ -161,6 +183,8 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 
 	worker.AddRetryableHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry)
 
+	worker.AddRetryableHandler(utils.DeleteOldRegistryTask, cronjobs.DeleteOldRegistry)
+
 	worker.AddRetryableHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
 
 	worker.AddOneShotHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders)
@@ -193,6 +217,8 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 	worker.AddRetryableHandler(utils.UpdateCloudResourceScanStatusTask, scans.UpdateCloudResourceScanStatus)
 
 	worker.AddRetryableHandler(utils.UpdatePodScanStatusTask, scans.UpdatePodScanStatus)
+
+	worker.AddOneShotHandler(utils.BulkDeleteScans, scans.BulkDeleteScans)
 
 	return worker, cancel, nil
 }

@@ -12,6 +12,7 @@ import {
   ControlsApi,
   DiagnosisApi,
   DiffAddApi,
+  GenerativeAIApi,
   IntegrationApi,
   LookupApi,
   MalwareScanApi,
@@ -154,6 +155,7 @@ export function getRegistriesApiClient() {
     countImageStubs: registriesApi.countImageStubs.bind(registriesApi),
     listImageStubs: registriesApi.listImageStubs.bind(registriesApi),
     syncRegistryImages: registriesApi.syncRegistry.bind(registriesApi),
+    deleteRegistryBulk: registriesApi.deleteRegistryBulk.bind(registriesApi),
   };
 }
 
@@ -240,6 +242,7 @@ export function getControlsApiClient() {
     listControls: controlsApi.getCloudNodeControls.bind(controlsApi),
     enableControl: controlsApi.enableCloudNodeControls.bind(controlsApi),
     disableControl: controlsApi.disableCloudNodeControls.bind(controlsApi),
+    upgradeAgentVersion: controlsApi.upgradeAgentVersion.bind(controlsApi),
   };
 }
 
@@ -306,6 +309,37 @@ export function getIntegrationApiClient() {
   };
 }
 
+export function getGenerativeAIIntegraitonClient() {
+  const generativeAiApi = new GenerativeAIApi(configuration);
+
+  return {
+    generativeAiIntegrationCloudPostureQuery:
+      generativeAiApi.generativeAiIntegrationCloudPostureQueryRaw.bind(generativeAiApi),
+    generativeAiIntegrationVulnerabilityQuery:
+      generativeAiApi.generativeAiIntegrationVulnerabilityQueryRaw.bind(generativeAiApi),
+    generativeAiIntegrationLinuxPostureQuery:
+      generativeAiApi.generativeAiIntegrationLinuxPostureQueryRaw.bind(generativeAiApi),
+    generativeAiIntegrationKubernetesPostureQuery:
+      generativeAiApi.generativeAiIntegrationKubernetesPostureQueryRaw.bind(
+        generativeAiApi,
+      ),
+    generativeAiIntegrationSecretQuery:
+      generativeAiApi.generativeAiIntegrationSecretQueryRaw.bind(generativeAiApi),
+    generativeAiIntegrationMalwareQuery:
+      generativeAiApi.generativeAiIntegrationMalwareQueryRaw.bind(generativeAiApi),
+    listGenerativeAiIntegration:
+      generativeAiApi.listGenerativeAiIntegration.bind(generativeAiApi),
+    addGenerativeAiIntegrationOpenAI:
+      generativeAiApi.addGenerativeAiIntegrationOpenAI.bind(generativeAiApi),
+    addGenerativeAiIntegrationBedrock:
+      generativeAiApi.addGenerativeAiIntegrationBedrock.bind(generativeAiApi),
+    deleteGenerativeAiIntegration:
+      generativeAiApi.deleteGenerativeAiIntegration.bind(generativeAiApi),
+    setDefaultGenerativeAiIntegration:
+      generativeAiApi.setDefaultGenerativeAiIntegration.bind(generativeAiApi),
+  };
+}
+
 export function getReportsApiClient() {
   const reportsApi = new ReportsApi(configuration);
 
@@ -332,6 +366,9 @@ export function getSettingsApiClient() {
       settingsApi.uploadVulnerabilityDatabase.bind(settingsApi),
     getScheduledTasks: settingsApi.getScheduledTasks.bind(settingsApi),
     updateScheduledTask: settingsApi.updateScheduledTask.bind(settingsApi),
+    deleteCustomScheduledTask: settingsApi.deleteCustomScheduledTask.bind(settingsApi),
+    addScheduledTask: settingsApi.addScheduledTask.bind(settingsApi),
+    getAgentVersions: settingsApi.getAgentVersions.bind(settingsApi),
   };
 }
 

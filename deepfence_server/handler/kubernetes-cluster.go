@@ -21,18 +21,17 @@ func (h *Handler) GetKubernetesClusterControls(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	var kubernetesClusterId model.AgentId
-
-	err = json.Unmarshal(data, &kubernetesClusterId)
+	var kubernetesClusterID model.AgentID
+	err = json.Unmarshal(data, &kubernetesClusterID)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
 
-	actions, errs := controls.GetKubernetesClusterActions(ctx, kubernetesClusterId.NodeId, kubernetesClusterId.AvailableWorkload)
+	actions, errs := controls.GetKubernetesClusterActions(ctx, kubernetesClusterID.NodeID, kubernetesClusterID.AvailableWorkload)
 	for _, err := range errs {
 		if err != nil {
-			log.Warn().Msgf("Cannot some actions for %s: %v, skipping", kubernetesClusterId.NodeId, err)
+			log.Warn().Msgf("Cannot some actions for %s: %v, skipping", kubernetesClusterID.NodeID, err)
 		}
 	}
 

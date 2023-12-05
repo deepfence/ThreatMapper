@@ -1,6 +1,8 @@
 package s3
 
 import (
+	"bytes"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/go-playground/validator/v10"
 )
@@ -11,6 +13,7 @@ type S3 struct {
 	NotificationType string                  `json:"notification_type"`
 	Filters          reporters.FieldsFilters `json:"filters"`
 	Message          string                  `json:"message"`
+	Buffer           *bytes.Buffer
 }
 
 type Config struct {

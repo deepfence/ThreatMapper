@@ -67,12 +67,12 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 
 	i, ok := records.Get("n")
 	if !ok {
-		h.respondError(&ingesters.NodeNotFoundError{NodeId: req.ReportID}, w)
+		h.respondError(&ingesters.NodeNotFoundError{NodeID: req.ReportID}, w)
 		return
 	}
 	da, ok := i.(dbtype.Node)
 	if !ok {
-		h.respondError(&ingesters.NodeNotFoundError{NodeId: req.ReportID}, w)
+		h.respondError(&ingesters.NodeNotFoundError{NodeID: req.ReportID}, w)
 		return
 	}
 
@@ -88,7 +88,7 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// skip report file delete, in case of error we don't save the file
-	if report.Status != utils.SCAN_STATUS_FAILED {
+	if report.Status != utils.ScanStatusFailed {
 		err = mc.DeleteFile(r.Context(), report.StoragePath, false, minio.RemoveObjectOptions{ForceDelete: true})
 		if err != nil {
 			h.respondError(err, w)
@@ -109,7 +109,7 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_REPORTS, ACTION_DELETE, req, true)
+	h.AuditUserActivity(r, EventReports, ActionDelete, req, true)
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -160,12 +160,12 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 
 	i, ok := records.Get("n")
 	if !ok {
-		h.respondError(&ingesters.NodeNotFoundError{NodeId: req.ReportID}, w)
+		h.respondError(&ingesters.NodeNotFoundError{NodeID: req.ReportID}, w)
 		return
 	}
 	da, ok := i.(dbtype.Node)
 	if !ok {
-		h.respondError(&ingesters.NodeNotFoundError{NodeId: req.ReportID}, w)
+		h.respondError(&ingesters.NodeNotFoundError{NodeID: req.ReportID}, w)
 		return
 	}
 
@@ -233,7 +233,7 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// sort reports
-	sort.Slice(reports[:], func(i, j int) bool {
+	sort.Slice(reports, func(i, j int) bool {
 		return reports[i].CreatedAt > reports[j].CreatedAt
 	})
 
@@ -258,9 +258,9 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// report task params
-	report_id := uuid.New().String()
+	reportID := uuid.New().String()
 	params := utils.ReportParams{
-		ReportID:   report_id,
+		ReportID:   reportID,
 		ReportType: req.ReportType,
 		Duration:   req.Duration,
 		Filters:    req.Filters,
@@ -298,8 +298,8 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	RETURN n`
 	vars := map[string]interface{}{
 		"type":     req.ReportType,
-		"uid":      report_id,
-		"status":   utils.SCAN_STATUS_STARTING,
+		"uid":      reportID,
+		"status":   utils.ScanStatusStarting,
 		"filters":  req.Filters.String(),
 		"duration": req.Duration,
 	}
@@ -330,9 +330,9 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_REPORTS, ACTION_CREATE, req, true)
+	h.AuditUserActivity(r, EventReports, ActionCreate, req, true)
 
-	err = httpext.JSON(w, http.StatusOK, model.GenerateReportResp{ReportID: report_id})
+	err = httpext.JSON(w, http.StatusOK, model.GenerateReportResp{ReportID: reportID})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}

@@ -16,50 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelAgentId
+ * @interface ModelDeleteRegistryBulkReq
  */
-export interface ModelAgentId {
+export interface ModelDeleteRegistryBulkReq {
     /**
      * 
-     * @type {number}
-     * @memberof ModelAgentId
+     * @type {Array<string>}
+     * @memberof ModelDeleteRegistryBulkReq
      */
-    available_workload: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelAgentId
-     */
-    node_id: string;
+    registry_ids: Array<string> | null;
 }
 
 /**
- * Check if a given object implements the ModelAgentId interface.
+ * Check if a given object implements the ModelDeleteRegistryBulkReq interface.
  */
-export function instanceOfModelAgentId(value: object): boolean {
+export function instanceOfModelDeleteRegistryBulkReq(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "available_workload" in value;
-    isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "registry_ids" in value;
 
     return isInstance;
 }
 
-export function ModelAgentIdFromJSON(json: any): ModelAgentId {
-    return ModelAgentIdFromJSONTyped(json, false);
+export function ModelDeleteRegistryBulkReqFromJSON(json: any): ModelDeleteRegistryBulkReq {
+    return ModelDeleteRegistryBulkReqFromJSONTyped(json, false);
 }
 
-export function ModelAgentIdFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAgentId {
+export function ModelDeleteRegistryBulkReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelDeleteRegistryBulkReq {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'available_workload': json['available_workload'],
-        'node_id': json['node_id'],
+        'registry_ids': json['registry_ids'],
     };
 }
 
-export function ModelAgentIdToJSON(value?: ModelAgentId | null): any {
+export function ModelDeleteRegistryBulkReqToJSON(value?: ModelDeleteRegistryBulkReq | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -68,8 +60,7 @@ export function ModelAgentIdToJSON(value?: ModelAgentId | null): any {
     }
     return {
         
-        'available_workload': value.available_workload,
-        'node_id': value.node_id,
+        'registry_ids': value.registry_ids,
     };
 }
 

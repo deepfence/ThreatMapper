@@ -63,10 +63,13 @@ p, standard-user, container-registry, read
 p, read-only-user, container-registry, read
 
 p, admin, integration, write
+p, admin, integration, update
 p, admin, integration, read
 p, admin, integration, delete
 p, standard-user, integration, write
+p, standard-user, integration, update
 p, standard-user, integration, read
+p, read-only-user, integration, read
 
 p, admin, report, generate
 p, admin, report, download

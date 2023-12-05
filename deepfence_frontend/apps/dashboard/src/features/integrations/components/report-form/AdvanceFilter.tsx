@@ -1,6 +1,11 @@
+import { upperCase } from 'lodash-es';
 import { useMemo, useState } from 'react';
 import { Listbox, ListboxOption } from 'ui-components';
 
+import {
+  UtilsReportFiltersNodeTypeEnum,
+  UtilsReportFiltersScanTypeEnum,
+} from '@/api/generated';
 import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudAccountsList';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
@@ -30,11 +35,11 @@ const getNodeTypeByProviderName = (providerName: string): string | undefined => 
 const API_SCAN_TYPE_MAP: {
   [key: string]: ScanTypeEnum;
 } = {
-  Vulnerability: ScanTypeEnum.VulnerabilityScan,
-  Secret: ScanTypeEnum.SecretScan,
-  Malware: ScanTypeEnum.MalwareScan,
-  Compliance: ScanTypeEnum.ComplianceScan,
-  CloudCompliance: ScanTypeEnum.CloudComplianceScan,
+  [UtilsReportFiltersScanTypeEnum.Vulnerability]: ScanTypeEnum.VulnerabilityScan,
+  [UtilsReportFiltersScanTypeEnum.Secret]: ScanTypeEnum.SecretScan,
+  [UtilsReportFiltersScanTypeEnum.Malware]: ScanTypeEnum.MalwareScan,
+  [UtilsReportFiltersScanTypeEnum.Compliance]: ScanTypeEnum.ComplianceScan,
+  [UtilsReportFiltersScanTypeEnum.CloudCompliance]: ScanTypeEnum.CloudComplianceScan,
 };
 
 export const AdvancedFilter = ({
@@ -50,6 +55,7 @@ export const AdvancedFilter = ({
 
   const [maskedType, setMaskedType] = useState([]);
   const [status, setStatus] = useState([]);
+
   const nodeType = useMemo(
     () => getNodeTypeByProviderName(provider.toLowerCase()),
     [provider],
@@ -71,7 +77,7 @@ export const AdvancedFilter = ({
           <div className="grid grid-cols-2 gap-x-8 gap-y-6 pt-4">
             {isCloudNode(nodeType) && (
               <SearchableCloudAccountsList
-                label={`${provider} Account`}
+                label={`${upperCase(provider)} Account`}
                 triggerVariant="select"
                 defaultSelectedAccounts={selectedCloudAccounts}
                 cloudProvider={provider.toLowerCase() as 'aws' | 'gcp' | 'azure'}
@@ -83,7 +89,7 @@ export const AdvancedFilter = ({
                 }}
               />
             )}
-            {nodeType === 'host' ? (
+            {nodeType === UtilsReportFiltersNodeTypeEnum.Host ? (
               <>
                 <div>
                   <SearchableHostList
@@ -103,7 +109,7 @@ export const AdvancedFilter = ({
               </>
             ) : null}
 
-            {provider === 'ContainerImage' ? (
+            {provider === UtilsReportFiltersNodeTypeEnum.ContainerImage ? (
               <>
                 <div>
                   <SearchableImageList
@@ -116,13 +122,13 @@ export const AdvancedFilter = ({
                     onClearAll={() => {
                       setImages([]);
                     }}
-                    active={false}
+                    active={!deadNodes}
                   />
                 </div>
               </>
             ) : null}
 
-            {provider === 'Container' ? (
+            {provider === UtilsReportFiltersNodeTypeEnum.Container ? (
               <>
                 <div>
                   <SearchableContainerList
@@ -141,7 +147,7 @@ export const AdvancedFilter = ({
               </>
             ) : null}
 
-            {resourceType !== 'CloudCompliance' ? (
+            {resourceType !== UtilsReportFiltersScanTypeEnum.CloudCompliance ? (
               <>
                 <div>
                   <SearchableClusterList

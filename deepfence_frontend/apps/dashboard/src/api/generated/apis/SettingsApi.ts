@@ -21,6 +21,7 @@ import type {
   ModelEmailConfigurationAdd,
   ModelEmailConfigurationResp,
   ModelGetAuditLogsRequest,
+  ModelListAgentVersionResp,
   ModelMessageResponse,
   ModelSettingUpdateRequest,
   ModelSettingsResponse,
@@ -42,6 +43,8 @@ import {
     ModelEmailConfigurationRespToJSON,
     ModelGetAuditLogsRequestFromJSON,
     ModelGetAuditLogsRequestToJSON,
+    ModelListAgentVersionRespFromJSON,
+    ModelListAgentVersionRespToJSON,
     ModelMessageResponseFromJSON,
     ModelMessageResponseToJSON,
     ModelSettingUpdateRequestFromJSON,
@@ -64,6 +67,10 @@ export interface AddEmailConfigurationRequest {
 
 export interface AddScheduledTaskRequest {
     modelAddScheduledTaskRequest?: ModelAddScheduledTaskRequest;
+}
+
+export interface DeleteCustomScheduledTaskRequest {
+    id: number;
 }
 
 export interface DeleteEmailConfigurationRequest {
@@ -128,6 +135,22 @@ export interface SettingsApiInterface {
     addScheduledTask(requestParameters: AddScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
+     * Delete Custom Schedule task
+     * @summary Delete Custom Schedule task
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    deleteCustomScheduledTaskRaw(requestParameters: DeleteCustomScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Delete Custom Schedule task
+     * Delete Custom Schedule task
+     */
+    deleteCustomScheduledTask(requestParameters: DeleteCustomScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
      * Delete Email Smtp / ses Configurations in system
      * @summary Delete Email Configurations
      * @param {string} configId 
@@ -142,6 +165,21 @@ export interface SettingsApiInterface {
      * Delete Email Configurations
      */
     deleteEmailConfiguration(requestParameters: DeleteEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Get available agent versions
+     * @summary Get available agent versions
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    getAgentVersionsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelListAgentVersionResp>>;
+
+    /**
+     * Get available agent versions
+     * Get available agent versions
+     */
+    getAgentVersions(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelListAgentVersionResp>;
 
     /**
      * Get Email Smtp / ses Configurations in system
@@ -254,6 +292,21 @@ export interface SettingsApiInterface {
     updateSetting(requestParameters: UpdateSettingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
+     * Upload Agent version
+     * @summary Upload New agent version
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    uploadAgentVersionRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Upload Agent version
+     * Upload New agent version
+     */
+    uploadAgentVersion(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
      * Upload Vulnerability Database for use in vulnerability scans
      * @summary Upload Vulnerability Database
      * @param {Blob} database 
@@ -354,6 +407,45 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
     }
 
     /**
+     * Delete Custom Schedule task
+     * Delete Custom Schedule task
+     */
+    async deleteCustomScheduledTaskRaw(requestParameters: DeleteCustomScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling deleteCustomScheduledTask.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scheduled-task/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete Custom Schedule task
+     * Delete Custom Schedule task
+     */
+    async deleteCustomScheduledTask(requestParameters: DeleteCustomScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.deleteCustomScheduledTaskRaw(requestParameters, initOverrides);
+    }
+
+    /**
      * Delete Email Smtp / ses Configurations in system
      * Delete Email Configurations
      */
@@ -390,6 +482,42 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      */
     async deleteEmailConfiguration(requestParameters: DeleteEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.deleteEmailConfigurationRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Get available agent versions
+     * Get available agent versions
+     */
+    async getAgentVersionsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelListAgentVersionResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/settings/agent/versions`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelListAgentVersionRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Get available agent versions
+     * Get available agent versions
+     */
+    async getAgentVersions(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelListAgentVersionResp> {
+        const response = await this.getAgentVersionsRaw(initOverrides);
+        return await response.value();
     }
 
     /**
@@ -657,6 +785,41 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      */
     async updateSetting(requestParameters: UpdateSettingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.updateSettingRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Upload Agent version
+     * Upload New agent version
+     */
+    async uploadAgentVersionRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/settings/agent/version`,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Upload Agent version
+     * Upload New agent version
+     */
+    async uploadAgentVersion(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.uploadAgentVersionRaw(initOverrides);
     }
 
     /**

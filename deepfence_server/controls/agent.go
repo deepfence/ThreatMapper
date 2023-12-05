@@ -14,62 +14,62 @@ import (
 )
 
 var (
-	MaxStops    = 5
-	MissingNode = errors.New("Missing node_id")
+	MaxStops         = 5
+	ErrMissingNodeID = errors.New("missing node_id")
 )
 
-func GetAgentActions(ctx context.Context, nodeId string,
-	work_num_to_extract int) ([]controls.Action, []error) {
+func GetAgentActions(ctx context.Context, nodeID string,
+	workNumToExtract int) ([]controls.Action, []error) {
 
 	// Append more actions here
 	actions := []controls.Action{}
 
 	// early return to avoid unnecessary checks
-	if err := CheckNodeExist(ctx, nodeId); err != nil {
-		log.Info().Msgf("Missing node: %s.... Skipping all actions", nodeId)
+	if err := CheckNodeExist(ctx, nodeID); err != nil {
+		log.Info().Msgf("Missing node: %s.... Skipping all actions", nodeID)
 		actions = []controls.Action{}
 		return actions, []error{}
 	}
 
-	//Extract the stop scans requests
-	stop_actions, stop_actions_err := ExtractStoppingAgentScans(ctx, nodeId, MaxStops)
-	if stop_actions_err == nil {
-		actions = append(actions, stop_actions...)
+	// Extract the stop scans requests
+	stopActions, stopActionsErr := ExtractStoppingAgentScans(ctx, nodeID, MaxStops)
+	if stopActionsErr == nil {
+		actions = append(actions, stopActions...)
 	}
 
-	if work_num_to_extract == 0 {
-		if stop_actions_err != nil {
-			return actions, []error{stop_actions_err}
+	if workNumToExtract == 0 {
+		if stopActionsErr != nil {
+			return actions, []error{stopActionsErr}
 		} else {
 			return actions, []error{}
 		}
 	}
 
-	upgrade_actions, upgrade_err := ExtractPendingAgentUpgrade(ctx, nodeId, work_num_to_extract)
-	work_num_to_extract -= len(upgrade_actions)
-	if upgrade_err == nil {
-		actions = append(actions, upgrade_actions...)
+	upgradeActions, upgradeErr := ExtractPendingAgentUpgrade(ctx, nodeID, workNumToExtract)
+	workNumToExtract -= len(upgradeActions)
+	if upgradeErr == nil {
+		actions = append(actions, upgradeActions...)
 	}
 
-	scan_actions, scan_err := ExtractStartingAgentScans(ctx, nodeId, work_num_to_extract)
-	work_num_to_extract -= len(scan_actions)
-	if scan_err == nil {
-		actions = append(actions, scan_actions...)
+	scanActions, scanErr := ExtractStartingAgentScans(ctx, nodeID, workNumToExtract)
+	workNumToExtract -= len(scanActions)
+	if scanErr == nil {
+		actions = append(actions, scanActions...)
 	}
 
-	diagnosticLogActions, scan_log_err := ExtractAgentDiagnosticLogRequests(ctx, nodeId, controls.Host, work_num_to_extract)
-	work_num_to_extract -= len(diagnosticLogActions)
-	if scan_err == nil {
+	diagnosticLogActions, scanLogErr := ExtractAgentDiagnosticLogRequests(ctx, nodeID, controls.Host, workNumToExtract)
+	workNumToExtract -= len(diagnosticLogActions) //nolint:ineffassign
+	if scanErr == nil {
 		actions = append(actions, diagnosticLogActions...)
 	}
 
-	return actions, []error{scan_err, upgrade_err, scan_log_err}
+	return actions, []error{scanErr, upgradeErr, scanLogErr}
 }
 
-func GetPendingAgentScans(ctx context.Context, nodeId string, availableWorkload int) ([]controls.Action, error) {
+func GetPendingAgentScans(ctx context.Context, nodeID string, availableWorkload int) ([]controls.Action, error) {
 	res := []controls.Action{}
-	if len(nodeId) == 0 {
-		return res, MissingNode
+	if len(nodeID) == 0 {
+		return res, ErrMissingNodeID
 	}
 
 	client, err := directory.Neo4jClient(ctx)
@@ -77,7 +77,7 @@ func GetPendingAgentScans(ctx context.Context, nodeId string, availableWorkload 
 		return res, err
 	}
 
-	if has, err := hasPendingAgentScans(client, nodeId, availableWorkload); !has || err != nil {
+	if has, err := hasPendingAgentScans(client, nodeID, availableWorkload); !has || err != nil {
 		return res, err
 	}
 
@@ -92,11 +92,13 @@ func GetPendingAgentScans(ctx context.Context, nodeId string, availableWorkload 
 
 	r, err := tx.Run(`
 		MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
-		WHERE s.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
+		WHERE s.status = '`+utils.ScanStatusInProgress+`'
 		AND s.retries < 3
 		SET s.retries = s.retries + 1
 		WITH s
-		RETURN s.trigger_action`, map[string]interface{}{"id": nodeId})
+		RETURN s.trigger_action
+		ORDER BY s.is_priority DESC, s.updated_at ASC`,
+		map[string]interface{}{"id": nodeID})
 
 	if err != nil {
 		return res, err
@@ -130,7 +132,7 @@ func GetPendingAgentScans(ctx context.Context, nodeId string, availableWorkload 
 
 }
 
-func hasAgentDiagnosticLogRequests(client neo4j.Driver, nodeId string, nodeType controls.ScanResource, max_work int) (bool, error) {
+func hasAgentDiagnosticLogRequests(client neo4j.Driver, nodeID string, nodeType controls.ScanResource, maxWork int) (bool, error) {
 
 	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
@@ -143,12 +145,12 @@ func hasAgentDiagnosticLogRequests(client neo4j.Driver, nodeId string, nodeType 
 
 	r, err := tx.Run(`MATCH (s:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n{node_id:$id})
 		WHERE (n:`+controls.ResourceTypeToNeo4j(nodeType)+`)
-		AND s.status = '`+utils.SCAN_STATUS_STARTING+`'
+		AND s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work
 		WITH s
 		RETURN s.trigger_action`,
-		map[string]interface{}{"id": nodeId, "max_work": max_work})
+		map[string]interface{}{"id": nodeID, "max_work": maxWork})
 
 	if err != nil {
 		return false, err
@@ -158,10 +160,10 @@ func hasAgentDiagnosticLogRequests(client neo4j.Driver, nodeId string, nodeType 
 	return len(records) != 0, err
 }
 
-func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, nodeType controls.ScanResource, max_work int) ([]controls.Action, error) {
+func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeID string, nodeType controls.ScanResource, maxWork int) ([]controls.Action, error) {
 	res := []controls.Action{}
-	if len(nodeId) == 0 {
-		return res, MissingNode
+	if len(nodeID) == 0 {
+		return res, ErrMissingNodeID
 	}
 
 	client, err := directory.Neo4jClient(ctx)
@@ -169,7 +171,7 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, nodeT
 		return res, err
 	}
 
-	if has, err := hasAgentDiagnosticLogRequests(client, nodeId, nodeType, max_work); !has || err != nil {
+	if has, err := hasAgentDiagnosticLogRequests(client, nodeID, nodeType, maxWork); !has || err != nil {
 		return res, err
 	}
 
@@ -184,13 +186,13 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, nodeT
 
 	r, err := tx.Run(`MATCH (s:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n{node_id:$id})
 		WHERE (n:`+controls.ResourceTypeToNeo4j(nodeType)+`)
-		AND s.status = '`+utils.SCAN_STATUS_STARTING+`'
+		AND s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work
-		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
+		SET s.status = '`+utils.ScanStatusInProgress+`'
 		WITH s
 		RETURN s.trigger_action`,
-		map[string]interface{}{"id": nodeId, "max_work": max_work})
+		map[string]interface{}{"id": nodeID, "max_work": maxWork})
 	if err != nil {
 		return res, err
 	}
@@ -221,7 +223,7 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, nodeT
 
 }
 
-func hasPendingAgentScans(client neo4j.Driver, nodeId string, max_work int) (bool, error) {
+func hasPendingAgentScans(client neo4j.Driver, nodeID string, maxWork int) (bool, error) {
 	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
@@ -232,11 +234,11 @@ func hasPendingAgentScans(client neo4j.Driver, nodeId string, max_work int) (boo
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
-		WHERE s.status = '`+utils.SCAN_STATUS_STARTING+`'
+		WHERE s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work
 		RETURN s.trigger_action`,
-		map[string]interface{}{"id": nodeId, "max_work": max_work})
+		map[string]interface{}{"id": nodeID, "max_work": maxWork})
 
 	if err != nil {
 		return false, err
@@ -246,12 +248,11 @@ func hasPendingAgentScans(client neo4j.Driver, nodeId string, max_work int) (boo
 	return len(records) != 0, err
 }
 
-func ExtractStartingAgentScans(ctx context.Context, nodeId string,
-	max_work int) ([]controls.Action, error) {
+func ExtractStartingAgentScans(ctx context.Context, nodeID string, maxWork int) ([]controls.Action, error) {
 
 	res := []controls.Action{}
-	if len(nodeId) == 0 {
-		return res, MissingNode
+	if len(nodeID) == 0 {
+		return res, ErrMissingNodeID
 	}
 
 	client, err := directory.Neo4jClient(ctx)
@@ -259,7 +260,7 @@ func ExtractStartingAgentScans(ctx context.Context, nodeId string,
 		return res, err
 	}
 
-	if has, err := hasPendingAgentScans(client, nodeId, max_work); !has || err != nil {
+	if has, err := hasPendingAgentScans(client, nodeID, maxWork); !has || err != nil {
 		return res, err
 	}
 
@@ -273,13 +274,13 @@ func ExtractStartingAgentScans(ctx context.Context, nodeId string,
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
-		WHERE s.status = '`+utils.SCAN_STATUS_STARTING+`'
+		WHERE s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
-		WITH s LIMIT $max_work
-		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`', s.updated_at = TIMESTAMP()
+		WITH s ORDER BY s.is_priority DESC, s.updated_at ASC LIMIT $max_work
+		SET s.status = '`+utils.ScanStatusInProgress+`', s.updated_at = TIMESTAMP()
 		WITH s
 		RETURN s.trigger_action`,
-		map[string]interface{}{"id": nodeId, "max_work": max_work})
+		map[string]interface{}{"id": nodeID, "max_work": maxWork})
 
 	if err != nil {
 		return res, err
@@ -313,12 +314,11 @@ func ExtractStartingAgentScans(ctx context.Context, nodeId string,
 
 }
 
-func ExtractStoppingAgentScans(ctx context.Context, nodeId string,
-	max_work int) ([]controls.Action, error) {
+func ExtractStoppingAgentScans(ctx context.Context, nodeID string, maxWrok int) ([]controls.Action, error) {
 
 	res := []controls.Action{}
-	if len(nodeId) == 0 {
-		return res, MissingNode
+	if len(nodeID) == 0 {
+		return res, ErrMissingNodeID
 	}
 
 	client, err := directory.Neo4jClient(ctx)
@@ -336,12 +336,12 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeId string,
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
-		WHERE s.status = '`+utils.SCAN_STATUS_CANCEL_PENDING+`'
+		WHERE s.status = '`+utils.ScanStatusCancelPending+`'
 		WITH s LIMIT $max_work
-        SET s.status = '`+utils.SCAN_STATUS_CANCELLING+`', s.updated_at = TIMESTAMP()
+        SET s.status = '`+utils.ScanStatusCancelling+`', s.updated_at = TIMESTAMP()
 		WITH s
 		RETURN s.trigger_action`,
-		map[string]interface{}{"id": nodeId, "max_work": max_work})
+		map[string]interface{}{"id": nodeID, "max_work": maxWrok})
 
 	if err != nil {
 		return res, err
@@ -388,7 +388,7 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeId string,
 
 }
 
-func hasPendingAgentUpgrade(client neo4j.Driver, nodeId string, max_work int) (bool, error) {
+func hasPendingAgentUpgrade(client neo4j.Driver, nodeID string, maxWork int) (bool, error) {
 	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
@@ -399,11 +399,11 @@ func hasPendingAgentUpgrade(client neo4j.Driver, nodeId string, max_work int) (b
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s:AgentVersion) -[r:SCHEDULED]-> (n:Node{node_id:$id})
-		WHERE r.status = '`+utils.SCAN_STATUS_STARTING+`'
+		WHERE r.status = '`+utils.ScanStatusStarting+`'
 		AND r.retries < 3
 		WITH r LIMIT $max_work
 		RETURN r.trigger_action`,
-		map[string]interface{}{"id": nodeId, "max_work": max_work})
+		map[string]interface{}{"id": nodeID, "max_work": maxWork})
 
 	if err != nil {
 		return false, err
@@ -413,10 +413,10 @@ func hasPendingAgentUpgrade(client neo4j.Driver, nodeId string, max_work int) (b
 	return len(records) != 0, err
 }
 
-func ExtractPendingAgentUpgrade(ctx context.Context, nodeId string, max_work int) ([]controls.Action, error) {
+func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int) ([]controls.Action, error) {
 	res := []controls.Action{}
-	if len(nodeId) == 0 {
-		return res, MissingNode
+	if len(nodeID) == 0 {
+		return res, ErrMissingNodeID
 	}
 
 	client, err := directory.Neo4jClient(ctx)
@@ -424,7 +424,7 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeId string, max_work int
 		return res, err
 	}
 
-	if has, err := hasPendingAgentUpgrade(client, nodeId, max_work); !has || err != nil {
+	if has, err := hasPendingAgentUpgrade(client, nodeID, maxWork); !has || err != nil {
 		return res, err
 	}
 
@@ -438,13 +438,13 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeId string, max_work int
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s:AgentVersion) -[r:SCHEDULED]-> (n:Node{node_id:$id})
-		WHERE r.status = '`+utils.SCAN_STATUS_STARTING+`'
+		WHERE r.status = '`+utils.ScanStatusStarting+`'
 		AND r.retries < 3
 		WITH r LIMIT $max_work
-		SET r.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
+		SET r.status = '`+utils.ScanStatusInProgress+`'
 		WITH r
 		RETURN r.trigger_action`,
-		map[string]interface{}{"id": nodeId, "max_work": max_work})
+		map[string]interface{}{"id": nodeID, "max_work": maxWork})
 
 	if err != nil {
 		return res, err
@@ -478,10 +478,10 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeId string, max_work int
 
 }
 
-func CheckNodeExist(ctx context.Context, nodeId string) error {
+func CheckNodeExist(ctx context.Context, nodeID string) error {
 
-	if len(nodeId) == 0 {
-		return MissingNode
+	if len(nodeID) == 0 {
+		return ErrMissingNodeID
 	}
 
 	client, err := directory.Neo4jClient(ctx)
@@ -501,7 +501,7 @@ func CheckNodeExist(ctx context.Context, nodeId string) error {
 	r, err := tx.Run(`
 		MATCH (n:Node{node_id:$id})
 		RETURN n.node_id`,
-		map[string]interface{}{"id": nodeId})
+		map[string]interface{}{"id": nodeID})
 
 	if err != nil {
 		return err
@@ -510,9 +510,8 @@ func CheckNodeExist(ctx context.Context, nodeId string) error {
 	_, err = r.Single()
 
 	if err != nil {
-		return MissingNode
+		return ErrMissingNodeID
 	}
 
 	return nil
-
 }

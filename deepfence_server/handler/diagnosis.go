@@ -35,7 +35,7 @@ func (h *Handler) GenerateConsoleDiagnosticLogs(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_SETTINGS, ACTION_LOGS, nil, true)
+	h.AuditUserActivity(r, EventSettings, ActionLogs, nil, true)
 
 	w.WriteHeader(http.StatusAccepted)
 }
@@ -81,7 +81,7 @@ func (h *Handler) GenerateAgentDiagnosticLogs(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_SETTINGS, ACTION_LOGS, nil, true)
+	h.AuditUserActivity(r, EventSettings, ActionLogs, nil, true)
 
 	w.WriteHeader(http.StatusAccepted)
 }
@@ -105,7 +105,7 @@ func (h *Handler) GenerateCloudScannerDiagnosticLogs(w http.ResponseWriter, r *h
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_SETTINGS, ACTION_LOGS, nil, true)
+	h.AuditUserActivity(r, EventSettings, ActionLogs, nil, true)
 
 	w.WriteHeader(http.StatusAccepted)
 }

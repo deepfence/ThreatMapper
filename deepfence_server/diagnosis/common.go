@@ -35,7 +35,7 @@ type GenerateConsoleDiagnosticLogsRequest struct {
 }
 
 type NodeIdentifier struct {
-	NodeId   string `json:"node_id" validate:"required,min=1" required:"true"`
+	NodeID   string `json:"node_id" validate:"required,min=1" required:"true"`
 	NodeType string `json:"node_type" required:"true" validate:"required,oneof=host cluster cloud_account" enum:"host,cluster,cloud_account"`
 }
 
@@ -56,7 +56,7 @@ type DiagnosticLogsStatus struct {
 }
 
 type DiagnosticLogsLink struct {
-	UrlLink   string `json:"url_link"`
+	URLLink   string `json:"url_link"`
 	Label     string `json:"label"`
 	FileName  string `json:"-"`
 	Message   string `json:"message"`
@@ -90,8 +90,12 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 	// Get completed files from minio
 	objects := mc.ListFiles(ctx, pathPrefix, false, 0, true)
 	log.Debug().Msgf("diagnosis logs at %s: %v", pathPrefix, objects)
-	diagnosticLogsResponse := make([]DiagnosticLogsLink, len(objects))
-	for i, obj := range objects {
+	diagnosticLogsResponse := make([]DiagnosticLogsLink, 0, len(objects))
+	for _, obj := range objects {
+		if len(obj.Key) == 0 {
+			continue
+		}
+
 		message := ""
 		urlLink, err := mc.ExposeFile(ctx, obj.Key, false, DiagnosisLinkExpiry, url.Values{})
 		if err != nil {
@@ -105,13 +109,13 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 			}
 		}
 		fileName := filepath.Base(obj.Key)
-		diagnosticLogsResponse[i] = DiagnosticLogsLink{
-			UrlLink:   urlLink,
+		diagnosticLogsResponse = append(diagnosticLogsResponse, DiagnosticLogsLink{
+			URLLink:   urlLink,
 			FileName:  fileName,
 			Label:     strings.TrimSuffix(strings.TrimPrefix(fileName, "deepfence-agent-logs-"), ".zip"),
 			Message:   message,
 			CreatedAt: obj.LastModified.Format("2006-01-02 15:04:05"),
-		}
+		})
 	}
 	sort.Slice(diagnosticLogsResponse, func(i, j int) bool {
 		return diagnosticLogsResponse[i].CreatedAt > diagnosticLogsResponse[j].CreatedAt
@@ -147,17 +151,17 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 		return diagnosticLogs
 	}
 
-	nodeIdToName := make(map[string]string)
+	nodeIDToName := make(map[string]string)
 	records, err := r.Collect()
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return diagnosticLogs
 	}
 	for _, rec := range records {
-		var nodeId, fileName, message, status, updatedAt, nodeName interface{}
+		var nodeID, fileName, message, status, updatedAt, nodeName interface{}
 		var ok bool
-		if nodeId, ok = rec.Get("n.node_id"); !ok || nodeId == nil {
-			nodeId = ""
+		if nodeID, ok = rec.Get("n.node_id"); !ok || nodeID == nil {
+			nodeID = ""
 		}
 		if fileName, ok = rec.Get("n.minio_file_name"); !ok || fileName == nil {
 			fileName = ""
@@ -175,8 +179,8 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 			nodeName = ""
 		}
 		updatedAtTime := time.UnixMilli(updatedAt.(int64))
-		nodeIdToName[nodeId.(string)] = nodeName.(string)
-		if message.(string) == "" && status.(string) != utils.SCAN_STATUS_SUCCESS {
+		nodeIDToName[nodeID.(string)] = nodeName.(string)
+		if message.(string) == "" && status.(string) != utils.ScanStatusSuccess {
 			message = status.(string)
 		}
 
@@ -185,7 +189,7 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 			diagnosticLogs[pos].Message = message.(string)
 		} else {
 			diagnosticLogs = append(diagnosticLogs, DiagnosticLogsLink{
-				UrlLink:   "",
+				URLLink:   "",
 				FileName:  fileName.(string),
 				Label:     nodeName.(string),
 				Message:   message.(string),
@@ -227,16 +231,16 @@ func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager
 		return diagnosticLogs, err
 	}
 
-	nodeIdToName := make(map[string]string)
+	nodeIDToName := make(map[string]string)
 	records, err := r.Collect()
 	if err != nil {
 		return diagnosticLogs, err
 	}
 	for _, rec := range records {
-		var nodeId, fileName, message, status, updatedAt, nodeName interface{}
+		var nodeID, fileName, message, status, updatedAt, nodeName interface{}
 		var ok bool
-		if nodeId, ok = rec.Get("n.node_id"); !ok || nodeId == nil {
-			nodeId = ""
+		if nodeID, ok = rec.Get("n.node_id"); !ok || nodeID == nil {
+			nodeID = ""
 		}
 		if fileName, ok = rec.Get("n.minio_file_name"); !ok || fileName == nil {
 			fileName = ""
@@ -254,8 +258,8 @@ func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager
 			nodeName = ""
 		}
 		updatedAtTime := time.UnixMilli(updatedAt.(int64))
-		nodeIdToName[nodeId.(string)] = nodeName.(string)
-		if message.(string) == "" && status.(string) != utils.SCAN_STATUS_SUCCESS {
+		nodeIDToName[nodeID.(string)] = nodeName.(string)
+		if message.(string) == "" && status.(string) != utils.ScanStatusSuccess {
 			message = status.(string)
 		}
 
@@ -264,7 +268,7 @@ func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager
 			diagnosticLogs[pos].Message = message.(string)
 		} else {
 			diagnosticLogs = append(diagnosticLogs, DiagnosticLogsLink{
-				UrlLink:   "",
+				URLLink:   "",
 				FileName:  fileName.(string),
 				Label:     nodeName.(string),
 				Message:   message.(string),

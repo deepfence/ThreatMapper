@@ -1,4 +1,4 @@
-package reporters_lookup
+package reporters_lookup //nolint:stylecheck
 
 import (
 	"context"
@@ -47,66 +47,66 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 		getConnections = utils.InSlice("connections", filter.InFieldFilter)
 	}
 
-	hostIds := make([]string, len(hosts))
-	hostIdIndex := make(map[string]int)
+	hostIDs := make([]string, len(hosts))
+	hostIDIndex := make(map[string]int)
 	for i, host := range hosts {
-		hostIds[i] = host.ID
-		hostIdIndex[host.ID] = i
+		hostIDs[i] = host.ID
+		hostIDIndex[host.ID] = i
 	}
 
 	var index int
 	if getProcesses {
-		processes, matched, err := getHostProcesses(ctx, hostIds)
+		processes, matched, err := getHostProcesses(ctx, hostIDs)
 		if err == nil {
 			for _, process := range processes {
-				index = hostIdIndex[matched[process.ID]]
+				index = hostIDIndex[matched[process.ID]]
 				hosts[index].Processes = append(hosts[index].Processes, process)
 			}
 		}
 	}
 	if getContainers {
-		containers, matched, err := getHostContainers(ctx, hostIds)
+		containers, matched, err := getHostContainers(ctx, hostIDs)
 		if err == nil {
 			for _, container := range containers {
-				index = hostIdIndex[matched[container.ID]]
+				index = hostIDIndex[matched[container.ID]]
 				hosts[index].Containers = append(hosts[index].Containers, container)
 			}
 		}
 	}
 	if getContainerImages {
-		containerImages, matched, err := getHostContainerImages(ctx, hostIds)
+		containerImages, matched, err := getHostContainerImages(ctx, hostIDs)
 		if err == nil {
 			for _, containerImage := range containerImages {
-				index = hostIdIndex[matched[containerImage.ID]]
+				index = hostIDIndex[matched[containerImage.ID]]
 				hosts[index].ContainerImages = append(hosts[index].ContainerImages, containerImage)
 			}
 		}
 	}
 	if getPods {
-		pods, matched, err := getHostPods(ctx, hostIds)
+		pods, matched, err := getHostPods(ctx, hostIDs)
 		if err == nil {
 			for _, pod := range pods {
-				index = hostIdIndex[matched[pod.ID]]
+				index = hostIDIndex[matched[pod.ID]]
 				hosts[index].Pods = append(hosts[index].Pods, pod)
 			}
 		}
 	}
 	if getConnections {
-		inboundConnections, outboundConnections, err := getNodeConnections[model.Host](ctx, hostIds)
+		inboundConnections, outboundConnections, err := getNodeConnections[model.Host](ctx, hostIDs)
 		if err == nil {
 			for _, conn := range inboundConnections {
-				index = hostIdIndex[conn.FromNodeId]
+				index = hostIDIndex[conn.FromNodeID]
 				hosts[index].InboundConnections = append(hosts[index].InboundConnections, model.Connection{
 					NodeName: conn.NodeName,
-					NodeId:   conn.NodeId,
+					NodeID:   conn.NodeID,
 					Count:    conn.Count,
 				})
 			}
 			for _, conn := range outboundConnections {
-				index = hostIdIndex[conn.FromNodeId]
+				index = hostIDIndex[conn.FromNodeID]
 				hosts[index].OutboundConnections = append(hosts[index].OutboundConnections, model.Connection{
 					NodeName: conn.NodeName,
-					NodeId:   conn.NodeId,
+					NodeID:   conn.NodeID,
 					Count:    conn.Count,
 				})
 			}
@@ -130,10 +130,10 @@ func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Cont
 	}
 
 	containerIds := make([]string, len(containers))
-	containerIdIndex := make(map[string]int)
+	containerIDIndex := make(map[string]int)
 	for i, container := range containers {
 		containerIds[i] = container.ID
-		containerIdIndex[container.ID] = i
+		containerIDIndex[container.ID] = i
 	}
 
 	var index int
@@ -141,7 +141,7 @@ func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Cont
 		processes, matched, err := getContainerProcesses(ctx, containerIds)
 		if err == nil {
 			for _, process := range processes {
-				index = containerIdIndex[matched[process.ID]]
+				index = containerIDIndex[matched[process.ID]]
 				containers[index].Processes = append(containers[index].Processes, process)
 			}
 		}
@@ -150,7 +150,7 @@ func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Cont
 		images, matched, err := getContainerContainerImages(ctx, containerIds)
 		if err == nil {
 			for _, image := range images {
-				index = containerIdIndex[matched[image.ID]]
+				index = containerIDIndex[matched[image.ID]]
 				containers[index].ContainerImage = image
 			}
 		}
@@ -187,10 +187,10 @@ func GetContainerImagesReport(ctx context.Context, filter LookupFilter) ([]model
 	}
 
 	imagesIds := make([]string, len(images))
-	imageIdIndex := make(map[string]int)
+	imageIDIndex := make(map[string]int)
 	for i, image := range images {
 		imagesIds[i] = image.ID
-		imageIdIndex[image.ID] = i
+		imageIDIndex[image.ID] = i
 	}
 
 	var index int
@@ -198,7 +198,7 @@ func GetContainerImagesReport(ctx context.Context, filter LookupFilter) ([]model
 		containers, matched, err := getContainerImageContainers(ctx, imagesIds)
 		if err == nil {
 			for _, container := range containers {
-				index = imageIdIndex[matched[container.ID]]
+				index = imageIDIndex[matched[container.ID]]
 				images[index].Containers = append(images[index].Containers, container)
 			}
 		}
@@ -218,19 +218,19 @@ func GetKubernetesClustersReport(ctx context.Context, filter LookupFilter) ([]mo
 		getHosts = utils.InSlice("hosts", filter.InFieldFilter)
 	}
 
-	clusterIds := make([]string, len(clusters))
-	clusterIdIndex := make(map[string]int)
+	clusterIDs := make([]string, len(clusters))
+	clusterIDIndex := make(map[string]int)
 	for i, cluster := range clusters {
-		clusterIds[i] = cluster.ID
-		clusterIdIndex[cluster.ID] = i
+		clusterIDs[i] = cluster.ID
+		clusterIDIndex[cluster.ID] = i
 	}
 
 	var index int
 	if getHosts {
-		hosts, matched, err := getClusterHosts(ctx, clusterIds)
+		hosts, matched, err := getClusterHosts(ctx, clusterIDs)
 		if err == nil {
 			for _, host := range hosts {
-				index = clusterIdIndex[matched[host.ID]]
+				index = clusterIDIndex[matched[host.ID]]
 				clusters[index].Hosts = append(clusters[index].Hosts, host)
 			}
 		}
@@ -242,7 +242,7 @@ func GetKubernetesClustersReport(ctx context.Context, filter LookupFilter) ([]mo
 func GetCloudResourcesReport(ctx context.Context, filter LookupFilter) ([]model.CloudResource, error) {
 	entries, err := getGenericDirectNodeReport[model.CloudResource](ctx, filter)
 	for _, entry := range entries {
-		label, found := commonConstants.CSPM_RESOURCE_LABELS[commonConstants.CSPM_RESOURCES[entry.Type]]
+		label, found := commonConstants.CSPMResourceLabels[commonConstants.CSPMResources[entry.Type]]
 		if found {
 			entry.TypeLabel = label
 		}
@@ -265,19 +265,19 @@ func GetRegistryAccountReport(ctx context.Context, filter LookupFilter) ([]model
 		getImages = utils.InSlice("container_images", filter.InFieldFilter)
 	}
 
-	registryIds := make([]string, len(registry))
-	registryIdIndex := make(map[string]int)
+	registryIDs := make([]string, len(registry))
+	registryIDIndex := make(map[string]int)
 	for i, r := range registry {
-		registryIds[i] = r.ID
-		registryIdIndex[r.ID] = i
+		registryIDs[i] = r.ID
+		registryIDIndex[r.ID] = i
 	}
 
 	var index int
 	if getImages {
-		images, matched, err := getRegistryImages(ctx, registryIds)
+		images, matched, err := getRegistryImages(ctx, registryIDs)
 		if err == nil {
 			for _, image := range images {
-				index = registryIdIndex[matched[image.ID]]
+				index = registryIDIndex[matched[image.ID]]
 				registry[index].ContainerImages = append(registry[index].ContainerImages, image)
 			}
 		}
@@ -349,7 +349,7 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 	}
 
 	for _, rec := range recs {
-		var node_map map[string]interface{}
+		var nodeMap map[string]interface{}
 		if len(filter.InFieldFilter) == 0 {
 			data, has := rec.Get("n")
 			if !has {
@@ -361,20 +361,20 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 				log.Warn().Msgf("Missing neo4j entry")
 				continue
 			}
-			node_map = da.Props
+			nodeMap = da.Props
 		} else {
-			node_map = map[string]interface{}{}
+			nodeMap = map[string]interface{}{}
 			for i := range filter.InFieldFilter {
-				node_map[filter.InFieldFilter[i]] = rec.Values[i]
+				nodeMap[filter.InFieldFilter[i]] = rec.Values[i]
 			}
 		}
-		is_node, _ := rec.Get("e")
-		if is_node != nil {
-			for k, v := range is_node.(dbtype.Node).Props {
+		isNode, _ := rec.Get("e")
+		if isNode != nil {
+			for k, v := range isNode.(dbtype.Node).Props {
 				if k != "node_id" {
-					node_map[k] = v
+					nodeMap[k] = v
 				} else {
-					node_map[dummy.ExtendedField()] = v
+					nodeMap[dummy.ExtendedField()] = v
 				}
 			}
 		}
@@ -388,15 +388,15 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 					continue
 				}
 				resourceListString[i] = model.BasicNode{
-					NodeId:   nodeDetails[0],
+					NodeID:   nodeDetails[0],
 					Name:     nodeDetails[1],
 					NodeType: nodeDetails[2],
 				}
 			}
-			node_map["resources"] = resourceListString
+			nodeMap["resources"] = resourceListString
 		}
 		var node T
-		utils.FromMap(node_map, &node)
+		utils.FromMap(nodeMap, &node)
 		res = append(res, node)
 	}
 
@@ -437,12 +437,12 @@ func getNodeConnections[T reporters.Cypherable](ctx context.Context, ids []strin
 
 	for _, rec := range recs {
 		connection := model.ConnectionQueryResp{
-			FromNodeId: rec.Values[0].(string),
-			NodeId:     rec.Values[1].(string),
+			FromNodeID: rec.Values[0].(string),
+			NodeID:     rec.Values[1].(string),
 			Count:      rec.Values[3].(int64),
 		}
 		if rec.Values[2] == nil {
-			connection.NodeName = connection.NodeId
+			connection.NodeName = connection.NodeID
 		} else {
 			connection.NodeName = rec.Values[2].(string)
 		}
@@ -458,11 +458,11 @@ func getNodeConnections[T reporters.Cypherable](ctx context.Context, ids []strin
 
 func getIndirectFromIDs[T any](ctx context.Context, query string, ids []string) ([]T, map[string]string, error) {
 	res := []T{}
-	matchedId := make(map[string]string)
+	matchedID := make(map[string]string)
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return res, matchedId, err
+		return res, matchedID, err
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
@@ -470,20 +470,20 @@ func getIndirectFromIDs[T any](ctx context.Context, query string, ids []string) 
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
-		return res, matchedId, err
+		return res, matchedID, err
 	}
 	defer tx.Close()
 
 	r, err := tx.Run(query, map[string]interface{}{"ids": ids})
 
 	if err != nil {
-		return res, matchedId, err
+		return res, matchedID, err
 	}
 
 	recs, err := r.Collect()
 
 	if err != nil {
-		return res, matchedId, err
+		return res, matchedID, err
 	}
 
 	for _, rec := range recs {
@@ -500,20 +500,20 @@ func getIndirectFromIDs[T any](ctx context.Context, query string, ids []string) 
 		var node T
 		utils.FromMap(da.Props, &node)
 
-		n_data, has := rec.Get("n.node_id")
+		nData, has := rec.Get("n.node_id")
 		if !has {
 			log.Warn().Msgf("Missing n.node_id")
 			continue
 		}
-		var matchedNodeId string
-		if matchedNodeId, ok = n_data.(string); !ok {
+		var matchedNodeID string
+		if matchedNodeID, ok = nData.(string); !ok {
 			continue
 		}
-		matchedId[da.Props["node_id"].(string)] = matchedNodeId
+		matchedID[da.Props["node_id"].(string)] = matchedNodeID
 		res = append(res, node)
 	}
 
-	return res, matchedId, nil
+	return res, matchedID, nil
 }
 
 func getHostContainers(ctx context.Context, ids []string) ([]model.Container, map[string]string, error) {

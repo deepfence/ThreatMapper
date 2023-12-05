@@ -78,16 +78,16 @@ func searchScansFilter(params sdkUtils.ReportParams) rptSearch.SearchScanReq {
 		filters.NodeFilter.Filters.ContainsFilter.FieldsValues["node_id"] = sdkUtils.StringArrayToInterfaceArray(params.Filters.AdvancedReportFilters.ImageName)
 	}
 
-	if len(params.Filters.AdvancedReportFilters.AccountId) > 0 {
-		filters.NodeFilter.Filters.ContainsFilter.FieldsValues["account_id"] = sdkUtils.StringArrayToInterfaceArray(params.Filters.AdvancedReportFilters.AccountId)
+	if len(params.Filters.AdvancedReportFilters.AccountID) > 0 {
+		filters.NodeFilter.Filters.ContainsFilter.FieldsValues["node_id"] = sdkUtils.StringArrayToInterfaceArray(params.Filters.AdvancedReportFilters.AccountID)
 	}
 
-	if len(params.Filters.ScanId) > 0 {
+	if len(params.Filters.ScanID) > 0 {
 		filters.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				ContainsFilter: reporters.ContainsFilter{
 					FieldsValues: map[string][]interface{}{
-						"node_id": {params.Filters.ScanId},
+						"node_id": {params.Filters.ScanID},
 					},
 				},
 			},
@@ -131,7 +131,7 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 		start time.Time = time.Now()
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
+	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
 		start = end.AddDate(0, 0, -params.Duration)
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
@@ -140,7 +140,7 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 		}
 	}
 
-	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4J_VULNERABILITY_SCAN)
+	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4JVulnerabilityScan)
 	if err != nil {
 		return nil, err
 	}
@@ -157,13 +157,13 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.Vulnerability](
-			ctx, sdkUtils.NEO4J_VULNERABILITY_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4JVulnerabilityScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
-			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
+			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
 		sort.Slice(result[:], func(i, j int) bool {
-			return result[i].Cve_severity < result[j].Cve_severity
+			return result[i].CveSeverity < result[j].CveSeverity
 		})
 		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
 		nodeWiseData.ScanData[s.NodeName] = ScanData[model.Vulnerability]{
@@ -208,13 +208,13 @@ func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParam
 	nodeWiseData.ScanData[nodeKey] = ScanData[model.Vulnerability]{ScanResults: entries}
 	sevMap := nodeWiseData.SeverityCount[nodeKey]
 	for _, entry := range entries {
-		count, present := sevMap[entry.Cve_severity]
+		count, present := sevMap[entry.CveSeverity]
 		if !present {
 			count = 1
 		} else {
 			count += 1
 		}
-		sevMap[entry.Cve_severity] = count
+		sevMap[entry.CveSeverity] = count
 	}
 
 	data := Info[model.Vulnerability]{
@@ -238,7 +238,7 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 		start time.Time = time.Now()
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
+	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
 		start = end.AddDate(0, 0, -params.Duration)
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
@@ -247,7 +247,7 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 		}
 	}
 
-	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4J_SECRET_SCAN)
+	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4JSecretScan)
 	if err != nil {
 		return nil, err
 	}
@@ -264,9 +264,9 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.Secret](
-			ctx, sdkUtils.NEO4J_SECRET_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4JSecretScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
-			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
+			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
 		sort.Slice(result[:], func(i, j int) bool {
@@ -300,7 +300,7 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 		start time.Time = time.Now()
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
+	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
 		start = end.AddDate(0, 0, -params.Duration)
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
@@ -308,7 +308,7 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 			},
 		}
 	}
-	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4J_MALWARE_SCAN)
+	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4JMalwareScan)
 	if err != nil {
 		return nil, err
 	}
@@ -325,9 +325,9 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.Malware](
-			ctx, sdkUtils.NEO4J_MALWARE_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4JMalwareScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
-			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
+			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
 		sort.Slice(result[:], func(i, j int) bool {
@@ -361,7 +361,7 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 		start time.Time = time.Now()
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
+	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
 		start = end.AddDate(0, 0, -params.Duration)
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
@@ -369,7 +369,7 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 			},
 		}
 	}
-	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4J_COMPLIANCE_SCAN)
+	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4JComplianceScan)
 	if err != nil {
 		return nil, err
 	}
@@ -386,9 +386,9 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.Compliance](
-			ctx, sdkUtils.NEO4J_COMPLIANCE_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4JComplianceScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
-			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
+			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
 		sort.Slice(result[:], func(i, j int) bool {
@@ -422,7 +422,7 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 		start time.Time = time.Now()
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
+	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
 		start = end.AddDate(0, 0, -params.Duration)
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
@@ -431,7 +431,7 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 		}
 	}
 
-	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4J_CLOUD_COMPLIANCE_SCAN)
+	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4JCloudComplianceScan)
 	if err != nil {
 		return nil, err
 	}
@@ -448,9 +448,9 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.CloudCompliance](
-			ctx, sdkUtils.NEO4J_CLOUD_COMPLIANCE_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4JCloudComplianceScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
-			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
+			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
 		sort.Slice(result[:], func(i, j int) bool {

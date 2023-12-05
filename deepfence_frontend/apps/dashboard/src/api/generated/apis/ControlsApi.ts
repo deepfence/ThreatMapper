@@ -18,7 +18,7 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ControlsAgentControls,
-  ModelAgentId,
+  ModelAgentID,
   ModelAgentPluginDisable,
   ModelAgentPluginEnable,
   ModelAgentUpgrade,
@@ -34,8 +34,8 @@ import {
     ApiDocsFailureResponseToJSON,
     ControlsAgentControlsFromJSON,
     ControlsAgentControlsToJSON,
-    ModelAgentIdFromJSON,
-    ModelAgentIdToJSON,
+    ModelAgentIDFromJSON,
+    ModelAgentIDToJSON,
     ModelAgentPluginDisableFromJSON,
     ModelAgentPluginDisableToJSON,
     ModelAgentPluginEnableFromJSON,
@@ -69,7 +69,7 @@ export interface EnableCloudNodeControlsRequest {
 }
 
 export interface GetAgentControlsRequest {
-    modelAgentId?: ModelAgentId;
+    modelAgentID?: ModelAgentID;
 }
 
 export interface GetAgentInitControlsRequest {
@@ -81,7 +81,7 @@ export interface GetCloudNodeControlsRequest {
 }
 
 export interface GetKubernetesClusterControlsRequest {
-    modelAgentId?: ModelAgentId;
+    modelAgentID?: ModelAgentID;
 }
 
 export interface UpgradeAgentVersionRequest {
@@ -162,7 +162,7 @@ export interface ControlsApiInterface {
     /**
      * Fetch actions for a given agent
      * @summary Fetch Agent Actions
-     * @param {ModelAgentId} [modelAgentId] 
+     * @param {ModelAgentID} [modelAgentID] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ControlsApiInterface
@@ -210,7 +210,7 @@ export interface ControlsApiInterface {
     /**
      * Fetch actions for a given Kubernetes Cluster
      * @summary Fetch Kubernetes Cluster Actions
-     * @param {ModelAgentId} [modelAgentId] 
+     * @param {ModelAgentID} [modelAgentID] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ControlsApiInterface
@@ -422,7 +422,7 @@ export class ControlsApi extends runtime.BaseAPI implements ControlsApiInterface
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelAgentIdToJSON(requestParameters.modelAgentId),
+            body: ModelAgentIDToJSON(requestParameters.modelAgentID),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ControlsAgentControlsFromJSON(jsonValue));
@@ -539,7 +539,7 @@ export class ControlsApi extends runtime.BaseAPI implements ControlsApiInterface
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelAgentIdToJSON(requestParameters.modelAgentId),
+            body: ModelAgentIDToJSON(requestParameters.modelAgentID),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ControlsAgentControlsFromJSON(jsonValue));

@@ -1,10 +1,10 @@
 package common
 
 const (
-	AES_SECRET = "aes_secret"
+	AESSecret = "aes_secret"
 )
 
-var CSPM_RESOURCES = map[string]string{
+var CSPMResources = map[string]string{
 	"aws_s3_bucket":                        "aws_s3",
 	"aws_s3_account_settings":              "aws_s3",
 	"aws_iam_user":                         "aws_iam",
@@ -135,7 +135,7 @@ var CSPM_RESOURCES = map[string]string{
 	"gcp_compute_subnetwork":      "gcp_compute_subnetwork",
 }
 
-var CSPM_RESOURCE_LABELS = map[string]string{
+var CSPMResourceLabels = map[string]string{
 	"aws_s3":                 "AWS S3 Bucket",
 	"aws_iam":                "AWS Identity and Access Management (IAM)",
 	"aws_vpc":                "AWS VPC",

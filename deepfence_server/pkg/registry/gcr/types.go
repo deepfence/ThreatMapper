@@ -10,18 +10,18 @@ type RegistryGCR struct {
 
 type NonSecret struct {
 	RegistryURL string `json:"registry_url" validate:"required,url"`
-	ProjectId   string `json:"project_id" validate:"required,min=6,max=30"`
+	ProjectID   string `json:"project_id" validate:"required,min=6,max=30"`
 }
 
 type Secret struct {
-	PrivateKeyId string `json:"private_key_id" validate:"required"`
+	PrivateKeyID string `json:"private_key_id" validate:"required"`
 }
 
 type Extras struct {
-	ServiceAccountJson string `json:"service_account_json" formData:"service_account_json"`
+	ServiceAccountJSON string `json:"service_account_json" formData:"service_account_json"`
 }
 
-type ServiceAccountJson struct {
+type ServiceAccountJSON struct {
 	Type                    string `json:"type"`
 	ProjectID               string `json:"project_id"`
 	PrivateKeyID            string `json:"private_key_id"`

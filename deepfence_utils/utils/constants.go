@@ -1,30 +1,27 @@
 package utils
 
 const (
+	Project           = "ThreatMapper"
 	ErrorUserNotFound = "user not found"
-)
-
-const (
-	Project = "ThreatMapper"
 )
 
 // kafka topics
 const (
-	AUDIT_LOGS                   = "audit-logs"
-	VULNERABILITY_SCAN           = "vulnerability-scan"
-	VULNERABILITY_SCAN_STATUS    = "vulnerability-scan-status"
-	SECRET_SCAN                  = "secret-scan"
-	SECRET_SCAN_STATUS           = "secret-scan-status"
-	MALWARE_SCAN                 = "malware-scan"
-	MALWARE_SCAN_STATUS          = "malware-scan-status"
-	SBOM_ARTIFACTS               = "sbom-artifact"
-	SBOM_CVE_SCAN                = "sbom-cve-scan"
-	CLOUD_COMPLIANCE_SCAN        = "cloud-compliance-scan"
-	CLOUD_COMPLIANCE_SCAN_STATUS = "cloud-compliance-scan-status"
-	COMPLIANCE_SCAN              = "compliance-scan"
-	COMPLIANCE_SCAN_STATUS       = "compliance-scan-status"
-	CLOUD_TRAIL_ALERTS           = "cloudtrail-alert"
-	CLOUD_RESOURCE               = "cloud-resource"
+	AuditLogs                 = "audit-logs"
+	VulnerabilityScan         = "vulnerability-scan"
+	VulnerabilityScanStatus   = "vulnerability-scan-status"
+	SecretScan                = "secret-scan"
+	SecretScanStatus          = "secret-scan-status"
+	MalwareScan               = "malware-scan"
+	MalwareScanStatus         = "malware-scan-status"
+	SbomArtifacts             = "sbom-artifact"
+	SbomCVEScan               = "sbom-cve-scan"
+	CloudComplianceScan       = "cloud-compliance-scan"
+	CloudComplianceScanStatus = "cloud-compliance-scan-status"
+	ComplianceScan            = "compliance-scan"
+	ComplianceScanStatus      = "compliance-scan-status"
+	CloudTrailAlerts          = "cloudtrail-alert"
+	CloudResource             = "cloud-resource"
 )
 
 // task names
@@ -38,6 +35,7 @@ const (
 	GenerateSBOMTask                  = "tasks_generate_sbom"
 	CheckAgentUpgradeTask             = "tasks_check_agent_upgrade"
 	SyncRegistryTask                  = "task_sync_registry"
+	DeleteOldRegistryTask             = "delete_old_registry"
 	TriggerConsoleActionsTask         = "trigger_console_actions"
 	ScheduledTasks                    = "scheduled_tasks"
 	SecretScanTask                    = "task_secret_scan"
@@ -55,16 +53,17 @@ const (
 	StopVulnerabilityScanTask         = "task_stop_vulnerability_scan"
 	UpdateCloudResourceScanStatusTask = "update_cloud_resource_scan_status"
 	UpdatePodScanStatusTask           = "update_pod_scan_status"
+	BulkDeleteScans                   = "bulk_delete_scans"
 )
 
 const (
-	SCAN_STATUS_SUCCESS        = "COMPLETE"
-	SCAN_STATUS_STARTING       = "STARTING"
-	SCAN_STATUS_INPROGRESS     = "IN_PROGRESS"
-	SCAN_STATUS_FAILED         = "ERROR"
-	SCAN_STATUS_CANCEL_PENDING = "CANCEL_PENDING"
-	SCAN_STATUS_CANCELLING     = "CANCELLING"
-	SCAN_STATUS_CANCELLED      = "CANCELLED"
+	ScanStatusSuccess       = "COMPLETE"
+	ScanStatusStarting      = "STARTING"
+	ScanStatusInProgress    = "IN_PROGRESS"
+	ScanStatusFailed        = "ERROR"
+	ScanStatusCancelPending = "CANCEL_PENDING"
+	ScanStatusCancelling    = "CANCELLING"
+	ScanStatusCancelled     = "CANCELLED"
 )
 
 // Neo4j Node Labels
@@ -85,25 +84,25 @@ const (
 type Neo4jScanType string
 
 const (
-	NEO4J_SECRET_SCAN           Neo4jScanType = "SecretScan"
-	NEO4J_VULNERABILITY_SCAN    Neo4jScanType = "VulnerabilityScan"
-	NEO4J_MALWARE_SCAN          Neo4jScanType = "MalwareScan"
-	NEO4J_COMPLIANCE_SCAN       Neo4jScanType = "ComplianceScan"
-	NEO4J_CLOUD_COMPLIANCE_SCAN Neo4jScanType = "CloudComplianceScan"
+	NEO4JSecretScan          Neo4jScanType = "SecretScan"
+	NEO4JVulnerabilityScan   Neo4jScanType = "VulnerabilityScan"
+	NEO4JMalwareScan         Neo4jScanType = "MalwareScan"
+	NEO4JComplianceScan      Neo4jScanType = "ComplianceScan"
+	NEO4JCloudComplianceScan Neo4jScanType = "CloudComplianceScan"
 )
 
 func StringToNeo4jScanType(s string) Neo4jScanType {
 	switch s {
 	case "VulnerabilityScan":
-		return NEO4J_VULNERABILITY_SCAN
+		return NEO4JVulnerabilityScan
 	case "SecretScan":
-		return NEO4J_SECRET_SCAN
+		return NEO4JSecretScan
 	case "MalwareScan":
-		return NEO4J_MALWARE_SCAN
+		return NEO4JMalwareScan
 	case "ComplianceScan":
-		return NEO4J_COMPLIANCE_SCAN
+		return NEO4JComplianceScan
 	case "CloudComplianceScan":
-		return NEO4J_CLOUD_COMPLIANCE_SCAN
+		return NEO4JCloudComplianceScan
 	default:
 		return ""
 	}
@@ -111,18 +110,18 @@ func StringToNeo4jScanType(s string) Neo4jScanType {
 
 var (
 	ScanTypeDetectedNode = map[Neo4jScanType]string{
-		NEO4J_VULNERABILITY_SCAN:    "Vulnerability",
-		NEO4J_SECRET_SCAN:           "Secret",
-		NEO4J_MALWARE_SCAN:          "Malware",
-		NEO4J_COMPLIANCE_SCAN:       "Compliance",
-		NEO4J_CLOUD_COMPLIANCE_SCAN: "CloudCompliance",
+		NEO4JVulnerabilityScan:   "Vulnerability",
+		NEO4JSecretScan:          "Secret",
+		NEO4JMalwareScan:         "Malware",
+		NEO4JComplianceScan:      "Compliance",
+		NEO4JCloudComplianceScan: "CloudCompliance",
 	}
 	DetectedNodeScanType = map[string]Neo4jScanType{
-		"Vulnerability":   NEO4J_VULNERABILITY_SCAN,
-		"Secret":          NEO4J_SECRET_SCAN,
-		"Malware":         NEO4J_MALWARE_SCAN,
-		"Compliance":      NEO4J_COMPLIANCE_SCAN,
-		"CloudCompliance": NEO4J_CLOUD_COMPLIANCE_SCAN,
+		"Vulnerability":   NEO4JVulnerabilityScan,
+		"Secret":          NEO4JSecretScan,
+		"Malware":         NEO4JMalwareScan,
+		"Compliance":      NEO4JComplianceScan,
+		"CloudCompliance": NEO4JCloudComplianceScan,
 	}
 )
 
@@ -170,18 +169,18 @@ func ResourceTypeToNeo4jLabel(t CloudProvider) string {
 }
 
 var Topics = []string{
-	VULNERABILITY_SCAN, VULNERABILITY_SCAN_STATUS,
-	SECRET_SCAN, SECRET_SCAN_STATUS,
-	MALWARE_SCAN, MALWARE_SCAN_STATUS,
-	SBOM_ARTIFACTS, SBOM_CVE_SCAN,
-	CLOUD_COMPLIANCE_SCAN, CLOUD_COMPLIANCE_SCAN_STATUS,
-	COMPLIANCE_SCAN, COMPLIANCE_SCAN_STATUS,
-	CLOUD_TRAIL_ALERTS,
-	AUDIT_LOGS,
-	CLOUD_RESOURCE,
+	VulnerabilityScan, VulnerabilityScanStatus,
+	SecretScan, SecretScanStatus,
+	MalwareScan, MalwareScanStatus,
+	SbomArtifacts, SbomCVEScan,
+	CloudComplianceScan, CloudComplianceScanStatus,
+	ComplianceScan, ComplianceScanStatus,
+	CloudTrailAlerts,
+	AuditLogs,
+	CloudResource,
 }
 
-// list of task names to create topics
+// Tasks is a list of task names to create topics
 var Tasks = []string{
 	CleanUpGraphDBTask,
 	CleanUpPostgresqlTask,
@@ -218,9 +217,13 @@ const (
 	ReportPDF  ReportType = "pdf"
 )
 
+// mask_global : This is to mask gobally. (same as previous mask_across_hosts_and_images flag)
+// mask_all_image_tag: This is to mask for all tags of an image.
+// mask_entity: This is to mask for an entity other than container/container image. E.g. Host.
+// mask_image_tag: This is to apply mask for an image and tag.
 const (
-	MASK_GLOBAL        = "mask_global"
-	MASK_ALL_IMAGE_TAG = "mask_all_image_tag"
-	MASK_ENTITY        = "mask_entity"
-	MASK_IMAGE_TAG     = "mask_image_tag"
+	MaskGlobal      = "mask_global"
+	MaskAllImageTag = "mask_all_image_tag"
+	MaskEntity      = "mask_entity"
+	MaskImageTag    = "mask_image_tag"
 )

@@ -16,42 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelApiAuthRequest
+ * @interface ModelListAgentVersionResp
  */
-export interface ModelApiAuthRequest {
+export interface ModelListAgentVersionResp {
     /**
      * 
-     * @type {string}
-     * @memberof ModelApiAuthRequest
+     * @type {Array<string>}
+     * @memberof ModelListAgentVersionResp
      */
-    api_token: string;
+    versions: Array<string> | null;
 }
 
 /**
- * Check if a given object implements the ModelApiAuthRequest interface.
+ * Check if a given object implements the ModelListAgentVersionResp interface.
  */
-export function instanceOfModelApiAuthRequest(value: object): boolean {
+export function instanceOfModelListAgentVersionResp(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "api_token" in value;
+    isInstance = isInstance && "versions" in value;
 
     return isInstance;
 }
 
-export function ModelApiAuthRequestFromJSON(json: any): ModelApiAuthRequest {
-    return ModelApiAuthRequestFromJSONTyped(json, false);
+export function ModelListAgentVersionRespFromJSON(json: any): ModelListAgentVersionResp {
+    return ModelListAgentVersionRespFromJSONTyped(json, false);
 }
 
-export function ModelApiAuthRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelApiAuthRequest {
+export function ModelListAgentVersionRespFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelListAgentVersionResp {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'api_token': json['api_token'],
+        'versions': json['versions'],
     };
 }
 
-export function ModelApiAuthRequestToJSON(value?: ModelApiAuthRequest | null): any {
+export function ModelListAgentVersionRespToJSON(value?: ModelListAgentVersionResp | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -60,7 +60,7 @@ export function ModelApiAuthRequestToJSON(value?: ModelApiAuthRequest | null): a
     }
     return {
         
-        'api_token': value.api_token,
+        'versions': value.versions,
     };
 }
 

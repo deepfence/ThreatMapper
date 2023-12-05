@@ -15,6 +15,8 @@ import { searchCloudFiltersApiLoader } from '@/features/common/data-component/se
 import { RootLayout } from '@/features/common/RootLayout';
 import { module as dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrationsLayout } from '@/features/integrations/layouts/IntegrationsLayout';
+import { module as aiIntegrationAdd } from '@/features/integrations/pages/AIIntegrationAdd';
+import { module as aiIntegrationList } from '@/features/integrations/pages/AIIntegrationList';
 import { module as createReport } from '@/features/integrations/pages/CreateReport';
 import { module as downloadReport } from '@/features/integrations/pages/DownloadReport';
 import { module as addIntegration } from '@/features/integrations/pages/IntegrationAdd';
@@ -73,6 +75,7 @@ import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as topologyLoader } from '@/features/topology/data-components/topologyLoader';
+import { action as agentUpgradeAction } from '@/features/topology/data-components/UpgradeAgentModal';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
 import { module as topologyTable } from '@/features/topology/pages/Table';
 import { module as topology } from '@/features/topology/pages/Topology';
@@ -296,6 +299,19 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'create',
             ...createReport,
             meta: { title: 'Create Report' },
+          },
+        ],
+      },
+      // Gen AI
+      {
+        path: 'integrations/gen-ai',
+        ...aiIntegrationList,
+        meta: { title: 'ThreatRx - Generative AI Integrations' },
+        children: [
+          {
+            path: 'add',
+            ...aiIntegrationAdd,
+            meta: { title: 'Add Gen AI Integration' },
           },
         ],
       },
@@ -614,6 +630,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'malware/classes/scan/:scanId',
         ...malwareClassesForScan,
+      },
+      {
+        path: 'controls/agent-upgrade',
+        action: agentUpgradeAction,
       },
     ],
   },

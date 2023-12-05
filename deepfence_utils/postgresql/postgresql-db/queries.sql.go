@@ -78,6 +78,20 @@ func (q *Queries) CountContainerRegistry(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countGenerativeAiIntegrationByLabel = `-- name: CountGenerativeAiIntegrationByLabel :one
+SELECT COUNT(*)
+FROM generative_ai_integration
+WHERE label = $1
+LIMIT 1
+`
+
+func (q *Queries) CountGenerativeAiIntegrationByLabel(ctx context.Context, label string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countGenerativeAiIntegrationByLabel, label)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countUsers = `-- name: CountUsers :one
 SELECT count(*)
 FROM users
@@ -213,6 +227,42 @@ func (q *Queries) CreateContainerRegistry(ctx context.Context, arg CreateContain
 		&i.EncryptedSecret,
 		&i.NonSecret,
 		&i.Extras,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createGenerativeAiIntegration = `-- name: CreateGenerativeAiIntegration :one
+INSERT INTO generative_ai_integration (integration_type, label, config, created_by_user_id)
+VALUES ($1, $2, $3, $4)
+RETURNING id, integration_type, label, last_sent_time, config, error_msg, default_integration, created_by_user_id, created_at, updated_at
+`
+
+type CreateGenerativeAiIntegrationParams struct {
+	IntegrationType string          `json:"integration_type"`
+	Label           string          `json:"label"`
+	Config          json.RawMessage `json:"config"`
+	CreatedByUserID int64           `json:"created_by_user_id"`
+}
+
+func (q *Queries) CreateGenerativeAiIntegration(ctx context.Context, arg CreateGenerativeAiIntegrationParams) (GenerativeAiIntegration, error) {
+	row := q.db.QueryRowContext(ctx, createGenerativeAiIntegration,
+		arg.IntegrationType,
+		arg.Label,
+		arg.Config,
+		arg.CreatedByUserID,
+	)
+	var i GenerativeAiIntegration
+	err := row.Scan(
+		&i.ID,
+		&i.IntegrationType,
+		&i.Label,
+		&i.LastSentTime,
+		&i.Config,
+		&i.ErrorMsg,
+		&i.DefaultIntegration,
+		&i.CreatedByUserID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -553,12 +603,37 @@ const deleteCustomSchedule = `-- name: DeleteCustomSchedule :exec
 DELETE
 FROM scheduler
 WHERE id = $1
-	AND is_system='f'
+  AND is_system = 'f'
 `
 
 func (q *Queries) DeleteCustomSchedule(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteCustomSchedule, id)
 	return err
+}
+
+const deleteGenerativeAiIntegration = `-- name: DeleteGenerativeAiIntegration :one
+DELETE
+FROM generative_ai_integration
+WHERE id = $1
+RETURNING id, integration_type, label, last_sent_time, config, error_msg, default_integration, created_by_user_id, created_at, updated_at
+`
+
+func (q *Queries) DeleteGenerativeAiIntegration(ctx context.Context, id int32) (GenerativeAiIntegration, error) {
+	row := q.db.QueryRowContext(ctx, deleteGenerativeAiIntegration, id)
+	var i GenerativeAiIntegration
+	err := row.Scan(
+		&i.ID,
+		&i.IntegrationType,
+		&i.Label,
+		&i.LastSentTime,
+		&i.Config,
+		&i.ErrorMsg,
+		&i.DefaultIntegration,
+		&i.CreatedByUserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const deleteIntegration = `-- name: DeleteIntegration :exec
@@ -1519,6 +1594,135 @@ func (q *Queries) GetContainerRegistrySafe(ctx context.Context, id int32) (GetCo
 	return i, err
 }
 
+const getDefaultGenerativeAiIntegration = `-- name: GetDefaultGenerativeAiIntegration :one
+SELECT id, integration_type, label, last_sent_time, config, error_msg, default_integration, created_by_user_id, created_at, updated_at
+FROM generative_ai_integration
+WHERE default_integration = true
+LIMIT 1
+`
+
+func (q *Queries) GetDefaultGenerativeAiIntegration(ctx context.Context) (GenerativeAiIntegration, error) {
+	row := q.db.QueryRowContext(ctx, getDefaultGenerativeAiIntegration)
+	var i GenerativeAiIntegration
+	err := row.Scan(
+		&i.ID,
+		&i.IntegrationType,
+		&i.Label,
+		&i.LastSentTime,
+		&i.Config,
+		&i.ErrorMsg,
+		&i.DefaultIntegration,
+		&i.CreatedByUserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getGenerativeAiIntegrationByType = `-- name: GetGenerativeAiIntegrationByType :many
+SELECT id, integration_type, label, last_sent_time, config, error_msg, default_integration, created_by_user_id, created_at, updated_at
+FROM generative_ai_integration
+WHERE integration_type = $1
+`
+
+func (q *Queries) GetGenerativeAiIntegrationByType(ctx context.Context, integrationType string) ([]GenerativeAiIntegration, error) {
+	rows, err := q.db.QueryContext(ctx, getGenerativeAiIntegrationByType, integrationType)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GenerativeAiIntegration
+	for rows.Next() {
+		var i GenerativeAiIntegration
+		if err := rows.Scan(
+			&i.ID,
+			&i.IntegrationType,
+			&i.Label,
+			&i.LastSentTime,
+			&i.Config,
+			&i.ErrorMsg,
+			&i.DefaultIntegration,
+			&i.CreatedByUserID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getGenerativeAiIntegrationFromID = `-- name: GetGenerativeAiIntegrationFromID :one
+SELECT id, integration_type, label, last_sent_time, config, error_msg, default_integration, created_by_user_id, created_at, updated_at
+FROM generative_ai_integration
+WHERE id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetGenerativeAiIntegrationFromID(ctx context.Context, id int32) (GenerativeAiIntegration, error) {
+	row := q.db.QueryRowContext(ctx, getGenerativeAiIntegrationFromID, id)
+	var i GenerativeAiIntegration
+	err := row.Scan(
+		&i.ID,
+		&i.IntegrationType,
+		&i.Label,
+		&i.LastSentTime,
+		&i.Config,
+		&i.ErrorMsg,
+		&i.DefaultIntegration,
+		&i.CreatedByUserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getGenerativeAiIntegrations = `-- name: GetGenerativeAiIntegrations :many
+SELECT id, integration_type, label, last_sent_time, config, error_msg, default_integration, created_by_user_id, created_at, updated_at
+FROM generative_ai_integration
+`
+
+func (q *Queries) GetGenerativeAiIntegrations(ctx context.Context) ([]GenerativeAiIntegration, error) {
+	rows, err := q.db.QueryContext(ctx, getGenerativeAiIntegrations)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GenerativeAiIntegration
+	for rows.Next() {
+		var i GenerativeAiIntegration
+		if err := rows.Scan(
+			&i.ID,
+			&i.IntegrationType,
+			&i.Label,
+			&i.LastSentTime,
+			&i.Config,
+			&i.ErrorMsg,
+			&i.DefaultIntegration,
+			&i.CreatedByUserID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getIntegrationFromID = `-- name: GetIntegrationFromID :one
 SELECT id, resource, filters, integration_type, interval_minutes, last_sent_time, config, error_msg, created_by_user_id, created_at, updated_at
 FROM integration
@@ -2375,6 +2579,44 @@ func (q *Queries) UpdateContainerRegistry(ctx context.Context, arg UpdateContain
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const updateGenerativeAiIntegrationDefault = `-- name: UpdateGenerativeAiIntegrationDefault :exec
+UPDATE generative_ai_integration
+SET default_integration = (CASE WHEN id = $1 THEN true ELSE false END)
+`
+
+func (q *Queries) UpdateGenerativeAiIntegrationDefault(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, updateGenerativeAiIntegrationDefault, id)
+	return err
+}
+
+const updateGenerativeAiIntegrationFirstRowDefault = `-- name: UpdateGenerativeAiIntegrationFirstRowDefault :exec
+UPDATE generative_ai_integration
+SET default_integration= true
+WHERE ID = (SELECT ID FROM generative_ai_integration ORDER BY ID LIMIT 1)
+`
+
+func (q *Queries) UpdateGenerativeAiIntegrationFirstRowDefault(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, updateGenerativeAiIntegrationFirstRowDefault)
+	return err
+}
+
+const updateGenerativeAiIntegrationStatus = `-- name: UpdateGenerativeAiIntegrationStatus :exec
+UPDATE generative_ai_integration
+SET error_msg      = $2,
+    last_sent_time = now()
+WHERE id = $1
+`
+
+type UpdateGenerativeAiIntegrationStatusParams struct {
+	ID       int32          `json:"id"`
+	ErrorMsg sql.NullString `json:"error_msg"`
+}
+
+func (q *Queries) UpdateGenerativeAiIntegrationStatus(ctx context.Context, arg UpdateGenerativeAiIntegrationStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateGenerativeAiIntegrationStatus, arg.ID, arg.ErrorMsg)
+	return err
 }
 
 const updateIntegrationStatus = `-- name: UpdateIntegrationStatus :exec

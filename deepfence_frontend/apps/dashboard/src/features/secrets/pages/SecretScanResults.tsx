@@ -77,7 +77,7 @@ import { SecretsCompare } from '@/features/secrets/components/scan-results/Secre
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
-import { get403Message } from '@/utils/403';
+import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
@@ -144,10 +144,11 @@ const action = async ({
     });
     if (!result.ok) {
       if (result.error.response.status === 400 || result.error.response.status === 409) {
+        const { message } = await getResponseErrors(result.error);
         return {
           action: actionType,
           success: false,
-          message: result.error.message ?? '',
+          message,
         };
       } else if (result.error.response.status === 403) {
         const message = await get403Message(result.error);
@@ -193,10 +194,11 @@ const action = async ({
     });
     if (!result.ok) {
       if (result.error.response.status === 400 || result.error.response.status === 409) {
+        const { message } = await getResponseErrors(result.error);
         return {
           action: actionType,
           success: false,
-          message: result.error.message ?? '',
+          message,
         };
       } else if (result.error.response.status === 403) {
         const message = await get403Message(result.error);
@@ -580,11 +582,14 @@ const ScanHistory = () => {
 };
 
 const HistoryControls = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { data, fetchStatus } = useScanResults();
   const { scanStatusResult } = data;
   const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
   const { navigate, goBack } = usePageNavigation();
-  const { downloadScan } = useDownloadScan();
+  const { downloadScan } = useDownloadScan((state) => {
+    setIsSubmitting(state === 'submitting');
+  });
   const [openStopScanModal, setOpenStopScanModal] = useState(false);
 
   const [showScanCompareModal, setShowScanCompareModal] = useState<boolean>(false);
@@ -734,14 +739,15 @@ const HistoryControls = () => {
           <>
             <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
             <div className="flex">
-              <IconButton
+              <Button
                 variant="flat"
-                icon={
+                startIcon={
                   <span className="h-3 w-3">
                     <DownloadLineIcon />
                   </span>
                 }
-                disabled={fetchStatus !== 'idle'}
+                disabled={fetchStatus !== 'idle' || isSubmitting}
+                loading={isSubmitting}
                 size="md"
                 onClick={() => {
                   downloadScan({
@@ -750,22 +756,26 @@ const HistoryControls = () => {
                     nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
                   });
                 }}
-              />
-              <IconButton
+              >
+                Download
+              </Button>
+              <Button
                 variant="flat"
-                icon={
+                startIcon={
                   <span className="h-3 w-3">
                     <TrashLineIcon />
                   </span>
                 }
                 disabled={fetchStatus !== 'idle'}
                 onClick={() => setScanIdToDelete(scan_id)}
-              />
+              >
+                Delete
+              </Button>
               <>
                 {isScanComplete(status ?? '') && (
-                  <IconButton
+                  <Button
                     variant="flat"
-                    icon={
+                    startIcon={
                       <span className="h-3 w-3">
                         <BalanceLineIcon />
                       </span>
@@ -778,7 +788,9 @@ const HistoryControls = () => {
                         showScanTimeModal: true,
                       });
                     }}
-                  />
+                  >
+                    Compare scan
+                  </Button>
                 )}
               </>
             </div>
@@ -1391,7 +1403,7 @@ const SecretTable = ({
           />
         ),
         header: () => '',
-        size: 55,
+        size: 45,
         minSize: 40,
         maxSize: 55,
         enableResizing: false,
@@ -1408,34 +1420,34 @@ const SecretTable = ({
             <div className="w-4 h-4 shrink-0 dark:text-text-text-and-icon">
               <SecretsIcon />
             </div>
-            <div className="truncate">{info.getValue()}</div>
+            <TruncatedText text={info.row.original.name ?? info.getValue() ?? ''} />
           </DFLink>
         ),
-        header: () => 'ID',
-        minSize: 100,
-        size: 120,
+        header: () => 'Name',
+        minSize: 80,
+        size: 100,
         maxSize: 130,
       }),
       columnHelper.accessor('full_filename', {
         cell: (info) => <TruncatedText text={info.getValue()} />,
         header: () => <TruncatedText text="File name" />,
-        minSize: 80,
-        size: 90,
-        maxSize: 110,
+        minSize: 100,
+        size: 110,
+        maxSize: 140,
       }),
       columnHelper.accessor('matched_content', {
         cell: (info) => <TruncatedText text={info.getValue()} />,
         header: () => 'Matched Content',
-        minSize: 150,
-        size: 160,
+        minSize: 130,
+        size: 140,
         maxSize: 165,
       }),
       columnHelper.accessor('level', {
         cell: (info) => <SeverityBadge severity={info.getValue()} />,
         header: () => 'Severity',
-        minSize: 80,
-        size: 90,
-        maxSize: 100,
+        minSize: 30,
+        size: 50,
+        maxSize: 70,
       }),
       columnHelper.accessor('signature_to_match', {
         enableSorting: false,
@@ -1444,8 +1456,8 @@ const SecretTable = ({
         },
         header: () => <TruncatedText text="Signature to match" />,
         minSize: 70,
-        size: 80,
-        maxSize: 100,
+        size: 100,
+        maxSize: 150,
       }),
       columnHelper.accessor('resources', {
         enableSorting: false,
@@ -1454,20 +1466,18 @@ const SecretTable = ({
           return <TruncatedText text={info.getValue()?.join(', ') ?? ''} />;
         },
         header: () => <TruncatedText text="Affected Resources" />,
-        minSize: 180,
-        size: 180,
-        maxSize: 190,
-      }),
-      columnHelper.accessor('name', {
-        enableSorting: false,
-        enableResizing: true,
-        cell: (info) => (
-          <TruncatedText text={info.getValue() || 'No description available'} />
-        ),
-        header: () => <TruncatedText text="Description" />,
         minSize: 100,
         size: 120,
-        maxSize: 250,
+        maxSize: 190,
+      }),
+      columnHelper.accessor('part', {
+        enableSorting: false,
+        enableResizing: true,
+        cell: (info) => <TruncatedText text={info.getValue() || '-'} />,
+        header: () => <TruncatedText text="Part" />,
+        minSize: 40,
+        size: 50,
+        maxSize: 70,
       }),
     ];
 

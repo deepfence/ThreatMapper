@@ -11,7 +11,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/render/detailed"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
-	reporters_graph "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
+	reportersGraph "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	httpext "github.com/go-playground/pkg/v5/net/http"
@@ -32,59 +32,59 @@ var (
 	}
 )
 
-var topology_reporters sync.Map
+var topologyReporters sync.Map
 
 func init() {
-	topology_reporters = sync.Map{}
+	topologyReporters = sync.Map{}
 }
 
-func getTopologyReporter(ctx context.Context) (reporters_graph.TopologyReporter, error) {
+func getTopologyReporter(ctx context.Context) (reportersGraph.TopologyReporter, error) {
 	nid, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	ing, has := topology_reporters.Load(nid)
+	ing, has := topologyReporters.Load(nid)
 	if has {
-		return ing.(reporters_graph.TopologyReporter), nil
+		return ing.(reportersGraph.TopologyReporter), nil
 	}
-	new_entry, err := reporters_graph.NewNeo4jCollector(ctx)
+	newEntry, err := reportersGraph.NewNeo4jCollector(ctx)
 	if err != nil {
 		return nil, err
 	}
-	true_entry, loaded := topology_reporters.LoadOrStore(nid, new_entry)
+	trueEntry, loaded := topologyReporters.LoadOrStore(nid, newEntry)
 	if loaded {
-		new_entry.Close()
+		newEntry.Close()
 	}
-	return true_entry.(reporters_graph.TopologyReporter), nil
+	return trueEntry.(reportersGraph.TopologyReporter), nil
 }
 
 func (h *Handler) GetTopologyGraph(w http.ResponseWriter, req *http.Request) {
-	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters_graph.TopologyFilters, reporter reporters_graph.TopologyReporter) (reporters_graph.RenderedGraph, error) {
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reportersGraph.TopologyFilters, reporter reportersGraph.TopologyReporter) (reportersGraph.RenderedGraph, error) {
 		return reporter.Graph(ctx, filters)
 	})
 }
 
 func (h *Handler) GetTopologyHostsGraph(w http.ResponseWriter, req *http.Request) {
-	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters_graph.TopologyFilters, reporter reporters_graph.TopologyReporter) (reporters_graph.RenderedGraph, error) {
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reportersGraph.TopologyFilters, reporter reportersGraph.TopologyReporter) (reportersGraph.RenderedGraph, error) {
 		return reporter.HostGraph(ctx, filters)
 	})
 }
 
 func (h *Handler) GetTopologyKubernetesGraph(w http.ResponseWriter, req *http.Request) {
-	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters_graph.TopologyFilters, reporter reporters_graph.TopologyReporter) (reporters_graph.RenderedGraph, error) {
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reportersGraph.TopologyFilters, reporter reportersGraph.TopologyReporter) (reportersGraph.RenderedGraph, error) {
 		return reporter.KubernetesGraph(ctx, filters)
 	})
 }
 
 func (h *Handler) GetTopologyContainersGraph(w http.ResponseWriter, req *http.Request) {
-	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters_graph.TopologyFilters, reporter reporters_graph.TopologyReporter) (reporters_graph.RenderedGraph, error) {
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reportersGraph.TopologyFilters, reporter reportersGraph.TopologyReporter) (reportersGraph.RenderedGraph, error) {
 		return reporter.ContainerGraph(ctx, filters)
 	})
 }
 
 func (h *Handler) GetTopologyPodsGraph(w http.ResponseWriter, req *http.Request) {
-	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters_graph.TopologyFilters, reporter reporters_graph.TopologyReporter) (reporters_graph.RenderedGraph, error) {
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reportersGraph.TopologyFilters, reporter reportersGraph.TopologyReporter) (reportersGraph.RenderedGraph, error) {
 		return reporter.PodGraph(ctx, filters)
 	})
 }
@@ -107,7 +107,7 @@ func (h *Handler) GetTopologyDelta(w http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	delta, err := reporters_graph.GetTopologyDelta(ctx, deltaReq)
+	delta, err := reportersGraph.GetTopologyDelta(ctx, deltaReq)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -120,7 +120,7 @@ func (h *Handler) GetTopologyDelta(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, getGraph func(context.Context, reporters_graph.TopologyFilters, reporters_graph.TopologyReporter) (reporters_graph.RenderedGraph, error)) {
+func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, getGraph func(context.Context, reportersGraph.TopologyFilters, reportersGraph.TopologyReporter) (reportersGraph.RenderedGraph, error)) {
 
 	ctx := req.Context()
 
@@ -130,7 +130,7 @@ func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, get
 		return
 	}
 
-	filters := reporters_graph.TopologyFilters{
+	filters := reportersGraph.TopologyFilters{
 		CloudFilter:      []string{},
 		RegionFilter:     []string{},
 		KubernetesFilter: []string{},
@@ -165,33 +165,41 @@ func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, get
 	respondWith(ctx, w, http.StatusOK, model.GraphResult{Nodes: newTopo, Edges: newConnections})
 }
 
-func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, region_filter, kubernetes_filter, host_filter []string) (detailed.NodeSummaries, detailed.TopologyConnectionSummaries) {
+func graphToSummaries(
+	graph reportersGraph.RenderedGraph,
+	providerFilter,
+	regionFilter,
+	kubernetesFilter,
+	hostFilter []string,
+) (detailed.NodeSummaries, detailed.TopologyConnectionSummaries) {
 	nodes := detailed.NodeSummaries{}
 	edges := detailed.TopologyConnectionSummaries{}
 
 	for _, conn := range graph.Connections {
-		left_splits := strings.Split(conn.Source, ";")
-		right_splits := strings.Split(conn.Target, ";")
+		leftSplits := strings.Split(conn.Source, ";")
+		rightSplits := strings.Split(conn.Target, ";")
 		source := ""
-		if contains(host_filter, left_splits[2]) {
-			source = left_splits[2] + ";" + left_splits[3]
-		} else if contains(region_filter, left_splits[1]) || contains(kubernetes_filter, left_splits[1]) {
-			source = left_splits[2]
-		} else if contains(provider_filter, left_splits[0]) {
-			source = left_splits[1]
-		} else {
-			source = left_splits[0]
+		switch {
+		case contains(hostFilter, leftSplits[2]):
+			source = leftSplits[2] + ";" + leftSplits[3]
+		case contains(regionFilter, leftSplits[1]) || contains(kubernetesFilter, leftSplits[1]):
+			source = leftSplits[2]
+		case contains(providerFilter, leftSplits[0]):
+			source = leftSplits[1]
+		default:
+			source = leftSplits[0]
 		}
 
 		target := ""
-		if contains(host_filter, right_splits[2]) {
-			target = right_splits[2] + ";" + right_splits[3]
-		} else if contains(region_filter, right_splits[1]) || contains(kubernetes_filter, right_splits[1]) {
-			target = right_splits[2]
-		} else if contains(provider_filter, right_splits[0]) {
-			target = right_splits[1]
-		} else {
-			target = right_splits[0]
+		switch {
+		case contains(hostFilter, rightSplits[2]):
+			target = rightSplits[2] + ";" + rightSplits[3]
+		case contains(regionFilter, rightSplits[1]) || contains(kubernetesFilter, rightSplits[1]):
+			target = rightSplits[2]
+		case contains(providerFilter, rightSplits[0]):
+			target = rightSplits[1]
+		default:
+			target = rightSplits[0]
 		}
 
 		if source == "internet" {
@@ -200,26 +208,26 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		if target == "internet" {
 			target = "out-the-internet"
 		}
-		//log.Info().Msgf("%v -> %v\n", source, target)
+		// log.Info().Msgf("%v -> %v\n", source, target)
 		edges[source+target] = detailed.ConnectionSummary{Source: source, Target: target}
 	}
 
-	for _, cp_stub := range graph.Providers {
-		cp := string(cp_stub.ID)
+	for _, cpStub := range graph.Providers {
+		cp := string(cpStub.ID)
 		nodes[cp] = detailed.NodeSummary{
-			ID:                string(cp_stub.ID),
-			Label:             cp_stub.Name,
+			ID:                string(cpStub.ID),
+			Label:             cpStub.Name,
 			ImmediateParentID: "",
 			Type:              report.CloudProvider,
 		}
 	}
 
 	for cp, crs := range graph.Kubernetes {
-		for _, cr_stub := range crs {
-			cr := string(cr_stub.ID)
+		for _, crStub := range crs {
+			cr := string(crStub.ID)
 			nodes[cr] = detailed.NodeSummary{
-				ID:                string(cr_stub.ID),
-				Label:             cr_stub.Name,
+				ID:                string(crStub.ID),
+				Label:             crStub.Name,
 				ImmediateParentID: string(cp),
 				Type:              report.KubernetesCluster,
 			}
@@ -227,11 +235,11 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 	}
 
 	for cp, crs := range graph.Regions {
-		for _, cr_stub := range crs {
-			cr := string(cr_stub.ID)
+		for _, crStub := range crs {
+			cr := string(crStub.ID)
 			nodes[cr] = detailed.NodeSummary{
-				ID:                string(cr_stub.ID),
-				Label:             cr_stub.Name,
+				ID:                string(crStub.ID),
+				Label:             crStub.Name,
 				ImmediateParentID: string(cp),
 				Type:              report.CloudRegion,
 			}
@@ -239,18 +247,18 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 	}
 
 	for cr, n := range graph.Hosts {
-		for _, host_stub := range n {
-			host := string(host_stub.ID)
+		for _, hostStub := range n {
+			host := string(hostStub.ID)
 			nodes[host] = detailed.NodeSummary{
-				ID:                string(host_stub.ID),
-				Label:             host_stub.Name,
+				ID:                string(hostStub.ID),
+				Label:             hostStub.Name,
 				ImmediateParentID: string(cr),
 				Type:              report.Host,
 			}
 		}
 	}
 
-	NodeIDs2strings := func(arr []reporters_graph.NodeID) []string {
+	NodeIDs2strings := func(arr []reportersGraph.NodeID) []string {
 		res := []string{}
 		for i := range arr {
 			res = append(res, string(arr[i]))
@@ -259,14 +267,14 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 	}
 
 	for cp, crs := range graph.CloudServices {
-		for _, cr_stub := range crs {
-			cr := string(cr_stub.ID)
+		for _, crStub := range crs {
+			cr := string(crStub.ID)
 			nodes[cr] = detailed.NodeSummary{
-				ID:                string(cr_stub.ID),
-				Label:             cr_stub.Name,
+				ID:                string(crStub.ID),
+				Label:             crStub.Name,
 				ImmediateParentID: string(cp),
-				Type:              cr_stub.ResourceType,
-				IDs:               NodeIDs2strings(cr_stub.IDs),
+				Type:              crStub.ResourceType,
+				IDs:               NodeIDs2strings(crStub.IDs),
 			}
 		}
 	}
@@ -275,11 +283,11 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 	nodes["out-the-internet"] = outboundInternetNode
 
 	for h, n := range graph.Processes {
-		for _, id_stub := range n {
-			id := string(id_stub.ID)
+		for _, idStub := range n {
+			id := string(idStub.ID)
 			nodes[id] = detailed.NodeSummary{
-				ID:                string(id_stub.ID),
-				Label:             id_stub.Name,
+				ID:                string(idStub.ID),
+				Label:             idStub.Name,
 				ImmediateParentID: string(h),
 				Type:              report.Process,
 			}
@@ -287,11 +295,11 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 	}
 
 	for h, n := range graph.Pods {
-		for _, id_stub := range n {
-			id := string(id_stub.ID)
+		for _, idStub := range n {
+			id := string(idStub.ID)
 			nodes[id] = detailed.NodeSummary{
-				ID:                string(id_stub.ID),
-				Label:             id_stub.Name,
+				ID:                string(idStub.ID),
+				Label:             idStub.Name,
 				ImmediateParentID: string(h),
 				Type:              report.Pod,
 			}
@@ -299,11 +307,11 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 	}
 
 	for h, n := range graph.Containers {
-		for _, id_stub := range n {
-			id := string(id_stub.ID)
+		for _, idStub := range n {
+			id := string(idStub.ID)
 			nodes[id] = detailed.NodeSummary{
-				ID:                string(id_stub.ID),
-				Label:             id_stub.Name,
+				ID:                string(idStub.ID),
+				Label:             idStub.Name,
 				ImmediateParentID: string(h),
 				Type:              report.Container,
 			}

@@ -2,8 +2,12 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
+	"hash/fnv"
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 
@@ -23,6 +27,13 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	req.Config["filter_hash"], err = GetFilterHash(req.Filters)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
@@ -90,7 +101,7 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_INTEGRATION, ACTION_CREATE, req, true)
+	h.AuditUserActivity(r, EventIntegration, ActionCreate, req, true)
 
 	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationCreated})
 	if err != nil {
@@ -180,9 +191,23 @@ func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 	}
 
-	h.AuditUserActivity(r, EVENT_INTEGRATION, ACTION_DELETE,
+	h.AuditUserActivity(r, EventIntegration, ActionDelete,
 		map[string]interface{}{"integration_id": id}, true)
 
 	w.WriteHeader(http.StatusNoContent)
 
+}
+
+func GetFilterHash(filters model.IntegrationFilters) (string, error) {
+	b, err := json.Marshal(filters)
+	if err != nil {
+		return "", err
+
+	}
+	str := strings.Split(string(b), "")
+	sort.Strings(str)
+	strSorted := strings.Join(str, "")
+	h := fnv.New32a()
+	h.Write([]byte(strSorted))
+	return fmt.Sprint(h.Sum32()), nil
 }

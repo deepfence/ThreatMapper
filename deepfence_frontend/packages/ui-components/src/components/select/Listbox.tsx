@@ -260,20 +260,16 @@ export function Listbox<TType, TActualType>({
                 </PopoverPrimitive.Trigger>
                 <PopoverPrimitive.Portal>
                   <PopoverPrimitive.Content align="start" sideOffset={2} asChild>
-                    <div className="data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down w-[var(--radix-popper-anchor-width)]">
+                    <div className="data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down w-[var(--radix-popper-anchor-width)] dark:bg-bg-card dark:border dark:border-bg-grid-border rounded-[5px] overflow-hidden">
                       <HUIListbox.Options>
                         <div
                           className={cn(
-                            // bg
-                            'max-h-60 overflow-auto',
-                            'bg-bg-card dark:bg-bg-card',
+                            'max-h-60 w-full select-none',
                             'text-p7',
-                            // border
-                            'border border-bg-grid-border dark:border-bg-grid-border',
-                            'rounded-[5px]',
-                            'select-none',
+                            'overflow-auto',
+                            'focus:visible:outline-none',
                             // text
-                            'text-text-text-and-icon dark:text-text-text-and-icon outline-none focus:outline-none',
+                            'text-text-text-and-icon dark:text-text-text-and-icon',
                           )}
                         >
                           <OptionsWrapper noDataText={noDataText}>
@@ -300,7 +296,7 @@ export function Listbox<TType, TActualType>({
                                   onClick={() => {
                                     onClearAll?.();
                                   }}
-                                  className="flex gap-1.5 dark:text-accent-accent items-center text-p6"
+                                  className="flex dark:text-accent-accent items-center text-p6"
                                 >
                                   {clearAll}
                                 </button>
@@ -369,7 +365,12 @@ export function ListboxOption<TType>({
     >
       {({ selected }) => (
         <>
-          {multiple ? <Checkbox checked={selected} /> : null}
+          {multiple ? (
+            <span className="relative">
+              <span className="absolute inset-0"></span>
+              <Checkbox checked={selected} />
+            </span>
+          ) : null}
           {children}
         </>
       )}

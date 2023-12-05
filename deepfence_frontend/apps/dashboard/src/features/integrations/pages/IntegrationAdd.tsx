@@ -23,7 +23,7 @@ import { PlusIcon } from '@/components/icons/common/Plus';
 import { integrationTypeToNameMapping } from '@/features/integrations/pages/Integrations';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
-import { get403Message } from '@/utils/403';
+import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { getArrayTypeValuesFromFormData } from '@/utils/formData';
 
@@ -194,6 +194,8 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       _notificationType = 'CloudTrailAlert';
     } else if (_notificationType === 'User Activities') {
       _notificationType = 'UserActivities';
+    } else if (_notificationType === 'Cloud Compliance') {
+      _notificationType = 'CloudCompliance';
     }
 
     // filters
@@ -265,6 +267,8 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       node_ids: [],
     };
 
+    const accountIds = getArrayTypeValuesFromFormData(formData, 'cloudAccountsFilter');
+
     const nodeIds = [];
 
     if (hostFilter.length) {
@@ -309,6 +313,17 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       );
       nodeIds.push(..._clusters);
     }
+    if (accountIds.length) {
+      const _accounts: ModelNodeIdentifier[] = accountIds.map<ModelNodeIdentifier>(
+        (id) => {
+          return {
+            node_id: id,
+            node_type: ModelNodeIdentifierNodeTypeEnum.CloudAccount,
+          };
+        },
+      );
+      nodeIds.push(..._accounts);
+    }
     if (severityFilter.length) {
       const filters = _filters.fields_filters.contains_filter.filter_in;
       const newFilter = {
@@ -327,6 +342,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       };
       _filters.fields_filters.contains_filter.filter_in = newFilter;
     }
+
     if (intervalFilter) {
       // TODO Add filters
     }
@@ -378,8 +394,10 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
     });
     if (!r.ok) {
       if (r.error.response.status === 400) {
+        const { message } = await getResponseErrors(r.error);
         return {
-          message: r.error.message ?? 'Error in deleting integrations',
+          success: false,
+          message: message ?? 'Error in deleting integrations',
         };
       } else if (r.error.response.status === 403) {
         const message = await get403Message(r.error);
@@ -541,7 +559,7 @@ const IntegrationAdd = () => {
 
   return (
     <div className="m-4">
-      <div className="flex gapx-8">
+      <div className="flex gap-x-2">
         <Button
           variant="flat"
           startIcon={<PlusIcon />}

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -22,7 +23,7 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]: {
+var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
 	"cve_severity":          "Severity",
 	"cve_id":                "CVE Id",
 	"cve_description":       "Description",
@@ -34,8 +35,9 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 	"cve_fixed_in":          "CVE Fixed In",
 	"cve_cvss_score":        "CVSS Score",
 	"cve_caused_by_package": "CVE Caused By Package",
-	"node_id":               "Node ID"},
-	utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]: {
+	"node_id":               "Node ID",
+	"updated_at":            "updated_at"},
+	utils.ScanTypeDetectedNode[utils.NEO4JSecretScan]: {
 		"node_id":            "Node ID",
 		"full_filename":      "File Name",
 		"matched_content":    "Matched Content",
@@ -44,8 +46,9 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 		"rule_id":            "Rule",
 		"name":               "Name",
 		"part":               "Part",
-		"signature_to_match": "Matched Signature"},
-	utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]: {"class": "Class",
+		"signature_to_match": "Matched Signature",
+		"updated_at":         "updated_at"},
+	utils.ScanTypeDetectedNode[utils.NEO4JMalwareScan]: {"class": "Class",
 		"complete_filename": "File Name",
 		"file_sev_score":    "File Severity Score",
 		"file_severity":     "File Severity",
@@ -55,8 +58,9 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 		"rule_name":         "Rule Name",
 		"author":            "Author",
 		"severity_score":    "Severity Score",
-		"summary":           "Summary"},
-	utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]: {
+		"summary":           "Summary",
+		"updated_at":        "updated_at"},
+	utils.ScanTypeDetectedNode[utils.NEO4JComplianceScan]: {
 		"compliance_check_type": "Compliance Check Type",
 		"resource":              "Resource",
 		"status":                "Test Status",
@@ -64,7 +68,7 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 		"description":           "Description",
 		"test_number":           "Test ID",
 		"test_desc":             "Info"},
-	utils.ScanTypeDetectedNode[utils.NEO4J_CLOUD_COMPLIANCE_SCAN]: {
+	utils.ScanTypeDetectedNode[utils.NEO4JCloudComplianceScan]: {
 		"title":                 "Title",
 		"reason":                "Reason",
 		"resource":              "Resource",
@@ -83,7 +87,32 @@ var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NE
 	},
 }
 
-var notificationLock sync.Mutex
+const DefaultNotificationErrorBackoff = 15 * time.Minute
+
+var (
+	NotificationErrorBackoff time.Duration
+	notificationLock         sync.Mutex
+)
+
+func init() {
+	backoffTimeStr := os.Getenv("DEEPFENCE_NOTIFICATION_ERROR_BACKOFF_MINUTES")
+	status := false
+	if len(backoffTimeStr) > 0 {
+		value, err := strconv.Atoi(backoffTimeStr)
+		if err == nil && value > 0 {
+			NotificationErrorBackoff = time.Duration(value) * time.Minute
+			status = true
+			log.Info().Msgf("Setting notification err backoff to: %v",
+				NotificationErrorBackoff)
+		}
+	}
+
+	if !status {
+		log.Info().Msgf("Setting notification err backoff to default: %v",
+			DefaultNotificationErrorBackoff)
+		NotificationErrorBackoff = DefaultNotificationErrorBackoff
+	}
+}
 
 func SendNotifications(ctx context.Context, task *asynq.Task) error {
 	//This lock is to ensure only one notification handler runs at a time
@@ -103,6 +132,16 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 	wg := sync.WaitGroup{}
 	wg.Add(len(integrations))
 	for _, integrationRow := range integrations {
+		if integrationRow.ErrorMsg.String != "" &&
+			time.Since(integrationRow.LastSentTime.Time) < NotificationErrorBackoff {
+			log.Info().Msgf("Skipping integration for %s rowId: %d due to error: %s "+
+				"occured at last attempt, %s ago",
+				integrationRow.IntegrationType, integrationRow.ID,
+				integrationRow.ErrorMsg.String, time.Since(integrationRow.LastSentTime.Time))
+			wg.Done()
+			continue
+		}
+
 		go func(integration postgresql_db.Integration) {
 			defer wg.Done()
 			log.Info().Msgf("Processing integration for %s rowId: %d",
@@ -148,16 +187,16 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 
 func processIntegrationRow(integrationRow postgresql_db.Integration, ctx context.Context, task *asynq.Task) error {
 	switch integrationRow.Resource {
-	case utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]:
+	case utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]:
 		return processIntegration[model.Vulnerability](ctx, task, integrationRow)
-	case utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]:
+	case utils.ScanTypeDetectedNode[utils.NEO4JSecretScan]:
 		return processIntegration[model.Secret](ctx, task, integrationRow)
-	case utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]:
+	case utils.ScanTypeDetectedNode[utils.NEO4JMalwareScan]:
 		return processIntegration[model.Malware](ctx, task, integrationRow)
-	case utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]:
+	case utils.ScanTypeDetectedNode[utils.NEO4JComplianceScan]:
 		err1 := processIntegration[model.Compliance](ctx, task, integrationRow)
 		// cloud compliance scans
-		integrationRow.Resource = utils.ScanTypeDetectedNode[utils.NEO4J_CLOUD_COMPLIANCE_SCAN]
+		integrationRow.Resource = utils.ScanTypeDetectedNode[utils.NEO4JCloudComplianceScan]
 		err2 := processIntegration[model.CloudCompliance](ctx, task, integrationRow)
 		return errors.Join(err1, err2)
 	}
@@ -201,12 +240,36 @@ func injectNodeDatamap(results []map[string]interface{}, common model.ScanResult
 			r["kubernetes_cluster_name"] = common.KubernetesClusterName
 		}
 
+		timeStampFunc := func(timestamp any) int64 {
+			var ts int64
+			switch t := timestamp.(type) {
+			case int64:
+				ts = t
+			case int32:
+				ts = int64(t)
+			case uint32:
+				ts = int64(t)
+			case uint64:
+				ts = int64(t)
+			}
+			return ts
+		}
+
 		if _, ok := r["updated_at"]; ok {
 			flag := integration.IsMessagingFormat(integrationType)
 			if flag {
-				ts := r["updated_at"].(int64)
-				tm := time.Unix(0, ts*int64(time.Millisecond))
-				r["updated_at"] = tm
+				ts := timeStampFunc(r["updated_at"])
+				tm := time.Unix(0, ts*int64(time.Millisecond)).In(time.UTC)
+				r["updated_at"] = tm.Format("02-01-2006 15:04:05 MST")
+			}
+		}
+
+		if _, ok := r["created_at"]; ok {
+			flag := integration.IsMessagingFormat(integrationType)
+			if flag {
+				ts := timeStampFunc(r["created_at"])
+				tm := time.Unix(0, ts*int64(time.Millisecond)).In(time.UTC)
+				r["created_at"] = tm.Format("02-01-2006 15:04:05 MST")
 			}
 		}
 
@@ -244,7 +307,7 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		},
 	)
 	filters.FieldsFilters.ContainsFilter = reporters.ContainsFilter{
-		FieldsValues: map[string][]interface{}{"status": {utils.SCAN_STATUS_SUCCESS}},
+		FieldsValues: map[string][]interface{}{"status": {utils.ScanStatusSuccess}},
 	}
 
 	profileStart := time.Now()
@@ -277,7 +340,7 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 	for _, scan := range list.ScansInfo {
 		profileStart = time.Now()
 		results, common, err := reporters_scan.GetScanResults[T](ctx,
-			utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId,
+			utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanID,
 			filters.FieldsFilters, model.FetchWindow{})
 		if err != nil {
 			return err
@@ -285,7 +348,7 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		totalQueryTime = totalQueryTime + time.Since(profileStart).Milliseconds()
 
 		if len(results) == 0 {
-			log.Info().Msgf("No Results filtered for scan id: %s with filters %+v", scan.ScanId, filters)
+			log.Info().Msgf("No Results filtered for scan id: %s with filters %+v", scan.ScanID, filters)
 			continue
 		}
 

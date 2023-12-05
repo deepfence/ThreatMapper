@@ -1,5 +1,8 @@
-FROM golang:1.21-alpine3.18
+ARG VECTORSCAN_IMG_TAG=latest
+ARG VECTORSCAN_IMAGE_REPOSITORY=deepfenceio
+FROM $VECTORSCAN_IMAGE_REPOSITORY/deepfence_vectorscan_build:$VECTORSCAN_IMG_TAG AS vectorscan
 
+FROM golang:1.21-alpine3.18
 
 RUN apk add --no-cache \
     git \
@@ -11,6 +14,7 @@ RUN apk add --no-cache \
     openssl \
     file \
     jansson \
+    jansson-static \
     bison \
     tini \
     su-exec
@@ -27,6 +31,8 @@ RUN apk add --no-cache -t .build-deps py-setuptools \
     flex \
     git \
     libmagic \
+    libmagic-static \
+    libcrypto3 \
     linux-headers
 
 RUN cd /root \
@@ -47,7 +53,9 @@ RUN apk update && apk add --no-cache --upgrade \
     curl tar libstdc++ libgcc python3 \
     py3-pip bash gcc musl-dev pkgconfig \
     g++ git protoc jansson-dev libc-dev openssl-dev
-RUN apk add hyperscan-dev --repository=https://dl-cdn.alpinelinux.org/alpine/v3.13/community
+
+COPY --from=vectorscan /vectorscan.tar.bz2 /
+RUN tar -xjf /vectorscan.tar.bz2 -C / && rm /vectorscan.tar.bz2
 
 ENV PKG_CONFIG_PATH=/usr/local/include/hs/:$(PKG_CONFIG_PATH) \
     CGO_CFLAGS="-I/usr/local/include/hyperscan/src" \

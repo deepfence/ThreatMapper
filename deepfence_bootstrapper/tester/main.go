@@ -13,7 +13,7 @@ func main() {
 		log.Fatal("dialing:", err)
 	}
 	reply := server.Reply{}
-	args := server.UpgradeArgs{Name: "package_scanner", Url: "http://143.110.232.114:8089/package-scanner"}
+	args := server.UpgradeArgs{Name: "package_scanner", URL: "http://143.110.232.114:8089/package-scanner"}
 	err = client.Call("Server.Upgrade", &args, &reply)
 	if err != nil {
 		log.Fatal(err)
