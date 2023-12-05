@@ -801,11 +801,11 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 		"Delete Custom Schedule task", "Delete Custom Schedule task",
 		http.StatusNoContent, []string{tagSettings}, bearerToken, new(ScheduleJobID), nil)
 
-	d.AddOperation("uploadAgentVersion", http.MethodPut, "/deepfence/agent/version",
+	d.AddOperation("uploadAgentVersion", http.MethodPut, "/deepfence/settings/agent/version",
 		"Upload New agent version", "Upload Agent version",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, nil)
 
-	d.AddOperation("getAgentVersions", http.MethodGet, "/deepfence/agent/versions",
+	d.AddOperation("getAgentVersions", http.MethodGet, "/deepfence/settings/agent/versions",
 		"Get available agent versions", "Get available agent versions",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(ListAgentVersionResp))
 
