@@ -50,7 +50,7 @@ bootstrap-agent-plugins:
 .PHONY: agent
 agent: go1_20_builder debian_builder deepfenced console_plugins
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
-	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" bash build.sh)
+	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" bash build.sh)
 
 .PHONY: deepfenced
 deepfenced: alpine_builder bootstrap bootstrap-agent-plugins
