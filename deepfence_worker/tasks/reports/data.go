@@ -119,17 +119,15 @@ func scanResultFilter(levelKey string, levelValues []string, masked []bool) repo
 
 	return filter
 }
-func CalculateOverallSeverityCounts(severityCountsList ...map[string]int32) map[string]int32 {
-	overallSeverityCounts := make(map[string]int32)
 
+func CalculateOverallSeverityCounts[T any](nodeData *NodeWiseData[T], severityCountsList ...map[string]int32) {
 	for _, severityCounts := range severityCountsList {
 		for severity, count := range severityCounts {
-			overallSeverityCounts[severity] += count
+			nodeData.OverallSeverityCounts[severity] += count
 		}
 	}
-
-	return overallSeverityCounts
 }
+
 func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Vulnerability], error) {
 
 	if params.Filters.MostExploitableReport {
@@ -167,9 +165,9 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 		OverallSeverityCounts: make(map[string]int32),
 	}
 
-	overallSeverityCounts := CalculateOverallSeverityCounts()
 	for _, s := range scans {
-		overallSeverityCounts = CalculateOverallSeverityCounts(overallSeverityCounts, s.SeverityCounts)
+		CalculateOverallSeverityCounts(&nodeWiseData, s.SeverityCounts)
+
 		result, common, err := rptScans.GetScanResults[model.Vulnerability](
 			ctx, sdkUtils.NEO4JVulnerabilityScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
@@ -185,7 +183,6 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 			ScanResults: result,
 		}
 	}
-	nodeWiseData.OverallSeverityCounts = overallSeverityCounts
 
 	data := Info[model.Vulnerability]{
 		ScanType:       VULNERABILITY,
@@ -223,7 +220,7 @@ func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParam
 	nodeWiseData.SeverityCount[nodeKey] = make(map[string]int32)
 	nodeWiseData.ScanData[nodeKey] = ScanData[model.Vulnerability]{ScanResults: entries}
 	sevMap := nodeWiseData.SeverityCount[nodeKey]
-	nodeWiseData.OverallSeverityCounts = CalculateOverallSeverityCounts(nodeWiseData.OverallSeverityCounts, nodeWiseData.SeverityCount[nodeKey])
+	CalculateOverallSeverityCounts(&nodeWiseData, nodeWiseData.SeverityCount[nodeKey])
 	for _, entry := range entries {
 		count, present := sevMap[entry.CveSeverity]
 		if !present {
@@ -279,9 +276,8 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 		ScanData:              make(map[string]ScanData[model.Secret]),
 		OverallSeverityCounts: make(map[string]int32),
 	}
-	overallSeverityCounts := CalculateOverallSeverityCounts()
 	for _, s := range scans {
-		overallSeverityCounts = CalculateOverallSeverityCounts(overallSeverityCounts, s.SeverityCounts)
+		CalculateOverallSeverityCounts(&nodeWiseData, s.SeverityCounts)
 		result, common, err := rptScans.GetScanResults[model.Secret](
 			ctx, sdkUtils.NEO4JSecretScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
@@ -297,7 +293,6 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 			ScanResults: result,
 		}
 	}
-	nodeWiseData.OverallSeverityCounts = overallSeverityCounts
 
 	data := Info[model.Secret]{
 		ScanType:       SECRET,
@@ -343,9 +338,8 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 		ScanData:              make(map[string]ScanData[model.Malware]),
 		OverallSeverityCounts: make(map[string]int32),
 	}
-	overallSeverityCounts := CalculateOverallSeverityCounts()
 	for _, s := range scans {
-		overallSeverityCounts = CalculateOverallSeverityCounts(overallSeverityCounts, s.SeverityCounts)
+		CalculateOverallSeverityCounts(&nodeWiseData, s.SeverityCounts)
 		result, common, err := rptScans.GetScanResults[model.Malware](
 			ctx, sdkUtils.NEO4JMalwareScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
@@ -361,7 +355,6 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 			ScanResults: result,
 		}
 	}
-	nodeWiseData.OverallSeverityCounts = overallSeverityCounts
 
 	data := Info[model.Malware]{
 		ScanType:       MALWARE,
@@ -407,9 +400,8 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 		ScanData:              make(map[string]ScanData[model.Compliance]),
 		OverallSeverityCounts: make(map[string]int32),
 	}
-	overallSeverityCounts := CalculateOverallSeverityCounts()
 	for _, s := range scans {
-		overallSeverityCounts = CalculateOverallSeverityCounts(overallSeverityCounts, s.SeverityCounts)
+		CalculateOverallSeverityCounts(&nodeWiseData, s.SeverityCounts)
 		result, common, err := rptScans.GetScanResults[model.Compliance](
 			ctx, sdkUtils.NEO4JComplianceScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
@@ -425,7 +417,6 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 			ScanResults: result,
 		}
 	}
-	nodeWiseData.OverallSeverityCounts = overallSeverityCounts
 
 	data := Info[model.Compliance]{
 		ScanType:       COMPLIANCE,
@@ -472,10 +463,9 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 		ScanData:              make(map[string]ScanData[model.CloudCompliance]),
 		OverallSeverityCounts: make(map[string]int32),
 	}
-	overallSeverityCounts := CalculateOverallSeverityCounts()
 
 	for _, s := range scans {
-		overallSeverityCounts = CalculateOverallSeverityCounts(overallSeverityCounts, s.SeverityCounts)
+		CalculateOverallSeverityCounts(&nodeWiseData, s.SeverityCounts)
 		result, common, err := rptScans.GetScanResults[model.CloudCompliance](
 			ctx, sdkUtils.NEO4JCloudComplianceScan, s.ScanID, severityFilter, model.FetchWindow{})
 		if err != nil {
@@ -491,7 +481,6 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 			ScanResults: result,
 		}
 	}
-	nodeWiseData.OverallSeverityCounts = overallSeverityCounts
 
 	data := Info[model.CloudCompliance]{
 		ScanType:       CLOUD_COMPLIANCE,
