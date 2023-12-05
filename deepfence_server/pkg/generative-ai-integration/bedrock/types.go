@@ -1,6 +1,9 @@
 package bedrock
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/generative-ai-integration/common"
 )
 
@@ -16,12 +19,26 @@ const (
 	MetaLlama2Chat13BV1           = "meta.llama2-13b-chat-v1"
 	CohereCommandTextV14          = "cohere.command-text-v14"
 	CohereCommandLightTextV14     = "cohere.command-light-text-v14"
+
+	modelLifecycleActive = "ACTIVE"
 )
 
 var (
+	textModality = "TEXT"
+
 	contentTypeHeader = "application/json"
 	acceptHeader      = "*/*"
+
+	ErrBedrockNoActiveModel error
 )
+
+func init() {
+	supportedModels := ""
+	for modelID, _ := range BedrockModelBody {
+		supportedModels += modelID + ", "
+	}
+	ErrBedrockNoActiveModel = fmt.Errorf("no active model, one of these should be active: %s", strings.Trim(supportedModels, ", "))
+}
 
 type Bedrock struct {
 	common.GenerativeAiIntegrationCommon

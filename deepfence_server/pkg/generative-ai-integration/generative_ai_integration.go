@@ -40,6 +40,7 @@ func NewGenerativeAiIntegrationFromDBEntry(ctx context.Context, integrationType 
 // GenerativeAiIntegration is the interface for all integrations
 type GenerativeAiIntegration interface {
 	ValidateConfig(*validator.Validate) error
+	VerifyAuth(ctx context.Context) error
 	GenerateCloudPostureQuery(model.GenerativeAiIntegrationRequest) (string, error)
 	GenerateLinuxPostureQuery(model.GenerativeAiIntegrationRequest) (string, error)
 	GenerateKubernetesPostureQuery(model.GenerativeAiIntegrationRequest) (string, error)

@@ -28,7 +28,7 @@ require github.com/anchore/syft v0.94.0
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.9.1
-	github.com/aws/aws-sdk-go v1.48.1
+	github.com/aws/aws-sdk-go v1.48.12
 	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/deepfence/SecretScanner v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
