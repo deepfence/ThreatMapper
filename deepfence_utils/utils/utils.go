@@ -649,7 +649,7 @@ func SplitFullName(name string) (string, string) {
 }
 
 // UNIX timestamp to common readable format
-func TimeStampFormat(timestamp interface{}, unit time.Duration) (string, error) {
+func PrintableTimeStamp(timestamp interface{}) string {
 	var ts int64
 
 	switch t := timestamp.(type) {
@@ -662,9 +662,14 @@ func TimeStampFormat(timestamp interface{}, unit time.Duration) (string, error) 
 	case uint64:
 		ts = int64(t)
 	default:
-		return "", errors.New("Unsupported timestamp type")
+		log.Error().Msgf("Unsupported timestamp type: %+v", timestamp)
+		return time.Unix(0, 0).In(time.UTC).Format(time.RFC3339)
 	}
 
-	tm := time.Unix(0, ts*int64(unit)).In(time.UTC)
-	return tm.Format(time.RFC3339), nil
+	if ts <= 0 {
+		log.Error().Msgf("Invalid Timestamp: %+v", timestamp)
+		return time.Unix(0, 0).In(time.UTC).Format(time.RFC3339)
+	}
+
+	return time.Unix(ts, 0).In(time.UTC).Format(time.RFC3339)
 }

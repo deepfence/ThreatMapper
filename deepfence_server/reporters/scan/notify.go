@@ -3,7 +3,6 @@ package reporters_scan //nolint:stylecheck
 import (
 	"context"
 	"encoding/json"
-	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
@@ -92,11 +91,7 @@ func injectNodeData[T any](results []T, common model.ScanResultsCommon,
 		if _, ok := m["updated_at"]; ok {
 			flag := integration.IsMessagingFormat(integrationType)
 			if flag {
-				if ts, err := utils.TimeStampFormat(m["updated_at"], time.Millisecond); err == nil {
-					m["updated_at"] = ts
-				} else {
-					log.Error().Err(err).Msg("Error formatting timestamp")
-				}
+				m["updated_at"] = utils.PrintableTimeStamp(m["updated_at"])
 			}
 		}
 

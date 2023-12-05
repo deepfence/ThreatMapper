@@ -243,22 +243,14 @@ func injectNodeDatamap(results []map[string]interface{}, common model.ScanResult
 		if _, ok := r["updated_at"]; ok {
 			flag := integration.IsMessagingFormat(integrationType)
 			if flag {
-				if ts, err := utils.TimeStampFormat(r["updated_at"], time.Millisecond); err == nil {
-					r["updated_at"] = ts
-				} else {
-					log.Error().Err(err).Msg("Error formatting timestamp")
-				}
+				r["updated_at"] = utils.PrintableTimeStamp(r["updated_at"])
 			}
 		}
 
 		if _, ok := r["created_at"]; ok {
 			flag := integration.IsMessagingFormat(integrationType)
 			if flag {
-				if ts, err := utils.TimeStampFormat(r["created_at"], time.Millisecond); err == nil {
-					r["created_at"] = ts
-				} else {
-					log.Error().Err(err).Msg("Error formatting timestamp")
-				}
+				r["created_at"] = utils.PrintableTimeStamp(r["created_at"])
 			}
 		}
 
