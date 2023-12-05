@@ -101,8 +101,8 @@ func (ct *ControlsClient) StartControlsWatching(nodeID string, isClusterAgent bo
 			*client.NewModelInitAgentReq(
 				getMaxAllocatable(),
 				nodeID,
-				version,
 				nodeType,
+				version,
 			),
 		)
 		ctl, _, err := ct.API().ControlsAPI.GetAgentInitControlsExecute(req)

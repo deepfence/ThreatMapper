@@ -50,6 +50,9 @@ func init() {
 			hostname = "(unknown)"
 		}
 	}
+	if enableCloudNode {
+		hostname = "cloud-agent-" + hostname
+	}
 	err = os.Setenv("DF_HOST_ID", hostname)
 	if err != nil {
 		log.Error().Msgf("Failed to set DF_HOST_ID: %v", err)
@@ -143,7 +146,6 @@ func main() {
 			err = consoleClient.StartControlsWatching(k8sClusterID, true, Version, "k8s")
 			log.Info().Msgf("cluster agent mode: %s", k8sClusterID)
 		} else if enableCloudNode {
-			hostname = "cloud-agent-" + hostname
 			err = consoleClient.StartControlsWatching(hostname, false, Version, "cloud_agent")
 			log.Info().Msgf("cloud agent mode: %s", hostname)
 		} else {

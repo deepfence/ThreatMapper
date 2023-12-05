@@ -309,19 +309,19 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || nodeType == controls.ResourceTypeToString(controls.Host) {
 		hostNodeId = nodeID
 		hostNeo4jNodeType = neo4jNodeType
-		internalReq, _ := json.Marshal(ctl.StartComplianceScanRequest{
+		internalReq, _ := json.Marshal(controls.StartComplianceScanRequest{
 			NodeID:   nodeID,
 			NodeType: nt,
 			BinArgs:  map[string]string{"scan_id": scanID, "benchmark_types": strings.Join(benchmarkTypes, ",")},
 		})
-		action, _ = json.Marshal(ctl.Action{ID: ctl.StartComplianceScan, RequestPayload: string(internalReq)})
+		action, _ = json.Marshal(controls.Action{ID: controls.StartComplianceScan, RequestPayload: string(internalReq)})
 	} else { // if nodeType == controls.ResourceTypeToString(controls.CloudAccount)
 		hostNeo4jNodeType = "Node"
 		res, err = tx.Run(fmt.Sprintf(`
 			MATCH (n:%s) -[:HOSTS]-> (m:%s{node_id: $node_id})
 			RETURN  n.node_id, m.cloud_provider, m.node_name`, hostNeo4jNodeType, neo4jNodeType),
 			map[string]interface{}{
-				"node_id": nodeId,
+				"node_id": nodeID,
 			})
 		if err != nil {
 			return err
@@ -330,7 +330,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		if err != nil {
 			return err
 		}
-		scanNodeDetails := ctl.CloudScanNodeDetails{
+		scanNodeDetails := controls.CloudScanNodeDetails{
 			AgentNodeId:   rec.Values[0].(string),
 			CloudProvider: rec.Values[1].(string),
 			NodeName:      rec.Values[2].(string),
@@ -341,18 +341,18 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 			log.Error().Msgf("Error getting controls for compliance type: %+v", benchmarkTypes)
 		}
 
-		internalReq, _ := json.Marshal(ctl.StartCloudComplianceScanRequest{
-			NodeID:   nodeId,
+		internalReq, _ := json.Marshal(controls.StartCloudComplianceScanRequest{
+			NodeID:   nodeID,
 			NodeType: nt,
-			BinArgs:  map[string]string{"scan_id": scanId, "benchmark_types": strings.Join(benchmarkTypes, ",")},
-			ScanDetails: ctl.CloudComplianceScanDetails{
-				ScanId:     scanId,
+			BinArgs:  map[string]string{"scan_id": scanID, "benchmark_types": strings.Join(benchmarkTypes, ",")},
+			ScanDetails: controls.CloudComplianceScanDetails{
+				ScanId:     scanID,
 				ScanTypes:  benchmarkTypes,
 				AccountId:  scanNodeDetails.NodeName,
 				Benchmarks: benchmarks,
 			},
 		})
-		action, _ = json.Marshal(ctl.Action{ID: ctl.StartCloudComplianceScan, RequestPayload: string(internalReq)})
+		action, _ = json.Marshal(controls.Action{ID: controls.StartCloudComplianceScan, RequestPayload: string(internalReq)})
 	}
 	if _, err = tx.Run(fmt.Sprintf(`
 		MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, updated_at: TIMESTAMP(), benchmark_types: $benchmark_types, trigger_action: $action, created_at:TIMESTAMP(), is_priority: $is_priority})
@@ -452,8 +452,8 @@ func AddBulkScan(tx WriteDBTransaction, scanType utils.Neo4jScanType, bulkScanID
 	return nil
 }
 
-func GetActiveCloudControls(tx WriteDBTransaction, complianceTypes []string, cloudProvider string) ([]ctl.CloudComplianceScanBenchmark, error) {
-	var benchmarks []ctl.CloudComplianceScanBenchmark
+func GetActiveCloudControls(tx WriteDBTransaction, complianceTypes []string, cloudProvider string) ([]controls.CloudComplianceScanBenchmark, error) {
+	var benchmarks []controls.CloudComplianceScanBenchmark
 	var res neo4j.Result
 	res, err := tx.Run(`
 		MATCH (n:CloudComplianceBenchmark) -[:PARENT]-> (m:CloudComplianceControl)
@@ -477,14 +477,14 @@ func GetActiveCloudControls(tx WriteDBTransaction, complianceTypes []string, clo
 	}
 
 	for _, rec := range recs {
-		var controls []string
+		var controlList []string
 		for _, rVal := range rec.Values[2].([]interface{}) {
-			controls = append(controls, rVal.(string))
+			controlList = append(controlList, rVal.(string))
 		}
-		benchmark := ctl.CloudComplianceScanBenchmark{
+		benchmark := controls.CloudComplianceScanBenchmark{
 			Id:             rec.Values[0].(string),
 			ComplianceType: rec.Values[1].(string),
-			Controls:       controls,
+			Controls:       controlList,
 		}
 		benchmarks = append(benchmarks, benchmark)
 	}

@@ -23,8 +23,8 @@ func (ct *OpenapiClient) StartControlsWatching(nodeID string, isClusterAgent boo
 			*openapi.NewModelInitAgentReq(
 				getMaxAllocatable(),
 				nodeID,
-				version,
 				nodeType,
+				version,
 			),
 		)
 		ctl, _, err := ct.API().ControlsAPI.GetAgentInitControlsExecute(req)

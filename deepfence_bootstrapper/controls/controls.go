@@ -222,7 +222,7 @@ func SetCloudScannerControls() {
 		func(req ctl.EnableAgentPluginRequest) error {
 			log.Info().Msg("Start & download Agent Plugin")
 			router.SetUpgrade()
-			err = supervisor.UpgradeProcessFromURL(req.PluginName, req.BinUrl)
+			err = supervisor.UpgradeProcessFromURL(req.PluginName, req.BinURL)
 			if err != nil {
 				return err
 			}

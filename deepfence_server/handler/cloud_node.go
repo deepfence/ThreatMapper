@@ -109,7 +109,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			return
 		}
 		// get log request for cloudscanner, if any
-		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeId})
+		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeID})
 		if err != nil {
 			log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
 		}
