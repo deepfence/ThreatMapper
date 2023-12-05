@@ -20,6 +20,7 @@
 
 GOFLAGS += --ldflags
 GOFLAGS += '-extldflags "-static"'
+VERSION?=v`git rev-parse --short HEAD`
 
 LN = ln
 MKDIR = mkdir
@@ -41,7 +42,7 @@ agent: tools/apache/scope/vendor
 		env GOGC=off \
 		CGO_ENABLED=1 \
 		go build -buildvcs=false \
-		-ldflags "-X main.version=$GIT_COMMIT -X main.version=$(shell git rev-parse --short HEAD)  -X github.com/weaveworks/scope/probe/host.agentCommitID=$(shell git rev-parse --short HEAD) -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(shell date +"%s%d%m%y") -s -w -extldflags=-static"\
+		-ldflags "-X main.version=${VERSION} -X github.com/weaveworks/scope/probe/host.agentCommitID=${VERSION} -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(shell date +"%s%d%m%y") -s -w -extldflags=-static"\
 		-tags 'netgo osusergo unsafe' \
 		-o docker/deepfence_exe \
 		./prog)

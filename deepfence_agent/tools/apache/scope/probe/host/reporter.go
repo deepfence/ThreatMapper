@@ -17,7 +17,6 @@ import (
 
 // Agent version to display in metadata
 var (
-	AgentVersionNo           = "v2.0.1"
 	agentCommitID            = "Unknown"
 	agentBuildTime           = "0"
 	DockerSocketPath         = os.Getenv("DOCKER_SOCKET_PATH")
@@ -236,7 +235,7 @@ func NewReporter(hostName, probeID, version string) (*Reporter, string, string) 
 		k8sClusterName:    os.Getenv(report.KubernetesClusterName),
 		OSVersion:         runtime.GOOS,
 		KernelVersion:     kernel,
-		AgentVersion:      AgentVersionNo + "-" + agentCommitID + "-" + agentBuildTime,
+		AgentVersion:      agentCommitID + "-" + agentBuildTime,
 		IsConsoleVm:       isConsoleVm,
 		hostDetailsMinute: HostDetailsEveryMinute{},
 	}
@@ -379,7 +378,7 @@ func (r *Reporter) Report() (report.Report, error) {
 				InterfaceNames:      interfaceNames,
 				InterfaceIps:        interfaceIPs,
 				InterfaceIpMap:      interfaceIPMap,
-				Version:             r.AgentVersion,
+				Version:             r.version,
 				IsConsoleVm:         r.IsConsoleVm,
 				AgentRunning:        true,
 				LocalCIDRs:          localCIDRs,
