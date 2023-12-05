@@ -155,6 +155,7 @@ export function getRegistriesApiClient() {
     countImageStubs: registriesApi.countImageStubs.bind(registriesApi),
     listImageStubs: registriesApi.listImageStubs.bind(registriesApi),
     syncRegistryImages: registriesApi.syncRegistry.bind(registriesApi),
+    deleteRegistryBulk: registriesApi.deleteRegistryBulk.bind(registriesApi),
   };
 }
 

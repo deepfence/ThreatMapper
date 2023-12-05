@@ -1382,7 +1382,7 @@ const PostureTable = ({
     ];
 
     return columns;
-  }, []);
+  }, [setSearchParams]);
 
   const { data: scanResultData, scanStatusResult } = data;
 
