@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import React, { createContext, useContext } from 'react';
 import { useMeasure } from 'react-use';
 import { cn } from 'tailwind-preset';
 
@@ -60,27 +60,29 @@ export const StepIndicator = ({
   );
 };
 
-export const Step = ({ indicator, title, children }: StepProps) => {
-  const [measureRef, { height }] = useMeasure<HTMLDivElement>();
-  return (
-    <StepHeightContext.Provider
-      value={{
-        contentHeight: height,
-        indicatorHeight: 0,
-      }}
-    >
-      <div className="flex">
-        <div className="flex flex-col">{indicator}</div>
-        <div ref={measureRef} className="w-full">
-          <h4 className="ml-4 relative mx-0 text-h4 dark:text-text-text-and-icon">
-            {title}
-          </h4>
-          <div className="ml-4 mb-6">{children}</div>
+export const Step = React.forwardRef<React.ElementRef<'div'>, StepProps>(
+  ({ indicator, title, children, ...props }, forwardedRef) => {
+    const [measureRef, { height }] = useMeasure<HTMLDivElement>();
+    return (
+      <StepHeightContext.Provider
+        value={{
+          contentHeight: height,
+          indicatorHeight: 0,
+        }}
+      >
+        <div className="flex" {...props} ref={forwardedRef}>
+          <div className="flex flex-col">{indicator}</div>
+          <div ref={measureRef} className="w-full">
+            <h4 className="ml-4 relative mx-0 text-h4 dark:text-text-text-and-icon">
+              {title}
+            </h4>
+            <div className="ml-4 mb-6">{children}</div>
+          </div>
         </div>
-      </div>
-    </StepHeightContext.Provider>
-  );
-};
+      </StepHeightContext.Provider>
+    );
+  },
+);
 type StepperProps = {
   children: React.ReactNode;
 };

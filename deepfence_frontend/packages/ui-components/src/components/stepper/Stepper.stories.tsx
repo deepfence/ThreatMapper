@@ -17,6 +17,7 @@ const Plus = () => (
 const Template: StoryFn<typeof Stepper> = (args) => (
   <Stepper>
     <Step
+      data-testid="step1Id"
       indicator={
         <StepIndicator>
           <Plus />

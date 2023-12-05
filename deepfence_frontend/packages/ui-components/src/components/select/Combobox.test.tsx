@@ -1,8 +1,8 @@
 import '@testing-library/jest-dom';
 
-import { screen, fireEvent, act } from '@testing-library/react';
-import { useState, useEffect } from 'react';
-import { describe, expect, vi } from 'vitest';
+import { act, fireEvent, screen } from '@testing-library/react';
+import { useEffect, useState } from 'react';
+import { describe, expect } from 'vitest';
 
 import { Combobox, ComboboxOption } from '@/main';
 import { renderUI } from '@/tests/utils';
