@@ -196,7 +196,7 @@ describe('Combobox', () => {
     });
     expect(triggerBtn).toHaveTextContent('1');
   });
-  it.only('Should display filter list by search input', async () => {
+  it('Should display filter list by search input', async () => {
     const UI = () => {
       const [selected, setSelected] = useState<typeof OPTIONS>([]);
       const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);

@@ -168,7 +168,6 @@ describe('Listbox', () => {
     renderUI(
       <UI
         onChange={(value) => {
-          console.log(value);
           expect(value).toEqual({
             name: 'Jon',
             id: '1',

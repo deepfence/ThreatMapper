@@ -21,7 +21,7 @@
     "lint:fix": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --fix --ignore-path ./.gitignore",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "vitest Combobox.test.tsx",
+    "test": "vitest",
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
