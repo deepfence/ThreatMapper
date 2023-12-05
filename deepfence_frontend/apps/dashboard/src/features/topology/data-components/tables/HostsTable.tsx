@@ -26,6 +26,7 @@ import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
@@ -119,7 +120,7 @@ const BulkActions = ({
 }) => {
   const [scanOptions, setScanOptions] =
     useState<ConfigureScanModalProps['scanOptions']>();
-  const [upgradeModal, setUpgradeModal] = useState(false);
+  const [agentUpgradeModal, setAgentUpgradeModal] = useState(false);
   const nodesWithAgentRunning = nodes.filter((node) => node.agentRunning);
   return (
     <>
@@ -208,11 +209,11 @@ const BulkActions = ({
             <DropdownItem
               onSelect={(e) => {
                 e.preventDefault();
-                setUpgradeModal(true);
+                setAgentUpgradeModal(true);
               }}
-              icon={<PostureIcon />}
+              icon={<ArrowLine />}
             >
-              Upgrage Agent
+              Upgrade Agent
             </DropdownItem>
           </>
         }
@@ -234,10 +235,10 @@ const BulkActions = ({
           scanOptions={scanOptions}
         />
       )}
-      {upgradeModal && (
+      {agentUpgradeModal && (
         <UpgrageAgentModal
           nodes={nodesWithAgentRunning}
-          setShowDialog={setUpgradeModal}
+          setShowDialog={setAgentUpgradeModal}
         />
       )}
     </>

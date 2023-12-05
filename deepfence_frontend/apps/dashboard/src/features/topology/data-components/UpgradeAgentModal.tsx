@@ -1,11 +1,11 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
-import { Button, Dropdown, DropdownItem, Modal } from 'ui-components';
+import { Button, CircleSpinner, Listbox, ListboxOption, Modal } from 'ui-components';
 
 import { getControlsApiClient } from '@/api/api';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { queries } from '@/queries';
+import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
@@ -22,7 +22,7 @@ export const action = async ({
   const formData = await request.formData();
   const nodeIds = formData.getAll('nodeIds[]') as string[];
   const version = formData.get('version') as string;
-  debugger;
+
   const upgradeApi = apiWrapper({
     fn: getControlsApiClient().upgradeAgentVersion,
   });
@@ -49,6 +49,7 @@ export const action = async ({
     }
     throw response.error;
   }
+  invalidateAllQueries();
   return {
     success: true,
     message: '',
@@ -67,34 +68,43 @@ const Agents = ({
   setVersion: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const { data } = useGetAgentVersions();
+  const [selectedVersion, setSelectedVersion] = useState<string | null>(() => {
+    return null;
+  });
 
   if (data.message && data.message.length) {
     return <p className="dark:text-status-error text-p7">{data.message}</p>;
   }
 
   return (
-    <Dropdown
-      triggerAsChild
-      align="end"
-      content={
-        <>
-          {data.versions?.map((version) => {
-            return (
-              <DropdownItem
-                key={version}
-                onClick={() => {
-                  setVersion(version);
-                }}
-              >
-                {version}
-              </DropdownItem>
-            );
-          })}
-        </>
-      }
+    <Listbox
+      name="version"
+      variant="underline"
+      label="Select agent version to upgrade"
+      placeholder="Select version"
+      value={selectedVersion}
+      onChange={(value: string) => {
+        setSelectedVersion(value);
+        setVersion?.(value);
+      }}
+      getDisplayValue={(value) => {
+        return value ?? '';
+      }}
     >
-      <Button size="md">Select version</Button>
-    </Dropdown>
+      {data.versions?.map((version) => {
+        return (
+          <ListboxOption
+            key={version}
+            value={version}
+            onClick={() => {
+              setVersion(version);
+            }}
+          >
+            {version}
+          </ListboxOption>
+        );
+      })}
+    </Listbox>
   );
 };
 export const UpgrageAgentModal = ({
@@ -124,10 +134,10 @@ export const UpgrageAgentModal = ({
       size="s"
       open={true}
       onOpenChange={() => setShowDialog(false)}
-      title="Agent Upgrade"
+      title={!fetcher.data?.success ? `Upgrade Agent` : ''}
       footer={
         !fetcher.data?.success ? (
-          <div className={'flex gap-x-4 justify-end'}>
+          <div className={'flex gap-x-4 mt-4 justify-end'}>
             <Button
               size="md"
               onClick={() => setShowDialog(false)}
@@ -138,7 +148,6 @@ export const UpgrageAgentModal = ({
             </Button>
             <Button
               size="md"
-              color="error"
               loading={fetcher.state === 'submitting'}
               disabled={fetcher.state === 'submitting'}
               onClick={(e) => {
@@ -153,14 +162,15 @@ export const UpgrageAgentModal = ({
       }
     >
       {!fetcher.data?.success ? (
-        <div className="grid">
-          <span>Select agent version to upgrade</span>
-          <br />
+        <div className="flex gap-x-1 flex-col">
           <Suspense
             fallback={
-              <Button size="md" disabled loading={true}>
-                Select version
-              </Button>
+              <Listbox
+                label="Select agent version to upgrade"
+                variant="underline"
+                startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+                placeholder="Scan version"
+              />
             }
           >
             <Agents setVersion={setVersion} />

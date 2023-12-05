@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Button, Dropdown, DropdownItem, SlidingModalHeader } from 'ui-components';
 
+import { ModelNodeIdentifierNodeTypeEnum } from '@/api/generated';
 import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
@@ -8,6 +10,7 @@ import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
+import { UpgrageAgentModal } from '@/features/topology/data-components/UpgradeAgentModal';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
 import { ScanTypeEnum } from '@/types/common';
 
@@ -53,7 +56,7 @@ export const Header = ({
   onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
 }) => {
   const availableScans = AvailableScansForNodeType[nodeType] ?? [];
-
+  const [agentUpgradeModal, setAgentUpgradeModal] = useState(false);
   // don't show the start scan button if host or cluster node is not connected
   // via agent. This means that it is discovered via cloud connector.
   const showInstallButton =
@@ -163,6 +166,17 @@ export const Header = ({
                     Start Posture Scan
                   </DropdownItem>
                 ) : null}
+                {nodeType === ModelNodeIdentifierNodeTypeEnum.Host && agentRunning ? (
+                  <DropdownItem
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      setAgentUpgradeModal(true);
+                    }}
+                    icon={<ArrowLine />}
+                  >
+                    Upgrade Agent
+                  </DropdownItem>
+                ) : null}
               </>
             }
           >
@@ -171,6 +185,16 @@ export const Header = ({
             </Button>
           </Dropdown>
         ) : null}
+        {agentUpgradeModal && (
+          <UpgrageAgentModal
+            nodes={[
+              {
+                nodeId,
+              },
+            ]}
+            setShowDialog={setAgentUpgradeModal}
+          />
+        )}
         {/* TODO: show install agent button here once api is ready */}
       </div>
     </SlidingModalHeader>
