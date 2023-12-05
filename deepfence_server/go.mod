@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.0
 	github.com/PagerDuty/go-pagerduty v1.7.0
 	github.com/andygrunwald/go-jira v1.16.0
-	github.com/aws/aws-sdk-go v1.48.1
+	github.com/aws/aws-sdk-go v1.48.12
 	github.com/casbin/casbin/v2 v2.75.0
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/docker/docker v24.0.5+incompatible

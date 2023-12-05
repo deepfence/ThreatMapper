@@ -37,6 +37,24 @@ func (b *Bedrock) ValidateConfig(validate *validator.Validate) error {
 	return validate.Struct(b)
 }
 
+func (b *Bedrock) VerifyAuth(ctx context.Context) error {
+	var err error
+	if b.UseIAMRole {
+		_, err = session.NewSession(&aws.Config{
+			Region: aws.String(b.AWSRegion),
+		})
+	} else {
+		_, err = session.NewSession(&aws.Config{
+			Region:      aws.String(b.AWSRegion),
+			Credentials: credentials.NewStaticCredentials(b.AWSAccessKey, b.AWSSecretKey, ""),
+		})
+	}
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (b *Bedrock) EncryptSecret(aes encryption.AES) error {
 	var err error
 	b.AWSSecretKey, err = aes.Encrypt(b.AWSSecretKey)

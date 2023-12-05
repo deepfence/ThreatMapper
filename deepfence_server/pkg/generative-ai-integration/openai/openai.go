@@ -30,6 +30,12 @@ func (o *OpenAI) ValidateConfig(validate *validator.Validate) error {
 	return validate.Struct(o)
 }
 
+func (o *OpenAI) VerifyAuth(ctx context.Context) error {
+	client := goopenai.NewClient(o.APIKey)
+	_, err := client.ListModels(ctx)
+	return err
+}
+
 func (o *OpenAI) EncryptSecret(aes encryption.AES) error {
 	var err error
 	o.APIKey, err = aes.Encrypt(o.APIKey)
@@ -50,7 +56,7 @@ func (o *OpenAI) Message(ctx context.Context, message string, dataChan chan stri
 		Temperature: defaultModelTemperature,
 		Stream:      true,
 	}
-	stream, err := client.CreateChatCompletionStream(context.Background(), req)
+	stream, err := client.CreateChatCompletionStream(ctx, req)
 	if err != nil {
 		log.Warn().Msg(err.Error())
 		return err

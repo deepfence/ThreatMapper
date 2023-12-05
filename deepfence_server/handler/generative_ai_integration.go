@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -10,6 +11,7 @@ import (
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	generative_ai_integration "github.com/deepfence/ThreatMapper/deepfence_server/pkg/generative-ai-integration"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/generative-ai-integration/bedrock"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -18,19 +20,19 @@ import (
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
-var ErrStreamUnsupported = errors.New("streaming unsupported")
+var (
+	ErrStreamUnsupported             = errors.New("streaming unsupported")
+	ErrGenerativeAIIntegrationExists = BadDecoding{
+		err: errors.New("similar integration already exists"),
+	}
+	ErrBedrockNoActiveModel = BadDecoding{
+		err: bedrock.ErrBedrockNoActiveModel,
+	}
+)
 
-func (h *Handler) AddOpenAiIntegration(w http.ResponseWriter, r *http.Request) {
-	AddGenerativeAiIntegration[model.AddGenerativeAiOpenAIIntegration](w, r, h)
-}
-
-func (h *Handler) AddBedrockIntegration(w http.ResponseWriter, r *http.Request) {
-	AddGenerativeAiIntegration[model.AddGenerativeAiBedrockIntegration](w, r, h)
-}
-
-func AddGenerativeAiIntegration[T model.AddGenerativeAiIntegrationRequest](w http.ResponseWriter, r *http.Request, h *Handler) {
+func (h *Handler) AddBedrockIntegrationUsingIAMRole(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req T
+	var req model.AutoAddGenerativeAiBedrockIntegration
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -38,22 +40,23 @@ func AddGenerativeAiIntegration[T model.AddGenerativeAiIntegrationRequest](w htt
 		return
 	}
 
-	ctx := r.Context()
-	pgClient, err := directory.PostgresClient(ctx)
-	if err != nil {
-		h.respondError(&InternalServerError{err}, w)
-		return
-	}
-
-	obj, err := generative_ai_integration.NewGenerativeAiIntegration(ctx, req)
+	addModelRequests, err := bedrock.ListBedrockModels(req.AWSRegion)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}
-	err = obj.ValidateConfig(h.Validator)
+
+	if len(addModelRequests) == 0 {
+		log.Error().Msgf("%v", ErrBedrockNoActiveModel)
+		h.respondError(&ErrBedrockNoActiveModel, w)
+		return
+	}
+
+	ctx := r.Context()
+	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		h.respondError(&ValidatorError{err: err}, w)
+		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
@@ -71,40 +74,123 @@ func AddGenerativeAiIntegration[T model.AddGenerativeAiIntegrationRequest](w htt
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
-	err = obj.EncryptSecret(aes)
-	if err != nil {
-		log.Error().Msgf(err.Error())
-		h.respondError(&InternalServerError{err}, w)
-		return
-	}
-
-	// add integration to database
-	// before that check if integration already exists
-	integrationExists, err := req.IntegrationExists(ctx, pgClient)
-	if err != nil {
-		log.Error().Msgf(err.Error())
-		h.respondError(&InternalServerError{err}, w)
-		return
-	}
-	if integrationExists {
-		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrIntegrationExists})
-		if err != nil {
-			log.Error().Msg(err.Error())
-		}
-		return
-	}
-
 	user, statusCode, _, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		h.respondWithErrorCode(err, w, statusCode)
 		return
 	}
 
-	// store the integration in db
-	bConfig, err := json.Marshal(obj)
+	for _, addModelRequest := range addModelRequests {
+		err = h.AddGenerativeAiIntegrationHelper(ctx, addModelRequest, aes, user, pgClient)
+		if err != nil {
+			log.Warn().Msgf(err.Error())
+			continue
+		}
+	}
+
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationCreated})
+}
+
+func (h *Handler) AddOpenAiIntegration(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.AddGenerativeAiOpenAIIntegration
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+	h.AddGenerativeAiIntegration(req, w, r)
+}
+
+func (h *Handler) AddBedrockIntegration(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.AddGenerativeAiBedrockIntegration
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+	h.AddGenerativeAiIntegration(req, w, r)
+}
+
+func (h *Handler) AddGenerativeAiIntegration(req model.AddGenerativeAiIntegrationRequest, w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	// encrypt secret
+	aesValue, err := model.GetAESValueForEncryption(ctx, pgClient)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+	aes := encryption.AES{}
+	err = json.Unmarshal(aesValue, &aes)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+	user, statusCode, _, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		h.respondWithErrorCode(err, w, statusCode)
 		return
+	}
+
+	err = h.AddGenerativeAiIntegrationHelper(ctx, req, aes, user, pgClient)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		h.respondError(err, w)
+		return
+	}
+
+	h.AuditUserActivity(r, EventGenerativeAIIntegration, ActionCreate, map[string]interface{}{"integration_type": req.GetIntegrationType()}, true)
+
+	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationCreated})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (h *Handler) AddGenerativeAiIntegrationHelper(ctx context.Context, req model.AddGenerativeAiIntegrationRequest, aes encryption.AES, user *model.User, pgClient *postgresqlDb.Queries) error {
+	obj, err := generative_ai_integration.NewGenerativeAiIntegration(ctx, req)
+	if err != nil {
+		return &BadDecoding{err}
+	}
+	err = obj.ValidateConfig(h.Validator)
+	if err != nil {
+		return &ValidatorError{err: err}
+	}
+	err = obj.VerifyAuth(ctx)
+	if err != nil {
+		return &BadDecoding{err: err}
+	}
+
+	err = obj.EncryptSecret(aes)
+	if err != nil {
+		return err
+	}
+
+	// add integration to database
+	// before that check if integration already exists
+	integrationExists, err := req.IntegrationExists(ctx, pgClient)
+	if err != nil {
+		return err
+	}
+	if integrationExists {
+		return &ErrGenerativeAIIntegrationExists
+	}
+
+	// store the integration in db
+	bConfig, err := json.Marshal(obj)
+	if err != nil {
+		return err
 	}
 
 	arg := postgresqlDb.CreateGenerativeAiIntegrationParams{
@@ -115,22 +201,14 @@ func AddGenerativeAiIntegration[T model.AddGenerativeAiIntegrationRequest](w htt
 	}
 	dbIntegration, err := pgClient.CreateGenerativeAiIntegration(ctx, arg)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-		h.respondError(&InternalServerError{err}, w)
-		return
+		return err
 	}
-
-	h.AuditUserActivity(r, EventGenerativeAIIntegration, ActionCreate, map[string]interface{}{"integration_type": req.GetIntegrationType()}, true)
 
 	err = pgClient.UpdateGenerativeAiIntegrationDefault(ctx, dbIntegration.ID)
 	if err != nil {
 		log.Warn().Msgf(err.Error())
 	}
-
-	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationCreated})
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
+	return nil
 }
 
 func (h *Handler) GetGenerativeAiIntegrations(w http.ResponseWriter, r *http.Request) {
