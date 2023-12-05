@@ -33,15 +33,15 @@ const useListRegistries = () => {
 };
 
 const ActionDropdown = ({
-  id,
+  ids,
   trigger,
   setIdsToDelete,
   setShowDeleteDialog,
   onTableAction,
 }: {
-  id: string;
+  ids: string[];
   trigger: React.ReactNode;
-  setIdsToDelete: React.Dispatch<React.SetStateAction<string>>;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   onTableAction: (id: string[], scanType: RegistryScanType, actionType: string) => void;
 }) => {
@@ -54,7 +54,7 @@ const ActionDropdown = ({
           <DropdownItem
             onClick={() =>
               onTableAction(
-                [id],
+                ids,
                 ScanTypeEnum.VulnerabilityScan,
                 ActionEnumType.START_SCAN,
               )
@@ -64,14 +64,14 @@ const ActionDropdown = ({
           </DropdownItem>
           <DropdownItem
             onClick={() =>
-              onTableAction([id], ScanTypeEnum.SecretScan, ActionEnumType.START_SCAN)
+              onTableAction(ids, ScanTypeEnum.SecretScan, ActionEnumType.START_SCAN)
             }
           >
             Start Secret Scan
           </DropdownItem>
           <DropdownItem
             onClick={() =>
-              onTableAction([id], ScanTypeEnum.MalwareScan, ActionEnumType.START_SCAN)
+              onTableAction(ids, ScanTypeEnum.MalwareScan, ActionEnumType.START_SCAN)
             }
           >
             Start Malware Scan
@@ -79,14 +79,14 @@ const ActionDropdown = ({
           <DropdownItem
             onClick={(e) => {
               e.preventDefault();
-              onTableAction([id], '' as RegistryScanType, ActionEnumType.SYNC_IMAGES);
+              onTableAction(ids, '' as RegistryScanType, ActionEnumType.SYNC_IMAGES);
             }}
           >
             Sync Images
           </DropdownItem>
           <DropdownItem
             onClick={() => {
-              setIdsToDelete(id);
+              setIdsToDelete(ids);
               setShowDeleteDialog(true);
             }}
             className="dark:text-status-error dark:hover:text-[#C45268]"
@@ -110,7 +110,7 @@ export const RegistryAccountsTable = ({
 }: {
   rowSelectionState: RowSelectionState;
   onTableAction: (id: string[], scanType: RegistryScanType, actionType: string) => void;
-  setIdsToDelete: React.Dispatch<React.SetStateAction<string>>;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
 }) => {
@@ -139,7 +139,7 @@ export const RegistryAccountsTable = ({
           }
           return (
             <ActionDropdown
-              id={cell.row.original.node_id.toString()}
+              ids={[cell.row.original.node_id.toString()]}
               setIdsToDelete={setIdsToDelete}
               setShowDeleteDialog={setShowDeleteDialog}
               onTableAction={onTableAction}
