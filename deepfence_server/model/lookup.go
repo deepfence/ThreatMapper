@@ -131,6 +131,8 @@ type RegistryAccount struct {
 	ID              string           `json:"node_id" required:"true"`
 	Name            string           `json:"host_name" required:"true"`
 	ContainerImages []ContainerImage `json:"container_images" required:"true"`
+	RegistryType    string           `json:"registry_type" required:"true"`
+	Syncing         bool             `json:"syncing" required:"true"`
 }
 
 func (RegistryAccount) NodeType() string {

@@ -224,6 +224,10 @@ func (h *Handler) SearchCloudNodes(w http.ResponseWriter, r *http.Request) {
 	SearchCloudNodeHandler[model.CloudNodeAccountInfo](w, r, h)
 }
 
+func (h *Handler) SearchRegistryAccounts(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.RegistryAccount](w, r, h)
+}
+
 func (h *Handler) NodeCount(w http.ResponseWriter, r *http.Request) {
 	h.NodeCountHandler(w, r)
 }
@@ -310,6 +314,10 @@ func (h *Handler) SearchComplianceScansCount(w http.ResponseWriter, r *http.Requ
 
 func (h *Handler) SearchCloudComplianceScansCount(w http.ResponseWriter, r *http.Request) {
 	h.SearchScansCount(w, r, utils.NEO4JCloudComplianceScan)
+}
+
+func (h *Handler) SearchRegistryAccountsCount(w http.ResponseWriter, r *http.Request) {
+	SearchCountHandler[model.RegistryAccount](w, r, h)
 }
 
 func (h *Handler) SearchScans(w http.ResponseWriter, r *http.Request, scanType utils.Neo4jScanType) {
