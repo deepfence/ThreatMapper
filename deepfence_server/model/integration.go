@@ -131,3 +131,49 @@ func DeleteIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, inte
 	err := pgClient.DeleteIntegration(ctx, integrationID)
 	return err
 }
+
+type IntegrationUpdateReq struct {
+	ID               int32                  `json:"id"`
+	Config           map[string]interface{} `json:"config"`
+	IntegrationType  string                 `json:"integration_type"`
+	NotificationType string                 `json:"notification_type"`
+	Filters          IntegrationFilters     `json:"filters"`
+}
+
+func (i *IntegrationUpdateReq) UpdateIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, integration postgresqlDb.Integration) error {
+	bConfig, err := json.Marshal(i.Config)
+	if err != nil {
+		return err
+	}
+
+	bFilter, err := json.Marshal(i.Filters)
+	if err != nil {
+		return err
+	}
+
+	arg := postgresqlDb.UpdateIntegrationParams{
+		Resource:        integration.Resource,
+		IntegrationType: integration.IntegrationType,
+		Config:          integration.Config,
+		Filters:         bFilter,
+	}
+
+	if i.Config != nil {
+		arg.Config = bConfig
+	}
+
+	i.Config["filter_hash"] = i.Config["filter_hash"].(string)
+
+	return pgClient.UpdateIntegration(ctx, arg)
+}
+
+func GetIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, integrationID int32) (postgresqlDb.Integration, bool, error) {
+	integration, err := pgClient.GetIntegrationFromID(ctx, integrationID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return postgresqlDb.Integration{}, false, nil
+		}
+		return postgresqlDb.Integration{}, false, err
+	}
+	return integration, true, nil
+}

@@ -166,6 +166,80 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *Handler) UpdateIntegration(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.IntegrationUpdateReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	req.Config["filter_hash"], err = GetFilterHash(req.Filters)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	ctx := r.Context()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	// get integration from DB using ID
+	integration, exists, err := model.GetIntegration(ctx, pgClient, req.ID)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	// check if result are or not
+	if !exists {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrIntegrationDoesNotExist})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		return
+	}
+
+	if integration.IntegrationType != req.IntegrationType {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrIntegrationTypeCannotBeUpdated})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		return
+	}
+
+	// check if integration is valid
+	/*err = i.SendNotification("validating integration")
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}*/
+
+	// store the integration in db
+	err = req.UpdateIntegration(ctx, pgClient, integration)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	h.AuditUserActivity(r, EventIntegration, ActionUpdate, req, true)
+
+	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationUpdated})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+}
+
 func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "integration_id")
 
