@@ -7,9 +7,11 @@ import { abbreviateNumber } from '@/utils/number';
 export const ScanResultChart = ({
   theme,
   data,
+  to,
 }: {
   theme: Mode;
   data: Array<{ value: number; name: string; color: string }>;
+  to: string;
 }) => {
   const totalValue = data.reduce((prev, record) => prev + record.value, 0);
 
@@ -42,7 +44,7 @@ export const ScanResultChart = ({
               fontWeight: 600,
               fontFamily: preset.theme.extend.fontFamily.sans.join(','),
             },
-            cursor: 'default',
+            cursor: 'pointer',
             emphasis: {
               disabled: true,
             },
@@ -55,6 +57,9 @@ export const ScanResultChart = ({
             ],
           },
         ],
+      }}
+      onChartClick={({ name }: { name: string; value: string | number | Date }) => {
+        window.open(`${to}=${name.toLowerCase()}`, '_blank', 'noopener, noreferrer');
       }}
     />
   );

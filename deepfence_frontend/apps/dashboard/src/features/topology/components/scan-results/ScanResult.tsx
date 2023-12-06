@@ -159,10 +159,12 @@ const ScanResultComponent = ({
   scanId,
   scanStatus,
   type,
+  to,
 }: {
   scanId?: string;
   scanStatus: string;
   type: ScanTypeEnum;
+  to: string;
 }) => {
   const { mode } = useTheme();
   const { data: scanSummary } = useScanResultSummaryCounts(scanId, type);
@@ -187,6 +189,7 @@ const ScanResultComponent = ({
                 <ScanResultChart
                   data={getSeriesOption(scanSummary.counts)}
                   theme={mode}
+                  to={to}
                 />
               </div>
             </div>
@@ -200,9 +203,15 @@ const ScanResultComponent = ({
                         backgroundColor: count.color,
                       }}
                     ></div>
-                    <div className="capitalize text-p8 dark:text-text-input-value">
+                    <DFLink
+                      to={`${to}=${count.name.toLowerCase()}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      unstyled
+                      className="capitalize text-p8 dark:text-text-input-value"
+                    >
                       {count.name}
-                    </div>
+                    </DFLink>
                     <div className="ml-auto text-p7 dark:text-text-input-value">
                       {abbreviateNumber(count.value)}
                     </div>
@@ -259,6 +268,9 @@ export const ScanResult = ({
               scanId={vulnerabilityScanId}
               scanStatus={vulnerabilityScanStatus}
               type={ScanTypeEnum.VulnerabilityScan}
+              to={`/vulnerability/scan-results/${encodeURIComponent(
+                vulnerabilityScanId!,
+              )}?severity`}
             />
           </Suspense>
         </Card>
@@ -270,6 +282,7 @@ export const ScanResult = ({
               scanId={secretScanId}
               scanStatus={secretScanStatus}
               type={ScanTypeEnum.SecretScan}
+              to={`/secret/scan-results/${encodeURIComponent(secretScanId!)}?severity`}
             />
           </Suspense>
         </Card>
@@ -281,6 +294,7 @@ export const ScanResult = ({
               scanId={malwareScanId}
               scanStatus={malwareScanStatus}
               type={ScanTypeEnum.MalwareScan}
+              to={`/malware/scan-results/${encodeURIComponent(malwareScanId!)}?severity`}
             />
           </Suspense>
         </Card>
@@ -292,6 +306,10 @@ export const ScanResult = ({
               scanId={complianceScanId}
               scanStatus={complianceScanStatus}
               type={ScanTypeEnum.ComplianceScan}
+              to={`${generatePath('/posture/scan-results/:nodeType/:scanId', {
+                scanId: encodeURIComponent(complianceScanId!),
+                nodeType: 'linux',
+              })}?status`}
             />
           </Suspense>
         </Card>

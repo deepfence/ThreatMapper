@@ -1641,7 +1641,19 @@ const SeverityCountWidget = () => {
         className="col-span-4 flex items-center justify-center min-h-[120px]"
       >
         <div className="col-span-2 h-[120px] w-[120px]">
-          <PostureScanResultsPieChart data={statusCounts} />
+          <PostureScanResultsPieChart
+            data={statusCounts}
+            onChartClick={({ name }: { name: string; value: string | number | Date }) => {
+              setSearchParams((prev) => {
+                prev.delete('page');
+                Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                  prev.delete(key);
+                });
+                prev.append('status', name.toLowerCase());
+                return prev;
+              });
+            }}
+          />
         </div>
       </ScanStatusWrapper>
 

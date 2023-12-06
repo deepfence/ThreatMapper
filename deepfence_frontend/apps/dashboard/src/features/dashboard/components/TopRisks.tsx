@@ -13,6 +13,7 @@ import { CardHeader } from '@/features/dashboard/components/CardHeader';
 import { queries } from '@/queries';
 import { VulnerabilitySeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 function useSummary(type: 'vulnerability' | 'secret' | 'malware') {
   if (type === 'vulnerability') {
@@ -90,10 +91,18 @@ const TopRisksContent = ({
     data: data.severityBreakdown,
     total: data.total,
   });
+
+  const { navigate } = usePageNavigation();
   return (
     <div className="flex-1 flex flex-col items-center py-1.5">
       <div className="max-w-[162px] max-h-[162px] h-[162px] w-[162px]">
-        <ReactECharts theme="dark" option={chartOptions} />
+        <ReactECharts
+          theme="dark"
+          option={chartOptions}
+          onChartClick={({ name }: { name: string; value: string | number | Date }) => {
+            navigate(`${to}?severity=${name.toLowerCase()}`);
+          }}
+        />
       </div>
       <div className="mt-4 flex flex-col min-w-[184px] self-center">
         {Object.keys(data.severityBreakdown).map((severity) => {
@@ -153,7 +162,7 @@ function getChartOptions({
           fontWeight: 600,
           fontFamily: preset.theme.extend.fontFamily.sans.join(','),
         },
-        cursor: 'default',
+        cursor: 'pointer',
         emphasis: {
           disabled: true,
         },

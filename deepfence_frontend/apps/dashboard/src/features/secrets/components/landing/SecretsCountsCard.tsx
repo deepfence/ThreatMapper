@@ -11,6 +11,7 @@ import { CardHeader } from '@/features/secrets/components/landing/CardHeader';
 import { queries } from '@/queries';
 import { SecretSeverityType, VulnerabilitySeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 function getChartOptions({
   data,
@@ -45,7 +46,7 @@ function getChartOptions({
           fontWeight: 600,
           fontFamily: preset.theme.extend.fontFamily.sans.join(','),
         },
-        cursor: 'default',
+        cursor: 'pointer',
         emphasis: {
           disabled: true,
         },
@@ -143,10 +144,18 @@ const CardContent = ({ data, to }: { data: SecretsCountsCardData; to: string }) 
     total: data.total,
   });
 
+  const { navigate } = usePageNavigation();
+
   return (
     <div className="flex-1 flex flex-col items-center">
       <div className="max-w-[200px] max-h-[200px] h-[200px] w-[200px] mt-6">
-        <ReactECharts theme="dark" option={chartOptions} />
+        <ReactECharts
+          theme="dark"
+          option={chartOptions}
+          onChartClick={({ name }: { name: string; value: string | number | Date }) => {
+            navigate(`${to}?severity=${name.toLowerCase()}`);
+          }}
+        />
       </div>
       <div className="mt-8 flex flex-col min-w-[160px] self-center">
         {Object.keys(data.severityBreakdown).map((severity) => {
