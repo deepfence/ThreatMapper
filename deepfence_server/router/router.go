@@ -282,6 +282,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScans)
 
 				r.Post("/cloud-accounts", dfHandler.SearchCloudNodes)
+				r.Post("/registry-accounts", dfHandler.SearchRegistryAccounts)
 
 				r.Route("/count", func(r chi.Router) {
 					r.Get("/nodes", dfHandler.NodeCount)
@@ -301,6 +302,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 					r.Post("/kubernetes-clusters", dfHandler.SearchKubernetesClustersCount)
 					r.Post("/pods", dfHandler.SearchPodsCount)
 					r.Post("/cloud-accounts", dfHandler.SearchCloudAccountCount)
+					r.Post("/registry-accounts", dfHandler.SearchRegistryAccountsCount)
 
 					r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScansCount)
 					r.Post("/secret/scans", dfHandler.SearchSecretScansCount)

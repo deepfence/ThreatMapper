@@ -263,6 +263,10 @@ func (d *OpenAPIDocs) AddSearchOperations() {
 		"Search Cloud Nodes", "Search across all the data associated with cloud nodes",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]CloudNodeAccountInfo))
 
+	d.AddOperation("searchRegistryAccounts", http.MethodPost, "/deepfence/search/registry-accounts",
+		"Search Registry Accounts", "Search across all the data associated with registry account",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]RegistryAccount))
+
 	d.AddOperation("getCloudComplianceFilters", http.MethodPost, "/deepfence/filters/cloud-compliance",
 		"Get Cloud Compliance Filters", "Get all applicable filter values for cloud compliance",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(FiltersReq), new(FiltersResult))
@@ -358,6 +362,10 @@ func (d *OpenAPIDocs) AddSearchOperations() {
 
 	d.AddOperation("countCloudAccounts", http.MethodPost, "/deepfence/search/count/cloud-accounts",
 		"Count Cloud Nodes", "Search across all the data associated with cloud nodes",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countRegistryAccounts", http.MethodPost, "/deepfence/search/count/registry-accounts",
+		"Count Registry Accounts", "Search across all the data associated with registry account",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 }
 
