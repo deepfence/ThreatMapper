@@ -17,6 +17,7 @@ import {
 import { AvailabilityCharts } from '@/features/topology/components/scan-results/AvailabilityCharts';
 import { ScanResult } from '@/features/topology/components/scan-results/ScanResult';
 import { queries } from '@/queries';
+import { ScanTypeEnum } from '@/types/common';
 
 function useLookupHost(nodeId: string) {
   return useSuspenseQuery({
@@ -75,7 +76,9 @@ export const Host = (props: HostModalProps) => {
             nodeType="host"
             onGoBack={onGoBack}
             showBackBtn={showBackBtn}
-            agentRunning={false}
+            availableScanTypes={[]}
+            showInstallAgentOption={false}
+            showUpgradeAgentOption={false}
           />
         }
       >
@@ -125,7 +128,18 @@ const HostHeader = ({
       nodeType="host"
       onGoBack={onGoBack}
       showBackBtn={showBackBtn}
-      agentRunning={data.hostData[0].agent_running}
+      availableScanTypes={
+        data.hostData[0].agent_running
+          ? [
+              ScanTypeEnum.VulnerabilityScan,
+              ScanTypeEnum.SecretScan,
+              ScanTypeEnum.MalwareScan,
+              ScanTypeEnum.ComplianceScan,
+            ]
+          : []
+      }
+      showInstallAgentOption={!data.hostData[0].agent_running}
+      showUpgradeAgentOption={data.hostData[0].agent_running}
     />
   );
 };

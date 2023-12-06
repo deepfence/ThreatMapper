@@ -56,6 +56,9 @@ export const Process = (props: ProcessModalProps) => {
             nodeType="process"
             onGoBack={onGoBack}
             showBackBtn={showBackBtn}
+            availableScanTypes={[]}
+            showInstallAgentOption={false}
+            showUpgradeAgentOption={false}
           />
         }
       >
@@ -103,6 +106,9 @@ const ProcessHeader = ({
       nodeType="process"
       onGoBack={onGoBack}
       showBackBtn={showBackBtn}
+      availableScanTypes={[]}
+      showInstallAgentOption={false}
+      showUpgradeAgentOption={false}
     />
   );
 };

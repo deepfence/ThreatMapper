@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Button, Dropdown, DropdownItem, SlidingModalHeader } from 'ui-components';
 
-import { ModelNodeIdentifierNodeTypeEnum } from '@/api/generated';
 import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
@@ -14,30 +13,6 @@ import { UpgrageAgentModal } from '@/features/topology/data-components/UpgradeAg
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
 import { ScanTypeEnum } from '@/types/common';
 
-const AvailableScansForNodeType: Record<string, ScanTypeEnum[]> = {
-  host: [
-    ScanTypeEnum.VulnerabilityScan,
-    ScanTypeEnum.SecretScan,
-    ScanTypeEnum.MalwareScan,
-    ScanTypeEnum.ComplianceScan,
-  ],
-  container: [
-    ScanTypeEnum.VulnerabilityScan,
-    ScanTypeEnum.SecretScan,
-    ScanTypeEnum.MalwareScan,
-  ],
-  container_image: [
-    ScanTypeEnum.VulnerabilityScan,
-    ScanTypeEnum.SecretScan,
-    ScanTypeEnum.MalwareScan,
-  ],
-  pod: [
-    ScanTypeEnum.VulnerabilityScan,
-    ScanTypeEnum.SecretScan,
-    ScanTypeEnum.MalwareScan,
-  ],
-};
-
 export const Header = ({
   nodeId,
   nodeType,
@@ -45,22 +20,25 @@ export const Header = ({
   onGoBack,
   showBackBtn,
   onStartScanClick,
-  agentRunning,
+  availableScanTypes,
+  showInstallAgentOption,
+  showUpgradeAgentOption,
 }: {
   nodeId: string;
   nodeType: string;
   label?: string;
   onGoBack: () => void;
   showBackBtn: boolean;
-  agentRunning?: boolean;
   onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
+  availableScanTypes: ScanTypeEnum[];
+  showInstallAgentOption: boolean;
+  showUpgradeAgentOption: boolean;
 }) => {
-  const availableScans = AvailableScansForNodeType[nodeType] ?? [];
+  const showDropdown =
+    !!availableScanTypes.length || showInstallAgentOption || showUpgradeAgentOption;
+
   const [agentUpgradeModal, setAgentUpgradeModal] = useState(false);
-  // don't show the start scan button if host or cluster node is not connected
-  // via agent. This means that it is discovered via cloud connector.
-  const showInstallButton =
-    ['host', 'cluster'].includes(nodeType) && agentRunning === false;
+
   return (
     <SlidingModalHeader>
       <div className="flex pt-5 pl-5 pr-16 pb-1.5 dark:bg-bg-breadcrumb-bar gap-4">
@@ -82,13 +60,13 @@ export const Header = ({
             <TruncatedText text={label?.length ? label : nodeId} />
           </div>
         </div>
-        {availableScans.length && !showInstallButton ? (
+        {showDropdown ? (
           <Dropdown
             align="end"
             triggerAsChild
             content={
               <>
-                {availableScans.includes(ScanTypeEnum.VulnerabilityScan) ? (
+                {availableScanTypes.includes(ScanTypeEnum.VulnerabilityScan) ? (
                   <DropdownItem
                     onClick={(e) => {
                       e.preventDefault();
@@ -108,7 +86,7 @@ export const Header = ({
                     Start Vulnerability Scan
                   </DropdownItem>
                 ) : null}
-                {availableScans.includes(ScanTypeEnum.SecretScan) ? (
+                {availableScanTypes.includes(ScanTypeEnum.SecretScan) ? (
                   <DropdownItem
                     onClick={(e) => {
                       e.preventDefault();
@@ -128,7 +106,7 @@ export const Header = ({
                     Start Secret Scan
                   </DropdownItem>
                 ) : null}
-                {availableScans.includes(ScanTypeEnum.MalwareScan) ? (
+                {availableScanTypes.includes(ScanTypeEnum.MalwareScan) ? (
                   <DropdownItem
                     onClick={(e) => {
                       e.preventDefault();
@@ -148,7 +126,7 @@ export const Header = ({
                     Start Malware Scan
                   </DropdownItem>
                 ) : null}
-                {availableScans.includes(ScanTypeEnum.ComplianceScan) ? (
+                {availableScanTypes.includes(ScanTypeEnum.ComplianceScan) ? (
                   <DropdownItem
                     onClick={(e) => {
                       e.preventDefault();
@@ -166,7 +144,7 @@ export const Header = ({
                     Start Posture Scan
                   </DropdownItem>
                 ) : null}
-                {nodeType === ModelNodeIdentifierNodeTypeEnum.Host && agentRunning ? (
+                {showUpgradeAgentOption ? (
                   <DropdownItem
                     onSelect={(e) => {
                       e.preventDefault();
@@ -177,6 +155,7 @@ export const Header = ({
                     Upgrade Agent
                   </DropdownItem>
                 ) : null}
+                {/* TODO: show install agent option here once api is ready */}
               </>
             }
           >
@@ -195,7 +174,6 @@ export const Header = ({
             setShowDialog={setAgentUpgradeModal}
           />
         )}
-        {/* TODO: show install agent button here once api is ready */}
       </div>
     </SlidingModalHeader>
   );
