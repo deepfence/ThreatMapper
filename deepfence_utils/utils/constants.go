@@ -54,6 +54,7 @@ const (
 	UpdateCloudResourceScanStatusTask = "update_cloud_resource_scan_status"
 	UpdatePodScanStatusTask           = "update_pod_scan_status"
 	BulkDeleteScans                   = "bulk_delete_scans"
+	AutoFetchGenerativeAIIntegrations = "auto_fetch_generative_ai_integrations"
 )
 
 const (

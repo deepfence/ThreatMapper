@@ -726,9 +726,9 @@ func (d *OpenAPIDocs) AddIntegrationOperations() {
 	d.AddOperation("addGenerativeAiIntegrationBedrock", http.MethodPost, "/deepfence/generative-ai-integration/bedrock",
 		"Add AWS Bedrock Generative AI Integration", "Add a new AWS Bedrock Generative AI Integration",
 		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(AddGenerativeAiBedrockIntegration), new(MessageResponse))
-	d.AddOperation("autoAddGenerativeAiIntegrationBedrock", http.MethodPost, "/deepfence/generative-ai-integration/bedrock/auto-add",
-		"Automatically add AWS Bedrock Generative AI Integration", "Automatically add AWS Bedrock Generative AI Integrations using IAM role",
-		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(AutoAddGenerativeAiBedrockIntegration), new(MessageResponse))
+	d.AddOperation("autoAddGenerativeAiIntegration", http.MethodPost, "/deepfence/generative-ai-integration/auto-add",
+		"Automatically add Generative AI Integration", "Automatically add Generative AI Integrations using IAM role",
+		http.StatusAccepted, []string{tagGenerativeAi}, bearerToken, nil, nil)
 
 	d.AddOperation("listGenerativeAiIntegration", http.MethodGet, "/deepfence/generative-ai-integration",
 		"List Generative AI Integrations", "List all the added Generative AI Integrations",

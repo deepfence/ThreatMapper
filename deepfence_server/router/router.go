@@ -511,7 +511,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			r.Route("/generative-ai-integration", func(r chi.Router) {
 				r.Post("/openai", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddOpenAiIntegration))
 				r.Post("/bedrock", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddBedrockIntegration))
-				r.Post("/bedrock/auto-add", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddBedrockIntegrationUsingIAMRole))
+				r.Post("/auto-add", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddGenerativeAIIntegrationUsingIAMRole))
 
 				r.Get("/", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GetGenerativeAiIntegrations))
 				r.Route("/{integration_id}", func(r chi.Router) {
