@@ -12,6 +12,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/generativeai"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/malwarescan"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/reports"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/sbom"
@@ -198,6 +199,8 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 	worker.AddOneShotHandler(utils.LinkCloudResourceTask, cronjobs.LinkCloudResources)
 
 	worker.AddOneShotHandler(utils.LinkNodesTask, cronjobs.LinkNodes)
+
+	worker.AddOneShotHandler(utils.AutoFetchGenerativeAIIntegrations, generativeai.AutoFetchGenerativeAIIntegrations)
 
 	// sbom
 	worker.AddRetryableHandler(utils.ScanSBOMTask, sbom.NewSBOMScanner(ingestC).ScanSBOM)

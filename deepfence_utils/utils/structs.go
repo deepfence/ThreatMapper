@@ -42,6 +42,11 @@ type SbomBody struct {
 	SBOM string `json:"sbom" required:"true"`
 }
 
+type AutoFetchGenerativeAIIntegrationsParameters struct {
+	CloudProvider string `json:"cloud_provider"`
+	UserID        int64  `json:"user_id"`
+}
+
 type SecretScanParameters struct {
 	ImageName             string `json:"image_name"`
 	ImageID               string `json:"image_id"`

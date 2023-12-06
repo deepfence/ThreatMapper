@@ -24,6 +24,8 @@ const (
 )
 
 var (
+	BedrockRegions = []string{"us-east-1", "us-west-2", "ap-southeast-1", "ap-northeast-1", "eu-central-1"}
+
 	textModality = "TEXT"
 
 	contentTypeHeader = "application/json"
