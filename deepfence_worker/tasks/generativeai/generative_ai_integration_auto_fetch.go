@@ -32,7 +32,7 @@ func AutoFetchGenerativeAIIntegrations(ctx context.Context, task *asynq.Task) er
 	}
 
 	var err error
-	switch string(task.Payload()) {
+	switch params.CloudProvider {
 	case "aws":
 		err = AutoFetchBedrockIntegrations(ctx, params)
 	}
@@ -80,7 +80,7 @@ func AutoFetchBedrockIntegrations(ctx context.Context, params utils.AutoFetchGen
 	for _, req := range models {
 		err = CreateGenerativeAIModel(ctx, req, aes, params.UserID, pgClient)
 		if err != nil {
-			log.Error().Msg(err.Error())
+			log.Warn().Msg(err.Error())
 			continue
 		}
 	}

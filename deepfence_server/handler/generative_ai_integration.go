@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -94,6 +93,18 @@ func AddGenerativeAiIntegration[T model.AddGenerativeAiIntegrationRequest](w htt
 		return
 	}
 
+	obj, err := generative_ai_integration.NewGenerativeAiIntegration(ctx, req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+	err = obj.ValidateConfig(h.Validator)
+	if err != nil {
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
 	// encrypt secret
 	aesValue, err := model.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
@@ -108,60 +119,37 @@ func AddGenerativeAiIntegration[T model.AddGenerativeAiIntegrationRequest](w htt
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
-	user, statusCode, _, err := h.GetUserFromJWT(ctx)
-	if err != nil {
-		h.respondWithErrorCode(err, w, statusCode)
-		return
-	}
-
-	err = h.AddGenerativeAiIntegrationHelper(ctx, req, aes, user, pgClient)
-	if err != nil {
-		log.Error().Msgf(err.Error())
-		h.respondError(err, w)
-		return
-	}
-
-	h.AuditUserActivity(r, EventGenerativeAIIntegration, ActionCreate, map[string]interface{}{"integration_type": req.GetIntegrationType()}, true)
-
-	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationCreated})
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) AddGenerativeAiIntegrationHelper(ctx context.Context, req model.AddGenerativeAiIntegrationRequest, aes encryption.AES, user *model.User, pgClient *postgresqlDb.Queries) error {
-	obj, err := generative_ai_integration.NewGenerativeAiIntegration(ctx, req)
-	if err != nil {
-		return &BadDecoding{err}
-	}
-	err = obj.ValidateConfig(h.Validator)
-	if err != nil {
-		return &ValidatorError{err: err}
-	}
-	err = obj.VerifyAuth(ctx)
-	if err != nil {
-		return &BadDecoding{err: err}
-	}
-
 	err = obj.EncryptSecret(aes)
 	if err != nil {
-		return err
+		log.Error().Msgf(err.Error())
+		h.respondError(&InternalServerError{err}, w)
+		return
 	}
 
 	// add integration to database
 	// before that check if integration already exists
 	integrationExists, err := req.IntegrationExists(ctx, pgClient)
 	if err != nil {
-		return err
+		log.Error().Msgf(err.Error())
+		h.respondError(&InternalServerError{err}, w)
+		return
 	}
 	if integrationExists {
-		return &ErrGenerativeAIIntegrationExists
+		h.respondError(&ErrGenerativeAIIntegrationExists, w)
+		return
+	}
+
+	user, statusCode, _, err := h.GetUserFromJWT(ctx)
+	if err != nil {
+		h.respondWithErrorCode(err, w, statusCode)
+		return
 	}
 
 	// store the integration in db
 	bConfig, err := json.Marshal(obj)
 	if err != nil {
-		return err
+		h.respondWithErrorCode(err, w, statusCode)
+		return
 	}
 
 	arg := postgresqlDb.CreateGenerativeAiIntegrationParams{
@@ -172,14 +160,22 @@ func (h *Handler) AddGenerativeAiIntegrationHelper(ctx context.Context, req mode
 	}
 	dbIntegration, err := pgClient.CreateGenerativeAiIntegration(ctx, arg)
 	if err != nil {
-		return err
+		log.Error().Msgf(err.Error())
+		h.respondError(&InternalServerError{err}, w)
+		return
 	}
+
+	h.AuditUserActivity(r, EventGenerativeAIIntegration, ActionCreate, map[string]interface{}{"integration_type": req.GetIntegrationType()}, true)
 
 	err = pgClient.UpdateGenerativeAiIntegrationDefault(ctx, dbIntegration.ID)
 	if err != nil {
 		log.Warn().Msgf(err.Error())
 	}
-	return nil
+
+	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationCreated})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) GetGenerativeAiIntegrations(w http.ResponseWriter, r *http.Request) {
