@@ -640,6 +640,15 @@ SET error_msg      = $2,
     last_sent_time = now()
 WHERE id = $1;
 
+-- name: UpdateIntegration :exec
+UPDATE integration
+SET resource        = $1,
+    filters         = $2,
+    integration_type= $3,
+    interval_minutes= $4,
+    config          = $5
+WHERE id = $6;
+
 -- name: DeleteIntegration :exec
 DELETE
 FROM integration

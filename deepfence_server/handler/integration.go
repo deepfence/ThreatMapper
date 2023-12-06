@@ -167,14 +167,22 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateIntegration(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
 	defer r.Body.Close()
 	var req model.IntegrationUpdateReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	err = httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}
+
+	req.ID = int32(id)
 
 	req.Config["filter_hash"], err = GetFilterHash(req.Filters)
 	if err != nil {
