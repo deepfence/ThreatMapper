@@ -12,6 +12,7 @@ import { ProcessTable } from '@/features/topology/components/node-details/Summar
 import { AvailabilityCharts } from '@/features/topology/components/scan-results/AvailabilityCharts';
 import { ScanResult } from '@/features/topology/components/scan-results/ScanResult';
 import { queries } from '@/queries';
+import { ScanTypeEnum } from '@/types/common';
 
 function useLookupContainer(nodeId: string) {
   return useSuspenseQuery({
@@ -67,6 +68,9 @@ export const Container = (props: ContainerModalProps) => {
             nodeType="container"
             onGoBack={onGoBack}
             showBackBtn={showBackBtn}
+            availableScanTypes={[]}
+            showInstallAgentOption={false}
+            showUpgradeAgentOption={false}
           />
         }
       >
@@ -114,6 +118,13 @@ const ContainerHeader = ({
       nodeType="container"
       onGoBack={onGoBack}
       showBackBtn={showBackBtn}
+      availableScanTypes={[
+        ScanTypeEnum.VulnerabilityScan,
+        ScanTypeEnum.SecretScan,
+        ScanTypeEnum.MalwareScan,
+      ]}
+      showInstallAgentOption={false}
+      showUpgradeAgentOption={false}
     />
   );
 };

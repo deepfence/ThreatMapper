@@ -10,6 +10,7 @@ import {
 } from '@/features/topology/components/node-details/Metadata';
 import { ContainerTable } from '@/features/topology/components/node-details/SummaryTables';
 import { queries } from '@/queries';
+import { ScanTypeEnum } from '@/types/common';
 
 function useLookupPod(nodeId: string) {
   return useSuspenseQuery({
@@ -61,6 +62,9 @@ export const Pod = (props: PodModalProps) => {
             nodeType="pod"
             onGoBack={onGoBack}
             showBackBtn={showBackBtn}
+            availableScanTypes={[]}
+            showInstallAgentOption={false}
+            showUpgradeAgentOption={false}
           />
         }
       >
@@ -108,6 +112,13 @@ const PodHeader = ({
       nodeType="pod"
       onGoBack={onGoBack}
       showBackBtn={showBackBtn}
+      availableScanTypes={[
+        ScanTypeEnum.VulnerabilityScan,
+        ScanTypeEnum.SecretScan,
+        ScanTypeEnum.MalwareScan,
+      ]}
+      showInstallAgentOption={false}
+      showUpgradeAgentOption={false}
     />
   );
 };

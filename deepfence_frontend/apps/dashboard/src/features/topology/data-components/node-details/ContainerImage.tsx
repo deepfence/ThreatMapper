@@ -11,6 +11,7 @@ import {
 import { ContainerTable } from '@/features/topology/components/node-details/SummaryTables';
 import { ScanResult } from '@/features/topology/components/scan-results/ScanResult';
 import { queries } from '@/queries';
+import { ScanTypeEnum } from '@/types/common';
 
 function useLookupContainerImage(nodeId: string) {
   return useSuspenseQuery({
@@ -66,6 +67,9 @@ export const ContainerImage = (props: ContainerImageModalProps) => {
             nodeType="container_image"
             onGoBack={onGoBack}
             showBackBtn={showBackBtn}
+            availableScanTypes={[]}
+            showInstallAgentOption={false}
+            showUpgradeAgentOption={false}
           />
         }
       >
@@ -113,6 +117,13 @@ const ContainerImageHeader = ({
       nodeType="container_image"
       onGoBack={onGoBack}
       showBackBtn={showBackBtn}
+      availableScanTypes={[
+        ScanTypeEnum.VulnerabilityScan,
+        ScanTypeEnum.SecretScan,
+        ScanTypeEnum.MalwareScan,
+      ]}
+      showInstallAgentOption={false}
+      showUpgradeAgentOption={false}
     />
   );
 };
