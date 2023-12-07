@@ -13,9 +13,30 @@ const Plus = () => (
   </span>
 );
 describe(`Component Button`, () => {
+  it(`render disabled button`, () => {
+    const onClick = vi.fn();
+    const { getByTestId } = renderUI(
+      <Button
+        id="id"
+        color="default"
+        startIcon={<Plus />}
+        endIcon={<Plus />}
+        onClick={onClick}
+        disabled
+      >
+        disabled button
+      </Button>,
+    );
+    const buttonId = getByTestId('button-id');
+    // action
+    expect(buttonId).toBeInTheDocument();
+
+    fireEvent.click(buttonId);
+    expect(onClick).not.toHaveBeenCalledOnce();
+  });
   it(`render with label, color, startIcon, endIcon, onClick`, () => {
     const onClick = vi.fn();
-    const { getByTestId, getByRole, getByText } = renderUI(
+    const { getByTestId, getByText } = renderUI(
       <Button
         id="id"
         color="default"
@@ -34,13 +55,7 @@ describe(`Component Button`, () => {
     expect(startIconId).toBeInTheDocument();
     expect(endIconId).toBeInTheDocument();
 
-    // action
-    const button = getByRole('button', {
-      name: 'Test button',
-    });
-    expect(button).toBeInTheDocument();
-
-    fireEvent.click(button);
+    fireEvent.click(buttonId);
     expect(onClick).toHaveBeenCalledOnce();
   });
 });

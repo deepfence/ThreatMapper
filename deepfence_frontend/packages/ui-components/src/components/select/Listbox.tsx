@@ -247,6 +247,7 @@ export function Listbox<TType, TActualType>({
                       {multiple && Array.isArray(value) && value.length > 0 ? (
                         <div className="relative flex items-center">
                           <Badge
+                            data-testid="listboxCountBadgeId"
                             color="blueLight"
                             variant="filled"
                             size="small"

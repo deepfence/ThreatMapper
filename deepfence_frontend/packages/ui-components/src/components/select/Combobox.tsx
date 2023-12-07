@@ -167,6 +167,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                     {triggerVariant === 'button' ? (
                       <HUICombobox.Button
                         id={inputBtnId}
+                        data-testid="comboboxTriggerButtonId"
                         as={Slot}
                         className={cn(
                           // display
@@ -202,6 +203,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                     ) : (
                       <HUICombobox.Button
                         id={inputBtnId}
+                        data-testid="comboboxTriggerButtonId"
                         as={Slot}
                         className={cn(
                           comboboxInputCva({
@@ -256,6 +258,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           </span>
                           <HUICombobox.Input
                             placeholder="Search"
+                            data-testid="comboboxSearchInputId"
                             className={cn(
                               'pl-[6px] text-p6 dark:text-text-input-value',
                               'dark:focus-visible:outline-none dark:bg-bg-card',
