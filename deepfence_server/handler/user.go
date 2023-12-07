@@ -367,10 +367,11 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 		htmlEmail, err := sendemail.RenderEmailTemplate(
 			sendemail.UserInviteTemplate,
 			sendemail.UserInvite{
-				Project:     utils.Project,
-				Username:    "",
-				RequestedBy: fmt.Sprintf("%s %s (%s)", user.FirstName, user.LastName, user.Email),
-				InviteLink:  inviteURL,
+				Project:          utils.Project,
+				Username:         "",
+				RequestedBy:      fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+				RequestedByEmail: user.Email,
+				InviteLink:       inviteURL,
 			},
 		)
 		if err != nil {
