@@ -73,9 +73,9 @@ func main() {
 	log.Info().Msgf("config: %+v", cfg)
 
 	if cfg.Debug {
-		log.Initialize(zerolog.LevelDebugValue)
+		_ = log.Initialize(zerolog.LevelDebugValue)
 	} else {
-		log.Initialize(zerolog.LevelInfoValue)
+		_ = log.Initialize(zerolog.LevelInfoValue)
 	}
 
 	// check connection to kafka broker

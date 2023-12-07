@@ -4,7 +4,6 @@ import (
 	"flag"
 	"testing"
 
-	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,8 +20,7 @@ func TestLogCensoredArgs(t *testing.T) {
 	}
 	flag.CommandLine.Parse(args)
 
-	hook := test.NewGlobal()
-	logCensoredArgs()
-	assert.NotContains(t, hook.LastEntry().Message, "secret")
-	assert.Contains(t, hook.LastEntry().Message, "cloud.weave.works:443")
+	msg := getCensoredArgs()
+	assert.NotContains(t, msg, "secret")
+	assert.Contains(t, msg, "cloud.weave.works:443")
 }

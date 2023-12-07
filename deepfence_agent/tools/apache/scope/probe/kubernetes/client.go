@@ -8,7 +8,7 @@ import (
 
 	"github.com/weaveworks/common/backoff"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	apiv1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -114,7 +114,7 @@ func NewClient(config ClientConfig) (Client, error) {
 			return nil, err
 		}
 	}
-	log.Infof("kubernetes: targeting api server %s", restConfig.Host)
+	log.Info().Msgf("kubernetes: targeting api server %s", restConfig.Host)
 
 	c, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {
@@ -140,7 +140,7 @@ func (c *client) InitCNIPlugin() {
 	// Check the CNI
 	cniPlugin, _ := c.getKubeCNIPlugin()
 	c.cniPlugin = cniPlugin
-	log.Info("CNI:", c.cniPlugin)
+	log.Info().Msgf("CNI: %s", c.cniPlugin)
 	if c.cniPlugin == K8sCniCalico {
 		//calicoClient, err := calico_helper.NewCalicoAPIClient()
 		//if err != nil {
@@ -238,7 +238,7 @@ func (c *client) runReflectorUntil(resource string, store cache.Store) {
 				return false, err
 			}
 			if !ok {
-				log.Infof("%v are not supported by this Kubernetes version", resource)
+				log.Info().Msgf("%v are not supported by this Kubernetes version", resource)
 				return true, nil
 			}
 			lw := cache.NewListWatchFromClient(kclient, resource, metav1.NamespaceAll, fields.Everything())

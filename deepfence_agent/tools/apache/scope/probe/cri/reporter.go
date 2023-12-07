@@ -190,7 +190,6 @@ func (r *Reporter) containerImageTopology() (report.Topology, map[string]ImageMe
 }
 
 func (r *Reporter) getImage(image *client.Image) (*report.TopologyNode, *ImageMetadata) {
-	// logrus.Infof("images: %v", image)
 	// image format: sha256:ab21abc2d2c34c2b2d2c23bbcf23gg23f23
 	imageID := trimImageID(image.Id)
 	shortImageID := getShortImageID(imageID)

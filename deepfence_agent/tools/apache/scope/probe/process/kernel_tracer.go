@@ -8,8 +8,8 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
-	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
@@ -76,7 +76,7 @@ func (it *InfoTracer) GetOpenFileList(pidstr string) ([]string, error) {
 			break
 		}
 		if err != nil {
-			logrus.Errorf("Failed to receive a note : %v", err)
+			log.Error().Msgf("Failed to receive a note : %v", err)
 		}
 
 		res = append(res, in.GetPath())

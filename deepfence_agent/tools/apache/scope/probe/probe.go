@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/hashicorp/go-metrics"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
 
 	"github.com/weaveworks/scope/report"
@@ -151,7 +151,7 @@ func (p *Probe) tick() {
 			{Name: "module", Value: ticker.Name()},
 		})
 		if err != nil {
-			log.Errorf("Error doing ticker: %v", err)
+			log.Error().Msgf("Error doing ticker: %v", err)
 		}
 	}
 }
@@ -161,17 +161,17 @@ func (p *Probe) report() report.Report {
 	for _, rep := range p.reporters {
 		go func(rep Reporter) {
 			t := time.Now()
-			timer := time.AfterFunc(p.spyInterval, func() { log.Warningf("%v reporter took longer than %v", rep.Name(), p.spyInterval) })
+			timer := time.AfterFunc(p.spyInterval, func() { log.Warn().Msgf("%v reporter took longer than %v", rep.Name(), p.spyInterval) })
 			newReport, err := rep.Report()
 			if !timer.Stop() {
-				log.Warningf("%v reporter took %v (longer than %v)", rep.Name(), time.Now().Sub(t), p.spyInterval)
+				log.Warn().Msgf("%v reporter took %v (longer than %v)", rep.Name(), time.Now().Sub(t), p.spyInterval)
 			}
 			metrics.MeasureSinceWithLabels([]string{"duration", "seconds"}, t, []metrics.Label{
 				{Name: "operation", Value: "reporter"},
 				{Name: "module", Value: rep.Name()},
 			})
 			if err != nil {
-				log.Errorf("Error generating %s report: %v", rep.Name(), err)
+				log.Error().Msgf("Error generating %s report: %v", rep.Name(), err)
 				newReport = report.MakeReport() // empty is OK to merge
 			}
 			reports <- newReport
@@ -190,17 +190,17 @@ func (p *Probe) tag(r report.Report) report.Report {
 	var err error
 	for _, tagger := range p.taggers {
 		t := time.Now()
-		timer := time.AfterFunc(p.spyInterval, func() { log.Warningf("%v tagger took longer than %v", tagger.Name(), p.spyInterval) })
+		timer := time.AfterFunc(p.spyInterval, func() { log.Warn().Msgf("%v tagger took longer than %v", tagger.Name(), p.spyInterval) })
 		r, err = tagger.Tag(r)
 		if !timer.Stop() {
-			log.Warningf("%v tagger took %v (longer than %v)", tagger.Name(), time.Now().Sub(t), p.spyInterval)
+			log.Warn().Msgf("%v tagger took %v (longer than %v)", tagger.Name(), time.Now().Sub(t), p.spyInterval)
 		}
 		metrics.MeasureSinceWithLabels([]string{"duration", "seconds"}, t, []metrics.Label{
 			{Name: "operation", Value: "tagger"},
 			{Name: "module", Value: tagger.Name()},
 		})
 		if err != nil {
-			log.Errorf("Error applying tagger: %v", err)
+			log.Error().Msgf("Error applying tagger: %v", err)
 		}
 	}
 	return r

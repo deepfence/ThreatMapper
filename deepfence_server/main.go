@@ -233,7 +233,7 @@ func main() {
 
 func initialize() (*Config, error) {
 	// logger
-	log.Initialize(*verbosity)
+	_ = log.Initialize(*verbosity)
 
 	httpListenEndpoint := os.Getenv("DEEPFENCE_HTTP_LISTEN_ENDPOINT")
 	if httpListenEndpoint == "" {

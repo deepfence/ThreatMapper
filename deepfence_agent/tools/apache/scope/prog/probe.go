@@ -72,7 +72,6 @@ func checkFlagsRequiringRoot(flags probeFlags) {
 // Main runs the probe
 func probeMain(flags probeFlags, targets []appclient.Target) {
 	setLogLevel(flags.logLevel)
-	setLogFormatter(flags.logPrefix)
 
 	if flags.basicAuth {
 		log.Info().Msgf("Basic authentication enabled")

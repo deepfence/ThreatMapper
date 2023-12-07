@@ -858,8 +858,6 @@ github.com/vishvananda/netns v0.0.4/go.mod h1:SpkAiCQRtJ6TvvxPnOSyH3BMl6unz3xZla
 github.com/weaveworks/common v0.0.0-20230531151736-e2613bee6b73 h1:CMM9+/AgM77vaMXMQedzqPRMuNwjbI0EcdofPqxc9F8=
 github.com/weaveworks/common v0.0.0-20230531151736-e2613bee6b73/go.mod h1:rgbeLfJUtEr+G74cwFPR1k/4N0kDeaeSv/qhUNE4hm8=
 github.com/weaveworks/promrus v1.2.0/go.mod h1:SaE82+OJ91yqjrE1rsvBWVzNZKcHYFtMUyS1+Ogs/KA=
-github.com/weaveworks/weave v2.6.5+incompatible h1:XdqFrbtKGXbCuDNlvLItapqA2VYLZrb2CxtCeHUMlJA=
-github.com/weaveworks/weave v2.6.5+incompatible/go.mod h1:5ht5Uktjg++tIOqmWI2VvRzbNM7i+RhtqDQPumydP1U=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

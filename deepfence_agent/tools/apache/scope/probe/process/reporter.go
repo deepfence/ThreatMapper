@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/weaveworks/scope/common/hostname"
 	"github.com/weaveworks/scope/report"
 )
@@ -41,10 +41,10 @@ type Jiffies func() (uint64, float64, error)
 func StartOpenFilesTracing() *InfoTracer {
 	ptracer, err := NewInfoTracer()
 	if err != nil {
-		logrus.Error("Failed to start eBPF process")
+		log.Error().Msg("Failed to start eBPF process")
 		return nil
 	}
-	logrus.Info("started eBPF process")
+	log.Info().Msg("started eBPF process")
 	return ptracer
 }
 

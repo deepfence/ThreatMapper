@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/miekg/dns"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -215,7 +215,7 @@ func (r staticResolver) resolveOne(t Target) []string {
 		addrs, err = r.Lookup(t.hostname)
 		if err != nil {
 			if _, ok := r.failedResolutions[t.hostname]; !ok {
-				log.Warnf("Cannot resolve '%s': %v", t.hostname, err)
+				log.Warn().Msgf("Cannot resolve '%s': %v", t.hostname, err)
 				// Only log the error once
 				r.failedResolutions[t.hostname] = struct{}{}
 			}

@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/typetypetype/conntrack"
 
 	"github.com/weaveworks/scope/probe/endpoint/procspy"
@@ -37,7 +37,7 @@ func newConnectionTracker(conf ReporterConfig) connectionTracker {
 			go feedEBPFInitialState(conf, et)
 			return ct
 		}
-		log.Warnf("Error setting up the eBPF tracker, falling back to proc scanning: %v", err)
+		log.Warn().Msgf("Error setting up the eBPF tracker, falling back to proc scanning: %v", err)
 	}
 	ct.useProcfs()
 	return ct
@@ -77,18 +77,18 @@ func (t *connectionTracker) ReportConnections(rpt *report.Report) {
 
 		if ebpfLastFailureTime.After(time.Now().Add(-1 * time.Minute)) {
 			// Multiple failures in the last minute, fall back to proc parsing
-			log.Warnf("ebpf tracker died again, gently falling back to proc scanning")
+			log.Warn().Msgf("ebpf tracker died again, gently falling back to proc scanning")
 			t.useProcfs()
 		} else {
 			// Tolerable failure rate, restart the tracker
-			log.Warnf("ebpf tracker died, restarting it")
+			log.Warn().Msgf("ebpf tracker died, restarting it")
 			err := t.ebpfTracker.restart()
 			if err == nil {
 				feedEBPFInitialState(t.conf, t.ebpfTracker)
 				t.performEbpfTrack(rpt, t.conf.HostName)
 				return
 			}
-			log.Warnf("could not restart ebpf tracker, falling back to proc scanning: %v", err)
+			log.Warn().Msgf("could not restart ebpf tracker, falling back to proc scanning: %v", err)
 			t.useProcfs()
 		}
 	}
@@ -109,11 +109,11 @@ func (t *connectionTracker) ReportConnections(rpt *report.Report) {
 func existingFlowsFromConntrack(conf ReporterConfig) map[string]fourTuple {
 	seenTuples := map[string]fourTuple{}
 	if !conf.UseConntrack {
-		// log.Warnf("Not using conntrack: disabled")
+		// log.Warn().Msgf("Not using conntrack: disabled")
 	} else if err := IsConntrackSupported(conf.ProcRoot); err != nil {
-		log.Warnf("Not using conntrack: not supported by the kernel: %s", err)
+		log.Warn().Msgf("Not using conntrack: not supported by the kernel: %s", err)
 	} else if existingFlows, err := conntrack.ConnectionsSize(conf.BufferSize); err != nil {
-		log.Errorf("conntrack existingConnections error: %v", err)
+		log.Error().Msgf("conntrack existingConnections error: %v", err)
 	} else {
 		for _, f := range existingFlows {
 			if (f.Status & conntrack.IPS_NAT_MASK) == 0 {
@@ -159,7 +159,7 @@ func feedEBPFInitialState(conf ReporterConfig, ebpfTracker *EbpfTracker) {
 
 	conns, err := scanner.Connections()
 	if err != nil {
-		log.Errorf("Error initializing ebpfTracker while scanning /proc, continuing without initial connections: %s", err)
+		log.Error().Msgf("Error initializing ebpfTracker while scanning /proc, continuing without initial connections: %s", err)
 	}
 	scanner.Stop()
 

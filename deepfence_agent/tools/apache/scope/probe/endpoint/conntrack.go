@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/hashicorp/go-metrics"
-	log "github.com/sirupsen/logrus"
 	"github.com/typetypetype/conntrack"
 )
 
@@ -51,7 +51,7 @@ func newConntrackFlowWalker(useConntrack bool, procRoot string, bufferSize int, 
 	if !useConntrack {
 		return nilFlowWalker{}
 	} else if err := IsConntrackSupported(procRoot); err != nil {
-		log.Warnf("Not using conntrack: not supported by the kernel: %s", err)
+		log.Warn().Msgf("Not using conntrack: not supported by the kernel: %s", err)
 		return nilFlowWalker{}
 	}
 	result := &conntrackWalker{
@@ -120,7 +120,7 @@ func (c *conntrackWalker) relevant(f conntrack.Conn) bool {
 func (c *conntrackWalker) run() {
 	existingFlows, err := conntrack.ConnectionsSize(c.bufferSize)
 	if err != nil {
-		log.Errorf("conntrack Connections error: %v", err)
+		log.Error().Msgf("conntrack Connections error: %v", err)
 		return
 	}
 	c.Lock()
@@ -133,7 +133,7 @@ func (c *conntrackWalker) run() {
 
 	events, stop, err := conntrack.FollowSize(c.bufferSize, conntrack.NF_NETLINK_CONNTRACK_UPDATE|conntrack.NF_NETLINK_CONNTRACK_DESTROY)
 	if err != nil {
-		log.Errorf("conntrack Follow error: %v", err)
+		log.Error().Msgf("conntrack Follow error: %v", err)
 		return
 	}
 
@@ -142,20 +142,20 @@ func (c *conntrackWalker) run() {
 	for {
 		select {
 		case <-periodicRestart:
-			log.Debugf("conntrack periodic restart")
+			log.Debug().Msgf("conntrack periodic restart")
 			return
 		case <-c.quit:
-			log.Infof("conntrack quit signal - exiting")
+			log.Info().Msgf("conntrack quit signal - exiting")
 			stop()
 			return
 		case f, ok := <-events:
 			if !ok {
-				log.Errorf("conntrack events read failed - exiting")
+				log.Error().Msgf("conntrack events read failed - exiting")
 				return
 			}
 			if f.Err != nil {
 				metrics.IncrCounter([]string{"conntrack", "errors"}, 1)
-				log.Errorf("conntrack event error: %v", f.Err)
+				log.Error().Msgf("conntrack event error: %v", f.Err)
 				stop()
 				return
 			}

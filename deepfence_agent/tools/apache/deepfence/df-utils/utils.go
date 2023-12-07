@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/weaveworks/scope/common/hostname"
 )
 
@@ -332,7 +332,7 @@ func GetDatetimeNow() string {
 
 func AppendTextToFile(fileObj *os.File, text string) {
 	if _, err := fileObj.WriteString(text); err != nil {
-		logrus.Error(err.Error())
+		log.Error().Msg(err.Error())
 	}
 }
 
