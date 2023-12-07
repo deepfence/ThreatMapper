@@ -36,7 +36,7 @@ var (
 
 func init() {
 	supportedModels := ""
-	for modelID, _ := range BedrockModelBody {
+	for modelID := range BedrockModelBody {
 		supportedModels += modelID + ", "
 	}
 	ErrBedrockNoActiveModel = fmt.Errorf("no active model, one of these should be active: %s", strings.Trim(supportedModels, ", "))

@@ -36,7 +36,7 @@ func listImagesRegistryV2(url, userName, password string) ([]model.IngestedConta
 			log.Error().Msg(err.Error())
 			continue
 		}
-		log.Debug().Msgf("tags for image %s/%s are %s", repo, repoTags.Tags)
+		log.Debug().Msgf("tags for image %s/%s are %s", repo, repoTags.Name, repoTags.Tags)
 
 		images = append(images, getImageWithTags(url, userName, password, repo, repoTags)...)
 	}

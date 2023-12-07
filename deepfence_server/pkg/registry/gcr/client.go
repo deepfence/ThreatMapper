@@ -30,7 +30,7 @@ func listImagesRegistryV2(url, namespace, userName, password string) ([]model.In
 			log.Error().Msg(err.Error())
 			continue
 		}
-		log.Debug().Msgf("tags for image %s/%s are %s", repo, repoTags.Tags)
+		log.Debug().Msgf("tags for image %s/%s are %s", repo, repoTags.Name, repoTags.Tags)
 
 		images = append(images, getImageWithTags(url, namespace, userName, password, repo, repoTags)...)
 	}

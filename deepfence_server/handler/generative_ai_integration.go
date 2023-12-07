@@ -54,12 +54,12 @@ func (h *Handler) AddGenerativeAIIntegrationUsingIAMRole(w http.ResponseWriter, 
 		CloudProvider: "aws",
 		UserID:        user.ID,
 	}
-	dataJson, err := json.Marshal(data)
+	dataJSON, err := json.Marshal(data)
 	if err != nil {
 		h.respondError(err, w)
 		return
 	}
-	err = worker.Enqueue(utils.AutoFetchGenerativeAIIntegrations, dataJson, utils.DefaultTaskOpts()...)
+	err = worker.Enqueue(utils.AutoFetchGenerativeAIIntegrations, dataJSON, utils.DefaultTaskOpts()...)
 	if err != nil {
 		h.respondError(err, w)
 		return

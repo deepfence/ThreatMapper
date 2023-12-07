@@ -25,6 +25,9 @@ func CheckBedrockModelAvailability() (bool, error) {
 		models, err := svc.ListFoundationModels(&bedrock.ListFoundationModelsInput{
 			ByOutputModality: &textModality,
 		})
+		if err != nil {
+			return false, err
+		}
 		for _, modelSummary := range models.ModelSummaries {
 			if *modelSummary.ModelLifecycle.Status == modelLifecycleActive {
 				if _, ok := BedrockModelBody[*modelSummary.ModelId]; ok {
@@ -33,7 +36,7 @@ func CheckBedrockModelAvailability() (bool, error) {
 				}
 			}
 		}
-		if foundModel == true {
+		if foundModel {
 			break
 		}
 	}

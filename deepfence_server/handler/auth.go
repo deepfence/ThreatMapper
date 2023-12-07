@@ -24,6 +24,7 @@ var (
 		err:                       errors.New("email:user is not active"),
 		skipOverwriteErrorMessage: true,
 	}
+	errNoUserRegistered = NotFoundError{errors.New("you have not registered, please register first")}
 )
 
 func (h *Handler) APIAuthHandler(w http.ResponseWriter, r *http.Request) {
@@ -158,7 +159,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if freshSetup {
-		h.respondError(&NotFoundError{errors.New("For a new console installation, registration by the user is required")}, w)
+		h.respondError(&errNoUserRegistered, w)
 		return
 	}
 	u, statusCode, pgClient, err := model.GetUserByEmail(ctx, loginRequest.Email)
