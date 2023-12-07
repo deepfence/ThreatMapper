@@ -36,10 +36,11 @@ type PasswordReset struct {
 }
 
 type UserInvite struct {
-	Project     string
-	Username    string
-	RequestedBy string
-	InviteLink  string
+	Project          string
+	Username         string
+	RequestedBy      string
+	RequestedByEmail string
+	InviteLink       string
 }
 
 func RenderEmailTemplate(emailTemplateType EmailTemplateType, data interface{}) (string, error) {
