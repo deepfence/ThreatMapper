@@ -245,28 +245,10 @@ const DeleteConfirmationModal = ({
 
 const ActionDropdown = ({
   trigger,
-  scanId,
-  nodeId,
-  scanStatus,
-  nodeType,
-  setShowDeleteDialog,
-  setScanIdToDelete,
-  setStartScanInfo,
+  row,
 }: {
   trigger: React.ReactNode;
-  scanId: string;
-  nodeId: string;
-  scanStatus: string;
-  nodeType: string;
-  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  setScanIdToDelete: React.Dispatch<React.SetStateAction<string>>;
-  setStartScanInfo: React.Dispatch<
-    React.SetStateAction<{
-      start: boolean;
-      nodeId: string;
-      nodeType: string;
-    }>
-  >;
+  row: ModelScanInfo;
 }) => {
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
@@ -275,6 +257,19 @@ const ActionDropdown = ({
     setIsSubmitting(state === 'submitting');
   });
   const [openStopScanModal, setOpenStopScanModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const {
+    scan_id: scanId,
+    node_id: nodeId,
+    node_type: nodeType,
+    node_name: nodeName,
+    status: scanStatus,
+  } = row;
+  const [startScanInfo, setStartScanInfo] = useState({
+    start: false,
+    nodeId: '',
+    nodeType: '',
+  });
 
   const onDownloadAction = useCallback(() => {
     downloadScan({
@@ -296,6 +291,44 @@ const ActionDropdown = ({
           closeModal={setOpenStopScanModal}
           scanIds={[scanId]}
           scanType={ScanTypeEnum.SecretScan}
+        />
+      )}
+
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          scanIds={[scanId]}
+          setShowDialog={setShowDeleteDialog}
+          onDeleteSuccess={() => {
+            //
+          }}
+        />
+      )}
+
+      {startScanInfo.start && (
+        <ConfigureScanModal
+          open={true}
+          onOpenChange={() =>
+            setStartScanInfo({
+              start: false,
+              nodeId: '',
+              nodeType: '',
+            })
+          }
+          scanOptions={
+            {
+              showAdvancedOptions: true,
+              scanType: ScanTypeEnum.SecretScan,
+              data: {
+                nodes: [
+                  {
+                    nodeId: startScanInfo.nodeId,
+                    nodeType: startScanInfo.nodeType,
+                  },
+                ],
+              },
+            } as ConfigureScanModalProps['scanOptions']
+          }
         />
       )}
 
@@ -332,27 +365,25 @@ const ActionDropdown = ({
             >
               <span>Start scan</span>
             </DropdownItem>
-            {isScanInProgress(scanStatus) && (
-              <DropdownItem
-                onClick={(e) => {
-                  e.preventDefault();
-                  setOpenStopScanModal(true);
-                }}
-                disabled={!isScanInProgress(scanStatus)}
-              >
-                <span className="flex items-center">Cancel scan</span>
-              </DropdownItem>
-            )}
-
+            <DropdownItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setOpenStopScanModal(true);
+              }}
+              disabled={!isScanInProgress(scanStatus)}
+            >
+              <span className="flex items-center">Cancel scan</span>
+            </DropdownItem>
             <DropdownItem
               className="text-sm"
               onClick={() => {
-                setScanIdToDelete(scanId);
+                if (!scanId || !nodeType) return;
                 setShowDeleteDialog(true);
               }}
+              disabled={!scanId || !nodeType}
             >
               <span className="text-red-700 dark:text-status-error dark:hover:text-[#C45268]">
-                Delete
+                Delete scan
               </span>
             </DropdownItem>
           </>
@@ -628,14 +659,6 @@ const ScansTable = ({
     keepPreviousData: true,
   });
   const [sort, setSort] = useSortingState();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [scanIdToDelete, setScanIdToDelete] = useState('');
-  const [startScanInfo, setStartScanInfo] = useState({
-    start: false,
-    nodeId: '',
-    nodeType: '',
-  });
-
   const columnHelper = createColumnHelper<ScanResult>();
 
   const columns = useMemo(() => {
@@ -650,13 +673,7 @@ const ScansTable = ({
         enableSorting: false,
         cell: (cell) => (
           <ActionDropdown
-            scanId={cell.row.original.scan_id}
-            nodeId={cell.row.original.node_id}
-            nodeType={cell.row.original.node_type}
-            scanStatus={cell.row.original.status}
-            setScanIdToDelete={setScanIdToDelete}
-            setShowDeleteDialog={setShowDeleteDialog}
-            setStartScanInfo={setStartScanInfo}
+            row={cell.row.original}
             trigger={
               <button className="p-1 flex">
                 <span className="block h-4 w-4 dark:text-text-text-and-icon rotate-90 shrink-0">
@@ -890,42 +907,6 @@ const ScansTable = ({
 
   return (
     <>
-      {showDeleteDialog && (
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          scanIds={[scanIdToDelete]}
-          setShowDialog={setShowDeleteDialog}
-          onDeleteSuccess={() => {
-            //
-          }}
-        />
-      )}
-      {startScanInfo.start && (
-        <ConfigureScanModal
-          open={true}
-          onOpenChange={() =>
-            setStartScanInfo({
-              start: false,
-              nodeId: '',
-              nodeType: '',
-            })
-          }
-          scanOptions={
-            {
-              showAdvancedOptions: true,
-              scanType: ScanTypeEnum.SecretScan,
-              data: {
-                nodes: [
-                  {
-                    nodeId: startScanInfo.nodeId,
-                    nodeType: startScanInfo.nodeType,
-                  },
-                ],
-              },
-            } as ConfigureScanModalProps['scanOptions']
-          }
-        />
-      )}
       <Table
         data={data.scans}
         columns={columns}
@@ -938,6 +919,7 @@ const ScansTable = ({
             nodeId: row.node_id,
             nodeType: row.node_type,
             updatedAt: row.updated_at,
+            scanStatus: row.status,
           });
         }}
         enablePagination
@@ -999,22 +981,46 @@ const ScansTable = ({
 
 const BulkActions = ({
   selectedRows,
-  setIdsToDelete,
-  setShowDeleteDialog,
-  setShowCancelScanDialog,
   setRowSelectionState,
 }: {
   selectedRows: {
     scanId: string;
     nodeId: string;
     nodeType: string;
+    scanStatus: string;
   }[];
-  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
-  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  setShowCancelScanDialog: React.Dispatch<React.SetStateAction<boolean>>;
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
 }) => {
   const [openStartScan, setOpenStartScan] = useState<boolean>(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCancelScanDialog, setShowCancelScanDialog] = useState(false);
+  const nodesToStartScan = useMemo(() => {
+    return selectedRows
+      .filter(
+        (row) => !isScanInProgress(row.scanStatus) && !isScanStopping(row.scanStatus),
+      )
+      .map((row) => {
+        return {
+          nodeId: row.nodeId,
+          nodeType: row.nodeType,
+        };
+      });
+  }, [selectedRows]);
+
+  const scanIdsToCancelScan = useMemo(() => {
+    return selectedRows
+      .filter((row) => isScanInProgress(row.scanStatus))
+      .map((row) => row.scanId);
+  }, [selectedRows]);
+
+  const scanIdsToDeleteScan = useMemo(() => {
+    return selectedRows
+      .filter((row) => !isNeverScanned(row.scanStatus))
+      .map((row) => row.scanId);
+  }, [selectedRows]);
+  console.log('nodesToStartScan', nodesToStartScan);
+  console.log('scanIdsToCancelScan', scanIdsToCancelScan);
+  console.log('scanIdsToDeleteScan', scanIdsToDeleteScan);
   return (
     <>
       {openStartScan && (
@@ -1027,23 +1033,40 @@ const BulkActions = ({
               showAdvancedOptions: true,
               scanType: ScanTypeEnum.SecretScan,
               data: {
-                nodes: selectedRows.map((row) => {
-                  return {
-                    nodeId: row.nodeId,
-                    nodeType: row.nodeType,
-                  };
-                }),
+                nodes: nodesToStartScan,
               },
             } as ConfigureScanModalProps['scanOptions']
           }
         />
       )}
 
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          scanIds={scanIdsToDeleteScan}
+          setShowDialog={setShowDeleteDialog}
+          onDeleteSuccess={() => {
+            setRowSelectionState({});
+          }}
+        />
+      )}
+      {showCancelScanDialog ? (
+        <StopScanForm
+          open={showCancelScanDialog}
+          closeModal={setShowCancelScanDialog}
+          scanIds={scanIdsToCancelScan}
+          scanType={ScanTypeEnum.SecretScan}
+          onCancelScanSuccess={() => {
+            setRowSelectionState({});
+          }}
+        />
+      ) : null}
+
       <Button
         color="default"
         variant="flat"
         size="sm"
-        disabled={!selectedRows.length}
+        disabled={nodesToStartScan.length == 0}
         onClick={() => {
           setOpenStartScan(true);
         }}
@@ -1054,7 +1077,7 @@ const BulkActions = ({
         color="default"
         variant="flat"
         size="sm"
-        disabled={!selectedRows.length}
+        disabled={scanIdsToCancelScan.length === 0}
         onClick={() => setShowCancelScanDialog(true)}
       >
         Cancel Scan
@@ -1064,17 +1087,12 @@ const BulkActions = ({
         variant="flat"
         startIcon={<TrashLineIcon />}
         size="sm"
-        disabled={!selectedRows.length}
+        disabled={scanIdsToDeleteScan.length === 0}
         onClick={() => {
-          setIdsToDelete(
-            selectedRows.map((row) => {
-              return row.scanId;
-            }),
-          );
           setShowDeleteDialog(true);
         }}
       >
-        Delete
+        Delete Scan
       </Button>
     </>
   );
@@ -1089,15 +1107,13 @@ const SecretScans = () => {
   });
 
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
-  const [idsToDelete, setIdsToDelete] = useState<string[]>([]);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showCancelScanDialog, setShowCancelScanDialog] = useState(false);
 
   const selectedRows = useMemo<
     {
       scanId: string;
       nodeId: string;
       nodeType: string;
+      scanStatus: string;
     }[]
   >(() => {
     return Object.keys(rowSelectionState).map((item) => {
@@ -1128,9 +1144,6 @@ const SecretScans = () => {
         <div className="h-12 flex items-center">
           <BulkActions
             selectedRows={selectedRows}
-            setIdsToDelete={setIdsToDelete}
-            setShowDeleteDialog={setShowDeleteDialog}
-            setShowCancelScanDialog={setShowCancelScanDialog}
             setRowSelectionState={setRowSelectionState}
           />
           <Button
@@ -1163,27 +1176,6 @@ const SecretScans = () => {
             setRowSelectionState={setRowSelectionState}
           />
         </Suspense>
-        {showDeleteDialog && (
-          <DeleteConfirmationModal
-            showDialog={showDeleteDialog}
-            scanIds={idsToDelete}
-            setShowDialog={setShowDeleteDialog}
-            onDeleteSuccess={() => {
-              setRowSelectionState({});
-            }}
-          />
-        )}
-        {showCancelScanDialog ? (
-          <StopScanForm
-            open={showCancelScanDialog}
-            closeModal={setShowCancelScanDialog}
-            scanIds={selectedRows.map((row) => row.scanId)}
-            scanType={ScanTypeEnum.SecretScan}
-            onCancelScanSuccess={() => {
-              setRowSelectionState({});
-            }}
-          />
-        ) : null}
       </div>
     </div>
   );

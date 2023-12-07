@@ -78,6 +78,7 @@ import { formatPercentage } from '@/utils/number';
 import {
   COMPLIANCE_SCAN_STATUS_GROUPS,
   ComplianceScanGroupedStatus,
+  isNeverScanned,
   isScanComplete,
   isScanInProgress,
   isScanStopping,
@@ -474,23 +475,25 @@ const DeleteConfirmationModal = ({
 };
 
 const ActionDropdown = ({
-  scanId = '',
-  scanStatus,
   nodeType,
   scanType,
-  nodeId,
   trigger,
+  row,
   onTableAction,
 }: {
   trigger: React.ReactNode;
-  scanId?: string;
   nodeType?: string;
   scanType: ScanTypeEnum;
-  scanStatus: string;
-  nodeId?: string;
+  row: ModelCloudNodeAccountInfo;
   onTableAction: (ids: string[], actionType: ActionEnumType) => void;
 }) => {
   const fetcher = useFetcher();
+  const {
+    last_scan_id: scanId = '',
+    node_id: nodeId,
+    last_scan_status: scanStatus = '',
+    active,
+  } = row;
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { downloadScan } = useDownloadScan((state) => {
@@ -552,7 +555,9 @@ const ActionDropdown = ({
         content={
           <>
             <DropdownItem
-              disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
+              disabled={
+                !active || isScanInProgress(scanStatus) || isScanStopping(scanStatus)
+              }
               onSelect={() => {
                 if (!nodeId) {
                   throw new Error('Node id is required to start scan');
@@ -562,17 +567,15 @@ const ActionDropdown = ({
             >
               Start scan
             </DropdownItem>
-            {isScanInProgress(scanStatus) && (
-              <DropdownItem
-                onClick={(e) => {
-                  e.preventDefault();
-                  setOpenStopScanModal(true);
-                }}
-                disabled={!isScanInProgress(scanStatus)}
-              >
-                <span className="flex items-center">Cancel scan</span>
-              </DropdownItem>
-            )}
+            <DropdownItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setOpenStopScanModal(true);
+              }}
+              disabled={!isScanInProgress(scanStatus)}
+            >
+              <span className="flex items-center">Cancel scan</span>
+            </DropdownItem>
             <DropdownItem
               disabled={!isScanComplete(scanStatus)}
               onClick={(e) => {
@@ -614,12 +617,16 @@ const BulkActions = ({
   onClick,
   onDelete,
   onCancelScan,
-  disabled,
+  disableStartScan,
+  disableCancelScan,
+  disableDeleteScan,
 }: {
   onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   onCancelScan?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   onDelete?: React.MouseEventHandler<HTMLButtonElement> | undefined;
-  disabled: boolean;
+  disableStartScan: boolean;
+  disableCancelScan: boolean;
+  disableDeleteScan: boolean;
 }) => {
   const { navigate } = usePageNavigation();
   const params = useParams();
@@ -649,7 +656,7 @@ const BulkActions = ({
         color="default"
         variant="flat"
         size="sm"
-        disabled={disabled}
+        disabled={disableStartScan}
         onClick={onClick}
       >
         Start scan
@@ -658,7 +665,7 @@ const BulkActions = ({
         color="default"
         variant="flat"
         size="sm"
-        disabled={disabled}
+        disabled={disableCancelScan}
         onClick={onCancelScan}
       >
         Cancel scan
@@ -668,7 +675,7 @@ const BulkActions = ({
         variant="flat"
         startIcon={<TrashLineIcon />}
         size="sm"
-        disabled={disabled}
+        disabled={disableDeleteScan}
         onClick={onDelete}
       >
         Delete scan
@@ -767,11 +774,9 @@ const AccountTable = ({
         cell: (cell) => {
           return (
             <ActionDropdown
-              scanId={cell.row.original.last_scan_id}
-              nodeId={cell.row.original.node_id}
+              row={cell.row.original}
               nodeType={nodeType}
               scanType={scanType}
-              scanStatus={cell.row.original.last_scan_status || ''}
               onTableAction={onTableAction}
               trigger={
                 <button className="p-1 flex">
@@ -943,6 +948,8 @@ const AccountTable = ({
               scanId: row.last_scan_id,
               nodeId: row.node_id,
               nodeType: row.cloud_provider,
+              active: row.active,
+              scanStatus: row.last_scan_status,
             });
           }}
           enableColumnResizing
@@ -1044,6 +1051,8 @@ const Accounts = () => {
       scanId: string;
       nodeId: string;
       nodeType: string;
+      active: boolean;
+      scanStatus: string;
     }[]
   >(() => {
     return Object.keys(rowSelectionState).map((item) => {
@@ -1051,8 +1060,29 @@ const Accounts = () => {
     });
   }, [rowSelectionState]);
 
+  const nodeIdsToDeleteScan = useMemo(() => {
+    return selectedRows
+      .filter((row) => !isNeverScanned(row.scanStatus))
+      .map((row) => row.scanId);
+  }, [selectedRows]);
+
+  const nodeIdsToCancelScan = useMemo(() => {
+    return selectedRows
+      .filter((row) => isScanInProgress(row.scanStatus))
+      .map((row) => row.scanId);
+  }, [selectedRows]);
+
   useEffect(() => {
-    setNodeIdsToScan(selectedRows.map((node) => node.nodeId));
+    setNodeIdsToScan(
+      selectedRows
+        .filter(
+          (node) =>
+            node.active &&
+            !isScanInProgress(node.scanStatus) &&
+            !isScanStopping(node.scanStatus),
+        )
+        .map((node) => node.nodeId),
+    );
   }, [selectedRows]);
 
   const onTableAction = useCallback(
@@ -1073,7 +1103,7 @@ const Accounts = () => {
         <StopScanForm
           open={true}
           closeModal={setShowCancelScan}
-          scanIds={selectedRows.map((row) => row.scanId)}
+          scanIds={nodeIdsToCancelScan}
           scanType={scanType}
           onCancelScanSuccess={() => {
             setRowSelectionState({});
@@ -1083,7 +1113,9 @@ const Accounts = () => {
       <div className="mb-4 mx-4">
         <div className="flex h-12 items-center">
           <BulkActions
-            disabled={Object.keys(rowSelectionState).length === 0}
+            disableStartScan={nodeIdsToScan.length == 0}
+            disableCancelScan={nodeIdsToCancelScan.length === 0}
+            disableDeleteScan={nodeIdsToDeleteScan.length === 0}
             onClick={() => {
               setSelectedScanType(scanType);
             }}
@@ -1148,7 +1180,7 @@ const Accounts = () => {
       {showDeleteDialog && (
         <DeleteConfirmationModal
           showDialog={showDeleteDialog}
-          scanIds={selectedRows.map((row) => row.scanId)}
+          scanIds={nodeIdsToDeleteScan}
           scanType={
             isNonCloudProvider(routeParams.nodeType)
               ? ModelBulkDeleteScansRequestScanTypeEnum.Compliance
@@ -1210,7 +1242,7 @@ const AccountWithTab = () => {
         size="md"
       >
         <div className="mt-2">
-          <Accounts />
+          <Accounts key={nodeType} />
         </div>
       </Tabs>
     </>
