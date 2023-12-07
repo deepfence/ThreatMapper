@@ -46,24 +46,16 @@ func init() {
 	).With().Caller().Logger()
 }
 
-func Initialize(logLevel string) {
+func Initialize(logLevel string) error {
+	level, err := zerolog.ParseLevel(logLevel)
 
-	switch logLevel {
-	case zerolog.LevelTraceValue:
-		zerolog.SetGlobalLevel(zerolog.TraceLevel)
-	case zerolog.LevelDebugValue:
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	case zerolog.LevelInfoValue:
+	if err != nil {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	case zerolog.LevelWarnValue:
-		zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	case zerolog.LevelErrorValue:
-		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
-	case zerolog.LevelFatalValue:
-		zerolog.SetGlobalLevel(zerolog.FatalLevel)
-	default:
-		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	} else {
+		zerolog.SetGlobalLevel(level)
 	}
+
+	return err
 }
 
 func Trace() *zerolog.Event {

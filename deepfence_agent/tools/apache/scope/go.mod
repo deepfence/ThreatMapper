@@ -43,14 +43,12 @@ require (
 	github.com/mjibson/esc v0.2.0
 	github.com/peterbourgon/runsvinit v2.0.0+incompatible
 	github.com/prometheus/client_golang v1.15.1
-	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
 	github.com/typetypetype/conntrack v1.0.0
 	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5
 	github.com/vishvananda/netns v0.0.4
 	github.com/weaveworks/common v0.0.0-20230531151736-e2613bee6b73
 	github.com/weaveworks/tcptracer-bpf v0.0.0-00010101000000-000000000000
-	github.com/weaveworks/weave v2.6.5+incompatible
 	golang.org/x/net v0.14.0
 	golang.org/x/sys v0.12.0
 	golang.org/x/time v0.1.0
@@ -115,6 +113,7 @@ require (
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/rs/zerolog v1.30.0 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/uber/jaeger-client-go v2.28.0+incompatible // indirect

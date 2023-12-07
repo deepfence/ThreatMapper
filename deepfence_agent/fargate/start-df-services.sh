@@ -2,10 +2,10 @@
 
 case $DF_LOG_LEVEL in
 debug | info | error)
-  echo LOG_LEVEL is valid
+  echo DF_LOG_LEVEL is valid
   ;;
 *)
-  echo LOG_LEVEL is not valid, setting to info level
+  echo DF_LOG_LEVEL is not valid, setting to info level
   export DF_LOG_LEVEL="info"
   ;;
 esac

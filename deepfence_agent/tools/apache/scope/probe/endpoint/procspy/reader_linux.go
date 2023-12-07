@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 
 	"github.com/weaveworks/scope/probe/process"
 )
@@ -163,7 +163,7 @@ func performWalk(w pidWalker, c chan<- walkResult) {
 
 	result.sockets, err = w.walk(result.buf)
 	if err != nil {
-		log.Errorf("background /proc reader: error walking /proc: %s", err)
+		log.Error().Msgf("background /proc reader: error walking /proc: %s", err)
 		result.buf.Reset()
 		result.sockets = nil
 	}
@@ -172,9 +172,9 @@ func performWalk(w pidWalker, c chan<- walkResult) {
 
 // Adjust rate limit for next walk and calculate when it should be started
 func scheduleNextWalk(rateLimitPeriod time.Duration, took time.Duration) (newRateLimitPeriod time.Duration, restInterval time.Duration) {
-	log.Debugf("background /proc reader: full pass took %s", took)
+	log.Debug().Msgf("background /proc reader: full pass took %s", took)
 	if float64(took)/float64(targetWalkTime) > 1.5 {
-		log.Warnf(
+		log.Warn().Msgf(
 			"background /proc reader: full pass took %s: 50%% more than expected (%s)",
 			took,
 			targetWalkTime,
@@ -188,7 +188,7 @@ func scheduleNextWalk(rateLimitPeriod time.Duration, took time.Duration) (newRat
 	} else if newRateLimitPeriod < minRateLimitPeriod {
 		newRateLimitPeriod = minRateLimitPeriod
 	}
-	log.Debugf("background /proc reader: new rate limit period %s", newRateLimitPeriod)
+	log.Debug().Msgf("background /proc reader: new rate limit period %s", newRateLimitPeriod)
 
 	return newRateLimitPeriod, targetWalkTime - took
 }

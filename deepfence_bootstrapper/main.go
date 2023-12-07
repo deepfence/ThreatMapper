@@ -51,7 +51,7 @@ func init() {
 	if enableDebug {
 		verbosity = "debug"
 	}
-	log.Initialize(verbosity)
+	_ = log.Initialize(verbosity)
 }
 
 func main() {

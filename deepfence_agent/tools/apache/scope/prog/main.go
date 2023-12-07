@@ -10,13 +10,11 @@ import (
 	"strings"
 	"time"
 
-	log2 "github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	log "github.com/sirupsen/logrus"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 
 	"github.com/weaveworks/scope/probe/appclient"
 	"github.com/weaveworks/scope/probe/host"
 	"github.com/weaveworks/scope/probe/kubernetes"
-	"github.com/weaveworks/weave/common"
 )
 
 var (
@@ -36,38 +34,11 @@ var (
 	elideURLCredentials = regexp.MustCompile(`//.+@`)
 )
 
-type prefixFormatter struct {
-	prefix []byte
-	next   log.Formatter
-}
-
-func (f *prefixFormatter) Format(entry *log.Entry) ([]byte, error) {
-	formatted, err := f.next.Format(entry)
-	if err != nil {
-		return formatted, err
-	}
-	return append(f.prefix, formatted...), nil
-}
-
-func setLogFormatter(prefix string) {
-	if !strings.HasSuffix(prefix, " ") {
-		prefix += " "
-	}
-	f := prefixFormatter{
-		prefix: []byte(prefix),
-		// reuse weave's log format
-		next: common.Log.Formatter,
-	}
-	log.SetFormatter(&f)
-}
-
 func setLogLevel(levelname string) {
-	level, err := log.ParseLevel(levelname)
+	err := log.Initialize(levelname)
 	if err != nil {
-		log.Fatal(err)
+		log.Error().Msgf("Initializing with %s failed with: %v", levelname, err)
 	}
-	log.SetLevel(level)
-	log2.Initialize(levelname)
 }
 
 type flags struct {
@@ -124,7 +95,7 @@ type probeFlags struct {
 	kubernetesClientConfig kubernetes.ClientConfig
 }
 
-func logCensoredArgs() {
+func getCensoredArgs() string {
 	var prettyPrintedArgs string
 	// We show the flags followed by the args. This may change the original
 	// ordering. However the flag parser doesn't keep positioning
@@ -143,7 +114,11 @@ func logCensoredArgs() {
 	for _, arg := range flag.Args() {
 		prettyPrintedArgs += " " + elideURLCredentials.ReplaceAllString(arg, "//<elided>@")
 	}
-	log.Infof("command line args:%s", prettyPrintedArgs)
+	return prettyPrintedArgs
+}
+
+func logCensoredArgs() {
+	log.Info().Msgf("command line args:%s", getCensoredArgs())
 }
 
 func makeBaseCheckpointFlags() map[string]string {
@@ -248,7 +223,7 @@ func main() {
 	if flags.probe.httpListen != "" {
 		_, _, err := net.SplitHostPort(flags.probe.httpListen)
 		if err != nil {
-			log.Fatalf("Invalid value for -probe.http.address: %v", err)
+			log.Fatal().Msgf("Invalid value for -probe.http.address: %v", err)
 		}
 	}
 
@@ -259,11 +234,11 @@ func main() {
 		args := []string{}
 		args = append(args, flag.Args()...)
 		if !flags.dryRun {
-			log.Infof("publishing to: %s", strings.Join(args, ", "))
+			log.Info().Msgf("publishing to: %s", strings.Join(args, ", "))
 		}
 		targets, err = appclient.ParseTargets(args)
 		if err != nil {
-			log.Fatalf("Invalid targets: %v", err)
+			log.Fatal().Msgf("Invalid targets: %v", err)
 		}
 	}
 

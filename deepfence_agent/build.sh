@@ -6,7 +6,7 @@ DF_IMG_TAG=${DF_IMG_TAG:-latest}
 building_image(){
 
     echo "Building GetCloudInstanceId"
-    docker run --rm --workdir /go/src/github.com/deepfence/deepfence_agent -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_builder_ce:$DF_IMG_TAG bash -x /home/deepfence/gocode-build.sh
+    docker run --rm --workdir /go/src/github.com/deepfence/deepfence_agent -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_builder_ce:$DF_IMG_TAG bash -x /home/deepfence/gocode-build.sh
     build_result=$?
     if [ $build_result -ne 0 ]
     then

@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/armon/go-radix"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	dfUtils "github.com/deepfence/df-utils"
 	docker_client "github.com/fsouza/go-dockerclient"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/weaveworks/scope/report"
 )
@@ -184,27 +184,27 @@ func (r *registry) listenForEvents() bool {
 	// - Docker will drop an event if it is not collected quickly enough.
 	events := make(chan *docker_client.APIEvents, 1024)
 	if err := r.client.AddEventListener(events); err != nil {
-		log.Errorf("docker registry: %s", err)
+		log.Error().Msgf("docker registry: %s", err)
 		return true
 	}
 	defer func() {
 		if err := r.client.RemoveEventListener(events); err != nil {
-			log.Errorf("docker registry: %s", err)
+			log.Error().Msgf("docker registry: %s", err)
 		}
 	}()
 
 	if err := r.updateContainers(); err != nil {
-		log.Errorf("docker registry: %s", err)
+		log.Error().Msgf("docker registry: %s", err)
 		return true
 	}
 
 	if err := r.updateImages(); err != nil {
-		log.Errorf("docker registry: %s", err)
+		log.Error().Msgf("docker registry: %s", err)
 		return true
 	}
 
 	if err := r.updateNetworks(); err != nil {
-		log.Errorf("docker registry: %s", err)
+		log.Error().Msgf("docker registry: %s", err)
 		return true
 	}
 
@@ -213,18 +213,18 @@ func (r *registry) listenForEvents() bool {
 		select {
 		case event, ok := <-events:
 			if !ok {
-				log.Errorf("docker registry: event listener unexpectedly disconnected")
+				log.Error().Msgf("docker registry: event listener unexpectedly disconnected")
 				return true
 			}
 			r.handleEvent(event)
 
 		case <-otherUpdates:
 			if err := r.updateImages(); err != nil {
-				log.Errorf("docker registry: %s", err)
+				log.Error().Msgf("docker registry: %s", err)
 				return true
 			}
 			if err := r.updateNetworks(); err != nil {
-				log.Errorf("docker registry: %s", err)
+				log.Error().Msgf("docker registry: %s", err)
 				return true
 			}
 
@@ -325,7 +325,7 @@ func (r *registry) updateContainerState(containerID string) {
 	dockerContainer, err := r.client.InspectContainer(containerID)
 	if err != nil {
 		if _, ok := err.(*docker_client.NoSuchContainer); !ok {
-			log.Errorf("Unable to get status for container %s: %v", containerID, err)
+			log.Error().Msgf("Unable to get status for container %s: %v", containerID, err)
 			return
 		}
 		// Docker says the container doesn't exist - remove it from our data
@@ -363,7 +363,7 @@ func (r *registry) updateContainerState(containerID string) {
 	if r.collectStats {
 		if dockerContainer.State.Running {
 			if err := c.StartGatheringStats(r.client); err != nil {
-				log.Errorf("Error gathering stats for container %s: %s", containerID, err)
+				log.Error().Msgf("Error gathering stats for container %s: %s", containerID, err)
 				return
 			}
 		} else {

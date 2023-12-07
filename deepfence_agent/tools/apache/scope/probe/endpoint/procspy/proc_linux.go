@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/hashicorp/go-metrics"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/weaveworks/common/fs"
 	"github.com/weaveworks/scope/probe/process"
@@ -83,7 +83,7 @@ func getNetNamespacePathSuffix() string {
 
 	major, minor, err := getKernelVersion()
 	if err != nil {
-		log.Errorf("getNamespacePathSuffix: cannot get kernel version: %s", err)
+		log.Error().Msgf("getNamespacePathSuffix: cannot get kernel version: %s", err)
 		netNamespacePathSuffix = post38Path
 		return netNamespacePathSuffix
 	}

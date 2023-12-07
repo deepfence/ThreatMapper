@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 
 	scopeHostname "github.com/weaveworks/scope/common/hostname"
 	"github.com/weaveworks/scope/probe/appclient"
@@ -65,7 +65,7 @@ func (p *Probe) dummyPublishLoop(i int) {
 	err = json.Unmarshal(dummy_agent_sed, &rpt)
 
 	if err != nil {
-		log.Errorf("rpt unmarshal err: %v", err)
+		log.Error().Msgf("rpt unmarshal err: %v", err)
 		return
 	}
 
@@ -90,7 +90,7 @@ func (p *Probe) dummyPublishLoop(i int) {
 			return
 		}
 		if err != nil {
-			log.Infof("Publish: %v", err)
+			log.Info().Msgf("Publish: %v", err)
 		}
 	}
 }

@@ -14,8 +14,8 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/hashicorp/go-metrics"
-	log "github.com/sirupsen/logrus"
 	"github.com/weaveworks/common/fs"
 	"github.com/weaveworks/scope/probe/endpoint/procspy"
 	"github.com/weaveworks/scope/probe/host"
@@ -147,7 +147,7 @@ func newEbpfTracker() (*EbpfTracker, error) {
 
 	var debugBPF bool
 	if os.Getenv("SCOPE_DEBUG_BPF") != "" {
-		log.Infof("ebpf tracker started in debug mode")
+		log.Info().Msgf("ebpf tracker started in debug mode")
 		debugBPF = true
 	}
 
@@ -169,7 +169,7 @@ func (t *EbpfTracker) TCPEventV4(e tracer.TcpV4) {
 		b, err := os.ReadFile("/var/run/scope/debug-bpf")
 		if err == nil && strings.TrimSpace(string(b[:])) == "stop" {
 			os.Remove(debugBPFFile)
-			log.Warnf("ebpf tracker stopped as requested by user")
+			log.Warn().Msgf("ebpf tracker stopped as requested by user")
 			t.stop()
 			return
 		}
@@ -180,8 +180,8 @@ func (t *EbpfTracker) TCPEventV4(e tracer.TcpV4) {
 		// Upgrading the kernel will fix the problem. For further info see:
 		// https://github.com/iovisor/bcc/issues/790#issuecomment-263704235
 		// https://github.com/weaveworks/scope/issues/2334
-		log.Errorf("tcp tracer received event with timestamp %v even though the last timestamp was %v. Stopping the eBPF tracker.", e.Timestamp, t.lastTimestampV4)
-		log.Errorf("***** Alert we are going to ignore this *****")
+		log.Error().Msgf("tcp tracer received event with timestamp %v even though the last timestamp was %v. Stopping the eBPF tracker.", e.Timestamp, t.lastTimestampV4)
+		log.Error().Msgf("***** Alert we are going to ignore this *****")
 		//t.stop()
 		metrics.IncrCounterWithLabels([]string{"ebpf", "errors"}, 1, []metrics.Label{
 			{Name: "kind", Value: "timestamp-out-of-order"},
@@ -207,11 +207,11 @@ func (t *EbpfTracker) TCPEventV6(e tracer.TcpV6) {
 
 // LostV4 handles IPv4 TCP event misses from the eBPF tracer.
 func (t *EbpfTracker) LostV4(count uint64) {
-	log.Errorf("tcp tracer lost %d events. Stopping the eBPF tracker", count)
+	log.Error().Msgf("tcp tracer lost %d events. Stopping the eBPF tracker", count)
 	metrics.IncrCounterWithLabels([]string{"ebpf", "errors"}, 1, []metrics.Label{
 		{Name: "kind", Value: "lost-events"},
 	})
-	log.Errorf("***** Alert we are going to ignore this for now")
+	log.Error().Msgf("***** Alert we are going to ignore this for now")
 	//t.stop()
 }
 
@@ -228,7 +228,7 @@ func tupleFromPidFd(pid int, fd int) (tuple fourTuple, netns uint32, ok bool) {
 	// don't need that here since ebpf-enabled kernels will be > 3.8
 	netnsIno, err := procspy.ReadNetnsFromPID(pid)
 	if err != nil {
-		log.Debugf("netns proc file for pid %d disappeared before we could read it: %v", pid, err)
+		log.Debug().Msgf("netns proc file for pid %d disappeared before we could read it: %v", pid, err)
 		return fourTuple{}, 0, false
 	}
 
@@ -236,12 +236,12 @@ func tupleFromPidFd(pid int, fd int) (tuple fourTuple, netns uint32, ok bool) {
 	fdFilename := fmt.Sprintf("/proc/%d/fd/%d", pid, fd)
 	var statFdFile syscall.Stat_t
 	if err := fs.Stat(fdFilename, &statFdFile); err != nil {
-		log.Debugf("proc file %q disappeared before we could read it", fdFilename)
+		log.Debug().Msgf("proc file %q disappeared before we could read it", fdFilename)
 		return fourTuple{}, 0, false
 	}
 
 	if statFdFile.Mode&syscall.S_IFMT != syscall.S_IFSOCK {
-		log.Errorf("file %q is not a socket", fdFilename)
+		log.Error().Msgf("file %q is not a socket", fdFilename)
 		return fourTuple{}, 0, false
 	}
 	ino := statFdFile.Ino
@@ -249,7 +249,7 @@ func tupleFromPidFd(pid int, fd int) (tuple fourTuple, netns uint32, ok bool) {
 	// read both /proc/pid/net/{tcp,tcp6}
 	buf := bytes.NewBuffer(make([]byte, 0, 5000))
 	if _, err := procspy.ReadTCPFiles(pid, buf); err != nil {
-		log.Debugf("TCP proc file for pid %d disappeared before we could read it: %v", pid, err)
+		log.Debug().Msgf("TCP proc file for pid %d disappeared before we could read it: %v", pid, err)
 		return fourTuple{}, 0, false
 	}
 
@@ -258,7 +258,7 @@ func tupleFromPidFd(pid int, fd int) (tuple fourTuple, netns uint32, ok bool) {
 	for {
 		n := pn.Next()
 		if n == nil {
-			log.Debugf("connection for proc file %q not found. buf=%q", fdFilename, buf.String())
+			log.Debug().Msgf("connection for proc file %q not found. buf=%q", fdFilename, buf.String())
 			break
 		}
 		if n.Inode == ino {
@@ -278,7 +278,7 @@ func (t *EbpfTracker) handleFdInstall(ev tracer.EventType, pid int, fd int) {
 		t.tracer.RemoveFdInstallWatcher(uint32(pid))
 	}
 	tuple, netns, ok := tupleFromPidFd(pid, fd)
-	log.Debugf("EbpfTracker: got fd-install event: pid=%d fd=%d -> tuple=%s netns=%v ok=%v", pid, fd, tuple, netns, ok)
+	log.Debug().Msgf("EbpfTracker: got fd-install event: pid=%d fd=%d -> tuple=%s netns=%v ok=%v", pid, fd, tuple, netns, ok)
 	if !ok {
 		return
 	}
@@ -296,7 +296,7 @@ func (t *EbpfTracker) handleConnection(ev tracer.EventType, tuple fourTuple, pid
 	t.Lock()
 	defer t.Unlock()
 
-	log.Debugf("handleConnection(%v, [%v:%v --> %v:%v], pid=%v, netNS=%v)",
+	log.Debug().Msgf("handleConnection(%v, [%v:%v --> %v:%v], pid=%v, netNS=%v)",
 		ev, tuple.fromAddr, tuple.fromPort, tuple.toAddr, tuple.toPort, pid, networkNamespace)
 
 	key := makeKey(tuple, networkNamespace)
@@ -319,10 +319,10 @@ func (t *EbpfTracker) handleConnection(ev tracer.EventType, tuple fourTuple, pid
 			delete(t.openConnections, key)
 			t.closedConnections = append(t.closedConnections, ebpfClosedConnection{key: key, ebpfDetail: deadConn})
 		} else {
-			log.Debugf("EbpfTracker: unmatched close event: %s pid=%d netns=%v", tuple, pid, networkNamespace)
+			log.Debug().Msgf("EbpfTracker: unmatched close event: %s pid=%d netns=%v", tuple, pid, networkNamespace)
 		}
 	default:
-		log.Debugf("EbpfTracker: unknown event: %s (%d)", ev, ev)
+		log.Debug().Msgf("EbpfTracker: unknown event: %s (%d)", ev, ev)
 	}
 }
 
@@ -351,7 +351,7 @@ func (t *EbpfTracker) feedInitialConnections(conns procspy.ConnIter, seenTuples 
 		key := makeKey(tuple, namespaceID)
 		if _, ok := t.closedDuringInit[key]; !ok {
 			if _, ok := t.openConnections[key]; !ok {
-				log.Debugf("initialConnection([%v], in=%v, pid=%v, netNS=%v)",
+				log.Debug().Msgf("initialConnection([%v], in=%v, pid=%v, netNS=%v)",
 					tuple, incoming, conn.Proc.PID, namespaceID)
 				t.openConnections[key] = ebpfDetail{
 					incoming: incoming,
@@ -366,7 +366,7 @@ func (t *EbpfTracker) feedInitialConnections(conns procspy.ConnIter, seenTuples 
 
 	for _, p := range processesWaitingInAccept {
 		t.tracer.AddFdInstallWatcher(uint32(p))
-		log.Debugf("EbpfTracker: install fd-install watcher: pid=%d", p)
+		log.Debug().Msgf("EbpfTracker: install fd-install watcher: pid=%d", p)
 	}
 }
 

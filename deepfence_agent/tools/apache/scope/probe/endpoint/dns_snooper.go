@@ -1,3 +1,4 @@
+//go:build (linux && amd64) || (linux && ppc64le)
 // +build linux,amd64 linux,ppc64le
 
 // Build constraint to use this file for amd64 & ppc64le on Linux
@@ -12,10 +13,10 @@ import (
 	"time"
 
 	"github.com/bluele/gcache"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -195,7 +196,7 @@ func (s *DNSSnooper) run() {
 			// TimeoutExpired is acceptable due to the Timeout black magic
 			// on the handle.
 			if err != pcap.NextErrorTimeoutExpired {
-				log.Errorf("DNSSnooper: error reading packet data: %s", err)
+				log.Error().Msgf("DNSSnooper: error reading packet data: %s", err)
 			}
 			continue
 		}
@@ -229,9 +230,9 @@ func (s *DNSSnooper) handleDecodingError(err error) {
 	s.decodingErrorCounts[str] = count
 	switch {
 	case count == maxLogsPerDecodingError:
-		log.Errorf("DNSSnooper: error decoding packet: %s (reached %d occurrences, silencing)", str, maxLogsPerDecodingError)
+		log.Error().Msgf("DNSSnooper: error decoding packet: %s (reached %d occurrences, silencing)", str, maxLogsPerDecodingError)
 	case count < maxLogsPerDecodingError:
-		log.Errorf("DNSSnooper: error decoding packet: %s", str)
+		log.Error().Msgf("DNSSnooper: error decoding packet: %s", str)
 	}
 }
 
@@ -280,7 +281,7 @@ func (s *DNSSnooper) processDNSMessage(dns *layers.DNS) {
 
 	// Update cache
 	newDomain := string(domainQueried)
-	log.Debugf("DNSSnooper: caught DNS lookup: %s -> %v", newDomain, ips)
+	log.Debug().Msgf("DNSSnooper: caught DNS lookup: %s -> %v", newDomain, ips)
 	for ip := range ips {
 		if existingDomains, err := s.reverseDNSCache.Get(ip); err != nil {
 			s.reverseDNSCache.Set(ip, map[string]struct{}{newDomain: {}})

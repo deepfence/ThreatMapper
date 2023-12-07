@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 
 	"github.com/weaveworks/scope/probe/appclient"
 	"github.com/weaveworks/scope/report"
@@ -27,7 +27,7 @@ func (p *Probe) publishLoop() {
 	var lastFullReport report.Report
 	ticker := time.NewTicker(time.Second * time.Duration(p.publisher.PublishInterval()))
 	for {
-		log.Infof("Report publish interval: %d", p.publisher.PublishInterval())
+		log.Info().Msgf("Report publish interval: %d", p.publisher.PublishInterval())
 		ticker.Reset(time.Second * time.Duration(p.publisher.PublishInterval()))
 		var err error
 		select {
@@ -67,7 +67,7 @@ func (p *Probe) publishLoop() {
 			return
 		}
 		if err != nil {
-			log.Infof("Publish: %v", err)
+			log.Info().Msgf("Publish: %v", err)
 		}
 	}
 }

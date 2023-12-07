@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	docker "github.com/fsouza/go-dockerclient"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/weaveworks/scope/report"
 )
@@ -135,11 +135,11 @@ func (c *container) StartGatheringStats(client StatsGatherer) error {
 		Done:   done,
 	}
 
-	log.Debugf("docker container: collecting stats for %s", c.container.ID)
+	log.Debug().Msgf("docker container: collecting stats for %s", c.container.ID)
 
 	go func() {
 		if err := client.Stats(opts); err != nil && err != io.EOF && err != io.ErrClosedPipe {
-			log.Errorf("docker container: error collecting stats for %s: %v", c.container.ID, err)
+			log.Error().Msgf("docker container: error collecting stats for %s: %v", c.container.ID, err)
 		}
 	}()
 
@@ -147,7 +147,7 @@ func (c *container) StartGatheringStats(client StatsGatherer) error {
 		for s := range stats {
 			c.Lock()
 			if c.numPending >= len(c.pendingStats) {
-				log.Debugf("docker container: dropping stats for %s", c.container.ID)
+				log.Debug().Msgf("docker container: dropping stats for %s", c.container.ID)
 			} else {
 				c.latestStats = *s
 				c.pendingStats[c.numPending] = *s
@@ -155,7 +155,7 @@ func (c *container) StartGatheringStats(client StatsGatherer) error {
 			}
 			c.Unlock()
 		}
-		log.Debugf("docker container: stopped collecting stats for %s", c.container.ID)
+		log.Debug().Msgf("docker container: stopped collecting stats for %s", c.container.ID)
 		c.Lock()
 		if c.stopStats == done {
 			c.stopStats = nil
@@ -233,7 +233,7 @@ func (c *container) NetworkInfo(localAddrs []net.IP) *report.Sets {
 		// Fetch IP addresses from the container's namespace
 		cidrs, err := namespaceIPAddresses(c.container.State.Pid)
 		if err != nil {
-			log.Debugf("container %s: failed to get addresses: %s", c.container.ID, err)
+			log.Debug().Msgf("container %s: failed to get addresses: %s", c.container.ID, err)
 		}
 		for _, cidr := range cidrs {
 			// This address can duplicate an address fetched from Docker earlier,
