@@ -14,7 +14,7 @@ const Dashboard = () => {
         <TopAttackPaths />
       </div>
       <div className="col-span-2 xl:col-span-1">
-        <TopRisks type="vulnerability" />
+        <TopRisks type="vulnerability" to="/vulnerability/unique-vulnerabilities" />
       </div>
       <div className="col-span-2 xl:col-span-1">
         <TopRisksRuntimeDummy />
@@ -23,10 +23,10 @@ const Dashboard = () => {
         <Posture />
       </div>
       <div className="col-span-2 xl:col-span-1">
-        <TopRisks type="secret" />
+        <TopRisks type="secret" to="/secret/unique-secrets" />
       </div>
       <div className="col-span-2 xl:col-span-1">
-        <TopRisks type="malware" />
+        <TopRisks type="malware" to="/malware/unique-malwares" />
       </div>
     </div>
   );

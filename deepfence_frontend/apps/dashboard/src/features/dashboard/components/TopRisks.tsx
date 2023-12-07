@@ -13,6 +13,7 @@ import { CardHeader } from '@/features/dashboard/components/CardHeader';
 import { queries } from '@/queries';
 import { VulnerabilitySeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 function useSummary(type: 'vulnerability' | 'secret' | 'malware') {
   if (type === 'vulnerability') {
@@ -54,7 +55,13 @@ const RISK_TYPES: {
   },
 };
 
-export const TopRisks = ({ type }: { type: 'vulnerability' | 'secret' | 'malware' }) => {
+export const TopRisks = ({
+  type,
+  to,
+}: {
+  type: 'vulnerability' | 'secret' | 'malware';
+  to: string;
+}) => {
   return (
     <Card className="rounded-[5px] flex flex-col h-full">
       <CardHeader
@@ -64,24 +71,38 @@ export const TopRisks = ({ type }: { type: 'vulnerability' | 'secret' | 'malware
       />
       <div className="flex-1 flex items-center justify-center">
         <Suspense fallback={<CircleSpinner size="md" />}>
-          <TopRisksContent type={type} />
+          <TopRisksContent type={type} to={to} />
         </Suspense>
       </div>
     </Card>
   );
 };
 
-const TopRisksContent = ({ type }: { type: 'vulnerability' | 'secret' | 'malware' }) => {
+const TopRisksContent = ({
+  type,
+  to,
+}: {
+  type: 'vulnerability' | 'secret' | 'malware';
+  to: string;
+}) => {
   const { data } = useSummary(type);
   if (!data) throw new Error('data is empty');
   const chartOptions = getChartOptions({
     data: data.severityBreakdown,
     total: data.total,
   });
+
+  const { navigate } = usePageNavigation();
   return (
     <div className="flex-1 flex flex-col items-center py-1.5">
       <div className="max-w-[162px] max-h-[162px] h-[162px] w-[162px]">
-        <ReactECharts theme="dark" option={chartOptions} />
+        <ReactECharts
+          theme="dark"
+          option={chartOptions}
+          onChartClick={({ name }: { name: string; value: string | number | Date }) => {
+            navigate(`${to}?severity=${name.toLowerCase()}`);
+          }}
+        />
       </div>
       <div className="mt-4 flex flex-col min-w-[184px] self-center">
         {Object.keys(data.severityBreakdown).map((severity) => {
@@ -90,7 +111,11 @@ const TopRisksContent = ({ type }: { type: 'vulnerability' | 'secret' | 'malware
               key={severity}
               className="flex items-center w-full justify-between py-[3px] pr-2"
             >
-              <SeverityLegend severity={severity} className="text-p4" />
+              <SeverityLegend
+                severity={severity}
+                className="text-p4"
+                to={`${to}?severity=${severity}`}
+              />
               <div className="dark:text-text-input-value text-p7">
                 {abbreviateNumber(
                   data.severityBreakdown[severity as keyof typeof data.severityBreakdown],
@@ -137,7 +162,7 @@ function getChartOptions({
           fontWeight: 600,
           fontFamily: preset.theme.extend.fontFamily.sans.join(','),
         },
-        cursor: 'default',
+        cursor: 'pointer',
         emphasis: {
           disabled: true,
         },

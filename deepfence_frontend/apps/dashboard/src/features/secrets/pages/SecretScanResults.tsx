@@ -25,7 +25,6 @@ import {
   DropdownItem,
   DropdownSeparator,
   getRowSelectionColumn,
-  IconButton,
   Modal,
   RowSelectionState,
   SortingState,
@@ -1710,6 +1709,8 @@ const SeverityCounts = ({
     [k: string]: number;
   };
 }) => {
+  const [, setSearchParams] = useSearchParams();
+
   return (
     <>
       {Object.keys(severityCounts)?.map((key) => {
@@ -1721,7 +1722,21 @@ const SeverityCounts = ({
                 backgroundColor: SEVERITY_COLORS[key.toLowerCase() as SecretSeverityType],
               }}
             ></div>
-            <div className="capitalize text-p7 dark:text-text-text-and-icon">{key}</div>
+            <button
+              className="capitalize text-p7 dark:text-text-text-and-icon"
+              onClick={() => {
+                setSearchParams((prev) => {
+                  prev.delete('page');
+                  Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                    prev.delete(key);
+                  });
+                  prev.append('severity', key.toLowerCase());
+                  return prev;
+                });
+              }}
+            >
+              {key}
+            </button>
             <div className="ml-auto text-p7 dark:text-text-input-value">
               {abbreviateNumber(severityCounts?.[key] ?? 0)}
             </div>
@@ -1791,11 +1806,25 @@ const SeverityCountWidget = () => {
     [k: string]: number;
   } = data?.severityCounts ?? {};
 
+  const [, setSearchParams] = useSearchParams();
+
   return (
     <ScanStatusWrapper scanStatusResult={scanStatusResult}>
       <div className="flex items-center">
         <div className="h-[140px] w-[140px]">
-          <SecretScanResultsPieChart data={severityCounts} />
+          <SecretScanResultsPieChart
+            data={severityCounts}
+            onChartClick={({ name }: { name: string; value: string | number | Date }) => {
+              setSearchParams((prev) => {
+                prev.delete('page');
+                Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                  prev.delete(key);
+                });
+                prev.append('severity', name.toLowerCase());
+                return prev;
+              });
+            }}
+          />
         </div>
         <div className="flex flex-1 justify-center">
           <div className="flex flex-col flex-1 max-w-[160px] gap-1">

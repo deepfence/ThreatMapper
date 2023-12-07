@@ -1,5 +1,7 @@
+import { upperFirst } from 'lodash-es';
 import { cn } from 'tailwind-preset';
 
+import { DFLink } from '@/components/DFLink';
 import { SeverityScoreIcon } from '@/components/icons/common/SeverityScore';
 import { getColorForCVSSScore, POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { PostureSeverityType } from '@/types/common';
@@ -81,10 +83,12 @@ export const SeverityLegend = ({
   severity,
   className,
   iconClassName,
+  to,
 }: {
   severity: string;
   className?: string;
   iconClassName?: string;
+  to?: string;
 }) => {
   return (
     <div
@@ -105,7 +109,13 @@ export const SeverityLegend = ({
           iconClassName,
         )}
       ></div>
-      <div>{severity}</div>
+      {to ? (
+        <DFLink to={to} unstyled>
+          {upperFirst(severity)}
+        </DFLink>
+      ) : (
+        <> {upperFirst(severity)}</>
+      )}
     </div>
   );
 };

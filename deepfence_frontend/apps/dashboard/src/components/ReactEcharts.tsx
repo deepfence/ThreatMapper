@@ -47,6 +47,7 @@ export interface ReactEChartsProps {
   settings?: SetOptionOpts;
   loading?: boolean;
   theme?: 'light' | 'dark';
+  onChartClick?: (data: { name: string; value: string | number | Date }) => void;
 }
 
 use([
@@ -70,6 +71,7 @@ export function ReactECharts({
   settings,
   loading,
   theme,
+  onChartClick,
 }: ReactEChartsProps): JSX.Element {
   const chartRef = useRef<HTMLDivElement>(null);
   const [measurerRef, { width, height }] = useMeasure<HTMLDivElement>();
@@ -94,7 +96,19 @@ export function ReactECharts({
     if (chartRef.current !== null) {
       const chart = getInstanceByDom(chartRef.current);
       chart?.setOption(option, settings);
+      chart?.on('click', (params) => {
+        onChartClick?.({
+          name: params.name,
+          value: params.value as string | number | Date,
+        });
+      });
     }
+    return () => {
+      if (chartRef.current !== null) {
+        const chart = getInstanceByDom(chartRef.current);
+        chart?.off('click');
+      }
+    };
   }, [option, settings, theme]); // Whenever theme changes we need to add option and setting due to it being deleted in cleanup function
 
   useEffect(() => {

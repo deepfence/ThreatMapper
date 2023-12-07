@@ -24,7 +24,6 @@ import {
   Dropdown,
   DropdownItem,
   getRowSelectionColumn,
-  IconButton,
   Modal,
   RowSelectionState,
   SortingState,
@@ -1525,6 +1524,8 @@ const StatusesCount = ({
     [k: string]: number;
   };
 }) => {
+  const [, setSearchParams] = useSearchParams();
+
   return (
     <div className="col-span-6">
       <div className="flex justify-evenly gap-8">
@@ -1532,18 +1533,30 @@ const StatusesCount = ({
           return (
             <div key={key} className="col-span-2 dark:text-text-text-and-icon">
               <span className="text-p1">{capitalize(key)}</span>
-              <div className="flex flex-1 max-w-[160px] gap-1 items-center">
-                <div
+              <button
+                className="flex flex-1 max-w-[160px] gap-1 items-center"
+                onClick={() => {
+                  setSearchParams((prev) => {
+                    prev.delete('page');
+                    Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                      prev.delete(key);
+                    });
+                    prev.append('status', key.toLowerCase());
+                    return prev;
+                  });
+                }}
+              >
+                <span
                   className="h-4 w-4 rounded-full"
                   style={{
                     backgroundColor:
                       POSTURE_STATUS_COLORS[key.toLowerCase() as PostureSeverityType],
                   }}
-                ></div>
+                ></span>
                 <span className="text-h1 dark:text-text-input-value pl-1.5">
                   {abbreviateNumber(statusCounts?.[key])}
                 </span>
-              </div>
+              </button>
             </div>
           );
         })}
@@ -1619,6 +1632,8 @@ const SeverityCountWidget = () => {
     return acc;
   }, 0);
 
+  const [, setSearchParams] = useSearchParams();
+
   return (
     <div className="grid grid-cols-12 px-6 items-center">
       <ScanStatusWrapper
@@ -1626,14 +1641,35 @@ const SeverityCountWidget = () => {
         className="col-span-4 flex items-center justify-center min-h-[120px]"
       >
         <div className="col-span-2 h-[120px] w-[120px]">
-          <PostureScanResultsPieChart data={statusCounts} />
+          <PostureScanResultsPieChart
+            data={statusCounts}
+            onChartClick={({ name }: { name: string; value: string | number | Date }) => {
+              setSearchParams((prev) => {
+                prev.delete('page');
+                Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                  prev.delete(key);
+                });
+                prev.append('status', name.toLowerCase());
+                return prev;
+              });
+            }}
+          />
         </div>
       </ScanStatusWrapper>
 
       {isScanComplete(scanStatusResult?.status ?? '') ? (
         <div className="col-span-2 dark:text-text-text-and-icon">
           <span className="text-p1">Total compliances</span>
-          <div className="flex flex-1 max-w-[160px] gap-1 items-center  dark:text-text-input-value">
+          <button
+            className="flex flex-1 max-w-[160px] gap-1 items-center  dark:text-text-input-value"
+            onClick={() => {
+              setSearchParams((prev) => {
+                prev.delete('status');
+                prev.delete('page');
+                return prev;
+              });
+            }}
+          >
             {keys(statusCounts).length > 0 ? (
               <>
                 <TaskIcon />
@@ -1644,7 +1680,7 @@ const SeverityCountWidget = () => {
             ) : (
               <ScanStatusNoData />
             )}
-          </div>
+          </button>
         </div>
       ) : null}
       <div className="w-px h-[60%] dark:bg-bg-grid-border" />

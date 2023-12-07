@@ -11,6 +11,7 @@ import { CardHeader } from '@/features/vulnerabilities/components/landing/CardHe
 import { queries } from '@/queries';
 import { VulnerabilitySeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 function getChartOptions({
   data,
@@ -45,7 +46,7 @@ function getChartOptions({
           fontWeight: 600,
           fontFamily: preset.theme.extend.fontFamily.sans.join(','),
         },
-        cursor: 'default',
+        cursor: 'pointer',
         emphasis: {
           disabled: true,
         },
@@ -126,7 +127,7 @@ const UniqueVulnerabilitiesCardContent = () => {
     ...queries.vulnerability.uniqueVulnerabilitiesCount(),
   });
 
-  return <CardContent data={data} />;
+  return <CardContent data={data} to="/vulnerability/unique-vulnerabilities" />;
 };
 
 const MostExploitableVulnerabilitiesCardContent = () => {
@@ -134,19 +135,33 @@ const MostExploitableVulnerabilitiesCardContent = () => {
     ...queries.vulnerability.mostExploitableVulnerabilitiesCount(),
   });
 
-  return <CardContent data={data} />;
+  return <CardContent data={data} to="/vulnerability/most-exploitable" />;
 };
 
-const CardContent = ({ data }: { data: VulnerabilitiesCountsCardData }) => {
+const CardContent = ({
+  data,
+  to,
+}: {
+  data: VulnerabilitiesCountsCardData;
+  to: string;
+}) => {
   const chartOptions = getChartOptions({
     data: data.severityBreakdown,
     total: data.total,
   });
 
+  const { navigate } = usePageNavigation();
+
   return (
     <div className="flex-1 flex flex-col items-center">
       <div className="max-w-[200px] max-h-[200px] h-[200px] w-[200px] mt-6">
-        <ReactECharts theme="dark" option={chartOptions} />
+        <ReactECharts
+          theme="dark"
+          option={chartOptions}
+          onChartClick={({ name }: { name: string; value: string | number | Date }) => {
+            navigate(`${to}?severity=${name.toLowerCase()}`);
+          }}
+        />
       </div>
       <div className="mt-8 flex flex-col min-w-[160px] self-center">
         {Object.keys(data.severityBreakdown).map((severity) => {
@@ -155,7 +170,7 @@ const CardContent = ({ data }: { data: VulnerabilitiesCountsCardData }) => {
               key={severity}
               className="flex items-center w-full justify-between py-[3px] pr-2"
             >
-              <SeverityLegend severity={severity} />
+              <SeverityLegend severity={severity} to={`${to}?severity=${severity}`} />
               <div className="dark:text-text-input-value text-p7">
                 {abbreviateNumber(
                   data.severityBreakdown[severity as keyof typeof data.severityBreakdown],
