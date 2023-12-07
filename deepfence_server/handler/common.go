@@ -159,6 +159,10 @@ func (h *Handler) respondError(err error, w http.ResponseWriter) {
 		code = http.StatusNotFound
 	case *ingesters.NodeNotFoundError:
 		code = http.StatusNotFound
+	case *ingesters.NodeNotActiveError:
+		code = http.StatusBadRequest
+	case *ingesters.AgentNotInstalledError:
+		code = http.StatusBadRequest
 	case *ingesters.AlreadyRunningScanError:
 		code = http.StatusConflict
 	case *BadDecoding:
