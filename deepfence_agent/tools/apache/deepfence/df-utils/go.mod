@@ -4,10 +4,7 @@ go 1.20
 
 replace github.com/deepfence/ThreatMapper/deepfence_utils => ../../../../../deepfence_utils
 
-require (
-	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
-	github.com/weaveworks/scope v1.13.2
-)
+require github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 
 require (
 	github.com/mattn/go-colorable v0.1.12 // indirect

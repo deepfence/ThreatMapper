@@ -17,7 +17,6 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/weaveworks/scope/common/hostname"
 )
 
 type PktDirection string
@@ -304,7 +303,14 @@ func WaitFunction(command *exec.Cmd) {
 }
 
 func GetHostName() string {
-	return hostname.Get()
+	if hostname := os.Getenv("SCOPE_HOSTNAME"); hostname != "" {
+		return hostname
+	}
+	hostname, err := os.Hostname()
+	if err != nil {
+		return "(unknown)"
+	}
+	return hostname
 }
 
 func GetRealHostName() string {
