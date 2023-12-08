@@ -49,7 +49,7 @@ export const RemediationNoIntegration = ({
       )}
       {state === 'idle' && data?.success && (
         <div className="text-center text-p2 mt-2 px-6 dark:text-status-success">
-          {data.successMessage ?? 'Successfully added integration.'}
+          {data.successMessage ?? 'Integration added successfully.'}
         </div>
       )}
       {state === 'submitting' && (
