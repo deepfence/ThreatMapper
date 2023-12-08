@@ -184,7 +184,7 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 
 	worker.AddRetryableHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry)
 
-	worker.AddRetryableHandler(utils.DeleteOldRegistryTask, cronjobs.DeleteOldRegistry)
+	worker.AddRetryableHandler(utils.SyncRegistryPostgresNeo4jTask, cronjobs.SyncRegistryPostgresNeo4jTask)
 
 	worker.AddRetryableHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
 
