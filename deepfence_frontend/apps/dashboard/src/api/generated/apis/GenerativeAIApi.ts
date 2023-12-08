@@ -139,6 +139,21 @@ export interface GenerativeAIApiInterface {
     addGenerativeAiIntegrationOpenAI(requestParameters: AddGenerativeAiIntegrationOpenAIRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
     /**
+     * Automatically add Generative AI Integrations using IAM role
+     * @summary Automatically add Generative AI Integration
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof GenerativeAIApiInterface
+     */
+    autoAddGenerativeAiIntegrationRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Automatically add Generative AI Integrations using IAM role
+     * Automatically add Generative AI Integration
+     */
+    autoAddGenerativeAiIntegration(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
      * Delete Generative AI integration
      * @summary Delete Generative AI Integration
      * @param {string} integrationId 
@@ -365,6 +380,41 @@ export class GenerativeAIApi extends runtime.BaseAPI implements GenerativeAIApiI
     async addGenerativeAiIntegrationOpenAI(requestParameters: AddGenerativeAiIntegrationOpenAIRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
         const response = await this.addGenerativeAiIntegrationOpenAIRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Automatically add Generative AI Integrations using IAM role
+     * Automatically add Generative AI Integration
+     */
+    async autoAddGenerativeAiIntegrationRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/generative-ai-integration/auto-add`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Automatically add Generative AI Integrations using IAM role
+     * Automatically add Generative AI Integration
+     */
+    async autoAddGenerativeAiIntegration(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.autoAddGenerativeAiIntegrationRaw(initOverrides);
     }
 
     /**

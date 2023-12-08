@@ -44,6 +44,18 @@ export interface ModelRegistryAccount {
      * @memberof ModelRegistryAccount
      */
     node_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelRegistryAccount
+     */
+    registry_type: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ModelRegistryAccount
+     */
+    syncing: boolean;
 }
 
 /**
@@ -54,6 +66,8 @@ export function instanceOfModelRegistryAccount(value: object): boolean {
     isInstance = isInstance && "container_images" in value;
     isInstance = isInstance && "host_name" in value;
     isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "registry_type" in value;
+    isInstance = isInstance && "syncing" in value;
 
     return isInstance;
 }
@@ -71,6 +85,8 @@ export function ModelRegistryAccountFromJSONTyped(json: any, ignoreDiscriminator
         'container_images': (json['container_images'] === null ? null : (json['container_images'] as Array<any>).map(ModelContainerImageFromJSON)),
         'host_name': json['host_name'],
         'node_id': json['node_id'],
+        'registry_type': json['registry_type'],
+        'syncing': json['syncing'],
     };
 }
 
@@ -86,6 +102,8 @@ export function ModelRegistryAccountToJSON(value?: ModelRegistryAccount | null):
         'container_images': (value.container_images === null ? null : (value.container_images as Array<any>).map(ModelContainerImageToJSON)),
         'host_name': value.host_name,
         'node_id': value.node_id,
+        'registry_type': value.registry_type,
+        'syncing': value.syncing,
     };
 }
 
