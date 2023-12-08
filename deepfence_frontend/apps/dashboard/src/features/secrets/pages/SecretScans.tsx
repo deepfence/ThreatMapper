@@ -262,14 +262,9 @@ const ActionDropdown = ({
     scan_id: scanId,
     node_id: nodeId,
     node_type: nodeType,
-    node_name: nodeName,
     status: scanStatus,
   } = row;
-  const [startScanInfo, setStartScanInfo] = useState({
-    start: false,
-    nodeId: '',
-    nodeType: '',
-  });
+  const [showStartScan, setShowStartScan] = useState(false);
 
   const onDownloadAction = useCallback(() => {
     downloadScan({
@@ -305,16 +300,10 @@ const ActionDropdown = ({
         />
       )}
 
-      {startScanInfo.start && (
+      {showStartScan && (
         <ConfigureScanModal
           open={true}
-          onOpenChange={() =>
-            setStartScanInfo({
-              start: false,
-              nodeId: '',
-              nodeType: '',
-            })
-          }
+          onOpenChange={() => setShowStartScan(false)}
           scanOptions={
             {
               showAdvancedOptions: true,
@@ -322,8 +311,8 @@ const ActionDropdown = ({
               data: {
                 nodes: [
                   {
-                    nodeId: startScanInfo.nodeId,
-                    nodeType: startScanInfo.nodeType,
+                    nodeId,
+                    nodeType,
                   },
                 ],
               },
@@ -355,11 +344,7 @@ const ActionDropdown = ({
               onClick={(e) => {
                 e.preventDefault();
                 if (isScanInProgress(scanStatus)) return;
-                setStartScanInfo({
-                  start: true,
-                  nodeId,
-                  nodeType,
-                });
+                setShowStartScan(true);
               }}
               disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
             >
@@ -1018,9 +1003,7 @@ const BulkActions = ({
       .filter((row) => !isNeverScanned(row.scanStatus))
       .map((row) => row.scanId);
   }, [selectedRows]);
-  console.log('nodesToStartScan', nodesToStartScan);
-  console.log('scanIdsToCancelScan', scanIdsToCancelScan);
-  console.log('scanIdsToDeleteScan', scanIdsToDeleteScan);
+
   return (
     <>
       {openStartScan && (
