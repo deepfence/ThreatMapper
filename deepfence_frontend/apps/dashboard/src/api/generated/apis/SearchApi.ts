@@ -31,6 +31,7 @@ import type {
   ModelMalware,
   ModelMalwareRule,
   ModelPod,
+  ModelRegistryAccount,
   ModelScanInfo,
   ModelSecret,
   ModelSecretRule,
@@ -74,6 +75,8 @@ import {
     ModelMalwareRuleToJSON,
     ModelPodFromJSON,
     ModelPodToJSON,
+    ModelRegistryAccountFromJSON,
+    ModelRegistryAccountToJSON,
     ModelScanInfoFromJSON,
     ModelScanInfoToJSON,
     ModelSecretFromJSON,
@@ -151,6 +154,10 @@ export interface CountMalwaresRequest {
 }
 
 export interface CountPodsRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
+export interface CountRegistryAccountsRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
@@ -243,6 +250,10 @@ export interface SearchMalwaresRequest {
 }
 
 export interface SearchPodsRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
+export interface SearchRegistryAccountsRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
@@ -531,6 +542,22 @@ export interface SearchApiInterface {
      * Count Pods
      */
     countPods(requestParameters: CountPodsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Search across all the data associated with registry account
+     * @summary Count Registry Accounts
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countRegistryAccountsRaw(requestParameters: CountRegistryAccountsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Search across all the data associated with registry account
+     * Count Registry Accounts
+     */
+    countRegistryAccounts(requestParameters: CountRegistryAccountsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
      * Count across all the data associated with secret rules
@@ -899,6 +926,22 @@ export interface SearchApiInterface {
      * Search Pods
      */
     searchPods(requestParameters: SearchPodsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelPod>>;
+
+    /**
+     * Search across all the data associated with registry account
+     * @summary Search Registry Accounts
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    searchRegistryAccountsRaw(requestParameters: SearchRegistryAccountsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelRegistryAccount>>>;
+
+    /**
+     * Search across all the data associated with registry account
+     * Search Registry Accounts
+     */
+    searchRegistryAccounts(requestParameters: SearchRegistryAccountsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryAccount>>;
 
     /**
      * Search across all the data associated with secret ruless
@@ -1621,6 +1664,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
      */
     async countPods(requestParameters: CountPodsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countPodsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Search across all the data associated with registry account
+     * Count Registry Accounts
+     */
+    async countRegistryAccountsRaw(requestParameters: CountRegistryAccountsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/registry-accounts`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Search across all the data associated with registry account
+     * Count Registry Accounts
+     */
+    async countRegistryAccounts(requestParameters: CountRegistryAccountsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countRegistryAccountsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -2518,6 +2600,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
      */
     async searchPods(requestParameters: SearchPodsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelPod>> {
         const response = await this.searchPodsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Search across all the data associated with registry account
+     * Search Registry Accounts
+     */
+    async searchRegistryAccountsRaw(requestParameters: SearchRegistryAccountsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelRegistryAccount>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/registry-accounts`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelRegistryAccountFromJSON));
+    }
+
+    /**
+     * Search across all the data associated with registry account
+     * Search Registry Accounts
+     */
+    async searchRegistryAccounts(requestParameters: SearchRegistryAccountsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryAccount>> {
+        const response = await this.searchRegistryAccountsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
