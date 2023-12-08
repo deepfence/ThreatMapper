@@ -16,5 +16,8 @@
   "prettier.prettierPath": "./node_modules/prettier/index.cjs",
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }

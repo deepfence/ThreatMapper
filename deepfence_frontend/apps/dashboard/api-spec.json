@@ -45,9 +45,7 @@
   "paths": {
     "/deepfence/api-token": {
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Get User's API Tokens",
         "description": "Get logged in user's API Tokens",
         "operationId": "getApiTokens",
@@ -111,9 +109,7 @@
     },
     "/deepfence/api-token/reset": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Reset User's API Tokens",
         "description": "Reset user's API Tokens",
         "operationId": "resetApiTokens",
@@ -177,9 +173,7 @@
     },
     "/deepfence/auth/token": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Get Access Token for API Token",
         "description": "Get access token for programmatic API access, by providing API Token",
         "operationId": "authToken",
@@ -244,9 +238,7 @@
     },
     "/deepfence/auth/token/refresh": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Refresh access token",
         "description": "Reissue access token using refresh token",
         "operationId": "authTokenRefresh",
@@ -307,9 +299,7 @@
     },
     "/deepfence/cloud-node/account": {
       "post": {
-        "tags": [
-          "Cloud Nodes"
-        ],
+        "tags": ["Cloud Nodes"],
         "summary": "Register Cloud Node Account",
         "description": "Register Cloud Node Account and return any pending compliance scans from console",
         "operationId": "registerCloudNodeAccount",
@@ -379,9 +369,7 @@
     },
     "/deepfence/cloud-node/list/accounts": {
       "post": {
-        "tags": [
-          "Cloud Nodes"
-        ],
+        "tags": ["Cloud Nodes"],
         "summary": "List Cloud Node Accounts",
         "description": "List Cloud Node Accounts registered with the console",
         "operationId": "listCloudNodeAccount",
@@ -451,9 +439,7 @@
     },
     "/deepfence/cloud-node/list/providers": {
       "get": {
-        "tags": [
-          "Cloud Nodes"
-        ],
+        "tags": ["Cloud Nodes"],
         "summary": "List Cloud Node Providers",
         "description": "List Cloud Node Providers registered with the console",
         "operationId": "listCloudProviders",
@@ -514,9 +500,7 @@
     },
     "/deepfence/complete/host": {
       "post": {
-        "tags": [
-          "Completion"
-        ],
+        "tags": ["Completion"],
         "summary": "Get Completion for host fields",
         "description": "Complete host info",
         "operationId": "completeHostInfo",
@@ -586,9 +570,7 @@
     },
     "/deepfence/complete/process": {
       "post": {
-        "tags": [
-          "Completion"
-        ],
+        "tags": ["Completion"],
         "summary": "Get Completion for process fields",
         "description": "Complete process info",
         "operationId": "completeProcessInfo",
@@ -658,9 +640,7 @@
     },
     "/deepfence/complete/vulnerability": {
       "post": {
-        "tags": [
-          "Completion"
-        ],
+        "tags": ["Completion"],
         "summary": "Get Completion for vulnerability fields",
         "description": "Complete vulnerability info",
         "operationId": "completeVulnerabilityInfo",
@@ -730,9 +710,7 @@
     },
     "/deepfence/controls/agent": {
       "post": {
-        "tags": [
-          "Controls"
-        ],
+        "tags": ["Controls"],
         "summary": "Fetch Agent Actions",
         "description": "Fetch actions for a given agent",
         "operationId": "getAgentControls",
@@ -802,9 +780,7 @@
     },
     "/deepfence/controls/agent-init": {
       "post": {
-        "tags": [
-          "Controls"
-        ],
+        "tags": ["Controls"],
         "summary": "Fetch Agent Init Actions",
         "description": "Fetch initial actions for a given agent after it started",
         "operationId": "getAgentInitControls",
@@ -874,9 +850,7 @@
     },
     "/deepfence/controls/agent-plugins/disable": {
       "post": {
-        "tags": [
-          "Controls"
-        ],
+        "tags": ["Controls"],
         "summary": "Schedule new agent plugin version disabling",
         "description": "Schedule agent plugin disable",
         "operationId": "disableAgentPlugin",
@@ -939,9 +913,7 @@
     },
     "/deepfence/controls/agent-plugins/enable": {
       "post": {
-        "tags": [
-          "Controls"
-        ],
+        "tags": ["Controls"],
         "summary": "Schedule new agent plugin version enabling",
         "description": "Schedule agent plugin enable",
         "operationId": "enableAgentPlugin",
@@ -1004,9 +976,7 @@
     },
     "/deepfence/controls/agent-upgrade": {
       "post": {
-        "tags": [
-          "Controls"
-        ],
+        "tags": ["Controls"],
         "summary": "Schedule new agent version upgrade",
         "description": "Schedule new agent version upgrade",
         "operationId": "upgradeAgentVersion",
@@ -1069,9 +1039,7 @@
     },
     "/deepfence/controls/cloud-node": {
       "post": {
-        "tags": [
-          "Controls"
-        ],
+        "tags": ["Controls"],
         "summary": "Fetch Cloud Node Controls",
         "description": "Fetch controls for a cloud node",
         "operationId": "getCloudNodeControls",
@@ -1141,9 +1109,7 @@
     },
     "/deepfence/controls/cloud-node/disable": {
       "post": {
-        "tags": [
-          "Controls"
-        ],
+        "tags": ["Controls"],
         "summary": "Disable Cloud Node Controls",
         "description": "Disable controls for a cloud node",
         "operationId": "disableCloudNodeControls",
@@ -1206,9 +1172,7 @@
     },
     "/deepfence/controls/cloud-node/enable": {
       "post": {
-        "tags": [
-          "Controls"
-        ],
+        "tags": ["Controls"],
         "summary": "Enable Cloud Node Controls",
         "description": "Enable controls for a cloud node",
         "operationId": "enableCloudNodeControls",
@@ -1271,9 +1235,7 @@
     },
     "/deepfence/controls/kubernetes-cluster": {
       "post": {
-        "tags": [
-          "Controls"
-        ],
+        "tags": ["Controls"],
         "summary": "Fetch Kubernetes Cluster Actions",
         "description": "Fetch actions for a given Kubernetes Cluster",
         "operationId": "getKubernetesClusterControls",
@@ -1343,9 +1305,7 @@
     },
     "/deepfence/database/vulnerability": {
       "put": {
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "summary": "Upload Vulnerability Database",
         "description": "Upload Vulnerability Database for use in vulnerability scans",
         "operationId": "uploadVulnerabilityDatabase",
@@ -1415,9 +1375,7 @@
     },
     "/deepfence/diagnosis/agent-logs": {
       "post": {
-        "tags": [
-          "Diagnosis"
-        ],
+        "tags": ["Diagnosis"],
         "summary": "Generate Agent Diagnostic Logs",
         "description": "Generate Agent Diagnostic Logs",
         "operationId": "generateAgentDiagnosticLogs",
@@ -1480,9 +1438,7 @@
     },
     "/deepfence/diagnosis/agent-logs/status/{node_id}": {
       "put": {
-        "tags": [
-          "Diagnosis"
-        ],
+        "tags": ["Diagnosis"],
         "summary": "Update Agent Diagnostic Logs Status",
         "description": "Update agent diagnostic logs status",
         "operationId": "updateAgentDiagnosticLogsStatus",
@@ -1555,9 +1511,7 @@
     },
     "/deepfence/diagnosis/cloud-scanner-logs": {
       "post": {
-        "tags": [
-          "Diagnosis"
-        ],
+        "tags": ["Diagnosis"],
         "summary": "Generate Cloud Scanner Diagnostic Logs",
         "description": "Generate Cloud Scanner Diagnostic Logs",
         "operationId": "generateCloudScannerDiagnosticLogs",
@@ -1620,9 +1574,7 @@
     },
     "/deepfence/diagnosis/cloud-scanner-logs/status/{node_id}": {
       "put": {
-        "tags": [
-          "Diagnosis"
-        ],
+        "tags": ["Diagnosis"],
         "summary": "Update Cloud Scanner Diagnostic Logs Status",
         "description": "Update cloud scanner diagnostic logs status",
         "operationId": "updateCloudScannerDiagnosticLogsStatus",
@@ -1695,9 +1647,7 @@
     },
     "/deepfence/diagnosis/console-logs": {
       "post": {
-        "tags": [
-          "Diagnosis"
-        ],
+        "tags": ["Diagnosis"],
         "summary": "Generate Console Diagnostic Logs",
         "description": "Generate Console Diagnostic Logs",
         "operationId": "generateConsoleDiagnosticLogs",
@@ -1760,9 +1710,7 @@
     },
     "/deepfence/diagnosis/diagnostic-logs": {
       "get": {
-        "tags": [
-          "Diagnosis"
-        ],
+        "tags": ["Diagnosis"],
         "summary": "Get Diagnostic Logs",
         "description": "Get diagnostic logs download url links",
         "operationId": "getDiagnosticLogs",
@@ -1823,9 +1771,7 @@
     },
     "/deepfence/diagnosis/notification": {
       "get": {
-        "tags": [
-          "Diagnosis"
-        ],
+        "tags": ["Diagnosis"],
         "summary": "Get Diagnostic Notification",
         "description": "Get Diagnostic Notification",
         "operationId": "diagnosticNotification",
@@ -1889,9 +1835,7 @@
     },
     "/deepfence/diff-add/cloud-compliance": {
       "post": {
-        "tags": [
-          "Diff Add"
-        ],
+        "tags": ["Diff Add"],
         "summary": "Get Cloud Compliance Diff",
         "description": "Get Cloud Compliance Diff between two scans",
         "operationId": "diffAddCloudCompliance",
@@ -1961,9 +1905,7 @@
     },
     "/deepfence/diff-add/compliance": {
       "post": {
-        "tags": [
-          "Diff Add"
-        ],
+        "tags": ["Diff Add"],
         "summary": "Get Compliance Diff",
         "description": "Get Compliance Diff between two scans",
         "operationId": "diffAddCompliance",
@@ -2033,9 +1975,7 @@
     },
     "/deepfence/diff-add/malware": {
       "post": {
-        "tags": [
-          "Diff Add"
-        ],
+        "tags": ["Diff Add"],
         "summary": "Get Malware Diff",
         "description": "Get Malware Diff between two scans",
         "operationId": "diffAddMalware",
@@ -2105,9 +2045,7 @@
     },
     "/deepfence/diff-add/secret": {
       "post": {
-        "tags": [
-          "Diff Add"
-        ],
+        "tags": ["Diff Add"],
         "summary": "Get Secret Diff",
         "description": "Get Secret Diff between two scans",
         "operationId": "diffAddSecret",
@@ -2177,9 +2115,7 @@
     },
     "/deepfence/diff-add/vulnerability": {
       "post": {
-        "tags": [
-          "Diff Add"
-        ],
+        "tags": ["Diff Add"],
         "summary": "Get Vulnerability Diff",
         "description": "Get Vulnerability Diff between two scans",
         "operationId": "diffAddVulnerability",
@@ -2249,9 +2185,7 @@
     },
     "/deepfence/end-user-license-agreement": {
       "get": {
-        "tags": [
-          "Common"
-        ],
+        "tags": ["Common"],
         "summary": "Get End User License Agreement",
         "description": "Get End User License Agreement",
         "operationId": "eula",
@@ -2307,9 +2241,7 @@
     },
     "/deepfence/filters/cloud-compliance": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Get Cloud Compliance Filters",
         "description": "Get all applicable filter values for cloud compliance",
         "operationId": "getCloudComplianceFilters",
@@ -2379,9 +2311,7 @@
     },
     "/deepfence/filters/compliance": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Get Compliance Filters",
         "description": "Get all applicable filter values for compliance",
         "operationId": "getComplianceFilters",
@@ -2451,9 +2381,7 @@
     },
     "/deepfence/generative-ai-integration": {
       "get": {
-        "tags": [
-          "Generative AI"
-        ],
+        "tags": ["Generative AI"],
         "summary": "List Generative AI Integrations",
         "description": "List all the added Generative AI Integrations",
         "operationId": "listGenerativeAiIntegration",
@@ -2462,10 +2390,7 @@
             "name": "integration_type",
             "in": "query",
             "schema": {
-              "enum": [
-                "openai",
-                "amazon-bedrock"
-              ],
+              "enum": ["openai", "amazon-bedrock"],
               "type": "string"
             }
           }
@@ -2530,9 +2455,7 @@
     },
     "/deepfence/generative-ai-integration/auto-add": {
       "post": {
-        "tags": [
-          "Generative AI"
-        ],
+        "tags": ["Generative AI"],
         "summary": "Automatically add Generative AI Integration",
         "description": "Automatically add Generative AI Integrations using IAM role",
         "operationId": "autoAddGenerativeAiIntegration",
@@ -2586,9 +2509,7 @@
     },
     "/deepfence/generative-ai-integration/bedrock": {
       "post": {
-        "tags": [
-          "Generative AI"
-        ],
+        "tags": ["Generative AI"],
         "summary": "Add AWS Bedrock Generative AI Integration",
         "description": "Add a new AWS Bedrock Generative AI Integration",
         "operationId": "addGenerativeAiIntegrationBedrock",
@@ -2658,9 +2579,7 @@
     },
     "/deepfence/generative-ai-integration/openai": {
       "post": {
-        "tags": [
-          "Generative AI"
-        ],
+        "tags": ["Generative AI"],
         "summary": "Add OpenAI Generative AI Integration",
         "description": "Add a new OpenAI Generative AI Integration",
         "operationId": "addGenerativeAiIntegrationOpenAI",
@@ -2730,9 +2649,7 @@
     },
     "/deepfence/generative-ai-integration/query/cloud-posture": {
       "post": {
-        "tags": [
-          "Generative AI"
-        ],
+        "tags": ["Generative AI"],
         "summary": "Send Cloud Posture query to Generative AI Integration",
         "description": "Send Cloud Posture query to Generative AI Integration",
         "operationId": "generativeAiIntegrationCloudPostureQuery",
@@ -2802,9 +2719,7 @@
     },
     "/deepfence/generative-ai-integration/query/kubernetes-posture": {
       "post": {
-        "tags": [
-          "Generative AI"
-        ],
+        "tags": ["Generative AI"],
         "summary": "Send Kubernetes Posture query to Generative AI Integration",
         "description": "Send Kubernetes Posture query to Generative AI Integration",
         "operationId": "generativeAiIntegrationKubernetesPostureQuery",
@@ -2874,9 +2789,7 @@
     },
     "/deepfence/generative-ai-integration/query/linux-posture": {
       "post": {
-        "tags": [
-          "Generative AI"
-        ],
+        "tags": ["Generative AI"],
         "summary": "Send Linux Posture query to Generative AI Integration",
         "description": "Send Linux Posture query to Generative AI Integration",
         "operationId": "generativeAiIntegrationLinuxPostureQuery",
@@ -2946,9 +2859,7 @@
     },
     "/deepfence/generative-ai-integration/query/malware": {
       "post": {
-        "tags": [
-          "Generative AI"
-        ],
+        "tags": ["Generative AI"],
         "summary": "Send Malware query to Generative AI Integration",
         "description": "Send Malware query to Generative AI Integration",
         "operationId": "generativeAiIntegrationMalwareQuery",
@@ -3018,9 +2929,7 @@
     },
     "/deepfence/generative-ai-integration/query/secret": {
       "post": {
-        "tags": [
-          "Generative AI"
-        ],
+        "tags": ["Generative AI"],
         "summary": "Send Secret query to Generative AI Integration",
         "description": "Send Secret query to Generative AI Integration",
         "operationId": "generativeAiIntegrationSecretQuery",
@@ -3090,9 +2999,7 @@
     },
     "/deepfence/generative-ai-integration/query/vulnerability": {
       "post": {
-        "tags": [
-          "Generative AI"
-        ],
+        "tags": ["Generative AI"],
         "summary": "Send Vulnerability query to Generative AI Integration",
         "description": "Send Vulnerability query to Generative AI Integration",
         "operationId": "generativeAiIntegrationVulnerabilityQuery",
@@ -3162,9 +3069,7 @@
     },
     "/deepfence/generative-ai-integration/{integration_id}": {
       "delete": {
-        "tags": [
-          "Generative AI"
-        ],
+        "tags": ["Generative AI"],
         "summary": "Delete Generative AI Integration",
         "description": "Delete Generative AI integration",
         "operationId": "deleteGenerativeAiIntegration",
@@ -3228,9 +3133,7 @@
     },
     "/deepfence/generative-ai-integration/{integration_id}/default": {
       "put": {
-        "tags": [
-          "Generative AI"
-        ],
+        "tags": ["Generative AI"],
         "summary": "Set Default Generative AI Integration",
         "description": "Set Default Generative AI integration",
         "operationId": "setDefaultGenerativeAiIntegration",
@@ -3294,9 +3197,7 @@
     },
     "/deepfence/graph/threat": {
       "post": {
-        "tags": [
-          "Threat"
-        ],
+        "tags": ["Threat"],
         "summary": "Get Threat Graph",
         "description": "Retrieve the full threat graph associated with the account",
         "operationId": "getThreatGraph",
@@ -3366,9 +3267,7 @@
     },
     "/deepfence/graph/threat/individual": {
       "post": {
-        "tags": [
-          "Threat"
-        ],
+        "tags": ["Threat"],
         "summary": "Get Vulnerability Threat Graph",
         "description": "Retrieve threat graph associated with vulnerabilities",
         "operationId": "getIndividualThreatGraph",
@@ -3441,9 +3340,7 @@
     },
     "/deepfence/graph/topology/": {
       "post": {
-        "tags": [
-          "Topology"
-        ],
+        "tags": ["Topology"],
         "summary": "Get Topology Graph",
         "description": "Retrieve the full topology graph associated with the account",
         "operationId": "getTopologyGraph",
@@ -3513,9 +3410,7 @@
     },
     "/deepfence/graph/topology/containers": {
       "post": {
-        "tags": [
-          "Topology"
-        ],
+        "tags": ["Topology"],
         "summary": "Get Containers Topology Graph",
         "description": "Retrieve the full topology graph associated with the account from Containers",
         "operationId": "getContainersTopologyGraph",
@@ -3585,9 +3480,7 @@
     },
     "/deepfence/graph/topology/delta": {
       "post": {
-        "tags": [
-          "Topology"
-        ],
+        "tags": ["Topology"],
         "summary": "Get Topology Delta",
         "description": "Retrieve addition or deletion toplogy deltas",
         "operationId": "getTopologyDelta",
@@ -3657,9 +3550,7 @@
     },
     "/deepfence/graph/topology/hosts": {
       "post": {
-        "tags": [
-          "Topology"
-        ],
+        "tags": ["Topology"],
         "summary": "Get Hosts Topology Graph",
         "description": "Retrieve the full topology graph associated with the account from Hosts",
         "operationId": "getHostsTopologyGraph",
@@ -3729,9 +3620,7 @@
     },
     "/deepfence/graph/topology/kubernetes": {
       "post": {
-        "tags": [
-          "Topology"
-        ],
+        "tags": ["Topology"],
         "summary": "Get Kubernetes Topology Graph",
         "description": "Retrieve the full topology graph associated with the account from Kubernetes",
         "operationId": "getKubernetesTopologyGraph",
@@ -3801,9 +3690,7 @@
     },
     "/deepfence/graph/topology/pods": {
       "post": {
-        "tags": [
-          "Topology"
-        ],
+        "tags": ["Topology"],
         "summary": "Get Pods Topology Graph",
         "description": "Retrieve the full topology graph associated with the account from Pods",
         "operationId": "getPodsTopologyGraph",
@@ -3873,9 +3760,7 @@
     },
     "/deepfence/ingest/cloud-compliance": {
       "post": {
-        "tags": [
-          "Cloud Scanner"
-        ],
+        "tags": ["Cloud Scanner"],
         "summary": "Ingest Cloud Compliances",
         "description": "Ingest Cloud compliances found while scanning cloud provider",
         "operationId": "ingestCloudCompliances",
@@ -3942,9 +3827,7 @@
     },
     "/deepfence/ingest/cloud-compliance-status": {
       "post": {
-        "tags": [
-          "Cloud Scanner"
-        ],
+        "tags": ["Cloud Scanner"],
         "summary": "Ingest Cloud Compliances scan status",
         "description": "Ingest Cloud compliances found while scanning cloud provider",
         "operationId": "ingestCloudComplianceScanStatus",
@@ -4011,9 +3894,7 @@
     },
     "/deepfence/ingest/cloud-resources": {
       "post": {
-        "tags": [
-          "Cloud Resources"
-        ],
+        "tags": ["Cloud Resources"],
         "summary": "Ingest Cloud resources",
         "description": "Ingest Clouds Resources found while scanning cloud provider",
         "operationId": "ingestCloudResources",
@@ -4080,9 +3961,7 @@
     },
     "/deepfence/ingest/compliance": {
       "post": {
-        "tags": [
-          "Compliance"
-        ],
+        "tags": ["Compliance"],
         "summary": "Ingest Compliances",
         "description": "Ingest compliance issues found while scanning the agent",
         "operationId": "ingestCompliances",
@@ -4149,9 +4028,7 @@
     },
     "/deepfence/ingest/compliance-scan-logs": {
       "post": {
-        "tags": [
-          "Compliance"
-        ],
+        "tags": ["Compliance"],
         "summary": "Ingest Compliance Scan Status",
         "description": "Ingest compliance issues found while scanning the agent",
         "operationId": "ingestComplianceScanStatus",
@@ -4218,9 +4095,7 @@
     },
     "/deepfence/ingest/malware": {
       "post": {
-        "tags": [
-          "Malware Scan"
-        ],
+        "tags": ["Malware Scan"],
         "summary": "Ingest Malware",
         "description": "Ingest malware found while scanning the agent",
         "operationId": "ingestMalware",
@@ -4287,9 +4162,7 @@
     },
     "/deepfence/ingest/malware-scan-logs": {
       "post": {
-        "tags": [
-          "Malware Scan"
-        ],
+        "tags": ["Malware Scan"],
         "summary": "Ingest Malware Scan Status",
         "description": "Ingest malware scan status from the agent",
         "operationId": "ingestMalwareScanStatus",
@@ -4356,9 +4229,7 @@
     },
     "/deepfence/ingest/report": {
       "post": {
-        "tags": [
-          "Topology"
-        ],
+        "tags": ["Topology"],
         "summary": "Ingest Topology Data",
         "description": "Ingest data reported by one Agent",
         "operationId": "ingestAgentReport",
@@ -4428,9 +4299,7 @@
     },
     "/deepfence/ingest/sbom": {
       "post": {
-        "tags": [
-          "Vulnerability"
-        ],
+        "tags": ["Vulnerability"],
         "summary": "Ingest SBOM from Scan",
         "description": "Ingest SBOM from Scan",
         "operationId": "ingestSbom",
@@ -4493,9 +4362,7 @@
     },
     "/deepfence/ingest/secret-scan-logs": {
       "post": {
-        "tags": [
-          "Secret Scan"
-        ],
+        "tags": ["Secret Scan"],
         "summary": "Ingest Secrets Scan Status",
         "description": "Ingest secrets scan status from the agent",
         "operationId": "ingestSecretScanStatus",
@@ -4562,9 +4429,7 @@
     },
     "/deepfence/ingest/secrets": {
       "post": {
-        "tags": [
-          "Secret Scan"
-        ],
+        "tags": ["Secret Scan"],
         "summary": "Ingest Secrets",
         "description": "Ingest secrets found while scanning the agent",
         "operationId": "ingestSecrets",
@@ -4631,9 +4496,7 @@
     },
     "/deepfence/ingest/sync-report": {
       "post": {
-        "tags": [
-          "Topology"
-        ],
+        "tags": ["Topology"],
         "summary": "Ingest Topology Data",
         "description": "Ingest data reported by one Agent",
         "operationId": "ingestSyncAgentReport",
@@ -4696,9 +4559,7 @@
     },
     "/deepfence/ingest/vulnerabilities": {
       "post": {
-        "tags": [
-          "Vulnerability"
-        ],
+        "tags": ["Vulnerability"],
         "summary": "Ingest Vulnerabilities",
         "description": "Ingest vulnerabilities found while scanning the agent host or containers",
         "operationId": "ingestVulnerabilities",
@@ -4765,9 +4626,7 @@
     },
     "/deepfence/ingest/vulnerabilities-scan-logs": {
       "post": {
-        "tags": [
-          "Vulnerability"
-        ],
+        "tags": ["Vulnerability"],
         "summary": "Ingest Vulnerabilities Scan Status",
         "description": "Ingest vulnerabilities scan status from agent",
         "operationId": "ingestVulnerabilitiesScanStatus",
@@ -4834,9 +4693,7 @@
     },
     "/deepfence/integration": {
       "get": {
-        "tags": [
-          "Integration"
-        ],
+        "tags": ["Integration"],
         "summary": "List Integrations",
         "description": "List all the added Integrations",
         "operationId": "listIntegration",
@@ -4898,9 +4755,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Integration"
-        ],
+        "tags": ["Integration"],
         "summary": "Add Integration",
         "description": "Add a new supported integration",
         "operationId": "addIntegration",
@@ -4970,9 +4825,7 @@
     },
     "/deepfence/integration/{integration_id}": {
       "delete": {
-        "tags": [
-          "Integration"
-        ],
+        "tags": ["Integration"],
         "summary": "Delete Integration",
         "description": "Delete integration",
         "operationId": "deleteIntegration",
@@ -5036,9 +4889,7 @@
     },
     "/deepfence/internal/console-api-token": {
       "get": {
-        "tags": [
-          "Internal"
-        ],
+        "tags": ["Internal"],
         "summary": "Get api-token for console agent",
         "description": "Get api-token for console agent",
         "operationId": "getConsoleApiToken",
@@ -5094,9 +4945,7 @@
     },
     "/deepfence/lookup/cloud-compliances": {
       "post": {
-        "tags": [
-          "Lookup"
-        ],
+        "tags": ["Lookup"],
         "summary": "Retrieve Cloud Compliances data",
         "description": "Retrieve all the data associated with cloud-compliances",
         "operationId": "getCloudCompliances",
@@ -5169,9 +5018,7 @@
     },
     "/deepfence/lookup/cloud-resources": {
       "post": {
-        "tags": [
-          "Lookup"
-        ],
+        "tags": ["Lookup"],
         "summary": "Get Cloud Resources",
         "description": "Retrieve the cloud resources",
         "operationId": "getCloudResources",
@@ -5244,9 +5091,7 @@
     },
     "/deepfence/lookup/compliances": {
       "post": {
-        "tags": [
-          "Lookup"
-        ],
+        "tags": ["Lookup"],
         "summary": "Retrieve Compliances data",
         "description": "Retrieve all the data associated with compliances",
         "operationId": "getCompliances",
@@ -5319,9 +5164,7 @@
     },
     "/deepfence/lookup/containerimages": {
       "post": {
-        "tags": [
-          "Lookup"
-        ],
+        "tags": ["Lookup"],
         "summary": "Retrieve Container Images data",
         "description": "Retrieve all the data associated with images",
         "operationId": "getContainerImages",
@@ -5394,9 +5237,7 @@
     },
     "/deepfence/lookup/containers": {
       "post": {
-        "tags": [
-          "Lookup"
-        ],
+        "tags": ["Lookup"],
         "summary": "Retrieve Containers data",
         "description": "Retrieve all the data associated with containers",
         "operationId": "getContainers",
@@ -5469,9 +5310,7 @@
     },
     "/deepfence/lookup/hosts": {
       "post": {
-        "tags": [
-          "Lookup"
-        ],
+        "tags": ["Lookup"],
         "summary": "Retrieve Hosts data",
         "description": "Retrieve all the data associated with hosts",
         "operationId": "getHosts",
@@ -5544,9 +5383,7 @@
     },
     "/deepfence/lookup/kubernetesclusters": {
       "post": {
-        "tags": [
-          "Lookup"
-        ],
+        "tags": ["Lookup"],
         "summary": "Retrieve K8s data",
         "description": "Retrieve all the data associated with k8s clusters",
         "operationId": "getKubernetesClusters",
@@ -5619,9 +5456,7 @@
     },
     "/deepfence/lookup/malwares": {
       "post": {
-        "tags": [
-          "Lookup"
-        ],
+        "tags": ["Lookup"],
         "summary": "Retrieve Malwares data",
         "description": "Retrieve all the data associated with malwares",
         "operationId": "getMalwares",
@@ -5694,9 +5529,7 @@
     },
     "/deepfence/lookup/pods": {
       "post": {
-        "tags": [
-          "Lookup"
-        ],
+        "tags": ["Lookup"],
         "summary": "Retrieve Pods data",
         "description": "Retrieve all the data associated with pods",
         "operationId": "getPods",
@@ -5769,9 +5602,7 @@
     },
     "/deepfence/lookup/processes": {
       "post": {
-        "tags": [
-          "Lookup"
-        ],
+        "tags": ["Lookup"],
         "summary": "Retrieve Processes data",
         "description": "Retrieve all the data associated with processes",
         "operationId": "getProcesses",
@@ -5844,9 +5675,7 @@
     },
     "/deepfence/lookup/registryaccount": {
       "post": {
-        "tags": [
-          "Lookup"
-        ],
+        "tags": ["Lookup"],
         "summary": "Get Images in Registry",
         "description": "List all the images present in the given registry",
         "operationId": "getRegistryAccount",
@@ -5919,9 +5748,7 @@
     },
     "/deepfence/lookup/secrets": {
       "post": {
-        "tags": [
-          "Lookup"
-        ],
+        "tags": ["Lookup"],
         "summary": "Retrieve Secrets data",
         "description": "Retrieve all the data associated with secrets",
         "operationId": "getSecrets",
@@ -5994,9 +5821,7 @@
     },
     "/deepfence/lookup/vulnerabilities": {
       "post": {
-        "tags": [
-          "Lookup"
-        ],
+        "tags": ["Lookup"],
         "summary": "Retrieve Vulnerabilities data",
         "description": "Retrieve all the data associated with vulnerabilities",
         "operationId": "getVulnerabilities",
@@ -6069,9 +5894,7 @@
     },
     "/deepfence/registryaccount": {
       "get": {
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "summary": "List Registries",
         "description": "List all the added Registries",
         "operationId": "listRegistry",
@@ -6133,9 +5956,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "summary": "Add Registry",
         "description": "Add a new supported registry",
         "operationId": "addRegistry",
@@ -6205,9 +6026,7 @@
     },
     "/deepfence/registryaccount/count/images": {
       "post": {
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "summary": "Count Registry Images",
         "description": "count of images from a given registry",
         "operationId": "CountImages",
@@ -6277,9 +6096,7 @@
     },
     "/deepfence/registryaccount/count/stubs": {
       "post": {
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "summary": "Count Image Stubs",
         "description": "count of image tags for a given image and registry",
         "operationId": "CountImageStubs",
@@ -6349,9 +6166,7 @@
     },
     "/deepfence/registryaccount/delete": {
       "patch": {
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "summary": "Batch Delete Registry",
         "description": "Batch Delete registry",
         "operationId": "deleteRegistryBulk",
@@ -6414,9 +6229,7 @@
     },
     "/deepfence/registryaccount/gcr": {
       "post": {
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "summary": "Add Google Container Registry",
         "description": "Add a Google Container registry",
         "operationId": "addRegistryGCR",
@@ -6486,9 +6299,7 @@
     },
     "/deepfence/registryaccount/images": {
       "post": {
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "summary": "List Registry Images",
         "description": "list images from a given registry",
         "operationId": "listImages",
@@ -6561,9 +6372,7 @@
     },
     "/deepfence/registryaccount/stubs": {
       "post": {
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "summary": "List Image Stubs",
         "description": "list image tags for a given image and registry",
         "operationId": "listImageStubs",
@@ -6636,9 +6445,7 @@
     },
     "/deepfence/registryaccount/summary": {
       "get": {
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "summary": "Get All Registries Summary By Type",
         "description": "get summary of all registries scans, images and tags by registry type",
         "operationId": "getSummaryAll",
@@ -6699,9 +6506,7 @@
     },
     "/deepfence/registryaccount/{registry_id}": {
       "delete": {
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "summary": "Delete Registry",
         "description": "Delete registry",
         "operationId": "deleteRegistry",
@@ -6763,9 +6568,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "summary": "Update Registry",
         "description": "Update registry",
         "operationId": "updateRegistry",
@@ -6845,9 +6648,7 @@
     },
     "/deepfence/registryaccount/{registry_id}/summary": {
       "get": {
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "summary": "Get Registry Summary",
         "description": "get summary of registry scans, images and tags",
         "operationId": "getRegistrySummary",
@@ -6918,9 +6719,7 @@
     },
     "/deepfence/registryaccount/{registry_id}/sync": {
       "post": {
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "summary": "Sync Registry",
         "description": "synchronize registry images",
         "operationId": "syncRegistry",
@@ -6991,9 +6790,7 @@
     },
     "/deepfence/registryaccount/{registry_type}/summary-by-type": {
       "get": {
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "summary": "Get Registry Summary By Type",
         "description": "get summary of registries scans, images and tags by registry type",
         "operationId": "getSummaryByType",
@@ -7064,9 +6861,7 @@
     },
     "/deepfence/reports": {
       "get": {
-        "tags": [
-          "Reports"
-        ],
+        "tags": ["Reports"],
         "summary": "List Reports",
         "description": "List all the available reports",
         "operationId": "listReports",
@@ -7128,9 +6923,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Reports"
-        ],
+        "tags": ["Reports"],
         "summary": "Generate Report",
         "description": "generate report for given type and filters",
         "operationId": "generateReport",
@@ -7200,9 +6993,7 @@
     },
     "/deepfence/reports/{report_id}": {
       "delete": {
-        "tags": [
-          "Reports"
-        ],
+        "tags": ["Reports"],
         "summary": "Delete Report",
         "description": "delete report for given report_id",
         "operationId": "deleteReport",
@@ -7264,9 +7055,7 @@
         ]
       },
       "get": {
-        "tags": [
-          "Reports"
-        ],
+        "tags": ["Reports"],
         "summary": "Get Report",
         "description": "get report by report_id",
         "operationId": "getReport",
@@ -7337,9 +7126,7 @@
     },
     "/deepfence/scan/list/cloud-compliance": {
       "post": {
-        "tags": [
-          "Cloud Scanner"
-        ],
+        "tags": ["Cloud Scanner"],
         "summary": "Get Cloud Compliance Scans List",
         "description": "Get Cloud Compliance Scans list for cloud node",
         "operationId": "listCloudComplianceScan",
@@ -7409,9 +7196,7 @@
     },
     "/deepfence/scan/list/compliance": {
       "post": {
-        "tags": [
-          "Compliance"
-        ],
+        "tags": ["Compliance"],
         "summary": "Get Compliance Scans List",
         "description": "Get Compliance Scans list on agent or registry",
         "operationId": "listComplianceScan",
@@ -7481,9 +7266,7 @@
     },
     "/deepfence/scan/list/malware": {
       "post": {
-        "tags": [
-          "Malware Scan"
-        ],
+        "tags": ["Malware Scan"],
         "summary": "Get Malware Scans List",
         "description": "Get Malware Scans list on agent or registry",
         "operationId": "listMalwareScan",
@@ -7553,9 +7336,7 @@
     },
     "/deepfence/scan/list/secret": {
       "post": {
-        "tags": [
-          "Secret Scan"
-        ],
+        "tags": ["Secret Scan"],
         "summary": "Get Secret Scans List",
         "description": "Get Secret Scans list on agent or registry",
         "operationId": "listSecretScan",
@@ -7625,9 +7406,7 @@
     },
     "/deepfence/scan/list/vulnerability": {
       "post": {
-        "tags": [
-          "Vulnerability"
-        ],
+        "tags": ["Vulnerability"],
         "summary": "Get Vulnerability Scans List",
         "description": "Get Vulnerability Scan list on agent or registry",
         "operationId": "listVulnerabilityScans",
@@ -7697,9 +7476,7 @@
     },
     "/deepfence/scan/nodes-in-result": {
       "post": {
-        "tags": [
-          "Scan Results"
-        ],
+        "tags": ["Scan Results"],
         "summary": "Get all nodes in given scan result ids",
         "description": "Get all nodes in given scan result ids",
         "operationId": "getAllNodesInScanResults",
@@ -7772,9 +7549,7 @@
     },
     "/deepfence/scan/results/action/delete": {
       "patch": {
-        "tags": [
-          "Scan Results"
-        ],
+        "tags": ["Scan Results"],
         "summary": "Delete selected scan results",
         "description": "Delete selected scan results",
         "operationId": "deleteScanResult",
@@ -7837,9 +7612,7 @@
     },
     "/deepfence/scan/results/action/mask": {
       "post": {
-        "tags": [
-          "Scan Results"
-        ],
+        "tags": ["Scan Results"],
         "summary": "Mask Scans Results",
         "description": "Mask scan results",
         "operationId": "maskScanResult",
@@ -7902,9 +7675,7 @@
     },
     "/deepfence/scan/results/action/notify": {
       "post": {
-        "tags": [
-          "Scan Results"
-        ],
+        "tags": ["Scan Results"],
         "summary": "Notify Scans Results",
         "description": "Notify scan results in connected integration channels",
         "operationId": "notifyScanResult",
@@ -7967,9 +7738,7 @@
     },
     "/deepfence/scan/results/action/unmask": {
       "post": {
-        "tags": [
-          "Scan Results"
-        ],
+        "tags": ["Scan Results"],
         "summary": "Unmask Scans Results",
         "description": "Unmask scan results",
         "operationId": "unmaskScanResult",
@@ -8032,9 +7801,7 @@
     },
     "/deepfence/scan/results/cloud-compliance": {
       "post": {
-        "tags": [
-          "Cloud Scanner"
-        ],
+        "tags": ["Cloud Scanner"],
         "summary": "Get Cloud Compliance Scan Results",
         "description": "Get Cloud Compliance Scan results for cloud node",
         "operationId": "resultsCloudComplianceScan",
@@ -8104,9 +7871,7 @@
     },
     "/deepfence/scan/results/compliance": {
       "post": {
-        "tags": [
-          "Compliance"
-        ],
+        "tags": ["Compliance"],
         "summary": "Get Compliance Scans Results",
         "description": "Get Compliance Scans results on agent or registry",
         "operationId": "resultsComplianceScan",
@@ -8176,9 +7941,7 @@
     },
     "/deepfence/scan/results/count/cloud-compliance": {
       "post": {
-        "tags": [
-          "Cloud Scanner"
-        ],
+        "tags": ["Cloud Scanner"],
         "summary": "Get Cloud Compliance Scan Results",
         "description": "Get Cloud Compliance Scan results for cloud node",
         "operationId": "countResultsCloudComplianceScan",
@@ -8248,9 +8011,7 @@
     },
     "/deepfence/scan/results/count/compliance": {
       "post": {
-        "tags": [
-          "Compliance"
-        ],
+        "tags": ["Compliance"],
         "summary": "Get Compliance Scans Results",
         "description": "Get Compliance Scans results on agent or registry",
         "operationId": "countResultsComplianceScan",
@@ -8320,9 +8081,7 @@
     },
     "/deepfence/scan/results/count/group/malware": {
       "get": {
-        "tags": [
-          "Malware Scan"
-        ],
+        "tags": ["Malware Scan"],
         "summary": "Group Malware Results",
         "description": "Group Malware Scans results by severity/rule",
         "operationId": "groupResultsMalwares",
@@ -8383,9 +8142,7 @@
     },
     "/deepfence/scan/results/count/group/malware/class": {
       "get": {
-        "tags": [
-          "Malware Scan"
-        ],
+        "tags": ["Malware Scan"],
         "summary": "Group Malware Results By Class",
         "description": "Group Malware Scans results by severity/class",
         "operationId": "groupResultsMalwaresClass",
@@ -8446,9 +8203,7 @@
     },
     "/deepfence/scan/results/count/group/secret": {
       "get": {
-        "tags": [
-          "Secret Scan"
-        ],
+        "tags": ["Secret Scan"],
         "summary": "Group Secret Results",
         "description": "Group Secret Scans results by severity/rule",
         "operationId": "groupResultsSecrets",
@@ -8509,9 +8264,7 @@
     },
     "/deepfence/scan/results/count/malware": {
       "post": {
-        "tags": [
-          "Malware Scan"
-        ],
+        "tags": ["Malware Scan"],
         "summary": "Get Malware Scans Results",
         "description": "Get Malware Scans results on agent or registry",
         "operationId": "countResultsMalwareScan",
@@ -8581,9 +8334,7 @@
     },
     "/deepfence/scan/results/count/secret": {
       "post": {
-        "tags": [
-          "Secret Scan"
-        ],
+        "tags": ["Secret Scan"],
         "summary": "Get Secret Scans Results",
         "description": "Get Secret Scans results on agent or registry",
         "operationId": "countResultsSecretScan",
@@ -8653,9 +8404,7 @@
     },
     "/deepfence/scan/results/count/vulnerability": {
       "post": {
-        "tags": [
-          "Vulnerability"
-        ],
+        "tags": ["Vulnerability"],
         "summary": "Get Vulnerability Scans Results",
         "description": "Get Vulnerability Scan results on agent or registry",
         "operationId": "countResultsVulnerabilityScans",
@@ -8725,9 +8474,7 @@
     },
     "/deepfence/scan/results/fields": {
       "get": {
-        "tags": [
-          "Common"
-        ],
+        "tags": ["Common"],
         "summary": "Get Scan Report Fields",
         "description": "Get all the fields available in all the scan reports",
         "operationId": "getScanReportFields",
@@ -8788,9 +8535,7 @@
     },
     "/deepfence/scan/results/malware": {
       "post": {
-        "tags": [
-          "Malware Scan"
-        ],
+        "tags": ["Malware Scan"],
         "summary": "Get Malware Scans Results",
         "description": "Get Malware Scans results on agent or registry",
         "operationId": "resultsMalwareScan",
@@ -8860,9 +8605,7 @@
     },
     "/deepfence/scan/results/malware/class": {
       "post": {
-        "tags": [
-          "Malware Scan"
-        ],
+        "tags": ["Malware Scan"],
         "summary": "Get Malware Scans Results",
         "description": "Get Malware Scans detected class names",
         "operationId": "resultsClassMalwareScan",
@@ -8932,9 +8675,7 @@
     },
     "/deepfence/scan/results/malware/rules": {
       "post": {
-        "tags": [
-          "Malware Scan"
-        ],
+        "tags": ["Malware Scan"],
         "summary": "Get Malware Scans Result Rules",
         "description": "Get Malware Scans detected rules names",
         "operationId": "resultsRulesMalwareScan",
@@ -9004,9 +8745,7 @@
     },
     "/deepfence/scan/results/secret": {
       "post": {
-        "tags": [
-          "Secret Scan"
-        ],
+        "tags": ["Secret Scan"],
         "summary": "Get Secret Scans Results",
         "description": "Get Secret Scans results on agent or registry",
         "operationId": "resultsSecretScan",
@@ -9076,9 +8815,7 @@
     },
     "/deepfence/scan/results/secret/rules": {
       "post": {
-        "tags": [
-          "Secret Scan"
-        ],
+        "tags": ["Secret Scan"],
         "summary": "Get Secret Scans Result Rules",
         "description": "Get Secret Scans detected rules names",
         "operationId": "resultsRulesSecretScan",
@@ -9148,9 +8885,7 @@
     },
     "/deepfence/scan/results/vulnerability": {
       "post": {
-        "tags": [
-          "Vulnerability"
-        ],
+        "tags": ["Vulnerability"],
         "summary": "Get Vulnerability Scans Results",
         "description": "Get Vulnerability Scan results on agent or registry",
         "operationId": "resultsVulnerabilityScans",
@@ -9220,9 +8955,7 @@
     },
     "/deepfence/scan/sbom": {
       "post": {
-        "tags": [
-          "Vulnerability"
-        ],
+        "tags": ["Vulnerability"],
         "summary": "Get SBOM for a node or scan id",
         "description": "Get SBOM for a node or scan id",
         "operationId": "getSBOM",
@@ -9295,9 +9028,7 @@
     },
     "/deepfence/scan/sbom/download": {
       "post": {
-        "tags": [
-          "Vulnerability"
-        ],
+        "tags": ["Vulnerability"],
         "summary": "Download SBOM for a node or scan id",
         "description": "Download SBOM for a node or scan id",
         "operationId": "downloadSBOM",
@@ -9367,9 +9098,7 @@
     },
     "/deepfence/scan/start/compliance": {
       "post": {
-        "tags": [
-          "Compliance"
-        ],
+        "tags": ["Compliance"],
         "summary": "Start Compliance Scan",
         "description": "Start Compliance Scan on agent or registry",
         "operationId": "startComplianceScan",
@@ -9439,9 +9168,7 @@
     },
     "/deepfence/scan/start/malware": {
       "post": {
-        "tags": [
-          "Malware Scan"
-        ],
+        "tags": ["Malware Scan"],
         "summary": "Start Malware Scan",
         "description": "Start Malware Scan on agent or registry",
         "operationId": "startMalwareScan",
@@ -9511,9 +9238,7 @@
     },
     "/deepfence/scan/start/secret": {
       "post": {
-        "tags": [
-          "Secret Scan"
-        ],
+        "tags": ["Secret Scan"],
         "summary": "Start Secret Scan",
         "description": "Start Secret Scan on agent or registry",
         "operationId": "startSecretScan",
@@ -9583,9 +9308,7 @@
     },
     "/deepfence/scan/start/vulnerability": {
       "post": {
-        "tags": [
-          "Vulnerability"
-        ],
+        "tags": ["Vulnerability"],
         "summary": "Start Vulnerability Scan",
         "description": "Start Vulnerability Scan on agent or registry",
         "operationId": "startVulnerabilityScan",
@@ -9655,9 +9378,7 @@
     },
     "/deepfence/scan/status/cloud-compliance": {
       "post": {
-        "tags": [
-          "Cloud Scanner"
-        ],
+        "tags": ["Cloud Scanner"],
         "summary": "Get Cloud Compliance Scan Status",
         "description": "Get Cloud Compliance Scan Status on cloud node",
         "operationId": "statusCloudComplianceScan",
@@ -9727,9 +9448,7 @@
     },
     "/deepfence/scan/status/compliance": {
       "post": {
-        "tags": [
-          "Compliance"
-        ],
+        "tags": ["Compliance"],
         "summary": "Get Compliance Scan Status",
         "description": "Get Compliance Scan Status on agent or registry",
         "operationId": "statusComplianceScan",
@@ -9799,9 +9518,7 @@
     },
     "/deepfence/scan/status/malware": {
       "post": {
-        "tags": [
-          "Malware Scan"
-        ],
+        "tags": ["Malware Scan"],
         "summary": "Get Malware Scan Status",
         "description": "Get Malware Scan status on agent or registry",
         "operationId": "statusMalwareScan",
@@ -9871,9 +9588,7 @@
     },
     "/deepfence/scan/status/secret": {
       "post": {
-        "tags": [
-          "Secret Scan"
-        ],
+        "tags": ["Secret Scan"],
         "summary": "Get Secret Scan Status",
         "description": "Get Secret Scan Status on agent or registry",
         "operationId": "statusSecretScan",
@@ -9943,9 +9658,7 @@
     },
     "/deepfence/scan/status/vulnerability": {
       "post": {
-        "tags": [
-          "Vulnerability"
-        ],
+        "tags": ["Vulnerability"],
         "summary": "Get Vulnerability Scan Status",
         "description": "Get Vulnerability Scan Status on agent or registry",
         "operationId": "statusVulnerabilityScan",
@@ -10015,9 +9728,7 @@
     },
     "/deepfence/scan/stop/compliance": {
       "post": {
-        "tags": [
-          "Compliance"
-        ],
+        "tags": ["Compliance"],
         "summary": "Stop Compliance Scan",
         "description": "Stop Compliance Scan on agent or registry",
         "operationId": "stopComplianceScan",
@@ -10080,9 +9791,7 @@
     },
     "/deepfence/scan/stop/malware": {
       "post": {
-        "tags": [
-          "Malware Scan"
-        ],
+        "tags": ["Malware Scan"],
         "summary": "Stop Malware Scan",
         "description": "Stop Malware Scan on agent or registry",
         "operationId": "stopMalwareScan",
@@ -10145,9 +9854,7 @@
     },
     "/deepfence/scan/stop/secret": {
       "post": {
-        "tags": [
-          "Secret Scan"
-        ],
+        "tags": ["Secret Scan"],
         "summary": "Stop Secret Scan",
         "description": "Stop Secret Scan on agent or registry",
         "operationId": "stopSecretScan",
@@ -10210,9 +9917,7 @@
     },
     "/deepfence/scan/stop/vulnerability": {
       "post": {
-        "tags": [
-          "Vulnerability"
-        ],
+        "tags": ["Vulnerability"],
         "summary": "Stop Vulnerability Scan",
         "description": "Stop Vulnerability Scan on agent or registry",
         "operationId": "stopVulnerabilityScan",
@@ -10275,9 +9980,7 @@
     },
     "/deepfence/scan/{scan_type}/{scan_id}": {
       "delete": {
-        "tags": [
-          "Scan Results"
-        ],
+        "tags": ["Scan Results"],
         "summary": "Delete all scan results for a scan id",
         "description": "Delete all scan results for a scan id",
         "operationId": "deleteScanResultsForScanID",
@@ -10356,9 +10059,7 @@
     },
     "/deepfence/scan/{scan_type}/{scan_id}/download": {
       "get": {
-        "tags": [
-          "Scan Results"
-        ],
+        "tags": ["Scan Results"],
         "summary": "Download Scans Results",
         "description": "Download scan results",
         "operationId": "downloadScanResults",
@@ -10444,9 +10145,7 @@
     },
     "/deepfence/scans/bulk/delete": {
       "post": {
-        "tags": [
-          "Scan Results"
-        ],
+        "tags": ["Scan Results"],
         "summary": "Bulk Delete Scans",
         "description": "Bulk delete scans along with their results for a particular scan type",
         "operationId": "bulkDeleteScans",
@@ -10509,9 +10208,7 @@
     },
     "/deepfence/scheduled-task": {
       "get": {
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "summary": "Get scheduled tasks",
         "description": "Get scheduled tasks",
         "operationId": "getScheduledTasks",
@@ -10573,9 +10270,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "summary": "Add scheduled task",
         "description": "Add scheduled task",
         "operationId": "addScheduledTask",
@@ -10638,9 +10333,7 @@
     },
     "/deepfence/scheduled-task/{id}": {
       "delete": {
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "summary": "Delete Custom Schedule task",
         "description": "Delete Custom Schedule task",
         "operationId": "deleteCustomScheduledTask",
@@ -10702,9 +10395,7 @@
         ]
       },
       "patch": {
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "summary": "Update scheduled task",
         "description": "Update scheduled task",
         "operationId": "updateScheduledTask",
@@ -10777,9 +10468,7 @@
     },
     "/deepfence/search/cloud-accounts": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Cloud Nodes",
         "description": "Search across all the data associated with cloud nodes",
         "operationId": "searchCloudAccounts",
@@ -10852,9 +10541,7 @@
     },
     "/deepfence/search/cloud-compliance/scans": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Cloud Compliance Scan results",
         "description": "Search across all the data associated with cloud-compliance scan",
         "operationId": "searchCloudComplianceScans",
@@ -10927,9 +10614,7 @@
     },
     "/deepfence/search/cloud-compliances": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Cloud compliances",
         "description": "Search across all the data associated with cloud-compliances",
         "operationId": "searchCloudCompliances",
@@ -11002,9 +10687,7 @@
     },
     "/deepfence/search/cloud-resources": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Cloud Resources",
         "description": "Search across all data associated with CloudResources",
         "operationId": "searchCloudResources",
@@ -11077,9 +10760,7 @@
     },
     "/deepfence/search/compliance-rules": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Compliance Rules",
         "description": "Search across all the data associated with compliance rules",
         "operationId": "searchComplianceRules",
@@ -11152,9 +10833,7 @@
     },
     "/deepfence/search/compliance/scans": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Compliance Scan results",
         "description": "Search across all the data associated with compliance scan",
         "operationId": "searchComplianceScans",
@@ -11227,9 +10906,7 @@
     },
     "/deepfence/search/compliances": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Compliances",
         "description": "Search across all the data associated with compliances",
         "operationId": "searchCompliances",
@@ -11302,9 +10979,7 @@
     },
     "/deepfence/search/containers": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Containers data",
         "description": "Search across all data associated with containers",
         "operationId": "searchContainers",
@@ -11377,9 +11052,7 @@
     },
     "/deepfence/search/count/cloud-accounts": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Cloud Nodes",
         "description": "Search across all the data associated with cloud nodes",
         "operationId": "countCloudAccounts",
@@ -11449,9 +11122,7 @@
     },
     "/deepfence/search/count/cloud-compliance/scans": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Cloud Compliance Scan results",
         "description": "Count across all the data associated with cloud-compliance scans",
         "operationId": "countCloudComplianceScans",
@@ -11521,9 +11192,7 @@
     },
     "/deepfence/search/count/cloud-compliances": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Cloud compliances",
         "description": "Count across all the data ssociated with cloud compliances",
         "operationId": "countCloudCompliances",
@@ -11593,9 +11262,7 @@
     },
     "/deepfence/search/count/cloud-resources": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Cloud resources",
         "description": "Count across all the data ssociated with cloud resources",
         "operationId": "countCloudResources",
@@ -11665,9 +11332,7 @@
     },
     "/deepfence/search/count/compliance-rules": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Compliance Rules",
         "description": "Count across all the data associated with compliance rules",
         "operationId": "countComplianceRules",
@@ -11737,9 +11402,7 @@
     },
     "/deepfence/search/count/compliance/scans": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Compliance Scan results",
         "description": "Count across all the data associated with compliance scans",
         "operationId": "countComplianceScans",
@@ -11809,9 +11472,7 @@
     },
     "/deepfence/search/count/compliances": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Compliances",
         "description": "Count across all the data associated with compliances",
         "operationId": "countCompliances",
@@ -11881,9 +11542,7 @@
     },
     "/deepfence/search/count/containers": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Containers data",
         "description": "Count across all the data associated with containers",
         "operationId": "countContainers",
@@ -11953,9 +11612,7 @@
     },
     "/deepfence/search/count/hosts": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count hosts",
         "description": "Count across all the data associated with hosts",
         "operationId": "countHosts",
@@ -12025,9 +11682,7 @@
     },
     "/deepfence/search/count/images": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Container images",
         "description": "Count across all the data associated with container images",
         "operationId": "countContainerImages",
@@ -12097,9 +11752,7 @@
     },
     "/deepfence/search/count/kubernetes-clusters": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Kubernetes clusters",
         "description": "Count across all the data ssociated with kubernetes clusters",
         "operationId": "countKubernetesClusters",
@@ -12169,9 +11822,7 @@
     },
     "/deepfence/search/count/malware-rules": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Malware Rules",
         "description": "Count across all the data associated with malware rules",
         "operationId": "countMalwareRules",
@@ -12241,9 +11892,7 @@
     },
     "/deepfence/search/count/malware/scans": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Malware Scan results",
         "description": "Count across all the data associated with malware scans",
         "operationId": "countMalwareScans",
@@ -12313,9 +11962,7 @@
     },
     "/deepfence/search/count/malwares": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Malwares",
         "description": "Count across all the data associated with malwares",
         "operationId": "countMalwares",
@@ -12385,9 +12032,7 @@
     },
     "/deepfence/search/count/nodes": {
       "get": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count nodes",
         "description": "Count hosts, containers, pods, k8s clusters, images",
         "operationId": "countNodes",
@@ -12448,9 +12093,7 @@
     },
     "/deepfence/search/count/pods": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Pods",
         "description": "Count across all the data associated with pods",
         "operationId": "countPods",
@@ -12520,9 +12163,7 @@
     },
     "/deepfence/search/count/registry-accounts": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Registry Accounts",
         "description": "Search across all the data associated with registry account",
         "operationId": "countRegistryAccounts",
@@ -12592,9 +12233,7 @@
     },
     "/deepfence/search/count/secret-rules": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Secret Rules",
         "description": "Count across all the data associated with secret rules",
         "operationId": "countSecretRules",
@@ -12664,9 +12303,7 @@
     },
     "/deepfence/search/count/secret/scans": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Secret Scan results",
         "description": "Count across all the data associated with secret scans",
         "operationId": "countSecretsScans",
@@ -12736,9 +12373,7 @@
     },
     "/deepfence/search/count/secrets": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Secrets",
         "description": "Count across all the data associated with secrets",
         "operationId": "countSecrets",
@@ -12808,9 +12443,7 @@
     },
     "/deepfence/search/count/vulnerabilities": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Vulnerabilities",
         "description": "Search across all the data associated with vulnerabilities",
         "operationId": "countVulnerabilities",
@@ -12880,9 +12513,7 @@
     },
     "/deepfence/search/count/vulnerability-rules": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Vulnerability Rules",
         "description": "Count across all the data associated with vulnerability rules",
         "operationId": "countVulnerabilityRules",
@@ -12952,9 +12583,7 @@
     },
     "/deepfence/search/count/vulnerability/scans": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Count Vulnerability Scan results",
         "description": "Count across all the data associated with vulnerability scans",
         "operationId": "countVulnerabilityScans",
@@ -13024,9 +12653,7 @@
     },
     "/deepfence/search/hosts": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search hosts",
         "description": "Search across all data associated with hosts",
         "operationId": "searchHosts",
@@ -13099,9 +12726,7 @@
     },
     "/deepfence/search/images": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Container images",
         "description": "Search across all the data associated with container images",
         "operationId": "searchContainerImages",
@@ -13174,9 +12799,7 @@
     },
     "/deepfence/search/kubernetes-clusters": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Kuberenetes Clusters",
         "description": "Search across all data associated with kuberentes clusters",
         "operationId": "searchKubernetesClusters",
@@ -13249,9 +12872,7 @@
     },
     "/deepfence/search/malware-rules": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Malware Rules",
         "description": "Search across all the data associated with malware rules",
         "operationId": "searchMalwareRules",
@@ -13324,9 +12945,7 @@
     },
     "/deepfence/search/malware/scans": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Malware Scan results",
         "description": "Search across all the data associated with malwares scan",
         "operationId": "searchMalwareScans",
@@ -13399,9 +13018,7 @@
     },
     "/deepfence/search/malwares": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Malwares",
         "description": "Search across all the data associated with malwares",
         "operationId": "searchMalwares",
@@ -13474,9 +13091,7 @@
     },
     "/deepfence/search/pods": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Pods",
         "description": "Search across all the data associated with pods",
         "operationId": "searchPods",
@@ -13549,9 +13164,7 @@
     },
     "/deepfence/search/registry-accounts": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Registry Accounts",
         "description": "Search across all the data associated with registry account",
         "operationId": "searchRegistryAccounts",
@@ -13624,9 +13237,7 @@
     },
     "/deepfence/search/secret-rules": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Secret Rules",
         "description": "Search across all the data associated with secret ruless",
         "operationId": "searchSecretRules",
@@ -13699,9 +13310,7 @@
     },
     "/deepfence/search/secret/scans": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Secrets Scan results",
         "description": "Search across all the data associated with secrets scan",
         "operationId": "searchSecretsScans",
@@ -13774,9 +13383,7 @@
     },
     "/deepfence/search/secrets": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Secrets",
         "description": "Search across all the data associated with secrets",
         "operationId": "searchSecrets",
@@ -13849,9 +13456,7 @@
     },
     "/deepfence/search/vulnerabilities": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Vulnerabilities",
         "description": "Search across all the data associated with vulnerabilities",
         "operationId": "searchVulnerabilities",
@@ -13924,9 +13529,7 @@
     },
     "/deepfence/search/vulnerability-rules": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Vulnerability Rules",
         "description": "Search across all the data associated with vulnerability rules",
         "operationId": "searchVulerabilityRules",
@@ -13999,9 +13602,7 @@
     },
     "/deepfence/search/vulnerability/scans": {
       "post": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Search Vulnerability Scan results",
         "description": "Search across all the data associated with vulnerability scan",
         "operationId": "searchVulnerabilityScans",
@@ -14074,9 +13675,7 @@
     },
     "/deepfence/settings/agent/version": {
       "put": {
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "summary": "Upload New agent version",
         "description": "Upload Agent version",
         "operationId": "uploadAgentVersion",
@@ -14130,9 +13729,7 @@
     },
     "/deepfence/settings/agent/versions": {
       "get": {
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "summary": "Get available agent versions",
         "description": "Get available agent versions",
         "operationId": "getAgentVersions",
@@ -14193,9 +13790,7 @@
     },
     "/deepfence/settings/email": {
       "get": {
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "summary": "Get Email Configurations",
         "description": "Get Email Smtp / ses Configurations in system",
         "operationId": "getEmailConfiguration",
@@ -14257,9 +13852,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "summary": "Add Email Configuration",
         "description": "This email configuration is used to send email notifications",
         "operationId": "addEmailConfiguration",
@@ -14329,9 +13922,7 @@
     },
     "/deepfence/settings/email/{config_id}": {
       "delete": {
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "summary": "Delete Email Configurations",
         "description": "Delete Email Smtp / ses Configurations in system",
         "operationId": "deleteEmailConfiguration",
@@ -14395,9 +13986,7 @@
     },
     "/deepfence/settings/global-settings": {
       "get": {
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "summary": "Get settings",
         "description": "Get all settings",
         "operationId": "getSettings",
@@ -14461,9 +14050,7 @@
     },
     "/deepfence/settings/global-settings/{id}": {
       "patch": {
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "summary": "Update setting",
         "description": "Update setting",
         "operationId": "updateSetting",
@@ -14536,9 +14123,7 @@
     },
     "/deepfence/settings/user-audit-log": {
       "post": {
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "summary": "Get user audit logs",
         "description": "Get audit logs for all users",
         "operationId": "getUserAuditLogs",
@@ -14611,9 +14196,7 @@
     },
     "/deepfence/settings/user-audit-log/count": {
       "get": {
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "summary": "Get user audit logs count",
         "description": "Get user audit logs count",
         "operationId": "getUserAuditLogsCount",
@@ -14674,9 +14257,7 @@
     },
     "/deepfence/user": {
       "delete": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Delete Current User",
         "description": "Delete logged in user",
         "operationId": "deleteCurrentUser",
@@ -14728,9 +14309,7 @@
         ]
       },
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Get Current User",
         "description": "Get logged in user information",
         "operationId": "getCurrentUser",
@@ -14789,9 +14368,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Update Current User",
         "description": "Update logged in user information",
         "operationId": "updateCurrentUser",
@@ -14861,9 +14438,7 @@
     },
     "/deepfence/user/invite": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Invite User",
         "description": "Invite a user",
         "operationId": "inviteUser",
@@ -14933,9 +14508,7 @@
     },
     "/deepfence/user/invite/register": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Register Invited User",
         "description": "Register invited user",
         "operationId": "registerInvitedUser",
@@ -15000,9 +14573,7 @@
     },
     "/deepfence/user/login": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Login API",
         "description": "Login API",
         "operationId": "login",
@@ -15067,9 +14638,7 @@
     },
     "/deepfence/user/logout": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Logout API",
         "description": "Logout API",
         "operationId": "logout",
@@ -15123,9 +14692,7 @@
     },
     "/deepfence/user/password": {
       "put": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Update Password",
         "description": "Update current user's password",
         "operationId": "updatePassword",
@@ -15188,9 +14755,7 @@
     },
     "/deepfence/user/register": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Register User",
         "description": "First user registration. Further users needs to be invited.",
         "operationId": "registerUser",
@@ -15255,9 +14820,7 @@
     },
     "/deepfence/user/reset-password/request": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Reset Password Request",
         "description": "Request for resetting the password",
         "operationId": "resetPasswordRequest",
@@ -15322,9 +14885,7 @@
     },
     "/deepfence/user/reset-password/verify": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Verify and Reset Password",
         "description": "Verify code and reset the password",
         "operationId": "verifyResetPasswordRequest",
@@ -15382,9 +14943,7 @@
     },
     "/deepfence/users": {
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Get all users",
         "description": "Get all users",
         "operationId": "getUsers",
@@ -15448,9 +15007,7 @@
     },
     "/deepfence/users/{id}": {
       "delete": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Delete User by User ID",
         "description": "Delete User by User ID",
         "operationId": "deleteUser",
@@ -15512,9 +15069,7 @@
         ]
       },
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Get User by User ID",
         "description": "Get User by User ID",
         "operationId": "getUser",
@@ -15583,9 +15138,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Update User by User ID",
         "description": "Update User by User ID",
         "operationId": "updateUser",
@@ -15708,11 +15261,7 @@
         }
       },
       "CompletionCompletionNodeFieldReq": {
-        "required": [
-          "completion",
-          "field_name",
-          "window"
-        ],
+        "required": ["completion", "field_name", "window"],
         "type": "object",
         "properties": {
           "completion": {
@@ -15730,9 +15279,7 @@
         }
       },
       "CompletionCompletionNodeFieldRes": {
-        "required": [
-          "possible_values"
-        ],
+        "required": ["possible_values"],
         "type": "object",
         "properties": {
           "possible_values": {
@@ -15745,10 +15292,7 @@
         }
       },
       "ControlsAction": {
-        "required": [
-          "id",
-          "request_payload"
-        ],
+        "required": ["id", "request_payload"],
         "type": "object",
         "properties": {
           "id": {
@@ -15760,9 +15304,7 @@
         }
       },
       "ControlsAgentBeat": {
-        "required": [
-          "beatrate"
-        ],
+        "required": ["beatrate"],
         "type": "object",
         "properties": {
           "beatrate": {
@@ -15771,10 +15313,7 @@
         }
       },
       "ControlsAgentControls": {
-        "required": [
-          "beatrate",
-          "commands"
-        ],
+        "required": ["beatrate", "commands"],
         "type": "object",
         "properties": {
           "beatrate": {
@@ -15859,9 +15398,7 @@
         }
       },
       "DiagnosisDiagnosticLogsStatus": {
-        "required": [
-          "status"
-        ],
+        "required": ["status"],
         "type": "object",
         "properties": {
           "message": {
@@ -15889,10 +15426,7 @@
         }
       },
       "DiagnosisGenerateAgentDiagnosticLogsRequest": {
-        "required": [
-          "node_ids",
-          "tail"
-        ],
+        "required": ["node_ids", "tail"],
         "type": "object",
         "properties": {
           "node_ids": {
@@ -15908,10 +15442,7 @@
         }
       },
       "DiagnosisGenerateCloudScannerDiagnosticLogsRequest": {
-        "required": [
-          "node_ids",
-          "tail"
-        ],
+        "required": ["node_ids", "tail"],
         "type": "object",
         "properties": {
           "node_ids": {
@@ -15927,9 +15458,7 @@
         }
       },
       "DiagnosisGenerateConsoleDiagnosticLogsRequest": {
-        "required": [
-          "tail"
-        ],
+        "required": ["tail"],
         "type": "object",
         "properties": {
           "tail": {
@@ -15964,31 +15493,20 @@
         }
       },
       "DiagnosisNodeIdentifier": {
-        "required": [
-          "node_id",
-          "node_type"
-        ],
+        "required": ["node_id", "node_type"],
         "type": "object",
         "properties": {
           "node_id": {
             "type": "string"
           },
           "node_type": {
-            "enum": [
-              "host",
-              "cluster",
-              "cloud_account"
-            ],
+            "enum": ["host", "cluster", "cloud_account"],
             "type": "string"
           }
         }
       },
       "FormDataModelRegistryGCRAddReq": {
-        "required": [
-          "name",
-          "registry_url",
-          "service_account_json"
-        ],
+        "required": ["name", "registry_url", "service_account_json"],
         "type": "object",
         "properties": {
           "name": {
@@ -16008,9 +15526,7 @@
         "nullable": true
       },
       "FormDataVulnerabilityDbDBUploadRequest": {
-        "required": [
-          "database"
-        ],
+        "required": ["database"],
         "type": "object",
         "properties": {
           "database": {
@@ -16019,9 +15535,7 @@
         }
       },
       "GraphCloudProviderFilter": {
-        "required": [
-          "account_ids"
-        ],
+        "required": ["account_ids"],
         "type": "object",
         "properties": {
           "account_ids": {
@@ -16064,10 +15578,7 @@
         }
       },
       "GraphIndividualThreatGraphRequest": {
-        "required": [
-          "graph_type",
-          "issue_type"
-        ],
+        "required": ["graph_type", "issue_type"],
         "type": "object",
         "properties": {
           "graph_type": {
@@ -17095,11 +16606,7 @@
         }
       },
       "LookupLookupFilter": {
-        "required": [
-          "in_field_filter",
-          "node_ids",
-          "window"
-        ],
+        "required": ["in_field_filter", "node_ids", "window"],
         "type": "object",
         "properties": {
           "in_field_filter": {
@@ -17122,9 +16629,7 @@
         }
       },
       "ModelAPIAuthRequest": {
-        "required": [
-          "api_token"
-        ],
+        "required": ["api_token"],
         "type": "object",
         "properties": {
           "api_token": {
@@ -17157,10 +16662,7 @@
         }
       },
       "ModelAddGenerativeAiBedrockIntegration": {
-        "required": [
-          "aws_region",
-          "model_id"
-        ],
+        "required": ["aws_region", "model_id"],
         "type": "object",
         "properties": {
           "aws_access_key": {
@@ -17219,31 +16721,20 @@
         }
       },
       "ModelAddGenerativeAiOpenAIIntegration": {
-        "required": [
-          "api_key",
-          "model_id"
-        ],
+        "required": ["api_key", "model_id"],
         "type": "object",
         "properties": {
           "api_key": {
             "type": "string"
           },
           "model_id": {
-            "enum": [
-              "gpt-4"
-            ],
+            "enum": ["gpt-4"],
             "type": "string"
           }
         }
       },
       "ModelAddScheduledTaskRequest": {
-        "required": [
-          "action",
-          "node_ids",
-          "filters",
-          "scan_config",
-          "benchmark_types"
-        ],
+        "required": ["action", "node_ids", "filters", "scan_config", "benchmark_types"],
         "type": "object",
         "properties": {
           "action": {
@@ -17292,10 +16783,7 @@
         }
       },
       "ModelAgentID": {
-        "required": [
-          "node_id",
-          "available_workload"
-        ],
+        "required": ["node_id", "available_workload"],
         "type": "object",
         "properties": {
           "available_workload": {
@@ -17307,10 +16795,7 @@
         }
       },
       "ModelAgentPluginDisable": {
-        "required": [
-          "plugin_name",
-          "node_id"
-        ],
+        "required": ["plugin_name", "node_id"],
         "type": "object",
         "properties": {
           "node_id": {
@@ -17322,11 +16807,7 @@
         }
       },
       "ModelAgentPluginEnable": {
-        "required": [
-          "plugin_name",
-          "version",
-          "node_id"
-        ],
+        "required": ["plugin_name", "version", "node_id"],
         "type": "object",
         "properties": {
           "node_id": {
@@ -17341,10 +16822,7 @@
         }
       },
       "ModelAgentUpgrade": {
-        "required": [
-          "version",
-          "node_ids"
-        ],
+        "required": ["version", "node_ids"],
         "type": "object",
         "properties": {
           "node_ids": {
@@ -17360,12 +16838,7 @@
         }
       },
       "ModelBasicNode": {
-        "required": [
-          "node_id",
-          "name",
-          "node_type",
-          "host_name"
-        ],
+        "required": ["node_id", "name", "node_type", "host_name"],
         "type": "object",
         "properties": {
           "host_name": {
@@ -17383,10 +16856,7 @@
         }
       },
       "ModelBulkDeleteScansRequest": {
-        "required": [
-          "scan_type",
-          "filters"
-        ],
+        "required": ["scan_type", "filters"],
         "type": "object",
         "properties": {
           "filters": {
@@ -17658,22 +17128,14 @@
         }
       },
       "ModelCloudNodeAccountRegisterReq": {
-        "required": [
-          "node_id",
-          "cloud_account",
-          "cloud_provider"
-        ],
+        "required": ["node_id", "cloud_account", "cloud_provider"],
         "type": "object",
         "properties": {
           "cloud_account": {
             "type": "string"
           },
           "cloud_provider": {
-            "enum": [
-              "aws",
-              "gcp",
-              "azure"
-            ],
+            "enum": ["aws", "gcp", "azure"],
             "type": "string"
           },
           "monitored_account_ids": {
@@ -17728,9 +17190,7 @@
         }
       },
       "ModelCloudNodeAccountsListReq": {
-        "required": [
-          "window"
-        ],
+        "required": ["window"],
         "type": "object",
         "properties": {
           "cloud_provider": {
@@ -17742,10 +17202,7 @@
         }
       },
       "ModelCloudNodeAccountsListResp": {
-        "required": [
-          "cloud_node_accounts_info",
-          "total"
-        ],
+        "required": ["cloud_node_accounts_info", "total"],
         "type": "object",
         "properties": {
           "cloud_node_accounts_info": {
@@ -17799,20 +17256,11 @@
         }
       },
       "ModelCloudNodeControlReq": {
-        "required": [
-          "cloud_provider",
-          "compliance_type"
-        ],
+        "required": ["cloud_provider", "compliance_type"],
         "type": "object",
         "properties": {
           "cloud_provider": {
-            "enum": [
-              "aws",
-              "gcp",
-              "azure",
-              "linux",
-              "kubernetes"
-            ],
+            "enum": ["aws", "gcp", "azure", "linux", "kubernetes"],
             "type": "string"
           },
           "compliance_type": {
@@ -17851,9 +17299,7 @@
         }
       },
       "ModelCloudNodeProvidersListResp": {
-        "required": [
-          "providers"
-        ],
+        "required": ["providers"],
         "type": "object",
         "properties": {
           "providers": {
@@ -18172,9 +17618,7 @@
         }
       },
       "ModelComplianceScanStatusResp": {
-        "required": [
-          "statuses"
-        ],
+        "required": ["statuses"],
         "type": "object",
         "properties": {
           "statuses": {
@@ -18187,11 +17631,7 @@
         }
       },
       "ModelComplianceScanTriggerReq": {
-        "required": [
-          "node_ids",
-          "filters",
-          "benchmark_types"
-        ],
+        "required": ["node_ids", "filters", "benchmark_types"],
         "type": "object",
         "properties": {
           "benchmark_types": {
@@ -18462,9 +17902,7 @@
         }
       },
       "ModelDeleteRegistryBulkReq": {
-        "required": [
-          "registry_ids"
-        ],
+        "required": ["registry_ids"],
         "type": "object",
         "properties": {
           "registry_ids": {
@@ -18588,10 +18026,7 @@
         }
       },
       "ModelFetchWindow": {
-        "required": [
-          "offset",
-          "size"
-        ],
+        "required": ["offset", "size"],
         "type": "object",
         "properties": {
           "offset": {
@@ -18603,9 +18038,7 @@
         }
       },
       "ModelFiltersReq": {
-        "required": [
-          "filters"
-        ],
+        "required": ["filters"],
         "type": "object",
         "properties": {
           "filters": {
@@ -18623,9 +18056,7 @@
         }
       },
       "ModelFiltersResult": {
-        "required": [
-          "filters"
-        ],
+        "required": ["filters"],
         "type": "object",
         "properties": {
           "filters": {
@@ -18641,31 +18072,18 @@
         }
       },
       "ModelGenerateReportReq": {
-        "required": [
-          "report_type"
-        ],
+        "required": ["report_type"],
         "type": "object",
         "properties": {
           "duration": {
-            "enum": [
-              "0",
-              "1",
-              "7",
-              "30",
-              "60",
-              "90",
-              "180"
-            ],
+            "enum": ["0", "1", "7", "30", "60", "90", "180"],
             "type": "integer"
           },
           "filters": {
             "$ref": "#/components/schemas/UtilsReportFilters"
           },
           "report_type": {
-            "enum": [
-              "pdf",
-              "xlsx"
-            ],
+            "enum": ["pdf", "xlsx"],
             "type": "string"
           }
         }
@@ -18701,18 +18119,11 @@
             "type": "integer"
           },
           "query_type": {
-            "enum": [
-              "remediation"
-            ],
+            "enum": ["remediation"],
             "type": "string"
           },
           "remediation_format": {
-            "enum": [
-              "all",
-              "cli",
-              "pulumi",
-              "terraform"
-            ],
+            "enum": ["all", "cli", "pulumi", "terraform"],
             "type": "string"
           },
           "service": {
@@ -18742,18 +18153,11 @@
             "type": "integer"
           },
           "query_type": {
-            "enum": [
-              "remediation"
-            ],
+            "enum": ["remediation"],
             "type": "string"
           },
           "remediation_format": {
-            "enum": [
-              "all",
-              "cli",
-              "pulumi",
-              "terraform"
-            ],
+            "enum": ["all", "cli", "pulumi", "terraform"],
             "type": "string"
           }
         }
@@ -18778,18 +18182,11 @@
             "type": "integer"
           },
           "query_type": {
-            "enum": [
-              "remediation"
-            ],
+            "enum": ["remediation"],
             "type": "string"
           },
           "remediation_format": {
-            "enum": [
-              "all",
-              "cli",
-              "pulumi",
-              "terraform"
-            ],
+            "enum": ["all", "cli", "pulumi", "terraform"],
             "type": "string"
           },
           "test_number": {
@@ -18818,11 +18215,7 @@
         }
       },
       "ModelGenerativeAiIntegrationMalwareRequest": {
-        "required": [
-          "query_type",
-          "rule_name",
-          "info"
-        ],
+        "required": ["query_type", "rule_name", "info"],
         "type": "object",
         "properties": {
           "info": {
@@ -18832,9 +18225,7 @@
             "type": "integer"
           },
           "query_type": {
-            "enum": [
-              "remediation"
-            ],
+            "enum": ["remediation"],
             "type": "string"
           },
           "rule_name": {
@@ -18843,10 +18234,7 @@
         }
       },
       "ModelGenerativeAiIntegrationSecretRequest": {
-        "required": [
-          "query_type",
-          "name"
-        ],
+        "required": ["query_type", "name"],
         "type": "object",
         "properties": {
           "integration_id": {
@@ -18856,9 +18244,7 @@
             "type": "string"
           },
           "query_type": {
-            "enum": [
-              "remediation"
-            ],
+            "enum": ["remediation"],
             "type": "string"
           }
         }
@@ -18886,26 +18272,17 @@
             "type": "integer"
           },
           "query_type": {
-            "enum": [
-              "remediation"
-            ],
+            "enum": ["remediation"],
             "type": "string"
           },
           "remediation_format": {
-            "enum": [
-              "all",
-              "cli",
-              "pulumi",
-              "terraform"
-            ],
+            "enum": ["all", "cli", "pulumi", "terraform"],
             "type": "string"
           }
         }
       },
       "ModelGetAuditLogsRequest": {
-        "required": [
-          "window"
-        ],
+        "required": ["window"],
         "type": "object",
         "properties": {
           "window": {
@@ -18914,10 +18291,7 @@
         }
       },
       "ModelGraphResult": {
-        "required": [
-          "nodes",
-          "edges"
-        ],
+        "required": ["nodes", "edges"],
         "type": "object",
         "properties": {
           "edges": {
@@ -19158,11 +18532,7 @@
         }
       },
       "ModelInitAgentReq": {
-        "required": [
-          "node_id",
-          "available_workload",
-          "version"
-        ],
+        "required": ["node_id", "available_workload", "version"],
         "type": "object",
         "properties": {
           "available_workload": {
@@ -19196,9 +18566,7 @@
         }
       },
       "ModelIntegrationFilters": {
-        "required": [
-          "node_ids"
-        ],
+        "required": ["node_ids"],
         "type": "object",
         "properties": {
           "fields_filters": {
@@ -19239,29 +18607,18 @@
         }
       },
       "ModelInviteUserRequest": {
-        "required": [
-          "email",
-          "role",
-          "action"
-        ],
+        "required": ["email", "role", "action"],
         "type": "object",
         "properties": {
           "action": {
-            "enum": [
-              "send-invite-email",
-              "get-invite-link"
-            ],
+            "enum": ["send-invite-email", "get-invite-link"],
             "type": "string"
           },
           "email": {
             "type": "string"
           },
           "role": {
-            "enum": [
-              "admin",
-              "standard-user",
-              "read-only-user"
-            ],
+            "enum": ["admin", "standard-user", "read-only-user"],
             "type": "string"
           }
         }
@@ -19281,12 +18638,7 @@
         }
       },
       "ModelKubernetesCluster": {
-        "required": [
-          "node_id",
-          "node_name",
-          "agent_running",
-          "hosts"
-        ],
+        "required": ["node_id", "node_name", "agent_running", "hosts"],
         "type": "object",
         "properties": {
           "agent_running": {
@@ -19308,9 +18660,7 @@
         }
       },
       "ModelListAgentVersionResp": {
-        "required": [
-          "versions"
-        ],
+        "required": ["versions"],
         "type": "object",
         "properties": {
           "versions": {
@@ -19323,10 +18673,7 @@
         }
       },
       "ModelLoginRequest": {
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "type": "object",
         "properties": {
           "email": {
@@ -19440,10 +18787,7 @@
         }
       },
       "ModelMalwareRule": {
-        "required": [
-          "masked",
-          "updated_at"
-        ],
+        "required": ["masked", "updated_at"],
         "type": "object",
         "properties": {
           "author": {
@@ -19554,9 +18898,7 @@
         }
       },
       "ModelMalwareScanResultClass": {
-        "required": [
-          "class"
-        ],
+        "required": ["class"],
         "type": "object",
         "properties": {
           "class": {
@@ -19569,9 +18911,7 @@
         }
       },
       "ModelMalwareScanResultRules": {
-        "required": [
-          "rules"
-        ],
+        "required": ["rules"],
         "type": "object",
         "properties": {
           "rules": {
@@ -19584,10 +18924,7 @@
         }
       },
       "ModelMalwareScanTriggerReq": {
-        "required": [
-          "node_ids",
-          "filters"
-        ],
+        "required": ["node_ids", "filters"],
         "type": "object",
         "properties": {
           "filters": {
@@ -19606,9 +18943,7 @@
         }
       },
       "ModelMessageResponse": {
-        "required": [
-          "message"
-        ],
+        "required": ["message"],
         "type": "object",
         "properties": {
           "message": {
@@ -19617,10 +18952,7 @@
         }
       },
       "ModelNodeIdentifier": {
-        "required": [
-          "node_id",
-          "node_type"
-        ],
+        "required": ["node_id", "node_type"],
         "type": "object",
         "properties": {
           "node_id": {
@@ -19641,10 +18973,7 @@
         }
       },
       "ModelNodesInScanResultRequest": {
-        "required": [
-          "result_ids",
-          "scan_type"
-        ],
+        "required": ["result_ids", "scan_type"],
         "type": "object",
         "properties": {
           "result_ids": {
@@ -19667,9 +18996,7 @@
         }
       },
       "ModelPasswordResetRequest": {
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "type": "object",
         "properties": {
           "email": {
@@ -19678,11 +19005,7 @@
         }
       },
       "ModelPasswordResetVerifyRequest": {
-        "required": [
-          "namespace",
-          "code",
-          "password"
-        ],
+        "required": ["namespace", "code", "password"],
         "type": "object",
         "properties": {
           "code": {
@@ -19863,13 +19186,7 @@
         }
       },
       "ModelRegisterInvitedUserRequest": {
-        "required": [
-          "namespace",
-          "first_name",
-          "last_name",
-          "password",
-          "code"
-        ],
+        "required": ["namespace", "first_name", "last_name", "password", "code"],
         "type": "object",
         "properties": {
           "code": {
@@ -19924,10 +19241,7 @@
         }
       },
       "ModelRegistryAddReq": {
-        "required": [
-          "name",
-          "registry_type"
-        ],
+        "required": ["name", "registry_type"],
         "type": "object",
         "properties": {
           "extras": {
@@ -19962,11 +19276,7 @@
         }
       },
       "ModelRegistryImageStubsReq": {
-        "required": [
-          "registry_id",
-          "image_filter",
-          "window"
-        ],
+        "required": ["registry_id", "image_filter", "window"],
         "type": "object",
         "properties": {
           "image_filter": {
@@ -19981,11 +19291,7 @@
         }
       },
       "ModelRegistryImagesReq": {
-        "required": [
-          "registry_id",
-          "image_filter",
-          "window"
-        ],
+        "required": ["registry_id", "image_filter", "window"],
         "type": "object",
         "properties": {
           "image_filter": {
@@ -20034,10 +19340,7 @@
         "nullable": true
       },
       "ModelRegistryUpdateReq": {
-        "required": [
-          "name",
-          "registry_type"
-        ],
+        "required": ["name", "registry_type"],
         "type": "object",
         "properties": {
           "extras": {
@@ -20064,10 +19367,7 @@
         }
       },
       "ModelResponseAccessToken": {
-        "required": [
-          "access_token",
-          "refresh_token"
-        ],
+        "required": ["access_token", "refresh_token"],
         "type": "object",
         "properties": {
           "access_token": {
@@ -20079,9 +19379,7 @@
         }
       },
       "ModelSbomRequest": {
-        "required": [
-          "scan_id"
-        ],
+        "required": ["scan_id"],
         "type": "object",
         "properties": {
           "scan_id": {
@@ -20122,12 +19420,7 @@
         }
       },
       "ModelScanCompareReq": {
-        "required": [
-          "base_scan_id",
-          "to_scan_id",
-          "fields_filter",
-          "window"
-        ],
+        "required": ["base_scan_id", "to_scan_id", "fields_filter", "window"],
         "type": "object",
         "properties": {
           "base_scan_id": {
@@ -20145,9 +19438,7 @@
         }
       },
       "ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelCloudCompliance": {
-        "required": [
-          "new"
-        ],
+        "required": ["new"],
         "type": "object",
         "properties": {
           "new": {
@@ -20160,9 +19451,7 @@
         }
       },
       "ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelCompliance": {
-        "required": [
-          "new"
-        ],
+        "required": ["new"],
         "type": "object",
         "properties": {
           "new": {
@@ -20175,9 +19464,7 @@
         }
       },
       "ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelMalware": {
-        "required": [
-          "new"
-        ],
+        "required": ["new"],
         "type": "object",
         "properties": {
           "new": {
@@ -20190,9 +19477,7 @@
         }
       },
       "ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelSecret": {
-        "required": [
-          "new"
-        ],
+        "required": ["new"],
         "type": "object",
         "properties": {
           "new": {
@@ -20205,9 +19490,7 @@
         }
       },
       "ModelScanCompareResGithubComDeepfenceThreatMapperDeepfenceServerModelVulnerability": {
-        "required": [
-          "new"
-        ],
+        "required": ["new"],
         "type": "object",
         "properties": {
           "new": {
@@ -20296,11 +19579,7 @@
         }
       },
       "ModelScanListReq": {
-        "required": [
-          "node_ids",
-          "fields_filter",
-          "window"
-        ],
+        "required": ["node_ids", "fields_filter", "window"],
         "type": "object",
         "properties": {
           "fields_filter": {
@@ -20319,9 +19598,7 @@
         }
       },
       "ModelScanListResp": {
-        "required": [
-          "scans_info"
-        ],
+        "required": ["scans_info"],
         "type": "object",
         "properties": {
           "scans_info": {
@@ -20367,10 +19644,7 @@
         }
       },
       "ModelScanResultBasicNode": {
-        "required": [
-          "result_id",
-          "basic_nodes"
-        ],
+        "required": ["result_id", "basic_nodes"],
         "type": "object",
         "properties": {
           "basic_nodes": {
@@ -20386,11 +19660,7 @@
         }
       },
       "ModelScanResultsActionRequest": {
-        "required": [
-          "scan_id",
-          "result_ids",
-          "scan_type"
-        ],
+        "required": ["scan_id", "result_ids", "scan_type"],
         "type": "object",
         "properties": {
           "notify_individual": {
@@ -20472,12 +19742,7 @@
         }
       },
       "ModelScanResultsMaskRequest": {
-        "required": [
-          "scan_id",
-          "result_ids",
-          "scan_type",
-          "mask_action"
-        ],
+        "required": ["scan_id", "result_ids", "scan_type", "mask_action"],
         "type": "object",
         "properties": {
           "mask_action": {
@@ -20512,11 +19777,7 @@
         }
       },
       "ModelScanResultsReq": {
-        "required": [
-          "scan_id",
-          "fields_filter",
-          "window"
-        ],
+        "required": ["scan_id", "fields_filter", "window"],
         "type": "object",
         "properties": {
           "fields_filter": {
@@ -20531,10 +19792,7 @@
         }
       },
       "ModelScanStatusReq": {
-        "required": [
-          "scan_ids",
-          "bulk_scan_id"
-        ],
+        "required": ["scan_ids", "bulk_scan_id"],
         "type": "object",
         "properties": {
           "bulk_scan_id": {
@@ -20550,9 +19808,7 @@
         }
       },
       "ModelScanStatusResp": {
-        "required": [
-          "statuses"
-        ],
+        "required": ["statuses"],
         "type": "object",
         "properties": {
           "statuses": {
@@ -20565,10 +19821,7 @@
         }
       },
       "ModelScanTriggerResp": {
-        "required": [
-          "scan_ids",
-          "bulk_scan_id"
-        ],
+        "required": ["scan_ids", "bulk_scan_id"],
         "type": "object",
         "properties": {
           "bulk_scan_id": {
@@ -20654,11 +19907,7 @@
         }
       },
       "ModelSecretRule": {
-        "required": [
-          "level",
-          "masked",
-          "updated_at"
-        ],
+        "required": ["level", "masked", "updated_at"],
         "type": "object",
         "properties": {
           "id": {
@@ -20754,9 +20003,7 @@
         }
       },
       "ModelSecretScanResultRules": {
-        "required": [
-          "rules"
-        ],
+        "required": ["rules"],
         "type": "object",
         "properties": {
           "rules": {
@@ -20769,10 +20016,7 @@
         }
       },
       "ModelSecretScanTriggerReq": {
-        "required": [
-          "node_ids",
-          "filters"
-        ],
+        "required": ["node_ids", "filters"],
         "type": "object",
         "properties": {
           "filters": {
@@ -20791,17 +20035,11 @@
         }
       },
       "ModelSettingUpdateRequest": {
-        "required": [
-          "key",
-          "value"
-        ],
+        "required": ["key", "value"],
         "type": "object",
         "properties": {
           "key": {
-            "enum": [
-              "console_url",
-              "inactive_delete_scan_results"
-            ],
+            "enum": ["console_url", "inactive_delete_scan_results"],
             "type": "string"
           },
           "value": {
@@ -20810,13 +20048,7 @@
         }
       },
       "ModelSettingsResponse": {
-        "required": [
-          "id",
-          "key",
-          "label",
-          "value",
-          "description"
-        ],
+        "required": ["id", "key", "label", "value", "description"],
         "type": "object",
         "properties": {
           "description": {
@@ -20835,10 +20067,7 @@
         }
       },
       "ModelStopScanRequest": {
-        "required": [
-          "scan_ids",
-          "scan_type"
-        ],
+        "required": ["scan_ids", "scan_type"],
         "type": "object",
         "properties": {
           "scan_ids": {
@@ -20944,9 +20173,7 @@
         }
       },
       "ModelUpdateScheduledTaskRequest": {
-        "required": [
-          "is_enabled"
-        ],
+        "required": ["is_enabled"],
         "type": "object",
         "properties": {
           "is_enabled": {
@@ -20967,20 +20194,13 @@
             "type": "string"
           },
           "role": {
-            "enum": [
-              "admin",
-              "standard-user",
-              "read-only-user"
-            ],
+            "enum": ["admin", "standard-user", "read-only-user"],
             "type": "string"
           }
         }
       },
       "ModelUpdateUserPasswordRequest": {
-        "required": [
-          "old_password",
-          "new_password"
-        ],
+        "required": ["old_password", "new_password"],
         "type": "object",
         "properties": {
           "new_password": {
@@ -21004,22 +20224,13 @@
             "type": "string"
           },
           "role": {
-            "enum": [
-              "admin",
-              "standard-user",
-              "read-only-user"
-            ],
+            "enum": ["admin", "standard-user", "read-only-user"],
             "type": "string"
           }
         }
       },
       "ModelUser": {
-        "required": [
-          "first_name",
-          "last_name",
-          "email",
-          "company"
-        ],
+        "required": ["first_name", "last_name", "email", "company"],
         "type": "object",
         "properties": {
           "company": {
@@ -21058,11 +20269,7 @@
             "type": "boolean"
           },
           "role": {
-            "enum": [
-              "admin",
-              "standard-user",
-              "read-only-user"
-            ],
+            "enum": ["admin", "standard-user", "read-only-user"],
             "type": "string"
           },
           "role_id": {
@@ -21277,9 +20484,7 @@
         }
       },
       "ModelVulnerabilityScanConfigLanguage": {
-        "required": [
-          "language"
-        ],
+        "required": ["language"],
         "type": "object",
         "properties": {
           "language": {
@@ -21370,11 +20575,7 @@
         }
       },
       "ModelVulnerabilityScanTriggerReq": {
-        "required": [
-          "node_ids",
-          "filters",
-          "scan_config"
-        ],
+        "required": ["node_ids", "filters", "scan_config"],
         "type": "object",
         "properties": {
           "filters": {
@@ -21734,9 +20935,7 @@
         }
       },
       "ReportRawReport": {
-        "required": [
-          "payload"
-        ],
+        "required": ["payload"],
         "type": "object",
         "properties": {
           "payload": {
@@ -21745,11 +20944,7 @@
         }
       },
       "ReportersCompareFilter": {
-        "required": [
-          "field_name",
-          "field_value",
-          "greater_than"
-        ],
+        "required": ["field_name", "field_value", "greater_than"],
         "type": "object",
         "properties": {
           "field_name": {
@@ -21762,9 +20957,7 @@
         }
       },
       "ReportersContainsFilter": {
-        "required": [
-          "filter_in"
-        ],
+        "required": ["filter_in"],
         "type": "object",
         "properties": {
           "filter_in": {
@@ -21778,12 +20971,7 @@
         }
       },
       "ReportersFieldsFilters": {
-        "required": [
-          "contains_filter",
-          "match_filter",
-          "order_filter",
-          "compare_filter"
-        ],
+        "required": ["contains_filter", "match_filter", "order_filter", "compare_filter"],
         "type": "object",
         "properties": {
           "compare_filter": {
@@ -21814,9 +21002,7 @@
         }
       },
       "ReportersMatchFilter": {
-        "required": [
-          "filter_in"
-        ],
+        "required": ["filter_in"],
         "type": "object",
         "properties": {
           "filter_in": {
@@ -21830,9 +21016,7 @@
         }
       },
       "ReportersOrderFilter": {
-        "required": [
-          "order_fields"
-        ],
+        "required": ["order_fields"],
         "type": "object",
         "properties": {
           "order_fields": {
@@ -21845,10 +21029,7 @@
         }
       },
       "ReportersOrderSpec": {
-        "required": [
-          "field_name",
-          "descending"
-        ],
+        "required": ["field_name", "descending"],
         "type": "object",
         "properties": {
           "descending": {
@@ -21863,10 +21044,7 @@
         }
       },
       "SearchChainedSearchFilter": {
-        "required": [
-          "node_filter",
-          "relation_ship"
-        ],
+        "required": ["node_filter", "relation_ship"],
         "type": "object",
         "properties": {
           "next_filter": {
@@ -21942,10 +21120,7 @@
         }
       },
       "SearchSearchCountResp": {
-        "required": [
-          "count",
-          "categories"
-        ],
+        "required": ["count", "categories"],
         "type": "object",
         "properties": {
           "categories": {
@@ -21961,11 +21136,7 @@
         }
       },
       "SearchSearchFilter": {
-        "required": [
-          "in_field_filter",
-          "filters",
-          "window"
-        ],
+        "required": ["in_field_filter", "filters", "window"],
         "type": "object",
         "properties": {
           "filters": {
@@ -21984,10 +21155,7 @@
         }
       },
       "SearchSearchNodeReq": {
-        "required": [
-          "node_filter",
-          "window"
-        ],
+        "required": ["node_filter", "window"],
         "type": "object",
         "properties": {
           "extended_node_filter": {
@@ -22005,11 +21173,7 @@
         }
       },
       "SearchSearchScanReq": {
-        "required": [
-          "scan_filters",
-          "node_filters",
-          "window"
-        ],
+        "required": ["scan_filters", "node_filters", "window"],
         "type": "object",
         "properties": {
           "node_filters": {
@@ -22080,10 +21244,7 @@
         }
       },
       "UtilsReportFilters": {
-        "required": [
-          "scan_type",
-          "node_type"
-        ],
+        "required": ["scan_type", "node_type"],
         "type": "object",
         "properties": {
           "advanced_report_filters": {
@@ -22143,10 +21304,7 @@
         }
       },
       "UtilsScanSbomRequest": {
-        "required": [
-          "scan_id",
-          "sbom"
-        ],
+        "required": ["scan_id", "sbom"],
         "type": "object",
         "properties": {
           "container_name": {
