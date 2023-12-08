@@ -3,6 +3,7 @@ package ecr
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ecrpublic"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 )
@@ -41,8 +42,12 @@ func listPublicImagesWithTags(result *ecrpublic.DescribeRepositoriesOutput, svc 
 	return containerImages, nil
 }
 
-func listPublicImages(svc *ecrpublic.ECRPublic) ([]model.IngestedContainerImage, error) {
-	result, err := svc.DescribeRepositories(&ecrpublic.DescribeRepositoriesInput{})
+func listPublicImages(svc *ecrpublic.ECRPublic, awsAccountID string) ([]model.IngestedContainerImage, error) {
+	describeRepositoriesInput := ecrpublic.DescribeRepositoriesInput{}
+	if awsAccountID != "" {
+		describeRepositoriesInput.RegistryId = aws.String(awsAccountID)
+	}
+	result, err := svc.DescribeRepositories(&describeRepositoriesInput)
 	if err != nil {
 		return nil, fmt.Errorf("error describing repositories: %v", err)
 	}

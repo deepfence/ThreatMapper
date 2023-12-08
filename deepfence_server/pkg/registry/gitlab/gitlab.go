@@ -2,6 +2,8 @@ package gitlab
 
 import (
 	"encoding/json"
+	"fmt"
+	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
@@ -23,7 +25,24 @@ func (e *RegistryGitlab) ValidateFields(v *validator.Validate) error {
 }
 
 func (e *RegistryGitlab) IsValidCredential() bool {
-	return true
+	if e.Secret.GitlabToken == "" {
+		return true
+	}
+
+	url := fmt.Sprintf("%s/api/v4/projects?private_token=%s&simple=false&membership=true", e.NonSecret.GitlabServerURL, e.Secret.GitlabToken)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return false
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Error().Msgf("failed to authenticate, response: %+v", resp)
+	}
+
+	return resp.StatusCode == http.StatusOK
 }
 
 func (e *RegistryGitlab) EncryptSecret(aes encryption.AES) error {

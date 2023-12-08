@@ -30,7 +30,7 @@ func (d *RegistryQuay) IsValidCredential() bool {
 	}
 
 	listRepos := "%s/api/v1/repository?public=true&namespace=%s"
-	url := fmt.Sprintf(listRepos, d.NonSecret.QuayRegistryURL, d.Secret.QuayAccessToken)
+	url := fmt.Sprintf(listRepos, d.NonSecret.QuayRegistryURL, d.NonSecret.QuayNamespace)
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
