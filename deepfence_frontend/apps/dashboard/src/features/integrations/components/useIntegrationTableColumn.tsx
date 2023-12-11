@@ -26,6 +26,9 @@ const ActionDropdown = ({
       align={'start'}
       content={
         <>
+          <DropdownItem onClick={() => onTableAction(row, ActionEnumType.EDIT)}>
+            Edit
+          </DropdownItem>
           <DropdownItem
             onClick={() => onTableAction(row, ActionEnumType.DELETE)}
             className="dark:text-status-error dark:hover:text-[#C45268]"
@@ -63,8 +66,8 @@ export const useIntegrationTableColumn = (
             size: 80,
             maxSize: 85,
           }),
-          columnHelper.accessor('webhook_url', {
-            cell: (cell) => cell.row.original.config?.webhook_url,
+          columnHelper.accessor('webhook_url_masked', {
+            cell: (cell) => cell.row.original.config?.webhook_url_masked,
             header: () => <TruncatedText text={'URL'} />,
             minSize: 75,
             size: 80,
@@ -113,16 +116,7 @@ export const useIntegrationTableColumn = (
               maxSize: 60,
             },
           ),
-          columnHelper.accessor('aws_access_key', {
-            enableSorting: false,
-            cell: (cell) => (
-              <TruncatedText text={cell.row.original.config?.aws_access_key || '-'} />
-            ),
-            header: () => <TruncatedText text="AWS Access Key" />,
-            minSize: 50,
-            size: 55,
-            maxSize: 60,
-          }),
+
           columnHelper.accessor('aws_account_id', {
             enableSorting: false,
             cell: (cell) => (

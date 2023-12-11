@@ -13165,10 +13165,20 @@
         "type": "object",
         "properties": {
           "config": { "type": "object", "additionalProperties": {}, "nullable": true },
-          "filters": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
+          "filters": { "$ref": "#/components/schemas/ModelIntegrationFilters" },
           "id": { "type": "integer" },
           "integration_type": { "type": "string" },
           "last_error_msg": { "type": "string" },
+          "notification_type": { "type": "string" }
+        }
+      },
+      "ModelIntegrationUpdateReq": {
+        "type": "object",
+        "properties": {
+          "config": { "type": "object", "additionalProperties": {}, "nullable": true },
+          "filters": { "$ref": "#/components/schemas/ModelIntegrationFilters" },
+          "id": { "type": "integer" },
+          "integration_type": { "type": "string" },
           "notification_type": { "type": "string" }
         }
       },

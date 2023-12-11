@@ -23,61 +23,55 @@ import {
 /**
  * 
  * @export
- * @interface ModelIntegrationListResp
+ * @interface ModelIntegrationUpdateReq
  */
-export interface ModelIntegrationListResp {
+export interface ModelIntegrationUpdateReq {
     /**
      * 
      * @type {{ [key: string]: any; }}
-     * @memberof ModelIntegrationListResp
+     * @memberof ModelIntegrationUpdateReq
      */
     config?: { [key: string]: any; } | null;
     /**
      * 
      * @type {ModelIntegrationFilters}
-     * @memberof ModelIntegrationListResp
+     * @memberof ModelIntegrationUpdateReq
      */
     filters?: ModelIntegrationFilters;
     /**
      * 
      * @type {number}
-     * @memberof ModelIntegrationListResp
+     * @memberof ModelIntegrationUpdateReq
      */
     id?: number;
     /**
      * 
      * @type {string}
-     * @memberof ModelIntegrationListResp
+     * @memberof ModelIntegrationUpdateReq
      */
     integration_type?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelIntegrationListResp
-     */
-    last_error_msg?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelIntegrationListResp
+     * @memberof ModelIntegrationUpdateReq
      */
     notification_type?: string;
 }
 
 /**
- * Check if a given object implements the ModelIntegrationListResp interface.
+ * Check if a given object implements the ModelIntegrationUpdateReq interface.
  */
-export function instanceOfModelIntegrationListResp(value: object): boolean {
+export function instanceOfModelIntegrationUpdateReq(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function ModelIntegrationListRespFromJSON(json: any): ModelIntegrationListResp {
-    return ModelIntegrationListRespFromJSONTyped(json, false);
+export function ModelIntegrationUpdateReqFromJSON(json: any): ModelIntegrationUpdateReq {
+    return ModelIntegrationUpdateReqFromJSONTyped(json, false);
 }
 
-export function ModelIntegrationListRespFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelIntegrationListResp {
+export function ModelIntegrationUpdateReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelIntegrationUpdateReq {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -87,12 +81,11 @@ export function ModelIntegrationListRespFromJSONTyped(json: any, ignoreDiscrimin
         'filters': !exists(json, 'filters') ? undefined : ModelIntegrationFiltersFromJSON(json['filters']),
         'id': !exists(json, 'id') ? undefined : json['id'],
         'integration_type': !exists(json, 'integration_type') ? undefined : json['integration_type'],
-        'last_error_msg': !exists(json, 'last_error_msg') ? undefined : json['last_error_msg'],
         'notification_type': !exists(json, 'notification_type') ? undefined : json['notification_type'],
     };
 }
 
-export function ModelIntegrationListRespToJSON(value?: ModelIntegrationListResp | null): any {
+export function ModelIntegrationUpdateReqToJSON(value?: ModelIntegrationUpdateReq | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -105,7 +98,6 @@ export function ModelIntegrationListRespToJSON(value?: ModelIntegrationListResp 
         'filters': ModelIntegrationFiltersToJSON(value.filters),
         'id': value.id,
         'integration_type': value.integration_type,
-        'last_error_msg': value.last_error_msg,
         'notification_type': value.notification_type,
     };
 }
