@@ -397,8 +397,8 @@ func (c *container) GetParent() *report.Parent {
 }
 
 func (c *container) GetNode() *report.TopologyNode {
-	c.RLock()
-	defer c.RUnlock()
+	c.Lock()
+	defer c.Unlock()
 	c.baseNode.DockerContainerState = c.StateString()
 	if report.SkipReportContainerState[c.baseNode.DockerContainerState] {
 		return nil
@@ -414,8 +414,10 @@ func (c *container) GetNode() *report.TopologyNode {
 		}
 		c.baseNode.Uptime = uptimeSeconds
 		c.baseNode.DockerContainerNetworkMode = networkMode
+		c.baseNode.MemoryUsage, c.baseNode.MemoryMax, c.baseNode.CpuUsage, c.baseNode.CpuMax = c.metrics()
+	} else {
+		c.baseNode.MemoryUsage, c.baseNode.MemoryMax, c.baseNode.CpuUsage, c.baseNode.CpuMax = 0, 0, 0, 0
 	}
-	c.baseNode.MemoryUsage, c.baseNode.MemoryMax, c.baseNode.CpuUsage, c.baseNode.CpuMax = c.metrics()
 	return &report.TopologyNode{
 		Metadata: c.baseNode,
 		Parents:  c.GetParent(),
