@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
@@ -14,7 +15,8 @@ import (
 )
 
 var (
-	errAccessKeyMissing = errors.New("access key and secret key are required")
+	errAccessKeyMissing     = errors.New("access key and secret key are required")
+	errPublicRegistryRegion = errors.New("region should be set to " + publicRegistryRegion + " for public registry")
 )
 
 func New(requestByte []byte) (*RegistryECR, error) {
@@ -23,13 +25,15 @@ func New(requestByte []byte) (*RegistryECR, error) {
 	if err != nil {
 		return &r, err
 	}
-	if r.NonSecret.IsPublic == trueStr {
-		r.NonSecret.AWSRegionName = publicRegistryRegion
-	}
 	return &r, nil
 }
 
 func (e *RegistryECR) ValidateFields(v *validator.Validate) error {
+	if e.NonSecret.IsPublic == trueStr {
+		if e.NonSecret.AWSRegionName != publicRegistryRegion {
+			return errPublicRegistryRegion
+		}
+	}
 	if e.NonSecret.UseIAMRole == trueStr {
 		// IAM role based authentication
 		return v.Struct(e)
@@ -44,21 +48,58 @@ func (e *RegistryECR) ValidateFields(v *validator.Validate) error {
 
 func (e *RegistryECR) IsValidCredential() bool {
 	if e.NonSecret.UseIAMRole == trueStr {
-		_, err := session.NewSession(&aws.Config{
+		sess, err := session.NewSession(&aws.Config{
 			Region: aws.String(e.NonSecret.AWSRegionName),
 		})
 		if err != nil {
 			log.Error().Msgf("failed to authenticate: %v", err)
 			return false
 		}
+		awsConfig := aws.Config{
+			Region: aws.String(e.NonSecret.AWSRegionName),
+		}
+		if e.NonSecret.TargetAccountRoleARN != "" {
+			if e.NonSecret.AWSAccountID == "" {
+				return false
+			}
+			creds := stscreds.NewCredentials(sess, e.NonSecret.TargetAccountRoleARN)
+			awsConfig.Credentials = creds
+		}
+		if e.NonSecret.IsPublic == trueStr {
+			_, err = listIAMPublicImages(sess, awsConfig, e.NonSecret.AWSAccountID)
+			if err != nil {
+				log.Error().Msgf("failed to authenticate: %v", err)
+				return false
+			}
+		} else {
+			_, err = listIAMPublicImages(sess, awsConfig, e.NonSecret.AWSAccountID)
+			if err != nil {
+				log.Error().Msgf("failed to authenticate: %v", err)
+				return false
+			}
+		}
 		return true
 	} else {
-		_, err := session.NewSession(&aws.Config{
+		sess, err := session.NewSession(&aws.Config{
+			Region:      aws.String(e.NonSecret.AWSRegionName),
 			Credentials: credentials.NewStaticCredentials(e.NonSecret.AWSAccessKeyID, e.Secret.AWSSecretAccessKey, ""),
 		})
 		if err != nil {
 			log.Error().Msgf("failed to authenticate: %v", err)
 			return false
+		}
+		if e.NonSecret.IsPublic == trueStr {
+			_, err = listNonIAMPublicImages(sess, e.NonSecret.AWSAccountID)
+			if err != nil {
+				log.Error().Msgf("failed to authenticate: %v", err)
+				return false
+			}
+		} else {
+			_, err = listNonIAMPublicImages(sess, e.NonSecret.AWSAccountID)
+			if err != nil {
+				log.Error().Msgf("failed to authenticate: %v", err)
+				return false
+			}
 		}
 		return true
 	}
