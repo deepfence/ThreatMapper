@@ -562,11 +562,13 @@ const NotificationType = ({
           filters={data?.filters}
         />
       ) : null}
+
       {notificationType &&
       isVulnerabilityNotification(notificationType) &&
       isJiraIntegration(integrationType) ? (
         <FieldSelection
           notificationType={notificationType.toLowerCase() as 'vulnerability'}
+          fields={data?.config?.custom_fields}
         />
       ) : null}
     </>

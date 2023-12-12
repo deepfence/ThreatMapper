@@ -346,29 +346,45 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
     const addIntegrationApi = apiWrapper({
       fn: getIntegrationApiClient().addIntegration,
     });
-    debugger;
-    const r = await addIntegrationApi({
-      modelIntegrationAddReq: {
-        integration_type: _integrationType,
-        notification_type: _notificationType,
-        config: getConfigBodyNotificationType(formData, _integrationType as string),
-        filters: _filters,
-      },
+    const updateIntegrationApi = apiWrapper({
+      fn: getIntegrationApiClient().addIntegration,
     });
-    if (!r.ok) {
-      if (r.error.response.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.error.response.json();
+    let result = null;
+    if (_actionType === ActionEnumType.EDIT) {
+      result = await addIntegrationApi({
+        modelIntegrationAddReq: {
+          integration_type: _integrationType,
+          notification_type: _notificationType,
+          config: getConfigBodyNotificationType(formData, _integrationType as string),
+          filters: _filters,
+        },
+      });
+    } else {
+      result = await addIntegrationApi({
+        modelIntegrationAddReq: {
+          integration_type: _integrationType,
+          notification_type: _notificationType,
+          config: getConfigBodyNotificationType(formData, _integrationType as string),
+          filters: _filters,
+        },
+      });
+    }
+
+    if (!result.ok) {
+      if (result.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse =
+          await result.error.response.json();
         return {
           message: modelResponse.message ?? '',
           fieldErrors: modelResponse.error_fields ?? {},
         };
-      } else if (r.error.response.status === 403) {
-        const message = await get403Message(r.error);
+      } else if (result.error.response.status === 403) {
+        const message = await get403Message(result.error);
         return {
           message,
         };
       }
-      throw r.error;
+      throw result.error;
     }
     invalidateAllQueries();
     return {
