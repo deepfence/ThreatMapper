@@ -97,6 +97,8 @@ docker run -dit \
     deepfenceio/deepfence_agent_ce:2.1.0
 ```
 
+Note: Image tag `deepfenceio/deepfence_agent_ce:2.1.0-multiarch` is supported in amd64 and arm64/v8 architectures.
+
 On a Kubernetes platform, the sensors are installed using [helm chart](https://community.deepfence.io/threatmapper/docs/v2.1/sensors/kubernetes/)
 
 ### Next Steps

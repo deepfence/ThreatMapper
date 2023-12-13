@@ -58,6 +58,10 @@ Then create the new policy.
 - At the bottom, select "Configure via JSON"
 - Copy and paste the following JSON configuration: (Replace `<DEEPFENCE_KEY>` and `<MGMT_CONSOLE_URL>` with actual values)
 
+:::info
+Image tag `deepfenceio/deepfence_agent_ce:2.1.0-multiarch` is supported in amd64 and arm64/v8 architectures.
+:::
+
 ```json
 {
   "ipcMode": null,

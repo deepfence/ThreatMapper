@@ -6,14 +6,6 @@ title: AWS Fargate
 
 On AWS Fargate, the ThreatMapper sensor agents are deployed as a sidecar container, using a task definition. 
 
-:::info
-
-These instructions are draft, untested, and need technical review.
-
-See also the Deepfence ThreatStryker instructions.
-
-:::
-
 ## Before you Begin
 
 Grant IAM permissions for ECS task execution role to access this secret as outlined [here](https://aws.amazon.com/blogs/compute/introducing-private-registry-authentication-support-for-aws-fargate/).

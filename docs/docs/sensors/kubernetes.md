@@ -10,22 +10,16 @@ In Kubernetes, the ThreatMapper sensors are deployed as a daemonset in the Kuber
 
 Install and start the latest release of the deepfence sensor.  Replace `x.x.x.x` with the IP address of the Management Console and `73f6f3d0-9931-4b31-8967-fd6adf475f80` with the API key.
 
+### Identify container runtime
+If container runtime is unknown, please follow [these](#identify-container-runtime-1) instructions.
+
 :::info
 `clusterName` is the name / identifier of the cluster. It should be different for different kubernetes clusters. Example: prod-cluster-1, test-cluster.
 :::
 
-### Identify container runtime
-- To get container runtime in the k8s cluster, run the following command 
-```shell
-kubectl get nodes -o=custom-columns=NAME:.metadata.name,Runtime:.status.nodeInfo.containerRuntimeVersion
-```
-- To get container runtime socket path in the k8s cluster, run the following commands and search for `--container-runtime-endpoint` or `containerd`
-```shell
-kubectl apply -f https://deepfence-public.s3.amazonaws.com/kubernetes/deepfence-cluster-config-job.yaml
-kubectl wait --for=condition=complete --timeout=30s job/deepfence-cluster-config
-kubectl logs $(kubectl get pod -l job-name=deepfence-cluster-config -o jsonpath="{.items[0].metadata.name}")
-kubectl delete -f https://deepfence-public.s3.amazonaws.com/kubernetes/deepfence-cluster-config-job.yaml
-```
+:::info
+Image tag `deepfenceio/deepfence_agent_ce:2.1.0-multiarch` is supported in amd64 and arm64/v8 architectures.
+:::
 
 ### Deploy deepfence-agent helm chart
 ```bash
@@ -73,4 +67,17 @@ helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-
 
 ```bash
 helm delete deepfence-agent -n deepfence
+```
+
+## Identify container runtime
+- To get container runtime in the k8s cluster, run the following command
+```shell
+kubectl get nodes -o=custom-columns=NAME:.metadata.name,Runtime:.status.nodeInfo.containerRuntimeVersion
+```
+- To get container runtime socket path in the k8s cluster, run the following commands and search for `--container-runtime-endpoint` or `containerd`
+```shell
+kubectl apply -f https://deepfence-public.s3.amazonaws.com/kubernetes/deepfence-cluster-config-job.yaml
+kubectl wait --for=condition=complete --timeout=30s job/deepfence-cluster-config
+kubectl logs $(kubectl get pod -l job-name=deepfence-cluster-config -o jsonpath="{.items[0].metadata.name}")
+kubectl delete -f https://deepfence-public.s3.amazonaws.com/kubernetes/deepfence-cluster-config-job.yaml
 ```
