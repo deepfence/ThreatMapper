@@ -84,12 +84,12 @@ type IntegrationListReq struct {
 }
 
 type IntegrationListResp struct {
-	ID               int32                   `json:"id"`
-	IntegrationType  string                  `json:"integration_type"`
-	NotificationType string                  `json:"notification_type"`
-	Config           map[string]interface{}  `json:"config"`
-	Filters          reporters.FieldsFilters `json:"filters"`
-	LastErrorMsg     string                  `json:"last_error_msg"`
+	ID               int32                  `json:"id"`
+	IntegrationType  string                 `json:"integration_type"`
+	NotificationType string                 `json:"notification_type"`
+	Config           map[string]interface{} `json:"config"`
+	Filters          IntegrationFilters     `json:"filters"`
+	LastErrorMsg     string                 `json:"last_error_msg"`
 }
 
 func (i *IntegrationListReq) GetIntegrations(ctx context.Context, pgClient *postgresqlDb.Queries) ([]postgresqlDb.Integration, error) {
@@ -115,7 +115,8 @@ func (i *IntegrationListResp) RedactSensitiveFieldsInConfig() {
 		// if key is present in SensitiveFields map, redact the value
 		if _, ok := constants.SensitiveFields[key]; ok {
 			// redact last half of the string
-			i.Config[key] = redactLastHalfString(value.(string))
+			i.Config[key + "_masked"] = redactLastHalfString(value.(string))
+			delete(i.Config, key)
 		}
 	}
 }

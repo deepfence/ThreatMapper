@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
@@ -127,7 +125,7 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 	integrationList := []model.IntegrationListResp{}
 	for _, integration := range integrations {
 		var config map[string]interface{}
-		var filters reporters.FieldsFilters
+		var filters model.IntegrationFilters
 
 		err = json.Unmarshal(integration.Config, &config)
 		if err != nil {
