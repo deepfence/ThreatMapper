@@ -165,7 +165,7 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateIntegration(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	id, err := strconv.ParseInt(chi.URLParam(r, "integration_id"), 10, 64)
 	if err != nil {
 		h.respondError(&BadDecoding{err}, w)
 		return

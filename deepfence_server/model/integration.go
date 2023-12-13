@@ -9,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 )
 
@@ -139,6 +140,7 @@ type IntegrationUpdateReq struct {
 	IntegrationType  string                 `json:"integration_type"`
 	NotificationType string                 `json:"notification_type"`
 	Filters          IntegrationFilters     `json:"filters"`
+	IntegrationID    string                 `path:"integration_id" validate:"required" required:"true"`
 }
 
 func (i *IntegrationUpdateReq) UpdateIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, integration postgresqlDb.Integration) error {
@@ -153,9 +155,11 @@ func (i *IntegrationUpdateReq) UpdateIntegration(ctx context.Context, pgClient *
 	}
 
 	arg := postgresqlDb.UpdateIntegrationParams{
-		Resource:        integration.Resource,
-		IntegrationType: integration.IntegrationType,
-		Config:          integration.Config,
+		ID:              i.ID,
+		Resource:        i.NotificationType,
+		IntegrationType: i.IntegrationType,
+		IntervalMinutes: integration.IntervalMinutes,
+		Config:          bConfig,
 		Filters:         bFilter,
 	}
 
