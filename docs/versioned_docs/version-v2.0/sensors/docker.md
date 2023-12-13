@@ -6,7 +6,7 @@ title: Docker
 
 On a Linux-based Docker host, the ThreatMapper agents are deployed as a lightweight container.
 
-Install a docker runtime on the Linux host. Refer to the [Prerequisites for the Sensor Agents](/docs/architecture#threatmapper-sensor-containers) for minimum supported platforms.
+Install a docker runtime on the Linux host. Refer to the [Prerequisites for the Sensor Agents](/docs/v2.0/architecture#threatmapper-sensor-containers) for minimum supported platforms.
 
 For Windows Server hosts, experimental support exists, but it is not suitable for production use.
 
