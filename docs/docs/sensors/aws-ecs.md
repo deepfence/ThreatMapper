@@ -117,7 +117,7 @@ Then create the new policy.
       "memoryReservation": null,
       "volumesFrom": [],
       "stopTimeout": null,
-      "image": "docker.io/deepfenceio/deepfence_agent_ce:2.0.1",
+      "image": "docker.io/deepfenceio/deepfence_agent_ce:2.1.0",
       "startTimeout": null,
       "firelensConfiguration": null,
       "dependsOn": null,

@@ -27,7 +27,7 @@ export const AzureCRConnectorForm = ({
       <div className="text-p4 dark:text-text-input-value">
         Connect to your Azure Container Registry. Find out more information by{' '}
         <DFLink
-          href={`https://community.deepfence.io/threatmapper/docs/v2.0/registries/`}
+          href={`https://community.deepfence.io/threatmapper/docs/v2.1/registries/`}
           target="_blank"
           rel="noreferrer"
         >
