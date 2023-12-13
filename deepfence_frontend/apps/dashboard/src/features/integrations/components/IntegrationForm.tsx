@@ -600,18 +600,18 @@ export const IntegrationForm = ({
 
   // for s3
   const [useIAMRole, setUseIAMRole] = useState<boolean>(() => {
-    return formData?.config?.use_iam_role || formData?.config?.use_iam_role === 'true';
+    return formData?.config?.use_iam_role === 'true';
   });
 
   return (
     <>
       {!data?.success ? (
         <fetcher.Form method="post" className="m-4 overflow-y-auto">
+          <input type="text" name="integrationId" hidden readOnly value={formData?.id} />
           <div className="grid grid-cols-2 relative gap-y-8 gap-x-8">
             {integrationType === IntegrationType.slack && (
               <>
                 <TextInputType
-                  defaultValue=""
                   name="url"
                   label="Webhook Url"
                   placeholder="Slack webhook url"
@@ -636,7 +636,6 @@ export const IntegrationForm = ({
             {integrationType === IntegrationType.pagerDuty && (
               <>
                 <TextInputType
-                  defaultValue={formData?.config?.service_key}
                   name="integrationKey"
                   label="Integration Key"
                   placeholder="Integration key"
@@ -645,7 +644,6 @@ export const IntegrationForm = ({
                   required
                 />
                 <TextInputType
-                  defaultValue={formData?.config?.api_key}
                   name="apiKey"
                   label="Api Key"
                   placeholder="Api key"
@@ -680,7 +678,6 @@ export const IntegrationForm = ({
                   required
                 />
                 <TextInputType
-                  defaultValue={formData?.config?.auth_header}
                   name="auth_header"
                   label="Authorization Header"
                   placeholder="Authorization header"
@@ -692,7 +689,6 @@ export const IntegrationForm = ({
             {integrationType === IntegrationType.microsoftTeams && (
               <>
                 <TextInputType
-                  defaultValue={formData?.config?.webhook_url}
                   name="url"
                   label="Webhook Url"
                   placeholder="Webhook url"
@@ -721,7 +717,6 @@ export const IntegrationForm = ({
                   required
                 />
                 <TextInputType
-                  defaultValue={formData?.config?.token}
                   name="token"
                   label="Receiver Token"
                   placeholder="Receiver token"
@@ -821,7 +816,6 @@ export const IntegrationForm = ({
                   color={fieldErrors?.aws_access_key ? 'error' : 'default'}
                 />
                 <TextInputType
-                  defaultValue={formData?.config?.aws_secret_key}
                   name="secretKey"
                   label="Secret Key"
                   placeholder="AWS secret key"
@@ -888,9 +882,6 @@ export const IntegrationForm = ({
                   }}
                 />
                 <TextInputType
-                  defaultValue={
-                    authType === 'password' ? '' : formData?.config?.api_token
-                  }
                   name="authType"
                   label={authType === 'password' ? 'Password' : 'Api Token'}
                   helperText={
@@ -1005,7 +996,6 @@ export const IntegrationForm = ({
                       color={fieldErrors?.aws_access_key ? 'error' : 'default'}
                     />
                     <TextInputType
-                      defaultValue={formData?.config?.aws_secret_key}
                       name="secretKey"
                       label="Secret Key"
                       placeholder="AWS secret key"
@@ -1065,7 +1055,7 @@ export const IntegrationForm = ({
           </div>
         </fetcher.Form>
       ) : (
-        <SuccessModalContent text="Added successfully" />
+        <SuccessModalContent text={`${formData ? 'Updated' : 'Added'} successfully`} />
       )}
     </>
   );

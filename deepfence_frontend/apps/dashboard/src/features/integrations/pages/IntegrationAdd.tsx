@@ -185,10 +185,11 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
   const formData = await request.formData();
   const _notificationType = formData.get('_notificationType')?.toString();
   const _actionType = formData.get('_actionType')?.toString();
+  const integrationId = formData.get('integrationId')?.toString() ?? '';
 
   if (!_actionType) {
     return {
-      message: 'Action Type is required1',
+      message: 'Action Type is required',
     };
   }
 
@@ -347,12 +348,18 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       fn: getIntegrationApiClient().addIntegration,
     });
     const updateIntegrationApi = apiWrapper({
-      fn: getIntegrationApiClient().addIntegration,
+      fn: getIntegrationApiClient().updateIntegration,
     });
     let result = null;
     if (_actionType === ActionEnumType.EDIT) {
-      result = await addIntegrationApi({
-        modelIntegrationAddReq: {
+      if (!integrationId) {
+        return {
+          message: 'Integration id is required for edit',
+        };
+      }
+      result = await updateIntegrationApi({
+        integrationId,
+        modelIntegrationUpdateReq: {
           integration_type: _integrationType,
           notification_type: _notificationType,
           config: getConfigBodyNotificationType(formData, _integrationType as string),
