@@ -46,7 +46,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-            {{- if .Values.clusterName }}
+            {{- if .Values.console_agents.cluster_name }}
             - name: SCOPE_HOSTNAME
               value: "{{ .Values.console_agents.cluster_name }}-$(AGENT_HOSTNAME)"
             {{- else }}

@@ -81,6 +81,9 @@ createDeepfenceKeySecret: true
 # It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
 clusterName: ""
 
+# Log level for pods: debug / info / error
+logLevel: "info"
+
 # Suffix cloud instance id to hostnames
 instanceIdSuffix: "N"
 

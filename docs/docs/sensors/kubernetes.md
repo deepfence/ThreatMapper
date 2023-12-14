@@ -38,6 +38,7 @@ helm install deepfence-agent deepfence/deepfence-agent \
     --set mountContainerRuntimeSocket.crioSock=false \
     --set mountContainerRuntimeSocket.podmanSock=false \
     --set mountContainerRuntimeSocket.containerdSockPath="/run/containerd/containerd.sock" \
+    --set logLevel="info" \
     --namespace deepfence \
     --create-namespace \
     --version 2.1.0

@@ -115,6 +115,8 @@ spec:
                 fieldRef:
                   fieldPath: spec.nodeName
             {{- end }}
+            - name: DF_LOG_LEVEL
+              value: "{{ .Values.logLevel }}"
             - name: AGENT_POD_NAME
               valueFrom:
                 fieldRef:

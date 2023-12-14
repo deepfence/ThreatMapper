@@ -85,6 +85,10 @@ Image tag `deepfenceio/deepfence_agent_ce:2.1.0-multiarch` is supported in amd64
           "value": "<MGMT_CONSOLE_URL>"
         },
         {
+          "name": "DF_LOG_LEVEL",
+          "value": "info"
+        },
+        {
           "name": "USER_DEFINED_TAGS",
           "value": ""
         }
