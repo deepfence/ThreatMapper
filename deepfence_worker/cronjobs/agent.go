@@ -43,6 +43,7 @@ func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
 	json.Unmarshal(body, &listing)
 
 	versioned_tarball := map[string]*bytes.Buffer{}
+	tags := []string{}
 	for _, version := range listing.Available {
 		tar_resp, err := http.Get(version.URL)
 		if err != nil {
@@ -50,6 +51,9 @@ func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
 			continue
 		}
 		defer tar_resp.Body.Close()
+
+		tags = append(tags, version.Version)
+
 		tarball, err := io.ReadAll(tar_resp.Body)
 		if err != nil {
 			log.Error().Msgf("Skipping %v, err: %v", version, err)
@@ -68,5 +72,11 @@ func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
 	if err != nil {
 		return err
 	}
+
+	err = handler.CleanUpAgentVersion(ctx, tags)
+	if err != nil {
+		return err
+	}
+
 	return handler.ScheduleAutoUpgradeForPatchChanges(ctx, handler.GetLatestVersionByMajorMinor(versioned_tarball))
 }
