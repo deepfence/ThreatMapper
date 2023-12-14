@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { isNil, upperFirst } from 'lodash-es';
+import { useState } from 'react';
 import { useFetcher, useParams } from 'react-router-dom';
+import { useUpdateEffect } from 'react-use';
 import {
   Button,
   Checkbox,
@@ -9,6 +11,11 @@ import {
   TextInput,
 } from 'ui-components';
 
+import {
+  ModelIntegrationFilters,
+  ModelIntegrationListResp,
+  ModelNodeIdentifierNodeTypeEnum,
+} from '@/api/generated';
 import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudAccountsList';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
@@ -20,6 +27,7 @@ import { ScanTypeEnum } from '@/types/common';
 
 import {
   ActionEnumType,
+  severityMap,
   // CLOUD_TRAIL_ALERT,
   // USER_ACTIVITIES,
 } from '../pages/IntegrationAdd';
@@ -27,6 +35,7 @@ import {
 type IntegrationTypeProps = {
   integrationType: string;
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
+  data?: ModelIntegrationListResp;
 };
 
 export const IntegrationType = {
@@ -70,19 +79,23 @@ export const IntegrationType = {
 const TextInputType = ({
   label,
   name,
+  value,
   helperText,
   color,
   type,
   placeholder,
   required,
+  defaultValue,
 }: {
   label: string;
   name: string;
+  value?: string;
   helperText: string;
   color: 'error' | 'default';
   type?: 'text' | 'password';
   placeholder?: string;
   required?: boolean;
+  defaultValue?: string;
 }) => {
   return (
     <TextInput
@@ -94,16 +107,18 @@ const TextInputType = ({
       helperText={helperText}
       color={color}
       required={required}
+      value={value}
+      defaultValue={defaultValue}
     />
   );
 };
 
 const isCloudTrailNotification = (notificationType: string) => {
-  return notificationType && notificationType === 'CloudTrail Alert';
+  return notificationType && notificationType === 'CloudTrailAlert';
 };
 
 const isUserActivityNotification = (notificationType: string) => {
-  return notificationType && notificationType === 'User Activities';
+  return notificationType && notificationType === 'UserActivities';
 };
 
 const isVulnerabilityNotification = (notificationType: string) => {
@@ -115,11 +130,71 @@ const isJiraIntegration = (integrationType: string) => {
 };
 
 const isCloudComplianceNotification = (notificationType: string) => {
-  return notificationType && notificationType === 'Cloud Compliance';
+  return notificationType && notificationType === 'CloudCompliance';
 };
 
 const isComplianceNotification = (notificationType: string) => {
   return notificationType && notificationType === 'Compliance';
+};
+
+const getHostsFilter = (nodeIds: ModelIntegrationFilters['node_ids'] = []) => {
+  if (!nodeIds) {
+    return [];
+  }
+  return nodeIds.reduce((acc: string[], current) => {
+    if (current.node_type === ModelNodeIdentifierNodeTypeEnum.Host) {
+      acc.push(current.node_id);
+    }
+    return acc;
+  }, []);
+};
+
+const getImagesFilter = (nodeIds: ModelIntegrationFilters['node_ids'] = []) => {
+  if (!nodeIds) {
+    return [];
+  }
+  return nodeIds.reduce((acc: string[], current) => {
+    if (current.node_type === ModelNodeIdentifierNodeTypeEnum.Image) {
+      acc.push(current.node_id);
+    }
+    return acc;
+  }, []);
+};
+
+const getContainersFilter = (nodeIds: ModelIntegrationFilters['node_ids'] = []) => {
+  if (!nodeIds) {
+    return [];
+  }
+  return nodeIds.reduce((acc: string[], current) => {
+    if (current.node_type === ModelNodeIdentifierNodeTypeEnum.Container) {
+      acc.push(current.node_id);
+    }
+    return acc;
+  }, []);
+};
+
+const getClustersFilter = (nodeIds: ModelIntegrationFilters['node_ids'] = []) => {
+  if (!nodeIds) {
+    return [];
+  }
+  return nodeIds.reduce((acc: string[], current) => {
+    if (current.node_type === ModelNodeIdentifierNodeTypeEnum.Cluster) {
+      acc.push(current.node_id);
+    }
+    return acc;
+  }, []);
+};
+
+const getCloudAccountsFilter = (nodeIds: ModelIntegrationFilters['node_ids'] = []) => {
+  if (!nodeIds) {
+    return [];
+  }
+  return nodeIds.reduce((acc: string[], current) => {
+    if (current.node_type === ModelNodeIdentifierNodeTypeEnum.CloudAccount) {
+      acc.push(current.node_id);
+    }
+    return acc;
+  }, []);
 };
 
 const API_SCAN_TYPE_MAP: {
@@ -135,25 +210,44 @@ const scanTypes = ['Secret', 'Vulnerability', 'Malware'];
 const AdvancedFilters = ({
   notificationType,
   cloudProvider,
+  filters,
 }: {
   notificationType: string;
   cloudProvider?: string;
+  filters?: ModelIntegrationFilters;
 }) => {
+  const fieldFilters = filters?.fields_filters;
   // severity
-  const [selectedSeverity, setSelectedSeverity] = useState([]);
+  const severityFilter =
+    fieldFilters?.contains_filter?.filter_in?.[
+      severityMap[notificationType ?? ''] || 'severity'
+    ];
+  // status for compliance
+  const statusFilter = fieldFilters?.contains_filter?.filter_in?.['status'];
+
+  const [selectedSeverity, setSelectedSeverity] = useState<string[]>(
+    severityFilter?.map((severity) => upperFirst(severity)) ?? [],
+  );
 
   // status
-  const [selectedStatus, setSelectedStatus] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState<string[]>(
+    statusFilter?.map((status) => upperFirst(status)) ?? [],
+  );
 
   // to main clear state for combobox
-  const [hosts, setHosts] = useState<string[]>([]);
-  const [images, setImages] = useState<string[]>([]);
-  const [containers, setContainers] = useState<string[]>([]);
-  const [clusters, setClusters] = useState<string[]>([]);
+  const [hosts, setHosts] = useState<string[]>(getHostsFilter(filters?.node_ids));
+  const [images, setImages] = useState<string[]>(getImagesFilter(filters?.node_ids));
+  const [containers, setContainers] = useState<string[]>(
+    getContainersFilter(filters?.node_ids),
+  );
+  const [clusters, setClusters] = useState<string[]>(
+    getClustersFilter(filters?.node_ids),
+  );
+  const [selectedCloudAccounts, setSelectedCloudAccounts] = useState<string[]>(
+    getCloudAccountsFilter(filters?.node_ids),
+  );
 
-  const [selectedCloudAccounts, setSelectedCloudAccounts] = useState<string[]>([]);
-
-  useEffect(() => {
+  useUpdateEffect(() => {
     setSelectedSeverity([]);
     setSelectedStatus([]);
     setHosts([]);
@@ -349,16 +443,28 @@ const AdvancedFilters = ({
   );
 };
 
-const notificationTypeList = [
-  'Vulnerability',
-  'Secret',
-  'Malware',
-  'Compliance',
-  'Cloud Compliance',
-];
-
-const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string> }) => {
-  const [notificationType, setNotificationType] = useState<ScanTypeEnum | string>('');
+const getDisplayNotification = (notificationType: string) => {
+  if (isCloudTrailNotification(notificationType)) {
+    return 'CloudTrail Alert';
+  } else if (isUserActivityNotification(notificationType)) {
+    return 'User Activities';
+  } else if (isCloudComplianceNotification(notificationType)) {
+    return 'Cloud Compliance';
+  }
+  return notificationType;
+};
+const NotificationType = ({
+  fieldErrors,
+  defaultNotificationType,
+  data,
+}: {
+  fieldErrors?: Record<string, string>;
+  defaultNotificationType: string;
+  data?: ModelIntegrationListResp;
+}) => {
+  const [notificationType, setNotificationType] = useState<ScanTypeEnum | string>(
+    defaultNotificationType,
+  );
   const [cloud, setCloud] = useState<string>('AWS');
 
   const { integrationType } = useParams() as {
@@ -386,17 +492,19 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
         placeholder="Select notification type"
         label="Notification Type"
         getDisplayValue={() => {
-          return notificationType;
+          return getDisplayNotification(notificationType);
         }}
         required
       >
-        {notificationTypeList.map((notification) => {
-          return (
-            <ListboxOption key={notification} value={notification}>
-              {notification}
-            </ListboxOption>
-          );
-        })}
+        {['Vulnerability', 'Secret', 'Malware', 'Compliance', 'CloudCompliance'].map(
+          (notification) => {
+            return (
+              <ListboxOption key={notification} value={notification}>
+                {getDisplayNotification(notification)}
+              </ListboxOption>
+            );
+          },
+        )}
 
         {/* {CloudTrailIntegration.includes(integrationType) && (
           <SelectItem value={CLOUD_TRAIL_ALERT}>CloudTrail Alert</SelectItem>
@@ -407,32 +515,34 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
         ) : null} */}
       </Listbox>
 
-      {isCloudComplianceNotification(notificationType) && (
-        <Listbox
-          variant="underline"
-          label="Select Provider"
-          value={cloud}
-          name="cloudType"
-          onChange={(value) => {
-            setCloud(value);
-          }}
-          placeholder="Select provider"
-          getDisplayValue={() => {
-            return cloud;
-          }}
-        >
-          {['AWS', 'GCP', 'AZURE'].map((cloud) => {
-            return (
-              <ListboxOption value={cloud} key={cloud}>
-                {cloud}
-              </ListboxOption>
-            );
-          })}
-        </Listbox>
-      )}
+      {isCloudComplianceNotification(notificationType) &&
+        integrationType !== IntegrationType.s3 && (
+          <Listbox
+            variant="underline"
+            label="Select Provider"
+            value={cloud}
+            name="cloudType"
+            onChange={(value) => {
+              setCloud(value);
+            }}
+            placeholder="Select provider"
+            getDisplayValue={() => {
+              return cloud;
+            }}
+          >
+            {['AWS', 'GCP', 'AZURE'].map((cloud) => {
+              return (
+                <ListboxOption value={cloud} key={cloud}>
+                  {cloud}
+                </ListboxOption>
+              );
+            })}
+          </Listbox>
+        )}
 
       {isCloudTrailNotification(notificationType) && <>Add Cloud trails here</>}
 
+      {/**  TODO: check this is used */}
       {isUserActivityNotification(notificationType) && (
         <div className="mt-3">
           <TextInputType
@@ -447,13 +557,19 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
       {notificationType &&
       !isCloudTrailNotification(notificationType) &&
       !isUserActivityNotification(notificationType) ? (
-        <AdvancedFilters notificationType={notificationType} cloudProvider={cloud} />
+        <AdvancedFilters
+          notificationType={notificationType}
+          cloudProvider={cloud}
+          filters={data?.filters}
+        />
       ) : null}
+
       {notificationType &&
       isVulnerabilityNotification(notificationType) &&
       isJiraIntegration(integrationType) ? (
         <FieldSelection
           notificationType={notificationType.toLowerCase() as 'vulnerability'}
+          defaultSelectedFields={data?.config?.custom_fields}
         />
       ) : null}
     </>
@@ -463,6 +579,7 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
 export const IntegrationForm = ({
   integrationType,
   setOpenModal,
+  data: formData,
 }: IntegrationTypeProps) => {
   const fetcher = useFetcher<{
     message: string;
@@ -473,18 +590,25 @@ export const IntegrationForm = ({
   const fieldErrors = data?.fieldErrors ?? {};
 
   // for jira
-  const [authType, setAuthType] = useState('apiToken');
+  const [authType, setAuthType] = useState(() => {
+    return formData?.config?.isAuthToken ? 'apiToken' : 'password';
+  });
 
   // for aws security hub
-  const [awsAccounts, setAccounts] = useState<string[]>([]);
+  const [awsAccounts, setAccounts] = useState<string[]>(() => {
+    return formData?.config?.aws_account_id ?? [];
+  });
 
   // for s3
-  const [useIAMRole, setUseIAMRole] = useState<boolean>(false);
+  const [useIAMRole, setUseIAMRole] = useState<boolean>(() => {
+    return formData?.config?.use_iam_role === 'true';
+  });
 
   return (
     <>
       {!data?.success ? (
         <fetcher.Form method="post" className="m-4 overflow-y-auto">
+          <input type="text" name="integrationId" hidden readOnly value={formData?.id} />
           <div className="grid grid-cols-2 relative gap-y-8 gap-x-8">
             {integrationType === IntegrationType.slack && (
               <>
@@ -500,6 +624,7 @@ export const IntegrationForm = ({
                   required
                 />
                 <TextInputType
+                  defaultValue={formData?.config?.channel}
                   name="channelName"
                   label="Channel Name"
                   placeholder="Slack channel"
@@ -532,6 +657,7 @@ export const IntegrationForm = ({
             {integrationType === IntegrationType.email && (
               <>
                 <TextInputType
+                  defaultValue={formData?.config?.email_id}
                   name="email"
                   label="Email Id"
                   placeholder="Email id"
@@ -544,6 +670,7 @@ export const IntegrationForm = ({
             {integrationType === IntegrationType.httpEndpoint && (
               <>
                 <TextInputType
+                  defaultValue={formData?.config?.url}
                   name="apiUrl"
                   label="API Url"
                   placeholder="API url"
@@ -579,6 +706,7 @@ export const IntegrationForm = ({
             {integrationType === IntegrationType.splunk && (
               <>
                 <TextInputType
+                  defaultValue={formData?.config?.endpoint_url}
                   name="url"
                   label="Endpoint Url"
                   placeholder="Endpoint url"
@@ -603,6 +731,7 @@ export const IntegrationForm = ({
             {integrationType === IntegrationType.sumoLogic && (
               <>
                 <TextInputType
+                  defaultValue={formData?.config?.endpoint_url}
                   name="url"
                   label="Endpoint Url"
                   placeholder="Endpoint url"
@@ -619,6 +748,7 @@ export const IntegrationForm = ({
             {integrationType === IntegrationType.elasticsearch && (
               <>
                 <TextInputType
+                  defaultValue={formData?.config?.endpoint_url}
                   name="url"
                   label="Endpoint Url"
                   placeholder="Elasticsearch endpoint url"
@@ -627,6 +757,7 @@ export const IntegrationForm = ({
                   required
                 />
                 <TextInputType
+                  defaultValue={formData?.config?.index}
                   name="index"
                   label="Index"
                   placeholder="Elasticsearch index"
@@ -635,6 +766,7 @@ export const IntegrationForm = ({
                   required
                 />
                 <TextInputType
+                  defaultValue={formData?.config?.docType}
                   name="docType"
                   label="Doc Type"
                   placeholder="Elasticsearch doc type"
@@ -642,6 +774,7 @@ export const IntegrationForm = ({
                   color={fieldErrors?.doc_type ? 'error' : 'default'}
                 />
                 <TextInputType
+                  defaultValue={formData?.config?.auth_header}
                   name="authKey"
                   label="Auth Key"
                   placeholder="Auth key"
@@ -654,6 +787,7 @@ export const IntegrationForm = ({
             {integrationType === IntegrationType.googleChronicle && (
               <>
                 <TextInputType
+                  defaultValue={formData?.config?.url}
                   name="url"
                   label="Api Url"
                   placeholder="Api url"
@@ -662,6 +796,7 @@ export const IntegrationForm = ({
                   required
                 />
                 <TextInputType
+                  defaultValue={formData?.config?.auth_header}
                   name="authKey"
                   label="Auth Key"
                   placeholder="Auth key"
@@ -674,6 +809,7 @@ export const IntegrationForm = ({
             {integrationType === IntegrationType.awsSecurityHub && (
               <>
                 <TextInputType
+                  defaultValue={formData?.config?.aws_access_key}
                   name="accessKey"
                   label="Access Key"
                   placeholder="AWS access key"
@@ -689,6 +825,7 @@ export const IntegrationForm = ({
                   type="password"
                 />
                 <TextInputType
+                  defaultValue={formData?.config?.aws_region}
                   name="region"
                   label="Region"
                   placeholder="AWS region"
@@ -716,6 +853,7 @@ export const IntegrationForm = ({
             {integrationType === IntegrationType.jira && (
               <>
                 <TextInputType
+                  defaultValue={formData?.config?.jiraSiteUrl}
                   name="url"
                   label="Jira Url"
                   placeholder="Jira site url"
@@ -757,8 +895,10 @@ export const IntegrationForm = ({
                   }
                   type={authType === 'password' ? 'password' : 'text'}
                   placeholder={authType === 'password' ? 'password' : 'Api token'}
+                  key={authType}
                 />
                 <TextInputType
+                  defaultValue={formData?.config?.username}
                   name="email"
                   label="Email"
                   helperText={fieldErrors?.username}
@@ -766,6 +906,7 @@ export const IntegrationForm = ({
                   required
                 />
                 <TextInputType
+                  defaultValue={formData?.config?.jiraProjectKey}
                   name="accessKey"
                   label="Project Key"
                   placeholder="Jira project key"
@@ -774,6 +915,7 @@ export const IntegrationForm = ({
                   required
                 />
                 <TextInputType
+                  defaultValue={formData?.config?.issueType}
                   name="task"
                   label="Task Name"
                   placeholder="Bugs, task, etc"
@@ -782,6 +924,7 @@ export const IntegrationForm = ({
                   required
                 />
                 <TextInputType
+                  defaultValue={formData?.config?.jiraAssignee}
                   name="assigne"
                   label="Assignee"
                   placeholder="Jira assigne"
@@ -794,6 +937,7 @@ export const IntegrationForm = ({
             {integrationType === IntegrationType.s3 && (
               <>
                 <TextInputType
+                  defaultValue={formData?.config?.s3_bucket_name}
                   name="name"
                   label="Bucket Name"
                   placeholder="S3 bukcket name"
@@ -802,6 +946,7 @@ export const IntegrationForm = ({
                   required
                 />
                 <TextInputType
+                  defaultValue={formData?.config?.s3_folder_name}
                   name="folder"
                   label={'Folder'}
                   placeholder="S3 folder"
@@ -823,6 +968,7 @@ export const IntegrationForm = ({
                 {useIAMRole ? (
                   <>
                     <TextInput
+                      defaultValue={formData?.config?.aws_account_id}
                       name="awsAccount"
                       label="AWS Account ID"
                       placeholder="AWS account id"
@@ -831,6 +977,7 @@ export const IntegrationForm = ({
                       color={fieldErrors?.aws_account_id ? 'error' : 'default'}
                     />
                     <TextInput
+                      defaultValue={formData?.config?.target_account_role_arn}
                       name="awsARN"
                       label="Target Account Role ARN"
                       placeholder="Target account role arn"
@@ -842,6 +989,7 @@ export const IntegrationForm = ({
                 ) : (
                   <>
                     <TextInputType
+                      defaultValue={formData?.config?.aws_access_key}
                       name="accessKey"
                       label="Access Key"
                       placeholder="AWS access key"
@@ -859,6 +1007,7 @@ export const IntegrationForm = ({
                 )}
 
                 <TextInputType
+                  defaultValue={formData?.config?.aws_region}
                   name="region"
                   label="Region"
                   placeholder="AWS region"
@@ -869,14 +1018,17 @@ export const IntegrationForm = ({
               </>
             )}
 
-            <NotificationType />
+            <NotificationType
+              defaultNotificationType={formData?.notification_type ?? ''}
+              data={formData}
+            />
 
             <input
               type="text"
               name="_actionType"
               readOnly
               hidden
-              value={ActionEnumType.ADD}
+              value={isNil(formData) ? ActionEnumType.ADD : ActionEnumType.EDIT}
             />
             {data?.message && (
               <p className="dark:text-status-error text-p7">{data.message}</p>
@@ -890,7 +1042,7 @@ export const IntegrationForm = ({
               loading={fetcher.state === 'submitting'}
               disabled={fetcher.state === 'submitting'}
             >
-              Add
+              {isNil(formData) ? 'Add' : 'Update'}
             </Button>
             <Button
               type="button"
@@ -904,7 +1056,7 @@ export const IntegrationForm = ({
           </div>
         </fetcher.Form>
       ) : (
-        <SuccessModalContent text="Added successfully" />
+        <SuccessModalContent text={`${formData ? 'Updated' : 'Added'} successfully`} />
       )}
     </>
   );

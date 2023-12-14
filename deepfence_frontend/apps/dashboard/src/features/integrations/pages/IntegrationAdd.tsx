@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { isNil } from 'lodash-es';
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import { ActionFunctionArgs, useFetcher, useParams } from 'react-router-dom';
 import {
@@ -36,15 +37,17 @@ export const USER_ACTIVITIES = 'User Activities';
 export enum ActionEnumType {
   DELETE = 'delete',
   ADD = 'add',
+  EDIT = 'edit',
   CONFIRM_DELETE = 'confirm_delete',
 }
-const severityMap: {
+export const severityMap: {
   [key: string]: string;
 } = {
   Vulnerability: 'cve_severity',
   Secret: 'level',
   Malware: 'file_severity',
   Compliance: 'status',
+  CloudCompliance: 'status',
 };
 
 export const useListIntegrations = () => {
@@ -180,24 +183,17 @@ type ActionData = {
 const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionData> => {
   const _integrationType = params.integrationType?.toString();
   const formData = await request.formData();
-  let _notificationType = formData.get('_notificationType')?.toString();
+  const _notificationType = formData.get('_notificationType')?.toString();
   const _actionType = formData.get('_actionType')?.toString();
+  const integrationId = formData.get('integrationId')?.toString() ?? '';
 
   if (!_actionType) {
     return {
-      message: 'Action Type is required1',
+      message: 'Action Type is required',
     };
   }
 
-  if (_actionType === ActionEnumType.ADD) {
-    if (_notificationType === 'CloudTrail Alert') {
-      _notificationType = 'CloudTrailAlert';
-    } else if (_notificationType === 'User Activities') {
-      _notificationType = 'UserActivities';
-    } else if (_notificationType === 'Cloud Compliance') {
-      _notificationType = 'CloudCompliance';
-    }
-
+  if (_actionType === ActionEnumType.ADD || _actionType === ActionEnumType.EDIT) {
     // filters
     // statuses filter
     const selectedStatusesLength = Number(formData.get('selectedStatusesLength'));
@@ -351,28 +347,51 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
     const addIntegrationApi = apiWrapper({
       fn: getIntegrationApiClient().addIntegration,
     });
-    const r = await addIntegrationApi({
-      modelIntegrationAddReq: {
-        integration_type: _integrationType,
-        notification_type: _notificationType,
-        config: getConfigBodyNotificationType(formData, _integrationType as string),
-        filters: _filters,
-      },
+    const updateIntegrationApi = apiWrapper({
+      fn: getIntegrationApiClient().updateIntegration,
     });
-    if (!r.ok) {
-      if (r.error.response.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.error.response.json();
+    let result = null;
+    if (_actionType === ActionEnumType.EDIT) {
+      if (!integrationId) {
+        return {
+          message: 'Integration id is required for edit',
+        };
+      }
+      result = await updateIntegrationApi({
+        integrationId,
+        modelIntegrationUpdateReq: {
+          integration_type: _integrationType,
+          notification_type: _notificationType,
+          config: getConfigBodyNotificationType(formData, _integrationType as string),
+          filters: _filters,
+        },
+      });
+    } else {
+      result = await addIntegrationApi({
+        modelIntegrationAddReq: {
+          integration_type: _integrationType,
+          notification_type: _notificationType,
+          config: getConfigBodyNotificationType(formData, _integrationType as string),
+          filters: _filters,
+        },
+      });
+    }
+
+    if (!result.ok) {
+      if (result.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse =
+          await result.error.response.json();
         return {
           message: modelResponse.message ?? '',
           fieldErrors: modelResponse.error_fields ?? {},
         };
-      } else if (r.error.response.status === 403) {
-        const message = await get403Message(r.error);
+      } else if (result.error.response.status === 403) {
+        const message = await get403Message(result.error);
         return {
           message,
         };
       }
-      throw r.error;
+      throw result.error;
     }
     invalidateAllQueries();
     return {
@@ -424,11 +443,11 @@ const useEmailConfiguration = () => {
 
 const DeleteConfirmationModal = ({
   showDialog,
-  row,
+  integrationId,
   setShowDialog,
 }: {
   showDialog: boolean;
-  row: ModelIntegrationListResp | undefined;
+  integrationId: number | undefined;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher<ActionData>();
@@ -437,13 +456,13 @@ const DeleteConfirmationModal = ({
     (actionType: string) => {
       const formData = new FormData();
       formData.append('_actionType', actionType);
-      formData.append('id', row?.id?.toString() ?? '');
+      formData.append('id', integrationId?.toString() ?? '');
 
       fetcher.submit(formData, {
         method: 'post',
       });
     },
-    [fetcher, row],
+    [fetcher, integrationId],
   );
   return (
     <Modal
@@ -507,7 +526,7 @@ const Header = ({ title }: { title: string }) => {
   return (
     <SlidingModalHeader>
       <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
-        Add Integration: &nbsp;{title}
+        {title}
       </div>
     </SlidingModalHeader>
   );
@@ -531,9 +550,16 @@ const IntegrationAdd = () => {
   const { integrationType } = useParams() as {
     integrationType: string;
   };
-  const [modelRow, setModelRow] = useState<ModelIntegrationListResp>();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
+
+  const [integrationToEdit, setIntegrationToEdit] =
+    useState<ModelIntegrationListResp | null>(null);
+
+  const [showAddIntegrationModal, setShowAddIntegrationModal] = useState<boolean>(false);
+  const [showEditIntegrationModal, setShowEditIntegrationModal] =
+    useState<boolean>(false);
+
+  const [integrationIdToDelete, setIntegrationIdToDelete] = useState<number>();
 
   const params = useParams() as {
     integrationType: string;
@@ -542,8 +568,11 @@ const IntegrationAdd = () => {
   const onTableAction = useCallback(
     (row: ModelIntegrationListResp, actionType: string) => {
       if (actionType === ActionEnumType.DELETE) {
-        setModelRow(row);
+        setIntegrationIdToDelete(row.id);
         setShowDeleteDialog(true);
+      } else if (actionType === ActionEnumType.EDIT) {
+        setIntegrationToEdit(row);
+        setShowEditIntegrationModal(true);
       }
     },
     [],
@@ -564,7 +593,7 @@ const IntegrationAdd = () => {
           variant="flat"
           startIcon={<PlusIcon />}
           onClick={() => {
-            setOpenModal(true);
+            setShowAddIntegrationModal(true);
           }}
           size="sm"
         >
@@ -576,17 +605,48 @@ const IntegrationAdd = () => {
           </Suspense>
         )}
       </div>
-      <SlidingModal
-        open={openModal}
-        onOpenChange={() => {
-          setOpenModal(false);
-        }}
-        size="l"
-      >
-        <SlidingModalCloseButton />
-        <Header title={integrationTypeToNameMapping[params.integrationType]} />
-        <IntegrationForm integrationType={integrationType} setOpenModal={setOpenModal} />
-      </SlidingModal>
+      {!isNil(integrationToEdit) ? (
+        <SlidingModal
+          open={showEditIntegrationModal}
+          onOpenChange={() => {
+            setShowEditIntegrationModal(false);
+          }}
+          size="l"
+        >
+          <SlidingModalCloseButton />
+          <Header
+            title={`Edit Integration: ${
+              integrationTypeToNameMapping[params.integrationType]
+            }`}
+          />
+          <IntegrationForm
+            integrationType={integrationType}
+            setOpenModal={setShowEditIntegrationModal}
+            data={integrationToEdit}
+          />
+        </SlidingModal>
+      ) : null}
+      {showAddIntegrationModal ? (
+        <SlidingModal
+          open={showAddIntegrationModal}
+          onOpenChange={() => {
+            setShowAddIntegrationModal(false);
+          }}
+          size="l"
+        >
+          <SlidingModalCloseButton />
+          <Header
+            title={`Add Integration: ${
+              integrationTypeToNameMapping[params.integrationType]
+            }`}
+          />
+          <IntegrationForm
+            integrationType={integrationType}
+            setOpenModal={setShowAddIntegrationModal}
+          />
+        </SlidingModal>
+      ) : null}
+
       <div className="self-start mt-2">
         <Suspense fallback={<TableSkeleton columns={4} rows={5} />}>
           <IntegrationTable onTableAction={onTableAction} />
@@ -595,7 +655,7 @@ const IntegrationAdd = () => {
       {showDeleteDialog && (
         <DeleteConfirmationModal
           showDialog={showDeleteDialog}
-          row={modelRow}
+          integrationId={integrationIdToDelete}
           setShowDialog={setShowDeleteDialog}
         />
       )}

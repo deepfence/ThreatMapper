@@ -132,6 +132,7 @@ models/ModelInitAgentReq.ts
 models/ModelIntegrationAddReq.ts
 models/ModelIntegrationFilters.ts
 models/ModelIntegrationListResp.ts
+models/ModelIntegrationUpdateReq.ts
 models/ModelInviteUserRequest.ts
 models/ModelInviteUserResponse.ts
 models/ModelKubernetesCluster.ts

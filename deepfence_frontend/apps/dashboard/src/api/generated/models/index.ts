@@ -106,6 +106,7 @@ export * from './ModelInitAgentReq';
 export * from './ModelIntegrationAddReq';
 export * from './ModelIntegrationFilters';
 export * from './ModelIntegrationListResp';
+export * from './ModelIntegrationUpdateReq';
 export * from './ModelInviteUserRequest';
 export * from './ModelInviteUserResponse';
 export * from './ModelKubernetesCluster';

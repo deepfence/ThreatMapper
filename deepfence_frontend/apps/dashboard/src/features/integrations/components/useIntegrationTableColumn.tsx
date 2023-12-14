@@ -26,6 +26,9 @@ const ActionDropdown = ({
       align={'start'}
       content={
         <>
+          <DropdownItem onClick={() => onTableAction(row, ActionEnumType.EDIT)}>
+            Edit
+          </DropdownItem>
           <DropdownItem
             onClick={() => onTableAction(row, ActionEnumType.DELETE)}
             className="dark:text-status-error dark:hover:text-[#C45268]"
@@ -63,8 +66,10 @@ export const useIntegrationTableColumn = (
             size: 80,
             maxSize: 85,
           }),
-          columnHelper.accessor('webhook_url', {
-            cell: (cell) => cell.row.original.config?.webhook_url,
+          columnHelper.accessor('webhook_url_masked', {
+            cell: (cell) => (
+              <TruncatedText text={cell.row.original.config?.webhook_url_masked} />
+            ),
             header: () => <TruncatedText text={'URL'} />,
             minSize: 75,
             size: 80,
@@ -149,7 +154,7 @@ export const useIntegrationTableColumn = (
       case IntegrationType.jira:
         return [
           columnHelper.display({
-            id: 'api_token',
+            id: 'api_token_masked',
             header: () => <TruncatedText text={'Auth type'} />,
             minSize: 50,
             size: 55,
@@ -158,7 +163,7 @@ export const useIntegrationTableColumn = (
               if (isEmpty(cell.row.original.config)) {
                 return '-';
               }
-              const isToken = cell.row.original.config?.api_token !== undefined;
+              const isToken = cell.row.original.config?.api_token_masked !== undefined;
               if (isToken) {
                 return <TruncatedText text={'Token'} />;
               } else {
@@ -170,7 +175,7 @@ export const useIntegrationTableColumn = (
             (cell) => (!isEmpty(cell.config) ? cell.config.issueType : '-'),
             {
               id: 'issueType',
-              header: () => <TruncatedText text={'Issye type'} />,
+              header: () => <TruncatedText text={'Issue type'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -197,7 +202,12 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.jiraSiteUrl : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.jiraSiteUrl} />
+              ) : (
+                '-'
+              ),
             {
               id: 'jiraSiteUrl',
               header: () => <TruncatedText text={'Url'} />,
@@ -210,7 +220,12 @@ export const useIntegrationTableColumn = (
       case IntegrationType.splunk:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.endpoint_url : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.endpoint_url} />
+              ) : (
+                '-'
+              ),
             {
               id: 'endpoint_url',
               header: () => <TruncatedText text={'Endpoint url'} />,
@@ -220,9 +235,14 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.token : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.token_masked} />
+              ) : (
+                '-'
+              ),
             {
-              id: 'token',
+              id: 'token_masked',
               header: () => <TruncatedText text={'Token'} />,
               minSize: 45,
               size: 50,
@@ -233,7 +253,12 @@ export const useIntegrationTableColumn = (
       case IntegrationType.elasticsearch:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.endpoint_url : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.endpoint_url} />
+              ) : (
+                '-'
+              ),
             {
               id: 'endpoint_url',
               header: () => <TruncatedText text={'Endpoint url'} />,
@@ -253,9 +278,9 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header : '-'),
+            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header_masked : '-'),
             {
-              id: 'auth_header',
+              id: 'auth_header_masked',
               header: () => <TruncatedText text={'Auth'} />,
               minSize: 45,
               size: 50,
@@ -276,7 +301,12 @@ export const useIntegrationTableColumn = (
       case IntegrationType.sumoLogic:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.endpoint_url : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.endpoint_url} />
+              ) : (
+                '-'
+              ),
             {
               id: 'endpoint_url',
               header: () => <TruncatedText text={'Endpoint url'} />,
@@ -289,7 +319,8 @@ export const useIntegrationTableColumn = (
       case IntegrationType.googleChronicle:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.url : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? <TruncatedText text={cell.config.url} /> : '-',
             {
               id: 'url',
               header: () => <TruncatedText text={'Endpoint url'} />,
@@ -299,9 +330,9 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header : '-'),
+            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header_masked : '-'),
             {
-              id: 'auth_header',
+              id: 'auth_header_masked',
               header: () => <TruncatedText text={'Auth header'} />,
               minSize: 45,
               size: 50,
@@ -312,7 +343,12 @@ export const useIntegrationTableColumn = (
       case IntegrationType.awsSecurityHub:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.aws_access_key : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.aws_access_key} />
+              ) : (
+                '-'
+              ),
             {
               id: 'aws_access_key',
               header: () => <TruncatedText text={'Access key'} />,
@@ -335,9 +371,14 @@ export const useIntegrationTableColumn = (
       case IntegrationType.microsoftTeams:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.webhook_url : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.webhook_url_masked} />
+              ) : (
+                '-'
+              ),
             {
-              id: 'webhook_url',
+              id: 'webhook_url_masked',
               header: () => <TruncatedText text={'Webhook url'} />,
               minSize: 45,
               size: 50,
@@ -348,9 +389,14 @@ export const useIntegrationTableColumn = (
       case IntegrationType.pagerDuty:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.service_key : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.service_key_masked} />
+              ) : (
+                '-'
+              ),
             {
-              id: 'service_key',
+              id: 'service_key_masked',
               header: () => <TruncatedText text={'Service key'} />,
               minSize: 45,
               size: 50,
@@ -358,9 +404,14 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.api_key : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.api_key_masked} />
+              ) : (
+                '-'
+              ),
             {
-              id: 'api_key',
+              id: 'api_key_masked',
               header: () => <TruncatedText text={'Api key'} />,
               minSize: 45,
               size: 50,
@@ -371,7 +422,8 @@ export const useIntegrationTableColumn = (
       case IntegrationType.httpEndpoint:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.url : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? <TruncatedText text={cell.config.url} /> : '-',
             {
               id: 'url',
               header: () => <TruncatedText text={'Url'} />,
@@ -381,9 +433,9 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header : '-'),
+            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header_masked : '-'),
             {
-              id: 'auth_header',
+              id: 'auth_header_masked',
               header: () => <TruncatedText text={'Auth header'} />,
               minSize: 45,
               size: 50,

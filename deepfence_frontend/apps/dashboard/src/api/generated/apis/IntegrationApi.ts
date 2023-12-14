@@ -19,6 +19,7 @@ import type {
   ApiDocsFailureResponse,
   ModelIntegrationAddReq,
   ModelIntegrationListResp,
+  ModelIntegrationUpdateReq,
   ModelMessageResponse,
 } from '../models';
 import {
@@ -30,6 +31,8 @@ import {
     ModelIntegrationAddReqToJSON,
     ModelIntegrationListRespFromJSON,
     ModelIntegrationListRespToJSON,
+    ModelIntegrationUpdateReqFromJSON,
+    ModelIntegrationUpdateReqToJSON,
     ModelMessageResponseFromJSON,
     ModelMessageResponseToJSON,
 } from '../models';
@@ -40,6 +43,11 @@ export interface AddIntegrationRequest {
 
 export interface DeleteIntegrationRequest {
     integrationId: string;
+}
+
+export interface UpdateIntegrationRequest {
+    integrationId: string;
+    modelIntegrationUpdateReq?: ModelIntegrationUpdateReq;
 }
 
 /**
@@ -95,6 +103,23 @@ export interface IntegrationApiInterface {
      * List Integrations
      */
     listIntegration(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelIntegrationListResp>>;
+
+    /**
+     * Update integration
+     * @summary Update Integration
+     * @param {string} integrationId 
+     * @param {ModelIntegrationUpdateReq} [modelIntegrationUpdateReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof IntegrationApiInterface
+     */
+    updateIntegrationRaw(requestParameters: UpdateIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
+
+    /**
+     * Update integration
+     * Update Integration
+     */
+    updateIntegration(requestParameters: UpdateIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
 }
 
@@ -214,6 +239,49 @@ export class IntegrationApi extends runtime.BaseAPI implements IntegrationApiInt
      */
     async listIntegration(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelIntegrationListResp>> {
         const response = await this.listIntegrationRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update integration
+     * Update Integration
+     */
+    async updateIntegrationRaw(requestParameters: UpdateIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
+        if (requestParameters.integrationId === null || requestParameters.integrationId === undefined) {
+            throw new runtime.RequiredError('integrationId','Required parameter requestParameters.integrationId was null or undefined when calling updateIntegration.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/integration/{integration_id}`.replace(`{${"integration_id"}}`, encodeURIComponent(String(requestParameters.integrationId))),
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelIntegrationUpdateReqToJSON(requestParameters.modelIntegrationUpdateReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update integration
+     * Update Integration
+     */
+    async updateIntegration(requestParameters: UpdateIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.updateIntegrationRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
