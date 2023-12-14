@@ -20,6 +20,8 @@ EOF
 
 MGMT_CONSOLE_URL=""
 MGMT_CONSOLE_PORT="443"
+# Log level: debug / info / error
+DF_LOG_LEVEL="info"
 USER_DEFINED_TAGS=""
 DEEPFENCE_KEY=""
 DF_HOSTNAME=""
@@ -100,6 +102,7 @@ start_agent() {
     -v /var/log/fenced \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /:/fenced/mnt/host/:ro \
+    -e DF_LOG_LEVEL=$DF_LOG_LEVEL \
     -e DF_ENABLE_PROCESS_REPORT="true" \
     -e DF_ENABLE_CONNECTIONS_REPORT="true" \
     -e INSTANCE_ID_SUFFIX="$INSTANCE_ID_SUFFIX" \

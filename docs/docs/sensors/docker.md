@@ -61,6 +61,7 @@ sudo podman run -dit \
     -v /run/podman/podman.sock:/run/podman/podman.sock \
     -v /run/systemd/:/run/systemd/ \
     -v /:/fenced/mnt/host/:ro \
+    -e DF_LOG_LEVEL="info" \
     -e USER_DEFINED_TAGS="" \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \

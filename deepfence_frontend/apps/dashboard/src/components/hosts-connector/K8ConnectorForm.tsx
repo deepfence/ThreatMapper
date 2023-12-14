@@ -144,6 +144,7 @@ const InformationForm = ({
   --set clusterName=${_clusterName} \\
   ${runtimeCommand} \\
   ${sockCommand}="${_socketPath}" \\
+  --set logLevel="info" \\
   --namespace ${_namespace} \\
   --create-namespace`;
 
@@ -325,6 +326,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
   --set clusterName=${defaultCluster} \\
   ${containerRuntimeDropdown[0].value} \\
   ${socketMap.containerd.command}="${defaultSocketPath}" \\
+  --set logLevel="info" \\
   --namespace ${defaultNamespace} \\
   --create-namespace`);
 
