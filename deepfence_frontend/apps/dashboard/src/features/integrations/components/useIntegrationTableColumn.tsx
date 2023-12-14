@@ -116,7 +116,16 @@ export const useIntegrationTableColumn = (
               maxSize: 60,
             },
           ),
-
+          columnHelper.accessor('aws_access_key', {
+            enableSorting: false,
+            cell: (cell) => (
+              <TruncatedText text={cell.row.original.config?.aws_access_key || '-'} />
+            ),
+            header: () => <TruncatedText text="AWS Access Key" />,
+            minSize: 50,
+            size: 55,
+            maxSize: 60,
+          }),
           columnHelper.accessor('aws_account_id', {
             enableSorting: false,
             cell: (cell) => (
