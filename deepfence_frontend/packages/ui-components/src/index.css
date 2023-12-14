@@ -1,3 +1,5 @@
+@import 'tailwind-preset/dist/vars.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

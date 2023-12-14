@@ -11,7 +11,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc"
+    "copy-css-file": "cp ./src/vars.css ./dist/",
+    "build": "tsc && pnpm run copy-css-file"
   },
   "keywords": [],
   "author": "Manan Vaghasiya",

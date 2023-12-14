@@ -192,6 +192,7 @@ importers:
       jsdom: ^22.1.0
       lodash-es: ^4.17.21
       postcss: ^8.4.27
+      postcss-import: ^15.1.0
       react: ^18.2.0
       react-dom: ^18.2.0
       react-use: ^17.4.0
@@ -256,6 +257,7 @@ importers:
       eslint-plugin-storybook: 0.6.13_qj3u6ezxe2airdzjq3nyoxe24m
       jsdom: 22.1.0
       postcss: 8.4.27
+      postcss-import: 15.1.0_postcss@8.4.27
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       resize-observer-polyfill: 1.5.1
