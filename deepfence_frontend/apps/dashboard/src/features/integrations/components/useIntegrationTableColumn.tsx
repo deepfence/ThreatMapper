@@ -143,7 +143,7 @@ export const useIntegrationTableColumn = (
       case IntegrationType.jira:
         return [
           columnHelper.display({
-            id: 'api_token',
+            id: 'api_token_masked',
             header: () => <TruncatedText text={'Auth type'} />,
             minSize: 50,
             size: 55,
@@ -152,7 +152,7 @@ export const useIntegrationTableColumn = (
               if (isEmpty(cell.row.original.config)) {
                 return '-';
               }
-              const isToken = cell.row.original.config?.api_token !== undefined;
+              const isToken = cell.row.original.config?.api_token_masked !== undefined;
               if (isToken) {
                 return <TruncatedText text={'Token'} />;
               } else {
@@ -164,7 +164,7 @@ export const useIntegrationTableColumn = (
             (cell) => (!isEmpty(cell.config) ? cell.config.issueType : '-'),
             {
               id: 'issueType',
-              header: () => <TruncatedText text={'Issye type'} />,
+              header: () => <TruncatedText text={'Issue type'} />,
               minSize: 45,
               size: 50,
               maxSize: 55,
@@ -214,9 +214,9 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.token : '-'),
+            (cell) => (!isEmpty(cell.config) ? cell.config.token_masked : '-'),
             {
-              id: 'token',
+              id: 'token_masked',
               header: () => <TruncatedText text={'Token'} />,
               minSize: 45,
               size: 50,
@@ -247,9 +247,9 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header : '-'),
+            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header_masked : '-'),
             {
-              id: 'auth_header',
+              id: 'auth_header_masked',
               header: () => <TruncatedText text={'Auth'} />,
               minSize: 45,
               size: 50,
@@ -293,9 +293,9 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header : '-'),
+            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header_masked : '-'),
             {
-              id: 'auth_header',
+              id: 'auth_header_masked',
               header: () => <TruncatedText text={'Auth header'} />,
               minSize: 45,
               size: 50,
@@ -329,9 +329,9 @@ export const useIntegrationTableColumn = (
       case IntegrationType.microsoftTeams:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.webhook_url : '-'),
+            (cell) => (!isEmpty(cell.config) ? cell.config.webhook_url_masked : '-'),
             {
-              id: 'webhook_url',
+              id: 'webhook_url_masked',
               header: () => <TruncatedText text={'Webhook url'} />,
               minSize: 45,
               size: 50,
@@ -342,9 +342,9 @@ export const useIntegrationTableColumn = (
       case IntegrationType.pagerDuty:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.service_key : '-'),
+            (cell) => (!isEmpty(cell.config) ? cell.config.service_key_masked : '-'),
             {
-              id: 'service_key',
+              id: 'service_key_masked',
               header: () => <TruncatedText text={'Service key'} />,
               minSize: 45,
               size: 50,
@@ -352,9 +352,9 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.api_key : '-'),
+            (cell) => (!isEmpty(cell.config) ? cell.config.api_key_masked : '-'),
             {
-              id: 'api_key',
+              id: 'api_key_masked',
               header: () => <TruncatedText text={'Api key'} />,
               minSize: 45,
               size: 50,
@@ -375,9 +375,9 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header : '-'),
+            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header_masked : '-'),
             {
-              id: 'auth_header',
+              id: 'auth_header_masked',
               header: () => <TruncatedText text={'Auth header'} />,
               minSize: 45,
               size: 50,
