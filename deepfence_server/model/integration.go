@@ -9,7 +9,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 )
 
@@ -116,7 +115,7 @@ func (i *IntegrationListResp) RedactSensitiveFieldsInConfig() {
 		// if key is present in SensitiveFields map, redact the value
 		if _, ok := constants.SensitiveFields[key]; ok {
 			// redact last half of the string
-			i.Config[key + "_masked"] = redactLastHalfString(value.(string))
+			i.Config[key+"_masked"] = redactLastHalfString(value.(string))
 			delete(i.Config, key)
 		}
 	}
