@@ -44,19 +44,29 @@ const (
 )
 
 const (
-	Password       = "password"
-	WebhookURL     = "webhook_url"
-	IntegrationKey = "integration_key"
-	APIKey         = "api_key"
+	PasswordFieldKey       = "password"
+	WebhookURLFieldKey     = "webhook_url"
+	IntegrationKeyFieldKey = "integration_key"
+	APIKeyFieldKey         = "api_key"
+	SecretKeyFieldKey      = "aws_secret_key"
+	AuthHeaderFieldKey     = "auth_header"
+	APITokenFieldKey       = "api_token"
+	ServiceKeyFieldKey     = "service_key"
+	TokenFieldKey          = "token"
 
 	DeepfenceCommunityEmailID = "community@deepfence.io"
 )
 
 var SensitiveFields = map[string]struct{}{
-	Password:       {},
-	WebhookURL:     {},
-	IntegrationKey: {},
-	APIKey:         {},
+	PasswordFieldKey:       {},
+	WebhookURLFieldKey:     {},
+	IntegrationKeyFieldKey: {},
+	APIKeyFieldKey:         {},
+	SecretKeyFieldKey:      {},
+	AuthHeaderFieldKey:     {},
+	APITokenFieldKey:       {},
+	ServiceKeyFieldKey:     {},
+	TokenFieldKey:          {},
 }
 
 const (

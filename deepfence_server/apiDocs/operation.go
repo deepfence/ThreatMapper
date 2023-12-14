@@ -716,6 +716,9 @@ func (d *OpenAPIDocs) AddIntegrationOperations() {
 	d.AddOperation("listIntegration", http.MethodGet, "/deepfence/integration",
 		"List Integrations", "List all the added Integrations",
 		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationListReq), new([]IntegrationListResp))
+	d.AddOperation("updateIntegration", http.MethodPut, "/deepfence/integration/{integration_id}",
+		"Update Integration", "Update integration",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationUpdateReq), new(MessageResponse))
 	d.AddOperation("deleteIntegration", http.MethodDelete, "/deepfence/integration/{integration_id}",
 		"Delete Integration", "Delete integration",
 		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)

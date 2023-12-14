@@ -84,12 +84,12 @@ type IntegrationListReq struct {
 }
 
 type IntegrationListResp struct {
-	ID               int32                   `json:"id"`
-	IntegrationType  string                  `json:"integration_type"`
-	NotificationType string                  `json:"notification_type"`
-	Config           map[string]interface{}  `json:"config"`
-	Filters          reporters.FieldsFilters `json:"filters"`
-	LastErrorMsg     string                  `json:"last_error_msg"`
+	ID               int32                  `json:"id"`
+	IntegrationType  string                 `json:"integration_type"`
+	NotificationType string                 `json:"notification_type"`
+	Config           map[string]interface{} `json:"config"`
+	Filters          IntegrationFilters     `json:"filters"`
+	LastErrorMsg     string                 `json:"last_error_msg"`
 }
 
 func (i *IntegrationListReq) GetIntegrations(ctx context.Context, pgClient *postgresqlDb.Queries) ([]postgresqlDb.Integration, error) {
@@ -115,7 +115,8 @@ func (i *IntegrationListResp) RedactSensitiveFieldsInConfig() {
 		// if key is present in SensitiveFields map, redact the value
 		if _, ok := constants.SensitiveFields[key]; ok {
 			// redact last half of the string
-			i.Config[key] = redactLastHalfString(value.(string))
+			i.Config[key+"_masked"] = redactLastHalfString(value.(string))
+			delete(i.Config, key)
 		}
 	}
 }
@@ -130,4 +131,53 @@ func redactLastHalfString(s string) string {
 func DeleteIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, integrationID int32) error {
 	err := pgClient.DeleteIntegration(ctx, integrationID)
 	return err
+}
+
+type IntegrationUpdateReq struct {
+	ID               int32                  `json:"id"`
+	Config           map[string]interface{} `json:"config"`
+	IntegrationType  string                 `json:"integration_type"`
+	NotificationType string                 `json:"notification_type"`
+	Filters          IntegrationFilters     `json:"filters"`
+	IntegrationID    string                 `path:"integration_id" validate:"required" required:"true"`
+}
+
+func (i *IntegrationUpdateReq) UpdateIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, integration postgresqlDb.Integration) error {
+	bConfig, err := json.Marshal(i.Config)
+	if err != nil {
+		return err
+	}
+
+	bFilter, err := json.Marshal(i.Filters)
+	if err != nil {
+		return err
+	}
+
+	arg := postgresqlDb.UpdateIntegrationParams{
+		ID:              i.ID,
+		Resource:        i.NotificationType,
+		IntegrationType: i.IntegrationType,
+		IntervalMinutes: integration.IntervalMinutes,
+		Config:          bConfig,
+		Filters:         bFilter,
+	}
+
+	if i.Config != nil {
+		arg.Config = bConfig
+	}
+
+	i.Config["filter_hash"] = i.Config["filter_hash"].(string)
+
+	return pgClient.UpdateIntegration(ctx, arg)
+}
+
+func GetIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, integrationID int32) (postgresqlDb.Integration, bool, error) {
+	integration, err := pgClient.GetIntegrationFromID(ctx, integrationID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return postgresqlDb.Integration{}, false, nil
+		}
+		return postgresqlDb.Integration{}, false, err
+	}
+	return integration, true, nil
 }
