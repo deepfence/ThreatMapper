@@ -67,7 +67,9 @@ export const useIntegrationTableColumn = (
             maxSize: 85,
           }),
           columnHelper.accessor('webhook_url_masked', {
-            cell: (cell) => cell.row.original.config?.webhook_url_masked,
+            cell: (cell) => (
+              <TruncatedText text={cell.row.original.config?.webhook_url_masked} />
+            ),
             header: () => <TruncatedText text={'URL'} />,
             minSize: 75,
             size: 80,
@@ -200,7 +202,12 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.jiraSiteUrl : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.jiraSiteUrl} />
+              ) : (
+                '-'
+              ),
             {
               id: 'jiraSiteUrl',
               header: () => <TruncatedText text={'Url'} />,
@@ -213,7 +220,12 @@ export const useIntegrationTableColumn = (
       case IntegrationType.splunk:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.endpoint_url : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.endpoint_url} />
+              ) : (
+                '-'
+              ),
             {
               id: 'endpoint_url',
               header: () => <TruncatedText text={'Endpoint url'} />,
@@ -223,7 +235,12 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.token_masked : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.token_masked} />
+              ) : (
+                '-'
+              ),
             {
               id: 'token_masked',
               header: () => <TruncatedText text={'Token'} />,
@@ -236,7 +253,12 @@ export const useIntegrationTableColumn = (
       case IntegrationType.elasticsearch:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.endpoint_url : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.endpoint_url} />
+              ) : (
+                '-'
+              ),
             {
               id: 'endpoint_url',
               header: () => <TruncatedText text={'Endpoint url'} />,
@@ -279,7 +301,12 @@ export const useIntegrationTableColumn = (
       case IntegrationType.sumoLogic:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.endpoint_url : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.endpoint_url} />
+              ) : (
+                '-'
+              ),
             {
               id: 'endpoint_url',
               header: () => <TruncatedText text={'Endpoint url'} />,
@@ -292,7 +319,8 @@ export const useIntegrationTableColumn = (
       case IntegrationType.googleChronicle:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.url : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? <TruncatedText text={cell.config.url} /> : '-',
             {
               id: 'url',
               header: () => <TruncatedText text={'Endpoint url'} />,
@@ -315,7 +343,12 @@ export const useIntegrationTableColumn = (
       case IntegrationType.awsSecurityHub:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.aws_access_key : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.aws_access_key} />
+              ) : (
+                '-'
+              ),
             {
               id: 'aws_access_key',
               header: () => <TruncatedText text={'Access key'} />,
@@ -338,7 +371,12 @@ export const useIntegrationTableColumn = (
       case IntegrationType.microsoftTeams:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.webhook_url_masked : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.webhook_url_masked} />
+              ) : (
+                '-'
+              ),
             {
               id: 'webhook_url_masked',
               header: () => <TruncatedText text={'Webhook url'} />,
@@ -351,7 +389,12 @@ export const useIntegrationTableColumn = (
       case IntegrationType.pagerDuty:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.service_key_masked : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.service_key_masked} />
+              ) : (
+                '-'
+              ),
             {
               id: 'service_key_masked',
               header: () => <TruncatedText text={'Service key'} />,
@@ -361,7 +404,12 @@ export const useIntegrationTableColumn = (
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.api_key_masked : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? (
+                <TruncatedText text={cell.config.api_key_masked} />
+              ) : (
+                '-'
+              ),
             {
               id: 'api_key_masked',
               header: () => <TruncatedText text={'Api key'} />,
@@ -374,7 +422,8 @@ export const useIntegrationTableColumn = (
       case IntegrationType.httpEndpoint:
         return [
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.url : '-'),
+            (cell) =>
+              !isEmpty(cell.config) ? <TruncatedText text={cell.config.url} /> : '-',
             {
               id: 'url',
               header: () => <TruncatedText text={'Url'} />,
