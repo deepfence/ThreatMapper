@@ -1,6 +1,7 @@
 import { isNil, upperFirst } from 'lodash-es';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useFetcher, useParams } from 'react-router-dom';
+import { useUpdateEffect } from 'react-use';
 import {
   Button,
   Checkbox,
@@ -224,19 +225,29 @@ const AdvancedFilters = ({
   // status for compliance
   const statusFilter = fieldFilters?.contains_filter?.filter_in?.['status'];
 
-  const [selectedSeverity, setSelectedSeverity] = useState<string[]>([]);
+  const [selectedSeverity, setSelectedSeverity] = useState<string[]>(
+    severityFilter?.map((severity) => upperFirst(severity)) ?? [],
+  );
 
   // status
-  const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState<string[]>(
+    statusFilter?.map((status) => upperFirst(status)) ?? [],
+  );
 
   // to main clear state for combobox
-  const [hosts, setHosts] = useState<string[]>([]);
-  const [images, setImages] = useState<string[]>([]);
-  const [containers, setContainers] = useState<string[]>([]);
-  const [clusters, setClusters] = useState<string[]>([]);
-  const [selectedCloudAccounts, setSelectedCloudAccounts] = useState<string[]>([]);
+  const [hosts, setHosts] = useState<string[]>(getHostsFilter(filters?.node_ids));
+  const [images, setImages] = useState<string[]>(getImagesFilter(filters?.node_ids));
+  const [containers, setContainers] = useState<string[]>(
+    getContainersFilter(filters?.node_ids),
+  );
+  const [clusters, setClusters] = useState<string[]>(
+    getClustersFilter(filters?.node_ids),
+  );
+  const [selectedCloudAccounts, setSelectedCloudAccounts] = useState<string[]>(
+    getCloudAccountsFilter(filters?.node_ids),
+  );
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     setSelectedSeverity([]);
     setSelectedStatus([]);
     setHosts([]);
@@ -245,16 +256,6 @@ const AdvancedFilters = ({
     setClusters([]);
     setSelectedCloudAccounts([]);
   }, [notificationType, cloudProvider]);
-
-  useEffect(() => {
-    setSelectedSeverity(severityFilter?.map((severity) => upperFirst(severity)) ?? []);
-    setSelectedStatus(statusFilter?.map((status) => upperFirst(status)) ?? []);
-    setHosts(getHostsFilter(filters?.node_ids));
-    setImages(getImagesFilter(filters?.node_ids));
-    setContainers(getContainersFilter(filters?.node_ids));
-    setClusters(getClustersFilter(filters?.node_ids));
-    setSelectedCloudAccounts(getCloudAccountsFilter(filters?.node_ids));
-  }, [severityFilter]);
 
   return (
     <div className="col-span-2 mt-6">
@@ -454,15 +455,15 @@ const getDisplayNotification = (notificationType: string) => {
 };
 const NotificationType = ({
   fieldErrors,
-  _notificationType,
+  defaultNotificationType,
   data,
 }: {
   fieldErrors?: Record<string, string>;
-  _notificationType: string;
+  defaultNotificationType: string;
   data?: ModelIntegrationListResp;
 }) => {
   const [notificationType, setNotificationType] = useState<ScanTypeEnum | string>(
-    _notificationType,
+    defaultNotificationType,
   );
   const [cloud, setCloud] = useState<string>('AWS');
 
@@ -568,7 +569,7 @@ const NotificationType = ({
       isJiraIntegration(integrationType) ? (
         <FieldSelection
           notificationType={notificationType.toLowerCase() as 'vulnerability'}
-          fields={data?.config?.custom_fields}
+          defaultSelectedFields={data?.config?.custom_fields}
         />
       ) : null}
     </>
@@ -1018,7 +1019,7 @@ export const IntegrationForm = ({
             )}
 
             <NotificationType
-              _notificationType={formData?.notification_type ?? ''}
+              defaultNotificationType={formData?.notification_type ?? ''}
               data={formData}
             />
 
