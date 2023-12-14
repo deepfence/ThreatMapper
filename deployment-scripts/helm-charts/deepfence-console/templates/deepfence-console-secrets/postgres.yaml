@@ -12,7 +12,9 @@ stringData:
   DEEPFENCE_POSTGRES_USER_DB_PORT: "5432"
   DEEPFENCE_POSTGRES_USER_DB_HOST: {{ include "deepfence-console.fullname" . }}-postgres
   DEEPFENCE_POSTGRES_USER_DB_SSLMODE: disable
+  {{- if .Values.fileserver.secrets }}
   DEEPFENCE_POSTGRES_USER_DB_USER: {{ .Values.postgres.secrets.POSTGRES_USER | quote }}
   DEEPFENCE_POSTGRES_USER_DB_PASSWORD: {{ .Values.postgres.secrets.POSTGRES_PASSWORD | quote }}
-  DEEPFENCE_POSTGRES_USER_DB_NAME: {{ .Values.postgres.secrets.POSTGRES_DB | quote }}
+  {{- end }}
+  DEEPFENCE_POSTGRES_USER_DB_NAME: {{ .Values.postgres.config.POSTGRES_DB | quote }}
 {{- end }}

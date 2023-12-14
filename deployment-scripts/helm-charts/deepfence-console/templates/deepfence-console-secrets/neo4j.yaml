@@ -11,7 +11,8 @@ metadata:
 stringData:
   DEEPFENCE_NEO4J_BOLT_PORT: "7687"
   DEEPFENCE_NEO4J_HOST: {{ include "deepfence-console.fullname" . }}-neo4j
+  {{- if .Values.neo4j.secrets }}
   DEEPFENCE_NEO4J_USER: {{ (splitList "/" .Values.neo4j.secrets.NEO4J_AUTH) | first | quote }} 
   DEEPFENCE_NEO4J_PASSWORD: {{ (splitList "/" .Values.neo4j.secrets.NEO4J_AUTH) | last | quote }} 
+  {{- end }}
 {{- end }}
-
