@@ -334,6 +334,8 @@ export function getGenerativeAIIntegraitonClient() {
       generativeAiApi.addGenerativeAiIntegrationOpenAI.bind(generativeAiApi),
     addGenerativeAiIntegrationBedrock:
       generativeAiApi.addGenerativeAiIntegrationBedrock.bind(generativeAiApi),
+    autoAddGenerativeAiIntegration:
+      generativeAiApi.autoAddGenerativeAiIntegration.bind(generativeAiApi),
     deleteGenerativeAiIntegration:
       generativeAiApi.deleteGenerativeAiIntegration.bind(generativeAiApi),
     setDefaultGenerativeAiIntegration:

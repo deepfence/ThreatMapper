@@ -1852,6 +1852,44 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/generative-ai-integration/auto-add": {
+      "post": {
+        "tags": ["Generative AI"],
+        "summary": "Automatically add Generative AI Integration",
+        "description": "Automatically add Generative AI Integrations using IAM role",
+        "operationId": "autoAddGenerativeAiIntegration",
+        "responses": {
+          "202": { "description": "Accepted" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/generative-ai-integration/bedrock": {
       "post": {
         "tags": ["Generative AI"],
@@ -9070,6 +9108,58 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/search/count/registry-accounts": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Count Registry Accounts",
+        "description": "Search across all the data associated with registry account",
+        "operationId": "countRegistryAccounts",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/search/count/secret-rules": {
       "post": {
         "tags": ["Search"],
@@ -9733,6 +9823,61 @@
                 "schema": {
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/ModelPod" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/registry-accounts": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Registry Accounts",
+        "description": "Search across all the data associated with registry account",
+        "operationId": "searchRegistryAccounts",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelRegistryAccount" }
                 }
               }
             }
@@ -13597,7 +13742,13 @@
         }
       },
       "ModelRegistryAccount": {
-        "required": ["node_id", "host_name", "container_images"],
+        "required": [
+          "node_id",
+          "host_name",
+          "container_images",
+          "registry_type",
+          "syncing"
+        ],
         "type": "object",
         "properties": {
           "container_images": {
@@ -13606,7 +13757,9 @@
             "nullable": true
           },
           "host_name": { "type": "string" },
-          "node_id": { "type": "string" }
+          "node_id": { "type": "string" },
+          "registry_type": { "type": "string" },
+          "syncing": { "type": "boolean" }
         }
       },
       "ModelRegistryAddReq": {

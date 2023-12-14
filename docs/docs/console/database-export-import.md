@@ -22,7 +22,7 @@ docker run --net=host --rm=true --name=postgresql-backup \
   -e POSTGRES_DB_NAME=users \
   -e POSTGRES_DB_USERNAME="" \
   -e POSTGRES_DB_PASSWORD="" \
-  deepfenceio/deepfence_backup:2.0.1
+  deepfenceio/deepfence_backup:2.1.0
 ```
 
 ### Import
@@ -38,7 +38,7 @@ docker run --net=host --rm=true --name=postgresql-restore \
   -e POSTGRES_DB_NAME=users \
   -e POSTGRES_DB_USERNAME="" \
   -e POSTGRES_DB_PASSWORD="" \
-  deepfenceio/deepfence_backup:2.0.1
+  deepfenceio/deepfence_backup:2.1.0
 ```
 - Restart management console once
 

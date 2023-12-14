@@ -30,6 +30,7 @@ interface ActionData {
   success: boolean;
   message?: string;
   fieldErrors?: Record<string, string>;
+  successMessage?: string;
 }
 
 const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
@@ -38,6 +39,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const integrationType = formData
     .get('integration_type')
     ?.toString() as GenerativeAIIntegrationType;
+
+  let successMessage = 'Integration added successfully.';
 
   if (integrationType === 'openai') {
     const modelId = formData.get('model_id')?.toString() ?? '';
@@ -74,44 +77,74 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       throw response.error;
     }
   } else if (integrationType === 'amazon-bedrock') {
-    const modelId = formData.get('model_id')?.toString() ?? '';
-    const awsRegion = formData.get('aws_region')?.toString() ?? '';
-    const awsAccessKey = formData.get('aws_access_key')?.toString() ?? '';
-    const awsSecretKey = formData.get('aws_secret_key')?.toString() ?? '';
-    const useIAMRole = (formData.get('use_iam_role')?.toString() ?? '') === 'checked';
+    const useIAMRole = (formData.get('use_iam_role')?.toString() ?? '') === 'on';
+    if (!useIAMRole) {
+      const modelId = formData.get('model_id')?.toString() ?? '';
+      const awsRegion = formData.get('aws_region')?.toString() ?? '';
+      const awsAccessKey = formData.get('aws_access_key')?.toString() ?? '';
+      const awsSecretKey = formData.get('aws_secret_key')?.toString() ?? '';
 
-    const addGenerativeAiIntegrationBedrock = apiWrapper({
-      fn: getGenerativeAIIntegraitonClient().addGenerativeAiIntegrationBedrock,
-    });
+      const addGenerativeAiIntegrationBedrock = apiWrapper({
+        fn: getGenerativeAIIntegraitonClient().addGenerativeAiIntegrationBedrock,
+      });
 
-    const response = await addGenerativeAiIntegrationBedrock({
-      modelAddGenerativeAiBedrockIntegration: {
-        model_id: modelId as ModelAddGenerativeAiBedrockIntegrationModelIdEnum,
-        aws_region: awsRegion as ModelAddGenerativeAiBedrockIntegrationAwsRegionEnum,
-        aws_access_key: awsAccessKey,
-        aws_secret_key: awsSecretKey,
-        use_iam_role: useIAMRole,
-      },
-    });
+      const response = await addGenerativeAiIntegrationBedrock({
+        modelAddGenerativeAiBedrockIntegration: {
+          model_id: modelId as ModelAddGenerativeAiBedrockIntegrationModelIdEnum,
+          aws_region: awsRegion as ModelAddGenerativeAiBedrockIntegrationAwsRegionEnum,
+          aws_access_key: awsAccessKey,
+          aws_secret_key: awsSecretKey,
+          use_iam_role: useIAMRole,
+        },
+      });
 
-    if (!response.ok) {
-      if (response.error.response.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse =
-          await response.error.response.json();
+      if (!response.ok) {
+        if (response.error.response.status === 400) {
+          const modelResponse: ApiDocsBadRequestResponse =
+            await response.error.response.json();
 
-        return {
-          success: false,
-          message: modelResponse.message ?? '',
-          fieldErrors: modelResponse.error_fields ?? {},
-        };
-      } else if (response.error.response.status === 403) {
-        const message = await get403Message(response.error);
-        return {
-          success: false,
-          message,
-        };
+          return {
+            success: false,
+            message: modelResponse.message ?? '',
+            fieldErrors: modelResponse.error_fields ?? {},
+          };
+        } else if (response.error.response.status === 403) {
+          const message = await get403Message(response.error);
+          return {
+            success: false,
+            message,
+          };
+        }
+        throw response.error;
       }
-      throw response.error;
+    } else {
+      const autoAddGenerativeAiIntegration = apiWrapper({
+        fn: getGenerativeAIIntegraitonClient().autoAddGenerativeAiIntegration,
+      });
+
+      const response = await autoAddGenerativeAiIntegration();
+
+      if (!response.ok) {
+        if (response.error.response.status === 400) {
+          const modelResponse: ApiDocsBadRequestResponse =
+            await response.error.response.json();
+
+          return {
+            success: false,
+            message: modelResponse.message ?? '',
+            fieldErrors: modelResponse.error_fields ?? {},
+          };
+        } else if (response.error.response.status === 403) {
+          const message = await get403Message(response.error);
+          return {
+            success: false,
+            message,
+          };
+        }
+        throw response.error;
+      }
+      successMessage =
+        'Bedrock integrations will automatically be added in a few minutes. If you have not enabled any models in Amazon Bedrock, please enable at least one “text” model and try again.';
     }
   } else {
     throw new Error('invalid provider');
@@ -121,6 +154,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 
   return {
     success: true,
+    successMessage,
   };
 };
 
@@ -204,7 +238,9 @@ const AIIntegrationAdd = () => {
             </div>
           </fetcher.Form>
         ) : (
-          <SuccessModalContent text="Integration added successfully." />
+          <SuccessModalContent
+            text={fetcher.data.successMessage ?? 'Integration added successfully.'}
+          />
         )}
       </SlidingModalContent>
     </SlidingModal>
@@ -274,92 +310,102 @@ const AmazonBedrockFormFields = ({ fetcherData }: { fetcherData?: ActionData }) 
 
   return (
     <>
-      <Listbox
-        variant="underline"
-        label="Model"
-        placeholder="Please select model"
-        name="model_id"
-        value={model}
-        onChange={(value) => {
-          setModel(value);
-        }}
-        getDisplayValue={(value) => {
-          if (value?.length) {
-            return value;
-          }
-          return 'Select...';
-        }}
-        helperText={fetcherData?.fieldErrors?.['model_id']}
-        color={fetcherData?.fieldErrors?.['model_id']?.length ? 'error' : 'default'}
-      >
-        {Object.keys(ModelAddGenerativeAiBedrockIntegrationModelIdEnum).map(
-          (modelKey) => {
-            return (
-              <ListboxOption
-                key={modelKey}
-                value={
-                  ModelAddGenerativeAiBedrockIntegrationModelIdEnum[
-                    modelKey as keyof typeof ModelAddGenerativeAiBedrockIntegrationModelIdEnum
-                  ]
-                }
-              >
-                {
-                  ModelAddGenerativeAiBedrockIntegrationModelIdEnum[
-                    modelKey as keyof typeof ModelAddGenerativeAiBedrockIntegrationModelIdEnum
-                  ]
-                }
-              </ListboxOption>
-            );
-          },
-        )}
-      </Listbox>
-      <Listbox
-        variant="underline"
-        label="Region"
-        placeholder="Please select region"
-        name="aws_region"
-        value={region}
-        onChange={(value) => {
-          setRegion(value);
-        }}
-        getDisplayValue={(value) => {
-          if (value?.length) {
-            return value;
-          }
-          return 'Select...';
-        }}
-        helperText={fetcherData?.fieldErrors?.['aws_region']}
-        color={fetcherData?.fieldErrors?.['aws_region']?.length ? 'error' : 'default'}
-      >
-        {Object.keys(ModelAddGenerativeAiBedrockIntegrationAwsRegionEnum).map(
-          (modelKey) => {
-            return (
-              <ListboxOption
-                key={modelKey}
-                value={
-                  ModelAddGenerativeAiBedrockIntegrationAwsRegionEnum[
-                    modelKey as keyof typeof ModelAddGenerativeAiBedrockIntegrationAwsRegionEnum
-                  ]
-                }
-              >
-                {
-                  ModelAddGenerativeAiBedrockIntegrationAwsRegionEnum[
-                    modelKey as keyof typeof ModelAddGenerativeAiBedrockIntegrationAwsRegionEnum
-                  ]
-                }
-              </ListboxOption>
-            );
-          },
-        )}
-      </Listbox>
       <Checkbox
         checked={useIAM}
         onCheckedChange={(val) => setUseIAM(val as boolean)}
-        label="Use IAM for authentication"
+        label={
+          <div className="pl-3 cursor-pointer">
+            <p className="text-h5 text-gray-900 dark:text-text-text-and-icon">
+              Automatically add Bedrock integrations
+            </p>
+            <p className="text-p6 text-gray-900 dark:text-text-text-and-icon">
+              If the management console is deployed in AWS with instance role and read
+              permission to Bedrock, integrations will be added automatically
+            </p>
+          </div>
+        }
         name="use_iam_role"
       />
       {!useIAM && (
         <>
+          <Listbox
+            variant="underline"
+            label="Model"
+            placeholder="Please select model"
+            name="model_id"
+            value={model}
+            onChange={(value) => {
+              setModel(value);
+            }}
+            getDisplayValue={(value) => {
+              if (value?.length) {
+                return value;
+              }
+              return 'Select...';
+            }}
+            helperText={fetcherData?.fieldErrors?.['model_id']}
+            color={fetcherData?.fieldErrors?.['model_id']?.length ? 'error' : 'default'}
+          >
+            {Object.keys(ModelAddGenerativeAiBedrockIntegrationModelIdEnum).map(
+              (modelKey) => {
+                return (
+                  <ListboxOption
+                    key={modelKey}
+                    value={
+                      ModelAddGenerativeAiBedrockIntegrationModelIdEnum[
+                        modelKey as keyof typeof ModelAddGenerativeAiBedrockIntegrationModelIdEnum
+                      ]
+                    }
+                  >
+                    {
+                      ModelAddGenerativeAiBedrockIntegrationModelIdEnum[
+                        modelKey as keyof typeof ModelAddGenerativeAiBedrockIntegrationModelIdEnum
+                      ]
+                    }
+                  </ListboxOption>
+                );
+              },
+            )}
+          </Listbox>
+          <Listbox
+            variant="underline"
+            label="Region"
+            placeholder="Please select region"
+            name="aws_region"
+            value={region}
+            onChange={(value) => {
+              setRegion(value);
+            }}
+            getDisplayValue={(value) => {
+              if (value?.length) {
+                return value;
+              }
+              return 'Select...';
+            }}
+            helperText={fetcherData?.fieldErrors?.['aws_region']}
+            color={fetcherData?.fieldErrors?.['aws_region']?.length ? 'error' : 'default'}
+          >
+            {Object.keys(ModelAddGenerativeAiBedrockIntegrationAwsRegionEnum).map(
+              (modelKey) => {
+                return (
+                  <ListboxOption
+                    key={modelKey}
+                    value={
+                      ModelAddGenerativeAiBedrockIntegrationAwsRegionEnum[
+                        modelKey as keyof typeof ModelAddGenerativeAiBedrockIntegrationAwsRegionEnum
+                      ]
+                    }
+                  >
+                    {
+                      ModelAddGenerativeAiBedrockIntegrationAwsRegionEnum[
+                        modelKey as keyof typeof ModelAddGenerativeAiBedrockIntegrationAwsRegionEnum
+                      ]
+                    }
+                  </ListboxOption>
+                );
+              },
+            )}
+          </Listbox>
           <TextInput
             label="Access Key"
             type="password"
@@ -383,6 +429,26 @@ const AmazonBedrockFormFields = ({ fetcherData }: { fetcherData?: ActionData }) 
     </>
   );
 };
+
+export function useAddBedrockIntegration() {
+  const fetcher = useFetcher<ActionData>();
+
+  function add() {
+    const formData = new FormData();
+    formData.set('use_iam_role', 'on');
+    formData.set('integration_type', 'amazon-bedrock');
+    fetcher.submit(formData, {
+      method: 'POST',
+      action: '/integrations/gen-ai/add',
+    });
+  }
+
+  return {
+    add,
+    state: fetcher.state,
+    data: fetcher.data,
+  };
+}
 
 export const module = {
   element: <AIIntegrationAdd />,

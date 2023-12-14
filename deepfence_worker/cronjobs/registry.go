@@ -31,7 +31,7 @@ func SyncRegistry(ctx context.Context, task *asynq.Task) error {
 	if task.Payload() != nil {
 		err = json.Unmarshal(task.Payload(), &rsp)
 		if err != nil {
-			log.Warn().Msgf("unable to unmarshal payload: %v, error: %v syncing all registries...", task.Payload(), err)
+			log.Warn().Msgf("unable to unmarshal payload: %v, error: %v syncing all registries...", string(task.Payload()), err)
 			registries, err = pgClient.GetContainerRegistries(ctx)
 			if err != nil {
 				log.Error().Msgf("unable to get registries: %v", err)
@@ -87,7 +87,8 @@ func syncRegistry(ctx context.Context, pgClient *postgresql_db.Queries, registri
 	}
 }
 
-func DeleteOldRegistry(ctx context.Context, task *asynq.Task) error {
+// SyncRegistryPostgresNeo4jTask Synchronize registry between postgres and neo4j
+func SyncRegistryPostgresNeo4jTask(ctx context.Context, task *asynq.Task) error {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("unable to get postgres client: %v", err)
@@ -95,14 +96,14 @@ func DeleteOldRegistry(ctx context.Context, task *asynq.Task) error {
 	}
 
 	var registries []postgresql_db.GetContainerRegistriesRow
-	var registriesByID map[string]postgresql_db.GetContainerRegistriesRow
+	registriesByID := make(map[string]postgresql_db.GetContainerRegistriesRow)
 
 	registries, err = pgClient.GetContainerRegistries(ctx)
 	if err != nil {
 		log.Error().Msgf("unable to get registries: %v", err)
 	}
 
-	var pgRegistryIDs map[string]bool
+	pgRegistryIDs := make(map[string]bool)
 	for _, row := range registries {
 		reg, err := registry.GetRegistryWithRegistryRow(row)
 		if err != nil {
@@ -139,7 +140,7 @@ func DeleteOldRegistry(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	var neo4jRegistryIDs map[string]bool
+	neo4jRegistryIDs := make(map[string]bool)
 	for _, rec := range recs {
 		neo4jRegistryIDs[fmt.Sprintf("%v", rec.Values[0])] = true
 	}

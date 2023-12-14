@@ -49,7 +49,7 @@ func listIAMImages(awsRegion, awsAccountID, targetAccountRoleARN string, isPubli
 	return listIAMPrivateImages(sess, awsConfig, awsAccountID)
 }
 
-func listNonIAMImages(awsAccessKey, awsSecretKey, awsRegion string, isPublic bool) ([]model.IngestedContainerImage, error) {
+func listNonIAMImages(awsAccessKey, awsSecretKey, awsAccountID, awsRegion string, isPublic bool) ([]model.IngestedContainerImage, error) {
 	// Set up AWS session with access key ID and secret access key
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(awsRegion),
@@ -60,9 +60,9 @@ func listNonIAMImages(awsAccessKey, awsSecretKey, awsRegion string, isPublic boo
 	}
 
 	if isPublic {
-		return listNonIAMPublicImages(sess)
+		return listNonIAMPublicImages(sess, awsAccountID)
 	}
-	return listNonIAMPrivateImages(sess)
+	return listNonIAMPrivateImages(sess, awsAccountID)
 }
 
 func getAWSAccountID() (string, error) {

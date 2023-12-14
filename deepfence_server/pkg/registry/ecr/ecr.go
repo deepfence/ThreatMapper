@@ -2,11 +2,17 @@ package ecr
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
+)
+
+var (
+	errAccessKeyMissing     = errors.New("access key and secret key are required")
+	errPublicRegistryRegion = errors.New("region should be set to " + publicRegistryRegion + " for public registry")
 )
 
 func New(requestByte []byte) (*RegistryECR, error) {
@@ -19,10 +25,35 @@ func New(requestByte []byte) (*RegistryECR, error) {
 }
 
 func (e *RegistryECR) ValidateFields(v *validator.Validate) error {
-	return v.Struct(e)
+	if e.NonSecret.IsPublic == trueStr {
+		if e.NonSecret.AWSRegionName != publicRegistryRegion {
+			return errPublicRegistryRegion
+		}
+	}
+	if e.NonSecret.UseIAMRole == trueStr {
+		// IAM role based authentication
+		return v.Struct(e)
+	} else {
+		// Key based authentication
+		if e.NonSecret.AWSAccessKeyID == "" || e.Secret.AWSSecretAccessKey == "" {
+			return errAccessKeyMissing
+		}
+		return v.Struct(e)
+	}
 }
 
 func (e *RegistryECR) IsValidCredential() bool {
+	isPublicRegistry := e.NonSecret.IsPublic == trueStr
+	var err error
+	if e.NonSecret.UseIAMRole == trueStr {
+		_, err = listIAMImages(e.NonSecret.AWSRegionName, e.NonSecret.AWSAccountID, e.NonSecret.TargetAccountRoleARN, isPublicRegistry)
+	} else {
+		_, err = listNonIAMImages(e.NonSecret.AWSAccessKeyID, e.Secret.AWSSecretAccessKey, e.NonSecret.AWSAccountID, e.NonSecret.AWSRegionName, isPublicRegistry)
+	}
+	if err != nil {
+		log.Error().Msgf("failed to authenticate: %v", err)
+		return false
+	}
 	return true
 }
 
@@ -48,10 +79,10 @@ func (e *RegistryECR) DecryptExtras(aes encryption.AES) error {
 
 func (e *RegistryECR) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
 	// based on iamrole we need to fetch images
-	if e.NonSecret.UseIAMRole == "true" {
-		return listIAMImages(e.NonSecret.AWSRegionName, e.NonSecret.AWSAccountID, e.NonSecret.TargetAccountRoleARN, e.NonSecret.IsPublic == "true")
+	if e.NonSecret.UseIAMRole == trueStr {
+		return listIAMImages(e.NonSecret.AWSRegionName, e.NonSecret.AWSAccountID, e.NonSecret.TargetAccountRoleARN, e.NonSecret.IsPublic == trueStr)
 	}
-	return listNonIAMImages(e.NonSecret.AWSAccessKeyID, e.Secret.AWSSecretAccessKey, e.NonSecret.AWSRegionName, e.NonSecret.IsPublic == "true")
+	return listNonIAMImages(e.NonSecret.AWSAccessKeyID, e.Secret.AWSSecretAccessKey, e.NonSecret.AWSAccountID, e.NonSecret.AWSRegionName, e.NonSecret.IsPublic == trueStr)
 }
 
 // getters
@@ -73,12 +104,12 @@ func (e *RegistryECR) GetExtras() map[string]interface{} {
 }
 
 func (e *RegistryECR) GetNamespace() string {
-	if e.NonSecret.IsPublic == "true" {
-		if e.NonSecret.UseIAMRole == "true" {
+	if e.NonSecret.IsPublic == trueStr {
+		if e.NonSecret.UseIAMRole == trueStr {
 			return e.NonSecret.AWSAccountID
 		}
 		return e.NonSecret.AWSAccessKeyID
-	} else if e.NonSecret.UseIAMRole == "true" {
+	} else if e.NonSecret.UseIAMRole == trueStr {
 		return e.NonSecret.AWSRegionName + "_" + e.NonSecret.AWSAccountID
 	}
 	return e.NonSecret.AWSRegionName + "_" + e.NonSecret.AWSAccessKeyID
