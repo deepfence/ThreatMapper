@@ -69,10 +69,11 @@ postgres:
   # if create false provide name of the existing secret
   # secret format refer templates/deepfence-console-secrets/postgres.yaml
   secretName: ""
+  # uncomment and set the below to change the default credentials
   # if create true then below values are used to create postgres database instance
   secrets:
-    POSTGRES_PASSWORD: deepfence
-    POSTGRES_USER: deepfence
+    # POSTGRES_PASSWORD: changeme
+    # POSTGRES_USER: changeme
     POSTGRES_DB: users
   image:
     repository: deepfenceio/deepfence_postgres_ce
@@ -130,10 +131,11 @@ fileserver:
   # if create false provide name of the existing secret
   # secret format refer templates/console-secrets/minio.yaml
   secretName: ""
+  # uncomment and set the below to change the default credentials
   # if create true then below values are used to create postgres database instance
   secrets:
-    MINIO_ROOT_USER: deepfence
-    MINIO_ROOT_PASSWORD: deepfence
+    # MINIO_ROOT_USER: changeme
+    # MINIO_ROOT_PASSWORD: changeme
   image:
     repository: deepfenceio/deepfence_file_server_ce
     pullPolicy: Always
@@ -168,7 +170,7 @@ aws_s3_buckets:
   # prvate bucket to host reports, sbom, etc.
   data_bucket: ""
   # aws credentials to access buckets
-  access_key_id : ""
+  access_key_id: ""
   secret_access_key: ""
   # region where the buckets are hosted ex: ap-south-1
   region: ""
@@ -181,8 +183,9 @@ neo4j:
   secretName: ""
   # if create true then below values are used to create neo4j database instance
   secrets:
+    # uncomment and set the below to change the default credentials
     # format should be username/password
-    NEO4J_AUTH: neo4j/e16908ffa5b9f8e9d4ed
+    # NEO4J_AUTH: changme/changeme
     # To enable periodic backup of neo4j database to S3, please set the values below
     # AWS_ACCESS_KEY: ""
     # AWS_SECRET_KEY: ""
@@ -479,7 +482,7 @@ console_agents:
     podAnnotations: {}
     podSecurityContext: {}
     securityContext: {}
-    nodeSelector: {"kubernetes.io/os": "linux"}
+    nodeSelector: { "kubernetes.io/os": "linux" }
     tolerations:
       - operator: "Exists"
         effect: "NoSchedule"
@@ -502,7 +505,7 @@ console_agents:
     podAnnotations: {}
     podSecurityContext: {}
     securityContext: {}
-    nodeSelector: {"kubernetes.io/os": "linux"}
+    nodeSelector: { "kubernetes.io/os": "linux" }
     tolerations:
       - operator: "Exists"
         effect: "NoSchedule"
