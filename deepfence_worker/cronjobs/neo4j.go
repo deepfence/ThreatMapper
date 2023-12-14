@@ -11,8 +11,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 const (
@@ -309,6 +309,16 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 			"time_ms":    dbUpgradeTimeout.Milliseconds(),
 			"new_status": utils.ScanStatusFailed,
 		}, txConfig); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:AgentVersion)
+		WHERE n.url IS NULL
+		AND NOT exists((n) -[:VERSIONED]-(:Node))
+		DETACH DELETE n`,
+		map[string]interface{}{}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
