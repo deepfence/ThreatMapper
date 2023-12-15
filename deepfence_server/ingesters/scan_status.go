@@ -87,37 +87,50 @@ func AddNewScan(tx WriteDBTransaction,
 	}
 
 	res, err = tx.Run(fmt.Sprintf(`
-		MATCH (m:%s{node_id:$node_id})
-		OPTIONAL MATCH (n:%s)-[:SCANNED]->(m)
-		WHERE NOT n.status = $complete
-		AND NOT n.status = $failed
-		AND not n.status = $cancelled
-		RETURN n.node_id, m.agent_running`, controls.ResourceTypeToNeo4j(nodeType), scanType),
+		MATCH (m:%s{node_id:$node_id}) <-[:SCANNED]- (n:%s)
+		WHERE NOT n.status IN $status
+		RETURN n.node_id`, controls.ResourceTypeToNeo4j(nodeType), scanType),
 		map[string]interface{}{
-			"node_id":   nodeID,
-			"complete":  utils.ScanStatusSuccess,
-			"failed":    utils.ScanStatusFailed,
-			"cancelled": utils.ScanStatusCancelled})
+			"node_id": nodeID,
+			"status":  []string{utils.ScanStatusSuccess, utils.ScanStatusFailed, utils.ScanStatusCancelled},
+		})
+
 	if err != nil {
 		return err
 	}
 
 	rec, err = res.Single()
-	if err != nil {
-		return err
-	}
-
-	if rec.Values[0] != nil {
-		return &AlreadyRunningScanError{
-			ScanID:   rec.Values[0].(string),
-			nodeID:   nodeID,
-			ScanType: string(scanType),
+	if err == nil {
+		if rec.Values[0] != nil {
+			return &AlreadyRunningScanError{
+				ScanID:   rec.Values[0].(string),
+				nodeID:   nodeID,
+				ScanType: string(scanType),
+			}
 		}
 	}
-	if rec.Values[1] != nil {
-		if !rec.Values[1].(bool) {
-			return &AgentNotInstalledError{
-				nodeID: nodeID,
+
+	if nodeType == controls.Host || nodeType == controls.KubernetesCluster {
+		res, err = tx.Run(fmt.Sprintf(`
+			MATCH (m:%s{node_id:$node_id})
+			RETURN m.agent_running`, controls.ResourceTypeToNeo4j(nodeType)),
+			map[string]interface{}{
+				"node_id": nodeID,
+				"status":  []string{utils.ScanStatusSuccess, utils.ScanStatusFailed, utils.ScanStatusCancelled},
+			})
+		if err != nil {
+			return err
+		}
+
+		rec, err = res.Single()
+		if err != nil {
+			return err
+		}
+		if rec.Values[0] != nil {
+			if !rec.Values[0].(bool) {
+				return &AgentNotInstalledError{
+					nodeID: nodeID,
+				}
 			}
 		}
 	}
@@ -128,33 +141,29 @@ func AddNewScan(tx WriteDBTransaction,
 	}
 
 	if _, err = tx.Run(fmt.Sprintf(`
-		MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, trigger_action: $action, updated_at: TIMESTAMP(), created_at: TIMESTAMP(), is_priority: $is_priority})
+		MERGE (n:%s{node_id:$scan_id})
 		MERGE (m:%s{node_id:$node_id})
-		MERGE (n)-[:SCANNED]->(m)`, scanType, controls.ResourceTypeToNeo4j(nodeType)),
+		MERGE (n)-[:SCANNED]->(m)
+		SET n.status = $status,
+			n.status_message = "",
+			n.retries = 0,
+			n.trigger_action = $action,
+			n.updated_at = TIMESTAMP(),
+			n.created_at = TIMESTAMP(),
+			n.is_priority =  $is_priority,
+			m.%s = $status,
+			m.%s = $scan_id
+		`,
+		scanType,
+		controls.ResourceTypeToNeo4j(nodeType),
+		ingestersUtil.ScanStatusField[scanType],
+		ingestersUtil.LatestScanIDField[scanType]),
 		map[string]interface{}{
 			"scan_id":     scanID,
 			"status":      utils.ScanStatusStarting,
 			"node_id":     nodeID,
 			"action":      string(b),
 			"is_priority": isPriority}); err != nil {
-		return err
-	}
-
-	latestScanIDFieldName := ingestersUtil.LatestScanIDField[scanType]
-	scanStatusFieldName := ingestersUtil.ScanStatusField[scanType]
-
-	if _, err = tx.Run(fmt.Sprintf(`
-		MERGE (n:%s{node_id: $scan_id})
-		SET n.status = $status, n.updated_at = TIMESTAMP()
-		WITH n
-		OPTIONAL MATCH (n) -[:DETECTED]- (m)
-		WITH n
-		MATCH (n) -[:SCANNED]- (r)
-		SET r.%s=n.status, r.%s=n.node_id`,
-		scanType, scanStatusFieldName, latestScanIDFieldName),
-		map[string]interface{}{
-			"scan_id": scanID,
-			"status":  utils.ScanStatusStarting}); err != nil {
 		return err
 	}
 
@@ -192,7 +201,7 @@ func AddNewScan(tx WriteDBTransaction,
 			WHERE pod_id IS NOT NULL AND n.node_id=pod_id
 			SET n.%s=$status`
 
-		if _, err = tx.Run(fmt.Sprintf(podQuery, scanStatusFieldName),
+		if _, err = tx.Run(fmt.Sprintf(podQuery, ingestersUtil.ScanStatusField[scanType]),
 			map[string]interface{}{
 				"node_id": nodeID,
 				"status":  utils.ScanStatusStarting}); err != nil {
