@@ -2053,22 +2053,6 @@ func StartMultiScan(ctx context.Context,
 	req model.ScanTriggerCommon,
 	actionBuilder func(string, model.NodeIdentifier, int32) (controls.Action, error)) ([]string, string, error) {
 
-	driver, err := directory.Neo4jClient(ctx)
-
-	if err != nil {
-		return nil, "", err
-	}
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return nil, "", err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
-	if err != nil {
-		return nil, "", err
-	}
 	isPriority := req.IsPriority
 
 	regular, k8s, registry, pods := extractBulksNodes(req.NodeIDs)
@@ -2120,6 +2104,22 @@ func StartMultiScan(ctx context.Context,
 		reqs = append(reqs, podContainerNodes...)
 	}
 
+	driver, err := directory.Neo4jClient(ctx)
+
+	if err != nil {
+		return nil, "", err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		return nil, "", err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(60 * time.Second))
+	if err != nil {
+		return nil, "", err
+	}
 	defer tx.Close()
 	scanIds := []string{}
 	for _, req := range reqs {
