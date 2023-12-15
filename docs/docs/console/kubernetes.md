@@ -36,6 +36,8 @@ The following instructions explain how to install the ThreatMapper console on a 
     kubectl get pods -o wide --namespace openebs -w
     ```
 
+    The Storage Class will now be ```bash openebs-hostpath ```
+
 2. **Install the metrics server** (optional)
 
    If the metrics server is not already installed (```kubectl get deployment metrics-server -n kube-system```), install as follows:
@@ -81,7 +83,7 @@ The following instructions explain how to install the ThreatMapper console on a 
    ... and wait for the cloud platform to deploy an external load-balancer:
 
     ```bash
-    kubectl get svc -w deepfence-router --namespace deepfence-console
+    kubectl get svc -w deepfence-console-router --namespace deepfence-console
     ```
 
 Now proceed to the [Initial Configuration](initial-configuration).

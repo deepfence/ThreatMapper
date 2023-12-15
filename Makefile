@@ -88,7 +88,7 @@ worker: alpine_builder
 .PHONY: jaeger
 jaeger:
 	docker pull jaegertracing/all-in-one:1.50
-	docker tag jaegertracing/all-in-one:1.50 $(IMAGE_REPOSITORY)/jaegertracing-all-in-one:1.50
+	docker tag jaegertracing/all-in-one:1.50 $(IMAGE_REPOSITORY)/deepfence_telemetry_ce:$(DF_IMG_TAG)
 
 .PHONY: graphdb
 graphdb:
