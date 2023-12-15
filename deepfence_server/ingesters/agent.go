@@ -385,6 +385,7 @@ type Connection struct {
 	destination string
 	leftPID     int
 	rightPID    int
+	localPort   int
 }
 
 func connections2maps(connections []Connection, buf *bytes.Buffer) []map[string]interface{} {
@@ -396,18 +397,17 @@ func connections2maps(connections []Connection, buf *bytes.Buffer) []map[string]
 		buf.WriteString(delim)
 		buf.WriteString(connection.destination)
 		connectionID := buf.String()
-		v, has := uniqueMaps[connectionID]
+		_, has := uniqueMaps[connectionID]
 		if !has {
 			uniqueMaps[connectionID] = map[string][]int{
-				"left_pids":  {connection.leftPID},
-				"right_pids": {connection.rightPID},
+				"left_pids":   {connection.leftPID},
+				"right_pids":  {connection.rightPID},
+				"local_ports": {connection.localPort},
 			}
 		} else {
-			// TODO(tjonak): this looks like a logic bug, not touching for now
-			//nolint:gocritic
-			uniqueMaps[connectionID]["left_pids"] = append(v["left_pids"], connection.leftPID)
-			//nolint:gocritic
-			uniqueMaps[connectionID]["right_pids"] = append(v["right_pids"], connection.rightPID)
+			uniqueMaps[connectionID]["left_pids"] = append(uniqueMaps[connectionID]["left_pids"], connection.leftPID)
+			uniqueMaps[connectionID]["right_pids"] = append(uniqueMaps[connectionID]["right_pids"], connection.rightPID)
+			uniqueMaps[connectionID]["local_ports"] = append(uniqueMaps[connectionID]["local_ports"], connection.localPort)
 		}
 	}
 	res := make([]map[string]interface{}, 0, len(uniqueMaps))
@@ -418,11 +418,13 @@ func connections2maps(connections []Connection, buf *bytes.Buffer) []map[string]
 		internal["destination"] = sourceDest[1]
 		leftPIDs := v["left_pids"]
 		rightPIDs := v["right_pids"]
+		localPorts := v["local_ports"]
 		pids := make([]map[string]int, 0, len(leftPIDs))
 		for i := range leftPIDs {
 			pids = append(pids, map[string]int{
-				"left":  leftPIDs[i],
-				"right": rightPIDs[i],
+				"left":       leftPIDs[i],
+				"right":      rightPIDs[i],
+				"local_port": localPorts[i],
 			})
 		}
 		internal["pids"] = pids
@@ -519,46 +521,57 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 				continue
 			}
 		}
-		if n.Metadata.Pid != -1 {
-			if n.Adjacency == nil || len(*n.Adjacency) == 0 {
-				// Handle inbound from internet
-				connections = append(connections, Connection{
-					source:      "in-the-internet",
-					destination: n.Metadata.HostName,
-					leftPID:     0,
-					rightPID:    n.Metadata.Pid,
-				})
-			} else {
-				for _, i := range *n.Adjacency {
-					if n.Metadata.NodeID != i {
-						ip, port := extractIPPortFromEndpointID(i)
-						// local memoization is used to skip redis access (91% reduction)
-						if _, has := localMemoization[ip]; has {
+
+		if n.Metadata.Pid == -1 {
+			//TODO: Check why scope cannot find pids
+			continue
+		}
+
+		if n.Adjacency == nil || len(*n.Adjacency) == 0 {
+			_, port := extractIPPortFromEndpointID(n.Metadata.NodeID)
+			portint, _ := strconv.Atoi(port)
+			// Handle inbound from internet
+			connections = append(connections, Connection{
+				source:      "in-the-internet",
+				destination: n.Metadata.HostName,
+				leftPID:     0,
+				rightPID:    n.Metadata.Pid,
+				localPort:   portint,
+			})
+		} else {
+			for _, i := range *n.Adjacency {
+				if n.Metadata.NodeID != i {
+					ip, port := extractIPPortFromEndpointID(i)
+					portint, _ := strconv.Atoi(port)
+					log.Error().Msgf("nodeid: %v", i)
+					// local memoization is used to skip redis access (91% reduction)
+					if _, has := localMemoization[ip]; has {
+						continue
+					}
+					if host, ok := resolvers.getHost(ip, ttl); ok {
+						if n.Metadata.HostName == host {
+							localMemoization[ip] = struct{}{}
 							continue
 						}
-						if host, ok := resolvers.getHost(ip, ttl); ok {
-							if n.Metadata.HostName == host {
-								localMemoization[ip] = struct{}{}
-								continue
-							}
-							rightIPPID, ok := resolvers.getIPPID(ip+port, ttl)
-							if ok {
-								rightpid := extractPidFromNodeID(rightIPPID)
-								connections = append(connections, Connection{
-									source:      n.Metadata.HostName,
-									destination: host,
-									leftPID:     n.Metadata.Pid,
-									rightPID:    rightpid,
-								})
-							}
-						} else {
+						rightIPPID, ok := resolvers.getIPPID(ip+port, ttl)
+						if ok {
+							rightpid := extractPidFromNodeID(rightIPPID)
 							connections = append(connections, Connection{
 								source:      n.Metadata.HostName,
-								destination: "out-the-internet",
+								destination: host,
 								leftPID:     n.Metadata.Pid,
-								rightPID:    0,
+								rightPID:    rightpid,
+								localPort:   portint,
 							})
 						}
+					} else {
+						connections = append(connections, Connection{
+							source:      n.Metadata.HostName,
+							destination: "out-the-internet",
+							leftPID:     n.Metadata.Pid,
+							rightPID:    0,
+							localPort:   portint,
+						})
 					}
 				}
 			}
@@ -706,7 +719,9 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 		WITH n, r, m, row.pids as rpids
 		UNWIND rpids as pids
 		SET r.left_pids = coalesce(r.left_pids, []) + pids.left,
-		    r.right_pids = coalesce(r.right_pids, []) + pids.right`, map[string]interface{}{"batch": batches.EndpointEdgesBatch}); err != nil {
+		    r.right_pids = coalesce(r.right_pids, []) + pids.right,
+			r.local_ports = coalesce(r.local_ports, []) + pids.local_port`,
+		map[string]interface{}{"batch": batches.EndpointEdgesBatch}); err != nil {
 		return err
 	}
 
