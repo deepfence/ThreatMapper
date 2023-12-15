@@ -78,46 +78,55 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.s3:
         return [
-          columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.aws_region : '-'),
-            {
-              id: 'aws_region',
-              header: () => <TruncatedText text={'Region'} />,
-              minSize: 50,
-              size: 55,
-              maxSize: 60,
-            },
-          ),
-          columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.s3_bucket_name : '-'),
-            {
-              id: 's3_bucket_name',
-              header: () => <TruncatedText text={'Bucket name'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
-          columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.s3_folder_name : '-'),
-            {
-              id: 's3_folder_name',
-              header: () => <TruncatedText text={'Folder name'} />,
-              minSize: 50,
-              size: 55,
-              maxSize: 60,
-            },
-          ),
-          columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.use_iam_role : '-'),
-            {
-              id: 'use_iam_role',
-              header: () => <TruncatedText text={'IAM Role'} />,
-              minSize: 50,
-              size: 55,
-              maxSize: 60,
-            },
-          ),
+          columnHelper.accessor('aws_region', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.aws_region || '-'} />
+              ) : (
+                '-'
+              ),
+            header: () => <TruncatedText text={'Region'} />,
+            minSize: 50,
+            size: 55,
+            maxSize: 60,
+          }),
+          columnHelper.accessor('s3_bucket_name', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.s3_bucket_name || '-'} />
+              ) : (
+                '-'
+              ),
+            header: () => <TruncatedText text={'Bucket name'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
+          columnHelper.accessor('s3_folder_name', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.s3_folder_name || '-'} />
+              ) : (
+                '-'
+              ),
+            header: () => <TruncatedText text={'Folder name'} />,
+            minSize: 50,
+            size: 55,
+            maxSize: 60,
+          }),
+          columnHelper.accessor('use_iam_role', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.use_iam_role} />
+              ) : (
+                '-'
+              ),
+
+            header: () => <TruncatedText text={'IAM Role'} />,
+            minSize: 50,
+            size: 55,
+            maxSize: 60,
+          }),
           columnHelper.accessor('aws_access_key', {
             enableSorting: false,
             cell: (cell) => (
@@ -171,277 +180,266 @@ export const useIntegrationTableColumn = (
               }
             },
           }),
-          columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.issueType : '-'),
-            {
-              id: 'issueType',
-              header: () => <TruncatedText text={'Issue type'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
-          columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.jiraAssignee : '-'),
-            {
-              id: 'jiraAssignee',
-              header: () => <TruncatedText text={'Assigne'} />,
-              minSize: 50,
-              size: 55,
-              maxSize: 60,
-            },
-          ),
-          columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.username : '-'),
-            {
-              id: 'username',
-              header: () => <TruncatedText text={'Username'} />,
-              minSize: 50,
-              size: 55,
-              maxSize: 60,
-            },
-          ),
-          columnHelper.accessor(
-            (cell) =>
-              !isEmpty(cell.config) ? (
-                <TruncatedText text={cell.config.jiraSiteUrl} />
+          columnHelper.accessor('issueType', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.issueType || '-'} />
               ) : (
                 '-'
               ),
-            {
-              id: 'jiraSiteUrl',
-              header: () => <TruncatedText text={'Url'} />,
-              minSize: 50,
-              size: 55,
-              maxSize: 60,
-            },
-          ),
+            header: () => <TruncatedText text={'Issue type'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
+          columnHelper.accessor('jiraAssignee', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.jiraAssignee || '-'} />
+              ) : (
+                '-'
+              ),
+            header: () => <TruncatedText text={'Assigne'} />,
+            minSize: 50,
+            size: 55,
+            maxSize: 60,
+          }),
+          columnHelper.accessor('username', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.username || '-'} />
+              ) : (
+                '-'
+              ),
+            header: () => <TruncatedText text={'Username'} />,
+            minSize: 50,
+            size: 55,
+            maxSize: 60,
+          }),
+          columnHelper.accessor('jiraSiteUrl', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.jiraSiteUrl || '-'} />
+              ) : (
+                '-'
+              ),
+            header: () => <TruncatedText text={'Url'} />,
+            minSize: 50,
+            size: 55,
+            maxSize: 60,
+          }),
         ];
       case IntegrationType.splunk:
         return [
-          columnHelper.accessor(
-            (cell) =>
-              !isEmpty(cell.config) ? (
-                <TruncatedText text={cell.config.endpoint_url} />
+          columnHelper.accessor('endpoint_url', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.endpoint_url || '-'} />
               ) : (
                 '-'
               ),
-            {
-              id: 'endpoint_url',
-              header: () => <TruncatedText text={'Endpoint url'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
-          columnHelper.accessor(
-            (cell) =>
-              !isEmpty(cell.config) ? (
-                <TruncatedText text={cell.config.token_masked} />
+            header: () => <TruncatedText text={'Endpoint url'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
+          columnHelper.accessor('token_masked', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.token_masked || '-'} />
               ) : (
                 '-'
               ),
-            {
-              id: 'token_masked',
-              header: () => <TruncatedText text={'Token'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
+            header: () => <TruncatedText text={'Token'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
         ];
       case IntegrationType.elasticsearch:
         return [
-          columnHelper.accessor(
-            (cell) =>
-              !isEmpty(cell.config) ? (
-                <TruncatedText text={cell.config.endpoint_url} />
+          columnHelper.accessor('endpoint_url', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.endpoint_url || '-'} />
               ) : (
                 '-'
               ),
-            {
-              id: 'endpoint_url',
-              header: () => <TruncatedText text={'Endpoint url'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
-          columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.index : '-'),
-            {
-              id: 'index',
-              header: () => <TruncatedText text={'Index'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
-          columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header_masked : '-'),
-            {
-              id: 'auth_header_masked',
-              header: () => <TruncatedText text={'Auth'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
-          columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.docType : '-'),
-            {
-              id: 'docType',
-              header: () => <TruncatedText text={'Doc type'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
+
+            header: () => <TruncatedText text={'Endpoint url'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
+          columnHelper.accessor('index', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.index || '-'} />
+              ) : (
+                '-'
+              ),
+            header: () => <TruncatedText text={'Index'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
+          columnHelper.accessor('auth_header_masked', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.auth_header_masked || '-'} />
+              ) : (
+                '-'
+              ),
+            header: () => <TruncatedText text={'Auth'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
+          columnHelper.accessor('docType', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.docType || '-'} />
+              ) : (
+                '-'
+              ),
+            header: () => <TruncatedText text={'Doc type'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
         ];
       case IntegrationType.sumoLogic:
         return [
-          columnHelper.accessor(
-            (cell) =>
-              !isEmpty(cell.config) ? (
-                <TruncatedText text={cell.config.endpoint_url} />
+          columnHelper.accessor('endpoint_url', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.endpoint_url || '-'} />
               ) : (
                 '-'
               ),
-            {
-              id: 'endpoint_url',
-              header: () => <TruncatedText text={'Endpoint url'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
+            header: () => <TruncatedText text={'Endpoint url'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
         ];
       case IntegrationType.googleChronicle:
         return [
-          columnHelper.accessor(
-            (cell) =>
-              !isEmpty(cell.config) ? <TruncatedText text={cell.config.url} /> : '-',
-            {
-              id: 'url',
-              header: () => <TruncatedText text={'Endpoint url'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
-          columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header_masked : '-'),
-            {
-              id: 'auth_header_masked',
-              header: () => <TruncatedText text={'Auth header'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
+          columnHelper.accessor('url', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.url || '-'} />
+              ) : (
+                '-'
+              ),
+            header: () => <TruncatedText text={'Endpoint url'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
+          columnHelper.accessor('auth_header_masked', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.auth_header_masked || '-'} />
+              ) : (
+                '-'
+              ),
+            header: () => <TruncatedText text={'Auth header'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
         ];
       case IntegrationType.awsSecurityHub:
         return [
-          columnHelper.accessor(
-            (cell) =>
-              !isEmpty(cell.config) ? (
-                <TruncatedText text={cell.config.aws_access_key} />
+          columnHelper.accessor('aws_access_key', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.aws_access_key || '-'} />
               ) : (
                 '-'
               ),
-            {
-              id: 'aws_access_key',
-              header: () => <TruncatedText text={'Access key'} />,
-              minSize: 45,
-              size: 60,
-              maxSize: 55,
-            },
-          ),
-          columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.aws_region : '-'),
-            {
-              id: 'aws_region',
-              header: () => <TruncatedText text={'Region'} />,
-              minSize: 45,
-              size: 60,
-              maxSize: 75,
-            },
-          ),
+            header: () => <TruncatedText text={'Access key'} />,
+            minSize: 45,
+            size: 60,
+            maxSize: 55,
+          }),
+          columnHelper.accessor('aws_region', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? row.original.config.aws_region : '-',
+            minSize: 45,
+            size: 60,
+            maxSize: 75,
+          }),
         ];
       case IntegrationType.microsoftTeams:
         return [
-          columnHelper.accessor(
-            (cell) =>
-              !isEmpty(cell.config) ? (
-                <TruncatedText text={cell.config.webhook_url_masked} />
+          columnHelper.accessor('webhook_url_masked', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.webhook_url_masked || '-'} />
               ) : (
                 '-'
               ),
-            {
-              id: 'webhook_url_masked',
-              header: () => <TruncatedText text={'Webhook url'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
+            header: () => <TruncatedText text={'Webhook url'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
         ];
       case IntegrationType.pagerDuty:
         return [
-          columnHelper.accessor(
-            (cell) =>
-              !isEmpty(cell.config) ? (
-                <TruncatedText text={cell.config.service_key_masked} />
+          columnHelper.accessor('service_key_masked', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.service_key_masked || '-'} />
               ) : (
                 '-'
               ),
-            {
-              id: 'service_key_masked',
-              header: () => <TruncatedText text={'Service key'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
-          columnHelper.accessor(
-            (cell) =>
-              !isEmpty(cell.config) ? (
-                <TruncatedText text={cell.config.api_key_masked} />
+            header: () => <TruncatedText text={'Service key'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
+          columnHelper.accessor('api_key_masked', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.api_key_masked || '-'} />
               ) : (
                 '-'
               ),
-            {
-              id: 'api_key_masked',
-              header: () => <TruncatedText text={'Api key'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
+            header: () => <TruncatedText text={'Api key'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
         ];
       case IntegrationType.httpEndpoint:
         return [
-          columnHelper.accessor(
-            (cell) =>
-              !isEmpty(cell.config) ? <TruncatedText text={cell.config.url} /> : '-',
-            {
-              id: 'url',
-              header: () => <TruncatedText text={'Url'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
-          columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header_masked : '-'),
-            {
-              id: 'auth_header_masked',
-              header: () => <TruncatedText text={'Auth header'} />,
-              minSize: 45,
-              size: 50,
-              maxSize: 55,
-            },
-          ),
+          columnHelper.accessor('url', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.url} />
+              ) : (
+                '-'
+              ),
+            header: () => <TruncatedText text={'Url'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
+          columnHelper.accessor('auth_header_masked', {
+            cell: ({ row }) =>
+              !isEmpty(row.original.config) ? (
+                <TruncatedText text={row.original.config.auth_header_masked || '-'} />
+              ) : (
+                '-'
+              ),
+            header: () => <TruncatedText text={'Auth header'} />,
+            minSize: 45,
+            size: 50,
+            maxSize: 55,
+          }),
         ];
       case IntegrationType.email:
         return [
@@ -449,7 +447,7 @@ export const useIntegrationTableColumn = (
             id: 'email_id',
             header: () => <TruncatedText text={'Email id'} />,
             cell: (info) => (
-              <TruncatedText text={info.row.original.config?.email_id ?? ''} />
+              <TruncatedText text={info.row.original.config?.email_id ?? '-'} />
             ),
             minSize: 45,
             size: 50,
