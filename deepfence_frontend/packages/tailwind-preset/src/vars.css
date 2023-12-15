@@ -7,7 +7,7 @@
     --text-input-value: #000000;
     --text-text-inverse: #ffffff;
     --text-link: #0ca7ff;
-    --accent-accent: #004ba3;
+    --accent-accent: #0079b8;
     --bg-page: #fafafa;
     --bg-grid-border: #cccccc;
     --bg-tooltip: #000000;
@@ -21,12 +21,12 @@
     --bg-card: #ffffff;
     --bg-map-node: #1b365e;
     --bg-active-selection: #cfd8dc;
-    --bg-hover-1: #002d62;
-    --bg-hover-2: #0e1f33;
-    --bg-hover-3: #739afe;
+    --bg-hover-1: #0072a3;
+    --bg-hover-2: #008ed9;
+    --bg-hover-3: #0099e9;
     --bg-side-panel: #eceff1;
-    --status-success: #046c4e;
-    --status-error: #c81e1e;
+    --status-success: #3c8500;
+    --status-error: #db2100;
     --status-warning: #e3a008;
     --status-info: #1d8ee6;
   }
