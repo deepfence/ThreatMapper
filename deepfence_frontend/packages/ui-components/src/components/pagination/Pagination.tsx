@@ -38,10 +38,10 @@ const PageButton = ({
     <button
       className={cn(
         // we donot want border to be overlap so we use border right here
-        'flex justify-center items-center text-p7 dark:bg-bg-card',
-        'px-3 py-[5px] border-r border-y border-gray-300 dark:border-bg-grid-border',
-        'dark:text-text-text-and-icon overflow-hidden',
-        'hover:dark:text-text-input-value',
+        'flex justify-center items-center text-p7 bg-bg-card',
+        'px-3 py-[5px] border-r border-y border-bg-grid-border',
+        'text-text-text-and-icon overflow-hidden',
+        'hover:text-text-input-value',
         className,
       )}
       onClick={() => {
@@ -129,15 +129,15 @@ export const Pagination = ({
 
   return (
     <div className="flex justify-end items-center gap-4">
-      <div className={`text-gray-500 dark:text-text-text-and-icon text-p4`}>
+      <div className={`text-text-text-and-icon text-p4`}>
         Showing{' '}
-        <span className="text-black dark:text-text-input-value">
+        <span className="text-text-input-value">
           {currentShowing[0]}-{currentShowing[1]}
         </span>
         {!approximatePagination ? (
           <>
             <span> of</span>
-            <span className="text-black dark:text-text-input-value"> {totalRows}</span>
+            <span className="text-text-input-value"> {totalRows}</span>
           </>
         ) : null}
       </div>
@@ -162,7 +162,7 @@ export const Pagination = ({
                 label={<DotsHorizontal />}
                 key={page + index}
                 disabled={true}
-                className={'px-2 py-1.5 focus:border-gray-300 focus:dark:border-gray-700'}
+                className={'px-2 py-1.5 foucs:border-gray-700'}
                 data-testid="pagination-button-dots"
               />
             );
@@ -176,8 +176,7 @@ export const Pagination = ({
               }}
               disabled={false}
               className={cn({
-                'bg-blue-100 text-blue-600 dark:bg-bg-active-selection dark:text-text-input-value':
-                  page === currentPage,
+                'bg-bg-active-selection text-text-input-value': page === currentPage,
               })}
             />
           );

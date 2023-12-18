@@ -32,15 +32,20 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
         id={_id}
         className={cn(
           'flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] peer group',
-          'data-[state=unchecked]:bg-gray-50 data-[state=unchecked]:dark:bg-transparent data-[state=unchecked]:border border-gray-300 dark:border-text-text-and-icon',
-          'data-[state=checked]:dark:bg-accent-accent',
+          'data-[state=unchecked]:bg-gray-50 data-[state=unchecked]:bg-transparent data-[state=unchecked]:border border-text-text-and-icon',
+          'data-[state=checked]:bg-accent-accent',
           // uncheck disabled
           'dark:data-[state=unchecked]:disabled:bg-gray-600 dark:data-[state=unchecked]:disabled:border-none',
+          // light uncheck disabled
+          'data-[state=unchecked]:disabled:bg-gray-400 data-[state=unchecked]:disabled:border-none',
           // check disabled
           'dark:data-[state=checked]:disabled:bg-gray-600 dark:data-[state=checked]:disabled:border-none',
           'disabled:cursor-not-allowed',
+          // light check disabled
+          'data-[state=checked]:disabled:bg-gray-400 data-[state=checked]:disabled:border-none',
+          'disabled:cursor-not-allowed',
           {
-            'dark:bg-accent-accent': internalChecked === 'indeterminate',
+            'bg-accent-accent': internalChecked === 'indeterminate',
           },
           'transition-colors',
           className,
@@ -74,7 +79,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
         <LabelPrimitive.Label
           htmlFor={_id}
           className={cn(
-            'pl-1.5 text-p4 dark:text-text-input-value dark:peer-disabled:text-gray-600 peer-disabled:cursor-not-allowed',
+            'pl-1.5 text-p4 dark:text-text-input-value dark:peer-disabled:text-gray-600 peer-disabled:text-gray-400 peer-disabled:cursor-not-allowed',
           )}
         >
           {label}

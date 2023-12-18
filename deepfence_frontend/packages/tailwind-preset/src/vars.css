@@ -11,7 +11,7 @@
     --bg-page: #fafafa;
     --bg-grid-border: #cccccc;
     --bg-tooltip: #000000;
-    --bg-grid-header: #cfd8dc;
+    --bg-grid-header: #f1f6f8;
     --bg-top-header: #eceff1;
     --bg-left-nav: #eceff1;
     --bg-breadcrumb-bar: #eceff1;
@@ -20,9 +20,9 @@
     --bg-map-cluster: #183867;
     --bg-card: #ffffff;
     --bg-map-node: #1b365e;
-    --bg-active-selection: #cfd8dc;
+    --bg-active-selection: #e6f7ff;
     --bg-hover-1: #0072a3;
-    --bg-hover-2: #008ed9;
+    --bg-hover-2: #f1f6f8;
     --bg-hover-3: #0099e9;
     --bg-side-panel: #eceff1;
     --status-success: #3c8500;

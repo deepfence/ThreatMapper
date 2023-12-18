@@ -43,13 +43,13 @@ export const DropdownSubMenu: React.FC<
     // paddings
     'px-6 pt-2 pb-1',
     // text
-    'text-gray-500 dark:text-text-text-and-icon',
+    'text-text-text-and-icon',
     // hover // focus
-    'focus:outline-none focus:bg-gray-100',
-    'dark:focus:bg-bg-grid-header dark:focus:text-text-text-and-icon',
+    'focus:outline-none',
+    'focus:bg-bg-grid-header focus:text-text-text-and-icon',
     {
       'cursor-pointer': !disabled,
-      'cursor-auto dark:text-gray-600': disabled,
+      'cursor-auto text-gray-600': disabled,
     },
   );
 
@@ -58,7 +58,7 @@ export const DropdownSubMenu: React.FC<
       <DropdownPrimitive.SubTrigger asChild={triggerAsChild} className={triggerClass}>
         <div className="items-center">
           {children}
-          <span className="ml-auto -mr-2 dark:text-text-text-and-icon">
+          <span className="ml-auto -mr-2 text-text-text-and-icon">
             <CaretIcon />
           </span>
         </div>
@@ -71,9 +71,9 @@ export const DropdownSubMenu: React.FC<
             // font size
             'text-p7',
             // bg
-            'bg-white dark:bg-bg-card',
+            'bg-bg-card',
             // border
-            'border dark:border dark:border-bg-left-nav',
+            'border border-bg-left-nav',
           )}
         >
           {content}
@@ -108,11 +108,11 @@ export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) =>
             'shadow-md min-w-[195px]',
             'overflow-hidden',
             // bg
-            'bg-white dark:bg-bg-card',
+            'bg-bg-card',
             // font size
             'text-p7',
             // border
-            'border dark:border dark:border-bg-left-nav',
+            'border border-bg-left-nav',
             'py-2',
           )}
         >
@@ -135,14 +135,14 @@ export const DropdownItem: React.ForwardRefExoticComponent<
   const classes = cn(
     'flex gap-x-2',
     // text
-    'text-p4 text-gray-500 dark:text-text-text-and-icon',
+    'text-p4 text-text-text-and-icon',
     'px-6 pt-2 pb-1', // hover // focus
-    'focus:outline-none focus:bg-gray-100',
-    'dark:focus:bg-bg-grid-header dark:focus:text-text-text-and-icon',
+    'focus:outline-none',
+    'dark:focus:bg-bg-grid-header focus:bg-bg-grid-header focus:text-text-text-and-icon',
     {
       'cursor-pointer': !disabled,
-      'cursor-auto dark:text-gray-600': disabled,
-      'dark:bg-bg-active-selection dark:text-text-input-value': selected,
+      'cursor-auto dark:text-gray-600 text-df-gray-400': disabled,
+      'bg-bg-active-selection text-text-input-value': selected,
     },
     className,
   );
@@ -164,7 +164,7 @@ export const DropdownSeparator: React.ForwardRefExoticComponent<
   DropdownPrimitive.DropdownMenuSeparatorProps & React.RefAttributes<HTMLDivElement>
 > = React.forwardRef((props, forwardedRef) => {
   const { className, ...rest } = props;
-  const classes = cn('h-px bg-gray-200 dark:bg-bg-left-nav flex-1', className);
+  const classes = cn('h-px bg-bg-left-nav flex-1', className);
   return (
     <DropdownPrimitive.Separator
       {...rest}
