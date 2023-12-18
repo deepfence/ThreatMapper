@@ -80,6 +80,7 @@ models/ModelAgentPluginEnable.ts
 models/ModelAgentUpgrade.ts
 models/ModelBasicNode.ts
 models/ModelBulkDeleteScansRequest.ts
+models/ModelCloudAccountRefreshReq.ts
 models/ModelCloudCompliance.ts
 models/ModelCloudComplianceBenchmark.ts
 models/ModelCloudComplianceScanDetails.ts

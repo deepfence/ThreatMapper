@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
+  ModelCloudAccountRefreshReq,
   ModelCloudNodeAccountRegisterReq,
   ModelCloudNodeAccountRegisterResp,
   ModelCloudNodeAccountsListReq,
@@ -28,6 +29,8 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
+    ModelCloudAccountRefreshReqFromJSON,
+    ModelCloudAccountRefreshReqToJSON,
     ModelCloudNodeAccountRegisterReqFromJSON,
     ModelCloudNodeAccountRegisterReqToJSON,
     ModelCloudNodeAccountRegisterRespFromJSON,
@@ -42,6 +45,10 @@ import {
 
 export interface ListCloudNodeAccountRequest {
     modelCloudNodeAccountsListReq?: ModelCloudNodeAccountsListReq;
+}
+
+export interface RefreshCloudNodeAccountRequest {
+    modelCloudAccountRefreshReq?: ModelCloudAccountRefreshReq;
 }
 
 export interface RegisterCloudNodeAccountRequest {
@@ -85,6 +92,22 @@ export interface CloudNodesApiInterface {
      * List Cloud Node Providers
      */
     listCloudProviders(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelCloudNodeProvidersListResp>;
+
+    /**
+     * Refresh the cloud resources in a Cloud Account
+     * @summary Refresh Cloud Account
+     * @param {ModelCloudAccountRefreshReq} [modelCloudAccountRefreshReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CloudNodesApiInterface
+     */
+    refreshCloudNodeAccountRaw(requestParameters: RefreshCloudNodeAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Refresh the cloud resources in a Cloud Account
+     * Refresh Cloud Account
+     */
+    refreshCloudNodeAccount(requestParameters: RefreshCloudNodeAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Register Cloud Node Account and return any pending compliance scans from console
@@ -182,6 +205,44 @@ export class CloudNodesApi extends runtime.BaseAPI implements CloudNodesApiInter
     async listCloudProviders(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelCloudNodeProvidersListResp> {
         const response = await this.listCloudProvidersRaw(initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Refresh the cloud resources in a Cloud Account
+     * Refresh Cloud Account
+     */
+    async refreshCloudNodeAccountRaw(requestParameters: RefreshCloudNodeAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/cloud-node/account/refresh`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelCloudAccountRefreshReqToJSON(requestParameters.modelCloudAccountRefreshReq),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Refresh the cloud resources in a Cloud Account
+     * Refresh Cloud Account
+     */
+    async refreshCloudNodeAccount(requestParameters: RefreshCloudNodeAccountRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.refreshCloudNodeAccountRaw(requestParameters, initOverrides);
     }
 
     /**

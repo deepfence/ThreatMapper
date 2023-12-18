@@ -277,6 +277,51 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/cloud-node/account/refresh": {
+      "post": {
+        "tags": ["Cloud Nodes"],
+        "summary": "Refresh Cloud Account",
+        "description": "Refresh the cloud resources in a Cloud Account",
+        "operationId": "refreshCloudNodeAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelCloudAccountRefreshReq" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/cloud-node/list/accounts": {
       "post": {
         "tags": ["Cloud Nodes"],
@@ -12359,6 +12404,13 @@
             ],
             "type": "string"
           }
+        }
+      },
+      "ModelCloudAccountRefreshReq": {
+        "required": ["node_ids"],
+        "type": "object",
+        "properties": {
+          "node_ids": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
       },
       "ModelCloudCompliance": {
