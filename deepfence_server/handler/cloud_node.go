@@ -20,9 +20,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *Handler) RegisterCloudNodeAccountCount(w http.ResponseWriter, r *http.Request) {
-	//TODO: Is this used?
-}
+const (
+	trueStr  = "true"
+	falseStr = "false"
+)
 
 func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
 	req, err := h.extractCloudNodeDetails(w, r)
@@ -43,7 +44,14 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 
 	ctx := r.Context()
 
-	doRefresh := "false"
+	doRefresh := falseStr
+	refreshReq := model.CloudAccountRefreshReq{NodeIDs: []string{nodeID}}
+	toRefreshNodeIDs, err := refreshReq.GetCloudAccountRefresh(ctx)
+	if err == nil {
+		if len(toRefreshNodeIDs) > 0 && toRefreshNodeIDs[0] == nodeID {
+			doRefresh = trueStr
+		}
+	}
 
 	log.Debug().Msgf("Monitored account ids count: %d", len(monitoredAccountIDs))
 	if len(monitoredAccountIDs) != 0 {
@@ -133,15 +141,21 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			return
 		}
 		// get log request for cloudscanner, if any
-		logRequestAction, err := cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeID})
+		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeID})
 		if err != nil {
 			log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
 		}
 		pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4JCloudComplianceScan, nodeID)
 		if err != nil || len(pendingScansList.ScansInfo) == 0 {
 			err = httpext.JSON(w, http.StatusOK,
-				model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
-					CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh, LogAction: logRequestAction}})
+				model.CloudNodeAccountRegisterResp{
+					Data: model.CloudNodeAccountRegisterRespData{
+						Scans:            scanList,
+						CloudtrailTrails: cloudtrailTrails,
+						Refresh:          doRefresh,
+						LogAction:        logRequestAction,
+					},
+				})
 			if err != nil {
 				log.Error().Msg(err.Error())
 			}
@@ -170,11 +184,35 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 	}
 	log.Debug().Msgf("Returning response: Scan List %+v cloudtrailTrails %+v Refresh %s", scanList, cloudtrailTrails, doRefresh)
 	err = httpext.JSON(w, http.StatusOK,
-		model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
-			CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh, LogAction: logRequestAction}})
+		model.CloudNodeAccountRegisterResp{
+			Data: model.CloudNodeAccountRegisterRespData{
+				Scans:            scanList,
+				CloudtrailTrails: cloudtrailTrails,
+				Refresh:          doRefresh,
+				LogAction:        logRequestAction,
+			},
+		})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
+}
+
+func (h *Handler) RefreshCloudAccountHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.CloudAccountRefreshReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+	err = req.SetCloudAccountRefresh(r.Context())
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) ListCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
