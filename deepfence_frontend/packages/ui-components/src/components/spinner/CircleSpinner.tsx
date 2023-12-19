@@ -8,7 +8,7 @@ type CircleSpinnerProps = {
   className?: string;
 };
 
-const spinnerCVA = cva(['animate-spin dark:text-bg-side-panel fill-accent-accent'], {
+const spinnerCVA = cva(['animate-spin text-bg-side-panel fill-accent-accent'], {
   variants: {
     size: {
       sm: 'w-[18px] h-[18px]',

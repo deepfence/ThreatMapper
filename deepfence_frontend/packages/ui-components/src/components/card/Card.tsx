@@ -7,6 +7,6 @@ type CardType = {
 export const Card = (props: CardType) => {
   const { className = '' } = props;
   return (
-    <div className={cn('rounded-[5px] dark:bg-bg-card', className)}>{props.children}</div>
+    <div className={cn('rounded-[5px] bg-bg-card', className)}>{props.children}</div>
   );
 };

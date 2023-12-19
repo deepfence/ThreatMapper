@@ -48,14 +48,14 @@ export const Tooltip = (props: TooltipProps) => {
               'data-[side=bottom]:animate-slide-up-fade',
               'data-[side=left]:animate-slide-right-fade',
               'rounded-md px-2.5 py-1.5 max-w-[400px]',
-              'bg-bg-tooltip dark:bg-bg-tooltip',
+              'bg-bg-tooltip',
               className,
             )}
           >
             <TooltipPrimitive.Arrow
               height={9}
               width={16}
-              className={cn('fill-bg-tooltip dark:fill-bg-tooltip', arrowClassName)}
+              className={cn('fill-bg-tooltip', arrowClassName)}
             />
             <>
               {label && (

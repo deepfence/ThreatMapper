@@ -27,16 +27,16 @@ export type TabProps = TabsPrimitive.TabsProps & {
 const labelCva = cva(['cursor-pointer uppercase'], {
   variants: {
     disabled: {
-      true: 'dark:text-gray-600',
+      true: 'text-text-text-and-icon',
     },
   },
 });
 const tabListCva = cva(
-  ['inline-flex cursor-pointer', 'text-center text-gray-500 dark:text-[#ADBBC4]'],
+  ['inline-flex cursor-pointer', 'text-center text-text-text-and-icon'],
   {
     variants: {
       underline: {
-        true: ['border-b border-gray-200 dark:border-bg-grid-border'],
+        true: ['border-b border-bg-grid-border'],
       },
     },
     defaultVariants: {
@@ -56,10 +56,10 @@ const tabItemCva = cva(['text-t4 cursor-pointer'], {
           'pb-[9px] pt-[15px] px-3 flex items-center justify-center box-border',
           'data-[state=active]:text-text-input-value data-[state=active]:border-accent-accent',
           // selected
-          'dark:data-[state=active]:shadow-[0_-3px_0_#489CFF_inset] transition-shadow duration-[0.2s] ease-[ease-in]',
+          'data-[state=active]:shadow-[0_-3px_0_#489CFF_inset] transition-shadow duration-[0.2s] ease-[ease-in]',
           // hover
-          'dark:hover:shadow-[0_-3px_0_#489CFF_inset] transition-shadow duration-[0.2s] ease-[ease-in]',
-          'dark:disabled:hover:shadow-none',
+          'hover:shadow-[0_-3px_0_#489CFF_inset] transition-shadow duration-[0.2s] ease-[ease-in]',
+          'disabled:hover:shadow-none',
         ),
       ],
     },

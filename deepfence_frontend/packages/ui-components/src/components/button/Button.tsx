@@ -107,7 +107,7 @@ export const buttonCva = cva(
         ],
         error: [
           // bg styles
-          'bg-status-error dark:hover:bg-[#C45268] hover:bg-[#c21d00]',
+          'bg-status-error dark:hover:bg-[#C45268] hover:bg-[#9B1C1C]',
           // text styles
           'text-text-text-inverse',
           // focus styles
@@ -218,7 +218,7 @@ export const buttonCva = cva(
           // bg styles
           'bg-transparent dark:hover:bg-transparent hover:bg-transparent',
           // text styles
-          'text-status-error dark:hover:text-[#C45268] hover:text-[#c21d00]',
+          'text-status-error dark:hover:text-[#C45268] hover:text-[#9B1C1C]',
           // border styles
           'border-none',
           // outline styles

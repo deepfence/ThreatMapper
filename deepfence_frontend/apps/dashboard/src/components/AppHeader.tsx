@@ -13,7 +13,7 @@ export function AppHeader() {
   return (
     <header
       className={cn(
-        'fixed z-10 top-0 bg-white dark:bg-bg-left-nav h-[56px] w-full border-b border-gray-200 dark:border-bg-top-header',
+        'fixed z-10 top-0 bg-bg-left-nav h-[56px] w-full border-b border-bg-top-header',
       )}
     >
       <div className="h-full flex items-center">
@@ -32,15 +32,13 @@ export function AppHeader() {
             <div className="h-9 w-9">
               <DeepfenceLogo />
             </div>
-            <div className="dark:text-text-text-and-icon text-[18px] leading-9">
-              deepfence
-            </div>
+            <div className="text-text-text-and-icon text-[18px] leading-9">deepfence</div>
           </DFLink>
         </div>
         <div className="flex items-center gap-[18px] mr-6">
           <AutoRefresh />
 
-          <div className="h-[16px] w-[1px] dark:bg-bg-grid-border" />
+          <div className="h-[16px] w-[1px] bg-bg-grid-border" />
 
           <Dropdown
             triggerAsChild
@@ -54,14 +52,14 @@ export function AppHeader() {
                       action: '/data-component/auth/logout',
                     });
                   }}
-                  className="text-red-700 dark:text-text-input-value"
+                  className="text-text-input-value"
                 >
                   Logout
                 </DropdownItem>
               </>
             }
           >
-            <button className="dark:text-text-text-and-icon flex gap-[6px] items-center text-p1">
+            <button className="text-text-text-and-icon flex gap-[6px] items-center text-p1">
               <div className="h-[18px] w-[18px]">
                 <UserLine />
               </div>

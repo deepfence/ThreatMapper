@@ -33,7 +33,7 @@ const ModalHeader: FC<{ title?: React.ReactNode }> = ({ title }) => {
         })}
       >
         <DialogPrimitive.Title
-          className="text-h2 dark:text-text-input-value"
+          className="text-h2 text-text-input-value"
           data-testid="modal-title"
         >
           {title}
@@ -45,7 +45,7 @@ const ModalHeader: FC<{ title?: React.ReactNode }> = ({ title }) => {
         className={cn(
           'absolute top-[30px] right-6 cursor-pointer',
           // text
-          'text-gray-400 dark:text-[#ADBBC4]',
+          'text-[#ADBBC4]',
         )}
         id={'modal-close-button'}
         data-testid={'modal-close-button'}
@@ -94,11 +94,11 @@ const contentCva = cva(
     cn(
       'max-h-[90vh] relative flex flex-col overflow-x-hidden focus:outline-none',
       // border
-      'border rounded dark:border-bg-grid-border',
+      'border rounded border-bg-grid-border',
       // bg
-      'dark:bg-bg-breadcrumb-bar',
+      'bg-bg-breadcrumb-bar',
       // text
-      'text-p1 dark:text-text-text-and-icon',
+      'text-p text-text-text-and-icon',
       // padding
       'px-5',
     ),
