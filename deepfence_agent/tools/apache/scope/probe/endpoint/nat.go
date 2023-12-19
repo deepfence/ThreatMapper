@@ -6,7 +6,7 @@ package endpoint
 import (
 	"net"
 
-	"github.com/typetypetype/conntrack"
+	"github.com/deepfence/conntrack"
 
 	"github.com/weaveworks/scope/report"
 )
