@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/conntrack"
 	"github.com/hashicorp/go-metrics"
-	"github.com/typetypetype/conntrack"
 )
 
 const (

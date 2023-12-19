@@ -181,7 +181,11 @@ func graphToSummaries(
 		source := ""
 		switch {
 		case contains(hostFilter, leftSplits[2]):
-			source = leftSplits[2] + ";" + leftSplits[3]
+			if leftSplits[3] != "-1" {
+				source = leftSplits[2] + ";" + leftSplits[3]
+			} else {
+				source = leftSplits[2]
+			}
 		case contains(regionFilter, leftSplits[1]) || contains(kubernetesFilter, leftSplits[1]):
 			source = leftSplits[2]
 		case contains(providerFilter, leftSplits[0]):
@@ -193,7 +197,11 @@ func graphToSummaries(
 		target := ""
 		switch {
 		case contains(hostFilter, rightSplits[2]):
-			target = rightSplits[2] + ";" + rightSplits[3]
+			if rightSplits[3] != "-1" {
+				target = rightSplits[2] + ";" + rightSplits[3]
+			} else {
+				target = rightSplits[2]
+			}
 		case contains(regionFilter, rightSplits[1]) || contains(kubernetesFilter, rightSplits[1]):
 			target = rightSplits[2]
 		case contains(providerFilter, rightSplits[0]):

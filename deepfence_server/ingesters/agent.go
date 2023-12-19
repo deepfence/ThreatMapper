@@ -503,6 +503,16 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		processesToKeep[hostPID] = struct{}{}
 	}
 
+	pidsToKeep := map[int]struct{}{}
+	for _, n := range rpt.Process {
+		splits := strings.Split(n.Metadata.NodeID, ";")
+		if len(splits) != 2 {
+			continue
+		}
+		pid, _ := strconv.Atoi(splits[1])
+		pidsToKeep[pid] = struct{}{}
+	}
+
 	// endpoint_batch := []map[string]string{}
 	// endpoint_edges := []map[string]string{}
 
@@ -522,9 +532,9 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			}
 		}
 
-		if n.Metadata.Pid == -1 {
-			//TODO: Check why scope cannot find pids
-			continue
+		pid := n.Metadata.Pid
+		if _, ok := pidsToKeep[pid]; !ok {
+			pid = -1
 		}
 
 		if n.Adjacency == nil || len(*n.Adjacency) == 0 {
@@ -535,7 +545,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 				source:      "in-the-internet",
 				destination: n.Metadata.HostName,
 				leftPID:     0,
-				rightPID:    n.Metadata.Pid,
+				rightPID:    pid,
 				localPort:   portint,
 			})
 		} else {
@@ -543,7 +553,6 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 				if n.Metadata.NodeID != i {
 					ip, port := extractIPPortFromEndpointID(i)
 					portint, _ := strconv.Atoi(port)
-					log.Error().Msgf("nodeid: %v", i)
 					// local memoization is used to skip redis access (91% reduction)
 					if _, has := localMemoization[ip]; has {
 						continue
@@ -559,7 +568,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 							connections = append(connections, Connection{
 								source:      n.Metadata.HostName,
 								destination: host,
-								leftPID:     n.Metadata.Pid,
+								leftPID:     pid,
 								rightPID:    rightpid,
 								localPort:   portint,
 							})
@@ -568,7 +577,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 						connections = append(connections, Connection{
 							source:      n.Metadata.HostName,
 							destination: "out-the-internet",
-							leftPID:     n.Metadata.Pid,
+							leftPID:     pid,
 							rightPID:    0,
 							localPort:   portint,
 						})

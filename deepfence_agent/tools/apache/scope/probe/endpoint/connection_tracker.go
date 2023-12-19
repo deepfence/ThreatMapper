@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/typetypetype/conntrack"
+	"github.com/deepfence/conntrack"
 
 	"github.com/weaveworks/scope/probe/endpoint/procspy"
 	"github.com/weaveworks/scope/probe/process"
