@@ -1,6 +1,14 @@
 #!/bin/sh
 set -e
 
+if [ -z "$DEEPFENCE_POSTGRES_USER_DB_PASSWORD" ]; then
+  export DEEPFENCE_POSTGRES_USER_DB_PASSWORD="deepfence"
+fi
+
+if [ -z "$DEEPFENCE_POSTGRES_USER_DB_USER" ]; then
+  export DEEPFENCE_POSTGRES_USER_DB_USER="deepfence"
+fi
+
 until pg_isready -h "${DEEPFENCE_POSTGRES_USER_DB_HOST}" -p "${DEEPFENCE_POSTGRES_USER_DB_PORT}" -U "${DEEPFENCE_POSTGRES_USER_DB_USER}" -d "${DEEPFENCE_POSTGRES_USER_DB_NAME}"; 
 do
   echo >&2 "Postgres is unavailable - sleeping"
