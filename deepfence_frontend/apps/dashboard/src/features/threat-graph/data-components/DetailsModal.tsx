@@ -135,7 +135,7 @@ const ModalContent = ({
             latest_secret_scan_id: (nodeData as ModelHost)?.secret_latest_scan_id,
             secrets_count: (nodeData as ModelHost)?.secrets_count,
             latest_compliance_scan_id: (nodeData as ModelHost)?.compliance_latest_scan_id,
-            compliance_count: (nodeData as ModelHost)?.compliances_count,
+            compliance_count: (nodeData as ModelHost)?.warn_alarm_count,
             latest_cloud_compliance_scan_id: undefined,
           };
         }
@@ -144,8 +144,7 @@ const ModalContent = ({
           ...node,
           latest_cloud_compliance_scan_id: (nodeData as ModelCloudResource)
             ?.cloud_compliance_latest_scan_id,
-          cloud_compliance_count: (nodeData as ModelCloudResource)
-            ?.cloud_compliances_count,
+          cloud_compliance_count: (nodeData as ModelHost)?.cloud_warn_alarm_count,
           latest_vulnerability_scan_id: undefined,
           latest_secret_scan_id: undefined,
           latest_compliance_scan_id: undefined,
