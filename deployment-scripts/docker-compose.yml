@@ -122,6 +122,7 @@ services:
       - DEEPFENCE_KEY=""
       - DEEPFENCE_CONSOLE_AGENT=true
     network_mode: "host"
+    pid: "host"
     volumes:
       - /sys/kernel/debug:/sys/kernel/debug:rw
       - /var/log/fenced
