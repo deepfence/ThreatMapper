@@ -151,7 +151,12 @@ func computeThreatGraph(session neo4j.Session) error {
 		WITH distinct m, max(s.updated_at) as most_recent
 		MATCH (m) <-[:SCANNED]- (s:ComplianceScan{updated_at: most_recent})-[:DETECTED]->(c:Compliance)
 		WITH s, m, count(distinct c) as compliances_count
-		SET m.compliances_count = compliances_count`, map[string]interface{}{}, txConfig); err != nil {
+		MATCH (s)-[:DETECTED]->(n:Compliance)
+		WHERE n.status IN ['warn', 'alarm']
+		WITH s, m, compliances_count, count(distinct n) as warn_alarm_count
+
+		SET m.compliances_count = compliances_count, m.warn_alarm_count = warn_alarm_count
+	`, map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}
 
@@ -161,7 +166,12 @@ func computeThreatGraph(session neo4j.Session) error {
 		WITH distinct p, max(s.updated_at) as most_recent
 		MATCH (s:CloudComplianceScan{updated_at: most_recent})-[:DETECTED]->(c:CloudCompliance) -[:SCANNED]->(m:CloudResource)
 		WITH s, m, count(distinct c) as cloud_compliances_count
-		SET m.cloud_compliances_count = cloud_compliances_count`, map[string]interface{}{}, txConfig); err != nil {
+		MATCH (s)-[:DETECTED]->(n:CloudCompliance)
+		WHERE n.status IN ['warn', 'alarm']
+		WITH s, m, cloud_compliances_count, count(distinct n) as cloud_warn_alarm_count
+
+		SET m.cloud_compliances_count = cloud_compliances_count, m.cloud_warn_alarm_count = cloud_warn_alarm_count
+	`, map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}
 
@@ -198,7 +208,10 @@ func computeThreatGraph(session neo4j.Session) error {
 		n.sum_secrets = COALESCE(n.secrets_count, 0),
 		n.sum_malware = COALESCE(n.malwares_count, 0),
 		n.sum_compliance = COALESCE(n.compliances_count, 0),
-		n.sum_cloud_compliance = COALESCE(n.cloud_compliances_count, 0)`,
+		n.sum_cloud_compliance = COALESCE(n.cloud_compliances_count, 0),
+		n.sum_warn_alarm = COALESCE(n.warn_alarm_count, 0),
+		n.sum_cloud_warn_alarm = COALESCE(n.cloud_warn_alarm_count, 0)
+`,
 		map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}
@@ -211,7 +224,9 @@ func computeThreatGraph(session neo4j.Session) error {
 		n.sum_malware = COALESCE(n.sum_malware, 0) + COALESCE(m.sum_malware, m.malwares_count, 0) ,
 		n.sum_secrets = COALESCE(n.sum_secrets, 0) + COALESCE(m.sum_secrets, m.secrets_count, 0),
 		n.sum_compliance = COALESCE(n.sum_compliance, 0) + COALESCE(m.sum_compliance, m.compliances_count, 0),
-		n.sum_cloud_compliance = COALESCE(n.sum_cloud_compliance, 0) + COALESCE(m.sum_cloud_compliance, m.cloud_compliances_count, 0)`,
+		n.sum_cloud_compliance = COALESCE(n.sum_cloud_compliance, 0) + COALESCE(m.sum_cloud_compliance, m.cloud_compliances_count, 0),
+		n.sum_warn_alarm = COALESCE(n.sum_warn_alarm, 0) + COALESCE(m.sum_warn_alarm, m.warn_alarm_count, 0),
+		n.sum_cloud_warn_alarm = COALESCE(n.sum_cloud_warn_alarm, 0) + COALESCE(m.sum_cloud_warn_alarm, m.cloud_warn_alarm_count, 0)`,
 		map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}

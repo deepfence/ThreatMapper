@@ -103,6 +103,8 @@ type Host struct {
 	CompliancesCount          int64            `json:"compliances_count" required:"true"`
 	ComplianceScanStatus      string           `json:"compliance_scan_status" required:"true"`
 	ComplianceLatestScanID    string           `json:"compliance_latest_scan_id" required:"true"`
+	WarnAlarmCount            int64            `json:"warn_alarm_count" required:"true"`
+	CloudWarnAlarmCount       int64            `json:"cloud_warn_alarm_count" required:"true"`
 	InboundConnections        []Connection     `json:"inbound_connections" required:"true"`
 	OutboundConnections       []Connection     `json:"outbound_connections" required:"true"`
 }
