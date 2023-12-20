@@ -82,6 +82,12 @@ export interface ModelHost {
     cloud_region: string;
     /**
      * 
+     * @type {number}
+     * @memberof ModelHost
+     */
+    cloud_warn_alarm_count: number;
+    /**
+     * 
      * @type {string}
      * @memberof ModelHost
      */
@@ -308,6 +314,12 @@ export interface ModelHost {
      * @memberof ModelHost
      */
     vulnerability_scan_status: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelHost
+     */
+    warn_alarm_count: number;
 }
 
 /**
@@ -320,6 +332,7 @@ export function instanceOfModelHost(value: object): boolean {
     isInstance = isInstance && "cloud_account_id" in value;
     isInstance = isInstance && "cloud_provider" in value;
     isInstance = isInstance && "cloud_region" in value;
+    isInstance = isInstance && "cloud_warn_alarm_count" in value;
     isInstance = isInstance && "compliance_latest_scan_id" in value;
     isInstance = isInstance && "compliance_scan_status" in value;
     isInstance = isInstance && "compliances_count" in value;
@@ -358,6 +371,7 @@ export function instanceOfModelHost(value: object): boolean {
     isInstance = isInstance && "vulnerabilities_count" in value;
     isInstance = isInstance && "vulnerability_latest_scan_id" in value;
     isInstance = isInstance && "vulnerability_scan_status" in value;
+    isInstance = isInstance && "warn_alarm_count" in value;
 
     return isInstance;
 }
@@ -377,6 +391,7 @@ export function ModelHostFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'cloud_account_id': json['cloud_account_id'],
         'cloud_provider': json['cloud_provider'],
         'cloud_region': json['cloud_region'],
+        'cloud_warn_alarm_count': json['cloud_warn_alarm_count'],
         'compliance_latest_scan_id': json['compliance_latest_scan_id'],
         'compliance_scan_status': json['compliance_scan_status'],
         'compliances_count': json['compliances_count'],
@@ -415,6 +430,7 @@ export function ModelHostFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'vulnerabilities_count': json['vulnerabilities_count'],
         'vulnerability_latest_scan_id': json['vulnerability_latest_scan_id'],
         'vulnerability_scan_status': json['vulnerability_scan_status'],
+        'warn_alarm_count': json['warn_alarm_count'],
     };
 }
 
@@ -432,6 +448,7 @@ export function ModelHostToJSON(value?: ModelHost | null): any {
         'cloud_account_id': value.cloud_account_id,
         'cloud_provider': value.cloud_provider,
         'cloud_region': value.cloud_region,
+        'cloud_warn_alarm_count': value.cloud_warn_alarm_count,
         'compliance_latest_scan_id': value.compliance_latest_scan_id,
         'compliance_scan_status': value.compliance_scan_status,
         'compliances_count': value.compliances_count,
@@ -470,6 +487,7 @@ export function ModelHostToJSON(value?: ModelHost | null): any {
         'vulnerabilities_count': value.vulnerabilities_count,
         'vulnerability_latest_scan_id': value.vulnerability_latest_scan_id,
         'vulnerability_scan_status': value.vulnerability_scan_status,
+        'warn_alarm_count': value.warn_alarm_count,
     };
 }
 
