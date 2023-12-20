@@ -98,7 +98,11 @@ func (t *connectionTracker) ReportConnections(rpt *report.Report) {
 	t.flowWalker.walkFlows(func(f conntrack.Conn, alive bool) {
 		tuple := flowToTuple(f)
 		seenTuples[tuple.key()] = tuple
-		t.addConnection(rpt, "", tuple, 0, 0, 0, 1)
+		if tuple.fromPort < tuple.toPort {
+			t.addConnection(rpt, "", tuple, 0, uint(f.Pid), 0, 1)
+		} else {
+			t.addConnection(rpt, "", tuple, uint(f.Pid), 0, 0, 1)
+		}
 	})
 
 	if t.conf.WalkProc && t.conf.Scanner != nil {
