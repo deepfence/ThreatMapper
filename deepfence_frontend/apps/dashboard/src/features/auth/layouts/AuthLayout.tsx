@@ -114,7 +114,7 @@ export const AuthLayout = () => {
         <div className="h-full grid place-items-center">
           <div className="flex mt-4">
             <DeepfenceLogo />
-            <span className="dark:text-text-input-value text-h2 font-normal ml-1">
+            <span className="dark:text-text-input-value text-white text-h2 font-normal ml-1">
               Deepfence
             </span>
           </div>

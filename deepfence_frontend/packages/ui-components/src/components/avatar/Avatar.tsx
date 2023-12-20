@@ -20,7 +20,7 @@ export const Avatar = forwardRef<HTMLButtonElement, AvatarType>(
         className={cn(
           `inline-flex overflow-hidden relative justify-center items-center w-10 h-10 bg-gray-100 rounded-full dark:bg-gray-600`,
           `text-gray-700 dark:text-gray-100 text-lg`,
-          'outline-none focus-visible:ring-1 focus-visible:ring-gray-900 dark:focus-visible:ring-2 dark:focus-visible:ring-gray-400',
+          'outline-none focus-visible:ring-gray-500 focus-visible:ring-2 dark:focus-visible:ring-gray-400',
           className,
         )}
       >

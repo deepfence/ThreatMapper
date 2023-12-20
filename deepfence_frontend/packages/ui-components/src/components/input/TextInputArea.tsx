@@ -23,7 +23,7 @@ const inputElementClassnames = cva(
     'text-p4 px-2 pt-[5px] df-input block w-full disabled:cursor-not-allowed',
     'focus:outline-none',
     'border-b',
-    'dark:bg-transparent',
+    'bg-transparent',
     'transition-[background-size] duration-[0.2s] ease-[ease]',
   ],
   {
@@ -32,20 +32,20 @@ const inputElementClassnames = cva(
         default: [
           cn(
             // border
-            'dark:border-text-text-and-icon',
+            'border-text-text-and-icon',
             // placeholder styles
             'placeholder-df-gray-500 disabled:placeholder-df-gray-600',
             'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
             // text styles
-            'text-gray-900 dark:text-text-input-value',
+            'text-text-input-value',
             // disabled text color
-            'disabled:text-gray-700 dark:disabled:text-df-gray-600',
+            'disabled:text-gray-400 dark:disabled:text-df-gray-600',
             // focus style
-            'dark:bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
-            'dark:focus:border-b-accent-accent',
+            'bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
+            'focus:border-b-accent-accent',
             // dark and bg styles
-            'dark:bg-no-repeat',
-            'dark:focus:bg-no-repeat',
+            'bg-no-repeat',
+            'focus:bg-no-repeat',
             // 'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]',
             // 'dark:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]',
           ),
@@ -53,21 +53,21 @@ const inputElementClassnames = cva(
         error: [
           cn(
             // border
-            'dark:border-chart-red df-error',
+            'border-chart-red df-error',
             // placeholder styles
-            'placeholder-df-gray-500 disabled:placeholder-df-gray-600',
-            'dark:placeholder-df-gray-400 dark:disabled:placeholder-df-gray-500',
+            'placeholder-df-gray-500 disabled:placeholder-df-gray-400',
+            'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
             // text font
             // text styles
-            'text-gray-900 dark:text-text-input-value',
+            'text-text-input-value',
             // disabled text color
-            'disabled:text-gray-700 dark:disabled:text-df-gray-600',
+            'disabled:text-gray-400 dark:disabled:text-df-gray-600',
             // focus style
-            'dark:bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
-            'dark:focus:border-b-chart-red',
+            'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
+            'focus:border-b-chart-red',
             // dark and bg styles
-            'dark:bg-no-repeat',
-            'dark:focus:bg-no-repeat',
+            'bg-no-repeat',
+            'focus:bg-no-repeat',
             // 'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#F55B47_95%)]',
             // 'dark:bg-[linear-gradient(to_bottom,_transparent_95%,_#F55B47_95%)]',
           ),
@@ -97,7 +97,7 @@ export const TextInputArea = forwardRef<HTMLTextAreaElement, TextInputAreaProps>
         {label && (
           <LabelPrimitive.Root
             htmlFor={_id}
-            className="font-medium text-gray-900 dark:text-white"
+            className="font-medium text-text-text-inverse"
           >
             {label}
           </LabelPrimitive.Root>

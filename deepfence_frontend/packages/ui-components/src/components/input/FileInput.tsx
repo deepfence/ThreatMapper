@@ -11,15 +11,15 @@ export type SizeType = 'sm' | 'md' | 'lg';
 
 const inputCva = cva(
   [
-    'block w-full rounded-[5px] dark:placeholder-df-gray-400 cursor-auto',
-    'border border-gray-300 dark:border-accent-accent',
+    'block w-full rounded-[5px] dark:placeholder-df-gray-400 placeholder-df-gray-500 cursor-auto',
+    'border border-accent-accent',
     'bg-gray-50 dark:bg-transparent',
-    'text-gray-900 dark:text-text-text-and-icon dark:hover:border-[#3777C2] file:text-white file:dark:text-black',
+    'text-text-text-and-icon hover:border-bg-hover-1 file:text-text-text-inverse',
     'disabled:cursor-not-allowed',
     'focus:outline-none',
     // ring styles
-    'file:border-0 file:cursor-pointer file:hover:bg-gray-700 dark:file:hover:bg-[#3777C2]',
-    'file:h-ful file:bg-gray-800 dark:file:bg-accent-accent file:px-3',
+    'file:border-0 file:cursor-pointer file:hover:bg-bg-hover-1',
+    'file:h-ful file:bg-accent-accent file:px-3',
   ],
   {
     variants: {

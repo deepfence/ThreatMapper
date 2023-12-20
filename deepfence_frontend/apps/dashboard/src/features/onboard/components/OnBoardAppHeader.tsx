@@ -54,7 +54,7 @@ export const OnboardAppHeader = () => {
           </span>
           <DFLink
             unstyled
-            className="ml-8 dark:text-accent-accent hover:underline text-p3"
+            className="ml-8 text-accent-accent hover:underline text-p3"
             to="/dashboard"
           >
             Go to main dashboard

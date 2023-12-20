@@ -41,7 +41,7 @@ export const ConnectorHeader = ({
             <span
               className={cn(
                 'w-6 h-6 rounded-full dark:bg-df-gray-200 text-p7 flex items-center justify-center',
-                'dark:bg-gray-700 dark:text-df-gray-100 bg-gray-300 text-text-input-value cursor-default',
+                'dark:bg-gray-700 dark:text-df-gray-100 bg-gray-100 text-text-input-value cursor-default',
               )}
             >
               1
@@ -58,7 +58,7 @@ export const ConnectorHeader = ({
             <span
               className={cn(
                 'w-6 h-6 rounded-full dark:bg-df-gray-200 text-p7 flex items-center justify-center',
-                'dark:bg-gray-700 dark:text-df-gray-100 bg-gray-300 text-text-input-value cursor-default',
+                'dark:bg-gray-700 dark:text-df-gray-100 bg-gray-100 text-text-input-value cursor-default',
               )}
             >
               2
@@ -76,7 +76,7 @@ export const ConnectorHeader = ({
             <span
               className={cn(
                 'w-6 h-6 rounded-full dark:bg-df-gray-200 text-p7 flex items-center justify-center',
-                'dark:bg-gray-700 dark:text-df-gray-100 bg-gray-300 text-text-input-value cursor-default',
+                'dark:bg-gray-700 dark:text-df-gray-100 bg-gray-100 text-text-input-value cursor-default',
               )}
             >
               3
