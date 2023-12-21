@@ -16,13 +16,13 @@ export const SeverityBadge = ({
   return (
     <div
       className={cn(
-        'flex items-center capitalize justify-center font-semibold leading-4 text-[11px] dark:text-text-text-inverse py-0.5 max-w-[62px] min-w-[62px]',
-        'dark:bg-df-gray-500 rounded-[5px]',
+        'flex items-center capitalize justify-center font-semibold leading-4 text-[11px] dark:text-text-text-inverse text-text-text-inverse py-0.5 max-w-[62px] min-w-[62px]',
+        'dark:bg-df-gray-500 bg-df-gray-600 rounded-[5px]',
         {
-          'dark:bg-status-error': severity === 'critical',
-          'dark:bg-chart-orange': severity === 'high',
-          'dark:bg-status-warning': severity === 'medium',
-          'dark:bg-chart-yellow1': severity === 'low',
+          'bg-status-error': severity === 'critical',
+          'bg-chart-orange text-text-input-value': severity === 'high',
+          'bg-status-warning text-text-input-value': severity === 'medium',
+          'bg-chart-yellow1 text-text-input-value': severity === 'low',
         },
         className,
       )}

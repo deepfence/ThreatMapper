@@ -67,7 +67,10 @@ export const Tooltip = (props: TooltipProps) => {
               )}
               {typeof content === 'string' ? (
                 <span
-                  className={cn('text-p4', 'text-text-input-value block')}
+                  className={cn(
+                    'text-p4',
+                    'dark:text-text-input-value text-text-text-inverse block',
+                  )}
                   style={{
                     wordBreak: 'break-word',
                   }}

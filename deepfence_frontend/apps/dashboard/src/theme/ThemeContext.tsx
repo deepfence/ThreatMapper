@@ -15,25 +15,23 @@ interface ThemeContextProps {
 const THEME_PREFRENCE_STORAGE_KEY = 'theme';
 
 function getCurrentThemeModeFromStorage(): Mode {
-  return 'light'; // TODO: remove this and comment code below when we enable light theme
-  // const themePrefrence = localStorage.getItem(THEME_PREFRENCE_STORAGE_KEY);
-  // if (!themePrefrence || ![THEME_LIGHT, THEME_DARK].includes(themePrefrence)) {
-  //   // this means user has not set any explicit prefrence, so we use device theme
-  //   const deviceTheme =
-  //     !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-  //       ? THEME_DARK
-  //       : THEME_LIGHT;
-  //   return deviceTheme;
-  // }
-  // return themePrefrence as Mode;
+  const themePrefrence = localStorage.getItem(THEME_PREFRENCE_STORAGE_KEY);
+  if (!themePrefrence || ![THEME_LIGHT, THEME_DARK].includes(themePrefrence)) {
+    // this means user has not set any explicit prefrence, so we use device theme
+    const deviceTheme =
+      !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? THEME_DARK
+        : THEME_LIGHT;
+    return deviceTheme;
+  }
+  return themePrefrence as Mode;
 }
 
 function getUserSelectedModeFromStorage(): Mode | undefined {
-  return 'light'; // TODO: remove this and comment code below when we enable light theme
-  // const themePrefrence = localStorage.getItem(THEME_PREFRENCE_STORAGE_KEY);
-  // if ([THEME_LIGHT, THEME_DARK].includes(themePrefrence ?? '')) {
-  //   return themePrefrence as Mode;
-  // }
+  const themePrefrence = localStorage.getItem(THEME_PREFRENCE_STORAGE_KEY);
+  if ([THEME_LIGHT, THEME_DARK].includes(themePrefrence ?? '')) {
+    return themePrefrence as Mode;
+  }
 }
 
 const saveThemeModeToStorage = (newMode?: Mode) => {

@@ -185,7 +185,7 @@ export const VulnerabilityThreatGraph = ({
     <div className="h-full w-full relative select-none" ref={measureRef}>
       <div className="absolute inset-0" ref={setContainer} />
       {isGraphEmpty(data) ? (
-        <div className="absolute inset-0 flex gap-2 items-center justify-center p-6 dark:text-text-text-and-icon">
+        <div className="absolute inset-0 flex gap-2 items-center justify-center p-6 text-text-text-and-icon">
           <div className="h-6 w-6 shrink-0">
             <ErrorStandardLineIcon />
           </div>
