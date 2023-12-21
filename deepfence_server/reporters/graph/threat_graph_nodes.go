@@ -176,7 +176,11 @@ func GetIndividualThreatGraph[T reporters.Cypherable](ctx context.Context, graph
 			attackPaths[nodeID] = append(attackPaths[nodeID], node.Props["node_id"].(string))
 		}
 		lastConnects := paths.Relationships[len(paths.Relationships)-1]
-		for _, port := range lastConnects.Props["right_pids"].([]interface{}) {
+		//TODO: remove
+		if lastConnects.Props["local_ports"] == nil {
+			continue
+		}
+		for _, port := range lastConnects.Props["local_ports"].([]interface{}) {
 			if _, has := ports[nodeID]; !has {
 				ports[nodeID] = map[int]struct{}{}
 			}

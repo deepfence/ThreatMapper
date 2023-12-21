@@ -36,7 +36,7 @@ The following instructions explain how to install the ThreatMapper console on a 
     kubectl get pods -o wide --namespace openebs -w
     ```
 
-    The Storage Class will now be ```bash openebs-hostpath ```
+    The Storage Class will now be `openebs-hostpath`
 
 2. **Install the metrics server** (optional)
 

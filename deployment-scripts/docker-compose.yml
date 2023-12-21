@@ -1,13 +1,14 @@
 version: "3.7"
 
 x-service-variables: &common-creds
-    DEEPFENCE_NEO4J_USER: neo4j
-    DEEPFENCE_NEO4J_PASSWORD: e16908ffa5b9f8e9d4ed
-    NEO4J_AUTH: neo4j/e16908ffa5b9f8e9d4ed
+    # uncomment to set the credentials otherwise default credentials will be used
+    # DEEPFENCE_NEO4J_USER: neo4juser
+    # DEEPFENCE_NEO4J_PASSWORD: changeme
+    # NEO4J_AUTH: neo4juser/changeme
+    # DEEPFENCE_POSTGRES_USER_DB_USER: postgresuser
+    # DEEPFENCE_POSTGRES_USER_DB_PASSWORD: changeme
     DEEPFENCE_NEO4J_BOLT_PORT: 7687
     DEEPFENCE_NEO4J_HOST: deepfence-neo4j
-    DEEPFENCE_POSTGRES_USER_DB_USER: deepfence
-    DEEPFENCE_POSTGRES_USER_DB_PASSWORD: deepfence
     DEEPFENCE_POSTGRES_USER_DB_HOST: deepfence-postgres
     DEEPFENCE_POSTGRES_USER_DB_NAME: users
     DEEPFENCE_POSTGRES_USER_DB_PORT: 5432
@@ -21,10 +22,10 @@ x-service-variables: &common-creds
     # set s3.amazonaws.com if using s3 buckets
     DEEPFENCE_MINIO_HOST: deepfence-file-server
     DEEPFENCE_MINIO_PORT: 9000
-    # set access key if using s3 buckets
-    DEEPFENCE_MINIO_USER: deepfence
-    # set secret key if using s3 buckets
-    DEEPFENCE_MINIO_PASSWORD: deepfence
+    # uncomment to set access key if using s3 buckets
+    # DEEPFENCE_MINIO_USER: miniouser
+    # uncomment to set secret key if using s3 buckets
+    # DEEPFENCE_MINIO_PASSWORD: changeme
     # set true if using s3 buckets
     DEEPFENCE_MINIO_SECURE: "false"
     # set aws s3 buckets region if using s3 buckets
@@ -122,6 +123,7 @@ services:
       - DEEPFENCE_KEY=""
       - DEEPFENCE_CONSOLE_AGENT=true
     network_mode: "host"
+    pid: "host"
     volumes:
       - /sys/kernel/debug:/sys/kernel/debug:rw
       - /var/log/fenced
@@ -349,7 +351,7 @@ services:
     restart: unless-stopped
 
   deepfence-telemetry:
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_telemetry_ce:$(DF_IMG_TAG:-2.1.0}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_telemetry_ce:${DF_IMG_TAG:-2.1.0}
     hostname: deepfence-telemetry
     container_name: deepfence-telemetry
     ports:

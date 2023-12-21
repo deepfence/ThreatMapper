@@ -52,7 +52,10 @@ type ResourceStub struct {
 func (ntp *neo4jTopologyReporter) GetProcessConnections(tx neo4j.Transaction, hosts []string) ([]ConnectionSummary, error) {
 
 	res := []ConnectionSummary{}
-	hosts = append(hosts, "in-the-internet")
+
+	if len(hosts) > 0 {
+		hosts = append(hosts, "in-the-internet")
+	}
 
 	r, err := tx.Run(`
 	MATCH (n:Node) -[r:CONNECTS]-> (m:Node)
@@ -1259,7 +1262,7 @@ func GetTopologyDelta(ctx context.Context,
 
 	if deltaReq.Addition {
 		additionQuery := `MATCH (n) WHERE ` + nodeTypeQueryStr + `
-		AND n.active=true AND n.created_at > %d 
+		AND n.active=true AND n.created_at > %d
 		RETURN n.node_id, n.node_type, n.created_at`
 
 		err = processRecords(true, fmt.Sprintf(additionQuery,

@@ -11640,16 +11640,20 @@
           "vulnerability_count",
           "secrets_count",
           "compliance_count",
-          "cloud_compliance_count"
+          "cloud_compliance_count",
+          "warn_alarm_count",
+          "cloud_warn_alarm_count"
         ],
         "type": "object",
         "properties": {
           "cloud_compliance_count": { "type": "integer" },
+          "cloud_warn_alarm_count": { "type": "integer" },
           "compliance_count": { "type": "integer" },
           "name": { "type": "string" },
           "node_id": { "type": "string" },
           "secrets_count": { "type": "integer" },
-          "vulnerability_count": { "type": "integer" }
+          "vulnerability_count": { "type": "integer" },
+          "warn_alarm_count": { "type": "integer" }
         }
       },
       "GraphProviderThreatGraph": {
@@ -11658,11 +11662,14 @@
           "compliance_count",
           "secrets_count",
           "vulnerability_count",
-          "cloud_compliance_count"
+          "cloud_compliance_count",
+          "warn_alarm_count",
+          "cloud_warn_alarm_count"
         ],
         "type": "object",
         "properties": {
           "cloud_compliance_count": { "type": "integer" },
+          "cloud_warn_alarm_count": { "type": "integer" },
           "compliance_count": { "type": "integer" },
           "resources": {
             "type": "array",
@@ -11670,7 +11677,8 @@
             "nullable": true
           },
           "secrets_count": { "type": "integer" },
-          "vulnerability_count": { "type": "integer" }
+          "vulnerability_count": { "type": "integer" },
+          "warn_alarm_count": { "type": "integer" }
         }
       },
       "GraphThreatFilters": {
@@ -11717,6 +11725,8 @@
           "compliance_count",
           "cloud_compliance_count",
           "count",
+          "warn_alarm_count",
+          "cloud_warn_alarm_count",
           "node_type",
           "attack_path"
         ],
@@ -11728,6 +11738,7 @@
             "nullable": true
           },
           "cloud_compliance_count": { "type": "integer" },
+          "cloud_warn_alarm_count": { "type": "integer" },
           "compliance_count": { "type": "integer" },
           "count": { "type": "integer" },
           "id": { "type": "string" },
@@ -11739,7 +11750,8 @@
             "nullable": true
           },
           "secrets_count": { "type": "integer" },
-          "vulnerability_count": { "type": "integer" }
+          "vulnerability_count": { "type": "integer" },
+          "warn_alarm_count": { "type": "integer" }
         }
       },
       "GraphTopologyFilters": {
@@ -13252,6 +13264,8 @@
           "compliances_count",
           "compliance_scan_status",
           "compliance_latest_scan_id",
+          "warn_alarm_count",
+          "cloud_warn_alarm_count",
           "inbound_connections",
           "outbound_connections"
         ],
@@ -13262,6 +13276,7 @@
           "cloud_account_id": { "type": "string" },
           "cloud_provider": { "type": "string" },
           "cloud_region": { "type": "string" },
+          "cloud_warn_alarm_count": { "type": "integer" },
           "compliance_latest_scan_id": { "type": "string" },
           "compliance_scan_status": { "type": "string" },
           "compliances_count": { "type": "integer" },
@@ -13323,7 +13338,8 @@
           "version": { "type": "string" },
           "vulnerabilities_count": { "type": "integer" },
           "vulnerability_latest_scan_id": { "type": "string" },
-          "vulnerability_scan_status": { "type": "string" }
+          "vulnerability_scan_status": { "type": "string" },
+          "warn_alarm_count": { "type": "integer" }
         }
       },
       "ModelImageStub": {

@@ -66,9 +66,12 @@ func (tc *ThreatGraphReporter) GetThreatGraph(ctx context.Context, filter Threat
 					SecretsCount:         nodeInfo[index].SecretsCount,
 					ComplianceCount:      nodeInfo[index].ComplianceCount,
 					CloudComplianceCount: nodeInfo[index].CloudComplianceCount,
-					Count:                nodeInfo[index].Count,
-					NodeType:             nodeInfo[index].NodeType,
-					AttackPath:           paths,
+					WarnAlarmCount:       nodeInfo[index].WarnAlarmCount,
+					CloudWarnAlarmCount:  nodeInfo[index].CloudWarnAlarmCount,
+
+					Count:      nodeInfo[index].Count,
+					NodeType:   nodeInfo[index].NodeType,
+					AttackPath: paths,
 				}
 				resources = append(resources, entry)
 			}
@@ -80,6 +83,8 @@ func (tc *ThreatGraphReporter) GetThreatGraph(ctx context.Context, filter Threat
 			SecretsCount:         0,
 			VulnerabilityCount:   0,
 			CloudComplianceCount: 0,
+			WarnAlarmCount:       0,
+			CloudWarnAlarmCount:  0,
 		}
 	}
 
@@ -166,9 +171,9 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters Th
 			OR
 			CASE WHEN $type = 'malware' or $type = 'all' THEN n.malwares_count > 0 ELSE false END
 			OR
-			CASE WHEN $type = 'compliance' or $type = 'all' THEN n.compliances_count > 0 ELSE false END
+			CASE WHEN $type = 'compliance' or $type = 'all' THEN n.warn_alarm_count > 0 ELSE false END
 			OR
-			CASE WHEN $type = 'cloud_compliance' or $type = 'all' THEN n.cloud_compliances_count > 0 ELSE false END
+			CASE WHEN $type = 'cloud_compliance' or $type = 'all' THEN n.cloud_warn_alarm_count > 0 ELSE false END
 		)
 		WITH n, n.cloud_provider as provider
 		WHERE CASE WHEN size($aws_ids) = 0 OR provider <> 'aws' THEN true ELSE n.account_id IN $aws_ids END
@@ -196,9 +201,9 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters Th
 			OR
 			CASE WHEN $type = 'malware' or $type = 'all' THEN n.malwares_count > 0 ELSE false END
 			OR
-			CASE WHEN $type = 'compliance' or $type = 'all' THEN n.compliances_count > 0 ELSE false END
+			CASE WHEN $type = 'compliance' or $type = 'all' THEN n.warn_alarm_count > 0 ELSE false END
 			OR
-			CASE WHEN $type = 'cloud_compliance' or $type = 'all' THEN n.cloud_compliances_count > 0 ELSE false END
+			CASE WHEN $type = 'cloud_compliance' or $type = 'all' THEN n.cloud_warn_alarm_count > 0 ELSE false END
 		)
 		SET n:ThreatNode
 	`, map[string]interface{}{
@@ -239,8 +244,8 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters Th
 		case cloudProvider != CloudPrivate:
 			res, err = tx.Run(`
 				CALL apoc.nodes.group(['ThreatCloudResource','ThreatNode'], ['node_type', 'depth', 'cloud_provider'],
-				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum',
-				node_id:'collect', vulnerabilities_count: 'collect', secrets_count:'collect', compliances_count:'collect', cloud_compliances_count: 'collect'},
+				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum', sum_warn_alarm: 'sum', sum_cloud_warn_alarm: 'sum',
+				node_id:'collect', vulnerabilities_count: 'collect', secrets_count:'collect', compliances_count:'collect', cloud_compliances_count: 'collect', warn_alarm_count: 'collect', cloud_warn_alarm_count: 'collect'},
 				{`+"`*`"+`: 'count'}], {selfRels: false})
 				YIELD node, relationships
 				WHERE apoc.any.property(node, 'cloud_provider') = '`+cloudProvider+`'
@@ -249,8 +254,8 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters Th
 		case !filters.CloudResourceOnly:
 			res, err = tx.Run(`
 				CALL apoc.nodes.group(['ThreatNode'], ['node_type', 'depth', 'cloud_provider'],
-				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum',
-				node_id:'collect', vulnerabilities_count: 'collect', secrets_count:'collect', compliances_count:'collect', cloud_compliances_count:'collect'},
+				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum', sum_warn_alarm: 'sum', sum_cloud_warn_alarm: 'sum',
+				node_id:'collect', vulnerabilities_count: 'collect', secrets_count:'collect', compliances_count:'collect', cloud_compliances_count:'collect', warn_alarm_count: 'collect', cloud_warn_alarm_count: 'collect'},
 				{`+"`*`"+`: 'count'}], {selfRels: false})
 				YIELD node, relationships
 				WHERE NOT apoc.any.property(node, 'cloud_provider') IN ['aws', 'gcp', 'azure']
@@ -314,12 +319,16 @@ func record2struct(node dbtype.Node) AttackPathData {
 	sumSumSecrets := record["sum_sum_secrets"]
 	sumSumCompliance := record["sum_sum_compliance"]
 	sumSumCloudCompliance := record["sum_sum_cloud_compliance"]
+	sumSumWarnAlarm := record["sum_sum_warn_alarm"]
+	sumSumCloudWarnAlarm := record["sum_sum_cloud_warn_alarm"]
 	nodeCount := record["count_*"]
 	collectNodeID := record["collect_node_id"]
 	collectNumCVE := record["collect_vulnerabilities_count"]
 	collectNumSecrets := record["collect_secrets_count"]
 	collectNumCompliance := record["collect_compliances_count"]
 	collectNumCloudCompliance := record["collect_cloud_compliances_count"]
+	collectNumWarnAlarm := record["collect_warn_alarm_count"]
+	collectNumCloudWarnAlarm := record["collect_cloud_warn_alarm_count"]
 
 	collectNodeIDs := []string{}
 	for _, v := range collectNodeID.([]interface{}) {
@@ -362,6 +371,24 @@ func record2struct(node dbtype.Node) AttackPathData {
 		sumSumCloudComplianceRes = sumSumCloudCompliance.(int64)
 	}
 
+	collectNumWarnAlarmRes := []int64{}
+	sumSumWarnAlarmRes := int64(0)
+	if collectNumWarnAlarm != nil {
+		for _, v := range collectNumWarnAlarm.([]interface{}) {
+			collectNumWarnAlarmRes = append(collectNumWarnAlarmRes, v.(int64))
+		}
+		sumSumWarnAlarmRes = sumSumWarnAlarm.(int64)
+	}
+
+	collectNumCloudWarnAlarmRes := []int64{}
+	sumSumCloudWarnAlarmRes := int64(0)
+	if collectNumCloudWarnAlarm != nil {
+		for _, v := range collectNumCloudWarnAlarm.([]interface{}) {
+			collectNumCloudWarnAlarmRes = append(collectNumCloudWarnAlarmRes, v.(int64))
+		}
+		sumSumCloudWarnAlarmRes = sumSumCloudWarnAlarm.(int64)
+	}
+
 	return AttackPathData{
 		identity:                  node.Id,
 		NodeType:                  nodeType.(string),
@@ -377,6 +404,10 @@ func record2struct(node dbtype.Node) AttackPathData {
 		collectNumSecrets:         collectNumSecretsRes,
 		collectNumCompliance:      collectNumComplianceRes,
 		collectNumCloudCompliance: collectNumCloudComplianceRes,
+		collectNumWarnAlarm:       collectNumWarnAlarmRes,
+		collectNumCloudWarnAlarm:  collectNumCloudWarnAlarmRes,
+		sumSumWarnAlarm:           sumSumWarnAlarmRes,
+		sumSumCloudWarnAlarm:      sumSumCloudWarnAlarmRes,
 	}
 }
 
@@ -389,12 +420,16 @@ type AttackPathData struct {
 	sumSumSecrets             int64
 	sumSumCompliance          int64
 	sumSumCloudCompliance     int64
+	sumSumWarnAlarm           int64
+	sumSumCloudWarnAlarm      int64
 	nodeCount                 int64
 	collectNodeID             []string
 	collectNumCVE             []int64
 	collectNumSecrets         []int64
 	collectNumCompliance      []int64
 	collectNumCloudCompliance []int64
+	collectNumWarnAlarm       []int64
+	collectNumCloudWarnAlarm  []int64
 }
 
 func getThreatNodeID(apd AttackPathData) string {
@@ -444,6 +479,14 @@ func (ap AttackPaths) getNodeInfos() map[int64]ThreatNodeInfo {
 			if len(v.collectNumCloudCompliance) == len(v.collectNodeID) {
 				cloudComplianceCount = v.collectNumCloudCompliance[i]
 			}
+			warnAlarmCount := int64(0)
+			if len(v.collectNumWarnAlarm) == len(v.collectNodeID) {
+				warnAlarmCount = v.collectNumWarnAlarm[i]
+			}
+			cloudWarnAlarmCount := int64(0)
+			if len(v.collectNumCloudWarnAlarm) == len(v.collectNodeID) {
+				cloudWarnAlarmCount = v.collectNumCloudWarnAlarm[i]
+			}
 
 			Nodes[nodeID] = NodeInfo{
 				NodeID:               nodeID,
@@ -452,6 +495,8 @@ func (ap AttackPaths) getNodeInfos() map[int64]ThreatNodeInfo {
 				SecretsCount:         secretsCount,
 				ComplianceCount:      complianceCount,
 				CloudComplianceCount: cloudComplianceCount,
+				WarnAlarmCount:       warnAlarmCount,
+				CloudWarnAlarmCount:  cloudWarnAlarmCount,
 			}
 		}
 		res[v.identity] = ThreatNodeInfo{
@@ -462,6 +507,8 @@ func (ap AttackPaths) getNodeInfos() map[int64]ThreatNodeInfo {
 			SecretsCount:         v.sumSumSecrets,
 			ComplianceCount:      v.sumSumCompliance,
 			CloudComplianceCount: v.sumSumCloudCompliance,
+			WarnAlarmCount:       v.sumSumWarnAlarm,
+			CloudWarnAlarmCount:  v.sumSumCloudWarnAlarm,
 			Count:                int64(len(v.collectNodeID)),
 			NodeType:             v.NodeType,
 			AttackPath:           [][]string{},
@@ -478,6 +525,8 @@ type ProviderThreatGraph struct {
 	SecretsCount         int64            `json:"secrets_count" required:"true"`
 	VulnerabilityCount   int64            `json:"vulnerability_count" required:"true"`
 	CloudComplianceCount int64            `json:"cloud_compliance_count" required:"true"`
+	WarnAlarmCount       int64            `json:"warn_alarm_count" required:"true"`
+	CloudWarnAlarmCount  int64            `json:"cloud_warn_alarm_count" required:"true"`
 }
 
 type ThreatNodeInfo struct {
@@ -490,6 +539,8 @@ type ThreatNodeInfo struct {
 	ComplianceCount      int64 `json:"compliance_count" required:"true"`
 	CloudComplianceCount int64 `json:"cloud_compliance_count" required:"true"`
 	Count                int64 `json:"count" required:"true"`
+	WarnAlarmCount       int64 `json:"warn_alarm_count" required:"true"`
+	CloudWarnAlarmCount  int64 `json:"cloud_warn_alarm_count" required:"true"`
 
 	NodeType string `json:"node_type" required:"true"`
 
@@ -503,4 +554,6 @@ type NodeInfo struct {
 	SecretsCount         int64  `json:"secrets_count" required:"true"`
 	ComplianceCount      int64  `json:"compliance_count" required:"true"`
 	CloudComplianceCount int64  `json:"cloud_compliance_count" required:"true"`
+	WarnAlarmCount       int64  `json:"warn_alarm_count" required:"true"`
+	CloudWarnAlarmCount  int64  `json:"cloud_warn_alarm_count" required:"true"`
 }

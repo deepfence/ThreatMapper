@@ -37,6 +37,12 @@ export interface GraphProviderThreatGraph {
      * @type {number}
      * @memberof GraphProviderThreatGraph
      */
+    cloud_warn_alarm_count: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof GraphProviderThreatGraph
+     */
     compliance_count: number;
     /**
      * 
@@ -56,6 +62,12 @@ export interface GraphProviderThreatGraph {
      * @memberof GraphProviderThreatGraph
      */
     vulnerability_count: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof GraphProviderThreatGraph
+     */
+    warn_alarm_count: number;
 }
 
 /**
@@ -64,10 +76,12 @@ export interface GraphProviderThreatGraph {
 export function instanceOfGraphProviderThreatGraph(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "cloud_compliance_count" in value;
+    isInstance = isInstance && "cloud_warn_alarm_count" in value;
     isInstance = isInstance && "compliance_count" in value;
     isInstance = isInstance && "resources" in value;
     isInstance = isInstance && "secrets_count" in value;
     isInstance = isInstance && "vulnerability_count" in value;
+    isInstance = isInstance && "warn_alarm_count" in value;
 
     return isInstance;
 }
@@ -83,10 +97,12 @@ export function GraphProviderThreatGraphFromJSONTyped(json: any, ignoreDiscrimin
     return {
         
         'cloud_compliance_count': json['cloud_compliance_count'],
+        'cloud_warn_alarm_count': json['cloud_warn_alarm_count'],
         'compliance_count': json['compliance_count'],
         'resources': (json['resources'] === null ? null : (json['resources'] as Array<any>).map(GraphThreatNodeInfoFromJSON)),
         'secrets_count': json['secrets_count'],
         'vulnerability_count': json['vulnerability_count'],
+        'warn_alarm_count': json['warn_alarm_count'],
     };
 }
 
@@ -100,10 +116,12 @@ export function GraphProviderThreatGraphToJSON(value?: GraphProviderThreatGraph 
     return {
         
         'cloud_compliance_count': value.cloud_compliance_count,
+        'cloud_warn_alarm_count': value.cloud_warn_alarm_count,
         'compliance_count': value.compliance_count,
         'resources': (value.resources === null ? null : (value.resources as Array<any>).map(GraphThreatNodeInfoToJSON)),
         'secrets_count': value.secrets_count,
         'vulnerability_count': value.vulnerability_count,
+        'warn_alarm_count': value.warn_alarm_count,
     };
 }
 
