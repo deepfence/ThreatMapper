@@ -206,7 +206,7 @@ publish-graphdb:
 
 .PHONY: publish-jaeger
 publish-jaeger:
-	docker push $(IMAGE_REPOSITORY)/deepfence_telemetry_ce:1.50
+	docker push $(IMAGE_REPOSITORY)/deepfence_telemetry_ce:$(DF_IMG_TAG)
 
 .PHONY: clean
 clean:
