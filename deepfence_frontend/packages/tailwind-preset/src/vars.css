@@ -8,13 +8,13 @@
     --text-text-inverse: #ffffff;
     --text-link: #1c64f2;
     --accent-accent: #0079b8;
-    --bg-page: #ffffff;
+    --bg-page: #f6f9ff;
     --bg-grid-border: #e5e7eb;
     --bg-tooltip: #f2f2f2;
-    --bg-grid-header: #f9fafb;
+    --bg-grid-header: #f2f6f8;
     --bg-top-header: #ffffff;
     --bg-left-nav: #fcfcfc;
-    --bg-breadcrumb-bar: #f9fafb;
+    --bg-breadcrumb-bar: #f2f6f8;
     --bg-grid-default: #ffffff;
     --bg-grid-border-light: #e5e7eb;
     --bg-map-cluster: #183867;

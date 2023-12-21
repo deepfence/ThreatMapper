@@ -14,6 +14,7 @@ export function AppHeader() {
     <header
       className={cn(
         'fixed z-10 top-0 bg-bg-left-nav h-[56px] w-full border-b border-bg-top-header',
+        'shadow-[0px_0px_2px_-2px_rgba(0,0,0,0.05),0px_2px_2px_-1px_rgba(0,0,0,0.10)]',
       )}
     >
       <div className="h-full flex items-center">
