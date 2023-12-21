@@ -18,7 +18,7 @@ export const CardHeader = ({
         <DFLink
           to={link}
           unstyled
-          className="p-3 flex items-center dark:text-text-text-and-icon dark:hover:text-accent-accent border-b dark:border-df-gray-900"
+          className="p-3 flex items-center dark:text-text-text-and-icon text-accent-accent hover:text-accent-accent border-b dark:border-df-gray-900 border-df-gray-100"
         >
           <span className="flex-1 truncate flex items-center gap-2">{children}</span>
           <div className="h-4 w-4 shrink-0 -rotate-90 justify-self-end">
@@ -28,7 +28,7 @@ export const CardHeader = ({
       );
     }
     return (
-      <div className="p-3 flex items-center gap-2 dark:text-text-text-and-icon border-b dark:border-df-gray-900">
+      <div className="p-3 flex items-center gap-2 text-text-text-and-icon border-b dark:border-df-gray-900 border-df-gray-100">
         {children}
       </div>
     );

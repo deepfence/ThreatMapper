@@ -119,6 +119,7 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
         'transition-[width]',
         'fixed left-0 z-10 scrolling-touch',
         'border-r border-bg-top-header',
+        'shadow-[0px_2px_4px_-2px_rgba(0,0,0,0.05),0px_4px_6px_-1px_rgba(0,0,0,0.10)]',
       )}
       style={{
         top: '56px',
@@ -254,7 +255,7 @@ const MenuItemButton = ({
             }}
           >
             <ul
-              className="min-w-[200px] =bg-bg-card border-y border-r border-bg-left-nav rounded-[5px] py-2 ml-1"
+              className="min-w-[200px] bg-bg-card border-y border-r border-bg-left-nav rounded-[5px] py-2 ml-1"
               style={{
                 boxShadow: '0px 1px 3px 0px rgba(0, 0, 0, 0.25)',
               }}
