@@ -694,18 +694,20 @@ func GetScanResultDiff[T any](ctx context.Context, scanType utils.Neo4jScanType,
 	}
 
 	query = `
-	MATCH (m:` + string(scanType) + `{node_id: $base_scan_id}) -[r:DETECTED]-> (d2)
-	WITH collect(d2) as dset
-	MATCH (n:` + string(scanType) + `{node_id: $compare_to_scan_id}) -[r:DETECTED]-> (d)
-	WHERE NOT d in dset
+	MATCH (m:` + string(scanType) + `{node_id: $compare_to_scan_id}) -[r:DETECTED]-> (d2) -[:IS]-> (rule2)
+	WITH collect(rule2) as rset
+	MATCH (n:` + string(scanType) + `{node_id: $base_scan_id}) -[r:DETECTED]-> (d) -[:IS]-> (rule)
+	WHERE NOT rule in rset
 	OPTIONAL MATCH (d) -[:IS]-> (e)
 	OPTIONAL MATCH (n) -[:SCANNED]-> (f)
 	OPTIONAL MATCH (c:ContainerImage{node_id: f.docker_image_id}) -[:ALIAS] ->(t) -[ma:MASKED]-> (d)
-	WITH apoc.map.merge( e{.*}, 
-	d{.*, masked: coalesce(d.masked or r.masked or e.masked or head(collect(ma.masked)), false), 
-	name: coalesce(e.name, d.name, '')}) AS d` +
-		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
-		ffCondition + ` RETURN d ` +
+	UNWIND rule as rl
+		MATCH (rl) <-[:IS]- (d1) <-[r:DETECTED]- ({node_id: $base_scan_id})
+		WITH apoc.map.merge( e{.*}, 
+		d1{.*, masked: coalesce(d1.masked or r.masked or e.masked or head(collect(ma.masked)), false), 
+		name: coalesce(e.name, d1.name, '')}) AS d1` +
+		reporters.ParseFieldFilters2CypherWhereConditions("d1", mo.Some(ff), true) +
+		ffCondition + ` RETURN d1 ` +
 		fw.FetchWindow2CypherQuery()
 	log.Debug().Msgf("diff query: %v", query)
 	nres, err := tx.Run(query,
