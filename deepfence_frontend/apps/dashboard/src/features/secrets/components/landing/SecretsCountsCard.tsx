@@ -6,19 +6,22 @@ import { Card, CircleSpinner } from 'ui-components';
 import { ECOption, ReactECharts } from '@/components/ReactEcharts';
 import { SeverityLegend } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
-import { SEVERITY_COLORS } from '@/constants/charts';
+import { getSeverityColorMap } from '@/constants/charts';
 import { CardHeader } from '@/features/secrets/components/landing/CardHeader';
 import { queries } from '@/queries';
-import { SecretSeverityType, VulnerabilitySeverityType } from '@/types/common';
+import { Mode, useTheme } from '@/theme/ThemeContext';
+import { SecretSeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 function getChartOptions({
   data,
   total,
+  theme,
 }: {
   data: { [key: string]: number };
   total: number;
+  theme: Mode;
 }) {
   const option: ECOption = {
     backgroundColor: 'transparent',
@@ -58,8 +61,8 @@ function getChartOptions({
               name: key,
               itemStyle: {
                 color:
-                  SEVERITY_COLORS[key as VulnerabilitySeverityType] ??
-                  SEVERITY_COLORS['unknown'],
+                  getSeverityColorMap(theme)[key as SecretSeverityType] ??
+                  getSeverityColorMap(theme)['unknown'],
               },
             };
           }),
@@ -139,9 +142,11 @@ const MostExploitableSecretsCardContent = () => {
 };
 
 const CardContent = ({ data, to }: { data: SecretsCountsCardData; to: string }) => {
+  const { mode } = useTheme();
   const chartOptions = getChartOptions({
     data: data.severityBreakdown,
     total: data.total,
+    theme: mode,
   });
 
   const { navigate } = usePageNavigation();

@@ -7,11 +7,11 @@ import { Card, CircleSpinner } from 'ui-components';
 import { DFLink } from '@/components/DFLink';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
-import { POSTURE_STATUS_COLORS, SEVERITY_COLORS } from '@/constants/charts';
+import { getSeverityColorMap, POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { ScanResultChart } from '@/features/topology/components/scan-results/ScanResultChart';
 import { queries } from '@/queries';
-import { useTheme } from '@/theme/ThemeContext';
-import { ScanTypeEnum } from '@/types/common';
+import { Mode, useTheme } from '@/theme/ThemeContext';
+import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
 import { sortBySeverity } from '@/utils/array';
 import { formatToRelativeTimeFromNow } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
@@ -48,9 +48,12 @@ function useScanResultSummaryCounts(scanId = '', type: ScanTypeEnum) {
   }[type];
 }
 
-const getSeriesOption = (counts: {
-  [x: string]: number;
-}): Array<{
+const getSeriesOption = (
+  theme: Mode,
+  counts: {
+    [x: string]: number;
+  },
+): Array<{
   name: string;
   value: number;
   color: string;
@@ -61,7 +64,7 @@ const getSeriesOption = (counts: {
         name: key,
         value: counts[key],
         color:
-          SEVERITY_COLORS[key as keyof typeof SEVERITY_COLORS] ??
+          getSeverityColorMap(theme)[key as SecretSeverityType] ??
           POSTURE_STATUS_COLORS[key as keyof typeof POSTURE_STATUS_COLORS] ??
           '',
       };
@@ -187,14 +190,14 @@ const ScanResultComponent = ({
             <div className="flex items-center justify-center">
               <div className="h-[100px] w-[100px]">
                 <ScanResultChart
-                  data={getSeriesOption(scanSummary.counts)}
+                  data={getSeriesOption(mode, scanSummary.counts)}
                   theme={mode}
                   to={to}
                 />
               </div>
             </div>
             <div className="flex flex-col gap-1 self-center min-w-[150px] ml-auto pr-8">
-              {getSeriesOption(scanSummary.counts).map((count) => {
+              {getSeriesOption(mode, scanSummary.counts).map((count) => {
                 return (
                   <div className="flex gap-2 w-full items-center" key={count.name}>
                     <div

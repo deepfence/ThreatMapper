@@ -53,11 +53,12 @@ import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { TruncatedText } from '@/components/TruncatedText';
-import { SEVERITY_COLORS } from '@/constants/charts';
+import { getSeverityColorMap } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -624,6 +625,7 @@ const ScansTable = ({
   rowSelectionState: RowSelectionState;
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
 }) => {
+  const { mode } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = useSuspenseQuery({
     ...queries.secret.scanList({
@@ -755,7 +757,7 @@ const ScansTable = ({
               <div
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{
-                  backgroundColor: SEVERITY_COLORS['critical'],
+                  backgroundColor: getSeverityColorMap(mode)['critical'],
                 }}
               ></div>
               <DFLink
@@ -783,7 +785,7 @@ const ScansTable = ({
               <div
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{
-                  backgroundColor: SEVERITY_COLORS['high'],
+                  backgroundColor: getSeverityColorMap(mode)['high'],
                 }}
               ></div>
               <DFLink
@@ -811,7 +813,7 @@ const ScansTable = ({
               <div
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{
-                  backgroundColor: SEVERITY_COLORS['medium'],
+                  backgroundColor: getSeverityColorMap(mode)['medium'],
                 }}
               ></div>
               <DFLink
@@ -839,7 +841,7 @@ const ScansTable = ({
               <div
                 className="w-2 h-2 rounded-full shrink-0"
                 style={{
-                  backgroundColor: SEVERITY_COLORS['low'],
+                  backgroundColor: getSeverityColorMap(mode)['low'],
                 }}
               ></div>
               <DFLink
@@ -867,7 +869,7 @@ const ScansTable = ({
               <div
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{
-                  backgroundColor: SEVERITY_COLORS['unknown'],
+                  backgroundColor: getSeverityColorMap(mode)['unknown'],
                 }}
               ></div>
               <DFLink
@@ -1106,7 +1108,7 @@ const SecretScans = () => {
 
   return (
     <div>
-      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<SecretsIcon />} isLink>
             <DFLink to={'/secret'} unstyled>

@@ -69,12 +69,13 @@ import {
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { TruncatedText } from '@/components/TruncatedText';
-import { SEVERITY_COLORS } from '@/constants/charts';
+import { getSeverityColorMap } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { SecretScanResultsPieChart } from '@/features/secrets/components/scan-results/SecretScanResultsPieChart';
 import { SecretsCompare } from '@/features/secrets/components/scan-results/SecretsCompare';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -1564,7 +1565,7 @@ const SecretTable = ({
 
 const Header = () => {
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<SecretsIcon />} isLink>
@@ -1709,6 +1710,7 @@ const SeverityCounts = ({
     [k: string]: number;
   };
 }) => {
+  const { mode } = useTheme();
   const [, setSearchParams] = useSearchParams();
 
   return (
@@ -1719,7 +1721,8 @@ const SeverityCounts = ({
             <div
               className="h-3 w-3 rounded-full"
               style={{
-                backgroundColor: SEVERITY_COLORS[key.toLowerCase() as SecretSeverityType],
+                backgroundColor:
+                  getSeverityColorMap(mode)[key.toLowerCase() as SecretSeverityType],
               }}
             ></div>
             <button
@@ -1918,7 +1921,7 @@ const Widgets = () => {
         </div>
       </Card>
       <Card className="px-4 py-1.5 flex flex-col">
-        <div className="text-h6 dark:text-text-input-value py-1">Top 5 secrets</div>
+        <div className="text-h6 text-text-input-value py-1">Top 5 secrets</div>
         <div className="mt-2 flex-1">
           <Suspense
             fallback={

@@ -17,12 +17,13 @@ export const SeverityBadge = ({
     <div
       className={cn(
         'flex items-center capitalize justify-center font-semibold leading-4 text-[11px] dark:text-text-text-inverse text-text-text-inverse py-0.5 max-w-[62px] min-w-[62px]',
-        'dark:bg-df-gray-500 bg-df-gray-600 rounded-[5px]',
+        ' rounded-[5px]',
         {
           'bg-status-error': severity === 'critical',
           'bg-chart-orange text-text-input-value': severity === 'high',
           'bg-status-warning text-text-input-value': severity === 'medium',
           'bg-chart-yellow1 text-text-input-value': severity === 'low',
+          'dark:bg-df-gray-500 bg-df-gray-600': !severity || severity === 'unknown',
         },
         className,
       )}
@@ -99,12 +100,14 @@ export const SeverityLegend = ({
     >
       <div
         className={cn(
-          'rounded-full h-3 w-3 shrink-0 dark:bg-df-gray-500 bg-df-gray-600',
+          'rounded-full h-3 w-3 shrink-0',
           {
             'bg-status-error': severity === 'critical',
             'bg-chart-orange text-text-input-value': severity === 'high',
             'bg-status-warning text-text-input-value': severity === 'medium',
             'bg-chart-yellow1 text-text-input-value': severity === 'low',
+            'dark:bg-df-gray-500 bg-df-gray-600 text-text-input-value':
+              !severity || severity === 'unknown',
           },
           iconClassName,
         )}

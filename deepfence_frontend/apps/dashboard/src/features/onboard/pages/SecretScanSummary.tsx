@@ -5,9 +5,10 @@ import { createColumnHelper, Table, TableSkeleton } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { TruncatedText } from '@/components/TruncatedText';
-import { SEVERITY_COLORS } from '@/constants/charts';
+import { getSeverityColorMap } from '@/constants/charts';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum } from '@/types/common';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -23,6 +24,7 @@ const useGetScanSummary = () => {
 };
 
 const SummaryTable = () => {
+  const { mode } = useTheme();
   const { data } = useGetScanSummary();
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const columnHelper = createColumnHelper<(typeof data)[number]>();
@@ -65,7 +67,7 @@ const SummaryTable = () => {
               <div
                 className="w-3 h-3 rounded-full"
                 style={{
-                  backgroundColor: SEVERITY_COLORS['critical'],
+                  backgroundColor: getSeverityColorMap(mode)['critical'],
                 }}
               ></div>
               <span>{info.getValue() ?? 0}</span>
@@ -85,7 +87,7 @@ const SummaryTable = () => {
               <div
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{
-                  backgroundColor: SEVERITY_COLORS['high'],
+                  backgroundColor: getSeverityColorMap(mode)['high'],
                 }}
               ></div>
               <span>{info.getValue() ?? 0}</span>
@@ -105,7 +107,7 @@ const SummaryTable = () => {
               <div
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{
-                  backgroundColor: SEVERITY_COLORS['medium'],
+                  backgroundColor: getSeverityColorMap(mode)['medium'],
                 }}
               ></div>
               <span>{info.getValue() ?? 0}</span>
@@ -125,7 +127,7 @@ const SummaryTable = () => {
               <div
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{
-                  backgroundColor: SEVERITY_COLORS['low'],
+                  backgroundColor: getSeverityColorMap(mode)['low'],
                 }}
               ></div>
               <span>{info.getValue() ?? 0}</span>
@@ -145,7 +147,7 @@ const SummaryTable = () => {
               <div
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{
-                  backgroundColor: SEVERITY_COLORS['unknown'],
+                  backgroundColor: getSeverityColorMap(mode)['unknown'],
                 }}
               ></div>
               <span>{info.getValue() ?? 0}</span>

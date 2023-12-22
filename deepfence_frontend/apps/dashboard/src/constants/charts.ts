@@ -1,17 +1,7 @@
 import { colors, preset } from 'tailwind-preset';
 
 import { Mode } from '@/theme/ThemeContext';
-import { PostureSeverityType, VulnerabilitySeverityType } from '@/types/common';
-
-export const SEVERITY_COLORS: {
-  [x in VulnerabilitySeverityType]: string;
-} = {
-  critical: preset.theme.extend.colors.status.error,
-  high: preset.theme.extend.colors.chart.orange,
-  medium: preset.theme.extend.colors.status.warning,
-  low: preset.theme.extend.colors.chart.yellow1,
-  unknown: preset.theme.extend.colors['df-gray'][600],
-};
+import { PostureSeverityType } from '@/types/common';
 
 export const getSeverityColorMap = (theme: Mode) => {
   const color = colors[theme];

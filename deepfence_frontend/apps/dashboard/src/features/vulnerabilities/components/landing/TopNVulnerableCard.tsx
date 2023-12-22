@@ -75,7 +75,7 @@ function getChartOptions({
       confine: true,
       borderWidth: 0,
       borderRadius: 5,
-      backgroundColor: '#000',
+      backgroundColor: preset.theme.extend.colors.bg.page,
       textStyle: {
         color: preset.theme.extend.colors.text['input-value'],
         fontSize: '13px',

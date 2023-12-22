@@ -16,7 +16,7 @@ import { TopNSecretCard } from '@/features/secrets/components/landing/TopNSecret
 const Secret = () => {
   return (
     <div>
-      <div className="dark:bg-bg-breadcrumb-bar py-2 px-4">
+      <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4 flex items-center">
         <Breadcrumb>
           <BreadcrumbLink icon={<SecretsIcon />} className="dark:text-text-input-value">
             Secrets

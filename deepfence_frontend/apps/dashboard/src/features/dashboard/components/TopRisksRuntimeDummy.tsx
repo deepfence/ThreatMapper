@@ -5,7 +5,7 @@ import { DFLink } from '@/components/DFLink';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { ECOption, ReactECharts } from '@/components/ReactEcharts';
 import { AlertIcon } from '@/components/sideNavigation/icons/Alert';
-import { SEVERITY_COLORS } from '@/constants/charts';
+import { getSeverityColorMap } from '@/constants/charts';
 import { CardHeader } from '@/features/dashboard/components/CardHeader';
 import { RuntimeIncidentsCheckIcon } from '@/features/dashboard/components/images/RuntimeIncidentCheck';
 import { useTheme } from '@/theme/ThemeContext';
@@ -84,11 +84,11 @@ const DummyDonutChart = () => {
         },
         silent: true,
         color: [
-          SEVERITY_COLORS['critical'],
-          SEVERITY_COLORS['high'],
-          SEVERITY_COLORS['medium'],
-          SEVERITY_COLORS['low'],
-          SEVERITY_COLORS['unknown'],
+          getSeverityColorMap(mode)['critical'],
+          getSeverityColorMap(mode)['high'],
+          getSeverityColorMap(mode)['medium'],
+          getSeverityColorMap(mode)['low'],
+          getSeverityColorMap(mode)['unknown'],
         ],
       },
     ],
