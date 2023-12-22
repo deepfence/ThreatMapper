@@ -194,11 +194,9 @@ func processIntegrationRow(integrationRow postgresql_db.Integration, ctx context
 	case utils.ScanTypeDetectedNode[utils.NEO4JMalwareScan]:
 		return processIntegration[model.Malware](ctx, task, integrationRow)
 	case utils.ScanTypeDetectedNode[utils.NEO4JComplianceScan]:
-		err1 := processIntegration[model.Compliance](ctx, task, integrationRow)
-		// cloud compliance scans
-		integrationRow.Resource = utils.ScanTypeDetectedNode[utils.NEO4JCloudComplianceScan]
-		err2 := processIntegration[model.CloudCompliance](ctx, task, integrationRow)
-		return errors.Join(err1, err2)
+		return processIntegration[model.Compliance](ctx, task, integrationRow)
+	case utils.ScanTypeDetectedNode[utils.NEO4JCloudComplianceScan]:
+		return processIntegration[model.CloudCompliance](ctx, task, integrationRow)
 	}
 	return errors.New("No integration type")
 }
