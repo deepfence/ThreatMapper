@@ -6,9 +6,10 @@ import { Card, CircleSpinner } from 'ui-components';
 import { ECOption, ReactECharts } from '@/components/ReactEcharts';
 import { SeverityLegend } from '@/components/SeverityBadge';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
-import { SEVERITY_COLORS } from '@/constants/charts';
+import { getSeverityColorMap } from '@/constants/charts';
 import { CardHeader } from '@/features/vulnerabilities/components/landing/CardHeader';
 import { queries } from '@/queries';
+import { Mode, useTheme } from '@/theme/ThemeContext';
 import { VulnerabilitySeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -16,9 +17,11 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 function getChartOptions({
   data,
   total,
+  theme,
 }: {
   data: { [key: string]: number };
   total: number;
+  theme: Mode;
 }) {
   const option: ECOption = {
     backgroundColor: 'transparent',
@@ -53,13 +56,12 @@ function getChartOptions({
         data: Object.keys(data)
           .filter((key) => data[key] > 0)
           .map((key) => {
+            const colorMap = getSeverityColorMap(theme);
             return {
               value: data[key],
               name: key,
               itemStyle: {
-                color:
-                  SEVERITY_COLORS[key as VulnerabilitySeverityType] ??
-                  SEVERITY_COLORS['unknown'],
+                color: colorMap[key as VulnerabilitySeverityType] ?? colorMap['unknown'],
               },
             };
           }),
@@ -145,9 +147,11 @@ const CardContent = ({
   data: VulnerabilitiesCountsCardData;
   to: string;
 }) => {
+  const { mode } = useTheme();
   const chartOptions = getChartOptions({
     data: data.severityBreakdown,
     total: data.total,
+    theme: mode,
   });
 
   const { navigate } = usePageNavigation();
@@ -156,7 +160,7 @@ const CardContent = ({
     <div className="flex-1 flex flex-col items-center">
       <div className="max-w-[200px] max-h-[200px] h-[200px] w-[200px] mt-6">
         <ReactECharts
-          theme="dark"
+          theme={mode}
           option={chartOptions}
           onChartClick={({ name }: { name: string; value: string | number | Date }) => {
             navigate(`${to}?severity=${name.toLowerCase()}`);

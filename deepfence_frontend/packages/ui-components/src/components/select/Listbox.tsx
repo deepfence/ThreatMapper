@@ -350,7 +350,7 @@ export function ListboxOption<TType>({
           'pt-2 pb-1 px-2',
           'flex gap-1.5',
           'cursor-pointer',
-          'hover:bg-bg-grid-header',
+          'hover:bg-bg-hover-2',
           {
             'bg-bg-grid-header': active,
             'bg-bg-active-selection text-text-input-value': selected,

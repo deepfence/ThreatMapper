@@ -551,6 +551,15 @@ const colors = {
       warning: '#ff9c32',
       info: '#1d8ee6',
     },
+    chart: {
+      critical: preset.theme.extend.colors.status.error,
+      high: preset.theme.extend.colors.chart.orange,
+      medium: preset.theme.extend.colors.status.warning,
+      low: preset.theme.extend.colors.chart.yellow1,
+      unknown: preset.theme.extend.colors['df-gray'][600],
+      axisLabel: preset.theme.extend.colors['df-gray'][400],
+      splitLine: preset.theme.extend.colors['df-gray'][900],
+    },
   },
   light: {
     brand: {
@@ -591,6 +600,15 @@ const colors = {
       error: '#c81e1e',
       warning: '#e3a008',
       info: '#1d8ee6',
+    },
+    chart: {
+      critical: preset.theme.extend.colors.status.error,
+      high: preset.theme.extend.colors.chart.orange,
+      medium: preset.theme.extend.colors.status.warning,
+      low: preset.theme.extend.colors.chart.yellow1,
+      unknown: preset.theme.extend.colors['df-gray'][400],
+      axisLabel: preset.theme.extend.colors['df-gray'][600],
+      splitLine: preset.theme.extend.colors['df-gray'][100],
     },
   },
   clarity: {

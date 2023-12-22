@@ -1,5 +1,6 @@
-import { preset } from 'tailwind-preset';
+import { colors, preset } from 'tailwind-preset';
 
+import { Mode } from '@/theme/ThemeContext';
 import { PostureSeverityType, VulnerabilitySeverityType } from '@/types/common';
 
 export const SEVERITY_COLORS: {
@@ -10,6 +11,17 @@ export const SEVERITY_COLORS: {
   medium: preset.theme.extend.colors.status.warning,
   low: preset.theme.extend.colors.chart.yellow1,
   unknown: preset.theme.extend.colors['df-gray'][600],
+};
+
+export const getSeverityColorMap = (theme: Mode) => {
+  const color = colors[theme];
+  return {
+    critical: color.chart.critical,
+    high: color.chart.high,
+    medium: color.chart.medium,
+    low: color.chart.low,
+    unknown: color.chart.unknown,
+  };
 };
 
 export function getColorForCVSSScore(score: number | undefined): string {
@@ -35,9 +47,12 @@ export const POSTURE_STATUS_COLORS: {
   delete: preset.theme.extend.colors.chart.red,
 };
 
-export function getColorForCompliancePercent(percent: number | undefined | null): string {
+export function getColorForCompliancePercent(
+  theme: Mode,
+  percent: number | undefined | null,
+): string {
   if (percent === undefined || percent === null) {
-    return preset.theme.extend.colors['df-gray'][600];
+    return colors[theme].chart.unknown;
   }
   if (percent >= 80 && percent <= 100) {
     return preset.theme.extend.colors.status.success;
@@ -46,5 +61,5 @@ export function getColorForCompliancePercent(percent: number | undefined | null)
   } else if (percent < 30) {
     return preset.theme.extend.colors.status.error;
   }
-  return preset.theme.extend.colors['df-gray'][600];
+  return colors[theme].chart.unknown;
 }

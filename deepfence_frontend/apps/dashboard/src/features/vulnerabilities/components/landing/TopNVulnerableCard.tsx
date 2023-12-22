@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { truncate } from 'lodash-es';
 import { Suspense } from 'react';
-import { preset } from 'tailwind-preset';
+import { colors, preset } from 'tailwind-preset';
 import { Card, CircleSpinner } from 'ui-components';
 
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
@@ -9,9 +9,10 @@ import { ContainerIcon } from '@/components/icons/container';
 import { HostIcon } from '@/components/icons/host';
 import { ImageIcon } from '@/components/icons/image';
 import { ReactECharts, ReactEChartsProps } from '@/components/ReactEcharts';
-import { SEVERITY_COLORS } from '@/constants/charts';
+import { getSeverityColorMap } from '@/constants/charts';
 import { CardHeader } from '@/features/vulnerabilities/components/landing/CardHeader';
 import { queries } from '@/queries';
+import { Mode, useTheme } from '@/theme/ThemeContext';
 
 export interface TopNVulnerableChartData {
   name: string;
@@ -22,7 +23,13 @@ export interface TopNVulnerableChartData {
   unknown: number;
 }
 
-function getChartOptions({ data }: { data: TopNVulnerableChartData[] }) {
+function getChartOptions({
+  data,
+  theme,
+}: {
+  data: TopNVulnerableChartData[];
+  theme: Mode;
+}) {
   return {
     backgroundColor: 'transparent',
     title: {
@@ -88,12 +95,12 @@ function getChartOptions({ data }: { data: TopNVulnerableChartData[] }) {
       type: 'value',
       splitLine: {
         lineStyle: {
-          color: preset.theme.extend.colors['df-gray'][900],
+          color: colors[theme].chart.splitLine,
         },
       },
       axisLabel: {
         fontWeight: 600,
-        color: preset.theme.extend.colors['df-gray']['600'],
+        color: colors[theme].chart.axisLabel,
       },
     },
     yAxis: {
@@ -116,35 +123,35 @@ function getChartOptions({ data }: { data: TopNVulnerableChartData[] }) {
       {
         type: 'bar',
         stack: 'total',
-        color: SEVERITY_COLORS['critical'],
+        color: getSeverityColorMap(theme)['critical'],
         cursor: 'default',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
-        color: SEVERITY_COLORS['high'],
+        color: getSeverityColorMap(theme)['high'],
         cursor: 'default',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
-        color: SEVERITY_COLORS['medium'],
+        color: getSeverityColorMap(theme)['medium'],
         cursor: 'default',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
-        color: SEVERITY_COLORS['low'],
+        color: getSeverityColorMap(theme)['low'],
         cursor: 'default',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
-        color: SEVERITY_COLORS['unknown'],
+        color: getSeverityColorMap(theme)['unknown'],
         cursor: 'default',
         barMaxWidth: 20,
       },
@@ -198,7 +205,8 @@ const TopNCardContent = ({ type }: { type: 'host' | 'container' | 'image' }) => 
   const { data } = useSuspenseQuery({
     ...queries.vulnerability.top5VulnerableAssets({ nodeType: type }),
   });
-  const chartOptions = getChartOptions({ data: data });
+  const { mode } = useTheme();
+  const chartOptions = getChartOptions({ data: data, theme: mode });
 
   return (
     <div className="pb-3 pt-5 px-5 h-[300px] flex items-center justify-center">

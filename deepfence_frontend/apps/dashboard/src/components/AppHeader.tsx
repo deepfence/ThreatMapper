@@ -1,14 +1,18 @@
 import { useFetcher, useRouteLoaderData } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
-import { Dropdown, DropdownItem } from 'ui-components';
+import { Button, Dropdown, DropdownItem } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { AutoRefresh } from '@/components/header/AutoRefresh';
 import { CaretDown } from '@/components/icons/common/CaretDown';
+import { ThemeDarkIcon } from '@/components/icons/common/ThemeDarkIcon';
+import { ThemeLightIcon } from '@/components/icons/common/ThemeLightIcon';
 import { UserLine } from '@/components/icons/common/UserLine';
+import { useTheme } from '@/theme/ThemeContext';
 
 export function AppHeader() {
   const fetcher = useFetcher();
+  const { setMode, mode } = useTheme();
   const { email } = useRouteLoaderData('root') as { email: string };
   return (
     <header
@@ -37,6 +41,20 @@ export function AppHeader() {
           </DFLink>
         </div>
         <div className="flex items-center gap-[18px] mr-6">
+          <div className="text-text-text-and-icon">
+            <Button
+              startIcon={mode === 'light' ? <ThemeDarkIcon /> : <ThemeLightIcon />}
+              variant="flat"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setMode(mode === 'light' ? 'dark' : 'light');
+              }}
+            >
+              {mode === 'light' ? 'Dark' : 'Light'}
+            </Button>
+          </div>
+          <div className="h-[16px] w-[1px] bg-bg-grid-border" />
           <AutoRefresh />
 
           <div className="h-[16px] w-[1px] bg-bg-grid-border" />

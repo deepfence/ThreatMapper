@@ -93,18 +93,18 @@ export const SeverityLegend = ({
   return (
     <div
       className={cn(
-        'flex items-center gap-2 flex-nowrap text-p7 dark:text-text-text-and-icon capitalize',
+        'flex items-center gap-2 flex-nowrap text-p7 text-text-text-and-icon capitalize',
         className,
       )}
     >
       <div
         className={cn(
-          'rounded-full h-3 w-3 shrink-0 dark:bg-df-gray-500',
+          'rounded-full h-3 w-3 shrink-0 dark:bg-df-gray-500 bg-df-gray-600',
           {
-            'dark:bg-status-error': severity === 'critical',
-            'dark:bg-chart-orange': severity === 'high',
-            'dark:bg-status-warning': severity === 'medium',
-            'dark:bg-chart-yellow1': severity === 'low',
+            'bg-status-error': severity === 'critical',
+            'bg-chart-orange text-text-input-value': severity === 'high',
+            'bg-status-warning text-text-input-value': severity === 'medium',
+            'bg-chart-yellow1 text-text-input-value': severity === 'low',
           },
           iconClassName,
         )}

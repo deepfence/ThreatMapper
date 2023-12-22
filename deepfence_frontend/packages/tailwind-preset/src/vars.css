@@ -6,7 +6,7 @@
     --text-text-and-icon: #565656;
     --text-input-value: #000000;
     --text-text-inverse: #ffffff;
-    --text-link: #1c64f2;
+    --text-link: #056699;
     --accent-accent: #0079b8;
     --bg-page: #f6f9ff;
     --bg-grid-border: #e5e7eb;
@@ -20,9 +20,9 @@
     --bg-map-cluster: #183867;
     --bg-card: #ffffff;
     --bg-map-node: #1b365e;
-    --bg-active-selection: #d9e4ea;
+    --bg-active-selection: #e4ecf2;
     --bg-hover-1: #0072a3;
-    --bg-hover-2: #f9fafb;
+    --bg-hover-2: #edf0f3;
     --bg-hover-3: #0099e9;
     --bg-side-panel: #fefefe;
     --status-success: #3c8500;

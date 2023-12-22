@@ -7,7 +7,7 @@ import { SettingNavigation } from '@/features/settings/components/SettingNavigat
 const Settings = () => {
   return (
     <>
-      <div className="dark:bg-bg-breadcrumb-bar py-2 px-4">
+      <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4">
         <Breadcrumb>
           <BreadcrumbLink icon={<SettingsIcon />} className="dark:text-text-input-value">
             Settings

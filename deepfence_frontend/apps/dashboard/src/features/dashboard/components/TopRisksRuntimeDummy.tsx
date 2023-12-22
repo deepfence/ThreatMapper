@@ -8,6 +8,7 @@ import { AlertIcon } from '@/components/sideNavigation/icons/Alert';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { CardHeader } from '@/features/dashboard/components/CardHeader';
 import { RuntimeIncidentsCheckIcon } from '@/features/dashboard/components/images/RuntimeIncidentCheck';
+import { useTheme } from '@/theme/ThemeContext';
 
 export const TopRisksRuntimeDummy = () => {
   return (
@@ -22,8 +23,8 @@ export const TopRisksRuntimeDummy = () => {
             <RuntimeIncidentsCheckIcon />
           </div>
         </div>
-        <div className="text-h3 dark:text-text-input-value">Runtime Protection</div>
-        <div className="px-6 pt-1 text-center text-p1 dark:text-text-text-and-icon">
+        <div className="text-h3 ext-text-input-value">Runtime Protection</div>
+        <div className="px-6 pt-1 text-center text-p1 text-text-text-and-icon">
           Extend ThreatMapper with runtime attack analysis, threat assessment, and
           targeted protection for your applications. Scalable, supported, and ready for
           action!
@@ -44,6 +45,7 @@ export const TopRisksRuntimeDummy = () => {
 };
 
 const DummyDonutChart = () => {
+  const { mode } = useTheme();
   const data: { [x: string]: number } = {
     critical: 100,
     high: 50,
@@ -91,5 +93,5 @@ const DummyDonutChart = () => {
       },
     ],
   };
-  return <ReactECharts theme="dark" option={option} />;
+  return <ReactECharts theme={mode} option={option} />;
 };

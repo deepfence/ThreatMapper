@@ -172,7 +172,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           // border
                           'border border-bg-grid-border rounded-[5px]',
                           // bg
-                          'bg-bg-card hover:bg-bg-active-selection',
+                          'bg-bg-card dark:hover:bg-bg-active-selection hover:bg-bg-hover-2',
                           'text-p7 text-text-text-and-icon',
                           'py-[7px] px-3',
                           {
@@ -359,7 +359,7 @@ export function ComboboxOption<TType>({
           'pt-1.5 pb-1.5 px-3',
           'flex gap-1.5',
           'cursor-pointer',
-          'hover:bg-bg-grid-header',
+          'hover:bg-bg-hover-2',
           {
             'bg-bg-grid-header': active,
             'bg-bg-active-selection text-text-input-value': selected,

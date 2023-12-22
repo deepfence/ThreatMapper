@@ -119,7 +119,7 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
         'transition-[width]',
         'fixed left-0 z-10 scrolling-touch',
         'border-r border-bg-top-header',
-        'shadow-[0px_2px_4px_-2px_rgba(0,0,0,0.05),0px_4px_6px_-1px_rgba(0,0,0,0.10)]',
+        'dark:shadow-none shadow-md',
       )}
       style={{
         top: '56px',
@@ -304,7 +304,7 @@ const MenuItemLink = ({
 }) => {
   const linkClass = cn(
     'text-h4 text-text-text-and-icon py-3 px-5',
-    'hover:bg-bg-breadcrumb-bar',
+    'dark:hover:bg-bg-breadcrumb-bar hover:bg-bg-hover-2',
     'flex items-center gap-5 whitespace-nowrap relative',
     'h-12 w-full',
   );

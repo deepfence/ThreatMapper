@@ -8,8 +8,6 @@ import { useThemeMode } from '@/theme/ThemeContext';
 
 export const TopAttackPaths = () => {
   const { mode } = useThemeMode();
-  console.log('mode', mode);
-
   const gradient =
     mode === 'light'
       ? ''

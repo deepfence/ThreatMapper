@@ -66,6 +66,7 @@ import {
 } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import {
   ComplianceScanNodeTypeEnum,
   isCloudNode,
@@ -697,6 +698,7 @@ const AccountTable = ({
   rowSelectionState: RowSelectionState;
   onTableAction: (ids: string[], actionType: ActionEnumType) => void;
 }) => {
+  const { mode: theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = usePostureAccounts();
 
@@ -840,7 +842,7 @@ const AccountTable = ({
             return (
               <span
                 style={{
-                  color: getColorForCompliancePercent(percent),
+                  color: getColorForCompliancePercent(theme, percent),
                 }}
               >
                 {formatPercentage(percent, {

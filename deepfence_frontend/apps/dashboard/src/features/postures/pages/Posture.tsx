@@ -9,6 +9,7 @@ import { ComplianceIconByPercent, PostureLogos } from '@/components/icons/postur
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { getColorForCompliancePercent } from '@/constants/charts';
 import { queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import { abbreviateNumber, formatPercentage } from '@/utils/number';
 
 export const providersToNameMapping: { [key: string]: string } = {
@@ -107,7 +108,7 @@ const CardHeader = ({ name }: { name: string }) => {
 };
 const CardIconSection = ({ provider }: { provider: ModelPostureProvider }) => {
   const isScanned = provider.scan_count && provider.scan_count >= 0;
-
+  const { mode: theme } = useTheme();
   return (
     <div
       className={cn('flex flex-col self-start w-fit ml-[15px]', {
@@ -117,7 +118,7 @@ const CardIconSection = ({ provider }: { provider: ModelPostureProvider }) => {
       <span className="text-p7 leading-6 dark:text-text-text-and-icon">Compliance</span>
       <div
         style={{
-          color: getColorForCompliancePercent(provider.compliance_percentage),
+          color: getColorForCompliancePercent(theme, provider.compliance_percentage),
         }}
         className={cn('my-1.5', {
           'h-6 w-6 shrink-0': isScanned,
@@ -130,7 +131,7 @@ const CardIconSection = ({ provider }: { provider: ModelPostureProvider }) => {
       <span
         className="text-h2"
         style={{
-          color: getColorForCompliancePercent(provider.compliance_percentage),
+          color: getColorForCompliancePercent(theme, provider.compliance_percentage),
         }}
       >
         {isScanned ? (
