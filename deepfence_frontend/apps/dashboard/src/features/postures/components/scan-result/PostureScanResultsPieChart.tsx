@@ -1,11 +1,18 @@
 import { preset } from 'tailwind-preset';
 
 import { ECOption, ReactECharts } from '@/components/ReactEcharts';
-import { POSTURE_STATUS_COLORS } from '@/constants/charts';
+import { getPostureColor } from '@/constants/charts';
+import { Mode, useTheme } from '@/theme/ThemeContext';
 import { PostureSeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
 
-function getChartOptions({ data }: { data: { [key: string]: number } }) {
+function getChartOptions({
+  data,
+  theme,
+}: {
+  data: { [key: string]: number };
+  theme: Mode;
+}) {
   const option: ECOption = {
     backgroundColor: 'transparent',
     tooltip: {
@@ -48,8 +55,8 @@ function getChartOptions({ data }: { data: { [key: string]: number } }) {
               name: key,
               itemStyle: {
                 color:
-                  POSTURE_STATUS_COLORS[key as PostureSeverityType] ??
-                  POSTURE_STATUS_COLORS['skip'],
+                  getPostureColor(theme)[key as PostureSeverityType] ??
+                  getPostureColor(theme)['skip'],
               },
             };
           }),
@@ -66,9 +73,10 @@ export const PostureScanResultsPieChart = ({
   data: { [key: string]: number };
   onChartClick: (data: { name: string; value: string | number | Date }) => void;
 }) => {
+  const { mode } = useTheme();
   if (!data) {
     return null;
   }
-  const options = getChartOptions({ data });
+  const options = getChartOptions({ data, theme: mode });
   return <ReactECharts theme="dark" option={options} onChartClick={onChartClick} />;
 };

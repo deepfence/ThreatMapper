@@ -52,7 +52,7 @@ const Header = ({
 
   return (
     <SlidingModalHeader>
-      <div className="pt-5 px-5 dark:bg-[linear-gradient(to_bottom,_#15253e_96px,_transparent_0)]">
+      <div className="pt-5 px-5 dark:bg-[linear-gradient(to_bottom,_#15253e_96px,_transparent_0)] bg-[linear-gradient(to_bottom,_#f6f7f9_96px,_transparent_0)]">
         <div className="flex items-center gap-2 dark:text-text-text-and-icon pr-8">
           <div className="h-4 w-4 shrink-0">
             <PostureIcon />

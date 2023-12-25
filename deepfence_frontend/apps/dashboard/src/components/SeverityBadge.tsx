@@ -3,7 +3,8 @@ import { cn } from 'tailwind-preset';
 
 import { DFLink } from '@/components/DFLink';
 import { SeverityScoreIcon } from '@/components/icons/common/SeverityScore';
-import { getColorForCVSSScore, POSTURE_STATUS_COLORS } from '@/constants/charts';
+import { getColorForCVSSScore, getPostureColor } from '@/constants/charts';
+import { useTheme } from '@/theme/ThemeContext';
 import { PostureSeverityType } from '@/types/common';
 
 export const SeverityBadge = ({
@@ -40,15 +41,19 @@ export const PostureStatusBadge = ({
   status: PostureSeverityType;
   className?: string;
 }) => {
+  const { mode } = useTheme();
   return (
     <div
       className={cn(
-        'flex items-center capitalize justify-center font-semibold leading-4 text-[11px] dark:text-text-text-inverse py-0.5 max-w-[62px] min-w-[62px]',
-        'dark:bg-df-gray-500 rounded-[5px]',
+        'flex items-center capitalize justify-center font-semibold leading-4 text-[11px] dark:text-text-text-inverse text-text-input-value py-0.5 max-w-[62px] min-w-[62px]',
+        'bg-df-gray-500 rounded-[5px]',
+        {
+          'text-text-text-inverse': status === 'alarm' || status === 'delete',
+        },
         className,
       )}
       style={{
-        backgroundColor: POSTURE_STATUS_COLORS[status],
+        backgroundColor: getPostureColor(mode)[status],
       }}
     >
       {status}

@@ -76,7 +76,7 @@ const CardSkeleton = ({ count }: { count: number }) => {
     <>
       {Array.from(Array(count).keys()).map((k) => (
         <Card
-          className="p-2 animate-pulse items-center gap-2 dark:bg-bg-card min-w-[322px]"
+          className="p-2 animate-pulse items-center gap-2 bg-bg-card min-w-[322px]"
           key={k}
         >
           <HeaderSkeleton />
@@ -94,13 +94,13 @@ const CardSkeleton = ({ count }: { count: number }) => {
 const CardHeader = ({ name }: { name: string }) => {
   return (
     <div className="flex items-center w-full relative">
-      <div className="dark:bg-bg-grid-default absolute -top-[34px] left-[12px] rounded-full p-3">
+      <div className="dark:bg-bg-grid-default bg-bg-hover-2 absolute -top-[34px] left-[12px] rounded-full p-3">
         <span className="w-10 h-10 block">
           <PostureLogos name={name} />
         </span>
       </div>
 
-      <span className="ml-[122px] flex items-center gap-2 text-t4 uppercase dark:text-text-input-value pt-1">
+      <span className="ml-[122px] flex items-center gap-2 text-t4 uppercase text-text-input-value pt-1">
         {providersToNameMapping[name]}
       </span>
     </div>
@@ -115,7 +115,7 @@ const CardIconSection = ({ provider }: { provider: ModelPostureProvider }) => {
         'items-center': isScanned,
       })}
     >
-      <span className="text-p7 leading-6 dark:text-text-text-and-icon">Compliance</span>
+      <span className="text-p7 leading-6 text-text-text-and-icon">Compliance</span>
       <div
         style={{
           color: getColorForCompliancePercent(theme, provider.compliance_percentage),
@@ -139,9 +139,7 @@ const CardIconSection = ({ provider }: { provider: ModelPostureProvider }) => {
             maximumFractionDigits: 1,
           })}`
         ) : (
-          <span className="text-p7 leading-6 dark:text-text-input-value">
-            Not scanned
-          </span>
+          <span className="text-p7 leading-6 text-text-input-value">Not scanned</span>
         )}
       </span>
     </div>
@@ -149,8 +147,8 @@ const CardIconSection = ({ provider }: { provider: ModelPostureProvider }) => {
 };
 
 const CardCountSection = ({ provider }: { provider: ModelPostureProvider }) => {
-  const textStyle = 'text-p7 leading-6 dark:text-text-text-and-icon min-w-[120px]';
-  const countStyle = 'text-h3 dark:text-text-input-value';
+  const textStyle = 'text-p7 leading-6 text-text-text-and-icon min-w-[120px]';
+  const countStyle = 'text-h3 text-text-input-value';
   return (
     <div className="ml-[42px]">
       <div className="flex gap-x-6">
@@ -212,10 +210,10 @@ const PostureCard = ({ provider }: { provider: ModelPostureProvider }) => {
   return (
     <Card
       className={cn(
-        'relative group pt-2 pb-3 flex flex-col dark:bg-bg-card dark:hover:shadow-[0px_0px_6px_1px_#044AFF]',
-        'hover:outline outline-2 dark:outline-bg-hover-3',
+        'relative group pt-2 pb-3 flex flex-col bg-bg-card hover:shadow-[0px_0px_6px_1px_#044AFF]',
+        'hover:outline outline-2 outline-bg-hover-3',
         "before:content-none hover:before:content-[''] before:w-[68px] before:h-[68px]",
-        'dark:before:bg-bg-hover-3 dark:before:shadow-[0px_0px_7px_-1px_#044AFF] before:absolute before:-top-[28px]',
+        'before:bg-bg-hover-3 before:shadow-[0px_0px_7px_-1px_#044AFF] before:absolute before:-top-[28px]',
         'before:left-[10px] before:rounded-full before:-z-10 cursor-pointer',
       )}
     >
@@ -271,9 +269,9 @@ const PosturenNonCloudList = () => {
 const Posture = () => {
   return (
     <>
-      <div className="dark:bg-bg-breadcrumb-bar py-2 px-4">
+      <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4">
         <Breadcrumb>
-          <BreadcrumbLink icon={<PostureIcon />} className="dark:text-text-input-value">
+          <BreadcrumbLink icon={<PostureIcon />} className="text-text-input-value">
             Posture
           </BreadcrumbLink>
         </Breadcrumb>
@@ -285,7 +283,7 @@ const Posture = () => {
               <div className="flex gap-x-4">
                 <CardSkeleton count={3} />
               </div>
-              <Separator className="dark:bg-bg-grid-border h-px w-full" />
+              <Separator className="bg-bg-grid-border h-px w-full" />
               <div className="mt-8 flex gap-x-4">
                 <CardSkeleton count={2} />
               </div>
@@ -293,7 +291,7 @@ const Posture = () => {
           }
         >
           <PostureCloudList />
-          <Separator className="dark:bg-bg-grid-border h-px w-full" />
+          <Separator className="bg-bg-grid-border h-px w-full" />
           <div className="mt-6 flex gap-x-4">
             <PosturenNonCloudList />
           </div>

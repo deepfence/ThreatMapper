@@ -7,11 +7,11 @@ import { Card, CircleSpinner } from 'ui-components';
 import { DFLink } from '@/components/DFLink';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
-import { getSeverityColorMap, POSTURE_STATUS_COLORS } from '@/constants/charts';
+import { getPostureColor, getSeverityColorMap } from '@/constants/charts';
 import { ScanResultChart } from '@/features/topology/components/scan-results/ScanResultChart';
 import { queries } from '@/queries';
 import { Mode, useTheme } from '@/theme/ThemeContext';
-import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
+import { PostureSeverityType, ScanTypeEnum, SecretSeverityType } from '@/types/common';
 import { sortBySeverity } from '@/utils/array';
 import { formatToRelativeTimeFromNow } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
@@ -65,7 +65,7 @@ const getSeriesOption = (
         value: counts[key],
         color:
           getSeverityColorMap(theme)[key as SecretSeverityType] ??
-          POSTURE_STATUS_COLORS[key as keyof typeof POSTURE_STATUS_COLORS] ??
+          getPostureColor(theme)[key as PostureSeverityType] ??
           '',
       };
     }),

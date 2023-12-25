@@ -23,18 +23,19 @@ export function getColorForCVSSScore(score: number | undefined): string {
   return preset.theme.extend.colors['df-gray'][600];
 }
 
-export const POSTURE_STATUS_COLORS: {
-  [x in PostureSeverityType]: string;
-} = {
-  alarm: preset.theme.extend.colors.status.error,
-  info: preset.theme.extend.colors.status.info,
-  ok: preset.theme.extend.colors.status.success,
-  skip: preset.theme.extend.colors['df-gray'][600],
+export const getPostureColor = (theme: Mode) => {
+  const color = colors[theme];
+  return {
+    alarm: color.status.error,
+    info: color.status.info,
+    ok: color.status.success,
+    skip: color.chart.unknown,
 
-  pass: preset.theme.extend.colors.status.success,
-  warn: preset.theme.extend.colors.status.warning,
-  note: preset.theme.extend.colors['df-gray'][600],
-  delete: preset.theme.extend.colors.chart.red,
+    pass: color.status.success,
+    warn: color.status.warning,
+    note: color.chart.unknown,
+    delete: color.status.error,
+  };
 };
 
 export function getColorForCompliancePercent(

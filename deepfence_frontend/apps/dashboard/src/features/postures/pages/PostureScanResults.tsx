@@ -70,13 +70,14 @@ import {
 import { PostureStatusBadge } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { TruncatedText } from '@/components/TruncatedText';
-import { POSTURE_STATUS_COLORS } from '@/constants/charts';
+import { getPostureColor } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { PostureScanResultsPieChart } from '@/features/postures/components/scan-result/PostureScanResultsPieChart';
 import { PosturesCompare } from '@/features/postures/components/scan-result/PosturesCompare';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import {
   ComplianceScanNodeTypeEnum,
   PostureSeverityType,
@@ -548,7 +549,7 @@ const NotifyModal = ({
 const ScanHistory = () => {
   return (
     <div className="flex items-center h-12">
-      <span className="h-3.5 w-3.5 dark:text-text-input-value">
+      <span className="h-3.5 w-3.5 text-text-input-value">
         <ClockLineIcon />
       </span>
       <span className="pl-2 pr-3 text-t3 text-text-text-and-icon uppercase">
@@ -556,9 +557,7 @@ const ScanHistory = () => {
       </span>
       <Suspense
         fallback={
-          <div className="dark:text-text-text-and-icon text-p9">
-            Fetching scan history...
-          </div>
+          <div className="text-text-text-and-icon text-p9">Fetching scan history...</div>
         }
       >
         <HistoryControls />
@@ -1468,7 +1467,7 @@ const PostureTable = ({
 
 const Header = () => {
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<PostureIcon />} isLink>
@@ -1524,6 +1523,7 @@ const StatusesCount = ({
     [k: string]: number;
   };
 }) => {
+  const { mode } = useTheme();
   const [, setSearchParams] = useSearchParams();
 
   return (
@@ -1550,7 +1550,7 @@ const StatusesCount = ({
                   className="h-4 w-4 rounded-full"
                   style={{
                     backgroundColor:
-                      POSTURE_STATUS_COLORS[key.toLowerCase() as PostureSeverityType],
+                      getPostureColor(mode)[key.toLowerCase() as PostureSeverityType],
                   }}
                 ></span>
                 <span className="text-h1 dark:text-text-input-value pl-1.5">
