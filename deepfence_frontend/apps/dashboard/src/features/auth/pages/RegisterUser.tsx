@@ -95,9 +95,7 @@ export const RegisterUser = () => {
       </div>
 
       {data?.error && (
-        <div className={`text-center mt-1.5 dark:text-status-error text-p7`}>
-          {data.error}
-        </div>
+        <div className={`text-center mt-1.5 text-status-error text-p7`}>{data.error}</div>
       )}
 
       <div

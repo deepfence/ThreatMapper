@@ -335,7 +335,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -376,7 +376,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
           <div className="flex items-center justify-right gap-4"></div>
         </div>
@@ -421,7 +421,7 @@ const DeleteScanConfirmationModal = ({
       size="s"
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -462,7 +462,7 @@ const DeleteScanConfirmationModal = ({
             Are you sure you want to delete this scan? This action cannot be undone.
           </span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (
@@ -520,9 +520,7 @@ const NotifyModal = ({
               <Checkbox label="Yes notify them separately" name="notifyIndividual" />
             </div>
             {fetcher.data?.message && (
-              <p className="mt-2 text-p7 dark:text-status-error">
-                {fetcher.data?.message}
-              </p>
+              <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
             )}
           </div>
           <div className={'flex gap-x-3 justify-end pt-3 mx-2'}>
@@ -841,7 +839,7 @@ const ActionDropdown = ({
               setIdsToDelete(ids);
               setShowDeleteDialog(true);
             }}
-            className="dark:text-status-error dark:hover:text-[#C45268]"
+            className="text-status-error hover:text-[#C45268]"
           >
             Delete
           </DropdownItem>

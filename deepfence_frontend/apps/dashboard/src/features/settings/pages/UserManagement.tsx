@@ -322,7 +322,7 @@ const ActionDropdown = ({
               onClick={() => {
                 setShowDeleteDialog(true);
               }}
-              className="dark:text-status-error dark:hover:text-[#C45268]"
+              className="text-status-error hover:text-[#C45268]"
             >
               Delete
             </DropdownItem>
@@ -370,7 +370,7 @@ const InviteUserModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+        <div className="text-h3 text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar bg-[#f6f7f9]">
           Invite user
         </div>
       </SlidingModalHeader>
@@ -379,7 +379,7 @@ const InviteUserModal = ({
         {data?.success && data?.successMessage ? (
           <SuccessModalContent text={data?.successMessage}>
             {data?.invite_url && (
-              <p className={`my-4 text-p7 dark:text-status-success`}>
+              <p className={`my-4 text-p7 text-status-success`}>
                 {data?.invite_url} , invite will expire after {data?.invite_expiry_hours}{' '}
                 hours
               </p>
@@ -422,7 +422,7 @@ const InviteUserModal = ({
             </Listbox>
 
             {!data?.success && data?.message && (
-              <div className={`dark:text-status-error text-p7`}>
+              <div className={`text-status-error text-p7`}>
                 <span>{data?.message}</span>
               </div>
             )}
@@ -492,7 +492,7 @@ const EditUserModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+        <div className="text-h3 text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar bg-[#f6f7f9]">
           Update user
         </div>
       </SlidingModalHeader>
@@ -575,7 +575,7 @@ const EditUserModal = ({
               <ListboxOption value="Inactive">Inactive</ListboxOption>
             </Listbox>
             {!data?.success && data?.message && (
-              <p className="dark:text-status-error text-p7">{data.message}</p>
+              <p className="text-status-error text-p7">{data.message}</p>
             )}
 
             <div className="flex gap-x-2 mt-6">
@@ -706,7 +706,7 @@ const CurrentUserInfo = ({
         <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Status</span>
         <span
           className={cn('text-p1 dark:text-text-input-value', {
-            'text-green-500 dark:text-status-success': currentUser?.is_active,
+            'text-status-success': currentUser?.is_active,
             'text-gray-700 dark:text-df-gray-400': !currentUser?.is_active,
           })}
         >
@@ -832,9 +832,9 @@ const UsersTable = () => {
         cell: (cell) => {
           const active = cell.getValue();
           if (active) {
-            return <span className="dark:text-status-success">Yes</span>;
+            return <span className="text-status-success">Yes</span>;
           }
-          return <span className="dark:text-status-error">No</span>;
+          return <span className="text-status-error">No</span>;
         },
         header: () => 'Active',
         minSize: 60,
@@ -848,7 +848,7 @@ const UsersTable = () => {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   if (data?.error?.message) {
-    return <p className="dark:text-status-error text-p7">{data.error.message}</p>;
+    return <p className="text-status-error text-p7">{data.error.message}</p>;
   }
   return (
     <div className="mt-2">
@@ -962,7 +962,7 @@ const DeleteUserConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -1005,7 +1005,7 @@ const DeleteUserConfirmationModal = ({
           <span>Are you sure you want to delete?</span>
           <br />
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (
@@ -1039,7 +1039,7 @@ const ResetAPIKeyConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -1082,7 +1082,7 @@ const ResetAPIKeyConfirmationModal = ({
           <span>Are you sure you want to reset?</span>
           <br />
           {fetcher.data?.message && (
-            <p className="text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
           <div className="flex items-center justify-right gap-4"></div>
         </div>

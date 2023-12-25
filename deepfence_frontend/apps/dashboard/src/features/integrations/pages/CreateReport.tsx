@@ -380,7 +380,7 @@ const ReportForm = () => {
           />
 
           {data?.message ? (
-            <p className="mt-4 text-p7 dark:text-status-error">{data?.message}</p>
+            <p className="mt-4 text-p7 text-status-error">{data?.message}</p>
           ) : null}
 
           <div className="mt-14 flex gap-x-2">

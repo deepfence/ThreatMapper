@@ -257,7 +257,7 @@ const CountCard = ({
   };
   return (
     <Wrapper className="w-full h-full flex-1 max-w-[112px] flex flex-col gap-1.5 dark:bg-bg-card rounded-[5px] p-1.5">
-      <div className="flex gap-1.5 items-center dark:text-status-error">
+      <div className="flex gap-1.5 items-center text-status-error">
         <div className="w-[30px] h-[30px] shrink-0">
           <Logo />
         </div>

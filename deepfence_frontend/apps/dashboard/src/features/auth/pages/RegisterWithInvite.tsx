@@ -151,9 +151,7 @@ const RegisterWithInvite = () => {
         />
       </div>
       {data?.error && (
-        <div className={`text-center mt-1.5 text-p7 dark:text-status-error`}>
-          {data.error}
-        </div>
+        <div className={`text-center mt-1.5 text-p7 text-status-error`}>{data.error}</div>
       )}
       <div
         className={cn('flex flex-col w-full mt-6', {

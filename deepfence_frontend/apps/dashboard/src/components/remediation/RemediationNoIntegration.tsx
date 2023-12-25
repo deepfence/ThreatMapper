@@ -43,12 +43,12 @@ export const RemediationNoIntegration = ({
         </div>
       )}
       {state === 'idle' && data?.success === false && (
-        <div className="text-center text-p2 mt-2 px-6 dark:text-status-error">
+        <div className="text-center text-p2 mt-2 px-6 text-status-error">
           {data.message ?? "Couldn't add integration."}
         </div>
       )}
       {state === 'idle' && data?.success && (
-        <div className="text-center text-p2 mt-2 px-6 dark:text-status-success">
+        <div className="text-center text-p2 mt-2 px-6 text-status-success">
           {data.successMessage ?? 'Integration added successfully.'}
         </div>
       )}

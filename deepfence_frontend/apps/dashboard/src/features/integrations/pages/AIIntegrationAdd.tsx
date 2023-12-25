@@ -213,7 +213,7 @@ const AIIntegrationAdd = () => {
             )}
 
             {fetcher.data?.message && (
-              <p className="dark:text-status-error text-p7">{fetcher.data?.message}</p>
+              <p className="text-status-error text-p7">{fetcher.data?.message}</p>
             )}
 
             <div className="flex gap-x-2 p-1">

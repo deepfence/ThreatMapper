@@ -73,7 +73,7 @@ const AgentVersion = ({
   });
 
   if (data.message && data.message.length) {
-    return <p className="dark:text-status-error text-p7">{data.message}</p>;
+    return <p className="text-status-error text-p7">{data.message}</p>;
   }
 
   return (
@@ -176,7 +176,7 @@ export const UpgrageAgentModal = ({
             <AgentVersion setVersion={setVersion} />
           </Suspense>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (

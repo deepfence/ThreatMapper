@@ -120,10 +120,10 @@ export const ScanInProgressError = () => {
         description={'An error has occurred, please retry.'}
       />
       <div className="flex flex-col items-center">
-        <span className="w-[70px] h-[70px] dark:text-status-error">
+        <span className="w-[70px] h-[70px] text-status-error">
           <ErrorIcon />
         </span>
-        <p className="text-p7 dark:text-status-error mt-4">
+        <p className="text-p7 text-status-error mt-4">
           An error has occurred during your scan, please try again
         </p>
 
@@ -231,7 +231,7 @@ const ScanStatus = () => {
         ) : (
           <>
             {allScanFailed ? (
-              <span className="w-20 h-20 dark:text-status-error">
+              <span className="w-20 h-20 text-status-error">
                 <ErrorIcon />
               </span>
             ) : (
@@ -239,7 +239,7 @@ const ScanStatus = () => {
                 <SuccessIcon />
               </span>
             )}
-            <h3 className="text-h2 pt-1 dark:text-text-text-and-icon">
+            <h3 className="text-h2 pt-1 text-text-text-and-icon">
               Scan {allScanFailed ? 'failed' : 'done'}
             </h3>
             <div className="mt-2">
@@ -370,7 +370,7 @@ const ScanStatus = () => {
               }}
               renderSubComponent={({ row }) => {
                 return (
-                  <p className="dark:text-status-error py-2 px-4 overflow-auto text-p7">
+                  <p className="text-status-error py-2 px-4 overflow-auto text-p7">
                     {row.original.status_message}
                   </p>
                 );

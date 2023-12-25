@@ -46,7 +46,7 @@ export const Login = () => {
           </DFLink>
         </div>
         {data?.error && (
-          <div className={`text-center m-1.5 text-p7 dark:text-status-error`}>
+          <div className={`text-center m-1.5 text-p7 text-status-error`}>
             {data.error}
           </div>
         )}

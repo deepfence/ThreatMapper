@@ -285,7 +285,7 @@ const UniqueTable = () => {
             className="flex items-center gap-x-2"
           >
             <div className="p-2 bg-gray-100 dark:bg-gray-500/10 rounded-lg shrink-0">
-              <div className="w-3 h-3 dark:text-status-error">
+              <div className="w-3 h-3 text-status-error">
                 <VulnerabilityIcon />
               </div>
             </div>

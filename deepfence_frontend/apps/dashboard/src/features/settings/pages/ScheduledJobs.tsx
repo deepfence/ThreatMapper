@@ -135,7 +135,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -176,7 +176,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
           <div className="flex items-center justify-right gap-4"></div>
         </div>
@@ -222,9 +222,7 @@ const ActionDropdown = ({
                 }
               }}
             >
-              <span className="dark:text-status-error dark:hover:text-[#C45268]">
-                Delete
-              </span>
+              <span className="text-status-error hover:text-[#C45268]">Delete</span>
             </DropdownItem>
           ) : null}
         </>
@@ -352,7 +350,7 @@ const ScheduledJobsTable = ({
   return (
     <div className="mt-2">
       {data.message ? (
-        <p className="dark:text-status-error text-p7">{data.message}</p>
+        <p className="text-status-error text-p7">{data.message}</p>
       ) : (
         <Table
           size="default"

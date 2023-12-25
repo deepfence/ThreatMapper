@@ -424,7 +424,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -465,7 +465,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (
@@ -598,8 +598,8 @@ const ActionDropdown = ({
             >
               <span
                 className={cn('flex items-center gap-x-2', {
-                  'text-red-700 dark:text-status-error': scanId,
-                  'dark:text-df-gray-600': !scanId || !nodeType,
+                  'text-status-error': scanId,
+                  'dark:text-df-gray-600 text-df-gray-400': !scanId || !nodeType,
                 })}
               >
                 Delete latest scan

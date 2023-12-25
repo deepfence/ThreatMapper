@@ -251,7 +251,7 @@ const ConsoleDiagnosticLogsTable = () => {
   const { data: _logs, message } = data;
   const consoleLogs = _logs?.console_logs ?? [];
   if (message) {
-    return <p className="dark:text-status-error text-p7">{message}</p>;
+    return <p className="text-status-error text-p7">{message}</p>;
   }
   return (
     <Table
@@ -333,7 +333,7 @@ const AgentDiagnosticLogsTable = () => {
   }, 20000);
 
   if (message) {
-    return <p className="dark:text-status-error text-p7">{message}</p>;
+    return <p className="text-status-error text-p7">{message}</p>;
   }
 
   return (
@@ -447,7 +447,7 @@ const AgentDiagnosticsLogsModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+        <div className="text-h3 text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar bg-[#f6f7f9]">
           Agent diagnostic logs
         </div>
       </SlidingModalHeader>
@@ -507,9 +507,7 @@ const AgentDiagnosticsLogsModal = ({
               {nodeType === 'cloud account' && <SelectCloudAccount fetcher={fetcher} />}
 
               {fetcher?.data?.message ? (
-                <p className="text-p7 dark:text-status-error pt-2">
-                  {fetcher.data.message}
-                </p>
+                <p className="text-p7 text-status-error pt-2">{fetcher.data.message}</p>
               ) : null}
 
               <div className="flex gap-x-2 mt-8">

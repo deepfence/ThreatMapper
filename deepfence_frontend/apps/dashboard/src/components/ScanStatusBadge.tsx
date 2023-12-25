@@ -48,7 +48,7 @@ export const ScanStatusBadge = ({
   } else if (isScanFailed(status)) {
     return (
       <div className={wrapperClassName}>
-        <span className={cn(iconWrapper, 'dark:text-status-error')}>
+        <span className={cn(iconWrapper, 'text-status-error')}>
           <ErrorIcon />
         </span>
         {!justIcon ? <TruncatedText text={scanStatus} /> : null}

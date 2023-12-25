@@ -108,9 +108,7 @@ export const HarborConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           Supported Versions: 1.8.2 and above
         </div>
       </div>
-      {errorMessage && (
-        <p className="mt-4 dark:text-status-error text-p7">{errorMessage}</p>
-      )}
+      {errorMessage && <p className="mt-4 text-status-error text-p7">{errorMessage}</p>}
     </>
   );
 };

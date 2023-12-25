@@ -79,7 +79,7 @@ export const ForgotPassword = () => {
           helperText={data?.fieldErrors?.email}
         />
         {data?.message && (
-          <p className={`my-1.5 text-p7 text-center dark:text-status-success`}>
+          <p className={`my-1.5 text-p7 text-center text-status-success`}>
             {data.message}
           </p>
         )}

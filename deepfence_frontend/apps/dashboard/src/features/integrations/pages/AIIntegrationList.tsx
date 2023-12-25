@@ -154,7 +154,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -195,7 +195,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message ? (
-            <p className="mt-2 dark:text-status-error text-p7">{fetcher.data?.message}</p>
+            <p className="mt-2 text-status-error text-p7">{fetcher.data?.message}</p>
           ) : null}
         </div>
       ) : (
@@ -275,7 +275,7 @@ const MakeDefaultConfirmationModal = ({
           <br />
           <span>Are you sure?</span>
           {fetcher.data?.message ? (
-            <p className="mt-2 dark:text-status-error text-p7">{fetcher.data?.message}</p>
+            <p className="mt-2 text-status-error text-p7">{fetcher.data?.message}</p>
           ) : null}
         </div>
       ) : (
@@ -290,7 +290,7 @@ const AIIntegrationList = () => {
 
   return (
     <>
-      <div className="px-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <div className="px-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<IntegrationsIcon />} isLink>
             <DFLink to={'/integrations'} unstyled>
@@ -357,7 +357,7 @@ const ActionDropdown = ({
           ) : null}
           <DropdownItem
             onClick={() => onTableAction(row, ActionEnumType.DELETE)}
-            className="dark:text-status-error dark:hover:text-[#C45268]"
+            className="text-status-error dark:hover:text-[#C45268]"
           >
             Delete
           </DropdownItem>
@@ -454,7 +454,7 @@ const AIIntegrationTable = () => {
   }, []);
 
   if (message && message.length) {
-    return <p className="text-p7 dark:text-status-error">{message}</p>;
+    return <p className="text-p7 text-status-error">{message}</p>;
   }
 
   return (

@@ -110,9 +110,7 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
           Supported Versions: 6.19.1 and above
         </div>
       </div>
-      {errorMessage && (
-        <p className="mt-4 dark:text-status-error text-p7">{errorMessage}</p>
-      )}
+      {errorMessage && <p className="mt-4 text-status-error text-p7">{errorMessage}</p>}
     </>
   );
 };

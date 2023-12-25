@@ -326,7 +326,7 @@ export const SecretScanConfigureForm = ({
       {showScheduleScanOptions && <ScheduleScanForm />}
 
       {fetcherData?.message && (
-        <p className="dark:text-status-error text-p7 mt-4">{fetcherData.message}</p>
+        <p className="text-status-error text-p7 mt-4">{fetcherData.message}</p>
       )}
 
       <div className="flex gap-3 mt-14">

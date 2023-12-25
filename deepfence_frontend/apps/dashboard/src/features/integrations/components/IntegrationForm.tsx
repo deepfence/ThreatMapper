@@ -878,9 +878,7 @@ export const IntegrationForm = ({
               hidden
               value={ActionEnumType.ADD}
             />
-            {data?.message && (
-              <p className="dark:text-status-error text-p7">{data.message}</p>
-            )}
+            {data?.message && <p className="text-status-error text-p7">{data.message}</p>}
           </div>
           <div className="mt-14 flex gap-x-2 p-1">
             <Button

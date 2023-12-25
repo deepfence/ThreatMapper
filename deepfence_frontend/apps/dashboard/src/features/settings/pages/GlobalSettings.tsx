@@ -89,7 +89,7 @@ const EditGlobalSettingModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+        <div className="text-h3 text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar bg-[#f6f7f9]">
           Update setting
         </div>
       </SlidingModalHeader>
@@ -109,7 +109,7 @@ const EditGlobalSettingModal = ({
               helperText={data?.fieldErrors?.value}
               required
             />
-            <div className={`text-red-600 dark:text-status-error text-p7`}>
+            <div className={`text-status-error text-p7`}>
               {!data?.success && data?.message && <span>{data.message}</span>}
             </div>
             <div className="flex gap-x-2">
@@ -228,7 +228,7 @@ const SettingTable = () => {
   return (
     <div className="mt-2">
       {data.message ? (
-        <p className="dark:text-status-error text-p7">{data.message}</p>
+        <p className="text-status-error text-p7">{data.message}</p>
       ) : (
         <Table
           size="default"

@@ -51,7 +51,7 @@ export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
       />
 
       {!data?.success && data?.message && (
-        <div className={`text-red-600 dark:text-status-error text-p7`}>
+        <div className={`text-red-600 text-status-error text-p7`}>
           <span>{data.message}</span>{' '}
         </div>
       )}

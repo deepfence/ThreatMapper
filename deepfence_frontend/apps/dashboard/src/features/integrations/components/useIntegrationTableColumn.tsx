@@ -28,7 +28,7 @@ const ActionDropdown = ({
         <>
           <DropdownItem
             onClick={() => onTableAction(row, ActionEnumType.DELETE)}
-            className="dark:text-status-error dark:hover:text-[#C45268]"
+            className="text-status-error dark:hover:text-[#C45268]"
           >
             Delete
           </DropdownItem>
@@ -472,7 +472,7 @@ export const useIntegrationTableColumn = (
               {isError ? (
                 <Tooltip content={cell.row.original?.last_error_msg}>
                   <div className="flex gap-1.5">
-                    <span className="w-[18px] h-[18px] shrink-0 flex dark:text-status-error">
+                    <span className="w-[18px] h-[18px] shrink-0 flex text-status-error">
                       <ErrorIcon />
                     </span>
                     Error

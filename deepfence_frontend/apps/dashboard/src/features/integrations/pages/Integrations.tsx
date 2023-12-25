@@ -213,7 +213,7 @@ const IntegrationTypes = ({ integration }: { integration: IIntegrationType }) =>
   const { data: list } = useListIntegrations();
   const { message, data } = list ?? {};
   if (message && message.length) {
-    return <p className="text-p7 dark:text-status-error">{message}</p>;
+    return <p className="text-p7 text-status-error">{message}</p>;
   }
   return (
     <div className="mt-2 flex flex-wrap gap-4">
@@ -377,7 +377,7 @@ const AIIntegrations = () => {
   } = useListAIIntegrations();
 
   if (message && message.length) {
-    return <p className="text-p7 dark:text-status-error">{message}</p>;
+    return <p className="text-p7 text-status-error">{message}</p>;
   }
 
   const groupedData = data.reduce<Record<string, number>>((prev, current) => {

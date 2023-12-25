@@ -370,7 +370,7 @@ const ControlTable = ({
   return (
     <>
       {data.message ? (
-        <p className="dark:text-status-error text-p7 p-3">{data.message}</p>
+        <p className="text-status-error text-p7 p-3">{data.message}</p>
       ) : null}
       <Table
         size="compact"
@@ -520,7 +520,7 @@ export const ComplianceScanConfigureForm = ({
         <input type="text" name="_nodeType" readOnly hidden value={nodeType} />
 
         {fetcherData?.message && (
-          <p className="dark:text-status-error text-p7 py-3">{fetcherData.message}</p>
+          <p className="text-status-error text-p7 py-3">{fetcherData.message}</p>
         )}
         {showAdvancedOptions && (
           <Suspense

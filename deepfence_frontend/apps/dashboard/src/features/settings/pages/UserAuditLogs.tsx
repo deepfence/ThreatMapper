@@ -129,7 +129,7 @@ const AuditTable = () => {
   return (
     <div className="mt-2">
       {data.message ? (
-        <p className="dark:text-status-error text-p7">{data.message}</p>
+        <p className="text-status-error text-p7">{data.message}</p>
       ) : (
         <Table
           size="default"

@@ -58,7 +58,7 @@ export const AWSCloudFormation = () => {
           }
           title="Cloud Formation"
         >
-          <div className="text-p7 dark:text-text-text-and-icon">
+          <div className="text-p7 text-text-text-and-icon">
             Connect to your AWS Cloud Account via Cloud Formation. Find out more
             information by{' '}
             <Link

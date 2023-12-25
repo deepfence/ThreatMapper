@@ -130,7 +130,7 @@ const ScanResultHeading = ({
 const ScanStatusError = () => {
   return (
     <div className="flex items-center justify-center h-full w-full gap-2">
-      <div className="h-6 w-6 shrink-0 dark:text-status-error">
+      <div className="h-6 w-6 shrink-0 text-status-error">
         <ErrorStandardSolidIcon />
       </div>
       <p className="dark:text-text-text-and-icon text-h3">Scan failed</p>

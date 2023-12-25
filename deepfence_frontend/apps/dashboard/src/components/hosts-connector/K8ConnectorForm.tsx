@@ -203,9 +203,7 @@ const InformationForm = ({
           />
         </div>
       </div>
-      <div className="text-red-600 dark:text-status-error text-p7">
-        {error && <span>{error}</span>}
-      </div>
+      <div className="text-status-error text-p7">{error && <span>{error}</span>}</div>
     </div>
   );
 };

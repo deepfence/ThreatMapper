@@ -165,7 +165,7 @@ const EmailConfigurationModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+        <div className="text-h3 text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar bg-[#f6f7f9]">
           Add email configuration
         </div>
       </SlidingModalHeader>
@@ -271,7 +271,7 @@ const EmailConfigurationModal = ({
               </>
             )}
             {!data?.success ? (
-              <div className={`text-red-600 dark:text-status-error text-p7`}>
+              <div className={`text-red-600 text-status-error text-p7`}>
                 <span>{data?.message}</span>
               </div>
             ) : null}
@@ -310,9 +310,9 @@ const AddEmailConfigurationComponent = ({
   return (
     <>
       {show && (
-        <Card className="p-4 max-w-sm dark:bg-bg-card">
-          <h4 className="text-p2 pb-2 dark:text-text-text-and-icon">Setup</h4>
-          <p className="text-p7 dark:text-text-text-and-icon">
+        <Card className="p-4 max-w-sm bg-bg-card">
+          <h4 className="text-p2 pb-2 text-text-text-and-icon">Setup</h4>
+          <p className="text-p7 text-text-text-and-icon">
             Please connect an email provider in order to configure email, you can click on
             Add Configuration to set up email configurations
           </p>
@@ -349,7 +349,7 @@ const Configuration = () => {
   }, [configData]);
 
   if (message) {
-    return <p className="text-p7 dark:text-status-error">{message}</p>;
+    return <p className="text-p7 text-status-error">{message}</p>;
   }
 
   return (
@@ -373,46 +373,40 @@ const Configuration = () => {
         <Card className="p-4 flex flex-col gap-y-3">
           <div className="flex">
             <div className="flex flex-col">
-              <span className="text-h4 dark:text-text-text-and-icon">Configuration</span>
+              <span className="text-h4 text-text-text-and-icon">Configuration</span>
             </div>
           </div>
           <div className="flex mt-2">
-            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
+            <span className="text-p7 min-w-[140px] text-text-text-and-icon">
               Email Provider
             </span>
-            <span className="text-p4 dark:text-text-input-value">
+            <span className="text-p4 text-text-input-value">
               {configuration?.email_provider || '-'}
             </span>
           </div>
           <div className="flex">
-            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
+            <span className="text-p7 min-w-[140px] text-text-text-and-icon">
               Email Id
             </span>
-            <span className="text-p4 dark:text-text-input-value">
+            <span className="text-p4 text-text-input-value">
               {configuration?.email_id || '-'}
             </span>
           </div>
           <div className="flex">
-            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-              Region
-            </span>
-            <span className="text-p4 dark:text-text-input-value">
+            <span className="text-p7 min-w-[140px] text-text-text-and-icon">Region</span>
+            <span className="text-p4 text-text-input-value">
               {configuration?.ses_region || '-'}
             </span>
           </div>
           <div className="flex">
-            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-              Port
-            </span>
-            <span className="text-p4 dark:text-text-input-value">
+            <span className="text-p7 min-w-[140px] text-text-text-and-icon">Port</span>
+            <span className="text-p4 text-text-input-value">
               {configuration.port || '-'}
             </span>
           </div>
           <div className="flex">
-            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-              SMTP
-            </span>
-            <span className="text-p4 dark:text-text-input-value">
+            <span className="text-p7 min-w-[140px] text-text-text-and-icon">SMTP</span>
+            <span className="text-p4 text-text-input-value">
               {configuration.smtp || '-'}
             </span>
           </div>
@@ -442,7 +436,7 @@ const EmailConfiguration = () => {
   return (
     <div>
       <div className="mt-2">
-        <h3 className="text-h6 dark:text-text-input-value">Email configurations</h3>
+        <h3 className="text-h6 text-text-input-value">Email configurations</h3>
       </div>
       <div className="mt-2">
         <Suspense fallback={<CircleSpinner size="sm" />}>
@@ -484,7 +478,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -533,7 +527,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : undefined}

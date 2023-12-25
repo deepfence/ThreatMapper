@@ -44,7 +44,7 @@ const ActionDropdown = ({
           </DropdownItem>
           <DropdownItem
             onClick={() => onTableAction(row, ActionEnumType.DELETE)}
-            className="dark:text-status-error dark:hover:text-[#C45268]"
+            className="text-status-error dark:hover:text-[#C45268]"
           >
             Delete
           </DropdownItem>
@@ -164,7 +164,7 @@ export const ReportTable = ({
   }, []);
 
   if (message) {
-    return <p className="dark:text-status-error text-p7">{message}</p>;
+    return <p className="text-status-error text-p7">{message}</p>;
   }
   return (
     <div className="mt-2">

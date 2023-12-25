@@ -89,7 +89,7 @@ const ActionDropdown = ({
               setIdsToDelete(ids);
               setShowDeleteDialog(true);
             }}
-            className="dark:text-status-error dark:hover:text-[#C45268]"
+            className="text-status-error hover:text-[#C45268]"
           >
             Delete
           </DropdownItem>

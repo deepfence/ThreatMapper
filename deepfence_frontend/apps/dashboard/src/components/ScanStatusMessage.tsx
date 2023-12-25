@@ -30,12 +30,12 @@ export const ScanStatusInError = ({ errorMessage }: { errorMessage: string }) =>
     <div className="flex items-center justify-center gap-x-2">
       {errorMessage ? (
         <Tooltip content={errorMessage}>
-          <div className="w-6 h-6 dark:text-status-error  rounded-full">
+          <div className="w-6 h-6 text-status-error rounded-full">
             <ErrorStandardSolidIcon />
           </div>
         </Tooltip>
       ) : (
-        <div className="w-6 h-6 dark:text-status-error  rounded-full">
+        <div className="w-6 h-6 text-status-error rounded-full">
           <ErrorStandardSolidIcon />
         </div>
       )}

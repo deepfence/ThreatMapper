@@ -154,7 +154,7 @@ export const StopScanForm = ({
           <br />
           <span>Are you sure you want to cancel?</span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (
