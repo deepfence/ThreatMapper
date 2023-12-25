@@ -56,13 +56,13 @@ const CardHeader = ({ registry }: { registry: RegistryResponseType }) => {
 
   return (
     <div className="flex items-center w-full relative">
-      <div className="dark:bg-bg-grid-default absolute -top-[34px] left-[12px] rounded-full p-3">
+      <div className="dark:bg-bg-grid-default bg-bg-hover-2 absolute -top-[34px] left-[12px] rounded-full p-3">
         <RegistryLogos
           registryType={registry.type as unknown as keyof typeof RegistryType}
         />
       </div>
 
-      <span className="ml-[102px] flex items-center gap-2 text-t4 uppercase dark:text-text-input-value pt-1">
+      <span className="ml-[102px] flex items-center gap-2 text-t4 uppercase text-text-input-value pt-1">
         {name}
       </span>
     </div>
@@ -75,29 +75,29 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
       <Card
         className={cn(
           'relative group p-2 pb-3 flex flex-col',
-          'dark:bg-bg-card hover:outline outline-2 dark:outline-bg-hover-3 dark:hover:shadow-[0px_0px_6px_1px_#044AFF]',
-          "before:content-none dark:hover:before:content-[''] before:w-[68px] before:h-[68px]",
-          'dark:before:bg-bg-hover-3 dark:before:hover:shadow-[0px_0px_7px_-1px_#044AFF] before:absolute before:-top-[28px]',
+          'bg-bg-card hover:outline outline-2 outline-bg-hover-3 hover:shadow-[0px_0px_6px_1px_#044AFF]',
+          "before:content-none hover:before:content-[''] before:w-[68px] before:h-[68px]",
+          'before:bg-bg-hover-3 before:hover:shadow-[0px_0px_7px_-1px_#044AFF] before:absolute before:-top-[28px]',
           'before:left-[18px] before:rounded-full before:-z-10 cursor-pointer',
         )}
         key={registry.type}
       >
         <CardHeader registry={registry} />
         <div className="flex mt-6 gap-x-[48px] justify-center items-center w-[322px]">
-          <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
-            <span className="text-h1 text-gray-900 dark:text-text-input-value">
+          <div className="flex flex-col justify-center text-p4 text-text-text-and-icon">
+            <span className="text-h1 text-text-input-value">
               {abbreviateNumber(registry.registries ?? 0)}
             </span>
             Registries
           </div>
-          <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
-            <span className="text-h1 text-gray-900 dark:text-text-input-value">
+          <div className="flex flex-col justify-center text-p4 text-text-text-and-icon">
+            <span className="text-h1 text-text-input-value">
               {abbreviateNumber(registry.images ?? 0)}
             </span>
             Images
           </div>
-          <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
-            <span className="text-h1 text-gray-900 dark:text-text-input-value">
+          <div className="flex flex-col justify-center text-p4 text-text-text-and-icon">
+            <span className="text-h1 text-text-input-value">
               {abbreviateNumber(registry.tags ?? 0)}
             </span>
             Tags
@@ -124,9 +124,9 @@ const RegistryList = () => {
 const Registries = () => {
   return (
     <>
-      <div className="dark:bg-bg-breadcrumb-bar py-2 px-4">
+      <div className="bg-bg-breadcrumb-bar bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4">
         <Breadcrumb>
-          <BreadcrumbLink icon={<RegistryIcon />} className="dark:text-text-input-value">
+          <BreadcrumbLink icon={<RegistryIcon />} className="text-text-input-value">
             Registries
           </BreadcrumbLink>
         </Breadcrumb>

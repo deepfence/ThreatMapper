@@ -294,7 +294,7 @@ const Header = () => {
     queryKey: queries.registry.listRegistryAccounts._def,
   });
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
       <Breadcrumb>
         <BreadcrumbLink asChild icon={<RegistryIcon />} isLink>
           <DFLink to={'/registries'} unstyled>
@@ -332,49 +332,47 @@ const CountWidget = () => {
 
   return (
     <div className="grid grid-cols-12 px-6 items-center w-full">
-      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+      <div className="col-span-3 flex items-center text-text-text-and-icon gap-x-3 justify-center">
         <div className="w-8 h-8">
           <RegistryIcon />
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input-value">
+          <span className="text-h1 text-text-input-value">
             {abbreviateNumber(registries)}
           </span>
           <span className="text-p1">Total registries</span>
         </div>
       </div>
-      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+      <div className="col-span-3 flex items-center text-text-text-and-icon gap-x-3 justify-center">
         <div className="w-8 h-8">
           <ImageIcon />
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input-value">
+          <span className="text-h1 text-text-input-value">
             {abbreviateNumber(images)}
           </span>
           <span className="text-p1">Total images</span>
         </div>
       </div>
-      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+      <div className="col-span-3 flex items-center text-text-text-and-icon gap-x-3 justify-center">
         <div className="w-8 h-8">
           <TagsIcon />
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input-value">
-            {abbreviateNumber(tags)}
-          </span>
+          <span className="text-h1 text-text-input-value">{abbreviateNumber(tags)}</span>
           <span className="text-p1">Total tags</span>
         </div>
       </div>
-      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+      <div className="col-span-3 flex items-center text-text-text-and-icon gap-x-3 justify-center">
         <div className="w-8 h-8">
           <InProgressIcon />
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input-value">
+          <span className="text-h1 text-text-input-value">
             {abbreviateNumber(scans_in_progress)}
           </span>
           <span className="text-p1">In Progress</span>
