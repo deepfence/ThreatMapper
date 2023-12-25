@@ -1579,7 +1579,7 @@ const StatusesCount = ({
       <div className="flex justify-evenly gap-8">
         {Object.keys(statusCounts)?.map((key: string) => {
           return (
-            <div key={key} className="col-span-2 dark:text-text-text-and-icon">
+            <div key={key} className="col-span-2 text-text-text-and-icon">
               <span className="text-p1">{capitalize(key)}</span>
               <button
                 className="flex flex-1 max-w-[160px] gap-1 items-center"
@@ -1601,7 +1601,7 @@ const StatusesCount = ({
                       getPostureColor(mode)[key.toLowerCase() as PostureSeverityType],
                   }}
                 ></span>
-                <span className="text-h1 dark:text-text-input-value pl-1.5">
+                <span className="text-h1 text-text-input-value pl-1.5">
                   {abbreviateNumber(statusCounts?.[key])}
                 </span>
               </button>
@@ -1705,10 +1705,10 @@ const SeverityCountWidget = () => {
         </div>
       </ScanStatusWrapper>
       {isScanComplete(scanStatusResult?.status ?? '') ? (
-        <div className="col-span-2 dark:text-text-text-and-icon">
+        <div className="col-span-2 text-text-text-and-icon">
           <span className="text-p1">Total compliances</span>
           <button
-            className="flex flex-1 max-w-[160px] gap-1 items-center dark:text-text-input-value"
+            className="flex flex-1 max-w-[160px] gap-1 items-center text-text-input-value"
             onClick={() => {
               setSearchParams((prev) => {
                 prev.delete('status');
@@ -1720,7 +1720,7 @@ const SeverityCountWidget = () => {
             {keys(statusCounts).length > 0 ? (
               <>
                 <TaskIcon />
-                <span className="text-h1 dark:text-text-input pl-1.5">
+                <span className="text-h1 text-text-input pl-1.5">
                   {abbreviateNumber(total)}
                 </span>
               </>
@@ -1731,7 +1731,7 @@ const SeverityCountWidget = () => {
         </div>
       ) : null}
 
-      <div className="w-px h-[60%] dark:bg-bg-grid-border" />
+      <div className="w-px h-[60%] bg-bg-grid-border" />
 
       <ScanStatusWrapper
         scanStatusResult={scanStatusResult}
