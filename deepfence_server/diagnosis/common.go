@@ -182,6 +182,14 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 		nodeIDToName[nodeID.(string)] = nodeName.(string)
 		if message.(string) == "" && status.(string) != utils.ScanStatusSuccess {
 			message = status.(string)
+		} else if message.(string) != "" && status.(string) != utils.ScanStatusSuccess {
+			var minioError utils.MinioError
+			xmlErr := xml.Unmarshal([]byte(message.(string)), &minioError)
+			if xmlErr != nil {
+				message = message.(string)
+			} else {
+				message = minioError.Message
+			}
 		}
 
 		if pos, ok := minioAgentLogsKeys[fileName.(string)]; ok {
@@ -261,6 +269,14 @@ func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager
 		nodeIDToName[nodeID.(string)] = nodeName.(string)
 		if message.(string) == "" && status.(string) != utils.ScanStatusSuccess {
 			message = status.(string)
+		} else if message.(string) != "" && status.(string) != utils.ScanStatusSuccess {
+			var minioError utils.MinioError
+			xmlErr := xml.Unmarshal([]byte(message.(string)), &minioError)
+			if xmlErr != nil {
+				message = message.(string)
+			} else {
+				message = minioError.Message
+			}
 		}
 
 		if pos, ok := minioAgentLogsKeys[fileName.(string)]; ok {
