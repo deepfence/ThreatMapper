@@ -709,6 +709,23 @@ func GetScanResultDiff[T any](ctx context.Context, scanType utils.Neo4jScanType,
 		reporters.ParseFieldFilters2CypherWhereConditions("d1", mo.Some(ff), true) +
 		ffCondition + ` RETURN d1 ` +
 		fw.FetchWindow2CypherQuery()
+
+	// for cloud compliance scan, there is no such relation as "IS" between the rule and the detected resource
+	if scanType == utils.NEO4JCloudComplianceScan {
+		query = `
+		MATCH (m:` + string(scanType) + `{node_id: $base_scan_id}) -[r:DETECTED]-> (d2)
+		WITH collect(d2) as dset
+		MATCH (n:` + string(scanType) + `{node_id: $compare_to_scan_id}) -[r:DETECTED]-> (d)
+		WHERE NOT d in dset
+		OPTIONAL MATCH (d) -[:IS]-> (e)
+		OPTIONAL MATCH (n) -[:SCANNED]-> (f)
+		WITH apoc.map.merge( e{.*}, 
+		d{.*, masked: coalesce(d.masked or r.masked or e.masked, false), 
+		name: coalesce(e.name, d.name, '')}) AS d` +
+			reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
+			ffCondition + ` RETURN d ` +
+			fw.FetchWindow2CypherQuery()
+	}
 	log.Debug().Msgf("diff query: %v", query)
 	nres, err := tx.Run(query,
 		map[string]interface{}{
