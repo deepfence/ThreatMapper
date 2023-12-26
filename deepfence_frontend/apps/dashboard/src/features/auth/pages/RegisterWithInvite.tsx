@@ -82,7 +82,7 @@ const RegisterWithInvite = () => {
 
   return (
     <fetcher.Form method="post">
-      <h1 className="dark:text-text-text-and-icon text-h2 text-center">
+      <h1 className="text-text-text-and-icon text-h2 text-center">
         Register for Deepfence
       </h1>
       <input

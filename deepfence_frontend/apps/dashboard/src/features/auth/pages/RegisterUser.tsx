@@ -14,7 +14,7 @@ export const RegisterUser = () => {
 
   return (
     <fetcher.Form method="post">
-      <h1 className="dark:text-text-text-and-icon text-h2 text-center">
+      <h1 className="text-text-text-and-icon text-h2 text-center">
         Register for Deepfence
       </h1>
       <TextInput
@@ -118,7 +118,7 @@ export const RegisterUser = () => {
         className={`flex flex-row justify-center text-p4 mt-4 dark:text-text-text-and-icon`}
       >
         Already have an account?&nbsp;
-        <DFLink to="/auth/login" className="underline dark:text-accent-accent" unstyled>
+        <DFLink to="/auth/login" className="underline text-accent-accent" unstyled>
           Sign in
         </DFLink>
       </div>

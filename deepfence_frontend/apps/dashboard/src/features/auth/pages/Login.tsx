@@ -10,7 +10,7 @@ export const Login = () => {
 
   return (
     <fetcher.Form method="post">
-      <h1 className="text-p1 font-normal text-center dark:text-text-text-and-icon">
+      <h1 className="text-p1 font-normal text-center text-text-text-and-icon">
         Welcome to
         <br />
         <span className="text-h2">Deepfence portal</span>
@@ -40,7 +40,7 @@ export const Login = () => {
           <DFLink
             unstyled
             to="/auth/forgot-password"
-            className="ml-auto text-p5 underline text-blue-600 dark:text-accent-accent"
+            className="ml-auto text-p5 underline text-accent-accent"
           >
             Forgot password?
           </DFLink>
@@ -60,13 +60,9 @@ export const Login = () => {
           Sign In
         </Button>
 
-        <p className="mt-4 text-p4 dark:text-text-text-and-icon">
+        <p className="mt-4 text-p4 text-text-text-and-icon">
           Don&apos;t have account yet?{' '}
-          <DFLink
-            to="/auth/register"
-            className="dark:text-accent-accent underline"
-            unstyled
-          >
+          <DFLink to="/auth/register" className="text-accent-accent underline" unstyled>
             Register now
           </DFLink>
         </p>

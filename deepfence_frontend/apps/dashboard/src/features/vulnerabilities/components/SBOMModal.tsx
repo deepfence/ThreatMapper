@@ -44,7 +44,7 @@ export const SbomModal = ({
     >
       <SlidingModalCloseButton />
       <SlidingModalHeader>
-        <div className="flex items-center gap-2 dark:text-text-text-and-icon dark:bg-bg-breadcrumb-bar p-5 text-h3">
+        <div className="flex items-center gap-2 text-text-text-and-icon dark:bg-bg-breadcrumb-bar bg-[#f6f7f9] p-5 text-h3">
           <div className="h-5 w-5 shrink-0">
             <FileLineIcon />
           </div>

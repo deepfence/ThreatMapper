@@ -72,7 +72,7 @@ const ResetPassword = () => {
 
   return !data?.success ? (
     <fetcher.Form method="post">
-      <h1 className="dark:text-text-text-and-icon text-h2 text-center">Reset Password</h1>
+      <h1 className="text-text-text-and-icon text-h2 text-center">Reset Password</h1>
       <input type="hidden" name="code" value={searchParams.get('code') ?? ''} />
       <input type="hidden" name="namespace" value={searchParams.get('namespace') ?? ''} />
 

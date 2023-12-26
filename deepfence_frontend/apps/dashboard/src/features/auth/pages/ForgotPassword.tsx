@@ -62,10 +62,8 @@ export const ForgotPassword = () => {
   return (
     <>
       <fetcher.Form method="post">
-        <h1 className="dark:text-text-text-and-icon text-h2 text-center">
-          Forgot Password
-        </h1>
-        <p className="mt-4 dark:text-text-text-and-icon text-p7">
+        <h1 className="text-text-text-and-icon text-h2 text-center">Forgot Password</h1>
+        <p className="mt-4 text-text-text-and-icon text-p7">
           Enter your email address registered with your account. We’ll send you a link to
           reset your password
         </p>
@@ -95,7 +93,7 @@ export const ForgotPassword = () => {
           </Button>
           <DFLink
             to="/auth/login"
-            className="mt-4 text-p4 underline dark:text-accent-accent text-center"
+            className="mt-4 text-p4 underline text-accent-accent text-center"
             unstyled
           >
             Back to login

@@ -411,7 +411,7 @@ const PageNotFoundComponent = () => {
         404
       </h1>
       <div className="mt-6 flex flex-col gap-y-14 items-center">
-        <h4 className="sm:text-base 2xl:text-xl font-semibold text-text-text-and-icon dark:text-text-text-and-icon flex flex-col text-center">
+        <h4 className="sm:text-base 2xl:text-xl font-semibold text-text-text-and-icon flex flex-col text-center">
           Page not found.
         </h4>
         <div className="sm:w-[375px] 2xl:w-[455px]">

@@ -489,7 +489,7 @@ const DataTable = () => {
             getNodeImage('cloud_provider', info.row.original.cloud_provider);
           return (
             <div className="flex items-center gap-2">
-              <div className="shrink-0">
+              <div className="shrink-0 text-text-input-value">
                 <img src={imagePath} alt={info.getValue()} height={24} width={24} />
               </div>
               <TruncatedText text={info.getValue()} />

@@ -71,7 +71,7 @@ export const Pod = (props: PodModalProps) => {
         <PodHeader {...props} />
       </Suspense>
       <SlidingModalContent>
-        <div className="dark:bg-bg-breadcrumb-bar">
+        <div className="dark:bg-bg-breadcrumb-bar bg-[#f6f7f9]">
           <Tabs
             value={tab}
             defaultValue={tab}

@@ -426,7 +426,7 @@ export const useIntegrationTableColumn = (
               onTableAction={onTableAction}
               trigger={
                 <button className="p-1">
-                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                  <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
                     <EllipsisIcon />
                   </div>
                 </button>
@@ -468,7 +468,7 @@ export const useIntegrationTableColumn = (
             cell.row.original?.last_error_msg &&
             cell.row.original?.last_error_msg?.trim()?.length > 0;
           return (
-            <div className="flex items-center dark:text-text-text-and-icon text-p4">
+            <div className="flex items-center text-text-text-and-icon text-p4">
               {isError ? (
                 <Tooltip content={cell.row.original?.last_error_msg}>
                   <div className="flex gap-1.5">
