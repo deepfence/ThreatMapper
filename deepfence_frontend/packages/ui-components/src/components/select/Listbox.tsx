@@ -31,9 +31,9 @@ const defaultStyle = cn(
   'placeholder-gray-400 disabled:placeholder-gray-400',
   'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
   // text styles
-  'text-text-input-value dark:text-text-input-value',
+  'text-text-input-value',
   // disabled text color
-  'disabled:text-gray-600 dark:disabled:text-gray-600',
+  'disabled:text-gray-400 dark:disabled:text-gray-600',
 );
 const defaultUnderlineStyle = cn(
   'focus-visible:outline-none',
@@ -51,7 +51,7 @@ const defaultUnderlineStyle = cn(
   // text styles
   'text-text-input-value',
   // disabled text color
-  'text-gray-400 dark:disabled:text-gray-600',
+  'disabled:text-gray-400 dark:disabled:text-gray-600',
 );
 const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[5px] px-2'], {
   variants: {
@@ -208,7 +208,7 @@ export function Listbox<TType, TActualType>({
                 <HUIListbox.Label
                   htmlFor={_id}
                   className={cn('text-p3 text-text-text-and-icon pb-[10px]', {
-                    'text-gray-600 dark:text-gray-600': disabled,
+                    'text-gray-400 dark:text-gray-600': disabled,
                   })}
                 >
                   {required && <span>*</span>}

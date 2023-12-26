@@ -171,7 +171,7 @@ const AIIntegrationAdd = () => {
     >
       <SlidingModalCloseButton />
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+        <div className="text-h3 text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar bg-[#f6f7f9]">
           Add Generative AI Integration
         </div>
       </SlidingModalHeader>

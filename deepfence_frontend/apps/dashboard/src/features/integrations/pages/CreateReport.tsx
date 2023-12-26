@@ -216,7 +216,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 const Header = () => {
   return (
     <SlidingModalHeader>
-      <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+      <div className="text-h3 text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar bg-[#f6f7f9]">
         Create new report
       </div>
     </SlidingModalHeader>

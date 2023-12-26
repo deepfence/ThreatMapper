@@ -220,7 +220,13 @@ const IntegrationTypes = ({ integration }: { integration: IIntegrationType }) =>
       {integration?.types?.map((type) => {
         return (
           <DFLink to={type.path} unstyled key={type.name}>
-            <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-bg-hover-3 dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:ring-1 cursor-pointer">
+            <Card
+              className={cn(
+                'p-3 flex flex-col shrink-0 min-w-[208px] ring-inset',
+                'hover:ring-bg-hover-3 hover:ring-1 hover:shadow-[0px_0px_6px_1px_#044AFF]',
+                'focus:ring-bg-hover-3 focus:shadow-[0px_0px_6px_1px_#044AFF] focus:ring-1 cursor-pointer',
+              )}
+            >
               <div className="flex items-center gap-x-4">
                 <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
                   <span className="h-9 w-9">{type.icon}</span>
@@ -260,7 +266,7 @@ const Skeleton = ({ count }: { count: number }) => {
 const Integrations = () => {
   return (
     <>
-      <div className="dark:bg-bg-breadcrumb-bar py-2 px-4">
+      <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4">
         <Breadcrumb>
           <BreadcrumbLink
             icon={<IntegrationsIcon />}
@@ -395,7 +401,13 @@ const AIIntegrations = () => {
         const count = groupedData[type.type] ?? 0;
         return (
           <DFLink to="/integrations/gen-ai" unstyled key={type.type}>
-            <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-bg-hover-3 dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:ring-1 cursor-pointer">
+            <Card
+              className={cn(
+                'p-3 flex flex-col shrink-0 min-w-[208px] ring-inset',
+                'hover:ring-bg-hover-3 hover:ring-1 hover:shadow-[0px_0px_6px_1px_#044AFF]',
+                'focus:ring-bg-hover-3 focus:shadow-[0px_0px_6px_1px_#044AFF] focus:ring-1 cursor-pointer',
+              )}
+            >
               <div className="flex items-center gap-x-6">
                 <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
                   <span className="h-9 w-9">{type.icon}</span>
