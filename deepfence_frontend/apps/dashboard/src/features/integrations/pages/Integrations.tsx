@@ -228,7 +228,7 @@ const IntegrationTypes = ({ integration }: { integration: IIntegrationType }) =>
               )}
             >
               <div className="flex items-center gap-x-4">
-                <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
+                <div className="dark:bg-bg-grid-default bg-bg-hover-2 rounded-full p-3 flex justify-center items-center">
                   <span className="h-9 w-9">{type.icon}</span>
                 </div>
                 <CardContent type={type} data={data} />
@@ -322,13 +322,13 @@ const DownloadReport = () => {
             <Card
               className={cn(
                 'p-3 flex shrink-0 items-center h-full gap-x-4',
-                'dark:text-text-text-and-icon',
-                'hover:ring dark:hover:ring-bg-hover-3 dark:hover:ring-1',
-                'dark:focus:ring-bg-hover-3 dark:focus:ring-1 cursor-pointer',
-                'dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF]',
+                'text-text-text-and-icon',
+                'hover:ring hover:ring-bg-hover-3 hover:ring-1',
+                'focus:ring-bg-hover-3 focus:ring-1 cursor-pointer',
+                'hover:shadow-[0px_0px_6px_1px_#044AFF] focus:shadow-[0px_0px_6px_1px_#044AFF]',
               )}
             >
-              <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
+              <div className="dark:bg-bg-grid-default bg-bg-hover-2 rounded-full p-3 flex justify-center items-center">
                 <span className="h-9 w-9">
                   <DownloadReportIcon />
                 </span>
@@ -409,7 +409,7 @@ const AIIntegrations = () => {
               )}
             >
               <div className="flex items-center gap-x-6">
-                <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
+                <div className="dark:bg-bg-grid-default bg-bg-hover-2 rounded-full p-3 flex justify-center items-center">
                   <span className="h-9 w-9">{type.icon}</span>
                 </div>
                 <div className="flex flex-col">
