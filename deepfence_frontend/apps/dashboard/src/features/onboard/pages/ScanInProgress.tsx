@@ -279,7 +279,7 @@ const ScanStatus = () => {
         )}
 
         <div className="flex justify-center items-center mt-6">
-          <p className="text-p4 text-gray-700 dark:text-text-text-and-icon">
+          <p className="text-p4 text-text-text-and-icon">
             {!allScanDone &&
               `${
                 scanType.charAt(0).toUpperCase() + scanType.slice(1)
@@ -295,7 +295,7 @@ const ScanStatus = () => {
           </p>
         </div>
         {!allScanDone && !allScanFailed && (
-          <div className="text-p4 dark:text-text-text-and-icon mt-4 flex items-center flex-col">
+          <div className="text-p4 text-text-text-and-icon mt-4 flex items-center flex-col">
             <span>
               You can either wait for the scan to complete to see summary of scan result
               or go to main dashbord to see details of your scan.
@@ -319,7 +319,7 @@ const ScanStatus = () => {
           </div>
         )}
         {allScanDone && (
-          <div className="text-p4 dark:text-text-text-and-icon mt-4 flex items-center flex-col">
+          <div className="text-p4 text-text-text-and-icon mt-4 flex items-center flex-col">
             <span>
               If you wish to start a new scan you can click on &quot;Go to add
               connectors&quot;

@@ -28,7 +28,7 @@ export const RegistriesConnector = () => {
           }}
         />
       </Card>
-      <div className="mt-8 flex items-center sticky bottom-0 py-4 dark:bg-bg-page gap-x-2">
+      <div className="mt-8 flex items-center sticky bottom-0 py-4 bg-bg-page gap-x-2">
         <Button
           size="md"
           type="submit"

@@ -104,7 +104,7 @@ const Connector = () => {
         <RegistriesConnector />
       ) : (
         <>
-          <div className="mt-8 flex items-center sticky bottom-0 py-4 dark:bg-bg-page gap-x-4">
+          <div className="mt-8 flex items-center sticky bottom-0 py-4 bg-bg-page gap-x-4">
             <div className="flex items-center gap-x-2">
               <Button
                 size="md"

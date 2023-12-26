@@ -43,15 +43,13 @@ export const OnboardAppHeader = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-bg-left-nav border-b dark:border-bg-top-header isolate h-[54px] fixed top-0 w-full">
+    <div className="bg-bg-left-nav border-b dark:border-bg-top-header border-bg-grid-border isolate h-[54px] fixed top-0 w-full">
       <div className="h-full flex items-center mx-16">
         <div className="mr-auto flex items-center">
           <span className="h-9 w-9 mr-3">
             <DeepfenceLogo />
           </span>
-          <span className="dark:text-text-text-and-icon text-[18px] leading-9">
-            deepfence
-          </span>
+          <span className="text-text-text-and-icon text-[18px] leading-9">deepfence</span>
           <DFLink
             unstyled
             className="ml-8 text-accent-accent hover:underline text-p3"
@@ -66,16 +64,13 @@ export const OnboardAppHeader = () => {
             align="end"
             content={
               <>
-                <DropdownItem
-                  onClick={logout}
-                  className="text-red-700 dark:text-text-input-value"
-                >
+                <DropdownItem onClick={logout} className="text-text-input-value">
                   Logout
                 </DropdownItem>
               </>
             }
           >
-            <button className="dark:text-text-text-and-icon flex gap-[6px] items-center text-p1">
+            <button className="text-text-text-and-icon flex gap-[6px] items-center text-p1">
               <div className="h-[18px] w-[18px]">
                 <UserLine />
               </div>

@@ -282,7 +282,7 @@ const ChooseScan = () => {
       />
       <SelectedAccount state={state} />
       <ScanHeader state={state} />
-      <div className="mt-8 flex items-center sticky bottom-0 py-4 dark:bg-bg-page gap-x-4">
+      <div className="mt-8 flex items-center sticky bottom-0 py-4 bg-bg-page gap-x-4">
         <Button
           onClick={goBack}
           color="default"
