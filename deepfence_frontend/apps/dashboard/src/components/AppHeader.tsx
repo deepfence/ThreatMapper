@@ -41,20 +41,6 @@ export function AppHeader() {
           </DFLink>
         </div>
         <div className="flex items-center gap-[18px] mr-6">
-          <div className="text-text-text-and-icon">
-            <Button
-              startIcon={mode === 'light' ? <ThemeDarkIcon /> : <ThemeLightIcon />}
-              variant="flat"
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                setMode(mode === 'light' ? 'dark' : 'light');
-              }}
-            >
-              {mode === 'light' ? 'Dark' : 'Light'}
-            </Button>
-          </div>
-          <div className="h-[16px] w-[1px] bg-bg-grid-border" />
           <AutoRefresh />
 
           <div className="h-[16px] w-[1px] bg-bg-grid-border" />
@@ -64,6 +50,15 @@ export function AppHeader() {
             align="end"
             content={
               <>
+                <DropdownItem
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setMode(mode === 'light' ? 'dark' : 'light');
+                  }}
+                  className="text-text-input-value"
+                >
+                  {mode === 'light' ? 'Dark Mode' : 'Light Mode'}
+                </DropdownItem>
                 <DropdownItem
                   onClick={() => {
                     fetcher.submit(null, {

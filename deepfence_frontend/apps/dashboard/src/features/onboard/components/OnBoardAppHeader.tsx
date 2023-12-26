@@ -4,6 +4,7 @@ import { Dropdown, DropdownItem, Separator } from 'ui-components';
 import { DFLink } from '@/components/DFLink';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { UserLine } from '@/components/icons/common/UserLine';
+import { useTheme } from '@/theme/ThemeContext';
 
 const DeepfenceLogo = () => {
   return (
@@ -32,6 +33,7 @@ const DeepfenceLogo = () => {
 
 export const OnboardAppHeader = () => {
   const fetcher = useFetcher();
+  const { setMode, mode } = useTheme();
   const { email } = (useRouteLoaderData('onboard') as { email: string }) ?? {
     email: '',
   };
@@ -43,7 +45,7 @@ export const OnboardAppHeader = () => {
   };
 
   return (
-    <div className="bg-bg-left-nav border-b dark:border-bg-top-header border-bg-grid-border isolate h-[54px] fixed top-0 w-full">
+    <div className="bg-bg-left-nav border-b border-bg-top-header shadow-[0px_0px_2px_-2px_rgba(0,0,0,0.05),0px_2px_2px_-1px_rgba(0,0,0,0.10)] isolate h-[54px] fixed top-0 w-full">
       <div className="h-full flex items-center mx-16">
         <div className="mr-auto flex items-center">
           <span className="h-9 w-9 mr-3">
@@ -64,6 +66,15 @@ export const OnboardAppHeader = () => {
             align="end"
             content={
               <>
+                <DropdownItem
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setMode(mode === 'light' ? 'dark' : 'light');
+                  }}
+                  className="text-text-input-value"
+                >
+                  {mode === 'light' ? 'Dark Mode' : 'Light Mode'}
+                </DropdownItem>
                 <DropdownItem onClick={logout} className="text-text-input-value">
                   Logout
                 </DropdownItem>
