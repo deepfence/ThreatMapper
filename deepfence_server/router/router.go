@@ -540,9 +540,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 	return nil
 }
 
-func doNothingHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-}
+// func doNothingHandler(w http.ResponseWriter, r *http.Request) {
+// 	 w.WriteHeader(http.StatusOK)
+// }
 
 func newAuthorizationHandler() (*casbin.Enforcer, error) {
 	return casbin.NewEnforcer("auth/model.conf", "auth/policy.csv")

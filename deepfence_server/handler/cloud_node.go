@@ -13,7 +13,6 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -27,7 +26,7 @@ const (
 )
 
 var (
-	cloudAccountNodeType = controls.ResourceTypeToString(controls.CloudAccount)
+	cloudAccountNodeType = ctl.ResourceTypeToString(ctl.CloudAccount)
 )
 
 func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
