@@ -416,6 +416,10 @@ func (d *OpenAPIDocs) AddCloudNodeOperations() {
 		"List Cloud Node Accounts", "List Cloud Node Accounts registered with the console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountsListReq), new(CloudNodeAccountsListResp))
 
+	d.AddOperation("refreshCloudNodeAccount", http.MethodPost, "/deepfence/cloud-node/account/refresh",
+		"Refresh Cloud Account", "Refresh the cloud resources in a Cloud Account",
+		http.StatusNoContent, []string{tagCloudNodes}, bearerToken, new(CloudAccountRefreshReq), nil)
+
 	d.AddOperation("listCloudProviders", http.MethodGet, "/deepfence/cloud-node/list/providers",
 		"List Cloud Node Providers", "List Cloud Node Providers registered with the console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeProvidersListReq), new(CloudNodeProvidersListResp))

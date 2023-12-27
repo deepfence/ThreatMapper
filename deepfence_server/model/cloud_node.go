@@ -529,3 +529,80 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 
 	return benchmarks, nil
 }
+
+type CloudAccountRefreshReq struct {
+	NodeIDs []string `json:"node_ids" validate:"required,gt=0" required:"true"`
+}
+
+func (c *CloudAccountRefreshReq) SetCloudAccountRefresh(ctx context.Context) error {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	if _, err = tx.Run(`
+		UNWIND $batch as cloudNode
+		MERGE (n:CloudNodeRefresh{node_id: cloudNode})
+		SET n.refresh = true, n.updated_at = TIMESTAMP()`,
+		map[string]interface{}{
+			"batch": c.NodeIDs,
+		}); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+func (c *CloudAccountRefreshReq) GetCloudAccountRefresh(ctx context.Context) ([]string, error) {
+	var updatedNodeIDs []string
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return updatedNodeIDs, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		return updatedNodeIDs, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return updatedNodeIDs, err
+	}
+	defer tx.Close()
+
+	res, err := tx.Run(`
+		UNWIND $batch as cloudNode
+		MATCH (n:CloudNodeRefresh{node_id: cloudNode})
+		WHERE n.refresh=true
+		WITH n, n.node_id as deletedNodeID
+		DELETE n
+		RETURN deletedNodeID`,
+		map[string]interface{}{
+			"batch": c.NodeIDs,
+		})
+	if err != nil {
+		return updatedNodeIDs, err
+	}
+	recs, err := res.Collect()
+	if err != nil {
+		return updatedNodeIDs, err
+	}
+
+	for _, rec := range recs {
+		updatedNodeIDs = append(updatedNodeIDs, rec.Values[0].(string))
+	}
+	return updatedNodeIDs, tx.Commit()
+}
