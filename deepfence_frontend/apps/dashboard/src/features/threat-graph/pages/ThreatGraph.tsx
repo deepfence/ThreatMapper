@@ -11,6 +11,7 @@ import { ThreatGraphIcon } from '@/components/sideNavigation/icons/ThreatGraph';
 import { ThreatGraphComponent } from '@/features/threat-graph/components/ThreatGraph';
 import { DetailsModal } from '@/features/threat-graph/data-components/DetailsModal';
 import { ThreatGraphNodeModelConfig } from '@/features/threat-graph/utils/threat-graph-custom-node';
+import { useTheme } from '@/theme/ThemeContext';
 
 const ThreatGraph = () => {
   const [modalData, setModalData] = useState<{
@@ -19,7 +20,7 @@ const ThreatGraph = () => {
     nodes?: { [key: string]: GraphNodeInfo } | null;
     cloudId: string;
   }>();
-
+  const { mode } = useTheme();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   return (
@@ -28,7 +29,10 @@ const ThreatGraph = () => {
       <div
         className="flex-1 flex flex-col"
         style={{
-          background: `radial-gradient(48.55% 48.55% at 50.04% 51.45%, #16253B 0%, #0B121E 100%)`,
+          background:
+            mode === 'dark'
+              ? 'radial-gradient(48.55% 48.55% at 50.04% 51.45%, #16253B 0%, #0B121E 100%)'
+              : '',
         }}
       >
         {isFilterOpen ? <Filters /> : null}
@@ -74,7 +78,7 @@ const ThreatGraphHeader = ({
 }) => {
   const [searchParams] = useSearchParams();
   return (
-    <div className="flex items-center dark:bg-bg-breadcrumb-bar min-h-[48px]">
+    <div className="flex items-center dark:bg-bg-breadcrumb-bar bg-[#f6f7f9] dark:border-none border-b border-bg-grid-border min-h-[48px]">
       <div className="px-4 flex items-center gap-[6px] dark:text-text-input-value">
         <div className="h-4 w-4 shrink-0">
           <ThreatGraphIcon />

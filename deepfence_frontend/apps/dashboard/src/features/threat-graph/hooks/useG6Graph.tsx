@@ -2,7 +2,7 @@ import G6 from '@antv/g6';
 import { merge } from 'lodash-es';
 import { useEffect, useState } from 'react';
 import { useUpdateEffect } from 'react-use';
-import { preset } from 'tailwind-preset';
+import { colors, preset } from 'tailwind-preset';
 
 import { g6Toolbar } from '@/components/graph/plugin';
 import { G6Graph, G6GraphOptionsWithoutContainer } from '@/features/topology/types/graph';
@@ -14,46 +14,25 @@ const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
       offset: 50,
       radius: 20,
       lineWidth: 1.5,
-      stroke:
-        theme === 'dark'
-          ? preset.theme.extend.colors['brand-dark'].blue
-          : preset.theme.extend.colors['brand-light'].blue,
+      stroke: colors[theme].brand.blue,
       endArrow: {
         path: G6.Arrow.triangle(4, 5, 8),
         d: 10,
-        fill:
-          theme === 'dark'
-            ? preset.theme.extend.colors['brand-dark'].blue
-            : preset.theme.extend.colors['brand-light'].blue,
-        stroke:
-          theme === 'dark'
-            ? preset.theme.extend.colors['brand-dark'].blue
-            : preset.theme.extend.colors['brand-light'].blue,
+        fill: colors[theme].brand.blue,
+        stroke: colors[theme].brand.blue,
       },
     };
   }
   return {
     lineWidth: 1.5,
     shadowBlur: 14,
-    shadowColor:
-      theme === 'dark'
-        ? preset.theme.extend.colors.status.error
-        : preset.theme.extend.colors.status.error,
-    stroke:
-      theme === 'dark'
-        ? preset.theme.extend.colors.status.error
-        : preset.theme.extend.colors.status.error,
+    shadowColor: colors[theme].status.error,
+    stroke: colors[theme].status.error,
     endArrow: {
       path: G6.Arrow.triangle(4, 5, 8),
       d: 10,
-      fill:
-        theme === 'dark'
-          ? preset.theme.extend.colors.status.error
-          : preset.theme.extend.colors.status.error,
-      stroke:
-        theme === 'dark'
-          ? preset.theme.extend.colors.status.error
-          : preset.theme.extend.colors.status.error,
+      fill: colors[theme].status.error,
+      stroke: colors[theme].status.error,
     },
   };
 };
@@ -69,10 +48,7 @@ const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) =
   }
 
   return {
-    fill:
-      theme === 'dark'
-        ? preset.theme.extend.colors.bg['breadcrumb-bar']
-        : preset.theme.extend.colors.bg['breadcrumb-bar'],
+    fill: colors[theme].bg['breadcrumb-bar'],
     fillOpacity: 1,
     padding: [2, 4, 2, 4],
     radius: 3,
@@ -82,10 +58,7 @@ const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) =
 const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
   if (!active) {
     return {
-      fill:
-        theme === 'dark'
-          ? preset.theme.extend.colors.text['text-and-icon']
-          : preset.theme.extend.colors.text['text-and-icon'],
+      fill: colors[theme].text['text-and-icon'],
       fontFamily: preset.theme.extend.fontFamily.body.join(','),
       fontSize: 13,
       fontWeight: 300,
@@ -94,10 +67,7 @@ const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => 
   }
 
   return {
-    fill:
-      theme === 'dark'
-        ? preset.theme.extend.colors.text['input-value']
-        : preset.theme.extend.colors.text['input-value'],
+    fill: colors[theme].text['input-value'],
     fontFamily: preset.theme.extend.fontFamily.body.join(','),
     fontSize: 13,
     fontWeight: 700,
@@ -109,21 +79,15 @@ const getNodeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
   if (!active) {
     return {
       lineWidth: 0,
-      fill: preset.theme.extend.colors.bg['map-node'],
+      fill: colors[theme].bg['map-node'],
     };
   }
   return {
     lineWidth: 2,
     shadowBlur: 10,
-    shadowColor:
-      theme === 'dark'
-        ? preset.theme.extend.colors.status.error
-        : preset.theme.extend.colors.status.error,
-    stroke:
-      theme === 'dark'
-        ? preset.theme.extend.colors.status.error
-        : preset.theme.extend.colors.status.error,
-    fill: preset.theme.extend.colors.bg['map-node'],
+    shadowColor: colors[theme].status.error,
+    stroke: colors[theme].status.error,
+    fill: colors[theme].bg['map-node'],
   };
 };
 

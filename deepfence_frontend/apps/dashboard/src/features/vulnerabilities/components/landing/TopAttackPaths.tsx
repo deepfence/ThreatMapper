@@ -21,10 +21,6 @@ import { useTheme } from '@/theme/ThemeContext';
 
 export const TopAttackPaths = ({ nodeIds }: { nodeIds?: string[] }) => {
   const { mode } = useTheme();
-  const gradient =
-    mode === 'light'
-      ? ''
-      : 'linear-gradient(0deg, rgba(22, 37, 59, 0.6), rgba(22, 37, 59, 0.6)), radial-gradient(48.55% 48.55% at 50.04% 51.45%, rgba(27, 47, 77, 0.35) 0%, #020617 100%)';
   return (
     <Card className="rounded min-h-[450px] h-full flex flex-col">
       <CardHeader
@@ -35,7 +31,10 @@ export const TopAttackPaths = ({ nodeIds }: { nodeIds?: string[] }) => {
       <div
         className="flex-1"
         style={{
-          background: gradient,
+          background:
+            mode === 'dark'
+              ? 'linear-gradient(0deg, rgba(22, 37, 59, 0.6), rgba(22, 37, 59, 0.6)), radial-gradient(48.55% 48.55% at 50.04% 51.45%, rgba(27, 47, 77, 0.35) 0%, #020617 100%)'
+              : '',
         }}
       >
         <Suspense

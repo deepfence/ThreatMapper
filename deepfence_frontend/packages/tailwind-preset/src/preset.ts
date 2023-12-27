@@ -588,7 +588,7 @@ const colors = {
       'grid-border-light': '#e5e7eb',
       'map-cluster': '#183867',
       card: '#fcfcfc',
-      'map-node': '#1b365e',
+      'map-node': '#056699',
       'active-selection': '#f3f5f7',
       'hover-1': '#0072a3',
       'hover-2': '#f9fafb',

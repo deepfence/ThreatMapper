@@ -8,10 +8,7 @@ import { useThemeMode } from '@/theme/ThemeContext';
 
 export const TopAttackPaths = () => {
   const { mode } = useThemeMode();
-  const gradient =
-    mode === 'light'
-      ? ''
-      : 'linear-gradient(0deg, rgba(22, 37, 59, 0.60) 0%, rgba(22, 37, 59, 0.60) 100%), radial-gradient(48.55% 48.55% at 50.04% 51.45%, rgba(27, 47, 77, 0.35) 0%, #020617 100%)';
+
   return (
     <Card className="rounded-[5px] flex flex-col h-full">
       <CardHeader
@@ -22,7 +19,10 @@ export const TopAttackPaths = () => {
       <div
         className="flex flex-1 items-center justify-center"
         style={{
-          background: gradient,
+          background:
+            mode === 'dark'
+              ? 'linear-gradient(0deg, rgba(22, 37, 59, 0.60) 0%, rgba(22, 37, 59, 0.60) 100%), radial-gradient(48.55% 48.55% at 50.04% 51.45%, rgba(27, 47, 77, 0.35) 0%, #020617 100%)'
+              : '',
         }}
       >
         <Suspense fallback={<CircleSpinner size="md" />}>
