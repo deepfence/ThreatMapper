@@ -13,6 +13,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -23,6 +24,10 @@ import (
 const (
 	trueStr  = "true"
 	falseStr = "false"
+)
+
+var (
+	cloudAccountNodeType = controls.ResourceTypeToString(controls.CloudAccount)
 )
 
 func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
@@ -206,7 +211,24 @@ func (h *Handler) RefreshCloudAccountHandler(w http.ResponseWriter, r *http.Requ
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}
-	err = req.SetCloudAccountRefresh(r.Context())
+
+	nodeIdentifiers := make([]model.NodeIdentifier, len(req.NodeIDs))
+	for i, id := range req.NodeIDs {
+		nodeIdentifiers[i] = model.NodeIdentifier{NodeID: id, NodeType: cloudAccountNodeType}
+	}
+
+	cloudNodeIds, err := reporters_scan.GetCloudAccountIDs(r.Context(), nodeIdentifiers)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	resolvedRequest := model.CloudAccountRefreshReq{NodeIDs: make([]string, len(cloudNodeIds))}
+	for i, id := range cloudNodeIds {
+		resolvedRequest.NodeIDs[i] = id.NodeID
+	}
+
+	err = resolvedRequest.SetCloudAccountRefresh(r.Context())
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
