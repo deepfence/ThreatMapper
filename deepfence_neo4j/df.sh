@@ -4,6 +4,16 @@ export RCLONE_S3_ACCESS_KEY_ID=$AWS_ACCESS_KEY
 export RCLONE_S3_SECRET_ACCESS_KEY=$AWS_SECRET_KEY
 export PROVIDER="s3"
 
+if [ -z "$DEEPFENCE_NEO4J_USER" ]; then
+    export DEEPFENCE_NEO4J_USER="neo4j"
+fi
+if [ -z "$DEEPFENCE_NEO4J_PASSWORD" ]; then
+    export DEEPFENCE_NEO4J_PASSWORD="e16908ffa5b9f8e9d4ed"
+fi
+if [ -z "$NEO4J_AUTH" ]; then
+    export NEO4J_AUTH=$DEEPFENCE_NEO4J_USER/$DEEPFENCE_NEO4J_PASSWORD
+fi
+
 # Waker
 {
   set -e
