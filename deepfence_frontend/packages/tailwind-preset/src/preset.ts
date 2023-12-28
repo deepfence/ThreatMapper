@@ -516,6 +516,7 @@ const colors = {
       blue: '#2742e7',
       magenta: '#e640a2',
       purple: '#753ee5',
+      error: '#f56682',
     },
     text: {
       'text-and-icon': '#b2c0c9',
@@ -563,9 +564,10 @@ const colors = {
   },
   light: {
     brand: {
-      blue: '#2742e7',
+      blue: '#63a1ff',
       magenta: '#d91590',
       purple: '#6d32e5',
+      error: '#f56682',
     },
     text: {
       'text-and-icon': '#565656',
@@ -574,7 +576,7 @@ const colors = {
       link: '#1c64f2',
     },
     accent: {
-      accent: '0079b8',
+      accent: '#0079b8',
     },
     bg: {
       page: '#f6f9ff',
@@ -588,7 +590,7 @@ const colors = {
       'grid-border-light': '#e5e7eb',
       'map-cluster': '#183867',
       card: '#fcfcfc',
-      'map-node': '#056699',
+      'map-node': '#e4ecf2',
       'active-selection': '#f3f5f7',
       'hover-1': '#0072a3',
       'hover-2': '#f9fafb',

@@ -26,13 +26,13 @@ const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
   return {
     lineWidth: 1.5,
     shadowBlur: 14,
-    shadowColor: colors[theme].status.error,
-    stroke: colors[theme].status.error,
+    shadowColor: colors[theme].brand.error,
+    stroke: colors[theme].brand.error,
     endArrow: {
       path: G6.Arrow.triangle(4, 5, 8),
       d: 10,
-      fill: colors[theme].status.error,
-      stroke: colors[theme].status.error,
+      fill: colors[theme].brand.error,
+      stroke: colors[theme].brand.error,
     },
   };
 };
@@ -85,8 +85,8 @@ const getNodeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
   return {
     lineWidth: 2,
     shadowBlur: 10,
-    shadowColor: colors[theme].status.error,
-    stroke: colors[theme].status.error,
+    shadowColor: colors[theme].brand.error,
+    stroke: colors[theme].brand.error,
     fill: colors[theme].bg['map-node'],
   };
 };

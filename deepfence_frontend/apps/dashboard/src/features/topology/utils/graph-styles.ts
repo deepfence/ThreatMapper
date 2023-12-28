@@ -1,6 +1,6 @@
 import { IEdge, INode, ShapeStyle } from '@antv/g6';
 import { truncate } from 'lodash-es';
-import { preset } from 'tailwind-preset';
+import { colors } from 'tailwind-preset';
 
 import AWSLogo from '@/assets/topology/aws.svg';
 import AWSEc2ALBLogo from '@/assets/topology/aws_ec2_application_load_balancer.svg';
@@ -35,6 +35,7 @@ import PodLogo from '@/assets/topology/pod.svg';
 import ProcessLogo from '@/assets/topology/process.svg';
 import TheInternetLogo from '@/assets/topology/the-internet.svg';
 import { EnhancedDetailedNodeSummary, G6Node } from '@/features/topology/types/graph';
+import { Mode } from '@/theme/ThemeContext';
 
 export const GraphPalette = {
   NODE_OUTLINE_DARK: '#E5E7EB',
@@ -49,20 +50,24 @@ export const GraphPalette = {
   COMBO_FILL_LIGHT: '#EBF5FF',
 };
 
-const DEFAULT_FILL_COLOR = preset.theme.extend.colors.bg['map-node'];
-const NODE_FILL_COLORS: Record<string, string> = {
-  cloud_provider: DEFAULT_FILL_COLOR,
-  region: DEFAULT_FILL_COLOR,
-  host: DEFAULT_FILL_COLOR,
-  pod: DEFAULT_FILL_COLOR,
-  container: DEFAULT_FILL_COLOR,
-  process: DEFAULT_FILL_COLOR,
-};
+// const DEFAULT_FILL_COLOR = colors.bg['map-node'];
+// const NODE_FILL_COLORS: Record<string, string> = {
+//   cloud_provider: DEFAULT_FILL_COLOR,
+//   region: DEFAULT_FILL_COLOR,
+//   host: DEFAULT_FILL_COLOR,
+//   pod: DEFAULT_FILL_COLOR,
+//   container: DEFAULT_FILL_COLOR,
+//   process: DEFAULT_FILL_COLOR,
+// };
 
-export const nodeStyle = (node: EnhancedDetailedNodeSummary, override?: ShapeStyle) => {
+export const nodeStyle = (
+  theme: Mode,
+  node: EnhancedDetailedNodeSummary,
+  override?: ShapeStyle,
+) => {
   const style: ShapeStyle = {
     cursor: 'pointer',
-    fill: NODE_FILL_COLORS[node?.df_data?.type ?? ''] || DEFAULT_FILL_COLOR,
+    fill: colors[theme].bg['map-node'],
   };
   return { ...style, ...override };
 };

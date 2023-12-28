@@ -60,7 +60,7 @@ export const DetailsModal = ({
     <SlidingModal open={open} onOpenChange={onOpenChange} size="m">
       <SlidingModalCloseButton />
       <SlidingModalHeader>
-        <div className="flex gap-2 items-center dark:text-text-text-and-icon px-5 py-[22px] dark:bg-bg-breadcrumb-bar">
+        <div className="flex gap-2 items-center text-text-text-and-icon px-5 py-[22px] dark:bg-bg-breadcrumb-bar bg-[#f6f7f9]">
           <div className="w-5 h-5 shrink-0">
             <img src={getNodeImage(nodeType)} alt={nodeType} width="100%" height="100%" />
           </div>
@@ -166,7 +166,7 @@ const ModalContent = ({
                 height="100%"
               />
             </div>
-            <div className="text-h5 dark:text-text-text-and-icon">{item?.node_id}</div>
+            <div className="text-h5 text-text-text-and-icon">{item?.node_id}</div>
           </div>
           <div className="flex items-center justify-start gap-4 py-3">
             {item?.vulnerability_count ? (
@@ -256,14 +256,14 @@ const CountCard = ({
     return <div className={className}>{children}</div>;
   };
   return (
-    <Wrapper className="w-full h-full flex-1 max-w-[112px] flex flex-col gap-1.5 dark:bg-bg-card rounded-[5px] p-1.5">
+    <Wrapper className="w-full h-full flex-1 max-w-[112px] flex flex-col gap-1.5 dark:bg-bg-card bg-df-gray-100  rounded-[5px] p-1.5">
       <div className="flex gap-1.5 items-center text-status-error">
         <div className="w-[30px] h-[30px] shrink-0">
           <Logo />
         </div>
         <div className="text-h1">{abbreviateNumber(count)}</div>
       </div>
-      <div className="text-p1 dark:text-text-text-and-icon">{label}</div>
+      <div className="text-p1 text-text-text-and-icon">{label}</div>
     </Wrapper>
   );
 };

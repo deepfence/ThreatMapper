@@ -28,6 +28,7 @@ import {
   getTopologyDiff,
   GraphStorageManager,
 } from '@/features/topology/utils/topology-data';
+import { useTheme } from '@/theme/ThemeContext';
 
 const MAX_NODES_COUNT_THRESHOLD = 200;
 
@@ -41,6 +42,7 @@ interface TooltipState {
 export const TopologyGraph = () => {
   // measures parent of the graph, so we can set the graph width and height
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
+  const { mode } = useTheme();
 
   // tooltip related hooks
   const [tooltipLoc, setTooltipLoc] = useState<TooltipState>({
@@ -92,7 +94,7 @@ export const TopologyGraph = () => {
   });
   useEffect(() => {
     if (dataDiffWithAction.diff && dataDiffWithAction.action) {
-      updateGraph(graph!, dataDiffWithAction.diff, dataDiffWithAction.action);
+      updateGraph(mode, graph!, dataDiffWithAction.diff, dataDiffWithAction.action);
       if (dataDiffWithAction.action.type === 'expandNode') {
         nodeToFront(graph!, dataDiffWithAction.action.nodeId);
         focusItem(graph!, dataDiffWithAction.action.nodeId);
@@ -194,7 +196,10 @@ export const TopologyGraph = () => {
         className="h-full w-full relative select-none overflow-hidden"
         ref={measureRef}
         style={{
-          background: `radial-gradient(48.55% 48.55% at 50.04% 51.45%, #16253B 0%, #0B121E 100%)`,
+          background:
+            mode === 'dark'
+              ? `radial-gradient(48.55% 48.55% at 50.04% 51.45%, #16253B 0%, #0B121E 100%)`
+              : 'radial-gradient(48.55% 48.55% at 50.04% 51.45%, #ffffff 50%, #f6f7f9 100%)',
         }}
       >
         {/** had to use this absolute relative trick, otherwise element does not shrink, only grows */}
@@ -310,8 +315,9 @@ const GraphTooltip = ({
     <div
       role="tooltip"
       className={cn(
-        'inline-block rounded-[5px] dark:bg-[#C1CFD9] w-[200px] select-text',
-        'pt-1.5 pb-1.5 px-2.5 dark:text-text-text-inverse',
+        'inline-block rounded-[5px] dark:bg-text-text-and-icon bg-white w-[200px] select-text',
+        'pt-1.5 pb-1.5 px-2.5 dark:text-text-text-inverse text-text-input-value',
+        'shadow-md',
       )}
     >
       <div className="text-p3 capitalize">
@@ -322,14 +328,14 @@ const GraphTooltip = ({
       </div>
       {expands || hasDetails ? (
         <>
-          <div className="h-[1px] mt-2 mb-2 dark:bg-df-gray-600 -mx-2.5" />
+          <div className="h-[1px] mt-2 mb-2 dark:bg-df-gray-500 bg-df-gray-200 -mx-2.5" />
           {expands && (
             <div className="-mx-2.5">
               <button
                 onClick={() => {
                   onExpandCollapseClick(model);
                 }}
-                className="px-2.5 text-p6 py-1 hover:dark:bg-[#A1AFB9] flex items-center gap-2 w-full"
+                className="px-2.5 text-p6 py-1 hover:dark:bg-text-text-and-icon hover:bg-white flex items-center gap-2 w-full"
               >
                 <div className="h-4 w-4 shrink-0">
                   {expanded ? <ResizeDownIcon /> : <ResizeUpIcon />}
@@ -344,7 +350,7 @@ const GraphTooltip = ({
                 onClick={() => {
                   onViewDetailsClick(model);
                 }}
-                className="px-2.5 text-p6 py-1 hover:dark:bg-[#A1AFB9] flex items-center gap-2 w-full"
+                className="px-2.5 text-p6 py-1 hover:dark:bg-text-text-and-icon hover:bg-white flex items-center gap-2 w-full"
               >
                 <div className="h-4 w-4 shrink-0">
                   <DetailsLineIcon />
@@ -362,10 +368,10 @@ const GraphTooltip = ({
 const NoData = () => {
   return (
     <div className="h-full flex gap-2 flex-col items-center justify-center p-6">
-      <div className="w-8 h-8 text-blue-600 dark:text-status-info">
+      <div className="w-8 h-8 text-status-info">
         <ErrorStandardSolidIcon />
       </div>
-      <div className="text-gray-600 dark:text-gray-400 text-lg text-center">
+      <div className="text-text-text-and-icon text-lg text-center">
         No data to display, please{' '}
         <DFLink to="/settings/connection-instructions">
           connect your infrastructure
@@ -380,11 +386,11 @@ const NodeLimitExceeded = () => {
   const params = useParams();
   const type = params.viewType ?? 'cloud_provider';
   return (
-    <div className="h-full flex gap-2 flex-col items-center justify-center p-6 dark:bg-bg-hover-2/50">
-      <div className="w-8 h-8 text-blue-600 dark:text-status-info">
+    <div className="h-full flex gap-2 flex-col items-center justify-center p-6 bg-bg-hover-2 opacity-50">
+      <div className="w-8 h-8 text-status-info">
         <ErrorStandardSolidIcon />
       </div>
-      <div className="text-gray-600 dark:text-gray-400 text-lg text-center">
+      <div className="text-text-text-and-icon text-lg text-center">
         There are too many nodes to display on the Graph view. Please use the{' '}
         <DFLink to={`/topology/table/${type}`}>Table view</DFLink> to see all nodes..
       </div>
