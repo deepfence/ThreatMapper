@@ -88,6 +88,7 @@ services:
     environment:
       <<: *common-creds
       NEO4J_dbms_memory_pagecache_size: 2600m
+      NEO4J_dbms_tx__log_rotation_retention__policy: "3 files"
       NEO4JLABS_PLUGINS: '["apoc"]'
       DF_REMOTE_BACKUP_ROOT: ""
       AWS_ACCESS_KEY: ""
