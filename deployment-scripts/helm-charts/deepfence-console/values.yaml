@@ -143,7 +143,7 @@ fileserver:
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.1.0
   storageClass: ""
-  volumeSize: 50G
+  volumeSize: 100G
   resources:
     limits:
       cpu: 2000m
@@ -199,7 +199,7 @@ neo4j:
     pullPolicy: Always
     # tag: 2.1.0
   storageClass: ""
-  volumeSize: 50G
+  volumeSize: 100G
   resources:
     limits:
       cpu: 4000m
