@@ -110,7 +110,6 @@ const inputCva = cva(
     'focus:outline-none',
     'pl-1.5 pt-1.5 pb-[5px]',
     'border-b',
-    'bg-transparent',
     'transition-[background-size] duration-[0.2s] ease-[ease]',
   ],
   {
@@ -131,7 +130,7 @@ const inputCva = cva(
             'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
             'focus:border-b-accent-accent',
             // dark and bg styles
-            'bg-no-repeat',
+            'bg-transparent bg-no-repeat',
             'focus:bg-no-repeat',
             // 'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]',
             // 'dark:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]',
@@ -153,7 +152,7 @@ const inputCva = cva(
             'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
             'focus:border-b-chart-red',
             // dark and bg styles
-            'bg-no-repeat',
+            'bg-transparent bg-no-repeat',
             'focus:bg-no-repeat',
             // 'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#F55B47_95%)]',
             // 'dark:bg-[linear-gradient(to_bottom,_transparent_95%,_#F55B47_95%)]',

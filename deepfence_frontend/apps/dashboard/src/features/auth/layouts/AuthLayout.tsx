@@ -119,7 +119,9 @@ export const AuthLayout = () => {
             </span>
           </div>
           <Card
-            className={cn('w-[360px] px-14 py-12 my-4 rounded-[15px] dark:bg-bg-page/70')}
+            className={cn(
+              'w-[360px] px-14 py-12 my-4 rounded-[15px] bg-bg-page opacity-70',
+            )}
           >
             <Outlet />
           </Card>

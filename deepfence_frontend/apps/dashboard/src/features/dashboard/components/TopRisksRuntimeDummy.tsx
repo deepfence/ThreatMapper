@@ -23,7 +23,7 @@ export const TopRisksRuntimeDummy = () => {
             <RuntimeIncidentsCheckIcon />
           </div>
         </div>
-        <div className="text-h3 ext-text-input-value">Runtime Protection</div>
+        <div className="text-h3 text-text-input-value">Runtime Protection</div>
         <div className="px-6 pt-1 text-center text-p1 text-text-text-and-icon">
           Extend ThreatMapper with runtime attack analysis, threat assessment, and
           targeted protection for your applications. Scalable, supported, and ready for

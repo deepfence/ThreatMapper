@@ -4,6 +4,8 @@ import { cn } from 'tailwind-preset';
 import { Tooltip } from 'ui-components';
 
 import { CaretDown } from '@/components/icons/common/CaretDown';
+import { ThemeDarkIcon } from '@/components/icons/common/ThemeDarkIcon';
+import { ThemeLightIcon } from '@/components/icons/common/ThemeLightIcon';
 import { DashboardIcon } from '@/components/sideNavigation/icons/Dashboard';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
@@ -14,6 +16,7 @@ import { SettingsIcon } from '@/components/sideNavigation/icons/Settings';
 import { ThreatGraphIcon } from '@/components/sideNavigation/icons/ThreatGraph';
 import { TopologyIcon } from '@/components/sideNavigation/icons/Topology';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { useTheme } from '@/theme/ThemeContext';
 
 export interface SideNavigationRootProps {
   expanded: boolean;
@@ -108,6 +111,7 @@ const ItemWrapper = ({
 };
 
 export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRootProps) {
+  const { mode: theme, setMode } = useTheme();
   useEffect(() => {
     setSideNavigationState(expanded ? 'open' : 'closed');
   }, [expanded]);
@@ -127,7 +131,7 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
         height: 'calc(100vh - 56px)',
       }}
     >
-      <ul className={cn('flex flex-col')}>
+      <ul className={cn('flex flex-col h-full')}>
         <li>
           <button
             className="h-12 w-full mb-2 flex pl-5 items-center border border-bg-top-header"
@@ -164,6 +168,36 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
             );
           }
         })}
+        <li className="mt-auto px-5 min-h-[48px] flex flex-col items-center">
+          <button
+            className={cn(
+              'w-full h-full',
+              'text-text-text-and-icon hover:text-text-input-value text-h4',
+              'flex items-center gap-x-5',
+              'border-t dark:border-bg-breadcrumb-bar',
+            )}
+            onClick={(e) => {
+              e.preventDefault();
+              setMode(theme === 'light' ? 'dark' : 'light');
+            }}
+          >
+            {theme === 'dark' ? (
+              <>
+                <span className="h-5 w-5 block">
+                  <ThemeLightIcon />
+                </span>
+                Light
+              </>
+            ) : (
+              <>
+                <span className="h-5 w-5 block">
+                  <ThemeDarkIcon />
+                </span>
+                Dark
+              </>
+            )}
+          </button>
+        </li>
       </ul>
     </nav>
   );

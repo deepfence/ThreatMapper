@@ -59,16 +59,6 @@ export const GraphPalette = {
   COMBO_FILL_LIGHT: '#EBF5FF',
 };
 
-// const DEFAULT_FILL_COLOR = colors.bg['map-node'];
-// const NODE_FILL_COLORS: Record<string, string> = {
-//   cloud_provider: DEFAULT_FILL_COLOR,
-//   region: DEFAULT_FILL_COLOR,
-//   host: DEFAULT_FILL_COLOR,
-//   pod: DEFAULT_FILL_COLOR,
-//   container: DEFAULT_FILL_COLOR,
-//   process: DEFAULT_FILL_COLOR,
-// };
-
 export const nodeStyle = (
   theme: Mode,
   node: EnhancedDetailedNodeSummary,

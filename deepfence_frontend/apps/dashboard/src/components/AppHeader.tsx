@@ -1,12 +1,10 @@
 import { useFetcher, useRouteLoaderData } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
-import { Button, Dropdown, DropdownItem } from 'ui-components';
+import { Dropdown, DropdownItem } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { AutoRefresh } from '@/components/header/AutoRefresh';
 import { CaretDown } from '@/components/icons/common/CaretDown';
-import { ThemeDarkIcon } from '@/components/icons/common/ThemeDarkIcon';
-import { ThemeLightIcon } from '@/components/icons/common/ThemeLightIcon';
 import { UserLine } from '@/components/icons/common/UserLine';
 import { useTheme } from '@/theme/ThemeContext';
 
