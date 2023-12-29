@@ -588,7 +588,7 @@ const colors = {
       'breadcrumb-bar': '#fdfdfd',
       'grid-default': '#ffffff',
       'grid-border-light': '#e5e7eb',
-      'map-cluster': '#183867',
+      'map-cluster': '#d4e1ea',
       card: '#fcfcfc',
       'map-node': '#e4ecf2',
       'active-selection': '#f3f5f7',

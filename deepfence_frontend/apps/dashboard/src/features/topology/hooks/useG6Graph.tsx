@@ -129,7 +129,7 @@ const getDefaultOptions = (theme: Mode): G6GraphOptionsWithoutContainer => {
         fill: colors[theme].bg['map-cluster'],
         fillOpacity: 0.25,
         lineWidth: 1.5,
-        stroke: colors['df-gray'][500],
+        stroke: theme === 'dark' ? colors['df-gray'][500] : colors['df-gray'][300],
         strokeOpacity: 0.25,
       },
     },

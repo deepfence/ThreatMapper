@@ -17,7 +17,7 @@ import {
 } from '@/features/topology/types/graph';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
 import { queries } from '@/queries';
-import { useTheme } from '@/theme/ThemeContext';
+import { Mode, useTheme } from '@/theme/ThemeContext';
 
 const setActiveState = (item: INode | IEdge, active: boolean) => {
   if (active) {
@@ -63,7 +63,7 @@ export const ThreatGraphComponent = ({
 
   useEffect(() => {
     if (!graph || !data || isGraphEmpty(data)) return;
-    graph.data(getGraphData(data));
+    graph.data(getGraphData(mode, data));
     graph.render();
   }, [graph, data]);
 
@@ -133,7 +133,10 @@ function isGraphEmpty(data?: { [key: string]: GraphProviderThreatGraph }): boole
   );
 }
 
-function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6GraphData {
+function getGraphData(
+  theme: Mode,
+  data: { [key: string]: GraphProviderThreatGraph },
+): G6GraphData {
   const g6Data: G6GraphData = {
     nodes: [],
     edges: [],
@@ -165,7 +168,7 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
     cloudId: 'NA',
     icon: {
       show: true,
-      img: getNodeImage('pseudo')!,
+      img: getNodeImage(theme, 'pseudo')!,
       width: 40,
       height: 40,
     },
@@ -191,7 +194,9 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
       nodeType: cloudRootId,
       icon: {
         show: true,
-        img: getNodeImage('cloud_provider', cloudKey) ?? getNodeImage('cloud_provider'),
+        img:
+          getNodeImage(theme, 'cloud_provider', cloudKey) ??
+          getNodeImage(theme, 'cloud_provider'),
         width: 30,
         height: 30,
       },
@@ -239,7 +244,9 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
             nodeType: singleGraph.node_type,
             icon: {
               show: true,
-              img: getNodeImage(singleGraph.node_type) ?? getNodeImage('cloud_provider')!,
+              img:
+                getNodeImage(theme, singleGraph.node_type) ??
+                getNodeImage(theme, 'cloud_provider')!,
               width: 30,
               height: 30,
               ...{ cursor: 'pointer' },

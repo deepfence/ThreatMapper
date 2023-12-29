@@ -145,7 +145,7 @@ function processRootUpdate(theme: Mode, graph: G6Graph, diff: EnhancedDiff['node
       y: pointAround(center_y),
       style: nodeStyle(theme, node, {}),
       type: 'circle',
-      icon: getNodeIconConfig(node) ?? undefined,
+      icon: getNodeIconConfig(theme, node) ?? undefined,
     });
   }
 }
@@ -205,7 +205,7 @@ function processNodeUpdate(
           x: numNodesInCombo > 1 ? pointAround(center_model.x!) : center_model.x,
           y: numNodesInCombo > 1 ? pointAround(center_model.y!) : center_model.y,
           type: 'circle',
-          icon: getNodeIconConfig(nodeToAdd) ?? undefined,
+          icon: getNodeIconConfig(theme, nodeToAdd) ?? undefined,
         });
 
         graph.addItem('edge', {
@@ -228,7 +228,7 @@ function processNodeUpdate(
           parent_id: nodeId,
           style: nodeStyle(theme, nodeToAdd, {}),
           type: 'circle',
-          icon: getNodeIconConfig(nodeToAdd) ?? undefined,
+          icon: getNodeIconConfig(theme, nodeToAdd) ?? undefined,
         }) as G6Node;
         graph.addItem('edge', {
           ...pseudoEdge(nodeId, nodeToAdd.id!),

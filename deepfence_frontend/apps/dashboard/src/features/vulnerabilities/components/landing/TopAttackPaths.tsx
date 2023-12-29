@@ -17,7 +17,7 @@ import { G6GraphData, G6Node } from '@/features/topology/types/graph';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
 import { CardHeader } from '@/features/vulnerabilities/components/landing/CardHeader';
 import { queries } from '@/queries';
-import { useTheme } from '@/theme/ThemeContext';
+import { Mode, useTheme } from '@/theme/ThemeContext';
 
 export const TopAttackPaths = ({ nodeIds }: { nodeIds?: string[] }) => {
   const { mode } = useTheme();
@@ -130,6 +130,7 @@ export const VulnerabilityThreatGraph = ({
   direction?: 'LR' | 'TB';
   hideToolbar?: boolean;
 }) => {
+  const { mode } = useTheme();
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const { graph } = useG6Graph(container, {
@@ -156,7 +157,7 @@ export const VulnerabilityThreatGraph = ({
 
   useEffect(() => {
     if (!graph || !data || isGraphEmpty(data)) return;
-    graph.data(getGraphData(data, direction));
+    graph.data(getGraphData(mode, data, direction));
     graph.render();
   }, [graph, data]);
 
@@ -210,7 +211,11 @@ function useVulnerabilityThreatGraphData(nodeIds: string[] = []) {
   });
 }
 
-function getGraphData(data: GraphIndividualThreatGraph[], direction: 'LR' | 'TB') {
+function getGraphData(
+  theme: Mode,
+  data: GraphIndividualThreatGraph[],
+  direction: 'LR' | 'TB',
+) {
   const g6Data: G6GraphData = {
     nodes: [],
     edges: [],
@@ -229,7 +234,7 @@ function getGraphData(data: GraphIndividualThreatGraph[], direction: 'LR' | 'TB'
     label: 'The Internet',
     icon: {
       show: true,
-      img: getNodeImage('pseudo')!,
+      img: getNodeImage(theme, 'pseudo')!,
       width: 40,
       height: 40,
     },
@@ -258,7 +263,7 @@ function getGraphData(data: GraphIndividualThreatGraph[], direction: 'LR' | 'TB'
               label: truncate(node, { length: 20 }),
               icon: {
                 show: true,
-                img: getNodeImage('host')!,
+                img: getNodeImage(theme, 'host')!,
                 width: 30,
                 height: 30,
               },

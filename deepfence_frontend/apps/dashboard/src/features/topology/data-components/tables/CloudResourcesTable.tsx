@@ -22,6 +22,7 @@ import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { TruncatedText } from '@/components/TruncatedText';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
 import { queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import { isScanComplete } from '@/utils/scan';
 import {
   getOrderFromSearchParams,
@@ -445,6 +446,7 @@ function Filters() {
 }
 
 const DataTable = () => {
+  const { mode } = useTheme();
   const { data } = useSearchCloudResourcesWithPagination();
   const columnHelper = createColumnHelper<ModelCloudResource>();
   const [sort, setSort] = useSortingState();
@@ -485,8 +487,8 @@ const DataTable = () => {
       columnHelper.accessor('node_type', {
         cell: (info) => {
           const imagePath =
-            getNodeImage(info.row.original.node_type) ??
-            getNodeImage('cloud_provider', info.row.original.cloud_provider);
+            getNodeImage(mode, info.row.original.node_type) ??
+            getNodeImage(mode, 'cloud_provider', info.row.original.cloud_provider);
           return (
             <div className="flex items-center gap-2">
               <div className="shrink-0 text-text-input-value">
@@ -507,7 +509,7 @@ const DataTable = () => {
             <div className="flex items-center gap-2 uppercase">
               <div className="shrink-0">
                 <img
-                  src={getNodeImage('cloud_provider', info.getValue())}
+                  src={getNodeImage(mode, 'cloud_provider', info.getValue())}
                   alt={info.getValue()}
                   height={24}
                   width={24}

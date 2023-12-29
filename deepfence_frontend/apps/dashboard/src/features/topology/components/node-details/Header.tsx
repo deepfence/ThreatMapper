@@ -11,6 +11,7 @@ import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerabili
 import { TruncatedText } from '@/components/TruncatedText';
 import { UpgrageAgentModal } from '@/features/topology/data-components/UpgradeAgentModal';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
+import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum } from '@/types/common';
 
 export const Header = ({
@@ -34,6 +35,7 @@ export const Header = ({
   showInstallAgentOption: boolean;
   showUpgradeAgentOption: boolean;
 }) => {
+  const { mode } = useTheme();
   const showDropdown =
     !!availableScanTypes.length || showInstallAgentOption || showUpgradeAgentOption;
 
@@ -54,7 +56,12 @@ export const Header = ({
             </button>
           ) : null}
           <div className="w-6 h-6 shrink-0">
-            <img src={getNodeImage(nodeType)} alt={nodeType} width="100%" height="100%" />
+            <img
+              src={getNodeImage(mode, nodeType)}
+              alt={nodeType}
+              width="100%"
+              height="100%"
+            />
           </div>
           <div className="overflow-hidden">
             <TruncatedText text={label?.length ? label : nodeId} />
