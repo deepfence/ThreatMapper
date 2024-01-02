@@ -36,6 +36,9 @@ Common labels
 {{- define "deepfence-router.labels" -}}
 helm.sh/chart: {{ include "deepfence-router.chart" . }}
 {{ include "deepfence-router.selectorLabels" . }}
+{{- with .Values.commonLabels }}
+{{ toYaml . }}
+{{- end }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}

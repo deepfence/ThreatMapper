@@ -19,6 +19,9 @@ spec:
       labels:
         {{- include "deepfence-agent.selectorLabels" . | nindent 8 }}
         name: {{ include "deepfence-agent.fullname" . }}-cluster
+        {{- with .Values.cluster_agent.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       hostNetwork: true
       serviceAccountName: {{ include "deepfence-agent.serviceAccountName" . }}

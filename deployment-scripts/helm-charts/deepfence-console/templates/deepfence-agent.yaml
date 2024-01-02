@@ -9,15 +9,18 @@ metadata:
 spec:
   selector:
     matchLabels:
-      {{- include "deepfence-console.labels" . | nindent 6 }}
+      {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
       name: {{ include "deepfence-console.fullname" . }}-agent
   updateStrategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
-        {{- include "deepfence-console.labels" . | nindent 8 }}
+        {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
         name: {{ include "deepfence-console.fullname" . }}-agent
+        {{- with .Values.console_agents.agent.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       hostPID: true
       hostNetwork: true

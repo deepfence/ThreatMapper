@@ -22,6 +22,9 @@ spec:
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
         name: {{ include "deepfence-console.fullname" . }}-router
+        {{- with .Values.router.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
