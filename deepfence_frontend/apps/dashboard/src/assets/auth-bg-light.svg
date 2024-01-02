@@ -47,8 +47,8 @@
 	</g>
 	<defs>
 		<linearGradient id="b" x1="791.281" x2="790" y1="-62.783" y2="983.5" gradientUnits="userSpaceOnUse">
-			<stop offset=".24" stop-color="#3a27e8"/>
-			<stop offset="1" stop-color="#3a2495"/>
+			<stop offset=".24" stop-color="#1b07ce"/>
+			<stop offset="1" stop-color="#0E0434"/>
 		</linearGradient>
 		<linearGradient id="d" x1="786.175" x2="786.175" y1="1072.93" y2="706.28" gradientUnits="userSpaceOnUse">
 			<stop stop-color="#FF00D6"/>
