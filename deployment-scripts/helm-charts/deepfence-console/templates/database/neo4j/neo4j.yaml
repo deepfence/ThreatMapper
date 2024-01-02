@@ -23,7 +23,7 @@ spec:
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
         name: {{ include "deepfence-console.fullname" . }}-neo4j
-        {{- with .Values.kafka.podLabels }}
+        {{- with .Values.neo4j.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
