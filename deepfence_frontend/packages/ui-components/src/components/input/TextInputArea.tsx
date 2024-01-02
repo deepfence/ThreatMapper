@@ -1,5 +1,3 @@
-import './input.css';
-
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { cva, VariantProps } from 'cva';
 import { isNil } from 'lodash-es';
@@ -20,10 +18,9 @@ export interface TextInputAreaProps
 
 const inputElementClassnames = cva(
   [
-    'text-p4 px-2 pt-[5px] df-input block w-full disabled:cursor-not-allowed',
+    'text-p4 px-2 pt-[5px] block w-full disabled:cursor-not-allowed',
     'focus:outline-none',
     'border-b',
-    'bg-transparent',
     'transition-[background-size] duration-[0.2s] ease-[ease]',
   ],
   {
@@ -44,16 +41,15 @@ const inputElementClassnames = cva(
             'bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
             'focus:border-b-accent-accent',
             // dark and bg styles
-            'bg-no-repeat',
-            'focus:bg-no-repeat',
-            // 'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]',
-            // 'dark:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]',
+            'bg-[length:0%_100%] bg-no-repeat',
+            'bg-gradient-to-b from-transparent from-95% to-[#489cff] to-95%',
+            'focus:bg-[length:100%_100%]',
           ),
         ],
         error: [
           cn(
             // border
-            'border-chart-red df-error',
+            'border-chart-red',
             // placeholder styles
             'placeholder-df-gray-500 disabled:placeholder-df-gray-400',
             'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
@@ -66,10 +62,9 @@ const inputElementClassnames = cva(
             'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
             'focus:border-b-chart-red',
             // dark and bg styles
-            'bg-no-repeat',
-            'focus:bg-no-repeat',
-            // 'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#F55B47_95%)]',
-            // 'dark:bg-[linear-gradient(to_bottom,_transparent_95%,_#F55B47_95%)]',
+            'bg-[length:0%_100%] bg-no-repeat',
+            'bg-gradient-to-b from-transparent from-95% to-[#f55b47] to-95%',
+            'focus:bg-[length:100%_100%]',
           ),
         ],
       },
@@ -115,6 +110,9 @@ export const TextInputArea = forwardRef<HTMLTextAreaElement, TextInputAreaProps>
             data-testid={`textinputarea-${_id}`}
             cols={cols}
             {...rest}
+            style={{
+              backgroundColor: 'transparent',
+            }}
           />
         </div>
         {helperText && <HelperText color={color} text={helperText} className="mb-2.5" />}

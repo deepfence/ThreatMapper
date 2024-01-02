@@ -1,5 +1,3 @@
-import './../input/input.css';
-
 import {
   Listbox as HUIListbox,
   ListboxOptionProps as HUIListboxOptionProps,
@@ -23,7 +21,7 @@ const ListboxContext = createContext<{
 });
 const defaultStyle = cn(
   // border
-  'dark:border rounded-[5px]',
+  'border rounded-[5px]',
   'border-bg-grid-border',
   // bg styles
   'bg-bg-card',
@@ -37,14 +35,37 @@ const defaultStyle = cn(
 );
 const defaultUnderlineStyle = cn(
   'focus-visible:outline-none',
-  'bg-transparent dark:bg-transparent',
   'border-transparent border-b rounded-none',
   'border-b-text-text-and-icon dark:disabled:border-b-gray-600 disabled:border-b-gray-400',
   // active
-  'df-input',
   'transition-[background-size] duration-[0.2s] ease-[ease]',
-  'focus:bg-[length:100%_100%] focus:border-b-accent-accent focus:bg-no-repeat',
+  'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
+  'focus:border-b-accent-accent',
+  'bg-[length:0%_100%] bg-no-repeat',
+  'bg-gradient-to-b from-transparent from-95% to-[#489cff] to-95%',
+
   'data-[headlessui-state=open]:dark:border-b-accent-accent',
+  'data-[headlessui-state=open]:border-b-[#0598f6]',
+
+  'placeholder-gray-400 disabled:placeholder-gray-400',
+  'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+  // text styles
+  'text-text-input-value',
+  // disabled text color
+  'disabled:text-gray-400 dark:disabled:text-gray-600',
+);
+const defaultUnderlineJErrorStyle = cn(
+  'focus-visible:outline-none',
+  'border-transparent border-b rounded-none',
+  'border-b-text-text-and-icon dark:disabled:border-b-gray-600 disabled:border-b-gray-400',
+  // active
+  'transition-[background-size] duration-[0.2s] ease-[ease]',
+  'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
+  'focus:border-b-status-error',
+  'bg-[length:0%_100%] bg-no-repeat',
+  'bg-gradient-to-b from-transparent from-95% to-[#f55b47] to-95%',
+
+  'data-[headlessui-state=open]:border-b-status-error',
 
   'placeholder-gray-400 disabled:placeholder-gray-400',
   'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
@@ -77,8 +98,8 @@ const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[5px] px-2
       variant: 'underline',
       color: 'error',
       className: cn(
-        defaultUnderlineStyle,
-        'df-error data-[headlessui-state=open]:border-b-status-error focus:border-b-status-error border-b-status-error',
+        defaultUnderlineJErrorStyle,
+        'data-[headlessui-state=open]:border-b-status-error focus:border-b-status-error border-b-status-error',
       ),
     },
   ],
