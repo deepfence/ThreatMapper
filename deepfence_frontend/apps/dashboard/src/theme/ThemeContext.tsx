@@ -1,5 +1,5 @@
 import type { FC, ReactNode } from 'react';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 export const THEME_LIGHT = 'light';
 export const THEME_DARK = 'dark';
@@ -84,6 +84,25 @@ export const useThemeMode = (): {
   ) {
     document.documentElement.classList.remove('dark');
   }
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = ({ matches }: { matches: boolean }) => {
+      setThemeMode((prev) => {
+        if (!prev.userSelectedMode) {
+          return {
+            ...prev,
+            mode: matches ? 'dark' : 'light',
+          };
+        }
+        return prev;
+      });
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
+  }, [themeMode]);
 
   const setMode = (newMode?: Mode) => {
     saveThemeModeToStorage(newMode);

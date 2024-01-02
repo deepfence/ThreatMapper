@@ -1,10 +1,11 @@
 import { MouseEventHandler, ReactNode, useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
-import { Tooltip } from 'ui-components';
+import { Dropdown, DropdownItem, Tooltip } from 'ui-components';
 
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { ThemeDarkIcon } from '@/components/icons/common/ThemeDarkIcon';
+import { ThemeDeviceIcon } from '@/components/icons/common/ThemeDeviceIcon';
 import { ThemeLightIcon } from '@/components/icons/common/ThemeLightIcon';
 import { DashboardIcon } from '@/components/sideNavigation/icons/Dashboard';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
@@ -111,7 +112,7 @@ const ItemWrapper = ({
 };
 
 export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRootProps) {
-  const { mode: theme, setMode } = useTheme();
+  const { mode: theme, setMode, userSelectedMode } = useTheme();
   useEffect(() => {
     setSideNavigationState(expanded ? 'open' : 'closed');
   }, [expanded]);
@@ -168,35 +169,72 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
             );
           }
         })}
-        <li className="mt-auto px-5 min-h-[48px] flex flex-col items-center">
-          <button
-            className={cn(
-              'w-full h-full',
-              'text-text-text-and-icon hover:text-text-input-value text-h4',
-              'flex items-center gap-x-5',
-              'border-t dark:border-bg-breadcrumb-bar',
-            )}
-            onClick={(e) => {
-              e.preventDefault();
-              setMode(theme === 'light' ? 'dark' : 'light');
-            }}
-          >
-            {theme === 'dark' ? (
-              <>
-                <span className="h-5 w-5 block">
-                  <ThemeLightIcon />
-                </span>
-                Light
-              </>
-            ) : (
-              <>
-                <span className="h-5 w-5 block">
-                  <ThemeDarkIcon />
-                </span>
-                Dark
-              </>
-            )}
-          </button>
+        <li className="mt-auto border-t border-bg-grid-border">
+          <ItemWrapper expanded={expanded} title="Theme">
+            <Dropdown
+              align="center"
+              triggerAsChild
+              content={
+                <>
+                  <DropdownItem
+                    selected={!userSelectedMode}
+                    onSelect={(e) => {
+                      setMode(undefined);
+                    }}
+                  >
+                    System
+                  </DropdownItem>
+                  <DropdownItem
+                    selected={userSelectedMode === 'light'}
+                    onSelect={(e) => {
+                      setMode('light');
+                    }}
+                  >
+                    Light
+                  </DropdownItem>
+                  <DropdownItem
+                    selected={userSelectedMode === 'dark'}
+                    onSelect={(e) => {
+                      setMode('dark');
+                    }}
+                  >
+                    Dark
+                  </DropdownItem>
+                </>
+              }
+            >
+              <button
+                className={cn(
+                  'text-h4 text-text-text-and-icon py-3 px-5',
+                  'dark:hover:bg-bg-breadcrumb-bar hover:bg-bg-hover-2',
+                  'flex items-center gap-5 whitespace-nowrap relative',
+                  'h-12 w-full',
+                  'focus:outline-none',
+                )}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMode(theme === 'light' ? 'dark' : 'light');
+                }}
+              >
+                {userSelectedMode === 'light' && (
+                  <span className="h-5 w-5 block">
+                    <ThemeLightIcon />
+                  </span>
+                )}
+                {userSelectedMode === 'dark' && (
+                  <span className="h-5 w-5 block">
+                    <ThemeDarkIcon />
+                  </span>
+                )}
+                {!userSelectedMode && (
+                  <span className="h-5 w-5 block">
+                    <ThemeDeviceIcon />
+                  </span>
+                )}
+                {expanded && <div className="overflow-hidden flex-1 flex">Theme</div>}
+              </button>
+            </Dropdown>
+          </ItemWrapper>
         </li>
       </ul>
     </nav>

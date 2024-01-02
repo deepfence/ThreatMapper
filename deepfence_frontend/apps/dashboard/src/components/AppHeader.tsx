@@ -6,11 +6,9 @@ import { DFLink } from '@/components/DFLink';
 import { AutoRefresh } from '@/components/header/AutoRefresh';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { UserLine } from '@/components/icons/common/UserLine';
-import { useTheme } from '@/theme/ThemeContext';
 
 export function AppHeader() {
   const fetcher = useFetcher();
-  const { setMode, mode } = useTheme();
   const { email } = useRouteLoaderData('root') as { email: string };
   return (
     <header
@@ -49,22 +47,13 @@ export function AppHeader() {
             content={
               <>
                 <DropdownItem
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setMode(mode === 'light' ? 'dark' : 'light');
-                  }}
-                  className="text-text-input-value"
-                >
-                  {mode === 'light' ? 'Dark Mode' : 'Light Mode'}
-                </DropdownItem>
-                <DropdownItem
                   onClick={() => {
                     fetcher.submit(null, {
                       method: 'post',
                       action: '/data-component/auth/logout',
                     });
                   }}
-                  className="text-text-input-value"
+                  className="text-status-error"
                 >
                   Logout
                 </DropdownItem>
