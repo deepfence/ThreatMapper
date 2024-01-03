@@ -199,7 +199,7 @@ export const TopologyGraph = () => {
           background:
             mode === 'dark'
               ? `radial-gradient(48.55% 48.55% at 50.04% 51.45%, #16253B 0%, #0B121E 100%)`
-              : 'radial-gradient(48.55% 48.55% at 50.04% 51.45%, #ffffff 50%, #f6f7f9 100%)',
+              : 'radial-gradient(48.55% 48.55% at 50.04% 51.45%, #FFFFFF 0%, #f9fbfd 100%)',
         }}
       >
         {/** had to use this absolute relative trick, otherwise element does not shrink, only grows */}
@@ -209,7 +209,7 @@ export const TopologyGraph = () => {
           style={{
             top: tooltipLoc.y,
             left: tooltipLoc.x,
-            display: !debouncedTooltipLoc.show ? 'block' : 'block',
+            display: !debouncedTooltipLoc.show ? 'none' : 'block',
           }}
           ref={tooltipRef}
         >

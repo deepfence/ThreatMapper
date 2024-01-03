@@ -64,7 +64,7 @@ export const nodeStyle = (
   node: EnhancedDetailedNodeSummary,
   override?: ShapeStyle,
 ) => {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
 
   const style: ShapeStyle = {
     cursor: 'pointer',

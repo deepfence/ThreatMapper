@@ -24,7 +24,7 @@ export interface TopNSecretChartData {
 }
 
 function getChartOptions({ data, theme }: { data: TopNSecretChartData[]; theme: Mode }) {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
 
   return {
     backgroundColor: 'transparent',

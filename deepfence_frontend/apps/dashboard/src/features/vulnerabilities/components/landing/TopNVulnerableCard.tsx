@@ -30,7 +30,7 @@ function getChartOptions({
   data: TopNVulnerableChartData[];
   theme: Mode;
 }) {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
 
   return {
     backgroundColor: 'transparent',
