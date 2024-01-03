@@ -1,4 +1,4 @@
-import { preset } from 'tailwind-preset';
+import { colors } from 'tailwind-preset';
 import { Button, Card } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
@@ -46,6 +46,7 @@ export const TopRisksRuntimeDummy = () => {
 
 const DummyDonutChart = () => {
   const { mode } = useTheme();
+  const color = colors[mode === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
   const data: { [x: string]: number } = {
     critical: 100,
     high: 50,
@@ -73,7 +74,7 @@ const DummyDonutChart = () => {
         radius: ['72%', '100%'],
         itemStyle: {
           borderWidth: 2,
-          borderColor: preset.theme.extend.colors.bg.card,
+          borderColor: color['bg-card'],
         },
         label: {
           show: false,

@@ -209,13 +209,13 @@ const CountWidget = (props: {
 const ScanComapareTime = ({ baseScanTime, toScanTime }: IScanCompareProps) => {
   return (
     <div className="px-1.5 flex items-center h-12">
-      <div className="dark:text-text-text-and-icon text-p4 flex gap-x-1">
+      <div className="text-text-text-and-icon text-p4 flex gap-x-1">
         Comparing scan{' '}
-        <span className="dark:text-text-input-value text-p4">
+        <span className="text-text-input-value text-p4">
           {formatMilliseconds(baseScanTime)}
         </span>{' '}
         with{' '}
-        <span className="dark:text-text-input-value text-p4">
+        <span className="text-text-input-value text-p4">
           {formatMilliseconds(toScanTime)}
         </span>
       </div>

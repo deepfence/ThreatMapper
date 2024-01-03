@@ -112,7 +112,7 @@ function getChartOptions({
           return truncate(value, { length: 20 });
         },
         fontSize: '12px',
-        color: preset.theme.extend.colors.text['text-and-icon'],
+        color: color['text-text-and-icon'],
       },
       axisLine: {
         show: false,

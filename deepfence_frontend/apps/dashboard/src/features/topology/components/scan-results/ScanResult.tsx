@@ -133,7 +133,7 @@ const ScanStatusError = () => {
       <div className="h-6 w-6 shrink-0 text-status-error">
         <ErrorStandardSolidIcon />
       </div>
-      <p className="dark:text-text-text-and-icon text-h3">Scan failed</p>
+      <p className="text-text-text-and-icon text-h3">Scan failed</p>
     </div>
   );
 };
@@ -153,7 +153,7 @@ const ScanStatusNeverScanned = () => {
       <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">
         <ErrorStandardLineIcon />
       </div>
-      <p className="dark:text-text-text-and-icon text-h3">Never scanned</p>
+      <p className="text-text-text-and-icon text-h3">Never scanned</p>
     </div>
   );
 };

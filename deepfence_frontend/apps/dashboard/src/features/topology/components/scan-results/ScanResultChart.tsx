@@ -1,4 +1,4 @@
-import { preset } from 'tailwind-preset';
+import { colors, preset } from 'tailwind-preset';
 
 import { ReactECharts } from '@/components/ReactEcharts';
 import { Mode } from '@/theme/ThemeContext';
@@ -13,6 +13,7 @@ export const ScanResultChart = ({
   data: Array<{ value: number; name: string; color: string }>;
   to: string;
 }) => {
+  const color = colors[theme === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
   const totalValue = data.reduce((prev, record) => prev + record.value, 0);
 
   return (
@@ -32,7 +33,7 @@ export const ScanResultChart = ({
             radius: ['65%', '91%'],
             itemStyle: {
               borderWidth: 2,
-              borderColor: preset.theme.extend.colors.bg.card,
+              borderColor: color['bg-card'],
             },
             label: {
               position: 'center',
@@ -40,7 +41,7 @@ export const ScanResultChart = ({
                 return abbreviateNumber(totalValue).toString();
               },
               fontSize: '18px',
-              color: preset.theme.extend.colors.text['input-value'],
+              color: color['text-input-value'],
               fontWeight: 600,
               fontFamily: preset.theme.extend.fontFamily.sans.join(','),
             },

@@ -193,8 +193,8 @@ const colors = {
       'status-warning': '#e3a008',
       'status-info': '#1d8ee6',
 
-      'chart-splitline': commonColors['df-gray']['600'],
-      'chart-axislabel': commonColors['df-gray']['100'],
+      'chart-splitline': '#F3F6FA',
+      'chart-axislabel': '#61717D',
       'brand-error': '#f56682',
 
       ...commonColors,
@@ -233,8 +233,8 @@ const colors = {
       'status-warning': '#ff9c32',
       'status-info': '#1d8ee6',
 
-      'chart-splitline': commonColors['df-gray']['400'],
-      'chart-axislabel': commonColors['df-gray']['900'],
+      'chart-splitline': '#25333D',
+      'chart-axislabel': '#61717D',
       'brand-error': '#f56682',
 
       ...commonColors,

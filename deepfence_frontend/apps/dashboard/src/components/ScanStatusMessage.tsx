@@ -40,9 +40,7 @@ export const ScanStatusInError = ({ errorMessage }: { errorMessage: string }) =>
         </div>
       )}
 
-      <div className="flex flex-col text-h3 dark:text-text-text-and-icon">
-        Scan failed
-      </div>
+      <div className="flex flex-col text-h3 text-text-text-and-icon">Scan failed</div>
     </div>
   );
 };
