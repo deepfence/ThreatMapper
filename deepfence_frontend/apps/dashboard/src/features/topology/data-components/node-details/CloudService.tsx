@@ -71,7 +71,7 @@ export const CloudService = ({
           >
             <Suspense
               fallback={
-                <div className="min-h-[300px] flex items-center justify-center dark:bg-bg-side-panel">
+                <div className="min-h-[300px] flex items-center justify-center bg-bg-side-panel">
                   <CircleSpinner size="lg" />
                 </div>
               }

@@ -209,7 +209,7 @@ export const TopologyGraph = () => {
           style={{
             top: tooltipLoc.y,
             left: tooltipLoc.x,
-            display: !debouncedTooltipLoc.show ? 'none' : 'block',
+            display: !debouncedTooltipLoc.show ? 'block' : 'block',
           }}
           ref={tooltipRef}
         >
@@ -315,7 +315,7 @@ const GraphTooltip = ({
     <div
       role="tooltip"
       className={cn(
-        'inline-block rounded-[5px] dark:bg-text-text-and-icon bg-white w-[200px] select-text',
+        'inline-block rounded-[5px] dark:bg-[#C1CFD9] bg-white w-[200px] select-text',
         'pt-1.5 pb-1.5 px-2.5 dark:text-text-text-inverse text-text-input-value',
         'shadow-md',
       )}
@@ -335,7 +335,7 @@ const GraphTooltip = ({
                 onClick={() => {
                   onExpandCollapseClick(model);
                 }}
-                className="px-2.5 text-p6 py-1 hover:dark:bg-text-text-and-icon hover:bg-white flex items-center gap-2 w-full"
+                className="px-2.5 text-p6 py-1 dark:hover:bg-text-text-and-icon hover:bg-bg-hover-2 flex items-center gap-2 w-full"
               >
                 <div className="h-4 w-4 shrink-0">
                   {expanded ? <ResizeDownIcon /> : <ResizeUpIcon />}
@@ -350,7 +350,7 @@ const GraphTooltip = ({
                 onClick={() => {
                   onViewDetailsClick(model);
                 }}
-                className="px-2.5 text-p6 py-1 hover:dark:bg-text-text-and-icon hover:bg-white flex items-center gap-2 w-full"
+                className="px-2.5 text-p6 py-1 dark:hover:bg-text-text-and-icon hover:bg-bg-hover-2 flex items-center gap-2 w-full"
               >
                 <div className="h-4 w-4 shrink-0">
                   <DetailsLineIcon />

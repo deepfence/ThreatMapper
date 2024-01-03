@@ -1,5 +1,5 @@
 import { useFetcher, useRouteLoaderData } from 'react-router-dom';
-import { Dropdown, DropdownItem, Separator } from 'ui-components';
+import { Dropdown, DropdownItem, DropdownSubMenu, Separator } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { CaretDown } from '@/components/icons/common/CaretDown';
@@ -33,7 +33,7 @@ const DeepfenceLogo = () => {
 
 export const OnboardAppHeader = () => {
   const fetcher = useFetcher();
-  const { setMode, mode } = useTheme();
+  const { setMode, userSelectedMode } = useTheme();
   const { email } = (useRouteLoaderData('onboard') as { email: string }) ?? {
     email: '',
   };
@@ -64,20 +64,43 @@ export const OnboardAppHeader = () => {
           <Dropdown
             triggerAsChild
             align="end"
+            loop
             content={
               <>
-                <DropdownItem
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setMode(mode === 'light' ? 'dark' : 'light');
-                  }}
-                  className="text-text-input-value"
+                <DropdownSubMenu
+                  triggerAsChild
+                  content={
+                    <>
+                      <DropdownItem
+                        selected={!userSelectedMode}
+                        onSelect={() => {
+                          setMode(undefined);
+                        }}
+                      >
+                        System
+                      </DropdownItem>
+                      <DropdownItem
+                        selected={userSelectedMode === 'light'}
+                        onSelect={() => {
+                          setMode('light');
+                        }}
+                      >
+                        Light
+                      </DropdownItem>
+                      <DropdownItem
+                        selected={userSelectedMode === 'dark'}
+                        onSelect={() => {
+                          setMode('dark');
+                        }}
+                      >
+                        Dark
+                      </DropdownItem>
+                    </>
+                  }
                 >
-                  {mode === 'light' ? 'Dark Mode' : 'Light Mode'}
-                </DropdownItem>
-                <DropdownItem onClick={logout} className="text-text-input-value">
-                  Logout
-                </DropdownItem>
+                  Theme
+                </DropdownSubMenu>
+                <DropdownItem onClick={logout}>Logout</DropdownItem>
               </>
             }
           >
