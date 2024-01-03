@@ -24,7 +24,7 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
 
   return (
     <>
-      <div className="text-p7 dark:text-text-input-value">
+      <div className="text-p7 text-text-input-value">
         Connect to your Docker Registry. Find out more information by{' '}
         <DFLink
           href={`https://community.deepfence.io/threatmapper/docs/v2.0/registries/`}
@@ -35,7 +35,7 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
         </DFLink>
         .
       </div>
-      <p className="mt-6 text-p1 dark:text-text-input-value">Enter Information</p>
+      <p className="mt-6 text-p1 text-text-input-value">Enter Information</p>
       <div className="mt-4 w-full relative flex flex-col gap-y-4">
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"
@@ -94,7 +94,7 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
           </div>
         )}
 
-        <div className="text-p7 dark:text-text-input-value">
+        <div className="text-p7 text-text-input-value">
           Supported Versions: API version v2
         </div>
       </div>

@@ -188,8 +188,8 @@ const Count = ({
     .length;
   return (
     <div className="flex items-center gap-x-2 mt-1">
-      <span className="text-h1 dark:text-text-input-value">{len}</span>
-      <span className="text-p4 dark:text-text-text-and-icon">
+      <span className="text-h1 text-text-input-value">{len}</span>
+      <span className="text-p4 text-text-text-and-icon">
         {`Connection${len && len > 1 ? 's' : ''}`}
       </span>
     </div>
@@ -413,11 +413,11 @@ const AIIntegrations = () => {
                   <span className="h-9 w-9">{type.icon}</span>
                 </div>
                 <div className="flex flex-col">
-                  <h4 className="text-h6 dark:text-text-input-value">{type.label}</h4>
+                  <h4 className="text-h6 text-text-input-value">{type.label}</h4>
 
                   <div className="flex items-center gap-x-2 mt-2">
-                    <span className="text-h1 dark:text-text-input-value">{count}</span>
-                    <span className="text-p4 dark:text-text-text-and-icon">
+                    <span className="text-h1 text-text-input-value">{count}</span>
+                    <span className="text-p4 text-text-text-and-icon">
                       {`Connection`}
                     </span>
                   </div>
@@ -435,7 +435,7 @@ const ThreatRx = () => {
   return (
     <section className="flex flex-col">
       <h2 className="flex items-center gap-2 text-h5 animate-text-gradient text-transparent bg-gradient-to-r from-pink-400 via-orange-400 to-fuchsia-300 bg-clip-text">
-        <div className="h-4 w-4 dark:text-orange-400">
+        <div className="h-4 w-4 dark:text-orange-400 text-orange-500">
           <SparkleLineIcon />
         </div>
         ThreatRx

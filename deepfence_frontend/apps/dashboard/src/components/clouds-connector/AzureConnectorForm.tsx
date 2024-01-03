@@ -18,7 +18,7 @@ export const AzureConnectorForm = () => {
         }
         title="Terraform"
       >
-        <div className="text-p7 dark:text-text-text-and-icon">
+        <div className="text-p7 text-text-text-and-icon">
           Connect to your Azure Cloud Account via Terraform. Find out more information by{' '}
           <DFLink
             href={`https://community.deepfence.io/threatmapper/docs/v2.0/cloudscanner/azure`}

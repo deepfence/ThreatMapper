@@ -7,7 +7,7 @@ export const ScanStatusInProgress = () => {
   return (
     <div className="flex items-center justify-center gap-x-2">
       <CircleSpinner size="md" />
-      <span className="text-h3 font-medium dark:text-text-text-and-icon">
+      <span className="text-h3 font-medium text-text-text-and-icon">
         Scan is in progress, please wait...
       </span>
     </div>
@@ -18,9 +18,7 @@ export const ScanStatusStopping = () => {
   return (
     <div className="flex items-center justify-center gap-x-2">
       <CircleSpinner size="md" />
-      <span className="text-h3 font-medium dark:text-text-text-and-icon">
-        Scan cancelling
-      </span>
+      <span className="text-h3 font-medium text-text-text-and-icon">Scan cancelling</span>
     </div>
   );
 };
@@ -60,16 +58,14 @@ export const ScanStatusStopped = ({ errorMessage }: { errorMessage: string }) =>
         </div>
       )}
 
-      <div className="flex flex-col text-h3 dark:text-text-text-and-icon">
-        Scan cancelled
-      </div>
+      <div className="flex flex-col text-h3 text-text-text-and-icon">Scan cancelled</div>
     </div>
   );
 };
 
 export const ScanStatusNoData = ({ message }: { message?: string }) => {
   return (
-    <div className="flex-1 flex gap-2 items-center justify-center p-6 dark:text-text-text-and-icon">
+    <div className="flex-1 flex gap-2 items-center justify-center p-6 text-text-text-and-icon">
       <div className="h-6 w-6 shrink-0">
         <ErrorStandardLineIcon />
       </div>

@@ -179,10 +179,7 @@ const AIIntegrationAdd = () => {
         {!fetcher.data?.success ? (
           <fetcher.Form method="POST" className="flex flex-col gap-8 m-4">
             <div className="flex flex-col gap-2">
-              <label
-                htmlFor="genAIProviders"
-                className="text-p3 text-gray-900 dark:text-text-text-and-icon"
-              >
+              <label htmlFor="genAIProviders" className="text-p3 text-text-text-and-icon">
                 Select Provider
               </label>
               <Radio
@@ -315,10 +312,10 @@ const AmazonBedrockFormFields = ({ fetcherData }: { fetcherData?: ActionData }) 
         onCheckedChange={(val) => setUseIAM(val as boolean)}
         label={
           <div className="pl-3 cursor-pointer">
-            <p className="text-h5 text-gray-900 dark:text-text-text-and-icon">
+            <p className="text-h5 text-text-text-and-icon">
               Automatically add Bedrock integrations
             </p>
-            <p className="text-p6 text-gray-900 dark:text-text-text-and-icon">
+            <p className="text-p6 text-text-text-and-icon">
               If the management console is deployed in AWS with instance role and read
               permission to Bedrock, integrations will be added automatically
             </p>

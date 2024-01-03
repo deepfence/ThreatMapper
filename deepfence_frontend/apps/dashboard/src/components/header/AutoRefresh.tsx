@@ -49,7 +49,7 @@ export const AutoRefresh = () => {
   }, [spinning]);
 
   return (
-    <div className="flex items-stretch text-gray-500 dark:text-text-text-and-icon">
+    <div className="flex items-stretch text-text-text-and-icon">
       <button
         className="flex items-center justify-center"
         title="Refresh now"
@@ -64,7 +64,7 @@ export const AutoRefresh = () => {
         }}
       >
         <span
-          className={cn('w-4 h-4 dark:text-text-text-and-icon', {
+          className={cn('w-4 h-4 text-text-text-and-icon', {
             'animate-spin direction-reverse': spinning,
           })}
         >
@@ -134,7 +134,7 @@ export const AutoRefresh = () => {
       >
         <div className="flex items-center gap-1 cursor-pointer px-2 text-p2 select-none">
           <span>Refresh data</span>
-          <span className="dark:text-text-input-value text-h6">
+          <span className="text-text-input-value text-h6">
             {refreshInSeconds !== 0 ? secondsToHuman(refreshInSeconds) : 'Never'}
           </span>
           <span className="w-3 h-3">

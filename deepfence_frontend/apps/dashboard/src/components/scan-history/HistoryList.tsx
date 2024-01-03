@@ -51,18 +51,18 @@ export const ScanHistoryDropdown = ({
                     status={scan.status}
                     justIcon
                     className={cn('gap-1 text-p7', {
-                      'dark:text-text-input-value': scan.isCurrent,
+                      'text-text-input-value': scan.isCurrent,
                     })}
                   />
                   <span
-                    className={cn('text-p7 dark:text-text-text-and-icon', {
-                      'dark:text-text-input-value': scan.isCurrent,
+                    className={cn('text-p7 text-text-text-and-icon', {
+                      'text-text-input-value': scan.isCurrent,
                     })}
                   >
                     {formatMilliseconds(scan.timestamp)}
                   </span>
 
-                  <div className="flex items-center dark:text-text-link">
+                  <div className="flex items-center text-text-link">
                     {isScanComplete(scan.status) ? (
                       <IconButton
                         variant="flat"
@@ -120,9 +120,9 @@ export const ScanHistoryDropdown = ({
         </>
       }
     >
-      <span className="text-h5 flex items-center dark:text-text-input-value gap-x-2">
+      <span className="text-h5 flex items-center text-text-input-value gap-x-2">
         {currentTimeStamp}
-        <div className="h-4 w-4 dark:text-accent-accent">
+        <div className="h-4 w-4 text-accent-accent">
           <CaretDown />
         </div>
       </span>

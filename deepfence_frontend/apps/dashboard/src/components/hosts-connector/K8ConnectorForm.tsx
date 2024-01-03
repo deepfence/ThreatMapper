@@ -212,7 +212,7 @@ const FirstCommand = () => {
   const { copy, isCopied } = useCopyToClipboardState();
   return (
     <div className="relative flex items-center">
-      <pre className="h-fit text-p7 dark:text-text-text-and-icon">
+      <pre className="h-fit text-p7 text-text-text-and-icon">
         helm repo add deepfence
         https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
       </pre>
@@ -236,7 +236,7 @@ const SecondCommand = () => {
   const { copy, isCopied } = useCopyToClipboardState();
   return (
     <div className="relative flex items-center">
-      <pre className="h-fit text-p7 dark:text-text-text-and-icon">helm repo update</pre>
+      <pre className="h-fit text-p7 text-text-text-and-icon">helm repo update</pre>
       <div className="flex items-center ml-auto self-start">
         {isCopied ? 'copied' : null}
         <IconButton
@@ -267,7 +267,7 @@ const ThirdCommand = ({ command }: { command: string }) => {
   const { copy, isCopied } = useCopyToClipboardState();
   return (
     <div className="relative flex items-center">
-      <pre className="h-fit text-p7 dark:text-text-text-and-icon">
+      <pre className="h-fit text-p7 text-text-text-and-icon">
         {command
           .replace(PLACEHOLDER_API_KEY, dfApiKey)
           .replaceAll(PLACEHOLDER_VERSION, version.trim())}
@@ -342,7 +342,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
           }
           title="Connect Kubernetes Cluster"
         >
-          <div className="text-p7 dark:text-text-text-and-icon">
+          <div className="text-p7 text-text-text-and-icon">
             Deploy Deepfence agent Kubernetes Scanner. Find out more information by{' '}
             <DFLink
               href={`https://community.deepfence.io/threatmapper/docs/v2.0/sensors/kubernetes`}
@@ -365,7 +365,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
           title="Enter Information"
         >
           <div>
-            <p className="mb-2.5 text-p7 dark:text-text-text-and-icon">
+            <p className="mb-2.5 text-p7 text-text-text-and-icon">
               Fill the following details:
             </p>
             <Card className="w-full relative">
@@ -384,7 +384,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
           }
           title="Copy Code"
         >
-          <div className="text-p7 dark:text-text-text-and-icon">
+          <div className="text-p7 text-text-text-and-icon">
             <p className="mb-2.5">
               Copy the following commands and paste them into your shell.
             </p>

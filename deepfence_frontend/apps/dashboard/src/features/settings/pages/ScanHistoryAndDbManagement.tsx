@@ -232,10 +232,10 @@ const UploadVulnerabilityDatabase = () => {
   return (
     <>
       <div className="mt-9">
-        <h3 className="text-h6 dark:text-text-input-value">Database management</h3>
+        <h3 className="text-h6 text-text-input-value">Database management</h3>
       </div>
 
-      <p className="mt-4 text-p4 dark:text-text-text-and-icon">
+      <p className="mt-4 text-p4 text-text-text-and-icon">
         You can upload affected database, and scan and check their results
       </p>
       <FileInput
@@ -334,17 +334,15 @@ const ScanHistoryAndDbManagement = () => {
         />
       )}
       <div className="mt-2">
-        <h3 className="text-h6 dark:text-text-input-value">Scan History</h3>
+        <h3 className="text-h6 text-text-input-value">Scan History</h3>
       </div>
 
-      <p className="mt-4 text-p4 dark:text-text-text-and-icon">
+      <p className="mt-4 text-p4 text-text-text-and-icon">
         Please specify the resource and duration you would like to delete from the scan
         history.
       </p>
       <div className="mt-4 flex flex-col">
-        <h6 className="text-p3 text-text-text-and-icon dark:text-text-text-and-icon pb-[10px]">
-          Choose resource
-        </h6>
+        <h6 className="text-p3 text-text-text-and-icon pb-[10px]">Choose resource</h6>
         <Radio
           direction="row"
           name="severityOrStatus"

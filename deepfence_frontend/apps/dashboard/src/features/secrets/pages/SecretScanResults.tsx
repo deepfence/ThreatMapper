@@ -498,7 +498,7 @@ const NotifyModal = ({
       onOpenChange={() => closeModal(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-text-text-and-icon">
+          <div className="flex gap-3 items-center text-text-text-and-icon">
             <span className="h-6 w-6 shrink-0">
               <BellLineIcon />
             </span>
@@ -568,9 +568,7 @@ const ScanHistory = () => {
       </span>
       <Suspense
         fallback={
-          <div className="dark:text-text-text-and-icon text-p9">
-            Fetching scan history...
-          </div>
+          <div className="text-text-text-and-icon text-p9">Fetching scan history...</div>
         }
       >
         <HistoryControls />
@@ -1393,7 +1391,7 @@ const SecretTable = ({
             isDockerImageNameEmpty={isDockerImageNameEmpty}
             trigger={
               <button className="p-1">
-                <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
                   <EllipsisIcon />
                 </div>
               </button>
@@ -1415,7 +1413,7 @@ const SecretTable = ({
             }}
             className="flex items-center gap-x-[6px]"
           >
-            <div className="w-4 h-4 shrink-0 dark:text-text-text-and-icon">
+            <div className="w-4 h-4 shrink-0 text-text-text-and-icon">
               <SecretsIcon />
             </div>
             <TruncatedText text={info.row.original.name ?? info.getValue() ?? ''} />
@@ -1724,7 +1722,7 @@ const SeverityCounts = ({
               }}
             ></div>
             <button
-              className="capitalize text-p7 dark:text-text-text-and-icon"
+              className="capitalize text-p7 text-text-text-and-icon"
               onClick={() => {
                 setSearchParams((prev) => {
                   prev.delete('page');

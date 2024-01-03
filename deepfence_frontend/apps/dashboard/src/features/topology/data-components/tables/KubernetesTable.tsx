@@ -425,7 +425,7 @@ const DataTable = ({
                   </>
                 }
               >
-                <div className="cursor-pointer h-3 w-4 dark:text-text-text-and-icon rotate-90">
+                <div className="cursor-pointer h-3 w-4 text-text-text-and-icon rotate-90">
                   <EllipsisIcon />
                 </div>
               </Dropdown>

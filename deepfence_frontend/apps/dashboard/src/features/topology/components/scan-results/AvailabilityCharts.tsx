@@ -126,16 +126,14 @@ export const AvailabilityCharts = ({
               />
             ) : (
               <div className="flex items-center justify-center h-full w-full gap-2">
-                <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">
+                <div className="h-6 w-6 shrink-0 text-text-text-and-icon">
                   <ErrorStandardLineIcon />
                 </div>
-                <p className="dark:text-text-text-and-icon text-h3">Not available</p>
+                <p className="text-text-text-and-icon text-h3">Not available</p>
               </div>
             )}
           </div>
-          <div className="text-p6 dark:text-text-input-value text-center mb-4 -mt-10">
-            CPU
-          </div>
+          <div className="text-p6 text-text-input-value text-center mb-4 -mt-10">CPU</div>
         </div>
         <div className="flex flex-col justify-center">
           <div className="h-[220px]">
@@ -146,14 +144,14 @@ export const AvailabilityCharts = ({
               />
             ) : (
               <div className="flex items-center justify-center h-full w-full gap-2">
-                <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">
+                <div className="h-6 w-6 shrink-0 text-text-text-and-icon">
                   <ErrorStandardLineIcon />
                 </div>
-                <p className="dark:text-text-text-and-icon text-h3">Not available</p>
+                <p className="text-text-text-and-icon text-h3">Not available</p>
               </div>
             )}
           </div>
-          <div className="text-p6 dark:text-text-input-value text-center mb-4 -mt-10">
+          <div className="text-p6 text-text-input-value text-center mb-4 -mt-10">
             Memory
           </div>
         </div>

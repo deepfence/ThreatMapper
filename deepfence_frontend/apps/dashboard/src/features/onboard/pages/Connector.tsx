@@ -119,7 +119,7 @@ const Connector = () => {
                 Cancel
               </Button>
             </div>
-            <p className="text-p7 dark:text-text-text-and-icon">
+            <p className="text-p7 text-text-text-and-icon">
               Note: After completing the steps above, your connector will appear on
               MyConnector page and you will be able to scan them.
             </p>

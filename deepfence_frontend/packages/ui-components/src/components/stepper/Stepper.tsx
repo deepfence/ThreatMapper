@@ -41,14 +41,14 @@ export const StepIndicator = ({
     >
       <div
         className={cn(
-          'flex items-center justify-center relative dark:bg-transparent dark:text-text-text-and-icon text-h4',
+          'flex items-center justify-center relative bg-transparent text-text-text-and-icon text-h4',
           className,
         )}
         ref={measureRef}
       >
         <div className="overflow-hidden">
           <div
-            className={cn('dark:bg-bg-card', {
+            className={cn('bg-bg-card', {
               'rounded-full': rounded,
             })}
           >
@@ -73,7 +73,7 @@ export const Step = React.forwardRef<React.ElementRef<'div'>, StepProps>(
         <div className="flex" {...props} ref={forwardedRef}>
           <div className="flex flex-col">{indicator}</div>
           <div ref={measureRef} className="w-full">
-            <h4 className="ml-4 relative mx-0 text-h4 dark:text-text-text-and-icon">
+            <h4 className="ml-4 relative mx-0 text-h4 text-text-text-and-icon">
               {title}
             </h4>
             <div className="ml-4 mb-6">{children}</div>

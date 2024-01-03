@@ -107,10 +107,10 @@ const Cloud = () => {
           Connect an AWS, GCP, or Azure cloud account to check for compliance
           misconfigurations.
         </p>
-        <div className="flex flex-col dark:text-text-text-and-icon">
+        <div className="flex flex-col text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div key={connector.label} className="dark:hover:bg-bg-hover-2">
+              <div key={connector.label} className="hover:bg-bg-hover-2">
                 <CardConnect {...connector} />
               </div>
             );
@@ -181,10 +181,10 @@ const Host = () => {
           Connect a K8s cluster, Docker container, or Linux host to check for
           vulnerabilities, secrets, malware, and compliance misconfigurations.
         </p>
-        <div className="flex flex-col dark:text-text-text-and-icon">
+        <div className="flex flex-col text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div key={connector.label} className="dark:hover:bg-bg-hover-2">
+              <div key={connector.label} className="hover:bg-bg-hover-2">
                 <CardConnect {...connector} />
               </div>
             );

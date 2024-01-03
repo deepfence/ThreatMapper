@@ -345,7 +345,7 @@ const ChangePasswordModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+        <div className="text-h3 text-text-text-and-icon py-4 px-4 bg-bg-header">
           Change your password
         </div>
       </SlidingModalHeader>
@@ -703,9 +703,9 @@ const CurrentUserInfo = ({
         </div>
       </div>
       <div className="flex mt-4 mb-2">
-        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Status</span>
+        <span className="text-p3 min-w-[140px] text-text-text-and-icon">Status</span>
         <span
-          className={cn('text-p1 dark:text-text-input-value', {
+          className={cn('text-p1 text-text-input-value', {
             'text-status-success': currentUser?.is_active,
             'text-gray-700 dark:text-df-gray-400': !currentUser?.is_active,
           })}
@@ -714,30 +714,22 @@ const CurrentUserInfo = ({
         </span>
       </div>
       <div className="flex mt-4 mb-2">
-        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Email</span>
-        <span className="text-p1 dark:text-text-input-value">
-          {currentUser?.email || '-'}
-        </span>
+        <span className="text-p3 min-w-[140px] text-text-text-and-icon">Email</span>
+        <span className="text-p1 text-text-input-value">{currentUser?.email || '-'}</span>
       </div>
       <div className="flex my-3">
-        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">
-          Company
-        </span>
-        <span className="text-p1 dark:text-text-input-value">
+        <span className="text-p3 min-w-[140px] text-text-text-and-icon">Company</span>
+        <span className="text-p1 text-text-input-value">
           {currentUser?.company || '-'}
         </span>
       </div>
       <div className="flex my-3">
-        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Role</span>
-        <span className="text-p1 dark:text-text-input-value">
-          {currentUser?.role || '-'}
-        </span>
+        <span className="text-p3 min-w-[140px] text-text-text-and-icon">Role</span>
+        <span className="text-p1 text-text-input-value">{currentUser?.role || '-'}</span>
       </div>
       <div className="flex my-3">
-        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">
-          API key
-        </span>
-        <div className="text-p1 items-center dark:text-text-input-value flex gap-x-2">
+        <span className="text-p3 min-w-[140px] text-text-text-and-icon">API key</span>
+        <div className="text-p1 items-center text-text-input-value flex gap-x-2">
           <Suspense fallback={<CircleSpinner size="sm" />}>
             <ApiToken />
           </Suspense>
@@ -779,7 +771,7 @@ const UsersTable = () => {
               user={cell.row.original}
               trigger={
                 <button className="p-1">
-                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                  <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
                     <EllipsisIcon />
                   </div>
                 </button>

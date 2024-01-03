@@ -55,7 +55,7 @@ const Command = () => {
 
   return (
     <>
-      <pre className="h-fit text-p7 dark:text-text-text-and-icon">{code}</pre>
+      <pre className="h-fit text-p7 text-text-text-and-icon">{code}</pre>
       <div className="flex items-center ml-auto self-start">
         {isCopied ? 'copied' : null}
         <IconButton
@@ -114,7 +114,7 @@ export const DockerConnectorForm = () => {
         }
         title="Connect Docker Container"
       >
-        <div className="text-p7 dark:text-text-text-and-icon">
+        <div className="text-p7 text-text-text-and-icon">
           Deploy Deepfence agent sensor as a docker container. Find out more information
           by{' '}
           <DFLink
@@ -136,7 +136,7 @@ export const DockerConnectorForm = () => {
         }
         title="Deploy"
       >
-        <div className="text-p7 dark:text-text-text-and-icon">
+        <div className="text-p7 text-text-text-and-icon">
           <p className="mb-2.5">
             Copy the following commands and paste them into your shell.
           </p>

@@ -80,20 +80,20 @@ const Cloud = () => {
   return (
     <>
       <div className="py-4 items-center flex px-6 gap-x-2">
-        <span className="w-6 h-6 dark:text-accent-accent">
+        <span className="w-6 h-6 text-accent-accent">
           <CloudLine />
         </span>
-        <span className="dark:text-text-text-and-icon text-h2">Cloud</span>
+        <span className="text-text-text-and-icon text-h2">Cloud</span>
       </div>
       <div className="mb-4">
-        <p className={`px-6 text-p4 dark:text-text-text-and-icon min-h-[110px]`}>
+        <p className={`px-6 text-p4 text-text-text-and-icon min-h-[110px]`}>
           Connect an AWS, GCP, or Azure cloud account to check for compliance
           misconfigurations.
         </p>
-        <div className="flex flex-col dark:text-text-text-and-icon">
+        <div className="flex flex-col text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div key={connector.label} className="dark:hover:bg-bg-hover-2">
+              <div key={connector.label} className="hover:bg-bg-hover-2">
                 <CardConnect {...connector} />
               </div>
             );
@@ -150,20 +150,20 @@ const Host = () => {
   return (
     <>
       <div className="py-4 items-center flex px-6 gap-x-2">
-        <span className="w-6 h-6 dark:text-accent-accent">
+        <span className="w-6 h-6 text-accent-accent">
           <HostIcon />
         </span>
-        <span className="dark:text-text-text-and-icon text-h2">Host</span>
+        <span className="text-text-text-and-icon text-h2">Host</span>
       </div>
       <div className="mb-4">
-        <p className={`px-6 text-p4 dark:text-text-text-and-icon min-h-[110px]`}>
+        <p className={`px-6 text-p4 text-text-text-and-icon min-h-[110px]`}>
           Connect a K8s cluster, Docker container, or Linux host to check for
           vulnerabilities, secrets, malware, and compliance misconfigurations.
         </p>
-        <div className="flex flex-col dark:text-text-text-and-icon">
+        <div className="flex flex-col text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div key={connector.label} className="dark:hover:bg-bg-hover-2">
+              <div key={connector.label} className="hover:bg-bg-hover-2">
                 <CardConnect {...connector} />
               </div>
             );
@@ -246,21 +246,21 @@ const Registries = () => {
   return (
     <>
       <div className="py-4 items-center flex px-6 gap-x-2">
-        <span className="w-6 h-6 dark:text-accent-accent">
+        <span className="w-6 h-6 text-accent-accent">
           <RegistryIcon />
         </span>
-        <span className="dark:text-text-text-and-icon text-h2">Registry</span>
+        <span className="text-text-text-and-icon text-h2">Registry</span>
       </div>
       <div className="mb-4">
-        <p className="px-6 text-p4 dark:text-text-text-and-icon min-h-[110px]">
+        <p className="px-6 text-p4 text-text-text-and-icon min-h-[110px]">
           Connect a registry to scan images for vulnerabilities.
           <br></br>
           &nbsp;
         </p>
-        <div className="flex flex-col dark:text-text-text-and-icon">
+        <div className="flex flex-col text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div key={connector.path} className="dark:hover:bg-bg-hover-2">
+              <div key={connector.path} className="hover:bg-bg-hover-2">
                 <CardConnect {...connector} />
               </div>
             );

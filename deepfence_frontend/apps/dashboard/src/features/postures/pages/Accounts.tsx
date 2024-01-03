@@ -782,7 +782,7 @@ const AccountTable = ({
               onTableAction={onTableAction}
               trigger={
                 <button className="p-1 flex">
-                  <span className="block h-4 w-4 dark:text-text-text-and-icon rotate-90 shrink-0">
+                  <span className="block h-4 w-4 text-text-text-and-icon rotate-90 shrink-0">
                     <EllipsisIcon />
                   </span>
                 </button>

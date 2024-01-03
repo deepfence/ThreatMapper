@@ -54,7 +54,7 @@ const Command = () => {
   deepfenceio/deepfence_agent_ce:${version}`;
   return (
     <>
-      <pre className="h-fit text-p7 dark:text-text-text-and-icon">{code}</pre>
+      <pre className="h-fit text-p7 text-text-text-and-icon">{code}</pre>
       <div className="flex items-center ml-auto self-start">
         {isCopied ? 'copied' : null}
         <IconButton
@@ -110,7 +110,7 @@ export const LinuxConnectorForm = () => {
         }
         title="Connect Linux VM"
       >
-        <div className="text-p7 dark:text-text-text-and-icon">
+        <div className="text-p7 text-text-text-and-icon">
           Connect to Linux VM. Find out more information by{' '}
           <DFLink
             href={`https://community.deepfence.io/threatmapper/docs/v2.0/sensors/docker`}
@@ -131,7 +131,7 @@ export const LinuxConnectorForm = () => {
         }
         title="Deploy"
       >
-        <div className="text-p7 dark:text-text-text-and-icon">
+        <div className="text-p7 text-text-text-and-icon">
           <p className="mb-2.5">
             Copy the following commands and paste them into your shell.
           </p>

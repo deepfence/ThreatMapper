@@ -119,7 +119,7 @@ const ScanResultHeading = ({
         <h5 className="text-h5 dark:text-text-input-value">{title}</h5>
       )}
       {timestamp ? (
-        <div className="dark:text-text-text-and-icon text-p8">
+        <div className="text-text-text-and-icon text-p8">
           {formatToRelativeTimeFromNow(timestamp)}
         </div>
       ) : null}
@@ -142,7 +142,7 @@ const ScanStatusInProgress = () => {
   return (
     <div className="flex items-center justify-center h-full w-full gap-2">
       <CircleSpinner size="sm" />
-      <p className="dark:text-text-text-and-icon text-h3">Scan in progress</p>
+      <p className="text-text-text-and-icon text-h3">Scan in progress</p>
     </div>
   );
 };
@@ -150,7 +150,7 @@ const ScanStatusInProgress = () => {
 const ScanStatusNeverScanned = () => {
   return (
     <div className="flex items-center justify-center h-full w-full gap-2">
-      <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">
+      <div className="h-6 w-6 shrink-0 text-text-text-and-icon">
         <ErrorStandardLineIcon />
       </div>
       <p className="text-text-text-and-icon text-h3">Never scanned</p>
@@ -222,7 +222,7 @@ const ScanResultComponent = ({
                 );
               })}
               {!Object.keys(scanSummary.counts).length ? (
-                <div className="dark:text-text-text-and-icon pr-3">No issues found</div>
+                <div className="text-text-text-and-icon pr-3">No issues found</div>
               ) : null}
             </div>
           </div>

@@ -73,7 +73,7 @@ function getChartOptions({ data, theme }: { data: TopNSecretChartData[]; theme: 
       borderRadius: 5,
       backgroundColor: color['bg-page'],
       textStyle: {
-        color: color['text-input-value'],
+        color: color['text-text-and-icon'],
         fontSize: '13px',
       },
     },
@@ -205,7 +205,7 @@ const TopNCardContent = ({ type }: { type: 'host' | 'container' | 'image' }) => 
       {data.length ? (
         <ReactECharts theme="dark" option={chartOptions} />
       ) : (
-        <div className="flex items-center justify-center gap-2 dark:text-text-text-and-icon">
+        <div className="flex items-center justify-center gap-2 text-text-text-and-icon">
           <div className="h-6 w-6 shrink-0">
             <ErrorStandardLineIcon />
           </div>

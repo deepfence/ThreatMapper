@@ -318,7 +318,7 @@ export const SecretScanConfigureForm = ({
 
       {shouldSetPriorityScan(nodeType as SecretScanNodeTypeEnum) ? (
         <div className="flex flex-col gap-y-2 mt-4">
-          <h6 className={'text-p3 dark:text-text-text-and-icon'}>Priority scan</h6>
+          <h6 className={'text-p3 text-text-text-and-icon'}>Priority scan</h6>
           <Checkbox name="isPriorityScan" label="Priority scan" />
         </div>
       ) : null}

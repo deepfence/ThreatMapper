@@ -485,7 +485,7 @@ const NotifyModal = ({
       onOpenChange={() => closeModal(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-text-text-and-icon">
+          <div className="flex gap-3 items-center text-text-text-and-icon">
             <span className="h-6 w-6 shrink-0">
               <BellLineIcon />
             </span>
@@ -1297,7 +1297,7 @@ const PostureTable = ({
             onTableAction={onTableAction}
             trigger={
               <button className="p-1">
-                <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
                   <EllipsisIcon />
                 </div>
               </button>
@@ -1322,7 +1322,7 @@ const PostureTable = ({
             }}
             className="flex items-center gap-x-[6px]"
           >
-            <div className="w-4 h-4 dark:text-text-text-and-icon">
+            <div className="w-4 h-4 text-text-text-and-icon">
               <PostureIcon />
             </div>
             <TruncatedText

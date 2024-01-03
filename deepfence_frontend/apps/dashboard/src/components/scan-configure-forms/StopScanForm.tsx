@@ -105,7 +105,7 @@ export const StopScanForm = ({
       onOpenChange={() => closeModal(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-text-text-and-icon">
+          <div className="flex gap-3 items-center text-text-text-and-icon">
             <span className="h-6 w-6 shrink-0 dark:text-df-gray-500">
               <ErrorStandardLineIcon />
             </span>

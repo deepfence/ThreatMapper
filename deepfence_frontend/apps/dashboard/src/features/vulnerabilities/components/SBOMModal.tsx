@@ -158,7 +158,7 @@ const ModalContent = ({ scanId }: { scanId: string }) => {
   }, []);
 
   if (data.message?.length) {
-    return <div className="dark:text-text-text-and-icon">{data.message}</div>;
+    return <div className="text-text-text-and-icon">{data.message}</div>;
   }
 
   return (

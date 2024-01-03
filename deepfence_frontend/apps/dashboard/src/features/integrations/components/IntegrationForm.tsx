@@ -268,21 +268,17 @@ const AdvancedFilters = ({
                   return value && value.length ? `${value.length} selected` : '';
                 }}
               >
-                <div className="px-3 pt-2 text-p3 text-gray-900 dark:text-text-text-and-icon">
-                  Host
-                </div>
+                <div className="px-3 pt-2 text-p3 text-text-text-and-icon">Host</div>
                 <ListboxOption value={'Alarm'}>Alarm</ListboxOption>
                 <ListboxOption value={'Note'}>Note</ListboxOption>
                 <ListboxOption value={'Ok'}>Ok</ListboxOption>
-                <div className="px-3 pt-4 text-p3 text-gray-900 dark:text-text-text-and-icon">
+                <div className="px-3 pt-4 text-p3 text-text-text-and-icon">
                   Kubernetes
                 </div>
                 <ListboxOption value={'Pass'}>Pass</ListboxOption>
                 <ListboxOption value={'Skip'}>Skip</ListboxOption>
                 <ListboxOption value={'Warn'}>Warn</ListboxOption>
-                <div className="px-3 pt-4 text-p3 text-gray-900 dark:text-text-text-and-icon">
-                  Common
-                </div>
+                <div className="px-3 pt-4 text-p3 text-text-text-and-icon">Common</div>
                 <ListboxOption value={'Info'}>Info</ListboxOption>
               </Listbox>
             )}

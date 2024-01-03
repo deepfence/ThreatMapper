@@ -24,7 +24,7 @@ export const AzureCRConnectorForm = ({
 }: RegistryFormProps) => {
   return (
     <>
-      <div className="text-p4 dark:text-text-input-value">
+      <div className="text-p4 text-text-input-value">
         Connect to your Azure Container Registry. Find out more information by{' '}
         <DFLink
           href={`https://community.deepfence.io/threatmapper/docs/v2.0/registries/`}
@@ -35,7 +35,7 @@ export const AzureCRConnectorForm = ({
         </DFLink>
         .
       </div>
-      <p className="mt-6 text-p1 dark:text-text-input-value">Enter Information</p>
+      <p className="mt-6 text-p1 text-text-input-value">Enter Information</p>
       <div className="w-full flex flex-col relative mt-4 gap-y-8">
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"

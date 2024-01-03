@@ -40,9 +40,7 @@ const Secret = () => {
           </DFLink>
         </div>
         <div className="flex gap-2 items-center ml-auto">
-          <span className="text-p6 dark:text-text-text-and-icon self-center">
-            Legends
-          </span>
+          <span className="text-p6 text-text-text-and-icon self-center">Legends</span>
           <div className="flex gap-5">
             <SeverityLegend severity="critical" />
             <SeverityLegend severity="high" />
@@ -67,7 +65,7 @@ const Secret = () => {
               title={'Top Attack Paths'}
               path={'/threatgraph'}
             />
-            <div className="flex-1 flex gap-2 items-center justify-center p-6 dark:text-text-text-and-icon">
+            <div className="flex-1 flex gap-2 items-center justify-center p-6 text-text-text-and-icon">
               <div className="h-6 w-6 shrink-0">
                 <ErrorStandardLineIcon />
               </div>

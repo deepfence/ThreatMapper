@@ -170,10 +170,10 @@ const RegisterWithInvite = () => {
       </div>
 
       <div
-        className={`flex flex-row justify-center text-p7 mt-4 dark:text-text-text-and-icon`}
+        className={`flex flex-row justify-center text-p7 mt-4 text-text-text-and-icon`}
       >
         Already have an account?&nbsp;
-        <DFLink to="/auth/login" className="underline dark:text-accent-accent" unstyled>
+        <DFLink to="/auth/login" className="underline text-accent-accent" unstyled>
           Login
         </DFLink>
       </div>

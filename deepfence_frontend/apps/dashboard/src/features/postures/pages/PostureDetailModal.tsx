@@ -233,12 +233,12 @@ const DetailsComponent = ({
             className="flex flex-col grow basis-[45%] max-w-full gap-1 group"
           >
             <div className="flex relative">
-              <div className="text-p3 dark:text-text-text-and-icon first-letter:capitalize">
+              <div className="text-p3 text-text-text-and-icon first-letter:capitalize">
                 {label}
               </div>
               <CopyField value={valueAsStr} />
             </div>
-            <div className="text-p1 dark:text-text-input-value">
+            <div className="text-p1 text-text-input-value">
               {key in timeFormatKey ? formatMilliseconds(+valueAsStr) : valueAsStr}
             </div>
           </div>
@@ -247,7 +247,7 @@ const DetailsComponent = ({
       {posture.resources?.length ? (
         <div className="flex flex-col grow basis-[100%] max-w-full gap-1 group">
           <div className="basis-[45%] flex relative">
-            <div className="text-p3 dark:text-text-text-and-icon">Resources</div>
+            <div className="text-p3 text-text-text-and-icon">Resources</div>
             <CopyField value={JSON.stringify(posture.resources)} />
           </div>
           <div className="text-p1 flex flex-col">

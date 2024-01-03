@@ -60,7 +60,12 @@ export const Tooltip = (props: TooltipProps) => {
             <>
               {label && (
                 <span
-                  className={cn('text-p6', 'text-text-input-value', 'block', 'pb-[3px]')}
+                  className={cn(
+                    'text-p6',
+                    'dark:text-text-input-value text-text-text-inverse',
+                    'block',
+                    'pb-[3px]',
+                  )}
                 >
                   {label}
                 </span>

@@ -115,7 +115,7 @@ export const RegisterUser = () => {
       </div>
 
       <div
-        className={`flex flex-row justify-center text-p4 mt-4 dark:text-text-text-and-icon`}
+        className={`flex flex-row justify-center text-p4 mt-4 text-text-text-and-icon`}
       >
         Already have an account?&nbsp;
         <DFLink to="/auth/login" className="underline text-accent-accent" unstyled>

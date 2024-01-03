@@ -73,7 +73,7 @@ const CompareTable = (props: IScanCompareProps & { type: string }) => {
             }}
             className="flex items-center gap-x-[6px]"
           >
-            <div className="w-4 h-4 dark:text-text-text-and-icon">
+            <div className="w-4 h-4 text-text-text-and-icon">
               <PostureIcon />
             </div>
             <TruncatedText
@@ -162,10 +162,10 @@ const CompareCountWidget = ({
   const counts = !isDeleted ? data.added : data.deleted;
 
   return (
-    <div className="flex flex-col  dark:text-text-text-and-icon items-center">
+    <div className="flex flex-col text-text-text-and-icon items-center">
       <div className="flex flex-col gap-y-1.5">
         <span className="text-p1">{title}</span>
-        <div className="flex flex-1 max-w-[160px] dark:text-text-input-value items-baseline">
+        <div className="flex flex-1 max-w-[160px] text-text-input-value items-baseline">
           <>
             <div
               className={cn('h-5 w-5', {

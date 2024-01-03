@@ -43,8 +43,8 @@ export const Header = ({
 
   return (
     <SlidingModalHeader>
-      <div className="flex pt-5 pl-5 pr-16 pb-1.5 dark:bg-bg-breadcrumb-bar gap-4 bg-[#f6f7f9]">
-        <div className="flex gap-2 text-h3 dark:text-text-text-and-icon overflow-hidden items-center">
+      <div className="flex pt-5 pl-5 pr-16 pb-1.5 gap-4 bg-bg-header">
+        <div className="flex gap-2 text-h3 text-text-text-and-icon overflow-hidden items-center">
           {showBackBtn ? (
             <button
               className="h-5 w-5 shrink-0 -rotate-90 dark:text-accent-accent "

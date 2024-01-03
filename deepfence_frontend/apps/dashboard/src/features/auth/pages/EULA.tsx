@@ -42,7 +42,7 @@ const EULA = () => {
 
   return (
     <div
-      className="grid h-screen place-items-center overflow-auto dark:bg-bg-card dark:text-text-text-and-icon"
+      className="grid h-screen place-items-center overflow-auto bg-bg-card text-text-text-and-icon"
       style={{
         background: `url("${bg}") no-repeat center center`,
         backgroundSize: 'cover',

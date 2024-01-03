@@ -107,7 +107,7 @@ export const AWSCloudFormation = () => {
           }
           title="Deploy"
         >
-          <div className="text-p7 dark:text-text-text-and-icon">
+          <div className="text-p7 text-text-text-and-icon">
             <p>
               Deploy all modules for Deepfence Posture Scanner for a single account. For
               information on AWS Organizations and account types, see AWS docs.
