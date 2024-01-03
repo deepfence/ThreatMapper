@@ -5,6 +5,9 @@
 nameOverride: ""
 fullnameOverride: ""
 
+# Add labels to all the deployed resources
+commonLabels: {}
+
 global:
   imageRepoPrefix: "docker.io"
   # this image tag is used everywhere for console services
@@ -62,6 +65,7 @@ kafka:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  podLabels: {}
 
 postgres:
   # Specifies whether a postgres database instance should be created
@@ -96,6 +100,7 @@ postgres:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  podLabels: {}
 
 redis:
   # Specifies whether a postgres database instance should be created
@@ -124,6 +129,7 @@ redis:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  podLabels: {}
 
 fileserver:
   # Specifies whether a file server instance should be created
@@ -157,6 +163,7 @@ fileserver:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  podLabels: {}
 
 # these values are used if fileserver.create=false
 aws_s3_buckets:
@@ -214,6 +221,7 @@ neo4j:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  podLabels: {}
 
 # ingress for console
 ingress:
@@ -279,6 +287,7 @@ router:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  podLabels: {}
   # Use custom ssl certificate for Deepfence UI
   # custom certificates can be configured using two options
   # existing secret or base64 encoded cert and key string
@@ -335,6 +344,7 @@ server:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  podLabels: {}
 
 worker:
   replicaCount: 1
@@ -365,6 +375,7 @@ worker:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  podLabels: {}
 
 ingester:
   replicaCount: 1
@@ -395,6 +406,7 @@ ingester:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  podLabels: {}
 
 scheduler:
   image:
@@ -418,6 +430,7 @@ scheduler:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  podLabels: {}
 
 ui:
   replicaCount: 1
@@ -448,6 +461,7 @@ ui:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  podLabels: {}
 
 console_agents:
   enabled: true
@@ -491,6 +505,7 @@ console_agents:
       - operator: "Exists"
         effect: "NoExecute"
     affinity: {}
+    podLabels: {}
   cluster_agent:
     image:
       repository: deepfenceio/deepfence_cluster_agent_ce
@@ -514,3 +529,4 @@ console_agents:
       - operator: "Exists"
         effect: "NoExecute"
     affinity: {}
+    podLabels: {}

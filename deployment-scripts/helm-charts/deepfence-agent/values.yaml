@@ -5,6 +5,9 @@
 nameOverride: ""
 fullnameOverride: ""
 
+# Add labels to all the deployed resources
+commonLabels: {}
+
 global:
   # this image tag is used every where for agents
   # to override set tag at agents level
@@ -27,6 +30,7 @@ agent:
     # tag: 2.1.0
     pullPolicy: Always
   affinity: {}
+  podLabels: {}
   nodeSelector:
     kubernetes.io/os: linux
     # kubernetes.io/arch: amd64
@@ -50,6 +54,7 @@ cluster_agent:
     # tag: 2.1.0
     pullPolicy: Always
   affinity: {}
+  podLabels: {}
   nodeSelector:
     kubernetes.io/os: linux
     # kubernetes.io/arch: amd64
