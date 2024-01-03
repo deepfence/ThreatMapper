@@ -20,7 +20,7 @@ const graphModeEnableOptimize = (mode: string) => {
 };
 
 const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
 
   if (!active) {
     return {
@@ -49,7 +49,7 @@ const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
 };
 
 const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
 
   if (!active) {
     return {
@@ -69,7 +69,7 @@ const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) =
 };
 
 const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
 
   if (!active) {
     return {
@@ -91,7 +91,7 @@ const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => 
 };
 
 const getNodeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
 
   if (!active) {
     return {
@@ -99,6 +99,7 @@ const getNodeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
       fill: color['bg-map-node'],
     };
   }
+
   return {
     lineWidth: 2,
     shadowBlur: 10,
@@ -109,7 +110,7 @@ const getNodeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
 };
 
 const getDefaultOptions = (theme: Mode): G6GraphOptionsWithoutContainer => {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
 
   return {
     animate: false,

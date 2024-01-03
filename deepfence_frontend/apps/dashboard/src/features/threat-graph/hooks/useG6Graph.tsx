@@ -9,7 +9,7 @@ import { G6Graph, G6GraphOptionsWithoutContainer } from '@/features/topology/typ
 import { Mode, useTheme } from '@/theme/ThemeContext';
 
 const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
 
   if (!active) {
     return {
@@ -40,7 +40,7 @@ const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
 };
 
 const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
 
   if (!active) {
     return {
@@ -60,7 +60,7 @@ const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) =
 };
 
 const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
 
   if (!active) {
     return {
@@ -82,7 +82,7 @@ const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => 
 };
 
 const getNodeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
 
   if (!active) {
     return {

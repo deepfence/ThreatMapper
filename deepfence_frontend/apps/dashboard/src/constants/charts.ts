@@ -4,7 +4,7 @@ import { Mode } from '@/theme/ThemeContext';
 import { PostureSeverityType } from '@/types/common';
 
 export const getSeverityColorMap = (theme: Mode) => {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
 
   if (theme === 'light') {
     return {
@@ -36,7 +36,7 @@ export function getColorForCVSSScore(score: number | undefined): string {
 }
 
 export const getPostureColor = (theme: Mode) => {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
 
   if (theme === 'light') {
     return {
@@ -68,7 +68,7 @@ export function getColorForCompliancePercent(
   theme: Mode,
   percent: number | undefined | null,
 ): string {
-  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
   if (percent === undefined || percent === null) {
     return theme === 'dark' ? color['df-gray']['600'] : color['df-gray']['400'];
   }
