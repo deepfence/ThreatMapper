@@ -20,15 +20,17 @@ const graphModeEnableOptimize = (mode: string) => {
 };
 
 const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
+  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+
   if (!active) {
     return {
       lineWidth: 1.5,
-      stroke: colors[theme].brand.blue,
+      stroke: color['brand-blue'],
       endArrow: {
         path: G6.Arrow.triangle(4, 5, 8),
         d: 10,
-        fill: colors[theme].brand.blue,
-        stroke: colors[theme].brand.blue,
+        fill: color['brand-blue'],
+        stroke: color['brand-blue'],
       },
     };
   }
@@ -36,17 +38,19 @@ const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
     lineWidth: 2.5,
     shadowBlur: 14,
     shadowColor: theme === 'dark' ? '#8AB9FF' : '#8AB9FF',
-    stroke: colors[theme].accent.accent,
+    stroke: color['accent-accent'],
     endArrow: {
       path: G6.Arrow.triangle(4, 5, 8),
       d: 10,
-      fill: colors[theme].accent.accent,
-      stroke: colors[theme].accent.accent,
+      fill: color['accent-accent'],
+      stroke: color['accent-accent'],
     },
   };
 };
 
 const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
+  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+
   if (!active) {
     return {
       fill: 'transparent',
@@ -57,7 +61,7 @@ const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) =
   }
 
   return {
-    fill: colors[theme].bg['breadcrumb-bar'],
+    fill: color['bg-breadcrumb-bar'],
     fillOpacity: 1,
     padding: [2, 4, 2, 4],
     radius: 3,
@@ -65,9 +69,11 @@ const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) =
 };
 
 const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
+  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+
   if (!active) {
     return {
-      fill: colors[theme].text['text-and-icon'],
+      fill: color['text-text-and-icon'],
       fontFamily: preset.theme.extend.fontFamily.body.join(','),
       fontSize: 13,
       fontWeight: 300,
@@ -76,7 +82,7 @@ const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => 
   }
 
   return {
-    fill: colors[theme].text['input-value'],
+    fill: color['text-input-value'],
     fontFamily: preset.theme.extend.fontFamily.body.join(','),
     fontSize: 13,
     fontWeight: 700,
@@ -85,22 +91,26 @@ const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => 
 };
 
 const getNodeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
+  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+
   if (!active) {
     return {
       lineWidth: 0,
-      fill: colors[theme].bg['map-node'],
+      fill: color['bg-map-node'],
     };
   }
   return {
     lineWidth: 2,
     shadowBlur: 10,
-    shadowColor: colors[theme].accent.accent,
-    stroke: colors[theme].accent.accent,
-    fill: colors[theme].bg['map-node'],
+    shadowColor: color['accent-accent'],
+    stroke: color['accent-accent'],
+    fill: color['bg-map-node'],
   };
 };
 
 const getDefaultOptions = (theme: Mode): G6GraphOptionsWithoutContainer => {
+  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+
   return {
     animate: false,
     fitCenter: true,
@@ -126,10 +136,10 @@ const getDefaultOptions = (theme: Mode): G6GraphOptionsWithoutContainer => {
     defaultCombo: {
       padding: 0,
       style: {
-        fill: colors[theme].bg['map-cluster'],
+        fill: color['bg-map-cluster'],
         fillOpacity: 0.25,
         lineWidth: 1.5,
-        stroke: theme === 'dark' ? colors['df-gray'][500] : colors[theme].brand.blue,
+        stroke: theme === 'dark' ? color['df-gray']['500'] : color['brand-blue'],
         strokeOpacity: 0.25,
       },
     },

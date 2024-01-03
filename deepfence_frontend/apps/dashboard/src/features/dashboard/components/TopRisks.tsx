@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { ReactNode, Suspense } from 'react';
-import { preset } from 'tailwind-preset';
+import { colors, preset } from 'tailwind-preset';
 import { Card, CircleSpinner } from 'ui-components';
 
 import { ECOption, ReactECharts } from '@/components/ReactEcharts';
@@ -141,6 +141,7 @@ function getChartOptions({
   total: number;
   theme: Mode;
 }) {
+  const color = colors[theme === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
   const option: ECOption = {
     backgroundColor: 'transparent',
     tooltip: {
@@ -155,7 +156,7 @@ function getChartOptions({
         radius: ['72%', '100%'],
         itemStyle: {
           borderWidth: 2,
-          borderColor: preset.theme.extend.colors.bg.card,
+          borderColor: color['bg-card'],
         },
         label: {
           position: 'center',
@@ -163,7 +164,7 @@ function getChartOptions({
             return abbreviateNumber(total).toString();
           },
           fontSize: '30px',
-          color: preset.theme.extend.colors.text['input-value'],
+          color: color['text-input-value'],
           fontWeight: 600,
           fontFamily: preset.theme.extend.fontFamily.sans.join(','),
         },
