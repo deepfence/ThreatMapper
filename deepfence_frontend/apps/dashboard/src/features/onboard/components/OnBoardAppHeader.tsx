@@ -33,7 +33,7 @@ const DeepfenceLogo = () => {
 
 export const OnboardAppHeader = () => {
   const fetcher = useFetcher();
-  const { setMode } = useTheme();
+  const { setMode, userSelectedMode } = useTheme();
   const { email } = (useRouteLoaderData('onboard') as { email: string }) ?? {
     email: '',
   };
@@ -72,6 +72,7 @@ export const OnboardAppHeader = () => {
                   content={
                     <>
                       <DropdownItem
+                        selected={!userSelectedMode}
                         onSelect={() => {
                           setMode(undefined);
                         }}
@@ -79,6 +80,7 @@ export const OnboardAppHeader = () => {
                         System
                       </DropdownItem>
                       <DropdownItem
+                        selected={userSelectedMode === 'light'}
                         onSelect={() => {
                           setMode('light');
                         }}
@@ -86,6 +88,7 @@ export const OnboardAppHeader = () => {
                         Light
                       </DropdownItem>
                       <DropdownItem
+                        selected={userSelectedMode === 'dark'}
                         onSelect={() => {
                           setMode('dark');
                         }}

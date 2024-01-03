@@ -89,7 +89,7 @@ export const Container = (props: ContainerModalProps) => {
           >
             <Suspense
               fallback={
-                <div className="min-h-[300px] flex items-center justify-center dark:bg-bg-side-panel">
+                <div className="min-h-[300px] flex items-center justify-center bg-bg-side-panel">
                   <CircleSpinner size="lg" />
                 </div>
               }
@@ -140,7 +140,7 @@ const TabContent = ({
 }) => {
   const { data } = useLookupContainer(nodeId);
   return (
-    <div className="p-5 flex flex-col gap-x-4 gap-y-7 dark:bg-bg-side-panel">
+    <div className="p-5 flex flex-col gap-x-4 gap-y-7 bg-bg-side-panel">
       {tab === 'metadata' && (
         <>
           <Metadata
