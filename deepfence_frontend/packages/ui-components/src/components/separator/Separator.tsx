@@ -6,7 +6,7 @@ interface ISeparatorProps extends SeparatorPrimitive.SeparatorProps {
   className?: string;
 }
 const Separator: FC<ISeparatorProps> = ({ className = '' }) => (
-  <SeparatorPrimitive.Root className={cn('dark:bg-bg-left-nav', className)} />
+  <SeparatorPrimitive.Root className={cn('bg-bg-left-nav', className)} />
 );
 
 Separator.displayName = 'Separator';

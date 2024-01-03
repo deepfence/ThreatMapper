@@ -462,7 +462,7 @@ export const ControlsTable = memo(
                       selectedTab={selectedTab}
                     />
                     {!isCheckTypeEnabled ? (
-                      <div className="inset-0 dark:bg-bg-left-nav/70 absolute pointer-events-none"></div>
+                      <div className="inset-0 bg-bg-left-nav/70 absolute pointer-events-none"></div>
                     ) : null}
                   </Suspense>
                 </div>

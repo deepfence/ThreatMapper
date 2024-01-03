@@ -150,7 +150,7 @@ const Filters = () => {
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   return (
-    <div className="border dark:border-bg-hover-3 rounded-l-[5px] rounded-br-[5px] mt-[6px] mx-4 dark:bg-bg-left-nav flex flex-col pt-4 pb-2.5 px-4 gap-4">
+    <div className="border dark:border-bg-hover-3 rounded-l-[5px] rounded-br-[5px] mt-[6px] mx-4 bg-bg-left-nav flex flex-col pt-4 pb-2.5 px-4 gap-4">
       <div className="flex gap-2">
         <Combobox
           value={THREAT_TYPES.find((threatType) => {

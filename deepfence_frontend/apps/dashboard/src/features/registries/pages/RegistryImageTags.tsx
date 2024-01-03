@@ -229,7 +229,7 @@ const Filters = () => {
   }
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden bg-bg-left-nav">
       <div className="flex gap-2">
         <Combobox
           value={
