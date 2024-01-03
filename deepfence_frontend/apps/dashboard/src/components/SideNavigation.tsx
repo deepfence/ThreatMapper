@@ -217,24 +217,18 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
                 }}
               >
                 {userSelectedMode === 'light' && (
-                  <span>
-                    <span className="h-5 w-5 block">
-                      <ThemeLightIcon />
-                    </span>
+                  <span className="h-5 w-5 shrink-0">
+                    <ThemeLightIcon />
                   </span>
                 )}
                 {userSelectedMode === 'dark' && (
-                  <span>
-                    <span className="h-5 w-5 block">
-                      <ThemeDarkIcon />
-                    </span>
+                  <span className="h-5 w-5 shrink-0">
+                    <ThemeDarkIcon />
                   </span>
                 )}
                 {!userSelectedMode && (
-                  <span>
-                    <span className="h-5 w-5 block">
-                      <ThemeDeviceIcon />
-                    </span>
+                  <span className="h-5 w-5 shrink-0">
+                    <ThemeDeviceIcon />
                   </span>
                 )}
                 {expanded && <div className="overflow-hidden flex-1 flex">Theme</div>}

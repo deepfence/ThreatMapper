@@ -64,9 +64,11 @@ export const nodeStyle = (
   node: EnhancedDetailedNodeSummary,
   override?: ShapeStyle,
 ) => {
+  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+
   const style: ShapeStyle = {
     cursor: 'pointer',
-    fill: colors[theme].bg['map-node'],
+    fill: color['bg-map-node'],
   };
   return { ...style, ...override };
 };

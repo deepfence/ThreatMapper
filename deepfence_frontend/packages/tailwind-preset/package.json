@@ -11,8 +11,7 @@
     "dist"
   ],
   "scripts": {
-    "copy-css-file": "cp ./src/vars.css ./dist/",
-    "build": "tsc && pnpm run copy-css-file"
+    "build": "tsc"
   },
   "keywords": [],
   "author": "Manan Vaghasiya",
@@ -20,6 +19,8 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
+    "@mertasan/tailwindcss-variables": "^2.7.0",
+    "@types/mertasan__tailwindcss-variables": "^2.6.4",
     "tailwindcss": "^3.3.3",
     "typescript": "^5.1.6"
   },

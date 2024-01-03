@@ -24,6 +24,8 @@ export interface TopNSecretChartData {
 }
 
 function getChartOptions({ data, theme }: { data: TopNSecretChartData[]; theme: Mode }) {
+  const color = colors[theme === 'dark' ? 'variables' : 'darkVariables'].DEFAULT;
+
   return {
     backgroundColor: 'transparent',
     title: {
@@ -69,9 +71,9 @@ function getChartOptions({ data, theme }: { data: TopNSecretChartData[]; theme: 
       confine: true,
       borderWidth: 0,
       borderRadius: 5,
-      backgroundColor: preset.theme.extend.colors.bg.page,
+      backgroundColor: color['bg-page'],
       textStyle: {
-        color: preset.theme.extend.colors.text['input-value'],
+        color: color['text-input-value'],
         fontSize: '13px',
       },
     },
@@ -89,12 +91,12 @@ function getChartOptions({ data, theme }: { data: TopNSecretChartData[]; theme: 
       type: 'value',
       splitLine: {
         lineStyle: {
-          color: colors[theme].chart.splitLine,
+          color: color['chart-splitline'],
         },
       },
       axisLabel: {
         fontWeight: 600,
-        color: colors[theme].chart.axisLabel,
+        color: color['chart-axislabel'],
       },
     },
     yAxis: {
