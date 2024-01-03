@@ -38,11 +38,11 @@ backup_db() {
     neo4j stop
     NOW=$(date +"%Y-%m-%d_%H-%M-%S")
     neo4j-admin dump --database=neo4j --to="/backups/neo4j_$NOW.dump"
-    ls -tr /backups/* | head -n -${MAX_NUM_BACKUPS:-5} | xargs --no-run-if-empty rm
+    ls -tr /backups/*.dump | head -n -${MAX_NUM_BACKUPS:-5} | xargs --no-run-if-empty rm
     start_db
     if [ -n "$DF_REMOTE_BACKUP_ROOT" ]
     then
-        rclone sync /backups :$PROVIDER:$DF_REMOTE_BACKUP_ROOT
+        rclone sync /backups :$PROVIDER:$DF_REMOTE_BACKUP_ROOT --include "*.dump"
     fi
     trap backup_db USR1
 }
