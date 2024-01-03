@@ -217,17 +217,17 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
                 }}
               >
                 {userSelectedMode === 'light' && (
-                  <span className="h-5 w-5 block">
+                  <span className="h-5 w-5 shrink-0">
                     <ThemeLightIcon />
                   </span>
                 )}
                 {userSelectedMode === 'dark' && (
-                  <span className="h-5 w-5 block">
+                  <span className="h-5 w-5 shrink-0">
                     <ThemeDarkIcon />
                   </span>
                 )}
                 {!userSelectedMode && (
-                  <span className="h-5 w-5 block">
+                  <span className="h-5 w-5 shrink-0">
                     <ThemeDeviceIcon />
                   </span>
                 )}
