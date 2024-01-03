@@ -62,7 +62,7 @@ export const DetailsModal = ({
     <SlidingModal open={open} onOpenChange={onOpenChange} size="m">
       <SlidingModalCloseButton />
       <SlidingModalHeader>
-        <div className="flex gap-2 items-center text-text-text-and-icon px-5 py-[22px] dark:bg-bg-breadcrumb-bar bg-[#f6f7f9]">
+        <div className="flex gap-2 items-center text-text-text-and-icon px-5 py-[22px] bg-bg-header">
           <div className="w-5 h-5 shrink-0">
             <img
               src={getNodeImage(mode, nodeType)}

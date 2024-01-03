@@ -85,7 +85,7 @@ export const Host = (props: HostModalProps) => {
         <HostHeader {...props} />
       </Suspense>
       <SlidingModalContent>
-        <div className="dark:bg-bg-breadcrumb-bar bg-[#f6f7f9]">
+        <div className="bg-bg-header">
           <Tabs
             value={tab}
             defaultValue={tab}

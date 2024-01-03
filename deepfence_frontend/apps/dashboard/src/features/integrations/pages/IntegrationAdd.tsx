@@ -506,7 +506,7 @@ const DeleteConfirmationModal = ({
 const Header = ({ title }: { title: string }) => {
   return (
     <SlidingModalHeader>
-      <div className="text-h3 text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar bg-[#f6f7f9]">
+      <div className="text-h3 text-text-text-and-icon py-4 px-4 bg-bg-header">
         Add Integration: &nbsp;{title}
       </div>
     </SlidingModalHeader>

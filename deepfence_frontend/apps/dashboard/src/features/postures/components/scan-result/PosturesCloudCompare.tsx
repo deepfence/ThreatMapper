@@ -255,7 +255,7 @@ export const PosturesCloudCompare = ({
       >
         <SlidingModalCloseButton />
         <SlidingModalHeader>
-          <div className="p-4 text-h3 text-text-text-and-icon dark:bg-bg-breadcrumb-bar bg-[#f6f7f9]">
+          <div className="p-4 text-h3 text-text-text-and-icon bg-bg-header">
             <div className="overflow-hidden">
               <TruncatedText text="Scan comparision" />
             </div>

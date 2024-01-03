@@ -63,7 +63,7 @@ export const CloudService = ({
         showUpgradeAgentOption={false}
       />
       <SlidingModalContent>
-        <div className="dark:bg-bg-breadcrumb-bar bg-[#f6f7f9]">
+        <div className="bg-bg-header">
           <Tabs
             value={'overview'}
             defaultValue={'overview'}

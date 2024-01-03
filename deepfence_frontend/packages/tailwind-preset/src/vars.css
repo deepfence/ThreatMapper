@@ -12,6 +12,7 @@
     --bg-grid-border: #e5e7eb;
     --bg-tooltip: #000000;
     --bg-grid-header: #fbfbfb;
+    --bg-header: #f6f7f9;
     --bg-top-header: #ffffff;
     --bg-left-nav: #fcfcfc;
     --bg-breadcrumb-bar: #fdfdfd;
@@ -43,6 +44,7 @@
     --bg-grid-border: #2c375f;
     --bg-tooltip: #233c7d;
     --bg-grid-header: #0f1e34;
+    --bg-header: #11223b;
     --bg-top-header: #0c1a33;
     --bg-left-nav: #0b121e;
     --bg-breadcrumb-bar: #11223b;
