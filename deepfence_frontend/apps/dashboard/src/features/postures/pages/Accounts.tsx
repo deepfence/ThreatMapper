@@ -876,12 +876,12 @@ const AccountTable = ({
               return (
                 <>
                   <div className="flex gap-x-1.5 items-center" key={current}>
-                    <span className="dark:text-text-input-value font-medium">
+                    <span className="text-text-input-value font-medium">
                       {data[current]}
                     </span>
                     <ScanStatusBadge status={scanStatus ?? ''} />
                     {index < keys.length - 1 ? (
-                      <div className="mx-2 w-px h-[20px] dark:bg-bg-grid-border" />
+                      <div className="mx-2 w-px h-[20px] bg-bg-grid-border" />
                     ) : null}
                   </div>
                 </>

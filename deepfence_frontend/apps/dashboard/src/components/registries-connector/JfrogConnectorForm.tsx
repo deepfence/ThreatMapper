@@ -25,7 +25,7 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
 
   return (
     <>
-      <div className="text-p4 dark:text-text-input-value">
+      <div className="text-p4 text-text-input-value">
         Using Certificate based Docker client Authentication? A custom certificate is
         configured by creating a directory under /etc/docker/certs.d on Deepfence console
         machine, using the same name as the registry&apos;s hostname provided above. All
@@ -39,7 +39,7 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
         </DFLink>
         .
       </div>
-      <p className="mt-6 text-p1 dark:text-text-input-value">Enter Information</p>
+      <p className="mt-6 text-p1 text-text-input-value">Enter Information</p>
       <div className="w-full relative mt-4 flex flex-col gap-y-8">
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"
@@ -106,7 +106,7 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
           </>
         )}
 
-        <div className="mt-2 text-p7 dark:text-text-input-value">
+        <div className="mt-2 text-p7 text-text-input-value">
           Supported Versions: 6.19.1 and above
         </div>
       </div>

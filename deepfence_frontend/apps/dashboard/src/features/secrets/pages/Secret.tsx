@@ -18,7 +18,7 @@ const Secret = () => {
     <div>
       <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4 flex items-center">
         <Breadcrumb>
-          <BreadcrumbLink icon={<SecretsIcon />} className="dark:text-text-input-value">
+          <BreadcrumbLink icon={<SecretsIcon />} className="text-text-input-value">
             Secrets
           </BreadcrumbLink>
         </Breadcrumb>

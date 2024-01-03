@@ -165,7 +165,7 @@ const AdvancedFilters = ({
 
   return (
     <div className="col-span-2 mt-6">
-      <div className="flex dark:text-text-input-value ">
+      <div className="flex text-text-input-value ">
         <div className="text-h5">Advanced Filter (Optional)</div>
       </div>
       <div className="grid grid-cols-2 gap-y-8 gap-x-8 pt-4">

@@ -113,7 +113,7 @@ export const AvailabilityCharts = ({
   const { mode } = useTheme();
   return (
     <Card className="rounded-[5px]">
-      <h5 className="text-h5 dark:text-text-input-value px-3 py-2.5 flex items-center">
+      <h5 className="text-h5 text-text-input-value px-3 py-2.5 flex items-center">
         Availability
       </h5>
       <div className="grid grid-cols-2">

@@ -139,7 +139,7 @@ export const RemediationBlock = ({ meta, onBackButtonClick }: RemediationBlockPr
     <div className="h-full flex flex-col gap-4">
       <div className="flex flex-col gap-4 px-5 pt-4">
         <div className="flex justify-between items-center">
-          <span className="flex items-center text-p6 gap-2 dark:text-text-input-value">
+          <span className="flex items-center text-p6 gap-2 text-text-input-value">
             {onBackButtonClick && (
               <button
                 type="button"

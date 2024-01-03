@@ -398,7 +398,7 @@ const ScheduledJobs = () => {
       <div className="flex justify-between">
         <div>
           <div className="mt-2">
-            <h3 className="text-h6 dark:text-text-input-value">Scheduled jobs</h3>
+            <h3 className="text-h6 text-text-input-value">Scheduled jobs</h3>
           </div>
         </div>
       </div>

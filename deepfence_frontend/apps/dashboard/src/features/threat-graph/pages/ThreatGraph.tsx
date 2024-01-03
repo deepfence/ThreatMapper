@@ -79,7 +79,7 @@ const ThreatGraphHeader = ({
   const [searchParams] = useSearchParams();
   return (
     <div className="flex items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border min-h-[48px]">
-      <div className="px-4 flex items-center gap-[6px] dark:text-text-input-value">
+      <div className="px-4 flex items-center gap-[6px] text-text-input-value">
         <div className="h-4 w-4 shrink-0">
           <ThreatGraphIcon />
         </div>

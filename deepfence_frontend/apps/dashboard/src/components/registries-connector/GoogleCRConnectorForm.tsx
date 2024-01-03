@@ -20,7 +20,7 @@ export const GoogleCRConnectorForm = ({
 }: RegistryFormProps) => {
   return (
     <>
-      <div className="text-p4 dark:text-text-input-value">
+      <div className="text-p4 text-text-input-value">
         Connect to your Google Cloud Registry. Find out more information by{' '}
         <DFLink
           href={`https://community.deepfence.io/threatmapper/docs/v2.0/registries/`}
@@ -31,7 +31,7 @@ export const GoogleCRConnectorForm = ({
         </DFLink>
         .
       </div>
-      <p className="mt-6 text-p1 dark:text-text-input-value">Enter Information</p>
+      <p className="mt-6 text-p1 text-text-input-value">Enter Information</p>
       <div className="w-full relative mt-4 flex flex-col gap-y-8">
         <TextInput
           className="w-3/4 min-[200px] max-w-xs"

@@ -175,7 +175,7 @@ const UserAuditLogs = () => {
   return (
     <div className="h-full">
       <div className="mt-2">
-        <h3 className="text-h6 dark:text-text-input-value">User audit logs</h3>
+        <h3 className="text-h6 text-text-input-value">User audit logs</h3>
       </div>
       <Suspense
         fallback={

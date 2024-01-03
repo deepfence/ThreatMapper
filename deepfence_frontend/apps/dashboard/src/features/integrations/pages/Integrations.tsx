@@ -204,7 +204,7 @@ const CardContent = ({
 }) => {
   return (
     <div className="flex flex-col">
-      <h4 className="text-h6 dark:text-text-input-value">{type.name}</h4>
+      <h4 className="text-h6 text-text-input-value">{type.name}</h4>
       <Count type={type} data={data} />
     </div>
   );
@@ -268,10 +268,7 @@ const Integrations = () => {
     <>
       <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4">
         <Breadcrumb>
-          <BreadcrumbLink
-            icon={<IntegrationsIcon />}
-            className="dark:text-text-input-value"
-          >
+          <BreadcrumbLink icon={<IntegrationsIcon />} className="text-text-input-value">
             Integrations
           </BreadcrumbLink>
         </Breadcrumb>
@@ -281,7 +278,7 @@ const Integrations = () => {
         {IntegrationsData.map((integration, index) => {
           return (
             <section key={integration.name} className="flex flex-col">
-              <h2 className="text-t3 dark:text-text-input-value">{integration.name}</h2>
+              <h2 className="text-t3 text-text-input-value">{integration.name}</h2>
               <Suspense
                 fallback={<Skeleton count={IntegrationsData[index].types.length} />}
               >
@@ -303,7 +300,7 @@ const ReportCount = () => {
 
   return (
     <div className="flex gap-x-2 items-center">
-      <span className="text-h1 dark:text-text-input-value">{reportCount}</span>
+      <span className="text-h1 text-text-input-value">{reportCount}</span>
 
       <span className="text-p7">Reports generated</span>
     </div>
@@ -315,7 +312,7 @@ const DownloadReport = () => {
 
   return (
     <div>
-      <h2 className="text-t3 dark:text-text-input-value">Download reports</h2>
+      <h2 className="text-t3 text-text-input-value">Download reports</h2>
       <div className="mt-2 flex gap-x-4 items-center">
         <div className="flex flex-col w-fit min-w-[208px]">
           <DFLink to={'/integrations/download/report'} className="h-[84px]" unstyled>

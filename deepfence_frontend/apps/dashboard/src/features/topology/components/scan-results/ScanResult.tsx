@@ -116,7 +116,7 @@ const ScanResultHeading = ({
           {title}
         </DFLink>
       ) : (
-        <h5 className="text-h5 dark:text-text-input-value">{title}</h5>
+        <h5 className="text-h5 text-text-input-value">{title}</h5>
       )}
       {timestamp ? (
         <div className="text-text-text-and-icon text-p8">
@@ -211,11 +211,11 @@ const ScanResultComponent = ({
                       target="_blank"
                       rel="noreferrer"
                       unstyled
-                      className="capitalize text-p8 dark:text-text-input-value"
+                      className="capitalize text-p8 text-text-input-value"
                     >
                       {count.name}
                     </DFLink>
-                    <div className="ml-auto text-p7 dark:text-text-input-value">
+                    <div className="ml-auto text-p7 text-text-input-value">
                       {abbreviateNumber(count.value)}
                     </div>
                   </div>

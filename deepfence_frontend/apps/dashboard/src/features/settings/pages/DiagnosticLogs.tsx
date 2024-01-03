@@ -596,7 +596,7 @@ const DiagnosticLogs = () => {
   return (
     <div className="my-2">
       <div className="flex flex-col">
-        <h6 className="text-h5 dark:text-text-input-value">Console diagnostic logs</h6>
+        <h6 className="text-h5 text-text-input-value">Console diagnostic logs</h6>
         <div className="mt-2 flex flex-col gap-y-2">
           <Suspense
             fallback={
@@ -609,7 +609,7 @@ const DiagnosticLogs = () => {
         </div>
       </div>
       <div className="flex flex-col mt-8">
-        <h6 className="text-h5 dark:text-text-input-value">Agent diagnostic logs</h6>
+        <h6 className="text-h5 text-text-input-value">Agent diagnostic logs</h6>
         <div className="mt-2 gap-y-2 flex flex-col">
           <Suspense
             fallback={

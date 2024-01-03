@@ -560,7 +560,7 @@ const NotifyModal = ({
 const ScanHistory = () => {
   return (
     <div className="flex items-center h-12">
-      <span className="h-3.5 w-3.5 dark:text-text-input-value">
+      <span className="h-3.5 w-3.5 text-text-input-value">
         <ClockLineIcon />
       </span>
       <span className="pl-2 pr-3 text-t3 text-text-text-and-icon uppercase">
@@ -1736,7 +1736,7 @@ const SeverityCounts = ({
             >
               {key}
             </button>
-            <div className="ml-auto text-p7 dark:text-text-input-value">
+            <div className="ml-auto text-p7 text-text-input-value">
               {abbreviateNumber(severityCounts?.[key] ?? 0)}
             </div>
           </div>
@@ -1903,7 +1903,7 @@ const Widgets = () => {
   return (
     <div className="grid grid-cols-3 gap-4 min-h-[200px]">
       <Card className="px-4 py-1.5 flex flex-col">
-        <div className="text-h6 dark:text-text-input-value py-1">Total secrets</div>
+        <div className="text-h6 text-text-input-value py-1">Total secrets</div>
         <div className="mt-2 flex-1 pl-4">
           <Suspense
             fallback={
@@ -1931,7 +1931,7 @@ const Widgets = () => {
         </div>
       </Card>
       <Card className="px-4 py-1.5 flex flex-col">
-        <div className="text-h6 dark:text-text-input-value py-1">Top attack paths</div>
+        <div className="text-h6 text-text-input-value py-1">Top attack paths</div>
         <Suspense
           fallback={
             <div className="flex items-center justify-center min-h-[100px]">

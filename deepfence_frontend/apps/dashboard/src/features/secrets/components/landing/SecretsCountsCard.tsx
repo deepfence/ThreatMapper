@@ -171,7 +171,7 @@ const CardContent = ({ data, to }: { data: SecretsCountsCardData; to: string }) 
               className="flex items-center w-full justify-between py-[3px] pr-2"
             >
               <SeverityLegend severity={severity} to={`${to}?severity=${severity}`} />
-              <div className="dark:text-text-input-value text-p7">
+              <div className="text-text-input-value text-p7">
                 {abbreviateNumber(
                   data.severityBreakdown[severity as keyof typeof data.severityBreakdown],
                 )}
