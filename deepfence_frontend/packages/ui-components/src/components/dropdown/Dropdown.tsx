@@ -43,7 +43,7 @@ export const DropdownSubMenu: React.FC<
     // paddings
     'px-6 pt-2 pb-1',
     // text
-    'text-text-text-and-icon',
+    'text-p4 text-text-text-and-icon',
     // hover // focus
     'focus:outline-none',
     'dark:focus:bg-bg-grid-header focus:bg-bg-hover-2 focus:text-text-text-and-icon',
