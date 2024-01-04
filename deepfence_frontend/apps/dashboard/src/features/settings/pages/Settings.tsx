@@ -18,7 +18,7 @@ const Settings = () => {
         <div>
           <SettingNavigation />
         </div>
-        <div className="mx-4 flex-1">
+        <div className="px-4 flex-1">
           <Outlet />
         </div>
       </div>

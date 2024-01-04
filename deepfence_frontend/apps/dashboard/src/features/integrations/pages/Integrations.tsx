@@ -246,14 +246,14 @@ const Skeleton = ({ count }: { count: number }) => {
       {Array.from(Array(count).keys()).map((k) => (
         <Card key={k} className="p-3 flex flex-col shrink-0 min-w-[208px] w-fit">
           <div className="flex items-center gap-x-6">
-            <div className="dark:bg-bg-grid-border rounded-full p-3 flex justify-center items-center">
+            <div className="bg-bg-grid-border rounded-full p-3 flex justify-center items-center">
               <span className="h-9 w-9"></span>
             </div>
             <div className="flex flex-col">
-              <div className="h-3 w-16 bg-gray-200 dark:bg-bg-grid-border rounded"></div>
+              <div className="h-3 w-16 bg-bg-grid-border rounded"></div>
               <div className="flex items-center gap-x-2 mt-4">
-                <div className="h-6 w-6 bg-gray-200 dark:bg-bg-grid-border rounded"></div>
-                <div className="h-2 w-16 bg-gray-200 dark:bg-bg-grid-border rounded"></div>
+                <div className="h-6 w-6 bg-bg-grid-border rounded"></div>
+                <div className="h-2 w-16 bg-bg-grid-border rounded"></div>
               </div>
             </div>
           </div>
@@ -287,7 +287,7 @@ const Integrations = () => {
             </section>
           );
         })}
-        <Separator className="dark:bg-bg-grid-border h-px w-full mt-1" />
+        <Separator className="bg-bg-grid-border h-px w-full mt-1" />
         <DownloadReport />
       </div>
     </>
@@ -320,12 +320,12 @@ const DownloadReport = () => {
               className={cn(
                 'p-3 flex shrink-0 items-center h-full gap-x-4',
                 'text-text-text-and-icon',
-                'hover:ring hover:ring-bg-hover-3 hover:ring-1',
+                'hover:ring-bg-hover-3 hover:ring-1',
                 'focus:ring-bg-hover-3 focus:ring-1 cursor-pointer',
                 'hover:shadow-[0px_0px_6px_1px_#044AFF] focus:shadow-[0px_0px_6px_1px_#044AFF]',
               )}
             >
-              <div className="dark:bg-bg-grid-default bg-bg-hover-2 rounded-full p-3 flex justify-center items-center">
+              <div className="bg-bg-grid-default bg-bg-hover-2 rounded-full p-3 flex justify-center items-center">
                 <span className="h-9 w-9">
                   <DownloadReportIcon />
                 </span>
@@ -334,10 +334,10 @@ const DownloadReport = () => {
               <Suspense
                 fallback={
                   <div className="animate-pulse flex gap-x-2 items-center">
-                    <div className="dark:bg-bg-grid-border rounded-md">
+                    <div className="bg-bg-grid-border rounded-md">
                       <div className="w-4 h-6"></div>
                     </div>
-                    <div className="dark:bg-bg-grid-border rounded-md">
+                    <div className="bg-bg-grid-border rounded-md">
                       <div className="w-16 h-2"></div>
                     </div>
                   </div>

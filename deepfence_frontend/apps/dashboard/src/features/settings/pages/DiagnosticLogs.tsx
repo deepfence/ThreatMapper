@@ -229,7 +229,7 @@ const ConsoleDiagnosticLogsTable = () => {
               href={cell.row.original.url_link ?? ''}
               download
               target={'_blank'}
-              className="flex items-center gap-x-1 dark:text-accent-accent dark:hover:text-bg-hover-1"
+              className="flex items-center gap-x-1 text-accent-accent hover:text-bg-hover-1"
               unstyled
             >
               <span className="h-3 w-3">
@@ -309,7 +309,7 @@ const AgentDiagnosticLogsTable = () => {
               href={cell.row.original.url_link ?? ''}
               download
               target={'_blank'}
-              className="flex items-center gap-x-1 dark:text-accent-accent dark:hover:text-bg-hover-1"
+              className="flex items-center gap-x-1 text-accent-accent hover:text-bg-hover-1"
               unstyled
             >
               <span className="h-3 w-3">

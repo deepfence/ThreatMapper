@@ -168,7 +168,7 @@ const colors = {
       'text-text-and-icon': '#565656',
       'text-input-value': '#000000',
       'text-text-inverse': '#ffffff',
-      'text-link': '#056699',
+      'text-link': '#237fb3',
       'accent-accent': '#0079b8',
       'bg-page': '#f5f5f5',
       'bg-grid-border': '#e5e7eb',

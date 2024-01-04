@@ -63,7 +63,7 @@ export const AWSCloudFormation = () => {
             information by{' '}
             <Link
               to="https://community.deepfence.io/threatmapper/docs/v2.0/cloudscanner/aws#cloudformation"
-              className="text-blue-600 dark:text-blue-500"
+              className="text-text-link"
             >
               reading our documentation
             </Link>

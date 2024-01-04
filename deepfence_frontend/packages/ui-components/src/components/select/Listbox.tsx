@@ -278,7 +278,7 @@ export function Listbox<TType, TActualType>({
                 </PopoverPrimitive.Trigger>
                 <PopoverPrimitive.Portal>
                   <PopoverPrimitive.Content align="start" sideOffset={2} asChild>
-                    <div className="data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down w-[var(--radix-popper-anchor-width)] bg-bg-card border border-bg-grid-border rounded-[5px] overflow-hidden">
+                    <div className="data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down w-[var(--radix-popper-anchor-width)] bg-bg-card border border-bg-grid-border rounded-[5px] overflow-hidden shadow-md dark:shadow-none">
                       <HUIListbox.Options>
                         <div
                           className={cn(
