@@ -98,7 +98,7 @@ const contentCva = cva(
       // bg
       'bg-bg-breadcrumb-bar',
       // text
-      'text-p text-text-text-and-icon',
+      'text-p1 text-text-text-and-icon',
       // padding
       'px-5',
     ),

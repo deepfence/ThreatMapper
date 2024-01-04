@@ -357,7 +357,7 @@ const ActionDropdown = ({
           ) : null}
           <DropdownItem
             onClick={() => onTableAction(row, ActionEnumType.DELETE)}
-            className="text-status-error dark:hover:text-[#C45268]"
+            className="text-status-error hover:text-red-500 focus:text-red-500"
           >
             Delete
           </DropdownItem>

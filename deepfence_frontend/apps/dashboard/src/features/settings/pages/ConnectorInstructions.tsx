@@ -102,7 +102,7 @@ const Cloud = () => {
       </div>
       <div className="mb-4">
         <p
-          className={`px-6 text-sm font-normal leading-6 text-gray-700 dark:text-gray-400 min-h-[110px]`}
+          className={`px-6 text-sm font-normal leading-6 text-text-text-and-icon min-h-[110px]`}
         >
           Connect an AWS, GCP, or Azure cloud account to check for compliance
           misconfigurations.
@@ -141,7 +141,7 @@ const Host = () => {
     },
     {
       icon: (
-        <div className="dark:text-[#F68633]">
+        <div className="text-orange-400">
           <AWSECSEC2Icon />
         </div>
       ),
@@ -176,7 +176,7 @@ const Host = () => {
       </div>
       <div className="mb-4">
         <p
-          className={`px-6 text-sm font-normal leading-6 text-gray-700 dark:text-gray-400 min-h-[110px]`}
+          className={`px-6 text-sm font-normal leading-6 text-text-text-and-icon min-h-[110px]`}
         >
           Connect a K8s cluster, Docker container, or Linux host to check for
           vulnerabilities, secrets, malware, and compliance misconfigurations.

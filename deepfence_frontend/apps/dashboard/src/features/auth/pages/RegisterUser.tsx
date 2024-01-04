@@ -84,7 +84,7 @@ export const RegisterUser = () => {
               I agree to terms and conditions outlined in{' '}
               <Link
                 to="/end-user-license-agreement"
-                className="text-blue-600 dark:text-accent-accent"
+                className="text-text-link"
                 target="_blank"
               >
                 License Agreement

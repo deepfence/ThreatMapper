@@ -124,7 +124,7 @@ const Host = () => {
     },
     {
       icon: (
-        <div className="dark:text-[#F68633]">
+        <div className="text-orange-400">
           <AWSECSEC2Icon />
         </div>
       ),

@@ -387,7 +387,7 @@ const ScanHistoryAndDbManagement = () => {
           Submit
         </Button>
       </div>
-      <Separator className="mt-6 dark:bg-bg-grid-border h-px w-full" />
+      <Separator className="mt-6 bg-bg-grid-border h-px w-full" />
       <UploadVulnerabilityDatabase />
     </>
   );
