@@ -24,26 +24,26 @@ const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
 
   if (!active) {
     return {
-      lineWidth: 1.5,
-      stroke: color['brand-blue'],
+      lineWidth: theme === 'dark' ? 1.5 : 2,
+      stroke: theme === 'dark' ? color['brand-blue'] : '#6699CC',
       endArrow: {
         path: G6.Arrow.triangle(4, 5, 8),
         d: 10,
-        fill: color['brand-blue'],
-        stroke: color['brand-blue'],
+        fill: theme === 'dark' ? color['brand-blue'] : '#6699CC',
+        stroke: theme === 'dark' ? color['brand-blue'] : '#6699CC',
       },
     };
   }
   return {
     lineWidth: 2.5,
     shadowBlur: 14,
-    shadowColor: theme === 'dark' ? '#8AB9FF' : '#8AB9FF',
-    stroke: color['accent-accent'],
+    shadowColor: theme === 'dark' ? '#8AB9FF' : '#3E8EDE',
+    stroke: theme === 'dark' ? color['accent-accent'] : color['brand-blue'],
     endArrow: {
       path: G6.Arrow.triangle(4, 5, 8),
       d: 10,
-      fill: color['accent-accent'],
-      stroke: color['accent-accent'],
+      fill: theme === 'dark' ? color['accent-accent'] : color['brand-blue'],
+      stroke: theme === 'dark' ? color['accent-accent'] : color['brand-blue'],
     },
   };
 };

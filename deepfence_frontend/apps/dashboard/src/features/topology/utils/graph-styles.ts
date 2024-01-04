@@ -34,6 +34,7 @@ import GCPLogo from '@/assets/topology/gcp.svg';
 import GCPComputeInstance from '@/assets/topology/gcp_compute_instance.svg';
 import GCPDatabaseInstance from '@/assets/topology/gcp_sql_database_instance.svg';
 import GCPStorageBucket from '@/assets/topology/gcp_storage_bucket.svg';
+import GCPLightLogo from '@/assets/topology/gcp-light.svg';
 import HostLogo from '@/assets/topology/host.svg';
 import HostLightLogo from '@/assets/topology/host-light.svg';
 import KubernetesClusterLogo from '@/assets/topology/kubernetes-cluster.svg';
@@ -156,7 +157,7 @@ const getNodeImagePath = (
     } else if (nodeLabel && nodeLabel === 'azure') {
       return AzureLogo;
     } else if (nodeLabel && nodeLabel === 'gcp') {
-      return GCPLogo;
+      return isDarkTheme ? GCPLogo : GCPLightLogo;
     }
     return isDarkTheme ? CloudLogo : CloudLightLogo;
   } else if (nodeType === 'pseudo') {

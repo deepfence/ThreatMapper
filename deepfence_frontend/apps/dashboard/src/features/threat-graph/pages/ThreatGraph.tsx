@@ -32,7 +32,7 @@ const ThreatGraph = () => {
           background:
             mode === 'dark'
               ? 'radial-gradient(48.55% 48.55% at 50.04% 51.45%, #16253B 0%, #0B121E 100%)'
-              : 'radial-gradient(48.55% 48.55% at 50.04% 51.45%, #ffffff 50%, #f6f7f9 100%)',
+              : 'radial-gradient(48.55% 48.55% at 50.04% 51.45%, #FFFFFF 0%, #f9fbfd 100%)',
         }}
       >
         {isFilterOpen ? <Filters /> : null}

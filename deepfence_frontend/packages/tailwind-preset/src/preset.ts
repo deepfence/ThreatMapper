@@ -182,7 +182,7 @@ const colors = {
       'bg-grid-border-light': '#e5e7eb',
       'bg-map-cluster': '#183867',
       'bg-card': '#ffffff',
-      'bg-map-node': '#1b365e',
+      'bg-map-node': '#00538C',
       'bg-active-selection': '#e4ecf2',
       'bg-hover-1': '#0072a3',
       'bg-hover-2': '#edf0f3',
