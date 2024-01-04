@@ -70,11 +70,12 @@ export const CveCVSSScore = ({
   className?: string;
   iconClassName?: string;
 }) => {
+  const { mode } = useTheme();
   return (
     <div
       className={cn('flex gap-1 items-center text-p3', className)}
       style={{
-        color: getColorForCVSSScore(score),
+        color: getColorForCVSSScore(mode, score),
       }}
     >
       <div className={cn('h-[16px] w-[16px] shrink-0', iconClassName)}>
