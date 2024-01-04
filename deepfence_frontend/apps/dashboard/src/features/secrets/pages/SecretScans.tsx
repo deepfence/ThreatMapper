@@ -368,7 +368,7 @@ const ActionDropdown = ({
               }}
               disabled={!scanId || !nodeType}
             >
-              <span className="text-red-700 text-status-error hover:text-[#C45268]">
+              <span className="text-status-error hover:text-red-500 focus:text-red-500">
                 Delete scan
               </span>
             </DropdownItem>

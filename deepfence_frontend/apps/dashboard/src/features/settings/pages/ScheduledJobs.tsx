@@ -222,7 +222,9 @@ const ActionDropdown = ({
                 }
               }}
             >
-              <span className="text-status-error hover:text-[#C45268]">Delete</span>
+              <span className="text-status-error hover:text-red-500 focus:text-red-500">
+                Delete
+              </span>
             </DropdownItem>
           ) : null}
         </>
