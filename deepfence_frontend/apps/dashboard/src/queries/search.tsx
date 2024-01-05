@@ -1278,21 +1278,23 @@ export const searchQueries = createQueryKeys('search', {
             'node_type'
           ] = serviceType;
         }
+
+        let accounts: string[] = [];
         if (awsAccountId?.length) {
-          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
-            'account_id'
-          ] = awsAccountId;
+          accounts = [...accounts, ...awsAccountId];
         }
         if (gcpAccountId?.length) {
-          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
-            'account_id'
-          ] = gcpAccountId;
+          accounts = [...accounts, ...gcpAccountId];
         }
         if (azureAccountId?.length) {
+          accounts = [...accounts, ...azureAccountId];
+        }
+        if (accounts.length) {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
             'account_id'
-          ] = azureAccountId;
+          ] = accounts;
         }
+
         if (order) {
           searchSearchNodeReq.node_filter.filters.order_filter.order_fields?.push({
             field_name: order.sortBy,
