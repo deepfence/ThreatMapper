@@ -1,4 +1,4 @@
-import { isEmpty } from 'lodash-es';
+import { has, isEmpty } from 'lodash-es';
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { createColumnHelper, Dropdown, DropdownItem, Tooltip } from 'ui-components';
@@ -545,6 +545,61 @@ export const useIntegrationTableColumn = (
         maxSize: 75,
       }),
       ...getDynamicTableColumns(),
+      columnHelper.display({
+        id: 'filters',
+        enableSorting: false,
+        cell: ({ row }) => {
+          const displayFilters: {
+            severities?: string[];
+            statuses?: string[];
+            node_ids?: Array<{ node_id: string; node_type: string }> | null;
+            custom_fields?: string[];
+          } = {};
+          const filters = row.original.filters;
+          const containFilter = filters?.fields_filters?.contains_filter;
+          const filterIn = containFilter?.filter_in;
+          const hasSeverity = has(filterIn, 'cve_severity');
+          const hasStatus = has(filterIn, 'status');
+          if (filters?.node_ids && filters?.node_ids.length) {
+            displayFilters.node_ids = filters?.node_ids;
+          }
+
+          if (hasSeverity) {
+            displayFilters.severities = filterIn?.['cve_severity'] ?? [];
+          } else if (hasStatus) {
+            displayFilters.statuses = filterIn?.['status'] ?? [];
+          }
+
+          const configs = row.original.config;
+          const customFields = configs?.custom_fields;
+
+          if (customFields) {
+            displayFilters.custom_fields = customFields;
+          }
+
+          if (isEmpty(displayFilters)) {
+            return '-';
+          }
+
+          return (
+            <Tooltip
+              content={
+                <pre className="text-p7 text-text-input-value h-[300px] overflow-auto">
+                  {JSON.stringify(displayFilters, null, 2)}
+                </pre>
+              }
+              triggerAsChild
+            >
+              <div className="w-full truncate">{JSON.stringify(displayFilters)}</div>
+            </Tooltip>
+          );
+        },
+        header: () => 'Filter',
+        minSize: 65,
+        size: 70,
+        maxSize: 80,
+        enableResizing: true,
+      }),
     ];
     return columns;
   }, []);
