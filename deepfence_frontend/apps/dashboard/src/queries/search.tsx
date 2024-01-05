@@ -1213,6 +1213,9 @@ export const searchQueries = createQueryKeys('search', {
     cloudRegion?: string;
     cloudProvider?: string[];
     serviceType?: string[];
+    awsAccountId?: string[];
+    gcpAccountId?: string[];
+    azureAccountId?: string[];
     order?: {
       sortBy: string;
       descending: boolean;
@@ -1229,6 +1232,9 @@ export const searchQueries = createQueryKeys('search', {
           order,
           cloudProvider,
           serviceType,
+          awsAccountId,
+          gcpAccountId,
+          azureAccountId,
         } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
@@ -1272,6 +1278,23 @@ export const searchQueries = createQueryKeys('search', {
             'node_type'
           ] = serviceType;
         }
+
+        let accounts: string[] = [];
+        if (awsAccountId?.length) {
+          accounts = [...accounts, ...awsAccountId];
+        }
+        if (gcpAccountId?.length) {
+          accounts = [...accounts, ...gcpAccountId];
+        }
+        if (azureAccountId?.length) {
+          accounts = [...accounts, ...azureAccountId];
+        }
+        if (accounts.length) {
+          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
+            'account_id'
+          ] = accounts;
+        }
+
         if (order) {
           searchSearchNodeReq.node_filter.filters.order_filter.order_fields?.push({
             field_name: order.sortBy,
