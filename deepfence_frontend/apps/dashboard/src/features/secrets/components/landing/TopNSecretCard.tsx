@@ -12,6 +12,7 @@ import { ReactECharts, ReactEChartsProps } from '@/components/ReactEcharts';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { CardHeader } from '@/features/secrets/components/landing/CardHeader';
 import { queries } from '@/queries';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export interface TopNSecretChartData {
   name: string;
@@ -117,35 +118,35 @@ function getChartOptions({ data }: { data: TopNSecretChartData[] }) {
         type: 'bar',
         stack: 'total',
         color: SEVERITY_COLORS['critical'],
-        cursor: 'default',
+        cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
         color: SEVERITY_COLORS['high'],
-        cursor: 'default',
+        cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
         color: SEVERITY_COLORS['medium'],
-        cursor: 'default',
+        cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
         color: SEVERITY_COLORS['low'],
-        cursor: 'default',
+        cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
         color: SEVERITY_COLORS['unknown'],
-        cursor: 'default',
+        cursor: 'pointer',
         barMaxWidth: 20,
       },
     ],
@@ -154,17 +155,17 @@ function getChartOptions({ data }: { data: TopNSecretChartData[] }) {
 
 const mappings = {
   image: {
-    title: 'Top secret container images',
+    title: 'Top container images exposing secret',
     icon: <ImageIcon />,
     path: '/secret/scans?nodeType=container_image',
   },
   host: {
-    title: 'Top secret hosts',
+    title: 'Top hosts exposing secret',
     icon: <HostIcon />,
     path: '/secret/scans?nodeType=host',
   },
   container: {
-    title: 'Top secret containers',
+    title: 'Top containers exposing secret',
     icon: <ContainerIcon />,
     path: '/secret/scans?nodeType=container',
   },
@@ -195,11 +196,33 @@ const TopNCardContent = ({ type }: { type: 'host' | 'container' | 'image' }) => 
     ...queries.secret.top5SecretAssets({ nodeType: type }),
   });
   const chartOptions = getChartOptions({ data: data });
-
+  const { navigate } = usePageNavigation();
   return (
     <div className="pb-3 pt-5 px-5 h-[300px] flex items-center justify-center">
       {data.length ? (
-        <ReactECharts theme="dark" option={chartOptions} />
+        <ReactECharts
+          theme="dark"
+          option={chartOptions}
+          onChartClick={({ id }: { id?: string }) => {
+            if (!id) {
+              console.warn('Missing node id to navigate to scan page');
+              return;
+            }
+            if (type === 'host') {
+              navigate(`/secret/scans?nodeType=host&hosts=${encodeURIComponent(id)}`);
+            } else if (type === 'container') {
+              navigate(
+                `/secret/scans?nodeType=container&containers=${encodeURIComponent(id)}`,
+              );
+            } else if (type === 'image') {
+              navigate(
+                `/secret/scans?nodeType=container_image&containerImages=${encodeURIComponent(
+                  id,
+                )}`,
+              );
+            }
+          }}
+        />
       ) : (
         <div className="flex items-center justify-center gap-2 dark:text-text-text-and-icon">
           <div className="h-6 w-6 shrink-0">

@@ -47,7 +47,11 @@ export interface ReactEChartsProps {
   settings?: SetOptionOpts;
   loading?: boolean;
   theme?: 'light' | 'dark';
-  onChartClick?: (data: { name: string; value: string | number | Date }) => void;
+  onChartClick?: (data: {
+    name: string;
+    value: string | number | Date;
+    id?: string;
+  }) => void;
 }
 
 use([
@@ -99,6 +103,11 @@ export function ReactECharts({
       chart?.on('click', (params) => {
         onChartClick?.({
           name: params.name,
+          id: (
+            params.data as {
+              id: string;
+            }
+          ).id,
           value: params.value as string | number | Date,
         });
       });

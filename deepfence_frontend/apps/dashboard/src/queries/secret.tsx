@@ -559,6 +559,7 @@ export const secretQueries = createQueryKeys('secret', {
             }
             return {
               name: latestScan.node_name,
+              id: latestScan.node_id,
               critical: latestScan.severity_counts?.critical ?? 0,
               high: latestScan.severity_counts?.high ?? 0,
               medium: latestScan.severity_counts?.medium ?? 0,

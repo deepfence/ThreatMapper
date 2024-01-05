@@ -12,6 +12,7 @@ import { ReactECharts, ReactEChartsProps } from '@/components/ReactEcharts';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { CardHeader } from '@/features/vulnerabilities/components/landing/CardHeader';
 import { queries } from '@/queries';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export interface TopNVulnerableChartData {
   name: string;
@@ -117,35 +118,35 @@ function getChartOptions({ data }: { data: TopNVulnerableChartData[] }) {
         type: 'bar',
         stack: 'total',
         color: SEVERITY_COLORS['critical'],
-        cursor: 'default',
+        cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
         color: SEVERITY_COLORS['high'],
-        cursor: 'default',
+        cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
         color: SEVERITY_COLORS['medium'],
-        cursor: 'default',
+        cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
         color: SEVERITY_COLORS['low'],
-        cursor: 'default',
+        cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
         color: SEVERITY_COLORS['unknown'],
-        cursor: 'default',
+        cursor: 'pointer',
         barMaxWidth: 20,
       },
     ],
@@ -199,11 +200,37 @@ const TopNCardContent = ({ type }: { type: 'host' | 'container' | 'image' }) => 
     ...queries.vulnerability.top5VulnerableAssets({ nodeType: type }),
   });
   const chartOptions = getChartOptions({ data: data });
-
+  const { navigate } = usePageNavigation();
   return (
     <div className="pb-3 pt-5 px-5 h-[300px] flex items-center justify-center">
       {data.length ? (
-        <ReactECharts theme="dark" option={chartOptions} />
+        <ReactECharts
+          theme="dark"
+          option={chartOptions}
+          onChartClick={({ id }: { id?: string }) => {
+            if (!id) {
+              console.warn('Missing node id to navigate to scan page');
+              return;
+            }
+            if (type === 'host') {
+              navigate(
+                `/vulnerability/scans?nodeType=host&hosts=${encodeURIComponent(id)}`,
+              );
+            } else if (type === 'container') {
+              navigate(
+                `/vulnerability/scans?nodeType=container&containers=${encodeURIComponent(
+                  id,
+                )}`,
+              );
+            } else if (type === 'image') {
+              navigate(
+                `/vulnerability/scans?nodeType=container_image&containerImages=${encodeURIComponent(
+                  id,
+                )}`,
+              );
+            }
+          }}
+        />
       ) : (
         <div className="flex items-center justify-center gap-2 dark:text-text-text-and-icon">
           <div className="h-6 w-6 shrink-0">
