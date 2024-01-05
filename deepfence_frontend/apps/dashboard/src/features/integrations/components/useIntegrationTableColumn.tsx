@@ -581,7 +581,18 @@ export const useIntegrationTableColumn = (
             return '-';
           }
 
-          return <TruncatedText text={JSON.stringify(displayFilters)} />;
+          return (
+            <Tooltip
+              content={
+                <pre className="text-p7 text-text-input-value h-[300px] overflow-auto">
+                  {JSON.stringify(displayFilters, null, 2)}
+                </pre>
+              }
+              triggerAsChild
+            >
+              <div className="w-full truncate">{JSON.stringify(displayFilters)}</div>
+            </Tooltip>
+          );
         },
         header: () => 'Filter',
         minSize: 65,
