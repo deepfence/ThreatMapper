@@ -155,17 +155,17 @@ function getChartOptions({ data }: { data: TopNSecretChartData[] }) {
 
 const mappings = {
   image: {
-    title: 'Top container images exposing secret',
+    title: 'Top container images exposing secrets',
     icon: <ImageIcon />,
     path: '/secret/scans?nodeType=container_image',
   },
   host: {
-    title: 'Top hosts exposing secret',
+    title: 'Top hosts exposing secrets',
     icon: <HostIcon />,
     path: '/secret/scans?nodeType=host',
   },
   container: {
-    title: 'Top containers exposing secret',
+    title: 'Top containers exposing secrets',
     icon: <ContainerIcon />,
     path: '/secret/scans?nodeType=container',
   },
