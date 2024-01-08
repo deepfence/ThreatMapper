@@ -86,7 +86,7 @@ launch_deepfenced() {
   until [[ "$(ls /var/log/supervisor/deepfenced* 2>/dev/null | wc -w)" != "0" ]]; do
     sleep 5
   done
-  tail -f /var/log/supervisor/deepfenced*
+  tail -f /var/log/supervisor/deepfenced* 2>/dev/null
 }
 
 create_cgroups() {
