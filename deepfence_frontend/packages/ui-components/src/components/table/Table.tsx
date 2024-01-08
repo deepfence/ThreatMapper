@@ -99,7 +99,7 @@ function useTableContext<TData extends RowData>() {
   return useContext(createTableContext<TData>());
 }
 
-const PAGE_RESIZE_OPTIONS = [10, 25, 50];
+const PAGE_RESIZE_OPTIONS = [10, 25, 50, 100, 250];
 
 const CustomTable = <TData extends RowData>(
   props: TableProps<TData>,
