@@ -31,7 +31,7 @@ RUN cd /root  \
 COPY --from=vectorscan /vectorscan.tar.bz2 /
 RUN tar -xjf /vectorscan.tar.bz2 -C / && rm /vectorscan.tar.bz2
 
-RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.30.0
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.32.0
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
 
 RUN mkdir /home/deepfence
