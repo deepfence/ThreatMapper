@@ -115,11 +115,11 @@ redis:
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.1.0
   storageClass: ""
-  volumeSize: 10G
+  volumeSize: 20G
   resources:
     limits:
-      cpu: 1000m
-      memory: 2048Mi
+      cpu: 2000m
+      memory: 4096Mi
     requests:
       cpu: 100m
       memory: 128Mi

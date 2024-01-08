@@ -1,4 +1,4 @@
-FROM redis:7.2-alpine3.18
+FROM redis:7.2-alpine3.19
 
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
