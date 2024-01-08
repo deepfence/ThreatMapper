@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sync"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
 )
 
@@ -65,6 +66,20 @@ func (ws WorkEnqueuer) Enqueue(taskEnum string, data []byte, opts ...asynq.Optio
 	_, err = client.Enqueue(asynq.NewTask(taskEnum, data), opts...)
 
 	return err
+}
+
+func (ws WorkEnqueuer) DeleteAllArchivedTasks() (int, []error) {
+	var deletedTasksCount int
+	var errs []error
+	for _, queue := range utils.AsynqQueues {
+		count, err := ws.clients.inspector.DeleteAllArchivedTasks(queue)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		deletedTasksCount += count
+	}
+	return deletedTasksCount, errs
 }
 
 func Worker(ctx context.Context) (WorkEnqueuer, error) {

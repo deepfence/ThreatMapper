@@ -15,8 +15,9 @@ const (
 )
 
 var (
-	maxRetry int
-	once     sync.Once
+	AsynqQueues = []string{QCritical, QDefault, QLow}
+	maxRetry    int
+	once        sync.Once
 )
 
 func TasksMaxRetries() asynq.Option {

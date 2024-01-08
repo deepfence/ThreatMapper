@@ -55,6 +55,8 @@ const (
 	UpdatePodScanStatusTask           = "update_pod_scan_status"
 	BulkDeleteScans                   = "bulk_delete_scans"
 	AutoFetchGenerativeAIIntegrations = "auto_fetch_generative_ai_integrations"
+	AsynqDeleteAllArchivedTasks       = "asynq_delete_all_archived_tasks"
+	RedisRewriteAOF                   = "redis_rewrite_aof"
 )
 
 const (

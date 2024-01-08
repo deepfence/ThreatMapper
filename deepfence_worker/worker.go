@@ -202,6 +202,10 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 
 	worker.AddOneShotHandler(utils.AutoFetchGenerativeAIIntegrations, generativeai.AutoFetchGenerativeAIIntegrations)
 
+	worker.AddOneShotHandler(utils.AsynqDeleteAllArchivedTasks, cronjobs.AsynqDeleteAllArchivedTasks)
+
+	worker.AddOneShotHandler(utils.RedisRewriteAOF, cronjobs.RedisRewriteAOF)
+
 	// sbom
 	worker.AddRetryableHandler(utils.ScanSBOMTask, sbom.NewSBOMScanner(ingestC).ScanSBOM)
 
