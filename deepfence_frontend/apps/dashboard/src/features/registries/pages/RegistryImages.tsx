@@ -303,7 +303,10 @@ const CountWidget = () => {
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input-value">
+          <span
+            className="text-h1 dark:text-text-input-value"
+            data-testid="totalRegistryImagesId"
+          >
             {abbreviateNumber(images)}
           </span>
           <span className="text-p1">Total images</span>
@@ -316,7 +319,10 @@ const CountWidget = () => {
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input-value">
+          <span
+            className="text-h1 dark:text-text-input-value"
+            data-testid="totalRegistryImageTagsId"
+          >
             {abbreviateNumber(tags)}
           </span>
           <span className="text-p1">Total tags</span>
