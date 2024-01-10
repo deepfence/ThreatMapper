@@ -478,7 +478,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		OPTIONAL MATCH (m:CloudResource{id: "aws_vpc_security_group_rule", group_id: node_id})
 		MATCH (o:Node {node_id:'out-the-internet'})
 		MATCH (p:Node {node_id:'in-the-internet'})
-		WITH m, n, o, p, CASE m WHEN NOT NULL THEN [1] ELSE [] END AS make_cat
+		WITH m, n, o, p, CASE WHEN m IS NOT NULL THEN [1] ELSE [] END AS make_cat
 		FOREACH (i IN make_cat |
 			MERGE (m) -[:SECURED]-> (n)
 		)
@@ -508,7 +508,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		OPTIONAL MATCH (m:CloudResource{id: "aws_vpc_security_group_rule", group_id: subgroup})
 		MATCH (o:Node {node_id:'out-the-internet'})
 		MATCH (p:Node {node_id:'in-the-internet'})
-		WITH m, n, o, p, CASE m WHEN NOT NULL THEN [1] ELSE [] END AS make_cat
+		WITH m, n, o, p, CASE WHEN m IS NOT NULL THEN [1] ELSE [] END AS make_cat
 		FOREACH (i IN make_cat |
 			MERGE (m) -[:SECURED]-> (n)
 		)
