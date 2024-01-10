@@ -488,6 +488,7 @@ const Filters = () => {
         <SearchableImageList
           scanType={ScanTypeEnum.SecretScan}
           defaultSelectedImages={searchParams.getAll('containerImages')}
+          isScannedForSecrets
           onClearAll={() => {
             setSearchParams((prev) => {
               prev.delete('containerImages');
@@ -509,6 +510,7 @@ const Filters = () => {
         <SearchableContainerList
           scanType={ScanTypeEnum.SecretScan}
           defaultSelectedContainers={searchParams.getAll('containers')}
+          isScannedForSecrets
           onClearAll={() => {
             setSearchParams((prev) => {
               prev.delete('containers');
@@ -530,6 +532,7 @@ const Filters = () => {
         <SearchableHostList
           scanType={ScanTypeEnum.SecretScan}
           defaultSelectedHosts={searchParams.getAll('hosts')}
+          isScannedForSecrets
           onClearAll={() => {
             setSearchParams((prev) => {
               prev.delete('hosts');

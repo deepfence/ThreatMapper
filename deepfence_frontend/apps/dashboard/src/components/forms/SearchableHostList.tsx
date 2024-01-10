@@ -18,6 +18,9 @@ export type SearchableHostListProps = {
   triggerVariant?: 'select' | 'button';
   helperText?: string;
   color?: 'error' | 'default';
+  isScannedForVulnerabilities?: boolean;
+  isScannedForSecrets?: boolean;
+  isScannedForMalware?: boolean;
 };
 
 const PAGE_SIZE = 15;
@@ -33,6 +36,9 @@ const SearchableHost = ({
   triggerVariant,
   helperText,
   color,
+  isScannedForVulnerabilities,
+  isScannedForSecrets,
+  isScannedForMalware,
 }: SearchableHostListProps) => {
   const [searchText, setSearchText] = useState('');
 
@@ -57,6 +63,9 @@ const SearchableHost = ({
         active,
         agentRunning,
         showOnlyKubernetesHosts,
+        isScannedForVulnerabilities,
+        isScannedForSecrets,
+        isScannedForMalware,
         order: {
           sortBy: 'host_name',
           descending: false,

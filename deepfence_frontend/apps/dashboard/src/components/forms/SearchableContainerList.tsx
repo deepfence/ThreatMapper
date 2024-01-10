@@ -14,6 +14,9 @@ export type Props = {
   valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
   triggerVariant?: 'select' | 'button';
+  isScannedForVulnerabilities?: boolean;
+  isScannedForSecrets?: boolean;
+  isScannedForMalware?: boolean;
 };
 const PAGE_SIZE = 15;
 const SearchableContainer = ({
@@ -24,6 +27,9 @@ const SearchableContainer = ({
   valueKey = 'nodeId',
   active = true,
   triggerVariant,
+  isScannedForVulnerabilities,
+  isScannedForSecrets,
+  isScannedForMalware,
 }: Props) => {
   const [searchText, setSearchText] = useState('');
 
@@ -46,6 +52,9 @@ const SearchableContainer = ({
         size: PAGE_SIZE,
         searchText,
         active,
+        isScannedForVulnerabilities,
+        isScannedForSecrets,
+        isScannedForMalware,
         order: {
           sortBy: 'node_name',
           descending: false,
