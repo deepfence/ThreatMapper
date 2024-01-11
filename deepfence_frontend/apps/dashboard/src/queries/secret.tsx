@@ -124,6 +124,9 @@ export const secretQueries = createQueryKeys('secret', {
               order_filter: { order_fields: [] },
               contains_filter: { filter_in: { ...scanFilters } },
               compare_filter: null,
+              not_contains_filter: {
+                filter_in: {},
+              },
             },
             in_field_filter: null,
             window: {
