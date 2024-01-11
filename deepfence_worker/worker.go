@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	utils_ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
@@ -32,10 +33,11 @@ var (
 )
 
 type Worker struct {
-	cfg       config
-	mux       *asynq.ServeMux
-	srv       *asynq.Server
-	namespace directory.NamespaceID
+	cfg                     wtils.Config
+	mux                     *asynq.ServeMux
+	srv                     *asynq.Server
+	namespace               directory.NamespaceID
+	scan_workload_allocator *utils_ctl.RedisWorkloadAllocator
 }
 
 func (w *Worker) Run(ctx context.Context) error {
@@ -58,12 +60,13 @@ func telemetryCallbackWrapper(task string, taskCallback wtils.WorkerHandler) wti
 }
 
 func contextInjectorCallbackWrapper(
+	allocator *utils_ctl.RedisWorkloadAllocator,
 	namespace directory.NamespaceID,
 	taskCallback wtils.WorkerHandler) wtils.WorkerHandler {
 	return func(ctx context.Context, t *asynq.Task) error {
-		return taskCallback(
-			context.WithValue(ctx, directory.NamespaceKey, namespace),
-			t)
+		ctx = context.WithValue(ctx, cronjobs.ContextAllocatorKey, allocator) //nolint:staticcheck
+		ctx = context.WithValue(ctx, directory.NamespaceKey, namespace)       //nolint:staticcheck
+		return taskCallback(ctx, t)
 	}
 }
 
@@ -83,7 +86,7 @@ func (w *Worker) AddRetryableHandler(
 ) {
 	w.mux.HandleFunc(
 		task,
-		contextInjectorCallbackWrapper(w.namespace,
+		contextInjectorCallbackWrapper(w.scan_workload_allocator, w.namespace,
 			telemetryCallbackWrapper(task, taskCallback)),
 	)
 }
@@ -97,12 +100,12 @@ func (w *Worker) AddOneShotHandler(
 	w.mux.HandleFunc(
 		task,
 		skipRetryCallbackWrapper(
-			contextInjectorCallbackWrapper(w.namespace,
+			contextInjectorCallbackWrapper(w.scan_workload_allocator, w.namespace,
 				telemetryCallbackWrapper(task, taskCallback))),
 	)
 }
 
-func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc, error) {
+func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.CancelFunc, error) {
 
 	kafkaCtx, cancel := signal.NotifyContext(
 		context.Background(),
@@ -162,6 +165,14 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 		mux:       mux,
 		srv:       srv,
 		namespace: ns,
+		scan_workload_allocator: utils_ctl.NewRedisWorkloadAllocator(
+			cfg.MaxScanWorkload,
+			ns,
+			&directory.RedisConfig{
+				Endpoint: fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort),
+				Database: cfg.RedisDbNumber,
+				Password: cfg.RedisPassword},
+		),
 	}
 
 	worker.AddOneShotHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)

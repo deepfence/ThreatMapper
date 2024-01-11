@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	utils_ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -37,7 +38,9 @@ func NewSbomGenerator(ingest chan *kgo.Record) SbomGenerator {
 }
 
 func StopVulnerabilityScan(ctx context.Context, task *asynq.Task) error {
-	defer cronjobs.ScanWorkloadAllocator.Free()
+	if allocator := ctx.Value(cronjobs.ContextAllocatorKey); allocator != nil {
+		defer allocator.(*utils_ctl.RedisWorkloadAllocator).Free()
+	}
 
 	log.Info().Msgf("StopVulnerabilityScan, payload: %s ", string(task.Payload()))
 	var params utils.SbomParameters
@@ -62,7 +65,9 @@ func StopVulnerabilityScan(ctx context.Context, task *asynq.Task) error {
 }
 
 func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error {
-	defer cronjobs.ScanWorkloadAllocator.Free()
+	if allocator := ctx.Value(cronjobs.ContextAllocatorKey); allocator != nil {
+		defer allocator.(*utils_ctl.RedisWorkloadAllocator).Free()
+	}
 
 	var (
 		params utils.SbomParameters

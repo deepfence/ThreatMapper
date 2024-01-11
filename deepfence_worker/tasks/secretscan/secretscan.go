@@ -13,6 +13,7 @@ import (
 	"github.com/deepfence/SecretScanner/output"
 	secretScan "github.com/deepfence/SecretScanner/scan"
 	"github.com/deepfence/SecretScanner/signature"
+	utils_ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -39,7 +40,9 @@ func NewSecretScanner(ingest chan *kgo.Record) SecretScan {
 }
 
 func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error {
-	defer cronjobs.ScanWorkloadAllocator.Free()
+	if allocator := ctx.Value(cronjobs.ContextAllocatorKey); allocator != nil {
+		defer allocator.(*utils_ctl.RedisWorkloadAllocator).Free()
+	}
 
 	var params utils.SecretScanParameters
 
@@ -67,7 +70,9 @@ func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error 
 }
 
 func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error {
-	defer cronjobs.ScanWorkloadAllocator.Free()
+	if allocator := ctx.Value(cronjobs.ContextAllocatorKey); allocator != nil {
+		defer allocator.(*utils_ctl.RedisWorkloadAllocator).Free()
+	}
 
 	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
