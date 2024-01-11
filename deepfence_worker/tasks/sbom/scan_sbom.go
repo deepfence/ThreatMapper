@@ -104,18 +104,16 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		return directory.ErrNamespaceNotFound
 	}
 
-	log.Info().Msgf("message tenant id %s", string(tenantID))
-
 	rh := []kgo.RecordHeader{
 		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
-	log.Info().Msgf("payload: %s ", string(task.Payload()))
+	log.Info().Str("namespace", string(tenantID)).Msgf("payload: %s ", string(task.Payload()))
 
 	var params utils.SbomParameters
 
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {
-		log.Error().Msg(err.Error())
+		log.Error().Str("namespace", string(tenantID)).Msg(err.Error())
 		return nil
 	}
 
@@ -140,10 +138,10 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		time.Minute*20,
 	)
 
-	log.Info().Msgf("Adding scan id to map:%s", params.ScanID)
+	log.Info().Str("namespace", string(tenantID)).Msgf("Adding scan id to map:%s", params.ScanID)
 	scanMap.Store(params.ScanID, scanCtx)
 	defer func() {
-		log.Info().Msgf("Removing scan id from map:%s", params.ScanID)
+		log.Info().Str("namespace", string(tenantID)).Msgf("Removing scan id from map:%s", params.ScanID)
 		scanMap.Delete(params.ScanID)
 		res <- err
 		close(res)
@@ -153,7 +151,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
-		log.Error().Msg(err.Error())
+		log.Error().Str("namespace", string(tenantID)).Msg(err.Error())
 		return err
 	}
 
@@ -162,23 +160,23 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	if err != nil {
 		return err
 	}
-	log.Info().Msgf("sbom file %s", sbomFilePath)
+	log.Info().Str("namespace", string(tenantID)).Msgf("sbom file %s", sbomFilePath)
 	sbomFile := NewUnzippedFile(f)
 	err = mc.DownloadFileTo(context.Background(), params.SBOMFilePath, sbomFile, minio.GetObjectOptions{})
 	if err != nil {
-		log.Error().Msg(err.Error())
+		log.Error().Str("namespace", string(tenantID)).Msg(err.Error())
 		return err
 	}
 	defer func() {
-		log.Info().Msgf("remove sbom file %s", sbomFilePath)
+		log.Info().Str("namespace", string(tenantID)).Msgf("remove sbom file %s", sbomFilePath)
 		os.Remove(sbomFilePath)
 	}()
 
-	log.Info().Msg("scanning sbom for vulnerabilities ...")
+	log.Info().Str("namespace", string(tenantID)).Msg("scanning sbom for vulnerabilities ...")
 	env := []string{GRYPE_DB_UPDATE_URL}
 	vulnerabilities, err := grype.Scan(grypeBin, grypeConfig, sbomFilePath, &env)
 	if err != nil {
-		log.Error().Msgf("error: %s output: %s", err.Error(), string(vulnerabilities))
+		log.Error().Str("namespace", string(tenantID)).Msgf("error: %s output: %s", err.Error(), string(vulnerabilities))
 		return err
 	}
 
@@ -194,13 +192,14 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 
 	report, err := grype.PopulateFinalReport(vulnerabilities, cfg)
 	if err != nil {
-		log.Error().Msgf("error on generate vulnerability report: %s", err)
+		log.Error().Str("namespace", string(tenantID)).Msgf("error on generate vulnerability report: %s", err)
 		return err
 	}
 
 	details := psOutput.CountBySeverity(&report)
 
-	log.Info().Msgf("scan-id=%s vulnerabilities=%d severities=%v", params.ScanID, len(report), details.Severity)
+	log.Info().Str("namespace", string(tenantID)).
+		Msgf("scan-id=%s vulnerabilities=%d severities=%v", params.ScanID, len(report), details.Severity)
 
 	// write reports and status to kafka ingester will process from there
 	for _, c := range report {
@@ -235,19 +234,19 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 
 	entityID, err := workerUtil.GetEntityIdFromScanID(params.ScanID, string(utils.NEO4JVulnerabilityScan), tx)
 	if err != nil {
-		log.Error().Msgf("Error in getting entityId: %v", err)
+		log.Error().Str("namespace", string(tenantID)).Msgf("Error in getting entityId: %v", err)
 	}
 
 	// generate runtime sbom
 	runtimeSbom, err := generateRuntimeSBOM(sbomFilePath, report, entityID)
 	if err != nil {
-		log.Error().Err(err).Msgf("failed to generate runtime sbom")
+		log.Error().Str("namespace", string(tenantID)).Err(err).Msgf("failed to generate runtime sbom")
 		return err
 	}
 
 	runtimeSbomBytes, err := json.Marshal(runtimeSbom)
 	if err != nil {
-		log.Error().Err(err).Msgf("failed to marshal runtime sbom")
+		log.Error().Str("namespace", string(tenantID)).Err(err).Msgf("failed to marshal runtime sbom")
 		return err
 	}
 
@@ -255,11 +254,12 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	uploadInfo, err := mc.UploadFile(context.Background(), runtimeSbomPath, runtimeSbomBytes, true,
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
-		log.Error().Err(err).Msgf("failed to upload runtime sbom")
+		log.Error().Str("namespace", string(tenantID)).Err(err).Msgf("failed to upload runtime sbom")
 		return err
 	}
 
-	log.Info().Msgf("scan_id: %s, runtime sbom minio file info: %+v", params.ScanID, uploadInfo)
+	log.Info().Str("namespace", string(tenantID)).
+		Msgf("scan_id: %s, runtime sbom minio file info: %+v", params.ScanID, uploadInfo)
 
 	return nil
 }

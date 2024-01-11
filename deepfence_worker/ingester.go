@@ -11,10 +11,11 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/processors"
+	wtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func startIngester(cfg config) error {
+func startIngester(cfg wtils.Config) error {
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		os.Interrupt, syscall.SIGTERM)
