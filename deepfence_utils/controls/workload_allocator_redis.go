@@ -26,10 +26,12 @@ func (rwa *RedisWorkloadAllocator) Reserve(delta int64) {
 }
 
 func (rwa *RedisWorkloadAllocator) Free() {
+
 	var (
-		current int64 = 0
+		current int64
 		err     error
 	)
+
 	result := rwa.rdb.Get(context.Background(), CurrentWorkloadCounter)
 	if result.Err() != nil {
 		log.Error().Err(result.Err()).Msgf("failed to get current allocator for ns %s", string(rwa.namespace))
