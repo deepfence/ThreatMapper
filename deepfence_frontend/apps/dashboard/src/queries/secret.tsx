@@ -75,7 +75,6 @@ export const secretQueries = createQueryKeys('secret', {
         const nodeFilters = {
           node_type: nodeTypes,
         } as {
-          status?: string[];
           node_type?: string[];
           host_name?: string[];
           node_id?: string[];
@@ -125,6 +124,9 @@ export const secretQueries = createQueryKeys('secret', {
               order_filter: { order_fields: [] },
               contains_filter: { filter_in: { ...scanFilters } },
               compare_filter: null,
+              not_contains_filter: {
+                filter_in: {},
+              },
             },
             in_field_filter: null,
             window: {
@@ -151,9 +153,9 @@ export const secretQueries = createQueryKeys('secret', {
         }
         if (secretScanStatus) {
           if (secretScanStatus === SecretScanGroupedStatus.neverScanned) {
-            scanRequestParams.node_filters.filters.not_contains_filter!.filter_in = {
-              ...scanRequestParams.node_filters.filters.not_contains_filter!.filter_in,
-              secret_scan_status: [
+            scanRequestParams.scan_filters.filters.not_contains_filter!.filter_in = {
+              ...scanRequestParams.scan_filters.filters.not_contains_filter!.filter_in,
+              status: [
                 ...SECRET_SCAN_STATUS_GROUPS.complete,
                 ...SECRET_SCAN_STATUS_GROUPS.error,
                 ...SECRET_SCAN_STATUS_GROUPS.inProgress,
@@ -161,9 +163,9 @@ export const secretQueries = createQueryKeys('secret', {
               ],
             };
           } else {
-            scanRequestParams.node_filters.filters.contains_filter.filter_in = {
-              ...scanRequestParams.node_filters.filters.contains_filter.filter_in,
-              secret_scan_status: SECRET_SCAN_STATUS_GROUPS[secretScanStatus],
+            scanRequestParams.scan_filters.filters.contains_filter.filter_in = {
+              ...scanRequestParams.scan_filters.filters.contains_filter.filter_in,
+              status: SECRET_SCAN_STATUS_GROUPS[secretScanStatus],
             };
           }
         }
