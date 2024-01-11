@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	utils_ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	utilsCtl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
@@ -37,7 +37,7 @@ type Worker struct {
 	mux                     *asynq.ServeMux
 	srv                     *asynq.Server
 	namespace               directory.NamespaceID
-	scan_workload_allocator *utils_ctl.RedisWorkloadAllocator
+	scan_workload_allocator *utilsCtl.RedisWorkloadAllocator
 }
 
 func (w *Worker) Run(ctx context.Context) error {
@@ -60,11 +60,11 @@ func telemetryCallbackWrapper(task string, taskCallback wtils.WorkerHandler) wti
 }
 
 func contextInjectorCallbackWrapper(
-	allocator *utils_ctl.RedisWorkloadAllocator,
+	allocator *utilsCtl.RedisWorkloadAllocator,
 	namespace directory.NamespaceID,
 	taskCallback wtils.WorkerHandler) wtils.WorkerHandler {
 	return func(ctx context.Context, t *asynq.Task) error {
-		ctx = context.WithValue(ctx, cronjobs.ContextAllocatorKey, allocator) //nolint:staticcheck
+		ctx = context.WithValue(ctx, utilsCtl.ContextAllocatorKey, allocator) //nolint:staticcheck
 		ctx = context.WithValue(ctx, directory.NamespaceKey, namespace)       //nolint:staticcheck
 		return taskCallback(ctx, t)
 	}
@@ -146,11 +146,17 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 		qCfg.Queues = DefaultQueues
 	}
 
+	nsCfg, err := directory.GetDatabaseConfig(directory.NewContextWithNameSpace(ns))
+	if err != nil {
+		log.Error().Msgf("%s namespace, error: %s", string(ns), err)
+		return Worker{}, nil, err
+	}
+
 	srv := asynq.NewServer(
 		asynq.RedisClientOpt{
-			Addr:     fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort),
-			DB:       cfg.RedisDbNumber,
-			Password: cfg.RedisPassword,
+			Addr:     nsCfg.Redis.Endpoint,
+			DB:       nsCfg.Redis.Database,
+			Password: nsCfg.Redis.Password,
 		},
 		qCfg,
 	)
@@ -161,18 +167,11 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 	)
 
 	worker := Worker{
-		cfg:       cfg,
-		mux:       mux,
-		srv:       srv,
-		namespace: ns,
-		scan_workload_allocator: utils_ctl.NewRedisWorkloadAllocator(
-			cfg.MaxScanWorkload,
-			ns,
-			&directory.RedisConfig{
-				Endpoint: fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort),
-				Database: cfg.RedisDbNumber,
-				Password: cfg.RedisPassword},
-		),
+		cfg:                     cfg,
+		mux:                     mux,
+		srv:                     srv,
+		namespace:               ns,
+		scan_workload_allocator: utilsCtl.NewRedisWorkloadAllocator(cfg.MaxScanWorkload, ns, nsCfg.Redis),
 	}
 
 	worker.AddOneShotHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)

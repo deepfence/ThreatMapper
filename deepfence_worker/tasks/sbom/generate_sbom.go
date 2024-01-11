@@ -10,11 +10,10 @@ import (
 	"sync"
 	"time"
 
-	utils_ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	utilsCtl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/deepfence/golang_deepfence_sdk/utils/tasks"
 	"github.com/deepfence/package-scanner/sbom/syft"
@@ -38,14 +37,22 @@ func NewSbomGenerator(ingest chan *kgo.Record) SbomGenerator {
 }
 
 func StopVulnerabilityScan(ctx context.Context, task *asynq.Task) error {
-	if allocator := ctx.Value(cronjobs.ContextAllocatorKey); allocator != nil {
-		defer allocator.(*utils_ctl.RedisWorkloadAllocator).Free()
+	if allocator := ctx.Value(utilsCtl.ContextAllocatorKey); allocator != nil {
+		defer allocator.(*utilsCtl.RedisWorkloadAllocator).Free()
+	} else {
+		return utilsCtl.ErrCtxAllocatorNotFound
 	}
 
-	log.Info().Msgf("StopVulnerabilityScan, payload: %s ", string(task.Payload()))
+	tenantID, err := directory.ExtractNamespace(ctx)
+	if err != nil {
+		return err
+	}
+
+	log.Info().Str("namespace", string(tenantID)).Msgf("StopVulnerabilityScan, payload: %s ", string(task.Payload()))
+
 	var params utils.SbomParameters
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {
-		log.Error().Msgf("StopVulnerabilityScan, error in Unmarshal: %s", err.Error())
+		log.Error().Str("namespace", string(tenantID)).Msgf("StopVulnerabilityScan, error in Unmarshal: %s", err.Error())
 		return nil
 	}
 
@@ -60,13 +67,15 @@ func StopVulnerabilityScan(ctx context.Context, task *asynq.Task) error {
 		logMsg = "Failed to Stop scan, SBOM may have already generated or errored out"
 	}
 
-	log.Info().Msgf("%s, scan_id: %s", logMsg, scanID)
+	log.Info().Str("namespace", string(tenantID)).Msgf("%s, scan_id: %s", logMsg, scanID)
 	return nil
 }
 
 func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error {
-	if allocator := ctx.Value(cronjobs.ContextAllocatorKey); allocator != nil {
-		defer allocator.(*utils_ctl.RedisWorkloadAllocator).Free()
+	if allocator := ctx.Value(utilsCtl.ContextAllocatorKey); allocator != nil {
+		defer allocator.(*utilsCtl.RedisWorkloadAllocator).Free()
+	} else {
+		return utilsCtl.ErrCtxAllocatorNotFound
 	}
 
 	var (
@@ -82,13 +91,12 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		log.Error().Msg("tenant-id/namespace is empty")
 		return directory.ErrNamespaceNotFound
 	}
-	log.Info().Msgf("message tenant id %s", string(tenantID))
 
 	rh := []kgo.RecordHeader{
 		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
-	log.Info().Msgf("payload: %s ", string(task.Payload()))
+	log.Info().Str("namespace", string(tenantID)).Msgf("payload: %s ", string(task.Payload()))
 
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {
 		return err
@@ -115,17 +123,17 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		time.Minute*20,
 	)
 
-	log.Info().Msgf("Adding scan id to map:%s", params.ScanID)
+	log.Info().Str("namespace", string(tenantID)).Msgf("Adding scan id to map:%s", params.ScanID)
 	scanMap.Store(params.ScanID, scanCtx)
 	defer func() {
-		log.Info().Msgf("Removing scan id from map:%s", params.ScanID)
+		log.Info().Str("namespace", string(tenantID)).Msgf("Removing scan id from map:%s", params.ScanID)
 		scanMap.Delete(params.ScanID)
 		res <- err
 		close(res)
 	}()
 
 	if params.RegistryID == "" {
-		log.Error().Msgf("registry id is empty in params %+v", params)
+		log.Error().Str("namespace", string(tenantID)).Msgf("registry id is empty in params %+v", params)
 		return err
 	}
 
@@ -141,7 +149,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 	}
 
 	defer func() {
-		log.Info().Msgf("remove auth directory %s", authFile)
+		log.Info().Str("namespace", string(tenantID)).Msgf("remove auth directory %s", authFile)
 		if authFile == "" {
 			return
 		}
@@ -179,7 +187,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		cfg.Source = params.ImageID
 	}
 
-	log.Debug().Msgf("config: %+v", cfg)
+	log.Debug().Str("namespace", string(tenantID)).Msgf("config: %+v", cfg)
 
 	err = scanCtx.Checkpoint("Before generating SBOM")
 	if err != nil {
@@ -195,7 +203,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 	gzipwriter := gzip.NewWriter(&gzpb64Sbom)
 	_, err = gzipwriter.Write(rawSbom)
 	if err != nil {
-		log.Error().Msg(err.Error())
+		log.Error().Str("namespace", string(tenantID)).Msg(err.Error())
 		return err
 	}
 	gzipwriter.Close()
@@ -208,7 +216,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 	// upload sbom to minio
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
-		log.Error().Msg(err.Error())
+		log.Error().Str("namespace", string(tenantID)).Msg(err.Error())
 		return err
 	}
 
@@ -216,11 +224,11 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 	info, err := mc.UploadFile(ctx, sbomFile, gzpb64Sbom.Bytes(), true,
 		minio.PutObjectOptions{ContentType: "application/gzip"})
 	if err != nil {
-		log.Error().Err(err).Msg("failed to uplaod sbom")
+		log.Error().Str("namespace", string(tenantID)).Err(err).Msg("failed to uplaod sbom")
 		return err
 	}
 
-	log.Info().Msgf("sbom file uploaded %+v", info)
+	log.Info().Str("namespace", string(tenantID)).Msgf("sbom file uploaded %+v", info)
 
 	// write sbom to minio and return details another task will scan sbom
 
