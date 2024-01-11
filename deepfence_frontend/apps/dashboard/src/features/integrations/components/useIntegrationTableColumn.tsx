@@ -1,7 +1,13 @@
 import { has, isEmpty } from 'lodash-es';
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { createColumnHelper, Dropdown, DropdownItem, Tooltip } from 'ui-components';
+import {
+  createColumnHelper,
+  Dropdown,
+  DropdownItem,
+  getRowSelectionColumn,
+  Tooltip,
+} from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
@@ -462,6 +468,11 @@ export const useIntegrationTableColumn = (
 
   const columns = useMemo(() => {
     const columns = [
+      getRowSelectionColumn(columnHelper, {
+        size: 30,
+        minSize: 20,
+        maxSize: 45,
+      }),
       columnHelper.display({
         id: 'actions',
         enableSorting: false,
