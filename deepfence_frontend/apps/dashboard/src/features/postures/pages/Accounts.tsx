@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useIsFetching } from '@tanstack/react-query';
-import { capitalize } from 'lodash-es';
+import { capitalize, upperCase } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
@@ -227,6 +227,9 @@ const usePostureAccounts = () => {
         | undefined,
       nodeType,
       org_accounts: searchParams.getAll('org_accounts'),
+      aws_accounts: searchParams.getAll('aws_accounts'),
+      gcp_accounts: searchParams.getAll('gcp_accounts'),
+      azure_accounts: searchParams.getAll('azure_accounts'),
     }),
     keepPreviousData: true,
   });
@@ -236,6 +239,9 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   complianceScanStatus: 'Posture scan status',
   status: 'Status',
   org_accounts: 'Organization accounts',
+  aws_accounts: 'AWS accounts',
+  gcp_accounts: 'GCP accounts',
+  azure_accounts: 'Azure accounts',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -336,7 +342,7 @@ const Filters = () => {
         </Combobox>
         {(nodeType === 'aws' || nodeType === 'gcp') && (
           <SearchableCloudAccountsList
-            displayValue={`${nodeType.toUpperCase()} organization accounts`}
+            displayValue={`${nodeType.toUpperCase()} organization account`}
             valueKey="nodeId"
             cloudProvider={`${nodeType}_org` as ICloudAccountType}
             defaultSelectedAccounts={searchParams.getAll('org_accounts')}
@@ -357,6 +363,26 @@ const Filters = () => {
             }}
           />
         )}
+        <SearchableCloudAccountsList
+          cloudProvider={nodeType as ICloudAccountType}
+          displayValue={FILTER_SEARCHPARAMS[`${nodeType}_accounts`]}
+          defaultSelectedAccounts={searchParams.getAll(`${nodeType}_accounts`)}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete(`${nodeType}_accounts`);
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete(`${nodeType}_accounts`);
+              value.forEach((id) => {
+                prev.append(`${nodeType}_accounts`, id);
+              });
+              return prev;
+            });
+          }}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">

@@ -52,6 +52,9 @@ export const postureQueries = createQueryKeys('posture', {
       descending: boolean;
     };
     org_accounts?: string[];
+    aws_accounts?: string[];
+    gcp_accounts?: string[];
+    azure_accounts?: string[];
   }) => {
     const {
       page = 1,
@@ -61,6 +64,9 @@ export const postureQueries = createQueryKeys('posture', {
       order,
       nodeType,
       org_accounts,
+      aws_accounts,
+      gcp_accounts,
+      azure_accounts,
     } = filters;
     return {
       queryKey: [{ filters }],
@@ -101,6 +107,21 @@ export const postureQueries = createQueryKeys('posture', {
         if (org_accounts && org_accounts.length) {
           searchReq.node_filter.filters.contains_filter.filter_in!['organization_id'] =
             org_accounts;
+        }
+
+        if (aws_accounts && aws_accounts.length) {
+          searchReq.node_filter.filters.contains_filter.filter_in!['node_id'] =
+            aws_accounts;
+        }
+
+        if (gcp_accounts && gcp_accounts.length) {
+          searchReq.node_filter.filters.contains_filter.filter_in!['node_id'] =
+            gcp_accounts;
+        }
+
+        if (azure_accounts && azure_accounts.length) {
+          searchReq.node_filter.filters.contains_filter.filter_in!['node_id'] =
+            azure_accounts;
         }
 
         if (complianceScanStatus) {
