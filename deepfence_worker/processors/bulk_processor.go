@@ -3,46 +3,17 @@ package processors
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/cenkalti/backoff/v3"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/db"
 )
-
-var (
-	wait    chan struct{}
-	breaker sync.RWMutex
-)
-
-func init() {
-	wait = make(chan struct{})
-
-	neo4j_port := os.Getenv("DEEPFENCE_NEO4J_BOLT_PORT")
-	neo4j_host := os.Getenv("DEEPFENCE_NEO4J_HOST")
-	go func() {
-		for {
-			<-wait
-			breaker.Lock()
-			log.Info().Msgf("Breaker opened")
-			for {
-				err := utils.WaitServiceTCPConn(neo4j_host, neo4j_port, time.Second*30)
-				if err != nil {
-					log.Error().Msgf("err: %v", err)
-					continue
-				}
-				break
-			}
-			breaker.Unlock()
-			log.Info().Msgf("Breaker closed")
-		}
-	}()
-}
 
 type BulkRequest struct {
 	NameSpace string
@@ -67,6 +38,7 @@ type BulkProcessor struct {
 	flushInterval time.Duration
 	flusherStopC  chan struct{}
 	commitFn      commitFn
+	breaker       sync.RWMutex
 }
 
 type commitFn func(ns string, data [][]byte) error
@@ -309,9 +281,9 @@ func (w *bulkWorker) commit(ctx context.Context) []error {
 		w.expBackoff.Reset()
 		var err error
 		for {
-			breaker.RLock()
+			w.p.breaker.RLock()
 			err = w.p.commitFn(k, v)
-			breaker.RUnlock()
+			w.p.breaker.RUnlock()
 			if err != nil {
 				if isTransientError(err) {
 					waitTime := w.expBackoff.NextBackOff()
@@ -320,10 +292,32 @@ func (w *bulkWorker) commit(ctx context.Context) []error {
 						continue
 					}
 				} else if isConnectivityError(err) {
-					select {
-					case wait <- struct{}{}:
-					default:
-					}
+					go func() {
+						w.p.breaker.Lock()
+						defer w.p.breaker.Unlock()
+
+						log.Info().Msgf("Breaker opened")
+
+						configs, err := directory.GetDatabaseConfig(directory.NewContextWithNameSpace(directory.NamespaceID(w.p.ns)))
+						if err != nil {
+							log.Error().Msg(err.Error())
+							return
+						}
+						hostPort := strings.Split(configs.Neo4j.Endpoint, ":")
+						if len(hostPort) != 3 {
+							log.Error().Msgf("Invalid endpoint %v", configs.Neo4j.Endpoint)
+							return
+						}
+						for {
+							err = utils.WaitServiceTCPConn(hostPort[1][2:], hostPort[2], time.Second*30)
+							if err != nil {
+								log.Error().Msgf("err: %v", err)
+								continue
+							}
+							break
+						}
+						log.Info().Msgf("Breaker closed")
+					}()
 					// Give some room
 					<-time.After(time.Second)
 					continue

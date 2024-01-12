@@ -959,7 +959,8 @@ func (nc *neo4jIngester) runDBPusher(
 				batches.Retries += 1
 				if isClosedError(err) {
 					log.Warn().Msg("Renew session")
-					newDriver, err := directory.Neo4jClient(ctx)
+					var newDriver neo4j.Driver
+					newDriver, err = directory.Neo4jClient(ctx)
 					if err == nil {
 						_ = session.Close()
 						session = newDriver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
