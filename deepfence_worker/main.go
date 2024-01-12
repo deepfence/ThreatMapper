@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"path"
+	"syscall"
 	"time"
 
 	"net/http"
@@ -15,6 +17,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/controls"
 	cs "github.com/deepfence/ThreatMapper/deepfence_worker/cronscheduler"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/processors"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel"
@@ -88,10 +91,15 @@ func main() {
 	switch cfg.Mode {
 	case "ingester":
 		log.Info().Msg("Starting ingester")
-		if err := startIngester(cfg); err != nil {
-			log.Error().Msg(err.Error())
-			os.Exit(1)
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		ingester, err := processors.NewIngester(directory.NonSaaSDirKey, cfg, cancel)
+		if err != nil {
+			log.Fatal().Msg(err.Error())
 		}
+		ingester.Start(ctx)
+		// wait for shutdown
+		<-ctx.Done()
+
 	case "worker":
 		log.Info().Msg("Starting worker")
 		if err := controls.ConsoleActionSetup(); err != nil {
