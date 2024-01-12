@@ -3,18 +3,12 @@ package processors
 import (
 	"context"
 	"encoding/json"
-	"time"
 
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/twmb/franz-go/pkg/kgo"
-)
-
-var (
-	processors map[string]*BulkProcessor
 )
 
 type Mappable interface {
@@ -54,77 +48,75 @@ func telemetryWrapper(task string, cf commitFn) commitFn {
 	}
 }
 
-func StartKafkaProcessors(ctx context.Context) {
-	processors = map[string]*BulkProcessor{}
+func NewKafkaProcessors(namespace string) map[string]*BulkProcessor {
+	processors := map[string]*BulkProcessor{}
 
-	processors[utils.VulnerabilityScan] = NewBulkProcessor(
-		utils.VulnerabilityScan,
+	processors[utils.TopicWithNamespace(utils.VulnerabilityScan, namespace)] = NewBulkProcessor(
+		utils.VulnerabilityScan, namespace,
 		telemetryWrapper(utils.VulnerabilityScan,
 			desWrapper(ingesters.CommitFuncVulnerabilities)),
 	)
-	processors[utils.ComplianceScan] = NewBulkProcessor(
-		utils.ComplianceScan,
+
+	processors[utils.TopicWithNamespace(utils.ComplianceScan, namespace)] = NewBulkProcessor(
+		utils.ComplianceScan, namespace,
 		telemetryWrapper(utils.ComplianceScan,
 			desWrapper(ingesters.CommitFuncCompliance)),
 	)
-	processors[utils.CloudComplianceScan] = NewBulkProcessor(
-		utils.CloudComplianceScan,
+
+	processors[utils.TopicWithNamespace(utils.CloudComplianceScan, namespace)] = NewBulkProcessor(
+		utils.CloudComplianceScan, namespace,
 		telemetryWrapper(utils.CloudComplianceScan,
 			desWrapper(ingesters.CommitFuncCloudCompliance)),
 	)
-	processors[utils.SecretScan] = NewBulkProcessor(
-		utils.SecretScan,
+
+	processors[utils.TopicWithNamespace(utils.SecretScan, namespace)] = NewBulkProcessor(
+		utils.SecretScan, namespace,
 		telemetryWrapper(utils.SecretScan,
 			desWrapper(ingesters.CommitFuncSecrets)),
 	)
-	processors[utils.MalwareScan] = NewBulkProcessor(
-		utils.MalwareScan,
+
+	processors[utils.TopicWithNamespace(utils.MalwareScan, namespace)] = NewBulkProcessor(
+		utils.MalwareScan, namespace,
 		telemetryWrapper(utils.MalwareScan,
 			desWrapper(ingesters.CommitFuncMalware)),
 	)
-	processors[utils.VulnerabilityScanStatus] = NewBulkProcessor(
-		utils.VulnerabilityScanStatus,
+
+	processors[utils.TopicWithNamespace(utils.VulnerabilityScanStatus, namespace)] = NewBulkProcessor(
+		utils.VulnerabilityScanStatus, namespace,
 		telemetryWrapper(utils.VulnerabilityScanStatus,
 			desWrapper(ingesters.CommitFuncStatus[ingestersUtil.VulnerabilityScanStatus](utils.NEO4JVulnerabilityScan))),
 	)
-	processors[utils.ComplianceScanStatus] = NewBulkProcessor(
-		utils.ComplianceScanStatus,
+
+	processors[utils.TopicWithNamespace(utils.ComplianceScanStatus, namespace)] = NewBulkProcessor(
+		utils.ComplianceScanStatus, namespace,
 		telemetryWrapper(utils.ComplianceScanStatus,
 			desWrapper(ingesters.CommitFuncStatus[ingestersUtil.ComplianceScanStatus](utils.NEO4JComplianceScan))),
 	)
-	processors[utils.SecretScanStatus] = NewBulkProcessor(
-		utils.SecretScanStatus,
+
+	processors[utils.TopicWithNamespace(utils.SecretScanStatus, namespace)] = NewBulkProcessor(
+		utils.SecretScanStatus, namespace,
 		telemetryWrapper(utils.SecretScanStatus,
 			desWrapper(ingesters.CommitFuncStatus[ingestersUtil.SecretScanStatus](utils.NEO4JSecretScan))),
 	)
-	processors[utils.MalwareScanStatus] = NewBulkProcessor(
-		utils.MalwareScanStatus,
+
+	processors[utils.TopicWithNamespace(utils.MalwareScanStatus, namespace)] = NewBulkProcessor(
+		utils.MalwareScanStatus, namespace,
 		telemetryWrapper(utils.MalwareScanStatus,
 			desWrapper(ingesters.CommitFuncStatus[ingestersUtil.MalwareScanStatus](utils.NEO4JMalwareScan))),
 	)
-	processors[utils.CloudComplianceScanStatus] = NewBulkProcessor(
-		utils.CloudComplianceScanStatus,
+
+	processors[utils.TopicWithNamespace(utils.CloudComplianceScanStatus, namespace)] = NewBulkProcessor(
+		utils.CloudComplianceScanStatus, namespace,
 		telemetryWrapper(utils.CloudComplianceScanStatus,
 			desWrapper(ingesters.CommitFuncStatus[ingestersUtil.CloudComplianceScanStatus](utils.NEO4JCloudComplianceScan))),
 	)
-	processors[utils.CloudResource] = NewBulkProcessorWith(
-		utils.CloudResource,
+
+	processors[utils.TopicWithNamespace(utils.CloudResource, namespace)] = NewBulkProcessorWithSize(
+		utils.CloudResource, namespace,
 		telemetryWrapper(utils.CloudResource,
-			desWrapper(ingesters.CommitFuncCloudResource)),
-		1_000)
+			desWrapper(ingesters.CommitFuncCloudResource)), 1_000)
 
-	for i := range processors {
-		err := processors[i].Start(ctx)
-		if err != nil {
-			log.Error().Msg(err.Error())
-		}
-	}
-}
-
-func StopKafkaProcessors() {
-	for i := range processors {
-		_ = processors[i].Stop()
-	}
+	return processors
 }
 
 func getNamespace(rh []kgo.RecordHeader) string {
@@ -134,84 +126,4 @@ func getNamespace(rh []kgo.RecordHeader) string {
 		}
 	}
 	return ""
-}
-
-func processRecord(r *kgo.Record) {
-	switch r.Topic {
-	case utils.AuditLogs:
-		addAuditLog(r)
-	default:
-		processor, exists := processors[r.Topic]
-		if !exists {
-			log.Error().Msgf("Not Implemented for topic %s", r.Topic)
-			return
-		}
-
-		// get tenant id from headers
-		tenant := getNamespace(r.Headers)
-
-		err := Process(processor, tenant, r.Value)
-		if err != nil {
-			log.Error().Msgf("Process err: %s", err)
-		}
-	}
-}
-
-func StartKafkaConsumers(
-	ctx context.Context,
-	brokers []string,
-	topics []string,
-	group string,
-	kgoLogger kgo.Logger,
-) error {
-
-	log.Info().Msgf("brokers: %v", brokers)
-	log.Info().Msgf("topics: %v", topics)
-	log.Info().Msgf("group ID: %v", group)
-
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(brokers...),
-		kgo.ConsumerGroup(group),
-		kgo.ConsumeTopics(topics...),
-		kgo.ClientID(group),
-		kgo.FetchMinBytes(1e3),
-		kgo.WithLogger(kgoLogger),
-		kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()),
-	}
-
-	kc, err := kgo.NewClient(opts...)
-	if err != nil {
-		return err
-	}
-
-	if err := kc.Ping(ctx); err != nil {
-		kc.Close()
-		return err
-	}
-
-	go func() {
-		defer kc.Close()
-		pollRecords(ctx, kc)
-	}()
-
-	return nil
-}
-
-func pollRecords(ctx context.Context, kc *kgo.Client) {
-	ticker := time.NewTicker(5 * time.Second)
-	for {
-		select {
-		case <-ctx.Done():
-			log.Info().Msg("stop consuming from kafka")
-			return
-		case <-ticker.C:
-			records := kc.PollRecords(ctx, 20_000)
-			records.EachRecord(processRecord)
-			records.EachError(
-				func(s string, i int32, err error) {
-					log.Error().Msgf("topic=%s partition=%d error: %s", s, i, err)
-				},
-			)
-		}
-	}
 }
