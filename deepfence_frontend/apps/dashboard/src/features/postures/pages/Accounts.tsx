@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useIsFetching } from '@tanstack/react-query';
-import { capitalize, upperCase } from 'lodash-es';
+import { capitalize } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
