@@ -24,8 +24,8 @@ export const providersToNameMapping: { [key: string]: string } = {
 export const isNonCloudProvider = (provider: string) => {
   return provider === 'linux' || provider === 'kubernetes';
 };
-const isLinuxProvider = (provider: string) => provider === 'linux';
-const isKubernetesProvider = (provider: string) => provider === 'kubernetes';
+export const isLinuxProvider = (provider: string) => provider === 'linux';
+export const isKubernetesProvider = (provider: string) => provider === 'kubernetes';
 
 const HeaderSkeleton = () => {
   return (
