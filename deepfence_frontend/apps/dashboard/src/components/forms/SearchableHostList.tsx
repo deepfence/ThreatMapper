@@ -21,6 +21,7 @@ export type SearchableHostListProps = {
   isScannedForVulnerabilities?: boolean;
   isScannedForSecrets?: boolean;
   isScannedForMalware?: boolean;
+  displayValue?: string;
 };
 
 const PAGE_SIZE = 15;
@@ -39,6 +40,7 @@ const SearchableHost = ({
   isScannedForVulnerabilities,
   isScannedForSecrets,
   isScannedForMalware,
+  displayValue,
 }: SearchableHostListProps) => {
   const [searchText, setSearchText] = useState('');
 
@@ -108,7 +110,9 @@ const SearchableHost = ({
         getDisplayValue={() =>
           isSelectVariantType && selectedHosts.length > 0
             ? `${selectedHosts.length} selected`
-            : null
+            : displayValue
+            ? displayValue
+            : 'Select host'
         }
         placeholder="Select host"
         multiple
@@ -157,6 +161,9 @@ export const SearchableHostList = (props: SearchableHostListProps) => {
           multiple
           onQueryChange={() => {
             // no operation
+          }}
+          getDisplayValue={() => {
+            return props.displayValue ? props.displayValue : 'Select host';
           }}
         />
       }
