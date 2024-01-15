@@ -1,0 +1,15 @@
+FROM scratch
+
+LABEL MAINTAINER="Deepfence Inc"
+LABEL deepfence.role=system
+
+WORKDIR /
+
+COPY fargate/deepfence-agent-bin-2.1.0 /deepfence
+
+COPY fargate/deepfence-entry-point-scratch.sh deepfence/usr/local/bin/deepfence-entry-point-scratch.sh 
+COPY fargate/start-df-services-fargate.sh deepfence/usr/local/bin/start-df-services-fargate.sh
+
+VOLUME ["/deepfence"]
+
+ENTRYPOINT ["/deepfence/bin/ls"]

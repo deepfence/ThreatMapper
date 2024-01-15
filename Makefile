@@ -11,6 +11,7 @@ export PACKAGE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/package-scanner
 export COMPLIANCE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/compliance
 export DEEPFENCE_CTL=$(PWD)/deepfence_ctl
 export DEEPFENCED=$(PWD)/deepfence_bootstrapper
+export DEEPFENCE_FARGATE_DIR=$(DEEPFENCE_AGENT_DIR)/fargate
 export IMAGE_REPOSITORY?=deepfenceio
 export DF_IMG_TAG?=latest
 export IS_DEV_BUILD?=false
@@ -51,6 +52,26 @@ bootstrap-agent-plugins:
 agent: go1_20_builder debian_builder deepfenced console_plugins
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
 	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" bash build.sh)
+
+.PHONY: agent-binary
+agent-binary: agent agent-binary-tar
+
+.PHONY: agent-binary-tar
+agent-binary-tar:
+	ID=$$(docker create $(IMAGE_REPOSITORY)/deepfence_agent:$(DF_IMG_TAG)); \
+	(cd $(DEEPFENCE_FARGATE_DIR) &&\
+	CONTAINER_ID=$$ID VERSION="$(VERSION)" bash copy-bin-from-agent.sh); \
+	docker rm -v $$ID
+
+.PHONY: fargate-local
+fargate-local: agent-binary-tar
+	(cd $(DEEPFENCE_AGENT_DIR) &&\
+	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" bash build-fargate-local-bin.sh)
+
+.PHONY: fargate
+fargate: 
+	(cd $(DEEPFENCE_AGENT_DIR) &&\
+	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" bash build-fargate.sh)
 
 .PHONY: deepfenced
 deepfenced: alpine_builder bootstrap bootstrap-agent-plugins
