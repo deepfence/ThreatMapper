@@ -48,6 +48,8 @@ import {
   ICloudAccountType,
   SearchableCloudAccountsList,
 } from '@/components/forms/SearchableCloudAccountsList';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
+import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { ArrowUpCircleLine } from '@/components/icons/common/ArrowUpCircleLine';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
@@ -63,6 +65,8 @@ import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { getColorForCompliancePercent } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import {
+  isKubernetesProvider,
+  isLinuxProvider,
   isNonCloudProvider,
   providersToNameMapping,
 } from '@/features/postures/pages/Posture';
@@ -228,6 +232,11 @@ const usePostureAccounts = () => {
         | undefined,
       nodeType,
       org_accounts: searchParams.getAll('org_accounts'),
+      aws_accounts: searchParams.getAll('aws_accounts'),
+      gcp_accounts: searchParams.getAll('gcp_accounts'),
+      azure_accounts: searchParams.getAll('azure_accounts'),
+      hosts: searchParams.getAll('hosts'),
+      clusters: searchParams.getAll('clusters'),
     }),
     keepPreviousData: true,
   });
@@ -237,6 +246,11 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   complianceScanStatus: 'Posture scan status',
   status: 'Status',
   org_accounts: 'Organization accounts',
+  aws_accounts: 'Account',
+  gcp_accounts: 'Account',
+  azure_accounts: 'Account',
+  hosts: 'Account',
+  clusters: 'Account',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -337,7 +351,7 @@ const Filters = () => {
         </Combobox>
         {(nodeType === 'aws' || nodeType === 'gcp') && (
           <SearchableCloudAccountsList
-            displayValue={`${nodeType.toUpperCase()} organization accounts`}
+            displayValue="Organization account"
             valueKey="nodeId"
             cloudProvider={`${nodeType}_org` as ICloudAccountType}
             defaultSelectedAccounts={searchParams.getAll('org_accounts')}
@@ -358,6 +372,75 @@ const Filters = () => {
             }}
           />
         )}
+        {isCloudNode(nodeType) ? (
+          <SearchableCloudAccountsList
+            cloudProvider={nodeType as ICloudAccountType}
+            displayValue={FILTER_SEARCHPARAMS[`${nodeType}_accounts`]}
+            defaultSelectedAccounts={searchParams.getAll(`${nodeType}_accounts`)}
+            onClearAll={() => {
+              setSearchParams((prev) => {
+                prev.delete(`${nodeType}_accounts`);
+                return prev;
+              });
+            }}
+            onChange={(value) => {
+              setSearchParams((prev) => {
+                prev.delete(`${nodeType}_accounts`);
+                value.forEach((id) => {
+                  prev.append(`${nodeType}_accounts`, id);
+                });
+                return prev;
+              });
+            }}
+          />
+        ) : null}
+        {isLinuxProvider(nodeType) ? (
+          <SearchableHostList
+            scanType={'none'}
+            displayValue={FILTER_SEARCHPARAMS['hosts']}
+            defaultSelectedHosts={searchParams.getAll('hosts')}
+            onClearAll={() => {
+              setSearchParams((prev) => {
+                prev.delete('hosts');
+                prev.delete('page');
+                return prev;
+              });
+            }}
+            onChange={(value) => {
+              setSearchParams((prev) => {
+                prev.delete('hosts');
+                value.forEach((host) => {
+                  prev.append('hosts', host);
+                });
+                prev.delete('page');
+                return prev;
+              });
+            }}
+          />
+        ) : null}
+        {isKubernetesProvider(nodeType) ? (
+          <SearchableClusterList
+            displayValue={FILTER_SEARCHPARAMS['clusters']}
+            defaultSelectedClusters={searchParams.getAll('clusters')}
+            onClearAll={() => {
+              setSearchParams((prev) => {
+                prev.delete('clusters');
+                prev.delete('page');
+                return prev;
+              });
+            }}
+            onChange={(value) => {
+              setSearchParams((prev) => {
+                prev.delete('clusters');
+                value.forEach((cluster) => {
+                  prev.append('clusters', cluster);
+                });
+                prev.delete('page');
+                return prev;
+              });
+            }}
+          />
+        ) : null}
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">

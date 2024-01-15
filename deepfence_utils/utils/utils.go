@@ -673,3 +673,18 @@ func PrintableTimeStamp(timestamp interface{}) string {
 
 	return time.Unix(ts, 0).In(time.UTC).Format(time.RFC3339)
 }
+
+func TopicsWithNamespace(ns string) []string {
+	newtopics := []string{}
+	for i := range Topics {
+		newtopics = append(newtopics, TopicWithNamespace(Topics[i], ns))
+	}
+	return newtopics
+}
+
+func TopicWithNamespace(topic, ns string) string {
+	if len(ns) > 0 && ns != "default" {
+		return fmt.Sprintf("%s-%s", topic, ns)
+	}
+	return topic
+}

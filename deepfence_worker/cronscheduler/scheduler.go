@@ -325,6 +325,7 @@ func (s *Scheduler) startInitJobs(ctx context.Context) error {
 	s.enqueueTask(namespace, utils.CloudComplianceTask, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.ReportCleanUpTask, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.CachePostureProviders, utils.CritialTaskOpts()...)()
+	s.enqueueTask(namespace, utils.RedisRewriteAOF, utils.CritialTaskOpts()...)()
 
 	return nil
 }

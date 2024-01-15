@@ -4,14 +4,20 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"path"
+	"syscall"
 	"time"
+
+	"net/http"
+	_ "net/http/pprof"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/controls"
 	cs "github.com/deepfence/ThreatMapper/deepfence_worker/cronscheduler"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/processors"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel"
@@ -23,25 +29,8 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
 
-	"net/http"
-	_ "net/http/pprof"
+	wtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 )
-
-type config struct {
-	Debug                 bool     `default:"false"`
-	Mode                  string   `default:"worker" required:"true"`
-	MetricsPort           string   `default:"8181" split_words:"true"`
-	KafkaBrokers          []string `default:"deepfence-kafka-broker:9092" required:"true" split_words:"true"`
-	KafkaTopicPartitions  int32    `default:"1" split_words:"true"`
-	KafkaTopicReplicas    int16    `default:"1" split_words:"true"`
-	KafkaTopicRetentionMs string   `default:"86400000" split_words:"true"`
-	RedisHost             string   `default:"deepfence-redis" required:"true" split_words:"true"`
-	RedisDbNumber         int      `default:"0" split_words:"true"`
-	RedisPort             string   `default:"6379" split_words:"true"`
-	RedisPassword         string   `default:"" split_words:"true"`
-	TasksConcurrency      int      `default:"50" split_words:"true"`
-	ProcessQueues         []string `split_words:"true"`
-}
 
 // build info
 var (
@@ -55,7 +44,7 @@ func main() {
 	log.Info().Msgf("\n version: %s\n commit: %s\n build-time: %s\n",
 		Version, Commit, BuildTime)
 
-	var cfg config
+	var cfg wtils.Config
 	var err error
 	err = envconfig.Process("DEEPFENCE", &cfg)
 	if err != nil {
@@ -102,10 +91,15 @@ func main() {
 	switch cfg.Mode {
 	case "ingester":
 		log.Info().Msg("Starting ingester")
-		if err := startIngester(cfg); err != nil {
-			log.Error().Msg(err.Error())
-			os.Exit(1)
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		ingester, err := processors.NewIngester(directory.NonSaaSDirKey, cfg, cancel)
+		if err != nil {
+			log.Fatal().Msg(err.Error())
 		}
+		ingester.Start(ctx)
+		// wait for shutdown
+		<-ctx.Done()
+
 	case "worker":
 		log.Info().Msg("Starting worker")
 		if err := controls.ConsoleActionSetup(); err != nil {
