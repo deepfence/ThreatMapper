@@ -15,6 +15,7 @@ import {
   Table,
   TableNoDataElement,
   TableSkeleton,
+  Tooltip,
 } from 'ui-components';
 
 import { ModelHost } from '@/api/generated';
@@ -26,7 +27,7 @@ import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
-import { ArrowLine } from '@/components/icons/common/ArrowLine';
+import { ArrowUpCircleLine } from '@/components/icons/common/ArrowUpCircleLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
@@ -38,7 +39,6 @@ import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerabili
 import { TruncatedText } from '@/components/TruncatedText';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { SearchableCloudAccountForHost } from '@/features/topology/data-components/tables/SearchableCloudAccountForHost';
-import { UpgrageAgentModal } from '@/features/topology/data-components/UpgradeAgentModal';
 import { queries } from '@/queries';
 import {
   ComplianceScanNodeTypeEnum,
@@ -62,6 +62,12 @@ import {
 import { CLOUD_PROVIDERS } from '@/utils/topology';
 
 const DEFAULT_PAGE_SIZE = 25;
+
+const useGetAgentVersions = () => {
+  return useSuspenseQuery({
+    ...queries.setting.listAgentVersion(),
+  });
+};
 
 export const HostsTable = () => {
   const [selectedNodes, setSelectedNodes] = useState<ModelHost[]>([]);
@@ -120,7 +126,6 @@ const BulkActions = ({
 }) => {
   const [scanOptions, setScanOptions] =
     useState<ConfigureScanModalProps['scanOptions']>();
-  const [agentUpgradeModal, setAgentUpgradeModal] = useState(false);
   const nodesWithAgentRunning = nodes.filter((node) => node.agentRunning);
   return (
     <>
@@ -206,15 +211,6 @@ const BulkActions = ({
             >
               Start Posture Scan
             </DropdownItem>
-            <DropdownItem
-              onSelect={(e) => {
-                e.preventDefault();
-                setAgentUpgradeModal(true);
-              }}
-              icon={<ArrowLine />}
-            >
-              Upgrade Agent
-            </DropdownItem>
           </>
         }
       >
@@ -233,12 +229,6 @@ const BulkActions = ({
           open
           onOpenChange={() => setScanOptions(undefined)}
           scanOptions={scanOptions}
-        />
-      )}
-      {agentUpgradeModal && (
-        <UpgrageAgentModal
-          nodes={nodesWithAgentRunning}
-          setShowDialog={setAgentUpgradeModal}
         />
       )}
     </>
@@ -631,6 +621,9 @@ const DataTable = ({
   const [sort, setSort] = useSortingState();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const { data: versionsData } = useGetAgentVersions();
+  const versions = versionsData.versions ?? [];
+
   useEffect(() => {
     setSelectedNodes((prev) => {
       const newSelectedNodes: ModelHost[] = [];
@@ -747,6 +740,47 @@ const DataTable = ({
       }),
       columnHelper.accessor('version', {
         cell: (info) => {
+          if (versions.length && info.row.original.agent_running) {
+            const isLatest =
+              versions[0] === info.getValue() || versions[0] === `v${info.getValue()}`;
+            if (!isLatest) {
+              return (
+                <div className="flex items-center gap-2 justify-start">
+                  <div className="truncate">{info.getValue() ?? ''}</div>
+
+                  <Tooltip
+                    content={
+                      <div className="flex-col gap-2 dark:text-text-text-and-icon">
+                        <div className="text-h5">Update Available</div>
+                        <div className="text-p6">
+                          Version <span className="text-h6">{versions[0]}</span> is
+                          available. Please follow{' '}
+                          <DFLink
+                            href="https://community.deepfence.io/threatmapper/docs/sensors/"
+                            target="_blank"
+                          >
+                            the instructions
+                          </DFLink>{' '}
+                          to upgrade the sensor probe. One click updates are available on{' '}
+                          <DFLink
+                            href="https://www.deepfence.io/threatstryker"
+                            target="_blank"
+                          >
+                            ThreatStryker
+                          </DFLink>
+                          .
+                        </div>
+                      </div>
+                    }
+                  >
+                    <div className="h-4 w-4 dark:text-status-warning">
+                      <ArrowUpCircleLine />
+                    </div>
+                  </Tooltip>
+                </div>
+              );
+            }
+          }
           return <TruncatedText text={info.getValue() ?? ''} />;
         },
         header: () => <TruncatedText text="Agent Version" />,
@@ -755,7 +789,7 @@ const DataTable = ({
         maxSize: 300,
       }),
     ],
-    [],
+    [versions],
   );
 
   return (
