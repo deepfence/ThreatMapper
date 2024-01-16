@@ -50,6 +50,7 @@ You can use these instructions for helm-based installations in standalone and ho
 
 ```bash
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+helm repo update
 
 helm show values deepfence/deepfence-agent --version 2.1.0 > deepfence_agent_values.yaml
 

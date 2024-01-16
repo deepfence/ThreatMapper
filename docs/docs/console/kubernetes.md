@@ -50,8 +50,9 @@ The following instructions explain how to install the ThreatMapper console on a 
 
     ```bash
     helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+    helm repo update
 
-    # helm show values deepfence/deepfence-console --version 2.1.0 | less
+    # helm show values deepfence/deepfence-console --version 2.1.1 | less
 
     helm install deepfence-console deepfence/deepfence-console \
     --set global.imageTag=2.1.0 \
