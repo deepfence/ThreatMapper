@@ -138,7 +138,11 @@ const DEFAULT_PAGE_SIZE = 10;
 
 const action = async ({
   request,
-}: ActionFunctionArgs): Promise<{ success?: boolean; message?: string } | null> => {
+}: ActionFunctionArgs): Promise<{
+  success?: boolean;
+  message?: string;
+  action?: ActionEnumType;
+} | null> => {
   const formData = await request.formData();
   const actionType = formData.get('actionType');
   const scanIds = formData.getAll('scanId');
@@ -175,12 +179,15 @@ const action = async ({
         const { message } = await getResponseErrors(result.error);
         return {
           success: false,
+          action: ActionEnumType.DELETE,
           message,
         };
       } else if (result.error.response.status === 403) {
         const message = await get403Message(result.error);
         return {
+          success: false,
           message,
+          action: ActionEnumType.DELETE,
         };
       }
       throw result.error;
@@ -200,11 +207,14 @@ const action = async ({
         return {
           success: false,
           message,
+          action: ActionEnumType.REFRESH_ACCOUNT,
         };
       } else if (refreshAccountRresult.error.response.status === 403) {
         const message = await get403Message(refreshAccountRresult.error);
         return {
           message,
+          success: false,
+          action: ActionEnumType.REFRESH_ACCOUNT,
         };
       }
       throw refreshAccountRresult.error;
@@ -213,6 +223,7 @@ const action = async ({
   invalidateAllQueries();
   return {
     success: true,
+    action: actionType as ActionEnumType,
   };
 };
 
