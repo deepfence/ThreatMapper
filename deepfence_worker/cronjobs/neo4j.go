@@ -508,7 +508,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		WHERE m.is_egress
 		AND m.cidr_ipv4 = "0.0.0.0/0"
 		MATCH (m) -[:SECURED]-> (n:CloudResource)
-		WHERE NOT exists( (n) -[:PUBLIC]-> (o))
+		WHERE NOT exists( (n) -[:PUBLIC]-> (:Node{node_id:'out-the-internet'}))
 		AND n.node_type in $types
 		WITH n LIMIT 10000
 		MERGE (n) -[:PUBLIC]-> (:Node{node_id:'out-the-internet'})`,
@@ -523,7 +523,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		WHERE NOT m.is_egress
 		AND m.cidr_ipv4 = "0.0.0.0/0"
 		MATCH (m) -[:SECURED]-> (n:CloudResource)
-		WHERE NOT exists( (o) -[:PUBLIC]-> (n))
+		WHERE NOT exists( (:Node{node_id:'in-the-internet'}) -[:PUBLIC]-> (n))
 		AND n.node_type in $types
 		WITH n LIMIT 10000
 		MERGE (:Node{node_id:'in-the-internet'}) -[:PUBLIC]-> (n)`,
