@@ -31,6 +31,7 @@ const (
 var (
 	resource_types    = [...]string{"aws_ec2_instance", "aws_ec2_application_load_balancer", "aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer"}
 	resource_lambda   = [...]string{"aws_lambda_function"}
+	resource_link     = [...]string{"aws_lambda_function", "aws_ec2_instance", "aws_ec2_application_load_balancer", "aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer"}
 	resource_ecs      = [...]string{"aws_ecs_service"}
 	resource_ecs_task = [...]string{"aws_ecs_task"}
 )
@@ -475,21 +476,9 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		UNWIND groups as subgroup
 		WITH n, subgroup, CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupName END as name,
 		CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupId END as node_id
-		OPTIONAL MATCH (m:CloudResource{id: "aws_vpc_security_group_rule", group_id: node_id})
-		MATCH (o:Node {node_id:'out-the-internet'})
-		MATCH (p:Node {node_id:'in-the-internet'})
-		WITH m, n, o, p, CASE WHEN m IS NOT NULL THEN [1] ELSE [] END AS make_cat
-		FOREACH (i IN make_cat |
-			MERGE (m) -[:SECURED]-> (n)
-		)
-		WITH m, n, o, p, CASE WHEN m.is_egress AND m.cidr_ipv4 = "0.0.0.0/0" THEN [1] ELSE [] END AS make_cat2
-		FOREACH (i IN make_cat2 |
-			MERGE (n) <-[:PUBLIC]- (o)
-		)
-		WITH m, n, o, p, CASE WHEN NOT m.is_egress AND m.cidr_ipv4 = "0.0.0.0/0" THEN [1] ELSE [] END AS make_cat3
-		FOREACH (i IN make_cat3 |
-			MERGE (n) <-[:PUBLIC]- (p)
-		)`,
+		MATCH (m:CloudResource{id: "aws_vpc_security_group_rule"})
+		WHERE m.node_id ENDS WITH node_id
+		MERGE (m) -[:SECURED]-> (n)`,
 		map[string]interface{}{
 			"types": resource_types[:],
 		}, txConfig); err != nil {
@@ -505,23 +494,41 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		SET n.linked = true
 		WITH n, apoc.convert.fromJsonList(n.vpc_security_group_ids) as sec_group_ids
 		UNWIND sec_group_ids as subgroup
-		OPTIONAL MATCH (m:CloudResource{id: "aws_vpc_security_group_rule", group_id: subgroup})
-		MATCH (o:Node {node_id:'out-the-internet'})
-		MATCH (p:Node {node_id:'in-the-internet'})
-		WITH m, n, o, p, CASE WHEN m IS NOT NULL THEN [1] ELSE [] END AS make_cat
-		FOREACH (i IN make_cat |
-			MERGE (m) -[:SECURED]-> (n)
-		)
-		WITH m, n, o, p, CASE WHEN m.is_egress AND m.cidr_ipv4 = "0.0.0.0/0" THEN [1] ELSE [] END AS make_cat2
-		FOREACH (i IN make_cat2 |
-			MERGE (n) <-[:PUBLIC]- (o)
-		)
-		WITH m, n, o, p, CASE WHEN NOT m.is_egress AND m.cidr_ipv4 = "0.0.0.0/0" THEN [1] ELSE [] END AS make_cat3
-		FOREACH (i IN make_cat3 |
-			MERGE (n) <-[:PUBLIC]- (p)
-		)`,
+		MATCH (m:CloudResource{id: "aws_vpc_security_group_rule"})
+		WHERE m.node_id ENDS WITH subgroup
+		MERGE (m) -[:SECURED]-> (n)`,
 		map[string]interface{}{
 			"types": resource_lambda[:],
+		}, txConfig); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (m:CloudResource{id: "aws_vpc_security_group_rule"})
+		WHERE m.is_egress
+		AND m.cidr_ipv4 = "0.0.0.0/0"
+		MATCH (m) -[:SECURED]-> (n:CloudResource)
+		WHERE NOT exists( (n) -[:PUBLIC]-> (o))
+		AND n.node_type in $types
+		WITH n LIMIT 10000
+		MERGE (n) -[:PUBLIC]-> (:Node{node_id:'out-the-internet'})`,
+		map[string]interface{}{
+			"types": resource_link[:],
+		}, txConfig); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (m:CloudResource{id: "aws_vpc_security_group_rule"})
+		WHERE NOT m.is_egress
+		AND m.cidr_ipv4 = "0.0.0.0/0"
+		MATCH (m) -[:SECURED]-> (n:CloudResource)
+		WHERE NOT exists( (o) -[:PUBLIC]-> (n))
+		AND n.node_type in $types
+		WITH n LIMIT 10000
+		MERGE (:Node{node_id:'in-the-internet'}) -[:PUBLIC]-> (n)`,
+		map[string]interface{}{
+			"types": resource_link[:],
 		}, txConfig); err != nil {
 		return err
 	}
