@@ -59,7 +59,7 @@ The following instructions explain how to install the ThreatMapper console on a 
     --set global.storageClass=gp3 \
     --namespace deepfence-console \
     --create-namespace \
-    --version 2.1.0
+    --version 2.1.1
     ```
 
    ... and wait for the pods to start up:
@@ -94,7 +94,7 @@ Now proceed to the [Initial Configuration](initial-configuration).
 ### Console Helm Chart
 
 ```bash
-helm show values deepfence/deepfence-console --version 2.1.0 > deepfence_console_values.yaml
+helm show values deepfence/deepfence-console --version 2.1.1 > deepfence_console_values.yaml
 
 # Make the changes in this file and save
 vim deepfence_console_values.yaml
@@ -102,7 +102,7 @@ vim deepfence_console_values.yaml
 helm install -f deepfence_console_values.yaml deepfence-console deepfence/deepfence-console \
     --namespace deepfence-console \
     --create-namespace \
-    --version 2.1.0
+    --version 2.1.1
 ```
 
 ### Router Helm Chart
