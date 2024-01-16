@@ -28,10 +28,10 @@ import {
 export interface SearchChainedSearchFilter {
     /**
      * 
-     * @type {any}
+     * @type {SearchChainedSearchFilter}
      * @memberof SearchChainedSearchFilter
      */
-    next_filter?: any | null;
+    next_filter?: SearchChainedSearchFilter;
     /**
      * 
      * @type {SearchSearchFilter}
@@ -67,7 +67,7 @@ export function SearchChainedSearchFilterFromJSONTyped(json: any, ignoreDiscrimi
     }
     return {
         
-        'next_filter': !exists(json, 'next_filter') ? undefined : json['next_filter'],
+        'next_filter': !exists(json, 'next_filter') ? undefined : SearchChainedSearchFilterFromJSON(json['next_filter']),
         'node_filter': SearchSearchFilterFromJSON(json['node_filter']),
         'relation_ship': json['relation_ship'],
     };
@@ -82,7 +82,7 @@ export function SearchChainedSearchFilterToJSON(value?: SearchChainedSearchFilte
     }
     return {
         
-        'next_filter': value.next_filter,
+        'next_filter': SearchChainedSearchFilterToJSON(value.next_filter),
         'node_filter': SearchSearchFilterToJSON(value.node_filter),
         'relation_ship': value.relation_ship,
     };

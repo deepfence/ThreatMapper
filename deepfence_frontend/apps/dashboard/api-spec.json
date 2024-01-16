@@ -11618,16 +11618,13 @@
         "properties": {
           "name": { "type": "string" },
           "registry_url": { "type": "string" },
-          "service_account_json": { "$ref": "#/components/schemas/FormDataMultipartFile" }
+          "service_account_json": { "$ref": "#/components/schemas/MultipartFile" }
         }
       },
-      "FormDataMultipartFile": { "type": "string", "format": "binary", "nullable": true },
       "FormDataVulnerabilityDbDBUploadRequest": {
         "required": ["database"],
         "type": "object",
-        "properties": {
-          "database": { "$ref": "#/components/schemas/FormDataMultipartFile" }
-        }
+        "properties": { "database": { "$ref": "#/components/schemas/MultipartFile" } }
       },
       "GraphCloudProviderFilter": {
         "required": ["account_ids"],
@@ -14679,6 +14676,7 @@
           }
         }
       },
+      "MultipartFile": { "type": "string", "format": "binary" },
       "PostgresqlDbGetAuditLogsRow": {
         "type": "object",
         "properties": {
@@ -14870,7 +14868,7 @@
         "required": ["node_filter", "relation_ship"],
         "type": "object",
         "properties": {
-          "next_filter": { "nullable": true },
+          "next_filter": { "$ref": "#/components/schemas/SearchChainedSearchFilter" },
           "node_filter": { "$ref": "#/components/schemas/SearchSearchFilter" },
           "relation_ship": { "type": "string" }
         }
