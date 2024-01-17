@@ -89,8 +89,10 @@ func main() {
 
 	// new router
 	router := chi.NewRouter()
-	// profiler
-	router.Mount("/debug", middleware.Profiler())
+	// profiler, enabled in debug mode
+	if cfg.Debug {
+		router.Mount("/debug", middleware.Profiler())
+	}
 	// metrics
 	router.Handle("/metrics", promhttp.HandlerFor(NewMetrics(cfg.Mode), promhttp.HandlerOpts{EnableOpenMetrics: true}))
 

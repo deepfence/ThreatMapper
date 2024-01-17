@@ -169,7 +169,7 @@ func main() {
 		return
 	}
 
-	err = router.InternalRoutes(internalMux, ingestC)
+	err = router.InternalRoutes(internalMux, ingestC, enableDebug)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return

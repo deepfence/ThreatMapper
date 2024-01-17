@@ -9,7 +9,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-func InternalRoutes(r *chi.Mux, ingestC chan *kgo.Record) error {
+func InternalRoutes(r *chi.Mux, ingestC chan *kgo.Record, debug bool) error {
 	// authorization
 	authEnforcer, err := newAuthorizationHandler()
 	if err != nil {
@@ -31,8 +31,10 @@ func InternalRoutes(r *chi.Mux, ingestC chan *kgo.Record) error {
 		})
 	})
 
-	// profiler
-	r.Mount("/debug", middleware.Profiler())
+	// profiler, enabled in debug mode
+	if debug {
+		r.Mount("/debug", middleware.Profiler())
+	}
 	// metrics
 	r.Handle("/metrics", promhttp.HandlerFor(NewMetrics(), promhttp.HandlerOpts{EnableOpenMetrics: true}))
 
