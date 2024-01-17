@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"net/http"
-	_ "net/http/pprof"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
