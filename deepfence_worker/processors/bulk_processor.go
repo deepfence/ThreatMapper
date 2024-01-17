@@ -329,9 +329,9 @@ func (w *bulkWorker) commit(ctx context.Context) []error {
 	}
 	// metrics
 	if len(errs) > 0 {
-		commitNeo4jRecordsCounts.WithLabelValues(w.workerID, "error").Add(float64(w.buffer.size))
+		CommitNeo4jRecordsCounts.WithLabelValues(w.workerID, "error", w.p.ns).Add(float64(w.buffer.size))
 	} else {
-		commitNeo4jRecordsCounts.WithLabelValues(w.workerID, "success").Add(float64(w.buffer.size))
+		CommitNeo4jRecordsCounts.WithLabelValues(w.workerID, "success", w.p.ns).Add(float64(w.buffer.size))
 	}
 	// reset buffer after commit
 	w.buffer.Reset()

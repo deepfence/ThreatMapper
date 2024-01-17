@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 
@@ -13,14 +12,14 @@ import (
 )
 
 var (
-	commitNeo4jRecordsCounts = promauto.NewCounterVec(prometheus.CounterOpts{
+	CommitNeo4jRecordsCounts = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "neo4j_commit_records_total",
 		Help: "Total number of records committed to neo4j",
-	}, []string{"worker", "status"})
-	topicLag = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "consumer_group_lag",
-		Help: "Consumer group lag per topic",
-	}, []string{"topic"})
+	}, []string{"worker", "status", "namespace"})
+	KafkaTopicsLag = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "kafka_consumer_group_lag",
+		Help: "Kafka consumer group lag per topic",
+	}, []string{"topic", "namespace"})
 )
 
 func StartGetLagByTopic(ctx context.Context, kafkaBrokers []string, groupID string, kgoLogger kgo.Logger) error {
@@ -70,7 +69,7 @@ func StartGetLagByTopic(ctx context.Context, kafkaBrokers []string, groupID stri
 				lagByTopic := kadm.CalculateGroupLag(described[groupID], fetched, endOffsets).TotalByTopic()
 				for k, v := range lagByTopic {
 					log.Debug().Msgf("consumer group lag topic=%s lag=%d", k, v.Lag)
-					topicLag.WithLabelValues(k).Set(float64(v.Lag))
+					KafkaTopicsLag.WithLabelValues(k, "default").Set(float64(v.Lag))
 				}
 			}
 		}
