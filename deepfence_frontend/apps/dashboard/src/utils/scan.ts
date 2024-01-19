@@ -67,12 +67,14 @@ export const getScanLink = ({
     return (
       generatePath('/vulnerability/scan-results/:scanId', {
         scanId: encodeURIComponent(scanId),
-      }) + `?exploitable=most_exploitable`
+      }) + '?exploitable=most_exploitable'
     );
   } else if (scanType === ScanTypeEnum.SecretScan) {
-    return generatePath('/secret/scan-results/:scanId', {
-      scanId: encodeURIComponent(scanId),
-    });
+    return (
+      generatePath('/secret/scan-results/:scanId', {
+        scanId: encodeURIComponent(scanId),
+      }) + '?severity=critical&severity=high'
+    );
   } else if (scanType === ScanTypeEnum.MalwareScan) {
     return generatePath('/malware/scan-results/:scanId', {
       scanId: encodeURIComponent(scanId),

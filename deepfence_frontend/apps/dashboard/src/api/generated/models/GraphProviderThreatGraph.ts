@@ -46,6 +46,18 @@ export interface GraphProviderThreatGraph {
     compliance_count: number;
     /**
      * 
+     * @type {number}
+     * @memberof GraphProviderThreatGraph
+     */
+    exploitable_secret_count: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof GraphProviderThreatGraph
+     */
+    exploitable_vulnerabilities_count: number;
+    /**
+     * 
      * @type {Array<GraphThreatNodeInfo>}
      * @memberof GraphProviderThreatGraph
      */
@@ -78,6 +90,8 @@ export function instanceOfGraphProviderThreatGraph(value: object): boolean {
     isInstance = isInstance && "cloud_compliance_count" in value;
     isInstance = isInstance && "cloud_warn_alarm_count" in value;
     isInstance = isInstance && "compliance_count" in value;
+    isInstance = isInstance && "exploitable_secret_count" in value;
+    isInstance = isInstance && "exploitable_vulnerabilities_count" in value;
     isInstance = isInstance && "resources" in value;
     isInstance = isInstance && "secrets_count" in value;
     isInstance = isInstance && "vulnerability_count" in value;
@@ -99,6 +113,8 @@ export function GraphProviderThreatGraphFromJSONTyped(json: any, ignoreDiscrimin
         'cloud_compliance_count': json['cloud_compliance_count'],
         'cloud_warn_alarm_count': json['cloud_warn_alarm_count'],
         'compliance_count': json['compliance_count'],
+        'exploitable_secret_count': json['exploitable_secret_count'],
+        'exploitable_vulnerabilities_count': json['exploitable_vulnerabilities_count'],
         'resources': (json['resources'] === null ? null : (json['resources'] as Array<any>).map(GraphThreatNodeInfoFromJSON)),
         'secrets_count': json['secrets_count'],
         'vulnerability_count': json['vulnerability_count'],
@@ -118,6 +134,8 @@ export function GraphProviderThreatGraphToJSON(value?: GraphProviderThreatGraph 
         'cloud_compliance_count': value.cloud_compliance_count,
         'cloud_warn_alarm_count': value.cloud_warn_alarm_count,
         'compliance_count': value.compliance_count,
+        'exploitable_secret_count': value.exploitable_secret_count,
+        'exploitable_vulnerabilities_count': value.exploitable_vulnerabilities_count,
         'resources': (value.resources === null ? null : (value.resources as Array<any>).map(GraphThreatNodeInfoToJSON)),
         'secrets_count': value.secrets_count,
         'vulnerability_count': value.vulnerability_count,
