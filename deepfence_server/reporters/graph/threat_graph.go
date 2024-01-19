@@ -248,7 +248,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters Th
 			res, err = tx.Run(`
 				CALL apoc.nodes.group(['ThreatCloudResource','ThreatNode'], ['node_type', 'depth', 'cloud_provider'],
 				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_exploitable_cve: 'sum', sum_secrets: 'sum', sum_exploitable_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum', sum_warn_alarm: 'sum', sum_cloud_warn_alarm: 'sum',
-				node_id:'collect', vulnerabilities_count: 'collect', exploitable_vulnerabilities_count: 'collect', secrets_count:'collect', exploitable_secret_count:'collect', compliances_count:'collect', cloud_compliances_count: 'collect', warn_alarm_count: 'collect', cloud_warn_alarm_count: 'collect'},
+				node_id:'collect', vulnerabilities_count: 'collect', exploitable_vulnerabilities_count: 'collect', secrets_count:'collect', exploitable_secrets_count: 'collect', compliances_count:'collect', cloud_compliances_count: 'collect', warn_alarm_count: 'collect', cloud_warn_alarm_count: 'collect'},
 				{`+"`*`"+`: 'count'}], {selfRels: false})
 				YIELD node, relationships
 				WHERE apoc.any.property(node, 'cloud_provider') = '`+cloudProvider+`'
@@ -258,7 +258,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters Th
 			res, err = tx.Run(`
 				CALL apoc.nodes.group(['ThreatNode'], ['node_type', 'depth', 'cloud_provider'],
 				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_exploitable_cve: 'sum', sum_secrets: 'sum', sum_exploitable_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum', sum_warn_alarm: 'sum', sum_cloud_warn_alarm: 'sum',
-				node_id:'collect', vulnerabilities_count: 'collect', secrets_count:'collect', compliances_count:'collect', cloud_compliances_count:'collect', warn_alarm_count: 'collect', cloud_warn_alarm_count: 'collect'},
+				node_id:'collect', vulnerabilities_count: 'collect', exploitable_vulnerabilities_count: 'collect', secrets_count:'collect', exploitable_secrets_count: 'collect', compliances_count:'collect', cloud_compliances_count:'collect', warn_alarm_count: 'collect', cloud_warn_alarm_count: 'collect'},
 				{`+"`*`"+`: 'count'}], {selfRels: false})
 				YIELD node, relationships
 				WHERE NOT apoc.any.property(node, 'cloud_provider') IN ['aws', 'gcp', 'azure']
