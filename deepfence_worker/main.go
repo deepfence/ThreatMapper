@@ -6,11 +6,11 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"runtime"
 	"syscall"
 	"time"
 
 	"net/http"
-	_ "net/http/pprof"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -18,7 +18,10 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_worker/controls"
 	cs "github.com/deepfence/ThreatMapper/deepfence_worker/cronscheduler"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/processors"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -27,7 +30,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 
 	wtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 )
@@ -79,14 +82,26 @@ func main() {
 		log.Fatal().Err(err).Msg("Telemetry initialization failed")
 	}
 
-	if os.Getenv("DEEPFENCE_ENABLE_PPROF") != "" {
-		go func() {
-			err := http.ListenAndServe("localhost:6060", nil)
-			if err != nil {
-				log.Error().Msgf("pprof err: %v", err)
-			}
-		}()
+	if cfg.Debug {
+		runtime.SetBlockProfileRate(1)
+		runtime.SetMutexProfileFraction(1)
 	}
+
+	// new router
+	router := chi.NewRouter()
+	// profiler, enabled in debug mode
+	if cfg.Debug {
+		router.Mount("/debug", middleware.Profiler())
+	}
+	// metrics
+	router.Handle("/metrics", promhttp.HandlerFor(NewMetrics(cfg.Mode), promhttp.HandlerOpts{EnableOpenMetrics: true}))
+
+	srv := &http.Server{Addr: "0.0.0.0:" + cfg.MetricsPort, Handler: router}
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Error().Msgf("Server listen failed: %s", err)
+		}
+	}()
 
 	switch cfg.Mode {
 	case "ingester":
@@ -167,7 +182,7 @@ func initializeTelemetry(mode string) error {
 	} else {
 		log.Info().Msgf("setting up noop tracer provider")
 		// set a noop tracer provider
-		otel.SetTracerProvider(trace.NewNoopTracerProvider())
+		otel.SetTracerProvider(noop.NewTracerProvider())
 	}
 
 	otel.SetTextMapPropagator(

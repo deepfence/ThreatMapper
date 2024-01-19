@@ -149,6 +149,12 @@ export const scanPostureApiAction = async ({
           success: false,
           message,
         };
+      } else if (startComplianceScanResponse.error.response.status >= 500) {
+        console.error(startComplianceScanResponse.error);
+        return {
+          success: false,
+          message: 'Something went wrong, please try again later.',
+        };
       }
       throw startComplianceScanResponse.error;
     }
