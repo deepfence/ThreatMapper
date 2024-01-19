@@ -811,6 +811,14 @@ export const secretQueries = createQueryKeys('secret', {
               node_filter: {
                 filters: {
                   contains_filter: containsFilter,
+                  order_filter: { order_fields: [] },
+                  match_filter: { filter_in: {} },
+                  compare_filter: null,
+                },
+                in_field_filter: null,
+                window: {
+                  offset: 0,
+                  size: 0,
                 },
               },
             },
@@ -974,6 +982,14 @@ export const secretQueries = createQueryKeys('secret', {
               node_filter: {
                 filters: {
                   contains_filter: containsFilter,
+                  order_filter: { order_fields: [] },
+                  match_filter: { filter_in: {} },
+                  compare_filter: null,
+                },
+                in_field_filter: null,
+                window: {
+                  offset: 0,
+                  size: 0,
                 },
               },
             },
