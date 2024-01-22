@@ -11,6 +11,7 @@ import (
 type Collector struct {
 	activeAgents *prometheus.Desc
 	activeUsers  *prometheus.Desc
+	userInfo     *prometheus.Desc
 }
 
 func newCollector() *Collector {
@@ -23,7 +24,12 @@ func newCollector() *Collector {
 		activeUsers: prometheus.NewDesc(
 			"active_users_total",
 			"number of users in the console",
-			nil, nil,
+			[]string{"namespace"}, nil,
+		),
+		userInfo: prometheus.NewDesc(
+			"active_users_info",
+			"users info",
+			[]string{"namespace", "company"}, nil,
 		),
 	}
 }
@@ -31,10 +37,12 @@ func newCollector() *Collector {
 func (collector *Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- collector.activeAgents
 	ch <- collector.activeUsers
+	ch <- collector.userInfo
 }
 
 func (collector *Collector) Collect(ch chan<- prometheus.Metric) {
 	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+	ns := string(directory.NonSaaSDirKey)
 
 	// get number of agents connected
 	counts, err := reporters_search.CountNodes(ctx)
@@ -42,19 +50,19 @@ func (collector *Collector) Collect(ch chan<- prometheus.Metric) {
 		log.Error().Err(err).Msg("failed to fetch nodes count for metrics")
 	} else {
 		ch <- prometheus.MustNewConstMetric(collector.activeAgents, prometheus.GaugeValue,
-			float64(counts.CloudProviders), "cloud_provider", "default")
+			float64(counts.CloudProviders), "cloud_provider", ns)
 		ch <- prometheus.MustNewConstMetric(collector.activeAgents, prometheus.GaugeValue,
-			float64(counts.Host), "host", "default")
+			float64(counts.Host), "host", ns)
 		ch <- prometheus.MustNewConstMetric(collector.activeAgents, prometheus.GaugeValue,
-			float64(counts.Container), "container", "default")
+			float64(counts.Container), "container", ns)
 		ch <- prometheus.MustNewConstMetric(collector.activeAgents, prometheus.GaugeValue,
-			float64(counts.ContainerImage), "container_image", "default")
+			float64(counts.ContainerImage), "container_image", ns)
 		ch <- prometheus.MustNewConstMetric(collector.activeAgents, prometheus.GaugeValue,
-			float64(counts.Pod), "pod", "default")
+			float64(counts.Pod), "pod", ns)
 		ch <- prometheus.MustNewConstMetric(collector.activeAgents, prometheus.GaugeValue,
-			float64(counts.KubernetesCluster), "kubernetes_cluster", "default")
+			float64(counts.KubernetesCluster), "kubernetes_cluster", ns)
 		ch <- prometheus.MustNewConstMetric(collector.activeAgents, prometheus.GaugeValue,
-			float64(counts.Namespace), "kubernetes_namespace", "default")
+			float64(counts.Namespace), "kubernetes_namespace", ns)
 	}
 
 	// get number of users
@@ -68,7 +76,10 @@ func (collector *Collector) Collect(ch chan<- prometheus.Metric) {
 	if err != nil {
 		log.Error().Err(err).Msg("failed to fetch users count for metrics")
 	} else {
-		ch <- prometheus.MustNewConstMetric(collector.activeUsers, prometheus.GaugeValue, float64(len(users)))
+		ch <- prometheus.MustNewConstMetric(collector.activeUsers, prometheus.GaugeValue, float64(len(users)), ns)
+		if len(users) > 0 {
+			ch <- prometheus.MustNewConstMetric(collector.userInfo, prometheus.GaugeValue, 1.0, ns, users[0].CompanyName)
+		}
 	}
 
 }
