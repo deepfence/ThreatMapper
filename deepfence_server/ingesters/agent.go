@@ -107,7 +107,7 @@ func (erc *EndpointResolversCache) cleanMaps() {
 		log.Error().Msg(err.Error())
 	} else if v >= maxNetworkMapsSize {
 		log.Warn().Msgf("Memory usage for %v reached limit", RedisNetworkMapKey)
-		err = erc.rdb.HDel(context.Background(), RedisNetworkMapKey).Err()
+		err = erc.rdb.Del(context.Background(), RedisNetworkMapKey).Err()
 		if err != nil {
 			log.Error().Msg(err.Error())
 		}
@@ -119,7 +119,7 @@ func (erc *EndpointResolversCache) cleanMaps() {
 		log.Error().Msg(err.Error())
 	} else if v >= maxNetworkMapsSize {
 		log.Warn().Msgf("Memory usage for %v reached limit", RedisIPPortPIDMapKey)
-		err = erc.rdb.HDel(context.Background(), RedisIPPortPIDMapKey).Err()
+		err = erc.rdb.Del(context.Background(), RedisIPPortPIDMapKey).Err()
 		if err != nil {
 			log.Error().Msg(err.Error())
 		}
