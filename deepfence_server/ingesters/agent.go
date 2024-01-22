@@ -33,7 +33,7 @@ const (
 	defaultIngesterSize  = defaultDBInputSize * dbBatchSize
 	dbBatchTimeout       = time.Second * 10
 	resolverTimeout      = time.Second * 10
-	maxNetworkMapsSize   = 1024 * 1024 * 1024 // 1 GB per maps
+	maxNetworkMapsSize   = 1 * 1024 * 1024 * 1024 // 1 GB per maps
 	enqueerTimeout       = time.Second * 30
 	agentBaseTimeout     = time.Second * 30
 	localhostIP          = "127.0.0.1"
@@ -102,21 +102,38 @@ type CacheEntry struct {
 }
 
 func (erc *EndpointResolversCache) cleanMaps() {
-	if v, _ := erc.rdb.MemoryUsage(context.Background(), RedisNetworkMapKey).Result(); v > maxNetworkMapsSize {
-		log.Debug().Msgf("Memory usage for %v reached limit", RedisNetworkMapKey)
-		erc.rdb.HDel(context.Background(), RedisNetworkMapKey)
+	v, err := erc.rdb.MemoryUsage(context.Background(), RedisNetworkMapKey).Result()
+	if err != nil {
+		log.Error().Msg(err.Error())
+	} else if v >= maxNetworkMapsSize {
+		log.Warn().Msgf("Memory usage for %v reached limit", RedisNetworkMapKey)
+		err = erc.rdb.HDel(context.Background(), RedisNetworkMapKey).Err()
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 		erc.netCache = sync.Map{}
 	}
-	if v, _ := erc.rdb.MemoryUsage(context.Background(), RedisIPPortPIDMapKey).Result(); v > maxNetworkMapsSize {
-		log.Debug().Msgf("Memory usage for %v reached limit", RedisIPPortPIDMapKey)
-		erc.rdb.HDel(context.Background(), RedisIPPortPIDMapKey)
+
+	v, err = erc.rdb.MemoryUsage(context.Background(), RedisIPPortPIDMapKey).Result()
+	if err != nil {
+		log.Error().Msg(err.Error())
+	} else if v >= maxNetworkMapsSize {
+		log.Warn().Msgf("Memory usage for %v reached limit", RedisIPPortPIDMapKey)
+		err = erc.rdb.HDel(context.Background(), RedisIPPortPIDMapKey).Err()
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 		erc.pidCache = sync.Map{}
 	}
 }
 
 func (erc *EndpointResolversCache) pushMaps(er *EndpointResolvers) {
-	erc.rdb.HSet(context.Background(), RedisNetworkMapKey, er.networkMap)
-	erc.rdb.HSet(context.Background(), RedisIPPortPIDMapKey, er.ipPortToIPPID)
+	if err := erc.rdb.HSet(context.Background(), RedisNetworkMapKey, er.networkMap).Err(); err != nil {
+		log.Error().Msg(err.Error())
+	}
+	if err := erc.rdb.HSet(context.Background(), RedisIPPortPIDMapKey, er.ipPortToIPPID).Err(); err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (erc *EndpointResolversCache) getHost(ip string, ttl time.Time) (string, bool) {
