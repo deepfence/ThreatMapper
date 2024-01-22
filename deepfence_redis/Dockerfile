@@ -4,5 +4,6 @@ MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
 COPY redis.conf /usr/local/etc/redis/
+COPY df.sh /bin
 
-CMD ["redis-server", "/usr/local/etc/redis/redis.conf"]
+ENTRYPOINT ["/bin/df.sh"]
