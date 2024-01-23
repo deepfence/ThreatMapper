@@ -92,7 +92,7 @@ export interface UpdateSettingRequest {
 }
 
 export interface UploadVulnerabilityDatabaseRequest {
-    database: Blob | null;
+    database: Blob;
 }
 
 /**
