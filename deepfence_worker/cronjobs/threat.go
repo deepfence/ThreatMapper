@@ -142,8 +142,8 @@ func computeThreatGraph(session neo4j.Session) error {
 		WITH c, m, secrets_count
         MATCH (c)
         WHERE c.level IN ['critical', 'high']
-        WITH m, secrets_count, count(distinct c) as exploitable_secret_count
-        SET m.secrets_count = secrets_count, m.exploitable_secret_count = exploitable_secret_count`,
+        WITH m, secrets_count, count(distinct c) as exploitable_secrets_count
+        SET m.secrets_count = secrets_count, m.exploitable_secrets_count = exploitable_secrets_count`,
 		map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}
@@ -158,8 +158,8 @@ func computeThreatGraph(session neo4j.Session) error {
 		WITH c, m, malwares_count
         MATCH (c)                      
         WHERE c.file_severity IN ['critical', 'high']
-        WITH m, malwares_count, count(distinct c) as exploitable_malware_count
-        SET m.malwares_count = malwares_count, m.exploitable_malware_count = exploitable_malware_count`,
+        WITH m, malwares_count, count(distinct c) as exploitable_malwares_count
+        SET m.malwares_count = malwares_count, m.exploitable_malwares_count = exploitable_malwares_count`,
 		map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}
@@ -232,8 +232,8 @@ func computeThreatGraph(session neo4j.Session) error {
 			n.sum_compliance = COALESCE(n.compliances_count, 0),
 			n.sum_cloud_compliance = COALESCE(n.cloud_compliances_count, 0),
 			n.sum_exploitable_cve = COALESCE(n.exploitable_vulnerabilities_count, 0),
-			n.sum_exploitable_secrets = COALESCE(n.exploitable_secret_count, 0),
-			n.sum_exploitable_malwares = COALESCE(n.exploitable_malware_count, 0),
+			n.sum_exploitable_secrets = COALESCE(n.exploitable_secrets_count, 0),
+			n.sum_exploitable_malwares = COALESCE(n.exploitable_malwares_count, 0),
 			n.sum_warn_alarm = COALESCE(n.warn_alarm_count, 0),
 			n.sum_cloud_warn_alarm = COALESCE(n.cloud_warn_alarm_count, 0)`,
 		map[string]interface{}{}, txConfig); err != nil {
@@ -250,8 +250,8 @@ func computeThreatGraph(session neo4j.Session) error {
 			n.sum_compliance = COALESCE(n.sum_compliance, 0) + COALESCE(m.sum_compliance, m.compliances_count, 0),
 			n.sum_cloud_compliance = COALESCE(n.sum_cloud_compliance, 0) + COALESCE(m.sum_cloud_compliance, m.cloud_compliances_count, 0),
 			n.sum_exploitable_cve = COALESCE(n.sum_exploitable_cve, 0) + COALESCE(m.sum_exploitable_cve, m.exploitable_vulnerabilities_count, 0),
-			n.sum_exploitable_secrets = COALESCE(n.sum_exploitable_secrets, 0) + COALESCE(m.sum_exploitable_secrets, m.exploitable_secret_count, 0),
-			n.sum_exploitable_malwares = COALESCE(n.sum_exploitable_malwares, 0) + COALESCE(m.sum_exploitable_malwares, m.exploitable_malware_count, 0),
+			n.sum_exploitable_secrets = COALESCE(n.sum_exploitable_secrets, 0) + COALESCE(m.sum_exploitable_secrets, m.exploitable_secrets_count, 0),
+			n.sum_exploitable_malwares = COALESCE(n.sum_exploitable_malwares, 0) + COALESCE(m.sum_exploitable_malwares, m.exploitable_malwares_count, 0),
 			n.sum_warn_alarm = COALESCE(n.sum_warn_alarm, 0) + COALESCE(m.sum_warn_alarm, m.warn_alarm_count, 0),
 			n.sum_cloud_warn_alarm = COALESCE(n.sum_cloud_warn_alarm, 0) + COALESCE(m.sum_cloud_warn_alarm, m.cloud_warn_alarm_count, 0)`,
 		map[string]interface{}{}, txConfig); err != nil {
