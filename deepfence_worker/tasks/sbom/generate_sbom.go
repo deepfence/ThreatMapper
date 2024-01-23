@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	utilsCtl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -37,11 +36,6 @@ func NewSbomGenerator(ingest chan *kgo.Record) SbomGenerator {
 }
 
 func StopVulnerabilityScan(ctx context.Context, task *asynq.Task) error {
-	if allocator := ctx.Value(utilsCtl.ContextAllocatorKey); allocator != nil {
-		defer allocator.(*utilsCtl.RedisWorkloadAllocator).Free()
-	} else {
-		return utilsCtl.ErrCtxAllocatorNotFound
-	}
 
 	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
@@ -72,11 +66,6 @@ func StopVulnerabilityScan(ctx context.Context, task *asynq.Task) error {
 }
 
 func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error {
-	if allocator := ctx.Value(utilsCtl.ContextAllocatorKey); allocator != nil {
-		defer allocator.(*utilsCtl.RedisWorkloadAllocator).Free()
-	} else {
-		return utilsCtl.ErrCtxAllocatorNotFound
-	}
 
 	var (
 		params utils.SbomParameters
