@@ -14,5 +14,5 @@ type Config struct {
 	RedisPassword         string   `default:"" split_words:"true"`
 	TasksConcurrency      int      `default:"50" split_words:"true"`
 	ProcessQueues         []string `split_words:"true"`
-	MaxScanWorkload       int64    `default:"5" split_words:"true"`
+	MaxScanWorkload       int      `default:"5" split_words:"true"`
 }
