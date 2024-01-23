@@ -134,3 +134,8 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 
 	return nil
 }
+
+// todo
+func (j Jira) IsValidCredential(ctx context.Context) bool {
+	return true
+}

@@ -70,3 +70,8 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message string, ext
 
 	return nil
 }
+
+// todo
+func (e ElasticSearch) IsValidCredential(ctx context.Context) bool {
+	return true
+}

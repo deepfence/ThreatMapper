@@ -93,3 +93,8 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 	fmt.Println("JSON data uploaded successfully")
 	return nil
 }
+
+// todo
+func (s S3) IsValidCredential(ctx context.Context) bool {
+	return true
+}

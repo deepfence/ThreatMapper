@@ -59,4 +59,7 @@ func (h HTTPEndpoint) SendNotification(ctx context.Context, message string, extr
 	return nil
 }
 
-// func (s Slack) FormatMessage
+// todo
+func (h HTTPEndpoint) IsValidCredential(ctx context.Context) bool {
+	return true
+}

@@ -139,3 +139,8 @@ func (t Teams) Sender(in chan *Payload, wg *sync.WaitGroup) {
 		resp.Body.Close()
 	}
 }
+
+// todo
+func (t Teams) IsValidCredential(ctx context.Context) bool {
+	return true
+}

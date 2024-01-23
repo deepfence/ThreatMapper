@@ -126,3 +126,8 @@ func (e Email) IsEmailConfigured(ctx context.Context) bool {
 
 	return true
 }
+
+// todo
+func (e Email) IsValidCredential(ctx context.Context) bool {
+	return true
+}

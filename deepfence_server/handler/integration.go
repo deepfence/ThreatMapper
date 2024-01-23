@@ -61,6 +61,14 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !obj.IsValidCredential(ctx) {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrInvalidCredential})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		return
+	}
+
 	// add integration to database
 	// before that check if integration already exists
 	integrationExists, err := req.IntegrationExists(ctx, pgClient)
