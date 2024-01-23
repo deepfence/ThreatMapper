@@ -6,13 +6,6 @@ set -x
 export DF_SERVERLESS=${DF_SERVERLESS:-"true"}
 export DF_FIM_ON=${DF_FIM_ON:-"Y"}
 export DF_TRAFFIC_ANALYSIS_ON=${DF_TRAFFIC_ANALYSIS_ON:-"Y"}
-export DF_ENABLE_PROCESS_REPORT=${DF_ENABLE_PROCESS_REPORT:-"true"}
-export DF_ENABLE_CONNECTIONS_REPORT=${DF_ENABLE_CONNECTIONS_REPORT:-"true"}
-export DF_PKT_CAPTURE_PERCENTAGE=${DF_PKT_CAPTURE_PERCENTAGE:-"100"}
-export DF_PKT_CAPTURE_SNAP_LENGTH=${DF_PKT_CAPTURE_SNAP_LENGTH:-"65535"}
-export DF_CAPTURE_INTF=${DF_CAPTURE_INTF:-"any"}
-export DF_TRAFFIC_ANALYSIS_PROCESSES=${DF_TRAFFIC_ANALYSIS_PROCESSES:-""}
-export DF_TRAFFIC_ANALYSIS_MODE=${DF_TRAFFIC_ANALYSIS_MODE:-"all"}
 export DF_INSTALL_DIR=${DF_INSTALL_DIR:-"/opt/deepfence"}
 export DF_BASE_DIR="/deepfence"
 
@@ -148,11 +141,7 @@ if [[ "$DF_BASE_DIR" != "$DF_INSTALL_DIR" ]]; then
   deep_copy "$DF_BASE_DIR/etc/*" "$DF_INSTALL_DIR/etc/."
   deep_copy "$DF_BASE_DIR/home/*" "$DF_INSTALL_DIR/home/."
   deep_copy "$DF_BASE_DIR/usr/*" "$DF_INSTALL_DIR/usr/."
-  # deep_copy "$DF_BASE_DIR/var/*" "$DF_INSTALL_DIR/var/."
-  # deep_copy "$DF_BASE_DIR/tmp/*" "$DF_INSTALL_DIR/tmp/."
-#   deep_copy "$DF_BASE_DIR/var/*" "$DF_INSTALL_DIR/var/."
   deep_copy "$DF_BASE_DIR/opt/*" "$DF_INSTALL_DIR/opt/."
-#   deep_copy "$DF_BASE_DIR/deepfence/*" "$DF_INSTALL_DIR/deepfence/."
 fi
 
 # Make rules.tar.gz

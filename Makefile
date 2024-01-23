@@ -17,7 +17,7 @@ export DF_IMG_TAG?=latest
 export IS_DEV_BUILD?=false
 export VERSION?="2.1.0"
 
-default: bootstrap console_plugins agent console
+default: bootstrap console_plugins agent console fargate-local
 
 .PHONY: console
 console: redis postgres kafka-broker router server worker ui file-server graphdb jaeger
