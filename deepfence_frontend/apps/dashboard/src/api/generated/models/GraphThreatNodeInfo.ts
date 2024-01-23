@@ -61,7 +61,7 @@ export interface GraphThreatNodeInfo {
      * @type {number}
      * @memberof GraphThreatNodeInfo
      */
-    exploitable_secret_count: number;
+    exploitable_secrets_count: number;
     /**
      * 
      * @type {number}
@@ -122,7 +122,7 @@ export function instanceOfGraphThreatNodeInfo(value: object): boolean {
     isInstance = isInstance && "cloud_warn_alarm_count" in value;
     isInstance = isInstance && "compliance_count" in value;
     isInstance = isInstance && "count" in value;
-    isInstance = isInstance && "exploitable_secret_count" in value;
+    isInstance = isInstance && "exploitable_secrets_count" in value;
     isInstance = isInstance && "exploitable_vulnerabilities_count" in value;
     isInstance = isInstance && "id" in value;
     isInstance = isInstance && "label" in value;
@@ -150,7 +150,7 @@ export function GraphThreatNodeInfoFromJSONTyped(json: any, ignoreDiscriminator:
         'cloud_warn_alarm_count': json['cloud_warn_alarm_count'],
         'compliance_count': json['compliance_count'],
         'count': json['count'],
-        'exploitable_secret_count': json['exploitable_secret_count'],
+        'exploitable_secrets_count': json['exploitable_secrets_count'],
         'exploitable_vulnerabilities_count': json['exploitable_vulnerabilities_count'],
         'id': json['id'],
         'label': json['label'],
@@ -176,7 +176,7 @@ export function GraphThreatNodeInfoToJSON(value?: GraphThreatNodeInfo | null): a
         'cloud_warn_alarm_count': value.cloud_warn_alarm_count,
         'compliance_count': value.compliance_count,
         'count': value.count,
-        'exploitable_secret_count': value.exploitable_secret_count,
+        'exploitable_secrets_count': value.exploitable_secrets_count,
         'exploitable_vulnerabilities_count': value.exploitable_vulnerabilities_count,
         'id': value.id,
         'label': value.label,

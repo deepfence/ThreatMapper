@@ -134,7 +134,7 @@ const ModalContent = ({
             vulnerability_count: (nodeData as ModelHost)
               ?.exploitable_vulnerabilities_count,
             latest_secret_scan_id: (nodeData as ModelHost)?.secret_latest_scan_id,
-            secrets_count: (nodeData as ModelHost)?.exploitable_secret_count,
+            secrets_count: (nodeData as ModelHost)?.exploitable_secrets_count,
             latest_compliance_scan_id: (nodeData as ModelHost)?.compliance_latest_scan_id,
             compliance_count: (nodeData as ModelHost)?.warn_alarm_count,
             latest_cloud_compliance_scan_id: undefined,

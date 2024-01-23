@@ -133,13 +133,13 @@ export interface ModelHost {
      * @type {number}
      * @memberof ModelHost
      */
-    exploitable_malware_count: number;
+    exploitable_malwares_count: number;
     /**
      * 
      * @type {number}
      * @memberof ModelHost
      */
-    exploitable_secret_count: number;
+    exploitable_secrets_count: number;
     /**
      * 
      * @type {number}
@@ -358,8 +358,8 @@ export function instanceOfModelHost(value: object): boolean {
     isInstance = isInstance && "containers" in value;
     isInstance = isInstance && "cpu_max" in value;
     isInstance = isInstance && "cpu_usage" in value;
-    isInstance = isInstance && "exploitable_malware_count" in value;
-    isInstance = isInstance && "exploitable_secret_count" in value;
+    isInstance = isInstance && "exploitable_malwares_count" in value;
+    isInstance = isInstance && "exploitable_secrets_count" in value;
     isInstance = isInstance && "exploitable_vulnerabilities_count" in value;
     isInstance = isInstance && "host_name" in value;
     isInstance = isInstance && "inbound_connections" in value;
@@ -420,8 +420,8 @@ export function ModelHostFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'containers': (json['containers'] === null ? null : (json['containers'] as Array<any>).map(ModelContainerFromJSON)),
         'cpu_max': json['cpu_max'],
         'cpu_usage': json['cpu_usage'],
-        'exploitable_malware_count': json['exploitable_malware_count'],
-        'exploitable_secret_count': json['exploitable_secret_count'],
+        'exploitable_malwares_count': json['exploitable_malwares_count'],
+        'exploitable_secrets_count': json['exploitable_secrets_count'],
         'exploitable_vulnerabilities_count': json['exploitable_vulnerabilities_count'],
         'host_name': json['host_name'],
         'inbound_connections': (json['inbound_connections'] === null ? null : (json['inbound_connections'] as Array<any>).map(ModelConnectionFromJSON)),
@@ -480,8 +480,8 @@ export function ModelHostToJSON(value?: ModelHost | null): any {
         'containers': (value.containers === null ? null : (value.containers as Array<any>).map(ModelContainerToJSON)),
         'cpu_max': value.cpu_max,
         'cpu_usage': value.cpu_usage,
-        'exploitable_malware_count': value.exploitable_malware_count,
-        'exploitable_secret_count': value.exploitable_secret_count,
+        'exploitable_malwares_count': value.exploitable_malwares_count,
+        'exploitable_secrets_count': value.exploitable_secrets_count,
         'exploitable_vulnerabilities_count': value.exploitable_vulnerabilities_count,
         'host_name': value.host_name,
         'inbound_connections': (value.inbound_connections === null ? null : (value.inbound_connections as Array<any>).map(ModelConnectionToJSON)),

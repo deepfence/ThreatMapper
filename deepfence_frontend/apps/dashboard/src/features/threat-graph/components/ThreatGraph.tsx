@@ -229,7 +229,7 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
             }`,
             issuesCount:
               singleGraph.warn_alarm_count +
-              singleGraph.exploitable_secret_count +
+              singleGraph.exploitable_secrets_count +
               singleGraph.exploitable_vulnerabilities_count +
               singleGraph.cloud_warn_alarm_count,
             nodeType: singleGraph.node_type,
