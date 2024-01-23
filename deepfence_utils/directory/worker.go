@@ -82,6 +82,10 @@ func (ws WorkEnqueuer) DeleteAllArchivedTasks() (int, []error) {
 	return deletedTasksCount, errs
 }
 
+func (ws WorkEnqueuer) Inspector() *asynq.Inspector {
+	return ws.clients.inspector
+}
+
 func Worker(ctx context.Context) (WorkEnqueuer, error) {
 	client, err := getClient(ctx, &workerClientsPool, newAsynqClient)
 	if err != nil {
