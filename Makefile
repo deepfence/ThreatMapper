@@ -3,6 +3,7 @@ PWD=$(shell pwd)
 export ROOT_MAKEFILE_DIR=$(shell pwd)
 export DEEPFENCE_AGENT_DIR=$(PWD)/deepfence_agent
 export DEEPFENCE_ROUTER_DIR=$(PWD)/haproxy
+export DEEPFENCE_TELEMETRY_DIR=$(PWD)/deepfence_telemetry
 export DEEPFENCE_FILE_SERVER_DIR=$(PWD)/deepfence_file_server
 export DEEPFENCE_FRONTEND_DIR=$(PWD)/deepfence_frontend
 export SECRET_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/SecretScanner
@@ -87,8 +88,7 @@ worker: alpine_builder
 
 .PHONY: jaeger
 jaeger:
-	docker pull jaegertracing/all-in-one:1.53
-	docker tag jaegertracing/all-in-one:1.53 $(IMAGE_REPOSITORY)/deepfence_telemetry_ce:$(DF_IMG_TAG)
+	docker build -t $(IMAGE_REPOSITORY)/deepfence_telemetry_ce:$(DF_IMG_TAG) $(DEEPFENCE_TELEMETRY_DIR)
 
 .PHONY: graphdb
 graphdb:

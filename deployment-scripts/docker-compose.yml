@@ -365,15 +365,6 @@ services:
       - "127.0.0.1:16686:16686"
     environment:
       <<: *telemetry-variables
-    entrypoint: >
-      /bin/sh -c '
-        if [ $${DEEPFENCE_TELEMETRY_ENABLED} == "true" ]; then
-          /go/bin/all-in-one-linux
-        else
-          echo "DEEPFENCE_TELEMETRY_ENABLED is not set to true"
-          sleep infinity
-        fi
-      '
     networks:
       - deepfence_net
     logging:
