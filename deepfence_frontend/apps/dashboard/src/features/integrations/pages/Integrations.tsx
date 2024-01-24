@@ -219,7 +219,7 @@ const IntegrationTypes = ({ integration }: { integration: IIntegrationType }) =>
     <div className="mt-2 flex flex-wrap gap-4">
       {integration?.types?.map((type) => {
         return (
-          <DFLink to={type.path} unstyled key={type.name}>
+          <DFLink to={type.path} unstyled key={type.name} data-testid={`${type.id}Id`}>
             <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-bg-hover-3 dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:ring-1 cursor-pointer">
               <div className="flex items-center gap-x-4">
                 <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
@@ -297,7 +297,9 @@ const ReportCount = () => {
 
   return (
     <div className="flex gap-x-2 items-center">
-      <span className="text-h1 dark:text-text-input-value">{reportCount}</span>
+      <span className="text-h1 dark:text-text-input-value" data-testid="reportCountId">
+        {reportCount}
+      </span>
 
       <span className="text-p7">Reports generated</span>
     </div>
@@ -311,7 +313,7 @@ const DownloadReport = () => {
     <div>
       <h2 className="text-t3 dark:text-text-input-value">Download reports</h2>
       <div className="mt-2 flex gap-x-4 items-center">
-        <div className="flex flex-col w-fit min-w-[208px]">
+        <div className="flex flex-col w-fit min-w-[208px]" data-testid="reportWrapperId">
           <DFLink to={'/integrations/download/report'} className="h-[84px]" unstyled>
             <Card
               className={cn(
