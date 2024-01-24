@@ -80,15 +80,17 @@ export const getScanLink = ({
       scanId: encodeURIComponent(scanId),
     });
   } else if (scanType === ScanTypeEnum.ComplianceScan) {
-    return generatePath('/posture/scan-results/:nodeType/:scanId', {
-      scanId: encodeURIComponent(scanId),
-      nodeType: nodeType === 'host' ? 'linux' : nodeType,
-    });
+    return (
+      generatePath('/posture/scan-results/:nodeType/:scanId', {
+        scanId: encodeURIComponent(scanId),
+        nodeType: nodeType === 'host' ? 'linux' : nodeType,
+      }) + '?status=warn'
+    );
   } else if (scanType === ScanTypeEnum.CloudComplianceScan) {
     return `${generatePath('/posture/cloud/scan-results/:nodeType/:scanId', {
       scanId: encodeURIComponent(scanId),
       nodeType: cloudId,
-    })}?resources=${encodeURIComponent(nodeId)}`;
+    })}?resources=${encodeURIComponent(nodeId)}&status=alarm`;
   }
   throw new Error('Invalid scan type');
 };
