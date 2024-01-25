@@ -226,8 +226,6 @@ func (s Slack) IsValidCredential(ctx context.Context) bool {
 		return false
 	}
 
-	log.Infof("Slack test message response: %v", resp)
-
 	// Check the response status code.
 	if resp.StatusCode != http.StatusOK {
 		log.Errorf("failed to send notification, status code: %d", resp.StatusCode)
