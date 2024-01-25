@@ -23,6 +23,8 @@ import (
 	"github.com/hibiken/asynq"
 )
 
+const NOTIFICATION_INTERVAL = 60000 //in milliseconds
+
 var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
 	"cve_severity":          "Severity",
 	"cve_id":                "CVE Id",
@@ -287,7 +289,7 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		return err
 	}
 
-	last30sTimeStamp := ts - 30000
+	last30sTimeStamp := ts - NOTIFICATION_INTERVAL
 
 	log.Debug().Msgf("Check for %s scans to notify at timestamp (%d,%d)",
 		integrationRow.Resource, last30sTimeStamp, ts)
