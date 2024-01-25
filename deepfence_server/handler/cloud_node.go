@@ -8,6 +8,7 @@ import (
 	"net/http/httputil"
 
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	"github.com/hibiken/asynq"
 
 	cloudscanner_diagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/cloudscanner-diagnosis"
 
@@ -317,5 +318,9 @@ func (h *Handler) CachePostureProviders(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return worker.Enqueue(utils.CachePostureProviders, []byte{}, utils.CritialTaskOpts()...)
+	err = worker.EnqueueUnique(utils.CachePostureProviders, []byte{}, utils.CritialTaskOpts()...)
+	if err != nil && err != asynq.ErrTaskIDConflict {
+		return err
+	}
+	return nil
 }
