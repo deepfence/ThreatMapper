@@ -68,6 +68,12 @@ func (ws WorkEnqueuer) Enqueue(taskEnum string, data []byte, opts ...asynq.Optio
 	return err
 }
 
+// utility func to use when task name is used as task id to ensure unique task is enqueued
+func (ws WorkEnqueuer) EnqueueUnique(taskEnum string, data []byte, opts ...asynq.Option) error {
+	opts = append(opts, asynq.TaskID(taskEnum))
+	return ws.Enqueue(taskEnum, data, opts...)
+}
+
 func (ws WorkEnqueuer) DeleteAllArchivedTasks() (int, []error) {
 	var deletedTasksCount int
 	var errs []error
