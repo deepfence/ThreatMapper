@@ -128,11 +128,15 @@ func (erc *EndpointResolversCache) cleanMaps() {
 }
 
 func (erc *EndpointResolversCache) pushMaps(er *EndpointResolvers) {
-	if err := erc.rdb.HSet(context.Background(), RedisNetworkMapKey, er.networkMap).Err(); err != nil {
-		log.Error().Msg(err.Error())
+	if len(er.networkMap) > 0 {
+		if err := erc.rdb.HSet(context.Background(), RedisNetworkMapKey, er.networkMap).Err(); err != nil {
+			log.Error().Msg(err.Error())
+		}
 	}
-	if err := erc.rdb.HSet(context.Background(), RedisIPPortPIDMapKey, er.ipPortToIPPID).Err(); err != nil {
-		log.Error().Msg(err.Error())
+	if len(er.ipPortToIPPID) > 0 {
+		if err := erc.rdb.HSet(context.Background(), RedisIPPortPIDMapKey, er.ipPortToIPPID).Err(); err != nil {
+			log.Error().Msg(err.Error())
+		}
 	}
 }
 
