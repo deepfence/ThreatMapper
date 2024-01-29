@@ -1483,4 +1483,98 @@ export const searchQueries = createQueryKeys('search', {
       },
     };
   },
+  registryAccounts: (filters: {
+    searchText?: string;
+    size: number;
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
+  }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async ({
+        pageParam = 0,
+      }): Promise<{
+        registryAccounts: {
+          nodeId: string;
+          nodeName: string;
+        }[];
+      }> => {
+        const { searchText, size, order } = filters;
+        const matchFilter = { filter_in: {} };
+        if (searchText?.length) {
+          matchFilter.filter_in = {
+            node_id: [searchText],
+          };
+        }
+
+        const searchRegistryAccountsApi = apiWrapper({
+          fn: getSearchApiClient().searchRegistryAccounts,
+        });
+
+        const scanRequestParams: SearchSearchNodeReq = {
+          node_filter: {
+            filters: {
+              contains_filter: {
+                filter_in: {},
+              },
+              not_contains_filter: {
+                filter_in: {},
+              },
+              order_filter: {
+                order_fields: [
+                  {
+                    field_name: 'node_id',
+                    descending: false,
+                  },
+                ],
+              },
+              match_filter: matchFilter,
+              compare_filter: null,
+            },
+            in_field_filter: null,
+            window: {
+              offset: 0,
+              size: 0,
+            },
+          },
+          window: {
+            offset: pageParam,
+            size,
+          },
+        };
+        if (order) {
+          scanRequestParams.node_filter.filters.order_filter.order_fields = [
+            {
+              field_name: order.sortBy,
+              descending: order.descending,
+            },
+          ];
+        }
+        const searchRegistryAccountsResponse = await searchRegistryAccountsApi({
+          searchSearchNodeReq: scanRequestParams,
+        });
+        if (!searchRegistryAccountsResponse.ok) {
+          throw searchRegistryAccountsResponse.error;
+        }
+
+        if (searchRegistryAccountsResponse.value === null) {
+          return {
+            registryAccounts: [],
+          };
+        }
+        return {
+          registryAccounts: searchRegistryAccountsResponse.value
+            .slice(0, size)
+            .map((res) => {
+              return {
+                nodeId: res.node_id,
+                nodeName: res.host_name,
+              };
+            }),
+        };
+      },
+    };
+  },
 });

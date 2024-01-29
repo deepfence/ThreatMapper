@@ -10293,6 +10293,13 @@
         "summary": "Upload New agent version",
         "description": "Upload Agent version",
         "operationId": "uploadAgentVersion",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": { "$ref": "#/components/schemas/FormDataModelBinUploadRequest" }
+            }
+          }
+        },
         "responses": {
           "200": { "description": "OK" },
           "400": {
@@ -11612,22 +11619,24 @@
           "node_type": { "enum": ["host", "cluster", "cloud_account"], "type": "string" }
         }
       },
+      "FormDataModelBinUploadRequest": {
+        "required": ["tarball"],
+        "type": "object",
+        "properties": { "tarball": { "$ref": "#/components/schemas/MultipartFile" } }
+      },
       "FormDataModelRegistryGCRAddReq": {
         "required": ["name", "registry_url", "service_account_json"],
         "type": "object",
         "properties": {
           "name": { "type": "string" },
           "registry_url": { "type": "string" },
-          "service_account_json": { "$ref": "#/components/schemas/FormDataMultipartFile" }
+          "service_account_json": { "$ref": "#/components/schemas/MultipartFile" }
         }
       },
-      "FormDataMultipartFile": { "type": "string", "format": "binary", "nullable": true },
       "FormDataVulnerabilityDbDBUploadRequest": {
         "required": ["database"],
         "type": "object",
-        "properties": {
-          "database": { "$ref": "#/components/schemas/FormDataMultipartFile" }
-        }
+        "properties": { "database": { "$ref": "#/components/schemas/MultipartFile" } }
       },
       "GraphCloudProviderFilter": {
         "required": ["account_ids"],
@@ -11683,7 +11692,9 @@
           "node_id",
           "name",
           "vulnerability_count",
+          "exploitable_vulnerabilities_count",
           "secrets_count",
+          "exploitable_secrets_count",
           "compliance_count",
           "cloud_compliance_count",
           "warn_alarm_count",
@@ -11694,6 +11705,8 @@
           "cloud_compliance_count": { "type": "integer" },
           "cloud_warn_alarm_count": { "type": "integer" },
           "compliance_count": { "type": "integer" },
+          "exploitable_secrets_count": { "type": "integer" },
+          "exploitable_vulnerabilities_count": { "type": "integer" },
           "name": { "type": "string" },
           "node_id": { "type": "string" },
           "secrets_count": { "type": "integer" },
@@ -11706,7 +11719,9 @@
           "resources",
           "compliance_count",
           "secrets_count",
+          "exploitable_secrets_count",
           "vulnerability_count",
+          "exploitable_vulnerabilities_count",
           "cloud_compliance_count",
           "warn_alarm_count",
           "cloud_warn_alarm_count"
@@ -11716,6 +11731,8 @@
           "cloud_compliance_count": { "type": "integer" },
           "cloud_warn_alarm_count": { "type": "integer" },
           "compliance_count": { "type": "integer" },
+          "exploitable_secrets_count": { "type": "integer" },
+          "exploitable_vulnerabilities_count": { "type": "integer" },
           "resources": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/GraphThreatNodeInfo" },
@@ -11766,7 +11783,9 @@
           "id",
           "nodes",
           "vulnerability_count",
+          "exploitable_vulnerabilities_count",
           "secrets_count",
+          "exploitable_secrets_count",
           "compliance_count",
           "cloud_compliance_count",
           "count",
@@ -11786,6 +11805,8 @@
           "cloud_warn_alarm_count": { "type": "integer" },
           "compliance_count": { "type": "integer" },
           "count": { "type": "integer" },
+          "exploitable_secrets_count": { "type": "integer" },
+          "exploitable_vulnerabilities_count": { "type": "integer" },
           "id": { "type": "string" },
           "label": { "type": "string" },
           "node_type": { "type": "string" },
@@ -13316,6 +13337,9 @@
           "compliances_count",
           "compliance_scan_status",
           "compliance_latest_scan_id",
+          "exploitable_vulnerabilities_count",
+          "exploitable_secrets_count",
+          "exploitable_malwares_count",
           "warn_alarm_count",
           "cloud_warn_alarm_count",
           "inbound_connections",
@@ -13344,6 +13368,9 @@
           },
           "cpu_max": { "type": "number" },
           "cpu_usage": { "type": "number" },
+          "exploitable_malwares_count": { "type": "integer" },
+          "exploitable_secrets_count": { "type": "integer" },
+          "exploitable_vulnerabilities_count": { "type": "integer" },
           "host_name": { "type": "string" },
           "inbound_connections": {
             "type": "array",
@@ -14679,6 +14706,7 @@
           }
         }
       },
+      "MultipartFile": { "type": "string", "format": "binary" },
       "PostgresqlDbGetAuditLogsRow": {
         "type": "object",
         "properties": {
@@ -14870,7 +14898,7 @@
         "required": ["node_filter", "relation_ship"],
         "type": "object",
         "properties": {
-          "next_filter": { "nullable": true },
+          "next_filter": { "$ref": "#/components/schemas/SearchChainedSearchFilter" },
           "node_filter": { "$ref": "#/components/schemas/SearchSearchFilter" },
           "relation_ship": { "type": "string" }
         }
@@ -14956,6 +14984,9 @@
         "type": "object",
         "properties": {
           "node_filters": { "$ref": "#/components/schemas/SearchSearchFilter" },
+          "related_node_filter": {
+            "$ref": "#/components/schemas/SearchChainedSearchFilter"
+          },
           "scan_filters": { "$ref": "#/components/schemas/SearchSearchFilter" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
