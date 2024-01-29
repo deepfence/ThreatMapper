@@ -104,8 +104,8 @@ type Host struct {
 	ComplianceScanStatus            string           `json:"compliance_scan_status" required:"true"`
 	ComplianceLatestScanID          string           `json:"compliance_latest_scan_id" required:"true"`
 	ExploitableVulnerabilitiesCount int64            `json:"exploitable_vulnerabilities_count" required:"true"`
-	ExploitableSecretCount          int64            `json:"exploitable_secret_count" required:"true"`
-	ExploitableMalwareCount         int64            `json:"exploitable_malware_count" required:"true"`
+	ExploitableSecretsCount         int64            `json:"exploitable_secrets_count" required:"true"`
+	ExploitableMalwaresCount        int64            `json:"exploitable_malwares_count" required:"true"`
 	WarnAlarmCount                  int64            `json:"warn_alarm_count" required:"true"`
 	CloudWarnAlarmCount             int64            `json:"cloud_warn_alarm_count" required:"true"`
 	InboundConnections              []Connection     `json:"inbound_connections" required:"true"`

@@ -821,7 +821,7 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 
 	d.AddOperation("uploadAgentVersion", http.MethodPut, "/deepfence/settings/agent/version",
 		"Upload New agent version", "Upload Agent version",
-		http.StatusOK, []string{tagSettings}, bearerToken, nil, nil)
+		http.StatusOK, []string{tagSettings}, bearerToken, new(BinUploadRequest), nil)
 
 	d.AddOperation("getAgentVersions", http.MethodGet, "/deepfence/settings/agent/versions",
 		"Get available agent versions", "Get available agent versions",

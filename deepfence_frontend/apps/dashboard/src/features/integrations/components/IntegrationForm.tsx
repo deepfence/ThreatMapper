@@ -940,7 +940,7 @@ export const IntegrationForm = ({
                   defaultValue={formData?.config?.s3_bucket_name}
                   name="name"
                   label="Bucket Name"
-                  placeholder="S3 bukcket name"
+                  placeholder="S3 bucket name"
                   helperText={fieldErrors?.s3_bucket_name}
                   color={fieldErrors?.s3_bucket_name ? 'error' : 'default'}
                   required

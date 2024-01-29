@@ -64,27 +64,33 @@ export const getScanLink = ({
   nodeId: string;
 }): string => {
   if (scanType === ScanTypeEnum.VulnerabilityScan) {
-    return generatePath('/vulnerability/scan-results/:scanId', {
-      scanId: encodeURIComponent(scanId),
-    });
+    return (
+      generatePath('/vulnerability/scan-results/:scanId', {
+        scanId: encodeURIComponent(scanId),
+      }) + '?exploitable=most_exploitable'
+    );
   } else if (scanType === ScanTypeEnum.SecretScan) {
-    return generatePath('/secret/scan-results/:scanId', {
-      scanId: encodeURIComponent(scanId),
-    });
+    return (
+      generatePath('/secret/scan-results/:scanId', {
+        scanId: encodeURIComponent(scanId),
+      }) + '?severity=critical&severity=high'
+    );
   } else if (scanType === ScanTypeEnum.MalwareScan) {
     return generatePath('/malware/scan-results/:scanId', {
       scanId: encodeURIComponent(scanId),
     });
   } else if (scanType === ScanTypeEnum.ComplianceScan) {
-    return generatePath('/posture/scan-results/:nodeType/:scanId', {
-      scanId: encodeURIComponent(scanId),
-      nodeType: nodeType === 'host' ? 'linux' : nodeType,
-    });
+    return (
+      generatePath('/posture/scan-results/:nodeType/:scanId', {
+        scanId: encodeURIComponent(scanId),
+        nodeType: nodeType === 'host' ? 'linux' : nodeType,
+      }) + '?status=warn'
+    );
   } else if (scanType === ScanTypeEnum.CloudComplianceScan) {
     return `${generatePath('/posture/cloud/scan-results/:nodeType/:scanId', {
       scanId: encodeURIComponent(scanId),
       nodeType: cloudId,
-    })}?resources=${encodeURIComponent(nodeId)}`;
+    })}?resources=${encodeURIComponent(nodeId)}&status=alarm`;
   }
   throw new Error('Invalid scan type');
 };

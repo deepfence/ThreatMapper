@@ -195,104 +195,122 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 
 	// Documentation: https://pkg.go.dev/github.com/robfig/cron#hdr-Usage
 	var jobID cron.EntryID
-	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, utils.TriggerConsoleActionsTask, utils.CritialTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 30s",
+		s.enqueueTask(namespace, utils.TriggerConsoleActionsTask, true, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, utils.CleanUpGraphDBTask, utils.CritialTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 120s",
+		s.enqueueTask(namespace, utils.CleanUpGraphDBTask, true, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, utils.ComputeThreatTask, utils.CritialTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 120s",
+		s.enqueueTask(namespace, utils.ComputeThreatTask, true, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 120s", s.enqueueTask(namespace, utils.RetryFailedScansTask, utils.CritialTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 120s",
+		s.enqueueTask(namespace, utils.RetryFailedScansTask, true, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 10m", s.enqueueTask(namespace, utils.RetryFailedUpgradesTask, utils.DefaultTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 10m",
+		s.enqueueTask(namespace, utils.RetryFailedUpgradesTask, true, utils.DefaultTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 5m", s.enqueueTask(namespace, utils.CleanUpPostgresqlTask, utils.DefaultTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 5m",
+		s.enqueueTask(namespace, utils.CleanUpPostgresqlTask, true, utils.DefaultTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, utils.CleanupDiagnosisLogs, utils.DefaultTaskOpts()...))
-	if err != nil {
-		return err
-	}
-	// Adding CloudComplianceTask only to ensure data is ingested if task fails on startup, Retry to be handled by watermill
-	jobIDs = append(jobIDs, jobID)
-
-	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, utils.CloudComplianceTask, utils.CritialTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 60m",
+		s.enqueueTask(namespace, utils.CleanupDiagnosisLogs, true, utils.DefaultTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, utils.CheckAgentUpgradeTask))
+	// Adding CloudComplianceTask only to ensure data is ingested if task fails on startup
+	jobID, err = s.cron.AddFunc("@every 60m",
+		s.enqueueTask(namespace, utils.CloudComplianceTask, true, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 12h", s.enqueueTask(namespace, utils.SyncRegistryTask, utils.CritialTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 60m",
+		s.enqueueTask(namespace, utils.CheckAgentUpgradeTask, true))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, utils.SendNotificationTask, utils.LowTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 12h",
+		s.enqueueTask(namespace, utils.SyncRegistryTask, true, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 60m", s.enqueueTask(namespace, utils.ReportCleanUpTask, utils.DefaultTaskOpts()...))
+	// dont want unique tasks for SendNotification
+	jobID, err = s.cron.AddFunc("@every 60s",
+		s.enqueueTask(namespace, utils.SendNotificationTask, false, utils.LowTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 15m", s.enqueueTask(namespace, utils.CachePostureProviders, utils.CritialTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 60m",
+		s.enqueueTask(namespace, utils.ReportCleanUpTask, true, utils.DefaultTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, utils.LinkCloudResourceTask, utils.CritialTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 15m",
+		s.enqueueTask(namespace, utils.CachePostureProviders, true, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 30s", s.enqueueTask(namespace, utils.LinkNodesTask, utils.CritialTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 30s",
+		s.enqueueTask(namespace, utils.LinkCloudResourceTask, true, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 1h", s.enqueueTask(namespace, utils.AsynqDeleteAllArchivedTasks, utils.CritialTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 30s",
+		s.enqueueTask(namespace, utils.LinkNodesTask, true, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 12h", s.enqueueTask(namespace, utils.RedisRewriteAOF, utils.CritialTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 1h",
+		s.enqueueTask(namespace, utils.AsynqDeleteAllArchivedTasks, true, utils.CritialTaskOpts()...))
+	if err != nil {
+		return err
+	}
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 12h",
+		s.enqueueTask(namespace, utils.RedisRewriteAOF, true, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
@@ -320,12 +338,12 @@ func (s *Scheduler) startInitJobs(ctx context.Context) error {
 	}
 
 	log.Info().Msgf("Start immediate cronjobs for namespace %s", namespace)
-	s.enqueueTask(namespace, utils.CheckAgentUpgradeTask)()
-	s.enqueueTask(namespace, utils.SyncRegistryPostgresNeo4jTask, utils.CritialTaskOpts()...)()
-	s.enqueueTask(namespace, utils.CloudComplianceTask, utils.CritialTaskOpts()...)()
-	s.enqueueTask(namespace, utils.ReportCleanUpTask, utils.CritialTaskOpts()...)()
-	s.enqueueTask(namespace, utils.CachePostureProviders, utils.CritialTaskOpts()...)()
-	s.enqueueTask(namespace, utils.RedisRewriteAOF, utils.CritialTaskOpts()...)()
+	s.enqueueTask(namespace, utils.CheckAgentUpgradeTask, true)()
+	s.enqueueTask(namespace, utils.SyncRegistryPostgresNeo4jTask, true, utils.CritialTaskOpts()...)()
+	s.enqueueTask(namespace, utils.CloudComplianceTask, true, utils.CritialTaskOpts()...)()
+	s.enqueueTask(namespace, utils.ReportCleanUpTask, true, utils.CritialTaskOpts()...)()
+	s.enqueueTask(namespace, utils.CachePostureProviders, true, utils.CritialTaskOpts()...)()
+	s.enqueueTask(namespace, utils.RedisRewriteAOF, true, utils.CritialTaskOpts()...)()
 
 	return nil
 }
@@ -360,18 +378,25 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID,
 	}
 }
 
-func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string, taskOpts ...asynq.Option) func() {
-	log.Info().Msgf("Registering task: %s for namespace %s", task, namespace)
+func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string, unique bool, taskOpts ...asynq.Option) func() {
+	ns := string(namespace)
 	return func() {
-		log.Info().Msgf("Enqueuing task: %s for namespace %s", task, namespace)
+		log.Info().Str("namespace", ns).Msgf("Enqueuing task %s", task)
 		worker, err := directory.Worker(directory.NewContextWithNameSpace(namespace))
 		if err != nil {
-			log.Error().Msg(err.Error())
+			log.Error().Str("namespace", ns).Msg(err.Error())
 			return
 		}
-		err = worker.Enqueue(task, []byte(strconv.FormatInt(utils.GetTimestamp(), 10)), taskOpts...)
-		if err != nil {
-			log.Error().Msg(err.Error())
+
+		if !unique {
+			err = worker.Enqueue(task, []byte(strconv.FormatInt(utils.GetTimestamp(), 10)), taskOpts...)
+		} else {
+			err = worker.EnqueueUnique(task, []byte(strconv.FormatInt(utils.GetTimestamp(), 10)), taskOpts...)
+		}
+		if err == asynq.ErrTaskIDConflict {
+			log.Warn().Str("namespace", ns).Msgf("unique task true, skip enqueue task %s %s", task, err.Error())
+		} else if err != nil {
+			log.Error().Str("namespace", ns).Msg(err.Error())
 		}
 	}
 }
