@@ -231,6 +231,14 @@ func (h *Handler) UpdateIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !obj.IsValidCredential(ctx) {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrInvalidCredential})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		return
+	}
+
 	// check if result are or not
 	if !exists {
 		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrIntegrationDoesNotExist})
