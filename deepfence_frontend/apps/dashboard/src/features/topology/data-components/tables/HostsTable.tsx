@@ -60,6 +60,7 @@ import {
   useSortingState,
 } from '@/utils/table';
 import { CLOUD_PROVIDERS } from '@/utils/topology';
+import { isUpgradeAvailable } from '@/utils/version';
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -741,9 +742,8 @@ const DataTable = ({
       columnHelper.accessor('version', {
         cell: (info) => {
           if (versions.length && info.row.original.agent_running) {
-            const isLatest =
-              versions[0] === info.getValue() || versions[0] === `v${info.getValue()}`;
-            if (!isLatest) {
+            const upgradeAvailable = isUpgradeAvailable(info.getValue(), versions);
+            if (upgradeAvailable) {
               return (
                 <div className="flex items-center gap-2 justify-start">
                   <div className="truncate">{info.getValue() ?? ''}</div>

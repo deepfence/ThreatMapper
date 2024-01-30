@@ -96,6 +96,7 @@ import {
   useSortingState,
 } from '@/utils/table';
 import { usePageNavigation } from '@/utils/usePageNavigation';
+import { isUpgradeAvailable } from '@/utils/version';
 
 enum ActionEnumType {
   DELETE = 'delete',
@@ -1043,10 +1044,7 @@ const AccountTable = ({
         columnHelper.accessor('version', {
           enableSorting: false,
           cell: (info) => {
-            const upgradeAvailable =
-              versions.length &&
-              versions[0] !== info.getValue() &&
-              versions[0] !== `v${info.getValue()}`;
+            const upgradeAvailable = isUpgradeAvailable(info.getValue(), versions);
             return (
               <div className="flex items-center gap-2 justify-start">
                 <div className="truncate">{info.getValue() ?? ''}</div>
