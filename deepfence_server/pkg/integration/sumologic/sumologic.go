@@ -81,3 +81,8 @@ func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[
 	log.Debug().Msg("Data sent to Sumo Logic successfully")
 	return nil
 }
+
+// todo
+func (s SumoLogic) IsValidCredential(ctx context.Context) bool {
+	return true
+}

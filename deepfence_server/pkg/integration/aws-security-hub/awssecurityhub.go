@@ -424,3 +424,8 @@ func (a AwsSecurityHub) mapPayloadToFindings(msg []map[string]interface{}, resou
 	}
 	return &findings
 }
+
+// todo
+func (a AwsSecurityHub) IsValidCredential(ctx context.Context) bool {
+	return true
+}

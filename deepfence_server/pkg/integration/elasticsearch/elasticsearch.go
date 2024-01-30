@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
@@ -69,4 +72,25 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message string, ext
 	}
 
 	return nil
+}
+
+func (e ElasticSearch) IsValidCredential(ctx context.Context) bool {
+	// Construct the URL for the Elasticsearch index
+	url := fmt.Sprintf("%s/%s", e.Config.EndpointURL, e.Config.Index)
+
+	// Send a HEAD request to check if the index exists
+	resp, err := http.Head(url)
+	if err != nil {
+		log.Error().Msgf("Error connecting to Elasticsearch: %v", err)
+		return false
+	}
+	defer resp.Body.Close()
+
+	// Check the status code
+	if resp.StatusCode != http.StatusOK {
+		log.Error().Msgf("Elasticsearch index validation failed. Status code: %d", resp.StatusCode)
+		return false
+	}
+
+	return true
 }

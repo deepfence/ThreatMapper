@@ -28,6 +28,22 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.IntegrationType == "" {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrIntegrationTypeEmpty})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		return
+	}
+
+	if req.NotificationType == "" {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrNotificationTypeEmpty})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		return
+	}
+
 	req.Config["filter_hash"], err = GetFilterHash(req.Filters)
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -58,6 +74,14 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 	err = obj.ValidateConfig(h.Validator)
 	if err != nil {
 		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	if !obj.IsValidCredential(ctx) {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrInvalidCredential})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 		return
 	}
 
@@ -196,11 +220,38 @@ func (h *Handler) UpdateIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// get integration from DB using ID
-	integration, exists, err := model.GetIntegration(ctx, pgClient, req.ID)
+	// get intg from DB using ID
+	intg, exists, err := model.GetIntegration(ctx, pgClient, req.ID)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	// validate the inputs
+	b, err := json.Marshal(req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+	obj, err := integration.GetIntegration(ctx, req.IntegrationType, b)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+	err = obj.ValidateConfig(h.Validator)
+	if err != nil {
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	if !obj.IsValidCredential(ctx) {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrInvalidCredential})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 		return
 	}
 
@@ -213,7 +264,7 @@ func (h *Handler) UpdateIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if integration.IntegrationType != req.IntegrationType {
+	if intg.IntegrationType != req.IntegrationType {
 		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrIntegrationTypeCannotBeUpdated})
 		if err != nil {
 			log.Error().Msg(err.Error())
@@ -230,7 +281,7 @@ func (h *Handler) UpdateIntegration(w http.ResponseWriter, r *http.Request) {
 	}*/
 
 	// store the integration in db
-	err = req.UpdateIntegration(ctx, pgClient, integration)
+	err = req.UpdateIntegration(ctx, pgClient, intg)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		h.respondError(&InternalServerError{err}, w)

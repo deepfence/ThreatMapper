@@ -19,8 +19,8 @@ type IntegrationIDPathReq struct {
 // IntegrationAddReq is the request body for adding a new integration
 type IntegrationAddReq struct {
 	Config           map[string]interface{} `json:"config"`
-	IntegrationType  string                 `json:"integration_type"`
-	NotificationType string                 `json:"notification_type"`
+	IntegrationType  string                 `json:"integration_type" required:"true"`
+	NotificationType string                 `json:"notification_type" required:"true"`
 	Filters          IntegrationFilters     `json:"filters"`
 }
 

@@ -20,7 +20,7 @@ type Config struct {
 	JiraProjectKey string   `json:"jiraProjectKey" validate:"required,min=1" required:"true"`
 	JiraAssignee   string   `json:"jiraAssignee" validate:"omitempty,min=1"`
 	IssueType      string   `json:"issueType" validate:"required,min=1" required:"true"`
-	IsAuthToken    bool     `json:"isAuthToken" validate:"required" required:"true"`
+	IsAuthToken    bool     `json:"isAuthToken"`
 	APIToken       string   `json:"api_token" validate:"omitempty,min=32,max=300,jira_auth_key"`
 	CustomFields   []string `json:"custom_fields"`
 }
