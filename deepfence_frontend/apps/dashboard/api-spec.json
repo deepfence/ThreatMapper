@@ -10293,6 +10293,13 @@
         "summary": "Upload New agent version",
         "description": "Upload Agent version",
         "operationId": "uploadAgentVersion",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": { "$ref": "#/components/schemas/FormDataModelBinUploadRequest" }
+            }
+          }
+        },
         "responses": {
           "200": { "description": "OK" },
           "400": {
@@ -11611,6 +11618,11 @@
           "node_id": { "type": "string" },
           "node_type": { "enum": ["host", "cluster", "cloud_account"], "type": "string" }
         }
+      },
+      "FormDataModelBinUploadRequest": {
+        "required": ["tarball"],
+        "type": "object",
+        "properties": { "tarball": { "$ref": "#/components/schemas/MultipartFile" } }
       },
       "FormDataModelRegistryGCRAddReq": {
         "required": ["name", "registry_url", "service_account_json"],
@@ -14972,6 +14984,9 @@
         "type": "object",
         "properties": {
           "node_filters": { "$ref": "#/components/schemas/SearchSearchFilter" },
+          "related_node_filter": {
+            "$ref": "#/components/schemas/SearchChainedSearchFilter"
+          },
           "scan_filters": { "$ref": "#/components/schemas/SearchSearchFilter" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }

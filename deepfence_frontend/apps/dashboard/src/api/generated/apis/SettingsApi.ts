@@ -91,6 +91,10 @@ export interface UpdateSettingRequest {
     modelSettingUpdateRequest?: ModelSettingUpdateRequest;
 }
 
+export interface UploadAgentVersionRequest {
+    tarball: Blob;
+}
+
 export interface UploadVulnerabilityDatabaseRequest {
     database: Blob;
 }
@@ -294,17 +298,18 @@ export interface SettingsApiInterface {
     /**
      * Upload Agent version
      * @summary Upload New agent version
+     * @param {Blob} tarball 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SettingsApiInterface
      */
-    uploadAgentVersionRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+    uploadAgentVersionRaw(requestParameters: UploadAgentVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
     /**
      * Upload Agent version
      * Upload New agent version
      */
-    uploadAgentVersion(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+    uploadAgentVersion(requestParameters: UploadAgentVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Upload Vulnerability Database for use in vulnerability scans
@@ -791,7 +796,11 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      * Upload Agent version
      * Upload New agent version
      */
-    async uploadAgentVersionRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async uploadAgentVersionRaw(requestParameters: UploadAgentVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.tarball === null || requestParameters.tarball === undefined) {
+            throw new runtime.RequiredError('tarball','Required parameter requestParameters.tarball was null or undefined when calling uploadAgentVersion.');
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -804,11 +813,32 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
         }
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters.tarball !== undefined) {
+            formParams.append('tarball', requestParameters.tarball as any);
+        }
+
         const response = await this.request({
             path: `/deepfence/settings/agent/version`,
             method: 'PUT',
             headers: headerParameters,
             query: queryParameters,
+            body: formParams,
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -818,8 +848,8 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      * Upload Agent version
      * Upload New agent version
      */
-    async uploadAgentVersion(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.uploadAgentVersionRaw(initOverrides);
+    async uploadAgentVersion(requestParameters: UploadAgentVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.uploadAgentVersionRaw(requestParameters, initOverrides);
     }
 
     /**
