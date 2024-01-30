@@ -16,8 +16,14 @@ func GetKubernetesClusterActions(ctx context.Context, nodeID string, workNumToEx
 	// Append more actions here
 	var actions []controls.Action
 
+	// Diagnostic logs not part of workNumToExtract
+	diagnosticLogActions, diagnosticLogErr := ExtractAgentDiagnosticLogRequests(ctx, nodeID, controls.KubernetesCluster, maxWork)
+	if diagnosticLogErr == nil {
+		actions = append(actions, diagnosticLogActions...)
+	}
+
 	if workNumToExtract == 0 {
-		return actions, []error{nil, nil}
+		return actions, []error{diagnosticLogErr}
 	}
 
 	upgradeActions, upgradeErr := ExtractPendingKubernetesClusterUpgrade(ctx, nodeID, workNumToExtract)
@@ -30,13 +36,6 @@ func GetKubernetesClusterActions(ctx context.Context, nodeID string, workNumToEx
 	workNumToExtract -= len(scanActions)
 	if scanErr == nil {
 		actions = append(actions, scanActions...)
-	}
-
-	diagnosticLogActions, scanErr := ExtractAgentDiagnosticLogRequests(ctx, nodeID, controls.KubernetesCluster, workNumToExtract)
-
-	workNumToExtract -= len(diagnosticLogActions) //nolint:ineffassign
-	if scanErr == nil {
-		actions = append(actions, diagnosticLogActions...)
 	}
 
 	return actions, []error{scanErr, upgradeErr}
