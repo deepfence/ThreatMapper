@@ -327,12 +327,22 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	if _, err = session.Run(`
 		MATCH (n:AgentDiagnosticLogs)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{
-			"time_ms":     diagnosticLogsCleanUpTimeout.Milliseconds(),
-			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+			"time_ms": diagnosticLogsCleanUpTimeout.Milliseconds(),
+		}, txConfig); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:CloudScannerDiagnosticLogs)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		WITH n LIMIT 10000
+		DETACH DELETE n`,
+		map[string]interface{}{
+			"time_ms": diagnosticLogsCleanUpTimeout.Milliseconds(),
 		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
