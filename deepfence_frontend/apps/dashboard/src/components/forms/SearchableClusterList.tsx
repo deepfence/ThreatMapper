@@ -150,7 +150,7 @@ export const SearchableClusterList = (props: SearchableClusterListProps) => {
             // no operation
           }}
           getDisplayValue={() => {
-            return props.displayValue ? props.displayValue : 'Select host';
+            return props.displayValue ? props.displayValue : 'Select cluster';
           }}
         />
       }
