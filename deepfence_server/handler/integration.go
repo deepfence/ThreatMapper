@@ -28,6 +28,22 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.IntegrationType == "" {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrIntegrationTypeEmpty})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		return
+	}
+
+	if req.NotificationType == "" {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrNotificationTypeEmpty})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		return
+	}
+
 	req.Config["filter_hash"], err = GetFilterHash(req.Filters)
 	if err != nil {
 		log.Error().Msgf("%v", err)
