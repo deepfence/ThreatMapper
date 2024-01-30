@@ -38,7 +38,7 @@ func GetKubernetesClusterActions(ctx context.Context, nodeID string, workNumToEx
 		actions = append(actions, scanActions...)
 	}
 
-	return actions, []error{scanErr, upgradeErr}
+	return actions, []error{scanErr, upgradeErr, diagnosticLogErr}
 }
 
 func ExtractStartingKubernetesClusterScans(ctx context.Context, nodeID string, maxWork int) ([]controls.Action, error) {
