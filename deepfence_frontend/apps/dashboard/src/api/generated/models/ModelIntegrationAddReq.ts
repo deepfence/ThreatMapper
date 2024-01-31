@@ -43,13 +43,13 @@ export interface ModelIntegrationAddReq {
      * @type {string}
      * @memberof ModelIntegrationAddReq
      */
-    integration_type?: string;
+    integration_type: string;
     /**
      * 
      * @type {string}
      * @memberof ModelIntegrationAddReq
      */
-    notification_type?: string;
+    notification_type: string;
 }
 
 /**
@@ -57,6 +57,8 @@ export interface ModelIntegrationAddReq {
  */
 export function instanceOfModelIntegrationAddReq(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "integration_type" in value;
+    isInstance = isInstance && "notification_type" in value;
 
     return isInstance;
 }
@@ -73,8 +75,8 @@ export function ModelIntegrationAddReqFromJSONTyped(json: any, ignoreDiscriminat
         
         'config': !exists(json, 'config') ? undefined : json['config'],
         'filters': !exists(json, 'filters') ? undefined : ModelIntegrationFiltersFromJSON(json['filters']),
-        'integration_type': !exists(json, 'integration_type') ? undefined : json['integration_type'],
-        'notification_type': !exists(json, 'notification_type') ? undefined : json['notification_type'],
+        'integration_type': json['integration_type'],
+        'notification_type': json['notification_type'],
     };
 }
 

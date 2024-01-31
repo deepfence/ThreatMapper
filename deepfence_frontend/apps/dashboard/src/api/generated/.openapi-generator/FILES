@@ -107,6 +107,7 @@ models/ModelComplianceScanTriggerReq.ts
 models/ModelConnection.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts
+models/ModelDeleteIntegrationReq.ts
 models/ModelDeleteRegistryBulkReq.ts
 models/ModelDownloadReportResponse.ts
 models/ModelDownloadScanResultsResponse.ts
