@@ -309,6 +309,7 @@ export function getIntegrationApiClient() {
     updateIntegration: integrationApi.updateIntegration.bind(integrationApi),
     listIntegration: integrationApi.listIntegration.bind(integrationApi),
     deleteIntegration: integrationApi.deleteIntegration.bind(integrationApi),
+    bulkDeleteIntegration: integrationApi.deleteIntegrations.bind(integrationApi),
   };
 }
 

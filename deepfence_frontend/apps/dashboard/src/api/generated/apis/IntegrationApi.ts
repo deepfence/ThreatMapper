@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
+  ModelDeleteIntegrationReq,
   ModelIntegrationAddReq,
   ModelIntegrationListResp,
   ModelIntegrationUpdateReq,
@@ -27,6 +28,8 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
+    ModelDeleteIntegrationReqFromJSON,
+    ModelDeleteIntegrationReqToJSON,
     ModelIntegrationAddReqFromJSON,
     ModelIntegrationAddReqToJSON,
     ModelIntegrationListRespFromJSON,
@@ -43,6 +46,10 @@ export interface AddIntegrationRequest {
 
 export interface DeleteIntegrationRequest {
     integrationId: string;
+}
+
+export interface DeleteIntegrationsRequest {
+    modelDeleteIntegrationReq?: ModelDeleteIntegrationReq;
 }
 
 export interface UpdateIntegrationRequest {
@@ -74,8 +81,8 @@ export interface IntegrationApiInterface {
     addIntegration(requestParameters: AddIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
     /**
-     * Delete integration
-     * @summary Delete Integration
+     * Delete single integration
+     * @summary Delete Single Integration
      * @param {string} integrationId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -84,10 +91,26 @@ export interface IntegrationApiInterface {
     deleteIntegrationRaw(requestParameters: DeleteIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
     /**
-     * Delete integration
-     * Delete Integration
+     * Delete single integration
+     * Delete Single Integration
      */
     deleteIntegration(requestParameters: DeleteIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Delete integrations
+     * @summary Delete Integrations
+     * @param {ModelDeleteIntegrationReq} [modelDeleteIntegrationReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof IntegrationApiInterface
+     */
+    deleteIntegrationsRaw(requestParameters: DeleteIntegrationsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Delete integrations
+     * Delete Integrations
+     */
+    deleteIntegrations(requestParameters: DeleteIntegrationsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * List all the added Integrations
@@ -168,8 +191,8 @@ export class IntegrationApi extends runtime.BaseAPI implements IntegrationApiInt
     }
 
     /**
-     * Delete integration
-     * Delete Integration
+     * Delete single integration
+     * Delete Single Integration
      */
     async deleteIntegrationRaw(requestParameters: DeleteIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         if (requestParameters.integrationId === null || requestParameters.integrationId === undefined) {
@@ -199,11 +222,49 @@ export class IntegrationApi extends runtime.BaseAPI implements IntegrationApiInt
     }
 
     /**
-     * Delete integration
-     * Delete Integration
+     * Delete single integration
+     * Delete Single Integration
      */
     async deleteIntegration(requestParameters: DeleteIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.deleteIntegrationRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Delete integrations
+     * Delete Integrations
+     */
+    async deleteIntegrationsRaw(requestParameters: DeleteIntegrationsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/integration/delete`,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelDeleteIntegrationReqToJSON(requestParameters.modelDeleteIntegrationReq),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete integrations
+     * Delete Integrations
+     */
+    async deleteIntegrations(requestParameters: DeleteIntegrationsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.deleteIntegrationsRaw(requestParameters, initOverrides);
     }
 
     /**

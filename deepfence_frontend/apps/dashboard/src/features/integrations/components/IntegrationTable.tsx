@@ -14,12 +14,15 @@ const DEFAULT_PAGE_SIZE = 10;
 
 export const IntegrationTable = ({
   onTableAction,
+  rowSelectionState,
+  setRowSelectionState,
 }: {
   onTableAction: (row: ModelIntegrationListResp, actionType: ActionEnumType) => void;
+  rowSelectionState: RowSelectionState;
+  setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
 }) => {
   const columns = useIntegrationTableColumn(onTableAction);
   const { data: list } = useListIntegrations();
-  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
   const { data = [], message } = list ?? {};
   const params = useParams() as {

@@ -81,6 +81,7 @@ export * from './ModelComplianceScanTriggerReq';
 export * from './ModelConnection';
 export * from './ModelContainer';
 export * from './ModelContainerImage';
+export * from './ModelDeleteIntegrationReq';
 export * from './ModelDeleteRegistryBulkReq';
 export * from './ModelDownloadReportResponse';
 export * from './ModelDownloadScanResultsResponse';
