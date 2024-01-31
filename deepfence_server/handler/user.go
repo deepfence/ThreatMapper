@@ -43,6 +43,7 @@ var (
 	ErrpasswordResetCodeNotFound = NotFoundError{errors.New("code not found")}
 	ErruserInviteInvalidCode     = BadDecoding{errors.New("invalid code")}
 	ErrregistrationDone          = ForbiddenError{errors.New("cannot register. Please contact your administrator for an invite")}
+	ErrCannotDeleteSelfUser      = ForbiddenError{err: errors.New("cannot delete your account, please request another admin user to delete your account")}
 )
 
 func init() {
@@ -633,21 +634,29 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) DeleteUserByUserID(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
+		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	ctx := r.Context()
 	user, statusCode, pgClient, err := model.GetUserByID(ctx, userID)
 	if err != nil {
+		log.Error().Msgf("%v", err)
 		h.respondWithErrorCode(err, w, statusCode)
 		return
 	}
 	currentUser, statusCode, _, err := h.GetUserFromJWT(ctx)
 	if err != nil {
+		log.Error().Msgf("%v", err)
 		h.respondWithErrorCode(err, w, statusCode)
 		return
 	}
-	h.deleteUserHandler(w, r, ctx, pgClient, user, currentUser.ID == user.ID)
+	if currentUser.ID == user.ID {
+		log.Error().Msgf("User: %s, error: %v", currentUser.Email, ErrCannotDeleteSelfUser)
+		h.respondError(&ErrCannotDeleteSelfUser, w)
+		return
+	}
+	h.deleteUserHandler(w, r, ctx, pgClient, user, false)
 }
 
 func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
