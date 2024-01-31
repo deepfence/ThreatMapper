@@ -19,7 +19,7 @@ const (
 	AwsEc2ResourceId          = "aws_ec2_instance"
 	GcpComputeResourceId      = "gcp_compute_instance"
 	AzureComputeResourceId    = "azure_compute_virtual_machine"
-	DeepfenceVersion          = "v2.0.0"
+	DeepfenceVersion          = "2.1.0"
 )
 
 func CommitFuncCloudResource(ns string, cs []ingestersUtil.CloudResource) error {

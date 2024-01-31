@@ -13,13 +13,15 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
+const (
+	maxWork = 5
+)
+
 var (
-	MaxStops         = 5
 	ErrMissingNodeID = errors.New("missing node_id")
 )
 
-func GetAgentActions(ctx context.Context, nodeID string,
-	workNumToExtract int) ([]controls.Action, []error) {
+func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int) ([]controls.Action, []error) {
 
 	// Append more actions here
 	actions := []controls.Action{}
@@ -32,17 +34,19 @@ func GetAgentActions(ctx context.Context, nodeID string,
 	}
 
 	// Extract the stop scans requests
-	stopActions, stopActionsErr := ExtractStoppingAgentScans(ctx, nodeID, MaxStops)
+	stopActions, stopActionsErr := ExtractStoppingAgentScans(ctx, nodeID, maxWork)
 	if stopActionsErr == nil {
 		actions = append(actions, stopActions...)
 	}
 
+	// Diagnostic logs not part of workNumToExtract
+	diagnosticLogActions, diagnosticLogErr := ExtractAgentDiagnosticLogRequests(ctx, nodeID, controls.Host, maxWork)
+	if diagnosticLogErr == nil {
+		actions = append(actions, diagnosticLogActions...)
+	}
+
 	if workNumToExtract == 0 {
-		if stopActionsErr != nil {
-			return actions, []error{stopActionsErr}
-		} else {
-			return actions, []error{}
-		}
+		return actions, []error{stopActionsErr, diagnosticLogErr}
 	}
 
 	upgradeActions, upgradeErr := ExtractPendingAgentUpgrade(ctx, nodeID, workNumToExtract)
@@ -57,13 +61,7 @@ func GetAgentActions(ctx context.Context, nodeID string,
 		actions = append(actions, scanActions...)
 	}
 
-	diagnosticLogActions, scanLogErr := ExtractAgentDiagnosticLogRequests(ctx, nodeID, controls.Host, workNumToExtract)
-	workNumToExtract -= len(diagnosticLogActions) //nolint:ineffassign
-	if scanErr == nil {
-		actions = append(actions, diagnosticLogActions...)
-	}
-
-	return actions, []error{scanErr, upgradeErr, scanLogErr}
+	return actions, []error{scanErr, upgradeErr, diagnosticLogErr, stopActionsErr}
 }
 
 func GetPendingAgentScans(ctx context.Context, nodeID string, availableWorkload int) ([]controls.Action, error) {
