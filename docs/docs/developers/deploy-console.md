@@ -45,9 +45,10 @@ Refer to the [Kubernetes Installation Instructions](/docs/console/kubernetes) al
 
     ```bash
     helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+    helm repo update
 
     # Create the values file
-    helm show values deepfence/deepfence-console --version 2.1.0 > deepfence_console_values.yaml
+    helm show values deepfence/deepfence-console --version 2.1.1 > deepfence_console_values.yaml
     ```
 
     Edit the `deepfence_console_values.yaml` file, replacing the `image: repository:` value to point to your repository, and making any other changes as needed.
@@ -55,7 +56,7 @@ Refer to the [Kubernetes Installation Instructions](/docs/console/kubernetes) al
     Install the management console:
 
     ```bash
-    helm install -f deepfence_console_values.yaml deepfence-console deepfence/deepfence-console --version 2.1.0
+    helm install -f deepfence_console_values.yaml deepfence-console deepfence/deepfence-console --version 2.1.1
     ```
 
     Full instructions can be found in the [Console helm chart documentation](https://github.com/deepfence/ThreatMapper/tree/main/deployment-scripts/helm-charts/deepfence-console).

@@ -32,7 +32,7 @@ var (
 )
 
 type Worker struct {
-	cfg       config
+	cfg       wtils.Config
 	mux       *asynq.ServeMux
 	srv       *asynq.Server
 	namespace directory.NamespaceID
@@ -61,9 +61,8 @@ func contextInjectorCallbackWrapper(
 	namespace directory.NamespaceID,
 	taskCallback wtils.WorkerHandler) wtils.WorkerHandler {
 	return func(ctx context.Context, t *asynq.Task) error {
-		return taskCallback(
-			context.WithValue(ctx, directory.NamespaceKey, namespace),
-			t)
+		ctx = context.WithValue(ctx, directory.NamespaceKey, namespace) //nolint:staticcheck
+		return taskCallback(ctx, t)
 	}
 }
 
@@ -83,8 +82,7 @@ func (w *Worker) AddRetryableHandler(
 ) {
 	w.mux.HandleFunc(
 		task,
-		contextInjectorCallbackWrapper(w.namespace,
-			telemetryCallbackWrapper(task, taskCallback)),
+		contextInjectorCallbackWrapper(w.namespace, telemetryCallbackWrapper(task, taskCallback)),
 	)
 }
 
@@ -97,12 +95,11 @@ func (w *Worker) AddOneShotHandler(
 	w.mux.HandleFunc(
 		task,
 		skipRetryCallbackWrapper(
-			contextInjectorCallbackWrapper(w.namespace,
-				telemetryCallbackWrapper(task, taskCallback))),
+			contextInjectorCallbackWrapper(w.namespace, telemetryCallbackWrapper(task, taskCallback))),
 	)
 }
 
-func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc, error) {
+func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.CancelFunc, error) {
 
 	kafkaCtx, cancel := signal.NotifyContext(
 		context.Background(),
@@ -143,11 +140,17 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 		qCfg.Queues = DefaultQueues
 	}
 
+	nsCfg, err := directory.GetDatabaseConfig(directory.NewContextWithNameSpace(ns))
+	if err != nil {
+		log.Error().Msgf("%s namespace, error: %s", string(ns), err)
+		return Worker{}, nil, err
+	}
+
 	srv := asynq.NewServer(
 		asynq.RedisClientOpt{
-			Addr:     fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort),
-			DB:       cfg.RedisDbNumber,
-			Password: cfg.RedisPassword,
+			Addr:     nsCfg.Redis.Endpoint,
+			DB:       nsCfg.Redis.Database,
+			Password: nsCfg.Redis.Password,
 		},
 		qCfg,
 	)
@@ -178,7 +181,7 @@ func NewWorker(ns directory.NamespaceID, cfg config) (Worker, context.CancelFunc
 
 	worker.AddOneShotHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade)
 
-	worker.AddOneShotHandler(utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls)
+	worker.AddOneShotHandler(utils.TriggerConsoleActionsTask, cronjobs.NewConsoleController(cfg.MaxScanWorkload).TriggerConsoleControls)
 
 	worker.AddOneShotHandler(utils.ScheduledTasks, cronjobs.RunScheduledTasks)
 

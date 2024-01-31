@@ -1,5 +1,7 @@
 package model
 
+import "mime/multipart"
+
 type InitAgentReq struct {
 	AgentID
 	Version string `json:"version" required:"true"`
@@ -28,4 +30,8 @@ type AgentPluginDisable struct {
 
 type ListAgentVersionResp struct {
 	Versions []string `json:"versions" required:"true"`
+}
+
+type BinUploadRequest struct {
+	Tarball multipart.File `formData:"tarball" json:"tarball" validate:"required" required:"true"`
 }

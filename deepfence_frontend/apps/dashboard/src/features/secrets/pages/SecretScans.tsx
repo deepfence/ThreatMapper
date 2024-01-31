@@ -44,6 +44,7 @@ import { SearchableClusterList } from '@/components/forms/SearchableClusterList'
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
+import { SearchableRegistryAccountList } from '@/components/forms/SearchableRegistryAccountList';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -387,6 +388,7 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   containers: 'Container',
   hosts: 'Host',
   clusters: 'Cluster',
+  registryAccounts: 'Registry',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -571,6 +573,26 @@ const Filters = () => {
             });
           }}
         />
+        <SearchableRegistryAccountList
+          defaultSelectedRegistryAccounts={searchParams.getAll('registryAccounts')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('registryAccounts');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('registryAccounts');
+              value.forEach((registryAccount) => {
+                prev.append('registryAccounts', registryAccount);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -632,6 +654,7 @@ const ScansTable = ({
     ...queries.secret.scanList({
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       clusters: searchParams.getAll('clusters'),
+      registryAccounts: searchParams.getAll('registryAccounts'),
       containers: searchParams.getAll('containers'),
       hosts: searchParams.getAll('hosts'),
       images: searchParams.getAll('containerImages'),

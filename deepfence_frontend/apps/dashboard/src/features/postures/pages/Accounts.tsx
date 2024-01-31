@@ -47,6 +47,8 @@ import {
   ICloudAccountType,
   SearchableCloudAccountsList,
 } from '@/components/forms/SearchableCloudAccountsList';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
+import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -62,6 +64,8 @@ import { TruncatedText } from '@/components/TruncatedText';
 import { getColorForCompliancePercent } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import {
+  isKubernetesProvider,
+  isLinuxProvider,
   isNonCloudProvider,
   providersToNameMapping,
 } from '@/features/postures/pages/Posture';
@@ -134,7 +138,11 @@ const DEFAULT_PAGE_SIZE = 10;
 
 const action = async ({
   request,
-}: ActionFunctionArgs): Promise<{ success?: boolean; message?: string } | null> => {
+}: ActionFunctionArgs): Promise<{
+  success?: boolean;
+  message?: string;
+  action?: ActionEnumType;
+} | null> => {
   const formData = await request.formData();
   const actionType = formData.get('actionType');
   const scanIds = formData.getAll('scanId');
@@ -171,12 +179,15 @@ const action = async ({
         const { message } = await getResponseErrors(result.error);
         return {
           success: false,
+          action: ActionEnumType.DELETE,
           message,
         };
       } else if (result.error.response.status === 403) {
         const message = await get403Message(result.error);
         return {
+          success: false,
           message,
+          action: ActionEnumType.DELETE,
         };
       }
       throw result.error;
@@ -196,11 +207,14 @@ const action = async ({
         return {
           success: false,
           message,
+          action: ActionEnumType.REFRESH_ACCOUNT,
         };
       } else if (refreshAccountRresult.error.response.status === 403) {
         const message = await get403Message(refreshAccountRresult.error);
         return {
           message,
+          success: false,
+          action: ActionEnumType.REFRESH_ACCOUNT,
         };
       }
       throw refreshAccountRresult.error;
@@ -209,6 +223,7 @@ const action = async ({
   invalidateAllQueries();
   return {
     success: true,
+    action: actionType as ActionEnumType,
   };
 };
 
@@ -227,6 +242,11 @@ const usePostureAccounts = () => {
         | undefined,
       nodeType,
       org_accounts: searchParams.getAll('org_accounts'),
+      aws_accounts: searchParams.getAll('aws_accounts'),
+      gcp_accounts: searchParams.getAll('gcp_accounts'),
+      azure_accounts: searchParams.getAll('azure_accounts'),
+      hosts: searchParams.getAll('hosts'),
+      clusters: searchParams.getAll('clusters'),
     }),
     keepPreviousData: true,
   });
@@ -236,6 +256,11 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   complianceScanStatus: 'Posture scan status',
   status: 'Status',
   org_accounts: 'Organization accounts',
+  aws_accounts: 'Account',
+  gcp_accounts: 'Account',
+  azure_accounts: 'Account',
+  hosts: 'Account',
+  clusters: 'Account',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -336,7 +361,7 @@ const Filters = () => {
         </Combobox>
         {(nodeType === 'aws' || nodeType === 'gcp') && (
           <SearchableCloudAccountsList
-            displayValue={`${nodeType.toUpperCase()} organization accounts`}
+            displayValue="Organization account"
             valueKey="nodeId"
             cloudProvider={`${nodeType}_org` as ICloudAccountType}
             defaultSelectedAccounts={searchParams.getAll('org_accounts')}
@@ -357,6 +382,75 @@ const Filters = () => {
             }}
           />
         )}
+        {isCloudNode(nodeType) ? (
+          <SearchableCloudAccountsList
+            cloudProvider={nodeType as ICloudAccountType}
+            displayValue={FILTER_SEARCHPARAMS[`${nodeType}_accounts`]}
+            defaultSelectedAccounts={searchParams.getAll(`${nodeType}_accounts`)}
+            onClearAll={() => {
+              setSearchParams((prev) => {
+                prev.delete(`${nodeType}_accounts`);
+                return prev;
+              });
+            }}
+            onChange={(value) => {
+              setSearchParams((prev) => {
+                prev.delete(`${nodeType}_accounts`);
+                value.forEach((id) => {
+                  prev.append(`${nodeType}_accounts`, id);
+                });
+                return prev;
+              });
+            }}
+          />
+        ) : null}
+        {isLinuxProvider(nodeType) ? (
+          <SearchableHostList
+            scanType={'none'}
+            displayValue={FILTER_SEARCHPARAMS['hosts']}
+            defaultSelectedHosts={searchParams.getAll('hosts')}
+            onClearAll={() => {
+              setSearchParams((prev) => {
+                prev.delete('hosts');
+                prev.delete('page');
+                return prev;
+              });
+            }}
+            onChange={(value) => {
+              setSearchParams((prev) => {
+                prev.delete('hosts');
+                value.forEach((host) => {
+                  prev.append('hosts', host);
+                });
+                prev.delete('page');
+                return prev;
+              });
+            }}
+          />
+        ) : null}
+        {isKubernetesProvider(nodeType) ? (
+          <SearchableClusterList
+            displayValue={FILTER_SEARCHPARAMS['clusters']}
+            defaultSelectedClusters={searchParams.getAll('clusters')}
+            onClearAll={() => {
+              setSearchParams((prev) => {
+                prev.delete('clusters');
+                prev.delete('page');
+                return prev;
+              });
+            }}
+            onChange={(value) => {
+              setSearchParams((prev) => {
+                prev.delete('clusters');
+                value.forEach((cluster) => {
+                  prev.append('clusters', cluster);
+                });
+                prev.delete('page');
+                return prev;
+              });
+            }}
+          />
+        ) : null}
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">

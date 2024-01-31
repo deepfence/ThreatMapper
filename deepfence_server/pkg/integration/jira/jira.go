@@ -134,3 +134,31 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 
 	return nil
 }
+
+func (j Jira) IsValidCredential(ctx context.Context) bool {
+	auth := jira.BasicAuthTransport{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true},
+		},
+	}
+	if j.Config.IsAuthToken {
+		auth.Username = strings.TrimSpace(j.Config.Username)
+		auth.Password = strings.TrimSpace(j.Config.APIToken)
+	} else {
+		auth.Username = strings.TrimSpace(j.Config.Username)
+		auth.Password = strings.TrimSpace(j.Config.Password)
+	}
+
+	jiraClient, err := jira.NewClient(auth.Client(), strings.TrimSpace(j.Config.JiraSiteURL))
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		return false
+	}
+	_, _, err = jiraClient.User.GetSelf()
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		return false
+	}
+
+	return true
+}

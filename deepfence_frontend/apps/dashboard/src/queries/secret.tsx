@@ -33,6 +33,7 @@ export const secretQueries = createQueryKeys('secret', {
     containers?: string[];
     images?: string[];
     clusters?: string[];
+    registryAccounts?: string[];
     pageSize: number;
   }) => {
     const {
@@ -45,6 +46,7 @@ export const secretQueries = createQueryKeys('secret', {
       clusters,
       pageSize,
       order,
+      registryAccounts,
     } = filters;
     return {
       queryKey: [{ filters }],
@@ -169,6 +171,37 @@ export const secretQueries = createQueryKeys('secret', {
             };
           }
         }
+
+        if (registryAccounts?.length) {
+          scanRequestParams.related_node_filter = {
+            relation_ship: 'HOSTS',
+            node_filter: {
+              filters: {
+                compare_filter: null,
+                contains_filter: {
+                  filter_in: {
+                    node_id: registryAccounts,
+                  },
+                },
+                match_filter: {
+                  filter_in: {},
+                },
+                not_contains_filter: {
+                  filter_in: {},
+                },
+                order_filter: {
+                  order_fields: [],
+                },
+              },
+              in_field_filter: null,
+              window: {
+                offset: 0,
+                size: 0,
+              },
+            },
+          };
+        }
+
         const searchSecretsScanApi = apiWrapper({
           fn: getSearchApiClient().searchSecretsScan,
         });
@@ -811,7 +844,12 @@ export const secretQueries = createQueryKeys('secret', {
               node_filter: {
                 filters: {
                   contains_filter: containsFilter,
+                  order_filter: { order_fields: [] },
+                  match_filter: { filter_in: {} },
+                  compare_filter: null,
                 },
+                in_field_filter: [],
+                window: { offset: 0, size: 0 },
               },
             },
           };
@@ -974,6 +1012,14 @@ export const secretQueries = createQueryKeys('secret', {
               node_filter: {
                 filters: {
                   contains_filter: containsFilter,
+                  order_filter: { order_fields: [] },
+                  match_filter: { filter_in: {} },
+                  compare_filter: null,
+                },
+                in_field_filter: null,
+                window: {
+                  offset: 0,
+                  size: 0,
                 },
               },
             },

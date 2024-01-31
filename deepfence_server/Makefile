@@ -1,4 +1,4 @@
-VERSION=`git describe --tags`
+VERSION?=`git describe --tags`
 GIT_COMMIT=`git rev-parse HEAD`
 BUILD_TIME=`date -u +%FT%TZ`
 

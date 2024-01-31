@@ -24,6 +24,7 @@ Image tag `deepfenceio/deepfence_agent_ce:2.1.0-multiarch` is supported in amd64
 ### Deploy deepfence-agent helm chart
 ```bash
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+helm repo update
 
 # helm show readme deepfence/deepfence-agent --version 2.1.0 | less
 # helm show values deepfence/deepfence-agent --version 2.1.0 | less
@@ -48,6 +49,7 @@ helm install deepfence-agent deepfence/deepfence-agent \
 
 ```bash
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+helm repo update
 
 helm show values deepfence/deepfence-agent --version 2.1.0 > deepfence_agent_values.yaml
 

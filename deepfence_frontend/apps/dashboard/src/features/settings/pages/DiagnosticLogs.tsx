@@ -597,7 +597,7 @@ const AgentDiagnosticLogsComponent = () => {
 const DiagnosticLogs = () => {
   return (
     <div className="my-2">
-      <div className="flex flex-col">
+      <div className="flex flex-col" data-testid="consoleDiagnosticLogWrapperId">
         <h6 className="text-h5 dark:text-text-input-value">Console diagnostic logs</h6>
         <div className="mt-2 flex flex-col gap-y-2">
           <Suspense
@@ -610,7 +610,7 @@ const DiagnosticLogs = () => {
           </Suspense>
         </div>
       </div>
-      <div className="flex flex-col mt-8">
+      <div className="flex flex-col mt-8" data-testid="agentDiagnosticLogWrapperId">
         <h6 className="text-h5 dark:text-text-input-value">Agent diagnostic logs</h6>
         <div className="mt-2 gap-y-2 flex flex-col">
           <Suspense

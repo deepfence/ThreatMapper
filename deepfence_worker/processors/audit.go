@@ -12,33 +12,40 @@ import (
 	"go.opentelemetry.io/otel/codes"
 )
 
-var auditC chan *kgo.Record
+func (i *Ingester) StartAuditLogProcessor(ctx context.Context) error {
 
-func addAuditLog(record *kgo.Record) {
-	auditC <- record
+	go i.processAuditLog(ctx)
+
+	return nil
 }
 
-func processAuditLog(ctx context.Context, auditC chan *kgo.Record) {
-	defer close(auditC)
+func (i *Ingester) AddAuditLog(record *kgo.Record) {
+	i.auditC <- record
+}
+
+func (i *Ingester) processAuditLog(ctx context.Context) {
+	defer close(i.auditC)
 
 	for {
 		select {
 		case <-ctx.Done():
-			log.Info().Msg("stop processing audit logs")
+			log.Info().Msgf("stop processing audit logs for ns %s", i.namespace)
 			return
-		case record := <-auditC:
+		case record := <-i.auditC:
 
 			spanCtx, span := otel.Tracer("audit-log").Start(ctx, "ingest-audit-log")
 
-			pgClient, err := directory.PostgresClient(directory.NewContextWithNameSpace(directory.NamespaceID(getNamespace(record.Headers))))
+			namespace := getNamespace(record.Headers)
+
+			pgClient, err := directory.PostgresClient(directory.NewContextWithNameSpace(directory.NamespaceID(namespace)))
 			if err != nil {
-				log.Error().Err(err).Msg("failed to get db connection")
+				log.Error().Str("namespace", namespace).Err(err).Msg("failed to get db connection")
 			}
 
 			var params postgresql_db.CreateAuditLogParams
 
 			if err := json.Unmarshal(record.Value, &params); err != nil {
-				log.Error().Err(err).Msg("failed to unmarshal audit log")
+				log.Error().Err(err).Str("namespace", namespace).Msg("failed to unmarshal audit log")
 				span.RecordError(err)
 				span.SetStatus(codes.Error, err.Error())
 				span.End()
@@ -46,7 +53,7 @@ func processAuditLog(ctx context.Context, auditC chan *kgo.Record) {
 			}
 
 			if err := pgClient.CreateAuditLog(spanCtx, params); err != nil {
-				log.Error().Err(err).Msgf("failed to insert audit log params: %+v", params)
+				log.Error().Err(err).Str("namespace", namespace).Msgf("failed to insert audit log params: %+v", params)
 				span.RecordError(err)
 				span.SetStatus(codes.Error, err.Error())
 				span.End()
@@ -56,13 +63,4 @@ func processAuditLog(ctx context.Context, auditC chan *kgo.Record) {
 			span.End()
 		}
 	}
-}
-
-func StartAuditLogProcessor(ctx context.Context) error {
-	// init channel
-	auditC = make(chan *kgo.Record, 1000)
-
-	go processAuditLog(ctx, auditC)
-
-	return nil
 }

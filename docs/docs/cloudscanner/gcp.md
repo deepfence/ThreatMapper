@@ -67,7 +67,7 @@ module "cloud-scanner_example_multiple-projects" {
   # Example: 11.0.0.0/28
   ip_cidr_range_svpca = ""
   cpu                 = "4"
-  memory              = "8096Mi"
+  memory              = "8192Mi"
   labels              = {
     name = "deepfence-cloud-scanner"
   }

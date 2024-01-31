@@ -37,10 +37,12 @@ x-service-variables: &common-creds
     DEEPFENCE_DEBUG: "false"
     DF_ENABLE_DEBUG: ""
     DEEPFENCE_ENABLE_PPROF: ""
-    DEEPFENCE_TELEMETRY_ENABLED: "true"
     DEEPFENCE_TASKS_CONCURRENCY: 50
     DEEPFENCE_TASKS_MAX_RETRIES: 3
     DEEPFENCE_MAX_SCAN_WORKLOAD: 5
+
+x-telemetry-variables: &telemetry-variables
+    DEEPFENCE_TELEMETRY_ENABLED: "false"
 
 services:
 
@@ -190,7 +192,7 @@ services:
     tmpfs:
       - /tmp
     environment:
-      <<: *common-creds
+      <<: [*common-creds, *telemetry-variables]
       ELASTICSEARCH_SCHEME: "http"
       DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES: 5
       DEEPFENCE_CONSOLE_ORCHESTRATOR: "docker"
@@ -229,7 +231,7 @@ services:
       options:
         max-size: "200m"
     environment:
-      <<: *common-creds
+      <<: [*common-creds, *telemetry-variables]
     volumes:
       - /etc/docker/certs.d:/etc/docker/certs.d:ro
       - /var/run/docker.sock:/var/run/docker.sock
@@ -361,6 +363,8 @@ services:
       - "127.0.0.1:9411:9411"
       - "127.0.0.1:14269:14269"
       - "127.0.0.1:16686:16686"
+    environment:
+      <<: *telemetry-variables
     networks:
       - deepfence_net
     logging:

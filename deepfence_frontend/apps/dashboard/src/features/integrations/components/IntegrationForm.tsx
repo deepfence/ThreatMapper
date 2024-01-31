@@ -736,10 +736,10 @@ export const IntegrationForm = ({
                   label="Endpoint Url"
                   placeholder="Endpoint url"
                   helperText={
-                    fieldErrors?.url ??
+                    fieldErrors?.http_endpoint ??
                     'Ex. https://[SumoEndpoint]/receiver/v1/http/[UniqueHTTPCollectorCode]'
                   }
-                  color={fieldErrors?.url ? 'error' : 'default'}
+                  color={fieldErrors?.http_endpoint ? 'error' : 'default'}
                   required
                 />
               </>
@@ -789,7 +789,7 @@ export const IntegrationForm = ({
                 <TextInputType
                   defaultValue={formData?.config?.url}
                   name="url"
-                  label="Api Url"
+                  label="API Url"
                   placeholder="Api url"
                   helperText={fieldErrors?.url}
                   color={fieldErrors?.url ? 'error' : 'default'}
@@ -940,7 +940,7 @@ export const IntegrationForm = ({
                   defaultValue={formData?.config?.s3_bucket_name}
                   name="name"
                   label="Bucket Name"
-                  placeholder="S3 bukcket name"
+                  placeholder="S3 bucket name"
                   helperText={fieldErrors?.s3_bucket_name}
                   color={fieldErrors?.s3_bucket_name ? 'error' : 'default'}
                   required

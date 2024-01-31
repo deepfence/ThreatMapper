@@ -74,14 +74,14 @@ func GetDiagnosticLogs(ctx context.Context) (*GetDiagnosticLogsResponse, error) 
 	if err != nil {
 		return nil, err
 	}
-	diagLogs, err := getCloudScannerDiagnosticLogs(ctx, mc, CloudScannerDiagnosticLogsPrefix)
+	cloudScannerDiagnosticLogs, err := getCloudScannerDiagnosticLogs(ctx, mc, CloudScannerDiagnosticLogsPrefix)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
 	diagnosticLogs := GetDiagnosticLogsResponse{
 		ConsoleLogs:      getDiagnosticLogsHelper(ctx, mc, ConsoleDiagnosisFileServerPrefix),
 		AgentLogs:        getAgentDiagnosticLogs(ctx, mc, AgentDiagnosisFileServerPrefix),
-		CloudScannerLogs: diagLogs,
+		CloudScannerLogs: cloudScannerDiagnosticLogs,
 	}
 	return &diagnosticLogs, nil
 }

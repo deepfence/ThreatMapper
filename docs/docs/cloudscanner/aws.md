@@ -103,6 +103,10 @@ module "deepfence-cloud-scanner_example_single-account" {
   # AWS region: Example: us-east-1
   region                        = "us-east-1"
   ecs_vpc_region_azs            = ["us-east-1a"]
+  # Optional: To refresh the cloud resources every hour, provide CloudTrail Trail ARNs (Management events with write-only or read-write).
+  # If empty, a trail with management events will be automatically chosen if available.
+  # e.g.: ["arn:aws:cloudtrail:us-east-1:123456789012:trail/aws-events"]
+  cloudtrail_trails             = []
 }
 ```
 Ensure that the `name` parameter is set to some unique string to avoid collision with existing resource names in the account of deployment

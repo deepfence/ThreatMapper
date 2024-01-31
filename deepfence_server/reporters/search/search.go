@@ -39,9 +39,10 @@ type SearchNodeReq struct {
 }
 
 type SearchScanReq struct {
-	ScanFilter SearchFilter      `json:"scan_filters" required:"true"`
-	NodeFilter SearchFilter      `json:"node_filters" required:"true"`
-	Window     model.FetchWindow `json:"window" required:"true"`
+	ScanFilter          SearchFilter         `json:"scan_filters" required:"true"`
+	NodeFilter          SearchFilter         `json:"node_filters" required:"true"`
+	NodeIndirectFilters *ChainedSearchFilter `json:"related_node_filter"`
+	Window              model.FetchWindow    `json:"window" required:"true"`
 }
 
 type SearchCountResp struct {
@@ -138,33 +139,45 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 	return res, nil
 }
 
-func constructIndirectMatchInit[T reporters.Cypherable](
+func constructIndirectMatchInit(
+	nodeType string,
+	extendedField string,
+	name string,
 	filter SearchFilter,
 	extendedFilter SearchFilter,
 	indirectFilter *ChainedSearchFilter,
-	fw model.FetchWindow) string {
-	var dummy T
+	fw model.FetchWindow,
+	doReturn bool) string {
 	query, prevs := constructIndirectMatch(indirectFilter, 0)
-	if len(prevs) == 0 {
-		query += `MATCH (n:` + dummy.NodeType() + `)` +
-			reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-			reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter, prevs)
+
+	var matchQuery string
+	if nodeType == "" {
+		matchQuery = `MATCH (` + name + `)`
 	} else {
-		query += `MATCH (n:` + dummy.NodeType() + `) -[:` + indirectFilter.RelationShip + `]- (` + prevs[len(prevs)-1] + `)` +
-			reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-			reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter, prevs)
+		matchQuery = `MATCH (` + name + `:` + nodeType + `)`
 	}
 
-	if dummy.ExtendedField() != "" {
-		query += `
-			MATCH (n) -[:IS]-> (e) ` +
-			reporters.ParseFieldFilters2CypherWhereConditions("e", mo.Some(extendedFilter.Filters), true) +
-			reporters.OrderFilter2CypherCondition("e", extendedFilter.Filters.OrderFilter, []string{"n"}) +
-			` RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e` +
-			fw.FetchWindow2CypherQuery()
+	if len(prevs) == 0 {
+		query += matchQuery +
+			reporters.ParseFieldFilters2CypherWhereConditions(name, mo.Some(filter.Filters), true) +
+			reporters.OrderFilter2CypherCondition(name, filter.Filters.OrderFilter, prevs)
 	} else {
-		query += ` RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) +
-			fw.FetchWindow2CypherQuery()
+		query += matchQuery + ` -[:` + indirectFilter.RelationShip + `]- (` + prevs[len(prevs)-1] + `)` +
+			reporters.ParseFieldFilters2CypherWhereConditions(name, mo.Some(filter.Filters), true) +
+			reporters.OrderFilter2CypherCondition(name, filter.Filters.OrderFilter, prevs)
+	}
+
+	if doReturn {
+		if extendedField != "" {
+			query += "\n"+`MATCH (` + name + `) -[:IS]-> (e) ` +
+				reporters.ParseFieldFilters2CypherWhereConditions("e", mo.Some(extendedFilter.Filters), true) +
+				reporters.OrderFilter2CypherCondition("e", extendedFilter.Filters.OrderFilter, []string{name}) +
+				` RETURN ` + reporters.FieldFilterCypher(name, filter.InFieldFilter) + `, e` +
+				fw.FetchWindow2CypherQuery()
+		} else {
+			query += ` RETURN ` + reporters.FieldFilterCypher(name, filter.InFieldFilter) +
+				fw.FetchWindow2CypherQuery()
+		}
 	}
 	return query
 }
@@ -207,7 +220,8 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	}
 	defer tx.Close()
 
-	query := constructIndirectMatchInit[T](filter, extendedFilter, indirectFilters, fw)
+	query := constructIndirectMatchInit(dummy.NodeType(), dummy.ExtendedField(), "n", filter,
+		extendedFilter, indirectFilters, fw, true)
 	log.Debug().Msgf("search query: \n%v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{})
@@ -394,7 +408,7 @@ func getScanStatusMap(ctx context.Context, id string, cloudProvider string) (map
 	}
 	defer tx.Close()
 	query := `MATCH (n:CloudNode{cloud_provider:"` + cloudProvider + `",node_id:"` + id + `"}) -[:IS_CHILD] -> (m:CloudNode)
-			WITH m.node_id AS node_id UNWIND node_id AS x 
+			WITH m.node_id AS node_id UNWIND node_id AS x
 			CALL {
 				WITH x
 				OPTIONAL MATCH (n:CloudNode{node_id: x})<-[:SCANNED]-(s1:CloudComplianceScan)
@@ -416,7 +430,24 @@ func getScanStatusMap(ctx context.Context, id string, cloudProvider string) (map
 	}
 	return res, nil
 }
-func searchGenericScanInfoReport(ctx context.Context, scanType utils.Neo4jScanType, scanFilter SearchFilter, resourceFilter SearchFilter, fw model.FetchWindow) ([]model.ScanInfo, error) {
+
+type FakeCypher struct {
+	nodeType string
+	extended string
+}
+
+func (fc FakeCypher) NodeType() string {
+	return fc.nodeType
+}
+
+func (fc FakeCypher) ExtendedField() string {
+	return fc.extended
+}
+
+func searchGenericScanInfoReport(ctx context.Context, scanType utils.Neo4jScanType,
+	scanFilter SearchFilter, resourceFilter SearchFilter,
+	resourceChainedFilter *ChainedSearchFilter,
+	fw model.FetchWindow) ([]model.ScanInfo, error) {
 	res := []model.ScanInfo{}
 
 	driver, err := directory.Neo4jClient(ctx)
@@ -433,7 +464,9 @@ func searchGenericScanInfoReport(ctx context.Context, scanType utils.Neo4jScanTy
 	}
 	defer tx.Close()
 
-	query := `
+	query := constructIndirectMatchInit("", "", "m", resourceFilter, SearchFilter{}, resourceChainedFilter, fw, false)
+
+	query += `
 		MATCH (:` + string(scanType) + `) -[:SCANNED]-> (m)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(resourceFilter.Filters), true) +
 		`
@@ -502,7 +535,7 @@ func SearchReport[T reporters.Cypherable](ctx context.Context, filter SearchFilt
 }
 
 func SearchScansReport(ctx context.Context, filter SearchScanReq, scanType utils.Neo4jScanType) ([]model.ScanInfo, error) {
-	hosts, err := searchGenericScanInfoReport(ctx, scanType, filter.ScanFilter, filter.NodeFilter, filter.Window)
+	hosts, err := searchGenericScanInfoReport(ctx, scanType, filter.ScanFilter, filter.NodeFilter, filter.NodeIndirectFilters, filter.Window)
 	if err != nil {
 		return nil, err
 	}

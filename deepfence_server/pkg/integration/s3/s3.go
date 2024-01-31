@@ -93,3 +93,48 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 	fmt.Println("JSON data uploaded successfully")
 	return nil
 }
+
+func (s S3) IsValidCredential(ctx context.Context) bool {
+	sess, err := session.NewSession(&aws.Config{
+		Region:      aws.String(s.Config.AWSRegion),
+		Credentials: credentials.NewStaticCredentials(s.Config.AWSAccessKey, s.Config.AWSSecretKey, ""),
+	})
+	if err != nil {
+		fmt.Println("Failed to create AWS session", err)
+		return false
+	}
+	if s.Config.UseIAMRole == "true" {
+		sess, err := session.NewSession(&aws.Config{
+			Region: aws.String(s.Config.AWSRegion),
+		})
+		if err != nil {
+			fmt.Printf("error creating session: %v", err)
+			return false
+		}
+
+		awsConfig := aws.Config{
+			Region: aws.String(s.Config.AWSRegion),
+		}
+
+		// if targetRoleARN is empty, that means
+		// it is not a crossaccount ecr, no need to use stscreds
+		if s.Config.TargetAccountRoleARN != "" {
+			if s.Config.AWSAccountID == "" {
+				fmt.Printf("for cross account ECR, account ID is mandatory")
+				return false
+			}
+			creds := stscreds.NewCredentials(sess, s.Config.TargetAccountRoleARN)
+			awsConfig.Credentials = creds
+		}
+	}
+
+	svc := s3.New(sess)
+
+	_, err = svc.ListBuckets(nil)
+	if err != nil {
+		fmt.Println("Failed to list buckets", err)
+		return false
+	}
+
+	return true
+}

@@ -3,46 +3,17 @@ package processors
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/cenkalti/backoff/v3"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/db"
 )
-
-var (
-	wait    chan struct{}
-	breaker sync.RWMutex
-)
-
-func init() {
-	wait = make(chan struct{})
-
-	neo4j_port := os.Getenv("DEEPFENCE_NEO4J_BOLT_PORT")
-	neo4j_host := os.Getenv("DEEPFENCE_NEO4J_HOST")
-	go func() {
-		for {
-			<-wait
-			breaker.Lock()
-			log.Info().Msgf("Breaker opened")
-			for {
-				err := utils.WaitServiceTCPConn(neo4j_host, neo4j_port, time.Second*30)
-				if err != nil {
-					log.Error().Msgf("err: %v", err)
-					continue
-				}
-				break
-			}
-			breaker.Unlock()
-			log.Info().Msgf("Breaker closed")
-		}
-	}()
-}
 
 type BulkRequest struct {
 	NameSpace string
@@ -58,6 +29,7 @@ func NewBulkRequest(namespace string, data []byte) BulkRequest {
 
 type BulkProcessor struct {
 	name          string
+	ns            string
 	bulkActions   int
 	numWorkers    int
 	requestsC     chan BulkRequest
@@ -66,6 +38,7 @@ type BulkProcessor struct {
 	flushInterval time.Duration
 	flusherStopC  chan struct{}
 	commitFn      commitFn
+	breaker       sync.RWMutex
 }
 
 type commitFn func(ns string, data [][]byte) error
@@ -89,9 +62,10 @@ func (s *BulkProcessor) FlushInterval(interval time.Duration) *BulkProcessor {
 	return s
 }
 
-func NewBulkProcessor(name string, fn commitFn) *BulkProcessor {
+func NewBulkProcessor(name string, ns string, fn commitFn) *BulkProcessor {
 	return &BulkProcessor{
 		name:          name,
+		ns:            ns,
 		commitFn:      fn,
 		numWorkers:    1,
 		bulkActions:   1_000,
@@ -100,9 +74,10 @@ func NewBulkProcessor(name string, fn commitFn) *BulkProcessor {
 	}
 }
 
-func NewBulkProcessorWith(name string, fn commitFn, size int) *BulkProcessor {
+func NewBulkProcessorWithSize(name string, ns string, fn commitFn, size int) *BulkProcessor {
 	return &BulkProcessor{
 		name:          name,
+		ns:            ns,
 		commitFn:      fn,
 		numWorkers:    1,
 		bulkActions:   size,
@@ -194,7 +169,7 @@ type bulkWorker struct {
 	buffer      *bulKBuffer
 	flushC      chan struct{}
 	flushAckC   chan struct{}
-	worker_id   string
+	workerID    string
 	expBackoff  backoff.BackOff
 }
 
@@ -213,7 +188,7 @@ func newBulkWorker(p *BulkProcessor, i int) *bulkWorker {
 		buffer:      NewBulkBuffer(),
 		flushC:      make(chan struct{}),
 		flushAckC:   make(chan struct{}),
-		worker_id:   fmt.Sprintf("%s.%d", p.name, i),
+		workerID:    fmt.Sprintf("%s.%s.%d", p.name, p.ns, i),
 		expBackoff:  backoff.WithMaxRetries(expBackoff, 3),
 	}
 }
@@ -225,7 +200,7 @@ func (w *bulkWorker) work(ctx context.Context, flushInterval time.Duration) {
 		close(w.flushC)
 	}()
 
-	log.Info().Str("worker", w.worker_id).Msg("started")
+	log.Info().Str("worker", w.workerID).Msg("started")
 
 	// Start the ticker for flush
 	ticker := time.NewTicker(flushInterval)
@@ -238,9 +213,9 @@ func (w *bulkWorker) work(ctx context.Context, flushInterval time.Duration) {
 				// Received a new request
 				w.buffer.Add(req)
 				if w.commitRequired() {
-					log.Info().Str("worker", w.worker_id).Msg("buffer full commit all")
+					log.Debug().Str("worker", w.workerID).Msg("buffer full commit all")
 					if errs := w.commit(ctx); len(errs) != 0 {
-						log.Error().Str("worker", w.worker_id).Msgf("%v", errs)
+						log.Error().Str("worker", w.workerID).Msgf("%v", errs)
 					}
 					ticker.Reset(flushInterval)
 					for len(ticker.C) > 0 {
@@ -252,9 +227,9 @@ func (w *bulkWorker) work(ctx context.Context, flushInterval time.Duration) {
 				// Channel closed: Stop.
 				stop = true
 				if w.buffer.Size() > 0 {
-					log.Info().Str("worker", w.worker_id).Msg("exit called commit all")
+					log.Info().Str("worker", w.workerID).Msg("exit called commit all")
 					if errs := w.commit(ctx); len(errs) != 0 {
-						log.Error().Str("worker", w.worker_id).Msgf("%v", errs)
+						log.Error().Str("worker", w.workerID).Msgf("%v", errs)
 					}
 				}
 			}
@@ -262,17 +237,17 @@ func (w *bulkWorker) work(ctx context.Context, flushInterval time.Duration) {
 		case <-ticker.C:
 			// Commit outstanding requests
 			if w.buffer.Size() > 0 {
-				log.Info().Str("worker", w.worker_id).Msg("ticker called commit all")
+				log.Debug().Str("worker", w.workerID).Msg("ticker called commit all")
 				if errs := w.commit(ctx); len(errs) != 0 {
-					log.Error().Str("worker", w.worker_id).Msgf("%v", errs)
+					log.Error().Str("worker", w.workerID).Msgf("%v", errs)
 				}
 			}
 		case <-w.flushC:
 			// Commit outstanding requests
 			if w.buffer.Size() > 0 {
-				log.Info().Str("worker", w.worker_id).Msg("flush called commit all")
+				log.Info().Str("worker", w.workerID).Msg("flush called commit all")
 				if errs := w.commit(ctx); len(errs) != 0 {
-					log.Error().Str("worker", w.worker_id).Msgf("%v", errs)
+					log.Error().Str("worker", w.workerID).Msgf("%v", errs)
 				}
 			}
 			w.flushAckC <- struct{}{}
@@ -302,13 +277,13 @@ func isConnectivityError(err error) bool {
 func (w *bulkWorker) commit(ctx context.Context) []error {
 	errs := []error{}
 	for k, v := range w.buffer.Read() {
-		log.Info().Str("worker", w.worker_id).Msgf("namespace=%s #data=%d", k, len(v))
+		log.Info().Str("worker", w.workerID).Msgf("#data=%d", len(v))
 		w.expBackoff.Reset()
 		var err error
 		for {
-			breaker.RLock()
+			w.p.breaker.RLock()
 			err = w.p.commitFn(k, v)
-			breaker.RUnlock()
+			w.p.breaker.RUnlock()
 			if err != nil {
 				if isTransientError(err) {
 					waitTime := w.expBackoff.NextBackOff()
@@ -317,10 +292,32 @@ func (w *bulkWorker) commit(ctx context.Context) []error {
 						continue
 					}
 				} else if isConnectivityError(err) {
-					select {
-					case wait <- struct{}{}:
-					default:
-					}
+					go func() {
+						w.p.breaker.Lock()
+						defer w.p.breaker.Unlock()
+
+						log.Info().Msgf("Breaker opened")
+
+						configs, err := directory.GetDatabaseConfig(directory.NewContextWithNameSpace(directory.NamespaceID(w.p.ns)))
+						if err != nil {
+							log.Error().Msg(err.Error())
+							return
+						}
+						hostPort := strings.Split(configs.Neo4j.Endpoint, ":")
+						if len(hostPort) != 3 {
+							log.Error().Msgf("Invalid endpoint %v", configs.Neo4j.Endpoint)
+							return
+						}
+						for {
+							err = utils.WaitServiceTCPConn(hostPort[1][2:], hostPort[2], time.Second*30)
+							if err != nil {
+								log.Error().Msgf("err: %v", err)
+								continue
+							}
+							break
+						}
+						log.Info().Msgf("Breaker closed")
+					}()
 					// Give some room
 					<-time.After(time.Second)
 					continue
@@ -332,9 +329,9 @@ func (w *bulkWorker) commit(ctx context.Context) []error {
 	}
 	// metrics
 	if len(errs) > 0 {
-		commitNeo4jRecordsCounts.WithLabelValues(w.worker_id, "error").Add(float64(w.buffer.size))
+		CommitNeo4jRecordsCounts.WithLabelValues(w.workerID, "error", w.p.ns).Add(float64(w.buffer.size))
 	} else {
-		commitNeo4jRecordsCounts.WithLabelValues(w.worker_id, "success").Add(float64(w.buffer.size))
+		CommitNeo4jRecordsCounts.WithLabelValues(w.workerID, "success", w.p.ns).Add(float64(w.buffer.size))
 	}
 	// reset buffer after commit
 	w.buffer.Reset()

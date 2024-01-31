@@ -15,11 +15,19 @@ import (
 
 func BulkDeleteScans(ctx context.Context, task *asynq.Task) error {
 
-	var req model.BulkDeleteScansRequest
-	err := json.Unmarshal(task.Payload(), &req)
+	var err error
+	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
 	}
+
+	var req model.BulkDeleteScansRequest
+	err = json.Unmarshal(task.Payload(), &req)
+	if err != nil {
+		return err
+	}
+
+	log.Info().Str("namespace", string(tenantID)).Msgf("bulk delete scans payload: %v", req)
 
 	scanType := utils.DetectedNodeScanType[req.ScanType]
 	scansList, err := reporters_scan.GetScansList(ctx, scanType, nil, req.Filters, model.FetchWindow{})
@@ -31,7 +39,7 @@ func BulkDeleteScans(ctx context.Context, task *asynq.Task) error {
 		log.Info().Msgf("delete scan %s %s", req.ScanType, s.ScanID)
 		err = reporters_scan.DeleteScan(ctx, scanType, s.ScanID, []string{})
 		if err != nil {
-			log.Error().Err(err).Msgf("failed to delete scan id %s", s.ScanID)
+			log.Error().Str("namespace", string(tenantID)).Err(err).Msgf("failed to delete scan id %s", s.ScanID)
 			continue
 		}
 	}

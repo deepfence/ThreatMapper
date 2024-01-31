@@ -16,6 +16,7 @@ type SearchableClusterListProps = {
   triggerVariant?: 'select' | 'button';
   helperText?: string;
   color?: 'error' | 'default';
+  displayValue?: string;
 };
 
 const SearchableCluster = ({
@@ -28,6 +29,7 @@ const SearchableCluster = ({
   triggerVariant,
   helperText,
   color,
+  displayValue,
 }: SearchableClusterListProps) => {
   const [searchText, setSearchText] = useState('');
 
@@ -92,7 +94,9 @@ const SearchableCluster = ({
         getDisplayValue={() =>
           isSelectVariantType && selectedClusters.length > 0
             ? `${selectedClusters.length} selected`
-            : null
+            : displayValue
+            ? displayValue
+            : 'Select cluster'
         }
         placeholder="Select cluster"
         multiple
@@ -144,6 +148,9 @@ export const SearchableClusterList = (props: SearchableClusterListProps) => {
           multiple
           onQueryChange={() => {
             // no operation
+          }}
+          getDisplayValue={() => {
+            return props.displayValue ? props.displayValue : 'Select cluster';
           }}
         />
       }

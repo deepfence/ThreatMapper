@@ -39,6 +39,18 @@ export interface GraphNodeInfo {
     compliance_count: number;
     /**
      * 
+     * @type {number}
+     * @memberof GraphNodeInfo
+     */
+    exploitable_secrets_count: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof GraphNodeInfo
+     */
+    exploitable_vulnerabilities_count: number;
+    /**
+     * 
      * @type {string}
      * @memberof GraphNodeInfo
      */
@@ -77,6 +89,8 @@ export function instanceOfGraphNodeInfo(value: object): boolean {
     isInstance = isInstance && "cloud_compliance_count" in value;
     isInstance = isInstance && "cloud_warn_alarm_count" in value;
     isInstance = isInstance && "compliance_count" in value;
+    isInstance = isInstance && "exploitable_secrets_count" in value;
+    isInstance = isInstance && "exploitable_vulnerabilities_count" in value;
     isInstance = isInstance && "name" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "secrets_count" in value;
@@ -99,6 +113,8 @@ export function GraphNodeInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
         'cloud_compliance_count': json['cloud_compliance_count'],
         'cloud_warn_alarm_count': json['cloud_warn_alarm_count'],
         'compliance_count': json['compliance_count'],
+        'exploitable_secrets_count': json['exploitable_secrets_count'],
+        'exploitable_vulnerabilities_count': json['exploitable_vulnerabilities_count'],
         'name': json['name'],
         'node_id': json['node_id'],
         'secrets_count': json['secrets_count'],
@@ -119,6 +135,8 @@ export function GraphNodeInfoToJSON(value?: GraphNodeInfo | null): any {
         'cloud_compliance_count': value.cloud_compliance_count,
         'cloud_warn_alarm_count': value.cloud_warn_alarm_count,
         'compliance_count': value.compliance_count,
+        'exploitable_secrets_count': value.exploitable_secrets_count,
+        'exploitable_vulnerabilities_count': value.exploitable_vulnerabilities_count,
         'name': value.name,
         'node_id': value.node_id,
         'secrets_count': value.secrets_count,

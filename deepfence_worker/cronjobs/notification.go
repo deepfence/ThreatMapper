@@ -23,6 +23,8 @@ import (
 	"github.com/hibiken/asynq"
 )
 
+const NOTIFICATION_INTERVAL = 60000 //in milliseconds
+
 var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
 	"cve_severity":          "Severity",
 	"cve_id":                "CVE Id",
@@ -91,7 +93,7 @@ const DefaultNotificationErrorBackoff = 15 * time.Minute
 
 var (
 	NotificationErrorBackoff time.Duration
-	notificationLock         sync.Mutex
+	// notificationLock         sync.Mutex
 )
 
 func init() {
@@ -115,26 +117,42 @@ func init() {
 }
 
 func SendNotifications(ctx context.Context, task *asynq.Task) error {
-	//This lock is to ensure only one notification handler runs at a time
-	notificationLock.Lock()
-	defer notificationLock.Unlock()
+	// //This lock is to ensure only one notification handler runs at a time
+	// notificationLock.Lock()
+	// defer notificationLock.Unlock()
 
-	log.Info().Msgf("SendNotifications task starting at %s", string(task.Payload()))
+	namespace, _ := directory.ExtractNamespace(ctx)
+	ns := string(namespace)
+
+	start := time.Now()
+	log.Info().Str("namespace", ns).Msgf("SendNotifications task for timestamp %s starting", string(task.Payload()))
+	defer log.Info().Str("namespace", ns).Msgf("SendNotifications task for timestamp %s ended elapsed: %s",
+		string(task.Payload()), time.Now().Sub(start))
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
+		log.Error().Str("namespace", ns).Msgf("Error getting postgresCtx: %v", err)
 		return nil
 	}
 	integrations, err := pgClient.GetIntegrations(ctx)
 	if err != nil {
-		log.Error().Msgf("Error getting postgresCtx: %v", err)
+		log.Error().Str("namespace", ns).Msgf("Error getting postgresCtx: %v", err)
 		return nil
 	}
+
+	// check if any integrations are configured
+	if len(integrations) <= 0 {
+		log.Warn().Str("namespace", ns).Msg("No integrations configured to notify")
+		return nil
+	}
+
 	wg := sync.WaitGroup{}
 	wg.Add(len(integrations))
+
 	for _, integrationRow := range integrations {
 		if integrationRow.ErrorMsg.String != "" &&
 			time.Since(integrationRow.LastSentTime.Time) < NotificationErrorBackoff {
-			log.Info().Msgf("Skipping integration for %s rowId: %d due to error: %s "+
+			log.Info().Str("namespace", ns).Msgf("Skipping integration for %s rowId: %d due to error: %s "+
 				"occured at last attempt, %s ago",
 				integrationRow.IntegrationType, integrationRow.ID,
 				integrationRow.ErrorMsg.String, time.Since(integrationRow.LastSentTime.Time))
@@ -144,12 +162,12 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 
 		go func(integration postgresql_db.Integration) {
 			defer wg.Done()
-			log.Info().Msgf("Processing integration for %s rowId: %d",
+			log.Info().Str("namespace", ns).Msgf("Processing integration for %s rowId: %d",
 				integration.IntegrationType, integration.ID)
 
 			err := processIntegrationRow(integration, ctx, task)
 
-			log.Info().Msgf("Processed integration for %s rowId: %d",
+			log.Info().Str("namespace", ns).Msgf("Processed integration for %s rowId: %d",
 				integration.IntegrationType, integration.ID)
 
 			update_row := err != nil || (err == nil && integration.ErrorMsg.Valid)
@@ -181,7 +199,7 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 		}(integrationRow)
 	}
 	wg.Wait()
-	log.Info().Msgf("SendNotifications task ended for timestamp %s", string(task.Payload()))
+
 	return nil
 }
 
@@ -271,7 +289,7 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		return err
 	}
 
-	last30sTimeStamp := ts - 30000
+	last30sTimeStamp := ts - NOTIFICATION_INTERVAL
 
 	log.Debug().Msgf("Check for %s scans to notify at timestamp (%d,%d)",
 		integrationRow.Resource, last30sTimeStamp, ts)

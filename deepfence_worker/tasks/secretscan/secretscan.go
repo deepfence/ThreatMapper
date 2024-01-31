@@ -16,7 +16,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
 	tasks "github.com/deepfence/golang_deepfence_sdk/utils/tasks"
@@ -39,7 +38,6 @@ func NewSecretScanner(ingest chan *kgo.Record) SecretScan {
 }
 
 func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error {
-	defer cronjobs.ScanWorkloadAllocator.Free()
 
 	var params utils.SecretScanParameters
 
@@ -67,7 +65,6 @@ func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error 
 }
 
 func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error {
-	defer cronjobs.ScanWorkloadAllocator.Free()
 
 	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
@@ -77,19 +74,18 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 		log.Error().Msg("tenant-id/namespace is empty")
 		return nil
 	}
-	log.Info().Msgf("message tenant id %s", string(tenantID))
 
-	log.Info().Msgf("payload: %s ", string(task.Payload()))
+	log.Info().Str("namespace", string(tenantID)).Msgf("payload: %s ", string(task.Payload()))
 
 	var params utils.SecretScanParameters
 
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {
-		log.Error().Msg(err.Error())
+		log.Error().Str("namespace", string(tenantID)).Msg(err.Error())
 		return nil
 	}
 
 	if params.RegistryID == "" {
-		log.Error().Msgf("registry id is empty in params %+v", params)
+		log.Error().Str("namespace", string(tenantID)).Msgf("registry id is empty in params %+v", params)
 		return nil
 	}
 
@@ -120,7 +116,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	ScanMap.Store(params.ScanID, scanCtx)
 
 	defer func() {
-		log.Info().Msgf("Removing from scan map, scan_id: %s", params.ScanID)
+		log.Info().Str("namespace", string(tenantID)).Msgf("Removing from scan map, scan_id: %s", params.ScanID)
 		ScanMap.Delete(params.ScanID)
 		res <- hardErr
 		close(res)
@@ -141,7 +137,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	}
 
 	defer func() {
-		log.Info().Msgf("remove auth directory %s", authDir)
+		log.Info().Str("namespace", string(tenantID)).Msgf("remove auth directory %s", authDir)
 		if authDir == "" {
 			return
 		}
@@ -180,11 +176,11 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 			"docker://" + imageName, "docker-archive:" + imgTar}...)
 	}
 
-	log.Info().Msgf("command: %s", cmd.String())
+	log.Info().Str("namespace", string(tenantID)).Msgf("command: %s", cmd.String())
 
 	if out, err := workerUtils.RunCommand(cmd); err != nil {
-		log.Error().Err(err).Msg(cmd.String())
-		log.Error().Msgf("output: %s", out.String())
+		log.Error().Str("namespace", string(tenantID)).Err(err).Msg(cmd.String())
+		log.Error().Str("namespace", string(tenantID)).Msgf("output: %s", out.String())
 		hardErr = err
 		return nil
 	}
@@ -197,7 +193,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	// init secret scan
 	scanResult, err := secretScan.ExtractAndScanFromTar(dir, imageName, scanCtx)
 	if err != nil {
-		log.Error().Msg(err.Error())
+		log.Error().Str("namespace", string(tenantID)).Msg(err.Error())
 		hardErr = err
 		return nil
 	}

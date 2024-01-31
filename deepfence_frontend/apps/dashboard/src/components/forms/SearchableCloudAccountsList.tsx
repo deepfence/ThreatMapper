@@ -132,7 +132,7 @@ const SearchableCloudAccounts = ({
 };
 
 export const SearchableCloudAccountsList = (props: SearchableCloudAccountsListProps) => {
-  const { cloudProvider, label, triggerVariant } = props;
+  const { cloudProvider, label, triggerVariant, displayValue } = props;
   return (
     <Suspense
       fallback={
@@ -140,9 +140,13 @@ export const SearchableCloudAccountsList = (props: SearchableCloudAccountsListPr
           label={label}
           triggerVariant={triggerVariant}
           startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-          getDisplayValue={() =>
-            cloudProvider ? `${cloudProvider} account` : 'Cloud account'
-          }
+          getDisplayValue={() => {
+            return displayValue
+              ? displayValue
+              : cloudProvider
+              ? `${cloudProvider} account`
+              : 'Cloud account';
+          }}
           multiple
           onQueryChange={() => {
             // no operation
