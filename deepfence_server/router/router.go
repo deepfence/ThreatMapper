@@ -502,6 +502,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			r.Route("/integration", func(r chi.Router) {
 				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddIntegration))
 				r.Get("/", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GetIntegrations))
+				r.Patch("/delete", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteIntegrations))
 				r.Route("/{integration_id}", func(r chi.Router) {
 					r.Delete("/", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteIntegration))
 					r.Put("/", dfHandler.AuthHandler(ResourceIntegration, PermissionUpdate, dfHandler.UpdateIntegration))

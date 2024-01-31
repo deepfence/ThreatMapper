@@ -649,15 +649,16 @@ SET resource        = $1,
     config          = $5
 WHERE id = $6;
 
--- name: DeleteIntegration :exec
-DELETE
-FROM integration
-WHERE id = $1;
 
 -- name: DeleteIntegrationByUserID :exec
 DELETE
 FROM integration
 WHERE created_by_user_id = $1;
+
+-- name: DeleteIntegrations :exec
+DELETE
+FROM integration
+WHERE id = ANY($1::int[]);
 
 -- name: CreateSchedule :one
 INSERT INTO scheduler (action, description, cron_expr, payload, is_enabled, is_system, status)

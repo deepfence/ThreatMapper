@@ -16,6 +16,10 @@ type IntegrationIDPathReq struct {
 	IntegrationID string `path:"integration_id" validate:"required" required:"true"`
 }
 
+type DeleteIntegrationReq struct {
+	IntegrationIDs []int32 `json:"integration_ids" required:"true"`
+}
+
 // IntegrationAddReq is the request body for adding a new integration
 type IntegrationAddReq struct {
 	Config           map[string]interface{} `json:"config"`
@@ -128,8 +132,8 @@ func redactLastHalfString(s string) string {
 	return s[:len(s)/2] + "****"
 }
 
-func DeleteIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, integrationID int32) error {
-	err := pgClient.DeleteIntegration(ctx, integrationID)
+func DeleteIntegrations(ctx context.Context, pgClient *postgresqlDb.Queries, integrationIDs []int32) error {
+	err := pgClient.DeleteIntegrations(ctx, integrationIDs)
 	return err
 }
 

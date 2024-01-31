@@ -297,6 +297,36 @@ func (h *Handler) UpdateIntegration(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *Handler) DeleteIntegrations(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.DeleteIntegrationReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	if err := h.Validator.Struct(req); err != nil {
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	ctx := r.Context()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	err = model.DeleteIntegrations(ctx, pgClient, req.IntegrationIDs)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+	}
+}
+
 func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "integration_id")
 
@@ -316,7 +346,10 @@ func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = model.DeleteIntegration(ctx, pgClient, int32(idInt))
+	var req model.DeleteIntegrationReq
+	req.IntegrationIDs = []int32{int32(idInt)}
+
+	err = model.DeleteIntegrations(ctx, pgClient, req.IntegrationIDs)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
