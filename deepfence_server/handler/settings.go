@@ -208,6 +208,10 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 			h.respondError(&errInvalidURL, w)
 			return
 		}
+		if !strings.Contains(parsedURL.Host, ".") {
+			h.respondError(&errInvalidURL, w)
+			return
+		}
 		value = parsedURL.Scheme + "://" + parsedURL.Host
 	case model.InactiveNodesDeleteScanResultsKey:
 		value, err = strconv.ParseInt(strings.TrimSpace(req.Value), 10, 64)
