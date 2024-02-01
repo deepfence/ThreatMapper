@@ -20,12 +20,9 @@ import (
 )
 
 var (
-	errInvalidID = ValidatorError{
-		err: errors.New("id:invalid id"), skipOverwriteErrorMessage: true}
-	errInvalidURL = ValidatorError{
-		err: errors.New("value:invalid url"), skipOverwriteErrorMessage: true}
-	errInvalidInteger = ValidatorError{
-		err: errors.New("value:must be integer"), skipOverwriteErrorMessage: true}
+	errInvalidID              = BadDecoding{err: errors.New("invalid id")}
+	errInvalidURL             = BadDecoding{err: errors.New("invalid url")}
+	errInvalidInteger         = BadDecoding{err: errors.New("must be integer")}
 	errInvalidEmailConfigType = ValidatorError{
 		err: fmt.Errorf("email_provider:must be %s or %s", model.EmailSettingSMTP, model.EmailSettingSES), skipOverwriteErrorMessage: true}
 )
