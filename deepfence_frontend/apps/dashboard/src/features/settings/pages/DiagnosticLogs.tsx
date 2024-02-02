@@ -151,6 +151,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       }
       throw logsResponse.error;
     }
+    invalidateAllQueries();
     return {
       success: true,
       message: '',
@@ -177,8 +178,9 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       throw logsResponse.error;
     }
     toast.success('Logs generated successfully');
+    invalidateAllQueries();
   }
-  invalidateAllQueries();
+
   return null;
 };
 
@@ -213,7 +215,12 @@ const ConsoleDiagnosticLogsTable = () => {
         maxSize: 85,
       }),
       columnHelper.accessor('message', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => {
+          if (!cell.row.original.message) {
+            return 'Logs generated';
+          }
+          return cell.getValue();
+        },
         header: () => 'Message',
         minSize: 75,
         size: 80,
@@ -293,7 +300,12 @@ const AgentDiagnosticLogsTable = () => {
         maxSize: 85,
       }),
       columnHelper.accessor('message', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => {
+          if (!cell.row.original.message) {
+            return 'Logs generated';
+          }
+          return cell.getValue();
+        },
         header: () => 'Message',
         minSize: 75,
         size: 80,
