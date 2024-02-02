@@ -33,13 +33,26 @@ const ActionDropdown = ({
   trigger: React.ReactNode;
   onTableAction: (row: ModelExportReport, actionType: ActionEnumType) => void;
 }) => {
+  const { status } = row;
+  const isCompleted = useMemo(() => {
+    return status && status.toLowerCase() === 'complete';
+  }, [row]);
+
   return (
     <Dropdown
       triggerAsChild={true}
       align={'start'}
       content={
         <>
-          <DropdownItem onClick={() => onTableAction(row, ActionEnumType.DOWNLOAD)}>
+          <DropdownItem
+            onSelect={() => {
+              if (!isCompleted) {
+                return;
+              }
+              onTableAction(row, ActionEnumType.DOWNLOAD);
+            }}
+            disabled={!isCompleted}
+          >
             Download report
           </DropdownItem>
           <DropdownItem
@@ -180,6 +193,12 @@ export const ReportTable = ({
         pageSize={pageSize}
         onPageResize={(newSize) => {
           setPageSize(newSize);
+        }}
+        getRowId={(row) => {
+          return JSON.stringify({
+            status: row.status,
+            id: row.report_id,
+          });
         }}
         noDataElement={
           <TableNoDataElement text="No reports found, please add new report" />
