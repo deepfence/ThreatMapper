@@ -15,17 +15,17 @@ const root = path.dirname(current);
 const matomoPlugin = (enable: string) => {
   if (!enable) {
     return {
-      name: 'matomo-analytics',
+      name: 'analytics-tracking',
       transformIndexHtml(html) {
-        return html.replace(/<matomo-analytics>(.*?)<\/matomo-analytics>/, '');
+        return html.replace(/<analytics-tracking>(.*?)<\/analytics-tracking>/, '');
       },
     };
   }
   return {
-    name: 'matomo-analytics',
+    name: 'analytics-tracking',
     transformIndexHtml(html) {
       return html.replace(
-        /<matomo-analytics>(.*?)<\/matomo-analytics>/,
+        /<analytics-tracking>(.*?)<\/analytics-tracking>/,
         `<script>
         var _paq = (window._paq = window._paq || []);
         /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
@@ -55,7 +55,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       webfontDownload(),
-      matomoPlugin(process.env.ENABLE_MATOMO),
+      matomoPlugin(process.env.ENABLE_ANALYTICS),
       ...(mode === 'production' ? [visualizer()] : []),
     ],
     test: {
