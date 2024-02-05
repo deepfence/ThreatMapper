@@ -3,6 +3,7 @@ package cronscheduler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	stdLogger "log"
 	"os"
 	"strconv"
@@ -194,7 +195,16 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	var jobIDs []cron.EntryID
 
 	// Documentation: https://pkg.go.dev/github.com/robfig/cron#hdr-Usage
+
 	var jobID cron.EntryID
+
+	// based on neo4j connectivity status pause/unpause queues
+	jobID, err = s.cron.AddJob("@every 30s", NewAsynqQueueState(namespace, time.Second*10))
+	if err != nil {
+		return err
+	}
+	jobIDs = append(jobIDs, jobID)
+
 	jobID, err = s.cron.AddFunc("@every 30s",
 		s.enqueueTask(namespace, utils.TriggerConsoleActionsTask, true, utils.CritialTaskOpts()...))
 	if err != nil {
@@ -393,7 +403,7 @@ func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string, un
 		} else {
 			err = worker.EnqueueUnique(task, []byte(strconv.FormatInt(utils.GetTimestamp(), 10)), taskOpts...)
 		}
-		if err == asynq.ErrTaskIDConflict {
+		if errors.Is(err, asynq.ErrTaskIDConflict) {
 			log.Warn().Str("namespace", ns).Msgf("unique task true, skip enqueue task %s %s", task, err.Error())
 		} else if err != nil {
 			log.Error().Str("namespace", ns).Msg(err.Error())
