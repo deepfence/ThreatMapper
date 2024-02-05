@@ -11589,6 +11589,7 @@
           "created_at": { "type": "string" },
           "label": { "type": "string" },
           "message": { "type": "string" },
+          "type": { "type": "string" },
           "url_link": { "type": "string" }
         }
       },

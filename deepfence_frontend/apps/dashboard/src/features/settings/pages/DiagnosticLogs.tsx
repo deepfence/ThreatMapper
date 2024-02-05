@@ -228,7 +228,7 @@ const ConsoleDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('url_link', {
         cell: (cell) => {
-          if (cell.row.original.message !== '') {
+          if (cell.row.original.url_link?.trim() === '') {
             return 'No logs';
           }
           return (
@@ -299,12 +299,16 @@ const AgentDiagnosticLogsTable = () => {
         size: 80,
         maxSize: 85,
       }),
+      columnHelper.accessor('type', {
+        cell: (cell) => cell.getValue(),
+        header: () => 'Type',
+        minSize: 75,
+        size: 80,
+        maxSize: 85,
+      }),
       columnHelper.accessor('message', {
         cell: (cell) => {
-          if (!cell.row.original.message) {
-            return 'Logs generated';
-          }
-          return cell.getValue();
+          return <TruncatedText text={cell.getValue() ?? ''} />;
         },
         header: () => 'Message',
         minSize: 75,
@@ -313,12 +317,12 @@ const AgentDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('url_link', {
         cell: (cell) => {
-          if (cell.row.original.message !== '') {
+          if (cell.row.original.url_link?.trim() === '') {
             return 'No logs';
           }
           return (
             <DFLink
-              href={cell.row.original.url_link ?? ''}
+              href={cell.row.original.url_link}
               download
               target={'_blank'}
               className="flex items-center gap-x-1 dark:text-accent-accent dark:hover:text-bg-hover-1"
