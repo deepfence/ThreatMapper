@@ -80,7 +80,7 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 	vc, err := obj.IsValidCredential(ctx)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		h.respondError(&ValidatorError{err: err}, w)
+		h.respondError(&BadDecoding{err: err}, w)
 		return
 	}
 
@@ -257,7 +257,7 @@ func (h *Handler) UpdateIntegration(w http.ResponseWriter, r *http.Request) {
 	vc, err := obj.IsValidCredential(ctx)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		h.respondError(&ValidatorError{err: err}, w)
+		h.respondError(&BadDecoding{err: err}, w)
 		return
 	}
 
