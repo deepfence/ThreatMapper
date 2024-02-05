@@ -701,8 +701,9 @@ func GetScanResultDiff[T any](ctx context.Context, scanType utils.Neo4jScanType,
 	OPTIONAL MATCH (d) -[:IS]-> (e)
 	OPTIONAL MATCH (n) -[:SCANNED]-> (f)
 	OPTIONAL MATCH (c:ContainerImage{node_id: f.docker_image_id}) -[:ALIAS] ->(t) -[ma:MASKED]-> (d)
+	OPTIONAL MATCH (cb:ContainerImage{node_id: n.docker_image_id}) -[:IS] ->(is) -[mis:MASKED]-> (d)
 	WITH apoc.map.merge( e{.*}, 
-	d{.*, masked: coalesce(d.masked or r.masked or e.masked or head(collect(ma.masked)), false), 
+	d{.*, masked: coalesce(d.masked or r.masked or e.masked or head(collect(ma.masked)) or head(collect(mis.masked)), false), 
 	name: coalesce(e.name, d.name, '')}) AS d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
 		ffCondition + ` RETURN d ` +
@@ -789,9 +790,12 @@ func GetScanResults[T any](ctx context.Context, scanType utils.Neo4jScanType, sc
 		MATCH (s:` + string(scanType) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
 		OPTIONAL MATCH (d) -[:IS]-> (e)
 		OPTIONAL MATCH (s) -[:SCANNED]-> (n)
-		OPTIONAL MATCH (c:ContainerImage{node_id: n.docker_image_id}) -[:ALIAS] ->(t) -[m:MASKED]-> (d)
+		OPTIONAL MATCH (ca:ContainerImage{node_id: n.docker_image_id}) -[:ALIAS] ->(t) -[m:MASKED]-> (d)
+		WITH d, n, e, r, m
+		OPTIONAL MATCH (cb:ContainerImage{node_id: n.docker_image_id}) -[:IS] ->(is) -[mis:MASKED]-> (d)
 		WITH apoc.map.merge( e{.*},
-		d{.*, masked: coalesce(d.masked or r.masked or e.masked or head(collect(m.masked)), false),
+		d{.*, masked: coalesce(d.masked or r.masked or e.masked 
+			or head(collect(m.masked)) or head(collect(mis.masked)), false),
 		name: coalesce(e.name, d.name, '')}) as d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
 		ffCondition + ` RETURN d ` +
@@ -937,8 +941,12 @@ func GetSevCounts(ctx context.Context, scanType utils.Neo4jScanType, scanID stri
 	query := `
 	MATCH (m:` + string(scanType) + `{node_id: $scan_id, status: "` + utils.ScanStatusSuccess + `"}) -[r:DETECTED]-> (d)
 	WHERE r.masked = false
+	OPTIONAL MATCH (m) -[:SCANNED] -> (e)
+	OPTIONAL MATCH (c:ContainerImage{node_id: e.docker_image_id}) -[:ALIAS] ->(t) -[ma:MASKED]-> (d)
+	WITH d, ma, r WHERE ma IS NULL OR ma.masked=false
 	RETURN d.` + type2sevField(scanType) + `, COUNT(*)`
 
+	log.Debug().Msgf("query: %v", query)
 	nres, err := tx.Run(query, map[string]interface{}{"scan_id": scanID})
 	if err != nil {
 		return res, err
