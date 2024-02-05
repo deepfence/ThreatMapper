@@ -5,10 +5,8 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
-	workerUtil "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -78,23 +76,8 @@ func secretsToMaps(data []ingestersUtil.Secret,
 			secret[k] = v
 		}
 
-		entityId := ""
-		if _, ok := secret["scan_id"]; ok {
-			scanId := secret["scan_id"].(string)
-			var err error
-			entityId, err = workerUtil.GetEntityIdFromScanID(scanId, string(utils.NEO4JSecretScan), tx)
-			if err != nil {
-				log.Error().Msgf("Error in getting entityId: %v", err)
-				return nil, err
-			}
-		}
-
-		nodeId := utils.ScanIDReplacer.Replace(fmt.Sprintf("%v:%v",
+		secret["node_id"] = utils.ScanIDReplacer.Replace(fmt.Sprintf("%v:%v", 
 			i.Rule.ID, i.Match.FullFilename))
-		if len(entityId) > 0 {
-			nodeId = nodeId + "_" + entityId
-		}
-		secret["node_id"] = nodeId
 		rule := utils.ToMap(i.Rule)
 		delete(rule, "id")
 		rule["rule_id"] = i.Rule.ID

@@ -7,7 +7,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
-	workerUtil "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -65,17 +64,11 @@ func CVEsToMaps(ms []ingestersUtil.Vulnerability,
 	for _, v := range ms {
 		data, rule := v.Split()
 
-		entityId, err := workerUtil.GetEntityIdFromScanID(v.ScanID, string(utils.NEO4JVulnerabilityScan), tx)
-		if err != nil {
-			log.Error().Msgf("Error in getting entityId: %v", err)
-			return nil, err
-		}
-
 		res = append(res, map[string]interface{}{
 			"rule":    utils.ToMap(rule),
 			"data":    utils.ToMap(data),
 			"scan_id": v.ScanID,
-			"node_id": workerUtil.GetVulnerabilityNodeID(data.CveCausedByPackage, rule.CveID, entityId),
+			"node_id": data.CveCausedByPackage+rule.CveID,
 		})
 	}
 	return res, nil

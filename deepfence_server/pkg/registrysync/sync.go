@@ -86,7 +86,7 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r
 		MERGE (n:ContainerImage{node_id:row.node_id})
 		MERGE (s:ImageStub{node_id: row.docker_image_name + "_" + $registry_id, 
 		docker_image_name: row.docker_image_name})
-		MERGE (t:ImageTag{node_id: row.docker_image_name + "_" + row.docker_image_tag + "_" + $registry_id})
+		MERGE (t:ImageTag{node_id: row.docker_image_name + "_" + row.docker_image_tag})
 		MERGE (n) -[:IS]-> (s)
 		MERGE (n) -[:ALIAS]-> (t)
 		MERGE (m:RegistryAccount{node_id:$registry_id})
