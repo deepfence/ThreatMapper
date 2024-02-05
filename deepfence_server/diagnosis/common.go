@@ -108,10 +108,10 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 			continue
 		}
 
-		message := ""
+		message := diagnosticLogsStatusSuccess
 		urlLink, err := mc.ExposeFile(ctx, obj.Key, false, DiagnosisLinkExpiry, url.Values{})
 		if err != nil {
-			log.Error().Err(err).Msg("failed to list console diagnosis logs")
+			log.Error().Err(err).Msg("failed to list diagnosis logs")
 			var minioError utils.MinioError
 			xmlErr := xml.Unmarshal([]byte(err.Error()), &minioError)
 			if xmlErr != nil {

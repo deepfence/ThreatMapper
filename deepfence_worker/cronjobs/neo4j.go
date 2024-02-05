@@ -315,6 +315,32 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	}
 
 	if _, err = session.Run(`
+		MATCH (n:AgentDiagnosticLogs)
+		WHERE n.retries >= 3
+		WITH n LIMIT 10000
+		SET n.status = $new_status`,
+		map[string]interface{}{
+			"time_ms":    dbUpgradeTimeout.Milliseconds(),
+			"new_status": utils.ScanStatusFailed,
+		}, txConfig); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:CloudScannerDiagnosticLogs)
+		WHERE n.retries >= 3
+		WITH n LIMIT 10000
+		SET n.status = $new_status`,
+		map[string]interface{}{
+			"time_ms":    dbUpgradeTimeout.Milliseconds(),
+			"new_status": utils.ScanStatusFailed,
+		}, txConfig); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	if _, err = session.Run(`
 		MATCH (n:AgentVersion)
 		WHERE n.url IS NULL
 		AND NOT exists((n) -[:VERSIONED]-(:Node))
@@ -676,6 +702,21 @@ func RetryScansDB(ctx context.Context, task *asynq.Task) error {
 
 	if _, err = tx.Run(`
 		MATCH (a:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n)
+		WHERE a.status = $old_status
+		AND a.updated_at < TIMESTAMP()-$time_ms
+		AND a.retries < 3
+		WITH a LIMIT 10000
+		SET a.retries = a.retries + 1, a.status=$new_status`,
+		map[string]interface{}{
+			"time_ms":    dbScanTimeout.Milliseconds(),
+			"old_status": utils.ScanStatusInProgress,
+			"new_status": utils.ScanStatusStarting,
+		}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run(`
+		MATCH (a:CloudScannerDiagnosticLogs)
 		WHERE a.status = $old_status
 		AND a.updated_at < TIMESTAMP()-$time_ms
 		AND a.retries < 3
