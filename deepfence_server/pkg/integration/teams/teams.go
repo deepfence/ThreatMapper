@@ -140,34 +140,34 @@ func (t Teams) Sender(in chan *Payload, wg *sync.WaitGroup) {
 	}
 }
 
-func (t Teams) IsValidCredential(ctx context.Context) bool {
+func (t Teams) IsValidCredential(ctx context.Context) (bool, error) {
 	t.client = utils.GetHTTPClient()
 
 	payload := "Test message from Deepfence"
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		log.Info().Msgf("Failed to marshal payload: %v", err)
-		return false
+		return false, nil
 	}
 
 	req, err := http.NewRequest("POST", t.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		log.Info().Msgf("Failed to create HTTP request: %v", err)
-		return false
+		return false, nil
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := t.client.Do(req)
 	if err != nil {
 		log.Info().Msgf("Failed to send data to Teams: %v", err)
-		return false
+		return false, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		log.Info().Msgf("Failed to send data to Teams %s", resp.Status)
-		return false
+		return false, fmt.Errorf("failed to connect to Teams: %s", resp.Status)
 	}
 	resp.Body.Close()
 
-	return true
+	return true, nil
 }

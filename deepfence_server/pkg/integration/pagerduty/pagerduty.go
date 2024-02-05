@@ -160,6 +160,6 @@ func IsValidCreds(p PagerDuty) (bool, error) {
 }
 
 // todo
-func (p PagerDuty) IsValidCredential(ctx context.Context) bool {
-	return true
+func (p PagerDuty) IsValidCredential(ctx context.Context) (bool, error) {
+	return true, nil
 }
