@@ -143,7 +143,12 @@ func (t Teams) Sender(in chan *Payload, wg *sync.WaitGroup) {
 func (t Teams) IsValidCredential(ctx context.Context) (bool, error) {
 	t.client = utils.GetHTTPClient()
 
-	payload := "Test message from Deepfence"
+	payload := Payload{
+		Text:       "Test message from Deepfence",
+		CardType:   "MessageCard",
+		Context:    "http://schema.org/extensions",
+		ThemeColor: "007FFF",
+	}
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		log.Info().Msgf("Failed to marshal payload: %v", err)
