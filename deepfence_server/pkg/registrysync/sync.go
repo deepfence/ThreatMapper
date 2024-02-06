@@ -222,7 +222,7 @@ func SetRegistryAccountSyncing(ctx context.Context, syncing bool, r registry.Reg
 
 func chunkBy(items []model.IngestedContainerImage, chunkSize int) (chunks [][]model.IngestedContainerImage) {
 	for chunkSize < len(items) {
-		items, chunks = items[chunkSize:], append(chunks, items[0:chunkSize:chunkSize])
+		items, chunks = items[chunkSize:], append(chunks, items[:chunkSize])
 	}
 	return append(chunks, items)
 }
