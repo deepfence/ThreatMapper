@@ -61,7 +61,7 @@ importers:
       remark-gfm: ^4.0.0
       resize-observer-polyfill: ^1.5.1
       rollup-plugin-visualizer: ^5.9.2
-      sonner: ^0.6.2
+      sonner: ^1.4.0
       tailwind-preset: workspace:*
       tailwindcss: ^3.3.3
       typescript: ^5.1.6
@@ -91,7 +91,7 @@ importers:
       react-use: 17.4.0_biqbaboplfbrettd7655fr4n2y
       rehype-sanitize: 6.0.0
       remark-gfm: 4.0.0
-      sonner: 0.6.2_biqbaboplfbrettd7655fr4n2y
+      sonner: 1.4.0_biqbaboplfbrettd7655fr4n2y
       tailwind-preset: link:../../packages/tailwind-preset
       ui-components: link:../../packages/ui-components
     devDependencies:
@@ -4658,7 +4658,7 @@ packages:
       dom-accessibility-api: 0.5.16
       lodash: 4.17.21
       redent: 3.0.0
-      vitest: 0.34.1_jsdom@22.1.0+less@4.2.0
+      vitest: 0.34.1_playwright@1.37.0
     dev: true
 
   /@testing-library/react/14.0.0_biqbaboplfbrettd7655fr4n2y:
@@ -5265,7 +5265,7 @@ packages:
       '@babel/plugin-transform-react-jsx-self': 7.22.5_@babel+core@7.22.10
       '@babel/plugin-transform-react-jsx-source': 7.22.5_@babel+core@7.22.10
       react-refresh: 0.14.0
-      vite: 4.4.9_less@4.2.0
+      vite: 4.4.9
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -5281,7 +5281,7 @@ packages:
       magic-string: 0.30.2
       picocolors: 1.0.0
       std-env: 3.3.3
-      vitest: 0.34.1_jsdom@22.1.0+less@4.2.0
+      vitest: 0.34.1_playwright@1.37.0
     dev: true
 
   /@vitest/expect/0.34.1:
@@ -11794,8 +11794,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /sonner/0.6.2_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-bh4FWhYoNN481ZIW94W4e0kSLBTMGislYg2YXvDS1px1AJJz4erQe9jHV8s5pS1VMVDgfh3CslNSFLaU6Ldrnw==}
+  /sonner/1.4.0_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-nvkTsIuOmi9e5Wz5If8ldasJjZNVfwiXYijBi2dbijvTQnQppvMcXTFNxL/NUFWlI2yJ1JX7TREDsg+gYm9WyA==}
     peerDependencies:
       react: ^18.0.0
       react-dom: ^18.0.0

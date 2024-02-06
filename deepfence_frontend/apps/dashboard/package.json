@@ -37,7 +37,7 @@
     "react-use": "^17.4.0",
     "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.0",
-    "sonner": "^0.6.2",
+    "sonner": "^1.4.0",
     "tailwind-preset": "workspace:*",
     "ui-components": "workspace:*"
   },
