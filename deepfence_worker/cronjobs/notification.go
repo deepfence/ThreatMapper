@@ -25,20 +25,21 @@ import (
 
 const NOTIFICATION_INTERVAL = 60000 //in milliseconds
 
-var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
-	"cve_severity":          "Severity",
-	"cve_id":                "CVE Id",
-	"cve_description":       "Description",
-	"cve_attack_vector":     "Attack Vector",
-	"cve_container_layer":   "Container Layer",
-	"cve_overall_score":     "CVE Overall Score",
-	"cve_type":              "CVE Type",
-	"cve_link":              "CVE Link",
-	"cve_fixed_in":          "CVE Fixed In",
-	"cve_cvss_score":        "CVSS Score",
-	"cve_caused_by_package": "CVE Caused By Package",
-	"node_id":               "Node ID",
-	"updated_at":            "updated_at"},
+var fieldsMap = map[string]map[string]string{
+	utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
+		"cve_severity":          "Severity",
+		"cve_id":                "CVE Id",
+		"cve_description":       "Description",
+		"cve_attack_vector":     "Attack Vector",
+		"cve_container_layer":   "Container Layer",
+		"cve_overall_score":     "CVE Overall Score",
+		"cve_type":              "CVE Type",
+		"cve_link":              "CVE Link",
+		"cve_fixed_in":          "CVE Fixed In",
+		"cve_cvss_score":        "CVSS Score",
+		"cve_caused_by_package": "CVE Caused By Package",
+		"node_id":               "Node ID",
+		"updated_at":            "updated_at"},
 	utils.ScanTypeDetectedNode[utils.NEO4JSecretScan]: {
 		"node_id":            "Node ID",
 		"full_filename":      "File Name",
@@ -121,28 +122,27 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 	// notificationLock.Lock()
 	// defer notificationLock.Unlock()
 
-	namespace, _ := directory.ExtractNamespace(ctx)
-	ns := string(namespace)
+	log := log.WithCtx(ctx)
 
 	start := time.Now()
-	log.Info().Str("namespace", ns).Msgf("SendNotifications task for timestamp %s starting", string(task.Payload()))
-	defer log.Info().Str("namespace", ns).Msgf("SendNotifications task for timestamp %s ended elapsed: %s",
+	log.Info().Msgf("SendNotifications task for timestamp %s starting", string(task.Payload()))
+	defer log.Info().Msgf("SendNotifications task for timestamp %s ended elapsed: %s",
 		string(task.Payload()), time.Now().Sub(start))
 
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		log.Error().Str("namespace", ns).Msgf("Error getting postgresCtx: %v", err)
+		log.Error().Msgf("Error getting postgresCtx: %v", err)
 		return nil
 	}
 	integrations, err := pgClient.GetIntegrations(ctx)
 	if err != nil {
-		log.Error().Str("namespace", ns).Msgf("Error getting postgresCtx: %v", err)
+		log.Error().Msgf("Error getting postgresCtx: %v", err)
 		return nil
 	}
 
 	// check if any integrations are configured
 	if len(integrations) <= 0 {
-		log.Warn().Str("namespace", ns).Msg("No integrations configured to notify")
+		log.Warn().Msg("No integrations configured to notify")
 		return nil
 	}
 
@@ -152,7 +152,7 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 	for _, integrationRow := range integrations {
 		if integrationRow.ErrorMsg.String != "" &&
 			time.Since(integrationRow.LastSentTime.Time) < NotificationErrorBackoff {
-			log.Info().Str("namespace", ns).Msgf("Skipping integration for %s rowId: %d due to error: %s "+
+			log.Info().Msgf("Skipping integration for %s rowId: %d due to error: %s "+
 				"occured at last attempt, %s ago",
 				integrationRow.IntegrationType, integrationRow.ID,
 				integrationRow.ErrorMsg.String, time.Since(integrationRow.LastSentTime.Time))
@@ -162,12 +162,12 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 
 		go func(integration postgresql_db.Integration) {
 			defer wg.Done()
-			log.Info().Str("namespace", ns).Msgf("Processing integration for %s rowId: %d",
+			log.Info().Msgf("Processing integration for %s rowId: %d",
 				integration.IntegrationType, integration.ID)
 
 			err := processIntegrationRow(integration, ctx, task)
 
-			log.Info().Str("namespace", ns).Msgf("Processed integration for %s rowId: %d",
+			log.Info().Msgf("Processed integration for %s rowId: %d",
 				integration.IntegrationType, integration.ID)
 
 			update_row := err != nil || (err == nil && integration.ErrorMsg.Valid)
@@ -276,6 +276,9 @@ func injectNodeDatamap(results []map[string]interface{}, common model.ScanResult
 }
 
 func processIntegration[T any](ctx context.Context, task *asynq.Task, integrationRow postgresql_db.Integration) error {
+
+	log := log.WithCtx(ctx)
+
 	startTime := time.Now()
 	var filters model.IntegrationFilters
 	err := json.Unmarshal(integrationRow.Filters, &filters)

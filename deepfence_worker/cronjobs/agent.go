@@ -43,6 +43,9 @@ func init() {
 }
 
 func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	log.Info().Msg("Start agent version check")
 
 	resp, err := http.Get(listing_url)

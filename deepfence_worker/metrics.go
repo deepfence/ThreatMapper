@@ -92,18 +92,20 @@ func (collector *WorkerCollector) Collect(ch chan<- prometheus.Metric) {
 		ctx := directory.NewContextWithNameSpace(namespace)
 		ns := string(namespace)
 
-		log.Info().Str("namespace", ns).Msg("collect asynq tasks counts")
+		log := log.WithCtx(ctx)
+
+		log.Info().Msg("collect asynq tasks counts")
 
 		worker, err := directory.Worker(ctx)
 		if err != nil {
-			log.Error().Str("namespace", ns).Err(err).Msg("failed to get worker instance")
+			log.Error().Err(err).Msg("failed to get worker instance")
 			return
 		}
 
 		// get all the queues
 		queues, err := worker.Inspector().Queues()
 		if err != nil {
-			log.Error().Str("namespace", ns).Err(err).Msg("failed to get worker queues")
+			log.Error().Err(err).Msg("failed to get worker queues")
 			return
 		}
 
@@ -122,7 +124,7 @@ func (collector *WorkerCollector) Collect(ch chan<- prometheus.Metric) {
 			// active tasks
 			tasks, err = worker.Inspector().ListActiveTasks(q, pageSize)
 			if err != nil {
-				log.Error().Str("namespace", ns).Err(err).Msgf("failed to get active tasks from queue %s", q)
+				log.Error().Err(err).Msgf("failed to get active tasks from queue %s", q)
 			} else {
 				for _, task := range tasks {
 					status.Inc(task.Type, task.Queue, task.State)
@@ -132,7 +134,7 @@ func (collector *WorkerCollector) Collect(ch chan<- prometheus.Metric) {
 			// pending tasks
 			tasks, err = worker.Inspector().ListPendingTasks(q, pageSize)
 			if err != nil {
-				log.Error().Str("namespace", ns).Err(err).Msgf("failed to get pending tasks from queue %s", q)
+				log.Error().Err(err).Msgf("failed to get pending tasks from queue %s", q)
 			} else {
 				for _, task := range tasks {
 					status.Inc(task.Type, task.Queue, task.State)
@@ -142,7 +144,7 @@ func (collector *WorkerCollector) Collect(ch chan<- prometheus.Metric) {
 			// retry tasks
 			tasks, err = worker.Inspector().ListRetryTasks(q, pageSize)
 			if err != nil {
-				log.Error().Str("namespace", ns).Err(err).Msgf("failed to get retry tasks from queue %s", q)
+				log.Error().Err(err).Msgf("failed to get retry tasks from queue %s", q)
 			} else {
 				for _, task := range tasks {
 					status.Inc(task.Type, task.Queue, task.State)
@@ -152,7 +154,7 @@ func (collector *WorkerCollector) Collect(ch chan<- prometheus.Metric) {
 			// archived tasks
 			tasks, err = worker.Inspector().ListArchivedTasks(q, pageSize)
 			if err != nil {
-				log.Error().Str("namespace", ns).Err(err).Msgf("failed to get archived tasks from queue %s", q)
+				log.Error().Err(err).Msgf("failed to get archived tasks from queue %s", q)
 			} else {
 				for _, task := range tasks {
 					status.Inc(task.Type, task.Queue, task.State)
@@ -162,7 +164,7 @@ func (collector *WorkerCollector) Collect(ch chan<- prometheus.Metric) {
 			// completed tasks
 			tasks, err = worker.Inspector().ListCompletedTasks(q, pageSize)
 			if err != nil {
-				log.Error().Str("namespace", ns).Err(err).Msgf("failed to get completed tasks from queue %s", q)
+				log.Error().Err(err).Msgf("failed to get completed tasks from queue %s", q)
 			} else {
 				for _, task := range tasks {
 					status.Inc(task.Type, task.Queue, task.State)

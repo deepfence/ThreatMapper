@@ -28,17 +28,16 @@ Allocator shared across all workers instances per namespace
 */
 func (c ConsoleController) TriggerConsoleControls(ctx context.Context, t *asynq.Task) error {
 
-	ns, _ := directory.ExtractNamespace(ctx)
-	namespace := string(ns)
+	log := log.WithCtx(ctx)
 
 	allocatable := MaxAllocable(ctx, c.MaxWorkload)
 
-	log.Info().Str("namespace", namespace).
+	log.Info().
 		Msgf("Trigger console actions #capacity: %d", allocatable)
 
 	// skip if capacity is zero
 	if allocatable <= 0 {
-		log.Info().Str("namespace", namespace).
+		log.Info().
 			Msgf("Skip console actions #capacity: %d", allocatable)
 		return nil
 	}
@@ -46,11 +45,11 @@ func (c ConsoleController) TriggerConsoleControls(ctx context.Context, t *asynq.
 	actions, errs := controls.GetAgentActions(ctx, ConsoleAgentId, int(allocatable))
 	for _, e := range errs {
 		if e != nil {
-			log.Error().Str("namespace", namespace).Msgf(e.Error())
+			log.Error().Msgf(e.Error())
 		}
 	}
 
-	log.Info().Str("namespace", namespace).
+	log.Info().
 		Msgf("Trigger console actions got #actions: %d", len(actions))
 
 	for _, action := range actions {
@@ -76,18 +75,17 @@ func shouldInclude(name string) bool {
 
 func MaxAllocable(ctx context.Context, max int) int {
 
-	ns, _ := directory.ExtractNamespace(ctx)
-	namespace := string(ns)
+	log := log.WithCtx(ctx)
 
 	worker, err := directory.Worker(ctx)
 	if err != nil {
-		log.Error().Str("namespace", namespace).Err(err).Msgf("failed to get worker instance")
+		log.Error().Err(err).Msgf("failed to get worker instance")
 		return 0
 	}
 
 	queues, err := worker.Inspector().Queues()
 	if err != nil {
-		log.Error().Str("namespace", namespace).Err(err).Msgf("failed to get worker queues")
+		log.Error().Err(err).Msgf("failed to get worker queues")
 		return 0
 	}
 
@@ -100,21 +98,21 @@ func MaxAllocable(ctx context.Context, max int) int {
 		// active tasks
 		active, err := worker.Inspector().ListActiveTasks(q, asynq.PageSize(5000))
 		if err != nil {
-			log.Error().Str("namespace", namespace).Err(err).Msgf("failed to get active tasks from queue %s", q)
+			log.Error().Err(err).Msgf("failed to get active tasks from queue %s", q)
 		} else {
 			tasks = append(tasks, active...)
 		}
 		// pending tasks
 		pending, err := worker.Inspector().ListPendingTasks(q, asynq.PageSize(5000))
 		if err != nil {
-			log.Error().Str("namespace", namespace).Err(err).Msgf("failed to get pending tasks from queue %s", q)
+			log.Error().Err(err).Msgf("failed to get pending tasks from queue %s", q)
 		} else {
 			tasks = append(tasks, pending...)
 		}
 		// retry tasks
 		retry, err := worker.Inspector().ListRetryTasks(q, asynq.PageSize(5000))
 		if err != nil {
-			log.Error().Str("namespace", namespace).Err(err).Msgf("failed to get retry tasks from queue %s", q)
+			log.Error().Err(err).Msgf("failed to get retry tasks from queue %s", q)
 		} else {
 			tasks = append(tasks, retry...)
 		}

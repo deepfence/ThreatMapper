@@ -9,6 +9,9 @@ import (
 )
 
 func RedisRewriteAOF(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	rdb, err := directory.RedisClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())

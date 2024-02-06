@@ -60,6 +60,8 @@ func generateReport(ctx context.Context, params sdkUtils.ReportParams) (string, 
 
 func GenerateReport(ctx context.Context, task *asynq.Task) error {
 
+	log := log.WithCtx(ctx)
+
 	var params sdkUtils.ReportParams
 
 	tenantID, err := directory.ExtractNamespace(ctx)
@@ -71,21 +73,21 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 		return errors.New("tenant-id/namespace is empty")
 	}
 
-	log.Info().Str("namespace", string(tenantID)).Msgf("payload: %s ", string(task.Payload()))
+	log.Info().Msgf("payload: %s ", string(task.Payload()))
 
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {
-		log.Error().Str("namespace", string(tenantID)).Err(err).Msgf("error decoding report request payload %s", string(task.Payload()))
+		log.Error().Err(err).Msgf("error decoding report request payload %s", string(task.Payload()))
 	}
 
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		log.Error().Str("namespace", string(tenantID)).Msg(err.Error())
+		log.Error().Msg(err.Error())
 		return nil
 	}
 
 	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
-		log.Error().Str("namespace", string(tenantID)).Msg(err.Error())
+		log.Error().Msg(err.Error())
 		return nil
 	}
 	defer session.Close()
@@ -95,7 +97,7 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 	// generate reportName
 	localReportPath, err := generateReport(ctx, params)
 	if err != nil {
-		log.Error().Str("namespace", string(tenantID)).Err(err).Msgf("failed to generate report with params %+v", params)
+		log.Error().Err(err).Msgf("failed to generate report with params %+v", params)
 		updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.ScanStatusFailed)
 		return nil
 	}
@@ -107,7 +109,7 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 	// upload file to minio
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
-		log.Error().Str("namespace", string(tenantID)).Err(err).Msg("failed to get minio client")
+		log.Error().Err(err).Msg("failed to get minio client")
 		return nil
 	}
 
@@ -115,7 +117,7 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 	res, err := mc.UploadLocalFile(ctx, reportName,
 		localReportPath, false, putOpts(sdkUtils.ReportType(params.ReportType)))
 	if err != nil {
-		log.Error().Str("namespace", string(tenantID)).Err(err).Msg("failed to upload file to minio")
+		log.Error().Err(err).Msg("failed to upload file to minio")
 		return nil
 	}
 
@@ -128,7 +130,7 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 		log.Error().Err(err)
 		return err
 	}
-	log.Info().Str("namespace", string(tenantID)).Msgf("exposed report URL: %s", url)
+	log.Info().Msgf("exposed report URL: %s", url)
 
 	updateReportState(ctx, session, params.ReportID, url, res.Key, sdkUtils.ScanStatusSuccess)
 
@@ -136,6 +138,9 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 }
 
 func updateReportState(ctx context.Context, session neo4j.Session, reportId, url, path, status string) {
+
+	log := log.WithCtx(ctx)
+
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())

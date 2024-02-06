@@ -39,6 +39,8 @@ func NewSecretScanner(ingest chan *kgo.Record) SecretScan {
 
 func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error {
 
+	log := log.WithCtx(ctx)
+
 	var params utils.SecretScanParameters
 
 	log.Info().Msgf("StopSecretScan, payload: %s ", string(task.Payload()))
@@ -66,6 +68,8 @@ func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error 
 
 func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error {
 
+	log := log.WithCtx(ctx)
+
 	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
@@ -75,17 +79,17 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 		return nil
 	}
 
-	log.Info().Str("namespace", string(tenantID)).Msgf("payload: %s ", string(task.Payload()))
+	log.Info().Msgf("payload: %s ", string(task.Payload()))
 
 	var params utils.SecretScanParameters
 
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {
-		log.Error().Str("namespace", string(tenantID)).Msg(err.Error())
+		log.Error().Msg(err.Error())
 		return nil
 	}
 
 	if params.RegistryID == "" {
-		log.Error().Str("namespace", string(tenantID)).Msgf("registry id is empty in params %+v", params)
+		log.Error().Msgf("registry id is empty in params %+v", params)
 		return nil
 	}
 
@@ -116,7 +120,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	ScanMap.Store(params.ScanID, scanCtx)
 
 	defer func() {
-		log.Info().Str("namespace", string(tenantID)).Msgf("Removing from scan map, scan_id: %s", params.ScanID)
+		log.Info().Msgf("Removing from scan map, scan_id: %s", params.ScanID)
 		ScanMap.Delete(params.ScanID)
 		res <- hardErr
 		close(res)
@@ -137,7 +141,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	}
 
 	defer func() {
-		log.Info().Str("namespace", string(tenantID)).Msgf("remove auth directory %s", authDir)
+		log.Info().Msgf("remove auth directory %s", authDir)
 		if authDir == "" {
 			return
 		}
@@ -176,11 +180,11 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 			"docker://" + imageName, "docker-archive:" + imgTar}...)
 	}
 
-	log.Info().Str("namespace", string(tenantID)).Msgf("command: %s", cmd.String())
+	log.Info().Msgf("command: %s", cmd.String())
 
 	if out, err := workerUtils.RunCommand(cmd); err != nil {
-		log.Error().Str("namespace", string(tenantID)).Err(err).Msg(cmd.String())
-		log.Error().Str("namespace", string(tenantID)).Msgf("output: %s", out.String())
+		log.Error().Err(err).Msg(cmd.String())
+		log.Error().Msgf("output: %s", out.String())
 		hardErr = err
 		return nil
 	}
@@ -193,7 +197,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	// init secret scan
 	scanResult, err := secretScan.ExtractAndScanFromTar(dir, imageName, scanCtx)
 	if err != nil {
-		log.Error().Str("namespace", string(tenantID)).Msg(err.Error())
+		log.Error().Msg(err.Error())
 		hardErr = err
 		return nil
 	}
