@@ -19,6 +19,9 @@ import (
 )
 
 func RunScheduledTasks(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	messagePayload := map[string]interface{}{}
 	if err := json.Unmarshal(task.Payload(), &messagePayload); err != nil {
 		log.Error().Msg(err.Error())
@@ -57,6 +60,9 @@ var (
 )
 
 func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]interface{}) error {
+
+	log := log.WithCtx(ctx)
+
 	payload := messagePayload["payload"].(map[string]interface{})
 	nodeType := payload["node_type"].(string)
 	isPriority := false
@@ -156,6 +162,9 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 }
 
 func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]interface{}) error {
+
+	log := log.WithCtx(ctx)
+
 	var payload model.ScheduleTaskPayload
 	val := messagePayload["payload"].(map[string]interface{})
 	payloadRaw, err := json.Marshal(val)

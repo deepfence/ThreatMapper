@@ -127,6 +127,9 @@ func (s *Scheduler) updateScheduledJobs() {
 }
 
 func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
+
+	log := log.WithCtx(ctx)
+
 	// Get scheduled tasks
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
@@ -184,11 +187,14 @@ func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
 }
 
 func (s *Scheduler) addCronJobs(ctx context.Context) error {
+
+	log := log.WithCtx(ctx)
+
 	namespace, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
 	}
-	log.Info().Msgf("Register cronjobs for namespace %v", namespace)
+	log.Info().Msg("Register cronjobs")
 
 	s.jobs.CronJobsMutex.Lock()
 	defer s.jobs.CronJobsMutex.Unlock()
@@ -332,6 +338,9 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 }
 
 func (s *Scheduler) startInitJobs(ctx context.Context) error {
+
+	log := log.WithCtx(ctx)
+
 	namespace, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
@@ -339,12 +348,12 @@ func (s *Scheduler) startInitJobs(ctx context.Context) error {
 
 	// initialize sql database
 	if err := initSqlDatabase(ctx); err != nil {
-		log.Error().Err(err).Msgf("failed to initialize sql database for namespace %s", namespace)
+		log.Error().Err(err).Msg("failed to initialize sql database")
 	}
 
 	// initialize neo4j database
 	if err := initNeo4jDatabase(ctx); err != nil {
-		log.Error().Err(err).Msgf("failed to initialize neo4j database for namespace %s", namespace)
+		log.Error().Err(err).Msg("failed to initialize neo4j database")
 	}
 
 	log.Info().Msgf("Start immediate cronjobs for namespace %s", namespace)
@@ -367,8 +376,13 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID,
 	schedule postgresqlDb.Scheduler, payload json.RawMessage) func() {
 	log.Info().Msgf("Registering task: %s, %s for namespace %s", schedule.Description, schedule.CronExpr, namespace)
 	return func() {
+		ctx := directory.NewContextWithNameSpace(namespace)
+
+		log := log.WithCtx(ctx)
+
 		log.Info().Msgf("Enqueuing task: %s, %s for namespace %s",
 			schedule.Description, schedule.CronExpr, namespace)
+
 		message := map[string]interface{}{
 			"action":      schedule.Action,
 			"id":          schedule.ID,
@@ -377,7 +391,7 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID,
 			"is_system":   schedule.IsSystem,
 		}
 		messageJson, _ := json.Marshal(message)
-		worker, err := directory.Worker(directory.NewContextWithNameSpace(namespace))
+		worker, err := directory.Worker(ctx)
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return
@@ -390,12 +404,16 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID,
 }
 
 func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string, unique bool, taskOpts ...asynq.Option) func() {
-	ns := string(namespace)
 	return func() {
-		log.Info().Str("namespace", ns).Msgf("Enqueuing task %s", task)
-		worker, err := directory.Worker(directory.NewContextWithNameSpace(namespace))
+		ctx := directory.NewContextWithNameSpace(namespace)
+
+		log := log.WithCtx(ctx)
+
+		log.Info().Msgf("Enqueuing task %s", task)
+
+		worker, err := directory.Worker(ctx)
 		if err != nil {
-			log.Error().Str("namespace", ns).Msg(err.Error())
+			log.Error().Msg(err.Error())
 			return
 		}
 
@@ -405,9 +423,9 @@ func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string, un
 			err = worker.EnqueueUnique(task, []byte(strconv.FormatInt(utils.GetTimestamp(), 10)), taskOpts...)
 		}
 		if errors.Is(err, asynq.ErrTaskIDConflict) {
-			log.Warn().Str("namespace", ns).Msgf("unique task true, skip enqueue task %s %s", task, err.Error())
+			log.Warn().Msgf("unique task true, skip enqueue task %s %s", task, err.Error())
 		} else if err != nil {
-			log.Error().Str("namespace", ns).Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
 	}
 }

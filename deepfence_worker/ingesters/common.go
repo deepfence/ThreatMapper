@@ -16,14 +16,16 @@ import (
 func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data []Status) error {
 	return func(ns string, data []Status) error {
 		ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
+
+		log := log.WithCtx(ctx)
+
 		driver, err := directory.Neo4jClient(ctx)
+		if err != nil {
+			return err
+		}
 
 		if len(data) == 0 {
 			return nil
-		}
-
-		if err != nil {
-			return err
 		}
 
 		session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})

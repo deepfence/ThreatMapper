@@ -92,7 +92,7 @@ func CommitFuncCloudResource(ns string, cs []ingestersUtil.CloudResource) error 
 		}
 	}
 
-	log.Debug().Msgf("cloud resource ingest took: %v", time.Until(start))
+	log.Debug().Ctx(ctx).Msgf("cloud resource ingest took: %v", time.Until(start))
 
 	return tx.Commit()
 }

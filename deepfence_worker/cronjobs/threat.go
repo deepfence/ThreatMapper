@@ -26,23 +26,27 @@ func ComputeThreat(ctx context.Context, task *asynq.Task) error {
 
 	if exploitabilityRunning.CompareAndSwap(false, true) {
 		defer exploitabilityRunning.Store(false)
-		if err := computeThreatExploitability(session); err != nil {
+		if err := computeThreatExploitability(ctx, session); err != nil {
 			return err
 		}
 	}
 
 	if threatGraphRunning.CompareAndSwap(false, true) {
 		defer threatGraphRunning.Store(false)
-		return computeThreatGraph(session)
+		return computeThreatGraph(ctx, session)
 	}
 
 	return nil
 
 }
 
-func computeThreatExploitability(session neo4j.Session) error {
+func computeThreatExploitability(ctx context.Context, session neo4j.Session) error {
+
+	log := log.WithCtx(ctx)
+
 	log.Info().Msgf("Compute threat Starting")
 	defer log.Info().Msgf("Compute threat Done")
+
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(600 * time.Second))
 	if err != nil {
 		return err
@@ -110,7 +114,13 @@ func computeThreatExploitability(session neo4j.Session) error {
 	return tx.Commit()
 }
 
-func computeThreatGraph(session neo4j.Session) error {
+func computeThreatGraph(ctx context.Context, session neo4j.Session) error {
+
+	log := log.WithCtx(ctx)
+
+	log.Info().Msgf("Compute threat graph Starting")
+	defer log.Info().Msgf("Compute threat graph Done")
+
 	txConfig := neo4j.WithTxTimeout(600 * time.Second)
 
 	var err error

@@ -26,6 +26,8 @@ var (
 
 func generatePDF(ctx context.Context, params utils.ReportParams) (string, error) {
 
+	log := log.WithCtx(ctx)
+
 	var (
 		buffer *bytes.Buffer
 		err    error
@@ -87,6 +89,8 @@ func generatePDF(ctx context.Context, params utils.ReportParams) (string, error)
 
 func vulnerabilityPDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffer, error) {
 
+	log := log.WithCtx(ctx)
+
 	data, err := getVulnerabilityData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get vulnerabilities info")
@@ -105,6 +109,8 @@ func vulnerabilityPDF(ctx context.Context, params utils.ReportParams) (*bytes.Bu
 }
 
 func secretPDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffer, error) {
+
+	log := log.WithCtx(ctx)
 
 	data, err := getSecretData(ctx, params)
 	if err != nil {
@@ -125,6 +131,8 @@ func secretPDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffer, e
 
 func malwarePDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffer, error) {
 
+	log := log.WithCtx(ctx)
+
 	data, err := getMalwareData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get malware info")
@@ -143,6 +151,8 @@ func malwarePDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffer, 
 
 func compliancePDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffer, error) {
 
+	log := log.WithCtx(ctx)
+
 	data, err := getComplianceData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get compliance info")
@@ -160,6 +170,8 @@ func compliancePDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffe
 }
 
 func cloudCompliancePDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffer, error) {
+
+	log := log.WithCtx(ctx)
 
 	data, err := getCloudComplianceData(ctx, params)
 	if err != nil {

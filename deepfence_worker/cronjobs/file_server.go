@@ -12,6 +12,9 @@ import (
 )
 
 func CleanUpDiagnosisLogs(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		return err

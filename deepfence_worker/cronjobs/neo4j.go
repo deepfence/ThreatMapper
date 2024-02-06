@@ -70,6 +70,9 @@ func getPushBackValue(session neo4j.Session) int32 {
 var cleanUpRunning = atomic.Bool{}
 
 func CleanUpDB(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	if cleanUpRunning.Swap(true) {
 		return nil
 	}
@@ -442,6 +445,9 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 var linkCloudResourcesRunning = atomic.Bool{}
 
 func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	if linkCloudResourcesRunning.Swap(true) {
 		return nil
 	}
@@ -603,6 +609,9 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 var linkNodesRunning = atomic.Bool{}
 
 func LinkNodes(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	if linkNodesRunning.Swap(true) {
 		return nil
 	}
@@ -666,6 +675,8 @@ func LinkNodes(ctx context.Context, task *asynq.Task) error {
 }
 
 func RetryScansDB(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
 
 	log.Info().Msgf("Retry scan DB Starting")
 	defer log.Info().Msgf("Retry scan DB Done")
@@ -734,6 +745,9 @@ func RetryScansDB(ctx context.Context, task *asynq.Task) error {
 }
 
 func RetryUpgradeAgent(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	log.Info().Msgf("Retry upgrade DB Starting")
 	defer log.Info().Msgf("Retry upgrade DB Done")
 	nc, err := directory.Neo4jClient(ctx)

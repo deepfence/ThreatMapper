@@ -18,6 +18,9 @@ import (
 )
 
 func SyncRegistry(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("unable to get postgres client: %v", err)
@@ -72,6 +75,8 @@ func SyncRegistry(ctx context.Context, task *asynq.Task) error {
 
 func syncRegistry(ctx context.Context, pgClient *postgresql_db.Queries, registries []postgresql_db.GetContainerRegistriesRow) error {
 
+	log := log.WithCtx(ctx)
+
 	enqueuer, err := directory.Worker(ctx)
 	if err != nil {
 		return err
@@ -107,6 +112,9 @@ func syncRegistry(ctx context.Context, pgClient *postgresql_db.Queries, registri
 
 // SyncRegistryPostgresNeo4jTask Synchronize registry between postgres and neo4j
 func SyncRegistryPostgresNeo4jTask(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("unable to get postgres client: %v", err)
