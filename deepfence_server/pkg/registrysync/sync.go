@@ -3,8 +3,10 @@ package registrysync
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -16,7 +18,12 @@ import (
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 )
 
+var ChunkSize = 500
+
 func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgID int32) error {
+
+	log := log.WithCtx(ctx)
+
 	// set registry account syncing
 	err := SetRegistryAccountSyncing(ctx, true, r, pgID)
 	if err != nil {
@@ -57,8 +64,39 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	if err != nil {
 		return err
 	}
-	log.Info().Msgf("sync registry id=%d type=%s found %d images", pgID, r.GetRegistryType(), len(list))
-	return insertToNeo4j(ctx, list, r, pgID)
+
+	log.Info().Msgf("sync registry id=%d type=%s found %d images",
+		pgID, r.GetRegistryType(), len(list))
+
+	// batch insert to neo4j with retries
+	chunks := chunkBy(list, ChunkSize)
+
+	var errs []error
+	for i := range chunks {
+
+		log.Debug().Msgf("sync registry insert batch %d id=%d type=%s batch=%d",
+			i, pgID, r.GetRegistryType(), len(chunks[i]))
+
+		op := func() error {
+			return insertToNeo4j(ctx, chunks[i], r, pgID)
+		}
+
+		notify := func(err error, d time.Duration) {
+			log.Error().Err(err).Msgf("waited %s before retry inserting batch %d id=%d type=%s error: %s",
+				d, i, pgID, r.GetRegistryType(), err)
+		}
+
+		bf := backoff.NewConstantBackOff(5 * time.Second)
+
+		err := backoff.RetryNotify(op, backoff.WithMaxRetries(bf, 3), notify)
+		if err != nil {
+			log.Error().Err(err).Msgf("failed to insert registry images batch %d id=%d type=%s",
+				i, pgID, r.GetRegistryType())
+			errs = append(errs, err)
+		}
+	}
+
+	return errors.Join(errs...)
 }
 
 func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r registry.Registry, pgID int32) error {
@@ -80,29 +118,33 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r
 	defer tx.Close()
 
 	imageMap := RegistryImagesToMaps(images)
+
 	registryID := utils.GetRegistryID(r.GetRegistryType(), r.GetNamespace(), pgID)
-	_, err = tx.Run(`
-		UNWIND $batch as row
-		MERGE (n:ContainerImage{node_id:row.node_id})
-		MERGE (s:ImageStub{node_id: row.docker_image_name + "_" + $registry_id, 
-		docker_image_name: row.docker_image_name})
-		MERGE (t:ImageTag{node_id: row.docker_image_name + "_" + row.docker_image_tag})
-		MERGE (n) -[:IS]-> (s)
-		MERGE (n) -[:ALIAS]-> (t)
-		MERGE (m:RegistryAccount{node_id:$registry_id})
-		MERGE (m) -[:HOSTS]-> (n)
-		MERGE (m) -[:HOSTS]-> (s)
-		SET n+= row, n.updated_at = TIMESTAMP(),
-		m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
-		n.node_type='container_image',
-		m.registry_type=$registry_type,
-		n.pseudo=false,
-		n.active=true,
-		n.docker_image_tag_list = REDUCE(distinctElements = [], element IN COALESCE(n.docker_image_tag_list, []) + (row.docker_image_name+":"+row.docker_image_tag) | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
-		n.node_name=n.docker_image_name+":"+n.docker_image_tag+" ("+n.short_image_id+")",
-		s.updated_at = TIMESTAMP(),
-		s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
-		t.updated_at = TIMESTAMP()`,
+
+	insertQuery := `
+	UNWIND $batch as row
+	MERGE (n:ContainerImage{node_id:row.node_id})
+	MERGE (s:ImageStub{node_id: row.docker_image_name + "_" + $registry_id, 
+	docker_image_name: row.docker_image_name})
+	MERGE (t:ImageTag{node_id: row.docker_image_name + "_" + row.docker_image_tag})
+	MERGE (n) -[:IS]-> (s)
+	MERGE (n) -[:ALIAS]-> (t)
+	MERGE (m:RegistryAccount{node_id:$registry_id})
+	MERGE (m) -[:HOSTS]-> (n)
+	MERGE (m) -[:HOSTS]-> (s)
+	SET n+= row, n.updated_at = TIMESTAMP(),
+	m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
+	n.node_type='container_image',
+	m.registry_type=$registry_type,
+	n.pseudo=false,
+	n.active=true,
+	n.docker_image_tag_list = REDUCE(distinctElements = [], element IN COALESCE(n.docker_image_tag_list, []) + (row.docker_image_name+":"+row.docker_image_tag) | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
+	n.node_name=n.docker_image_name+":"+n.docker_image_tag+" ("+n.short_image_id+")",
+	s.updated_at = TIMESTAMP(),
+	s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
+	t.updated_at = TIMESTAMP()`
+
+	_, err = tx.Run(insertQuery,
 		map[string]interface{}{
 			"batch": imageMap, "registry_id": registryID,
 			"pgId": pgID, "registry_type": r.GetRegistryType(),
@@ -176,4 +218,11 @@ func SetRegistryAccountSyncing(ctx context.Context, syncing bool, r registry.Reg
 	}
 
 	return tx.Commit()
+}
+
+func chunkBy(items []model.IngestedContainerImage, chunkSize int) (chunks [][]model.IngestedContainerImage) {
+	for chunkSize < len(items) {
+		items, chunks = items[chunkSize:], append(chunks, items[:chunkSize])
+	}
+	return append(chunks, items)
 }

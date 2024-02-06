@@ -10,6 +10,7 @@ require (
 	github.com/andygrunwald/go-jira v1.16.0
 	github.com/aws/aws-sdk-go v1.49.16
 	github.com/casbin/casbin/v2 v2.81.0
+	github.com/cenkalti/backoff/v4 v4.2.1
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/docker/docker v24.0.7+incompatible
 	github.com/go-chi/chi/v5 v5.0.8
@@ -62,7 +63,6 @@ require (
 	github.com/XSAM/otelsql v0.27.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/casbin/govaluate v1.1.0 // indirect
-	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
