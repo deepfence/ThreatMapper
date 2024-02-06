@@ -57,6 +57,6 @@ func (g GoogleChronicle) SendNotification(ctx context.Context, message string, e
 }
 
 // todo
-func (g GoogleChronicle) IsValidCredential(ctx context.Context) bool {
-	return true
+func (g GoogleChronicle) IsValidCredential(ctx context.Context) (bool, error) {
+	return true, nil
 }

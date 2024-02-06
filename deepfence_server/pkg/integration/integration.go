@@ -70,5 +70,5 @@ type Integration interface {
 	// extras are additional fields that are not part of the message
 	SendNotification(ctx context.Context, message string, extras map[string]interface{}) error
 	ValidateConfig(*validator.Validate) error
-	IsValidCredential(ctx context.Context) bool
+	IsValidCredential(ctx context.Context) (bool, error)
 }

@@ -83,6 +83,6 @@ func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[
 }
 
 // todo
-func (s SumoLogic) IsValidCredential(ctx context.Context) bool {
-	return true
+func (s SumoLogic) IsValidCredential(ctx context.Context) (bool, error) {
+	return true, nil
 }

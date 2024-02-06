@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -188,7 +189,7 @@ func (s Slack) SendNotification(ctx context.Context, message string, extras map[
 	return nil
 }
 
-func (s Slack) IsValidCredential(ctx context.Context) bool {
+func (s Slack) IsValidCredential(ctx context.Context) (bool, error) {
 	// send test message to slack
 	payload := map[string]interface{}{
 		"text": "Test message from Deepfence",
@@ -206,7 +207,8 @@ func (s Slack) IsValidCredential(ctx context.Context) bool {
 
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		return false
+		log.Errorf(err.Error())
+		return false, nil
 	}
 
 	// send message to this webhookURL using http
@@ -214,7 +216,7 @@ func (s Slack) IsValidCredential(ctx context.Context) bool {
 	req, err := http.NewRequest("POST", s.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		log.Errorf(err.Error())
-		return false
+		return false, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
@@ -223,15 +225,15 @@ func (s Slack) IsValidCredential(ctx context.Context) bool {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Errorf(err.Error())
-		return false
+		return false, err
 	}
 
 	// Check the response status code.
 	if resp.StatusCode != http.StatusOK {
 		log.Errorf("failed to send notification, status code: %d", resp.StatusCode)
-		return false
+		return false, errors.New(fmt.Sprintf("failed to send test notification, status code: %d", resp.StatusCode))
 	}
 	resp.Body.Close()
 
-	return true
+	return true, nil
 }
