@@ -12,6 +12,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	dferror "github.com/deepfence/ThreatMapper/deepfence_server/pkg/df-error"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
@@ -62,6 +63,10 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 
 	list, err := r.FetchImagesFromRegistry()
 	if err != nil {
+		if err == dferror.ErrTooManyRequests {
+			log.Warn().Msgf("rate limit exceeded for registry even after retry id=%d type=%s", pgID, r.GetRegistryType())
+			return nil
+		}
 		return err
 	}
 
