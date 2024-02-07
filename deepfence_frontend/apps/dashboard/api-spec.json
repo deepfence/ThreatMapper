@@ -13737,6 +13737,7 @@
         "type": "object",
         "properties": {
           "node_id": { "type": "string" },
+          "node_name": { "type": "string" },
           "node_type": {
             "enum": [
               "image",
