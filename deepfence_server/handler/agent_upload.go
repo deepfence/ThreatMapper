@@ -270,7 +270,8 @@ func GetAgentVersionList(ctx context.Context) ([]string, error) {
 	res, err := tx.Run(`
 		MATCH (n:AgentVersion)
 		WHERE NOT n.url IS NULL
-		RETURN n.node_id`,
+		RETURN n.node_id
+		ORDER BY n.node_id DESC`,
 		map[string]interface{}{})
 	if err != nil {
 		return nil, err
