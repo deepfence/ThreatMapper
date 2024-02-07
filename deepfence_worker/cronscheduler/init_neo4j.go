@@ -19,6 +19,9 @@ func RunDisplayError(session neo4j.Session, statement string) {
 }
 
 func initNeo4jDatabase(ctx context.Context) error {
+
+	log := log.WithCtx(ctx)
+
 	log.Info().Msgf("Init Neo4j Constraints")
 	defer log.Info().Msgf("Init Neo4j Constraints - Done")
 

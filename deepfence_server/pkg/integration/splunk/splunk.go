@@ -118,3 +118,8 @@ func (s Splunk) Sender(in chan []byte, wg *sync.WaitGroup) {
 		resp.Body.Close()
 	}
 }
+
+// todo
+func (s Splunk) IsValidCredential(ctx context.Context) (bool, error) {
+	return true, nil
+}

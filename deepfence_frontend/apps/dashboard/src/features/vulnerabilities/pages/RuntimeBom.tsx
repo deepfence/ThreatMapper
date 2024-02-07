@@ -84,27 +84,30 @@ const RuntimeBom = () => {
       </div>
 
       <div className="mx-4">
-        <Button
-          variant="flat"
-          className="ml-auto py-2"
-          startIcon={<FilterIcon />}
-          endIcon={
-            getAppliedFiltersCount(searchParams) > 0 ? (
-              <Badge
-                label={String(getAppliedFiltersCount(searchParams))}
-                variant="filled"
-                size="small"
-                color="blue"
-              />
-            ) : null
-          }
-          size="sm"
-          onClick={() => {
-            setFiltersExpanded((prev) => !prev);
-          }}
-        >
-          Filter
-        </Button>
+        <div className="h-12 flex items-center">
+          <Button
+            variant="flat"
+            className="ml-auto py-2"
+            startIcon={<FilterIcon />}
+            endIcon={
+              getAppliedFiltersCount(searchParams) > 0 ? (
+                <Badge
+                  label={String(getAppliedFiltersCount(searchParams))}
+                  variant="filled"
+                  size="small"
+                  color="blue"
+                />
+              ) : null
+            }
+            size="sm"
+            onClick={() => {
+              setFiltersExpanded((prev) => !prev);
+            }}
+          >
+            Filter
+          </Button>
+        </div>
+
         {filtersExpanded ? <Filters /> : null}
         <Suspense fallback={<TableSkeleton columns={11} rows={15} />}>
           <ScansTable />

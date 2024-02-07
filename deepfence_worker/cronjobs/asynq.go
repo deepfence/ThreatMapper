@@ -9,6 +9,9 @@ import (
 )
 
 func AsynqDeleteAllArchivedTasks(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	worker, err := directory.Worker(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -19,11 +22,7 @@ func AsynqDeleteAllArchivedTasks(ctx context.Context, task *asynq.Task) error {
 		log.Error().Msg(err.Error())
 	}
 	if deletedTasksCount > 0 {
-		namespace, err := directory.ExtractNamespace(ctx)
-		if err != nil {
-			return err
-		}
-		log.Info().Msgf("Namespace: %s. Deleted %d archived tasks.", namespace, deletedTasksCount)
+		log.Info().Msgf("Deleted %d archived tasks.", deletedTasksCount)
 	}
 	return nil
 }

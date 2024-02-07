@@ -3639,11 +3639,56 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/integration/delete": {
+      "patch": {
+        "tags": ["Integration"],
+        "summary": "Delete Integrations",
+        "description": "Delete integrations",
+        "operationId": "deleteIntegrations",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelDeleteIntegrationReq" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/integration/{integration_id}": {
       "delete": {
         "tags": ["Integration"],
-        "summary": "Delete Integration",
-        "description": "Delete integration",
+        "summary": "Delete Single Integration",
+        "description": "Delete single integration",
         "operationId": "deleteIntegration",
         "parameters": [
           {
@@ -10293,6 +10338,13 @@
         "summary": "Upload New agent version",
         "description": "Upload Agent version",
         "operationId": "uploadAgentVersion",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": { "$ref": "#/components/schemas/FormDataModelBinUploadRequest" }
+            }
+          }
+        },
         "responses": {
           "200": { "description": "OK" },
           "400": {
@@ -11537,6 +11589,7 @@
           "created_at": { "type": "string" },
           "label": { "type": "string" },
           "message": { "type": "string" },
+          "type": { "type": "string" },
           "url_link": { "type": "string" }
         }
       },
@@ -11612,6 +11665,11 @@
           "node_type": { "enum": ["host", "cluster", "cloud_account"], "type": "string" }
         }
       },
+      "FormDataModelBinUploadRequest": {
+        "required": ["tarball"],
+        "type": "object",
+        "properties": { "tarball": { "$ref": "#/components/schemas/MultipartFile" } }
+      },
       "FormDataModelRegistryGCRAddReq": {
         "required": ["name", "registry_url", "service_account_json"],
         "type": "object",
@@ -11680,7 +11738,9 @@
           "node_id",
           "name",
           "vulnerability_count",
+          "exploitable_vulnerabilities_count",
           "secrets_count",
+          "exploitable_secrets_count",
           "compliance_count",
           "cloud_compliance_count",
           "warn_alarm_count",
@@ -11691,6 +11751,8 @@
           "cloud_compliance_count": { "type": "integer" },
           "cloud_warn_alarm_count": { "type": "integer" },
           "compliance_count": { "type": "integer" },
+          "exploitable_secrets_count": { "type": "integer" },
+          "exploitable_vulnerabilities_count": { "type": "integer" },
           "name": { "type": "string" },
           "node_id": { "type": "string" },
           "secrets_count": { "type": "integer" },
@@ -11703,7 +11765,9 @@
           "resources",
           "compliance_count",
           "secrets_count",
+          "exploitable_secrets_count",
           "vulnerability_count",
+          "exploitable_vulnerabilities_count",
           "cloud_compliance_count",
           "warn_alarm_count",
           "cloud_warn_alarm_count"
@@ -11713,6 +11777,8 @@
           "cloud_compliance_count": { "type": "integer" },
           "cloud_warn_alarm_count": { "type": "integer" },
           "compliance_count": { "type": "integer" },
+          "exploitable_secrets_count": { "type": "integer" },
+          "exploitable_vulnerabilities_count": { "type": "integer" },
           "resources": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/GraphThreatNodeInfo" },
@@ -11763,7 +11829,9 @@
           "id",
           "nodes",
           "vulnerability_count",
+          "exploitable_vulnerabilities_count",
           "secrets_count",
+          "exploitable_secrets_count",
           "compliance_count",
           "cloud_compliance_count",
           "count",
@@ -11783,6 +11851,8 @@
           "cloud_warn_alarm_count": { "type": "integer" },
           "compliance_count": { "type": "integer" },
           "count": { "type": "integer" },
+          "exploitable_secrets_count": { "type": "integer" },
+          "exploitable_vulnerabilities_count": { "type": "integer" },
           "id": { "type": "string" },
           "label": { "type": "string" },
           "node_type": { "type": "string" },
@@ -13042,6 +13112,17 @@
           "vulnerability_scan_status": { "type": "string" }
         }
       },
+      "ModelDeleteIntegrationReq": {
+        "required": ["integration_ids"],
+        "type": "object",
+        "properties": {
+          "integration_ids": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "nullable": true
+          }
+        }
+      },
       "ModelDeleteRegistryBulkReq": {
         "required": ["registry_ids"],
         "type": "object",
@@ -13313,6 +13394,9 @@
           "compliances_count",
           "compliance_scan_status",
           "compliance_latest_scan_id",
+          "exploitable_vulnerabilities_count",
+          "exploitable_secrets_count",
+          "exploitable_malwares_count",
           "warn_alarm_count",
           "cloud_warn_alarm_count",
           "inbound_connections",
@@ -13341,6 +13425,9 @@
           },
           "cpu_max": { "type": "number" },
           "cpu_usage": { "type": "number" },
+          "exploitable_malwares_count": { "type": "integer" },
+          "exploitable_secrets_count": { "type": "integer" },
+          "exploitable_vulnerabilities_count": { "type": "integer" },
           "host_name": { "type": "string" },
           "inbound_connections": {
             "type": "array",
@@ -13409,6 +13496,7 @@
         }
       },
       "ModelIntegrationAddReq": {
+        "required": ["integration_type", "notification_type"],
         "type": "object",
         "properties": {
           "config": { "type": "object", "additionalProperties": {}, "nullable": true },
@@ -14954,6 +15042,9 @@
         "type": "object",
         "properties": {
           "node_filters": { "$ref": "#/components/schemas/SearchSearchFilter" },
+          "related_node_filter": {
+            "$ref": "#/components/schemas/SearchChainedSearchFilter"
+          },
           "scan_filters": { "$ref": "#/components/schemas/SearchSearchFilter" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }

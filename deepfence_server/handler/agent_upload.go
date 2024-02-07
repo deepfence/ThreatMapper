@@ -44,6 +44,7 @@ func (h *Handler) UploadAgentBinaries(w http.ResponseWriter, r *http.Request) {
 	vername := filename[:len(filename)-len(filepath.Ext(filename))]
 	if !semver.IsValid(vername) {
 		h.respondError(&BadDecoding{fmt.Errorf("tarball name should be versioned %v", vername)}, w)
+		return
 	}
 
 	log.Info().Msgf("uploaded file content type %s", fileHeader.Header.Get("Content-Type"))
@@ -269,7 +270,8 @@ func GetAgentVersionList(ctx context.Context) ([]string, error) {
 	res, err := tx.Run(`
 		MATCH (n:AgentVersion)
 		WHERE NOT n.url IS NULL
-		RETURN n.node_id`,
+		RETURN n.node_id
+		ORDER BY n.node_id DESC`,
 		map[string]interface{}{})
 	if err != nil {
 		return nil, err

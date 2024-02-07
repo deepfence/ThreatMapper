@@ -67,6 +67,12 @@ export const actionStopScan = async ({
         success: false,
         message,
       };
+    } else if (result.error.response.status >= 500) {
+      console.error(result.error);
+      return {
+        success: false,
+        message: 'Something went wrong, please try again later.',
+      };
     }
     throw result.error;
   }

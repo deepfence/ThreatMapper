@@ -31,6 +31,7 @@ const (
 var (
 	resource_types    = [...]string{"aws_ec2_instance", "aws_ec2_application_load_balancer", "aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer"}
 	resource_lambda   = [...]string{"aws_lambda_function"}
+	resource_link     = [...]string{"aws_lambda_function", "aws_ec2_instance", "aws_ec2_application_load_balancer", "aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer"}
 	resource_ecs      = [...]string{"aws_ecs_service"}
 	resource_ecs_task = [...]string{"aws_ecs_task"}
 )
@@ -69,6 +70,9 @@ func getPushBackValue(session neo4j.Session) int32 {
 var cleanUpRunning = atomic.Bool{}
 
 func CleanUpDB(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	if cleanUpRunning.Swap(true) {
 		return nil
 	}
@@ -314,6 +318,32 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	}
 
 	if _, err = session.Run(`
+		MATCH (n:AgentDiagnosticLogs)
+		WHERE n.retries >= 3
+		WITH n LIMIT 10000
+		SET n.status = $new_status`,
+		map[string]interface{}{
+			"time_ms":    dbUpgradeTimeout.Milliseconds(),
+			"new_status": utils.ScanStatusFailed,
+		}, txConfig); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:CloudScannerDiagnosticLogs)
+		WHERE n.retries >= 3
+		WITH n LIMIT 10000
+		SET n.status = $new_status`,
+		map[string]interface{}{
+			"time_ms":    dbUpgradeTimeout.Milliseconds(),
+			"new_status": utils.ScanStatusFailed,
+		}, txConfig); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	if _, err = session.Run(`
 		MATCH (n:AgentVersion)
 		WHERE n.url IS NULL
 		AND NOT exists((n) -[:VERSIONED]-(:Node))
@@ -326,12 +356,22 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	if _, err = session.Run(`
 		MATCH (n:AgentDiagnosticLogs)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{
-			"time_ms":     diagnosticLogsCleanUpTimeout.Milliseconds(),
-			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+			"time_ms": diagnosticLogsCleanUpTimeout.Milliseconds(),
+		}, txConfig); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:CloudScannerDiagnosticLogs)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		WITH n LIMIT 10000
+		DETACH DELETE n`,
+		map[string]interface{}{
+			"time_ms": diagnosticLogsCleanUpTimeout.Milliseconds(),
 		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -405,6 +445,9 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 var linkCloudResourcesRunning = atomic.Bool{}
 
 func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	if linkCloudResourcesRunning.Swap(true) {
 		return nil
 	}
@@ -475,21 +518,9 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		UNWIND groups as subgroup
 		WITH n, subgroup, CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupName END as name,
 		CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupId END as node_id
-		OPTIONAL MATCH (m:CloudResource{id: "aws_vpc_security_group_rule", group_id: node_id})
-		MATCH (o:Node {node_id:'out-the-internet'})
-		MATCH (p:Node {node_id:'in-the-internet'})
-		WITH m, n, o, p, CASE WHEN m IS NOT NULL THEN [1] ELSE [] END AS make_cat
-		FOREACH (i IN make_cat |
-			MERGE (m) -[:SECURED]-> (n)
-		)
-		WITH m, n, o, p, CASE WHEN m.is_egress AND m.cidr_ipv4 = "0.0.0.0/0" THEN [1] ELSE [] END AS make_cat2
-		FOREACH (i IN make_cat2 |
-			MERGE (n) <-[:PUBLIC]- (o)
-		)
-		WITH m, n, o, p, CASE WHEN NOT m.is_egress AND m.cidr_ipv4 = "0.0.0.0/0" THEN [1] ELSE [] END AS make_cat3
-		FOREACH (i IN make_cat3 |
-			MERGE (n) <-[:PUBLIC]- (p)
-		)`,
+		MATCH (m:CloudResource{id: "aws_vpc_security_group_rule"})
+		WHERE m.node_id ENDS WITH node_id
+		MERGE (m) -[:SECURED]-> (n)`,
 		map[string]interface{}{
 			"types": resource_types[:],
 		}, txConfig); err != nil {
@@ -505,23 +536,41 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		SET n.linked = true
 		WITH n, apoc.convert.fromJsonList(n.vpc_security_group_ids) as sec_group_ids
 		UNWIND sec_group_ids as subgroup
-		OPTIONAL MATCH (m:CloudResource{id: "aws_vpc_security_group_rule", group_id: subgroup})
-		MATCH (o:Node {node_id:'out-the-internet'})
-		MATCH (p:Node {node_id:'in-the-internet'})
-		WITH m, n, o, p, CASE WHEN m IS NOT NULL THEN [1] ELSE [] END AS make_cat
-		FOREACH (i IN make_cat |
-			MERGE (m) -[:SECURED]-> (n)
-		)
-		WITH m, n, o, p, CASE WHEN m.is_egress AND m.cidr_ipv4 = "0.0.0.0/0" THEN [1] ELSE [] END AS make_cat2
-		FOREACH (i IN make_cat2 |
-			MERGE (n) <-[:PUBLIC]- (o)
-		)
-		WITH m, n, o, p, CASE WHEN NOT m.is_egress AND m.cidr_ipv4 = "0.0.0.0/0" THEN [1] ELSE [] END AS make_cat3
-		FOREACH (i IN make_cat3 |
-			MERGE (n) <-[:PUBLIC]- (p)
-		)`,
+		MATCH (m:CloudResource{id: "aws_vpc_security_group_rule"})
+		WHERE m.node_id ENDS WITH subgroup
+		MERGE (m) -[:SECURED]-> (n)`,
 		map[string]interface{}{
 			"types": resource_lambda[:],
+		}, txConfig); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (m:CloudResource{id: "aws_vpc_security_group_rule"})
+		WHERE m.is_egress
+		AND m.cidr_ipv4 = "0.0.0.0/0"
+		MATCH (m) -[:SECURED]-> (n:CloudResource)
+		WHERE NOT exists( (n) -[:PUBLIC]-> (:Node{node_id:'out-the-internet'}))
+		AND n.node_type in $types
+		WITH n LIMIT 10000
+		MERGE (n) -[:PUBLIC]-> (:Node{node_id:'out-the-internet'})`,
+		map[string]interface{}{
+			"types": resource_link[:],
+		}, txConfig); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (m:CloudResource{id: "aws_vpc_security_group_rule"})
+		WHERE NOT m.is_egress
+		AND m.cidr_ipv4 = "0.0.0.0/0"
+		MATCH (m) -[:SECURED]-> (n:CloudResource)
+		WHERE NOT exists( (:Node{node_id:'in-the-internet'}) -[:PUBLIC]-> (n))
+		AND n.node_type in $types
+		WITH n LIMIT 10000
+		MERGE (:Node{node_id:'in-the-internet'}) -[:PUBLIC]-> (n)`,
+		map[string]interface{}{
+			"types": resource_link[:],
 		}, txConfig); err != nil {
 		return err
 	}
@@ -560,6 +609,9 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 var linkNodesRunning = atomic.Bool{}
 
 func LinkNodes(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	if linkNodesRunning.Swap(true) {
 		return nil
 	}
@@ -624,6 +676,8 @@ func LinkNodes(ctx context.Context, task *asynq.Task) error {
 
 func RetryScansDB(ctx context.Context, task *asynq.Task) error {
 
+	log := log.WithCtx(ctx)
+
 	log.Info().Msgf("Retry scan DB Starting")
 	defer log.Info().Msgf("Retry scan DB Done")
 	nc, err := directory.Neo4jClient(ctx)
@@ -672,10 +726,28 @@ func RetryScansDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
+	if _, err = tx.Run(`
+		MATCH (a:CloudScannerDiagnosticLogs)
+		WHERE a.status = $old_status
+		AND a.updated_at < TIMESTAMP()-$time_ms
+		AND a.retries < 3
+		WITH a LIMIT 10000
+		SET a.retries = a.retries + 1, a.status=$new_status`,
+		map[string]interface{}{
+			"time_ms":    dbScanTimeout.Milliseconds(),
+			"old_status": utils.ScanStatusInProgress,
+			"new_status": utils.ScanStatusStarting,
+		}); err != nil {
+		return err
+	}
+
 	return tx.Commit()
 }
 
 func RetryUpgradeAgent(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	log.Info().Msgf("Retry upgrade DB Starting")
 	defer log.Info().Msgf("Retry upgrade DB Done")
 	nc, err := directory.Neo4jClient(ctx)

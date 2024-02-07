@@ -277,8 +277,14 @@ func isConnectivityError(err error) bool {
 func (w *bulkWorker) commit(ctx context.Context) []error {
 	errs := []error{}
 	for k, v := range w.buffer.Read() {
+		ctx := directory.NewContextWithNameSpace(directory.NamespaceID(w.p.ns))
+
+		log := log.WithCtx(ctx)
+
 		log.Info().Str("worker", w.workerID).Msgf("#data=%d", len(v))
+
 		w.expBackoff.Reset()
+
 		var err error
 		for {
 			w.p.breaker.RLock()
@@ -298,7 +304,7 @@ func (w *bulkWorker) commit(ctx context.Context) []error {
 
 						log.Info().Msgf("Breaker opened")
 
-						configs, err := directory.GetDatabaseConfig(directory.NewContextWithNameSpace(directory.NamespaceID(w.p.ns)))
+						configs, err := directory.GetDatabaseConfig(ctx)
 						if err != nil {
 							log.Error().Msg(err.Error())
 							return
@@ -329,9 +335,9 @@ func (w *bulkWorker) commit(ctx context.Context) []error {
 	}
 	// metrics
 	if len(errs) > 0 {
-		commitNeo4jRecordsCounts.WithLabelValues(w.workerID, "error").Add(float64(w.buffer.size))
+		CommitNeo4jRecordsCounts.WithLabelValues(w.workerID, "error", w.p.ns).Add(float64(w.buffer.size))
 	} else {
-		commitNeo4jRecordsCounts.WithLabelValues(w.workerID, "success").Add(float64(w.buffer.size))
+		CommitNeo4jRecordsCounts.WithLabelValues(w.workerID, "success", w.p.ns).Add(float64(w.buffer.size))
 	}
 	// reset buffer after commit
 	w.buffer.Reset()

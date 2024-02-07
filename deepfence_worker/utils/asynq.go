@@ -6,6 +6,7 @@ import (
 
 	"context"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/hibiken/asynq"
 	"github.com/pkg/errors"
 )
@@ -29,6 +30,7 @@ func Recoverer(h asynq.Handler) asynq.Handler {
 		defer func() {
 			if r := recover(); r != nil {
 				err = errors.WithStack(RecoveredPanicError{V: r, Stacktrace: string(debug.Stack())})
+				log.Error().Ctx(ctx).Err(err).Msg("recovered from panic")
 			}
 		}()
 

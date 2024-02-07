@@ -23,20 +23,23 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
-	"cve_severity":          "Severity",
-	"cve_id":                "CVE Id",
-	"cve_description":       "Description",
-	"cve_attack_vector":     "Attack Vector",
-	"cve_container_layer":   "Container Layer",
-	"cve_overall_score":     "CVE Overall Score",
-	"cve_type":              "CVE Type",
-	"cve_link":              "CVE Link",
-	"cve_fixed_in":          "CVE Fixed In",
-	"cve_cvss_score":        "CVSS Score",
-	"cve_caused_by_package": "CVE Caused By Package",
-	"node_id":               "Node ID",
-	"updated_at":            "updated_at"},
+const NOTIFICATION_INTERVAL = 60000 //in milliseconds
+
+var fieldsMap = map[string]map[string]string{
+	utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
+		"cve_severity":          "Severity",
+		"cve_id":                "CVE Id",
+		"cve_description":       "Description",
+		"cve_attack_vector":     "Attack Vector",
+		"cve_container_layer":   "Container Layer",
+		"cve_overall_score":     "CVE Overall Score",
+		"cve_type":              "CVE Type",
+		"cve_link":              "CVE Link",
+		"cve_fixed_in":          "CVE Fixed In",
+		"cve_cvss_score":        "CVSS Score",
+		"cve_caused_by_package": "CVE Caused By Package",
+		"node_id":               "Node ID",
+		"updated_at":            "updated_at"},
 	utils.ScanTypeDetectedNode[utils.NEO4JSecretScan]: {
 		"node_id":            "Node ID",
 		"full_filename":      "File Name",
@@ -91,7 +94,7 @@ const DefaultNotificationErrorBackoff = 15 * time.Minute
 
 var (
 	NotificationErrorBackoff time.Duration
-	notificationLock         sync.Mutex
+	// notificationLock         sync.Mutex
 )
 
 func init() {
@@ -115,13 +118,20 @@ func init() {
 }
 
 func SendNotifications(ctx context.Context, task *asynq.Task) error {
-	//This lock is to ensure only one notification handler runs at a time
-	notificationLock.Lock()
-	defer notificationLock.Unlock()
+	// //This lock is to ensure only one notification handler runs at a time
+	// notificationLock.Lock()
+	// defer notificationLock.Unlock()
 
-	log.Info().Msgf("SendNotifications task starting at %s", string(task.Payload()))
+	log := log.WithCtx(ctx)
+
+	start := time.Now()
+	log.Info().Msgf("SendNotifications task for timestamp %s starting", string(task.Payload()))
+	defer log.Info().Msgf("SendNotifications task for timestamp %s ended elapsed: %s",
+		string(task.Payload()), time.Now().Sub(start))
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
+		log.Error().Msgf("Error getting postgresCtx: %v", err)
 		return nil
 	}
 	integrations, err := pgClient.GetIntegrations(ctx)
@@ -129,8 +139,16 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 		log.Error().Msgf("Error getting postgresCtx: %v", err)
 		return nil
 	}
+
+	// check if any integrations are configured
+	if len(integrations) <= 0 {
+		log.Warn().Msg("No integrations configured to notify")
+		return nil
+	}
+
 	wg := sync.WaitGroup{}
 	wg.Add(len(integrations))
+
 	for _, integrationRow := range integrations {
 		if integrationRow.ErrorMsg.String != "" &&
 			time.Since(integrationRow.LastSentTime.Time) < NotificationErrorBackoff {
@@ -181,7 +199,7 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 		}(integrationRow)
 	}
 	wg.Wait()
-	log.Info().Msgf("SendNotifications task ended for timestamp %s", string(task.Payload()))
+
 	return nil
 }
 
@@ -258,6 +276,9 @@ func injectNodeDatamap(results []map[string]interface{}, common model.ScanResult
 }
 
 func processIntegration[T any](ctx context.Context, task *asynq.Task, integrationRow postgresql_db.Integration) error {
+
+	log := log.WithCtx(ctx)
+
 	startTime := time.Now()
 	var filters model.IntegrationFilters
 	err := json.Unmarshal(integrationRow.Filters, &filters)
@@ -271,7 +292,7 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		return err
 	}
 
-	last30sTimeStamp := ts - 30000
+	last30sTimeStamp := ts - NOTIFICATION_INTERVAL
 
 	log.Debug().Msgf("Check for %s scans to notify at timestamp (%d,%d)",
 		integrationRow.Resource, last30sTimeStamp, ts)

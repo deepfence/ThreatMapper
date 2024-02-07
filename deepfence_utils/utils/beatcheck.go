@@ -31,7 +31,7 @@ func WaitServiceTCPConn(host string, port string, timeout time.Duration) error {
 	}
 
 	notify := func(err error, d time.Duration) {
-		log.Info().Msgf("waited %s connecting %s:%s error: %s", d, host, port, err)
+		log.Warn().Msgf("waited %s connecting %s:%s error: %s", d, host, port, err)
 	}
 
 	bf := backoff.NewConstantBackOff(10 * time.Second)

@@ -55,3 +55,8 @@ func (g GoogleChronicle) SendNotification(ctx context.Context, message string, e
 
 	return nil
 }
+
+// todo
+func (g GoogleChronicle) IsValidCredential(ctx context.Context) (bool, error) {
+	return true, nil
+}

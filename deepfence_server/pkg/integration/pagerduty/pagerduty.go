@@ -158,3 +158,8 @@ func IsValidCreds(p PagerDuty) (bool, error) {
 	// todo: check response body for error message like invalid api key or something
 	return false, nil
 }
+
+// todo
+func (p PagerDuty) IsValidCredential(ctx context.Context) (bool, error) {
+	return true, nil
+}

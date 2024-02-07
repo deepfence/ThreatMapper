@@ -33,11 +33,15 @@ func (i *Ingester) processAuditLog(ctx context.Context) {
 			return
 		case record := <-i.auditC:
 
-			spanCtx, span := otel.Tracer("audit-log").Start(ctx, "ingest-audit-log")
-
 			namespace := getNamespace(record.Headers)
 
-			pgClient, err := directory.PostgresClient(directory.NewContextWithNameSpace(directory.NamespaceID(namespace)))
+			ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
+
+			log := log.WithCtx(ctx)
+
+			spanCtx, span := otel.Tracer("audit-log").Start(ctx, "ingest-audit-log")
+
+			pgClient, err := directory.PostgresClient(ctx)
 			if err != nil {
 				log.Error().Str("namespace", namespace).Err(err).Msg("failed to get db connection")
 			}

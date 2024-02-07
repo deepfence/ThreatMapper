@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/hibiken/asynq"
+	"golang.org/x/mod/semver"
 )
 
 var (
@@ -26,7 +28,24 @@ type ListingFormat struct {
 	} `json:"available"`
 }
 
+const DefaultConsoleVersion = "v2.1.0"
+
+var ConsoleVersion string
+
+func init() {
+	if len(ConsoleVersion) > 0 && ConsoleVersion[0] != 'v' {
+		ConsoleVersion = fmt.Sprintf("v%s", ConsoleVersion)
+	}
+	if !semver.IsValid(ConsoleVersion) {
+		log.Warn().Msgf("Provided console version %s is not valid, falling back to default %s", ConsoleVersion, DefaultConsoleVersion)
+		ConsoleVersion = DefaultConsoleVersion
+	}
+}
+
 func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	log.Info().Msg("Start agent version check")
 
 	resp, err := http.Get(listing_url)
@@ -51,6 +70,10 @@ func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
 			continue
 		}
 		defer tar_resp.Body.Close()
+
+		if semver.Major(version.Version) != semver.Major(ConsoleVersion) {
+			continue
+		}
 
 		tags = append(tags, version.Version)
 

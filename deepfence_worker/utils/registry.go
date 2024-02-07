@@ -73,6 +73,9 @@ func GetConfigFileFromRegistry(ctx context.Context, registryId string) (string, 
 }
 
 func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCreds, error) {
+
+	log := log.WithCtx(ctx)
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf(err.Error())
@@ -167,6 +170,7 @@ func gitlabCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) 
 	}, nil
 
 }
+
 func ecrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (regCreds, error) {
 	var (
 		err       error

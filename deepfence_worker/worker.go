@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	utilsCtl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
@@ -33,11 +32,10 @@ var (
 )
 
 type Worker struct {
-	cfg                     wtils.Config
-	mux                     *asynq.ServeMux
-	srv                     *asynq.Server
-	namespace               directory.NamespaceID
-	scan_workload_allocator *utilsCtl.RedisWorkloadAllocator
+	cfg       wtils.Config
+	mux       *asynq.ServeMux
+	srv       *asynq.Server
+	namespace directory.NamespaceID
 }
 
 func (w *Worker) Run(ctx context.Context) error {
@@ -60,12 +58,10 @@ func telemetryCallbackWrapper(task string, taskCallback wtils.WorkerHandler) wti
 }
 
 func contextInjectorCallbackWrapper(
-	allocator *utilsCtl.RedisWorkloadAllocator,
 	namespace directory.NamespaceID,
 	taskCallback wtils.WorkerHandler) wtils.WorkerHandler {
 	return func(ctx context.Context, t *asynq.Task) error {
-		ctx = context.WithValue(ctx, utilsCtl.ContextAllocatorKey, allocator) //nolint:staticcheck
-		ctx = context.WithValue(ctx, directory.NamespaceKey, namespace)       //nolint:staticcheck
+		ctx = context.WithValue(ctx, directory.NamespaceKey, namespace) //nolint:staticcheck
 		return taskCallback(ctx, t)
 	}
 }
@@ -86,8 +82,7 @@ func (w *Worker) AddRetryableHandler(
 ) {
 	w.mux.HandleFunc(
 		task,
-		contextInjectorCallbackWrapper(w.scan_workload_allocator, w.namespace,
-			telemetryCallbackWrapper(task, taskCallback)),
+		contextInjectorCallbackWrapper(w.namespace, telemetryCallbackWrapper(task, taskCallback)),
 	)
 }
 
@@ -100,8 +95,7 @@ func (w *Worker) AddOneShotHandler(
 	w.mux.HandleFunc(
 		task,
 		skipRetryCallbackWrapper(
-			contextInjectorCallbackWrapper(w.scan_workload_allocator, w.namespace,
-				telemetryCallbackWrapper(task, taskCallback))),
+			contextInjectorCallbackWrapper(w.namespace, telemetryCallbackWrapper(task, taskCallback))),
 	)
 }
 
@@ -126,7 +120,7 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 			if retried >= maxRetry {
 				err = fmt.Errorf("retry exhausted for task %s: %w", task.Type(), err)
 			}
-			log.Error().Err(err).Msgf("worker task %s, payload: %s", task.Type(), task.Payload())
+			log.Error().Ctx(ctx).Err(err).Msgf("worker task %s, payload: %s", task.Type(), task.Payload())
 		}),
 	}
 
@@ -167,11 +161,10 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 	)
 
 	worker := Worker{
-		cfg:                     cfg,
-		mux:                     mux,
-		srv:                     srv,
-		namespace:               ns,
-		scan_workload_allocator: utilsCtl.NewRedisWorkloadAllocator(cfg.MaxScanWorkload, ns, nsCfg.Redis),
+		cfg:       cfg,
+		mux:       mux,
+		srv:       srv,
+		namespace: ns,
 	}
 
 	worker.AddOneShotHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)
@@ -188,7 +181,7 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 
 	worker.AddOneShotHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade)
 
-	worker.AddOneShotHandler(utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls)
+	worker.AddOneShotHandler(utils.TriggerConsoleActionsTask, cronjobs.NewConsoleController(cfg.MaxScanWorkload).TriggerConsoleControls)
 
 	worker.AddOneShotHandler(utils.ScheduledTasks, cronjobs.RunScheduledTasks)
 

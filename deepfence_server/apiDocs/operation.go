@@ -724,9 +724,11 @@ func (d *OpenAPIDocs) AddIntegrationOperations() {
 		"Update Integration", "Update integration",
 		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationUpdateReq), new(MessageResponse))
 	d.AddOperation("deleteIntegration", http.MethodDelete, "/deepfence/integration/{integration_id}",
-		"Delete Integration", "Delete integration",
+		"Delete Single Integration", "Delete single integration",
 		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
-
+	d.AddOperation("deleteIntegrations", http.MethodPatch, "/deepfence/integration/delete",
+		"Delete Integrations", "Delete integrations",
+		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(DeleteIntegrationReq), nil)
 	d.AddOperation("addGenerativeAiIntegrationOpenAI", http.MethodPost, "/deepfence/generative-ai-integration/openai",
 		"Add OpenAI Generative AI Integration", "Add a new OpenAI Generative AI Integration",
 		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(AddGenerativeAiOpenAIIntegration), new(MessageResponse))
@@ -821,7 +823,7 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 
 	d.AddOperation("uploadAgentVersion", http.MethodPut, "/deepfence/settings/agent/version",
 		"Upload New agent version", "Upload Agent version",
-		http.StatusOK, []string{tagSettings}, bearerToken, nil, nil)
+		http.StatusOK, []string{tagSettings}, bearerToken, new(BinUploadRequest), nil)
 
 	d.AddOperation("getAgentVersions", http.MethodGet, "/deepfence/settings/agent/versions",
 		"Get available agent versions", "Get available agent versions",

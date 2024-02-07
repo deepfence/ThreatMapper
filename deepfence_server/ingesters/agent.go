@@ -33,7 +33,7 @@ const (
 	defaultIngesterSize  = defaultDBInputSize * dbBatchSize
 	dbBatchTimeout       = time.Second * 10
 	resolverTimeout      = time.Second * 10
-	maxNetworkMapsSize   = 1024 * 1024 * 1024 // 1 GB per maps
+	maxNetworkMapsSize   = 1 * 1024 * 1024 * 1024 // 1 GB per maps
 	enqueerTimeout       = time.Second * 30
 	agentBaseTimeout     = time.Second * 30
 	localhostIP          = "127.0.0.1"
@@ -102,21 +102,42 @@ type CacheEntry struct {
 }
 
 func (erc *EndpointResolversCache) cleanMaps() {
-	if v, _ := erc.rdb.MemoryUsage(context.Background(), RedisNetworkMapKey).Result(); v > maxNetworkMapsSize {
-		log.Debug().Msgf("Memory usage for %v reached limit", RedisNetworkMapKey)
-		erc.rdb.HDel(context.Background(), RedisNetworkMapKey)
+	v, err := erc.rdb.MemoryUsage(context.Background(), RedisNetworkMapKey).Result()
+	if err != nil {
+		log.Error().Msg(err.Error())
+	} else if v >= maxNetworkMapsSize {
+		log.Warn().Msgf("Memory usage for %v reached limit", RedisNetworkMapKey)
+		err = erc.rdb.Del(context.Background(), RedisNetworkMapKey).Err()
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 		erc.netCache = sync.Map{}
 	}
-	if v, _ := erc.rdb.MemoryUsage(context.Background(), RedisIPPortPIDMapKey).Result(); v > maxNetworkMapsSize {
-		log.Debug().Msgf("Memory usage for %v reached limit", RedisIPPortPIDMapKey)
-		erc.rdb.HDel(context.Background(), RedisIPPortPIDMapKey)
+
+	v, err = erc.rdb.MemoryUsage(context.Background(), RedisIPPortPIDMapKey).Result()
+	if err != nil {
+		log.Error().Msg(err.Error())
+	} else if v >= maxNetworkMapsSize {
+		log.Warn().Msgf("Memory usage for %v reached limit", RedisIPPortPIDMapKey)
+		err = erc.rdb.Del(context.Background(), RedisIPPortPIDMapKey).Err()
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 		erc.pidCache = sync.Map{}
 	}
 }
 
 func (erc *EndpointResolversCache) pushMaps(er *EndpointResolvers) {
-	erc.rdb.HSet(context.Background(), RedisNetworkMapKey, er.networkMap)
-	erc.rdb.HSet(context.Background(), RedisIPPortPIDMapKey, er.ipPortToIPPID)
+	if len(er.networkMap) > 0 {
+		if err := erc.rdb.HSet(context.Background(), RedisNetworkMapKey, er.networkMap).Err(); err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}
+	if len(er.ipPortToIPPID) > 0 {
+		if err := erc.rdb.HSet(context.Background(), RedisIPPortPIDMapKey, er.ipPortToIPPID).Err(); err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}
 }
 
 func (erc *EndpointResolversCache) getHost(ip string, ttl time.Time) (string, bool) {
@@ -957,13 +978,14 @@ func (nc *neo4jIngester) runDBPusher(
 			err := pusher(batches, session)
 			if err != nil {
 				batches.Retries += 1
-				if isClosedError(err) {
+				if batches.Retries < 2 && isClosedError(err) {
 					log.Warn().Msg("Renew session")
 					var newDriver neo4j.Driver
 					newDriver, err = directory.Neo4jClient(ctx)
 					if err == nil {
 						_ = session.Close()
 						session = newDriver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+						continue
 					}
 				}
 				if batches.Retries == 2 || !isTransientError(err) {

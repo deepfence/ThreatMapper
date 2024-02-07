@@ -2,7 +2,6 @@ package ingesters
 
 import (
 	"encoding/json"
-	"strconv"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -10,20 +9,23 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/scans"
+	"github.com/hibiken/asynq"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data []Status) error {
 	return func(ns string, data []Status) error {
 		ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
+
+		log := log.WithCtx(ctx)
+
 		driver, err := directory.Neo4jClient(ctx)
+		if err != nil {
+			return err
+		}
 
 		if len(data) == 0 {
 			return nil
-		}
-
-		if err != nil {
-			return err
 		}
 
 		session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
@@ -104,10 +106,9 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 		}
 
 		if (ts == utils.NEO4JComplianceScan || ts == utils.NEO4JCloudComplianceScan) && anyCompleted(others) {
-			err := worker.Enqueue(utils.CachePostureProviders,
-				[]byte(strconv.FormatInt(utils.GetTimestamp(), 10)), utils.CritialTaskOpts()...)
-			if err != nil {
-				log.Error().Err(err).Msgf("failed to enqueue %s", utils.CachePostureProviders)
+			err := worker.EnqueueUnique(utils.CachePostureProviders, []byte{}, utils.CritialTaskOpts()...)
+			if err != nil && err != asynq.ErrTaskIDConflict {
+				return err
 			}
 		}
 

@@ -1,13 +1,22 @@
 import { has, isEmpty } from 'lodash-es';
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { createColumnHelper, Dropdown, DropdownItem, Tooltip } from 'ui-components';
+import {
+  createColumnHelper,
+  Dropdown,
+  DropdownItem,
+  getRowSelectionColumn,
+  Tooltip,
+} from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorIcon, SuccessIcon } from '@/components/icons/common/ScanStatuses';
 import { TruncatedText } from '@/components/TruncatedText';
-import { ActionEnumType } from '@/features/integrations/pages/IntegrationAdd';
+import {
+  ActionEnumType,
+  severityMap,
+} from '@/features/integrations/pages/IntegrationAdd';
 
 import { IntegrationType } from './IntegrationForm';
 
@@ -462,6 +471,11 @@ export const useIntegrationTableColumn = (
 
   const columns = useMemo(() => {
     const columns = [
+      getRowSelectionColumn(columnHelper, {
+        size: 30,
+        minSize: 20,
+        maxSize: 45,
+      }),
       columnHelper.display({
         id: 'actions',
         enableSorting: false,
@@ -558,16 +572,22 @@ export const useIntegrationTableColumn = (
           const filters = row.original.filters;
           const containFilter = filters?.fields_filters?.contains_filter;
           const filterIn = containFilter?.filter_in;
-          const hasSeverity = has(filterIn, 'cve_severity');
-          const hasStatus = has(filterIn, 'status');
+          const notificationType = row.original?.notification_type ?? '';
+          const hasSeverityOrStatus = has(filterIn, severityMap[notificationType]);
+
           if (filters?.node_ids && filters?.node_ids.length) {
             displayFilters.node_ids = filters?.node_ids;
           }
 
-          if (hasSeverity) {
-            displayFilters.severities = filterIn?.['cve_severity'] ?? [];
-          } else if (hasStatus) {
-            displayFilters.statuses = filterIn?.['status'] ?? [];
+          if (hasSeverityOrStatus) {
+            if (
+              notificationType === 'Compliance' ||
+              notificationType === 'CloudCompliance'
+            ) {
+              displayFilters.statuses = filterIn?.[severityMap[notificationType]] ?? [];
+            } else {
+              displayFilters.severities = filterIn?.[severityMap[notificationType]] ?? [];
+            }
           }
 
           const configs = row.original.config;

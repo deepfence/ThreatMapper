@@ -15,6 +15,9 @@ import (
 const minioReportsPrefix = "/report/"
 
 func CleanUpReports(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	log.Info().Msg("Start reports cleanup")
 
 	mc, err := directory.MinioClient(ctx)
@@ -63,6 +66,9 @@ func CleanUpReports(ctx context.Context, task *asynq.Task) error {
 }
 
 func deleteReport(ctx context.Context, session neo4j.Session, path string) error {
+
+	log := log.WithCtx(ctx)
+
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -82,6 +88,9 @@ func deleteReport(ctx context.Context, session neo4j.Session, path string) error
 }
 
 func deleteFailedReports(ctx context.Context, session neo4j.Session) error {
+
+	log := log.WithCtx(ctx)
+
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())

@@ -1,4 +1,4 @@
-VERSION=`git describe --tags`
+VERSION?=`git describe --tags`
 GIT_COMMIT=`git rev-parse HEAD`
 BUILD_TIME=`date -u +%FT%TZ`
 
@@ -15,7 +15,7 @@ vendor: go.mod $(shell find ../deepfence_utils -path ../deepfence_utils/vendor -
 	go mod vendor
 
 deepfence_worker: vendor $(shell find . -path ./vendor -prune -o -name '*.go')
-	CGO_LDFLAGS="-ljansson -lcrypto -lmagic" go build -buildvcs=false -ldflags="-s -w -X main.Version=${VERSION} -X main.Commit=${GIT_COMMIT} -X main.BuildTime=${BUILD_TIME} -extldflags='-static'"
+	CGO_LDFLAGS="-ljansson -lcrypto -lmagic" go build -buildvcs=false -ldflags="-s -w -X main.Version=${VERSION} -X cronjobs.ConsoleVersion=${VERSION} -X main.Commit=${GIT_COMMIT} -X main.BuildTime=${BUILD_TIME} -extldflags='-static'"
 
 clean:
 	-rm deepfence_worker

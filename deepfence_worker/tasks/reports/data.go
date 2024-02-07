@@ -185,6 +185,7 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 }
 
 func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Vulnerability], error) {
+
 	var req rptSearch.SearchNodeReq
 	req.ExtendedNodeFilter.Filters.OrderFilter.OrderFields = []reporters.OrderSpec{{FieldName: "cve_cvss_score", Descending: true}}
 	req.NodeFilter.Filters.ContainsFilter.FieldsValues = map[string][]interface{}{"exploitability_score": {1, 2, 3}}

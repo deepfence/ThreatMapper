@@ -460,8 +460,8 @@ const InviteUserModal = ({
             </div>
             {data?.invite_url && (
               <p className={`mt-1.5 font-normal text-center text-sm text-green-500`}>
-                Invite URL: {data?.invite_url}, invite will expire after{' '}
-                {data?.invite_expiry_hours} hours
+                Invite URL: <span data-testid="inviteUrlId">{data?.invite_url}</span>,
+                invite will expire after {data?.invite_expiry_hours} hours
               </p>
             )}
           </fetcher.Form>
@@ -702,7 +702,7 @@ const CurrentUserInfo = ({
           </Button>
         </div>
       </div>
-      <div className="flex mt-4 mb-2">
+      <div className="flex mt-4 mb-2" data-testid="loginUserStatusWrapperId">
         <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Status</span>
         <span
           className={cn('text-p1 dark:text-text-input-value', {
@@ -713,7 +713,7 @@ const CurrentUserInfo = ({
           {currentUser?.is_active ? 'Active' : 'Inactive'}
         </span>
       </div>
-      <div className="flex mt-4 mb-2">
+      <div className="flex mt-4 mb-2" data-testid="loginUserEmailWrapperId">
         <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Email</span>
         <span className="text-p1 dark:text-text-input-value">
           {currentUser?.email || '-'}
@@ -902,7 +902,7 @@ const UserManagement = () => {
           setShowDialog={setOpenInviteUserForm}
         />
       )}
-      <div className="mt-6">
+      <div className="mt-6" data-testid="userAccountsWrapperId">
         <div className="mt-2">
           <h3 className="text-h6 dark:text-text-input-value">User accounts</h3>
         </div>

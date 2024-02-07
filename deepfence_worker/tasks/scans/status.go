@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"github.com/rs/zerolog/log"
 
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 )
@@ -20,6 +20,8 @@ type UpdateScanEvent struct {
 }
 
 func UpdatePodScanStatus(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
 
 	var event UpdateScanEvent
 	err := json.Unmarshal(task.Payload(), &event)
@@ -63,6 +65,8 @@ func UpdatePodScanStatus(ctx context.Context, task *asynq.Task) error {
 }
 
 func UpdateCloudResourceScanStatus(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
 
 	var event UpdateScanEvent
 	err := json.Unmarshal(task.Payload(), &event)

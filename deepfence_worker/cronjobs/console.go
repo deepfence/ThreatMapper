@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
-	utilsCtl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_worker/controls"
 	"github.com/hibiken/asynq"
 )
@@ -15,23 +15,32 @@ const (
 	ConsoleAgentId = "deepfence-console-cron"
 )
 
+type ConsoleController struct {
+	MaxWorkload int
+}
+
+func NewConsoleController(max int) ConsoleController {
+	return ConsoleController{MaxWorkload: max}
+}
+
 /*
-Allocator shared across all workers instances per namespace using redis counter
+Allocator shared across all workers instances per namespace
 */
-func TriggerConsoleControls(ctx context.Context, t *asynq.Task) error {
-	allocator := ctx.Value(utilsCtl.ContextAllocatorKey).(*utilsCtl.RedisWorkloadAllocator)
-	if allocator != nil {
-		defer allocator.Free()
-	} else {
-		return utilsCtl.ErrCtxAllocatorNotFound
+func (c ConsoleController) TriggerConsoleControls(ctx context.Context, t *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
+	allocatable := MaxAllocable(ctx, c.MaxWorkload)
+
+	log.Info().
+		Msgf("Trigger console actions #capacity: %d", allocatable)
+
+	// skip if capacity is zero
+	if allocatable <= 0 {
+		log.Info().
+			Msgf("Skip console actions #capacity: %d", allocatable)
+		return nil
 	}
-
-	ns, _ := directory.ExtractNamespace(ctx)
-
-	allocatable := allocator.MaxAllocable()
-
-	log.Info().Str("namespace", string(ns)).
-		Msgf("Trigger console actions #capacity: %v", allocatable)
 
 	actions, errs := controls.GetAgentActions(ctx, ConsoleAgentId, int(allocatable))
 	for _, e := range errs {
@@ -40,19 +49,89 @@ func TriggerConsoleControls(ctx context.Context, t *asynq.Task) error {
 		}
 	}
 
-	log.Info().Str("namespace", string(ns)).
+	log.Info().
 		Msgf("Trigger console actions got #actions: %d", len(actions))
 
-	allocator.Reserve(int64(len(actions)))
-
-	log.Debug().Msgf("Trigger console actions #actions: %d", len(actions))
 	for _, action := range actions {
 		log.Info().Msgf("Init execute: %v", action.ID)
 		err := ctl.ApplyControl(ctx, action)
 		if err != nil {
-			allocator.Free()
 			log.Error().Msgf("Control %v failed: %v", action, err)
 		}
 	}
 	return nil
+}
+
+// list of task types to count towards running
+func shouldInclude(name string) bool {
+	return name == utils.SecretScanTask ||
+		name == utils.MalwareScanTask ||
+		name == utils.GenerateSBOMTask ||
+		name == utils.ScanSBOMTask ||
+		name == utils.StopSecretScanTask ||
+		name == utils.StopMalwareScanTask ||
+		name == utils.StopVulnerabilityScanTask
+}
+
+func MaxAllocable(ctx context.Context, max int) int {
+
+	log := log.WithCtx(ctx)
+
+	worker, err := directory.Worker(ctx)
+	if err != nil {
+		log.Error().Err(err).Msgf("failed to get worker instance")
+		return 0
+	}
+
+	queues, err := worker.Inspector().Queues()
+	if err != nil {
+		log.Error().Err(err).Msgf("failed to get worker queues")
+		return 0
+	}
+
+	var tasks []*asynq.TaskInfo
+
+	for _, q := range queues {
+
+		var err error
+
+		// active tasks
+		active, err := worker.Inspector().ListActiveTasks(q, asynq.PageSize(5000))
+		if err != nil {
+			log.Error().Err(err).Msgf("failed to get active tasks from queue %s", q)
+		} else {
+			tasks = append(tasks, active...)
+		}
+		// pending tasks
+		pending, err := worker.Inspector().ListPendingTasks(q, asynq.PageSize(5000))
+		if err != nil {
+			log.Error().Err(err).Msgf("failed to get pending tasks from queue %s", q)
+		} else {
+			tasks = append(tasks, pending...)
+		}
+		// retry tasks
+		retry, err := worker.Inspector().ListRetryTasks(q, asynq.PageSize(5000))
+		if err != nil {
+			log.Error().Err(err).Msgf("failed to get retry tasks from queue %s", q)
+		} else {
+			tasks = append(tasks, retry...)
+		}
+	}
+
+	queued := 0
+
+	for _, task := range tasks {
+		if shouldInclude(task.Type) {
+			queued += 1
+		}
+	}
+
+	allocatable := max - queued
+
+	if allocatable > 0 {
+		return allocatable
+	}
+
+	return 0
+
 }
