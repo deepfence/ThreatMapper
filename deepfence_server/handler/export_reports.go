@@ -264,6 +264,7 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 		ReportType: req.ReportType,
 		Duration:   req.Duration,
 		Filters:    req.Filters,
+		Options:    req.Options,
 	}
 
 	worker, err := directory.Worker(r.Context())

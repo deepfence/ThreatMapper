@@ -29,6 +29,8 @@ func fileExt(reportType sdkUtils.ReportType) string {
 		return ".xlsx"
 	case sdkUtils.ReportPDF:
 		return ".pdf"
+	case sdkUtils.ReportSBOM:
+		return ".json.gz"
 	}
 	return ".unknown"
 }
@@ -44,6 +46,8 @@ func putOpts(reportType sdkUtils.ReportType) minio.PutObjectOptions {
 		return minio.PutObjectOptions{ContentType: "application/xlsx"}
 	case sdkUtils.ReportPDF:
 		return minio.PutObjectOptions{ContentType: "application/pdf"}
+	case sdkUtils.ReportSBOM:
+		return minio.PutObjectOptions{ContentType: "application/gzip"}
 	}
 	return minio.PutObjectOptions{}
 }
@@ -54,6 +58,8 @@ func generateReport(ctx context.Context, params sdkUtils.ReportParams) (string, 
 		return generatePDF(ctx, params)
 	case sdkUtils.ReportXLSX:
 		return generateXLSX(ctx, params)
+	case sdkUtils.ReportSBOM:
+		return generateSBOM(ctx, params)
 	}
 	return "", ErrUnknownReportType
 }
