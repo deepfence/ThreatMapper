@@ -36,6 +36,9 @@ func fileExt(reportType sdkUtils.ReportType) string {
 }
 
 func reportFileName(params sdkUtils.ReportParams) string {
+	if sdkUtils.ReportType(params.ReportType) == sdkUtils.ReportSBOM {
+		return "sbom_" + params.Filters.ScanID + fileExt(sdkUtils.ReportSBOM)
+	}
 	list := []string{params.Filters.ScanType, params.Filters.NodeType, params.ReportID}
 	return strings.Join(list, "_") + fileExt(sdkUtils.ReportType(params.ReportType))
 }

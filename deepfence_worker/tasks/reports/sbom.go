@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path"
@@ -37,22 +36,10 @@ var (
 )
 
 func generateSBOM(ctx context.Context, params utils.ReportParams) (string, error) {
-	var (
-		fileName string
-		err      error
-	)
-
-	switch params.Filters.ScanType {
-	case SBOM:
-		fileName, err = sbomReport(ctx, params)
-	default:
-		return "", ErrUnknownScanType
-	}
-
+	fileName, err := sbomReport(ctx, params)
 	if err != nil {
 		return "", err
 	}
-
 	return fileName, nil
 }
 
@@ -113,7 +100,7 @@ func sbomReport(ctx context.Context, params utils.ReportParams) (string, error) 
 }
 
 func saveSbomToFile(sbomContent []byte, params utils.ReportParams) (string, error) {
-	temp, err := os.CreateTemp("", fmt.Sprintf("sbom-*-%s%s", params.Filters.ScanID, fileExt(utils.ReportSBOM)))
+	temp, err := os.CreateTemp("", "sbom-*-"+reportFileName(params))
 	if err != nil {
 		return "", err
 	}
@@ -138,7 +125,7 @@ func convertSBOMFormat(oldFormatSBOMReader io.Reader, newFormat sbom.Format) ([]
 		return nil, err
 	}
 
-	if newFormat == spdxjson.Format2_2() || newFormat == spdxjson.Format2_3() {
+	if newFormat.String() == spdxjson.Format2_2().String() || newFormat.String() == spdxjson.Format2_3().String() {
 		// https://tools.spdx.org/app/validate/
 		// spdx validator expects package file name to be relative path (should not start with /)
 		var spdxDoc spdx.Document
