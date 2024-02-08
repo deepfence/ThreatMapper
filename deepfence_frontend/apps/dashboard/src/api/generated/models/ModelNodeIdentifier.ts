@@ -30,12 +30,6 @@ export interface ModelNodeIdentifier {
      * @type {string}
      * @memberof ModelNodeIdentifier
      */
-    node_name?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelNodeIdentifier
-     */
     node_type: ModelNodeIdentifierNodeTypeEnum;
 }
 
@@ -77,7 +71,6 @@ export function ModelNodeIdentifierFromJSONTyped(json: any, ignoreDiscriminator:
     return {
         
         'node_id': json['node_id'],
-        'node_name': !exists(json, 'node_name') ? undefined : json['node_name'],
         'node_type': json['node_type'],
     };
 }
@@ -92,7 +85,6 @@ export function ModelNodeIdentifierToJSON(value?: ModelNodeIdentifier | null): a
     return {
         
         'node_id': value.node_id,
-        'node_name': value.node_name,
         'node_type': value.node_type,
     };
 }

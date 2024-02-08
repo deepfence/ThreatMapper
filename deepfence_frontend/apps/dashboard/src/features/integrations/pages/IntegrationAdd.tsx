@@ -1,5 +1,4 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { InfiniteData } from '@tanstack/react-query';
 import { isNil } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { ActionFunctionArgs, useFetcher, useParams } from 'react-router-dom';
@@ -26,7 +25,6 @@ import { PlusIcon } from '@/components/icons/common/Plus';
 import { integrationTypeToNameMapping } from '@/features/integrations/pages/Integrations';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
-import { queryClient } from '@/queries/client';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { getArrayTypeValuesFromFormData } from '@/utils/formData';
@@ -176,51 +174,6 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
       break;
   }
 };
-const getContainersNode = (
-  _integrationType: string,
-  integrationId: string,
-  _actionType: string,
-): [
-  ModelNodeIdentifier[] | null | undefined,
-  (
-    | {
-        nodeId: string;
-        nodeName: string;
-      }[]
-    | undefined
-  ),
-] => {
-  const cachedIntegrations = queryClient.getQueriesData<
-    Awaited<
-      ReturnType<ReturnType<typeof queries.integration.listIntegrations>['queryFn']>
-    >
-  >(queries.integration.listIntegrations._def);
-  const cachedIntegrationsObject = cachedIntegrations?.[0] ?? [];
-  const cachedIntegrationsPages = cachedIntegrationsObject[1];
-  const integrations = cachedIntegrationsPages?.data?.filter((integration) => {
-    if (_actionType === ActionEnumType.EDIT) {
-      return (
-        integration.integration_type === _integrationType &&
-        integration.id?.toString() === integrationId
-      );
-    }
-    return integration.integration_type === _integrationType;
-  });
-  const savedContainers = integrations?.[0]?.filters?.node_ids;
-
-  const cachedContainers = queryClient.getQueriesData<
-    InfiniteData<
-      Awaited<ReturnType<ReturnType<typeof queries.search.containers>['queryFn']>>
-    >
-  >(queries.search.containers._def);
-  const cachedContainersObject = cachedContainers?.[0] ?? [];
-  const cachedContainerPages = cachedContainersObject[1];
-  const allContainers = cachedContainerPages?.pages?.flatMap((page) => {
-    return page.containers;
-  });
-
-  return [savedContainers, allContainers];
-};
 
 type ActionData = {
   action: ActionEnumType;
@@ -302,6 +255,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
     const _filters: {
       node_ids: ModelNodeIdentifier[];
       fields_filters: ReportersFieldsFilters;
+      container_names: string[];
     } = {
       fields_filters: {
         compare_filter: null,
@@ -311,6 +265,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
           order_fields: null,
         },
       },
+      container_names: [],
       node_ids: [],
     };
 
@@ -339,27 +294,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       nodeIds.push(..._images);
     }
     if (containerFilter.length) {
-      const [savedContainers, allContainers] = getContainersNode(
-        _integrationType,
-        integrationId,
-        _actionType,
-      );
-      const _containers: ModelNodeIdentifier[] = containerFilter.map<ModelNodeIdentifier>(
-        (nodeId) => {
-          return {
-            node_id: nodeId,
-            node_type: ModelNodeIdentifierNodeTypeEnum.Container,
-            node_name:
-              savedContainers?.find((nodeModel) => {
-                return nodeModel.node_id === nodeId;
-              })?.node_name ??
-              allContainers?.find((nodeModel) => {
-                return nodeModel.nodeId === nodeId;
-              })?.nodeName,
-          };
-        },
-      );
-      nodeIds.push(..._containers);
+      _filters.container_names = containerFilter;
     }
     if (clusterFilter.length) {
       const _clusters: ModelNodeIdentifier[] = clusterFilter.map<ModelNodeIdentifier>(
