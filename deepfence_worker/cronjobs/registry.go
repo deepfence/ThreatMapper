@@ -90,7 +90,7 @@ func syncRegistry(ctx context.Context, pgClient *postgresql_db.Queries, registri
 			continue
 		}
 
-		err = sync.SyncRegistry(ctx, pgClient, r, row.ID)
+		err = sync.SyncRegistry(ctx, pgClient, r, row)
 		if err != nil {
 			log.Error().Msgf("unable to sync registry: %s (%s): %v", row.RegistryType, row.Name, err)
 			toRetry = append(toRetry, row.ID)

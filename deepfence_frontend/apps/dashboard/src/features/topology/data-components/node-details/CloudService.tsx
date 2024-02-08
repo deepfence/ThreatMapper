@@ -60,7 +60,6 @@ export const CloudService = ({
         showBackBtn={showBackBtn}
         availableScanTypes={[]}
         showInstallAgentOption={false}
-        showUpgradeAgentOption={false}
       />
       <SlidingModalContent>
         <div className="dark:bg-bg-breadcrumb-bar">

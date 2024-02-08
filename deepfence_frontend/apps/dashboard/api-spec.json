@@ -13218,7 +13218,8 @@
             "type": "integer"
           },
           "filters": { "$ref": "#/components/schemas/UtilsReportFilters" },
-          "report_type": { "enum": ["pdf", "xlsx"], "type": "string" }
+          "options": { "$ref": "#/components/schemas/UtilsReportOptions" },
+          "report_type": { "enum": ["pdf", "xlsx", "sbom"], "type": "string" }
         }
       },
       "ModelGenerateReportResp": {
@@ -13900,13 +13901,7 @@
         }
       },
       "ModelRegistryAccount": {
-        "required": [
-          "node_id",
-          "host_name",
-          "container_images",
-          "registry_type",
-          "syncing"
-        ],
+        "required": ["node_id", "name", "container_images", "registry_type", "syncing"],
         "type": "object",
         "properties": {
           "container_images": {
@@ -13914,7 +13909,7 @@
             "items": { "$ref": "#/components/schemas/ModelContainerImage" },
             "nullable": true
           },
-          "host_name": { "type": "string" },
+          "name": { "type": "string" },
           "node_id": { "type": "string" },
           "registry_type": { "type": "string" },
           "syncing": { "type": "boolean" }
@@ -15117,6 +15112,15 @@
             "type": "array",
             "items": { "type": "string" },
             "nullable": true
+          }
+        }
+      },
+      "UtilsReportOptions": {
+        "type": "object",
+        "properties": {
+          "sbom_format": {
+            "enum": ["syft-json@11.0.1", "cyclonedx-json@1.5", "spdx-json@2.3"],
+            "type": "string"
           }
         }
       },

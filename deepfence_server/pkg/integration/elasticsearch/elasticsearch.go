@@ -44,7 +44,8 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message string, ext
 
 	// send message to this elasticsearch using http
 	// Set up the HTTP request.
-	req, err = http.NewRequest("POST", e.Config.EndpointURL+"/_bulk", bytes.NewBuffer([]byte(payloadMsg)))
+	endpointURL := strings.TrimRight(e.Config.EndpointURL, "/")
+	req, err = http.NewRequest("POST", endpointURL+"/_bulk", bytes.NewBuffer([]byte(payloadMsg)))
 	if err != nil {
 		return err
 	}
@@ -74,23 +75,25 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message string, ext
 	return nil
 }
 
-func (e ElasticSearch) IsValidCredential(ctx context.Context) bool {
+func (e ElasticSearch) IsValidCredential(ctx context.Context) (bool, error) {
+	// url might have trailing slash, remove it
+	url := strings.TrimRight(e.Config.EndpointURL, "/")
 	// Construct the URL for the Elasticsearch index
-	url := fmt.Sprintf("%s/%s", e.Config.EndpointURL, e.Config.Index)
+	url = fmt.Sprintf("%s/%s", url, e.Config.Index)
 
 	// Send a HEAD request to check if the index exists
 	resp, err := http.Head(url)
 	if err != nil {
 		log.Error().Msgf("Error connecting to Elasticsearch: %v", err)
-		return false
+		return false, fmt.Errorf("error connecting to Elasticsearch: %v", err)
 	}
 	defer resp.Body.Close()
 
 	// Check the status code
 	if resp.StatusCode != http.StatusOK {
 		log.Error().Msgf("Elasticsearch index validation failed. Status code: %d", resp.StatusCode)
-		return false
+		return false, fmt.Errorf("Elasticsearch index validation failed. Status code: %d", resp.StatusCode)
 	}
 
-	return true
+	return true, nil
 }

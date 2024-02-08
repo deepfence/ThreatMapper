@@ -94,14 +94,14 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 	return nil
 }
 
-func (s S3) IsValidCredential(ctx context.Context) bool {
+func (s S3) IsValidCredential(ctx context.Context) (bool, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(s.Config.AWSRegion),
 		Credentials: credentials.NewStaticCredentials(s.Config.AWSAccessKey, s.Config.AWSSecretKey, ""),
 	})
 	if err != nil {
 		fmt.Println("Failed to create AWS session", err)
-		return false
+		return false, err
 	}
 	if s.Config.UseIAMRole == "true" {
 		sess, err := session.NewSession(&aws.Config{
@@ -109,7 +109,7 @@ func (s S3) IsValidCredential(ctx context.Context) bool {
 		})
 		if err != nil {
 			fmt.Printf("error creating session: %v", err)
-			return false
+			return false, err
 		}
 
 		awsConfig := aws.Config{
@@ -121,7 +121,7 @@ func (s S3) IsValidCredential(ctx context.Context) bool {
 		if s.Config.TargetAccountRoleARN != "" {
 			if s.Config.AWSAccountID == "" {
 				fmt.Printf("for cross account ECR, account ID is mandatory")
-				return false
+				return false, err
 			}
 			creds := stscreds.NewCredentials(sess, s.Config.TargetAccountRoleARN)
 			awsConfig.Credentials = creds
@@ -133,8 +133,8 @@ func (s S3) IsValidCredential(ctx context.Context) bool {
 	_, err = svc.ListBuckets(nil)
 	if err != nil {
 		fmt.Println("Failed to list buckets", err)
-		return false
+		return false, err
 	}
 
-	return true
+	return true, nil
 }

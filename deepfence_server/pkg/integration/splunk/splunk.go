@@ -120,6 +120,6 @@ func (s Splunk) Sender(in chan []byte, wg *sync.WaitGroup) {
 }
 
 // todo
-func (s Splunk) IsValidCredential(ctx context.Context) bool {
-	return true
+func (s Splunk) IsValidCredential(ctx context.Context) (bool, error) {
+	return true, nil
 }

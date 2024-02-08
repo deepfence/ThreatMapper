@@ -135,7 +135,7 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 	return nil
 }
 
-func (j Jira) IsValidCredential(ctx context.Context) bool {
+func (j Jira) IsValidCredential(ctx context.Context) (bool, error) {
 	auth := jira.BasicAuthTransport{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true},
@@ -152,13 +152,13 @@ func (j Jira) IsValidCredential(ctx context.Context) bool {
 	jiraClient, err := jira.NewClient(auth.Client(), strings.TrimSpace(j.Config.JiraSiteURL))
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		return false
+		return false, err
 	}
 	_, _, err = jiraClient.User.GetSelf()
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		return false
+		return false, fmt.Errorf("failed to connect to Jira: %v", err)
 	}
 
-	return true
+	return true, nil
 }
