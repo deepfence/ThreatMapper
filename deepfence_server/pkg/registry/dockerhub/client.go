@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	dferror "github.com/deepfence/ThreatMapper/deepfence_server/pkg/df-error"
+	dferror "github.com/deepfence/ThreatMapper/deepfence_utils/errors"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 

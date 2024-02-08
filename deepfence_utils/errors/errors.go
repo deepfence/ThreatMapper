@@ -1,4 +1,4 @@
-package df_error
+package errors
 
 import "errors"
 

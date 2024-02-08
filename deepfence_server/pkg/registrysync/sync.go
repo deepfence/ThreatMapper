@@ -12,10 +12,10 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	dferror "github.com/deepfence/ThreatMapper/deepfence_server/pkg/df-error"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
+	dferror "github.com/deepfence/ThreatMapper/deepfence_utils/errors"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 )
 
