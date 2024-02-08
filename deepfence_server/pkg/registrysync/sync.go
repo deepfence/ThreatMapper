@@ -22,17 +22,19 @@ import (
 var ChunkSize = 500
 
 func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgID int32) error {
-	syncSuccess := false
+	syncStatus := SyncStatus{}
 	log := log.WithCtx(ctx)
 
 	// set registry account syncing
-	err := SetRegistryAccountSyncing(ctx, true, syncSuccess, r, pgID)
+	syncStatus.Syncing = true
+	err := SetRegistryAccountSyncing(ctx, syncStatus, r, pgID)
 	if err != nil {
 		return err
 	}
 
 	defer func() {
-		err := SetRegistryAccountSyncing(ctx, false, syncSuccess, r, pgID)
+		syncStatus.Syncing = false
+		err := SetRegistryAccountSyncing(ctx, syncStatus, r, pgID)
 		if err != nil {
 			log.Error().Msgf("failed to set registry account syncing to false, err: %v", err)
 		}
@@ -102,7 +104,7 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	}
 
 	if len(errs) == 0 {
-		syncSuccess = true
+		syncStatus.SyncSucc = true
 	}
 
 	return errors.Join(errs...)
@@ -202,7 +204,12 @@ func convertStructFieldToJSONString(bb map[string]interface{}, key string) map[s
 	return bb
 }
 
-func SetRegistryAccountSyncing(ctx context.Context, syncing, syncSuccess bool, r registry.Registry, pgID int32) error {
+type SyncStatus struct {
+	Syncing  bool
+	SyncSucc bool
+}
+
+func SetRegistryAccountSyncing(ctx context.Context, syncStatus SyncStatus, r registry.Registry, pgID int32) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -224,14 +231,14 @@ func SetRegistryAccountSyncing(ctx context.Context, syncing, syncSuccess bool, r
 	query := `
 	MATCH (m:RegistryAccount{node_id:$registry_id})
 	SET m.syncing=$syncing, m.updated_at=TIMESTAMP()`
-	if syncSuccess {
+	if syncStatus.SyncSucc {
 		query = query + `, m.last_synced_at=TIMESTAMP()`
 	}
 
 	_, err = tx.Run(query,
 		map[string]interface{}{
 			"registry_id": registryID,
-			"syncing":     syncing,
+			"syncing":     syncStatus.Syncing,
 		})
 	if err != nil {
 		return err
