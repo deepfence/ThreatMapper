@@ -134,6 +134,20 @@ func convertSBOMFormat(oldFormatSBOMReader io.Reader, newFormat sbom.Format) ([]
 			return nil, err
 		}
 
+		licenseIDCaseInsensitive := make(map[string]string)
+		for i := len(spdxDoc.OtherLicenses) - 1; i >= 0; i-- {
+			_, found := licenseIDCaseInsensitive[strings.ToLower(spdxDoc.OtherLicenses[i].LicenseIdentifier)]
+			if found {
+				// Delete this entry since same license ID already exists (case-insensitive match)
+				spdxDoc.OtherLicenses = append(spdxDoc.OtherLicenses[:i], spdxDoc.OtherLicenses[i+1:]...)
+			} else {
+				licenseIDCaseInsensitive[strings.ToLower(spdxDoc.OtherLicenses[i].LicenseIdentifier)] = spdxDoc.OtherLicenses[i].LicenseIdentifier
+			}
+		}
+		for i, pkg := range spdxDoc.Packages {
+			spdxDoc.Packages[i].PackageLicenseDeclared = licenseIDCaseInsensitive[strings.ToLower(pkg.PackageLicenseDeclared)]
+		}
+
 		for i, packageFile := range spdxDoc.Files {
 			if !strings.HasPrefix(packageFile.FileName, ".") {
 				spdxDoc.Files[i].FileName = "." + packageFile.FileName
