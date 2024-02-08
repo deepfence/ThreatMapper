@@ -227,6 +227,7 @@ models/SearchSearchNodeReq.ts
 models/SearchSearchScanReq.ts
 models/UtilsAdvancedReportFilters.ts
 models/UtilsReportFilters.ts
+models/UtilsReportOptions.ts
 models/UtilsScanSbomRequest.ts
 models/index.ts
 runtime.ts

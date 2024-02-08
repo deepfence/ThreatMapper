@@ -19,6 +19,12 @@ import {
     UtilsReportFiltersFromJSONTyped,
     UtilsReportFiltersToJSON,
 } from './UtilsReportFilters';
+import type { UtilsReportOptions } from './UtilsReportOptions';
+import {
+    UtilsReportOptionsFromJSON,
+    UtilsReportOptionsFromJSONTyped,
+    UtilsReportOptionsToJSON,
+} from './UtilsReportOptions';
 
 /**
  * 
@@ -38,6 +44,12 @@ export interface ModelGenerateReportReq {
      * @memberof ModelGenerateReportReq
      */
     filters?: UtilsReportFilters;
+    /**
+     * 
+     * @type {UtilsReportOptions}
+     * @memberof ModelGenerateReportReq
+     */
+    options?: UtilsReportOptions;
     /**
      * 
      * @type {string}
@@ -66,7 +78,8 @@ export type ModelGenerateReportReqDurationEnum = typeof ModelGenerateReportReqDu
  */
 export const ModelGenerateReportReqReportTypeEnum = {
     Pdf: 'pdf',
-    Xlsx: 'xlsx'
+    Xlsx: 'xlsx',
+    Sbom: 'sbom'
 } as const;
 export type ModelGenerateReportReqReportTypeEnum = typeof ModelGenerateReportReqReportTypeEnum[keyof typeof ModelGenerateReportReqReportTypeEnum];
 
@@ -93,6 +106,7 @@ export function ModelGenerateReportReqFromJSONTyped(json: any, ignoreDiscriminat
         
         'duration': !exists(json, 'duration') ? undefined : json['duration'],
         'filters': !exists(json, 'filters') ? undefined : UtilsReportFiltersFromJSON(json['filters']),
+        'options': !exists(json, 'options') ? undefined : UtilsReportOptionsFromJSON(json['options']),
         'report_type': json['report_type'],
     };
 }
@@ -108,6 +122,7 @@ export function ModelGenerateReportReqToJSON(value?: ModelGenerateReportReq | nu
         
         'duration': value.duration,
         'filters': UtilsReportFiltersToJSON(value.filters),
+        'options': UtilsReportOptionsToJSON(value.options),
         'report_type': value.report_type,
     };
 }

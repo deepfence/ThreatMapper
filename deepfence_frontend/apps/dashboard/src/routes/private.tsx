@@ -9,6 +9,7 @@ import { actionStopScan } from '@/components/scan-configure-forms/StopScanForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { module as logoutAction } from '@/features/auth/data-components/logoutAction';
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
+import { action as downloadSBOMAction } from '@/features/common/data-component/downloadSBOMAction';
 import { action as downloadScanAction } from '@/features/common/data-component/downloadScanAction';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
@@ -618,6 +619,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'scan/download',
         action: downloadScanAction,
+      },
+      {
+        path: 'sbom/download',
+        action: downloadSBOMAction,
       },
       {
         path: 'secret/rules/scan/:scanId',
