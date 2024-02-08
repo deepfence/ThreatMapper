@@ -15,6 +15,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
+	dferror "github.com/deepfence/ThreatMapper/deepfence_utils/errors"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 )
 
@@ -62,6 +63,10 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 
 	list, err := r.FetchImagesFromRegistry()
 	if err != nil {
+		if err == dferror.ErrTooManyRequests {
+			log.Warn().Msgf("rate limit exceeded for registry even after retry id=%d type=%s", pgID, r.GetRegistryType())
+			return nil
+		}
 		return err
 	}
 
