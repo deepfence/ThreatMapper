@@ -248,8 +248,14 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 		MERGE (m:RegistryAccount{node_id: $node_id })
 		SET m.registry_type = $registry_type,
 		m.syncing = false,
+		m.name = $name,
 		m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`
-	_, err = tx.Run(query, map[string]interface{}{"node_id": registryID, "registry_type": ra.RegistryType, "pgId": cr.ID})
+	_, err = tx.Run(query, map[string]interface{}{
+		"node_id":       registryID,
+		"registry_type": ra.RegistryType,
+		"pgId":          cr.ID,
+		"name":          containerRegistry.Name,
+	})
 	if err != nil {
 		return 0, err
 	}

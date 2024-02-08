@@ -21,18 +21,18 @@ import (
 
 var ChunkSize = 500
 
-func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgID int32) error {
+func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, row postgresqlDb.GetContainerRegistriesRow) error {
 
 	log := log.WithCtx(ctx)
 
 	// set registry account syncing
-	err := SetRegistryAccountSyncing(ctx, true, r, pgID)
+	err := SetRegistryAccountSyncing(ctx, true, r, row.ID)
 	if err != nil {
 		return err
 	}
 
 	defer func() {
-		err := SetRegistryAccountSyncing(ctx, false, r, pgID)
+		err := SetRegistryAccountSyncing(ctx, false, r, row.ID)
 		if err != nil {
 			log.Error().Msgf("failed to set registry account syncing to false, err: %v", err)
 		}
@@ -64,14 +64,14 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	list, err := r.FetchImagesFromRegistry()
 	if err != nil {
 		if err == dferror.ErrTooManyRequests {
-			log.Warn().Msgf("rate limit exceeded for registry even after retry id=%d type=%s", pgID, r.GetRegistryType())
+			log.Warn().Msgf("rate limit exceeded for registry even after retry id=%d type=%s", row.ID, r.GetRegistryType())
 			return nil
 		}
 		return err
 	}
 
 	log.Info().Msgf("sync registry id=%d type=%s found %d images",
-		pgID, r.GetRegistryType(), len(list))
+		row.ID, r.GetRegistryType(), len(list))
 
 	// batch insert to neo4j with retries
 	chunks := chunkBy(list, ChunkSize)
@@ -80,15 +80,15 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	for i := range chunks {
 
 		log.Debug().Msgf("sync registry insert batch %d id=%d type=%s batch=%d",
-			i, pgID, r.GetRegistryType(), len(chunks[i]))
+			i, row.ID, r.GetRegistryType(), len(chunks[i]))
 
 		op := func() error {
-			return insertToNeo4j(ctx, chunks[i], r, pgID)
+			return insertToNeo4j(ctx, chunks[i], r, row.ID, row.Name)
 		}
 
 		notify := func(err error, d time.Duration) {
 			log.Error().Err(err).Msgf("waited %s before retry inserting batch %d id=%d type=%s error: %s",
-				d, i, pgID, r.GetRegistryType(), err)
+				d, i, row.ID, r.GetRegistryType(), err)
 		}
 
 		bf := backoff.NewConstantBackOff(5 * time.Second)
@@ -96,7 +96,7 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 		err := backoff.RetryNotify(op, backoff.WithMaxRetries(bf, 3), notify)
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to insert registry images batch %d id=%d type=%s",
-				i, pgID, r.GetRegistryType())
+				i, row.ID, r.GetRegistryType())
 			errs = append(errs, err)
 		}
 	}
@@ -104,11 +104,14 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	return errors.Join(errs...)
 }
 
-func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r registry.Registry, pgID int32) error {
+func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage,
+	r registry.Registry, pgID int32, name string) error {
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
 	}
+
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return err
@@ -141,6 +144,7 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r
 	m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
 	n.node_type='container_image',
 	m.registry_type=$registry_type,
+	m.name=$name,
 	n.pseudo=false,
 	n.active=true,
 	n.docker_image_tag_list = REDUCE(distinctElements = [], element IN COALESCE(n.docker_image_tag_list, []) + (row.docker_image_name+":"+row.docker_image_tag) | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
@@ -153,6 +157,7 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r
 		map[string]interface{}{
 			"batch": imageMap, "registry_id": registryID,
 			"pgId": pgID, "registry_type": r.GetRegistryType(),
+			"name": name,
 		})
 	if err != nil {
 		return err
