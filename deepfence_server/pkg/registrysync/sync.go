@@ -232,7 +232,7 @@ func SetRegistryAccountSyncing(ctx context.Context, syncStatus SyncStatus, r reg
 	MATCH (m:RegistryAccount{node_id:$registry_id})
 	SET m.syncing=$syncing, m.updated_at=TIMESTAMP()`
 	if syncStatus.SyncSucc {
-		query = query + `, m.last_synced_at=TIMESTAMP()`
+		query += `, m.last_synced_at=TIMESTAMP()`
 	}
 
 	_, err = tx.Run(query,
