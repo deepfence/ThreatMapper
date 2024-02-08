@@ -59,13 +59,6 @@ export const CommonForm = ({
           );
         })}
       </Listbox>
-      <input
-        type="text"
-        name="selectedSeveritiesOrCheckTypeLength"
-        hidden
-        readOnly
-        value={severity.length}
-      />
       <Listbox
         variant="underline"
         label="Select Severity"

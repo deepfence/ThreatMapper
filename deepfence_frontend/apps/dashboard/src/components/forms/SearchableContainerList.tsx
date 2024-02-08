@@ -18,6 +18,7 @@ export type Props = {
   isScannedForSecrets?: boolean;
   isScannedForMalware?: boolean;
 };
+const fieldName = 'containerFilter';
 const PAGE_SIZE = 15;
 const SearchableContainer = ({
   scanType,
@@ -80,18 +81,11 @@ const SearchableContainer = ({
 
   return (
     <>
-      <input
-        type="text"
-        name="selectedContainerLength"
-        hidden
-        readOnly
-        value={selectedContainers.length}
-      />
       <Combobox
         startIcon={
           isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
-        name="containerFilter"
+        name={fieldName}
         triggerVariant={triggerVariant || 'button'}
         label={isSelectVariantType ? 'Container' : undefined}
         getDisplayValue={() =>
@@ -131,7 +125,7 @@ const SearchableContainer = ({
 };
 
 export const SearchableContainerList = (props: Props) => {
-  const { triggerVariant } = props;
+  const { triggerVariant, defaultSelectedContainers = [] } = props;
   const isSelectVariantType = useMemo(() => {
     return triggerVariant === 'select';
   }, [triggerVariant]);
@@ -139,16 +133,20 @@ export const SearchableContainerList = (props: Props) => {
   return (
     <Suspense
       fallback={
-        <Combobox
-          label={isSelectVariantType ? 'Container' : undefined}
-          triggerVariant={triggerVariant}
-          startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-          placeholder="Select container"
-          multiple
-          onQueryChange={() => {
-            // no operation
-          }}
-        />
+        <>
+          <Combobox
+            name={fieldName}
+            value={defaultSelectedContainers}
+            label={isSelectVariantType ? 'Container' : undefined}
+            triggerVariant={triggerVariant}
+            startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+            placeholder="Select container"
+            multiple
+            onQueryChange={() => {
+              // no operation
+            }}
+          />
+        </>
       }
     >
       <SearchableContainer {...props} />

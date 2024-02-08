@@ -55,25 +55,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
   const actionType = formData.getAll('actionType')?.toString();
 
-  // host filter
-  const selectedHostLength = Number(formData.get('selectedHostLength'));
-  const nodeIds = [];
-  if (selectedHostLength > 0) {
-    for (let i = 0; i < selectedHostLength; i++) {
-      nodeIds.push(formData.get(`hostFilter[${i}]`) as string);
-    }
-  }
-
-  // cluster filter
-  const selectedClusterLength = Number(formData.get('selectedClusterLength'));
-  const clusterIds = [];
-  if (selectedClusterLength > 0) {
-    for (let i = 0; i < selectedClusterLength; i++) {
-      clusterIds.push(formData.get(`clusterFilter[${i}]`) as string);
-    }
-  }
-
-  // cloud filter
+  const nodeIds = getArrayTypeValuesFromFormData(formData, 'hostFilter');
+  const clusterIds = getArrayTypeValuesFromFormData(formData, 'clusterFilter');
   const accountIds = getArrayTypeValuesFromFormData(formData, 'cloudAccountsFilter');
 
   if (!actionType) {
