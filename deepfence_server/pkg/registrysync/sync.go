@@ -21,20 +21,20 @@ import (
 
 var ChunkSize = 500
 
-func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgID int32) error {
+func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, row postgresqlDb.GetContainerRegistriesRow) error {
 	syncStatus := SyncStatus{}
 	log := log.WithCtx(ctx)
 
 	// set registry account syncing
 	syncStatus.Syncing = true
-	err := SetRegistryAccountSyncing(ctx, syncStatus, r, pgID)
+	err := SetRegistryAccountSyncing(ctx, syncStatus, r, row.ID)
 	if err != nil {
 		return err
 	}
 
 	defer func() {
 		syncStatus.Syncing = false
-		err := SetRegistryAccountSyncing(ctx, syncStatus, r, pgID)
+		err := SetRegistryAccountSyncing(ctx, syncStatus, r, row.ID)
 		if err != nil {
 			log.Error().Msgf("failed to set registry account syncing to false, err: %v", err)
 		}
