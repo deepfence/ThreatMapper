@@ -136,9 +136,13 @@ func convertSBOMFormat(oldFormatSBOMReader io.Reader, newFormat sbom.Format) ([]
 
 		for i, packageFile := range spdxDoc.Files {
 			if !strings.HasPrefix(packageFile.FileName, ".") {
-				packageFile.FileName = "." + packageFile.FileName
+				spdxDoc.Files[i].FileName = "." + packageFile.FileName
 			}
-			spdxDoc.Files[i] = packageFile
+		}
+
+		newFormatSBOM, err = json.MarshalIndent(spdxDoc, "", "\t")
+		if err != nil {
+			return nil, err
 		}
 	}
 

@@ -91,6 +91,7 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	if report.Status != utils.ScanStatusFailed {
 		err = mc.DeleteFile(r.Context(), report.StoragePath, false, minio.RemoveObjectOptions{ForceDelete: true})
 		if err != nil {
+			log.Error().Err(err).Msg("failed to delete file in file server")
 			h.respondError(err, w)
 			return
 		}

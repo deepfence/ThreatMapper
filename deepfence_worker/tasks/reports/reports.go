@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 	"os"
 	"path"
@@ -37,7 +38,9 @@ func fileExt(reportType sdkUtils.ReportType) string {
 
 func reportFileName(params sdkUtils.ReportParams) string {
 	if sdkUtils.ReportType(params.ReportType) == sdkUtils.ReportSBOM {
-		return "sbom_" + params.Filters.ScanID + fileExt(sdkUtils.ReportSBOM)
+		sbomFormat := strings.Replace(params.Options.SBOMFormat, "@", "_", 1)
+		sbomFormat = strings.Replace(sbomFormat, ".", "_", 1)
+		return fmt.Sprintf("sbom_%s_%s%s", sbomFormat, params.ReportID, fileExt(sdkUtils.ReportSBOM))
 	}
 	list := []string{params.Filters.ScanType, params.Filters.NodeType, params.ReportID}
 	return strings.Join(list, "_") + fileExt(sdkUtils.ReportType(params.ReportType))
@@ -124,7 +127,7 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 
 	reportName := path.Join("/report", reportFileName(params))
 	res, err := mc.UploadLocalFile(ctx, reportName,
-		localReportPath, false, putOpts(sdkUtils.ReportType(params.ReportType)))
+		localReportPath, true, putOpts(sdkUtils.ReportType(params.ReportType)))
 	if err != nil {
 		log.Error().Err(err).Msg("failed to upload file to minio")
 		return nil
