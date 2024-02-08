@@ -105,13 +105,7 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
         auth_header: formBody.authKey,
       };
     case IntegrationType.awsSecurityHub: {
-      const selectedAccountsLength = Number(formData.get('selectedCloudAccountsLength'));
-      const accounts = [];
-      if (selectedAccountsLength > 0) {
-        for (let i = 0; i < selectedAccountsLength; i++) {
-          accounts.push(formData.get(`cloudAccountsFilter[${i}]`) as string);
-        }
-      }
+      const accounts = getArrayTypeValuesFromFormData(formData, 'cloudAccountsFilter');
       return {
         aws_access_key: formBody.accessKey,
         aws_secret_key: formBody.secretKey,
@@ -195,61 +189,15 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       action: _actionType as ActionEnumType,
     };
   }
-
   if (_actionType === ActionEnumType.ADD || _actionType === ActionEnumType.EDIT) {
-    // filters
-    // statuses filter
-    const selectedStatusesLength = Number(formData.get('selectedStatusesLength'));
-    const statusFilter = [];
-    if (selectedStatusesLength > 0) {
-      for (let i = 0; i < selectedStatusesLength; i++) {
-        statusFilter.push(formData.get(`statusFilter[${i}]`) as string);
-      }
-    }
-    // severities filter
-    const selectedSeveritiesLength = Number(formData.get('selectedSeveritiesLength'));
-    const severityFilter = [];
-    if (selectedSeveritiesLength > 0) {
-      for (let i = 0; i < selectedSeveritiesLength; i++) {
-        severityFilter.push(formData.get(`severityFilter[${i}]`) as string);
-      }
-    }
     const intervalFilter = formData.get('interval')?.toString();
-
-    // host filter
-    const selectedHostLength = Number(formData.get('selectedHostLength'));
-    const hostFilter = [];
-    if (selectedHostLength > 0) {
-      for (let i = 0; i < selectedHostLength; i++) {
-        hostFilter.push(formData.get(`hostFilter[${i}]`) as string);
-      }
-    }
-    // container filter
-    const selectedContainerLength = Number(formData.get('selectedContainerLength'));
-    const containerFilter = [];
-    if (selectedContainerLength > 0) {
-      for (let i = 0; i < selectedContainerLength; i++) {
-        containerFilter.push(formData.get(`containerFilter[${i}]`) as string);
-      }
-    }
-
-    // image filter
-    const selectedImageLength = Number(formData.get('selectedImageLength'));
-    const imageFilter = [];
-    if (selectedImageLength > 0) {
-      for (let i = 0; i < selectedImageLength; i++) {
-        imageFilter.push(formData.get(`imageFilter[${i}]`) as string);
-      }
-    }
-
-    // cluster filter
-    const selectedClusterLength = Number(formData.get('selectedClusterLength'));
-    const clusterFilter = [];
-    if (selectedClusterLength > 0) {
-      for (let i = 0; i < selectedClusterLength; i++) {
-        clusterFilter.push(formData.get(`clusterFilter[${i}]`) as string);
-      }
-    }
+    // filters
+    const statusFilter = getArrayTypeValuesFromFormData(formData, 'statusFilter');
+    const severityFilter = getArrayTypeValuesFromFormData(formData, 'severityFilter');
+    const hostFilter = getArrayTypeValuesFromFormData(formData, 'hostFilter');
+    const containerFilter = getArrayTypeValuesFromFormData(formData, 'containerFilter');
+    const imageFilter = getArrayTypeValuesFromFormData(formData, 'imageFilter');
+    const clusterFilter = getArrayTypeValuesFromFormData(formData, 'clusterFilter');
 
     const _filters: {
       node_ids: ModelNodeIdentifier[];

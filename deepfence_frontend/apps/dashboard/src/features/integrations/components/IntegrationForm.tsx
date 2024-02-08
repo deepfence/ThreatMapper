@@ -338,13 +338,6 @@ const AdvancedFilters = ({
         {isComplianceNotification(notificationType) ||
         isCloudComplianceNotification(notificationType) ? (
           <>
-            <input
-              type="text"
-              name="selectedStatusesLength"
-              hidden
-              readOnly
-              value={selectedStatus.length}
-            />
             {isComplianceNotification(notificationType) && (
               <Listbox
                 variant="underline"
@@ -408,13 +401,6 @@ const AdvancedFilters = ({
 
         {scanTypes.includes(notificationType as ScanTypeEnum) ? (
           <>
-            <input
-              type="text"
-              name="selectedSeveritiesLength"
-              hidden
-              readOnly
-              value={selectedSeverity.length}
-            />
             <Listbox
               variant="underline"
               value={selectedSeverity}

@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
-
+const fieldName = 'clusterFilter';
 const PAGE_SIZE = 15;
 type SearchableClusterListProps = {
   onChange?: (value: string[]) => void;
@@ -77,18 +77,11 @@ const SearchableCluster = ({
 
   return (
     <>
-      <input
-        type="text"
-        name="selectedClusterLength"
-        hidden
-        readOnly
-        value={selectedClusters.length}
-      />
       <Combobox
         startIcon={
           isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
-        name="clusterFilter"
+        name={fieldName}
         triggerVariant={triggerVariant || 'button'}
         label={isSelectVariantType ? 'Cluster' : undefined}
         getDisplayValue={() =>
@@ -132,7 +125,7 @@ const SearchableCluster = ({
 };
 
 export const SearchableClusterList = (props: SearchableClusterListProps) => {
-  const { triggerVariant } = props;
+  const { triggerVariant, defaultSelectedClusters = [] } = props;
   const isSelectVariantType = useMemo(() => {
     return triggerVariant === 'select';
   }, [triggerVariant]);
@@ -140,19 +133,23 @@ export const SearchableClusterList = (props: SearchableClusterListProps) => {
   return (
     <Suspense
       fallback={
-        <Combobox
-          label={isSelectVariantType ? 'Cluster' : undefined}
-          triggerVariant={triggerVariant || 'button'}
-          startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-          placeholder="Select cluster"
-          multiple
-          onQueryChange={() => {
-            // no operation
-          }}
-          getDisplayValue={() => {
-            return props.displayValue ? props.displayValue : 'Select cluster';
-          }}
-        />
+        <>
+          <Combobox
+            name={fieldName}
+            value={defaultSelectedClusters}
+            label={isSelectVariantType ? 'Cluster' : undefined}
+            triggerVariant={triggerVariant || 'button'}
+            startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+            placeholder="Select cluster"
+            multiple
+            onQueryChange={() => {
+              // no operation
+            }}
+            getDisplayValue={() => {
+              return props.displayValue ? props.displayValue : 'Select cluster';
+            }}
+          />
+        </>
       }
     >
       <SearchableCluster {...props} />

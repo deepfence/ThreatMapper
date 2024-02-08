@@ -20,6 +20,7 @@ export type SearchableCloudAccountsListProps = {
   color?: 'error' | 'default';
 };
 
+const fieldName = 'cloudAccountsFilter';
 const PAGE_SIZE = 15;
 const SearchableCloudAccounts = ({
   cloudProvider,
@@ -76,20 +77,13 @@ const SearchableCloudAccounts = ({
 
   return (
     <>
-      <input
-        type="text"
-        name="selectedCloudAccountsLength"
-        hidden
-        readOnly
-        value={selectedAccounts.length}
-      />
       <Combobox
         label={label}
         triggerVariant={triggerVariant}
         startIcon={
           isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
-        name="cloudAccountsFilter"
+        name={fieldName}
         getDisplayValue={() =>
           isSelectVariantType && selectedAccounts.length > 0
             ? `${selectedAccounts.length} selected`
@@ -132,26 +126,36 @@ const SearchableCloudAccounts = ({
 };
 
 export const SearchableCloudAccountsList = (props: SearchableCloudAccountsListProps) => {
-  const { cloudProvider, label, triggerVariant, displayValue } = props;
+  const {
+    cloudProvider,
+    label,
+    triggerVariant,
+    displayValue,
+    defaultSelectedAccounts = [],
+  } = props;
   return (
     <Suspense
       fallback={
-        <Combobox
-          label={label}
-          triggerVariant={triggerVariant}
-          startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-          getDisplayValue={() => {
-            return displayValue
-              ? displayValue
-              : cloudProvider
-              ? `${cloudProvider} account`
-              : 'Cloud account';
-          }}
-          multiple
-          onQueryChange={() => {
-            // no operation
-          }}
-        />
+        <>
+          <Combobox
+            name={fieldName}
+            value={defaultSelectedAccounts}
+            label={label}
+            triggerVariant={triggerVariant}
+            startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+            getDisplayValue={() => {
+              return displayValue
+                ? displayValue
+                : cloudProvider
+                ? `${cloudProvider} account`
+                : 'Cloud account';
+            }}
+            multiple
+            onQueryChange={() => {
+              // no operation
+            }}
+          />
+        </>
       }
     >
       <SearchableCloudAccounts {...props} />
