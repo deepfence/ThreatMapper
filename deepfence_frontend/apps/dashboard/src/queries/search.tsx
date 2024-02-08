@@ -1499,6 +1499,7 @@ export const searchQueries = createQueryKeys('search', {
         registryAccounts: {
           nodeId: string;
           nodeName: string;
+          registryType: string;
         }[];
       }> => {
         const { searchText, size, order } = filters;
@@ -1570,7 +1571,8 @@ export const searchQueries = createQueryKeys('search', {
             .map((res) => {
               return {
                 nodeId: res.node_id,
-                nodeName: res.host_name,
+                nodeName: res.name,
+                registryType: res.registry_type,
               };
             }),
         };

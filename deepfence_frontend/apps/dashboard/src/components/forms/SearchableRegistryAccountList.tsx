@@ -110,10 +110,13 @@ const SearchableRegistryAccount = ({
           .flatMap((page) => {
             return page.registryAccounts;
           })
-          .map((host, index) => {
+          .map((registryAccount, index) => {
             return (
-              <ComboboxOption key={`${host.nodeId}-${index}`} value={host[valueKey]}>
-                {host.nodeId}
+              <ComboboxOption
+                key={`${registryAccount.nodeId}-${index}`}
+                value={registryAccount[valueKey]}
+              >
+                {registryAccount.nodeName} ({registryAccount.registryType})
               </ComboboxOption>
             );
           })}
