@@ -319,6 +319,7 @@ const ScansTable = () => {
   const [selectedNode, setSelectedNode] = useState<{
     nodeName: string;
     scanId: string;
+    nodeType: string;
   } | null>(null);
 
   const columns = useMemo(() => {
@@ -352,6 +353,7 @@ const ScansTable = () => {
                   setSelectedNode({
                     scanId: info.row.original.scan_id,
                     nodeName: info.row.original.node_name,
+                    nodeType: info.row.original.node_type,
                   });
                 }}
                 href="#"
@@ -432,6 +434,7 @@ const ScansTable = () => {
         <SbomModal
           scanId={selectedNode.scanId}
           nodeName={selectedNode.nodeName}
+          nodeType={selectedNode.nodeType}
           onClose={() => {
             setSelectedNode(null);
           }}

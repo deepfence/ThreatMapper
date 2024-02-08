@@ -201,4 +201,5 @@ export * from './SearchSearchNodeReq';
 export * from './SearchSearchScanReq';
 export * from './UtilsAdvancedReportFilters';
 export * from './UtilsReportFilters';
+export * from './UtilsReportOptions';
 export * from './UtilsScanSbomRequest';
