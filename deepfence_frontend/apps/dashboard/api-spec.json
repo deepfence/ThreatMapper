@@ -13896,13 +13896,7 @@
         }
       },
       "ModelRegistryAccount": {
-        "required": [
-          "node_id",
-          "host_name",
-          "container_images",
-          "registry_type",
-          "syncing"
-        ],
+        "required": ["node_id", "name", "container_images", "registry_type", "syncing"],
         "type": "object",
         "properties": {
           "container_images": {
@@ -13910,7 +13904,7 @@
             "items": { "$ref": "#/components/schemas/ModelContainerImage" },
             "nullable": true
           },
-          "host_name": { "type": "string" },
+          "name": { "type": "string" },
           "node_id": { "type": "string" },
           "registry_type": { "type": "string" },
           "syncing": { "type": "boolean" }
