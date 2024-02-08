@@ -20,6 +20,7 @@ import (
 
 const (
 	VULNERABILITY    = "vulnerability"
+	SBOM             = "sbom"
 	SECRET           = "secret"
 	MALWARE          = "malware"
 	COMPLIANCE       = "compliance"
