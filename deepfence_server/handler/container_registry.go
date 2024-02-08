@@ -772,7 +772,7 @@ func (h *Handler) SyncRegistry(rCtx context.Context, pgID int32, registry regist
 	// Set sync=true. Otherwise, the status in UI will be "Ready to scan" when an account was just added,
 	// because the asynq job may take some time to start
 	if registry != nil {
-		err := registrysync.SetRegistryAccountSyncing(rCtx, true, registry, pgID)
+		err := registrysync.SetRegistryAccountSyncing(rCtx, true, false, registry, pgID)
 		if err != nil {
 			log.Warn().Msgf(err.Error())
 		}
