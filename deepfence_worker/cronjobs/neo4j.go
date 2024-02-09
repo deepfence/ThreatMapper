@@ -133,7 +133,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		MATCH (n:ContainerImage)<-[:HOSTS]-(m:RegistryAccount)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND n.active = true
-		AND m.last_synced_at >= m.updated_at
+		AND m.last_synced_at = m.updated_at
 		WITH n LIMIT 10000
 		SET n.active=false, n.updated_at=TIMESTAMP()`,
 		map[string]interface{}{"time_ms": dbRegistryCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
