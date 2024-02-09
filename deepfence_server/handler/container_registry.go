@@ -768,11 +768,13 @@ func (h *Handler) Summary(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) SyncRegistry(rCtx context.Context, pgID int32, registry registry.Registry) error {
 	log.Info().Msgf("sync registry with id=%d", pgID)
+	syncStatus := registrysync.SyncStatus{}
 
 	// Set sync=true. Otherwise, the status in UI will be "Ready to scan" when an account was just added,
 	// because the asynq job may take some time to start
 	if registry != nil {
-		err := registrysync.SetRegistryAccountSyncing(rCtx, true, registry, pgID)
+		syncStatus.Syncing = true
+		err := registrysync.SetRegistryAccountSyncing(rCtx, syncStatus, registry, pgID)
 		if err != nil {
 			log.Warn().Msgf(err.Error())
 		}
