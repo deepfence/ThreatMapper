@@ -6,7 +6,7 @@ BINPATH="deepfence-agent-bin-$VERSION"
 
 rm -rf $BINPATH
 
-wget https://deepfence-public.s3.amazonaws.com/ThreatStryker/agent-sensor/v2.1.0/30d25325-83fc-4b42-9682-a06cd1249ad9/deepfence-agent-2.tar.gz
+wget https://deepfence-public.s3.amazonaws.com/ThreatMapper/agent-sensor/v2.1.0/cc11435d-bf5f-4a16-8c92-0a5a27e06b92/deepfence-agent-2.tar.gz
 
 mkdir -p fargate/$BINPATH
 tar -zxvf deepfence-agent-2.tar.gz -C fargate/$BINPATH/
