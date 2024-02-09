@@ -62,6 +62,11 @@ func NewContextWithNameSpace(ns NamespaceID) context.Context {
 	return ctx
 }
 
+func ContextWithNameSpace(ctx context.Context, ns NamespaceID) context.Context {
+	//nolint:staticcheck
+	return context.WithValue(ctx, NamespaceKey, ns)
+}
+
 func ExtractNamespace(ctx context.Context) (NamespaceID, error) {
 	namespace := ctx.Value(NamespaceKey)
 	if namespace == nil {

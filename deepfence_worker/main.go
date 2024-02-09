@@ -150,7 +150,7 @@ func main() {
 
 func initializeTelemetry(mode string) error {
 
-	telemetryEnabled := os.Getenv("DEEPFENCE_TELEMETRY_ENABLED") != ""
+	telemetryEnabled := os.Getenv("DEEPFENCE_TELEMETRY_ENABLED") != "false"
 
 	if telemetryEnabled {
 		telemetryHost := utils.GetEnvOrDefault("DEEPFENCE_TELEMETRY_HOST", "deepfence-telemetry")

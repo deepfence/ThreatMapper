@@ -33,34 +33,37 @@ func (i *Ingester) processAuditLog(ctx context.Context) {
 			return
 		case record := <-i.auditC:
 
+			var err error
+
+			spanCtx, span := otel.Tracer("audit-log").Start(context.Background(), "ingest-audit-log")
+			defer func() {
+				if err != nil {
+					span.RecordError(err)
+					span.SetStatus(codes.Error, err.Error())
+				}
+				span.End()
+			}()
+
 			namespace := getNamespace(record.Headers)
 
-			ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
+			ctx := directory.ContextWithNameSpace(spanCtx, directory.NamespaceID(namespace))
 
 			log := log.WithCtx(ctx)
 
-			spanCtx, span := otel.Tracer("audit-log").Start(ctx, "ingest-audit-log")
-
 			pgClient, err := directory.PostgresClient(ctx)
 			if err != nil {
-				log.Error().Str("namespace", namespace).Err(err).Msg("failed to get db connection")
+				log.Error().Err(err).Msg("failed to get db connection")
 			}
 
 			var params postgresql_db.CreateAuditLogParams
 
 			if err := json.Unmarshal(record.Value, &params); err != nil {
-				log.Error().Err(err).Str("namespace", namespace).Msg("failed to unmarshal audit log")
-				span.RecordError(err)
-				span.SetStatus(codes.Error, err.Error())
-				span.End()
+				log.Error().Err(err).Msg("failed to unmarshal audit log")
 				continue
 			}
 
-			if err := pgClient.CreateAuditLog(spanCtx, params); err != nil {
-				log.Error().Err(err).Str("namespace", namespace).Msgf("failed to insert audit log params: %+v", params)
-				span.RecordError(err)
-				span.SetStatus(codes.Error, err.Error())
-				span.End()
+			if err := pgClient.CreateAuditLog(ctx, params); err != nil {
+				log.Error().Err(err).Msgf("failed to insert audit log params: %+v", params)
 				continue
 			}
 
