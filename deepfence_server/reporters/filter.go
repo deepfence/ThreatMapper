@@ -51,7 +51,7 @@ type FieldsFilters struct {
 var severityFields = map[string]struct{}{"cve_severity": {}, "file_severity": {}, "level": {}}
 
 var (
-	nodeTypeCondition = map[string]bool{
+	nodeLabelsAvailableForNodeType = map[string]bool{
 		"host":            true,
 		"image":           true,
 		"container_image": true,
@@ -71,7 +71,20 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 		reverseOperator = " NOT "
 	}
 	for k, vs := range filter.FieldsValues {
-		if k == "node_type" && nodeTypeCondition[k] {
+		acceptedNodeTypesFound := true
+		if k == "node_type" {
+			for _, v := range vs {
+				if !nodeLabelsAvailableForNodeType[v.(string)] {
+					acceptedNodeTypesFound = false
+					break
+				}
+			}
+		}
+		if k == "node_type" && acceptedNodeTypesFound {
+			// If node types are part of supported list, use node label filter (better in performance) instead of field filter
+			// MATCH (:VulnerabilityScan) -[:SCANNED]-> (m) WHERE (m:Container)
+			// vs
+			// MATCH (:VulnerabilityScan) -[:SCANNED]-> (m) WHERE m.node_type IN ['container']
 			labels := []string{}
 			for i := range vs {
 				switch vs[i] {
