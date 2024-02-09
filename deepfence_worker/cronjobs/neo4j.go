@@ -669,6 +669,15 @@ func LinkNodes(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
+	if _, err = session.Run(`
+		MATCH (n:ContainerImage)
+		WHERE NOT exists((n) -[:ALIAS]-> ())
+		MERGE (t:ImageTag{node_id: n.docker_image_name + "_" + n.docker_image_tag})
+		MERGE (n) -[:ALIAS]-> (t)
+		SET t.updated_at = TIMESTAMP()`,
+		map[string]interface{}{}, txConfig); err != nil {
+		return err
+	}
 	log.Debug().Msgf("Link Nodes task took: %v", time.Since(start))
 
 	return nil

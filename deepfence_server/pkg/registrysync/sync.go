@@ -138,26 +138,23 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage,
 	insertQuery := `
 	UNWIND $batch as row
 	MERGE (n:ContainerImage{node_id:row.node_id})
-	MERGE (s:ImageStub{node_id: row.docker_image_name + "_" + $registry_id, 
-	docker_image_name: row.docker_image_name})
-	MERGE (t:ImageTag{node_id: row.docker_image_name + "_" + row.docker_image_tag})
+	MERGE (s:ImageStub{node_id: row.docker_image_name + "_" + $registry_id, docker_image_name: row.docker_image_name})
 	MERGE (n) -[:IS]-> (s)
-	MERGE (n) -[:ALIAS]-> (t)
 	MERGE (m:RegistryAccount{node_id:$registry_id})
 	MERGE (m) -[:HOSTS]-> (n)
 	MERGE (m) -[:HOSTS]-> (s)
-	SET n+= row, n.updated_at = TIMESTAMP(),
-	m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
-	n.node_type='container_image',
-	m.registry_type=$registry_type,
-	m.name=$name,
-	n.pseudo=false,
-	n.active=true,
-	n.docker_image_tag_list = REDUCE(distinctElements = [], element IN COALESCE(n.docker_image_tag_list, []) + (row.docker_image_name+":"+row.docker_image_tag) | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
-	n.node_name=n.docker_image_name+":"+n.docker_image_tag+" ("+n.short_image_id+")",
-	s.updated_at = TIMESTAMP(),
-	s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
-	t.updated_at = TIMESTAMP()`
+	SET n+= row,
+		n.updated_at = TIMESTAMP(),
+		m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
+		n.node_type='container_image',
+		m.registry_type=$registry_type,
+		m.name=$name,
+		n.pseudo=false,
+		n.active=true,
+		n.docker_image_tag_list = REDUCE(distinctElements = [], element IN COALESCE(n.docker_image_tag_list, []) + (row.docker_image_name+":"+row.docker_image_tag) | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
+		n.node_name=n.docker_image_name+":"+n.docker_image_tag+" ("+n.short_image_id+")",
+		s.updated_at = TIMESTAMP(),
+		s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`
 
 	_, err = tx.Run(insertQuery,
 		map[string]interface{}{
