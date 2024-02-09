@@ -47,6 +47,7 @@ require (
 	github.com/prometheus/client_golang v1.18.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/zerolog v1.31.0
+	github.com/spdx/tools-golang v0.5.3
 	github.com/twmb/franz-go v1.15.4
 	github.com/twmb/franz-go/pkg/kadm v1.10.0
 	github.com/xuri/excelize/v2 v2.8.0
@@ -222,7 +223,6 @@ require (
 	github.com/sethvargo/go-retry v0.2.4 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/spdx/tools-golang v0.5.3 // indirect
 	github.com/spf13/afero v1.10.0 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
 	github.com/spf13/cobra v1.7.0 // indirect
