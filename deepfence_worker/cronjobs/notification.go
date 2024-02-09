@@ -307,22 +307,46 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		FieldsValues: map[string][]interface{}{"status": {utils.ScanStatusSuccess}},
 	}
 
-	profileStart := time.Now()
-	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource],
-		filters.NodeIds, filters.FieldsFilters, model.FetchWindow{})
-	if err != nil {
-		return err
+	scansList := []model.ScanInfo{}
+	scanType, ok := utils.DetectedNodeScanType[integrationRow.Resource]
+	if !ok {
+		log.Error().Msgf("Unsupported scan type in integration: %v", integrationRow)
+		return errors.New("Unsupported scan type in integration")
 	}
-	neo4j_query_1 := time.Since(profileStart).Milliseconds()
+
+	reqNC, reqC := integrationFilters2SearchScanReqs(filters)
+	profileStart := time.Now()
+	if reqNC != nil {
+		scansInfo, err := reporters_search.SearchScansReport(ctx, *reqNC, scanType)
+		if err != nil {
+			log.Error().Msgf("Failed to get scans for non-container type, error: %v", err)
+			return err
+		} else if len(scansInfo) > 0 {
+			scansList = append(scansList, scansInfo...)
+		}
+	}
+	neo4j_query_nc := time.Since(profileStart).Milliseconds()
+
+	profileStart = time.Now()
+	if reqC != nil {
+		containerScanInfo, err := reporters_search.SearchScansReport(ctx, *reqC, scanType)
+		if err != nil {
+			log.Error().Msgf("Failed to get scans for container type, error: %v", err)
+			return err
+		} else if len(containerScanInfo) > 0 {
+			scansList = append(scansList, containerScanInfo...)
+		}
+	}
+	neo4j_query_c := time.Since(profileStart).Milliseconds()
 
 	// nothing to notify
-	if len(list.ScansInfo) == 0 {
+	if len(scansList) == 0 {
 		log.Info().Msgf("No %s scans to notify at timestamp (%d,%d)",
 			integrationRow.Resource, last30sTimeStamp, ts)
 		return nil
 	}
 
-	log.Info().Msgf("list of %s scans to notify: %+v", integrationRow.Resource, list)
+	log.Info().Msgf("list of %s scans to notify: %+v", integrationRow.Resource, scansList)
 
 	filters = model.IntegrationFilters{}
 	err = json.Unmarshal(integrationRow.Filters, &filters)
@@ -334,7 +358,15 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 	totalQueryTime := int64(0)
 	totalSendTime := int64(0)
 
-	for _, scan := range list.ScansInfo {
+	scanIDMap := make(map[string]bool)
+	for _, scan := range scansList {
+		//This map is required as we might have duplicates in the scansList
+		//for the containers
+		if _, ok := scanIDMap[scan.ScanID]; ok {
+			continue
+		}
+		scanIDMap[scan.ScanID] = true
+
 		profileStart = time.Now()
 		results, common, err := reporters_scan.GetScanResults[T](ctx,
 			utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanID,
@@ -389,7 +421,8 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 	}
 	log.Info().Msgf("%s Total Time taken for integration %s: %d", integrationRow.Resource,
 		integrationRow.IntegrationType, time.Since(startTime).Milliseconds())
-	log.Debug().Msgf("Time taken for neo4j_query_1: %d", neo4j_query_1)
+	log.Debug().Msgf("Time taken for neo4j_query_nc: %d", neo4j_query_nc)
+	log.Debug().Msgf("Time taken for neo4j_query_c: %d", neo4j_query_c)
 	log.Debug().Msgf("Time taken for neo4j_query_2: %d", totalQueryTime)
 	log.Debug().Msgf("Time taken for sending data : %d", totalSendTime)
 	return nil
@@ -410,4 +443,61 @@ func FormatForMessagingApps[T any](results []T, resourceType string) []map[strin
 		data = append(data, d)
 	}
 	return data
+}
+
+func integrationFilters2SearchScanReqs(filters model.IntegrationFilters) (*reporters_search.SearchScanReq,
+	*reporters_search.SearchScanReq) {
+
+	scanFilter := reporters_search.SearchFilter{
+		Filters: filters.FieldsFilters,
+	}
+
+	filterMap := make(map[string][]interface{})
+	containerFilterMap := make(map[string][]interface{})
+
+	containerNames := make([]interface{}, len(filters.ContainerNames))
+	for i, v := range filters.ContainerNames {
+		containerNames[i] = v
+	}
+
+	var nodeIDs, nodeTypes []interface{}
+	nodeTypeSet := make(map[string]bool)
+	for _, v := range filters.NodeIds {
+		nodeIDs = append(nodeIDs, v.NodeID)
+		if _, ok := nodeTypeSet[v.NodeType]; !ok {
+			nodeTypeSet[v.NodeType] = true
+			nodeTypes = append(nodeTypes, v.NodeType)
+			if v.NodeType == "image" {
+				nodeTypeSet["container_image"] = true
+				nodeTypes = append(nodeTypes, "container_image")
+			}
+		}
+	}
+
+	if len(nodeIDs) > 0 {
+		filterMap["node_id"] = nodeIDs
+		filterMap["node_type"] = nodeTypes
+	}
+
+	if len(containerNames) > 0 {
+		containerFilterMap["node_name"] = containerNames
+		containerFilterMap["node_type"] = []interface{}{"container"}
+	}
+
+	var reqNC, reqC *reporters_search.SearchScanReq
+	if len(filterMap) > 0 {
+		reqNC = &reporters_search.SearchScanReq{}
+		reqNC.NodeFilter.Filters.ContainsFilter.FieldsValues = filterMap
+		reqNC.ScanFilter = scanFilter
+		reqNC.Window = model.FetchWindow{}
+	}
+
+	if len(containerFilterMap) > 0 {
+		reqC = &reporters_search.SearchScanReq{}
+		reqC.NodeFilter.Filters.ContainsFilter.FieldsValues = containerFilterMap
+		reqC.ScanFilter = scanFilter
+		reqC.Window = model.FetchWindow{}
+	}
+
+	return reqNC, reqC
 }
