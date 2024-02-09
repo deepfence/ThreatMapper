@@ -568,6 +568,7 @@ export const useIntegrationTableColumn = (
             statuses?: string[];
             node_ids?: Array<{ node_id: string; node_type: string }> | null;
             custom_fields?: string[];
+            container_names?: string[];
           } = {};
           const filters = row.original.filters;
           const containFilter = filters?.fields_filters?.contains_filter;
@@ -577,6 +578,10 @@ export const useIntegrationTableColumn = (
 
           if (filters?.node_ids && filters?.node_ids.length) {
             displayFilters.node_ids = filters?.node_ids;
+          }
+
+          if (filters?.container_names && filters?.container_names.length) {
+            displayFilters.container_names = filters?.container_names;
           }
 
           if (hasSeverityOrStatus) {

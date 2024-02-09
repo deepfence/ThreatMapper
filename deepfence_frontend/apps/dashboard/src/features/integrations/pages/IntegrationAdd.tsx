@@ -168,6 +168,7 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
       break;
   }
 };
+
 type ActionData = {
   action: ActionEnumType;
   message?: string;
@@ -202,6 +203,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
     const _filters: {
       node_ids: ModelNodeIdentifier[];
       fields_filters: ReportersFieldsFilters;
+      container_names: string[];
     } = {
       fields_filters: {
         compare_filter: null,
@@ -211,6 +213,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
           order_fields: null,
         },
       },
+      container_names: [],
       node_ids: [],
     };
 
@@ -239,15 +242,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       nodeIds.push(..._images);
     }
     if (containerFilter.length) {
-      const _containers: ModelNodeIdentifier[] = containerFilter.map<ModelNodeIdentifier>(
-        (id) => {
-          return {
-            node_id: id,
-            node_type: ModelNodeIdentifierNodeTypeEnum.Container,
-          };
-        },
-      );
-      nodeIds.push(..._containers);
+      _filters.container_names = containerFilter;
     }
     if (clusterFilter.length) {
       const _clusters: ModelNodeIdentifier[] = clusterFilter.map<ModelNodeIdentifier>(

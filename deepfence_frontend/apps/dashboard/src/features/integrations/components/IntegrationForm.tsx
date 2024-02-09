@@ -161,18 +161,6 @@ const getImagesFilter = (nodeIds: ModelIntegrationFilters['node_ids'] = []) => {
   }, []);
 };
 
-const getContainersFilter = (nodeIds: ModelIntegrationFilters['node_ids'] = []) => {
-  if (!nodeIds) {
-    return [];
-  }
-  return nodeIds.reduce((acc: string[], current) => {
-    if (current.node_type === ModelNodeIdentifierNodeTypeEnum.Container) {
-      acc.push(current.node_id);
-    }
-    return acc;
-  }, []);
-};
-
 const getClustersFilter = (nodeIds: ModelIntegrationFilters['node_ids'] = []) => {
   if (!nodeIds) {
     return [];
@@ -237,9 +225,7 @@ const AdvancedFilters = ({
   // to main clear state for combobox
   const [hosts, setHosts] = useState<string[]>(getHostsFilter(filters?.node_ids));
   const [images, setImages] = useState<string[]>(getImagesFilter(filters?.node_ids));
-  const [containers, setContainers] = useState<string[]>(
-    getContainersFilter(filters?.node_ids),
-  );
+  const [containers, setContainers] = useState<string[]>(filters?.container_names ?? []);
   const [clusters, setClusters] = useState<string[]>(
     getClustersFilter(filters?.node_ids),
   );
@@ -304,6 +290,7 @@ const AdvancedFilters = ({
                 setContainers([]);
               }}
               active={false}
+              valueKey="nodeName"
             />
           )}
         {!isComplianceNotification(notificationType) &&

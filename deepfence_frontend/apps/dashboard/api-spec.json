@@ -13510,6 +13510,11 @@
         "required": ["node_ids"],
         "type": "object",
         "properties": {
+          "container_names": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "fields_filters": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
           "node_ids": {
             "type": "array",
