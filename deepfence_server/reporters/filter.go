@@ -51,15 +51,15 @@ type FieldsFilters struct {
 var severityFields = map[string]struct{}{"cve_severity": {}, "file_severity": {}, "level": {}}
 
 var (
-	nodeLabelsAvailableForNodeType = map[string]bool{
-		"host":            true,
-		"image":           true,
-		"container_image": true,
-		"container":       true,
-		"cluster":         true,
-		"aws":             true,
-		"gcp":             true,
-		"azure":           true,
+	nodeLabelsAvailableForNodeType = map[string]struct{}{
+		"host":            struct{}{},
+		"image":           struct{}{},
+		"container_image": struct{}{},
+		"container":       struct{}{},
+		"cluster":         struct{}{},
+		"aws":             struct{}{},
+		"gcp":             struct{}{},
+		"azure":           struct{}{},
 	}
 )
 
@@ -74,8 +74,8 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 		acceptedNodeTypesFound := true
 		if k == "node_type" {
 			for _, v := range vs {
-				if !nodeLabelsAvailableForNodeType[v.(string)] {
-					acceptedNodeTypesFound = false
+				_, acceptedNodeTypesFound = nodeLabelsAvailableForNodeType[v.(string)]
+				if !acceptedNodeTypesFound {
 					break
 				}
 			}
