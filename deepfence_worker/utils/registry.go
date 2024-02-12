@@ -207,7 +207,7 @@ func ecrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (re
 	}
 	mySession := session.Must(session.NewSession(&awsConfig))
 
-	if hub.NonSecret.UseIAMRole == "true" {
+	if hub.NonSecret.UseIAMRole == "true" && len(hub.NonSecret.TargetAccountRoleARN) > 0 {
 		creds = stscreds.NewCredentials(mySession, hub.NonSecret.TargetAccountRoleARN)
 		svc = ecr.New(mySession, &aws.Config{
 			Credentials: creds,
