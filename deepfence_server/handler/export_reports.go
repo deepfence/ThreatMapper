@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sort"
 	"time"
@@ -18,6 +19,131 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 )
+
+func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
+	var req model.BulkDeleteReportReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	if err := h.Validator.Struct(req); err != nil {
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	if len(req.ReportIDs) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	driver, err := directory.Neo4jClient(r.Context())
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(directory.ErrNamespaceNotFound, w)
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+	}
+	defer tx.Close()
+
+	vars := map[string]interface{}{"uids": req.ReportIDs}
+
+	getQuery := `MATCH (n:Report) WHERE n.report_id IN $uids RETURN n`
+	result, err := tx.Run(getQuery, vars)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+
+	records, err := result.Collect()
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+
+	if len(records) == 0 {
+		log.Warn().Msgf("No records found in db for the requested report ids")
+		h.respondError(fmt.Errorf("no records found in db for the requested report ids"), w)
+		return
+	}
+
+	mc, err := directory.MinioClient(r.Context())
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get minio client")
+		h.respondError(err, w)
+		return
+	}
+
+	deletedRecs := []string{}
+	for idx, rec := range records {
+		node, ok := rec.Get("n")
+		if !ok {
+			h.respondError(&ingesters.NodeNotFoundError{NodeID: req.ReportIDs[idx]}, w)
+			return
+		}
+		dbNode, ok := node.(dbtype.Node)
+		if !ok {
+			h.respondError(&ingesters.NodeNotFoundError{NodeID: req.ReportIDs[idx]}, w)
+			return
+		}
+
+		var report model.ExportReport
+		utils.FromMap(dbNode.Props, &report)
+
+		if report.Status != utils.ScanStatusFailed {
+			err = mc.DeleteFile(r.Context(), report.StoragePath, false, minio.RemoveObjectOptions{ForceDelete: true})
+			if err != nil {
+				log.Error().Err(err).Msgf("Failed to delete in file server for report id: %s",
+					report.ReportID)
+			} else {
+				deletedRecs = append(deletedRecs, report.ReportID)
+			}
+		}
+	}
+
+	if len(deletedRecs) == 0 {
+		log.Error().Msgf("Failed to delete any reports")
+		h.respondError(fmt.Errorf("failed to delete any reports"), w)
+		return
+	} else if len(deletedRecs) != len(req.ReportIDs) {
+		log.Warn().Msgf("Not able to delete all the requested reports")
+	}
+
+	vars["uids"] = deletedRecs
+	deleteQuery := `MATCH (n:Report) WHERE n.report_id in $uids DELETE n`
+	_, err = tx.Run(deleteQuery, vars)
+	if err != nil {
+		log.Error().Msgf("Failed to delete reports from db, Error: %s", err.Error())
+		h.respondError(err, w)
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Error().Msgf("Failure in db commit, error:%s", err.Error())
+		h.respondError(err, w)
+		return
+	}
+
+	h.AuditUserActivity(r, EventReports, ActionDelete, req, true)
+
+	w.WriteHeader(http.StatusNoContent)
+
+}
 
 func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 

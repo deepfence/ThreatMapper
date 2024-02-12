@@ -782,6 +782,9 @@ func (d *OpenAPIDocs) AddReportsOperations() {
 	d.AddOperation("deleteReport", http.MethodDelete, "/deepfence/reports/{report_id}",
 		"Delete Report", "delete report for given report_id",
 		http.StatusNoContent, []string{tagReports}, bearerToken, new(ReportReq), nil)
+	d.AddOperation("bulkDeleteReports", http.MethodPatch, "/deepfence/reports/delete",
+		"Bulk Delete Reports", "Bulk Delete reports",
+		http.StatusNoContent, []string{tagReports}, bearerToken, new(BulkDeleteReportReq), nil)
 }
 
 func (d *OpenAPIDocs) AddSettingsOperations() {
