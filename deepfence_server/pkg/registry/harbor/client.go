@@ -148,10 +148,10 @@ func getImageWithTags(repo Repository, artifacts []Artifact) []model.IngestedCon
 				Tag:           tag.Name,
 				Size:          fmt.Sprint(artifact.Size),
 				Metadata: model.Metadata{
-					"last_pushed":   tag.PushTime,
+					"last_pushed":   tag.PushTime.Unix(),
 					"digest":        artifact.Digest,
-					"creation_time": repo.CreationTime,
-					"last_updated":  tag.PushTime,
+					"creation_time": repo.CreationTime.Unix(),
+					"last_updated":  tag.PushTime.Unix(),
 				},
 			}
 			imageAndTag = append(imageAndTag, tt)
