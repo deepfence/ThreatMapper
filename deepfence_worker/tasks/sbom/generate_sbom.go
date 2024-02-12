@@ -133,6 +133,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 	// get registry credentials
 	authFile, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryID)
 	if err != nil {
+		log.Error().Err(err).Msgf("failed to generate registry auth file for task payload %s", string(task.Payload()))
 		return err
 	}
 
