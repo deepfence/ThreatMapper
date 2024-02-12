@@ -1,7 +1,19 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useCallback, useState } from 'react';
-import { ActionFunctionArgs, Outlet, useFetcher } from 'react-router-dom';
-import { Breadcrumb, BreadcrumbLink, Button, Modal, TableSkeleton } from 'ui-components';
+import {
+  ActionFunctionArgs,
+  Outlet,
+  useFetcher,
+  useSearchParams,
+} from 'react-router-dom';
+import {
+  Badge,
+  Breadcrumb,
+  BreadcrumbLink,
+  Button,
+  Modal,
+  TableSkeleton,
+} from 'ui-components';
 
 import { getReportsApiClient } from '@/api/api';
 import {
@@ -11,10 +23,15 @@ import {
 import { ModelExportReport } from '@/api/generated/models/ModelExportReport';
 import { DFLink } from '@/components/DFLink';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
+import { FilterIcon } from '@/components/icons/common/Filter';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
-import { ReportTable } from '@/features/integrations/components/ReportsTable';
+import {
+  getReportDownloadAppliedFiltersCount,
+  ReportFilters,
+  ReportTable,
+} from '@/features/integrations/components/ReportsTable';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getResponseErrors } from '@/utils/403';
@@ -230,6 +247,8 @@ const DownloadReport = () => {
   const { navigate } = usePageNavigation();
   const [modelRow, setModelRow] = useState<ModelExportReport>();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [searchParams] = useSearchParams();
 
   const onTableAction = useCallback((row: ModelExportReport, actionType: string) => {
     if (actionType === ActionEnumType.DELETE) {
@@ -244,16 +263,40 @@ const DownloadReport = () => {
     <>
       <Header />
       <div className="m-4">
-        <Button
-          variant="flat"
-          startIcon={<PlusIcon />}
-          onClick={() => {
-            navigate('./create');
-          }}
-          size="sm"
-        >
-          Create new report
-        </Button>
+        <div className="flex">
+          <Button
+            variant="flat"
+            startIcon={<PlusIcon />}
+            onClick={() => {
+              navigate(`./create?${searchParams.toString()}`);
+            }}
+            size="sm"
+          >
+            Create new report
+          </Button>
+          <Button
+            variant="flat"
+            className="ml-auto"
+            startIcon={<FilterIcon />}
+            endIcon={
+              getReportDownloadAppliedFiltersCount(searchParams) > 0 ? (
+                <Badge
+                  label={String(getReportDownloadAppliedFiltersCount(searchParams))}
+                  variant="filled"
+                  size="small"
+                  color="blue"
+                />
+              ) : null
+            }
+            size="sm"
+            onClick={() => {
+              setFiltersExpanded((prev) => !prev);
+            }}
+          >
+            Filter
+          </Button>
+        </div>
+        {filtersExpanded ? <ReportFilters /> : null}
         <Suspense fallback={<TableSkeleton columns={5} rows={10} />}>
           <ReportTable onTableAction={onTableAction} />
         </Suspense>

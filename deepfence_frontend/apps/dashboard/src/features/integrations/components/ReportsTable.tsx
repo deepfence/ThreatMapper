@@ -1,6 +1,11 @@
+import { capitalize, isNil, upperCase } from 'lodash-es';
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useInterval } from 'react-use';
 import {
+  Button,
+  Combobox,
+  ComboboxOption,
   createColumnHelper,
   Dropdown,
   DropdownItem,
@@ -10,9 +15,12 @@ import {
 } from 'ui-components';
 
 import { ModelExportReport } from '@/api/generated';
+import { FilterBadge } from '@/components/filters/FilterBadge';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
+import { TimesIcon } from '@/components/icons/common/Times';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { TruncatedText } from '@/components/TruncatedText';
+import { DURATION } from '@/features/integrations/pages/CreateReport';
 import { useGetReports } from '@/features/integrations/pages/DownloadReport';
 import { invalidateAllQueries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
@@ -75,10 +83,41 @@ export const ReportTable = ({
   onTableAction: (row: ModelExportReport, actionType: ActionEnumType) => void;
 }) => {
   const { data } = useGetReports();
+  const [searchParams] = useSearchParams();
   const { message, data: reports } = data || {
     message: '',
     data: [],
   };
+
+  const filteredData = useMemo(() => {
+    if (!reports?.length) {
+      return [];
+    }
+    const statusFilter = searchParams.getAll('status');
+    const reportTypeFilter = searchParams.getAll('reportType');
+    const durationFilter = searchParams.getAll('duration');
+    return reports.filter((report) => {
+      if (
+        statusFilter?.length &&
+        !statusFilter.includes(report.status?.toLowerCase() ?? '')
+      ) {
+        return false;
+      }
+      if (
+        reportTypeFilter?.length &&
+        !reportTypeFilter.includes(report.type?.toLowerCase() ?? '')
+      ) {
+        return false;
+      }
+      if (
+        durationFilter?.length &&
+        (!durationFilter.includes(String(report.duration)) || isNil(report.duration))
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [searchParams, reports]);
 
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
@@ -183,7 +222,7 @@ export const ReportTable = ({
     <div className="mt-2">
       <Table
         size="default"
-        data={reports ?? []}
+        data={filteredData}
         columns={columns}
         enablePagination
         enableSorting
@@ -204,6 +243,197 @@ export const ReportTable = ({
           <TableNoDataElement text="No reports found, please add new report" />
         }
       />
+    </div>
+  );
+};
+
+const FILTER_SEARCHPARAMS: Record<string, string> = {
+  status: 'Status',
+  reportType: 'Report type',
+  duration: 'Duration',
+};
+
+export const getReportDownloadAppliedFiltersCount = (searchParams: URLSearchParams) => {
+  return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
+    return prev + searchParams.getAll(curr).length;
+  }, 0);
+};
+
+export const ReportFilters = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [statusSearch, setStatusSearch] = useState('');
+  const [reportTypeSearch, setReportTypeSearch] = useState('');
+  const [durationSearch, setDurationSearch] = useState('');
+  const appliedFilterCount = getReportDownloadAppliedFiltersCount(searchParams);
+
+  return (
+    <div className="mt-2 px-4 py-2.5 mb-2 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+      <div className="flex gap-2">
+        <Combobox
+          getDisplayValue={() => FILTER_SEARCHPARAMS['reportType']}
+          multiple
+          value={searchParams.getAll('reportType')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('reportType');
+              values.forEach((value) => {
+                prev.append('reportType', value);
+              });
+              return prev;
+            });
+          }}
+          onQueryChange={(query) => {
+            setReportTypeSearch(query);
+          }}
+          clearAllElement="Clear"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('reportType');
+              return prev;
+            });
+          }}
+        >
+          {['xlsx', 'pdf']
+            .filter((item) => {
+              if (!reportTypeSearch.length) return true;
+              if (item.includes(reportTypeSearch.toLowerCase())) {
+                return true;
+              }
+              return false;
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item} value={item}>
+                  {upperCase(item.replace('_', ' '))}
+                </ComboboxOption>
+              );
+            })}
+        </Combobox>
+        <Combobox
+          getDisplayValue={() => FILTER_SEARCHPARAMS['status']}
+          multiple
+          value={searchParams.getAll('status')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('status');
+              values.forEach((value) => {
+                prev.append('status', value);
+              });
+              return prev;
+            });
+          }}
+          onQueryChange={(query) => {
+            setStatusSearch(query);
+          }}
+          clearAllElement="Clear"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('status');
+              return prev;
+            });
+          }}
+        >
+          {['complete', 'in_progress']
+            .filter((item) => {
+              if (!statusSearch.length) return true;
+              if (item.includes(statusSearch.toLowerCase())) {
+                return true;
+              }
+              return false;
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item} value={item}>
+                  {capitalize(item.replace('_', ' '))}
+                </ComboboxOption>
+              );
+            })}
+        </Combobox>
+        <Combobox
+          getDisplayValue={() => FILTER_SEARCHPARAMS['duration']}
+          multiple
+          value={searchParams.getAll('duration')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('duration');
+              values.forEach((value) => {
+                prev.append('duration', value);
+              });
+              return prev;
+            });
+          }}
+          onQueryChange={(query) => {
+            setDurationSearch(query);
+          }}
+          clearAllElement="Clear"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('duration');
+              return prev;
+            });
+          }}
+        >
+          {Object.entries(DURATION)
+            .filter(([str]) => {
+              if (!durationSearch.length) return true;
+              if (str.includes(durationSearch.toLowerCase())) {
+                return true;
+              }
+              return false;
+            })
+            .map(([str, item]) => {
+              return (
+                <ComboboxOption key={item} value={String(item)}>
+                  {str}
+                </ComboboxOption>
+              );
+            })}
+        </Combobox>
+      </div>
+      {appliedFilterCount > 0 ? (
+        <div className="flex gap-2.5 mt-4 flex-wrap items-center">
+          {Array.from(searchParams)
+            .filter(([key]) => {
+              return Object.keys(FILTER_SEARCHPARAMS).includes(key);
+            })
+            .map(([key, value]) => {
+              return (
+                <FilterBadge
+                  key={`${key}-${value}`}
+                  onRemove={() => {
+                    setSearchParams((prev) => {
+                      const existingValues = prev.getAll(key);
+                      prev.delete(key);
+                      existingValues.forEach((existingValue) => {
+                        if (existingValue !== value) prev.append(key, existingValue);
+                      });
+                      prev.delete('page');
+                      return prev;
+                    });
+                  }}
+                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                />
+              );
+            })}
+          <Button
+            variant="flat"
+            color="default"
+            startIcon={<TimesIcon />}
+            onClick={() => {
+              setSearchParams((prev) => {
+                Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                  prev.delete(key);
+                });
+                prev.delete('page');
+                return prev;
+              });
+            }}
+            size="sm"
+          >
+            Clear all
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { upperFirst } from 'lodash-es';
 import { useState } from 'react';
-import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher, useSearchParams } from 'react-router-dom';
 import {
   Button,
   Checkbox,
@@ -373,12 +373,13 @@ const ReportForm = () => {
 };
 const CreateReport = () => {
   const { navigate } = usePageNavigation();
+  const [searchParams] = useSearchParams();
 
   return (
     <SlidingModal
       open={true}
       onOpenChange={() => {
-        navigate(`..`);
+        navigate(`..?${searchParams.toString()}`);
       }}
       size="l"
     >
