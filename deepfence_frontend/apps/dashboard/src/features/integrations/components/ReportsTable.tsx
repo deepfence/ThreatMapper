@@ -4,6 +4,8 @@ import {
   createColumnHelper,
   Dropdown,
   DropdownItem,
+  getRowSelectionColumn,
+  RowSelectionState,
   SortingState,
   Table,
   TableNoDataElement,
@@ -70,9 +72,13 @@ const ActionDropdown = ({
 };
 
 export const ReportTable = ({
+  rowSelectionState,
+  setRowSelectionState,
   onTableAction,
 }: {
+  rowSelectionState: RowSelectionState;
   onTableAction: (row: ModelExportReport, actionType: ActionEnumType) => void;
+  setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
 }) => {
   const { data } = useGetReports();
   const { message, data: reports } = data || {
@@ -96,6 +102,11 @@ export const ReportTable = ({
   const columnHelper = createColumnHelper<ModelExportReport>();
   const columns = useMemo(() => {
     const columns = [
+      getRowSelectionColumn(columnHelper, {
+        minSize: 10,
+        size: 15,
+        maxSize: 30,
+      }),
       columnHelper.display({
         id: 'actions',
         enableSorting: false,
@@ -194,6 +205,9 @@ export const ReportTable = ({
         onPageResize={(newSize) => {
           setPageSize(newSize);
         }}
+        enableRowSelection
+        rowSelectionState={rowSelectionState}
+        onRowSelectionChange={setRowSelectionState}
         getRowId={(row) => {
           return JSON.stringify({
             status: row.status,
