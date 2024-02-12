@@ -44,12 +44,21 @@ func FieldValueCompletion[T reporters.Cypherable](ctx context.Context, req Compl
 	query := ""
 
 	if req.ScanID != "" {
-		query = `
-		MATCH (n{node_id: $scan_id}) -[:DETECTED]-> (m) -[:IS]-> (r:` + dummy.NodeType() + `)
-		WHERE r.` + req.FieldName + ` =~ '^` + req.Completion + `.*'
-		RETURN DISTINCT r.` + req.FieldName + `
-		ORDER BY r.` + req.FieldName +
-			req.Window.FetchWindow2CypherQuery()
+		if dummy.NodeType() == "CloudCompliance" {
+			query = `
+			MATCH (n{node_id: $scan_id}) -[:DETECTED]-> (r:` + dummy.NodeType() + `)
+			WHERE r.` + req.FieldName + ` =~ '^` + req.Completion + `.*'
+			RETURN DISTINCT r.` + req.FieldName + `
+			ORDER BY r.` + req.FieldName +
+				req.Window.FetchWindow2CypherQuery()
+		} else {
+			query = `
+			MATCH (n{node_id: $scan_id}) -[:DETECTED]-> (m) -[:IS]-> (r:` + dummy.NodeType() + `)
+			WHERE r.` + req.FieldName + ` =~ '^` + req.Completion + `.*'
+			RETURN DISTINCT r.` + req.FieldName + `
+			ORDER BY r.` + req.FieldName +
+				req.Window.FetchWindow2CypherQuery()
+		}
 	} else {
 		query = `
 		MATCH (n:` + dummy.NodeType() + `) 
