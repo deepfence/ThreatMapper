@@ -385,20 +385,20 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// report task params
-	reportID := uuid.New().String()
 	params := utils.ReportParams{
-		ReportID:   reportID,
 		ReportType: req.ReportType,
 		Duration:   req.Duration,
 		Filters:    req.Filters,
 		Options:    req.Options,
 	}
 
-	worker, err := directory.Worker(r.Context())
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-		return
+	// scan id can only be sent while downloading individual scans
+	if len(params.Filters.ScanID) > 0 && params.ReportType != string(utils.ReportSBOM) {
+		params.ReportID = params.Filters.ScanID
+	} else if len(params.Filters.ScanID) > 0 && params.ReportType == string(utils.ReportSBOM) {
+		params.ReportID = utils.SBOMFormatReplacer.Replace(params.Options.SBOMFormat) + "-" + params.Filters.ScanID
+	} else {
+		params.ReportID = uuid.New().String()
 	}
 
 	driver, err := directory.Neo4jClient(r.Context())
@@ -421,18 +421,70 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Close()
 
-	query := `
-	CREATE (n:Report{created_at:TIMESTAMP(), type:$type, report_id:$uid, status:$status, filters:$filters, duration:$duration})
+	// check if report exists for this report id
+	query := `MATCH (n:Report{report_id:$uid}) RETURN n`
+	vars := map[string]interface{}{"uid": params.ReportID}
+	result, err := tx.Run(query, vars)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+
+	record, err := result.Single()
+	if err == nil {
+		// report already exists
+		node, ok := record.Get("n")
+		if !ok {
+			h.respondError(&ingesters.NodeNotFoundError{NodeID: params.ReportID}, w)
+			return
+		}
+		dbNode, ok := node.(dbtype.Node)
+		if !ok {
+			h.respondError(&ingesters.NodeNotFoundError{NodeID: params.ReportID}, w)
+			return
+		}
+		var report model.ExportReport
+		utils.FromMap(dbNode.Props, &report)
+
+		// check report status is completed and report type fields match
+		if len(report.ReportID) > 0 && report.Status != utils.ScanStatusFailed && report.Type == req.ReportType {
+			log.Info().Msgf("skip generating, report exists for given filters %+v", report)
+			err = httpext.JSON(w, http.StatusOK, model.GenerateReportResp{ReportID: report.ReportID})
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
+			return
+		}
+	}
+
+	// generate if report doesnot exists
+	// also generate if its in error state
+
+	worker, err := directory.Worker(r.Context())
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+
+	createQuery := `
+	MERGE (n:Report{report_id:$uid})
+	SET n.created_at=TIMESTAMP()
+	SET n.type=$type
+	SET n.status=$status
+	SET n.filters=$filters
+	SET n.duration=$duration
 	RETURN n`
-	vars := map[string]interface{}{
+	createVars := map[string]interface{}{
 		"type":     req.ReportType,
-		"uid":      reportID,
+		"uid":      params.ReportID,
 		"status":   utils.ScanStatusStarting,
 		"filters":  req.Filters.String(),
 		"duration": req.Duration,
 	}
 
-	_, err = tx.Run(query, vars)
+	_, err = tx.Run(createQuery, createVars)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -460,7 +512,7 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 
 	h.AuditUserActivity(r, EventReports, ActionCreate, req, true)
 
-	err = httpext.JSON(w, http.StatusOK, model.GenerateReportResp{ReportID: reportID})
+	err = httpext.JSON(w, http.StatusOK, model.GenerateReportResp{ReportID: params.ReportID})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
