@@ -12,6 +12,8 @@
 
 ## :tada: Announcing ThreatMapper v2
 
+_ThreatMapper versions v1.x are depreciated. Please upgrade to the latest version._
+
 <!---  > [ThreatMapper 2.1.0](https://github.com/deepfence/ThreatMapper/releases/tag/v2.1.0) adds ThreatGraph, a rich visualization that uses runtime context such as network flows to prioritize threat scan results.  ThreatGraph enables organizations to narrow down attack path alerts from thousands to a handful of the most meaningful (and threatening). Release 2.1.0 also adds agentless cloud security posture management (CSPM) of cloud assets and agent-based posture management of hosts, evaluating posture against industry-standard compliance benchmarks. --->
 
 # ThreatMapper - Runtime Threat Management and Attack Path Enumeration for Cloud Native

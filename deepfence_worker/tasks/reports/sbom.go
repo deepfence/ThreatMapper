@@ -26,6 +26,8 @@ var (
 	sbomFormatMap = map[string]sbom.Format{
 		// syft-json@11.0.1
 		syftjson.Format().String(): syftjson.Format(),
+		// spdx-json@2.2
+		spdxjson.Format2_2().String(): spdxjson.Format2_2(),
 		// spdx-json@2.3
 		spdxjson.Format2_3().String(): spdxjson.Format2_3(),
 		// cyclonedx-json@1.5
