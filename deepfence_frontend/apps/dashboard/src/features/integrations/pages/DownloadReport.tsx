@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useCallback, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
   Outlet,
@@ -12,6 +12,7 @@ import {
   BreadcrumbLink,
   Button,
   Modal,
+  RowSelectionState,
   TableSkeleton,
 } from 'ui-components';
 
@@ -86,6 +87,7 @@ export const useGetReports = () => {
   });
 };
 export type ActionData = {
+  action: ActionEnumType;
   message?: string;
   success?: boolean;
   deleteSuccess?: boolean;
@@ -98,22 +100,26 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   if (!_actionType) {
     return {
       message: 'Action Type is required',
+      action: _actionType as ActionEnumType,
     };
   }
 
   if (_actionType === ActionEnumType.DELETE) {
-    const id = formData.get('id')?.toString();
-    if (!id) {
+    const reportIds = formData.getAll('reportIds[]');
+    if (!reportIds || reportIds.length <= 0) {
       return {
         deleteSuccess: false,
         message: 'Id is required to delete an integration',
+        action: _actionType as ActionEnumType,
       };
     }
     const deleteReportApi = apiWrapper({
-      fn: getReportsApiClient().deleteReport,
+      fn: getReportsApiClient().bulkDeleteReports,
     });
     const r = await deleteReportApi({
-      reportId: id,
+      modelBulkDeleteReportReq: {
+        report_ids: reportIds as string[],
+      },
     });
     if (!r.ok) {
       if (r.error.response.status === 400) {
@@ -121,12 +127,14 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
         return {
           message: message ?? 'Error in deleting report',
           success: false,
+          action: _actionType as ActionEnumType,
         };
       } else if (r.error.response.status === 403) {
         const message = await get403Message(r.error);
         return {
           message,
           success: false,
+          action: _actionType as ActionEnumType,
         };
       }
       throw r.error;
@@ -134,6 +142,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     invalidateAllQueries();
     return {
       deleteSuccess: true,
+      action: _actionType as ActionEnumType,
     };
   }
 
@@ -142,12 +151,14 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 
 const DeleteConfirmationModal = ({
   showDialog,
-  row,
+  reportIds,
   setShowDialog,
+  onDeleteSuccess,
 }: {
   showDialog: boolean;
-  row: ModelExportReport | undefined;
+  reportIds: string[] | undefined;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onDeleteSuccess: () => void;
 }) => {
   const fetcher = useFetcher<ActionData>();
 
@@ -155,14 +166,24 @@ const DeleteConfirmationModal = ({
     (actionType: string) => {
       const formData = new FormData();
       formData.append('_actionType', actionType);
-      formData.append('id', row?.report_id ?? '');
+      reportIds?.forEach((item) => formData.append('reportIds[]', item));
 
       fetcher.submit(formData, {
         method: 'post',
       });
     },
-    [fetcher, row],
+    [fetcher, reportIds],
   );
+
+  useEffect(() => {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data?.deleteSuccess &&
+      fetcher.data.action === ActionEnumType.DELETE
+    ) {
+      onDeleteSuccess();
+    }
+  }, [fetcher]);
 
   return (
     <Modal
@@ -245,14 +266,31 @@ const Header = () => {
 
 const DownloadReport = () => {
   const { navigate } = usePageNavigation();
-  const [modelRow, setModelRow] = useState<ModelExportReport>();
+  const [reportIdsToDelete, setReportIdsToDelete] = useState<string[]>();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const fetcher = useFetcher<ActionData>();
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+
+  const selectdRow = useMemo<
+    {
+      status: string;
+      id: string;
+    }[]
+  >(() => {
+    return Object.keys(rowSelectionState).map((item) => {
+      return JSON.parse(item);
+    });
+  }, [rowSelectionState]);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [searchParams] = useSearchParams();
 
   const onTableAction = useCallback((row: ModelExportReport, actionType: string) => {
     if (actionType === ActionEnumType.DELETE) {
-      setModelRow(row);
+      if (!row.report_id) {
+        console.error('No report id to delete');
+        return;
+      }
+      setReportIdsToDelete([row.report_id]);
       setShowDeleteDialog(true);
     } else if (actionType === ActionEnumType.DOWNLOAD) {
       download(row.url ?? '');
@@ -273,6 +311,20 @@ const DownloadReport = () => {
             size="sm"
           >
             Create new report
+          </Button>
+          <Button
+            size="md"
+            variant="flat"
+            color="error"
+            loading={fetcher.state === 'submitting'}
+            disabled={selectdRow.length === 0 || fetcher.state === 'submitting'}
+            onClick={(e) => {
+              e.preventDefault();
+              setReportIdsToDelete(selectdRow.map((row) => row.id));
+              setShowDeleteDialog(true);
+            }}
+          >
+            Delete
           </Button>
           <Button
             variant="flat"
@@ -298,13 +350,20 @@ const DownloadReport = () => {
         </div>
         {filtersExpanded ? <ReportFilters /> : null}
         <Suspense fallback={<TableSkeleton columns={5} rows={10} />}>
-          <ReportTable onTableAction={onTableAction} />
+          <ReportTable
+            onTableAction={onTableAction}
+            rowSelectionState={rowSelectionState}
+            setRowSelectionState={setRowSelectionState}
+          />
         </Suspense>
         {showDeleteDialog && (
           <DeleteConfirmationModal
             showDialog={showDeleteDialog}
-            row={modelRow}
+            reportIds={reportIdsToDelete}
             setShowDialog={setShowDeleteDialog}
+            onDeleteSuccess={() => {
+              setRowSelectionState({});
+            }}
           />
         )}
       </div>

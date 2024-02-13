@@ -5362,6 +5362,51 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/reports/delete": {
+      "patch": {
+        "tags": ["Reports"],
+        "summary": "Bulk Delete Reports",
+        "description": "Bulk Delete reports",
+        "operationId": "bulkDeleteReports",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelBulkDeleteReportReq" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/reports/{report_id}": {
       "delete": {
         "tags": ["Reports"],
@@ -12466,6 +12511,17 @@
           "name": { "type": "string" },
           "node_id": { "type": "string" },
           "node_type": { "type": "string" }
+        }
+      },
+      "ModelBulkDeleteReportReq": {
+        "required": ["report_ids"],
+        "type": "object",
+        "properties": {
+          "report_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          }
         }
       },
       "ModelBulkDeleteScansRequest": {

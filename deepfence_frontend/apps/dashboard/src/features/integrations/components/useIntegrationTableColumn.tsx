@@ -472,9 +472,9 @@ export const useIntegrationTableColumn = (
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
-        size: 30,
-        minSize: 20,
-        maxSize: 45,
+        minSize: 10,
+        size: 15,
+        maxSize: 30,
       }),
       columnHelper.display({
         id: 'actions',

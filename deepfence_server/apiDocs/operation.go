@@ -782,6 +782,9 @@ func (d *OpenAPIDocs) AddReportsOperations() {
 	d.AddOperation("deleteReport", http.MethodDelete, "/deepfence/reports/{report_id}",
 		"Delete Report", "delete report for given report_id",
 		http.StatusNoContent, []string{tagReports}, bearerToken, new(ReportReq), nil)
+	d.AddOperation("bulkDeleteReports", http.MethodPatch, "/deepfence/reports/delete",
+		"Bulk Delete Reports", "Bulk Delete reports",
+		http.StatusNoContent, []string{tagReports}, bearerToken, new(BulkDeleteReportReq), nil)
 }
 
 func (d *OpenAPIDocs) AddSettingsOperations() {
@@ -862,5 +865,11 @@ func (d *OpenAPIDocs) AddCompletionOperations() {
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 	d.AddOperation("completeHostInfo", http.MethodPost, "/deepfence/complete/host",
 		"Get Completion for host fields", "Complete host info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completeCloudCompliance", http.MethodPost, "/deepfence/complete/cloud-compliance",
+		"Get Completion for cloud compliance fields", "Complete cloud compliance info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completeComplianceInfo", http.MethodPost, "/deepfence/complete/compliance",
+		"Get Completion for compliance fields", "Complete compliance info",
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 }

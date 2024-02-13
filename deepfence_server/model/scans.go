@@ -526,7 +526,7 @@ type ComplianceRule struct {
 }
 
 func (ComplianceRule) NodeType() string {
-	return "Compliance"
+	return "ComplianceRule"
 }
 
 func (ComplianceRule) ExtendedField() string {

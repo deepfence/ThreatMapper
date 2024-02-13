@@ -53,6 +53,7 @@ export * from './ModelAgentPluginDisable';
 export * from './ModelAgentPluginEnable';
 export * from './ModelAgentUpgrade';
 export * from './ModelBasicNode';
+export * from './ModelBulkDeleteReportReq';
 export * from './ModelBulkDeleteScansRequest';
 export * from './ModelCloudAccountRefreshReq';
 export * from './ModelCloudCompliance';
