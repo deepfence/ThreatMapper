@@ -126,7 +126,7 @@ func GetComplianceScanStatus(ctx context.Context, scanType utils.Neo4jScanType, 
 	query := fmt.Sprintf(`
 	MATCH (m:%s) -[:SCANNED]-> (n:CloudNode)
 	WHERE m.node_id IN $scan_ids
-	RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.updated_at, n.node_name`, scanType)
+	RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.created_at, m.updated_at, n.node_name`, scanType)
 
 	res, err := tx.Run(query, map[string]interface{}{"scan_ids": scanIDs})
 	if err != nil {
@@ -157,8 +157,9 @@ func extractStatusesWithBenchmarks(recs []*db.Record) []model.ComplianceScanInfo
 				StatusMessage: rec.Values[3].(string),
 				NodeID:        rec.Values[4].(string),
 				NodeType:      controls.ResourceTypeToString(controls.CloudAccount),
-				UpdatedAt:     rec.Values[5].(int64),
-				NodeName:      rec.Values[6].(string),
+				CreatedAt:     rec.Values[5].(int64),
+				UpdatedAt:     rec.Values[6].(int64),
+				NodeName:      rec.Values[7].(string),
 			},
 			BenchmarkTypes: benchmarkTypes,
 		}
@@ -579,7 +580,7 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 	res, err := tx.Run(`
 		MATCH (m:`+string(scanType)+`) -[:SCANNED]-> (n:CloudNode{node_id: $node_id})
 		WHERE m.status = $starting
-		RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.updated_at, n.node_name ORDER BY m.updated_at`,
+		RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.created_at, m.updated_at, n.node_name ORDER BY m.updated_at`,
 		map[string]interface{}{"node_id": nodeID, "starting": utils.ScanStatusStarting})
 	if err != nil {
 		return model.CloudComplianceScanListResp{}, err
@@ -1214,7 +1215,7 @@ func GetComplianceBulkScans(ctx context.Context, scanType utils.Neo4jScanType, s
 
 	neoRes, err := tx.Run(`
 		MATCH (m:Bulk`+string(scanType)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scanType)+`) -[:SCANNED]-> (n:CloudNode)
-		RETURN d.node_id, d.benchmark_types, d.status, d.status_message, n.node_id, d.updated_at, n.node_name`,
+		RETURN d.node_id, d.benchmark_types, d.status, d.status_message, n.node_id, d.created_at, d.updated_at, n.node_name`,
 		map[string]interface{}{"scan_id": scanID})
 	if err != nil {
 		log.Error().Msgf("Compliance bulk scans status query failed: %+v", err)
