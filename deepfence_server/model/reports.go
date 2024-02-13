@@ -19,6 +19,10 @@ type ReportReq struct {
 	ReportID string `json:"report_id" path:"report_id" validate:"required" required:"true"`
 }
 
+type BulkDeleteReportReq struct {
+	ReportIDs []string `json:"report_ids" required:"true"`
+}
+
 type ExportReport struct {
 	Duration    int    `json:"duration"`
 	UpdatedAt   int64  `json:"updated_at"`
