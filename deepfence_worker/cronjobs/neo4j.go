@@ -29,11 +29,18 @@ const (
 )
 
 var (
-	resource_types    = [...]string{"aws_ec2_instance", "aws_ec2_application_load_balancer", "aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer"}
-	resource_lambda   = [...]string{"aws_lambda_function"}
-	resource_link     = [...]string{"aws_lambda_function", "aws_ec2_instance", "aws_ec2_application_load_balancer", "aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer"}
-	resource_ecs      = [...]string{"aws_ecs_service"}
-	resource_ecs_task = [...]string{"aws_ecs_task"}
+	awsResourceTypes           = [...]string{"aws_ec2_instance", "aws_ec2_application_load_balancer", "aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer"}
+	awsResourceLambda          = [...]string{"aws_lambda_function"}
+	awsResourceLink            = [...]string{"aws_lambda_function", "aws_ec2_instance", "aws_ec2_application_load_balancer", "aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer"}
+	awsResourceEcs             = [...]string{"aws_ecs_service"}
+	awsResourceEcsTask         = [...]string{"aws_ecs_task"}
+	gcpCloudfunctionTypes      = [...]string{"gcp_cloudfunctions_function"}
+	gcpStorageTypes            = [...]string{"gcp_storage_bucket"}
+	gcpDatabaseTypes           = [...]string{"gcp_sql_database_instance"}
+	azureResourceTypes         = [...]string{"azure_compute_virtual_machine"}
+	azureStorageAccountTypes   = [...]string{"azure_storage_account"}
+	azureStorageContainerTypes = [...]string{"azure_storage_container"}
+	azureSqlServerTypes        = [...]string{"azure_mysql_server"}
 )
 
 func getResourceCleanUpTimeout(ctx context.Context) time.Duration {
@@ -478,6 +485,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		MERGE (cp:CloudProvider{node_id: n.cloud_provider})
 		MERGE (cr:CloudRegion{node_id: n.cloud_region})
 		MERGE (m:CloudNode{node_id: n.account_id})
+		ON CREATE SET m.cloud_provider = n.cloud_provider, m.active = true
 		MERGE (m) -[:OWNS]-> (n)
 		MERGE (cp) -[:HOSTS]-> (cr)
 		MERGE (cr) -[:HOSTS]-> (n)
@@ -522,7 +530,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		WHERE m.node_id ENDS WITH node_id
 		MERGE (m) -[:SECURED]-> (n)`,
 		map[string]interface{}{
-			"types": resource_types[:],
+			"types": awsResourceTypes[:],
 		}, txConfig); err != nil {
 		return err
 	}
@@ -540,7 +548,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		WHERE m.node_id ENDS WITH subgroup
 		MERGE (m) -[:SECURED]-> (n)`,
 		map[string]interface{}{
-			"types": resource_lambda[:],
+			"types": awsResourceLambda[:],
 		}, txConfig); err != nil {
 		return err
 	}
@@ -555,7 +563,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		WITH n LIMIT 10000
 		MERGE (n) -[:PUBLIC]-> (:Node{node_id:'out-the-internet'})`,
 		map[string]interface{}{
-			"types": resource_link[:],
+			"types": awsResourceLink[:],
 		}, txConfig); err != nil {
 		return err
 	}
@@ -570,7 +578,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		WITH n LIMIT 10000
 		MERGE (:Node{node_id:'in-the-internet'}) -[:PUBLIC]-> (n)`,
 		map[string]interface{}{
-			"types": resource_link[:],
+			"types": awsResourceLink[:],
 		}, txConfig); err != nil {
 		return err
 	}
@@ -593,10 +601,140 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		MERGE (m) <-[:PUBLIC]- (p)
 		MERGE (n) <-[:PUBLIC]- (p)`,
 		map[string]interface{}{
-			"types":      resource_ecs[:],
-			"task_types": resource_ecs_task[:],
+			"types":      awsResourceEcs[:],
+			"task_types": awsResourceEcsTask[:],
 			"status":     ecsTaskRunningStatus,
 			"enabled":    ecsTaskPublicEnabledConfig,
+		}, txConfig); err != nil {
+		return err
+	}
+
+	// Handle GCP CloudFunction
+	if _, err = session.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.linked = false
+		AND n.node_type in $types
+		AND n.ingress_settings IS NOT NULL
+		WITH n LIMIT 10000
+		SET n.linked = true
+		WITH n
+		MATCH (p:Node {node_id:'in-the-internet'})
+		WHERE n.ingress_settings = 'ALLOW_ALL'
+		MERGE (n) <-[:PUBLIC]- (p)
+		`,
+		map[string]interface{}{
+			"types": gcpCloudfunctionTypes[:],
+		}, txConfig); err != nil {
+		return err
+	}
+
+	// Handle GCP Storage
+	if _, err = session.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.linked = false
+		AND n.node_type in $types
+		AND n.iam_policy IS NOT NULL
+		WITH n LIMIT 10000
+		SET n.linked = true
+		WITH n, apoc.convert.fromJsonMap(n.iam_policy) as iam_policy
+		UNWIND iam_policy.bindings as binding
+		WITH n, binding
+		MATCH (p:Node {node_id:'in-the-internet'})
+		WHERE 'allAuthenticatedUsers' IN binding.members OR 'allUsers' IN binding.members
+		MERGE (n) <-[:PUBLIC]- (p)`,
+		map[string]interface{}{
+			"types": gcpStorageTypes[:],
+		}, txConfig); err != nil {
+		return err
+	}
+
+	// Handle GCP Databases
+	if _, err = session.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.linked = false
+		AND n.node_type in $types
+		AND n.ip_configuration IS NOT NULL
+		WITH n LIMIT 10000
+		SET n.linked = true
+		WITH n, apoc.convert.fromJsonMap(n.ip_configuration) as ip_configuration
+		UNWIND ip_configuration.authorizedNetworks as authorizedNetwork
+		WITH n, authorizedNetwork
+		MATCH (p:Node {node_id:'in-the-internet'})
+		WHERE authorizedNetwork.value = '0.0.0.0/0'
+		MERGE (n) <-[:PUBLIC]- (p)`,
+		map[string]interface{}{
+			"types": gcpDatabaseTypes[:],
+		}, txConfig); err != nil {
+		return err
+	}
+
+	// Handle Azure VMs
+	if _, err = session.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.linked = false
+		AND n.node_type in $types
+		AND n.network_interfaces IS NOT NULL
+		WITH n LIMIT 10000
+		SET n.linked = true
+		WITH n
+		MATCH (p:Node {node_id:'in-the-internet'})
+		WHERE n.public_ips IS NOT NULL AND n.public_ips <> []
+		MERGE (n) <-[:PUBLIC]- (p)`,
+		map[string]interface{}{
+			"types": azureResourceTypes[:],
+		}, txConfig); err != nil {
+		return err
+	}
+
+	// Handle Azure Storage Account
+	if _, err = session.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.linked = false
+		AND n.node_type in $types
+		AND n.network_interfaces IS NOT NULL
+		WITH n LIMIT 10000
+		SET n.linked = true
+		WITH n
+		MATCH (p:Node {node_id:'in-the-internet'})
+		WHERE n.allow_blob_public_access = true
+		MERGE (n) <-[:PUBLIC]- (p)`,
+		map[string]interface{}{
+			"types": azureStorageAccountTypes[:],
+		}, txConfig); err != nil {
+		return err
+	}
+
+	// Handle Azure Storage Container
+	if _, err = session.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.linked = false
+		AND n.node_type in $types
+		AND n.network_interfaces IS NOT NULL
+		WITH n LIMIT 10000
+		SET n.linked = true
+		WITH n
+		MATCH (p:Node {node_id:'in-the-internet'})
+		WHERE n.public_access IS NOT NULL
+		MERGE (n) <-[:PUBLIC]- (p)`,
+		map[string]interface{}{
+			"types": azureStorageContainerTypes[:],
+		}, txConfig); err != nil {
+		return err
+	}
+
+	// Handle Azure SQL Server
+	if _, err = session.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.linked = false
+		AND n.node_type in $types
+		WITH n LIMIT 10000
+		SET n.linked = true
+		WITH n
+		MATCH (p:Node {node_id:'in-the-internet'})
+		WHERE n.public_network_access IS NOT NULL AND n.public_network_access = 'Enabled'
+		MERGE (n) <-[:PUBLIC]- (p)`,
+		map[string]interface{}{
+			"types": azureSqlServerTypes[:],
 		}, txConfig); err != nil {
 		return err
 	}
