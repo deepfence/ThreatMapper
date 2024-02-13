@@ -70,7 +70,7 @@ func GetScanStatus(ctx context.Context, scanType utils.Neo4jScanType, scanIDs []
 	res, err := tx.Run(fmt.Sprintf(`
 		MATCH (m:%s) -[:SCANNED]-> (n)
 		WHERE m.node_id IN $scan_ids
-		RETURN m.node_id, m.status, m.status_message, n.node_id, n.node_name, labels(n) as node_type, m.updated_at`, scanType),
+		RETURN m.node_id, m.status, m.status_message, n.node_id, n.node_name, labels(n) as node_type, m.created_at, m.updated_at`, scanType),
 		map[string]interface{}{"scan_ids": scanIDs})
 	if err != nil {
 		return model.ScanStatusResp{}, err
@@ -94,7 +94,8 @@ func extractStatuses(recs []*db.Record) map[string]model.ScanInfo {
 			NodeID:        rec.Values[3].(string),
 			NodeName:      rec.Values[4].(string),
 			NodeType:      Labels2NodeType(rec.Values[5].([]interface{})),
-			UpdatedAt:     rec.Values[6].(int64),
+			CreatedAt:     rec.Values[6].(int64),
+			UpdatedAt:     rec.Values[7].(int64),
 		}
 		statuses[rec.Values[0].(string)] = info
 	}
@@ -512,13 +513,13 @@ func GetScansList(ctx context.Context, scanType utils.Neo4jScanType, nodeIDs []m
 			WHERE n.node_id IN $node_ids
 			AND (` + strings.Join(nodeTypesStr, " OR ") + `)
 			` + reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(ff), false) + `
-			RETURN m.node_id, m.status, m.status_message, m.updated_at, n.node_id, n.node_name, labels(n) as node_type
+			RETURN m.node_id, m.status, m.status_message, m.created_at, m.updated_at, n.node_id, n.node_name, labels(n) as node_type
 			ORDER BY m.updated_at ` + fw.FetchWindow2CypherQuery()
 	} else {
 		query = `
 			MATCH (m:` + string(scanType) + `) -[:SCANNED]-> (n)
 			` + reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(ff), true) + `
-			RETURN m.node_id, m.status, m.status_message, m.updated_at, n.node_id, n.node_name, labels(n) as node_type
+			RETURN m.node_id, m.status, m.status_message, m.created_at, m.updated_at, n.node_id, n.node_name, labels(n) as node_type
 			ORDER BY m.updated_at ` + fw.FetchWindow2CypherQuery()
 	}
 	scansInfo, err = processScansListQuery(query, nodeIDsStr, tx)
@@ -546,10 +547,11 @@ func processScansListQuery(query string, nodeIds []string, tx neo4j.Transaction)
 			ScanID:        rec.Values[0].(string),
 			Status:        rec.Values[1].(string),
 			StatusMessage: rec.Values[2].(string),
-			UpdatedAt:     rec.Values[3].(int64),
-			NodeID:        rec.Values[4].(string),
-			NodeName:      rec.Values[5].(string),
-			NodeType:      Labels2NodeType(rec.Values[6].([]interface{})),
+			CreatedAt:     rec.Values[3].(int64),
+			UpdatedAt:     rec.Values[4].(int64),
+			NodeID:        rec.Values[5].(string),
+			NodeName:      rec.Values[6].(string),
+			NodeType:      Labels2NodeType(rec.Values[7].([]interface{})),
 		}
 		scansInfo = append(scansInfo, tmp)
 	}
@@ -1149,7 +1151,7 @@ func GetBulkScans(ctx context.Context, scanType utils.Neo4jScanType, scanID stri
 
 	neoRes, err := tx.Run(`
 		MATCH (m:Bulk`+string(scanType)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scanType)+`) -[:SCANNED]-> (n)
-		RETURN d.node_id as scan_id, d.status, d.status_message, n.node_id as node_id, n.node_name, labels(n) as node_type, d.updated_at`,
+		RETURN d.node_id as scan_id, d.status, d.status_message, n.node_id as node_id, n.node_name, labels(n) as node_type, d.created_at, d.updated_at`,
 		map[string]interface{}{"scan_id": scanID})
 	if err != nil {
 		return scanIDs, err
