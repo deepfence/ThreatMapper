@@ -1305,6 +1305,7 @@ const PostureTable = ({
   const { data } = useScanResults();
   const columnHelper = createColumnHelper<ModelCompliance>();
   const [sort, setSort] = useSortingState();
+  const params = useParams();
 
   const columns = useMemo(() => {
     const columns = [
@@ -1383,9 +1384,9 @@ const PostureTable = ({
       columnHelper.accessor('status', {
         enableResizing: false,
         enableSorting: true,
-        minSize: 60,
-        size: 60,
-        maxSize: 65,
+        minSize: 40,
+        size: 50,
+        maxSize: 60,
         header: () => <div>Status</div>,
         cell: (info) => {
           return <PostureStatusBadge status={info.getValue() as PostureSeverityType} />;
@@ -1403,9 +1404,24 @@ const PostureTable = ({
         ),
       }),
     ];
-
+    if (params.nodeType && params.nodeType === 'kubernetes') {
+      columns.splice(
+        columns.length - 1,
+        0,
+        columnHelper.accessor('resource', {
+          enableResizing: false,
+          minSize: 60,
+          size: 70,
+          maxSize: 80,
+          header: () => <div>Resource (ID)</div>,
+          cell: (info) => {
+            return <TruncatedText text={info.getValue()} />;
+          },
+        }),
+      );
+    }
     return columns;
-  }, [setSearchParams]);
+  }, [setSearchParams, params.nodeType]);
 
   const { data: scanResultData, scanStatusResult } = data;
 

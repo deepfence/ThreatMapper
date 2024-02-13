@@ -1416,18 +1416,18 @@ const CloudPostureTable = ({
         enableResizing: false,
         cell: (info) => <TruncatedText text={info.getValue().toUpperCase()} />,
         header: () => 'Benchmark Type',
-        minSize: 50,
-        size: 60,
-        maxSize: 65,
+        minSize: 40,
+        size: 50,
+        maxSize: 60,
       }),
       columnHelper.accessor('service', {
         enableSorting: true,
         enableResizing: false,
         cell: (info) => <TruncatedText text={info.getValue()} />,
         header: () => 'Service',
-        minSize: 50,
-        size: 60,
-        maxSize: 65,
+        minSize: 40,
+        size: 50,
+        maxSize: 60,
       }),
       columnHelper.accessor('status', {
         enableResizing: false,
@@ -1437,6 +1437,16 @@ const CloudPostureTable = ({
         header: () => <div>Status</div>,
         cell: (info) => {
           return <PostureStatusBadge status={info.getValue() as PostureSeverityType} />;
+        },
+      }),
+      columnHelper.accessor('reason', {
+        enableResizing: false,
+        minSize: 60,
+        size: 70,
+        maxSize: 80,
+        header: () => <div>Reason</div>,
+        cell: (info) => {
+          return <TruncatedText text={info.getValue()} />;
         },
       }),
       columnHelper.accessor('description', {
