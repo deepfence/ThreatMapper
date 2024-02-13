@@ -333,7 +333,7 @@ export const ReportFilters = () => {
             });
           }}
         >
-          {['complete', 'in_progress']
+          {['complete', 'starting', 'in_progress', 'error']
             .filter((item) => {
               if (!statusSearch.length) return true;
               if (item.includes(statusSearch.toLowerCase())) {
