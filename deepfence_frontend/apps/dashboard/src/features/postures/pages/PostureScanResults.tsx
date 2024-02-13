@@ -572,7 +572,7 @@ const HistoryControls = () => {
   const { data, fetchStatus } = useScanResults();
   const { nodeType = '' } = useParams();
   const { scanStatusResult } = data;
-  const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
+  const { scan_id, node_id, node_type, created_at, status } = scanStatusResult ?? {};
   const { navigate, goBack } = usePageNavigation();
   const { downloadScan } = useDownloadScan((state) => {
     setIsSubmitting(state === 'submitting');
@@ -592,7 +592,7 @@ const HistoryControls = () => {
   }>({
     baseScanId: '',
     toScanId: '',
-    baseScanTime: updated_at ?? 0,
+    baseScanTime: created_at ?? 0,
     toScanTime: 0,
     showScanTimeModal: false,
   });
@@ -665,7 +665,7 @@ const HistoryControls = () => {
             id: item.scanId,
             isCurrent: item.scanId === scan_id,
             status: item.status,
-            timestamp: item.updatedAt,
+            timestamp: item.createdAt,
             showScanCompareButton: true,
             onScanTimeCompareButtonClick: onCompareScanClick,
             onDeleteClick: (id) => {
@@ -690,7 +690,7 @@ const HistoryControls = () => {
               );
             },
           }))}
-          currentTimeStamp={formatMilliseconds(updated_at ?? '')}
+          currentTimeStamp={formatMilliseconds(created_at ?? '')}
         />
 
         {scanIdToDelete && (
@@ -770,7 +770,7 @@ const HistoryControls = () => {
                     onClick={() => {
                       setCompareInput({
                         ...compareInput,
-                        baseScanTime: updated_at ?? 0,
+                        baseScanTime: created_at ?? 0,
                         showScanTimeModal: true,
                       });
                     }}

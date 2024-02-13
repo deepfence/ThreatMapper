@@ -582,7 +582,7 @@ const HistoryControls = () => {
   });
 
   const [openStopScanModal, setOpenStopScanModal] = useState(false);
-  const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
+  const { scan_id, node_id, node_type, created_at, status } = scanStatusResult ?? {};
 
   const [showScanCompareModal, setShowScanCompareModal] = useState<boolean>(false);
 
@@ -597,7 +597,7 @@ const HistoryControls = () => {
   }>({
     baseScanId: '',
     toScanId: '',
-    baseScanTime: updated_at ?? 0,
+    baseScanTime: created_at ?? 0,
     toScanTime: 0,
     showScanTimeModal: false,
   });
@@ -626,7 +626,7 @@ const HistoryControls = () => {
       showScanTimeModal: true,
     });
   };
-
+  console.log(created_at);
   return (
     <div className="flex items-center relative flex-grow">
       {openStopScanModal && (
@@ -670,7 +670,7 @@ const HistoryControls = () => {
             id: item.scanId,
             isCurrent: item.scanId === scan_id,
             status: item.status,
-            timestamp: item.updatedAt,
+            timestamp: item.createdAt,
             showScanCompareButton: true,
             onScanTimeCompareButtonClick: onCompareScanClick,
             onDeleteClick: (id) => {
@@ -695,7 +695,7 @@ const HistoryControls = () => {
               );
             },
           }))}
-          currentTimeStamp={formatMilliseconds(updated_at ?? '')}
+          currentTimeStamp={formatMilliseconds(created_at ?? '')}
         />
 
         {scanIdToDelete && (
@@ -775,7 +775,7 @@ const HistoryControls = () => {
                     onClick={() => {
                       setCompareInput({
                         ...compareInput,
-                        baseScanTime: updated_at ?? 0,
+                        baseScanTime: created_at ?? 0,
                         showScanTimeModal: true,
                       });
                     }}
