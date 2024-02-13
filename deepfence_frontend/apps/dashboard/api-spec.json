@@ -423,6 +423,118 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/complete/cloud-compliance": {
+      "post": {
+        "tags": ["Completion"],
+        "summary": "Get Completion for cloud compliance fields",
+        "description": "Complete cloud compliance info",
+        "operationId": "completeCloudCompliance",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionCompletionNodeFieldReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletionCompletionNodeFieldRes"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/complete/compliance": {
+      "post": {
+        "tags": ["Completion"],
+        "summary": "Get Completion for compliance fields",
+        "description": "Complete compliance info",
+        "operationId": "completeComplianceInfo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionCompletionNodeFieldReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletionCompletionNodeFieldRes"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/complete/host": {
       "post": {
         "tags": ["Completion"],
@@ -13510,11 +13622,6 @@
         "required": ["node_ids"],
         "type": "object",
         "properties": {
-          "container_names": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
           "fields_filters": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
           "node_ids": {
             "type": "array",

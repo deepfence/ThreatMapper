@@ -74,6 +74,7 @@ import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { PostureScanResultsPieChart } from '@/features/postures/components/scan-result/PostureScanResultsPieChart';
 import { PosturesCompare } from '@/features/postures/components/scan-result/PosturesCompare';
+import { SearchablePostureTestNumber } from '@/features/postures/components/scan-result/SearchableTestNumber';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
@@ -283,6 +284,7 @@ const useScanResults = () => {
       }),
       visibility: searchParams.getAll('visibility'),
       status: searchParams.getAll('status'),
+      testNumber: searchParams.getAll('testNumber'),
     }),
     keepPreviousData: true,
   });
@@ -934,6 +936,7 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   visibility: 'Masked/Unmasked',
   status: 'Status',
   benchmarkType: 'Benchmark',
+  testNumber: 'ID',
 };
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
@@ -1094,6 +1097,27 @@ const Filters = () => {
               );
             })}
         </Combobox>
+        <SearchablePostureTestNumber
+          scanId={params.scanId}
+          defaultSelectedTestNumber={searchParams.getAll('testNumber')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('testNumber');
+              values.forEach((value) => {
+                prev.append('testNumber', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('testNumber');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
 
       {appliedFilterCount > 0 ? (

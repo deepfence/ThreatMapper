@@ -31,6 +31,14 @@ import {
     CompletionCompletionNodeFieldResToJSON,
 } from '../models';
 
+export interface CompleteCloudComplianceRequest {
+    completionCompletionNodeFieldReq?: CompletionCompletionNodeFieldReq;
+}
+
+export interface CompleteComplianceInfoRequest {
+    completionCompletionNodeFieldReq?: CompletionCompletionNodeFieldReq;
+}
+
 export interface CompleteHostInfoRequest {
     completionCompletionNodeFieldReq?: CompletionCompletionNodeFieldReq;
 }
@@ -50,6 +58,38 @@ export interface CompleteVulnerabilityInfoRequest {
  * @interface CompletionApiInterface
  */
 export interface CompletionApiInterface {
+    /**
+     * Complete cloud compliance info
+     * @summary Get Completion for cloud compliance fields
+     * @param {CompletionCompletionNodeFieldReq} [completionCompletionNodeFieldReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CompletionApiInterface
+     */
+    completeCloudComplianceRaw(requestParameters: CompleteCloudComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CompletionCompletionNodeFieldRes>>;
+
+    /**
+     * Complete cloud compliance info
+     * Get Completion for cloud compliance fields
+     */
+    completeCloudCompliance(requestParameters: CompleteCloudComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes>;
+
+    /**
+     * Complete compliance info
+     * @summary Get Completion for compliance fields
+     * @param {CompletionCompletionNodeFieldReq} [completionCompletionNodeFieldReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CompletionApiInterface
+     */
+    completeComplianceInfoRaw(requestParameters: CompleteComplianceInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CompletionCompletionNodeFieldRes>>;
+
+    /**
+     * Complete compliance info
+     * Get Completion for compliance fields
+     */
+    completeComplianceInfo(requestParameters: CompleteComplianceInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes>;
+
     /**
      * Complete host info
      * @summary Get Completion for host fields
@@ -104,6 +144,84 @@ export interface CompletionApiInterface {
  * 
  */
 export class CompletionApi extends runtime.BaseAPI implements CompletionApiInterface {
+
+    /**
+     * Complete cloud compliance info
+     * Get Completion for cloud compliance fields
+     */
+    async completeCloudComplianceRaw(requestParameters: CompleteCloudComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CompletionCompletionNodeFieldRes>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/complete/cloud-compliance`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CompletionCompletionNodeFieldReqToJSON(requestParameters.completionCompletionNodeFieldReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CompletionCompletionNodeFieldResFromJSON(jsonValue));
+    }
+
+    /**
+     * Complete cloud compliance info
+     * Get Completion for cloud compliance fields
+     */
+    async completeCloudCompliance(requestParameters: CompleteCloudComplianceRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes> {
+        const response = await this.completeCloudComplianceRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Complete compliance info
+     * Get Completion for compliance fields
+     */
+    async completeComplianceInfoRaw(requestParameters: CompleteComplianceInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CompletionCompletionNodeFieldRes>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/complete/compliance`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CompletionCompletionNodeFieldReqToJSON(requestParameters.completionCompletionNodeFieldReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CompletionCompletionNodeFieldResFromJSON(jsonValue));
+    }
+
+    /**
+     * Complete compliance info
+     * Get Completion for compliance fields
+     */
+    async completeComplianceInfo(requestParameters: CompleteComplianceInfoRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes> {
+        const response = await this.completeComplianceInfoRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Complete host info
