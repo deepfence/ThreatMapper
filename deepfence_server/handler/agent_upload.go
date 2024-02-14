@@ -20,7 +20,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"golang.org/x/mod/semver"
 )
 
@@ -126,21 +126,21 @@ func IngestAgentVersion(ctx context.Context, tagsToURL map[string]string, manual
 	if err != nil {
 		return err
 	}
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	tagsToIngest := []map[string]string{}
 	for k, v := range tagsToURL {
 		tagsToIngest = append(tagsToIngest, map[string]string{"tag": k, "url": v})
 	}
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row
 		MERGE (n:AgentVersion{node_id: row.tag})
 		SET n.url = row.url,
@@ -152,7 +152,7 @@ func IngestAgentVersion(ctx context.Context, tagsToURL map[string]string, manual
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func CleanUpAgentVersion(ctx context.Context, tagsToKeep []string) error {
@@ -160,16 +160,16 @@ func CleanUpAgentVersion(ctx context.Context, tagsToKeep []string) error {
 	if err != nil {
 		return err
 	}
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (n:AgentVersion)
 		WHERE NOT n.node_id IN $tags
 		AND COALESCE(n.manual, false) = false
@@ -178,7 +178,7 @@ func CleanUpAgentVersion(ctx context.Context, tagsToKeep []string) error {
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]string) error {
@@ -186,14 +186,14 @@ func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]s
 	if err != nil {
 		return err
 	}
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	tagsToIngest := []map[string]string{}
 	for k, v := range latest {
@@ -214,7 +214,7 @@ func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]s
 				"action":      string(actionStr)})
 	}
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row
 		MATCH (vnew:AgentVersion{node_id: row.latest})
 		MATCH (v:AgentVersion) <-[:VERSIONED]- (n:Node)
@@ -227,7 +227,7 @@ func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]s
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func GetLatestVersionByMajorMinor(versions map[string]*bytes.Buffer) map[string]string {
@@ -263,16 +263,16 @@ func GetAgentVersionList(ctx context.Context) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	res, err := tx.Run(`
+	res, err := tx.Run(ctx, `
 		MATCH (n:AgentVersion)
 		WHERE NOT n.url IS NULL
 		RETURN n.node_id
@@ -282,7 +282,7 @@ func GetAgentVersionList(ctx context.Context) ([]string, error) {
 		return nil, err
 	}
 
-	recs, err := res.Collect()
+	recs, err := res.Collect(ctx)
 	if err != nil {
 		return nil, err
 	}

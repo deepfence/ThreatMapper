@@ -13,7 +13,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier) (map[string]struct{}, error) {
@@ -22,21 +22,21 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 	if err != nil {
 		return inProgressNodeIds, err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return inProgressNodeIds, err
 	}
-	defer session.Close()
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	defer session.Close(ctx)
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return inProgressNodeIds, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 	nodeIDs := make([]string, len(nodeIdentifiers))
 	for i, n := range nodeIdentifiers {
 		nodeIDs[i] = n.NodeID
 	}
-	res, err := tx.Run(`MATCH (n)
+	res, err := tx.Run(ctx, `MATCH (n)
 		WHERE (n:Node OR n:KubernetesCluster) AND n.node_id IN $node_ids
 		OPTIONAL MATCH (n)<-[:SCHEDULEDLOGS]-(a:AgentDiagnosticLogs)
 		WHERE NOT a.status = $complete AND NOT a.status = $failed
@@ -47,7 +47,7 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 	if err != nil {
 		return inProgressNodeIds, err
 	}
-	rec, err := res.Collect()
+	rec, err := res.Collect(ctx)
 	if err != nil {
 		return inProgressNodeIds, err
 	}
@@ -77,25 +77,25 @@ func UpdateAgentDiagnosticLogsStatus(ctx context.Context, status diagnosis.Diagn
 	if err != nil {
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return err
 	}
-	defer session.Close()
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	defer session.Close(ctx)
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	_, err = tx.Run(`
+	_, err = tx.Run(ctx, `
 		MATCH (n:AgentDiagnosticLogs{node_id:$node_id})
 		SET n.status = $status, n.message = $message, n.updated_at = TIMESTAMP()`,
 		map[string]interface{}{"node_id": status.NodeID, "status": status.Status, "message": status.Message})
 	if err != nil {
 		return err
 	}
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier, tail string) error {
@@ -130,16 +130,16 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 	if err != nil {
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return err
 	}
-	defer session.Close()
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	defer session.Close(ctx)
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	fileNameSuffix := "-" + time.Now().Format("2006-01-02-15-04-05") + ".zip"
 	for _, nodeIdentifier := range nodeIdentifiers {
@@ -161,7 +161,7 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 		if err != nil {
 			return err
 		}
-		if _, err = tx.Run(fmt.Sprintf(`
+		if _, err = tx.Run(ctx, fmt.Sprintf(`
 		MERGE (n:AgentDiagnosticLogs{node_id: $node_id})
 		SET n.status=$status, n.retries=0, n.trigger_action=$action, n.updated_at=TIMESTAMP(), n.minio_file_name=$minio_file_name
 		MERGE (m:%s{node_id:$node_id})
@@ -175,5 +175,5 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 			return err
 		}
 	}
-	return tx.Commit()
+	return tx.Commit(ctx)
 }

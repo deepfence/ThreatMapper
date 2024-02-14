@@ -16,8 +16,8 @@ import (
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
 )
 
 func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
@@ -39,37 +39,39 @@ func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	driver, err := directory.Neo4jClient(r.Context())
+	ctx := r.Context()
+
+	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(directory.ErrNamespaceNotFound, w)
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	vars := map[string]interface{}{"uids": req.ReportIDs}
 
 	getQuery := `MATCH (n:Report) WHERE n.report_id IN $uids RETURN n`
-	result, err := tx.Run(getQuery, vars)
+	result, err := tx.Run(ctx, getQuery, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 		return
 	}
 
-	records, err := result.Collect()
+	records, err := result.Collect(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -126,14 +128,14 @@ func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
 
 	vars["uids"] = deletedRecs
 	deleteQuery := `MATCH (n:Report) WHERE n.report_id in $uids DELETE n`
-	_, err = tx.Run(deleteQuery, vars)
+	_, err = tx.Run(ctx, deleteQuery, vars)
 	if err != nil {
 		log.Error().Msgf("Failed to delete reports from db, Error: %s", err.Error())
 		h.respondError(err, w)
 		return
 	}
 
-	if err := tx.Commit(); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		log.Error().Msgf("Failure in db commit, error:%s", err.Error())
 		h.respondError(err, w)
 		return
@@ -154,37 +156,39 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	driver, err := directory.Neo4jClient(r.Context())
+	ctx := r.Context()
+
+	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(directory.ErrNamespaceNotFound, w)
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	vars := map[string]interface{}{"uid": req.ReportID}
 
 	getQuery := `MATCH (n:Report{report_id:$uid}) RETURN n`
-	result, err := tx.Run(getQuery, vars)
+	result, err := tx.Run(ctx, getQuery, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 		return
 	}
 
-	records, err := result.Single()
+	records, err := result.Single(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -224,13 +228,13 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	deleteQuery := `MATCH (n:Report{report_id:$uid}) DELETE n`
-	_, err = tx.Run(deleteQuery, vars)
+	_, err = tx.Run(ctx, deleteQuery, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 		return
 	}
-	if err := tx.Commit(); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 		return
@@ -249,36 +253,39 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	driver, err := directory.Neo4jClient(r.Context())
+
+	ctx := r.Context()
+
+	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(directory.ErrNamespaceNotFound, w)
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	query := `MATCH (n:Report{report_id:$uid}) RETURN n`
 	vars := map[string]interface{}{"uid": req.ReportID}
-	result, err := tx.Run(query, vars)
+	result, err := tx.Run(ctx, query, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 		return
 	}
 
-	records, err := result.Single()
+	records, err := result.Single(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -313,29 +320,31 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 		h.respondError(directory.ErrNamespaceNotFound, w)
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-	}
-	defer session.Close()
+	ctx := r.Context()
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 	}
-	defer tx.Close()
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+	}
+	defer tx.Close(ctx)
 
 	query := `MATCH (n:Report) RETURN n`
-	result, err := tx.Run(query, map[string]interface{}{})
+	result, err := tx.Run(ctx, query, map[string]interface{}{})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 		return
 	}
 
-	records, err := result.Collect()
+	records, err := result.Collect(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -401,37 +410,39 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 		params.ReportID = uuid.New().String()
 	}
 
-	driver, err := directory.Neo4jClient(r.Context())
+	ctx := r.Context()
+
+	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(directory.ErrNamespaceNotFound, w)
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	// check if report exists for this report id
 	query := `MATCH (n:Report{report_id:$uid}) RETURN n`
 	vars := map[string]interface{}{"uid": params.ReportID}
-	result, err := tx.Run(query, vars)
+	result, err := tx.Run(ctx, query, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 		return
 	}
 
-	record, err := result.Single()
+	record, err := result.Single(ctx)
 	if err == nil {
 		// report already exists
 		node, ok := record.Get("n")
@@ -484,13 +495,13 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 		"duration": req.Duration,
 	}
 
-	_, err = tx.Run(createQuery, createVars)
+	_, err = tx.Run(ctx, createQuery, createVars)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 		return
 	}
-	if err := tx.Commit(); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 		return

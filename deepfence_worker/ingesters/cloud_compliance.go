@@ -6,7 +6,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func CommitFuncCloudCompliance(ns string, data []ingestersUtil.CloudCompliance) error {
@@ -16,19 +16,19 @@ func CommitFuncCloudCompliance(ns string, data []ingestersUtil.CloudCompliance) 
 		return err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row
 		MERGE (n:CloudCompliance{node_id: row.node_id})
 		SET n+=row,
@@ -47,7 +47,7 @@ func CommitFuncCloudCompliance(ns string, data []ingestersUtil.CloudCompliance) 
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func CloudCompliancesToMaps(ms []ingestersUtil.CloudCompliance) []map[string]interface{} {

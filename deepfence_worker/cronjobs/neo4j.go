@@ -12,7 +12,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 const (
@@ -59,15 +59,15 @@ func getResourceCleanUpTimeout(ctx context.Context) time.Duration {
 	return defaultDBScannedResourceCleanUpTimeout
 }
 
-func getPushBackValue(session neo4j.Session) int32 {
-	res, err := session.Run(`
+func getPushBackValue(ctx context.Context, session neo4j.SessionWithContext) int32 {
+	res, err := session.Run(ctx, `
 		MATCH (n:Node{node_id:"`+ConsoleAgentId+`"})
 		RETURN n.push_back`,
 		map[string]interface{}{}, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return 1
 	}
-	rec, err := res.Single()
+	rec, err := res.Single(ctx)
 	if err != nil {
 		return 1
 	}
@@ -95,12 +95,12 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	read_session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	pushBack := getPushBackValue(read_session)
-	read_session.Close()
+	read_session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	pushBack := getPushBackValue(ctx, read_session)
+	read_session.Close(ctx)
 
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
 	dbReportCleanUpTimeout := dbReportCleanUpTimeoutBase * time.Duration(pushBack)
 	dbScanTimeout := dbScanTimeoutBase * time.Duration(pushBack)
@@ -110,7 +110,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	start := time.Now()
 
 	// Set inactives
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:Node)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND NOT n.node_id IN ["in-the-internet", "out-the-internet"]
@@ -123,7 +123,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:Node)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND n.agent_running=false
@@ -136,7 +136,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// registry images
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:ContainerImage)<-[:HOSTS]-(m:RegistryAccount)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND n.active = true
@@ -149,7 +149,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// host images
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:ContainerImage)
 		WHERE exists((n)<-[:HOSTS]-(:Node))
 		AND NOT exists((n)<-[:HOSTS]-(:RegistryAccount))
@@ -162,7 +162,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:ImageStub)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		OR NOT exists((n)<-[:IS]-(:ContainerImage))
@@ -173,7 +173,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:Container)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND n.active = true
@@ -184,7 +184,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:KubernetesCluster)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND n.active = true
@@ -196,7 +196,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:KubernetesCluster)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND n.active = true
@@ -209,7 +209,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// Delete old with no data
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:Node) <-[:HOSTS]- (cr:CloudRegion)
 		WHERE n.active = false
 		AND (NOT exists((n) <-[:SCANNED]-())
@@ -228,7 +228,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:ContainerImage)
 		WHERE n.active = false
 		AND ((NOT exists((n) <-[:SCANNED]-())
@@ -244,7 +244,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:Container)
 		WHERE n.active = false
 		AND ((NOT exists((n) <-[:SCANNED]-())
@@ -260,7 +260,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:KubernetesCluster)
 		WHERE n.active = false
 		AND (NOT exists((n) <-[:SCANNED]-())
@@ -274,7 +274,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:Pod)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		WITH n LIMIT 10000
@@ -284,7 +284,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:Process)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		WITH n LIMIT 10000
@@ -295,7 +295,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	}
 
 	for ts := range ingestersUtil.ScanStatusField {
-		if _, err = session.Run(`
+		if _, err = session.Run(ctx, `
 			MATCH (n:`+string(ts)+`) -[:SCANNED]-> (r)
 			WHERE n.retries >= 3
 			WITH n, r LIMIT 10000
@@ -311,7 +311,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		}
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (:AgentVersion) -[n:SCHEDULED]-> (:Node)
 		WHERE n.retries >= 3
 		WITH n LIMIT 10000
@@ -324,7 +324,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:AgentDiagnosticLogs)
 		WHERE n.retries >= 3
 		WITH n LIMIT 10000
@@ -337,7 +337,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudScannerDiagnosticLogs)
 		WHERE n.retries >= 3
 		WITH n LIMIT 10000
@@ -350,7 +350,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:AgentVersion)
 		WHERE n.url IS NULL
 		AND NOT exists((n) -[:VERSIONED]-(:Node))
@@ -360,7 +360,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:AgentDiagnosticLogs)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		WITH n LIMIT 10000
@@ -372,7 +372,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudScannerDiagnosticLogs)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		WITH n LIMIT 10000
@@ -384,7 +384,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudNode)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND n.active = true
@@ -397,7 +397,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudResource) <-[:HOSTS]- (cr:CloudRegion)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND NOT exists((n) <-[:SCANNED]-())
@@ -415,7 +415,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudProvider) -[:HOSTS]-> (m)
 		WHERE m.active = true
 		WITH count(m) as c, n LIMIT 10000
@@ -425,7 +425,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudRegion)
 		WHERE not (n) -[:HOSTS]-> ()
 		WITH n LIMIT 10000
@@ -435,7 +435,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudProvider)
 		WHERE not (n) -[:HOSTS]-> ()
 		WITH n LIMIT 10000
@@ -468,14 +468,14 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
 	txConfig := neo4j.WithTxTimeout(30 * time.Second)
 
 	start := time.Now()
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudResource)
 		WHERE not (n) <-[:HOSTS]- (:CloudRegion)
 		AND NOT n.cloud_provider IS NULL
@@ -497,7 +497,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:Node) <-[:HOSTS]- (cr:CloudRegion)
 		WHERE n.active = true and (n.kubernetes_cluster_id= "" or n.kubernetes_cluster_id is null)
 		WITH cr, count(n) as cnt
@@ -506,7 +506,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (cr:CloudRegion)
 		WHERE NOT cr.res_shown IS NULL
 		SET cr.active = cr.res_shown <> 0`,
@@ -515,7 +515,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// Handle AWS EC2 & LBs
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudResource)
 		WHERE n.linked = false
 		AND n.node_type in $types
@@ -536,7 +536,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// Handle AWS Lambda
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudResource)
 		WHERE n.linked = false
 		AND n.node_type in $types
@@ -553,7 +553,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (m:CloudResource{id: "aws_vpc_security_group_rule"})
 		WHERE m.is_egress
 		AND m.cidr_ipv4 = "0.0.0.0/0"
@@ -568,7 +568,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (m:CloudResource{id: "aws_vpc_security_group_rule"})
 		WHERE NOT m.is_egress
 		AND m.cidr_ipv4 = "0.0.0.0/0"
@@ -584,7 +584,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// Handle AWS ECS
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudResource)
 		WHERE n.linked = false
 		AND n.node_type in $types
@@ -610,7 +610,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// Handle GCP CloudFunction
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudResource)
 		WHERE n.linked = false
 		AND n.node_type in $types
@@ -629,7 +629,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// Handle GCP Storage
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudResource)
 		WHERE n.linked = false
 		AND n.node_type in $types
@@ -649,7 +649,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// Handle GCP Databases
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudResource)
 		WHERE n.linked = false
 		AND n.node_type in $types
@@ -669,7 +669,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// Handle Azure VMs
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudResource)
 		WHERE n.linked = false
 		AND n.node_type in $types
@@ -687,7 +687,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// Handle Azure Storage Account
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudResource)
 		WHERE n.linked = false
 		AND n.node_type in $types
@@ -705,7 +705,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// Handle Azure Storage Container
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudResource)
 		WHERE n.linked = false
 		AND n.node_type in $types
@@ -723,7 +723,7 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// Handle Azure SQL Server
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:CloudResource)
 		WHERE n.linked = false
 		AND n.node_type in $types
@@ -763,14 +763,14 @@ func LinkNodes(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
 	txConfig := neo4j.WithTxTimeout(30 * time.Second)
 
 	start := time.Now()
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:Node)
 		WHERE not (n) <-[:HOSTS]- (:CloudRegion)
 		AND NOT n.cloud_provider IS NULL
@@ -786,7 +786,7 @@ func LinkNodes(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err := session.Run(`
+	if _, err := session.Run(ctx, `
 		MATCH (n:Node) <-[:INSTANCIATE]- (k:KubernetesCluster)
 		WHERE not (k) <-[:HOSTS]- (:CloudRegion)
 		AND NOT n.cloud_region IS NULL
@@ -796,7 +796,7 @@ func LinkNodes(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err := session.Run(`
+	if _, err := session.Run(ctx, `
 		MATCH (n:KubernetesCluster)
 		WHERE not (n) <-[:HOSTS]- (:CloudProvider)
 		AND NOT n.cloud_provider IS NULL
@@ -807,7 +807,7 @@ func LinkNodes(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:ContainerImage)
 		WHERE NOT exists((n) -[:ALIAS]-> ())
 		MERGE (t:ImageTag{node_id: n.docker_image_name + "_" + n.docker_image_tag})
@@ -831,19 +831,19 @@ func RetryScansDB(ctx context.Context, task *asynq.Task) error {
 	if err != nil {
 		return err
 	}
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	pushBack := getPushBackValue(session)
+	pushBack := getPushBackValue(ctx, session)
 	dbScanTimeout := dbScanTimeoutBase * time.Duration(pushBack)
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (n) -[:SCANNED]-> ()
 		WHERE n.status = $old_status
 		AND n.updated_at < TIMESTAMP()-$time_ms
@@ -858,7 +858,7 @@ func RetryScansDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (a:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n)
 		WHERE a.status = $old_status
 		AND a.updated_at < TIMESTAMP()-$time_ms
@@ -873,7 +873,7 @@ func RetryScansDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (a:CloudScannerDiagnosticLogs)
 		WHERE a.status = $old_status
 		AND a.updated_at < TIMESTAMP()-$time_ms
@@ -888,7 +888,7 @@ func RetryScansDB(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func RetryUpgradeAgent(ctx context.Context, task *asynq.Task) error {
@@ -901,19 +901,19 @@ func RetryUpgradeAgent(ctx context.Context, task *asynq.Task) error {
 	if err != nil {
 		return err
 	}
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	pushBack := getPushBackValue(session)
+	pushBack := getPushBackValue(ctx, session)
 	dbScanTimeout := dbScanTimeoutBase * time.Duration(pushBack)
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (:AgentVersion) -[n:SCHEDULED]-> (:Node)
 		WHERE n.status = $old_status
 		AND n.updated_at < TIMESTAMP()-$time_ms
@@ -928,5 +928,5 @@ func RetryUpgradeAgent(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }

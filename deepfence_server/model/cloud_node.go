@@ -13,7 +13,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 const (
@@ -199,17 +199,17 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 		return err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	if parentNodeID == "" {
-		if _, err := tx.Run(`
+		if _, err := tx.Run(ctx, `
 			WITH $param as row
 			MERGE (n:CloudNode{node_id:row.node_id})
 			SET n+= row, n.active = true, n.updated_at = TIMESTAMP(), n.version = row.version`,
@@ -219,7 +219,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			return err
 		}
 	} else {
-		if _, err := tx.Run(`
+		if _, err := tx.Run(ctx, `
 			MERGE (m:CloudNode{node_id: $parent_node_id})
 			WITH $param as row, m
 			MERGE (n:CloudNode{node_id:row.node_id})
@@ -233,7 +233,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 		}
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func getPostureProviderCache(ctx context.Context) []PostureProvider {
@@ -262,17 +262,17 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 		return nil, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return nil, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	postureProvidersCache := getPostureProviderCache(ctx)
 
@@ -297,9 +297,9 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 	query := `MATCH (m:Node)
 			WHERE m.pseudo=false and m.agent_running=true
 			RETURN m.active, count(m)`
-	r, err := tx.Run(query, map[string]interface{}{})
+	r, err := tx.Run(ctx, query, map[string]interface{}{})
 	if err == nil {
-		records, err := r.Collect()
+		records, err := r.Collect(ctx)
 		if err == nil {
 			for _, record := range records {
 				if record.Values[0].(bool) {
@@ -317,9 +317,9 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 	query = `MATCH (m:KubernetesCluster)
 			WHERE m.pseudo=false and m.agent_running=true
 			RETURN m.active, count(m)`
-	r, err = tx.Run(query, map[string]interface{}{})
+	r, err = tx.Run(ctx, query, map[string]interface{}{})
 	if err == nil {
-		records, err := r.Collect()
+		records, err := r.Collect(ctx)
 		if err == nil {
 			for _, record := range records {
 				if record.Values[0].(bool) {
@@ -336,9 +336,9 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 	// CloudNodes
 	query = `MATCH (m:CloudNode)
 			RETURN m.cloud_provider, m.active, count(m)`
-	r, err = tx.Run(query, map[string]interface{}{})
+	r, err = tx.Run(ctx, query, map[string]interface{}{})
 	if err == nil {
-		records, err := r.Collect()
+		records, err := r.Collect(ctx)
 		if err == nil {
 			for _, record := range records {
 				provider := record.Values[0].(string)
@@ -364,17 +364,17 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		return CloudNodeAccountsListResp{Total: 0}, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return CloudNodeAccountsListResp{Total: 0}, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return CloudNodeAccountsListResp{Total: 0}, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	isOrgListing := false
 	neo4jNodeType := "CloudNode"
@@ -392,7 +392,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		neo4jNodeType = "Node"
 		passStatus = []string{"warn", "pass"}
 	}
-	var res neo4j.Result
+	var res neo4j.ResultWithContext
 	var query string
 	switch {
 	case cloudProvider == PostureProviderKubernetes || cloudProvider == PostureProviderLinux:
@@ -418,7 +418,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	}
 
 	log.Debug().Msgf("posture query: %v", query)
-	res, err = tx.Run(
+	res, err = tx.Run(ctx,
 		query,
 		map[string]interface{}{
 			"cloud_provider": cloudProvider,
@@ -428,7 +428,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		return CloudNodeAccountsListResp{Total: 0}, err
 	}
 
-	recs, err := res.Collect()
+	recs, err := res.Collect(ctx)
 	if err != nil {
 		return CloudNodeAccountsListResp{Total: 0}, err
 	}
@@ -448,14 +448,14 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	}
 
 	total := fw.Offset + len(cloudNodeAccountsInfo)
-	var countRes neo4j.Result
+	var countRes neo4j.ResultWithContext
 	if isOrgListing {
-		countRes, err = tx.Run(`
+		countRes, err = tx.Run(ctx, `
 		MATCH (m:CloudNode) -[:IS_CHILD]-> (n:CloudNode{cloud_provider: $cloud_provider})
 		RETURN COUNT(m)`,
 			map[string]interface{}{"cloud_provider": cloudProvider})
 	} else {
-		countRes, err = tx.Run(fmt.Sprintf(`
+		countRes, err = tx.Run(ctx, fmt.Sprintf(`
 		MATCH (n:%s {cloud_provider: $cloud_provider})
 		RETURN COUNT(*)`, neo4jNodeType),
 			map[string]interface{}{"cloud_provider": cloudProvider})
@@ -464,7 +464,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		return CloudNodeAccountsListResp{Total: 0}, err
 	}
 
-	countRec, err := countRes.Single()
+	countRec, err := countRes.Single(ctx)
 	if err != nil {
 		return CloudNodeAccountsListResp{CloudNodeAccountInfo: cloudNodeAccountsInfo, Total: total}, nil
 	}
@@ -481,20 +481,20 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 		return benchmarks, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return benchmarks, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return benchmarks, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	var res neo4j.Result
-	res, err = tx.Run(`
+	var res neo4j.ResultWithContext
+	res, err = tx.Run(ctx, `
 		MATCH (n:CloudComplianceBenchmark) -[:PARENT]-> (m:CloudComplianceControl)
 		WHERE m.active = true
 		AND m.disabled = false
@@ -510,7 +510,7 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 		return benchmarks, err
 	}
 
-	recs, err := res.Collect()
+	recs, err := res.Collect(ctx)
 	if err != nil {
 		return benchmarks, err
 	}
@@ -541,19 +541,19 @@ func (c *CloudAccountRefreshReq) SetCloudAccountRefresh(ctx context.Context) err
 		return err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		UNWIND $batch as cloudNode
 		MERGE (n:CloudNodeRefresh{node_id: cloudNode})
 		SET n.refresh = true, n.updated_at = TIMESTAMP()`,
@@ -562,7 +562,7 @@ func (c *CloudAccountRefreshReq) SetCloudAccountRefresh(ctx context.Context) err
 		}); err != nil {
 		return err
 	}
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func (c *CloudAccountRefreshReq) GetCloudAccountRefresh(ctx context.Context) ([]string, error) {
@@ -572,19 +572,19 @@ func (c *CloudAccountRefreshReq) GetCloudAccountRefresh(ctx context.Context) ([]
 		return updatedNodeIDs, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return updatedNodeIDs, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return updatedNodeIDs, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	res, err := tx.Run(`
+	res, err := tx.Run(ctx, `
 		UNWIND $batch as cloudNode
 		MATCH (n:CloudNodeRefresh{node_id: cloudNode})
 		WHERE n.refresh=true
@@ -597,7 +597,7 @@ func (c *CloudAccountRefreshReq) GetCloudAccountRefresh(ctx context.Context) ([]
 	if err != nil {
 		return updatedNodeIDs, err
 	}
-	recs, err := res.Collect()
+	recs, err := res.Collect(ctx)
 	if err != nil {
 		return updatedNodeIDs, err
 	}
@@ -605,5 +605,5 @@ func (c *CloudAccountRefreshReq) GetCloudAccountRefresh(ctx context.Context) ([]
 	for _, rec := range recs {
 		updatedNodeIDs = append(updatedNodeIDs, rec.Values[0].(string))
 	}
-	return updatedNodeIDs, tx.Commit()
+	return updatedNodeIDs, tx.Commit(ctx)
 }

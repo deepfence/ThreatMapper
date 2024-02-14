@@ -26,7 +26,7 @@ require (
 	github.com/klauspost/compress v1.17.4
 	github.com/lestrrat-go/jwx/v2 v2.0.18
 	github.com/minio/minio-go/v7 v7.0.66
-	github.com/neo4j/neo4j-go-driver/v4 v4.4.7
+	github.com/neo4j/neo4j-go-driver/v5 v5.17.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.18.0

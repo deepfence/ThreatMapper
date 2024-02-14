@@ -16,7 +16,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 const MaxFindingsPerBatch = 100
@@ -144,27 +144,27 @@ func getResourceForVulnerability(ctx context.Context, scanID, region, accountID 
 		return nil, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	// query for Host/Node
 	query := `MATCH (m:VulnerabilityScan{node_id: $id})-[:SCHEDULED|SCANNED]->(o:Node) WHERE o.pseudo <> true RETURN o.cloud_provider as cp, o.instance_id as instanceID, o.cloud_account_id as cloudAccountID`
 	vars := map[string]interface{}{"id": scanID}
-	r, err := tx.Run(query, vars)
+	r, err := tx.Run(ctx, query, vars)
 
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
 	}
 
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
@@ -191,13 +191,13 @@ func getResourceForVulnerability(ctx context.Context, scanID, region, accountID 
 	// query for containerImage
 	query = `MATCH (m:VulnerabilityScan{node_id: $id})-[:SCHEDULED|SCANNED]->(o:ContainerImage)<-[:HOSTS]-(p:RegistryAccount) 
 	RETURN o.docker_image_name as name, p.registry_type as type LIMIT 1`
-	r, err = tx.Run(query, vars)
+	r, err = tx.Run(ctx, query, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
 	}
 
-	records, err = r.Collect()
+	records, err = r.Collect(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
@@ -230,31 +230,31 @@ func getResourceForCompliance(ctx context.Context, scanID, region, accountID str
 		return nil, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	// query for Host/Node
 	query := `MATCH (m:ComplianceScan{node_id: $id})-[:SCHEDULED|SCANNED]->(o:Node) WHERE o.pseudo <> true RETURN o.cloud_provider as cp, o.instance_id as instanceID, o.cloud_account_id as cloudAccountID`
 	vars := map[string]interface{}{"id": scanID}
-	r, err := tx.Run(query, vars)
+	r, err := tx.Run(ctx, query, vars)
 
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
 	}
 
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err

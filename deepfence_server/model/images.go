@@ -7,8 +7,8 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
 	"github.com/rs/zerolog/log"
 )
 
@@ -26,17 +26,17 @@ func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, registryTyp
 		return nil, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return nil, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	if registryID != "" {
 		query = "MATCH (n:RegistryAccount{node_id: $node_id})-[r:HOSTS]->(m:ContainerImage) RETURN m"
@@ -44,12 +44,12 @@ func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, registryTyp
 		query = "MATCH (n:RegistryAccount{})-[r:HOSTS]->(m:ContainerImage) RETURN m"
 	}
 
-	res, err := tx.Run(query, map[string]interface{}{"node_id": registryID})
+	res, err := tx.Run(ctx, query, map[string]interface{}{"node_id": registryID})
 	if err != nil {
 		return nil, err
 	}
 
-	recs, err := res.Collect()
+	recs, err := res.Collect(ctx)
 	if err != nil {
 		return nil, err
 	}

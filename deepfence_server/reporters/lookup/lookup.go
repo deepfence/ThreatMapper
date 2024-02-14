@@ -10,8 +10,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
 	"github.com/rs/zerolog/log"
 )
 
@@ -297,16 +297,16 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 		return res, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	var r neo4j.Result
+	var r neo4j.ResultWithContext
 	var query string
 	if len(filter.NodeIds) == 0 {
 		query = `
@@ -337,14 +337,14 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 			RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources`
 	}
 	log.Debug().Msgf("query: %s", query)
-	r, err = tx.Run(query,
+	r, err = tx.Run(ctx, query,
 		map[string]interface{}{"ids": filter.NodeIds})
 
 	if err != nil {
 		return res, err
 	}
 
-	recs, err := r.Collect()
+	recs, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -414,25 +414,25 @@ func getNodeConnections[T reporters.Cypherable](ctx context.Context, ids []strin
 		return inbound, outbound, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return inbound, outbound, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	query := `
 			MATCH (n:` + dummy.NodeType() + `)-[c:CONNECTS]-(m)
 			WHERE n.node_id in $ids
 			RETURN n.node_id,m.node_id,m.node_name,sum(size(c.left_pids)),(startNode(c) = n),c.left_ips,c.right_ips`
-	r, err := tx.Run(query, map[string]interface{}{"ids": ids})
+	r, err := tx.Run(ctx, query, map[string]interface{}{"ids": ids})
 	if err != nil {
 		return inbound, outbound, err
 	}
 
-	recs, err := r.Collect()
+	recs, err := r.Collect(ctx)
 	if err != nil {
 		return inbound, outbound, err
 	}
@@ -474,22 +474,22 @@ func getIndirectFromIDs[T any](ctx context.Context, query string, ids []string) 
 		return res, matchedID, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, matchedID, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(query, map[string]interface{}{"ids": ids})
+	r, err := tx.Run(ctx, query, map[string]interface{}{"ids": ids})
 
 	if err != nil {
 		return res, matchedID, err
 	}
 
-	recs, err := r.Collect()
+	recs, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, matchedID, err

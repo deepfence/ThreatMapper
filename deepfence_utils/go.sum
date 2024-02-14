@@ -101,6 +101,8 @@ github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9G
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/neo4j/neo4j-go-driver/v4 v4.4.7 h1:6D0DPI7VOVF6zB8eubY1lav7RI7dZ2mytnr3fj369Ow=
 github.com/neo4j/neo4j-go-driver/v4 v4.4.7/go.mod h1:NexOfrm4c317FVjekrhVV8pHBXgtMG5P6GeweJWCyo4=
+github.com/neo4j/neo4j-go-driver/v5 v5.17.0 h1:Bdqg1Y8Hd3uLYToXtBjysDYXTdMiP7zeUNUEwfbJkSo=
+github.com/neo4j/neo4j-go-driver/v5 v5.17.0/go.mod h1:Vff8OwT7QpLm7L2yYr85XNWe9Rbqlbeb9asNXJTHO4k=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=

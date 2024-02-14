@@ -9,7 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 const (
@@ -67,18 +67,18 @@ func isOnboardingRequired(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return false, err
 	}
-	defer session.Close()
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	defer session.Close(ctx)
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return false, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	res, err := tx.Run(`MATCH (n)
+	res, err := tx.Run(ctx, `MATCH (n)
 		WHERE (n:Node OR n:KubernetesCluster or n:RegistryAccount or n:CloudNode)
 		AND COALESCE(n.active, true)=true
 		AND COALESCE(n.pseudo, false)=false
@@ -88,7 +88,7 @@ func isOnboardingRequired(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	rec, err := res.Single()
+	rec, err := res.Single(ctx)
 	if err != nil {
 		return false, err
 	}

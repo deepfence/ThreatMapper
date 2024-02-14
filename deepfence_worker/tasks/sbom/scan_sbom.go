@@ -25,7 +25,7 @@ import (
 	psUtils "github.com/deepfence/package-scanner/utils"
 	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -222,19 +222,19 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	if err != nil {
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	entityID, err := workerUtil.GetEntityIdFromScanID(params.ScanID, string(utils.NEO4JVulnerabilityScan), tx)
+	entityID, err := workerUtil.GetEntityIdFromScanID(ctx, params.ScanID, string(utils.NEO4JVulnerabilityScan), tx)
 	if err != nil {
 		log.Error().Msgf("Error in getting entityId: %v", err)
 	}

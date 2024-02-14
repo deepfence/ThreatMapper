@@ -1,4 +1,4 @@
-FROM neo4j:4.4.25
+FROM neo4j:5.16.0
 RUN apt update && apt install rclone netcat -y
 COPY df.sh /startup
 COPY backup_neo4j.sh /usr/local/bin/

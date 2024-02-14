@@ -9,7 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 const minioReportsPrefix = "/report/"
@@ -31,12 +31,12 @@ func CleanUpReports(ctx context.Context, task *asynq.Task) error {
 		return nil
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
 	hoursAgo := time.Now().Add(time.Duration(-utils.ReportRetentionTime))
 
@@ -65,38 +65,38 @@ func CleanUpReports(ctx context.Context, task *asynq.Task) error {
 	return err
 }
 
-func deleteReport(ctx context.Context, session neo4j.Session, path string) error {
+func deleteReport(ctx context.Context, session neo4j.SessionWithContext, path string) error {
 
 	log := log.WithCtx(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(10*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	query := `MATCH (n:Report{storage_path:$path}) DELETE n`
 	vars := map[string]interface{}{"path": path}
-	_, err = tx.Run(query, vars)
+	_, err = tx.Run(ctx, query, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
-func deleteFailedReports(ctx context.Context, session neo4j.Session) error {
+func deleteFailedReports(ctx context.Context, session neo4j.SessionWithContext) error {
 
 	log := log.WithCtx(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(10*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	duration := utils.ReportRetentionTime.Milliseconds()
 
@@ -104,11 +104,11 @@ func deleteFailedReports(ctx context.Context, session neo4j.Session) error {
 	vars := map[string]interface{}{
 		"duration": duration,
 	}
-	_, err = tx.Run(query, vars)
+	_, err = tx.Run(ctx, query, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"golang.org/x/mod/semver"
 )
 
@@ -49,21 +49,21 @@ func ScheduleAgentUpgrade(ctx context.Context, version string, nodeIDs []string,
 		return err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	actionStr, err := json.Marshal(action)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.Run(`
+	_, err = tx.Run(ctx, `
 		MATCH (v:AgentVersion{node_id: $version})
 		MATCH (n:Node)
 		WHERE n.node_id IN $node_ids
@@ -79,7 +79,7 @@ func ScheduleAgentUpgrade(ctx context.Context, version string, nodeIDs []string,
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 
 }
 
@@ -90,16 +90,16 @@ func GetAgentVersionTarball(ctx context.Context, version string) (string, error)
 		return "", err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return "", err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	res, err := tx.Run(`
+	res, err := tx.Run(ctx, `
 		MATCH (v:AgentVersion{node_id: $version})
 		RETURN v.url`,
 		map[string]interface{}{
@@ -110,7 +110,7 @@ func GetAgentVersionTarball(ctx context.Context, version string) (string, error)
 		return "", err
 	}
 
-	r, err := res.Single()
+	r, err := res.Single(ctx)
 
 	if err != nil {
 		return "", err
@@ -126,19 +126,19 @@ func GetAgentPluginVersionTarball(ctx context.Context, version, pluginName strin
 		return "", err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return "", err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	query := fmt.Sprintf(`
 		MATCH (v:AgentVersion{node_id: $version})
 		return v.url_%s`, pluginName)
-	res, err := tx.Run(query,
+	res, err := tx.Run(ctx, query,
 		map[string]interface{}{
 			"version": version,
 		})
@@ -147,7 +147,7 @@ func GetAgentPluginVersionTarball(ctx context.Context, version, pluginName strin
 		return "", err
 	}
 
-	r, err := res.Single()
+	r, err := res.Single(ctx)
 
 	if err != nil {
 		return "", err
@@ -163,16 +163,16 @@ func hasPendingUpgradeOrNew(ctx context.Context, version string, nodeID string) 
 		return false, err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return false, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	res, err := tx.Run(`
+	res, err := tx.Run(ctx, `
 		MATCH (n:Node{node_id:$node_id})
 		MATCH (v:AgentVersion{node_id:$version})
 		OPTIONAL MATCH (v) -[rs:SCHEDULED]-> (n)
@@ -186,7 +186,7 @@ func hasPendingUpgradeOrNew(ctx context.Context, version string, nodeID string) 
 		return false, err
 	}
 
-	r, err := res.Single()
+	r, err := res.Single(ctx)
 	if err != nil {
 		// No results means new
 		return true, nil
@@ -200,16 +200,16 @@ func wasAttachedToNewer(ctx context.Context, version string, nodeID string) (boo
 		return false, "", err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return false, "", err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	res, err := tx.Run(`
+	res, err := tx.Run(ctx, `
 		MATCH (n:Node{node_id:$node_id}) -[old:VERSIONED]-> (v)
 		RETURN v.node_id`,
 		map[string]interface{}{
@@ -219,7 +219,7 @@ func wasAttachedToNewer(ctx context.Context, version string, nodeID string) (boo
 		return false, "", err
 	}
 
-	rec, err := res.Single()
+	rec, err := res.Single(ctx)
 	if err != nil {
 		return false, "", nil
 	}
@@ -251,16 +251,16 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeID string) er
 		return err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	_, err = tx.Run(`
+	_, err = tx.Run(ctx, `
 		OPTIONAL MATCH (n:Node{node_id:$node_id}) -[old:VERSIONED]-> (v)
 		DELETE old`,
 		map[string]interface{}{
@@ -270,7 +270,7 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeID string) er
 		return err
 	}
 
-	_, err = tx.Run(`
+	_, err = tx.Run(ctx, `
 		MERGE (n:Node{node_id:$node_id})
 		MERGE (v:AgentVersion{node_id:$version})
 		MERGE (n) -[r:VERSIONED]-> (v)
@@ -286,7 +286,7 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeID string) er
 		return err
 	}
 
-	err = tx.Commit()
+	err = tx.Commit(ctx)
 	if err != nil {
 		return err
 	}
@@ -313,14 +313,14 @@ func ScheduleAgentPluginEnable(ctx context.Context, version, pluginName string, 
 		return err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	actionStr, err := json.Marshal(action)
 	if err != nil {
@@ -338,7 +338,7 @@ func ScheduleAgentPluginEnable(ctx context.Context, version, pluginName string, 
 		de_ids
 		MERGE (v) -[:SCHEDULED{status: $status, retries: 0, trigger_action: $action, updated_at: TIMESTAMP()}]-> (n)`, pluginName)
 
-	_, err = tx.Run(query,
+	_, err = tx.Run(ctx, query,
 		map[string]interface{}{
 			"version":  version,
 			"node_ids": nodeIDs,
@@ -350,7 +350,7 @@ func ScheduleAgentPluginEnable(ctx context.Context, version, pluginName string, 
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 
 }
 
@@ -361,14 +361,14 @@ func ScheduleAgentPluginDisable(ctx context.Context, pluginName string, nodeIDs 
 		return err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	actionStr, err := json.Marshal(action)
 	if err != nil {
@@ -381,7 +381,7 @@ func ScheduleAgentPluginDisable(ctx context.Context, pluginName string, nodeIDs 
 		MERGE (v) -[:SCHEDULED{status: $status, retries: 0, trigger_action: $action, updated_at: TIMESTAMP()}]-> (n)
 		SET n.status_%s = 'disabling'`, pluginName, pluginName)
 
-	_, err = tx.Run(query,
+	_, err = tx.Run(ctx, query,
 		map[string]interface{}{
 			"node_ids": nodeIDs,
 			"status":   utils.ScanStatusStarting,
@@ -392,6 +392,6 @@ func ScheduleAgentPluginDisable(ctx context.Context, pluginName string, nodeIDs 
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 
 }

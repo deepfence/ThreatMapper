@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 var (
@@ -253,14 +253,14 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 		log.Fatal(err)
 	}
 
-	defer session.Close()
+	defer session.Close(ctx)
 
 	log.Println("Starting ingestion")
 
 	for i := range images {
 
 		log.Printf("Processing %v / %v\n", i, len(images))
-		_, err = session.Run(`
+		_, err = session.Run(ctx, `
 		UNWIND $images as row
 		MERGE (n:ContainerImage{node_id:row.node_id})
 		SET n += row`,
@@ -274,7 +274,7 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 
 	for i := range hosts {
 		log.Printf("Processing %v / %v\n", i, len(hosts))
-		_, err = session.Run(`
+		_, err = session.Run(ctx, `
 		UNWIND $hosts as row
 		MERGE (cp:CloudProvider{node_id: row.cloud_provider})
 		MERGE (cr:CloudRegion{node_id: row.cloud_region})
@@ -292,7 +292,7 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 
 	for i := range containers {
 		log.Printf("Processing %v / %v\n", i, len(containers))
-		_, err = session.Run(`
+		_, err = session.Run(ctx, `
 		UNWIND $containers as row
 		MERGE (n:Container{node_id:row.node_id})
 		SET n += row`,
@@ -306,7 +306,7 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 
 	for i := range vulnerabilities {
 		log.Printf("Processing %v / %v\n", i, len(vulnerabilities))
-		_, err = session.Run(`
+		_, err = session.Run(ctx, `
 		UNWIND $vulnerabilities as row
 		MERGE (n:Vulnerability{node_id:row.node_id})
 		SET n += row`,
@@ -318,7 +318,7 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 
 	for i := range vulnerability_scans {
 		log.Printf("Processing %v / %v\n", i, len(vulnerability_scans))
-		_, err = session.Run(`
+		_, err = session.Run(ctx, `
 		UNWIND $vulnerability_scans as row
 		MERGE (n:VulnerabilityScan{node_id:row.node_id})
 		SET n += row`,
@@ -332,7 +332,7 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 
 	for i := range aws_lambdas {
 		log.Printf("Processing %v / %v\n", i, len(aws_lambdas))
-		_, err = session.Run(`
+		_, err = session.Run(ctx, `
 		UNWIND $batch as row
 		MERGE (cp:CloudProvider{node_id: row.cloud_provider})
 		MERGE (cr:CloudRegion{node_id: row.cloud_region})
@@ -362,7 +362,7 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 
 	for i := range link_host_container_image {
 		log.Printf("Processing %v / %v\n", i, len(link_host_container_image))
-		_, err = session.Run(`
+		_, err = session.Run(ctx, `
 		UNWIND $links as row
 		MATCH (n:Node{node_id:row.left})
 		MATCH (m:ContainerImage{node_id:row.right})
@@ -388,7 +388,7 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 
 	for i := range link_host_container {
 		log.Printf("Processing %v / %v\n", i, len(link_host_container))
-		_, err = session.Run(`
+		_, err = session.Run(ctx, `
 		UNWIND $links as row
 		MATCH (n:Node{node_id:row.left})
 		MATCH (m:Container{node_id:row.right})
@@ -401,7 +401,7 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 
 	fmt.Printf("Linked 2\n")
 
-	_, err = session.Run(`
+	_, err = session.Run(ctx, `
 		MATCH (n:ContainerImage)
 		MATCH (m:VulnerabilityScan{node_id: n.node_id})
 		MERGE (m) -[:SCANNED]->(n)`,
@@ -411,7 +411,7 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 		log.Fatal(err)
 	}
 
-	_, err = session.Run(`
+	_, err = session.Run(ctx, `
 		MATCH (n:Node)
 		MATCH (m:VulnerabilityScan{node_id: n.node_id})
 		MERGE (m) -[:SCANNED]->(n)`,
@@ -437,7 +437,7 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 
 	for i := range link_vuln_scan {
 		log.Printf("Processing %v / %v\n", i, len(link_vuln_scan))
-		_, err = session.Run(`
+		_, err = session.Run(ctx, `
 		UNWIND $links as row
 		MATCH (n:VulnerabilityScan{node_id:row.left})
 		MATCH (m:Vulnerability{node_id:row.right})

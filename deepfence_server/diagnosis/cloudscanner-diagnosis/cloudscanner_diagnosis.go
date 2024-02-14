@@ -12,7 +12,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func getInProgressCloudScannerNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier) (map[string]struct{}, error) {
@@ -22,22 +22,22 @@ func getInProgressCloudScannerNodeIds(ctx context.Context, nodeIdentifiers []dia
 		return inProgressNodeIds, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return inProgressNodeIds, err
 	}
 
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	nodeIDs := make([]string, len(nodeIdentifiers))
 	for i, n := range nodeIdentifiers {
 		nodeIDs[i] = n.NodeID
 	}
 
-	res, err := tx.Run(`MATCH (n:CloudNode)
+	res, err := tx.Run(ctx, `MATCH (n:CloudNode)
 		WHERE n.node_id IN $node_ids
 		OPTIONAL MATCH (n)<-[:SCHEDULEDLOGS]-(a:CloudScannerDiagnosticLogs)
 		WHERE NOT a.status = $complete AND NOT a.status = $failed
@@ -50,7 +50,7 @@ func getInProgressCloudScannerNodeIds(ctx context.Context, nodeIdentifiers []dia
 		return inProgressNodeIds, err
 	}
 
-	rec, err := res.Collect()
+	rec, err := res.Collect(ctx)
 	if err != nil {
 		return inProgressNodeIds, err
 	}
@@ -82,23 +82,23 @@ func UpdateCloudScannerDiagnosticLogsStatus(ctx context.Context, status diagnosi
 	if err != nil {
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	_, err = tx.Run(`
+	_, err = tx.Run(ctx, `
 		MATCH (n:CloudScannerDiagnosticLogs{node_id:$node_id})
 		SET n.status = $status, n.message = $message, n.updated_at = TIMESTAMP()`,
 		map[string]interface{}{"node_id": status.NodeID, "status": status.Status, "message": status.Message})
 	if err != nil {
 		return err
 	}
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier, tail string) error {
@@ -133,13 +133,13 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 	if err != nil {
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	fileNameSuffix := "-" + time.Now().Format("2006-01-02-15-04-05") + ".zip"
 	for _, nodeIdentifier := range nodeIdentifiers {
@@ -160,7 +160,7 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 		if err != nil {
 			return err
 		}
-		if _, err = tx.Run(fmt.Sprintf(`
+		if _, err = tx.Run(ctx, fmt.Sprintf(`
 		MERGE (n:CloudScannerDiagnosticLogs{node_id: $node_id})
 		SET n.status=$status, n.retries=0, n.trigger_action=$action, n.updated_at=TIMESTAMP(), n.minio_file_name=$minio_file_name
 		MERGE (m:%s{node_id:$node_id})
@@ -174,7 +174,7 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 			return err
 		}
 	}
-	return tx.Commit()
+	return tx.Commit(ctx)
 
 }
 
@@ -183,16 +183,16 @@ func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context, nodeIDs []string) 
 	if err != nil {
 		return controls.Action{}, err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return controls.Action{}, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	res, err := tx.Run(`MATCH (n:CloudScannerDiagnosticLogs)
+	res, err := tx.Run(ctx, `MATCH (n:CloudScannerDiagnosticLogs)
 		WHERE n.status = $status and n.node_id in $node_ids
 		RETURN n.trigger_action
 		ORDER BY n.updated_at ASC LIMIT 1`,
@@ -202,7 +202,7 @@ func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context, nodeIDs []string) 
 		return controls.Action{}, err
 	}
 
-	rec, err := res.Collect()
+	rec, err := res.Collect(ctx)
 	if err != nil {
 		return controls.Action{}, err
 	}

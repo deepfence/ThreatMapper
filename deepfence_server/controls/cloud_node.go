@@ -6,7 +6,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func GetCloudNodeComplianceControls(ctx context.Context, nodeID, cloudProvider, complianceType string) ([]model.CloudNodeComplianceControl, error) {
@@ -17,19 +17,19 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeID, cloudProvider, 
 		return controls, err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return controls, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return controls, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(`MATCH (n:CloudComplianceControl {
+	r, err := tx.Run(ctx, `MATCH (n:CloudComplianceControl {
 			cloud_provider: $cloud_provider,
 			compliance_type: $compliance_type
 		})
@@ -41,7 +41,7 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeID, cloudProvider, 
 		return controls, err
 	}
 
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return controls, err
@@ -65,7 +65,7 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeID, cloudProvider, 
 		controls = append(controls, control)
 	}
 
-	return controls, tx.Commit()
+	return controls, tx.Commit(ctx)
 }
 
 func EnableCloudNodeComplianceControls(ctx context.Context, nodeID string, controlIds []string) error {
@@ -74,19 +74,19 @@ func EnableCloudNodeComplianceControls(ctx context.Context, nodeID string, contr
 		return err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	_, err = tx.Run(`MATCH (n:CloudComplianceControl {})
+	_, err = tx.Run(ctx, `MATCH (n:CloudComplianceControl {})
 		WHERE n.node_id IN $control_ids
 		SET n.active = true`,
 		map[string]interface{}{"control_ids": controlIds})
@@ -94,7 +94,7 @@ func EnableCloudNodeComplianceControls(ctx context.Context, nodeID string, contr
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func DisableCloudNodeComplianceControls(ctx context.Context, nodeID string, controlIDs []string) error {
@@ -103,19 +103,19 @@ func DisableCloudNodeComplianceControls(ctx context.Context, nodeID string, cont
 		return err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	_, err = tx.Run(`MATCH (n:CloudComplianceControl {})
+	_, err = tx.Run(ctx, `MATCH (n:CloudComplianceControl {})
 		WHERE n.node_id IN $control_ids
 		SET n.active = false`,
 		map[string]interface{}{"control_ids": controlIDs})
@@ -123,5 +123,5 @@ func DisableCloudNodeComplianceControls(ctx context.Context, nodeID string, cont
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }

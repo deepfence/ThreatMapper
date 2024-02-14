@@ -89,8 +89,8 @@ services:
       - deepfence_net
     environment:
       <<: *common-creds
-      NEO4J_dbms_memory_pagecache_size: 2600m
-      NEO4J_dbms_tx__log_rotation_retention__policy: "3 files"
+      NEO4J_server_memory_pagecache_size: 2600m
+      NEO4J_db_tx__log_rotation_retention__policy: "3 files"
       NEO4JLABS_PLUGINS: '["apoc"]'
       DF_REMOTE_BACKUP_ROOT: ""
       AWS_ACCESS_KEY: ""
@@ -285,7 +285,7 @@ services:
       core: 0
     restart: unless-stopped
     environment:
-      <<: *common-creds
+      <<: [*common-creds, *telemetry-variables]
       DEEPFENCE_MODE: scheduler
     networks:
       - deepfence_net
@@ -341,7 +341,7 @@ services:
     ports:
       - "127.0.0.1:8181:8181"
     environment:
-      <<: *common-creds
+      <<: [*common-creds, *telemetry-variables]
       DEEPFENCE_MODE: ingester
     networks:
       - deepfence_net

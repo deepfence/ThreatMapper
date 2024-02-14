@@ -7,7 +7,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/rs/zerolog/log"
 )
 
@@ -32,14 +32,14 @@ func FieldValueCompletion[T reporters.Cypherable](ctx context.Context, req Compl
 		return res, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	query := ""
 
@@ -69,7 +69,7 @@ func FieldValueCompletion[T reporters.Cypherable](ctx context.Context, req Compl
 	}
 
 	log.Debug().Msgf("completion query: \n%v", query)
-	r, err := tx.Run(query,
+	r, err := tx.Run(ctx, query,
 		map[string]interface{}{
 			"scan_id": req.ScanID,
 		})
@@ -78,7 +78,7 @@ func FieldValueCompletion[T reporters.Cypherable](ctx context.Context, req Compl
 		return res, err
 	}
 
-	recs, err := r.Collect()
+	recs, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err

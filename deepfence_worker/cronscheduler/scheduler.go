@@ -17,6 +17,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 	"github.com/hibiken/asynq"
 	"github.com/robfig/cron/v3"
+	"go.opentelemetry.io/otel"
 )
 
 type ScheduledJobs struct {
@@ -121,6 +122,8 @@ func (s *Scheduler) updateScheduledJobs() {
 
 	for range ticker.C {
 		directory.ForEachNamespace(func(ctx context.Context) (string, error) {
+			ctx, span := otel.GetTracerProvider().Tracer("cronjobs").Start(ctx, "update-scheduled-jobs")
+			defer span.End()
 			return "Update scheduled jobs", s.addScheduledJobs(ctx)
 		})
 	}
@@ -129,6 +132,9 @@ func (s *Scheduler) updateScheduledJobs() {
 func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := otel.GetTracerProvider().Tracer("cronjobs").Start(ctx, "add-scheduled-jobs")
+	defer span.End()
 
 	// Get scheduled tasks
 	pgClient, err := directory.PostgresClient(ctx)

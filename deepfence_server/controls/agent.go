@@ -10,7 +10,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 const (
@@ -75,20 +75,20 @@ func GetPendingAgentScans(ctx context.Context, nodeID string, availableWorkload 
 		return res, err
 	}
 
-	if has, err := hasPendingAgentScans(client, nodeID, availableWorkload); !has || err != nil {
+	if has, err := hasPendingAgentScans(ctx, client, nodeID, availableWorkload); !has || err != nil {
 		return res, err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 		MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
 		WHERE s.status = '`+utils.ScanStatusInProgress+`'
 		AND s.retries < 3
@@ -102,7 +102,7 @@ func GetPendingAgentScans(ctx context.Context, nodeID string, availableWorkload 
 		return res, err
 	}
 
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -123,25 +123,25 @@ func GetPendingAgentScans(ctx context.Context, nodeID string, availableWorkload 
 	}
 
 	if len(res) != 0 {
-		err = tx.Commit()
+		err = tx.Commit(ctx)
 	}
 
 	return res, err
 
 }
 
-func hasAgentDiagnosticLogRequests(client neo4j.Driver, nodeID string, nodeType controls.ScanResource, maxWork int) (bool, error) {
+func hasAgentDiagnosticLogRequests(ctx context.Context, client neo4j.DriverWithContext, nodeID string, nodeType controls.ScanResource, maxWork int) (bool, error) {
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return false, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(`MATCH (s:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n{node_id:$id})
+	r, err := tx.Run(ctx, `MATCH (s:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n{node_id:$id})
 		WHERE (n:`+controls.ResourceTypeToNeo4j(nodeType)+`)
 		AND s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
@@ -154,7 +154,7 @@ func hasAgentDiagnosticLogRequests(client neo4j.Driver, nodeID string, nodeType 
 		return false, err
 	}
 
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 	return len(records) != 0, err
 }
 
@@ -169,20 +169,20 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeID string, nodeT
 		return res, err
 	}
 
-	if has, err := hasAgentDiagnosticLogRequests(client, nodeID, nodeType, maxWork); !has || err != nil {
+	if has, err := hasAgentDiagnosticLogRequests(ctx, client, nodeID, nodeType, maxWork); !has || err != nil {
 		return res, err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(`MATCH (s:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n{node_id:$id})
+	r, err := tx.Run(ctx, `MATCH (s:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n{node_id:$id})
 		WHERE (n:`+controls.ResourceTypeToNeo4j(nodeType)+`)
 		AND s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
@@ -194,7 +194,7 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeID string, nodeT
 	if err != nil {
 		return res, err
 	}
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 	if err != nil {
 		return res, err
 	}
@@ -214,24 +214,24 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeID string, nodeT
 	}
 
 	if len(res) != 0 {
-		err = tx.Commit()
+		err = tx.Commit(ctx)
 	}
 
 	return res, err
 
 }
 
-func hasPendingAgentScans(client neo4j.Driver, nodeID string, maxWork int) (bool, error) {
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+func hasPendingAgentScans(ctx context.Context, client neo4j.DriverWithContext, nodeID string, maxWork int) (bool, error) {
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return false, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
+	r, err := tx.Run(ctx, `MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
 		WHERE s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work
@@ -242,7 +242,7 @@ func hasPendingAgentScans(client neo4j.Driver, nodeID string, maxWork int) (bool
 		return false, err
 	}
 
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 	return len(records) != 0, err
 }
 
@@ -258,20 +258,20 @@ func ExtractStartingAgentScans(ctx context.Context, nodeID string, maxWork int) 
 		return res, err
 	}
 
-	if has, err := hasPendingAgentScans(client, nodeID, maxWork); !has || err != nil {
+	if has, err := hasPendingAgentScans(ctx, client, nodeID, maxWork); !has || err != nil {
 		return res, err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
+	r, err := tx.Run(ctx, `MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
 		WHERE s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
 		WITH s ORDER BY s.is_priority DESC, s.updated_at ASC LIMIT $max_work
@@ -284,7 +284,7 @@ func ExtractStartingAgentScans(ctx context.Context, nodeID string, maxWork int) 
 		return res, err
 	}
 
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -305,7 +305,7 @@ func ExtractStartingAgentScans(ctx context.Context, nodeID string, maxWork int) 
 	}
 
 	if len(res) != 0 {
-		err = tx.Commit()
+		err = tx.Commit(ctx)
 	}
 
 	return res, err
@@ -324,16 +324,16 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeID string, maxWrok int) 
 		return res, err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
+	r, err := tx.Run(ctx, `MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
 		WHERE s.status = '`+utils.ScanStatusCancelPending+`'
 		WITH s LIMIT $max_work
         SET s.status = '`+utils.ScanStatusCancelling+`', s.updated_at = TIMESTAMP()
@@ -345,7 +345,7 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeID string, maxWrok int) 
 		return res, err
 	}
 
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -379,24 +379,24 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeID string, maxWrok int) 
 	}
 
 	if len(res) != 0 {
-		err = tx.Commit()
+		err = tx.Commit(ctx)
 	}
 
 	return res, err
 
 }
 
-func hasPendingAgentUpgrade(client neo4j.Driver, nodeID string, maxWork int) (bool, error) {
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+func hasPendingAgentUpgrade(ctx context.Context, client neo4j.DriverWithContext, nodeID string, maxWork int) (bool, error) {
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return false, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(`MATCH (s:AgentVersion) -[r:SCHEDULED]-> (n:Node{node_id:$id})
+	r, err := tx.Run(ctx, `MATCH (s:AgentVersion) -[r:SCHEDULED]-> (n:Node{node_id:$id})
 		WHERE r.status = '`+utils.ScanStatusStarting+`'
 		AND r.retries < 3
 		WITH r LIMIT $max_work
@@ -407,7 +407,7 @@ func hasPendingAgentUpgrade(client neo4j.Driver, nodeID string, maxWork int) (bo
 		return false, err
 	}
 
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 	return len(records) != 0, err
 }
 
@@ -422,20 +422,20 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int)
 		return res, err
 	}
 
-	if has, err := hasPendingAgentUpgrade(client, nodeID, maxWork); !has || err != nil {
+	if has, err := hasPendingAgentUpgrade(ctx, client, nodeID, maxWork); !has || err != nil {
 		return res, err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(`MATCH (s:AgentVersion) -[r:SCHEDULED]-> (n:Node{node_id:$id})
+	r, err := tx.Run(ctx, `MATCH (s:AgentVersion) -[r:SCHEDULED]-> (n:Node{node_id:$id})
 		WHERE r.status = '`+utils.ScanStatusStarting+`'
 		AND r.retries < 3
 		WITH r LIMIT $max_work
@@ -448,7 +448,7 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int)
 		return res, err
 	}
 
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -469,7 +469,7 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int)
 	}
 
 	if len(res) != 0 {
-		err = tx.Commit()
+		err = tx.Commit(ctx)
 	}
 
 	return res, err
@@ -487,16 +487,16 @@ func CheckNodeExist(ctx context.Context, nodeID string) error {
 		return err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 		MATCH (n:Node{node_id:$id})
 		RETURN n.node_id`,
 		map[string]interface{}{"id": nodeID})
@@ -505,7 +505,7 @@ func CheckNodeExist(ctx context.Context, nodeID string) error {
 		return err
 	}
 
-	_, err = r.Single()
+	_, err = r.Single(ctx)
 
 	if err != nil {
 		return ErrMissingNodeID

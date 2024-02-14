@@ -11,7 +11,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 type AlreadyRunningScanError struct {
@@ -48,15 +48,8 @@ func (ve *NodeNotActiveError) Error() string {
 	return fmt.Sprintf("Node %v is currently not active", ve.NodeID)
 }
 
-type WriteDBTransaction struct {
-	Tx neo4j.Transaction
-}
-
-func (t WriteDBTransaction) Run(cypher string, params map[string]interface{}) (neo4j.Result, error) {
-	return t.Tx.Run(cypher, params)
-}
-
-func AddNewScan(tx WriteDBTransaction,
+func AddNewScan(ctx context.Context,
+	tx neo4j.ExplicitTransaction,
 	scanType utils.Neo4jScanType,
 	scanID string,
 	nodeType controls.ScanResource,
@@ -64,7 +57,7 @@ func AddNewScan(tx WriteDBTransaction,
 	isPriority bool,
 	action controls.Action) error {
 
-	res, err := tx.Run(fmt.Sprintf(`
+	res, err := tx.Run(ctx, fmt.Sprintf(`
 		OPTIONAL MATCH (n:%s{node_id:$node_id})
 		RETURN n IS NOT NULL AS Exists`,
 		controls.ResourceTypeToNeo4j(nodeType)),
@@ -75,7 +68,7 @@ func AddNewScan(tx WriteDBTransaction,
 		return err
 	}
 
-	rec, err := res.Single()
+	rec, err := res.Single(ctx)
 	if err != nil {
 		return err
 	}
@@ -86,7 +79,7 @@ func AddNewScan(tx WriteDBTransaction,
 		}
 	}
 
-	res, err = tx.Run(fmt.Sprintf(`
+	res, err = tx.Run(ctx, fmt.Sprintf(`
 		MATCH (m:%s{node_id:$node_id}) <-[:SCANNED]- (n:%s)
 		WHERE NOT n.status IN $status
 		RETURN n.node_id`, controls.ResourceTypeToNeo4j(nodeType), scanType),
@@ -99,7 +92,7 @@ func AddNewScan(tx WriteDBTransaction,
 		return err
 	}
 
-	rec, err = res.Single()
+	rec, err = res.Single(ctx)
 	if err == nil {
 		if rec.Values[0] != nil {
 			return &AlreadyRunningScanError{
@@ -111,7 +104,7 @@ func AddNewScan(tx WriteDBTransaction,
 	}
 
 	if nodeType == controls.Host || nodeType == controls.KubernetesCluster {
-		res, err = tx.Run(fmt.Sprintf(`
+		res, err = tx.Run(ctx, fmt.Sprintf(`
 			MATCH (m:%s{node_id:$node_id})
 			RETURN m.agent_running`, controls.ResourceTypeToNeo4j(nodeType)),
 			map[string]interface{}{
@@ -122,7 +115,7 @@ func AddNewScan(tx WriteDBTransaction,
 			return err
 		}
 
-		rec, err = res.Single()
+		rec, err = res.Single(ctx)
 		if err != nil {
 			return err
 		}
@@ -140,7 +133,7 @@ func AddNewScan(tx WriteDBTransaction,
 		return err
 	}
 
-	if _, err = tx.Run(fmt.Sprintf(`
+	if _, err = tx.Run(ctx, fmt.Sprintf(`
 		MERGE (n:%s{node_id:$scan_id})
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCANNED]->(m)
@@ -169,7 +162,7 @@ func AddNewScan(tx WriteDBTransaction,
 
 	switch nodeType {
 	case controls.Host:
-		if _, err = tx.Run(fmt.Sprintf(`
+		if _, err = tx.Run(ctx, fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
 		MATCH (m:Node{node_id:$node_id})
 		MERGE (n)-[:SCHEDULED]->(m)`, scanType),
@@ -180,7 +173,7 @@ func AddNewScan(tx WriteDBTransaction,
 			return err
 		}
 	case controls.Container:
-		if _, err = tx.Run(fmt.Sprintf(`
+		if _, err = tx.Run(ctx, fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
 		MATCH (m:Node) -[:HOSTS]-> (:Container{node_id:$node_id})
 		MERGE (n)-[:SCHEDULED]->(m)`, scanType),
@@ -201,14 +194,14 @@ func AddNewScan(tx WriteDBTransaction,
 			WHERE pod_id IS NOT NULL AND n.node_id=pod_id
 			SET n.%s=$status`
 
-		if _, err = tx.Run(fmt.Sprintf(podQuery, ingestersUtil.ScanStatusField[scanType]),
+		if _, err = tx.Run(ctx, fmt.Sprintf(podQuery, ingestersUtil.ScanStatusField[scanType]),
 			map[string]interface{}{
 				"node_id": nodeID,
 				"status":  utils.ScanStatusStarting}); err != nil {
 			return err
 		}
 	case controls.Image:
-		if _, err = tx.Run(fmt.Sprintf(`
+		if _, err = tx.Run(ctx, fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
 		OPTIONAL MATCH (m:Node) -[:HOSTS]-> (:ContainerImage{node_id:$node_id})
 		WITH n, m
@@ -227,7 +220,9 @@ func AddNewScan(tx WriteDBTransaction,
 	return nil
 }
 
-func AddNewCloudComplianceScan(tx WriteDBTransaction,
+func AddNewCloudComplianceScan(
+	ctx context.Context,
+	tx neo4j.ExplicitTransaction,
 	scanID string,
 	benchmarkTypes []string,
 	nodeID string,
@@ -243,7 +238,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		neo4jNodeType = "Node"
 		scanType = utils.NEO4JComplianceScan
 	}
-	res, err := tx.Run(fmt.Sprintf(`
+	res, err := tx.Run(ctx, fmt.Sprintf(`
 		OPTIONAL MATCH (n:%s{node_id:$node_id})
 		RETURN n IS NOT NULL AS Exists, n.active`, neo4jNodeType),
 		map[string]interface{}{
@@ -253,7 +248,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		return err
 	}
 
-	rec, err := res.Single()
+	rec, err := res.Single(ctx)
 	if err != nil {
 		return err
 	}
@@ -270,7 +265,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		}
 	}
 
-	res, err = tx.Run(fmt.Sprintf(`
+	res, err = tx.Run(ctx, fmt.Sprintf(`
 		MATCH (m:%s{node_id:$node_id})
 		OPTIONAL MATCH (n:%s)-[:SCANNED]->(m)
 		WHERE NOT n.status = $complete
@@ -289,7 +284,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		return err
 	}
 
-	rec, err = res.Single()
+	rec, err = res.Single(ctx)
 	if err != nil {
 		return err
 	}
@@ -321,7 +316,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || nodeType == controls.ResourceTypeToString(controls.Host) {
 		action, _ = json.Marshal(controls.Action{ID: controls.StartComplianceScan, RequestPayload: string(internalReq)})
 	}
-	if _, err = tx.Run(fmt.Sprintf(`
+	if _, err = tx.Run(ctx, fmt.Sprintf(`
 MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, updated_at: TIMESTAMP(), benchmark_types: $benchmark_types, trigger_action: $action, created_at:TIMESTAMP(), is_priority: $is_priority})
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCANNED]->(m)`, scanType, neo4jNodeType),
@@ -339,7 +334,7 @@ MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, 
 	latestScanIDFieldName := ingestersUtil.LatestScanIDField[scanType]
 	scanStatusFieldName := ingestersUtil.ScanStatusField[scanType]
 
-	if _, err = tx.Run(fmt.Sprintf(`
+	if _, err = tx.Run(ctx, fmt.Sprintf(`
 		MERGE (n:%s{node_id: $scan_id})
 		SET n.status = $status, n.updated_at = TIMESTAMP()
 		WITH n
@@ -354,7 +349,7 @@ MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, 
 		return err
 	}
 
-	if _, err = tx.Run(fmt.Sprintf(`
+	if _, err = tx.Run(ctx, fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
 		MATCH (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCHEDULED]->(m)`, scanType, neo4jNodeType),
@@ -376,19 +371,19 @@ func UpdateScanStatus(ctx context.Context, scanType string, scanID string, statu
 		return err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	if _, err = tx.Run(fmt.Sprintf(`
+	if _, err = tx.Run(ctx, fmt.Sprintf(`
 		MERGE (n:%s{node_id: $scan_id})
 		SET n.status = $status, n.status_message = $message, n.updated_at = TIMESTAMP()`, scanType),
 		map[string]interface{}{
@@ -398,12 +393,12 @@ func UpdateScanStatus(ctx context.Context, scanType string, scanID string, statu
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
-func AddBulkScan(tx WriteDBTransaction, scanType utils.Neo4jScanType, bulkScanID string, scanIDs []string) error {
+func AddBulkScan(ctx context.Context, tx neo4j.ExplicitTransaction, scanType utils.Neo4jScanType, bulkScanID string, scanIDs []string) error {
 
-	if _, err := tx.Run(fmt.Sprintf(`
+	if _, err := tx.Run(ctx, fmt.Sprintf(`
 		MERGE (n:Bulk%s{node_id: $bscan_id})
 		SET n.updated_at = TIMESTAMP()
 		WITH n

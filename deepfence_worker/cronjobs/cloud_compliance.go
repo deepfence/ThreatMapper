@@ -14,7 +14,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 var BenchmarksAvailableMap = map[string][]string{
@@ -57,17 +57,17 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 		log.Error().Msgf(err.Error())
 		return nil
 	}
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(300 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(300*time.Second))
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return nil
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (n:CloudComplianceControl)
 		SET n.disabled=true`, map[string]interface{}{}); err != nil {
 		log.Error().Msgf(err.Error())
@@ -92,7 +92,7 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 			for _, control := range controlList {
 				controlMap = append(controlMap, utils.ToMap(control))
 			}
-			if _, err = tx.Run(`
+			if _, err = tx.Run(ctx, `
 		UNWIND $batch as row
 		MERGE (n:CloudComplianceExecutable:CloudComplianceControl{
 			node_id: row.parent_control_breadcrumb + row.control_id
@@ -145,7 +145,7 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 				for _, benchMark := range benchmarkList {
 					benchmarkMap = append(benchmarkMap, utils.ToMap(benchMark))
 				}
-				if _, err = tx.Run(`
+				if _, err = tx.Run(ctx, `
 		UNWIND $batch as row
 		MERGE (n:CloudComplianceExecutable:CloudComplianceBenchmark{
 			node_id: row.benchmark_id
@@ -184,7 +184,7 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 		}
 	}
 	// connect controls to parent root benchmarks
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 	MATCH (n:CloudComplianceControl)
 	MATCH (b:CloudComplianceBenchmark{benchmark_id:n.parent_control_hierarchy[0]})
 	MERGE (b)-[:PARENT]->(n)`, map[string]interface{}{}); err != nil {
@@ -192,7 +192,7 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 		return nil
 	}
 	log.Info().Msgf("Updated Cloud Compliance Controls")
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
@@ -206,17 +206,17 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(120 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(120*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	var postureProviders []model.PostureProvider
 	for _, postureProviderName := range model.SupportedPostureProviders {
@@ -335,7 +335,7 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 			RETURN count(distinct c)`
 		}
 
-		node_count, err := getCount(tx, account_count_query,
+		node_count, err := getCount(ctx, tx, account_count_query,
 			map[string]interface{}{
 				"cloud_provider": postureProviderName,
 				"passStatus":     passStatus,
@@ -347,7 +347,7 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 			continue
 		}
 
-		resource_count, err := getCount(tx, resource_count_query,
+		resource_count, err := getCount(ctx, tx, resource_count_query,
 			map[string]interface{}{
 				"cloud_provider": postureProviderName,
 				"passStatus":     passStatus,
@@ -359,7 +359,7 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 			continue
 		}
 
-		scan_count, err := getCount(tx, scan_count_query,
+		scan_count, err := getCount(ctx, tx, scan_count_query,
 			map[string]interface{}{
 				"cloud_provider": postureProviderName,
 				"passStatus":     passStatus,
@@ -371,7 +371,7 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 			continue
 		}
 
-		success_count, err := getCount(tx, success_count_query,
+		success_count, err := getCount(ctx, tx, success_count_query,
 			map[string]interface{}{
 				"cloud_provider": postureProviderName,
 				"passStatus":     passStatus,
@@ -383,7 +383,7 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 			continue
 		}
 
-		global_count, err := getCount(tx, global_count_query,
+		global_count, err := getCount(ctx, tx, global_count_query,
 			map[string]interface{}{
 				"cloud_provider": postureProviderName,
 				"passStatus":     passStatus,
@@ -422,13 +422,13 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 	return nil
 }
 
-func getCount(tx neo4j.Transaction, query string, params map[string]interface{}) (int64, error) {
+func getCount(ctx context.Context, tx neo4j.ExplicitTransaction, query string, params map[string]interface{}) (int64, error) {
 	log.Debug().Msgf("Cloud compliance query: %v", query)
-	nodeRes, err := tx.Run(query, params)
+	nodeRes, err := tx.Run(ctx, query, params)
 	if err != nil {
 		return 0, err
 	}
-	nodeRec, err := nodeRes.Single()
+	nodeRec, err := nodeRes.Single(ctx)
 	if err != nil {
 		return 0, err
 	}

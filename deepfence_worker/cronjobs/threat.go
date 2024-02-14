@@ -9,7 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 var threatGraphRunning atomic.Bool
@@ -21,8 +21,8 @@ func ComputeThreat(ctx context.Context, task *asynq.Task) error {
 	if err != nil {
 		return err
 	}
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
 	if exploitabilityRunning.CompareAndSwap(false, true) {
 		defer exploitabilityRunning.Store(false)
@@ -40,20 +40,20 @@ func ComputeThreat(ctx context.Context, task *asynq.Task) error {
 
 }
 
-func computeThreatExploitability(ctx context.Context, session neo4j.Session) error {
+func computeThreatExploitability(ctx context.Context, session neo4j.SessionWithContext) error {
 
 	log := log.WithCtx(ctx)
 
 	log.Info().Msgf("Compute threat Starting")
 	defer log.Info().Msgf("Compute threat Done")
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(600 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(600*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (n:Secret)
 		WHERE n.exploitability_score IS NULL
 		SET n.exploitability_score = 0`,
@@ -61,7 +61,7 @@ func computeThreatExploitability(ctx context.Context, session neo4j.Session) err
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (n:Malware)
 		WHERE n.exploitability_score IS NULL
 		SET n.exploitability_score = 0`,
@@ -69,7 +69,7 @@ func computeThreatExploitability(ctx context.Context, session neo4j.Session) err
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (n:Compliance)
 		WHERE n.exploitability_score IS NULL
 		SET n.exploitability_score = 0`,
@@ -78,7 +78,7 @@ func computeThreatExploitability(ctx context.Context, session neo4j.Session) err
 	}
 
 	//Reset the exploitability_score to its original value
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
     MATCH (v:Vulnerability)
     WHERE v.exploitability_score <> v.init_exploitability_score
     SET v.exploitability_score = v.init_exploitability_score,
@@ -88,7 +88,7 @@ func computeThreatExploitability(ctx context.Context, session neo4j.Session) err
 	}
 
 	// Following cypher request applies to Images & Containers
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (n:Node{node_id:"in-the-internet"}) -[:CONNECTS*1..3]-> (m:Node)
 		WITH DISTINCT m
 		MATCH (m) -[:HOSTS]-> (o) <-[:SCANNED]- (s)
@@ -100,7 +100,7 @@ func computeThreatExploitability(ctx context.Context, session neo4j.Session) err
 	}
 
 	// Following cypher request applies to Hosts
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (n:Node{node_id:"in-the-internet"}) -[:CONNECTS*1..3]-> (m:Node)
 		WITH DISTINCT m
 		MATCH (m) <-[:SCANNED]- (s)
@@ -111,10 +111,10 @@ func computeThreatExploitability(ctx context.Context, session neo4j.Session) err
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
-func computeThreatGraph(ctx context.Context, session neo4j.Session) error {
+func computeThreatGraph(ctx context.Context, session neo4j.SessionWithContext) error {
 
 	log := log.WithCtx(ctx)
 
@@ -125,7 +125,7 @@ func computeThreatGraph(ctx context.Context, session neo4j.Session) error {
 
 	var err error
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (s:VulnerabilityScan) -[:SCANNED]-> (m)
 		WHERE s.status = "`+utils.ScanStatusSuccess+`"
 		WITH distinct m, max(s.updated_at) as most_recent
@@ -142,7 +142,7 @@ func computeThreatGraph(ctx context.Context, session neo4j.Session) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (s:SecretScan) -[:SCANNED]-> (m)
 		WHERE s.status = "`+utils.ScanStatusSuccess+`"
 		WITH distinct m, max(s.updated_at) as most_recent
@@ -158,7 +158,7 @@ func computeThreatGraph(ctx context.Context, session neo4j.Session) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (s:MalwareScan) -[:SCANNED]-> (m)
 		WHERE s.status = "`+utils.ScanStatusSuccess+`"
 		WITH distinct m, max(s.updated_at) as most_recent
@@ -174,7 +174,7 @@ func computeThreatGraph(ctx context.Context, session neo4j.Session) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (s:ComplianceScan) -[:SCANNED]-> (m)
 		WHERE s.status = "`+utils.ScanStatusSuccess+`"
 		WITH distinct m, max(s.updated_at) as most_recent
@@ -190,7 +190,7 @@ func computeThreatGraph(ctx context.Context, session neo4j.Session) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (s:CloudComplianceScan) -[:SCANNED]-> (p:CloudNode)
 		WHERE s.status = "`+utils.ScanStatusSuccess+`"
 		WITH distinct p, max(s.updated_at) as most_recent
@@ -205,7 +205,7 @@ func computeThreatGraph(ctx context.Context, session neo4j.Session) error {
 	}
 
 	// Define depths
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n)
 		WHERE n:Node OR n:CloudResource
 		AND NOT n.depth IS NULL
@@ -214,7 +214,7 @@ func computeThreatGraph(ctx context.Context, session neo4j.Session) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:Node {node_id:'in-the-internet'})-[d:CONNECTS*1..3]->(m:Node)
 		WITH SIZE(d) as depth, m with min(depth) as min_depth, m
 		SET m.depth = min_depth`,
@@ -222,7 +222,7 @@ func computeThreatGraph(ctx context.Context, session neo4j.Session) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:Node {node_id:'in-the-internet'})-[d:PUBLIC|IS|HOSTS|SECURED*1..3]->(m:CloudResource)
 		WITH SIZE(d) as depth, m
 		WITH min(depth) as min_depth, m
@@ -232,7 +232,7 @@ func computeThreatGraph(ctx context.Context, session neo4j.Session) error {
 	}
 
 	// Compute counts & sums
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n)
 		WHERE n:Node OR n:CloudResource
 		AND NOT n.depth IS NULL
@@ -250,7 +250,7 @@ func computeThreatGraph(ctx context.Context, session neo4j.Session) error {
 		return err
 	}
 
-	if _, err = session.Run(`
+	if _, err = session.Run(ctx, `
 		MATCH (n:Node) -[:CONNECTS]->(m:Node)
 		WHERE n.depth = m.depth - 1
 		WITH n, m
