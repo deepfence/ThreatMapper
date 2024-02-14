@@ -626,7 +626,7 @@ const HistoryControls = () => {
       showScanTimeModal: true,
     });
   };
-  console.log(created_at);
+
   return (
     <div className="flex items-center relative flex-grow">
       {openStopScanModal && (
