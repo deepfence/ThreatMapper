@@ -76,6 +76,7 @@ import { useDownloadScan } from '@/features/common/data-component/downloadScanAc
 import { useGetCloudFilters } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { PostureScanResultsPieChart } from '@/features/postures/components/scan-result/PostureScanResultsPieChart';
 import { PosturesCloudCompare } from '@/features/postures/components/scan-result/PosturesCloudCompare';
+import { SearchableControl } from '@/features/postures/components/scan-result/SearchableControl';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
@@ -287,6 +288,7 @@ const useScanResults = () => {
       status: searchParams.getAll('status'),
       services: searchParams.getAll('services'),
       resources: searchParams.getAll('resources'),
+      control: searchParams.getAll('controlId'),
     }),
     keepPreviousData: true,
   });
@@ -953,6 +955,7 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   benchmarkType: 'Benchmark',
   services: 'Service',
   resources: 'Resource',
+  controlId: 'Control',
 };
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
@@ -1142,6 +1145,27 @@ const Filters = () => {
               );
             })}
         </Combobox>
+        <SearchableControl
+          scanId={params.scanId}
+          defaultSelectedControl={searchParams.getAll('controlId')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('controlId');
+              values.forEach((value) => {
+                prev.append('controlId', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('controlId');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
 
       {appliedFilterCount > 0 ? (
@@ -1392,18 +1416,18 @@ const CloudPostureTable = ({
         enableResizing: false,
         cell: (info) => <TruncatedText text={info.getValue().toUpperCase()} />,
         header: () => 'Benchmark Type',
-        minSize: 50,
-        size: 60,
-        maxSize: 65,
+        minSize: 40,
+        size: 50,
+        maxSize: 60,
       }),
       columnHelper.accessor('service', {
         enableSorting: true,
         enableResizing: false,
         cell: (info) => <TruncatedText text={info.getValue()} />,
         header: () => 'Service',
-        minSize: 50,
-        size: 60,
-        maxSize: 65,
+        minSize: 40,
+        size: 50,
+        maxSize: 60,
       }),
       columnHelper.accessor('status', {
         enableResizing: false,
@@ -1413,6 +1437,16 @@ const CloudPostureTable = ({
         header: () => <div>Status</div>,
         cell: (info) => {
           return <PostureStatusBadge status={info.getValue() as PostureSeverityType} />;
+        },
+      }),
+      columnHelper.accessor('reason', {
+        enableResizing: false,
+        minSize: 60,
+        size: 70,
+        maxSize: 80,
+        header: () => <div>Reason</div>,
+        cell: (info) => {
+          return <TruncatedText text={info.getValue()} />;
         },
       }),
       columnHelper.accessor('description', {

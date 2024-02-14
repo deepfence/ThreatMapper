@@ -401,5 +401,9 @@ export function getScanResultCompletionApiClient() {
     completeVulnerabilityInfo:
       scanCompleteionApi.completeVulnerabilityInfo.bind(scanCompleteionApi),
     completeHostInfo: scanCompleteionApi.completeHostInfo.bind(scanCompleteionApi),
+    completeComplianceInfo:
+      scanCompleteionApi.completeComplianceInfo.bind(scanCompleteionApi),
+    completeCloudCompliance:
+      scanCompleteionApi.completeCloudCompliance.bind(scanCompleteionApi),
   };
 }
