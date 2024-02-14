@@ -25,6 +25,7 @@
     "@suspensive/react": "^1.11.6",
     "@suspensive/react-query": "^1.11.6",
     "@tanstack/react-query": "^4.32.6",
+    "@yornaath/batshit": "^0.9.0",
     "cron-converter": "^2.0.1",
     "cronstrue": "^2.41.0",
     "dayjs": "^1.11.9",

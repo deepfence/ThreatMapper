@@ -271,6 +271,7 @@ export function getLookupApiClient() {
     lookupMalwares: lookupApi.getMalwares.bind(lookupApi),
     lookupCompliances: lookupApi.getCompliances.bind(lookupApi),
     lookupCloudCompliances: lookupApi.getCloudCompliances.bind(lookupApi),
+    lookupRegistryAccounts: lookupApi.getRegistryAccount.bind(lookupApi),
   };
 }
 
