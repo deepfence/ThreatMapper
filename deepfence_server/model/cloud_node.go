@@ -75,6 +75,7 @@ type CloudNodeAccountInfo struct {
 	LastScanStatus       string           `json:"last_scan_status"`
 	ScanStatusMap        map[string]int64 `json:"scan_status_map"`
 	Version              string           `json:"version"`
+	HostNodeID           string           `json:"host_node_id"`
 }
 
 func (v CloudNodeAccountInfo) NodeType() string {
