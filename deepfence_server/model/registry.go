@@ -627,7 +627,6 @@ func RegistrySummary(ctx context.Context, registryID mo.Option[string], registry
 		COUNT(m.docker_image_tag) AS tags,
 		COUNT(distinct n) AS registries
 	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount)
-	WHERE $id IN a.container_registry_ids
 	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
 	`
 
@@ -655,16 +654,19 @@ func RegistrySummary(ctx context.Context, registryID mo.Option[string], registry
 		result neo4j.Result
 	)
 	if regID, ok := registryID.Get(); ok {
+		log.Debug().Msgf("summary queryPerRegistry: %s", queryPerRegistry)
 		if result, err = tx.Run(queryPerRegistry, map[string]interface{}{"id": regID}); err != nil {
 			log.Error().Err(err).Msgf("failed to query summary for registry id %v", regID)
 			return count, err
 		}
 	} else if regType, ok := registryType.Get(); ok {
+		log.Debug().Msgf("summary queryRegistriesByType: %s", queryRegistriesByType)
 		if result, err = tx.Run(queryRegistriesByType, map[string]interface{}{"type": regType}); err != nil {
 			log.Error().Err(err).Msgf("failed to query summary for registry type %s", regType)
 			return count, err
 		}
 	} else {
+		log.Debug().Msgf("summary queryAllRegistries: %s", queryAllRegistries)
 		if result, err = tx.Run(queryAllRegistries, map[string]interface{}{}); err != nil {
 			log.Error().Err(err).Msgf("failed to query summary for all registries")
 			return count, err
