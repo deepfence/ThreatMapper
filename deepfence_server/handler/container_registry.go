@@ -624,7 +624,7 @@ func (h *Handler) getImages(w http.ResponseWriter, r *http.Request) ([]model.Con
 		return images, err
 	}
 
-	images, err = model.ListImages(r.Context(), req.RegistryID, req.ImageFilter, req.Window)
+	images, err = model.ListImages(r.Context(), req.RegistryID, req.ImageFilter, req.ImageStubFilter, req.Window)
 	if err != nil {
 		log.Error().Msgf("failed list images: %v", err)
 		h.respondError(err, w)

@@ -50,9 +50,10 @@ type RegistryIDPathReq struct {
 }
 
 type RegistryImagesReq struct {
-	RegistryID  string                  `json:"registry_id" validate:"required" required:"true"`
-	ImageFilter reporters.FieldsFilters `json:"image_filter" required:"true"`
-	Window      FetchWindow             `json:"window" required:"true"`
+	RegistryID      string                  `json:"registry_id" validate:"required" required:"true"`
+	ImageFilter     reporters.FieldsFilters `json:"image_filter" required:"true"`
+	ImageStubFilter reporters.FieldsFilters `json:"image_stub_filter" required:"true"`
+	Window          FetchWindow             `json:"window" required:"true"`
 }
 
 type DeleteRegistryBulkReq struct {
@@ -415,7 +416,7 @@ func ListImageStubs(ctx context.Context, registryID string, filter reporters.Fie
 	return images, nil
 }
 
-func ListImages(ctx context.Context, registryID string, filter reporters.FieldsFilters, fw FetchWindow) ([]ContainerImage, error) {
+func ListImages(ctx context.Context, registryID string, filter, stubFilter reporters.FieldsFilters, fw FetchWindow) ([]ContainerImage, error) {
 
 	res := []ContainerImage{}
 
@@ -438,9 +439,14 @@ func ListImages(ctx context.Context, registryID string, filter reporters.FieldsF
 		return res, err
 	}
 
+	condition := reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(filter), true)
+	if condition == "" {
+		condition = reporters.ParseFieldFilters2CypherWhereConditions("l", mo.Some(stubFilter), true)
+	}
+
 	query := `
 	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub) <-[:IS]- (m:ContainerImage)
-	` + reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(filter), true) + `
+	` + condition + `
 	RETURN l, m
 	` + fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("query: %v", query)
