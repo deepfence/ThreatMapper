@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"sync"
 	"time"
 
 	"github.com/deepfence/df-utils/cloud_metadata"
@@ -10,20 +11,60 @@ import (
 // KubernetesClusterResource represents a Kubernetes cluster
 type KubernetesClusterResource interface {
 	GetNode() report.TopologyNode
+	GetTopology() report.Topology
+	Stop()
 }
 
 type kubernetesCluster struct {
-	cloudProvider  string
-	cloudAccountID string
+	k8sTopology report.Topology
+	stopRefresh chan bool
+	sync.RWMutex
 }
 
 // NewKubernetesClusterResource creates a new Cluster node
 func NewKubernetesClusterResource() KubernetesClusterResource {
-	metadata := cloud_metadata.GetCloudMetadata()
-	return &kubernetesCluster{cloudProvider: metadata.CloudProvider, cloudAccountID: metadata.AccountID}
+	k8sCluster := kubernetesCluster{stopRefresh: make(chan bool)}
+	k8sCluster.cacheK8sTopology()
+	go k8sCluster.refresh()
+	return &k8sCluster
+}
+
+func (k *kubernetesCluster) Stop() {
+	k.stopRefresh <- true
+}
+
+func (k *kubernetesCluster) refresh() {
+	ticker := time.NewTicker(6 * time.Hour)
+	for {
+		select {
+		case <-ticker.C:
+			k.cacheK8sTopology()
+		case <-k.stopRefresh:
+			return
+		}
+	}
+}
+
+func (k *kubernetesCluster) cacheK8sTopology() {
+	k.Lock()
+	defer k.Unlock()
+
+	k.k8sTopology = report.MakeTopology()
+	node := k.GetNode()
+	//cloudProviderNodeId = node.Parents.CloudProvider
+	k.k8sTopology.AddNode(node)
+}
+
+func (k *kubernetesCluster) GetTopology() report.Topology {
+	k.RLock()
+	defer k.RUnlock()
+
+	return k.k8sTopology
 }
 
 func (k *kubernetesCluster) GetNode() report.TopologyNode {
+	cloudMetadata := cloud_metadata.GetCloudMetadata()
+
 	metadata := report.Metadata{
 		Timestamp:             time.Now().UTC().Format(time.RFC3339Nano),
 		NodeID:                kubernetesClusterId,
@@ -31,14 +72,14 @@ func (k *kubernetesCluster) GetNode() report.TopologyNode {
 		NodeType:              report.KubernetesCluster,
 		KubernetesClusterId:   kubernetesClusterId,
 		KubernetesClusterName: kubernetesClusterName,
-		CloudProvider:         k.cloudProvider,
+		CloudProvider:         cloudMetadata.CloudProvider,
 		AgentRunning:          true,
-		CloudAccountID:        k.cloudAccountID,
+		CloudAccountID:        cloudMetadata.AccountID,
 	}
 	return report.TopologyNode{
 		Metadata: metadata,
 		Parents: &report.Parent{
-			CloudProvider: k.cloudProvider,
+			CloudProvider: cloudMetadata.CloudProvider,
 		},
 	}
 }
