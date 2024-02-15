@@ -440,10 +440,7 @@ func ListImages(ctx context.Context, registryID string, filter, stubFilter repor
 	}
 
 	condition := reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(filter), true)
-	if condition == "" {
-		condition = reporters.ParseFieldFilters2CypherWhereConditions("l", mo.Some(stubFilter), true)
-	}
-
+	condition += reporters.ParseFieldFilters2CypherWhereConditions("l", mo.Some(stubFilter), condition == "")
 	query := `
 	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub) <-[:IS]- (m:ContainerImage)
 	` + condition + `
