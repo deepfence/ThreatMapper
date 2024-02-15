@@ -28,7 +28,7 @@ func (d *RegistryDockerHub) ValidateFields(v *validator.Validate) error {
 
 func (d *RegistryDockerHub) IsValidCredential() bool {
 	if d.NonSecret.DockerHubUsername == "" {
-		return true
+		return d.NonSecret.IsPublic == "true"
 	}
 
 	jsonData := map[string]interface{}{"username": d.NonSecret.DockerHubUsername, "password": d.Secret.DockerHubPassword}
