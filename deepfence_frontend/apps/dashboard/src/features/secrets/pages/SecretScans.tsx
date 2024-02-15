@@ -739,7 +739,7 @@ const ScansTable = ({
         size: 240,
         maxSize: 250,
       }),
-      columnHelper.accessor('updated_at', {
+      columnHelper.accessor('created_at', {
         cell: (info) => <TruncatedText text={formatMilliseconds(info.getValue())} />,
         header: () => <TruncatedText text="Timestamp" />,
         minSize: 140,

@@ -90,7 +90,7 @@ export const commonQueries = createQueryKeys('common', {
         return {
           data: (result.value.scans_info ?? []).slice(0, size)?.map((res) => {
             return {
-              updatedAt: res.updated_at,
+              createdAt: res.created_at,
               scanId: res.scan_id,
               status: res.status,
               nodeName: res.node_name,
