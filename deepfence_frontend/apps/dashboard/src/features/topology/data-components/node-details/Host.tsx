@@ -97,7 +97,7 @@ export const Host = (props: HostModalProps) => {
             <Suspense
               fallback={
                 <div className="min-h-[300px] flex items-center justify-center dark:bg-bg-side-panel">
-                  <CircleSpinner size="lg" />
+                  <CircleSpinner size="lg" data-testid="nodeDetailsSpinnerId" />
                 </div>
               }
             >

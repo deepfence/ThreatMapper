@@ -308,7 +308,9 @@ const Header = () => {
         </BreadcrumbLink>
       </Breadcrumb>
       <div className="ml-2 flex items-center">
-        {isFetching ? <CircleSpinner size="sm" /> : null}
+        {isFetching ? (
+          <CircleSpinner size="sm" data-testid="registryAccountSpinnerId" />
+        ) : null}
       </div>
     </div>
   );
