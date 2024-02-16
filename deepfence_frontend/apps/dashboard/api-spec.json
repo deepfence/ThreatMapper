@@ -13678,6 +13678,11 @@
         "required": ["node_ids"],
         "type": "object",
         "properties": {
+          "container_names": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "fields_filters": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
           "node_ids": {
             "type": "array",
@@ -14107,10 +14112,11 @@
         }
       },
       "ModelRegistryImagesReq": {
-        "required": ["registry_id", "image_filter", "window"],
+        "required": ["registry_id", "image_filter", "image_stub_filter", "window"],
         "type": "object",
         "properties": {
           "image_filter": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
+          "image_stub_filter": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
           "registry_id": { "type": "string" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
@@ -15282,7 +15288,12 @@
         "type": "object",
         "properties": {
           "sbom_format": {
-            "enum": ["syft-json@11.0.1", "cyclonedx-json@1.5", "spdx-json@2.3"],
+            "enum": [
+              "syft-json@11.0.1",
+              "cyclonedx-json@1.5",
+              "spdx-json@2.2",
+              "spdx-json@2.3"
+            ],
             "type": "string"
           }
         }
