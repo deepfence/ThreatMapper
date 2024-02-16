@@ -16,6 +16,7 @@
             <th style="width: 100px; background: #0576c9; color: white;">Test Number</th>
             <th style="background: #0576c9; color: white;">Description</th>
             <th style="width: 100px ;background: #0576c9; color: white;">Check Type</th>
+            <th style="width: 100px ;background: #0576c9; color: white;">Resource</th>
         </tr>
         {{ range $i, $v := $value.ScanResults }}
         <tr>
@@ -25,6 +26,7 @@
             <td style="width: 60px">{{ $v.TestNumber }}</td>
             <td>{{ trunc 80 $v.TestInfo }}</td>
             <td style="width: 100px">{{ $v.ComplianceCheckType }}</td>
+            <td style="width: 100px">{{ $v.Resource }}</td>
         </tr>
         {{ end }}
     </table>
