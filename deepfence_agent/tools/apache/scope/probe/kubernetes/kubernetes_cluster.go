@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/df-utils/cloud_metadata"
 	"github.com/weaveworks/scope/report"
 )
@@ -64,6 +65,7 @@ func (k *kubernetesCluster) GetTopology() report.Topology {
 
 func (k *kubernetesCluster) GetNode() report.TopologyNode {
 	cloudMetadata := cloud_metadata.GetCloudMetadata()
+	log.Info().Msgf("Cloud metadata: %v", cloudMetadata)
 
 	metadata := report.Metadata{
 		Timestamp:             time.Now().UTC().Format(time.RFC3339Nano),
