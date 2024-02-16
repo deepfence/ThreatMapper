@@ -75,7 +75,7 @@ func (s *service) GetNode() report.TopologyNode {
 	return report.TopologyNode{
 		Metadata: metadata,
 		Parents: &report.Parent{
-			CloudProvider:     cloudProviderNodeId,
+			//CloudProvider:     cloudProviderNodeId,
 			KubernetesCluster: kubernetesClusterId,
 			Namespace:         kubernetesClusterId + "-" + s.GetNamespace(),
 		},
