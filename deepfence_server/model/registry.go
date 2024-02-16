@@ -621,33 +621,33 @@ func RegistrySummary(ctx context.Context, registryID mo.Option[string], registry
 	defer tx.Close()
 
 	queryPerRegistry := `
-	MATCH (n:RegistryAccount{node_id:$id})-[:HOSTS]->(m:ContainerImage)
-	WITH
+	MATCH (n:RegistryAccount{node_id:$id})-[:HOSTS]->(m:ContainerImage)-[:IS]-(i:ImageStub)
+	WITH n,
 		COUNT(distinct m.docker_image_name) AS images,
-		COUNT(m.docker_image_tag) AS tags,
+		COLLECT(distinct i.tags) AS tags,
 		COUNT(distinct n) AS registries
-	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount)
-	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(n)
+	RETURN COLLECT(s.status) AS scan_status, images, reduce(total = 0, t IN tags | total + size(t)) as tags, registries
 	`
 
 	queryRegistriesByType := `
-	MATCH (n:RegistryAccount{registry_type:$type})-[:HOSTS]->(m:ContainerImage)
+	MATCH (n:RegistryAccount{registry_type:$type})-[:HOSTS]->(m:ContainerImage)-[:IS]-(i:ImageStub)
 	WITH
 		COUNT(distinct m.docker_image_name) AS images,
-		COUNT(m.docker_image_tag) AS tags,
+		COLLECT(distinct i.tags) AS tags,
 		COUNT(distinct n) AS registries
-	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount{registry_type:$type})
-	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(:RegistryAccount{registry_type:$type})
+	RETURN COLLECT(s.status) AS scan_status, images, reduce(total = 0, t IN tags | total + size(t)) as tags, registries
 	`
 
 	queryAllRegistries := `
-	MATCH (n:RegistryAccount)-[:HOSTS]->(m:ContainerImage)
+	MATCH (n:RegistryAccount)-[:HOSTS]->(m:ContainerImage)-[:IS]-(i:ImageStub)
 	WITH
 		COUNT(distinct m.docker_image_name) AS images,
-		COUNT(m.docker_image_tag) AS tags,
+		COLLECT(distinct i.tags) AS tags,
 		COUNT(distinct n) AS registries
-	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount)
-	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(:RegistryAccount)
+	RETURN COLLECT(s.status) AS scan_status, images, reduce(total = 0, t IN tags | total + size(t)) as tags, registries
 	`
 
 	var (
