@@ -40,6 +40,12 @@ export interface ModelRegistryImagesReq {
     image_filter: ReportersFieldsFilters;
     /**
      * 
+     * @type {ReportersFieldsFilters}
+     * @memberof ModelRegistryImagesReq
+     */
+    image_stub_filter: ReportersFieldsFilters;
+    /**
+     * 
      * @type {string}
      * @memberof ModelRegistryImagesReq
      */
@@ -58,6 +64,7 @@ export interface ModelRegistryImagesReq {
 export function instanceOfModelRegistryImagesReq(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "image_filter" in value;
+    isInstance = isInstance && "image_stub_filter" in value;
     isInstance = isInstance && "registry_id" in value;
     isInstance = isInstance && "window" in value;
 
@@ -75,6 +82,7 @@ export function ModelRegistryImagesReqFromJSONTyped(json: any, ignoreDiscriminat
     return {
         
         'image_filter': ReportersFieldsFiltersFromJSON(json['image_filter']),
+        'image_stub_filter': ReportersFieldsFiltersFromJSON(json['image_stub_filter']),
         'registry_id': json['registry_id'],
         'window': ModelFetchWindowFromJSON(json['window']),
     };
@@ -90,6 +98,7 @@ export function ModelRegistryImagesReqToJSON(value?: ModelRegistryImagesReq | nu
     return {
         
         'image_filter': ReportersFieldsFiltersToJSON(value.image_filter),
+        'image_stub_filter': ReportersFieldsFiltersToJSON(value.image_stub_filter),
         'registry_id': value.registry_id,
         'window': ModelFetchWindowToJSON(value.window),
     };
