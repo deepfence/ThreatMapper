@@ -342,6 +342,24 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 	}
 	neo4j_query_c := time.Since(profileStart).Milliseconds()
 
+	neo4j_query_default := int64(0)
+	if reqNC == nil && reqC == nil {
+		profileStart = time.Now()
+		reqDefault := reporters_search.SearchScanReq{}
+		reqDefault.ScanFilter = reporters_search.SearchFilter{
+			Filters: filters.FieldsFilters,
+		}
+		reqDefault.Window = model.FetchWindow{}
+		defaultScanInfo, err := reporters_search.SearchScansReport(ctx, reqDefault, scanType)
+		if err != nil {
+			log.Error().Msgf("Failed to get default scans, error: %v", err)
+			return err
+		} else if len(defaultScanInfo) > 0 {
+			scansList = append(scansList, defaultScanInfo...)
+		}
+		neo4j_query_default = time.Since(profileStart).Milliseconds()
+	}
+
 	// nothing to notify
 	if len(scansList) == 0 {
 		log.Info().Msgf("No %s scans to notify at timestamp (%d,%d)",
@@ -426,6 +444,7 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		integrationRow.IntegrationType, time.Since(startTime).Milliseconds())
 	log.Debug().Msgf("Time taken for neo4j_query_nc: %d", neo4j_query_nc)
 	log.Debug().Msgf("Time taken for neo4j_query_c: %d", neo4j_query_c)
+	log.Debug().Msgf("Time taken for neo4j_query_default: %d", neo4j_query_default)
 	log.Debug().Msgf("Time taken for neo4j_query_2: %d", totalQueryTime)
 	log.Debug().Msgf("Time taken for sending data : %d", totalSendTime)
 	return nil
