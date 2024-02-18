@@ -399,7 +399,7 @@ const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
   FILTER_SEARCHPARAMS_KEYS_ENUM.containers,
 ];
 
-const FILTER_SEARCHPARAMS: Record<string, string> = {
+const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   nodeType: 'Node Type',
   secretScanStatus: 'Secret scan status',
   containerImages: 'Container image',
