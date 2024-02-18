@@ -7,6 +7,7 @@ import {
   lookupContainerBatcher,
   lookupContainerImagesBatcher,
   lookupHostsBatcher,
+  lookupPodBatcher,
   lookupRegistryAccountBatcher,
 } from '@/queries/batchers/lookup';
 
@@ -44,7 +45,8 @@ type PrettifiableNodeTypes =
   | 'container'
   | 'containerImage'
   | 'cluster'
-  | 'registryAccount';
+  | 'registryAccount'
+  | 'pod';
 
 const PrettyNameHost = ({ id }: { id: string }) => {
   const { data } = useSuspenseQuery({
@@ -98,6 +100,19 @@ const PrettyNameRegistryAccounts = ({ id }: { id: string }) => {
   return id;
 };
 
+const PrettyNamePod = ({ id }: { id: string }) => {
+  const { data } = useSuspenseQuery({
+    queryKey: ['badge', 'lookup', 'pod', id],
+    queryFn: async () => {
+      return lookupPodBatcher.fetch(id);
+    },
+  });
+  if (data) {
+    return data.node_name;
+  }
+  return id;
+};
+
 const PrettyNameContainers = ({ id }: { id: string }) => {
   const { data } = useSuspenseQuery({
     queryKey: ['badge', 'lookup', 'container', id],
@@ -146,6 +161,12 @@ const PrettyName = ({
     return (
       <Suspense fallback={id}>
         <PrettyNameContainers id={id} />
+      </Suspense>
+    );
+  } else if (nodeType === 'pod') {
+    return (
+      <Suspense fallback={id}>
+        <PrettyNamePod id={id} />
       </Suspense>
     );
   }

@@ -132,3 +132,29 @@ export const lookupRegistryAccountBatcher = create({
   resolver: (items, id) => items.find((item) => item.node_id === id) ?? null,
   scheduler: windowScheduler(10),
 });
+
+export const lookupPodBatcher = create({
+  fetcher: async (ids: string[]) => {
+    const lookupPod = apiWrapper({
+      fn: getLookupApiClient().lookupPod,
+    });
+    const lookupResult = await lookupPod({
+      lookupLookupFilter: {
+        node_ids: ids,
+        in_field_filter: null,
+        window: {
+          offset: 0,
+          size: ids.length,
+        },
+      },
+    });
+
+    if (!lookupResult.ok) {
+      throw new Error(`Failed to lookup pods`);
+    }
+
+    return lookupResult.value;
+  },
+  resolver: (items, id) => items.find((item) => item.node_id === id) ?? null,
+  scheduler: windowScheduler(10),
+});
