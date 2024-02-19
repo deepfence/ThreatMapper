@@ -58,7 +58,10 @@ import { PlusIcon } from '@/components/icons/common/Plus';
 import { RefreshIcon } from '@/components/icons/common/Refresh';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
-import { CLOUDS } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import {
+  CLOUDS,
+  ComplianceScanConfigureFormProps,
+} from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
@@ -99,14 +102,15 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 import { isUpgradeAvailable } from '@/utils/version';
 
 enum ActionEnumType {
-  DELETE = 'delete',
+  DELETE_SCAN = 'delete_scan',
   REFRESH_ACCOUNT = 'refresh_account',
   START_SCAN = 'start_scan',
+  CANCEL_SCAN = 'cancel_scan',
 }
 
 export const getNodeTypeByProviderName = (
   providerName: string,
-): ComplianceScanNodeTypeEnum | undefined => {
+): ComplianceScanNodeTypeEnum => {
   switch (providerName) {
     case 'linux':
     case 'host':
@@ -124,7 +128,7 @@ export const getNodeTypeByProviderName = (
     case 'kubernetes':
       return ComplianceScanNodeTypeEnum.kubernetes_cluster;
     default:
-      return;
+      throw new Error('No matching provider name found');
   }
 };
 
@@ -154,7 +158,7 @@ const action = async ({
     throw new Error('Invalid action');
   }
 
-  if (actionType === ActionEnumType.DELETE) {
+  if (actionType === ActionEnumType.DELETE_SCAN) {
     if (scanIds.length === 0) {
       throw new Error('Scan ids are required for deletion');
     }
@@ -181,7 +185,7 @@ const action = async ({
         const { message } = await getResponseErrors(result.error);
         return {
           success: false,
-          action: ActionEnumType.DELETE,
+          action: ActionEnumType.DELETE_SCAN,
           message,
         };
       } else if (result.error.response.status === 403) {
@@ -189,7 +193,7 @@ const action = async ({
         return {
           success: false,
           message,
-          action: ActionEnumType.DELETE,
+          action: ActionEnumType.DELETE_SCAN,
         };
       }
       throw result.error;
@@ -533,7 +537,7 @@ const DeleteConfirmationModal = ({
     if (
       fetcher.state === 'idle' &&
       fetcher.data?.success &&
-      fetcher.data.action === ActionEnumType.DELETE
+      fetcher.data.action === ActionEnumType.DELETE_SCAN
     ) {
       onSuccess();
     }
@@ -572,7 +576,7 @@ const DeleteConfirmationModal = ({
               disabled={fetcher.state === 'submitting'}
               onClick={(e) => {
                 e.preventDefault();
-                onDeleteAction(ActionEnumType.DELETE);
+                onDeleteAction(ActionEnumType.DELETE_SCAN);
               }}
             >
               Delete
@@ -608,23 +612,15 @@ const ActionDropdown = ({
   nodeType?: string;
   scanType: ScanTypeEnum;
   row: ModelCloudNodeAccountInfo;
-  onTableAction: (ids: string[], actionType: ActionEnumType) => void;
+  onTableAction: (row: ModelCloudNodeAccountInfo, actionType: ActionEnumType) => void;
 }) => {
   const fetcher = useFetcher();
-  const {
-    last_scan_id: scanId = '',
-    node_id: nodeId,
-    last_scan_status: scanStatus = '',
-    active,
-  } = row;
+  const { last_scan_id: scanId = '', last_scan_status: scanStatus = '', active } = row;
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { downloadScan } = useDownloadScan((state) => {
     setIsSubmitting(state === 'submitting');
   });
-  const [openStopScanModal, setOpenStopScanModal] = useState(false);
-
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const onDownloadAction = useCallback(() => {
     downloadScan({
@@ -641,35 +637,12 @@ const ActionDropdown = ({
     if (fetcher.state === 'idle') setOpen(false);
   }, [fetcher]);
 
-  if (!nodeType || !nodeId) {
-    throw new Error('Node type and Node id are required');
+  if (!nodeType) {
+    throw new Error('Node type is required');
   }
 
   return (
     <>
-      {openStopScanModal && (
-        <StopScanForm
-          open={openStopScanModal}
-          closeModal={setOpenStopScanModal}
-          scanIds={[scanId]}
-          scanType={scanType}
-        />
-      )}
-      {showDeleteDialog && (
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          scanIds={[scanId]}
-          scanType={
-            (scanType as ScanTypeEnum) === ScanTypeEnum.ComplianceScan
-              ? ModelBulkDeleteScansRequestScanTypeEnum.Compliance
-              : ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance
-          }
-          setShowDialog={setShowDeleteDialog}
-          onSuccess={() => {
-            //
-          }}
-        />
-      )}
       <Dropdown
         triggerAsChild
         align="start"
@@ -682,10 +655,7 @@ const ActionDropdown = ({
                 !active || isScanInProgress(scanStatus) || isScanStopping(scanStatus)
               }
               onSelect={() => {
-                if (!nodeId) {
-                  throw new Error('Node id is required to start scan');
-                }
-                onTableAction([nodeId], ActionEnumType.START_SCAN);
+                onTableAction(row, ActionEnumType.START_SCAN);
               }}
             >
               Start scan
@@ -693,7 +663,7 @@ const ActionDropdown = ({
             <DropdownItem
               onSelect={(e) => {
                 e.preventDefault();
-                setOpenStopScanModal(true);
+                onTableAction(row, ActionEnumType.CANCEL_SCAN);
               }}
               disabled={!isScanInProgress(scanStatus)}
             >
@@ -715,7 +685,7 @@ const ActionDropdown = ({
               disabled={!scanId || !nodeType}
               onClick={() => {
                 if (!scanId || !nodeType) return;
-                setShowDeleteDialog(true);
+                onTableAction(row, ActionEnumType.DELETE_SCAN);
               }}
             >
               <span
@@ -729,10 +699,7 @@ const ActionDropdown = ({
             </DropdownItem>
             <DropdownItem
               onSelect={() => {
-                if (!nodeId) {
-                  throw new Error('Account id is required to refresh');
-                }
-                onTableAction([nodeId], ActionEnumType.REFRESH_ACCOUNT);
+                onTableAction(row, ActionEnumType.REFRESH_ACCOUNT);
               }}
             >
               Refresh account
@@ -747,26 +714,52 @@ const ActionDropdown = ({
 };
 
 const BulkActions = ({
-  onClick,
-  onDelete,
-  onRefreshAccount,
-  onCancelScan,
-  disableStartScan,
-  disableCancelScan,
-  disableDeleteScan,
-  disableRefreshAccount,
+  nodeType,
+  selectedRows,
+  onBulkAction,
 }: {
-  onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
-  onCancelScan?: React.MouseEventHandler<HTMLButtonElement> | undefined;
-  onDelete?: React.MouseEventHandler<HTMLButtonElement> | undefined;
-  onRefreshAccount?: React.MouseEventHandler<HTMLButtonElement> | undefined;
-  disableStartScan: boolean;
-  disableCancelScan: boolean;
-  disableDeleteScan: boolean;
-  disableRefreshAccount: boolean;
+  nodeType: ComplianceScanNodeTypeEnum;
+  selectedRows: {
+    scanId: string;
+    nodeId: string;
+    nodeType: string;
+    active: boolean;
+    scanStatus: string;
+  }[];
+  onBulkAction: (
+    data: {
+      scanIdsToCancelScan: string[];
+      scanIdsToDeleteScan: string[];
+      nodesToStartScan: ComplianceScanConfigureFormProps['data'] | null;
+    },
+    actionType: ActionEnumType,
+  ) => void;
 }) => {
   const { navigate } = usePageNavigation();
   const params = useParams();
+
+  const scanIdsToDeleteScan = useMemo(() => {
+    return selectedRows
+      .filter((row) => !isNeverScanned(row.scanStatus))
+      .map((row) => row.scanId);
+  }, [selectedRows]);
+
+  const nodeIdsToScan = useMemo(() => {
+    return selectedRows
+      .filter(
+        (node) =>
+          node.active &&
+          !isScanInProgress(node.scanStatus) &&
+          !isScanStopping(node.scanStatus),
+      )
+      .map((node) => node.nodeId);
+  }, [selectedRows]);
+
+  const scanIdsToCancelScan = useMemo(() => {
+    return selectedRows
+      .filter((row) => isScanInProgress(row.scanStatus))
+      .map((row) => row.scanId);
+  }, [selectedRows]);
 
   return (
     <>
@@ -793,8 +786,20 @@ const BulkActions = ({
         color="default"
         variant="flat"
         size="sm"
-        disabled={disableStartScan}
-        onClick={onClick}
+        disabled={nodeIdsToScan.length == 0}
+        onClick={() =>
+          onBulkAction(
+            {
+              scanIdsToCancelScan: [],
+              scanIdsToDeleteScan: [],
+              nodesToStartScan: {
+                nodeIds: nodeIdsToScan,
+                nodeType,
+              },
+            },
+            ActionEnumType.START_SCAN,
+          )
+        }
       >
         Start scan
       </Button>
@@ -802,8 +807,17 @@ const BulkActions = ({
         color="default"
         variant="flat"
         size="sm"
-        disabled={disableCancelScan}
-        onClick={onCancelScan}
+        disabled={scanIdsToCancelScan.length === 0}
+        onClick={() =>
+          onBulkAction(
+            {
+              scanIdsToCancelScan,
+              scanIdsToDeleteScan: [],
+              nodesToStartScan: null,
+            },
+            ActionEnumType.CANCEL_SCAN,
+          )
+        }
       >
         Cancel scan
       </Button>
@@ -812,8 +826,17 @@ const BulkActions = ({
         variant="flat"
         startIcon={<TrashLineIcon />}
         size="sm"
-        disabled={disableDeleteScan}
-        onClick={onDelete}
+        disabled={scanIdsToDeleteScan.length === 0}
+        onClick={() =>
+          onBulkAction(
+            {
+              scanIdsToCancelScan: [],
+              scanIdsToDeleteScan,
+              nodesToStartScan: null,
+            },
+            ActionEnumType.DELETE_SCAN,
+          )
+        }
       >
         Delete scan
       </Button>
@@ -821,8 +844,17 @@ const BulkActions = ({
         variant="flat"
         startIcon={<RefreshIcon />}
         size="sm"
-        disabled={disableRefreshAccount}
-        onClick={onRefreshAccount}
+        disabled={selectedRows.length === 0}
+        onClick={() =>
+          onBulkAction(
+            {
+              scanIdsToCancelScan: [],
+              scanIdsToDeleteScan: [],
+              nodesToStartScan: null,
+            },
+            ActionEnumType.REFRESH_ACCOUNT,
+          )
+        }
       >
         Refresh account
       </Button>
@@ -847,7 +879,7 @@ const AccountTable = ({
   scanType: 'ComplianceScan' | 'CloudComplianceScan';
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
   rowSelectionState: RowSelectionState;
-  onTableAction: (ids: string[], actionType: ActionEnumType) => void;
+  onTableAction: (row: ModelCloudNodeAccountInfo, actionType: ActionEnumType) => void;
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = usePostureAccounts();
@@ -1215,10 +1247,6 @@ const Accounts = () => {
   const [searchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
-  const [selectedScanType, setSelectedScanType] = useState<
-    typeof ScanTypeEnum.ComplianceScan | typeof ScanTypeEnum.CloudComplianceScan
-  >();
-
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const fetcher = useFetcher();
   const routeParams = useParams() as {
@@ -1231,7 +1259,7 @@ const Accounts = () => {
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showCancelScan, setShowCancelScan] = useState(false);
-  const [nodeIdsToScan, setNodeIdsToScan] = useState<string[]>([]);
+  const [openStartScan, setOpenStartScan] = useState<boolean>(false);
 
   const scanType = isNonCloudProvider(routeParams.nodeType)
     ? ScanTypeEnum.ComplianceScan
@@ -1251,49 +1279,84 @@ const Accounts = () => {
     });
   }, [rowSelectionState]);
 
-  const nodeIdsToDeleteScan = useMemo(() => {
-    return selectedRows
-      .filter((row) => !isNeverScanned(row.scanStatus))
-      .map((row) => row.scanId);
-  }, [selectedRows]);
-
-  const nodeIdsToCancelScan = useMemo(() => {
-    return selectedRows
-      .filter((row) => isScanInProgress(row.scanStatus))
-      .map((row) => row.scanId);
-  }, [selectedRows]);
-
-  useEffect(() => {
-    setNodeIdsToScan(
-      selectedRows
-        .filter(
-          (node) =>
-            node.active &&
-            !isScanInProgress(node.scanStatus) &&
-            !isScanStopping(node.scanStatus),
-        )
-        .map((node) => node.nodeId),
-    );
-  }, [selectedRows]);
+  const [rowToAction, setRowToAction] = useState<{
+    scanIdsToCancelScan: string[];
+    scanIdsToDeleteScan: string[];
+    nodesToStartScan: ComplianceScanConfigureFormProps['data'] | null;
+  }>({
+    scanIdsToCancelScan: [],
+    scanIdsToDeleteScan: [],
+    nodesToStartScan: null,
+  });
 
   const onTableAction = useCallback(
-    (nodeIds: string[], actionType: ActionEnumType) => {
-      if (actionType === ActionEnumType.START_SCAN) {
-        setNodeIdsToScan(nodeIds);
-        setSelectedScanType(scanType);
+    (row: ModelCloudNodeAccountInfo, actionType: ActionEnumType) => {
+      if (actionType === ActionEnumType.START_SCAN && nodeType) {
+        setRowToAction({
+          scanIdsToCancelScan: [],
+          scanIdsToDeleteScan: [],
+          nodesToStartScan: {
+            nodeIds: [row.node_id!],
+            nodeType: nodeType,
+          },
+        });
+        setOpenStartScan(true);
         return;
       } else if (actionType === ActionEnumType.REFRESH_ACCOUNT) {
         const formData = new FormData();
         formData.append('actionType', ActionEnumType.REFRESH_ACCOUNT);
-        nodeIds.forEach((nodeId) => formData.append('accountId[]', nodeId));
+        [row.node_id!].forEach((nodeId) => formData.append('accountId[]', nodeId));
         fetcher.submit(formData, {
           method: 'post',
         });
         return;
+      } else if (actionType === ActionEnumType.DELETE_SCAN) {
+        setRowToAction({
+          scanIdsToCancelScan: [],
+          scanIdsToDeleteScan: [row.last_scan_id!],
+          nodesToStartScan: null,
+        });
+        setShowDeleteDialog(true);
+      } else if (actionType === ActionEnumType.CANCEL_SCAN) {
+        setRowToAction({
+          scanIdsToCancelScan: [row.last_scan_id!],
+          scanIdsToDeleteScan: [],
+          nodesToStartScan: null,
+        });
+        setShowCancelScan(true);
       }
     },
     [fetcher],
   );
+
+  const onBulkAction = (
+    data: {
+      scanIdsToCancelScan: string[];
+      scanIdsToDeleteScan: string[];
+      nodesToStartScan: ComplianceScanConfigureFormProps['data'] | null;
+    },
+    actionType: string,
+  ) => {
+    setRowToAction({
+      scanIdsToCancelScan: data.scanIdsToCancelScan,
+      scanIdsToDeleteScan: data.scanIdsToDeleteScan,
+      nodesToStartScan: data.nodesToStartScan,
+    });
+    if (actionType === ActionEnumType.DELETE_SCAN) {
+      setShowDeleteDialog(true);
+    } else if (actionType === ActionEnumType.CANCEL_SCAN) {
+      setShowCancelScan(true);
+    } else if (actionType === ActionEnumType.START_SCAN) {
+      setOpenStartScan(true);
+    } else if (actionType === ActionEnumType.REFRESH_ACCOUNT) {
+      const formData = new FormData();
+      formData.append('actionType', ActionEnumType.REFRESH_ACCOUNT);
+      selectedRows.forEach((row) => formData.append('accountId[]', row.nodeId));
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    }
+  };
 
   return (
     <div>
@@ -1302,9 +1365,40 @@ const Accounts = () => {
         <StopScanForm
           open={true}
           closeModal={setShowCancelScan}
-          scanIds={nodeIdsToCancelScan}
+          scanIds={rowToAction.scanIdsToCancelScan}
           scanType={scanType}
           onCancelScanSuccess={() => {
+            setRowSelectionState({});
+          }}
+        />
+      )}
+      {openStartScan && (
+        <ConfigureScanModal
+          open={true}
+          onOpenChange={() => setOpenStartScan(false)}
+          onSuccess={() => setRowSelectionState({})}
+          scanOptions={
+            nodeType && rowToAction.nodesToStartScan
+              ? {
+                  showAdvancedOptions: true,
+                  scanType,
+                  data: rowToAction.nodesToStartScan,
+                }
+              : undefined
+          }
+        />
+      )}
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          scanIds={rowToAction.scanIdsToDeleteScan}
+          scanType={
+            isNonCloudProvider(routeParams.nodeType)
+              ? ModelBulkDeleteScansRequestScanTypeEnum.Compliance
+              : ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance
+          }
+          setShowDialog={setShowDeleteDialog}
+          onSuccess={() => {
             setRowSelectionState({});
           }}
         />
@@ -1312,27 +1406,9 @@ const Accounts = () => {
       <div className="mb-4 mx-4">
         <div className="flex h-12 items-center">
           <BulkActions
-            disableStartScan={nodeIdsToScan.length == 0}
-            disableCancelScan={nodeIdsToCancelScan.length === 0}
-            disableDeleteScan={nodeIdsToDeleteScan.length === 0}
-            disableRefreshAccount={selectedRows.length === 0}
-            onRefreshAccount={() => {
-              const formData = new FormData();
-              formData.append('actionType', ActionEnumType.REFRESH_ACCOUNT);
-              selectedRows.forEach((row) => formData.append('accountId[]', row.nodeId));
-              fetcher.submit(formData, {
-                method: 'post',
-              });
-            }}
-            onClick={() => {
-              setSelectedScanType(scanType);
-            }}
-            onCancelScan={() => {
-              setShowCancelScan(true);
-            }}
-            onDelete={() => {
-              setShowDeleteDialog(true);
-            }}
+            nodeType={nodeType}
+            onBulkAction={onBulkAction}
+            selectedRows={selectedRows}
           />
           <Button
             variant="flat"
@@ -1357,24 +1433,6 @@ const Accounts = () => {
           </Button>
         </div>
         {filtersExpanded ? <Filters /> : null}
-        <ConfigureScanModal
-          open={!!selectedScanType}
-          onOpenChange={() => setSelectedScanType(undefined)}
-          onSuccess={() => setRowSelectionState({})}
-          scanOptions={
-            selectedScanType && nodeType
-              ? {
-                  showAdvancedOptions: true,
-                  scanType: selectedScanType,
-                  data: {
-                    nodeIds: nodeIdsToScan,
-                    nodeType: nodeType,
-                  },
-                }
-              : undefined
-          }
-        />
-
         <Suspense fallback={<TableSkeleton columns={6} rows={10} />}>
           <AccountTable
             setRowSelectionState={setRowSelectionState}
@@ -1385,21 +1443,6 @@ const Accounts = () => {
           />
         </Suspense>
       </div>
-      {showDeleteDialog && (
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          scanIds={nodeIdsToDeleteScan}
-          scanType={
-            isNonCloudProvider(routeParams.nodeType)
-              ? ModelBulkDeleteScansRequestScanTypeEnum.Compliance
-              : ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance
-          }
-          setShowDialog={setShowDeleteDialog}
-          onSuccess={() => {
-            setRowSelectionState({});
-          }}
-        />
-      )}
     </div>
   );
 };
