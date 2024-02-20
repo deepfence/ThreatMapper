@@ -108,9 +108,7 @@ enum ActionEnumType {
   CANCEL_SCAN = 'cancel_scan',
 }
 
-export const getNodeTypeByProviderName = (
-  providerName: string,
-): ComplianceScanNodeTypeEnum => {
+const getNodeTypeByProviderName = (providerName: string): ComplianceScanNodeTypeEnum => {
   switch (providerName) {
     case 'linux':
     case 'host':
@@ -625,7 +623,9 @@ const ActionDropdown = ({
   const onDownloadAction = useCallback(() => {
     downloadScan({
       scanId,
-      nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+      nodeType: (nodeType?.toString() === ComplianceScanNodeTypeEnum.kubernetes_cluster
+        ? 'cluster'
+        : nodeType) as UtilsReportFiltersNodeTypeEnum,
       scanType:
         (scanType as ScanTypeEnum) === ScanTypeEnum.CloudComplianceScan
           ? UtilsReportFiltersScanTypeEnum.CloudCompliance
