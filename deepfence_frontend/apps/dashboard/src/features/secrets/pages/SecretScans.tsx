@@ -341,7 +341,25 @@ const ActionDropdown = ({
   );
 };
 
-const FILTER_SEARCHPARAMS: Record<string, string> = {
+enum FILTER_SEARCHPARAMS_KEYS_ENUM {
+  nodeType = 'nodeType',
+  secretScanStatus = 'secretScanStatus',
+  containerImages = 'containerImages',
+  containers = 'containers',
+  hosts = 'hosts',
+  clusters = 'clusters',
+  registryAccounts = 'registryAccounts',
+}
+
+const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
+  FILTER_SEARCHPARAMS_KEYS_ENUM.hosts,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.containerImages,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.clusters,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.registryAccounts,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.containers,
+];
+
+const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   nodeType: 'Node Type',
   secretScanStatus: 'Secret scan status',
   containerImages: 'Container image',
@@ -361,6 +379,20 @@ const Filters = () => {
 
   const [nodeType, setNodeType] = useState('');
   const [secretScanStatusSearchText, setSecretScanStatusSearchText] = useState('');
+
+  const onFilterRemove = ({ key, value }: { key: string; value: string }) => {
+    return () => {
+      setSearchParams((prev) => {
+        const existingValues = prev.getAll(key);
+        prev.delete(key);
+        existingValues.forEach((existingValue) => {
+          if (existingValue !== value) prev.append(key, existingValue);
+        });
+        prev.delete('page');
+        return prev;
+      });
+    };
+  };
 
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
   return (
@@ -556,29 +588,44 @@ const Filters = () => {
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
-          {Array.from(searchParams)
-            .filter(([key]) => {
+          {(
+            Array.from(searchParams).filter(([key]) => {
               return Object.keys(FILTER_SEARCHPARAMS).includes(key);
-            })
-            .map(([key, value]) => {
+            }) as Array<[FILTER_SEARCHPARAMS_KEYS_ENUM, string]>
+          ).map(([key, value]) => {
+            if (FILTER_SEARCHPARAMS_DYNAMIC_KEYS.includes(key)) {
               return (
                 <FilterBadge
                   key={`${key}-${value}`}
-                  onRemove={() => {
-                    setSearchParams((prev) => {
-                      const existingValues = prev.getAll(key);
-                      prev.delete(key);
-                      existingValues.forEach((existingValue) => {
-                        if (existingValue !== value) prev.append(key, existingValue);
-                      });
-                      prev.delete('page');
-                      return prev;
-                    });
-                  }}
+                  nodeType={(() => {
+                    if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.hosts) {
+                      return 'host';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.containerImages) {
+                      return 'containerImage';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.clusters) {
+                      return 'cluster';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.registryAccounts) {
+                      return 'registryAccount';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.containers) {
+                      return 'container';
+                    }
+                    throw new Error('unknown key');
+                  })()}
+                  onRemove={onFilterRemove({ key, value })}
+                  id={value}
+                  label={FILTER_SEARCHPARAMS[key]}
+                />
+              );
+            } else {
+              return (
+                <FilterBadge
+                  key={`${key}-${value}`}
+                  onRemove={onFilterRemove({ key, value })}
                   text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
                 />
               );
-            })}
+            }
+          })}
           <Button
             variant="flat"
             color="default"

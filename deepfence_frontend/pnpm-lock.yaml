@@ -36,6 +36,7 @@ importers:
       '@typescript-eslint/parser': ^6.3.0
       '@vitejs/plugin-react': ^4.0.4
       '@vitest/coverage-c8': ^0.33.0
+      '@yornaath/batshit': ^0.9.0
       autoprefixer: ^10.4.15
       cron-converter: ^2.0.1
       cronstrue: ^2.41.0
@@ -79,6 +80,7 @@ importers:
       '@suspensive/react': 1.11.6_react@18.2.0
       '@suspensive/react-query': 1.11.6_mtrmixnuil4ipbilqpq7buadam
       '@tanstack/react-query': 4.32.6_biqbaboplfbrettd7655fr4n2y
+      '@yornaath/batshit': 0.9.0
       cron-converter: 2.0.1
       cronstrue: 2.41.0
       dayjs: 1.11.9
@@ -4658,7 +4660,7 @@ packages:
       dom-accessibility-api: 0.5.16
       lodash: 4.17.21
       redent: 3.0.0
-      vitest: 0.34.1_jsdom@22.1.0+less@4.2.0
+      vitest: 0.34.1_playwright@1.37.0
     dev: true
 
   /@testing-library/react/14.0.0_biqbaboplfbrettd7655fr4n2y:
@@ -5265,7 +5267,7 @@ packages:
       '@babel/plugin-transform-react-jsx-self': 7.22.5_@babel+core@7.22.10
       '@babel/plugin-transform-react-jsx-source': 7.22.5_@babel+core@7.22.10
       react-refresh: 0.14.0
-      vite: 4.4.9_less@4.2.0
+      vite: 4.4.9
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -5281,7 +5283,7 @@ packages:
       magic-string: 0.30.2
       picocolors: 1.0.0
       std-env: 3.3.3
-      vitest: 0.34.1_jsdom@22.1.0+less@4.2.0
+      vitest: 0.34.1_playwright@1.37.0
     dev: true
 
   /@vitest/expect/0.34.1:
@@ -5542,6 +5544,16 @@ packages:
       '@types/emscripten': 1.39.7
       tslib: 1.14.1
     dev: true
+
+  /@yornaath/batshit-devtools/1.6.0:
+    resolution: {integrity: sha512-ckKxrdfuFSRFz54tYU+VkD1eZOOaxa92U4eKOPtlxc1itB12Cqb1Dmk8Rqv6mARxp8YvocVGKbccrXoCwH2Lew==}
+    dev: false
+
+  /@yornaath/batshit/0.9.0:
+    resolution: {integrity: sha512-QdI1hQUPlpFT+o1iKLi9fQEKCli8c3UG7q4Ih8MP4jn+pyAjbfC4xaK5PwqSsSZgT0YeAZ0GWbbO9+1xAtWXlQ==}
+    dependencies:
+      '@yornaath/batshit-devtools': 1.6.0
+    dev: false
 
   /@zxing/text-encoding/0.9.0:
     resolution: {integrity: sha512-U/4aVJ2mxI0aDNI8Uq0wEhMgY+u4CNtEb0om3+y3+niDAsoTCOB33UF0sxpzqzdqXLqmvc+vZyAt4O8pPdfkwA==}
