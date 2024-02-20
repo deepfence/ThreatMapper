@@ -50,6 +50,13 @@ export const isScanStopping = (status: string): boolean => {
   return false;
 };
 
+export const isScanDeletePending = (status: string): boolean => {
+  if (status.length && VULNERABILITY_SCAN_STATUS_GROUPS.deleting.includes(status)) {
+    return true;
+  }
+  return false;
+};
+
 export const getScanLink = ({
   nodeType,
   scanType,
@@ -103,6 +110,7 @@ export enum VulnerabilityScanGroupedStatus {
   'complete' = 'complete',
   'cancelled' = 'cancelled',
   'cancelling' = 'cancelling',
+  'deleting' = 'deleting',
 }
 
 export const VULNERABILITY_SCAN_STATUS_GROUPS: Record<
@@ -116,6 +124,7 @@ export const VULNERABILITY_SCAN_STATUS_GROUPS: Record<
   complete: ['COMPLETE'],
   cancelled: ['CANCELLED'],
   cancelling: ['CANCEL_PENDING', 'CANCELLING'],
+  deleting: ['DELETE_PENDING'],
 };
 
 export enum SecretScanGroupedStatus {
@@ -126,6 +135,7 @@ export enum SecretScanGroupedStatus {
   'complete' = 'complete',
   'cancelled' = 'cancelled',
   'cancelling' = 'cancelling',
+  'deleting' = 'deleting',
 }
 
 export const SECRET_SCAN_STATUS_GROUPS: Record<
@@ -139,6 +149,7 @@ export const SECRET_SCAN_STATUS_GROUPS: Record<
   complete: ['COMPLETE'],
   cancelled: ['CANCELLED'],
   cancelling: ['CANCEL_PENDING', 'CANCELLING'],
+  deleting: ['DELETE_PENDING'],
 };
 
 export enum MalwareScanGroupedStatus {
@@ -149,6 +160,7 @@ export enum MalwareScanGroupedStatus {
   'complete' = 'complete',
   'cancelled' = 'cancelled',
   'cancelling' = 'cancelling',
+  'deleting' = 'deleting',
 }
 
 export const MALWARE_SCAN_STATUS_GROUPS: Record<
@@ -162,6 +174,7 @@ export const MALWARE_SCAN_STATUS_GROUPS: Record<
   complete: ['COMPLETE'],
   cancelled: ['CANCELLED'],
   cancelling: ['CANCEL_PENDING', 'CANCELLING'],
+  deleting: ['DELETE_PENDING'],
 };
 
 export enum ComplianceScanGroupedStatus {
@@ -172,6 +185,7 @@ export enum ComplianceScanGroupedStatus {
   'complete' = 'complete',
   'cancelled' = 'cancelled',
   'cancelling' = 'cancelling',
+  'deleting' = 'deleting',
 }
 
 export const COMPLIANCE_SCAN_STATUS_GROUPS: Record<
@@ -185,6 +199,7 @@ export const COMPLIANCE_SCAN_STATUS_GROUPS: Record<
   complete: ['COMPLETE'],
   cancelled: ['CANCELLED'],
   cancelling: ['CANCEL_PENDING', 'CANCELLING'],
+  deleting: ['DELETE_PENDING'],
 };
 
 export const SCAN_STATUS_GROUPS = [
