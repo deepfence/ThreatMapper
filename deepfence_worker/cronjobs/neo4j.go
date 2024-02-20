@@ -524,8 +524,8 @@ func LinkCloudResources(ctx context.Context, task *asynq.Task) error {
 		SET n.linked = true
 		WITH n, apoc.convert.fromJsonList(n.security_groups) as groups
 		UNWIND groups as subgroup
-		WITH n, subgroup, CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupName END as name,
-		CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupId END as node_id
+		WITH n, subgroup, CASE WHEN apoc.meta.cypher.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupName END as name,
+		CASE WHEN apoc.meta.cypher.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupId END as node_id
 		MATCH (m:CloudResource{id: "aws_vpc_security_group_rule"})
 		WHERE m.node_id ENDS WITH node_id
 		MERGE (m) -[:SECURED]-> (n)`,

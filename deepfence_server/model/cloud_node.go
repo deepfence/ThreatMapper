@@ -13,6 +13,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
@@ -101,6 +102,10 @@ func (v CloudNodeAccountInfo) ScanType() utils.Neo4jScanType {
 	default:
 		return utils.NEO4JCloudComplianceScan
 	}
+}
+
+func (v CloudNodeAccountInfo) LatestScanIDField() string {
+	return ingesters.LatestScanIDField[v.ScanType()]
 }
 
 func (v CloudNodeAccountInfo) ScanResultType() string {

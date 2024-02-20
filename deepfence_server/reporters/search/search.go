@@ -359,11 +359,12 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		MATCH (n:` + dummy.NodeType() + `)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
 		` WITH n.node_id AS node_id UNWIND node_id AS x
-		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `)-[:DETECTED]->(c:` + dummy.ScanResultType() + `)
+		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `{node_id:n.` + dummy.LatestScanIDField() + `})-[:DETECTED]->(c:` + dummy.ScanResultType() + `)
 		WITH x ` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, COUNT(c) AS total_compliance_count
-		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `)-[:DETECTED]->(c1:` + dummy.ScanResultType() + `)
+		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `{node_id:n.` + dummy.LatestScanIDField() + `})-[:DETECTED]->(c1:` + dummy.ScanResultType() + `)
 		WHERE c1.status IN $pass_status
-		WITH x` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage
+		WITH x, COUNT(c1.status) as statusCount, total_compliance_count
+		WITH x` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE statusCount*100.0/total_compliance_count END AS compliance_percentage
 		CALL {
 			WITH x
 			OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s1:` + string(dummy.ScanType()) + `)

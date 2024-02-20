@@ -798,7 +798,7 @@ func GetScanResults[T any](ctx context.Context, scanType utils.Neo4jScanType, sc
 		OPTIONAL MATCH (cb:ContainerImage{node_id: n.docker_image_id}) -[:IS] ->(is) -[mis:MASKED]-> (d)
 		WITH apoc.map.merge( e{.*},
 		d{.*, masked: coalesce(d.masked or r.masked or e.masked 
-			or head(collect(m.masked)) or head(collect(mis.masked)), false),
+			or m.masked or mis.masked, false),
 		name: coalesce(e.name, d.name, '')}) as d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
 		ffCondition + ` RETURN d ` +
