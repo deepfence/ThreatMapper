@@ -78,7 +78,9 @@ export interface FocusableElement {
 }
 
 enum ActionEnumType {
-  DELETE = 'delete',
+  DELETE_SCAN = 'delete_scan',
+  CANCEL_SCAN = 'cancel_scan',
+  START_SCAN = 'start_scan,',
 }
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -109,7 +111,7 @@ const action = async ({
     throw new Error('Invalid action');
   }
 
-  if (actionType === ActionEnumType.DELETE) {
+  if (actionType === ActionEnumType.DELETE_SCAN) {
     const resultApi = apiWrapper({
       fn: getScanResultsApiClient().bulkDeleteScans,
     });
@@ -180,7 +182,7 @@ const DeleteConfirmationModal = ({
     if (
       fetcher.state === 'idle' &&
       fetcher.data?.success &&
-      fetcher.data.action === ActionEnumType.DELETE
+      fetcher.data.action === ActionEnumType.DELETE_SCAN
     ) {
       onDeleteSuccess();
     }
@@ -219,7 +221,7 @@ const DeleteConfirmationModal = ({
               disabled={fetcher.state === 'submitting'}
               onClick={(e) => {
                 e.preventDefault();
-                onDeleteAction(ActionEnumType.DELETE);
+                onDeleteAction(ActionEnumType.DELETE_SCAN);
               }}
             >
               Delete
@@ -247,9 +249,11 @@ const DeleteConfirmationModal = ({
 const ActionDropdown = ({
   trigger,
   row,
+  onTableAction,
 }: {
   trigger: React.ReactNode;
   row: ModelScanInfo;
+  onTableAction: (row: ModelScanInfo, actionType: ActionEnumType) => void;
 }) => {
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
@@ -257,15 +261,12 @@ const ActionDropdown = ({
   const { downloadScan } = useDownloadScan((state) => {
     setIsSubmitting(state === 'submitting');
   });
-  const [openStopScanModal, setOpenStopScanModal] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const {
     scan_id: scanId,
     node_id: nodeId,
     node_type: nodeType,
     status: scanStatus,
   } = row;
-  const [showStartScan, setShowStartScan] = useState(false);
 
   const onDownloadAction = useCallback(() => {
     downloadScan({
@@ -281,47 +282,6 @@ const ActionDropdown = ({
 
   return (
     <>
-      {openStopScanModal && (
-        <StopScanForm
-          open={openStopScanModal}
-          closeModal={setOpenStopScanModal}
-          scanIds={[scanId]}
-          scanType={ScanTypeEnum.SecretScan}
-        />
-      )}
-
-      {showDeleteDialog && (
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          scanIds={[scanId]}
-          setShowDialog={setShowDeleteDialog}
-          onDeleteSuccess={() => {
-            //
-          }}
-        />
-      )}
-
-      {showStartScan && (
-        <ConfigureScanModal
-          open={true}
-          onOpenChange={() => setShowStartScan(false)}
-          scanOptions={
-            {
-              showAdvancedOptions: true,
-              scanType: ScanTypeEnum.SecretScan,
-              data: {
-                nodes: [
-                  {
-                    nodeId,
-                    nodeType,
-                  },
-                ],
-              },
-            } as ConfigureScanModalProps['scanOptions']
-          }
-        />
-      )}
-
       <Dropdown
         triggerAsChild
         align="start"
@@ -345,7 +305,7 @@ const ActionDropdown = ({
               onClick={(e) => {
                 e.preventDefault();
                 if (isScanInProgress(scanStatus)) return;
-                setShowStartScan(true);
+                onTableAction(row, ActionEnumType.START_SCAN);
               }}
               disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
             >
@@ -354,7 +314,7 @@ const ActionDropdown = ({
             <DropdownItem
               onSelect={(e) => {
                 e.preventDefault();
-                setOpenStopScanModal(true);
+                onTableAction(row, ActionEnumType.CANCEL_SCAN);
               }}
               disabled={!isScanInProgress(scanStatus)}
             >
@@ -364,7 +324,7 @@ const ActionDropdown = ({
               className="text-sm"
               onClick={() => {
                 if (!scanId || !nodeType) return;
-                setShowDeleteDialog(true);
+                onTableAction(row, ActionEnumType.DELETE_SCAN);
               }}
               disabled={!scanId || !nodeType}
             >
@@ -692,9 +652,11 @@ const Filters = () => {
 const ScansTable = ({
   rowSelectionState,
   setRowSelectionState,
+  onTableAction,
 }: {
   rowSelectionState: RowSelectionState;
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
+  onTableAction: (row: ModelScanInfo, actionType: ActionEnumType) => void;
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = useSuspenseQuery({
@@ -732,6 +694,7 @@ const ScansTable = ({
         cell: (cell) => (
           <ActionDropdown
             row={cell.row.original}
+            onTableAction={onTableAction}
             trigger={
               <button className="p-1 flex">
                 <span className="block h-4 w-4 dark:text-text-text-and-icon rotate-90 shrink-0">
@@ -786,7 +749,7 @@ const ScansTable = ({
         size: 240,
         maxSize: 250,
       }),
-      columnHelper.accessor('updated_at', {
+      columnHelper.accessor('created_at', {
         cell: (info) => <TruncatedText text={formatMilliseconds(info.getValue())} />,
         header: () => <TruncatedText text="Timestamp" />,
         minSize: 140,
@@ -1039,7 +1002,7 @@ const ScansTable = ({
 
 const BulkActions = ({
   selectedRows,
-  setRowSelectionState,
+  onBulkAction,
 }: {
   selectedRows: {
     scanId: string;
@@ -1047,11 +1010,18 @@ const BulkActions = ({
     nodeType: string;
     scanStatus: string;
   }[];
-  setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
+  onBulkAction: (
+    data: {
+      scanIdsToCancelScan: string[];
+      scanIdsToDeleteScan: string[];
+      nodesToStartScan: {
+        nodeId: string;
+        nodeType: string;
+      }[];
+    },
+    actionType: ActionEnumType,
+  ) => void;
 }) => {
-  const [openStartScan, setOpenStartScan] = useState<boolean>(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showCancelScanDialog, setShowCancelScanDialog] = useState(false);
   const nodesToStartScan = useMemo(() => {
     return selectedRows
       .filter(
@@ -1079,52 +1049,20 @@ const BulkActions = ({
 
   return (
     <>
-      {openStartScan && (
-        <ConfigureScanModal
-          open={true}
-          onOpenChange={() => setOpenStartScan(false)}
-          onSuccess={() => setRowSelectionState({})}
-          scanOptions={
-            {
-              showAdvancedOptions: true,
-              scanType: ScanTypeEnum.SecretScan,
-              data: {
-                nodes: nodesToStartScan,
-              },
-            } as ConfigureScanModalProps['scanOptions']
-          }
-        />
-      )}
-
-      {showDeleteDialog && (
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          scanIds={scanIdsToDeleteScan}
-          setShowDialog={setShowDeleteDialog}
-          onDeleteSuccess={() => {
-            setRowSelectionState({});
-          }}
-        />
-      )}
-      {showCancelScanDialog ? (
-        <StopScanForm
-          open={showCancelScanDialog}
-          closeModal={setShowCancelScanDialog}
-          scanIds={scanIdsToCancelScan}
-          scanType={ScanTypeEnum.SecretScan}
-          onCancelScanSuccess={() => {
-            setRowSelectionState({});
-          }}
-        />
-      ) : null}
-
       <Button
         color="default"
         variant="flat"
         size="sm"
         disabled={nodesToStartScan.length == 0}
         onClick={() => {
-          setOpenStartScan(true);
+          onBulkAction(
+            {
+              scanIdsToCancelScan: [],
+              scanIdsToDeleteScan: [],
+              nodesToStartScan,
+            },
+            ActionEnumType.START_SCAN,
+          );
         }}
       >
         Start Scan
@@ -1134,7 +1072,16 @@ const BulkActions = ({
         variant="flat"
         size="sm"
         disabled={scanIdsToCancelScan.length === 0}
-        onClick={() => setShowCancelScanDialog(true)}
+        onClick={() =>
+          onBulkAction(
+            {
+              scanIdsToCancelScan,
+              scanIdsToDeleteScan: [],
+              nodesToStartScan: [],
+            },
+            ActionEnumType.CANCEL_SCAN,
+          )
+        }
       >
         Cancel Scan
       </Button>
@@ -1145,7 +1092,14 @@ const BulkActions = ({
         size="sm"
         disabled={scanIdsToDeleteScan.length === 0}
         onClick={() => {
-          setShowDeleteDialog(true);
+          onBulkAction(
+            {
+              scanIdsToCancelScan: [],
+              scanIdsToDeleteScan,
+              nodesToStartScan: [],
+            },
+            ActionEnumType.DELETE_SCAN,
+          );
         }}
       >
         Delete Scan
@@ -1163,6 +1117,9 @@ const SecretScans = () => {
   });
 
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+  const [openStartScan, setOpenStartScan] = useState<boolean>(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCancelScanDialog, setShowCancelScanDialog] = useState(false);
 
   const selectedRows = useMemo<
     {
@@ -1177,8 +1134,115 @@ const SecretScans = () => {
     });
   }, [rowSelectionState]);
 
+  const [rowToAction, setRowToAction] = useState<{
+    scanIdsToCancelScan: string[];
+    scanIdsToDeleteScan: string[];
+    nodesToStartScan: {
+      nodeId: string;
+      nodeType: string;
+    }[];
+  }>({
+    scanIdsToCancelScan: [],
+    scanIdsToDeleteScan: [],
+    nodesToStartScan: [],
+  });
+
+  const onTableAction = (row: ModelScanInfo, actionType: string) => {
+    if (actionType === ActionEnumType.DELETE_SCAN) {
+      setRowToAction({
+        scanIdsToCancelScan: [],
+        scanIdsToDeleteScan: [row.scan_id],
+        nodesToStartScan: [],
+      });
+      setShowDeleteDialog(true);
+    } else if (actionType === ActionEnumType.CANCEL_SCAN) {
+      setRowToAction({
+        scanIdsToCancelScan: [row.scan_id],
+        scanIdsToDeleteScan: [],
+        nodesToStartScan: [],
+      });
+      setShowCancelScanDialog(true);
+    } else if (actionType === ActionEnumType.START_SCAN) {
+      setRowToAction({
+        scanIdsToCancelScan: [],
+        scanIdsToDeleteScan: [],
+        nodesToStartScan: [
+          {
+            nodeId: row.node_id,
+            nodeType: row.node_type,
+          },
+        ],
+      });
+      setOpenStartScan(true);
+    }
+  };
+
+  const onBulkAction = (
+    data: {
+      scanIdsToCancelScan: string[];
+      scanIdsToDeleteScan: string[];
+      nodesToStartScan: {
+        nodeId: string;
+        nodeType: string;
+      }[];
+    },
+    actionType: string,
+  ) => {
+    setRowToAction({
+      scanIdsToCancelScan: data.scanIdsToCancelScan,
+      scanIdsToDeleteScan: data.scanIdsToDeleteScan,
+      nodesToStartScan: data.nodesToStartScan,
+    });
+    if (actionType === ActionEnumType.DELETE_SCAN) {
+      setShowDeleteDialog(true);
+    } else if (actionType === ActionEnumType.CANCEL_SCAN) {
+      setShowCancelScanDialog(true);
+    } else if (actionType === ActionEnumType.START_SCAN) {
+      setOpenStartScan(true);
+    }
+  };
+
   return (
     <div>
+      <>
+        {openStartScan && (
+          <ConfigureScanModal
+            open={true}
+            onOpenChange={() => setOpenStartScan(false)}
+            onSuccess={() => setRowSelectionState({})}
+            scanOptions={
+              {
+                showAdvancedOptions: true,
+                scanType: ScanTypeEnum.SecretScan,
+                data: {
+                  nodes: rowToAction?.nodesToStartScan,
+                },
+              } as ConfigureScanModalProps['scanOptions']
+            }
+          />
+        )}
+        {showDeleteDialog && (
+          <DeleteConfirmationModal
+            showDialog={showDeleteDialog}
+            scanIds={rowToAction?.scanIdsToDeleteScan}
+            setShowDialog={setShowDeleteDialog}
+            onDeleteSuccess={() => {
+              setRowSelectionState({});
+            }}
+          />
+        )}
+        {showCancelScanDialog ? (
+          <StopScanForm
+            open={showCancelScanDialog}
+            closeModal={setShowCancelScanDialog}
+            scanIds={rowToAction?.scanIdsToCancelScan}
+            scanType={ScanTypeEnum.SecretScan}
+            onCancelScanSuccess={() => {
+              setRowSelectionState({});
+            }}
+          />
+        ) : null}
+      </>
       <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<SecretsIcon />} isLink>
@@ -1198,10 +1262,7 @@ const SecretScans = () => {
 
       <div className="mx-4">
         <div className="h-12 flex items-center">
-          <BulkActions
-            selectedRows={selectedRows}
-            setRowSelectionState={setRowSelectionState}
-          />
+          <BulkActions onBulkAction={onBulkAction} selectedRows={selectedRows} />
           <Button
             variant="flat"
             className="ml-auto"
@@ -1230,6 +1291,7 @@ const SecretScans = () => {
           <ScansTable
             rowSelectionState={rowSelectionState}
             setRowSelectionState={setRowSelectionState}
+            onTableAction={onTableAction}
           />
         </Suspense>
       </div>

@@ -27,7 +27,7 @@ func (ns *namespace) GetNode() report.TopologyNode {
 	return report.TopologyNode{
 		Metadata: ns.MetaNode(kubernetesClusterId+"-"+ns.Name(), report.Namespace),
 		Parents: &report.Parent{
-			CloudProvider:     cloudProviderNodeId,
+			//CloudProvider:     cloudProviderNodeId,
 			KubernetesCluster: kubernetesClusterId,
 		},
 	}

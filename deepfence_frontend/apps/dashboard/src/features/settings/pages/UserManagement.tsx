@@ -68,6 +68,7 @@ enum ActionEnumType {
   INVITE_USER = 'inviteUser',
   EDIT_USER = 'editUser',
   RESET_API_KEY = 'resetAPIKey',
+  DELETE_USER = 'delete_user',
 }
 
 const useListUsers = () => {
@@ -283,29 +284,14 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 const ActionDropdown = ({
   user,
   trigger,
+  onTableAction,
 }: {
   user: ModelUser;
   trigger: React.ReactNode;
+  onTableAction: (row: ModelUser, action: ActionEnumType) => void;
 }) => {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showEditUserForm, setShowEditUserForm] = useState(false);
-
   return (
     <>
-      {showDeleteDialog && user.id && (
-        <DeleteUserConfirmationModal
-          showDialog={showDeleteDialog}
-          userId={user.id}
-          setShowDialog={setShowDeleteDialog}
-        />
-      )}
-      {showEditUserForm && (
-        <EditUserModal
-          showDialog={showEditUserForm}
-          user={user}
-          setShowDialog={setShowEditUserForm}
-        />
-      )}
       <Dropdown
         triggerAsChild={true}
         align="start"
@@ -313,14 +299,14 @@ const ActionDropdown = ({
           <>
             <DropdownItem
               onClick={() => {
-                setShowEditUserForm(true);
+                onTableAction(user, ActionEnumType.EDIT_USER);
               }}
             >
               Edit
             </DropdownItem>
             <DropdownItem
               onClick={() => {
-                setShowDeleteDialog(true);
+                onTableAction(user, ActionEnumType.DELETE_USER);
               }}
               className="dark:text-status-error dark:hover:text-[#C45268]"
             >
@@ -763,7 +749,11 @@ const APITokenComponent = () => {
   );
 };
 
-const UsersTable = () => {
+const UsersTable = ({
+  onTableAction,
+}: {
+  onTableAction: (row: ModelUser, action: ActionEnumType) => void;
+}) => {
   const columnHelper = createColumnHelper<ModelUser>();
   const columns = useMemo(() => {
     const columns = [
@@ -777,6 +767,7 @@ const UsersTable = () => {
           return (
             <ActionDropdown
               user={cell.row.original}
+              onTableAction={onTableAction}
               trigger={
                 <button className="p-1">
                   <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
@@ -892,9 +883,37 @@ const InviteButton = ({
 };
 const UserManagement = () => {
   const [openInviteUserForm, setOpenInviteUserForm] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditUserForm, setShowEditUserForm] = useState(false);
+
+  const [user, setUser] = useState<ModelUser>();
+
+  const onTableAction = (row: ModelUser, action: ActionEnumType) => {
+    if (action === ActionEnumType.EDIT_USER) {
+      setUser(row);
+      setShowEditUserForm(true);
+    } else if (action === ActionEnumType.DELETE_USER) {
+      setUser(row);
+      setShowDeleteDialog(true);
+    }
+  };
 
   return (
     <div className="h-full mt-2">
+      {showDeleteDialog && user?.id && (
+        <DeleteUserConfirmationModal
+          showDialog={showDeleteDialog}
+          userId={user.id}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
+      {showEditUserForm && (
+        <EditUserModal
+          showDialog={showEditUserForm}
+          user={user!}
+          setShowDialog={setShowEditUserForm}
+        />
+      )}
       <APITokenComponent />
       {openInviteUserForm && (
         <InviteUserModal
@@ -924,7 +943,7 @@ const UserManagement = () => {
             />
           }
         >
-          <UsersTable />
+          <UsersTable onTableAction={onTableAction} />
         </Suspense>
       </div>
     </div>

@@ -18,9 +18,18 @@ const spinnerCVA = cva(['animate-spin dark:text-bg-side-panel fill-accent-accent
   },
 });
 
-export const CircleSpinner = ({ size = 'md', className }: CircleSpinnerProps) => {
+export const CircleSpinner = ({
+  size = 'md',
+  className,
+  ...props
+}: CircleSpinnerProps) => {
   return (
-    <div className="inline-block bg-transparent" role="status">
+    <div
+      className="inline-block bg-transparent"
+      role="status"
+      data-testid="circularSpinnerId"
+      {...props}
+    >
       <svg
         aria-hidden="true"
         className={cn(

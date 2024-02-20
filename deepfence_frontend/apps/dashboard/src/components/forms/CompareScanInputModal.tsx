@@ -136,7 +136,7 @@ const InputForm = ({
             valueKey="nodeId"
             onChange={(data: ISelected) => {
               setToScanData({
-                toScanTime: data.updatedAt,
+                toScanTime: data.createdAt,
                 toScanId: data.scanId,
               });
             }}
@@ -153,7 +153,7 @@ const InputForm = ({
             valueKey="nodeId"
             onChange={(data: ISelected) => {
               setToScanData({
-                toScanTime: data.updatedAt,
+                toScanTime: data.createdAt,
                 toScanId: data.scanId,
               });
             }}
@@ -183,7 +183,7 @@ export const CompareScanInputModal = ({
   showDialog: boolean;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
   scanHistoryData: {
-    updatedAt: number;
+    createdAt: number;
     scanId: string;
     status: string;
   }[];
@@ -238,12 +238,12 @@ export const CompareScanInputModal = ({
             disabled={!toScanData.toScanTime}
             onClick={() => {
               const baseScan = scanHistoryData.find((data) => {
-                return data.updatedAt === compareInput.baseScanTime;
+                return data.createdAt === compareInput.baseScanTime;
               });
               setCompareInput({
                 baseScanId: baseScan?.scanId ?? '',
                 toScanId: toScanData?.toScanId ?? '',
-                baseScanTime: baseScan?.updatedAt ?? 0,
+                baseScanTime: baseScan?.createdAt ?? 0,
                 toScanTime: toScanData?.toScanTime ?? 0,
                 showScanTimeModal: false,
               });

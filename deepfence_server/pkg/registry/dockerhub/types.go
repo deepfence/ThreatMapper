@@ -10,6 +10,7 @@ type RegistryDockerHub struct {
 }
 
 type NonSecret struct {
+	IsPublic           string `json:"is_public" validate:"required"`
 	DockerHubNamespace string `json:"docker_hub_namespace" validate:"required,min=2"`
 	DockerHubUsername  string `json:"docker_hub_username" validate:"omitempty,min=2"`
 }
