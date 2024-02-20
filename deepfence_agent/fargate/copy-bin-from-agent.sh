@@ -25,7 +25,8 @@ mkdir -p $folder
 
 copy() {
   echo "Copying ..."
-  deep_docker_copy "/bin/." "$folder/bin/."
+  cp -R bin $folder/
+  deep_docker_copy "/bin/deepfenced" "$folder/bin/."
   deep_docker_copy "/home/." "$folder/home/."
   deep_docker_copy "/opt/." "$folder/opt/."
   deep_docker_copy "/usr/bin/." "$folder/usr/bin/."
@@ -38,6 +39,7 @@ copy() {
   deep_docker_copy "/etc/td-agent-bit/." "$folder/etc/td-agent-bit/."
 
   echo "Copy some required binaries..."
+  cp start_deepfenced.sh $folder/home/deepfence/
   deep_docker_copy "/usr/bin/envsubst" "$folder/bin/envsubst"
 
   # delete rules.tar (not needed)
@@ -48,8 +50,11 @@ copy
 
 echo "Creating tar.gz file..."
 rm -rf $folder.tar.gz
-tar -czvf $folder.tar.gz $folder
+cd $folder
+tar -czvf $folder.tar.gz .
+mv $folder.tar.gz ../
 
+cd ../
 rm -rf $folder
 
 echo "Done"
