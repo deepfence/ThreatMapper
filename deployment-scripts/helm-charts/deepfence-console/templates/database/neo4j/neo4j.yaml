@@ -77,9 +77,6 @@ spec:
               mountPath: /logs
               subPath: "logs"
             - name: "neo4j"
-              mountPath: /plugins
-              subPath: "plugins"
-            - name: "neo4j"
               mountPath: /backups
               subPath: "backups"
       {{- with .Values.neo4j.nodeSelector }}
