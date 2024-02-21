@@ -232,6 +232,7 @@ publish-jaeger:
 .PHONY: clean
 clean:
 	-(cd $(DEEPFENCE_AGENT_DIR) && make clean)
+	-(cd $(DEEPFENCE_FARGATE_DIR) && rm -rf deepfence-agent-bin-$(VERSION)*)
 	-(cd $(ROOT_MAKEFILE_DIR)/deepfence_server && make clean)
 	-(cd $(ROOT_MAKEFILE_DIR)/deepfence_worker && make clean)
 	-(cd $(DEEPFENCED) && make clean && rm $(DEEPFENCE_AGENT_DIR)/deepfenced)

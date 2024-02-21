@@ -23,9 +23,38 @@ rm -rf $folder
 # create folder
 mkdir -p $folder
 
+copy_bin_amd64() {
+  cp -R bin $folder/
+}
+
+copy_bin_arm64() {
+  cp -R bin-arm64 $folder/
+  cp $folder/busybox $folder/cat
+  cp $folder/busybox $folder/chmod
+  cp $folder/busybox $folder/cp
+  cp $folder/busybox $folder/gzip
+  cp $folder/busybox $folder/hostname
+  cp $folder/busybox $folder/kill
+  cp $folder/busybox $folder/ln
+  cp $folder/busybox $folder/ls
+  cp $folder/busybox $folder/mkdir
+  cp $folder/busybox $folder/nice
+  cp $folder/busybox $folder/rm
+  cp $folder/busybox $folder/sed
+  cp $folder/busybox $folder/sleep
+  cp $folder/busybox $folder/tar
+}
+
 copy() {
   echo "Copying ..."
-  cp -R bin $folder/
+
+  architecture=$(uname -m)
+  if [[ $architecture == "aarch64" || $architecture == "arm" ]]; then
+    copy_bin_arm64
+  else
+    copy_bin_amd64
+  fi
+
   deep_docker_copy "/bin/deepfenced" "$folder/bin/."
   deep_docker_copy "/home/." "$folder/home/."
   deep_docker_copy "/opt/." "$folder/opt/."
@@ -50,6 +79,7 @@ copy
 
 echo "Creating tar.gz file..."
 rm -rf $folder.tar.gz
+chown -R root:root $folder
 cd $folder
 tar -czvf $folder.tar.gz .
 mv $folder.tar.gz ../
