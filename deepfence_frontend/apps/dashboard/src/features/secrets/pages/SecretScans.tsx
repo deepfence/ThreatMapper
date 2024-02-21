@@ -8,6 +8,7 @@ import {
   useFetcher,
   useSearchParams,
 } from 'react-router-dom';
+import { cn } from 'tailwind-preset';
 import {
   Badge,
   Breadcrumb,
@@ -66,6 +67,7 @@ import { formatMilliseconds } from '@/utils/date';
 import {
   isNeverScanned,
   isScanComplete,
+  isScanDeletePending,
   isScanInProgress,
   isScanStopping,
   SCAN_STATUS_GROUPS,
@@ -290,24 +292,31 @@ const ActionDropdown = ({
         content={
           <>
             <DropdownItem
-              onClick={(e) => {
+              onSelect={(e) => {
                 if (!isScanComplete(scanStatus)) return;
                 e.preventDefault();
                 onDownloadAction();
               }}
-              disabled={!isScanComplete(scanStatus) || isSubmitting}
+              disabled={
+                !isScanComplete(scanStatus) ||
+                isSubmitting ||
+                isScanDeletePending(scanStatus)
+              }
             >
               <span className="flex text-center gap-x-2">
                 {isSubmitting && <CircleSpinner size="sm" />}Download report
               </span>
             </DropdownItem>
             <DropdownItem
-              onClick={(e) => {
+              onSelect={(e) => {
                 e.preventDefault();
-                if (isScanInProgress(scanStatus)) return;
                 onTableAction(row, ActionEnumType.START_SCAN);
               }}
-              disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
+              disabled={
+                isScanInProgress(scanStatus) ||
+                isScanStopping(scanStatus) ||
+                isScanDeletePending(scanStatus)
+              }
             >
               <span>Start scan</span>
             </DropdownItem>
@@ -316,19 +325,23 @@ const ActionDropdown = ({
                 e.preventDefault();
                 onTableAction(row, ActionEnumType.CANCEL_SCAN);
               }}
-              disabled={!isScanInProgress(scanStatus)}
+              disabled={!isScanInProgress(scanStatus) || isScanDeletePending(scanStatus)}
             >
               <span className="flex items-center">Cancel scan</span>
             </DropdownItem>
             <DropdownItem
-              className="text-sm"
-              onClick={() => {
+              onSelect={() => {
                 if (!scanId || !nodeType) return;
                 onTableAction(row, ActionEnumType.DELETE_SCAN);
               }}
-              disabled={!scanId || !nodeType}
+              disabled={!scanId || !nodeType || isScanDeletePending(scanStatus)}
             >
-              <span className="text-red-700 dark:text-status-error dark:hover:text-[#C45268]">
+              <span
+                className={cn('flex items-center text-red-700 dark:text-status-error', {
+                  'dark:text-gray-600':
+                    isScanInProgress(scanStatus) || isScanDeletePending(scanStatus),
+                })}
+              >
                 Delete scan
               </span>
             </DropdownItem>
@@ -731,7 +744,7 @@ const ScansTable = ({
         enableSorting: false,
         cell: (info) => {
           const isNeverScan = isNeverScanned(info.row.original.status);
-          if (isNeverScan) {
+          if (isNeverScan || isScanDeletePending(info.row.original.status)) {
             return <TruncatedText text={info.getValue()} />;
           }
           return (
@@ -784,6 +797,9 @@ const ScansTable = ({
       columnHelper.accessor('critical', {
         enableSorting: false,
         cell: (info) => {
+          if (isScanDeletePending(info.row.original.status)) {
+            return <TruncatedText text={info.getValue()?.toString()} />;
+          }
           const params = new URLSearchParams();
           params.set('severity', 'critical');
           return (
@@ -812,6 +828,9 @@ const ScansTable = ({
       columnHelper.accessor('high', {
         enableSorting: false,
         cell: (info) => {
+          if (isScanDeletePending(info.row.original.status)) {
+            return <TruncatedText text={info.getValue()?.toString()} />;
+          }
           const params = new URLSearchParams();
           params.set('severity', 'high');
           return (
@@ -840,6 +859,9 @@ const ScansTable = ({
       columnHelper.accessor('medium', {
         enableSorting: false,
         cell: (info) => {
+          if (isScanDeletePending(info.row.original.status)) {
+            return <TruncatedText text={info.getValue()?.toString()} />;
+          }
           const params = new URLSearchParams();
           params.set('severity', 'medium');
           return (
@@ -868,6 +890,9 @@ const ScansTable = ({
       columnHelper.accessor('low', {
         enableSorting: false,
         cell: (info) => {
+          if (isScanDeletePending(info.row.original.status)) {
+            return <TruncatedText text={info.getValue()?.toString()} />;
+          }
           const params = new URLSearchParams();
           params.set('severity', 'low');
           return (
@@ -896,6 +921,9 @@ const ScansTable = ({
       columnHelper.accessor('unknown', {
         enableSorting: false,
         cell: (info) => {
+          if (isScanDeletePending(info.row.original.status)) {
+            return <TruncatedText text={info.getValue()?.toString()} />;
+          }
           const params = new URLSearchParams();
           params.set('severity', 'unknown');
           return (
@@ -1025,7 +1053,10 @@ const BulkActions = ({
   const nodesToStartScan = useMemo(() => {
     return selectedRows
       .filter(
-        (row) => !isScanInProgress(row.scanStatus) && !isScanStopping(row.scanStatus),
+        (row) =>
+          !isScanInProgress(row.scanStatus) &&
+          !isScanStopping(row.scanStatus) &&
+          !isScanDeletePending(row.scanStatus),
       )
       .map((row) => {
         return {
@@ -1037,13 +1068,17 @@ const BulkActions = ({
 
   const scanIdsToCancelScan = useMemo(() => {
     return selectedRows
-      .filter((row) => isScanInProgress(row.scanStatus))
+      .filter(
+        (row) => isScanInProgress(row.scanStatus) && !isScanDeletePending(row.scanStatus),
+      )
       .map((row) => row.scanId);
   }, [selectedRows]);
 
   const scanIdsToDeleteScan = useMemo(() => {
     return selectedRows
-      .filter((row) => !isNeverScanned(row.scanStatus))
+      .filter(
+        (row) => !isNeverScanned(row.scanStatus) && !isScanDeletePending(row.scanStatus),
+      )
       .map((row) => row.scanId);
   }, [selectedRows]);
 

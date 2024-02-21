@@ -89,6 +89,7 @@ import {
   ComplianceScanGroupedStatus,
   isNeverScanned,
   isScanComplete,
+  isScanDeletePending,
   isScanInProgress,
   isScanStopping,
   SCAN_STATUS_GROUPS,
@@ -692,7 +693,10 @@ const ActionDropdown = ({
           <>
             <DropdownItem
               disabled={
-                !active || isScanInProgress(scanStatus) || isScanStopping(scanStatus)
+                !active ||
+                isScanInProgress(scanStatus) ||
+                isScanStopping(scanStatus) ||
+                isScanDeletePending(scanStatus)
               }
               onSelect={() => {
                 onTableAction(row, ActionEnumType.START_SCAN);
@@ -705,13 +709,13 @@ const ActionDropdown = ({
                 e.preventDefault();
                 onTableAction(row, ActionEnumType.CANCEL_SCAN);
               }}
-              disabled={!isScanInProgress(scanStatus)}
+              disabled={!isScanInProgress(scanStatus) || isScanDeletePending(scanStatus)}
             >
               <span className="flex items-center">Cancel scan</span>
             </DropdownItem>
             <DropdownItem
-              disabled={!isScanComplete(scanStatus)}
-              onClick={(e) => {
+              disabled={!isScanComplete(scanStatus) || isScanDeletePending(scanStatus)}
+              onSelect={(e) => {
                 if (!isScanComplete(scanStatus)) return;
                 e.preventDefault();
                 onDownloadAction();
@@ -722,16 +726,18 @@ const ActionDropdown = ({
               </span>
             </DropdownItem>
             <DropdownItem
-              disabled={!scanId || !nodeType}
-              onClick={() => {
+              disabled={!scanId || !nodeType || isScanDeletePending(scanStatus)}
+              onSelect={() => {
                 if (!scanId || !nodeType) return;
                 onTableAction(row, ActionEnumType.DELETE_SCAN);
               }}
             >
               <span
-                className={cn('flex items-center gap-x-2', {
-                  'text-red-700 dark:text-status-error': scanId,
-                  'dark:text-df-gray-600': !scanId || !nodeType,
+                className={cn('flex items-center text-red-700 dark:text-status-error', {
+                  'dark:text-gray-600':
+                    isScanInProgress(scanStatus) ||
+                    isNeverScanned(scanStatus) ||
+                    isScanDeletePending(scanStatus),
                 })}
               >
                 Delete latest scan
@@ -780,7 +786,9 @@ const BulkActions = ({
 
   const scanIdsToDeleteScan = useMemo(() => {
     return selectedRows
-      .filter((row) => !isNeverScanned(row.scanStatus))
+      .filter(
+        (row) => !isNeverScanned(row.scanStatus) && !isScanDeletePending(row.scanStatus),
+      )
       .map((row) => row.scanId);
   }, [selectedRows]);
 
@@ -790,14 +798,17 @@ const BulkActions = ({
         (node) =>
           node.active &&
           !isScanInProgress(node.scanStatus) &&
-          !isScanStopping(node.scanStatus),
+          !isScanStopping(node.scanStatus) &&
+          !isScanDeletePending(node.scanStatus),
       )
       .map((node) => node.nodeId);
   }, [selectedRows]);
 
   const scanIdsToCancelScan = useMemo(() => {
     return selectedRows
-      .filter((row) => isScanInProgress(row.scanStatus))
+      .filter(
+        (row) => isScanInProgress(row.scanStatus) && !isScanDeletePending(row.scanStatus),
+      )
       .map((row) => row.scanId);
   }, [selectedRows]);
 
@@ -1038,7 +1049,8 @@ const AccountTable = ({
               scanId: encodeURIComponent(cell.row.original.last_scan_id ?? ''),
               nodeType: cell.row.original.cloud_provider ?? '',
             });
-            return isNeverScan ? (
+            return isNeverScan ||
+              isScanDeletePending(cell.row.original.last_scan_status!) ? (
               <span>{children}</span>
             ) : (
               <DFLink to={redirectUrl}>{children}</DFLink>
