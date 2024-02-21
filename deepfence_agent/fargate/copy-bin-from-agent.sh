@@ -55,6 +55,6 @@ tar -czvf $folder.tar.gz .
 mv $folder.tar.gz ../
 
 cd ../
-rm -rf $folder
+# rm -rf $folder
 
 echo "Done"
