@@ -16,6 +16,7 @@ import {
   ModelScanResultsReq,
   SearchSearchNodeReq,
 } from '@/api/generated';
+import { DF404Error } from '@/components/error/404';
 import { ScanStatusEnum } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -240,11 +241,13 @@ export const postureQueries = createQueryKeys('posture', {
             return {
               message,
             };
+          } else if (statusResult.error.response.status === 404) {
+            throw new DF404Error('Scan not found');
           }
           throw statusResult.error;
         }
         if (!statusResult.value || !statusResult.value?.statuses?.[scanId]) {
-          throw new Error('Scan status not found');
+          throw new DF404Error('Scan status not found');
         }
         const scanStatus = statusResult?.value.statuses?.[scanId].status;
         const isScanRunning =
@@ -435,8 +438,13 @@ export const postureQueries = createQueryKeys('posture', {
             return {
               message,
             };
+          } else if (statusResult.error.response.status === 404) {
+            throw new DF404Error('Scan not found');
           }
           throw statusResult.error;
+        }
+        if (!statusResult.value?.statuses?.length) {
+          throw new DF404Error('Scan not found');
         }
         const statuses = statusResult.value?.statuses?.[0];
 

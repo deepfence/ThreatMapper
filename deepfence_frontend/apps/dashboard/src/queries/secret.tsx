@@ -14,6 +14,7 @@ import {
   SearchSearchNodeReq,
   SearchSearchScanReq,
 } from '@/api/generated';
+import { DF404Error } from '@/components/error/404';
 import { SecretsCountsCardData } from '@/features/secrets/components/landing/SecretsCountsCard';
 import { ScanStatusEnum } from '@/types/common';
 import { getResponseErrors } from '@/utils/403';
@@ -300,6 +301,8 @@ export const secretQueries = createQueryKeys('secret', {
           if (statusSecretScanResponse.error.response.status === 400) {
             const { message } = await getResponseErrors(statusSecretScanResponse.error);
             return { message };
+          } else if (statusSecretScanResponse.error.response.status === 404) {
+            throw new DF404Error('Scan not found');
           }
           throw statusSecretScanResponse.error;
         }
@@ -464,6 +467,9 @@ export const secretQueries = createQueryKeys('secret', {
         });
 
         if (!resultSecretScanResponse.ok) {
+          if (resultSecretScanResponse.error.response.status === 404) {
+            throw new DF404Error('Scan not found');
+          }
           throw resultSecretScanResponse.error;
         }
 
