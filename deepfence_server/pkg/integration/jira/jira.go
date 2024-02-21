@@ -12,6 +12,7 @@ import (
 
 	jira "github.com/andygrunwald/go-jira"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 )
 
 func New(ctx context.Context, b []byte) (*Jira, error) {
@@ -24,6 +25,10 @@ func New(ctx context.Context, b []byte) (*Jira, error) {
 }
 
 func (j Jira) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+
+	_, span := telemetry.NewSpan(ctx, "integrations", "jira-send-notification")
+	defer span.End()
+
 	auth := jira.BasicAuthTransport{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true},
@@ -40,6 +45,7 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 	client, err := jira.NewClient(auth.Client(), strings.TrimSpace(j.Config.JiraSiteURL))
 	if err != nil {
 		log.Error().Msgf(err.Error())
+		span.EndWithErr(err)
 		return err
 	}
 
@@ -75,6 +81,7 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 			log.Error().Msgf(err.Error())
 		}
 		log.Error().Msgf("jira error reponse: %s", string(body))
+		span.EndWithErr(err)
 		return err
 	}
 	log.Info().Msgf("jira issue created id %s link %s", issue.ID, issue.Self)
@@ -102,6 +109,7 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 		finalByte, err := json.MarshalIndent(msgWithCustomFields, "", "  ")
 		if err != nil {
 			log.Error().Msgf(err.Error())
+			span.EndWithErr(err)
 			return err
 		}
 
@@ -116,6 +124,7 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 			log.Error().Msgf(err.Error())
 		}
 		log.Error().Msgf("jira attachment error reponse: %s", string(body))
+		span.EndWithErr(err)
 		return err
 	}
 	defer resp.Body.Close()

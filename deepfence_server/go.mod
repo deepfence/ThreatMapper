@@ -27,7 +27,6 @@ require (
 	github.com/lestrrat-go/jwx/v2 v2.0.18
 	github.com/minio/minio-go/v7 v7.0.66
 	github.com/neo4j/neo4j-go-driver/v5 v5.17.0
-	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.18.0
 	github.com/redis/go-redis/v9 v9.4.0
@@ -122,6 +121,7 @@ require (
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.45.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
+	github.com/raito-io/neo4j-tracing v0.0.4 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect

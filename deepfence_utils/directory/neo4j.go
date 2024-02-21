@@ -3,34 +3,19 @@ package directory
 import (
 	"context"
 	"errors"
-	"fmt"
-	"path"
-	"runtime"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"go.opentelemetry.io/otel"
+	neo4jTracing "github.com/raito-io/neo4j-tracing"
 )
 
 var neo4jClientsPool sync.Map
+var driverFactory *neo4jTracing.Neo4jTracer
 
 func init() {
 	neo4jClientsPool = sync.Map{}
-}
-
-func getCallerInfo(skip int) (info string) {
-	pc, file, lineNo, ok := runtime.Caller(skip)
-	if !ok {
-
-		info = "runtime.Caller() failed"
-		return
-	}
-	funcName := runtime.FuncForPC(pc).Name()
-	fileName := path.Base(file) // The Base function returns the last element of the path
-	splits := strings.Split(funcName, "/")
-	return fmt.Sprintf("Neo4j: %s:%s:%d ", splits[len(splits)-1], fileName, lineNo)
+	driverFactory = neo4jTracing.NewNeo4jTracer()
 }
 
 type CypherDriver struct {
@@ -41,7 +26,7 @@ func newNeo4JClient(endpoints DBConfigs) (*CypherDriver, error) {
 	if endpoints.Neo4j == nil {
 		return nil, errors.New("no defined Neo4j config")
 	}
-	driver, err := neo4j.NewDriverWithContext(endpoints.Neo4j.Endpoint,
+	driver, err := driverFactory.NewDriverWithContext(endpoints.Neo4j.Endpoint,
 		neo4j.BasicAuth(endpoints.Neo4j.Username, endpoints.Neo4j.Password, ""),
 		func(cfg *neo4j.Config) {
 			cfg.ConnectionAcquisitionTimeout = time.Second * 5
@@ -69,11 +54,4 @@ func Neo4jClient(ctx context.Context) (neo4j.DriverWithContext, error) {
 		return nil, err
 	}
 	return cd.impl, err
-}
-
-func Neo4jSession(ctx context.Context, driver neo4j.DriverWithContext, accessMode neo4j.AccessMode) neo4j.SessionWithContext {
-	return driver.NewSession(ctx, neo4j.SessionConfig{
-		AccessMode: neo4j.AccessModeWrite,
-		BoltLogger: NewNeoTrace(ctx, otel.GetTracerProvider()),
-	})
 }

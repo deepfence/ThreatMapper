@@ -9,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
@@ -110,6 +111,10 @@ func CountAllNodeLabels(ctx context.Context) (map[string]int64, error) {
 }
 
 func CountNodes(ctx context.Context) (NodeCountResp, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "search", "count-nodes")
+	defer span.End()
+
 	res := NodeCountResp{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -242,6 +247,9 @@ func constructIndirectMatch(indirectFilter *ChainedSearchFilter, count int) (str
 }
 
 func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, extendedFilter SearchFilter, indirectFilters *ChainedSearchFilter, fw model.FetchWindow) ([]T, error) {
+	ctx, span := telemetry.NewSpan(ctx, "search", "search-generic-direct-node-report")
+	defer span.End()
+
 	res := []T{}
 	var dummy T
 
@@ -321,6 +329,9 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 }
 
 func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]model.CloudNodeAccountInfo, error) {
+	ctx, span := telemetry.NewSpan(ctx, "search", "search-cloudnode")
+	defer span.End()
+
 	res := []model.CloudNodeAccountInfo{}
 	cloudProvider := filter.Filters.ContainsFilter.FieldsValues["cloud_provider"][0].(string)
 	dummy := model.CloudNodeAccountInfo{
@@ -433,6 +444,10 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 }
 
 func getScanStatusMap(ctx context.Context, id string, cloudProvider string) (map[string]int64, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "search", "get-scan-status-map")
+	defer span.End()
+
 	res := map[string]int64{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -488,6 +503,10 @@ func searchGenericScanInfoReport(ctx context.Context, scanType utils.Neo4jScanTy
 	scanFilter SearchFilter, resourceFilter SearchFilter,
 	resourceChainedFilter *ChainedSearchFilter,
 	fw model.FetchWindow) ([]model.ScanInfo, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "search", "search-generic-scan-info-report")
+	defer span.End()
+
 	res := []model.ScanInfo{}
 
 	driver, err := directory.Neo4jClient(ctx)

@@ -47,7 +47,7 @@ func (w *Worker) Run(ctx context.Context) error {
 
 func telemetryCallbackWrapper(task string, taskCallback wtils.WorkerHandler) wtils.WorkerHandler {
 	return func(ctx context.Context, t *asynq.Task) error {
-		span := telemetry.NewSpan(context.Background(), "workerjobs", task)
+		ctx, span := telemetry.NewSpan(ctx, "workerjobs", task)
 		defer span.End()
 		err := taskCallback(ctx, t)
 		if err != nil {

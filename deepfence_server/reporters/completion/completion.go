@@ -7,6 +7,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/rs/zerolog/log"
 )
@@ -23,6 +24,10 @@ type CompletionNodeFieldRes struct {
 }
 
 func FieldValueCompletion[T reporters.Cypherable](ctx context.Context, req CompletionNodeFieldReq) ([]string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "completion", "field-value-completion")
+	defer span.End()
+
 	res := []string{}
 
 	var dummy T

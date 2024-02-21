@@ -6,6 +6,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 	"github.com/pressly/goose/v3"
 )
@@ -15,6 +16,9 @@ const migrationsPath = "/usr/local/postgresql-migrate"
 func applyDatabaseMigrations(ctx context.Context) error {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "apply-sql-db-migration")
+	defer span.End()
 
 	log.Info().Msg("apply database migrations")
 	defer log.Info().Msg("complete database migrations")
@@ -41,6 +45,9 @@ func applyDatabaseMigrations(ctx context.Context) error {
 func initSqlDatabase(ctx context.Context) error {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "init-sql-database")
+	defer span.End()
 
 	// apply database migrations first
 	err := applyDatabaseMigrations(ctx)

@@ -9,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
@@ -289,6 +290,10 @@ func GetRegistryAccountReport(ctx context.Context, filter LookupFilter) ([]model
 }
 
 func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, filter LookupFilter) ([]T, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "lookup", "get-generic-direct-node-report")
+	defer span.End()
+
 	res := []T{}
 	var dummy T
 
@@ -466,6 +471,10 @@ func getNodeConnections[T reporters.Cypherable](ctx context.Context, ids []strin
 }
 
 func getIndirectFromIDs[T any](ctx context.Context, query string, ids []string) ([]T, map[string]string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "lookup", "get-indirect-from-ids")
+	defer span.End()
+
 	res := []T{}
 	matchedID := make(map[string]string)
 

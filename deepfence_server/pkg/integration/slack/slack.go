@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	log "github.com/sirupsen/logrus"
 )
@@ -121,6 +122,10 @@ func (s Slack) FormatMessage(message []map[string]interface{}, index int) []map[
 }
 
 func (s Slack) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+
+	_, span := telemetry.NewSpan(ctx, "integrations", "slack-send-notification")
+	defer span.End()
+
 	// formatting: unmarshal into payload
 	var msg []map[string]interface{}
 
@@ -181,6 +186,7 @@ func (s Slack) SendNotification(ctx context.Context, message string, extras map[
 				}
 			}
 			resp.Body.Close()
+			span.EndWithErr(err)
 			return fmt.Errorf("failed to send notification batch %d, status code: %d , error: %s", i+1, resp.StatusCode, errorMsg)
 		}
 		resp.Body.Close()

@@ -10,6 +10,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 )
 
 type IntegrationIDPathReq struct {
@@ -35,6 +36,10 @@ type IntegrationFilters struct {
 }
 
 func (i *IntegrationAddReq) IntegrationExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "integration-exists")
+	defer span.End()
+
 	integrations, err := pgClient.GetIntegrationsFromType(ctx, i.IntegrationType)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -62,6 +67,9 @@ func (i *IntegrationAddReq) IntegrationExists(ctx context.Context, pgClient *pos
 }
 
 func (i *IntegrationAddReq) CreateIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, userID int64) error {
+	ctx, span := telemetry.NewSpan(ctx, "model", "create-integration")
+	defer span.End()
+
 	bConfig, err := json.Marshal(i.Config)
 	if err != nil {
 		return err
@@ -98,6 +106,10 @@ type IntegrationListResp struct {
 }
 
 func (i *IntegrationListReq) GetIntegrations(ctx context.Context, pgClient *postgresqlDb.Queries) ([]postgresqlDb.Integration, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "get-integrations")
+	defer span.End()
+
 	var integrations []postgresqlDb.Integration
 
 	if len(i.IntegrationTypes) == 0 {
@@ -148,6 +160,10 @@ type IntegrationUpdateReq struct {
 }
 
 func (i *IntegrationUpdateReq) UpdateIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, integration postgresqlDb.Integration) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "update-integration")
+	defer span.End()
+
 	bConfig, err := json.Marshal(i.Config)
 	if err != nil {
 		return err
@@ -177,6 +193,10 @@ func (i *IntegrationUpdateReq) UpdateIntegration(ctx context.Context, pgClient *
 }
 
 func GetIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, integrationID int32) (postgresqlDb.Integration, bool, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "get-integration")
+	defer span.End()
+
 	integration, err := pgClient.GetIntegrationFromID(ctx, integrationID)
 	if err != nil {
 		if err == sql.ErrNoRows {

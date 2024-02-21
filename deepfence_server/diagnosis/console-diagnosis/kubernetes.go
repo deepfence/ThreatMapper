@@ -15,6 +15,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/minio/minio-go/v7"
 	coreV1 "k8s.io/api/core/v1"
@@ -82,6 +83,10 @@ func NewKubernetesConsoleDiagnosisHandler() (*KubernetesConsoleDiagnosisHandler,
 }
 
 func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.Context, tail string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "generate-diagnostic-logs-kubernetes")
+	defer span.End()
+
 	zipFile, err := os.Create(fmt.Sprintf("/tmp/deepfence-console-logs-%s.zip", time.Now().Format("2006-01-02-15-04-05")))
 	if err != nil {
 		return err
@@ -133,6 +138,9 @@ func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.C
 }
 
 func (k *KubernetesConsoleDiagnosisHandler) addPodLogs(ctx context.Context, pod *coreV1.Pod, podLogOptions *coreV1.PodLogOptions, zipWriter *zip.Writer) error {
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "add-pod-logs")
+	defer span.End()
+
 	req := k.kubeCli.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, podLogOptions)
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
@@ -154,7 +162,7 @@ func (k *KubernetesConsoleDiagnosisHandler) addPodLogs(ctx context.Context, pod 
 	}
 
 	if strings.Contains(pod.Name, "router") {
-		err = k.CopyFromPod(pod, HaproxyLogsPath, zipWriter)
+		err = k.CopyFromPod(ctx, pod, HaproxyLogsPath, zipWriter)
 		if err != nil {
 			return err
 		}
@@ -163,6 +171,9 @@ func (k *KubernetesConsoleDiagnosisHandler) addPodLogs(ctx context.Context, pod 
 }
 
 func (k *KubernetesConsoleDiagnosisHandler) GetPods(ctx context.Context, options metaV1.ListOptions) ([]coreV1.Pod, error) {
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "get-pods")
+	defer span.End()
+
 	pods, err := k.kubeCli.CoreV1().Pods(k.consoleNamespace).List(ctx, options)
 	if err != nil {
 		return nil, err
@@ -170,7 +181,10 @@ func (k *KubernetesConsoleDiagnosisHandler) GetPods(ctx context.Context, options
 	return pods.Items, nil
 }
 
-func (k *KubernetesConsoleDiagnosisHandler) CopyFromPod(pod *coreV1.Pod, srcPath string, zipWriter *zip.Writer) error {
+func (k *KubernetesConsoleDiagnosisHandler) CopyFromPod(ctx context.Context, pod *coreV1.Pod, srcPath string, zipWriter *zip.Writer) error {
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "copy-from-pod")
+	defer span.End()
+
 	randID := utils.NewUUIDString()
 	tmpFolder := "/tmp/" + randID + "/" + pod.Name
 	var err error

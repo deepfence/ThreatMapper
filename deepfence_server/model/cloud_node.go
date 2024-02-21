@@ -12,6 +12,7 @@ import (
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -199,6 +200,10 @@ type PostureProvider struct {
 }
 
 func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]interface{}, parentNodeID string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "upsert-cloud-compliance-node")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -262,6 +267,10 @@ func getPostureProviderCache(ctx context.Context) []PostureProvider {
 }
 
 func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "get-cloud-providers-list")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return nil, err
@@ -364,6 +373,10 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 }
 
 func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw FetchWindow) (CloudNodeAccountsListResp, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "get-cloud-compliance-nodes-list")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return CloudNodeAccountsListResp{Total: 0}, err
@@ -480,6 +493,10 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 }
 
 func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloudProvider string) ([]CloudComplianceBenchmark, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "get-active-cloud-controls")
+	defer span.End()
+
 	var benchmarks []CloudComplianceBenchmark
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -541,6 +558,10 @@ type CloudAccountRefreshReq struct {
 }
 
 func (c *CloudAccountRefreshReq) SetCloudAccountRefresh(ctx context.Context) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "set-cloud-account-refresh")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -571,6 +592,10 @@ func (c *CloudAccountRefreshReq) SetCloudAccountRefresh(ctx context.Context) err
 }
 
 func (c *CloudAccountRefreshReq) GetCloudAccountRefresh(ctx context.Context) ([]string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "get-cloud-account-refresh")
+	defer span.End()
+
 	var updatedNodeIDs []string
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {

@@ -69,6 +69,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	registerRequest.Email = strings.ToLower(registerRequest.Email)
 	namespace := directory.FetchNamespace(registerRequest.Email)
 	ctx := directory.NewContextWithNameSpace(namespace)
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf(err.Error())
@@ -203,7 +204,9 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
+
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(registerRequest.Namespace))
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		h.respondError(err, w)

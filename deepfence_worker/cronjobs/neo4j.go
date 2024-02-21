@@ -834,14 +834,14 @@ func RetryScansDB(ctx context.Context, task *asynq.Task) error {
 	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 
+	pushBack := getPushBackValue(ctx, session)
+	dbScanTimeout := dbScanTimeoutBase * time.Duration(pushBack)
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
 	}
 	defer tx.Close(ctx)
-
-	pushBack := getPushBackValue(ctx, session)
-	dbScanTimeout := dbScanTimeoutBase * time.Duration(pushBack)
 
 	if _, err = tx.Run(ctx, `
 		MATCH (n) -[:SCANNED]-> ()
@@ -904,14 +904,14 @@ func RetryUpgradeAgent(ctx context.Context, task *asynq.Task) error {
 	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 
+	pushBack := getPushBackValue(ctx, session)
+	dbScanTimeout := dbScanTimeoutBase * time.Duration(pushBack)
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
 	}
 	defer tx.Close(ctx)
-
-	pushBack := getPushBackValue(ctx, session)
-	dbScanTimeout := dbScanTimeoutBase * time.Duration(pushBack)
 
 	if _, err = tx.Run(ctx, `
 		MATCH (:AgentVersion) -[n:SCHEDULED]-> (:Node)

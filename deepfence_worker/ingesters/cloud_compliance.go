@@ -1,16 +1,22 @@
 package ingesters
 
 import (
+	"context"
 	"strings"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-func CommitFuncCloudCompliance(ns string, data []ingestersUtil.CloudCompliance) error {
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
+func CommitFuncCloudCompliance(ctx context.Context, ns string, data []ingestersUtil.CloudCompliance) error {
+	ctx = directory.ContextWithNameSpace(ctx, directory.NamespaceID(ns))
+
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "commit-func-cloud-compliance")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err

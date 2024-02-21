@@ -8,6 +8,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"golang.org/x/mod/semver"
@@ -20,6 +21,9 @@ const (
 )
 
 func PrepareAgentUpgradeAction(ctx context.Context, version string) (controls.Action, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "prepare-agent-upgrade-action")
+	defer span.End()
 
 	url, err := GetAgentVersionTarball(ctx, version)
 	if err != nil {
@@ -43,6 +47,9 @@ func PrepareAgentUpgradeAction(ctx context.Context, version string) (controls.Ac
 }
 
 func ScheduleAgentUpgrade(ctx context.Context, version string, nodeIDs []string, action controls.Action) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "agent", "schedule-agent-upgrade")
+	defer span.End()
 
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -85,6 +92,9 @@ func ScheduleAgentUpgrade(ctx context.Context, version string, nodeIDs []string,
 
 func GetAgentVersionTarball(ctx context.Context, version string) (string, error) {
 
+	ctx, span := telemetry.NewSpan(ctx, "control", "get-agent-version-tarball")
+	defer span.End()
+
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return "", err
@@ -120,6 +130,9 @@ func GetAgentVersionTarball(ctx context.Context, version string) (string, error)
 }
 
 func GetAgentPluginVersionTarball(ctx context.Context, version, pluginName string) (string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "get-agent-plugin-version-tarball")
+	defer span.End()
 
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -158,6 +171,9 @@ func GetAgentPluginVersionTarball(ctx context.Context, version, pluginName strin
 
 func hasPendingUpgradeOrNew(ctx context.Context, version string, nodeID string) (bool, error) {
 
+	ctx, span := telemetry.NewSpan(ctx, "control", "has-pending-upgrade-or-new")
+	defer span.End()
+
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return false, err
@@ -195,6 +211,10 @@ func hasPendingUpgradeOrNew(ctx context.Context, version string, nodeID string) 
 }
 
 func wasAttachedToNewer(ctx context.Context, version string, nodeID string) (bool, string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "was-attached-to-newer")
+	defer span.End()
+
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return false, "", err
@@ -230,6 +250,9 @@ func wasAttachedToNewer(ctx context.Context, version string, nodeID string) (boo
 }
 
 func CompleteAgentUpgrade(ctx context.Context, version string, nodeID string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "complete-agent-upgrade")
+	defer span.End()
 
 	has, err := hasPendingUpgradeOrNew(ctx, version, nodeID)
 
@@ -308,6 +331,9 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeID string) er
 
 func ScheduleAgentPluginEnable(ctx context.Context, version, pluginName string, nodeIDs []string, action controls.Action) error {
 
+	ctx, span := telemetry.NewSpan(ctx, "control", "schedule-agent-plugin-enable")
+	defer span.End()
+
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -355,6 +381,9 @@ func ScheduleAgentPluginEnable(ctx context.Context, version, pluginName string, 
 }
 
 func ScheduleAgentPluginDisable(ctx context.Context, pluginName string, nodeIDs []string, action controls.Action) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "schedule-agent-plugin-disable")
+	defer span.End()
 
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {

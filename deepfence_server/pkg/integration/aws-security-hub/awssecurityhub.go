@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/securityhub"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
@@ -52,6 +53,9 @@ func New(ctx context.Context, b []byte) (*AwsSecurityHub, error) {
 
 func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
 
+	ctx, span := telemetry.NewSpan(ctx, "integrations", "aws-security-hub-send-notification")
+	defer span.End()
+
 	scanID, ok := extras["scan_id"]
 	if !ok {
 		log.Error().Msgf("AwsSecurityHub: SendNotification: node_id not found in extras")
@@ -71,12 +75,14 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 	})
 	if err != nil {
 		fmt.Println("Failed to create AWS session", err)
+		span.EndWithErr(err)
 		return nil
 	}
 	stsSvc := sts.New(sess)
 	id, err := stsSvc.GetCallerIdentity(&sts.GetCallerIdentityInput{})
 	if err != nil {
 		fmt.Println("Failed to get caller identity", err)
+		span.EndWithErr(err)
 		return nil
 	}
 
@@ -119,6 +125,7 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 		importFindings, err := svc.BatchImportFindings(batch)
 		if err != nil {
 			fmt.Println("Failed to upload JSON data to Security Hub", err)
+			span.EndWithErr(err)
 			return nil
 		}
 
@@ -138,6 +145,10 @@ func getResource(ctx context.Context, scanType, scanID, region, accountID string
 }
 
 func getResourceForVulnerability(ctx context.Context, scanID, region, accountID string) ([]*securityhub.Resource, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "integrations", "get-resource-for-vulnerability")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -224,6 +235,9 @@ func getResourceForVulnerability(ctx context.Context, scanID, region, accountID 
 }
 
 func getResourceForCompliance(ctx context.Context, scanID, region, accountID string) ([]*securityhub.Resource, error) {
+	ctx, span := telemetry.NewSpan(ctx, "integrations", "get-resource-for-compliance")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())

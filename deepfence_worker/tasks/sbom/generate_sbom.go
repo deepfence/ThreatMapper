@@ -12,6 +12,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/deepfence/golang_deepfence_sdk/utils/tasks"
@@ -161,7 +162,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		RegistryCreds: psUtils.RegistryCreds{
 			AuthFilePath:  authFile,
 			SkipTLSVerify: creds.SkipTLSVerify,
-			UseHTTP:       creds.UseHttp,
+			UseHTTP:       creds.UseHTTP,
 		},
 		IsRegistry: creds.IsRegistry,
 	}
@@ -183,8 +184,10 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		return err
 	}
 
+	ctx, sbomSpan := telemetry.NewSpan(ctx, "vuln-scan", "generate-sbom")
 	rawSbom, err := syft.GenerateSBOM(scanCtx.Context, cfg)
 	if err != nil {
+		sbomSpan.EndWithErr(err)
 		return err
 	}
 
@@ -216,6 +219,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		log.Error().Err(err).Msg("failed to uplaod sbom")
 		return err
 	}
+	sbomSpan.End()
 
 	log.Info().Msgf("sbom file uploaded %+v", info)
 

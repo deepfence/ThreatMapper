@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -118,6 +119,10 @@ func (mfm *MinioFileManager) addNamespacePrefix(filePath string) string {
 }
 
 func (mfm *MinioFileManager) ListFiles(ctx context.Context, pathPrefix string, recursive bool, maxKeys int, skipDir bool) []ObjectInfo {
+
+	ctx, span := telemetry.NewSpan(ctx, "fileserver", "list-files")
+	defer span.End()
+
 	prefix := mfm.addNamespacePrefix(pathPrefix) + "/"
 
 	objects := mfm.client.ListObjects(ctx, mfm.bucket,
@@ -152,8 +157,12 @@ func (mfm *MinioFileManager) ListFiles(ctx context.Context, pathPrefix string, r
 func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context,
 	filename string, localFilename string, overwrite bool, extra interface{}) (UploadResult, error) {
 
+	ctx, span := telemetry.NewSpan(ctx, "fileserver", "upload-local-file")
+	defer span.End()
+
 	err := mfm.createBucketIfNeeded(ctx)
 	if err != nil {
+		span.EndWithErr(err)
 		return UploadResult{}, err
 	}
 
@@ -168,6 +177,7 @@ func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context,
 			err := mfm.DeleteFile(ctx, objectName, false, minio.RemoveObjectOptions{ForceDelete: true})
 			if err != nil {
 				log.Error().Err(err).Msg("failed to delete file while overwriting")
+				span.EndWithErr(err)
 				return UploadResult{}, FileDeleteError{Path: key}
 			}
 		}
@@ -175,6 +185,7 @@ func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context,
 
 	info, err := mfm.client.FPutObject(ctx, mfm.bucket, objectName, localFilename, extra.(minio.PutObjectOptions))
 	if err != nil {
+		span.EndWithErr(err)
 		return UploadResult{}, err
 	}
 
@@ -192,8 +203,12 @@ func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context,
 func (mfm *MinioFileManager) UploadFile(ctx context.Context,
 	filename string, data []byte, overwrite bool, extra interface{}) (UploadResult, error) {
 
+	ctx, span := telemetry.NewSpan(ctx, "fileserver", "upload-file")
+	defer span.End()
+
 	err := mfm.createBucketIfNeeded(ctx)
 	if err != nil {
+		span.EndWithErr(err)
 		return UploadResult{}, err
 	}
 
@@ -207,6 +222,7 @@ func (mfm *MinioFileManager) UploadFile(ctx context.Context,
 			log.Info().Msgf("overwrite file %s", key)
 			err := mfm.DeleteFile(ctx, objectName, false, minio.RemoveObjectOptions{ForceDelete: true})
 			if err != nil {
+				span.EndWithErr(err)
 				log.Error().Err(err).Msg("failed to delete file while overwriting")
 				return UploadResult{}, FileDeleteError{Path: key}
 			}
@@ -214,8 +230,8 @@ func (mfm *MinioFileManager) UploadFile(ctx context.Context,
 	}
 
 	info, err := mfm.client.PutObject(ctx, mfm.bucket, objectName, bytes.NewReader(data), int64(len(data)), extra.(minio.PutObjectOptions))
-
 	if err != nil {
+		span.EndWithErr(err)
 		return UploadResult{}, err
 	}
 
@@ -231,33 +247,50 @@ func (mfm *MinioFileManager) UploadFile(ctx context.Context,
 }
 
 func (mfm *MinioFileManager) DeleteFile(ctx context.Context, filePath string, addFilePathPrefix bool, extra interface{}) error {
+	ctx, span := telemetry.NewSpan(ctx, "fileserver", "delete-file")
+	defer span.End()
+
 	return mfm.client.RemoveObject(ctx, mfm.bucket, mfm.optionallyAddNamespacePrefix(filePath, addFilePathPrefix), extra.(minio.RemoveObjectOptions))
 }
 
 func (mfm *MinioFileManager) DownloadFile(ctx context.Context, remoteFile string, localFile string, extra interface{}) error {
+	ctx, span := telemetry.NewSpan(ctx, "fileserver", "download-file")
+	defer span.End()
+
 	return mfm.client.FGetObject(ctx, mfm.bucket, mfm.addNamespacePrefix(remoteFile), localFile, extra.(minio.GetObjectOptions))
 }
 
 func (mfm *MinioFileManager) DownloadFileTo(ctx context.Context, remoteFile string, writer io.WriteCloser, extra interface{}) error {
+	ctx, span := telemetry.NewSpan(ctx, "fileserver", "download-file-to")
+	defer span.End()
+
 	obj, err := mfm.client.GetObject(ctx, mfm.bucket, mfm.addNamespacePrefix(remoteFile), extra.(minio.GetObjectOptions))
 	if err != nil {
+		span.EndWithErr(err)
 		return err
 	}
 	_, err = io.Copy(writer, obj)
 	if err != nil {
+		span.EndWithErr(err)
 		return err
 	}
 	return writer.Close()
 }
 
 func (mfm *MinioFileManager) DownloadFileContexts(ctx context.Context, remoteFile string, extra interface{}) ([]byte, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "fileserver", "download-file-contents")
+	defer span.End()
+
 	object, err := mfm.client.GetObject(ctx, mfm.bucket, mfm.addNamespacePrefix(remoteFile), extra.(minio.GetObjectOptions))
 	if err != nil {
+		span.EndWithErr(err)
 		return nil, err
 	}
 
 	var buff bytes.Buffer
 	if _, err = io.Copy(bufio.NewWriter(&buff), object); err != nil {
+		span.EndWithErr(err)
 		return nil, err
 	}
 
@@ -266,8 +299,13 @@ func (mfm *MinioFileManager) DownloadFileContexts(ctx context.Context, remoteFil
 
 func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error) {
 	// Force browser to download file - url.Values{"response-content-disposition": []string{"attachment; filename=\"b.txt\""}},
+
+	ctx, span := telemetry.NewSpan(ctx, "fileserver", "expose-file")
+	defer span.End()
+
 	consoleIP, err := GetManagementHost(ctx)
 	if err != nil {
+		span.EndWithErr(err)
 		return "", err
 	}
 
@@ -275,7 +313,9 @@ func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, ad
 
 	key, has := checkIfFileExists(ctx, mfm.client, mfm.bucket, actualPath)
 	if !has {
-		return "", PathDoesNotExistsError{Path: actualPath}
+		err := PathDoesNotExistsError{Path: actualPath}
+		span.EndWithErr(err)
+		return "", err
 	}
 
 	headers := http.Header{}
@@ -293,6 +333,7 @@ func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, ad
 		headers,
 	)
 	if err != nil {
+		span.EndWithErr(err)
 		return "", err
 	}
 
@@ -300,8 +341,13 @@ func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, ad
 }
 
 func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "fileserver", "create-public-upload-url")
+	defer span.End()
+
 	consoleIP, err := GetManagementHost(ctx)
 	if err != nil {
+		span.EndWithErr(err)
 		return "", err
 	}
 
@@ -320,6 +366,7 @@ func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath
 		headers,
 	)
 	if err != nil {
+		span.EndWithErr(err)
 		return "", err
 	}
 
@@ -336,9 +383,13 @@ func (mfm *MinioFileManager) Bucket() string {
 
 func (mfm *MinioFileManager) createBucketIfNeeded(ctx context.Context) error {
 
+	ctx, span := telemetry.NewSpan(ctx, "fileserver", "create-bucket-if-needed")
+	defer span.End()
+
 	exists, err := mfm.client.BucketExists(ctx, mfm.bucket)
 
 	if err != nil {
+		span.EndWithErr(err)
 		return err
 	}
 
@@ -350,8 +401,12 @@ func (mfm *MinioFileManager) createBucketIfNeeded(ctx context.Context) error {
 
 func (mfm *MinioFileManager) CreatePublicBucket(ctx context.Context, bucket string) error {
 
+	ctx, span := telemetry.NewSpan(ctx, "fileserver", "create-public-bucket")
+	defer span.End()
+
 	exists, err := mfm.client.BucketExists(ctx, bucket)
 	if err != nil {
+		span.EndWithErr(err)
 		return err
 	} else if exists {
 		return nil
@@ -359,6 +414,7 @@ func (mfm *MinioFileManager) CreatePublicBucket(ctx context.Context, bucket stri
 
 	err = mfm.client.MakeBucket(ctx, bucket, minio.MakeBucketOptions{ObjectLocking: false})
 	if err != nil {
+		span.EndWithErr(err)
 		return err
 	}
 
@@ -367,11 +423,15 @@ func (mfm *MinioFileManager) CreatePublicBucket(ctx context.Context, bucket stri
 
 func (mfm *MinioFileManager) CleanNamespace(ctx context.Context) error {
 
+	ctx, span := telemetry.NewSpan(ctx, "fileserver", "clear-namespace")
+	defer span.End()
+
 	files := mfm.ListFiles(ctx, "", true, 0, false)
 	log.Info().Msgf("delete %d file for namespace %s", len(files), mfm.namespace)
 	for _, f := range files {
 		if err := mfm.DeleteFile(ctx, f.Key, false, minio.RemoveObjectOptions{ForceDelete: true}); err != nil {
 			log.Error().Err(err).Msgf("failed to delete file %s", f.Key)
+			span.EndWithErr(err)
 		}
 	}
 

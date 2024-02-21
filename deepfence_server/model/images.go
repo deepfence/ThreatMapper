@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
@@ -13,6 +14,10 @@ import (
 )
 
 func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, registryType, namespace string, pgID int32) ([]ContainerImage, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "get-container-images-from-registry-and-namespace")
+	defer span.End()
+
 	var registryID string
 	var query string
 	var images []ContainerImage

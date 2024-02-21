@@ -10,10 +10,10 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j/db"
-	"github.com/opentracing/opentracing-go"
 	"github.com/ugorji/go/codec"
 )
 
@@ -48,6 +48,10 @@ func (h *Handler) OpenAPIDocsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func respondWith(ctx context.Context, w http.ResponseWriter, code int, response interface{}) {
+
+	ctx, span := telemetry.NewSpan(ctx, "common", "respond-with")
+	defer span.End()
+
 	if err, ok := response.(error); ok {
 		switch response.(type) {
 		case *neo4j.ConnectivityError:
@@ -64,9 +68,6 @@ func respondWith(ctx context.Context, w http.ResponseWriter, code int, response 
 		log.Debug().Msgf("Context error %v", ctx.Err())
 		code = 499
 		response = nil
-	}
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		span.LogKV("response-code", code)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -129,6 +130,7 @@ func isTransientError(err error) bool {
 }
 
 func (h *Handler) respondWithErrorCode(err error, w http.ResponseWriter, code int) {
+
 	var errorFields map[string]string
 	var errMsg string
 	if code == http.StatusBadRequest {

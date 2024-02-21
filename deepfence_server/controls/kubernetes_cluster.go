@@ -8,11 +8,16 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func GetKubernetesClusterActions(ctx context.Context, nodeID string, workNumToExtract int) ([]controls.Action, []error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "get-kubernetes-cluster-actions")
+	defer span.End()
+
 	// Append more actions here
 	var actions []controls.Action
 
@@ -42,6 +47,10 @@ func GetKubernetesClusterActions(ctx context.Context, nodeID string, workNumToEx
 }
 
 func ExtractStartingKubernetesClusterScans(ctx context.Context, nodeID string, maxWork int) ([]controls.Action, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "extract-starting-kubernetes-cluster-scans")
+	defer span.End()
+
 	var res []controls.Action
 	if len(nodeID) == 0 {
 		return res, ErrMissingNodeID
@@ -102,6 +111,10 @@ func ExtractStartingKubernetesClusterScans(ctx context.Context, nodeID string, m
 }
 
 func ExtractPendingKubernetesClusterUpgrade(ctx context.Context, nodeID string, maxWork int) ([]controls.Action, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "extract-pending-kubernetes-cluster-upgrade")
+	defer span.End()
+
 	var res []controls.Action
 	if len(nodeID) == 0 {
 		return res, ErrMissingNodeID

@@ -13,6 +13,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/hibiken/asynq"
@@ -150,6 +151,9 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 func updateReportState(ctx context.Context, session neo4j.SessionWithContext, reportID, url, path, status string) {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "reports", "update-report-state")
+	defer span.End()
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {

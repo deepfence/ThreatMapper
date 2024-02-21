@@ -23,6 +23,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
@@ -60,6 +61,10 @@ func bulkScanID() string {
 }
 
 func GetImageFromID(ctx context.Context, nodeID string) (string, string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-image-from-id")
+	defer span.End()
+
 	var name string
 	var tag string
 
@@ -104,6 +109,10 @@ func GetImageFromID(ctx context.Context, nodeID string) (string, string, error) 
 }
 
 func GetContainerKubeClusterNameFromID(ctx context.Context, nodeID string) (string, string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-container-kube-cluster-name-from-id")
+	defer span.End()
+
 	var clusterID string
 	var clusterName string
 
@@ -148,6 +157,9 @@ func GetContainerKubeClusterNameFromID(ctx context.Context, nodeID string) (stri
 }
 
 func StartScanActionBuilder(ctx context.Context, scanType controls.ActionID, additionalBinArgs map[string]string) func(string, model.NodeIdentifier, int32) (controls.Action, error) {
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "start-scan-action-builder")
+	defer span.End()
+
 	return func(scanId string, req model.NodeIdentifier, registryId int32) (controls.Action, error) {
 		registryIDStr := ""
 		if registryId != -1 {
@@ -2071,6 +2083,9 @@ func StartMultiScan(ctx context.Context,
 	scanType utils.Neo4jScanType,
 	req model.ScanTriggerCommon,
 	actionBuilder func(string, model.NodeIdentifier, int32) (controls.Action, error)) ([]string, string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "start-multi-scan")
+	defer span.End()
 
 	isPriority := req.IsPriority
 

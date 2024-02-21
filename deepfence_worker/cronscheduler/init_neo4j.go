@@ -6,6 +6,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -21,6 +22,9 @@ func RunDisplayError(ctx context.Context, session neo4j.SessionWithContext, stat
 func initNeo4jDatabase(ctx context.Context) error {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "init-neo4j-database")
+	defer span.End()
 
 	log.Info().Msgf("Init Neo4j Constraints")
 	defer log.Info().Msgf("Init Neo4j Constraints - Done")

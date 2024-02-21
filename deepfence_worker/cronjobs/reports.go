@@ -6,6 +6,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
@@ -69,6 +70,9 @@ func deleteReport(ctx context.Context, session neo4j.SessionWithContext, path st
 
 	log := log.WithCtx(ctx)
 
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "delete-report")
+	defer span.End()
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(10*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -90,6 +94,9 @@ func deleteReport(ctx context.Context, session neo4j.SessionWithContext, path st
 func deleteFailedReports(ctx context.Context, session neo4j.SessionWithContext) error {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "delete-failed-reports")
+	defer span.End()
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(10*time.Second))
 	if err != nil {

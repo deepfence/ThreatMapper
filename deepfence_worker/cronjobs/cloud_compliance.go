@@ -12,6 +12,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -75,17 +76,22 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 	}
 
 	for cloud, benchmarksAvailable := range BenchmarksAvailableMap {
+		ctx, span := telemetry.NewSpan(ctx, "cloud-compliance", cloud+"-cloud-compliance-control")
+		defer span.End()
+
 		cwd := "/cloud_controls/" + cloud
 		for _, benchmark := range benchmarksAvailable {
 			controlFilePath := fmt.Sprintf("%s/%s.json", cwd, benchmark)
 			controlsJson, err := os.ReadFile(controlFilePath)
 			if err != nil {
 				log.Error().Msgf("error reading controls file %s: %s", controlFilePath, err.Error())
+				span.EndWithErr(err)
 				return nil
 			}
 			var controlList []Control
 			if err := json.Unmarshal(controlsJson, &controlList); err != nil {
 				log.Error().Msgf("error unmarshalling controls for compliance type %s: %s", benchmark, err.Error())
+				span.EndWithErr(err)
 				return nil
 			}
 			var controlMap []map[string]interface{}
@@ -127,6 +133,7 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 					"cloudCap":  strings.ToUpper(cloud),
 				}); err != nil {
 				log.Error().Msgf(err.Error())
+				span.EndWithErr(err)
 				return nil
 			}
 			benchmarkFilePath := fmt.Sprintf("%s/%s_benchmarks.json", cwd, benchmark)
@@ -134,11 +141,13 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 				benchmarksJson, err := os.ReadFile(benchmarkFilePath)
 				if err != nil {
 					log.Error().Msgf("Error reading benchmarks file %s: %s", benchmarkFilePath, err.Error())
+					span.EndWithErr(err)
 					return nil
 				}
 				var benchmarkList []Benchmark
 				if err := json.Unmarshal(benchmarksJson, &benchmarkList); err != nil {
 					log.Error().Msgf("Error unmarshalling benchmarks for compliance type %s: %s", benchmark, err.Error())
+					span.EndWithErr(err)
 					return nil
 				}
 				var benchmarkMap []map[string]interface{}
@@ -178,6 +187,7 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 						"cloudCap":  strings.ToUpper(cloud),
 					}); err != nil {
 					log.Error().Msgf(err.Error())
+					span.EndWithErr(err)
 					return nil
 				}
 			}
@@ -423,6 +433,9 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 }
 
 func getCount(ctx context.Context, tx neo4j.ExplicitTransaction, query string, params map[string]interface{}) (int64, error) {
+	ctx, span := telemetry.NewSpan(ctx, "cloud-compliance", "get-count")
+	defer span.End()
+
 	log.Debug().Msgf("Cloud compliance query: %v", query)
 	nodeRes, err := tx.Run(ctx, query, params)
 	if err != nil {

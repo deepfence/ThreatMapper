@@ -11,6 +11,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j/db"
@@ -177,6 +178,10 @@ func NodeIdentifierToIDList(in []model.NodeIdentifier) []string {
 }
 
 func GetRegistriesImageIDs(ctx context.Context, registryIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-registries-image-ids")
+	defer span.End()
+
 	res := []model.NodeIdentifier{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -221,6 +226,10 @@ func GetRegistriesImageIDs(ctx context.Context, registryIds []model.NodeIdentifi
 }
 
 func GetKubernetesImageIDs(ctx context.Context, k8sIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-kubernetes-image-ids")
+	defer span.End()
+
 	res := []model.NodeIdentifier{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -266,6 +275,10 @@ func GetKubernetesImageIDs(ctx context.Context, k8sIds []model.NodeIdentifier) (
 }
 
 func GetKubernetesHostsIDs(ctx context.Context, k8sIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-kubernetes-hosts-ids")
+	defer span.End()
+
 	res := []model.NodeIdentifier{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -310,6 +323,10 @@ func GetKubernetesHostsIDs(ctx context.Context, k8sIds []model.NodeIdentifier) (
 }
 
 func GetKubernetesContainerIDs(ctx context.Context, k8sIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-kubernetes-container-ids")
+	defer span.End()
+
 	res := []model.NodeIdentifier{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -355,6 +372,10 @@ func GetKubernetesContainerIDs(ctx context.Context, k8sIds []model.NodeIdentifie
 }
 
 func GetPodContainerIDs(ctx context.Context, podIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-pod-container-ids")
+	defer span.End()
+
 	res := []model.NodeIdentifier{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -398,6 +419,10 @@ func GetPodContainerIDs(ctx context.Context, podIds []model.NodeIdentifier) ([]m
 }
 
 func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-cloud-account-ids")
+	defer span.End()
+
 	res := []model.NodeIdentifier{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -482,6 +507,10 @@ func nodeType2Neo4jType(nodeType string) string {
 }
 
 func GetScansList(ctx context.Context, scanType utils.Neo4jScanType, nodeIDs []model.NodeIdentifier, ff reporters.FieldsFilters, fw model.FetchWindow) (model.ScanListResp, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-scans-list")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return model.ScanListResp{}, err
@@ -531,6 +560,10 @@ func GetScansList(ctx context.Context, scanType utils.Neo4jScanType, nodeIDs []m
 }
 
 func processScansListQuery(ctx context.Context, query string, nodeIds []string, tx neo4j.ExplicitTransaction) ([]model.ScanInfo, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "process-scans-list-query")
+	defer span.End()
+
 	var scansInfo []model.ScanInfo
 	res, err := tx.Run(ctx, query,
 		map[string]interface{}{"node_ids": nodeIds})
@@ -560,6 +593,10 @@ func processScansListQuery(ctx context.Context, query string, nodeIds []string, 
 }
 
 func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4jScanType, nodeID string) (model.CloudComplianceScanListResp, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-cloudcompliance-pending-scans-list")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return model.CloudComplianceScanListResp{}, err
@@ -644,6 +681,10 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 }
 
 func GetScanResultDiff[T any](ctx context.Context, scanType utils.Neo4jScanType, baseScanID, compareToScanID string, ff reporters.FieldsFilters, fw model.FetchWindow) ([]T, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-scan-result-diff")
+	defer span.End()
+
 	res := []T{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -736,6 +777,10 @@ func GetScanResultDiff[T any](ctx context.Context, scanType utils.Neo4jScanType,
 }
 
 func GetScanResults[T any](ctx context.Context, scanType utils.Neo4jScanType, scanID string, ff reporters.FieldsFilters, fw model.FetchWindow) ([]T, model.ScanResultsCommon, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-scan-results")
+	defer span.End()
+
 	res := []T{}
 	common := model.ScanResultsCommon{}
 	driver, err := directory.Neo4jClient(ctx)
@@ -840,6 +885,10 @@ func GetScanResults[T any](ctx context.Context, scanType utils.Neo4jScanType, sc
 }
 
 func GetFilters(ctx context.Context, having map[string]interface{}, detectedType string, filters []string) (map[string][]string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-filters")
+	defer span.End()
+
 	andQuery := "{"
 	index := 0
 	for key := range having {
@@ -923,6 +972,10 @@ func type2sevField(scanType utils.Neo4jScanType) string {
 }
 
 func GetSevCounts(ctx context.Context, scanType utils.Neo4jScanType, scanID string) (map[string]int32, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-sev-counts")
+	defer span.End()
+
 	res := map[string]int32{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -970,6 +1023,10 @@ func GetSevCounts(ctx context.Context, scanType utils.Neo4jScanType, scanID stri
 }
 
 func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, resultIds []string) ([]model.ScanResultBasicNode, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-nodes-in-scan-results")
+	defer span.End()
+
 	res := make([]model.ScanResultBasicNode, 0)
 	if len(resultIds) == 0 {
 		return res, nil
@@ -1032,6 +1089,10 @@ func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, re
 }
 
 func GetCloudComplianceStats(ctx context.Context, scanID string, neo4jComplianceType utils.Neo4jScanType) (model.ComplianceAdditionalInfo, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-cloudcompliance-stats")
+	defer span.End()
+
 	res := map[string]int32{}
 	additionalInfo := model.ComplianceAdditionalInfo{StatusCounts: res, CompliancePercentage: 0.0}
 	driver, err := directory.Neo4jClient(ctx)
@@ -1108,6 +1169,10 @@ func GetCloudComplianceStats(ctx context.Context, scanID string, neo4jCompliance
 }
 
 func GetBulkScans(ctx context.Context, scanType utils.Neo4jScanType, scanID string) (model.ScanStatusResp, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-bulk-scans")
+	defer span.End()
+
 	scanIDs := model.ScanStatusResp{
 		Statuses: map[string]model.ScanInfo{},
 	}
@@ -1190,6 +1255,10 @@ func Labels2NodeType(labels []interface{}) string {
 }
 
 func GetComplianceBulkScans(ctx context.Context, scanType utils.Neo4jScanType, scanID string) (model.ComplianceScanStatusResp, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-compliance-bulk-scans")
+	defer span.End()
+
 	scanIDs := model.ComplianceScanStatusResp{
 		Statuses: []model.ComplianceScanInfo{},
 	}

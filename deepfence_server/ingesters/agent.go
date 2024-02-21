@@ -381,7 +381,7 @@ loop:
 
 		if send {
 			send = false
-			span := telemetry.NewSpan(context.Background(), "ingester", "ResolversUpdater")
+			_, span := telemetry.NewSpan(context.Background(), "ingester", "ResolversUpdater")
 			finalBatch := mergeResolvers(batch[:elements])
 			nc.resolvers.cleanMaps()
 			nc.resolvers.pushMaps(&finalBatch)
@@ -713,6 +713,9 @@ func (nc *neo4jIngester) IsReady() bool {
 
 func (nc *neo4jIngester) PushToDBSeq(ctx context.Context, batches ReportIngestionData, session neo4j.SessionWithContext) error {
 
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "push-to-db-seq")
+	defer span.End()
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
@@ -776,6 +779,9 @@ func (nc *neo4jIngester) PushToDBSeq(ctx context.Context, batches ReportIngestio
 }
 
 func (nc *neo4jIngester) PushToDB(ctx context.Context, batches ReportIngestionData, session neo4j.SessionWithContext) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "push-to-db")
+	defer span.End()
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
@@ -990,7 +996,7 @@ func (nc *neo4jIngester) runDBPusher(
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 
 	for batches := range dbPusher {
-		span := telemetry.NewSpan(context.Background(), "ingester", "PushAgentReportsToDB")
+		ctx, span := telemetry.NewSpan(context.Background(), "ingester", "PushAgentReportsToDB")
 		for {
 			err := pusher(ctx, batches, session)
 			if err != nil {

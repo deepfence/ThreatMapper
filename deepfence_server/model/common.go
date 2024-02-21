@@ -9,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
@@ -63,6 +64,10 @@ func IsOnboardingRequired(ctx context.Context) bool {
 }
 
 func isOnboardingRequired(ctx context.Context) (bool, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "is-onboarding-required")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return false, err

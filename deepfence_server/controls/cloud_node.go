@@ -6,10 +6,15 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func GetCloudNodeComplianceControls(ctx context.Context, nodeID, cloudProvider, complianceType string) ([]model.CloudNodeComplianceControl, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "get-cloudnode-compliance-controls")
+	defer span.End()
+
 	var controls []model.CloudNodeComplianceControl
 
 	client, err := directory.Neo4jClient(ctx)
@@ -69,6 +74,10 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeID, cloudProvider, 
 }
 
 func EnableCloudNodeComplianceControls(ctx context.Context, nodeID string, controlIds []string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "enable-cloudnode-compliance-controls")
+	defer span.End()
+
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -98,6 +107,10 @@ func EnableCloudNodeComplianceControls(ctx context.Context, nodeID string, contr
 }
 
 func DisableCloudNodeComplianceControls(ctx context.Context, nodeID string, controlIDs []string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "disable-cloudnode-compliance-controls")
+	defer span.End()
+
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err

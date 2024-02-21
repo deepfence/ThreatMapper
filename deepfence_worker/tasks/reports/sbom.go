@@ -17,6 +17,7 @@ import (
 	"github.com/anchore/syft/syft/formats/syftjson"
 	"github.com/anchore/syft/syft/sbom"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/minio/minio-go/v7"
 	"github.com/spdx/tools-golang/spdx"
@@ -38,6 +39,9 @@ var (
 )
 
 func generateSBOM(ctx context.Context, params utils.ReportParams) (string, error) {
+	ctx, span := telemetry.NewSpan(ctx, "reports", "generate-sbom-report")
+	defer span.End()
+
 	fileName, err := sbomReport(ctx, params)
 	if err != nil {
 		return "", err

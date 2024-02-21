@@ -13,11 +13,11 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 	"github.com/hibiken/asynq"
 	"github.com/robfig/cron/v3"
-	"go.opentelemetry.io/otel"
 )
 
 type ScheduledJobs struct {
@@ -75,6 +75,9 @@ func (s *Scheduler) Init() {
 }
 
 func (s *Scheduler) AddJobs(ctx context.Context) error {
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "add-jobs")
+	defer span.End()
+
 	err := s.addCronJobs(ctx)
 	if err != nil {
 		return err
@@ -122,7 +125,7 @@ func (s *Scheduler) updateScheduledJobs() {
 
 	for range ticker.C {
 		directory.ForEachNamespace(func(ctx context.Context) (string, error) {
-			ctx, span := otel.GetTracerProvider().Tracer("cronjobs").Start(ctx, "update-scheduled-jobs")
+			ctx, span := telemetry.NewSpan(ctx, "cronjobs", "update-scheduled-jobs")
 			defer span.End()
 			return "Update scheduled jobs", s.addScheduledJobs(ctx)
 		})
@@ -133,7 +136,7 @@ func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
 
 	log := log.WithCtx(ctx)
 
-	ctx, span := otel.GetTracerProvider().Tracer("cronjobs").Start(ctx, "add-scheduled-jobs")
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "add-scheduled-jobs")
 	defer span.End()
 
 	// Get scheduled tasks
@@ -195,6 +198,9 @@ func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
 func (s *Scheduler) addCronJobs(ctx context.Context) error {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "add-cron-jobs")
+	defer span.End()
 
 	namespace, err := directory.ExtractNamespace(ctx)
 	if err != nil {
@@ -346,6 +352,9 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 func (s *Scheduler) startInitJobs(ctx context.Context) error {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "start-init-jobs")
+	defer span.End()
 
 	namespace, err := directory.ExtractNamespace(ctx)
 	if err != nil {

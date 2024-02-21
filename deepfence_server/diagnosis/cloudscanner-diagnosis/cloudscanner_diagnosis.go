@@ -11,11 +11,16 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func getInProgressCloudScannerNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier) (map[string]struct{}, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "get-inprogress-cloud-scanner-node-ids")
+	defer span.End()
+
 	inProgressNodeIds := map[string]struct{}{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -78,6 +83,10 @@ func getInProgressCloudScannerNodeIds(ctx context.Context, nodeIdentifiers []dia
 }
 
 func UpdateCloudScannerDiagnosticLogsStatus(ctx context.Context, status diagnosis.DiagnosticLogsStatus) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "update-cloud-scanner-diagnostic-logs-status")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -102,6 +111,9 @@ func UpdateCloudScannerDiagnosticLogsStatus(ctx context.Context, status diagnosi
 }
 
 func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier, tail string) error {
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "generate-cloud-scanner-diagnostic-logs")
+	defer span.End()
+
 	inProgressNodeIds, err := getInProgressCloudScannerNodeIds(ctx, nodeIdentifiers)
 	if err != nil {
 		return err

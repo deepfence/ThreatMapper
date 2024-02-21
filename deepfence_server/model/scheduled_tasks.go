@@ -9,6 +9,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
@@ -67,6 +68,10 @@ func GetScheduledTask(ctx context.Context) ([]postgresqlDb.Scheduler, error) {
 }
 
 func UpdateScheduledTask(ctx context.Context, id int64, updateScheduledTask UpdateScheduledTaskRequest) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "update-scheduled-task")
+	defer span.End()
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return err
@@ -86,6 +91,10 @@ func UpdateScheduledTask(ctx context.Context, id int64, updateScheduledTask Upda
 }
 
 func DeleteCustomSchedule(ctx context.Context, id int64) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "delete-custom-schedule")
+	defer span.End()
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return err
@@ -94,6 +103,9 @@ func DeleteCustomSchedule(ctx context.Context, id int64) error {
 }
 
 func AddScheduledTask(ctx context.Context, req AddScheduledTaskRequest) error {
+	ctx, span := telemetry.NewSpan(ctx, "model", "add-scheduled-task")
+	defer span.End()
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return err
@@ -123,6 +135,10 @@ func AddScheduledTask(ctx context.Context, req AddScheduledTaskRequest) error {
 }
 
 func InitializeScheduledTasks(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "init-scheduled-tasks")
+	defer span.End()
+
 	schedules, err := pgClient.GetSchedules(ctx)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 
@@ -23,6 +24,10 @@ var ChunkSize = 500
 
 func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, row postgresqlDb.GetContainerRegistriesRow) error {
 	syncStatus := SyncStatus{}
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "sync-registry")
+	defer span.End()
+
 	log := log.WithCtx(ctx)
 
 	// set registry account syncing
@@ -63,7 +68,7 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 		return err
 	}
 
-	list, err := r.FetchImagesFromRegistry()
+	list, err := r.FetchImagesFromRegistry(ctx)
 	if err != nil {
 		if err == dferror.ErrTooManyRequests {
 			log.Warn().Msgf("rate limit exceeded for registry even after retry id=%d type=%s", row.ID, r.GetRegistryType())
@@ -112,6 +117,9 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 
 func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage,
 	r registry.Registry, pgID int32, name string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "insert-to-neo4j")
+	defer span.End()
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -207,6 +215,10 @@ type SyncStatus struct {
 }
 
 func SetRegistryAccountSyncing(ctx context.Context, syncStatus SyncStatus, r registry.Registry, pgID int32) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "set-registry-account-syncing")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err

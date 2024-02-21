@@ -15,6 +15,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/samber/mo"
@@ -50,6 +51,9 @@ type ResourceStub struct {
 }
 
 func (ntp *neo4jTopologyReporter) GetProcessConnections(ctx context.Context, tx neo4j.ExplicitTransaction, hosts []string) ([]ConnectionSummary, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-process-connections")
+	defer span.End()
 
 	res := []ConnectionSummary{}
 
@@ -119,6 +123,9 @@ func (ntp *neo4jTopologyReporter) GetProcessConnections(ctx context.Context, tx 
 
 func (ntp *neo4jTopologyReporter) GetHostConnections(ctx context.Context, tx neo4j.ExplicitTransaction, regionK8s, notHosts []string) ([]ConnectionSummary, error) {
 
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-host-connections")
+	defer span.End()
+
 	res := []ConnectionSummary{}
 	if len(regionK8s) == 0 {
 		return res, nil
@@ -174,6 +181,9 @@ func (ntp *neo4jTopologyReporter) GetHostConnections(ctx context.Context, tx neo
 
 func (ntp *neo4jTopologyReporter) GetKubernetesClusterConnections(ctx context.Context, tx neo4j.ExplicitTransaction, notHosts []string) ([]ConnectionSummary, error) {
 
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-kubernetes-cluster-connections")
+	defer span.End()
+
 	res := []ConnectionSummary{}
 
 	r, err := tx.Run(ctx, `
@@ -222,6 +232,9 @@ func (ntp *neo4jTopologyReporter) GetKubernetesClusterConnections(ctx context.Co
 }
 
 func (ntp *neo4jTopologyReporter) GetRegionClusterConnections(ctx context.Context, tx neo4j.ExplicitTransaction, cloudProvider, notRegionCluster []string) ([]ConnectionSummary, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-region-cluster-connections")
+	defer span.End()
 
 	res := []ConnectionSummary{}
 	if len(cloudProvider) == 0 {
@@ -281,6 +294,9 @@ func (ntp *neo4jTopologyReporter) GetConnections(ctx context.Context, tx neo4j.E
 	k8sCluster,
 	hosts []string) ([]ConnectionSummary, error) {
 
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-connections")
+	defer span.End()
+
 	start := time.Now()
 	res := []ConnectionSummary{}
 	procConn, err := ntp.GetProcessConnections(ctx, tx, hosts)
@@ -308,6 +324,9 @@ func (ntp *neo4jTopologyReporter) GetConnections(ctx context.Context, tx neo4j.E
 func (ntp *neo4jTopologyReporter) GetKubernetesConnections(ctx context.Context, tx neo4j.ExplicitTransaction,
 	k8sCluster,
 	hosts []string) ([]ConnectionSummary, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-kubernetes-connections")
+	defer span.End()
 
 	start := time.Now()
 	res := []ConnectionSummary{}
@@ -354,6 +373,10 @@ func (ntp *neo4jTopologyReporter) GetNonPublicCloudResources(
 	cloudRegions []string,
 	cloudServices []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-non-public-cloud-resources")
+	defer span.End()
+
 	res := map[NodeID][]ResourceStub{}
 	r, err := tx.Run(ctx, `
 		MATCH (s:CloudResource)
@@ -420,6 +443,9 @@ func (ntp *neo4jTopologyReporter) GetCloudServices(
 	cloudRegions []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
 
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-cloud-services")
+	defer span.End()
+
 	res := map[NodeID][]ResourceStub{}
 	r, err := tx.Run(ctx, `
 		MATCH (cp: CloudProvider)
@@ -472,6 +498,10 @@ func (ntp *neo4jTopologyReporter) GetPublicCloudResources(
 	cloudRegions []string,
 	cloudServices []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-public-cloud-resources")
+	defer span.End()
+
 	res := map[NodeID][]ResourceStub{}
 	r, err := tx.Run(ctx, `
 		MATCH (cp: CloudProvider)
@@ -529,6 +559,10 @@ func (ntp *neo4jTopologyReporter) GetPublicCloudResources(
 }
 
 func (ntp *neo4jTopologyReporter) getCloudProviders(ctx context.Context, tx neo4j.ExplicitTransaction) ([]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-cloud-providers")
+	defer span.End()
+
 	res := []NodeStub{}
 	r, err := tx.Run(ctx, `
 		MATCH (n:CloudProvider)
@@ -553,6 +587,10 @@ func (ntp *neo4jTopologyReporter) getCloudProviders(ctx context.Context, tx neo4
 }
 
 func (ntp *neo4jTopologyReporter) getCloudRegions(ctx context.Context, tx neo4j.ExplicitTransaction, cloudProvider []string) (map[NodeID][]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-cloud-regions")
+	defer span.End()
+
 	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(ctx, `
 		MATCH (cr:CloudProvider)
@@ -588,6 +626,10 @@ func (ntp *neo4jTopologyReporter) getCloudKubernetes(
 	tx neo4j.ExplicitTransaction,
 	cloudProvider []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-cloud-kubernetes")
+	defer span.End()
+
 	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(ctx, `
 		MATCH (cr:CloudProvider)
@@ -635,6 +677,10 @@ func (ntp *neo4jTopologyReporter) getHosts(
 	tx neo4j.ExplicitTransaction,
 	cloudProvider, cloudRegions, cloudKubernetes []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-hosts")
+	defer span.End()
+
 	res := map[NodeID][]NodeStub{}
 
 	query := `
@@ -713,6 +759,10 @@ func (ntp *neo4jTopologyReporter) getProcesses(
 	ctx context.Context,
 	tx neo4j.ExplicitTransaction, hosts,
 	containers []string) (map[NodeID][]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-processes")
+	defer span.End()
+
 	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(ctx, `
@@ -776,6 +826,10 @@ func (ntp *neo4jTopologyReporter) getPods(
 	tx neo4j.ExplicitTransaction,
 	hosts []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-pods")
+	defer span.End()
+
 	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(ctx, `
@@ -812,6 +866,10 @@ func (ntp *neo4jTopologyReporter) getContainers(
 	tx neo4j.ExplicitTransaction,
 	hosts, pods []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-containers")
+	defer span.End()
+
 	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(ctx, `
@@ -897,6 +955,10 @@ const (
 func (ntp *neo4jTopologyReporter) getContainerGraph(
 	ctx context.Context,
 	filters TopologyFilters) (RenderedGraph, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-container-graph")
+	defer span.End()
+
 	res := RenderedGraph{}
 
 	driver, err := directory.Neo4jClient(ctx)
@@ -934,6 +996,10 @@ func (ntp *neo4jTopologyReporter) getContainerGraph(
 func (ntp *neo4jTopologyReporter) getPodGraph(
 	ctx context.Context,
 	filters TopologyFilters) (RenderedGraph, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-pod-graph")
+	defer span.End()
+
 	res := RenderedGraph{}
 
 	podFilter := filters.PodFilter
@@ -970,6 +1036,10 @@ func (ntp *neo4jTopologyReporter) getPodGraph(
 }
 
 func (ntp *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-kubernetes-graph")
+	defer span.End()
+
 	res := RenderedGraph{}
 
 	kubernetesFilter := filters.KubernetesFilter
@@ -1033,6 +1103,10 @@ func (ntp *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filter
 }
 
 func (ntp *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-host-graph")
+	defer span.End()
+
 	res := RenderedGraph{}
 
 	hostFilter := filters.HostFilter
@@ -1095,6 +1169,10 @@ func (ntp *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topo
 }
 
 func (ntp *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-graph")
+	defer span.End()
+
 	res := RenderedGraph{}
 
 	cloudFilter := filters.CloudFilter
@@ -1197,6 +1275,9 @@ func NewNeo4jCollector(ctx context.Context) (TopologyReporter, error) {
 
 func GetTopologyDelta(ctx context.Context,
 	deltaReq model.TopologyDeltaReq) (model.TopologyDeltaResponse, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-topology-delta")
+	defer span.End()
 
 	deltaResp := model.TopologyDeltaResponse{}
 	deltaResp.Additions = make([]model.NodeIdentifier, 0)

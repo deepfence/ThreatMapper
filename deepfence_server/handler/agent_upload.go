@@ -18,6 +18,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -84,6 +85,10 @@ func (h *Handler) UploadAgentBinaries(w http.ResponseWriter, r *http.Request) {
 }
 
 func PrepareAgentBinariesReleases(ctx context.Context, versionedTarball map[string]*bytes.Buffer) (map[string]string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "agent", "prepare-agent-binaries-releases")
+	defer span.End()
+
 	processedTags := map[string]string{}
 	minio, err := directory.MinioClient(ctx)
 	if err != nil {
@@ -122,6 +127,10 @@ func PrepareAgentBinariesReleases(ctx context.Context, versionedTarball map[stri
 }
 
 func IngestAgentVersion(ctx context.Context, tagsToURL map[string]string, manual bool) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "agent", "ingest-agent-version")
+	defer span.End()
+
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -156,6 +165,10 @@ func IngestAgentVersion(ctx context.Context, tagsToURL map[string]string, manual
 }
 
 func CleanUpAgentVersion(ctx context.Context, tagsToKeep []string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "agent", "cleanup-agent-version")
+	defer span.End()
+
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -182,6 +195,10 @@ func CleanUpAgentVersion(ctx context.Context, tagsToKeep []string) error {
 }
 
 func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "agent", "schedule-auto-upgrade-for-patch-changes")
+	defer span.End()
+
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err

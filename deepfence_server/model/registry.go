@@ -15,6 +15,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
@@ -131,10 +132,16 @@ type Summary struct {
 
 // ListRegistriesSafe doesnot get secret field from DB
 func (rl *RegistryListReq) ListRegistriesSafe(ctx context.Context, pgClient *postgresqlDb.Queries) ([]postgresqlDb.GetContainerRegistriesSafeRow, error) {
+	ctx, span := telemetry.NewSpan(ctx, "registry", "list-registries-safe")
+	defer span.End()
 	return pgClient.GetContainerRegistriesSafe(ctx)
 }
 
 func (rl *RegistryListReq) IsRegistrySyncing(ctx context.Context, rid string) bool {
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "is-registry-syncing")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return false
@@ -179,10 +186,15 @@ func (rl *RegistryListReq) IsRegistrySyncing(ctx context.Context, rid string) bo
 
 // DeleteRegistry from DB
 func DeleteRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r int32) error {
+	ctx, span := telemetry.NewSpan(ctx, "registry", "delete-registry")
+	defer span.End()
 	return pgClient.DeleteContainerRegistry(ctx, r)
 }
 
 func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
+	ctx, span := telemetry.NewSpan(ctx, "registry", "registry-exists")
+	defer span.End()
+
 	_, err := pgClient.GetContainerRegistryByTypeAndName(ctx, postgresqlDb.GetContainerRegistryByTypeAndNameParams{
 		RegistryType: ra.RegistryType,
 		Name:         ra.Name,
@@ -196,6 +208,9 @@ func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgres
 }
 
 func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.Context, pgClient *postgresqlDb.Queries, ns string) (int32, error) {
+	ctx, span := telemetry.NewSpan(ctx, "registry", "create-registry")
+	defer span.End()
+
 	bSecret, err := json.Marshal(ra.Secret)
 	if err != nil {
 		return 0, err
@@ -265,6 +280,10 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 }
 
 func (ru *RegistryUpdateReq) UpdateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r int32) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "update-registry")
+	defer span.End()
+
 	bSecret, err := json.Marshal(ru.Secret)
 	if err != nil {
 		return err
@@ -292,6 +311,9 @@ func (ru *RegistryUpdateReq) UpdateRegistry(ctx context.Context, pgClient *postg
 }
 
 func (ru *RegistryUpdateReq) RegistryExists(ctx context.Context, pgClient *postgresqlDb.Queries, id int32) (bool, error) {
+	ctx, span := telemetry.NewSpan(ctx, "registry", "registry-exists")
+	defer span.End()
+
 	registry, err := pgClient.GetContainerRegistry(ctx, id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return false, nil
@@ -328,6 +350,9 @@ func (ru *RegistryUpdateReq) RegistryExists(ctx context.Context, pgClient *postg
 }
 
 func GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
+	ctx, span := telemetry.NewSpan(ctx, "registry", "get-aes-value-for-encryption")
+	defer span.End()
+
 	aes, err := GetSettingByKey(ctx, pgClient, commonConstants.AESSecret)
 	if err != nil {
 		return nil, err
@@ -342,6 +367,8 @@ func GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Querie
 }
 
 func (r *RegistryImageListReq) GetRegistryImages(ctx context.Context) ([]ContainerImage, error) {
+	ctx, span := telemetry.NewSpan(ctx, "registry", "get-registry-images")
+	defer span.End()
 	return GetContainerImagesFromRegistryAndNamespace(ctx, r.ResourceType, r.Namespace, r.ID)
 }
 
@@ -357,6 +384,9 @@ func (i *ImageStub) AddTags(tags ...string) ImageStub {
 }
 
 func ListImageStubs(ctx context.Context, registryID string, filter reporters.FieldsFilters, fw FetchWindow) ([]ImageStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "list-image-stubs")
+	defer span.End()
 
 	images := []ImageStub{}
 
@@ -417,6 +447,9 @@ func ListImageStubs(ctx context.Context, registryID string, filter reporters.Fie
 }
 
 func ListImages(ctx context.Context, registryID string, filter, stubFilter reporters.FieldsFilters, fw FetchWindow) ([]ContainerImage, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "list-images")
+	defer span.End()
 
 	res := []ContainerImage{}
 
@@ -503,6 +536,10 @@ func ListImages(ctx context.Context, registryID string, filter, stubFilter repor
 }
 
 func checkRegistryExists(ctx context.Context, tx neo4j.ExplicitTransaction, nodeID string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "check-registry-exists")
+	defer span.End()
+
 	query := `
 	MATCH (n:RegistryAccount{node_id: $id})
 	RETURN n.node_id`
@@ -520,6 +557,9 @@ func checkRegistryExists(ctx context.Context, tx neo4j.ExplicitTransaction, node
 }
 
 func GetRegistryPgIDs(ctx context.Context, nodeIDs []string) ([]int64, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "get-registry-pg-ids")
+	defer span.End()
 
 	res := []int64{}
 	driver, err := directory.Neo4jClient(ctx)
@@ -560,6 +600,9 @@ func GetRegistryPgIDs(ctx context.Context, nodeIDs []string) ([]int64, error) {
 }
 
 func DeleteRegistryAccount(ctx context.Context, nodeIDs []string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "delete-registry-account")
+	defer span.End()
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -604,6 +647,9 @@ func toScansCount(scans []interface{}) Summary {
 }
 
 func RegistrySummary(ctx context.Context, registryID mo.Option[string], registryType mo.Option[string]) (Summary, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "registry-summary")
+	defer span.End()
 
 	count := Summary{}
 
@@ -708,6 +754,9 @@ func RegistrySummary(ctx context.Context, registryID mo.Option[string], registry
 }
 
 func RegistrySummaryAll(ctx context.Context) (RegistrySummaryAllResp, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "registry-summary-all")
+	defer span.End()
 
 	count := RegistrySummaryAllResp{}
 

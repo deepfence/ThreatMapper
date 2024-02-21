@@ -9,6 +9,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -56,6 +57,9 @@ func AddNewScan(ctx context.Context,
 	nodeID string,
 	isPriority bool,
 	action controls.Action) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "add-new-scan")
+	defer span.End()
 
 	res, err := tx.Run(ctx, fmt.Sprintf(`
 		OPTIONAL MATCH (n:%s{node_id:$node_id})
@@ -229,6 +233,9 @@ func AddNewCloudComplianceScan(
 	nodeType string,
 	isPriority bool) error {
 
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "add-new-cloud-compliance-scan")
+	defer span.End()
+
 	neo4jNodeType := "CloudNode"
 	scanType := utils.NEO4JCloudComplianceScan
 	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
@@ -365,6 +372,9 @@ MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, 
 
 func UpdateScanStatus(ctx context.Context, scanType string, scanID string, status, message string) error {
 
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "update-scan-status")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 
 	if err != nil {
@@ -397,6 +407,9 @@ func UpdateScanStatus(ctx context.Context, scanType string, scanID string, statu
 }
 
 func AddBulkScan(ctx context.Context, tx neo4j.ExplicitTransaction, scanType utils.Neo4jScanType, bulkScanID string, scanIDs []string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "add-bulk-scan")
+	defer span.End()
 
 	if _, err := tx.Run(ctx, fmt.Sprintf(`
 		MERGE (n:Bulk%s{node_id: $bscan_id})

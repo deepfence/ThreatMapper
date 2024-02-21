@@ -12,11 +12,16 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier) (map[string]struct{}, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "verify-node-ids")
+	defer span.End()
+
 	inProgressNodeIds := map[string]struct{}{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -73,6 +78,10 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 }
 
 func UpdateAgentDiagnosticLogsStatus(ctx context.Context, status diagnosis.DiagnosticLogsStatus) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "update-agent-diagnostic-logs-status")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -99,6 +108,10 @@ func UpdateAgentDiagnosticLogsStatus(ctx context.Context, status diagnosis.Diagn
 }
 
 func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier, tail string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "generate-agent-diagnostic-logs")
+	defer span.End()
+
 	inProgressNodeIds, err := verifyNodeIds(ctx, nodeIdentifiers)
 	if err != nil {
 		return err

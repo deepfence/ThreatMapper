@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/xuri/excelize/v2"
 )
@@ -73,6 +74,9 @@ var (
 )
 
 func generateXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "reports", "generate-xlsx-report")
+	defer span.End()
 
 	var (
 		xlsxFile string

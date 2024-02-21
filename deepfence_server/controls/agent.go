@@ -9,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
@@ -22,6 +23,9 @@ var (
 )
 
 func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int) ([]controls.Action, []error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "get-agent-actions")
+	defer span.End()
 
 	// Append more actions here
 	actions := []controls.Action{}
@@ -65,6 +69,10 @@ func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int) (
 }
 
 func GetPendingAgentScans(ctx context.Context, nodeID string, availableWorkload int) ([]controls.Action, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "get-pending-agent-scans")
+	defer span.End()
+
 	res := []controls.Action{}
 	if len(nodeID) == 0 {
 		return res, ErrMissingNodeID
@@ -222,6 +230,9 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeID string, nodeT
 }
 
 func hasPendingAgentScans(ctx context.Context, client neo4j.DriverWithContext, nodeID string, maxWork int) (bool, error) {
+	ctx, span := telemetry.NewSpan(ctx, "control", "has-pending-agent-scans")
+	defer span.End()
+
 	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close(ctx)
 
@@ -247,6 +258,9 @@ func hasPendingAgentScans(ctx context.Context, client neo4j.DriverWithContext, n
 }
 
 func ExtractStartingAgentScans(ctx context.Context, nodeID string, maxWork int) ([]controls.Action, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "extract-starting-agent-scans")
+	defer span.End()
 
 	res := []controls.Action{}
 	if len(nodeID) == 0 {
@@ -313,6 +327,9 @@ func ExtractStartingAgentScans(ctx context.Context, nodeID string, maxWork int) 
 }
 
 func ExtractStoppingAgentScans(ctx context.Context, nodeID string, maxWrok int) ([]controls.Action, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "extract-stopping-agent-scans")
+	defer span.End()
 
 	res := []controls.Action{}
 	if len(nodeID) == 0 {
@@ -387,6 +404,10 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeID string, maxWrok int) 
 }
 
 func hasPendingAgentUpgrade(ctx context.Context, client neo4j.DriverWithContext, nodeID string, maxWork int) (bool, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "has-pending-agent-upgrade")
+	defer span.End()
+
 	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close(ctx)
 
@@ -412,6 +433,10 @@ func hasPendingAgentUpgrade(ctx context.Context, client neo4j.DriverWithContext,
 }
 
 func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int) ([]controls.Action, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "extract-pending-agent-upgrade")
+	defer span.End()
+
 	res := []controls.Action{}
 	if len(nodeID) == 0 {
 		return res, ErrMissingNodeID
@@ -477,6 +502,9 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int)
 }
 
 func CheckNodeExist(ctx context.Context, nodeID string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "check-node-exist")
+	defer span.End()
 
 	if len(nodeID) == 0 {
 		return ErrMissingNodeID

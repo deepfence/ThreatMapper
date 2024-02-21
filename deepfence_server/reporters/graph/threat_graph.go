@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
 )
@@ -32,6 +33,10 @@ const (
 var CloudAll = [...]string{CloudAws, CloudAzure, CloudGcp, CloudPrivate}
 
 func (tc *ThreatGraphReporter) GetThreatGraph(ctx context.Context, filter ThreatFilters) (ThreatGraph, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "graph", "get-threat-graph")
+	defer span.End()
+
 	aggreg, err := tc.GetRawThreatGraph(ctx, filter)
 	if err != nil {
 		return ThreatGraph{}, err
@@ -119,6 +124,9 @@ func buildAttackPaths(paths AttackPaths, root int64, visited map[int64]struct{})
 }
 
 func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters ThreatFilters) (map[string]AttackPaths, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "graph", "get-raw-threat-graph")
+	defer span.End()
 
 	driver, err := directory.Neo4jClient(ctx)
 
