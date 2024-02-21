@@ -67,6 +67,7 @@ const (
 	ScanStatusCancelPending = "CANCEL_PENDING"
 	ScanStatusCancelling    = "CANCELLING"
 	ScanStatusCancelled     = "CANCELLED"
+	ScanStatusDeletePending = "DELETE_PENDING"
 )
 
 // Neo4j Node Labels
