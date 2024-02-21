@@ -158,12 +158,13 @@ func gitlabCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) 
 		log.Error().Msg(err.Error())
 	}
 
+	imagePrefix, _, _ := strings.Cut(httpReplacer.Replace(hub.NonSecret.GitlabRegistryURL), "/")
 	return regCreds{
 		URL:           hub.NonSecret.GitlabRegistryURL,
 		UserName:      "gitlab-ci-token",
 		Password:      hub.Secret.GitlabToken,
 		NameSpace:     "",
-		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.GitlabRegistryURL),
+		ImagePrefix:   imagePrefix,
 		SkipTLSVerify: true,
 		UseHttp:       useHttp(hub.NonSecret.GitlabRegistryURL),
 		IsRegistry:    true,

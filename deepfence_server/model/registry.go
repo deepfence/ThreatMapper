@@ -482,6 +482,7 @@ func ListImages(ctx context.Context, registryID string, filter, stubFilter repor
 		if exists {
 			var tagList []string
 			dockerImageName, _ := dockerImageNameVal.(string)
+			node.Name = dockerImageName
 			for _, imageTag := range node.DockerImageTagList {
 				tokens := strings.Split(imageTag, ":")
 				if len(tokens) > 1 {
