@@ -79,10 +79,10 @@ copy
 
 echo "Creating tar.gz file..."
 rm -rf $folder.tar.gz
-chown -R root:root $folder
+sudo chown -R root:root $folder
 cd $folder
-tar -czvf $folder.tar.gz .
-mv $folder.tar.gz ../
+sudo tar -czvf $folder.tar.gz .
+sudo mv $folder.tar.gz ../
 
 cd ../
 # rm -rf $folder
