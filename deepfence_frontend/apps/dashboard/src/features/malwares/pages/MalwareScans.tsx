@@ -310,7 +310,6 @@ const ActionDropdown = ({
             <DropdownItem
               onSelect={(e) => {
                 e.preventDefault();
-                if (isScanInProgress(scanStatus)) return;
                 onTableAction(row, ActionEnumType.START_SCAN);
               }}
               disabled={
@@ -339,7 +338,8 @@ const ActionDropdown = ({
             >
               <span
                 className={cn('flex items-center text-red-700 dark:text-status-error', {
-                  'dark:text-gray-600': isScanInProgress(scanStatus),
+                  'dark:text-gray-600':
+                    isScanInProgress(scanStatus) || isScanDeletePending(scanStatus),
                 })}
               >
                 Delete scan

@@ -735,7 +735,9 @@ const ActionDropdown = ({
               <span
                 className={cn('flex items-center text-red-700 dark:text-status-error', {
                   'dark:text-gray-600':
-                    isScanInProgress(scanStatus) || isNeverScanned(scanStatus),
+                    isScanInProgress(scanStatus) ||
+                    isNeverScanned(scanStatus) ||
+                    isScanDeletePending(scanStatus),
                 })}
               >
                 Delete latest scan

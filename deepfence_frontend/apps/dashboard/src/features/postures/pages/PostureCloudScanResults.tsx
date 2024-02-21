@@ -62,6 +62,7 @@ import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanHistoryDropdown } from '@/components/scan-history/HistoryList';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import {
+  ScanStatusDeletePending,
   ScanStatusInError,
   ScanStatusInProgress,
   ScanStatusNoData,
@@ -91,6 +92,7 @@ import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
 import {
   isScanComplete,
+  isScanDeletePending,
   isScanFailed,
   isScanInProgress,
   isScanStopped,
@@ -728,7 +730,7 @@ const HistoryControls = () => {
         )}
         <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
         <ScanStatusBadge status={status ?? ''} />
-        {!isScanInProgress(status ?? '') ? (
+        {!isScanInProgress(status ?? '') && !isScanDeletePending(status ?? '') ? (
           <>
             <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
             <div className="pl-1.5 flex">
@@ -789,18 +791,22 @@ const HistoryControls = () => {
             </div>
           </>
         ) : (
-          <Button
-            type="button"
-            variant="flat"
-            size="sm"
-            className="absolute right-0 top-0"
-            onClick={(e) => {
-              e.preventDefault();
-              setOpenStopScanModal(true);
-            }}
-          >
-            Cancel scan
-          </Button>
+          <>
+            {!isScanDeletePending(status ?? '') ? (
+              <Button
+                type="button"
+                variant="flat"
+                size="sm"
+                className="absolute right-0 top-0"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpenStopScanModal(true);
+                }}
+              >
+                Cancel scan
+              </Button>
+            ) : null}
+          </>
         )}
       </div>
     </div>
@@ -1332,6 +1338,14 @@ const TablePlaceholder = ({
     );
   }
 
+  if (isScanDeletePending(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center min-h-[384px]">
+        <ScanStatusDeletePending />
+      </div>
+    );
+  }
+
   return <TableNoDataElement text="No data available" />;
 };
 
@@ -1686,6 +1700,13 @@ const ScanStatusWrapper = ({
     return (
       <div className={className}>
         <ScanStatusInProgress />
+      </div>
+    );
+  }
+  if (isScanDeletePending(scanStatusResult?.status ?? '')) {
+    return (
+      <div className="flex items-center justify-center h-[140px]">
+        <ScanStatusDeletePending />
       </div>
     );
   }

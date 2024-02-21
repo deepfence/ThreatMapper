@@ -29,7 +29,8 @@ export const isScanInProgress = (status: string): boolean => {
     !isScanFailed(status) &&
     !isNeverScanned(status) &&
     !isScanStopped(status) &&
-    !isScanStopping(status)
+    !isScanStopping(status) &&
+    !isScanDeletePending(status)
   ) {
     return true;
   }
