@@ -1,6 +1,6 @@
 import { upperFirst } from 'lodash-es';
 import { useState } from 'react';
-import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher, useSearchParams } from 'react-router-dom';
 import {
   Button,
   Checkbox,
@@ -74,56 +74,17 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 
   const masked = formData.getAll('mask[]');
   const status = formData.getAll('status[]');
-
-  const accountIds = getArrayTypeValuesFromFormData(formData, 'cloudAccountsFilter');
   const interval = formData.get('interval'); // send this when backend is ready to support
 
-  // severities or benchmark types
-  const selectedSeveritiesOrCheckTypeLength = Number(
-    formData.get('selectedSeveritiesOrCheckTypeLength'),
+  const accountIds = getArrayTypeValuesFromFormData(formData, 'cloudAccountsFilter');
+  const severitiesOrCheckTypes = getArrayTypeValuesFromFormData(
+    formData,
+    'severityOrCheckType',
   );
-  const severitiesOrCheckTypes = [];
-  if (selectedSeveritiesOrCheckTypeLength > 0) {
-    for (let i = 0; i < selectedSeveritiesOrCheckTypeLength; i++) {
-      severitiesOrCheckTypes.push(formData.get(`severityOrCheckType[${i}]`) as string);
-    }
-  }
-
-  // host filter
-  const selectedHostLength = Number(formData.get('selectedHostLength'));
-  const hostIds = [];
-  if (selectedHostLength > 0) {
-    for (let i = 0; i < selectedHostLength; i++) {
-      hostIds.push(formData.get(`hostFilter[${i}]`) as string);
-    }
-  }
-
-  // container filter
-  const selectedContainerLength = Number(formData.get('selectedContainerLength'));
-  const containers = [];
-  if (selectedContainerLength > 0) {
-    for (let i = 0; i < selectedContainerLength; i++) {
-      containers.push(formData.get(`containerFilter[${i}]`) as string);
-    }
-  }
-
-  // image filter
-  const selectedImageLength = Number(formData.get('selectedImageLength'));
-  const containerImages = [];
-  if (selectedImageLength > 0) {
-    for (let i = 0; i < selectedImageLength; i++) {
-      containerImages.push(formData.get(`imageFilter[${i}]`) as string);
-    }
-  }
-
-  // cluster filter
-  const selectedClusterLength = Number(formData.get('selectedClusterLength'));
-  const clusterIds = [];
-  if (selectedClusterLength > 0) {
-    for (let i = 0; i < selectedClusterLength; i++) {
-      clusterIds.push(formData.get(`clusterFilter[${i}]`) as string);
-    }
-  }
+  const hostIds = getArrayTypeValuesFromFormData(formData, 'hostFilter');
+  const containers = getArrayTypeValuesFromFormData(formData, 'containerFilter');
+  const containerImages = getArrayTypeValuesFromFormData(formData, 'imageFilter');
+  const clusterIds = getArrayTypeValuesFromFormData(formData, 'clusterFilter');
 
   const _masked: boolean[] = [];
   if (masked.includes('Masked')) {
@@ -412,12 +373,13 @@ const ReportForm = () => {
 };
 const CreateReport = () => {
   const { navigate } = usePageNavigation();
+  const [searchParams] = useSearchParams();
 
   return (
     <SlidingModal
       open={true}
       onOpenChange={() => {
-        navigate(`..`);
+        navigate(`..?${searchParams.toString()}`);
       }}
       size="l"
     >

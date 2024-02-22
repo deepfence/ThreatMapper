@@ -13,13 +13,16 @@ spec:
     type: RollingUpdate
   selector:
     matchLabels:
-      {{- include "deepfence-console.labels" . | nindent 6 }}
+      {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
       name: {{ include "deepfence-console.fullname" . }}-cluster-agent
   template:
     metadata:
       labels:
-        {{- include "deepfence-console.labels" . | nindent 8 }}
+        {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
         name: {{ include "deepfence-console.fullname" . }}-cluster-agent
+        {{- with .Values.console_agents.cluster_agent.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       automountServiceAccountToken: true
@@ -46,7 +49,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-            {{- if .Values.clusterName }}
+            {{- if .Values.console_agents.cluster_name }}
             - name: SCOPE_HOSTNAME
               value: "{{ .Values.console_agents.cluster_name }}-$(AGENT_HOSTNAME)"
             {{- else }}

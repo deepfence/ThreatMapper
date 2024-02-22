@@ -82,6 +82,12 @@ export interface ModelHost {
     cloud_region: string;
     /**
      * 
+     * @type {number}
+     * @memberof ModelHost
+     */
+    cloud_warn_alarm_count: number;
+    /**
+     * 
      * @type {string}
      * @memberof ModelHost
      */
@@ -122,6 +128,24 @@ export interface ModelHost {
      * @memberof ModelHost
      */
     cpu_usage: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelHost
+     */
+    exploitable_malwares_count: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelHost
+     */
+    exploitable_secrets_count: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelHost
+     */
+    exploitable_vulnerabilities_count: number;
     /**
      * 
      * @type {string}
@@ -308,6 +332,12 @@ export interface ModelHost {
      * @memberof ModelHost
      */
     vulnerability_scan_status: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelHost
+     */
+    warn_alarm_count: number;
 }
 
 /**
@@ -320,6 +350,7 @@ export function instanceOfModelHost(value: object): boolean {
     isInstance = isInstance && "cloud_account_id" in value;
     isInstance = isInstance && "cloud_provider" in value;
     isInstance = isInstance && "cloud_region" in value;
+    isInstance = isInstance && "cloud_warn_alarm_count" in value;
     isInstance = isInstance && "compliance_latest_scan_id" in value;
     isInstance = isInstance && "compliance_scan_status" in value;
     isInstance = isInstance && "compliances_count" in value;
@@ -327,6 +358,9 @@ export function instanceOfModelHost(value: object): boolean {
     isInstance = isInstance && "containers" in value;
     isInstance = isInstance && "cpu_max" in value;
     isInstance = isInstance && "cpu_usage" in value;
+    isInstance = isInstance && "exploitable_malwares_count" in value;
+    isInstance = isInstance && "exploitable_secrets_count" in value;
+    isInstance = isInstance && "exploitable_vulnerabilities_count" in value;
     isInstance = isInstance && "host_name" in value;
     isInstance = isInstance && "inbound_connections" in value;
     isInstance = isInstance && "instance_id" in value;
@@ -358,6 +392,7 @@ export function instanceOfModelHost(value: object): boolean {
     isInstance = isInstance && "vulnerabilities_count" in value;
     isInstance = isInstance && "vulnerability_latest_scan_id" in value;
     isInstance = isInstance && "vulnerability_scan_status" in value;
+    isInstance = isInstance && "warn_alarm_count" in value;
 
     return isInstance;
 }
@@ -377,6 +412,7 @@ export function ModelHostFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'cloud_account_id': json['cloud_account_id'],
         'cloud_provider': json['cloud_provider'],
         'cloud_region': json['cloud_region'],
+        'cloud_warn_alarm_count': json['cloud_warn_alarm_count'],
         'compliance_latest_scan_id': json['compliance_latest_scan_id'],
         'compliance_scan_status': json['compliance_scan_status'],
         'compliances_count': json['compliances_count'],
@@ -384,6 +420,9 @@ export function ModelHostFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'containers': (json['containers'] === null ? null : (json['containers'] as Array<any>).map(ModelContainerFromJSON)),
         'cpu_max': json['cpu_max'],
         'cpu_usage': json['cpu_usage'],
+        'exploitable_malwares_count': json['exploitable_malwares_count'],
+        'exploitable_secrets_count': json['exploitable_secrets_count'],
+        'exploitable_vulnerabilities_count': json['exploitable_vulnerabilities_count'],
         'host_name': json['host_name'],
         'inbound_connections': (json['inbound_connections'] === null ? null : (json['inbound_connections'] as Array<any>).map(ModelConnectionFromJSON)),
         'instance_id': json['instance_id'],
@@ -415,6 +454,7 @@ export function ModelHostFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'vulnerabilities_count': json['vulnerabilities_count'],
         'vulnerability_latest_scan_id': json['vulnerability_latest_scan_id'],
         'vulnerability_scan_status': json['vulnerability_scan_status'],
+        'warn_alarm_count': json['warn_alarm_count'],
     };
 }
 
@@ -432,6 +472,7 @@ export function ModelHostToJSON(value?: ModelHost | null): any {
         'cloud_account_id': value.cloud_account_id,
         'cloud_provider': value.cloud_provider,
         'cloud_region': value.cloud_region,
+        'cloud_warn_alarm_count': value.cloud_warn_alarm_count,
         'compliance_latest_scan_id': value.compliance_latest_scan_id,
         'compliance_scan_status': value.compliance_scan_status,
         'compliances_count': value.compliances_count,
@@ -439,6 +480,9 @@ export function ModelHostToJSON(value?: ModelHost | null): any {
         'containers': (value.containers === null ? null : (value.containers as Array<any>).map(ModelContainerToJSON)),
         'cpu_max': value.cpu_max,
         'cpu_usage': value.cpu_usage,
+        'exploitable_malwares_count': value.exploitable_malwares_count,
+        'exploitable_secrets_count': value.exploitable_secrets_count,
+        'exploitable_vulnerabilities_count': value.exploitable_vulnerabilities_count,
         'host_name': value.host_name,
         'inbound_connections': (value.inbound_connections === null ? null : (value.inbound_connections as Array<any>).map(ModelConnectionToJSON)),
         'instance_id': value.instance_id,
@@ -470,6 +514,7 @@ export function ModelHostToJSON(value?: ModelHost | null): any {
         'vulnerabilities_count': value.vulnerabilities_count,
         'vulnerability_latest_scan_id': value.vulnerability_latest_scan_id,
         'vulnerability_scan_status': value.vulnerability_scan_status,
+        'warn_alarm_count': value.warn_alarm_count,
     };
 }
 

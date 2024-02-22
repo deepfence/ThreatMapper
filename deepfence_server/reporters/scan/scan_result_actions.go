@@ -75,7 +75,19 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
         MATCH (s) -[:SCANNED] ->(e)
         MATCH (c:ContainerImage{node_id: e.docker_image_id}) -[:ALIAS] ->(t)
         MERGE (t) -[m:MASKED]->(n)
-        SET m.masked = $value`
+        SET m.masked = $value
+		WITH c,n
+		MATCH (c) -[:IS] ->(ist)
+		%s`
+
+		imageStubQuery := ""
+		if value {
+			imageStubQuery = `MERGE (ist) -[ma:MASKED]-> (n) SET ma.masked = true`
+		} else {
+			imageStubQuery = `MATCH(ist) -[ma:MASKED] -> (n) DELETE ma`
+		}
+
+		globalQuery = fmt.Sprintf(globalQuery, imageStubQuery)
 
 		if utils.Neo4jScanType(req.ScanType) == utils.NEO4JCloudComplianceScan {
 			globalQuery = `
@@ -96,13 +108,37 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 
 		_, err = tx.Run(globalQuery, map[string]interface{}{"node_ids": req.ResultIDs, "value": value, "active": !value})
 
-	case utils.MaskAllImageTag, utils.MaskEntity:
+	case utils.MaskAllImageTag:
+		entityQuery := `
+        MATCH (s:` + string(req.ScanType) + `) - [d:DETECTED] -> (n)
+        WHERE n.node_id IN $node_ids
+		WITH s, n, d
+		MATCH (s) -[:SCANNED]-> (c:ContainerImage) -[:ALIAS] ->(t) -[m:MASKED]-> (n)
+		WITH s, n, d, m, c
+		MATCH (c)-[:IS]->(ist)
+		SET d.masked=$value, m.masked=$value
+		WITH ist, n
+		%s`
+
+		imageStubQuery := ""
+		if value {
+			imageStubQuery = `MERGE (ist) -[ma:MASKED]-> (n) SET ma.masked = true`
+		} else {
+			imageStubQuery = `MATCH(ist) -[ma:MASKED] -> (n) DELETE ma`
+		}
+
+		entityQuery = fmt.Sprintf(entityQuery, imageStubQuery)
+		log.Debug().Msgf("mask_all_image_tag query: %s", entityQuery)
+		_, err = tx.Run(entityQuery, map[string]interface{}{"node_ids": req.ResultIDs,
+			"value": value, "scan_id": req.ScanID})
+
+	case utils.MaskEntity:
 		entityQuery := `
         MATCH (s:` + string(req.ScanType) + `) - [d:DETECTED] -> (n)
         WHERE n.node_id IN $node_ids
         SET n.masked = $value, d.masked = $value`
 
-		log.Debug().Msgf("mask_entity/mask_all_image_tag query: %s", entityQuery)
+		log.Debug().Msgf("mask_entity query: %s", entityQuery)
 
 		_, err = tx.Run(entityQuery, map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
 
@@ -266,6 +302,8 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 		return nil
 	}
 
+	log.Debug().Msgf("Query:%s", fmt.Sprintf(query, scanID))
+
 	tx4, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
@@ -281,6 +319,39 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 	}
 
 	return nil
+}
+
+func MarkScanDeletePending(ctx context.Context, scanType utils.Neo4jScanType,
+	scanIds []string) error {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	query := `MATCH (n:%s) -[:SCANNED]-> (m)
+			WHERE n.node_id IN $scan_ids
+			SET n.status = $delete_pending`
+
+	queryStr := fmt.Sprintf(query, string(scanType))
+
+	log.Debug().Msgf("Query: %s", queryStr)
+
+	if _, err = tx.Run(queryStr,
+		map[string]interface{}{
+			"scan_ids":       scanIds,
+			"delete_pending": utils.ScanStatusDeletePending,
+		}); err != nil {
+		log.Error().Msgf("Failed to mark scans as DELETE_PENDING, Error: %s", err.Error())
+		return err
+	}
+	return tx.Commit()
 }
 
 func StopCloudComplianceScan(ctx context.Context, scanIds []string) error {

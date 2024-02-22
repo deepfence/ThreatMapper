@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 	"os"
 	"path"
@@ -29,11 +30,16 @@ func fileExt(reportType sdkUtils.ReportType) string {
 		return ".xlsx"
 	case sdkUtils.ReportPDF:
 		return ".pdf"
+	case sdkUtils.ReportSBOM:
+		return ".json.gz"
 	}
 	return ".unknown"
 }
 
 func reportFileName(params sdkUtils.ReportParams) string {
+	if sdkUtils.ReportType(params.ReportType) == sdkUtils.ReportSBOM {
+		return fmt.Sprintf("sbom_%s%s", params.ReportID, fileExt(sdkUtils.ReportSBOM))
+	}
 	list := []string{params.Filters.ScanType, params.Filters.NodeType, params.ReportID}
 	return strings.Join(list, "_") + fileExt(sdkUtils.ReportType(params.ReportType))
 }
@@ -44,6 +50,8 @@ func putOpts(reportType sdkUtils.ReportType) minio.PutObjectOptions {
 		return minio.PutObjectOptions{ContentType: "application/xlsx"}
 	case sdkUtils.ReportPDF:
 		return minio.PutObjectOptions{ContentType: "application/pdf"}
+	case sdkUtils.ReportSBOM:
+		return minio.PutObjectOptions{ContentType: "application/gzip"}
 	}
 	return minio.PutObjectOptions{}
 }
@@ -54,11 +62,15 @@ func generateReport(ctx context.Context, params sdkUtils.ReportParams) (string, 
 		return generatePDF(ctx, params)
 	case sdkUtils.ReportXLSX:
 		return generateXLSX(ctx, params)
+	case sdkUtils.ReportSBOM:
+		return generateSBOM(ctx, params)
 	}
 	return "", ErrUnknownReportType
 }
 
 func GenerateReport(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
 
 	var params sdkUtils.ReportParams
 
@@ -70,7 +82,6 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 		log.Error().Msg("tenant-id/namespace is empty")
 		return errors.New("tenant-id/namespace is empty")
 	}
-	log.Info().Msgf("message tenant id %s", string(tenantID))
 
 	log.Info().Msgf("payload: %s ", string(task.Payload()))
 
@@ -114,7 +125,7 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 
 	reportName := path.Join("/report", reportFileName(params))
 	res, err := mc.UploadLocalFile(ctx, reportName,
-		localReportPath, false, putOpts(sdkUtils.ReportType(params.ReportType)))
+		localReportPath, true, putOpts(sdkUtils.ReportType(params.ReportType)))
 	if err != nil {
 		log.Error().Err(err).Msg("failed to upload file to minio")
 		return nil
@@ -136,7 +147,10 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 	return nil
 }
 
-func updateReportState(ctx context.Context, session neo4j.Session, reportId, url, path, status string) {
+func updateReportState(ctx context.Context, session neo4j.Session, reportID, url, path, status string) {
+
+	log := log.WithCtx(ctx)
+
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -150,7 +164,7 @@ func updateReportState(ctx context.Context, session neo4j.Session, reportId, url
 	RETURN n
 	`
 	vars := map[string]interface{}{
-		"uid":    reportId,
+		"uid":    reportID,
 		"url":    url,
 		"status": status,
 		"path":   path,

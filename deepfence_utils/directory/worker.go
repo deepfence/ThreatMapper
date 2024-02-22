@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sync"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
 )
 
@@ -65,6 +66,30 @@ func (ws WorkEnqueuer) Enqueue(taskEnum string, data []byte, opts ...asynq.Optio
 	_, err = client.Enqueue(asynq.NewTask(taskEnum, data), opts...)
 
 	return err
+}
+
+// utility func to use when task name is used as task id to ensure unique task is enqueued
+func (ws WorkEnqueuer) EnqueueUnique(taskEnum string, data []byte, opts ...asynq.Option) error {
+	opts = append(opts, asynq.TaskID(taskEnum))
+	return ws.Enqueue(taskEnum, data, opts...)
+}
+
+func (ws WorkEnqueuer) DeleteAllArchivedTasks() (int, []error) {
+	var deletedTasksCount int
+	var errs []error
+	for _, queue := range utils.AsynqQueues {
+		count, err := ws.clients.inspector.DeleteAllArchivedTasks(queue)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		deletedTasksCount += count
+	}
+	return deletedTasksCount, errs
+}
+
+func (ws WorkEnqueuer) Inspector() *asynq.Inspector {
+	return ws.clients.inspector
 }
 
 func Worker(ctx context.Context) (WorkEnqueuer, error) {

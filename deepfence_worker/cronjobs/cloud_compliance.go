@@ -48,6 +48,9 @@ type Control struct {
 }
 
 func AddCloudControls(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	log.Info().Msgf("Starting Cloud Compliance Population")
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -193,6 +196,9 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 }
 
 func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	log.Info().Msgf("Caching Posture Providers")
 	defer log.Info().Msgf("Caching Posture Providers - Done")
 	driver, err := directory.Neo4jClient(ctx)

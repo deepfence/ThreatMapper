@@ -10,7 +10,7 @@ Once you have installed the Management Console, you need to register an admin us
 You will need the IP address for the management console:
 
 * On a Docker host, you can find the external, routable IP address of the host using `hostname -I`.
-* On a Kubernetes host, find the external IP address of the load balancer for the `deepfence-router` service (`kubectl get --namespace default svc -w deepfence-router`).
+* On a Kubernetes host, find the external IP address of the load balancer for the `deepfence-console-router` service (`kubectl get --namespace deepfence-console  svc -w deepfence-console-router`).
 :::
 
 ## Initial Configuration

@@ -73,6 +73,9 @@ func GetConfigFileFromRegistry(ctx context.Context, registryId string) (string, 
 }
 
 func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCreds, error) {
+
+	log := log.WithCtx(ctx)
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf(err.Error())
@@ -155,18 +158,20 @@ func gitlabCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) 
 		log.Error().Msg(err.Error())
 	}
 
+	imagePrefix, _, _ := strings.Cut(httpReplacer.Replace(hub.NonSecret.GitlabRegistryURL), "/")
 	return regCreds{
 		URL:           hub.NonSecret.GitlabRegistryURL,
 		UserName:      "gitlab-ci-token",
 		Password:      hub.Secret.GitlabToken,
 		NameSpace:     "",
-		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.GitlabRegistryURL),
+		ImagePrefix:   imagePrefix,
 		SkipTLSVerify: true,
 		UseHttp:       useHttp(hub.NonSecret.GitlabRegistryURL),
 		IsRegistry:    true,
 	}, nil
 
 }
+
 func ecrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (regCreds, error) {
 	var (
 		err       error
@@ -203,7 +208,7 @@ func ecrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (re
 	}
 	mySession := session.Must(session.NewSession(&awsConfig))
 
-	if hub.NonSecret.UseIAMRole == "true" {
+	if hub.NonSecret.UseIAMRole == "true" && len(hub.NonSecret.TargetAccountRoleARN) > 0 {
 		creds = stscreds.NewCredentials(mySession, hub.NonSecret.TargetAccountRoleARN)
 		svc = ecr.New(mySession, &aws.Config{
 			Credentials: creds,

@@ -5,9 +5,10 @@ import (
 )
 
 type GenerateReportReq struct {
-	ReportType string              `json:"report_type" validate:"required" required:"true" enum:"pdf,xlsx"`
+	ReportType string              `json:"report_type" validate:"required" required:"true" enum:"pdf,xlsx,sbom"`
 	Duration   int                 `json:"duration" enum:"0,1,7,30,60,90,180"`
 	Filters    utils.ReportFilters `json:"filters"`
+	Options    utils.ReportOptions `json:"options" validate:"omitempty"`
 }
 
 type GenerateReportResp struct {
@@ -16,6 +17,10 @@ type GenerateReportResp struct {
 
 type ReportReq struct {
 	ReportID string `json:"report_id" path:"report_id" validate:"required" required:"true"`
+}
+
+type BulkDeleteReportReq struct {
+	ReportIDs []string `json:"report_ids" required:"true"`
 }
 
 type ExportReport struct {

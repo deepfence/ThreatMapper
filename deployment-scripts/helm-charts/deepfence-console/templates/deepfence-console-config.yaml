@@ -9,3 +9,4 @@ metadata:
 data:
   DEEPFENCE_DEBUG: "false"
   DEEPFENCE_SAAS_DEPLOYMENT: "false"
+  DEEPFENCE_TELEMETRY_ENABLED: "false"

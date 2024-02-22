@@ -16,6 +16,7 @@ import {
   ModelScanResultsReq,
   SearchSearchNodeReq,
 } from '@/api/generated';
+import { DF404Error } from '@/components/error/404';
 import { ScanStatusEnum } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -52,6 +53,11 @@ export const postureQueries = createQueryKeys('posture', {
       descending: boolean;
     };
     org_accounts?: string[];
+    aws_accounts?: string[];
+    gcp_accounts?: string[];
+    azure_accounts?: string[];
+    hosts?: string[];
+    clusters?: string[];
   }) => {
     const {
       page = 1,
@@ -61,6 +67,11 @@ export const postureQueries = createQueryKeys('posture', {
       order,
       nodeType,
       org_accounts,
+      aws_accounts,
+      gcp_accounts,
+      azure_accounts,
+      hosts,
+      clusters,
     } = filters;
     return {
       queryKey: [{ filters }],
@@ -101,6 +112,29 @@ export const postureQueries = createQueryKeys('posture', {
         if (org_accounts && org_accounts.length) {
           searchReq.node_filter.filters.contains_filter.filter_in!['organization_id'] =
             org_accounts;
+        }
+
+        if (aws_accounts && aws_accounts.length) {
+          searchReq.node_filter.filters.contains_filter.filter_in!['node_id'] =
+            aws_accounts;
+        }
+
+        if (gcp_accounts && gcp_accounts.length) {
+          searchReq.node_filter.filters.contains_filter.filter_in!['node_id'] =
+            gcp_accounts;
+        }
+
+        if (azure_accounts && azure_accounts.length) {
+          searchReq.node_filter.filters.contains_filter.filter_in!['node_id'] =
+            azure_accounts;
+        }
+
+        if (hosts && hosts.length) {
+          searchReq.node_filter.filters.contains_filter.filter_in!['node_id'] = hosts;
+        }
+
+        if (clusters && clusters.length) {
+          searchReq.node_filter.filters.contains_filter.filter_in!['node_id'] = clusters;
         }
 
         if (complianceScanStatus) {
@@ -177,6 +211,7 @@ export const postureQueries = createQueryKeys('posture', {
       sortBy: string;
       descending: boolean;
     };
+    testNumber: string[];
   }) => {
     return {
       queryKey: [{ filters }],
@@ -186,6 +221,7 @@ export const postureQueries = createQueryKeys('posture', {
           visibility,
           status,
           benchmarkTypes,
+          testNumber,
           order,
           page = 1,
           pageSize,
@@ -205,11 +241,13 @@ export const postureQueries = createQueryKeys('posture', {
             return {
               message,
             };
+          } else if (statusResult.error.response.status === 404) {
+            throw new DF404Error('Scan not found');
           }
           throw statusResult.error;
         }
         if (!statusResult.value || !statusResult.value?.statuses?.[scanId]) {
-          throw new Error('Scan status not found');
+          throw new DF404Error('Scan status not found');
         }
         const scanStatus = statusResult?.value.statuses?.[scanId].status;
         const isScanRunning =
@@ -248,6 +286,10 @@ export const postureQueries = createQueryKeys('posture', {
           scanResultsReq.fields_filter.contains_filter.filter_in![
             'compliance_check_type'
           ] = benchmarkTypes;
+        }
+        if (testNumber.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['test_number'] =
+            testNumber;
         }
         if (order) {
           scanResultsReq.fields_filter.order_filter.order_fields?.push({
@@ -356,6 +398,7 @@ export const postureQueries = createQueryKeys('posture', {
     status: string[];
     visibility: string[];
     benchmarkTypes: string[];
+    control: string[];
     services: string[];
     resources: string[];
     nodeType: string;
@@ -377,6 +420,7 @@ export const postureQueries = createQueryKeys('posture', {
           resources,
           page = 1,
           pageSize,
+          control,
         } = filters;
         const statusCloudComplianceScanApi = apiWrapper({
           fn: getCloudComplianceApiClient().statusCloudComplianceScan,
@@ -394,8 +438,13 @@ export const postureQueries = createQueryKeys('posture', {
             return {
               message,
             };
+          } else if (statusResult.error.response.status === 404) {
+            throw new DF404Error('Scan not found');
           }
           throw statusResult.error;
+        }
+        if (!statusResult.value?.statuses?.length) {
+          throw new DF404Error('Scan not found');
         }
         const statuses = statusResult.value?.statuses?.[0];
 
@@ -437,6 +486,10 @@ export const postureQueries = createQueryKeys('posture', {
           scanResultsReq.fields_filter.contains_filter.filter_in![
             'compliance_check_type'
           ] = benchmarkTypes.map((type) => type.toLowerCase());
+        }
+
+        if (control.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['control_id'] = control;
         }
 
         if (services.length) {

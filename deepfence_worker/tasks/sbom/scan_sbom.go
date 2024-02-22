@@ -94,6 +94,8 @@ func (b UnzippedFile) Close() error {
 
 func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 
+	log := log.WithCtx(ctx)
+
 	var err error
 	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
@@ -103,8 +105,6 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		log.Error().Msg("tenant-id/namespace is empty")
 		return directory.ErrNamespaceNotFound
 	}
-
-	log.Info().Msgf("message tenant id %s", string(tenantID))
 
 	rh := []kgo.RecordHeader{
 		{Key: "namespace", Value: []byte(tenantID)},
@@ -200,7 +200,8 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 
 	details := psOutput.CountBySeverity(&report)
 
-	log.Info().Msgf("scan-id=%s vulnerabilities=%d severities=%v", params.ScanID, len(report), details.Severity)
+	log.Info().
+		Msgf("scan-id=%s vulnerabilities=%d severities=%v", params.ScanID, len(report), details.Severity)
 
 	// write reports and status to kafka ingester will process from there
 	for _, c := range report {
@@ -259,7 +260,8 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	log.Info().Msgf("scan_id: %s, runtime sbom minio file info: %+v", params.ScanID, uploadInfo)
+	log.Info().
+		Msgf("scan_id: %s, runtime sbom minio file info: %+v", params.ScanID, uploadInfo)
 
 	return nil
 }

@@ -22,6 +22,9 @@ var (
 )
 
 func AutoFetchGenerativeAIIntegrations(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	var params utils.AutoFetchGenerativeAIIntegrationsParameters
 
 	log.Info().Msgf("AutoFetchGenerativeAIIntegrations, payload: %s ", string(task.Payload()))
@@ -43,6 +46,9 @@ func AutoFetchGenerativeAIIntegrations(ctx context.Context, task *asynq.Task) er
 }
 
 func AutoFetchBedrockIntegrations(ctx context.Context, params utils.AutoFetchGenerativeAIIntegrationsParameters) error {
+
+	log := log.WithCtx(ctx)
+
 	var foundRegion string
 	var err error
 	var models []model.AddGenerativeAiIntegrationRequest
@@ -89,6 +95,9 @@ func AutoFetchBedrockIntegrations(ctx context.Context, params utils.AutoFetchGen
 }
 
 func CreateGenerativeAIModel(ctx context.Context, req model.AddGenerativeAiIntegrationRequest, aes encryption.AES, userID int64, pgClient *postgresqlDb.Queries) error {
+
+	log := log.WithCtx(ctx)
+
 	obj, err := generative_ai_integration.NewGenerativeAiIntegration(ctx, req)
 	if err != nil {
 		return err

@@ -21,6 +21,12 @@ func (h *Handler) CompleteVulnerabilityInfo(w http.ResponseWriter, r *http.Reque
 func (h *Handler) CompleteHostInfo(w http.ResponseWriter, r *http.Request) {
 	genericCompleteInfoHandler[model.Host](w, r, h)
 }
+func (h *Handler) CompleteComplianceInfo(w http.ResponseWriter, r *http.Request) {
+	genericCompleteInfoHandler[model.ComplianceRule](w, r, h)
+}
+func (h *Handler) CompleteCloudComplianceInfo(w http.ResponseWriter, r *http.Request) {
+	genericCompleteInfoHandler[model.CloudCompliance](w, r, h)
+}
 
 func genericCompleteInfoHandler[T reporters.Cypherable](w http.ResponseWriter, r *http.Request, h *Handler) {
 	defer r.Body.Close()

@@ -14,8 +14,11 @@ export type Props = {
   valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
   triggerVariant?: 'select' | 'button';
+  isScannedForVulnerabilities?: boolean;
+  isScannedForSecrets?: boolean;
+  isScannedForMalware?: boolean;
 };
-
+const fieldName = 'imageFilter';
 const PAGE_SIZE = 15;
 const SearchableImage = ({
   scanType,
@@ -25,6 +28,9 @@ const SearchableImage = ({
   valueKey = 'nodeId',
   active,
   triggerVariant,
+  isScannedForVulnerabilities,
+  isScannedForSecrets,
+  isScannedForMalware,
 }: Props) => {
   const [searchText, setSearchText] = useState('');
 
@@ -47,6 +53,9 @@ const SearchableImage = ({
         size: PAGE_SIZE,
         searchText,
         active,
+        isScannedForVulnerabilities,
+        isScannedForSecrets,
+        isScannedForMalware,
         order: {
           sortBy: 'node_name',
           descending: false,
@@ -72,18 +81,11 @@ const SearchableImage = ({
 
   return (
     <>
-      <input
-        type="text"
-        name="selectedImageLength"
-        hidden
-        readOnly
-        value={selectedImages.length}
-      />
       <Combobox
         startIcon={
           isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
-        name="imageFilter"
+        name={fieldName}
         triggerVariant={triggerVariant || 'button'}
         label={isSelectVariantType ? 'Container image' : undefined}
         getDisplayValue={() =>
@@ -134,7 +136,7 @@ const SearchableImage = ({
 };
 
 export const SearchableImageList = (props: Props) => {
-  const { triggerVariant } = props;
+  const { triggerVariant, defaultSelectedImages = [] } = props;
   const isSelectVariantType = useMemo(() => {
     return triggerVariant === 'select';
   }, [triggerVariant]);
@@ -142,16 +144,20 @@ export const SearchableImageList = (props: Props) => {
   return (
     <Suspense
       fallback={
-        <Combobox
-          label={isSelectVariantType ? 'Container image' : undefined}
-          triggerVariant={triggerVariant || 'button'}
-          startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-          placeholder="Select container image"
-          multiple
-          onQueryChange={() => {
-            // no operation
-          }}
-        />
+        <>
+          <Combobox
+            name={fieldName}
+            value={defaultSelectedImages}
+            label={isSelectVariantType ? 'Container image' : undefined}
+            triggerVariant={triggerVariant || 'button'}
+            startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+            placeholder="Select container image"
+            multiple
+            onQueryChange={() => {
+              // no operation
+            }}
+          />
+        </>
       }
     >
       <SearchableImage {...props} />

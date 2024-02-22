@@ -126,3 +126,8 @@ func (e Email) IsEmailConfigured(ctx context.Context) bool {
 
 	return true
 }
+
+// In case of email basic validation and regex check should be enough
+func (e Email) IsValidCredential(ctx context.Context) (bool, error) {
+	return true, nil
+}

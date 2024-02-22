@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
@@ -27,6 +25,22 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	if req.IntegrationType == "" {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrIntegrationTypeEmpty})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		return
+	}
+
+	if req.NotificationType == "" {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrNotificationTypeEmpty})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 		return
 	}
 
@@ -60,6 +74,21 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 	err = obj.ValidateConfig(h.Validator)
 	if err != nil {
 		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	vc, err := obj.IsValidCredential(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err: err}, w)
+		return
+	}
+
+	if !vc {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrInvalidCredential})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 		return
 	}
 
@@ -127,7 +156,7 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 	integrationList := []model.IntegrationListResp{}
 	for _, integration := range integrations {
 		var config map[string]interface{}
-		var filters reporters.FieldsFilters
+		var filters model.IntegrationFilters
 
 		err = json.Unmarshal(integration.Config, &config)
 		if err != nil {
@@ -166,6 +195,152 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *Handler) UpdateIntegration(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "integration_id"), 10, 64)
+	if err != nil {
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	defer r.Body.Close()
+	var req model.IntegrationUpdateReq
+	err = httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	req.ID = int32(id)
+
+	req.Config["filter_hash"], err = GetFilterHash(req.Filters)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	ctx := r.Context()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	// get intg from DB using ID
+	intg, exists, err := model.GetIntegration(ctx, pgClient, req.ID)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	// validate the inputs
+	b, err := json.Marshal(req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+	obj, err := integration.GetIntegration(ctx, req.IntegrationType, b)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+	err = obj.ValidateConfig(h.Validator)
+	if err != nil {
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	vc, err := obj.IsValidCredential(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err: err}, w)
+		return
+	}
+
+	if !vc {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrInvalidCredential})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		return
+	}
+
+	// check if result are or not
+	if !exists {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrIntegrationDoesNotExist})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		return
+	}
+
+	if intg.IntegrationType != req.IntegrationType {
+		err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrIntegrationTypeCannotBeUpdated})
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		return
+	}
+
+	// check if integration is valid
+	/*err = i.SendNotification("validating integration")
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}*/
+
+	// store the integration in db
+	err = req.UpdateIntegration(ctx, pgClient, intg)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	h.AuditUserActivity(r, EventIntegration, ActionUpdate, req, true)
+
+	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationUpdated})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+}
+
+func (h *Handler) DeleteIntegrations(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.DeleteIntegrationReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	if err := h.Validator.Struct(req); err != nil {
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
+	ctx := r.Context()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	err = model.DeleteIntegrations(ctx, pgClient, req.IntegrationIDs)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+	}
+}
+
 func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "integration_id")
 
@@ -185,7 +360,10 @@ func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = model.DeleteIntegration(ctx, pgClient, int32(idInt))
+	var req model.DeleteIntegrationReq
+	req.IntegrationIDs = []int32{int32(idInt)}
+
+	err = model.DeleteIntegrations(ctx, pgClient, req.IntegrationIDs)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)

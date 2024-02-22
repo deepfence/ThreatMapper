@@ -44,6 +44,7 @@ func (h *Handler) UploadAgentBinaries(w http.ResponseWriter, r *http.Request) {
 	vername := filename[:len(filename)-len(filepath.Ext(filename))]
 	if !semver.IsValid(vername) {
 		h.respondError(&BadDecoding{fmt.Errorf("tarball name should be versioned %v", vername)}, w)
+		return
 	}
 
 	log.Info().Msgf("uploaded file content type %s", fileHeader.Header.Get("Content-Type"))
@@ -150,6 +151,31 @@ func IngestAgentVersion(ctx context.Context, tagsToURL map[string]string) error 
 	return tx.Commit()
 }
 
+func CleanUpAgentVersion(ctx context.Context, tagsToKeep []string) error {
+	nc, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	if _, err = tx.Run(`
+		MATCH (n:AgentVersion)
+		WHERE NOT n.node_id IN $tags
+		SET n.url = NULL`,
+		map[string]interface{}{"tags": tagsToKeep}); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]string) error {
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -242,8 +268,10 @@ func GetAgentVersionList(ctx context.Context) ([]string, error) {
 	defer tx.Close()
 
 	res, err := tx.Run(`
-		MATCH (n:AgentVersion) 
-		RETURN n.node_id`,
+		MATCH (n:AgentVersion)
+		WHERE NOT n.url IS NULL
+		RETURN n.node_id
+		ORDER BY n.node_id DESC`,
 		map[string]interface{}{})
 	if err != nil {
 		return nil, err

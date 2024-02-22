@@ -113,6 +113,16 @@ func NewValidator() (*validator.Validate, ut.Translator, error) {
 			},
 		},
 		{
+			tag: "startswith",
+			customRegisFunc: func(ut ut.Translator) error {
+				return ut.Add("startswith", "{0}:should start with '{1}'", true)
+			},
+			customTransFunc: func(ut ut.Translator, fe validator.FieldError) string {
+				t, _ := ut.T("startswith", utils.ToSnakeCase(fe.Field()), fe.Param())
+				return t
+			},
+		},
+		{
 			tag: "oneof",
 			customRegisFunc: func(ut ut.Translator) error {
 				return ut.Add("oneof", "{0}:must be one of {1}", true)

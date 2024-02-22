@@ -55,25 +55,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
   const actionType = formData.getAll('actionType')?.toString();
 
-  // host filter
-  const selectedHostLength = Number(formData.get('selectedHostLength'));
-  const nodeIds = [];
-  if (selectedHostLength > 0) {
-    for (let i = 0; i < selectedHostLength; i++) {
-      nodeIds.push(formData.get(`hostFilter[${i}]`) as string);
-    }
-  }
-
-  // cluster filter
-  const selectedClusterLength = Number(formData.get('selectedClusterLength'));
-  const clusterIds = [];
-  if (selectedClusterLength > 0) {
-    for (let i = 0; i < selectedClusterLength; i++) {
-      clusterIds.push(formData.get(`clusterFilter[${i}]`) as string);
-    }
-  }
-
-  // cloud filter
+  const nodeIds = getArrayTypeValuesFromFormData(formData, 'hostFilter');
+  const clusterIds = getArrayTypeValuesFromFormData(formData, 'clusterFilter');
   const accountIds = getArrayTypeValuesFromFormData(formData, 'cloudAccountsFilter');
 
   if (!actionType) {
@@ -151,6 +134,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       }
       throw logsResponse.error;
     }
+    invalidateAllQueries();
     return {
       success: true,
       message: '',
@@ -177,8 +161,9 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       throw logsResponse.error;
     }
     toast.success('Logs generated successfully');
+    invalidateAllQueries();
   }
-  invalidateAllQueries();
+
   return null;
 };
 
@@ -213,7 +198,12 @@ const ConsoleDiagnosticLogsTable = () => {
         maxSize: 85,
       }),
       columnHelper.accessor('message', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => {
+          if (!cell.row.original.message) {
+            return 'Logs generated';
+          }
+          return cell.getValue();
+        },
         header: () => 'Message',
         minSize: 75,
         size: 80,
@@ -221,7 +211,7 @@ const ConsoleDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('url_link', {
         cell: (cell) => {
-          if (cell.row.original.message !== '') {
+          if (cell.row.original.url_link?.trim() === '') {
             return 'No logs';
           }
           return (
@@ -292,8 +282,17 @@ const AgentDiagnosticLogsTable = () => {
         size: 80,
         maxSize: 85,
       }),
-      columnHelper.accessor('message', {
+      columnHelper.accessor('type', {
         cell: (cell) => cell.getValue(),
+        header: () => 'Type',
+        minSize: 75,
+        size: 80,
+        maxSize: 85,
+      }),
+      columnHelper.accessor('message', {
+        cell: (cell) => {
+          return <TruncatedText text={cell.getValue() ?? ''} />;
+        },
         header: () => 'Message',
         minSize: 75,
         size: 80,
@@ -301,12 +300,12 @@ const AgentDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('url_link', {
         cell: (cell) => {
-          if (cell.row.original.message !== '') {
+          if (cell.row.original.url_link?.trim() === '') {
             return 'No logs';
           }
           return (
             <DFLink
-              href={cell.row.original.url_link ?? ''}
+              href={cell.row.original.url_link}
               download
               target={'_blank'}
               className="flex items-center gap-x-1 text-accent-accent hover:text-bg-hover-1"
@@ -595,8 +594,8 @@ const AgentDiagnosticLogsComponent = () => {
 const DiagnosticLogs = () => {
   return (
     <div className="my-2">
-      <div className="flex flex-col">
-        <h6 className="text-h5 text-text-input-value">Console diagnostic logs</h6>
+      <div className="flex flex-col" data-testid="consoleDiagnosticLogWrapperId">
+        <h6 className="text-h5 dark:text-text-input-value">Console diagnostic logs</h6>
         <div className="mt-2 flex flex-col gap-y-2">
           <Suspense
             fallback={
@@ -608,8 +607,8 @@ const DiagnosticLogs = () => {
           </Suspense>
         </div>
       </div>
-      <div className="flex flex-col mt-8">
-        <h6 className="text-h5 text-text-input-value">Agent diagnostic logs</h6>
+      <div className="flex flex-col mt-8" data-testid="agentDiagnosticLogWrapperId">
+        <h6 className="text-h5 dark:text-text-input-value">Agent diagnostic logs</h6>
         <div className="mt-2 gap-y-2 flex flex-col">
           <Suspense
             fallback={

@@ -3,6 +3,7 @@ PWD=$(shell pwd)
 export ROOT_MAKEFILE_DIR=$(shell pwd)
 export DEEPFENCE_AGENT_DIR=$(PWD)/deepfence_agent
 export DEEPFENCE_ROUTER_DIR=$(PWD)/haproxy
+export DEEPFENCE_TELEMETRY_DIR=$(PWD)/deepfence_telemetry
 export DEEPFENCE_FILE_SERVER_DIR=$(PWD)/deepfence_file_server
 export DEEPFENCE_FRONTEND_DIR=$(PWD)/deepfence_frontend
 export SECRET_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/SecretScanner
@@ -11,12 +12,13 @@ export PACKAGE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/package-scanner
 export COMPLIANCE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/compliance
 export DEEPFENCE_CTL=$(PWD)/deepfence_ctl
 export DEEPFENCED=$(PWD)/deepfence_bootstrapper
+export DEEPFENCE_FARGATE_DIR=$(DEEPFENCE_AGENT_DIR)/fargate
 export IMAGE_REPOSITORY?=deepfenceio
 export DF_IMG_TAG?=latest
 export IS_DEV_BUILD?=false
-export VERSION?="2.0.1"
+export VERSION?="2.1.1"
 
-default: bootstrap console_plugins agent console
+default: bootstrap console_plugins agent console fargate-local
 
 .PHONY: console
 console: redis postgres kafka-broker router server worker ui file-server graphdb jaeger
@@ -51,6 +53,26 @@ bootstrap-agent-plugins:
 agent: go1_20_builder debian_builder deepfenced console_plugins
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
 	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" bash build.sh)
+
+.PHONY: agent-binary
+agent-binary: agent agent-binary-tar
+
+.PHONY: agent-binary-tar
+agent-binary-tar:
+	ID=$$(docker create $(IMAGE_REPOSITORY)/deepfence_agent:$(DF_IMG_TAG)); \
+	(cd $(DEEPFENCE_FARGATE_DIR) &&\
+	CONTAINER_ID=$$ID VERSION="$(VERSION)" bash copy-bin-from-agent.sh); \
+	docker rm -v $$ID
+
+.PHONY: fargate-local
+fargate-local: agent-binary-tar
+	(cd $(DEEPFENCE_AGENT_DIR) &&\
+	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" bash build-fargate-local-bin.sh)
+
+.PHONY: fargate
+fargate: 
+	(cd $(DEEPFENCE_AGENT_DIR) &&\
+	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" bash build-fargate.sh)
 
 .PHONY: deepfenced
 deepfenced: alpine_builder bootstrap bootstrap-agent-plugins
@@ -87,8 +109,7 @@ worker: alpine_builder
 
 .PHONY: jaeger
 jaeger:
-	docker pull jaegertracing/all-in-one:1.50
-	docker tag jaegertracing/all-in-one:1.50 $(IMAGE_REPOSITORY)/jaegertracing-all-in-one:1.50
+	docker build -t $(IMAGE_REPOSITORY)/deepfence_telemetry_ce:$(DF_IMG_TAG) $(DEEPFENCE_TELEMETRY_DIR)
 
 .PHONY: graphdb
 graphdb:
@@ -206,11 +227,12 @@ publish-graphdb:
 
 .PHONY: publish-jaeger
 publish-jaeger:
-	docker push $(IMAGE_REPOSITORY)/jaegertracing-all-in-one:1.50
+	docker push $(IMAGE_REPOSITORY)/deepfence_telemetry_ce:$(DF_IMG_TAG)
 
 .PHONY: clean
 clean:
 	-(cd $(DEEPFENCE_AGENT_DIR) && make clean)
+	-(cd $(DEEPFENCE_FARGATE_DIR) && rm -rf deepfence-agent-bin-$(VERSION)*)
 	-(cd $(ROOT_MAKEFILE_DIR)/deepfence_server && make clean)
 	-(cd $(ROOT_MAKEFILE_DIR)/deepfence_worker && make clean)
 	-(cd $(DEEPFENCED) && make clean && rm $(DEEPFENCE_AGENT_DIR)/deepfenced)

@@ -144,6 +144,7 @@ const InformationForm = ({
   --set clusterName=${_clusterName} \\
   ${runtimeCommand} \\
   ${sockCommand}="${_socketPath}" \\
+  --set logLevel="info" \\
   --namespace ${_namespace} \\
   --create-namespace`;
 
@@ -323,6 +324,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
   --set clusterName=${defaultCluster} \\
   ${containerRuntimeDropdown[0].value} \\
   ${socketMap.containerd.command}="${defaultSocketPath}" \\
+  --set logLevel="info" \\
   --namespace ${defaultNamespace} \\
   --create-namespace`);
 
@@ -345,7 +347,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
           <div className="text-p7 text-text-text-and-icon">
             Deploy Deepfence agent Kubernetes Scanner. Find out more information by{' '}
             <DFLink
-              href={`https://community.deepfence.io/threatmapper/docs/v2.0/sensors/kubernetes`}
+              href={`https://community.deepfence.io/threatmapper/docs/v2.1/sensors/kubernetes`}
               target="_blank"
               rel="noreferrer"
               className="mt-2"

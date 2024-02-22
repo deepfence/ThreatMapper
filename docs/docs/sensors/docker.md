@@ -14,6 +14,10 @@ For Windows Server hosts, experimental support exists, but it is not suitable fo
 
 Install and start the latest release of the deepfence sensor.  Run the following command to start the sensor on the host, replacing the `CONSOLE_URL` and `DEEPFENCE_KEY` values:
 
+:::info
+Image tag `deepfenceio/deepfence_agent_ce:2.1.0-multiarch` is supported in amd64 and arm64/v8 architectures.
+:::
+
 ### Docker
 
 ```bash
@@ -30,11 +34,12 @@ docker run -dit \
     -v /var/log/fenced \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /:/fenced/mnt/host/:ro \
+    -e DF_LOG_LEVEL="info" \
     -e USER_DEFINED_TAGS="" \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-    deepfenceio/deepfence_agent_ce:2.0.1
+    deepfenceio/deepfence_agent_ce:2.1.0
 ```
 
 ### Podman
@@ -56,11 +61,12 @@ sudo podman run -dit \
     -v /run/podman/podman.sock:/run/podman/podman.sock \
     -v /run/systemd/:/run/systemd/ \
     -v /:/fenced/mnt/host/:ro \
+    -e DF_LOG_LEVEL="info" \
     -e USER_DEFINED_TAGS="" \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-    docker.io/deepfenceio/deepfence_agent_ce:2.0.1
+    docker.io/deepfenceio/deepfence_agent_ce:2.1.0
 ```
 
 :::tip

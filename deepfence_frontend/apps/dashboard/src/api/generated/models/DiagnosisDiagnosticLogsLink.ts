@@ -42,6 +42,12 @@ export interface DiagnosisDiagnosticLogsLink {
      * @type {string}
      * @memberof DiagnosisDiagnosticLogsLink
      */
+    type?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DiagnosisDiagnosticLogsLink
+     */
     url_link?: string;
 }
 
@@ -67,6 +73,7 @@ export function DiagnosisDiagnosticLogsLinkFromJSONTyped(json: any, ignoreDiscri
         'created_at': !exists(json, 'created_at') ? undefined : json['created_at'],
         'label': !exists(json, 'label') ? undefined : json['label'],
         'message': !exists(json, 'message') ? undefined : json['message'],
+        'type': !exists(json, 'type') ? undefined : json['type'],
         'url_link': !exists(json, 'url_link') ? undefined : json['url_link'],
     };
 }
@@ -83,6 +90,7 @@ export function DiagnosisDiagnosticLogsLinkToJSON(value?: DiagnosisDiagnosticLog
         'created_at': value.created_at,
         'label': value.label,
         'message': value.message,
+        'type': value.type,
         'url_link': value.url_link,
     };
 }

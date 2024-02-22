@@ -14,6 +14,8 @@ const migrationsPath = "/usr/local/postgresql-migrate"
 
 func applyDatabaseMigrations(ctx context.Context) error {
 
+	log := log.WithCtx(ctx)
+
 	log.Info().Msg("apply database migrations")
 	defer log.Info().Msg("complete database migrations")
 
@@ -37,6 +39,9 @@ func applyDatabaseMigrations(ctx context.Context) error {
 }
 
 func initSqlDatabase(ctx context.Context) error {
+
+	log := log.WithCtx(ctx)
+
 	// apply database migrations first
 	err := applyDatabaseMigrations(ctx)
 	if err != nil {

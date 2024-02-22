@@ -19,8 +19,10 @@ spec:
       labels:
         {{- include "deepfence-agent.selectorLabels" . | nindent 8 }}
         name: {{ include "deepfence-agent.fullname" . }}-cluster
+        {{- with .Values.cluster_agent.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
-      hostNetwork: true
       serviceAccountName: {{ include "deepfence-agent.serviceAccountName" . }}
       containers:
         - name: deepfence-cluster-agent
@@ -51,6 +53,8 @@ spec:
                 fieldRef:
                   fieldPath: spec.nodeName
             {{- end }}
+            - name: DF_LOG_LEVEL
+              value: "{{ .Values.logLevel }}"
             - name: AGENT_POD_NAME
               valueFrom:
                 fieldRef:

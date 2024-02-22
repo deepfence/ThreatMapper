@@ -1724,6 +1724,25 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) bulkDeleteScanResults(ctx context.Context, req model.BulkDeleteScansRequest) error {
+	// Mark the scans as delete pending
+	scanType := utils.DetectedNodeScanType[req.ScanType]
+	scansList, err := reportersScan.GetScansList(ctx, scanType, nil,
+		req.Filters, model.FetchWindow{})
+	if err != nil {
+		return err
+	}
+	scanIds := make([]string, 0, len(scansList.ScansInfo))
+	for _, entry := range scansList.ScansInfo {
+		scanIds = append(scanIds, entry.ScanID)
+	}
+
+	err = reportersScan.MarkScanDeletePending(ctx, scanType, scanIds)
+	if err != nil {
+		log.Error().Msgf("Failed to mark the scanids: %v as DELETE_PENDING",
+			scanIds)
+		return err
+	}
+
 	worker, err := directory.Worker(ctx)
 	if err != nil {
 		return err
@@ -2053,22 +2072,6 @@ func StartMultiScan(ctx context.Context,
 	req model.ScanTriggerCommon,
 	actionBuilder func(string, model.NodeIdentifier, int32) (controls.Action, error)) ([]string, string, error) {
 
-	driver, err := directory.Neo4jClient(ctx)
-
-	if err != nil {
-		return nil, "", err
-	}
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return nil, "", err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
-	if err != nil {
-		return nil, "", err
-	}
 	isPriority := req.IsPriority
 
 	regular, k8s, registry, pods := extractBulksNodes(req.NodeIDs)
@@ -2120,6 +2123,22 @@ func StartMultiScan(ctx context.Context,
 		reqs = append(reqs, podContainerNodes...)
 	}
 
+	driver, err := directory.Neo4jClient(ctx)
+
+	if err != nil {
+		return nil, "", err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		return nil, "", err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(60 * time.Second))
+	if err != nil {
+		return nil, "", err
+	}
 	defer tx.Close()
 	scanIds := []string{}
 	for _, req := range reqs {

@@ -416,6 +416,10 @@ func (d *OpenAPIDocs) AddCloudNodeOperations() {
 		"List Cloud Node Accounts", "List Cloud Node Accounts registered with the console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountsListReq), new(CloudNodeAccountsListResp))
 
+	d.AddOperation("refreshCloudNodeAccount", http.MethodPost, "/deepfence/cloud-node/account/refresh",
+		"Refresh Cloud Account", "Refresh the cloud resources in a Cloud Account",
+		http.StatusNoContent, []string{tagCloudNodes}, bearerToken, new(CloudAccountRefreshReq), nil)
+
 	d.AddOperation("listCloudProviders", http.MethodGet, "/deepfence/cloud-node/list/providers",
 		"List Cloud Node Providers", "List Cloud Node Providers registered with the console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeProvidersListReq), new(CloudNodeProvidersListResp))
@@ -716,10 +720,15 @@ func (d *OpenAPIDocs) AddIntegrationOperations() {
 	d.AddOperation("listIntegration", http.MethodGet, "/deepfence/integration",
 		"List Integrations", "List all the added Integrations",
 		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationListReq), new([]IntegrationListResp))
+	d.AddOperation("updateIntegration", http.MethodPut, "/deepfence/integration/{integration_id}",
+		"Update Integration", "Update integration",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationUpdateReq), new(MessageResponse))
 	d.AddOperation("deleteIntegration", http.MethodDelete, "/deepfence/integration/{integration_id}",
-		"Delete Integration", "Delete integration",
+		"Delete Single Integration", "Delete single integration",
 		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
-
+	d.AddOperation("deleteIntegrations", http.MethodPatch, "/deepfence/integration/delete",
+		"Delete Integrations", "Delete integrations",
+		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(DeleteIntegrationReq), nil)
 	d.AddOperation("addGenerativeAiIntegrationOpenAI", http.MethodPost, "/deepfence/generative-ai-integration/openai",
 		"Add OpenAI Generative AI Integration", "Add a new OpenAI Generative AI Integration",
 		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(AddGenerativeAiOpenAIIntegration), new(MessageResponse))
@@ -773,6 +782,9 @@ func (d *OpenAPIDocs) AddReportsOperations() {
 	d.AddOperation("deleteReport", http.MethodDelete, "/deepfence/reports/{report_id}",
 		"Delete Report", "delete report for given report_id",
 		http.StatusNoContent, []string{tagReports}, bearerToken, new(ReportReq), nil)
+	d.AddOperation("bulkDeleteReports", http.MethodPatch, "/deepfence/reports/delete",
+		"Bulk Delete Reports", "Bulk Delete reports",
+		http.StatusNoContent, []string{tagReports}, bearerToken, new(BulkDeleteReportReq), nil)
 }
 
 func (d *OpenAPIDocs) AddSettingsOperations() {
@@ -814,7 +826,7 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 
 	d.AddOperation("uploadAgentVersion", http.MethodPut, "/deepfence/settings/agent/version",
 		"Upload New agent version", "Upload Agent version",
-		http.StatusOK, []string{tagSettings}, bearerToken, nil, nil)
+		http.StatusOK, []string{tagSettings}, bearerToken, new(BinUploadRequest), nil)
 
 	d.AddOperation("getAgentVersions", http.MethodGet, "/deepfence/settings/agent/versions",
 		"Get available agent versions", "Get available agent versions",
@@ -853,5 +865,11 @@ func (d *OpenAPIDocs) AddCompletionOperations() {
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 	d.AddOperation("completeHostInfo", http.MethodPost, "/deepfence/complete/host",
 		"Get Completion for host fields", "Complete host info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completeCloudCompliance", http.MethodPost, "/deepfence/complete/cloud-compliance",
+		"Get Completion for cloud compliance fields", "Complete cloud compliance info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completeComplianceInfo", http.MethodPost, "/deepfence/complete/compliance",
+		"Get Completion for compliance fields", "Complete compliance info",
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 }

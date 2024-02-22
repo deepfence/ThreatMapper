@@ -19,7 +19,7 @@ const (
 	AwsEc2ResourceId          = "aws_ec2_instance"
 	GcpComputeResourceId      = "gcp_compute_instance"
 	AzureComputeResourceId    = "azure_compute_virtual_machine"
-	DeepfenceVersion          = "v2.0.0"
+	DeepfenceVersion          = "2.1.1"
 )
 
 func CommitFuncCloudResource(ns string, cs []ingestersUtil.CloudResource) error {
@@ -92,7 +92,7 @@ func CommitFuncCloudResource(ns string, cs []ingestersUtil.CloudResource) error 
 		}
 	}
 
-	log.Debug().Msgf("cloud resource ingest took: %v", time.Until(start))
+	log.Debug().Ctx(ctx).Msgf("cloud resource ingest took: %v", time.Until(start))
 
 	return tx.Commit()
 }

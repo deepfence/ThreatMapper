@@ -65,7 +65,7 @@ export interface AddRegistryRequest {
 export interface AddRegistryGCRRequest {
     name: string;
     registryUrl: string;
-    serviceAccountJson: Blob | null;
+    serviceAccountJson: Blob;
 }
 
 export interface CountImageStubsRequest {

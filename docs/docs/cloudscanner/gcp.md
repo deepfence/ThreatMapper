@@ -8,25 +8,72 @@ Cloud Scanner is deployed as a task within your Google Cloud Platform instance.
 
 You need to configure Terraform with the appropriate resources and inputs for your particular scenario, and you will need to provide the IP address or DNS name for the ThreatMapper management console and an API key.
 
-Copy and paste the following into a new file cloud-scanner.tf. Edit the fields: region, mgmt-console-url and deepfence-key.
+Copy and paste the following (single project or multiple projects) into a new file cloud-scanner.tf. Edit the fields: region, mgmt-console-url and deepfence-key.
+
+## Single Project
 
 ```terraform
 module "cloud-scanner_example_single-project" {
   source              = "deepfence/cloud-scanner/gcp//examples/single-project"
-  version             = "0.3.0"
+  version             = "0.4.0"
   name                = "deepfence-cloud-scanner"
-  mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
+  # mgmt-console-url: deepfence.customer.com or 22.33.44.55
+  mgmt-console-url    = "<Console URL>"
   mgmt-console-port   = "443"
-  deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:2.0.1"
-  project_id          = "<PROJECT_ID>; ex. dev1-123456"
-  region              = "<REGION_ID>; ex. asia-east1"
-  #optional for private ip console
-  vpc                 = "<VPC Network Name>; Name of vpc network in which the console exists"
-  #optional for private ip console
-  ip_cidr_range_svpca = "<11.0.0.0/28> IP CIDR range for the connector to above vpc"
+  deepfence-key       = "<Deepfence-key>"
+  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:2.1.0"
+  # project_id example: dev1-123456
+  project_id          = "<PROJECT_ID>"
+  # region example: asia-east1
+  region              = "<REGION_ID>"
+  # Optional for private ip console
+  # Name of vpc network in which the management console was deployed
+  vpc                 = ""
+  # Optional for private ip console
+  # IP CIDR range for the connector to above vpc
+  # Example: 11.0.0.0/28
+  ip_cidr_range_svpca = ""
+  cpu                 = "2"
+  memory              = "4096Mi"
+  labels              = {
+    name = "deepfence-cloud-scanner"
+  }
 }
 ```
+
+## Multiple Projects (Organization Deployment)
+
+```terraform
+module "cloud-scanner_example_multiple-projects" {
+  source              = "deepfence/cloud-scanner/gcp//examples/multi-project"
+  version             = "0.4.0"
+  name                = "deepfence-cloud-scanner"
+  # org_domain: root project name
+  org_domain          = ""
+  # mgmt-console-url: deepfence.customer.com or 22.33.44.55
+  mgmt-console-url    = "<Console URL>"
+  mgmt-console-port   = "443"
+  deepfence-key       = "<Deepfence-key>"
+  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:2.1.0"
+  # project_id example: dev1-123456
+  project_id          = "<PROJECT_ID>"
+  # region example: asia-east1
+  region              = "<REGION_ID>"
+  # Optional for private ip console
+  # Name of vpc network in which the management console was deployed
+  vpc                 = ""
+  # Optional for private ip console
+  # IP CIDR range for the connector to above vpc
+  # Example: 11.0.0.0/28
+  ip_cidr_range_svpca = ""
+  cpu                 = "4"
+  memory              = "8192Mi"
+  labels              = {
+    name = "deepfence-cloud-scanner"
+  }
+}
+```
+
 Ensure that the `name` parameter is set to some unique string to avoid collision with existing resource names in the project of deployment
 
 Then run
@@ -51,7 +98,7 @@ module "cloud-scanner_example_single-project" {
   mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:2.0.1"
+  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:2.1.0"
   project_id          = "<PROJECT_ID>; ex. dev1-123456"
   region              = "<REGION_ID>; ex. asia-east1"
   #optional for private ip console

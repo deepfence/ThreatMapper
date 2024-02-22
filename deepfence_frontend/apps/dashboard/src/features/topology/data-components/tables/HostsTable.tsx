@@ -15,6 +15,7 @@ import {
   Table,
   TableNoDataElement,
   TableSkeleton,
+  Tooltip,
 } from 'ui-components';
 
 import { ModelHost } from '@/api/generated';
@@ -26,7 +27,7 @@ import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
-import { ArrowLine } from '@/components/icons/common/ArrowLine';
+import { ArrowUpCircleLine } from '@/components/icons/common/ArrowUpCircleLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
@@ -38,7 +39,6 @@ import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerabili
 import { TruncatedText } from '@/components/TruncatedText';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { SearchableCloudAccountForHost } from '@/features/topology/data-components/tables/SearchableCloudAccountForHost';
-import { UpgrageAgentModal } from '@/features/topology/data-components/UpgradeAgentModal';
 import { queries } from '@/queries';
 import {
   ComplianceScanNodeTypeEnum,
@@ -60,8 +60,15 @@ import {
   useSortingState,
 } from '@/utils/table';
 import { CLOUD_PROVIDERS } from '@/utils/topology';
+import { isUpgradeAvailable } from '@/utils/version';
 
 const DEFAULT_PAGE_SIZE = 25;
+
+const useGetAgentVersions = () => {
+  return useSuspenseQuery({
+    ...queries.setting.listAgentVersion(),
+  });
+};
 
 export const HostsTable = () => {
   const [selectedNodes, setSelectedNodes] = useState<ModelHost[]>([]);
@@ -120,7 +127,6 @@ const BulkActions = ({
 }) => {
   const [scanOptions, setScanOptions] =
     useState<ConfigureScanModalProps['scanOptions']>();
-  const [agentUpgradeModal, setAgentUpgradeModal] = useState(false);
   const nodesWithAgentRunning = nodes.filter((node) => node.agentRunning);
   return (
     <>
@@ -206,15 +212,6 @@ const BulkActions = ({
             >
               Start Posture Scan
             </DropdownItem>
-            <DropdownItem
-              onSelect={(e) => {
-                e.preventDefault();
-                setAgentUpgradeModal(true);
-              }}
-              icon={<ArrowLine />}
-            >
-              Upgrade Agent
-            </DropdownItem>
           </>
         }
       >
@@ -235,17 +232,27 @@ const BulkActions = ({
           scanOptions={scanOptions}
         />
       )}
-      {agentUpgradeModal && (
-        <UpgrageAgentModal
-          nodes={nodesWithAgentRunning}
-          setShowDialog={setAgentUpgradeModal}
-        />
-      )}
     </>
   );
 };
 
-const FILTER_SEARCHPARAMS: Record<string, string> = {
+enum FILTER_SEARCHPARAMS_KEYS_ENUM {
+  vulnerabilityScanStatus = 'vulnerabilityScanStatus',
+  secretScanStatus = 'secretScanStatus',
+  malwareScanStatus = 'malwareScanStatus',
+  complianceScanStatus = 'complianceScanStatus',
+  cloudProvider = 'cloudProvider',
+  agentRunning = 'agentRunning',
+  clusters = 'clusters',
+  hosts = 'hosts',
+}
+
+const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
+  FILTER_SEARCHPARAMS_KEYS_ENUM.hosts,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.clusters,
+];
+
+const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   vulnerabilityScanStatus: 'Vulnerability scan status',
   secretScanStatus: 'Secret scan status',
   malwareScanStatus: 'Malware scan status',
@@ -273,6 +280,19 @@ function Filters() {
   const [cloudProvidersSearchText, setCloudProvidersSearchText] = useState('');
   const [agentRunningSearchText, setAgentRunningSearchText] = useState('');
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
+  const onFilterRemove = ({ key, value }: { key: string; value: string }) => {
+    return () => {
+      setSearchParams((prev) => {
+        const existingValues = prev.getAll(key);
+        prev.delete(key);
+        existingValues.forEach((existingValue) => {
+          if (existingValue !== value) prev.append(key, existingValue);
+        });
+        prev.delete('page');
+        return prev;
+      });
+    };
+  };
 
   return (
     <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden bg-bg-left-nav">
@@ -539,29 +559,38 @@ function Filters() {
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
-          {Array.from(searchParams)
-            .filter(([key]) => {
+          {(
+            Array.from(searchParams).filter(([key]) => {
               return Object.keys(FILTER_SEARCHPARAMS).includes(key);
-            })
-            .map(([key, value]) => {
+            }) as Array<[FILTER_SEARCHPARAMS_KEYS_ENUM, string]>
+          ).map(([key, value]) => {
+            if (FILTER_SEARCHPARAMS_DYNAMIC_KEYS.includes(key)) {
               return (
                 <FilterBadge
                   key={`${key}-${value}`}
-                  onRemove={() => {
-                    setSearchParams((prev) => {
-                      const existingValues = prev.getAll(key);
-                      prev.delete(key);
-                      existingValues.forEach((existingValue) => {
-                        if (existingValue !== value) prev.append(key, existingValue);
-                      });
-                      prev.delete('page');
-                      return prev;
-                    });
-                  }}
-                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                  nodeType={(() => {
+                    if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.hosts) {
+                      return 'host';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.clusters) {
+                      return 'cluster';
+                    }
+                    throw new Error('unknown key');
+                  })()}
+                  onRemove={onFilterRemove({ key, value })}
+                  id={value}
+                  label={FILTER_SEARCHPARAMS[key]}
                 />
               );
-            })}
+            }
+            return (
+              <FilterBadge
+                key={`${key}-${value}`}
+                onRemove={onFilterRemove({ key, value })}
+                text={value}
+                label={FILTER_SEARCHPARAMS[key]}
+              />
+            );
+          })}
           <Button
             variant="flat"
             color="default"
@@ -630,6 +659,9 @@ const DataTable = ({
   }>();
   const [sort, setSort] = useSortingState();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const { data: versionsData } = useGetAgentVersions();
+  const versions = versionsData.versions ?? [];
 
   useEffect(() => {
     setSelectedNodes((prev) => {
@@ -747,6 +779,46 @@ const DataTable = ({
       }),
       columnHelper.accessor('version', {
         cell: (info) => {
+          if (versions.length && info.row.original.agent_running) {
+            const upgradeAvailable = isUpgradeAvailable(info.getValue(), versions);
+            if (upgradeAvailable) {
+              return (
+                <div className="flex items-center gap-2 justify-start">
+                  <div className="truncate">{info.getValue() ?? ''}</div>
+
+                  <Tooltip
+                    content={
+                      <div className="flex-col gap-2 dark:text-text-text-and-icon">
+                        <div className="text-h5">Update Available</div>
+                        <div className="text-p6">
+                          Version <span className="text-h6">{versions[0]}</span> is
+                          available. Please follow{' '}
+                          <DFLink
+                            href="https://community.deepfence.io/threatmapper/docs/sensors/"
+                            target="_blank"
+                          >
+                            the instructions
+                          </DFLink>{' '}
+                          to upgrade the sensor probe. One click updates are available on{' '}
+                          <DFLink
+                            href="https://www.deepfence.io/threatstryker"
+                            target="_blank"
+                          >
+                            ThreatStryker
+                          </DFLink>
+                          .
+                        </div>
+                      </div>
+                    }
+                  >
+                    <div className="h-4 w-4 dark:text-status-warning">
+                      <ArrowUpCircleLine />
+                    </div>
+                  </Tooltip>
+                </div>
+              );
+            }
+          }
           return <TruncatedText text={info.getValue() ?? ''} />;
         },
         header: () => <TruncatedText text="Agent Version" />,
@@ -755,7 +827,7 @@ const DataTable = ({
         maxSize: 300,
       }),
     ],
-    [],
+    [versions],
   );
 
   return (

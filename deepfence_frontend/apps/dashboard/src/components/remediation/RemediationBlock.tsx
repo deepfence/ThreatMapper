@@ -264,6 +264,7 @@ function useAIIntegration({ meta }: { meta: RemediationCompletionProps['meta'] }
   const mountedRef = useRef<string | null>(null);
   const [remediationMd, setRemediationMd] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     mountedRef.current = 'mounted';
@@ -276,19 +277,31 @@ function useAIIntegration({ meta }: { meta: RemediationCompletionProps['meta'] }
     let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
     const abortController = new AbortController();
     setIsLoading(true);
+    setError(null);
     (async () => {
       const response = await getRemediation({ meta, signal: abortController.signal });
       setIsLoading(false);
       if (!response.ok) {
         console.error(response.error);
-        throw new Error('Response from ai integration is not ok');
+        if (response.error?.response?.status === 403) {
+          setError('You do not have permission to perform this action.');
+        } else {
+          setError(
+            'Error generating remediation. Please try again later. Contact Deepfence support if error persists.',
+          );
+        }
+        return;
       }
 
       const fetchResponse = response.value.raw;
 
       // A response body should always exist, if there isn't one something has gone wrong.
       if (!fetchResponse.body) {
-        throw new Error('No body included in POST response object');
+        console.error('No body included in POST response object');
+        setError(
+          'Error generating remediation. Please try again later. Contact Deepfence support if error persists.',
+        );
+        return;
       }
 
       reader = fetchResponse.body.getReader();
@@ -323,7 +336,7 @@ function useAIIntegration({ meta }: { meta: RemediationCompletionProps['meta'] }
     };
   }, [meta]);
 
-  return { remediationMd, isLoading };
+  return { remediationMd, isLoading, error };
 }
 
 async function getRemediation({
@@ -424,7 +437,11 @@ function useListAIIntegrations() {
 }
 
 function RemediationCompletion({ meta }: RemediationCompletionProps) {
-  const { remediationMd: markdownText, isLoading } = useAIIntegration({
+  const {
+    remediationMd: markdownText,
+    isLoading,
+    error,
+  } = useAIIntegration({
     meta,
   });
 
@@ -453,16 +470,20 @@ function RemediationCompletion({ meta }: RemediationCompletionProps) {
         'dark:prose-a:text-text-link dark:prose-a:hover:underline dark:prose-a:focus:underline dark:prose-a:visited:text-purple-600 dark:prose-a:dark:visited:text-purple-500',
       )}
     >
-      <Markdown
-        skipHtml
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeSanitize]}
-        components={{
-          pre: RemediationPre,
-        }}
-      >
-        {isLoading ? loadingText : markdownText}
-      </Markdown>
+      {error?.length ? (
+        <p className="not-prose text-status-error">{error}</p>
+      ) : (
+        <Markdown
+          skipHtml
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeSanitize]}
+          components={{
+            pre: RemediationPre,
+          }}
+        >
+          {isLoading ? loadingText : markdownText}
+        </Markdown>
+      )}
       <div ref={markdownEndRef}></div>
     </div>
   );

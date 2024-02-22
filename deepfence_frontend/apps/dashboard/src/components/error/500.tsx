@@ -3,6 +3,7 @@ import { useLocation, useRouteError } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 
 import { AppHeader } from '@/components/AppHeader';
+import { DF404Error, FourZeroFourAuthenticated } from '@/components/error/404';
 import { getSideNavigationState, SideNavigation } from '@/components/SideNavigation';
 import { OnboardAppHeader } from '@/features/onboard/components/OnBoardAppHeader';
 import storage from '@/utils/storage';
@@ -53,14 +54,17 @@ export const FiveZeroZero = () => {
   const location = useLocation();
   const error = useRouteError();
   console.error(error);
+
   if (location.pathname.startsWith('/onboard')) {
+    const errorComponent =
+      error instanceof DF404Error ? (
+        <FourZeroFourAuthenticated />
+      ) : (
+        <ErrorComponent maintenance={((error as Error)?.cause as any)?.status === 503} />
+      );
     return (
       <div className="min-h-screen isolate dark:bg-bg-page">
-        <div className="pt-[56px] h-screen">
-          <ErrorComponent
-            maintenance={((error as Error)?.cause as any)?.status === 503}
-          />
-        </div>
+        <div className="pt-[56px] h-screen">{errorComponent}</div>
         <OnboardAppHeader />
       </div>
     );
@@ -81,9 +85,13 @@ export const FiveZeroZero = () => {
               'ml-[240px]': sideNavExpanded,
             })}
           >
-            <ErrorComponent
-              maintenance={((error as Error)?.cause as any)?.status === 503}
-            />
+            {error instanceof DF404Error ? (
+              <FourZeroFourAuthenticated />
+            ) : (
+              <ErrorComponent
+                maintenance={((error as Error)?.cause as any)?.status === 503}
+              />
+            )}
           </main>
         </>
       ) : (

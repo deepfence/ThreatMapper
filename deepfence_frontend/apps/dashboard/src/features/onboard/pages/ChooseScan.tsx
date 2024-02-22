@@ -74,6 +74,9 @@ const possibleScanMap: PossibleScanMapType = {
   aws: [cloudComplianceScanData],
   gcp: [cloudComplianceScanData],
   azure: [cloudComplianceScanData],
+  aws_org: [cloudComplianceScanData],
+  gcp_org: [cloudComplianceScanData],
+  azure_org: [cloudComplianceScanData],
   host: [vulnerabilityScanData, complianceScanData, secretScanData, malwareScanData],
   kubernetes_cluster: [
     vulnerabilityScanData,
@@ -99,11 +102,23 @@ const logoAndTextMap = (
       title: `Amazon Web Service Account${count > 1 ? 's' : ''}`,
       logo: <CloudLine />,
     },
+    aws_org: {
+      title: `Amazon Web Service Account${count > 1 ? 's' : ''}`,
+      logo: <CloudLine />,
+    },
     gcp: {
       title: `Google Cloud Service Account${count > 1 ? 's' : ''}`,
       logo: <CloudLine />,
     },
+    gcp_org: {
+      title: `Google Cloud Service Account${count > 1 ? 's' : ''}`,
+      logo: <CloudLine />,
+    },
     azure: {
+      title: `Azure Web Service Account${count > 1 ? 's' : ''}`,
+      logo: <CloudLine />,
+    },
+    azure_org: {
       title: `Azure Web Service Account${count > 1 ? 's' : ''}`,
       logo: <CloudLine />,
     },

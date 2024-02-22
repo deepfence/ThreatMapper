@@ -237,10 +237,10 @@ function getGraphData(
               singleGraph.count ? ` (${singleGraph.count})` : ''
             }`,
             issuesCount:
-              singleGraph.compliance_count +
-              singleGraph.secrets_count +
-              singleGraph.vulnerability_count +
-              singleGraph.cloud_compliance_count,
+              singleGraph.warn_alarm_count +
+              singleGraph.exploitable_secrets_count +
+              singleGraph.exploitable_vulnerabilities_count +
+              singleGraph.cloud_warn_alarm_count,
             nodeType: singleGraph.node_type,
             icon: {
               show: true,

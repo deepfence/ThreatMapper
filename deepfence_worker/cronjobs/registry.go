@@ -18,6 +18,9 @@ import (
 )
 
 func SyncRegistry(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("unable to get postgres client: %v", err)
@@ -63,15 +66,23 @@ func SyncRegistry(ctx context.Context, task *asynq.Task) error {
 		registries, err = pgClient.GetContainerRegistries(ctx)
 		if err != nil {
 			log.Error().Msgf("unable to get registries: %v", err)
+			return err
 		}
 	}
 
-	syncRegistry(ctx, pgClient, registries)
-
-	return nil
+	return syncRegistry(ctx, pgClient, registries)
 }
 
-func syncRegistry(ctx context.Context, pgClient *postgresql_db.Queries, registries []postgresql_db.GetContainerRegistriesRow) {
+func syncRegistry(ctx context.Context, pgClient *postgresql_db.Queries, registries []postgresql_db.GetContainerRegistriesRow) error {
+
+	log := log.WithCtx(ctx)
+
+	enqueuer, err := directory.Worker(ctx)
+	if err != nil {
+		return err
+	}
+
+	toRetry := []int32{}
 	for _, row := range registries {
 		r, err := registry.GetRegistryWithRegistryRow(row)
 		if err != nil {
@@ -79,16 +90,31 @@ func syncRegistry(ctx context.Context, pgClient *postgresql_db.Queries, registri
 			continue
 		}
 
-		err = sync.SyncRegistry(ctx, pgClient, r, row.ID)
+		err = sync.SyncRegistry(ctx, pgClient, r, row)
 		if err != nil {
 			log.Error().Msgf("unable to sync registry: %s (%s): %v", row.RegistryType, row.Name, err)
+			toRetry = append(toRetry, row.ID)
 			continue
 		}
 	}
+
+	for i := range toRetry {
+		payload, err := json.Marshal(utils.RegistrySyncParams{
+			PgID: toRetry[i],
+		})
+		if err != nil {
+			log.Error().Msgf("unable to retry sync registry: %v", err)
+		}
+		enqueuer.Enqueue(utils.SyncRegistryTask, payload)
+	}
+	return nil
 }
 
 // SyncRegistryPostgresNeo4jTask Synchronize registry between postgres and neo4j
 func SyncRegistryPostgresNeo4jTask(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("unable to get postgres client: %v", err)

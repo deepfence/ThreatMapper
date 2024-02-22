@@ -4,15 +4,24 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"path"
+	"runtime"
+	"syscall"
 	"time"
+
+	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/controls"
 	cs "github.com/deepfence/ThreatMapper/deepfence_worker/cronscheduler"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/processors"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -21,27 +30,10 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 
-	"net/http"
-	_ "net/http/pprof"
+	wtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 )
-
-type config struct {
-	Debug                 bool     `default:"false"`
-	Mode                  string   `default:"worker" required:"true"`
-	MetricsPort           string   `default:"8181" split_words:"true"`
-	KafkaBrokers          []string `default:"deepfence-kafka-broker:9092" required:"true" split_words:"true"`
-	KafkaTopicPartitions  int32    `default:"1" split_words:"true"`
-	KafkaTopicReplicas    int16    `default:"1" split_words:"true"`
-	KafkaTopicRetentionMs string   `default:"86400000" split_words:"true"`
-	RedisHost             string   `default:"deepfence-redis" required:"true" split_words:"true"`
-	RedisDbNumber         int      `default:"0" split_words:"true"`
-	RedisPort             string   `default:"6379" split_words:"true"`
-	RedisPassword         string   `default:"" split_words:"true"`
-	TasksConcurrency      int      `default:"50" split_words:"true"`
-	ProcessQueues         []string `split_words:"true"`
-}
 
 // build info
 var (
@@ -55,7 +47,7 @@ func main() {
 	log.Info().Msgf("\n version: %s\n commit: %s\n build-time: %s\n",
 		Version, Commit, BuildTime)
 
-	var cfg config
+	var cfg wtils.Config
 	var err error
 	err = envconfig.Process("DEEPFENCE", &cfg)
 	if err != nil {
@@ -90,22 +82,39 @@ func main() {
 		log.Fatal().Err(err).Msg("Telemetry initialization failed")
 	}
 
-	if os.Getenv("DEEPFENCE_ENABLE_PPROF") != "" {
-		go func() {
-			err := http.ListenAndServe("localhost:6060", nil)
-			if err != nil {
-				log.Error().Msgf("pprof err: %v", err)
-			}
-		}()
+	if cfg.Debug {
+		runtime.SetBlockProfileRate(1)
+		runtime.SetMutexProfileFraction(1)
 	}
+
+	// new router
+	router := chi.NewRouter()
+	// profiler, enabled in debug mode
+	if cfg.Debug {
+		router.Mount("/debug", middleware.Profiler())
+	}
+	// metrics
+	router.Handle("/metrics", promhttp.HandlerFor(NewMetrics(cfg.Mode), promhttp.HandlerOpts{EnableOpenMetrics: true}))
+
+	srv := &http.Server{Addr: "0.0.0.0:" + cfg.MetricsPort, Handler: router}
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Error().Msgf("Server listen failed: %s", err)
+		}
+	}()
 
 	switch cfg.Mode {
 	case "ingester":
 		log.Info().Msg("Starting ingester")
-		if err := startIngester(cfg); err != nil {
-			log.Error().Msg(err.Error())
-			os.Exit(1)
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		ingester, err := processors.NewIngester(directory.NonSaaSDirKey, cfg, cancel)
+		if err != nil {
+			log.Fatal().Msg(err.Error())
 		}
+		ingester.Start(ctx)
+		// wait for shutdown
+		<-ctx.Done()
+
 	case "worker":
 		log.Info().Msg("Starting worker")
 		if err := controls.ConsoleActionSetup(); err != nil {
@@ -141,7 +150,7 @@ func main() {
 
 func initializeTelemetry(mode string) error {
 
-	telemetryEnabled := os.Getenv("DEEPFENCE_TELEMETRY_ENABLED") != ""
+	telemetryEnabled := os.Getenv("DEEPFENCE_TELEMETRY_ENABLED") != "false"
 
 	if telemetryEnabled {
 		telemetryHost := utils.GetEnvOrDefault("DEEPFENCE_TELEMETRY_HOST", "deepfence-telemetry")
@@ -173,7 +182,7 @@ func initializeTelemetry(mode string) error {
 	} else {
 		log.Info().Msgf("setting up noop tracer provider")
 		// set a noop tracer provider
-		otel.SetTracerProvider(trace.NewNoopTracerProvider())
+		otel.SetTracerProvider(noop.NewTracerProvider())
 	}
 
 	otel.SetTextMapPropagator(

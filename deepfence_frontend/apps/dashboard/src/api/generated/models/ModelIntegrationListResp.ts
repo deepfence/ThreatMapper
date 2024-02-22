@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ReportersFieldsFilters } from './ReportersFieldsFilters';
+import type { ModelIntegrationFilters } from './ModelIntegrationFilters';
 import {
-    ReportersFieldsFiltersFromJSON,
-    ReportersFieldsFiltersFromJSONTyped,
-    ReportersFieldsFiltersToJSON,
-} from './ReportersFieldsFilters';
+    ModelIntegrationFiltersFromJSON,
+    ModelIntegrationFiltersFromJSONTyped,
+    ModelIntegrationFiltersToJSON,
+} from './ModelIntegrationFilters';
 
 /**
  * 
@@ -34,10 +34,10 @@ export interface ModelIntegrationListResp {
     config?: { [key: string]: any; } | null;
     /**
      * 
-     * @type {ReportersFieldsFilters}
+     * @type {ModelIntegrationFilters}
      * @memberof ModelIntegrationListResp
      */
-    filters?: ReportersFieldsFilters;
+    filters?: ModelIntegrationFilters;
     /**
      * 
      * @type {number}
@@ -84,7 +84,7 @@ export function ModelIntegrationListRespFromJSONTyped(json: any, ignoreDiscrimin
     return {
         
         'config': !exists(json, 'config') ? undefined : json['config'],
-        'filters': !exists(json, 'filters') ? undefined : ReportersFieldsFiltersFromJSON(json['filters']),
+        'filters': !exists(json, 'filters') ? undefined : ModelIntegrationFiltersFromJSON(json['filters']),
         'id': !exists(json, 'id') ? undefined : json['id'],
         'integration_type': !exists(json, 'integration_type') ? undefined : json['integration_type'],
         'last_error_msg': !exists(json, 'last_error_msg') ? undefined : json['last_error_msg'],
@@ -102,7 +102,7 @@ export function ModelIntegrationListRespToJSON(value?: ModelIntegrationListResp 
     return {
         
         'config': value.config,
-        'filters': ReportersFieldsFiltersToJSON(value.filters),
+        'filters': ModelIntegrationFiltersToJSON(value.filters),
         'id': value.id,
         'integration_type': value.integration_type,
         'last_error_msg': value.last_error_msg,

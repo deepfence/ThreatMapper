@@ -82,6 +82,7 @@ func StartKafkaProducer(
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(brokers...),
 		kgo.WithLogger(KgoLogger),
+		kgo.UnknownTopicRetries(3),
 	}
 
 	kClient, err := kgo.NewClient(opts...)

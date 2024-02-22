@@ -37,6 +37,7 @@ RUN chown -R deepfence:root /opt/ /home/deepfence /var/log /var/run/ \
 USER deepfence
 COPY supervisord-cluster.conf /home/deepfence/supervisord.conf
 COPY run_discovery.sh /home/deepfence/
+COPY plugins/etc/run_fluentbit.sh /home/deepfence/
 RUN steampipe plugin install steampipe \
     && steampipe plugin install kubernetes \
     && git clone https://github.com/turbot/steampipe-mod-kubernetes-compliance.git

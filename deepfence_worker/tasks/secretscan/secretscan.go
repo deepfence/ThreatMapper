@@ -16,7 +16,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
 	tasks "github.com/deepfence/golang_deepfence_sdk/utils/tasks"
@@ -39,7 +38,8 @@ func NewSecretScanner(ingest chan *kgo.Record) SecretScan {
 }
 
 func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error {
-	defer cronjobs.ScanWorkloadAllocator.Free()
+
+	log := log.WithCtx(ctx)
 
 	var params utils.SecretScanParameters
 
@@ -67,7 +67,8 @@ func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error 
 }
 
 func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error {
-	defer cronjobs.ScanWorkloadAllocator.Free()
+
+	log := log.WithCtx(ctx)
 
 	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
@@ -77,7 +78,6 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 		log.Error().Msg("tenant-id/namespace is empty")
 		return nil
 	}
-	log.Info().Msgf("message tenant id %s", string(tenantID))
 
 	log.Info().Msgf("payload: %s ", string(task.Payload()))
 

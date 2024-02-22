@@ -243,6 +243,21 @@ export const registryQueries = createQueryKeys('registry', {
               order_fields: [],
             },
             contains_filter: {
+              filter_in: {},
+            },
+            not_contains_filter: {
+              filter_in: {},
+            },
+          },
+          image_stub_filter: {
+            compare_filter: [],
+            match_filter: {
+              filter_in: {},
+            },
+            order_filter: {
+              order_fields: [],
+            },
+            contains_filter: {
               filter_in: {
                 docker_image_name: [imageId],
               },

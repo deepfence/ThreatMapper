@@ -40,6 +40,8 @@ const ansi = "[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)
 var (
 	ScanIDReplacer = strings.NewReplacer("/", "_", ":", "_", ".", "_")
 
+	SBOMFormatReplacer = strings.NewReplacer("@", "_", ".", "_")
+
 	matchFirstCap                = regexp.MustCompile("(.)([A-Z][a-z]+)")
 	matchAllCap                  = regexp.MustCompile("([a-z0-9])([A-Z])")
 	once1, once2                 sync.Once
@@ -672,4 +674,19 @@ func PrintableTimeStamp(timestamp interface{}) string {
 	}
 
 	return time.Unix(ts, 0).In(time.UTC).Format(time.RFC3339)
+}
+
+func TopicsWithNamespace(ns string) []string {
+	newtopics := []string{}
+	for i := range Topics {
+		newtopics = append(newtopics, TopicWithNamespace(Topics[i], ns))
+	}
+	return newtopics
+}
+
+func TopicWithNamespace(topic, ns string) string {
+	if len(ns) > 0 && ns != "default" {
+		return fmt.Sprintf("%s-%s", topic, ns)
+	}
+	return topic
 }

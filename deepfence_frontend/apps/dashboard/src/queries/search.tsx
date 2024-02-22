@@ -27,6 +27,9 @@ export const searchQueries = createQueryKeys('search', {
       sortBy: string;
       descending: boolean;
     };
+    isScannedForVulnerabilities?: boolean;
+    isScannedForSecrets?: boolean;
+    isScannedForMalware?: boolean;
   }) => {
     return {
       queryKey: [{ filters }],
@@ -39,8 +42,17 @@ export const searchQueries = createQueryKeys('search', {
           nodeName: string;
         }[];
       }> => {
-        const { searchText, size, active, agentRunning, showOnlyKubernetesHosts, order } =
-          filters;
+        const {
+          searchText,
+          size,
+          active,
+          agentRunning,
+          showOnlyKubernetesHosts,
+          order,
+          isScannedForVulnerabilities,
+          isScannedForSecrets,
+          isScannedForMalware,
+        } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
             filters: {
@@ -97,6 +109,21 @@ export const searchQueries = createQueryKeys('search', {
           searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in![
             'kubernetes_cluster_id'
           ] = [''];
+        }
+        if (isScannedForVulnerabilities) {
+          searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in![
+            'vulnerability_scan_status'
+          ] = [...VULNERABILITY_SCAN_STATUS_GROUPS.neverScanned, ''];
+        }
+        if (isScannedForSecrets) {
+          searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in![
+            'secret_scan_status'
+          ] = [...SECRET_SCAN_STATUS_GROUPS.neverScanned, ''];
+        }
+        if (isScannedForMalware) {
+          searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in![
+            'malware_scan_status'
+          ] = [...MALWARE_SCAN_STATUS_GROUPS.neverScanned, ''];
         }
         const searchHostsApi = apiWrapper({
           fn: getSearchApiClient().searchHosts,
@@ -222,6 +249,9 @@ export const searchQueries = createQueryKeys('search', {
     searchText?: string;
     size: number;
     active?: boolean;
+    isScannedForVulnerabilities?: boolean;
+    isScannedForSecrets?: boolean;
+    isScannedForMalware?: boolean;
     order?: {
       sortBy: string;
       descending: boolean;
@@ -237,7 +267,15 @@ export const searchQueries = createQueryKeys('search', {
           nodeName: string;
         }[];
       }> => {
-        const { searchText, size, active, order } = filters;
+        const {
+          searchText,
+          size,
+          active,
+          order,
+          isScannedForVulnerabilities,
+          isScannedForSecrets,
+          isScannedForMalware,
+        } = filters;
         const matchFilter = { filter_in: {} };
         if (searchText?.length) {
           matchFilter.filter_in = {
@@ -257,6 +295,9 @@ export const searchQueries = createQueryKeys('search', {
                   pseudo: [false],
                   ...(active && { active: [active === true] }),
                 },
+              },
+              not_contains_filter: {
+                filter_in: {},
               },
               order_filter: {
                 order_fields: [
@@ -280,6 +321,22 @@ export const searchQueries = createQueryKeys('search', {
             size,
           },
         };
+
+        if (isScannedForVulnerabilities) {
+          scanRequestParams.node_filter.filters.not_contains_filter!.filter_in![
+            'vulnerability_scan_status'
+          ] = [...VULNERABILITY_SCAN_STATUS_GROUPS.neverScanned, ''];
+        }
+        if (isScannedForSecrets) {
+          scanRequestParams.node_filter.filters.not_contains_filter!.filter_in![
+            'secret_scan_status'
+          ] = [...SECRET_SCAN_STATUS_GROUPS.neverScanned, ''];
+        }
+        if (isScannedForMalware) {
+          scanRequestParams.node_filter.filters.not_contains_filter!.filter_in![
+            'malware_scan_status'
+          ] = [...MALWARE_SCAN_STATUS_GROUPS.neverScanned, ''];
+        }
         if (order) {
           scanRequestParams.node_filter.filters.order_filter.order_fields = [
             {
@@ -316,6 +373,9 @@ export const searchQueries = createQueryKeys('search', {
     searchText?: string;
     size: number;
     active?: boolean;
+    isScannedForVulnerabilities?: boolean;
+    isScannedForSecrets?: boolean;
+    isScannedForMalware?: boolean;
     order?: {
       sortBy: string;
       descending: boolean;
@@ -335,7 +395,16 @@ export const searchQueries = createQueryKeys('search', {
           tagList: string[];
         }[];
       }> => {
-        const { searchText, size, active, order, filter } = filters;
+        const {
+          searchText,
+          size,
+          active,
+          order,
+          filter,
+          isScannedForVulnerabilities,
+          isScannedForSecrets,
+          isScannedForMalware,
+        } = filters;
         const searchContainerImagesApi = apiWrapper({
           fn: getSearchApiClient().searchContainerImages,
         });
@@ -348,6 +417,9 @@ export const searchQueries = createQueryKeys('search', {
                   pseudo: [false],
                   ...(active !== undefined && { active: [active === true] }),
                 },
+              },
+              not_contains_filter: {
+                filter_in: {},
               },
               order_filter: {
                 order_fields: [
@@ -387,6 +459,22 @@ export const searchQueries = createQueryKeys('search', {
           scanRequestParams.node_filter.filters!.contains_filter!.filter_in![
             'docker_image_name'
           ] = [filter?.dockerImageName];
+        }
+
+        if (isScannedForVulnerabilities) {
+          scanRequestParams.node_filter.filters.not_contains_filter!.filter_in![
+            'vulnerability_scan_status'
+          ] = [...VULNERABILITY_SCAN_STATUS_GROUPS.neverScanned, ''];
+        }
+        if (isScannedForSecrets) {
+          scanRequestParams.node_filter.filters.not_contains_filter!.filter_in![
+            'secret_scan_status'
+          ] = [...SECRET_SCAN_STATUS_GROUPS.neverScanned, ''];
+        }
+        if (isScannedForMalware) {
+          scanRequestParams.node_filter.filters.not_contains_filter!.filter_in![
+            'malware_scan_status'
+          ] = [...MALWARE_SCAN_STATUS_GROUPS.neverScanned, ''];
         }
 
         if (order) {
@@ -1213,6 +1301,9 @@ export const searchQueries = createQueryKeys('search', {
     cloudRegion?: string;
     cloudProvider?: string[];
     serviceType?: string[];
+    awsAccountId?: string[];
+    gcpAccountId?: string[];
+    azureAccountId?: string[];
     order?: {
       sortBy: string;
       descending: boolean;
@@ -1229,6 +1320,9 @@ export const searchQueries = createQueryKeys('search', {
           order,
           cloudProvider,
           serviceType,
+          awsAccountId,
+          gcpAccountId,
+          azureAccountId,
         } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
@@ -1272,6 +1366,23 @@ export const searchQueries = createQueryKeys('search', {
             'node_type'
           ] = serviceType;
         }
+
+        let accounts: string[] = [];
+        if (awsAccountId?.length) {
+          accounts = [...accounts, ...awsAccountId];
+        }
+        if (gcpAccountId?.length) {
+          accounts = [...accounts, ...gcpAccountId];
+        }
+        if (azureAccountId?.length) {
+          accounts = [...accounts, ...azureAccountId];
+        }
+        if (accounts.length) {
+          searchSearchNodeReq.node_filter.filters.contains_filter.filter_in![
+            'account_id'
+          ] = accounts;
+        }
+
         if (order) {
           searchSearchNodeReq.node_filter.filters.order_filter.order_fields?.push({
             field_name: order.sortBy,
@@ -1369,6 +1480,102 @@ export const searchQueries = createQueryKeys('search', {
           throw new Error('Node counts failed');
         }
         return resourcesCountResults.value.count;
+      },
+    };
+  },
+  registryAccounts: (filters: {
+    searchText?: string;
+    size: number;
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
+  }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async ({
+        pageParam = 0,
+      }): Promise<{
+        registryAccounts: {
+          nodeId: string;
+          nodeName: string;
+          registryType: string;
+        }[];
+      }> => {
+        const { searchText, size, order } = filters;
+        const matchFilter = { filter_in: {} };
+        if (searchText?.length) {
+          matchFilter.filter_in = {
+            node_id: [searchText],
+          };
+        }
+
+        const searchRegistryAccountsApi = apiWrapper({
+          fn: getSearchApiClient().searchRegistryAccounts,
+        });
+
+        const scanRequestParams: SearchSearchNodeReq = {
+          node_filter: {
+            filters: {
+              contains_filter: {
+                filter_in: {},
+              },
+              not_contains_filter: {
+                filter_in: {},
+              },
+              order_filter: {
+                order_fields: [
+                  {
+                    field_name: 'node_id',
+                    descending: false,
+                  },
+                ],
+              },
+              match_filter: matchFilter,
+              compare_filter: null,
+            },
+            in_field_filter: null,
+            window: {
+              offset: 0,
+              size: 0,
+            },
+          },
+          window: {
+            offset: pageParam,
+            size,
+          },
+        };
+        if (order) {
+          scanRequestParams.node_filter.filters.order_filter.order_fields = [
+            {
+              field_name: order.sortBy,
+              descending: order.descending,
+            },
+          ];
+        }
+        const searchRegistryAccountsResponse = await searchRegistryAccountsApi({
+          searchSearchNodeReq: scanRequestParams,
+        });
+        if (!searchRegistryAccountsResponse.ok) {
+          throw searchRegistryAccountsResponse.error;
+        }
+
+        if (searchRegistryAccountsResponse.value === null) {
+          return {
+            registryAccounts: [],
+          };
+        }
+        return {
+          registryAccounts: searchRegistryAccountsResponse.value
+            .slice(0, size)
+            .map((res) => {
+              return {
+                nodeId: res.node_id,
+                nodeName: res.name,
+                registryType: res.registry_type,
+              };
+            }),
+        };
       },
     };
   },

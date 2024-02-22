@@ -58,6 +58,10 @@ Then create the new policy.
 - At the bottom, select "Configure via JSON"
 - Copy and paste the following JSON configuration: (Replace `<DEEPFENCE_KEY>` and `<MGMT_CONSOLE_URL>` with actual values)
 
+:::info
+Image tag `deepfenceio/deepfence_agent_ce:2.1.0-multiarch` is supported in amd64 and arm64/v8 architectures.
+:::
+
 ```json
 {
   "ipcMode": null,
@@ -79,6 +83,10 @@ Then create the new policy.
         {
           "name": "MGMT_CONSOLE_URL",
           "value": "<MGMT_CONSOLE_URL>"
+        },
+        {
+          "name": "DF_LOG_LEVEL",
+          "value": "info"
         },
         {
           "name": "USER_DEFINED_TAGS",
@@ -117,7 +125,7 @@ Then create the new policy.
       "memoryReservation": null,
       "volumesFrom": [],
       "stopTimeout": null,
-      "image": "docker.io/deepfenceio/deepfence_agent_ce:2.0.1",
+      "image": "docker.io/deepfenceio/deepfence_agent_ce:2.1.0",
       "startTimeout": null,
       "firelensConfiguration": null,
       "dependsOn": null,

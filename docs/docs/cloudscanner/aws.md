@@ -10,7 +10,7 @@ title: AWS
 
 Log in to the AWS management console account and open the following url link to deploy Cloud Scanner using CloudFormation in `us-east-1` region.
 
-[Deploy across multiple AWS accounts or AWS organization](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:2.0.1)
+[Deploy across multiple AWS accounts or AWS organization](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:2.1.0)
 
 (Template URL: https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template)
 
@@ -28,7 +28,7 @@ Then, fill in the below parameters as needed:
 
 Log in to the AWS management console account and open the following url link to deploy Cloud Scanner using CloudFormation in `us-east-1` region.
 
-[Deploy on a single AWS account](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:2.0.1)
+[Deploy on a single AWS account](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:2.1.0)
 
 (Template URL: https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template)
 
@@ -64,24 +64,50 @@ Cloud Scanner is deployed as a task within your AWS infrastructure.
 
 You need to configure Terraform with the appropriate resources and inputs for your particular scenario, and you will need to provide the IP address or DNS name for the ThreatMapper management console and an API key.
 
+### Single Account Deployment
+
 Copy and paste the following into a new file cloud-scanner.tf. Edit the fields: region, mgmt-console-url and deepfence-key.
 ```shell
 provider "aws" {
-  region = "<AWS-REGION>; eg. us-east-1"
+  # AWS region: Example: us-east-1
+  region = "us-east-1"
 }
 
 module "deepfence-cloud-scanner_example_single-account" {
   source                        = "deepfence/cloud-scanner/aws//examples/single-account-ecs"
-  version                       = "0.3.0"
-  mgmt-console-url              = "<Console URL> eg. XXX.XXX.XX.XXX"
-  mgmt-console-port             = "443"
-  deepfence-key                 = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+  version                       = "0.4.0"
   name                          = "deepfence-cloud-scanner"
-  image                         = "quay.io/deepfenceio/cloud-scanner:2.0.1"
-  region                        = "<AWS-REGION>; eg. us-east-1"
+  # mgmt-console-url: deepfence.customer.com or 22.33.44.55
+  mgmt-console-url              = "<Console URL>"
+  mgmt-console-port             = "443"
+  deepfence-key                 = "<Deepfence key>"
+  image                         = "quay.io/deepfenceio/cloud-scanner:2.1.0"
+  # Task CPU Units (Default: 4 vCPU)
+  cpu                           = "4096"
+  # Task Memory (Default: 8 GB)
+  memory                        = "8192"
+  # Task Ephemeral Storage (Default: 100 GB)
+  ephemeral_storage             = "100"
+  # Task role: Must be either arn:aws:iam::aws:policy/SecurityAudit or arn:aws:iam::aws:policy/ReadOnlyAccess
+  task_role                     = "arn:aws:iam::aws:policy/SecurityAudit"
+  debug_logs                    = false
+  # Use existing VPC (Optional)
+  use_existing_vpc              = false
+  # VPC ID (If use_existing_vpc is set to true)
+  existing_vpc_id               = ""
+  # List of VPC Subnet IDs (If use_existing_vpc is set to true)
+  existing_vpc_subnet_ids       = []
+  tags = {
+    product = "deepfence-cloud-scanner"
+  }
+  # AWS region: Example: us-east-1
+  region                        = "us-east-1"
   ecs_vpc_region_azs            = ["us-east-1a"]
+  # Optional: To refresh the cloud resources every hour, provide CloudTrail Trail ARNs (Management events with write-only or read-write).
+  # If empty, a trail with management events will be automatically chosen if available.
+  # e.g.: ["arn:aws:cloudtrail:us-east-1:123456789012:trail/aws-events"]
+  cloudtrail_trails             = []
 }
-
 ```
 Ensure that the `name` parameter is set to some unique string to avoid collision with existing resource names in the account of deployment
 
@@ -92,7 +118,11 @@ terraform plan
 terraform apply
 ```
 
-For full details, refer to the `examples` provided in the GitHub repository: https://github.com/deepfence/terraform-aws-cloud-scanner
+For full details, refer to the GitHub repository: https://github.com/deepfence/terraform-aws-cloud-scanner/tree/main/examples/single-account-ecs
+
+### Organization Account Deployment
+
+For full details, refer to the GitHub repository: https://github.com/deepfence/terraform-aws-cloud-scanner/tree/main/examples/organizational-deploy-with-member-account-read-only-access-creation
 
 ## What Compliance Scans are Performed?
 

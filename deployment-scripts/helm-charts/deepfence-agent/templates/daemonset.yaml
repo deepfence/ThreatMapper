@@ -17,6 +17,9 @@ spec:
       labels:
         {{- include "deepfence-agent.selectorLabels" . | nindent 8 }}
         name: {{ include "deepfence-agent.fullname" . }}
+        {{- with .Values.agent.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName | quote }}
@@ -115,6 +118,8 @@ spec:
                 fieldRef:
                   fieldPath: spec.nodeName
             {{- end }}
+            - name: DF_LOG_LEVEL
+              value: "{{ .Values.logLevel }}"
             - name: AGENT_POD_NAME
               valueFrom:
                 fieldRef:

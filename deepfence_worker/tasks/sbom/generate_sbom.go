@@ -13,7 +13,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/deepfence/golang_deepfence_sdk/utils/tasks"
 	"github.com/deepfence/package-scanner/sbom/syft"
@@ -37,9 +36,11 @@ func NewSbomGenerator(ingest chan *kgo.Record) SbomGenerator {
 }
 
 func StopVulnerabilityScan(ctx context.Context, task *asynq.Task) error {
-	defer cronjobs.ScanWorkloadAllocator.Free()
+
+	log := log.WithCtx(ctx)
 
 	log.Info().Msgf("StopVulnerabilityScan, payload: %s ", string(task.Payload()))
+
 	var params utils.SbomParameters
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {
 		log.Error().Msgf("StopVulnerabilityScan, error in Unmarshal: %s", err.Error())
@@ -62,7 +63,8 @@ func StopVulnerabilityScan(ctx context.Context, task *asynq.Task) error {
 }
 
 func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error {
-	defer cronjobs.ScanWorkloadAllocator.Free()
+
+	log := log.WithCtx(ctx)
 
 	var (
 		params utils.SbomParameters
@@ -77,7 +79,6 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 		log.Error().Msg("tenant-id/namespace is empty")
 		return directory.ErrNamespaceNotFound
 	}
-	log.Info().Msgf("message tenant id %s", string(tenantID))
 
 	rh := []kgo.RecordHeader{
 		{Key: "namespace", Value: []byte(tenantID)},
@@ -132,6 +133,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 	// get registry credentials
 	authFile, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryID)
 	if err != nil {
+		log.Error().Err(err).Msgf("failed to generate registry auth file for task payload %s", string(task.Payload()))
 		return err
 	}
 

@@ -55,6 +55,8 @@ const (
 	UpdatePodScanStatusTask           = "update_pod_scan_status"
 	BulkDeleteScans                   = "bulk_delete_scans"
 	AutoFetchGenerativeAIIntegrations = "auto_fetch_generative_ai_integrations"
+	AsynqDeleteAllArchivedTasks       = "asynq_delete_all_archived_tasks"
+	RedisRewriteAOF                   = "redis_rewrite_aof"
 )
 
 const (
@@ -65,6 +67,7 @@ const (
 	ScanStatusCancelPending = "CANCEL_PENDING"
 	ScanStatusCancelling    = "CANCELLING"
 	ScanStatusCancelled     = "CANCELLED"
+	ScanStatusDeletePending = "DELETE_PENDING"
 )
 
 // Neo4j Node Labels
@@ -216,6 +219,7 @@ type ReportType string
 const (
 	ReportXLSX ReportType = "xlsx"
 	ReportPDF  ReportType = "pdf"
+	ReportSBOM ReportType = "sbom"
 )
 
 // mask_global : This is to mask gobally. (same as previous mask_across_hosts_and_images flag)

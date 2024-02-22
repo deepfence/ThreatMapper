@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
+  ModelBulkDeleteReportReq,
   ModelExportReport,
   ModelGenerateReportReq,
   ModelGenerateReportResp,
@@ -26,6 +27,8 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
+    ModelBulkDeleteReportReqFromJSON,
+    ModelBulkDeleteReportReqToJSON,
     ModelExportReportFromJSON,
     ModelExportReportToJSON,
     ModelGenerateReportReqFromJSON,
@@ -33,6 +36,10 @@ import {
     ModelGenerateReportRespFromJSON,
     ModelGenerateReportRespToJSON,
 } from '../models';
+
+export interface BulkDeleteReportsRequest {
+    modelBulkDeleteReportReq?: ModelBulkDeleteReportReq;
+}
 
 export interface DeleteReportRequest {
     reportId: string;
@@ -53,6 +60,22 @@ export interface GetReportRequest {
  * @interface ReportsApiInterface
  */
 export interface ReportsApiInterface {
+    /**
+     * Bulk Delete reports
+     * @summary Bulk Delete Reports
+     * @param {ModelBulkDeleteReportReq} [modelBulkDeleteReportReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ReportsApiInterface
+     */
+    bulkDeleteReportsRaw(requestParameters: BulkDeleteReportsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Bulk Delete reports
+     * Bulk Delete Reports
+     */
+    bulkDeleteReports(requestParameters: BulkDeleteReportsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
     /**
      * delete report for given report_id
      * @summary Delete Report
@@ -122,6 +145,44 @@ export interface ReportsApiInterface {
  * 
  */
 export class ReportsApi extends runtime.BaseAPI implements ReportsApiInterface {
+
+    /**
+     * Bulk Delete reports
+     * Bulk Delete Reports
+     */
+    async bulkDeleteReportsRaw(requestParameters: BulkDeleteReportsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/reports/delete`,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelBulkDeleteReportReqToJSON(requestParameters.modelBulkDeleteReportReq),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Bulk Delete reports
+     * Bulk Delete Reports
+     */
+    async bulkDeleteReports(requestParameters: BulkDeleteReportsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.bulkDeleteReportsRaw(requestParameters, initOverrides);
+    }
 
     /**
      * delete report for given report_id

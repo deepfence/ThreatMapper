@@ -117,9 +117,11 @@ func (ph *procHandler) start() error {
 		done := make(chan bool)
 
 		go func() {
+			shortRetries := 5
 		loop:
 			for {
 				err := cmd.Start()
+				startTime := time.Now()
 				if err != nil {
 					log.Error().Msgf("Failed to start: %v", err)
 					break loop
@@ -152,6 +154,18 @@ func (ph *procHandler) start() error {
 						log.Info().Msgf("%s defenitively stopped", ph.command)
 						break loop
 					}
+
+					stopTime := time.Now()
+					if stopTime.Sub(startTime) <= 5*time.Second {
+						shortRetries -= 1
+						if shortRetries == 0 {
+							log.Info().Msgf("%s keeps crashing, stopped", ph.command)
+							break loop
+						}
+					} else {
+						shortRetries = 5
+					}
+
 					log.Info().Msgf("%s restarting...", ph.command)
 					time.Sleep(time.Second * 5)
 					cmd = exec.Command("/bin/bash", "-c", ph.command)

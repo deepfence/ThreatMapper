@@ -30,6 +30,8 @@ var configClusterFile []byte
 
 var enableClusterDiscovery bool
 
+var binaryOnly bool
+
 var enableDebug bool
 
 var hostname string
@@ -39,6 +41,7 @@ var Version string
 func init() {
 	var err error
 	enableClusterDiscovery = os.Getenv("DF_ENABLE_CLUSTER_DISCOVERY") != ""
+	binaryOnly = os.Getenv("DF_SERVERLESS") != ""
 	if hostname = os.Getenv("SCOPE_HOSTNAME"); hostname == "" {
 		hostname, err = os.Hostname()
 		if err != nil {
@@ -77,7 +80,7 @@ func main() {
 		log.Panic().Msgf("%v", err)
 	}
 
-	if !enableClusterDiscovery {
+	if !enableClusterDiscovery && !binaryOnly {
 		for _, entry := range cfg.Cgroups {
 			err := cgroups.LoadCgroup(entry.Name, int64(entry.MaxCPU), int64(entry.MaxMem))
 			if err != nil {

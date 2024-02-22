@@ -167,6 +167,12 @@ export const scanSecretApiAction = async ({
           success: false,
           message,
         };
+      } else if (startSecretScanResponse.error.response.status >= 500) {
+        console.error(startSecretScanResponse.error);
+        return {
+          success: false,
+          message: 'Something went wrong, please try again later.',
+        };
       }
       throw startSecretScanResponse.error;
     }

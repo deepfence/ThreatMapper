@@ -78,7 +78,6 @@ export const Host = (props: HostModalProps) => {
             showBackBtn={showBackBtn}
             availableScanTypes={[]}
             showInstallAgentOption={false}
-            showUpgradeAgentOption={false}
           />
         }
       >
@@ -97,8 +96,8 @@ export const Host = (props: HostModalProps) => {
           >
             <Suspense
               fallback={
-                <div className="min-h-[300px] flex items-center justify-center bg-bg-side-panel">
-                  <CircleSpinner size="lg" />
+                <div className="min-h-[300px] flex items-center justify-center dark:bg-bg-side-panel">
+                  <CircleSpinner size="lg" data-testid="nodeDetailsSpinnerId" />
                 </div>
               }
             >
@@ -139,7 +138,6 @@ const HostHeader = ({
           : []
       }
       showInstallAgentOption={!data.hostData[0].agent_running}
-      showUpgradeAgentOption={data.hostData[0].agent_running}
     />
   );
 };

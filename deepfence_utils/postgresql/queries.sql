@@ -640,15 +640,25 @@ SET error_msg      = $2,
     last_sent_time = now()
 WHERE id = $1;
 
--- name: DeleteIntegration :exec
-DELETE
-FROM integration
-WHERE id = $1;
+-- name: UpdateIntegration :exec
+UPDATE integration
+SET resource        = $1,
+    filters         = $2,
+    integration_type= $3,
+    interval_minutes= $4,
+    config          = $5
+WHERE id = $6;
+
 
 -- name: DeleteIntegrationByUserID :exec
 DELETE
 FROM integration
 WHERE created_by_user_id = $1;
+
+-- name: DeleteIntegrations :exec
+DELETE
+FROM integration
+WHERE id = ANY($1::int[]);
 
 -- name: CreateSchedule :one
 INSERT INTO scheduler (action, description, cron_expr, payload, is_enabled, is_system, status)

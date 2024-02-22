@@ -6,6 +6,9 @@ import (
 )
 
 var ErrNotEnoughRoom = errors.New("not enough room")
+var ErrCtxAllocatorNotFound = errors.New("error allocator context key not found")
+
+const ContextAllocatorKey = "scan-workload-allocator"
 
 type WorkloadAllocator struct {
 	currentWorkload int32

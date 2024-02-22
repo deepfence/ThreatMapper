@@ -16,6 +16,7 @@ import {
 import { ModelCloudResource } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudAccountsList';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
@@ -41,6 +42,9 @@ function useSearchCloudResourcesWithPagination() {
       order: getOrderFromSearchParams(searchParams),
       cloudProvider: searchParams.getAll('cloudProvider'),
       serviceType: searchParams.getAll('serviceType'),
+      awsAccountId: searchParams.getAll('aws_account_ids'),
+      gcpAccountId: searchParams.getAll('gcp_account_ids'),
+      azureAccountId: searchParams.getAll('azure_account_ids'),
     }),
     keepPreviousData: true,
   });
@@ -303,6 +307,9 @@ export const CloudResourcesTable = () => {
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   cloudProvider: 'Cloud provider',
   serviceType: 'Service type',
+  aws_account_ids: 'AWS account',
+  gcp_account_ids: 'GCP account',
+  azure_account_ids: 'Azure account',
 };
 
 const CLOUD_PROVIDERS = [
@@ -396,6 +403,66 @@ function Filters() {
             );
           })}
         </Combobox>
+        <SearchableCloudAccountsList
+          cloudProvider="aws"
+          displayValue="AWS account"
+          defaultSelectedAccounts={searchParams.getAll('aws_account_ids')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('aws_account_ids');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('aws_account_ids');
+              value.forEach((id) => {
+                prev.append('aws_account_ids', id);
+              });
+              return prev;
+            });
+          }}
+        />
+        <SearchableCloudAccountsList
+          cloudProvider="gcp"
+          displayValue="GCP account"
+          defaultSelectedAccounts={searchParams.getAll('gcp_account_ids')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('gcp_account_ids');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('gcp_account_ids');
+              value.forEach((id) => {
+                prev.append('gcp_account_ids', id);
+              });
+              return prev;
+            });
+          }}
+        />
+        <SearchableCloudAccountsList
+          cloudProvider="azure"
+          displayValue="Azure account"
+          defaultSelectedAccounts={searchParams.getAll('azure_account_ids')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('azure_account_ids');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('azure_account_ids');
+              value.forEach((id) => {
+                prev.append('azure_account_ids', id);
+              });
+              return prev;
+            });
+          }}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">

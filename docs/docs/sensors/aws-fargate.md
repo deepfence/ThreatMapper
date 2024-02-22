@@ -6,14 +6,6 @@ title: AWS Fargate
 
 On AWS Fargate, the ThreatMapper sensor agents are deployed as a sidecar container, using a task definition. 
 
-:::info
-
-These instructions are draft, untested, and need technical review.
-
-See also the Deepfence ThreatStryker instructions.
-
-:::
-
 ## Before you Begin
 
 Grant IAM permissions for ECS task execution role to access this secret as outlined [here](https://aws.amazon.com/blogs/compute/introducing-private-registry-authentication-support-for-aws-fargate/).
@@ -33,7 +25,7 @@ Grant IAM permissions for ECS task execution role to access this secret as outli
    * CPU and Memory - 0.5 vCPU, 1.0 Gb is appropriate
    * Define the sidecar containers - 
       * Name - deepfence-agent
-      * Image - ```docker.io/deepfenceio/deepfence_fargate_agent_ce:2.0.1```
+      * Image - ```docker.io/deepfenceio/deepfence_fargate_agent_ce:2.1.0```
       * Select the checkbox for "Private registry authentication" and provide the Secrets Manager ARN or name
       * Unselect the checkbox for "Essential" - the sidecar container is transient and exits once the sensor is installed
    * Define your application containers

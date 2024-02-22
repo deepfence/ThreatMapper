@@ -27,7 +27,7 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
       <div className="text-p7 text-text-input-value">
         Connect to your Docker Registry. Find out more information by{' '}
         <DFLink
-          href={`https://community.deepfence.io/threatmapper/docs/v2.0/registries/`}
+          href={`https://community.deepfence.io/threatmapper/docs/v2.1/registries/`}
           target="_blank"
           rel="noreferrer"
         >

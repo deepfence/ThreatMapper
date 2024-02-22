@@ -7,6 +7,7 @@ import { Card, CircleSpinner } from 'ui-components';
 import { DFLink } from '@/components/DFLink';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
+import { ScanStatusDeletePending } from '@/components/ScanStatusMessage';
 import { getPostureColor, getSeverityColorMap } from '@/constants/charts';
 import { ScanResultChart } from '@/features/topology/components/scan-results/ScanResultChart';
 import { queries } from '@/queries';
@@ -18,6 +19,7 @@ import { abbreviateNumber } from '@/utils/number';
 import {
   isNeverScanned,
   isScanComplete,
+  isScanDeletePending,
   isScanFailed,
   isScanInProgress,
 } from '@/utils/scan';
@@ -176,9 +178,15 @@ const ScanResultComponent = ({
     <div>
       <ScanResultHeading
         type={type}
-        scanId={!isNeverScanned(scanStatus) && scanId ? scanId : undefined}
+        scanId={
+          !isNeverScanned(scanStatus) && !isScanDeletePending(scanStatus) && scanId
+            ? scanId
+            : undefined
+        }
         timestamp={
-          !isNeverScanned(scanStatus) && scanSummary?.timestamp
+          !isNeverScanned(scanStatus) &&
+          !isScanDeletePending(scanStatus) &&
+          scanSummary?.timestamp
             ? scanSummary.timestamp
             : undefined
         }
@@ -230,6 +238,7 @@ const ScanResultComponent = ({
         {isScanFailed(scanStatus) && <ScanStatusError />}
         {isNeverScanned(scanStatus) && <ScanStatusNeverScanned />}
         {isScanInProgress(scanStatus) && <ScanStatusInProgress />}
+        {isScanDeletePending(scanStatus) && <ScanStatusDeletePending />}
       </div>
     </div>
   );

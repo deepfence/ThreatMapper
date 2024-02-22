@@ -69,7 +69,6 @@ export const ContainerImage = (props: ContainerImageModalProps) => {
             showBackBtn={showBackBtn}
             availableScanTypes={[]}
             showInstallAgentOption={false}
-            showUpgradeAgentOption={false}
           />
         }
       >
@@ -123,7 +122,6 @@ const ContainerImageHeader = ({
         ScanTypeEnum.MalwareScan,
       ]}
       showInstallAgentOption={false}
-      showUpgradeAgentOption={false}
     />
   );
 };

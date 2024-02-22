@@ -23,6 +23,9 @@ spec:
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
         name: {{ include "deepfence-console.fullname" . }}-neo4j
+        {{- with .Values.neo4j.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
@@ -60,12 +63,16 @@ spec:
           volumeMounts:
             - name: "neo4j"
               mountPath: /data
+              subPath: "data"
             - name: "neo4j"
               mountPath: /logs
+              subPath: "logs"
             - name: "neo4j"
               mountPath: /plugins
+              subPath: "plugins"
             - name: "neo4j"
               mountPath: /backups
+              subPath: "backups"
       {{- with .Values.neo4j.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

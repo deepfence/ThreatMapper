@@ -33,7 +33,7 @@ const (
 	defaultIngesterSize  = defaultDBInputSize * dbBatchSize
 	dbBatchTimeout       = time.Second * 10
 	resolverTimeout      = time.Second * 10
-	maxNetworkMapsSize   = 1024 * 1024 * 1024 // 1 GB per maps
+	maxNetworkMapsSize   = 1 * 1024 * 1024 * 1024 // 1 GB per maps
 	enqueerTimeout       = time.Second * 30
 	agentBaseTimeout     = time.Second * 30
 	localhostIP          = "127.0.0.1"
@@ -102,21 +102,42 @@ type CacheEntry struct {
 }
 
 func (erc *EndpointResolversCache) cleanMaps() {
-	if v, _ := erc.rdb.MemoryUsage(context.Background(), RedisNetworkMapKey).Result(); v > maxNetworkMapsSize {
-		log.Debug().Msgf("Memory usage for %v reached limit", RedisNetworkMapKey)
-		erc.rdb.HDel(context.Background(), RedisNetworkMapKey)
+	v, err := erc.rdb.MemoryUsage(context.Background(), RedisNetworkMapKey).Result()
+	if err != nil {
+		log.Error().Msg(err.Error())
+	} else if v >= maxNetworkMapsSize {
+		log.Warn().Msgf("Memory usage for %v reached limit", RedisNetworkMapKey)
+		err = erc.rdb.Del(context.Background(), RedisNetworkMapKey).Err()
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 		erc.netCache = sync.Map{}
 	}
-	if v, _ := erc.rdb.MemoryUsage(context.Background(), RedisIPPortPIDMapKey).Result(); v > maxNetworkMapsSize {
-		log.Debug().Msgf("Memory usage for %v reached limit", RedisIPPortPIDMapKey)
-		erc.rdb.HDel(context.Background(), RedisIPPortPIDMapKey)
+
+	v, err = erc.rdb.MemoryUsage(context.Background(), RedisIPPortPIDMapKey).Result()
+	if err != nil {
+		log.Error().Msg(err.Error())
+	} else if v >= maxNetworkMapsSize {
+		log.Warn().Msgf("Memory usage for %v reached limit", RedisIPPortPIDMapKey)
+		err = erc.rdb.Del(context.Background(), RedisIPPortPIDMapKey).Err()
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 		erc.pidCache = sync.Map{}
 	}
 }
 
 func (erc *EndpointResolversCache) pushMaps(er *EndpointResolvers) {
-	erc.rdb.HSet(context.Background(), RedisNetworkMapKey, er.networkMap)
-	erc.rdb.HSet(context.Background(), RedisIPPortPIDMapKey, er.ipPortToIPPID)
+	if len(er.networkMap) > 0 {
+		if err := erc.rdb.HSet(context.Background(), RedisNetworkMapKey, er.networkMap).Err(); err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}
+	if len(er.ipPortToIPPID) > 0 {
+		if err := erc.rdb.HSet(context.Background(), RedisIPPortPIDMapKey, er.ipPortToIPPID).Err(); err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}
 }
 
 func (erc *EndpointResolversCache) getHost(ip string, ttl time.Time) (string, bool) {
@@ -385,6 +406,7 @@ type Connection struct {
 	destination string
 	leftPID     int
 	rightPID    int
+	localPort   int
 }
 
 func connections2maps(connections []Connection, buf *bytes.Buffer) []map[string]interface{} {
@@ -396,18 +418,17 @@ func connections2maps(connections []Connection, buf *bytes.Buffer) []map[string]
 		buf.WriteString(delim)
 		buf.WriteString(connection.destination)
 		connectionID := buf.String()
-		v, has := uniqueMaps[connectionID]
+		_, has := uniqueMaps[connectionID]
 		if !has {
 			uniqueMaps[connectionID] = map[string][]int{
-				"left_pids":  {connection.leftPID},
-				"right_pids": {connection.rightPID},
+				"left_pids":   {connection.leftPID},
+				"right_pids":  {connection.rightPID},
+				"local_ports": {connection.localPort},
 			}
 		} else {
-			// TODO(tjonak): this looks like a logic bug, not touching for now
-			//nolint:gocritic
-			uniqueMaps[connectionID]["left_pids"] = append(v["left_pids"], connection.leftPID)
-			//nolint:gocritic
-			uniqueMaps[connectionID]["right_pids"] = append(v["right_pids"], connection.rightPID)
+			uniqueMaps[connectionID]["left_pids"] = append(uniqueMaps[connectionID]["left_pids"], connection.leftPID)
+			uniqueMaps[connectionID]["right_pids"] = append(uniqueMaps[connectionID]["right_pids"], connection.rightPID)
+			uniqueMaps[connectionID]["local_ports"] = append(uniqueMaps[connectionID]["local_ports"], connection.localPort)
 		}
 	}
 	res := make([]map[string]interface{}, 0, len(uniqueMaps))
@@ -418,11 +439,13 @@ func connections2maps(connections []Connection, buf *bytes.Buffer) []map[string]
 		internal["destination"] = sourceDest[1]
 		leftPIDs := v["left_pids"]
 		rightPIDs := v["right_pids"]
+		localPorts := v["local_ports"]
 		pids := make([]map[string]int, 0, len(leftPIDs))
 		for i := range leftPIDs {
 			pids = append(pids, map[string]int{
-				"left":  leftPIDs[i],
-				"right": rightPIDs[i],
+				"left":       leftPIDs[i],
+				"right":      rightPIDs[i],
+				"local_port": localPorts[i],
 			})
 		}
 		internal["pids"] = pids
@@ -501,6 +524,16 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		processesToKeep[hostPID] = struct{}{}
 	}
 
+	pidsToKeep := map[int]struct{}{}
+	for _, n := range rpt.Process {
+		splits := strings.Split(n.Metadata.NodeID, ";")
+		if len(splits) != 2 {
+			continue
+		}
+		pid, _ := strconv.Atoi(splits[1])
+		pidsToKeep[pid] = struct{}{}
+	}
+
 	// endpoint_batch := []map[string]string{}
 	// endpoint_edges := []map[string]string{}
 
@@ -519,46 +552,56 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 				continue
 			}
 		}
-		if n.Metadata.Pid != -1 {
-			if n.Adjacency == nil || len(*n.Adjacency) == 0 {
-				// Handle inbound from internet
-				connections = append(connections, Connection{
-					source:      "in-the-internet",
-					destination: n.Metadata.HostName,
-					leftPID:     0,
-					rightPID:    n.Metadata.Pid,
-				})
-			} else {
-				for _, i := range *n.Adjacency {
-					if n.Metadata.NodeID != i {
-						ip, port := extractIPPortFromEndpointID(i)
-						// local memoization is used to skip redis access (91% reduction)
-						if _, has := localMemoization[ip]; has {
+
+		pid := n.Metadata.Pid
+		if _, ok := pidsToKeep[pid]; !ok {
+			pid = -1
+		}
+
+		if n.Adjacency == nil || len(*n.Adjacency) == 0 {
+			_, port := extractIPPortFromEndpointID(n.Metadata.NodeID)
+			portint, _ := strconv.Atoi(port)
+			// Handle inbound from internet
+			connections = append(connections, Connection{
+				source:      "in-the-internet",
+				destination: n.Metadata.HostName,
+				leftPID:     0,
+				rightPID:    pid,
+				localPort:   portint,
+			})
+		} else {
+			for _, i := range *n.Adjacency {
+				if n.Metadata.NodeID != i {
+					ip, port := extractIPPortFromEndpointID(i)
+					portint, _ := strconv.Atoi(port)
+					// local memoization is used to skip redis access (91% reduction)
+					if _, has := localMemoization[ip]; has {
+						continue
+					}
+					if host, ok := resolvers.getHost(ip, ttl); ok {
+						if n.Metadata.HostName == host {
+							localMemoization[ip] = struct{}{}
 							continue
 						}
-						if host, ok := resolvers.getHost(ip, ttl); ok {
-							if n.Metadata.HostName == host {
-								localMemoization[ip] = struct{}{}
-								continue
-							}
-							rightIPPID, ok := resolvers.getIPPID(ip+port, ttl)
-							if ok {
-								rightpid := extractPidFromNodeID(rightIPPID)
-								connections = append(connections, Connection{
-									source:      n.Metadata.HostName,
-									destination: host,
-									leftPID:     n.Metadata.Pid,
-									rightPID:    rightpid,
-								})
-							}
-						} else {
+						rightIPPID, ok := resolvers.getIPPID(ip+port, ttl)
+						if ok {
+							rightpid := extractPidFromNodeID(rightIPPID)
 							connections = append(connections, Connection{
 								source:      n.Metadata.HostName,
-								destination: "out-the-internet",
-								leftPID:     n.Metadata.Pid,
-								rightPID:    0,
+								destination: host,
+								leftPID:     pid,
+								rightPID:    rightpid,
+								localPort:   portint,
 							})
 						}
+					} else {
+						connections = append(connections, Connection{
+							source:      n.Metadata.HostName,
+							destination: "out-the-internet",
+							leftPID:     pid,
+							rightPID:    0,
+							localPort:   portint,
+						})
 					}
 				}
 			}
@@ -667,12 +710,14 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 		UNWIND $batch as row
 		MERGE (n:ContainerImage{node_id:row.node_id})
 		MERGE (s:ImageStub{node_id: row.docker_image_name, docker_image_name: row.docker_image_name})
-		MERGE (t:ImageTag{node_id: row.docker_image_name + "_" + row.docker_image_tag})
 		MERGE (n) -[:IS]-> (s)
-		MERGE (n) -[:ALIAS]-> (t)
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true, s.updated_at = TIMESTAMP(), n.docker_image_id=row.node_id,
-		s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
-		n.updated_at = TIMESTAMP()`,
+		SET n+= row,
+			n.updated_at = TIMESTAMP(),
+			n.active = true,
+			s.updated_at = TIMESTAMP(),
+			n.docker_image_id=row.node_id,
+			s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
+			n.updated_at = TIMESTAMP()`,
 		map[string]interface{}{"batch": batches.ContainerImageBatch}); err != nil {
 		return err
 	}
@@ -706,7 +751,9 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 		WITH n, r, m, row.pids as rpids
 		UNWIND rpids as pids
 		SET r.left_pids = coalesce(r.left_pids, []) + pids.left,
-		    r.right_pids = coalesce(r.right_pids, []) + pids.right`, map[string]interface{}{"batch": batches.EndpointEdgesBatch}); err != nil {
+		    r.right_pids = coalesce(r.right_pids, []) + pids.right,
+			r.local_ports = coalesce(r.local_ports, []) + pids.local_port`,
+		map[string]interface{}{"batch": batches.EndpointEdgesBatch}); err != nil {
 		return err
 	}
 
@@ -933,12 +980,14 @@ func (nc *neo4jIngester) runDBPusher(
 			err := pusher(batches, session)
 			if err != nil {
 				batches.Retries += 1
-				if isClosedError(err) {
+				if batches.Retries < 2 && isClosedError(err) {
 					log.Warn().Msg("Renew session")
-					newDriver, err := directory.Neo4jClient(ctx)
+					var newDriver neo4j.Driver
+					newDriver, err = directory.Neo4jClient(ctx)
 					if err == nil {
 						_ = session.Close()
 						session = newDriver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+						continue
 					}
 				}
 				if batches.Retries == 2 || !isTransientError(err) {

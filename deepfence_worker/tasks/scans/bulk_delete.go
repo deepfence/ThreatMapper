@@ -9,17 +9,23 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/hibiken/asynq"
-	"github.com/rs/zerolog/log"
 )
 
 func BulkDeleteScans(ctx context.Context, task *asynq.Task) error {
 
+	log := log.WithCtx(ctx)
+
+	var err error
 	var req model.BulkDeleteScansRequest
-	err := json.Unmarshal(task.Payload(), &req)
+
+	err = json.Unmarshal(task.Payload(), &req)
 	if err != nil {
 		return err
 	}
+
+	log.Info().Msgf("bulk delete scans payload: %v", req)
 
 	scanType := utils.DetectedNodeScanType[req.ScanType]
 	scansList, err := reporters_scan.GetScansList(ctx, scanType, nil, req.Filters, model.FetchWindow{})

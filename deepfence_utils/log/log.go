@@ -1,6 +1,7 @@
 package log
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -43,7 +44,15 @@ func init() {
 				)
 			},
 		},
-	).With().Caller().Logger()
+	).With().Caller().Logger().Hook(NamespaceHook{})
+}
+
+type NamespaceHook struct{}
+
+func (h NamespaceHook) Run(e *zerolog.Event, level zerolog.Level, msg string) {
+	if ns := e.GetCtx().Value("namespace"); ns != nil {
+		e.Any("namespace", ns)
+	}
 }
 
 func Initialize(logLevel string) error {
@@ -84,4 +93,8 @@ func Fatal() *zerolog.Event {
 
 func Panic() *zerolog.Event {
 	return log.Logger.Panic()
+}
+
+func WithCtx(ctx context.Context) zerolog.Logger {
+	return log.With().Ctx(ctx).Logger()
 }

@@ -198,7 +198,15 @@ func initMinio() MinioConfig {
 	}
 
 	minioUser := os.Getenv("DEEPFENCE_MINIO_USER")
+	if minioUser == "" {
+		minioUser = "deepfence"
+		log.Warn().Msgf("DEEPFENCE_MINIO_USER defaults to: %v", minioUser)
+	}
 	minioPassword := os.Getenv("DEEPFENCE_MINIO_PASSWORD")
+	if minioPassword == "" {
+		minioPassword = "deepfence"
+		log.Warn().Msg("using default minio password")
+	}
 	minioBucket := os.Getenv("DEEPFENCE_MINIO_BUCKET")
 	minioRegion := os.Getenv("DEEPFENCE_MINIO_REGION")
 	minioSecure := os.Getenv("DEEPFENCE_MINIO_SECURE")
@@ -244,7 +252,15 @@ func initPosgresql() PostgresqlConfig {
 		}
 	}
 	postgresUsername := os.Getenv("DEEPFENCE_POSTGRES_USER_DB_USER")
+	if postgresUsername == "" {
+		postgresUsername = "deepfence"
+		log.Warn().Msgf("DEEPFENCE_POSTGRES_USER_DB_USER defaults to: %v", postgresUsername)
+	}
 	postgresPassword := os.Getenv("DEEPFENCE_POSTGRES_USER_DB_PASSWORD")
+	if postgresPassword == "" {
+		postgresPassword = "deepfence"
+		log.Warn().Msg("using default postgres password")
+	}
 	postgresDatabase := os.Getenv("DEEPFENCE_POSTGRES_USER_DB_NAME")
 	postgresSslMode := os.Getenv("DEEPFENCE_POSTGRES_USER_DB_SSLMODE")
 
@@ -271,7 +287,15 @@ func initNeo4j() Neo4jConfig {
 	}
 	neo4jEndpoint := "bolt://" + neo4jHost + ":" + neo4jBoltPort
 	neo4jUsername := os.Getenv("DEEPFENCE_NEO4J_USER")
+	if neo4jUsername == "" {
+		neo4jUsername = "neo4j"
+		log.Warn().Msgf("DEEPFENCE_NEO4J_USER defaults to: %v", neo4jUsername)
+	}
 	neo4jPassword := os.Getenv("DEEPFENCE_NEO4J_PASSWORD")
+	if neo4jPassword == "" {
+		neo4jPassword = "e16908ffa5b9f8e9d4ed"
+		log.Warn().Msg("using default neo4j password")
+	}
 	return Neo4jConfig{
 		Endpoint: neo4jEndpoint,
 		Username: neo4jUsername,

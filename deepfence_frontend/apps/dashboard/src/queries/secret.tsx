@@ -14,6 +14,7 @@ import {
   SearchSearchNodeReq,
   SearchSearchScanReq,
 } from '@/api/generated';
+import { DF404Error } from '@/components/error/404';
 import { SecretsCountsCardData } from '@/features/secrets/components/landing/SecretsCountsCard';
 import { ScanStatusEnum } from '@/types/common';
 import { getResponseErrors } from '@/utils/403';
@@ -33,6 +34,7 @@ export const secretQueries = createQueryKeys('secret', {
     containers?: string[];
     images?: string[];
     clusters?: string[];
+    registryAccounts?: string[];
     pageSize: number;
   }) => {
     const {
@@ -45,6 +47,7 @@ export const secretQueries = createQueryKeys('secret', {
       clusters,
       pageSize,
       order,
+      registryAccounts,
     } = filters;
     return {
       queryKey: [{ filters }],
@@ -75,7 +78,6 @@ export const secretQueries = createQueryKeys('secret', {
         const nodeFilters = {
           node_type: nodeTypes,
         } as {
-          status?: string[];
           node_type?: string[];
           host_name?: string[];
           node_id?: string[];
@@ -125,6 +127,9 @@ export const secretQueries = createQueryKeys('secret', {
               order_filter: { order_fields: [] },
               contains_filter: { filter_in: { ...scanFilters } },
               compare_filter: null,
+              not_contains_filter: {
+                filter_in: {},
+              },
             },
             in_field_filter: null,
             window: {
@@ -151,9 +156,9 @@ export const secretQueries = createQueryKeys('secret', {
         }
         if (secretScanStatus) {
           if (secretScanStatus === SecretScanGroupedStatus.neverScanned) {
-            scanRequestParams.node_filters.filters.not_contains_filter!.filter_in = {
-              ...scanRequestParams.node_filters.filters.not_contains_filter!.filter_in,
-              secret_scan_status: [
+            scanRequestParams.scan_filters.filters.not_contains_filter!.filter_in = {
+              ...scanRequestParams.scan_filters.filters.not_contains_filter!.filter_in,
+              status: [
                 ...SECRET_SCAN_STATUS_GROUPS.complete,
                 ...SECRET_SCAN_STATUS_GROUPS.error,
                 ...SECRET_SCAN_STATUS_GROUPS.inProgress,
@@ -161,12 +166,43 @@ export const secretQueries = createQueryKeys('secret', {
               ],
             };
           } else {
-            scanRequestParams.node_filters.filters.contains_filter.filter_in = {
-              ...scanRequestParams.node_filters.filters.contains_filter.filter_in,
-              secret_scan_status: SECRET_SCAN_STATUS_GROUPS[secretScanStatus],
+            scanRequestParams.scan_filters.filters.contains_filter.filter_in = {
+              ...scanRequestParams.scan_filters.filters.contains_filter.filter_in,
+              status: SECRET_SCAN_STATUS_GROUPS[secretScanStatus],
             };
           }
         }
+
+        if (registryAccounts?.length) {
+          scanRequestParams.related_node_filter = {
+            relation_ship: 'HOSTS',
+            node_filter: {
+              filters: {
+                compare_filter: null,
+                contains_filter: {
+                  filter_in: {
+                    node_id: registryAccounts,
+                  },
+                },
+                match_filter: {
+                  filter_in: {},
+                },
+                not_contains_filter: {
+                  filter_in: {},
+                },
+                order_filter: {
+                  order_fields: [],
+                },
+              },
+              in_field_filter: null,
+              window: {
+                offset: 0,
+                size: 0,
+              },
+            },
+          };
+        }
+
         const searchSecretsScanApi = apiWrapper({
           fn: getSearchApiClient().searchSecretsScan,
         });
@@ -265,6 +301,8 @@ export const secretQueries = createQueryKeys('secret', {
           if (statusSecretScanResponse.error.response.status === 400) {
             const { message } = await getResponseErrors(statusSecretScanResponse.error);
             return { message };
+          } else if (statusSecretScanResponse.error.response.status === 404) {
+            throw new DF404Error('Scan not found');
           }
           throw statusSecretScanResponse.error;
         }
@@ -429,6 +467,9 @@ export const secretQueries = createQueryKeys('secret', {
         });
 
         if (!resultSecretScanResponse.ok) {
+          if (resultSecretScanResponse.error.response.status === 404) {
+            throw new DF404Error('Scan not found');
+          }
           throw resultSecretScanResponse.error;
         }
 
@@ -559,6 +600,7 @@ export const secretQueries = createQueryKeys('secret', {
             }
             return {
               name: latestScan.node_name,
+              id: latestScan.node_id,
               critical: latestScan.severity_counts?.critical ?? 0,
               high: latestScan.severity_counts?.high ?? 0,
               medium: latestScan.severity_counts?.medium ?? 0,
@@ -808,6 +850,14 @@ export const secretQueries = createQueryKeys('secret', {
               node_filter: {
                 filters: {
                   contains_filter: containsFilter,
+                  compare_filter: [],
+                  match_filter: { filter_in: {} },
+                  order_filter: { order_fields: [] },
+                },
+                in_field_filter: [],
+                window: {
+                  offset: 0,
+                  size: 0,
                 },
               },
             },
@@ -971,6 +1021,14 @@ export const secretQueries = createQueryKeys('secret', {
               node_filter: {
                 filters: {
                   contains_filter: containsFilter,
+                  compare_filter: [],
+                  match_filter: { filter_in: {} },
+                  order_filter: { order_fields: [] },
+                },
+                in_field_filter: [],
+                window: {
+                  offset: 0,
+                  size: 0,
                 },
               },
             },

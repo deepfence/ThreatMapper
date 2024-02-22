@@ -6,8 +6,10 @@ import { queries } from '@/queries';
 
 export const FieldSelection = ({
   notificationType,
+  defaultSelectedFields,
 }: {
   notificationType: 'vulnerability';
+  defaultSelectedFields?: string[];
 }) => {
   return (
     <div className="flex flex-col col-span-2">
@@ -28,7 +30,10 @@ export const FieldSelection = ({
             />
           }
         >
-          <FieldSelectionDropdown notificationType={notificationType} />
+          <FieldSelectionDropdown
+            notificationType={notificationType}
+            defaultSelectedFields={defaultSelectedFields ?? []}
+          />
         </Suspense>
       </div>
     </div>
@@ -43,12 +48,15 @@ function useNotificationFields() {
 
 const FieldSelectionDropdown = ({
   notificationType,
+  defaultSelectedFields,
 }: {
   notificationType: 'vulnerability';
+  defaultSelectedFields: string[];
 }) => {
   const { data } = useNotificationFields();
-  const [selectedFields, setSelectedFields] = useState<string[]>([]);
+  const [selectedFields, setSelectedFields] = useState<string[]>(defaultSelectedFields);
   const [searchQuery, setSearchQuery] = useState('');
+
   return (
     <Combobox
       name="reportingFields"

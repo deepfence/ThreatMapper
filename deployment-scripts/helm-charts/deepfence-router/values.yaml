@@ -5,6 +5,9 @@
 nameOverride: ""
 fullnameOverride: ""
 
+# Add labels to all the deployed resources
+commonLabels: {}
+
 # Configure port for browser / agents
 managementConsolePort: "443"
 

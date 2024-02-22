@@ -50,9 +50,10 @@ type RegistryIDPathReq struct {
 }
 
 type RegistryImagesReq struct {
-	RegistryID  string                  `json:"registry_id" validate:"required" required:"true"`
-	ImageFilter reporters.FieldsFilters `json:"image_filter" required:"true"`
-	Window      FetchWindow             `json:"window" required:"true"`
+	RegistryID      string                  `json:"registry_id" validate:"required" required:"true"`
+	ImageFilter     reporters.FieldsFilters `json:"image_filter" required:"true"`
+	ImageStubFilter reporters.FieldsFilters `json:"image_stub_filter" required:"true"`
+	Window          FetchWindow             `json:"window" required:"true"`
 }
 
 type DeleteRegistryBulkReq struct {
@@ -248,8 +249,14 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 		MERGE (m:RegistryAccount{node_id: $node_id })
 		SET m.registry_type = $registry_type,
 		m.syncing = false,
+		m.name = $name,
 		m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`
-	_, err = tx.Run(query, map[string]interface{}{"node_id": registryID, "registry_type": ra.RegistryType, "pgId": cr.ID})
+	_, err = tx.Run(query, map[string]interface{}{
+		"node_id":       registryID,
+		"registry_type": ra.RegistryType,
+		"pgId":          cr.ID,
+		"name":          containerRegistry.Name,
+	})
 	if err != nil {
 		return 0, err
 	}
@@ -409,7 +416,7 @@ func ListImageStubs(ctx context.Context, registryID string, filter reporters.Fie
 	return images, nil
 }
 
-func ListImages(ctx context.Context, registryID string, filter reporters.FieldsFilters, fw FetchWindow) ([]ContainerImage, error) {
+func ListImages(ctx context.Context, registryID string, filter, stubFilter reporters.FieldsFilters, fw FetchWindow) ([]ContainerImage, error) {
 
 	res := []ContainerImage{}
 
@@ -432,9 +439,11 @@ func ListImages(ctx context.Context, registryID string, filter reporters.FieldsF
 		return res, err
 	}
 
+	condition := reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(filter), true)
+	condition += ` ` + reporters.ParseFieldFilters2CypherWhereConditions("l", mo.Some(stubFilter), condition == "")
 	query := `
 	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub) <-[:IS]- (m:ContainerImage)
-	` + reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(filter), true) + `
+	` + condition + `
 	RETURN l, m
 	` + fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("query: %v", query)
@@ -473,6 +482,7 @@ func ListImages(ctx context.Context, registryID string, filter reporters.FieldsF
 		if exists {
 			var tagList []string
 			dockerImageName, _ := dockerImageNameVal.(string)
+			node.Name = dockerImageName
 			for _, imageTag := range node.DockerImageTagList {
 				tokens := strings.Split(imageTag, ":")
 				if len(tokens) > 1 {
@@ -612,50 +622,52 @@ func RegistrySummary(ctx context.Context, registryID mo.Option[string], registry
 	defer tx.Close()
 
 	queryPerRegistry := `
-	MATCH (n:RegistryAccount{node_id:$id})-[:HOSTS]->(m:ContainerImage)
-	WITH
+	MATCH (n:RegistryAccount{node_id:$id})-[:HOSTS]->(m:ContainerImage)-[:IS]-(i:ImageStub)
+	WITH n,
 		COUNT(distinct m.docker_image_name) AS images,
-		COUNT(m.docker_image_tag) AS tags,
+		COLLECT(distinct i.tags) AS tags,
 		COUNT(distinct n) AS registries
-	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount)
-	WHERE $id IN a.container_registry_ids
-	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(n)
+	RETURN COLLECT(s.status) AS scan_status, images, reduce(total = 0, t IN tags | total + size(t)) as tags, registries
 	`
 
 	queryRegistriesByType := `
-	MATCH (n:RegistryAccount{registry_type:$type})-[:HOSTS]->(m:ContainerImage)
+	MATCH (n:RegistryAccount{registry_type:$type})-[:HOSTS]->(m:ContainerImage)-[:IS]-(i:ImageStub)
 	WITH
 		COUNT(distinct m.docker_image_name) AS images,
-		COUNT(m.docker_image_tag) AS tags,
+		COLLECT(distinct i.tags) AS tags,
 		COUNT(distinct n) AS registries
-	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount{registry_type:$type})
-	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(:RegistryAccount{registry_type:$type})
+	RETURN COLLECT(s.status) AS scan_status, images, reduce(total = 0, t IN tags | total + size(t)) as tags, registries
 	`
 
 	queryAllRegistries := `
-	MATCH (n:RegistryAccount)-[:HOSTS]->(m:ContainerImage)
+	MATCH (n:RegistryAccount)-[:HOSTS]->(m:ContainerImage)-[:IS]-(i:ImageStub)
 	WITH
 		COUNT(distinct m.docker_image_name) AS images,
-		COUNT(m.docker_image_tag) AS tags,
+		COLLECT(distinct i.tags) AS tags,
 		COUNT(distinct n) AS registries
-	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount)
-	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(:RegistryAccount)
+	RETURN COLLECT(s.status) AS scan_status, images, reduce(total = 0, t IN tags | total + size(t)) as tags, registries
 	`
 
 	var (
 		result neo4j.Result
 	)
 	if regID, ok := registryID.Get(); ok {
+		log.Debug().Msgf("summary queryPerRegistry: %s", queryPerRegistry)
 		if result, err = tx.Run(queryPerRegistry, map[string]interface{}{"id": regID}); err != nil {
 			log.Error().Err(err).Msgf("failed to query summary for registry id %v", regID)
 			return count, err
 		}
 	} else if regType, ok := registryType.Get(); ok {
+		log.Debug().Msgf("summary queryRegistriesByType: %s", queryRegistriesByType)
 		if result, err = tx.Run(queryRegistriesByType, map[string]interface{}{"type": regType}); err != nil {
 			log.Error().Err(err).Msgf("failed to query summary for registry type %s", regType)
 			return count, err
 		}
 	} else {
+		log.Debug().Msgf("summary queryAllRegistries: %s", queryAllRegistries)
 		if result, err = tx.Run(queryAllRegistries, map[string]interface{}{}); err != nil {
 			log.Error().Err(err).Msgf("failed to query summary for all registries")
 			return count, err

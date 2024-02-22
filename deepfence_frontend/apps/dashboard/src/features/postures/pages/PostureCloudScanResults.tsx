@@ -62,6 +62,7 @@ import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanHistoryDropdown } from '@/components/scan-history/HistoryList';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import {
+  ScanStatusDeletePending,
   ScanStatusInError,
   ScanStatusInProgress,
   ScanStatusNoData,
@@ -76,6 +77,7 @@ import { useDownloadScan } from '@/features/common/data-component/downloadScanAc
 import { useGetCloudFilters } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { PostureScanResultsPieChart } from '@/features/postures/components/scan-result/PostureScanResultsPieChart';
 import { PosturesCloudCompare } from '@/features/postures/components/scan-result/PosturesCloudCompare';
+import { SearchableControl } from '@/features/postures/components/scan-result/SearchableControl';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
@@ -91,6 +93,7 @@ import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
 import {
   isScanComplete,
+  isScanDeletePending,
   isScanFailed,
   isScanInProgress,
   isScanStopped,
@@ -288,6 +291,7 @@ const useScanResults = () => {
       status: searchParams.getAll('status'),
       services: searchParams.getAll('services'),
       resources: searchParams.getAll('resources'),
+      control: searchParams.getAll('controlId'),
     }),
     keepPreviousData: true,
   });
@@ -579,7 +583,7 @@ const HistoryControls = () => {
   });
 
   const [openStopScanModal, setOpenStopScanModal] = useState(false);
-  const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
+  const { scan_id, node_id, node_type, created_at, status } = scanStatusResult ?? {};
 
   const [showScanCompareModal, setShowScanCompareModal] = useState<boolean>(false);
 
@@ -594,7 +598,7 @@ const HistoryControls = () => {
   }>({
     baseScanId: '',
     toScanId: '',
-    baseScanTime: updated_at ?? 0,
+    baseScanTime: created_at ?? 0,
     toScanTime: 0,
     showScanTimeModal: false,
   });
@@ -667,7 +671,7 @@ const HistoryControls = () => {
             id: item.scanId,
             isCurrent: item.scanId === scan_id,
             status: item.status,
-            timestamp: item.updatedAt,
+            timestamp: item.createdAt,
             showScanCompareButton: true,
             onScanTimeCompareButtonClick: onCompareScanClick,
             onDeleteClick: (id) => {
@@ -692,7 +696,7 @@ const HistoryControls = () => {
               );
             },
           }))}
-          currentTimeStamp={formatMilliseconds(updated_at ?? '')}
+          currentTimeStamp={formatMilliseconds(created_at ?? '')}
         />
 
         {scanIdToDelete && (
@@ -723,7 +727,7 @@ const HistoryControls = () => {
         )}
         <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
         <ScanStatusBadge status={status ?? ''} />
-        {!isScanInProgress(status ?? '') ? (
+        {!isScanInProgress(status ?? '') && !isScanDeletePending(status ?? '') ? (
           <>
             <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
             <div className="pl-1.5 flex">
@@ -772,7 +776,7 @@ const HistoryControls = () => {
                     onClick={() => {
                       setCompareInput({
                         ...compareInput,
-                        baseScanTime: updated_at ?? 0,
+                        baseScanTime: created_at ?? 0,
                         showScanTimeModal: true,
                       });
                     }}
@@ -784,18 +788,22 @@ const HistoryControls = () => {
             </div>
           </>
         ) : (
-          <Button
-            type="button"
-            variant="flat"
-            size="sm"
-            className="absolute right-0 top-0"
-            onClick={(e) => {
-              e.preventDefault();
-              setOpenStopScanModal(true);
-            }}
-          >
-            Cancel scan
-          </Button>
+          <>
+            {!isScanDeletePending(status ?? '') ? (
+              <Button
+                type="button"
+                variant="flat"
+                size="sm"
+                className="absolute right-0 top-0"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpenStopScanModal(true);
+                }}
+              >
+                Cancel scan
+              </Button>
+            ) : null}
+          </>
         )}
       </div>
     </div>
@@ -950,6 +958,7 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   benchmarkType: 'Benchmark',
   services: 'Service',
   resources: 'Resource',
+  controlId: 'Control',
 };
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
@@ -1139,6 +1148,27 @@ const Filters = () => {
               );
             })}
         </Combobox>
+        <SearchableControl
+          scanId={params.scanId}
+          defaultSelectedControl={searchParams.getAll('controlId')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('controlId');
+              values.forEach((value) => {
+                prev.append('controlId', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('controlId');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
 
       {appliedFilterCount > 0 ? (
@@ -1305,6 +1335,14 @@ const TablePlaceholder = ({
     );
   }
 
+  if (isScanDeletePending(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center min-h-[384px]">
+        <ScanStatusDeletePending />
+      </div>
+    );
+  }
+
   return <TableNoDataElement text="No data available" />;
 };
 
@@ -1389,18 +1427,18 @@ const CloudPostureTable = ({
         enableResizing: false,
         cell: (info) => <TruncatedText text={info.getValue().toUpperCase()} />,
         header: () => 'Benchmark Type',
-        minSize: 50,
-        size: 60,
-        maxSize: 65,
+        minSize: 40,
+        size: 50,
+        maxSize: 60,
       }),
       columnHelper.accessor('service', {
         enableSorting: true,
         enableResizing: false,
         cell: (info) => <TruncatedText text={info.getValue()} />,
         header: () => 'Service',
-        minSize: 50,
-        size: 60,
-        maxSize: 65,
+        minSize: 40,
+        size: 50,
+        maxSize: 60,
       }),
       columnHelper.accessor('status', {
         enableResizing: false,
@@ -1410,6 +1448,16 @@ const CloudPostureTable = ({
         header: () => <div>Status</div>,
         cell: (info) => {
           return <PostureStatusBadge status={info.getValue() as PostureSeverityType} />;
+        },
+      }),
+      columnHelper.accessor('reason', {
+        enableResizing: false,
+        minSize: 60,
+        size: 70,
+        maxSize: 80,
+        header: () => <div>Reason</div>,
+        cell: (info) => {
+          return <TruncatedText text={info.getValue()} />;
         },
       }),
       columnHelper.accessor('description', {
@@ -1650,6 +1698,13 @@ const ScanStatusWrapper = ({
     return (
       <div className={className}>
         <ScanStatusInProgress />
+      </div>
+    );
+  }
+  if (isScanDeletePending(scanStatusResult?.status ?? '')) {
+    return (
+      <div className="flex items-center justify-center h-[140px]">
+        <ScanStatusDeletePending />
       </div>
     );
   }
