@@ -81,6 +81,18 @@ const useImageSummary = () => {
   });
 };
 
+const useRegistryDetails = () => {
+  const params = useParams() as {
+    nodeId: string;
+  };
+  const nodeId = params?.nodeId;
+  return useSuspenseQuery({
+    ...queries.lookup.registryAccount({
+      nodeIds: [nodeId],
+    }),
+  });
+};
+
 function getScanOptions(
   scanType: ScanTypeEnum,
   nodeIds: string[],
@@ -166,6 +178,9 @@ const DynamicBreadcrumbs = () => {
     account: string;
     nodeId: string;
   };
+
+  const { data } = useRegistryDetails();
+
   return (
     <>
       <BreadcrumbLink>
@@ -178,7 +193,7 @@ const DynamicBreadcrumbs = () => {
         </DFLink>
       </BreadcrumbLink>
       <BreadcrumbLink isLast>
-        <span className="inherit cursor-auto">{nodeId}</span>
+        <span className="inherit cursor-auto">{data.data?.[0]?.name ?? nodeId}</span>
       </BreadcrumbLink>
     </>
   );
