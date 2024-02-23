@@ -15,7 +15,7 @@ const commonColors = {
     pink2: '#C7527E',
     pink3: '#E3749E',
     red: '#F55B47',
-    orange: '#F57600',
+    orange: '#FF7C02',
     yellow1: '#E5C354',
     yellow2: '#F6C24F',
     lime: '#62C655',
@@ -162,40 +162,52 @@ const commonColors = {
 const colors = {
   variables: {
     DEFAULT: {
-      'brand-blue': '#2742e7',
-      'brand-magenta': '#d91590',
-      'brand-purple': '#6d32e5',
-      'text-text-and-icon': '#565656',
+      'brand-blue': '#2742E7',
+      'brand-magenta': '#D91590',
+      'brand-purple': '#6D32E5',
+      'text-text-and-icon': '#222', // referred in figma as 'light-text-default'
+      'text-icon': '#444444', // referred in figma as 'Light-Icon'
       'text-input-value': '#000000',
       'text-text-inverse': '#ffffff',
-      'text-link': '#237fb3',
-      'accent-accent': '#0079b8',
-      'bg-page': '#f5f5f5',
-      'bg-grid-border': '#e5e7eb',
-      'bg-tooltip': '#000000',
-      'bg-grid-header': '#fbfbfb',
-      'bg-header': '#f6f7f9',
-      'bg-top-header': '#ffffff',
-      'bg-left-nav': '#fcfcfc',
-      'bg-breadcrumb-bar': '#fdfdfd',
-      'bg-grid-default': '#ffffff',
-      'bg-grid-border-light': '#e5e7eb',
+      'text-link': '#006FE6',
+      'accent-accent': '#185FEC',
+      'accent-alt': '#006FE6',
+      'bg-page': '#F8F8F8',
+      'bg-grid-border': '#DDDDDD',
+      'bg-tooltip': '#233c7d',
+      'bg-grid-header': '#0f1e34',
+      'bg-header': '#11223b',
+      'bg-top-header': '#0c1a33',
+      'bg-left-nav': '#0b121e',
+      'bg-breadcrumb-bar': '#EEEEEE',
+      'bg-grid-default': '#0c182a',
+      'bg-grid-border-light': '#1c243f',
       'bg-map-cluster': '#183867',
-      'bg-card': '#ffffff',
-      'bg-map-node': '#00538C',
-      'bg-active-selection': '#e4ecf2',
-      'bg-hover-1': '#0072a3',
-      'bg-hover-2': '#edf0f3',
-      'bg-hover-3': '#0099e9',
-      'bg-side-panel': '#fefefe',
-      'status-success': '#3c8500',
-      'status-error': '#c81e1e',
-      'status-warning': '#e3a008',
-      'status-info': '#1d8ee6',
+      'bg-card': '#16253b',
+      'bg-map-node': '#EEEEEE',
+      'bg-active-selection': '#183867',
+      'bg-hover-1': '#3777c2',
+      'bg-hover-2': '#0e1f33',
+      'bg-hover-3': '#0140e3',
+      'bg-side-panel': '#192c49',
+      'status-success': '#019852',
+      'status-error': '#E41D4B',
+      'status-warning': '#FF992B',
+      'status-info': '#0B6FDA',
 
       'chart-splitline': '#F3F6FA',
       'chart-axislabel': '#61717D',
       'brand-error': '#f56682',
+
+      'severity-critical': '#B50909',
+      'severity-high': '#E41D4B',
+      'severity-medium': '#F57600',
+      'severity-low': '#F0C800',
+      'severity-unknown': '#939A9F',
+
+      'btn-blue': '#185FEC',
+      'btn-red': '#1C8804',
+      'btn-green': '#DE2121',
 
       ...commonColors,
     },
@@ -206,10 +218,12 @@ const colors = {
       'brand-magenta': '#e640a2',
       'brand-purple': '#753ee5',
       'text-text-and-icon': '#b2c0c9',
+      'text-icon': '#b2c0c9',
       'text-input-value': '#eeeeee',
       'text-text-inverse': '#000000',
       'text-link': '#0ca7ff',
       'accent-accent': '#489cff',
+      'accent-alt': '#489cff', // same as accent-accent for dark theme
       'bg-page': '#020617',
       'bg-grid-border': '#2c375f',
       'bg-tooltip': '#233c7d',
@@ -237,6 +251,20 @@ const colors = {
       'chart-axislabel': '#61717D',
       'brand-error': '#f56682',
 
+      /** In the dark theme, these are referring to some other dark theme colors */
+      'severity-critical': '#E0516D',
+      'severity-high': '#FF7C02',
+      'severity-medium': '#FFA442',
+      'severity-low': '#E5C354',
+      'severity-unknown': '#61717D',
+
+      /** following are just copied over from light theme, as
+       * in dark theme they are not used. acts as a placeholder.
+       */
+      'btn-blue': '#185FEC',
+      'btn-red': '#1C8804',
+      'btn-green': '#DE2121',
+
       ...commonColors,
     },
   },
@@ -249,7 +277,7 @@ const preset = {
     extend: {
       fontFamily: {
         sans: [
-          'Nunito Sans',
+          'Mulish',
           'ui-sans-serif',
           'system-ui',
           '-apple-system',
@@ -266,7 +294,7 @@ const preset = {
           'Noto Color Emoji',
         ],
         body: [
-          'Nunito Sans',
+          'Mulish',
           'ui-sans-serif',
           'system-ui',
           '-apple-system',
@@ -462,6 +490,7 @@ const preset = {
         },
         accent: {
           accent: colorVariable('var(--accent-accent)'),
+          alt: colorVariable('var(--accent-alt)'),
         },
         bg: {
           page: colorVariable('var(--bg-page)'),
@@ -488,6 +517,18 @@ const preset = {
           error: colorVariable('var(--status-error)'),
           warning: colorVariable('var(--status-warning)'),
           info: colorVariable('var(--status-info)'),
+        },
+        severity: {
+          critical: colorVariable('var(--severity-critical)'),
+          high: colorVariable('var(--severity-high)'),
+          medium: colorVariable('var(--severity-medium)'),
+          low: colorVariable('var(--severity-low)'),
+          unknown: colorVariable('var(--severity-unknown)'),
+        },
+        btn: {
+          blue: colorVariable('var(--btn-blue)'),
+          red: colorVariable('var(--btn-red)'),
+          green: colorVariable('var(--btn-green)'),
         },
         clarity: {
           border: colorVariable('var(--clarity-border)'),
