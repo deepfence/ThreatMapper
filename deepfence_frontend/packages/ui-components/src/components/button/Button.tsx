@@ -97,33 +97,46 @@ export const buttonCva = cva(
       color: {
         default: [
           // bg styles
-          'hover:bg-bg-hover-1 bg-accent-accent',
+          'hover:bg-[#1466B8] dark:hover:bg-[#3777c2] bg-btn-blue',
           // text styles
           'text-text-text-inverse',
           // focus styles
-          'focus:outline-[2px] focus:outline-offset-1 focus:outline-offset-transparent focus:outline-bg-hover-3',
+          'focus:outline-[2px] focus:outline-offset-0 focus:outline-offset-transparent',
+          'dark:focus:outline-offset-1',
+          'focus:bg-[#144BB8] focus:outline-[#0055ff]/50',
+          'dark:focus:bg-bg-hover-1 dark:focus:outline-bg-hover-3',
           // disabled styles
-          'dark:disabled:bg-df-gray-600 dark:disabled:text-df-gray-900 disabled:bg-df-gray-400 disabled:text-df-gray-600',
+          'dark:disabled:bg-df-gray-600 dark:disabled:text-df-gray-900',
+          'disabled:bg-[#CCCCCC] disabled:text-text-text-and-icon disabled:dark:text-opacity-100 disabled:text-opacity-40',
         ],
         error: [
           // bg styles
-          'bg-status-error dark:hover:bg-[#C45268] hover:bg-[#9B1C1C]',
+          'bg-btn-red dark:hover:bg-[#C45268] hover:bg-[#BC3434]',
           // text styles
           'text-text-text-inverse',
           // focus styles
-          'focus:outline-[2px] focus:outline-offset-1 focus:outline-offset-transparent dark:focus:outline-[#ffffffb3] focus:outline-[#ea2300]',
+          'focus:outline-[2px] focus:outline-offset-0 focus:outline-offset-transparent',
+          'dark:focus:outline-offset-1',
+          'focus:bg-[#B50909] focus:outline-[#de2121]/50',
+          'dark:focus:bg-[#C45268] dark:focus:outline-[#ffffffb3]',
           // disabled styles
-          'dark:disabled:bg-df-gray-600 dark:disabled:text-df-gray-900 disabled:bg-df-gray-400 disabled:text-df-gray-600',
+          // disabled styles
+          'dark:disabled:bg-df-gray-600 dark:disabled:text-df-gray-900',
+          'disabled:bg-[#CCCCCC] disabled:text-text-text-and-icon disabled:dark:text-opacity-100 disabled:text-opacity-40',
         ],
         success: [
           // bg styles
-          'bg-status-success dark:hover:bg-[#119365] hover:bg-[#306b00]',
+          'bg-btn-green dark:hover:bg-[#119365] hover:bg-[#257A1F]',
           // text styles
           'text-text-text-inverse',
           // focus styles
-          'focus:outline-[2px] focus:outline-offset-1 focus:outline-offset-transparent dark:focus:outline-[#ffffffb3] focus:outline-[#449800]',
+          'focus:outline-[2px] focus:outline-offset-0 focus:outline-offset-transparent',
+          'dark:focus:outline-offset-1',
+          'focus:bg-[#257A1F] focus:outline-[#1c8804]/50',
+          'dark:focus:bg-[#2F6F2A] dark:focus:outline-[#ffffffb3]',
           // disabled styles
-          'dark:disabled:bg-df-gray-600 dark:disabled:text-df-gray-900 disabled:bg-df-gray-400 disabled:text-df-gray-600',
+          'dark:disabled:bg-df-gray-600 dark:disabled:text-df-gray-900',
+          'disabled:bg-[#CCCCCC] disabled:text-text-text-and-icon disabled:dark:text-opacity-100 disabled:text-opacity-40',
         ],
       },
       pill: {
@@ -146,17 +159,22 @@ export const buttonCva = cva(
         variant: 'outline',
         className: [
           // bg styles
-          'bg-transparent dark:hover:bg-bg-hover-2 hover:bg-[#e3f5fc]',
+          'bg-transparent dark:hover:bg-bg-hover-2 hover:bg-[#7fa9ff] hover:bg-opacity-10',
           // text styles
-          'text-accent-accent dark:hover:text-accent-accent hover:text-[#00567a]',
+          'text-accent-accent dark:hover:text-accent-accent',
+          'dark:hover:text-accent-accent hover:text-[#1466B8]',
+          'dark:focus:text-accent-accent focus:text-[#144BB8]',
           // border styles
-          'border border-accent-accent dark:hover:border-accent-accent hover:border-[#0079ad]',
+          'border border-accent-accent dark:hover:border-accent-accent hover:border-[#1466B8]',
           // outline styles
-          'focus:outline-[2px] focus:outline-offset-1 focus:outline-offset-transparent focus:outline-bg-hover-3',
+          'focus:outline-[2px] focus:outline-offset-0 focus:outline-offset-transparent',
+          'dark:focus:outline-offset-1',
+          'focus:bg-[#7fa9ff] focus:bg-opacity-10 focus:outline-[#0055ff]/50',
+          'dark:focus:bg-bg-hover-2 dark:focus:outline-bg-hover-3',
           // disabled styles
-          'disabled:bg-transparent dark:disabled:border-df-gray-600',
-          'dark:disabled:text-df-gray-700 disabled:border-df-gray-400 disabled:text-df-gray-400',
-          'dark:disabled:bg-transparent',
+          'disabled:bg-transparent dark:disabled:bg-transparent',
+          'disabled:border-text-text-and-icon dark:disabled:border-df-gray-600 disabled:border-opacity-40',
+          'dark:disabled:text-df-gray-700 disabled:text-text-text-and-icon disabled:text-opacity-40',
         ],
       },
       {
@@ -164,17 +182,22 @@ export const buttonCva = cva(
         variant: 'outline',
         className: [
           // bg styles
-          'bg-transparent hover:bg-[#fff2f0] dark:hover:bg-[#33151B]',
+          'bg-transparent dark:hover:bg-[#33151B] hover:bg-[#DE2121] hover:bg-opacity-10',
           // text styles
-          'text-status-error',
+          'text-status-error dark:hover:text-status-error',
+          'dark:hover:text-status-error hover:text-[#BC3434]',
+          'dark:focus:text-status-error focus:text-[#B50909]',
           // border styles
-          'border border-status-error',
+          'border border-status-error dark:hover:border-status-error hover:border-[#de2121]',
           // outline styles
-          'focus:outline-[2px] focus:outline-offset-1 focus:outline-offset-transparent dark:focus:outline-[#ffffffb3] focus:outline-[#f82500]',
+          'focus:outline-[2px] focus:outline-offset-0 focus:outline-offset-transparent',
+          'dark:focus:outline-offset-1',
+          'dark:focus:outline-[#ffffffb3] focus:outline-[#de2121]/50',
+          'dark:focus:bg-[#33151B] focus:bg-[#de2121] focus:bg-opacity-10',
           // disabled styles
-          'disabled:bg-transparent dark:disabled:border-df-gray-600',
-          'dark:disabled:text-df-gray-700 disabled:border-df-gray-400 disabled:text-df-gray-400',
-          'dark:disabled:bg-transparent',
+          'disabled:bg-transparent dark:disabled:bg-transparent',
+          'disabled:border-text-text-and-icon dark:disabled:border-df-gray-600 disabled:border-opacity-40',
+          'dark:disabled:text-df-gray-700 disabled:text-text-text-and-icon disabled:text-opacity-40',
         ],
       },
       {
@@ -182,17 +205,22 @@ export const buttonCva = cva(
         variant: 'outline',
         className: [
           // bg styles
-          'bg-transparent hover:bg-[#eefce3] dark:hover:bg-[#052E20]',
+          'bg-transparent dark:hover:bg-[#052E20] hover:bg-[#1C880433] hover:bg-opacity-20',
           // text styles
-          'text-status-success',
+          'text-status-success dark:hover:text-status-success',
+          'dark:hover:text-status-success hover:text-[#257A1F]',
+          'dark:focus:text-status-success focus:text-[#2B7326]',
           // border styles
-          'border border-status-success dark:hover:border-status-success hover:border-[#42810e]',
+          'border border-status-success dark:hover:border-status-success hover:border-[#1C8804]',
           // outline styles
-          'focus:outline-[2px] focus:outline-offset-1 focus:outline-offset-transparent dark:focus:outline-[#ffffffb3] focus:outline-[#449800]',
+          'focus:outline-[2px] focus:outline-offset-0 focus:outline-offset-transparent',
+          'dark:focus:outline-offset-1',
+          'dark:focus:outline-[#ffffffb3] focus:outline-[#2B7326]/50',
+          'dark:focus:bg-[#052E20] focus:bg-[#1C880433] focus:bg-opacity-20',
           // disabled styles
-          'disabled:bg-transparent dark:disabled:border-df-gray-600',
-          'dark:disabled:text-df-gray-700 disabled:border-df-gray-400 disabled:text-df-gray-400',
-          'dark:disabled:bg-transparent',
+          'disabled:bg-transparent dark:disabled:bg-transparent',
+          'disabled:border-text-text-and-icon dark:disabled:border-df-gray-600 disabled:border-opacity-40',
+          'dark:disabled:text-df-gray-700 disabled:text-text-text-and-icon disabled:text-opacity-40',
         ],
       },
       {
@@ -201,14 +229,20 @@ export const buttonCva = cva(
         className: [
           // bg styles
           'bg-transparent dark:hover:bg-transparent hover:bg-transparent',
+          'dark:focus:bg-transparent focus:bg-transparent',
           // text styles
-          'text-accent-accent dark:hover:text-[#3777C2] hover:text-[#00618a]',
+          'text-btn-blue dark:text-btn-blue',
+          'dark:hover:text-[#3777C2] hover:text-[#1466B8]',
+          'dark:focus:text-[#3777C2] focus:text-[#144BB8]',
           // border styles
           'border-none',
           // outline styles
-          'focus:outline-[2px] focus:outline-offset-1 focus:outline-offset-transparent focus:outline-bg-hover-3',
+          'focus:outline-[2px] focus:outline-offset-0 focus:outline-offset-transparent',
+          'dark:focus:outline-offset-1',
+          'focus:outline-[#144BB8]/50 dark:focus:outline-[#0140E3]',
           // disabled styles
-          'dark:disabled:bg-transparent disabled:bg-transparent dark:disabled:text-df-gray-600 disabled:text-df-gray-400',
+          'dark:disabled:bg-transparent disabled:bg-transparent',
+          'dark:disabled:text-df-gray-600 disabled:text-text-text-and-icon disabled:text-opacity-40',
         ],
       },
       {
@@ -217,14 +251,20 @@ export const buttonCva = cva(
         className: [
           // bg styles
           'bg-transparent dark:hover:bg-transparent hover:bg-transparent',
+          'dark:focus:bg-transparent focus:bg-transparent',
           // text styles
-          'text-status-error dark:hover:text-[#C45268] hover:text-[#9B1C1C]',
+          'text-btn-red dark:text-btn-red',
+          'dark:hover:text-[#C45268] hover:text-[#BC3434]',
+          'dark:focus:text-[#C45268] focus:text-[#B50909]',
           // border styles
           'border-none',
           // outline styles
-          'focus:outline-[2px focus:outline-offset-1 focus:outline-offset-transparent dark:focus:outline-[#ffffffb3] focus:outline-[#f82500]',
+          'focus:outline-[2px] focus:outline-offset-0 focus:outline-offset-transparent',
+          'dark:focus:outline-offset-1',
+          'dark:focus:outline-[#ffffffb3] focus:outline-[#B50909]/50',
           // disabled styles
-          'dark:disabled:bg-transparent disabled:bg-transparent dark:disabled:text-df-gray-600 disabled:text-df-gray-400',
+          'dark:disabled:bg-transparent disabled:bg-transparent',
+          'dark:disabled:text-df-gray-600 disabled:text-text-text-and-icon disabled:text-opacity-40',
         ],
       },
       {
@@ -233,14 +273,20 @@ export const buttonCva = cva(
         className: [
           // bg styles
           'bg-transparent hover:bg-transparent dark:hover:bg-transparent',
+          'dark:focus:bg-transparent focus:bg-transparent',
           // text styles
-          'text-status-success dark:hover:text-[#119366] hover:text-[#366a0c]',
+          'text-btn-green dark:text-btn-green',
+          'dark:hover:text-[#119366] hover:text-[#257A1F]',
+          'dark:focus:text-[#119366] focus:text-[#2B7326]',
           // border styles
           'border-none',
           // outline styles
-          'focus:outline-[2px focus:outline-offset-1 dark:focus:outline-offset-transparent dark:focus:outline-[#ffffffb3] focus:outline-[#449800]',
+          'focus:outline-[2px] focus:outline-offset-0 dark:focus:outline-offset-transparent',
+          'dark:focus:outline-offset-1',
+          'dark:focus:outline-[#ffffffb3] focus:outline-[#2B7326]/50',
           // disabled styles
-          'dark:disabled:bg-transparent disabled:bg-transparent dark:disabled:text-df-gray-600 disabled:text-df-gray-400',
+          'dark:disabled:bg-transparent disabled:bg-transparent',
+          'dark:disabled:text-df-gray-600 disabled:text-text-text-and-icon disabled:text-opacity-40',
         ],
       },
     ],

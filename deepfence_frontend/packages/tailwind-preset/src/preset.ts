@@ -205,9 +205,9 @@ const colors = {
       'severity-low': '#F0C800',
       'severity-unknown': '#939A9F',
 
-      'btn-blue': '#185FEC',
-      'btn-red': '#1C8804',
-      'btn-green': '#DE2121',
+      'btn-blue': '#1E61E6',
+      'btn-red': '#DE2121',
+      'btn-green': '#1C8804',
 
       ...commonColors,
     },
@@ -261,9 +261,9 @@ const colors = {
       /** following are just copied over from light theme, as
        * in dark theme they are not used. acts as a placeholder.
        */
-      'btn-blue': '#185FEC',
-      'btn-red': '#1C8804',
-      'btn-green': '#DE2121',
+      'btn-blue': '#489cff',
+      'btn-red': '#E0516D',
+      'btn-green': '#15B77E',
 
       ...commonColors,
     },
