@@ -78,21 +78,21 @@ func CountAllNodeLabels(ctx context.Context) (map[string]int64, error) {
 		return res, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	query := `CALL apoc.meta.stats() YIELD labels RETURN labels;`
-	r, err := tx.Run(query, map[string]interface{}{})
+	r, err := tx.Run(ctx, query, map[string]interface{}{})
 	if err != nil {
 		return res, err
 	}
-	rec, err := r.Single()
+	rec, err := r.Single(ctx)
 	if err != nil {
 		return res, err
 	}

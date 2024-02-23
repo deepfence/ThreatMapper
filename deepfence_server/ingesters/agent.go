@@ -996,7 +996,7 @@ func (nc *neo4jIngester) runDBPusher(
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 
 	for batches := range dbPusher {
-		ctx, span := telemetry.NewSpan(context.Background(), "ingester", "PushAgentReportsToDB")
+		ctx, span := telemetry.NewSpan(ctx, "ingester", "PushAgentReportsToDB")
 		for {
 			err := pusher(ctx, batches, session)
 			if err != nil {
