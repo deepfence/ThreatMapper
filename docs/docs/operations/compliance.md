@@ -64,7 +64,7 @@ Click **Start Scan** once you have completed your selection. The Cloud Connector
 
 When scans complete, they are reported on the **Posture** page in the ThreatMapper console.
 
-Select the appropriate cloud instance and chose to view the results or review the inventory.
+Select the appropriate cloud instance and choose to view the results or review the inventory.
 
 ### View Scan Results
 
