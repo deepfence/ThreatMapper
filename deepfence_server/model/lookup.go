@@ -49,16 +49,18 @@ type BasicNode struct {
 }
 
 type Connection struct {
-	NodeName string `json:"node_name"`
-	NodeID   string `json:"node_id"`
-	Count    int64  `json:"count"`
+	NodeName string        `json:"node_name"`
+	NodeID   string        `json:"node_id"`
+	Count    int64         `json:"count"`
+	IPs      []interface{} `json:"ips"`
 }
 
 type ConnectionQueryResp struct {
-	FromNodeID string `json:"from_node_id"`
-	NodeName   string `json:"node_name"`
-	NodeID     string `json:"node_id"`
-	Count      int64  `json:"count"`
+	FromNodeID string        `json:"from_node_id"`
+	NodeName   string        `json:"node_name"`
+	NodeID     string        `json:"node_id"`
+	Count      int64         `json:"count"`
+	IPs        []interface{} `json:"ips"`
 }
 
 type Host struct {

@@ -100,6 +100,7 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 					NodeName: conn.NodeName,
 					NodeID:   conn.NodeID,
 					Count:    conn.Count,
+					IPs:      conn.IPs,
 				})
 			}
 			for _, conn := range outboundConnections {
@@ -108,6 +109,7 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 					NodeName: conn.NodeName,
 					NodeID:   conn.NodeID,
 					Count:    conn.Count,
+					IPs:      conn.IPs,
 				})
 			}
 		}
@@ -424,7 +426,7 @@ func getNodeConnections[T reporters.Cypherable](ctx context.Context, ids []strin
 	query := `
 			MATCH (n:` + dummy.NodeType() + `)-[c:CONNECTS]-(m)
 			WHERE n.node_id in $ids
-			RETURN n.node_id,m.node_id,m.node_name,sum(size(c.left_pids)),(startNode(c) = n)`
+			RETURN n.node_id,m.node_id,m.node_name,sum(size(c.left_pids)),(startNode(c) = n),c.left_ips,c.right_ips`
 	r, err := tx.Run(query, map[string]interface{}{"ids": ids})
 	if err != nil {
 		return inbound, outbound, err
@@ -436,10 +438,17 @@ func getNodeConnections[T reporters.Cypherable](ctx context.Context, ids []strin
 	}
 
 	for _, rec := range recs {
+		ips := []interface{}{}
+		if rec.Values[5] != nil {
+			ips = rec.Values[5].([]interface{})
+		} else if rec.Values[6] != nil {
+			ips = rec.Values[6].([]interface{})
+		}
 		connection := model.ConnectionQueryResp{
 			FromNodeID: rec.Values[0].(string),
 			NodeID:     rec.Values[1].(string),
 			Count:      rec.Values[3].(int64),
+			IPs:        ips,
 		}
 		if rec.Values[2] == nil {
 			connection.NodeName = connection.NodeID
