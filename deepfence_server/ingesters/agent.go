@@ -407,11 +407,13 @@ type Connection struct {
 	leftPID     int
 	rightPID    int
 	localPort   int
+	leftIP      *string
+	rightIP     *string
 }
 
 func connections2maps(connections []Connection, buf *bytes.Buffer) []map[string]interface{} {
 	delim := ";;;"
-	uniqueMaps := map[string]map[string][]int{}
+	uniqueMaps := map[string]map[string][]interface{}{}
 	for _, connection := range connections {
 		buf.Reset()
 		buf.WriteString(connection.source)
@@ -420,15 +422,19 @@ func connections2maps(connections []Connection, buf *bytes.Buffer) []map[string]
 		connectionID := buf.String()
 		_, has := uniqueMaps[connectionID]
 		if !has {
-			uniqueMaps[connectionID] = map[string][]int{
+			uniqueMaps[connectionID] = map[string][]interface{}{
 				"left_pids":   {connection.leftPID},
 				"right_pids":  {connection.rightPID},
 				"local_ports": {connection.localPort},
+				"left_ips":    {connection.leftIP},
+				"right_ips":   {connection.rightIP},
 			}
 		} else {
 			uniqueMaps[connectionID]["left_pids"] = append(uniqueMaps[connectionID]["left_pids"], connection.leftPID)
 			uniqueMaps[connectionID]["right_pids"] = append(uniqueMaps[connectionID]["right_pids"], connection.rightPID)
 			uniqueMaps[connectionID]["local_ports"] = append(uniqueMaps[connectionID]["local_ports"], connection.localPort)
+			uniqueMaps[connectionID]["left_ips"] = append(uniqueMaps[connectionID]["left_ips"], connection.leftIP)
+			uniqueMaps[connectionID]["right_ips"] = append(uniqueMaps[connectionID]["right_ips"], connection.rightIP)
 		}
 	}
 	res := make([]map[string]interface{}, 0, len(uniqueMaps))
@@ -440,12 +446,16 @@ func connections2maps(connections []Connection, buf *bytes.Buffer) []map[string]
 		leftPIDs := v["left_pids"]
 		rightPIDs := v["right_pids"]
 		localPorts := v["local_ports"]
-		pids := make([]map[string]int, 0, len(leftPIDs))
+		leftIPs := v["left_ips"]
+		rightIPs := v["right_ips"]
+		pids := make([]map[string]interface{}, 0, len(leftPIDs))
 		for i := range leftPIDs {
-			pids = append(pids, map[string]int{
+			pids = append(pids, map[string]interface{}{
 				"left":       leftPIDs[i],
 				"right":      rightPIDs[i],
 				"local_port": localPorts[i],
+				"left_ip":    leftIPs[i],
+				"right_ip":   rightIPs[i],
 			})
 		}
 		internal["pids"] = pids
@@ -541,15 +551,17 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	connections := []Connection{}
 	localMemoization := map[string]struct{}{}
 	for _, n := range rpt.Endpoint {
-		nodeIP, _ := extractIPPortFromEndpointID(n.Metadata.NodeID)
+		if n.Adjacency == nil || len(*n.Adjacency) == 0 {
+			continue
+		}
+
+		nodeIP, nodePort := extractIPPortFromEndpointID(n.Metadata.NodeID)
 		if nodeIP == localhostIP {
 			continue
 		}
 		if n.Metadata.HostName == "" {
 			if val, ok := resolvers.getHost(nodeIP, ttl); ok {
 				n.Metadata.HostName = val
-			} else {
-				continue
 			}
 		}
 
@@ -558,51 +570,52 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			pid = -1
 		}
 
-		if n.Adjacency == nil || len(*n.Adjacency) == 0 {
-			_, port := extractIPPortFromEndpointID(n.Metadata.NodeID)
-			portint, _ := strconv.Atoi(port)
-			// Handle inbound from internet
-			connections = append(connections, Connection{
-				source:      "in-the-internet",
-				destination: n.Metadata.HostName,
-				leftPID:     0,
-				rightPID:    pid,
-				localPort:   portint,
-			})
-		} else {
-			for _, i := range *n.Adjacency {
-				if n.Metadata.NodeID != i {
-					ip, port := extractIPPortFromEndpointID(i)
-					portint, _ := strconv.Atoi(port)
-					// local memoization is used to skip redis access (91% reduction)
-					if _, has := localMemoization[ip]; has {
+		localPortint, _ := strconv.Atoi(nodePort)
+
+		for _, i := range *n.Adjacency {
+			if n.Metadata.NodeID != i {
+				ip, port := extractIPPortFromEndpointID(i)
+				portint, _ := strconv.Atoi(port)
+				// local memoization is used to skip redis access (91% reduction)
+				if _, has := localMemoization[ip]; has {
+					continue
+				}
+				if host, ok := resolvers.getHost(ip, ttl); ok {
+					if n.Metadata.HostName == host {
+						localMemoization[ip] = struct{}{}
 						continue
 					}
-					if host, ok := resolvers.getHost(ip, ttl); ok {
-						if n.Metadata.HostName == host {
-							localMemoization[ip] = struct{}{}
-							continue
-						}
-						rightIPPID, ok := resolvers.getIPPID(ip+port, ttl)
-						if ok {
-							rightpid := extractPidFromNodeID(rightIPPID)
+					rightIPPID, ok := resolvers.getIPPID(ip+port, ttl)
+					if ok {
+						rightpid := extractPidFromNodeID(rightIPPID)
+						if n.Metadata.HostName == "" {
+							connections = append(connections, Connection{
+								source:      "in-the-internet",
+								destination: host,
+								leftPID:     pid,
+								rightPID:    rightpid,
+								localPort:   portint,
+								leftIP:      &nodeIP,
+							})
+						} else {
 							connections = append(connections, Connection{
 								source:      n.Metadata.HostName,
 								destination: host,
 								leftPID:     pid,
 								rightPID:    rightpid,
-								localPort:   portint,
+								localPort:   localPortint,
 							})
 						}
-					} else {
-						connections = append(connections, Connection{
-							source:      n.Metadata.HostName,
-							destination: "out-the-internet",
-							leftPID:     pid,
-							rightPID:    0,
-							localPort:   portint,
-						})
 					}
+				} else {
+					connections = append(connections, Connection{
+						source:      n.Metadata.HostName,
+						destination: "out-the-internet",
+						leftPID:     pid,
+						rightPID:    0,
+						localPort:   localPortint,
+						rightIP:     &ip,
+					})
 				}
 			}
 		}
@@ -752,7 +765,9 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 		UNWIND rpids as pids
 		SET r.left_pids = coalesce(r.left_pids, []) + pids.left,
 		    r.right_pids = coalesce(r.right_pids, []) + pids.right,
-			r.local_ports = coalesce(r.local_ports, []) + pids.local_port`,
+			r.local_ports = coalesce(r.local_ports, []) + pids.local_port,
+			r.left_ips = coalesce(r.left_ips, []) + pids.left_ip,
+			r.right_ips = coalesce(r.right_ips, []) + pids.rigth_ip`,
 		map[string]interface{}{"batch": batches.EndpointEdgesBatch}); err != nil {
 		return err
 	}
