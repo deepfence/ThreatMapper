@@ -61,12 +61,12 @@ const Radio: FC<Props> = (props) => {
                 className={cn(
                   'rounded-full py-2 w-4 h-4 flex shrink-0 peer group',
                   'data-[state=checked]:bg-accent-accent',
-                  'bg-gray-50 ring-inset data-[state=unchecked]:ring-1 data-[state=unchecked]:ring-text-text-and-icon bg-transparent',
+                  'ring-inset data-[state=unchecked]:ring-1 data-[state=unchecked]:ring-text-icon bg-transparent',
                   'data-[state=disabled]:pointer-events-none',
                   // uncheck disabled
-                  'dark:data-[state=unchecked]:disabled:bg-gray-600 data-[state=unchecked]:disabled:bg-gray-200 data-[state=unchecked]:disabled:ring-gray-400',
+                  'dark:data-[state=unchecked]:disabled:bg-gray-600 data-[state=unchecked]:disabled:bg-[#939A9F]/60 data-[state=unchecked]:disabled:ring-[#939A9F]',
                   // check disabled
-                  'dark:data-[state=checked]:disabled:bg-gray-600 data-[state=checked]:disabled:bg-gray-200 data-[state=checked]:disabled:ring-gray-400',
+                  'dark:data-[state=checked]:disabled:bg-gray-600 data-[state=checked]:disabled:bg-[#939A9F]/60 data-[state=checked]:disabled:ring-[#939A9F]',
                   'disabled:cursor-not-allowed',
                 )}
                 {...rest}
@@ -83,7 +83,7 @@ const Radio: FC<Props> = (props) => {
               <Label
                 htmlFor={_id + ''}
                 className={cn(
-                  'pl-1.5 text-p4 text-text-input-value dark:peer-disabled:text-gray-600 peer-disabled:text-gray-400 peer-disabled:cursor-not-allowed',
+                  'pl-1.5 text-p4 dark:text-text-input-value text-text-text-and-icon dark:peer-disabled:text-gray-600 peer-disabled:text-[#939A9F] peer-disabled:cursor-not-allowed',
                 )}
               >
                 {label}

@@ -29,14 +29,14 @@ const inputElementClassnames = cva(
         default: [
           cn(
             // border
-            'border-text-text-and-icon',
+            'border-text-text-and-icon dark:disabled:border-[#61717D]/50 disabled:border-[#939A9F]/50',
             // placeholder styles
-            'placeholder-df-gray-500 disabled:placeholder-df-gray-600',
+            'placeholder-df-gray-500 disabled:placeholder-[#939A9F]/60',
             'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
             // text styles
-            'text-text-input-value',
+            'dark:text-text-input-value text-text-text-and-icon',
             // disabled text color
-            'disabled:text-gray-400 dark:disabled:text-df-gray-600',
+            'disabled:text-[#939A9F]/60 dark:disabled:text-df-gray-600',
             // focus style
             'bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
             'focus:border-b-accent-accent',
@@ -49,21 +49,21 @@ const inputElementClassnames = cva(
         error: [
           cn(
             // border
-            'border-chart-red',
+            'dark:border-chart-red border-[#E41D4B] dark:disabled:border-[#61717D]/50 disabled:border-[#939A9F]/50',
             // placeholder styles
-            'placeholder-df-gray-500 disabled:placeholder-df-gray-400',
+            'placeholder-df-gray-500 disabled:placeholder-[#939A9F]/60',
             'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
             // text font
             // text styles
-            'text-text-input-value',
+            'dark:text-text-input-value text-text-text-and-icon',
             // disabled text color
-            'disabled:text-gray-400 dark:disabled:text-df-gray-600',
+            'disabled:text-[#939A9F]/60 dark:disabled:text-df-gray-600',
             // focus style
             'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
-            'focus:border-b-chart-red',
+            'dark:focus:border-b-chart-red focus:border-b-[#E41D4B]',
             // dark and bg styles
             'bg-[length:0%_100%] bg-no-repeat',
-            'bg-gradient-to-b from-transparent from-95% to-[#f55b47] to-95%',
+            'bg-gradient-to-b from-transparent from-95% dark:to-[#f55b47] to-[#E41D4B] to-95%',
             'focus:bg-[length:100%_100%]',
           ),
         ],
@@ -92,7 +92,7 @@ export const TextInputArea = forwardRef<HTMLTextAreaElement, TextInputAreaProps>
         {label && (
           <LabelPrimitive.Root
             htmlFor={_id}
-            className="font-medium text-text-text-inverse"
+            className="font-medium dark:text-text-input-value text-text-text-and-icon"
           >
             {label}
           </LabelPrimitive.Root>

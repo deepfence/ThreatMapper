@@ -484,6 +484,7 @@ const preset = {
         },
         text: {
           'text-and-icon': colorVariable('var(--text-text-and-icon)'),
+          icon: colorVariable('var(--text-icon)'),
           'input-value': colorVariable('var(--text-input-value)'),
           'text-inverse': colorVariable('var(--text-text-inverse)'),
           link: colorVariable('var(--text-link)'),

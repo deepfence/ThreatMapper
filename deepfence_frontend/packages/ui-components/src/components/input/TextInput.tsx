@@ -116,14 +116,14 @@ const inputCva = cva(
         default: [
           cn(
             // border
-            'border-text-text-and-icon',
+            'border-text-text-and-icon dark:disabled:border-[#61717D]/50 disabled:border-[#939A9F]/50',
             // placeholder styles
-            'placeholder-df-gray-500 disabled:placeholder-df-gray-400',
+            'placeholder-df-gray-500 disabled:placeholder-[#939A9F]/50',
             'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
             // text styles
-            'text-text-input-value',
+            'dark:text-text-input-value text-text-text-and-icon',
             // disabled text color
-            'disabled:text-df-gray-400 dark:disabled:text-df-gray-600',
+            'disabled:text-[#939A9F]/50 dark:disabled:text-df-gray-600',
             // focus style
             'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
             'focus:border-b-accent-accent',
@@ -136,21 +136,21 @@ const inputCva = cva(
         error: [
           cn(
             // border
-            'border-chart-red',
+            'dark:border-chart-red border-[#E41D4B] dark:disabled:border-[#61717D]/50 disabled:border-[#939A9F]/50',
             // placeholder styles
-            'placeholder-df-gray-500 disabled:placeholder-df-gray-400',
+            'placeholder-df-gray-500 disabled:placeholder-[#939A9F]/60',
             'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
             // text font
             // text styles
-            'text-text-input-value',
+            'dark:text-text-input-value text-text-text-and-icon',
             // disabled text color
-            'disabled:text-gray-400 dark:disabled:text-df-gray-600',
+            'disabled:text-[#939A9F]/60 dark:disabled:text-df-gray-600',
             // focus style
             'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
-            'focus:border-b-chart-red',
+            'dark:focus:border-b-chart-red focus:border-b-[#E41D4B]',
             // dark and bg styles
             'bg-[length:0%_100%] bg-no-repeat',
-            'bg-gradient-to-b from-transparent from-95% to-[#f55b47] to-95%',
+            'bg-gradient-to-b from-transparent from-95% dark:to-[#f55b47] to-[#E41D4B] to-95%',
             'focus:bg-[length:100%_100%]',
           ),
         ],
@@ -184,7 +184,7 @@ const iconContextCva = cva('', {
     sizing: {
       md: `w-4 h-4`,
     },
-    disabled: { true: 'dark:text-df-gray-600 text-df-gray-400' },
+    disabled: { true: 'dark:text-df-gray-600 text-[#939A9F]/60' },
   },
   defaultVariants: {
     color: 'default',
@@ -259,9 +259,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           <div className="flex gap-2 pb-[10px] items-center">
             <LabelPrimitive.Root
               htmlFor={_id}
-              className={cn('text-p3 text-text-text-and-icon', {
-                'dark:text-df-gray-600 text-df-gray-400': disabled,
-              })}
+              className={cn('text-p3 dark:text-text-input-value text-text-text-and-icon')}
             >
               {required && <span>*</span>}
               {label}
@@ -324,7 +322,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
 
           {color === 'error' && (
             <div
-              className={cn('text-chart-red', {
+              className={cn('dark:text-chart-red text-status-error', {
                 'cursor-not-allowed': disabled,
               })}
               data-testid={`textinput-error-icon-${id}`}
