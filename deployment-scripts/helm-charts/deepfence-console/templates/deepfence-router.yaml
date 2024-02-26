@@ -111,7 +111,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
 ---
-{{- if or .Values.router.service.create .Values.ingress.enable }}
+{{- if or .Values.router.service.create .Values.ingress.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
