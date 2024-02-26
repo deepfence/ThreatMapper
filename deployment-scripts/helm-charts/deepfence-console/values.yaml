@@ -223,9 +223,11 @@ neo4j:
   affinity: {}
   podLabels: {}
 
+# DO NOT USE
+# Use deepfence-router helm chart to configure the service and ingress
 # ingress for console
 ingress:
-  enable: false
+  enabled: false
   ## name of the ingress class for ingress provider installed on the cluster, cannot be empty
   ## Example: nginx
   class: nginx
