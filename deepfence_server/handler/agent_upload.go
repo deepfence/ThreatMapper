@@ -68,7 +68,7 @@ func (h *Handler) UploadAgentBinaries(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = IngestAgentVersion(ctx, tagsWithURLs)
+	err = IngestAgentVersion(ctx, tagsWithURLs, true)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
@@ -121,7 +121,7 @@ func PrepareAgentBinariesReleases(ctx context.Context, versionedTarball map[stri
 	return processedTags, nil
 }
 
-func IngestAgentVersion(ctx context.Context, tagsToURL map[string]string) error {
+func IngestAgentVersion(ctx context.Context, tagsToURL map[string]string, manual bool) error {
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -143,8 +143,12 @@ func IngestAgentVersion(ctx context.Context, tagsToURL map[string]string) error 
 	if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:AgentVersion{node_id: row.tag})
-		SET n.url = row.url`,
-		map[string]interface{}{"batch": tagsToIngest}); err != nil {
+		SET n.url = row.url,
+			n.manual = $manual`,
+		map[string]interface{}{
+			"batch":  tagsToIngest,
+			"manual": manual,
+		}); err != nil {
 		return err
 	}
 
@@ -168,6 +172,7 @@ func CleanUpAgentVersion(ctx context.Context, tagsToKeep []string) error {
 	if _, err = tx.Run(`
 		MATCH (n:AgentVersion)
 		WHERE NOT n.node_id IN $tags
+		AND COALESCE(n.manual, false) = false
 		SET n.url = NULL`,
 		map[string]interface{}{"tags": tagsToKeep}); err != nil {
 		return err
