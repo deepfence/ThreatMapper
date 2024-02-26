@@ -26,53 +26,53 @@ const defaultStyle = cn(
   // bg styles
   'bg-bg-card',
   // placeholder styles
-  'placeholder-gray-400 disabled:placeholder-gray-400',
+  'placeholder-text-text-text-and-icon disabled:placeholder-severity-unknown/60',
   'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
   // text styles
-  'text-text-input-value',
+  'dark:text-text-input-value text-text-text-and-icon',
   // disabled text color
-  'disabled:text-gray-400 dark:disabled:text-gray-600',
+  'disabled:text-severity-unknown/60 dark:disabled:text-gray-600',
 );
 const defaultUnderlineStyle = cn(
   'focus-visible:outline-none',
   'border-transparent border-b rounded-none',
-  'border-b-text-text-and-icon dark:disabled:border-b-gray-600 disabled:border-b-gray-400',
+  'dark:border-b-text-text-and-icon border-b-bg-border-form dark:disabled:border-b-gray-600 disabled:border-b-severity-unknown/60',
   // active
   'transition-[background-size] duration-[0.2s] ease-[ease]',
   'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
   'focus:border-b-accent-accent',
   'bg-[length:0%_100%] bg-no-repeat',
-  'bg-gradient-to-b from-transparent from-95% to-[#489cff] to-95%',
+  'bg-gradient-to-b from-transparent from-95% to-accent-accent to-95%',
 
   'data-[headlessui-state=open]:dark:border-b-accent-accent',
   'data-[headlessui-state=open]:border-b-[#0598f6]',
 
-  'placeholder-gray-400 disabled:placeholder-gray-400',
+  'placeholder-text-text-text-and-icon disabled:placeholder-severity-unknown/60',
   'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
   // text styles
-  'text-text-input-value',
+  'dark:text-text-input-value text-text-text-and-icon',
   // disabled text color
-  'disabled:text-gray-400 dark:disabled:text-gray-600',
+  'disabled:text-severity-unknown/60 dark:disabled:text-gray-600',
 );
 const defaultUnderlineJErrorStyle = cn(
   'focus-visible:outline-none',
   'border-transparent border-b rounded-none',
-  'border-b-text-text-and-icon dark:disabled:border-b-gray-600 disabled:border-b-gray-400',
+  'dark:border-b-text-text-and-icon border-b-bg-border-form dark:disabled:border-b-gray-600 disabled:border-b-severity-unknown',
   // active
   'transition-[background-size] duration-[0.2s] ease-[ease]',
   'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
   'focus:border-b-status-error',
   'bg-[length:0%_100%] bg-no-repeat',
-  'bg-gradient-to-b from-transparent from-95% to-[#f55b47] to-95%',
+  'bg-gradient-to-b from-transparent from-95% to-chart-red to-95%',
 
   'data-[headlessui-state=open]:border-b-status-error',
 
-  'placeholder-gray-400 disabled:placeholder-gray-400',
+  'placeholder-text-text-text-and-icon disabled:placeholder-severity-unknown/60',
   'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
   // text styles
-  'text-text-input-value',
+  'dark:text-text-input-value text-text-text-and-icon',
   // disabled text color
-  'disabled:text-gray-400 dark:disabled:text-gray-600',
+  'disabled:text-severity-unknown/60 dark:disabled:text-gray-600',
 );
 const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[5px] px-2'], {
   variants: {
@@ -229,7 +229,7 @@ export function Listbox<TType, TActualType>({
                 <HUIListbox.Label
                   htmlFor={_id}
                   className={cn('text-p3 text-text-text-and-icon pb-[10px]', {
-                    'text-gray-400 dark:text-gray-600': disabled,
+                    'text-severity-unknown dark:text-gray-600': disabled,
                   })}
                 >
                   {required && <span>*</span>}
@@ -314,7 +314,7 @@ export function Listbox<TType, TActualType>({
                                   onClick={() => {
                                     onClearAll?.();
                                   }}
-                                  className="flex text-accent-accent items-center text-p6"
+                                  className="flex dark:text-accent-accent text-text-link items-center text-p6"
                                 >
                                   {clearAll}
                                 </button>
@@ -371,10 +371,11 @@ export function ListboxOption<TType>({
           'pt-2 pb-1 px-2',
           'flex gap-1.5',
           'cursor-pointer',
-          'hover:bg-bg-hover-2',
+          'dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar',
           {
-            'bg-bg-grid-header': active,
-            'bg-bg-active-selection text-text-input-value': selected,
+            'dark:bg-bg-grid-header bg-bg-breadcrumb-bar': active,
+            'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value':
+              selected,
           },
           'outline-none focus:outline-none',
         );
@@ -405,11 +406,7 @@ function getPlaceholderValue<T extends unknown | unknown[]>(
     (typeof value === 'string' && isEmpty(value)) ||
     (Array.isArray(value) && value.length === 0)
   ) {
-    return (
-      <span className="dark:text-gray-600 text-gray-400 block">
-        {defaultPlaceholder || 'Select...'}
-      </span>
-    );
+    return <span className="block">{defaultPlaceholder || 'Select...'}</span>;
   } else if (getDisplayValue) {
     return getDisplayValue(value);
   }

@@ -46,10 +46,10 @@ export const DropdownSubMenu: React.FC<
     'text-p4 text-text-text-and-icon',
     // hover // focus
     'focus:outline-none',
-    'dark:focus:bg-bg-grid-header focus:bg-bg-hover-2 focus:text-text-text-and-icon',
+    'dark:focus:bg-bg-grid-header focus:bg-bg-grid-border dark:focus:text-text-text-and-icon text-text-input-value',
     {
       'cursor-pointer': !disabled,
-      'cursor-auto text-gray-600': disabled,
+      'cursor-auto dark:text-gray-600 text-severity-unknown': disabled,
     },
   );
 
@@ -73,7 +73,7 @@ export const DropdownSubMenu: React.FC<
             // bg
             'bg-bg-card',
             // border
-            'border border-bg-left-nav',
+            'border dark:border-bg-left-nav border-bg-grid-border',
           )}
         >
           {content}
@@ -112,7 +112,7 @@ export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) =>
             // font size
             'text-p7',
             // border
-            'border border-bg-left-nav',
+            'border dark:border-bg-left-nav border-bg-grid-border',
             'py-2',
           )}
         >
@@ -138,11 +138,12 @@ export const DropdownItem: React.ForwardRefExoticComponent<
     'text-p4 text-text-text-and-icon',
     'px-6 pt-2 pb-1', // hover // focus
     'focus:outline-none',
-    'dark:focus:bg-bg-grid-header focus:bg-bg-hover-2 focus:text-text-text-and-icon',
+    'dark:focus:bg-bg-grid-header focus:bg-bg-grid-border dark:focus:text-text-text-and-icon text-text-input-value',
     {
       'cursor-pointer': !disabled,
-      'cursor-auto dark:text-gray-600 text-df-gray-400': disabled,
-      'bg-bg-active-selection text-text-input-value': selected,
+      'cursor-auto dark:text-gray-600 text-severity-unknown': disabled,
+      'dark:bg-bg-active-selection bg-bg-grid-border dark:text-text-input-value text-text-text-and-icon':
+        selected,
     },
     className,
   );
@@ -164,7 +165,7 @@ export const DropdownSeparator: React.ForwardRefExoticComponent<
   DropdownPrimitive.DropdownMenuSeparatorProps & React.RefAttributes<HTMLDivElement>
 > = React.forwardRef((props, forwardedRef) => {
   const { className, ...rest } = props;
-  const classes = cn('h-px bg-bg-left-nav flex-1', className);
+  const classes = cn('h-px dark:bg-bg-left-nav bg-bg-grid-border flex-1', className);
   return (
     <DropdownPrimitive.Separator
       {...rest}

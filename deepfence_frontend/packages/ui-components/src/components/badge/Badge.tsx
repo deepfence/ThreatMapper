@@ -102,7 +102,7 @@ const badgeCVA = cva(['inline-block pt-0.5 min-w-[20px] text-center'], {
     {
       variant: 'filled',
       color: 'blueLight',
-      className: 'bg-clarity-action dark:text-text-text-inverse',
+      className: 'bg-text-link dark:text-text-text-inverse',
     },
     {
       variant: 'filled',

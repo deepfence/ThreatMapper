@@ -3,7 +3,7 @@ import { cn } from 'tailwind-preset';
 
 export const comboboxInputCva = cva(
   [
-    'df-input flex justify-start items-center w-full disabled:cursor-not-allowed',
+    'flex justify-start items-center w-full disabled:cursor-not-allowed',
     'focus:outline-none',
     'pt-1.5 pb-[5px]',
     'border-b',
@@ -15,20 +15,20 @@ export const comboboxInputCva = cva(
         default: [
           cn(
             // border
-            'border-text-text-and-icon',
+            'dark:border-text-text-and-icon border-b-bg-border-form',
             // bg styles
             'bg-df-gray-50',
             // text font
             'text-p4',
             // text styles
-            'text-text-input-value',
+            'dark:text-text-input-value text-text-text-and-icon',
             // disabled text color
-            'disabled:text-df-gray-700 dark:disabled:text-df-gray-600',
+            'disabled:text-severity-unknown/60 dark:disabled:text-df-gray-600',
             // bg styles
             'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
             'focus:border-b-accent-accent',
             'bg-[length:0%_100%] bg-no-repeat',
-            'bg-gradient-to-b from-transparent from-95% to-[#489cff] to-95%',
+            'bg-gradient-to-b from-transparent from-95% to-accent-accent to-95%',
           ),
         ],
         error: [
@@ -40,14 +40,14 @@ export const comboboxInputCva = cva(
             // text font
             'text-p4',
             // text styles
-            'text-text-input-value',
+            'dark:text-text-input-value text-text-text-and-icon',
             // disabled text color
-            'disabled:text-df-gray-700 dark:disabled:text-df-gray-600',
+            'disabled:text-severity-unknown/60 dark:disabled:text-df-gray-600',
             // bg styles
             'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
             'focus:border-b-status-error',
             'bg-[length:0%_100%] bg-no-repeat',
-            'bg-gradient-to-b from-transparent from-95% to-[#f55b47] to-95%',
+            'bg-gradient-to-b from-transparent from-95% dark:to-chart-red-500 to-status-error to-95%',
           ),
         ],
       },
@@ -83,7 +83,8 @@ export const comboboxInputCva = cva(
       {
         isOpen: true,
         color: 'error',
-        className: 'dark:bg-[length:100%_100%] dark:border-b-chart-red dark:bg-no-repeat',
+        className:
+          'dark:bg-[length:100%_100%] dark:border-b-chart-red dark:bg-no-repeat border-status-error',
       },
     ],
   },

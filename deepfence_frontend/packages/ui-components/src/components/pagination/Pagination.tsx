@@ -40,7 +40,7 @@ const PageButton = ({
         // we donot want border to be overlap so we use border right here
         'flex justify-center items-center text-p7 bg-bg-card',
         'px-3 py-[5px] border-r border-y border-bg-grid-border',
-        'text-text-text-and-icon overflow-hidden',
+        'text-text-icon overflow-hidden',
         'hover:text-text-input-value',
         className,
       )}
@@ -131,13 +131,13 @@ export const Pagination = ({
     <div className="flex justify-end items-center gap-4">
       <div className={`text-text-text-and-icon text-p4`}>
         Showing{' '}
-        <span className="text-text-input-value">
+        <span className="text-text-input-value text-p3">
           {currentShowing[0]}-{currentShowing[1]}
         </span>
         {!approximatePagination ? (
           <>
             <span> of</span>
-            <span className="text-text-input-value"> {totalRows}</span>
+            <span className="text-text-input-value text-p3"> {totalRows}</span>
           </>
         ) : null}
       </div>
@@ -145,7 +145,7 @@ export const Pagination = ({
         <PageButton
           data-testid="pagination-prev"
           label={
-            <div className="h-4 w-4 rotate-180">
+            <div className="h-4 w-4 rotate-180 text-text-icon">
               <CaretIcon />
             </div>
           }
@@ -175,8 +175,9 @@ export const Pagination = ({
                 onPageChange(page);
               }}
               disabled={false}
-              className={cn({
-                'bg-bg-active-selection text-text-input-value': page === currentPage,
+              className={cn('text-text-icon', {
+                'dark:bg-bg-active-selection bg-text-link dark:text-text-input-value text-text-text-inverse hover:text-text-text-inverse':
+                  page === currentPage,
               })}
             />
           );
@@ -184,7 +185,7 @@ export const Pagination = ({
 
         <PageButton
           label={
-            <div className="h-4 w-4">
+            <div className="h-4 w-4 text-text-icon">
               <CaretIcon />
             </div>
           }

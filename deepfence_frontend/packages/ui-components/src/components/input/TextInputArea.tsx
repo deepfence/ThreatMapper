@@ -29,7 +29,7 @@ const inputElementClassnames = cva(
         default: [
           cn(
             // border
-            'border-text-text-and-icon dark:disabled:border-text-text-and-icon disabled:border-bg-border-form',
+            'border-bg-border-form dark:disabled:border-text-text-and-icon disabled:border-bg-border-form',
             // placeholder styles
             'placeholder-df-gray-500 disabled:placeholder-severity-unknown/60',
             'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',

@@ -172,11 +172,11 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           // border
                           'border border-bg-grid-border rounded-[5px]',
                           // bg
-                          'bg-bg-card dark:hover:bg-bg-active-selection hover:bg-bg-hover-2',
+                          'bg-bg-card dark:hover:bg-bg-active-selection hover:bg-bg-breadcrumb-bar',
                           'text-p7 text-text-text-and-icon',
                           'py-[7px] px-3',
                           {
-                            'border-bg-hover-3 bg-bg-active-selection text-text-input-value':
+                            'border-bg-hover-3 dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value':
                               Array.isArray(value) ? !!value.length : !!value,
                           },
                         )}
@@ -223,7 +223,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           >
                             {getDisplayValue?.(value as unknown as any) ?? placeholder}
                           </div>
-                          <div className="h-2.5 w-2.5 shrink-0 text-text-text-and-icon ml-auto mr-1.5">
+                          <div className="h-2.5 w-2.5 shrink-0 dark:text-text-text-and-icon text-text-icon ml-auto mr-1.5">
                             <CaretDownIcon />
                           </div>
                         </button>
@@ -246,7 +246,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                         <div className={cn('flex items-center px-3 py-2')}>
                           <span
                             className={cn(
-                              'pointer-events-none  text-df-gray-400 dark:text-df-gray-600 h-[16px] w-[16px] shrink-0',
+                              'pointer-events-none text-text-icon dark:text-df-gray-600 h-[16px] w-[16px] shrink-0',
                             )}
                             data-testid={`search-icon`}
                           >
@@ -256,7 +256,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                             placeholder="Search"
                             data-testid="comboboxSearchInputId"
                             className={cn(
-                              'pl-[6px] text-p6 text-text-input-value',
+                              'pl-[6px] text-p6 dark:text-text-input-value text-text-text-and-icon',
                               'focus-visible:outline-none bg-bg-card',
                               'placeholder:text-df-gray-600',
                               'min-w-0 w-full',
@@ -301,7 +301,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                               >
                                 <div className="flex items-center justify-center py-[6px]">
                                   <button
-                                    className="text-accent-accent items-center text-p6"
+                                    className="dark:text-accent-accent text-text-link items-center text-p6"
                                     onClick={() => {
                                       onClearAll?.();
                                     }}
@@ -359,10 +359,11 @@ export function ComboboxOption<TType>({
           'pt-1.5 pb-1.5 px-3',
           'flex gap-1.5',
           'cursor-pointer',
-          'hover:bg-bg-hover-2',
+          'dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar',
           {
-            'bg-bg-grid-header': active,
-            'bg-bg-active-selection text-text-input-value': selected,
+            'dark:bg-bg-grid-header bg-bg-breadcrumb-bar': active,
+            'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value':
+              selected,
           },
         );
       }}
