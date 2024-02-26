@@ -13,11 +13,9 @@ import (
 
 var client = &http.Client{Timeout: 10 * time.Second}
 
-func listImagesRegistryV2(url, namespace, userName, password string) ([]model.IngestedContainerImage, error) {
-
-	var (
-		images []model.IngestedContainerImage
-	)
+func listImagesRegistryV2(url, namespace, userName,
+	password string) ([]model.IngestedContainerImage, error) {
+	var images []model.IngestedContainerImage
 
 	repos, err := listCatalogRegistryV2(url, namespace, userName, password)
 	if err != nil {
@@ -38,11 +36,10 @@ func listImagesRegistryV2(url, namespace, userName, password string) ([]model.In
 	return images, nil
 }
 
-func listCatalogRegistryV2(url, namespace, userName, password string) ([]string, error) {
-	var (
-		repositories []string
-		err          error
-	)
+func listCatalogRegistryV2(url, namespace, userName,
+	password string) ([]string, error) {
+
+	var repositories []string
 
 	listReposURL := "%s/v2/_catalog"
 	queryURL := fmt.Sprintf(listReposURL, url)
@@ -57,22 +54,26 @@ func listCatalogRegistryV2(url, namespace, userName, password string) ([]string,
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error().Msg(err.Error())
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Error().Msg(err.Error())
+		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("error bad status code %d", resp.StatusCode)
 		log.Error().Msg(err.Error())
+		return nil, err
 	}
 
 	var repos ReposResp
 	if err := json.Unmarshal(body, &repos); err != nil {
 		log.Error().Msg(err.Error())
+		return nil, err
 	}
 
 	repositories = append(repositories, repos.Repositories...)
@@ -80,11 +81,10 @@ func listCatalogRegistryV2(url, namespace, userName, password string) ([]string,
 	return repositories, err
 }
 
-func listRepoTagsV2(url, namespace, userName, password, repoName string) (RepoTagsResp, error) {
-	var (
-		err      error
-		repoTags RepoTagsResp
-	)
+func listRepoTagsV2(url, namespace, userName, password,
+	repoName string) (RepoTagsResp, error) {
+
+	var repoTags RepoTagsResp
 
 	listRepoTagsURL := "%s/v2/%s/tags/list"
 	queryURL := fmt.Sprintf(listRepoTagsURL, url, repoName)

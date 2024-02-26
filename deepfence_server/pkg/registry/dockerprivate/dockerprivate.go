@@ -21,7 +21,21 @@ func New(requestByte []byte) (*RegistryDockerPrivate, error) {
 }
 
 func (d *RegistryDockerPrivate) ValidateFields(v *validator.Validate) error {
-	return v.Struct(d)
+	err := v.Struct(d)
+	if (err != nil) || d.NonSecret.IsPublic == "true" {
+		return err
+	}
+
+	type AuthInfo struct {
+		DockerUsername string `json:"docker_username" validate:"required,min=2"`
+		DockerPassword string `json:"docker_password" validate:"required,min=2"`
+	}
+
+	auth := AuthInfo{}
+	auth.DockerUsername = d.NonSecret.DockerUsername
+	auth.DockerPassword = d.Secret.DockerPassword
+	return v.Struct(auth)
+
 }
 
 func (d *RegistryDockerPrivate) IsValidCredential() bool {

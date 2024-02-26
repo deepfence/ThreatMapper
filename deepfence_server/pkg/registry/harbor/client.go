@@ -22,9 +22,7 @@ var client = &http.Client{
 
 func listImages(url, project, username, password string) ([]model.IngestedContainerImage, error) {
 
-	var (
-		images []model.IngestedContainerImage
-	)
+	var images []model.IngestedContainerImage
 
 	repos, err := listRepos(url, project, username, password)
 	if err != nil {
@@ -89,13 +87,12 @@ func listRepos(url, project, username, password string) ([]Repository, error) {
 }
 
 func listArtifacts(url, username, password, project, repo string) ([]Artifact, error) {
-	var (
-		err       error
-		artifacts []Artifact
-	)
+	var artifacts []Artifact
 
 	listRepoTagsURL := "%s/api/v2.0/projects/%s/repositories/%s/artifacts"
-	queryURL := fmt.Sprintf(listRepoTagsURL, url, project, strings.TrimPrefix(repo, project))
+	repoName := strings.TrimPrefix(repo, project)
+	repoName = strings.TrimPrefix(repoName, "/")
+	queryURL := fmt.Sprintf(listRepoTagsURL, url, project, repoName)
 	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
