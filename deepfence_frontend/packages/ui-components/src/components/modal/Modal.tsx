@@ -33,7 +33,7 @@ const ModalHeader: FC<{ title?: React.ReactNode }> = ({ title }) => {
         })}
       >
         <DialogPrimitive.Title
-          className="text-h2 text-text-input-value"
+          className="text-h2 dark:text-text-input-value text-text-text-and-icon"
           data-testid="modal-title"
         >
           {title}
@@ -96,7 +96,7 @@ const contentCva = cva(
       // border
       'border rounded border-bg-grid-border',
       // bg
-      'bg-bg-breadcrumb-bar',
+      'dark:bg-bg-breadcrumb-bar bg-white',
       // text
       'text-p1 text-text-text-and-icon',
       // padding

@@ -173,7 +173,8 @@ const colors = {
       'accent-accent': '#185FEC',
       'accent-alt': '#006FE6',
       'bg-page': '#F8F8F8',
-      'bg-grid-border': '#DDDDDD',
+      'bg-grid-border': '#DDDDDD', // Light/Light-Border-Grid
+      'bg-border-form': '#999999', // Light/Light-Border-Form
       'bg-tooltip': '#233c7d',
       'bg-grid-header': '#0f1e34',
       'bg-header': '#11223b',
@@ -183,7 +184,7 @@ const colors = {
       'bg-grid-default': '#0c182a',
       'bg-grid-border-light': '#1c243f',
       'bg-map-cluster': '#183867',
-      'bg-card': '#16253b',
+      'bg-card': '#FFFFFF',
       'bg-map-node': '#EEEEEE',
       'bg-active-selection': '#183867',
       'bg-hover-1': '#3777c2',
@@ -226,6 +227,7 @@ const colors = {
       'accent-alt': '#489cff', // same as accent-accent for dark theme
       'bg-page': '#020617',
       'bg-grid-border': '#2c375f',
+      'bg-border-form': '#999999',
       'bg-tooltip': '#233c7d',
       'bg-grid-header': '#0f1e34',
       'bg-header': '#11223b',
@@ -495,6 +497,7 @@ const preset = {
         },
         bg: {
           page: colorVariable('var(--bg-page)'),
+          'border-form': colorVariable('var(--bg-border-form)'),
           'grid-border': colorVariable('var(--bg-grid-border)'),
           tooltip: colorVariable('var(--bg-tooltip)'),
           'grid-header': colorVariable('var(--bg-grid-header)'),

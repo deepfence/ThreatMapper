@@ -97,7 +97,7 @@ export const buttonCva = cva(
       color: {
         default: [
           // bg styles
-          'hover:bg-[#1466B8] dark:hover:bg-[#3777c2] bg-btn-blue',
+          'hover:bg-[#1466B8] dark:hover:bg-bg-hover-1 bg-btn-blue',
           // text styles
           'text-text-text-inverse',
           // focus styles
@@ -117,7 +117,7 @@ export const buttonCva = cva(
           // focus styles
           'focus:outline-[2px] focus:outline-offset-0 focus:outline-offset-transparent',
           'dark:focus:outline-offset-1',
-          'focus:bg-[#B50909] focus:outline-[#de2121]/50',
+          'focus:bg-severity-critical focus:outline-btn-red/50',
           'dark:focus:bg-[#C45268] dark:focus:outline-[#ffffffb3]',
           // disabled styles
           // disabled styles
@@ -132,7 +132,7 @@ export const buttonCva = cva(
           // focus styles
           'focus:outline-[2px] focus:outline-offset-0 focus:outline-offset-transparent',
           'dark:focus:outline-offset-1',
-          'focus:bg-[#257A1F] focus:outline-[#1c8804]/50',
+          'focus:bg-[#257A1F] focus:outline-btn-green/50',
           'dark:focus:bg-[#2F6F2A] dark:focus:outline-[#ffffffb3]',
           // disabled styles
           'dark:disabled:bg-df-gray-600 dark:disabled:text-df-gray-900',
@@ -182,18 +182,18 @@ export const buttonCva = cva(
         variant: 'outline',
         className: [
           // bg styles
-          'bg-transparent dark:hover:bg-[#33151B] hover:bg-[#DE2121] hover:bg-opacity-10',
+          'bg-transparent dark:hover:bg-[#33151B] hover:bg-btn-red hover:bg-opacity-10',
           // text styles
           'text-status-error dark:hover:text-status-error',
           'dark:hover:text-status-error hover:text-[#BC3434]',
-          'dark:focus:text-status-error focus:text-[#B50909]',
+          'dark:focus:text-status-error focus:text-severity-critical',
           // border styles
-          'border border-status-error dark:hover:border-status-error hover:border-[#de2121]',
+          'border border-status-error dark:hover:border-status-error hover:border-btn-red',
           // outline styles
           'focus:outline-[2px] focus:outline-offset-0 focus:outline-offset-transparent',
           'dark:focus:outline-offset-1',
-          'dark:focus:outline-[#ffffffb3] focus:outline-[#de2121]/50',
-          'dark:focus:bg-[#33151B] focus:bg-[#de2121] focus:bg-opacity-10',
+          'dark:focus:outline-[#ffffffb3] focus:outline-btn-red/50',
+          'dark:focus:bg-[#33151B] focus:bg-btn-red focus:bg-opacity-10',
           // disabled styles
           'disabled:bg-transparent dark:disabled:bg-transparent',
           'disabled:border-text-text-and-icon dark:disabled:border-df-gray-600 disabled:border-opacity-40',
@@ -211,7 +211,7 @@ export const buttonCva = cva(
           'dark:hover:text-status-success hover:text-[#257A1F]',
           'dark:focus:text-status-success focus:text-[#2B7326]',
           // border styles
-          'border border-status-success dark:hover:border-status-success hover:border-[#1C8804]',
+          'border border-status-success dark:hover:border-status-success hover:border-btn-green',
           // outline styles
           'focus:outline-[2px] focus:outline-offset-0 focus:outline-offset-transparent',
           'dark:focus:outline-offset-1',
@@ -255,13 +255,13 @@ export const buttonCva = cva(
           // text styles
           'text-btn-red dark:text-btn-red',
           'dark:hover:text-[#C45268] hover:text-[#BC3434]',
-          'dark:focus:text-[#C45268] focus:text-[#B50909]',
+          'dark:focus:text-[#C45268] focus:text-severity-critical',
           // border styles
           'border-none',
           // outline styles
           'focus:outline-[2px] focus:outline-offset-0 focus:outline-offset-transparent',
           'dark:focus:outline-offset-1',
-          'dark:focus:outline-[#ffffffb3] focus:outline-[#B50909]/50',
+          'dark:focus:outline-[#ffffffb3] focus:outline-severity-critical/50',
           // disabled styles
           'dark:disabled:bg-transparent disabled:bg-transparent',
           'dark:disabled:text-df-gray-600 disabled:text-text-text-and-icon disabled:text-opacity-40',

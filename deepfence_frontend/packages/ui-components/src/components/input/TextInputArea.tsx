@@ -29,41 +29,41 @@ const inputElementClassnames = cva(
         default: [
           cn(
             // border
-            'border-text-text-and-icon dark:disabled:border-[#61717D]/50 disabled:border-[#939A9F]/50',
+            'border-text-text-and-icon dark:disabled:border-text-text-and-icon disabled:border-bg-border-form',
             // placeholder styles
-            'placeholder-df-gray-500 disabled:placeholder-[#939A9F]/60',
+            'placeholder-df-gray-500 disabled:placeholder-severity-unknown/60',
             'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
             // text styles
             'dark:text-text-input-value text-text-text-and-icon',
             // disabled text color
-            'disabled:text-[#939A9F]/60 dark:disabled:text-df-gray-600',
+            'disabled:text-severity-unknown/60 dark:disabled:text-df-gray-600',
             // focus style
             'bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
             'focus:border-b-accent-accent',
             // dark and bg styles
             'bg-[length:0%_100%] bg-no-repeat',
-            'bg-gradient-to-b from-transparent from-95% to-[#489cff] to-95%',
+            'bg-gradient-to-b from-transparent from-95% to-accent-accent to-95%',
             'focus:bg-[length:100%_100%]',
           ),
         ],
         error: [
           cn(
             // border
-            'dark:border-chart-red border-[#E41D4B] dark:disabled:border-[#61717D]/50 disabled:border-[#939A9F]/50',
+            'dark:border-chart-red border-status-error dark:disabled:border-text-text-and-icon disabled:border-bg-border-form',
             // placeholder styles
-            'placeholder-df-gray-500 disabled:placeholder-[#939A9F]/60',
+            'placeholder-df-gray-500 disabled:placeholder-severity-unknown/60',
             'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
             // text font
             // text styles
             'dark:text-text-input-value text-text-text-and-icon',
             // disabled text color
-            'disabled:text-[#939A9F]/60 dark:disabled:text-df-gray-600',
+            'disabled:text-severity-unknown dark:disabled:text-df-gray-600',
             // focus style
             'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
-            'dark:focus:border-b-chart-red focus:border-b-[#E41D4B]',
+            'dark:focus:border-b-chart-red focus:border-b-status-error',
             // dark and bg styles
             'bg-[length:0%_100%] bg-no-repeat',
-            'bg-gradient-to-b from-transparent from-95% dark:to-[#f55b47] to-[#E41D4B] to-95%',
+            'bg-gradient-to-b from-transparent from-95% dark:to-chart-red-500 to-status-error to-95%',
             'focus:bg-[length:100%_100%]',
           ),
         ],

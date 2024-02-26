@@ -2,7 +2,12 @@ import { upperFirst } from 'lodash-es';
 import { cn } from 'tailwind-preset';
 
 import { DFLink } from '@/components/DFLink';
+import { SeverityCritical } from '@/components/icons/common/SeverityCritical';
+import { SeverityHigh } from '@/components/icons/common/SeverityHigh';
+import { SeverityLow } from '@/components/icons/common/SeverityLow';
+import { SeverityMedium } from '@/components/icons/common/SeverityMedium';
 import { SeverityScoreIcon } from '@/components/icons/common/SeverityScore';
+import { SeverityUnknown } from '@/components/icons/common/SeverityUnknown';
 import { getColorForCVSSScore, getPostureColor } from '@/constants/charts';
 import { useTheme } from '@/theme/ThemeContext';
 import { PostureSeverityType } from '@/types/common';
@@ -125,6 +130,24 @@ export const SeverityLegend = ({
       ) : (
         <> {upperFirst(severity)}</>
       )}
+    </div>
+  );
+};
+
+export const SeverityBadgeIcon = ({
+  severity,
+  className,
+}: {
+  severity: string;
+  className?: string;
+}) => {
+  return (
+    <div className={cn('w-[18px] h-[18px]', className)}>
+      {severity === 'critical' && <SeverityCritical />}
+      {severity === 'high' && <SeverityHigh />}
+      {severity === 'medium' && <SeverityMedium />}
+      {severity === 'low' && <SeverityLow />}
+      {!severity || (severity === 'unknown' && <SeverityUnknown />)}
     </div>
   );
 };

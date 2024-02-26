@@ -37,12 +37,12 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
           // uncheck disabled
           'dark:data-[state=unchecked]:disabled:bg-gray-600 dark:data-[state=unchecked]:disabled:border-none',
           // light uncheck disabled
-          'data-[state=unchecked]:disabled:bg-transparent data-[state=unchecked]:disabled:border-[#939A9F]/60',
+          'data-[state=unchecked]:disabled:bg-transparent data-[state=unchecked]:disabled:border-severity-unknown/60',
           // check disabled
           'dark:data-[state=checked]:disabled:bg-gray-600 dark:data-[state=checked]:disabled:border-none',
           'disabled:cursor-not-allowed',
           // light check disabled
-          'data-[state=checked]:disabled:bg-[#939A9F]/60 data-[state=checked]:disabled:border-none',
+          'data-[state=checked]:disabled:bg-severity-unknown/60 data-[state=checked]:disabled:border-none',
           'disabled:cursor-not-allowed',
           {
             'bg-accent-accent': internalChecked === 'indeterminate',
@@ -64,12 +64,12 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
       >
         <CheckboxPrimitive.Indicator>
           {internalChecked === 'indeterminate' && (
-            <span className="self-center text-white dark:text-black dark:group-disabled:group-data-[state=checked]:bg-gray-900 group-disabled:group-data-[state=checked]:bg-[#939A9F]">
+            <span className="self-center text-white dark:text-black dark:group-disabled:group-data-[state=checked]:bg-gray-900 group-disabled:group-data-[state=checked]:bg-severity-unknown">
               <InterminateIcon />
             </span>
           )}
           {internalChecked === true && (
-            <span className="self-center text-white dark:text-black dark:group-disabled:group-data-[state=checked]:bg-gray-900 group-disabled:group-data-[state=checked]:bg-[#939A9F]">
+            <span className="self-center text-white dark:text-black dark:group-disabled:group-data-[state=checked]:bg-gray-900 group-disabled:group-data-[state=checked]:bg-severity-unknown">
               <CheckedIcon />
             </span>
           )}
@@ -79,7 +79,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
         <LabelPrimitive.Label
           htmlFor={_id}
           className={cn(
-            'pl-1.5 text-p4 dark:text-text-input-value text-text-text-and-icon dark:peer-disabled:text-gray-600 peer-disabled:text-[#939A9F] peer-disabled:cursor-not-allowed',
+            'pl-1.5 text-p4 dark:text-text-input-value text-text-text-and-icon dark:peer-disabled:text-gray-600 peer-disabled:text-severity-unknown peer-disabled:cursor-not-allowed',
           )}
         >
           {label}
