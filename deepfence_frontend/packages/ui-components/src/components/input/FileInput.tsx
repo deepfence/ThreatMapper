@@ -14,7 +14,7 @@ const inputCva = cva(
     'block w-full rounded-[5px] dark:placeholder-df-gray-400 placeholder-df-gray-500 cursor-auto',
     'border border-accent-accent',
     'bg-gray-50 dark:bg-transparent',
-    'dark:text-text-input-value text-text-text-and-icon hover:border-[#1466B8] dark:hover:border-[#3777c2] file:text-text-text-inverse',
+    'dark:text-text-input-value text-text-text-and-icon hover:border-[#1466B8] dark:hover:border-bg-hover-1 file:text-text-text-inverse',
     'disabled:cursor-not-allowed',
     'focus:outline-none',
     // ring styles
@@ -80,7 +80,7 @@ export const FileInput = forwardRef<HTMLInputElement, TextInputProps>(
           <div className="flex gap-2 items-center">
             <LabelPrimitive.Root
               htmlFor={_id}
-              className="text-p4 text-gray-900 dark:text-text-input-value text-text-text-and-icon"
+              className="text-p4 dark:text-text-input-value text-text-text-and-icon"
             >
               {required && <span>*</span>}
               {label}
