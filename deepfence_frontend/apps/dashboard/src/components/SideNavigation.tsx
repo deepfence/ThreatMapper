@@ -120,10 +120,10 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
     <nav
       className={cn(
         'overflow-y-auto overflow-x-hidden',
-        'bg-bg-left-nav',
+        'dark:bg-bg-left-nav bg-white',
         'transition-[width]',
         'fixed left-0 z-10 scrolling-touch',
-        'border-r border-bg-top-header',
+        'border-r dark:border-bg-top-header border-bg-grid-border',
         'dark:shadow-none shadow-md',
       )}
       style={{
@@ -135,7 +135,7 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
       <ul className={cn('flex flex-col h-full')}>
         <li>
           <button
-            className="h-12 w-full mb-2 flex pl-5 items-center border border-bg-top-header"
+            className="h-12 w-full mb-2 flex pl-5 items-center border dark:border-bg-top-header border-bg-bg-grid-border"
             onClick={(e) => {
               e.preventDefault();
               onExpandedChange(!expanded);
@@ -206,7 +206,7 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
               <button
                 className={cn(
                   'text-h4 text-text-text-and-icon py-3 px-5',
-                  'dark:hover:bg-bg-breadcrumb-bar hover:bg-bg-hover-2',
+                  'dark:hover:bg-bg-breadcrumb-bar hover:bg-bg-breadcrumb-bar',
                   'flex items-center gap-5 whitespace-nowrap relative',
                   'h-12 w-full',
                   'focus:outline-none',
@@ -376,7 +376,7 @@ const MenuItemLink = ({
 }) => {
   const linkClass = cn(
     'text-h4 text-text-text-and-icon py-3 px-5',
-    'dark:hover:bg-bg-breadcrumb-bar hover:bg-bg-hover-2',
+    'hover:bg-bg-breadcrumb-bar',
     'flex items-center gap-5 whitespace-nowrap relative',
     'h-12 w-full',
   );
@@ -388,7 +388,10 @@ const MenuItemLink = ({
           to={link}
           className={({ isActive }) =>
             isActive
-              ? cn(linkClass, 'bg-bg-active-selection text-text-input-value')
+              ? cn(
+                  linkClass,
+                  'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value',
+                )
               : linkClass
           }
         >
@@ -439,7 +442,10 @@ const MenuSubItemLink = ({
         to={link}
         className={({ isActive }) =>
           isActive
-            ? cn(linkClass, 'bg-bg-active-selection text-text-input-value')
+            ? cn(
+                linkClass,
+                'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value',
+              )
             : linkClass
         }
         onClick={onLinkClick}

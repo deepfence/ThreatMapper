@@ -51,7 +51,9 @@ export const OnboardAppHeader = () => {
           <span className="h-9 w-9 mr-3">
             <DeepfenceLogo />
           </span>
-          <span className="text-text-text-and-icon text-[18px] leading-9">deepfence</span>
+          <span className="dark:text-text-text-and-icon text-text-text-inverse text-[18px] leading-9">
+            deepfence
+          </span>
           <DFLink
             unstyled
             className="ml-8 text-accent-accent hover:underline text-p3"

@@ -78,7 +78,10 @@ export const SettingNavigation = () => {
                       to={menuItem.to}
                       className={({ isActive }) =>
                         isActive
-                          ? cn(linkClass, 'bg-bg-active-selection text-text-input-value')
+                          ? cn(
+                              linkClass,
+                              'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value',
+                            )
                           : linkClass
                       }
                     >
