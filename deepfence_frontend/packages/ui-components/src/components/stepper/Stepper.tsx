@@ -12,7 +12,10 @@ export const StepLine = ({ className }: { className?: string }) => {
   const { contentHeight, indicatorHeight } = useContext(StepHeightContext);
   return (
     <div
-      className={cn('absolute border-l left-[50%] dark:border-df-gray-600', className)}
+      className={cn(
+        'absolute border-l left-[50%] dark:border-text-text-and-icon border-df-gray-400',
+        className,
+      )}
       style={{
         top: indicatorHeight + 2,
         height: contentHeight - indicatorHeight - 4,
