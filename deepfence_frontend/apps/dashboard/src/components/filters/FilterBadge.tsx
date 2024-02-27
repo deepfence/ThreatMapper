@@ -13,7 +13,7 @@ import {
 
 const Wrapper = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="flex items-center py-1 px-2.5 dark:border dark:border-accent-accent rounded-[11px] gap-2">
+    <div className="flex items-center py-1 px-2.5 border border-accent-accent rounded-[11px] gap-2">
       {children}
     </div>
   );

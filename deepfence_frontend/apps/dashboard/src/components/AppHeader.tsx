@@ -1,6 +1,6 @@
 import { useFetcher, useRouteLoaderData } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
-import { Dropdown, DropdownItem } from 'ui-components';
+import { Dropdown, DropdownItem, DropdownSubMenu } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { AutoRefresh } from '@/components/header/AutoRefresh';
@@ -12,6 +12,8 @@ export function AppHeader() {
   const fetcher = useFetcher();
   const { mode } = useTheme();
   const { email } = useRouteLoaderData('root') as { email: string };
+  const { setMode, userSelectedMode } = useTheme();
+
   return (
     <header
       className={cn(
@@ -50,6 +52,39 @@ export function AppHeader() {
             align="end"
             content={
               <>
+                <DropdownSubMenu
+                  triggerAsChild
+                  content={
+                    <>
+                      <DropdownItem
+                        selected={!userSelectedMode}
+                        onSelect={() => {
+                          setMode(undefined);
+                        }}
+                      >
+                        System
+                      </DropdownItem>
+                      <DropdownItem
+                        selected={userSelectedMode === 'light'}
+                        onSelect={() => {
+                          setMode('light');
+                        }}
+                      >
+                        Light
+                      </DropdownItem>
+                      <DropdownItem
+                        selected={userSelectedMode === 'dark'}
+                        onSelect={() => {
+                          setMode('dark');
+                        }}
+                      >
+                        Dark
+                      </DropdownItem>
+                    </>
+                  }
+                >
+                  Theme
+                </DropdownSubMenu>
                 <DropdownItem
                   onClick={() => {
                     fetcher.submit(null, {
