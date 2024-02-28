@@ -128,7 +128,7 @@ export const ReportTable = ({
 
     return reports.filter((report) => {
       const filters = JSON.parse(report.filters ?? '') as UtilsReportFilters;
-      const advancedFilters = filters.advanced_report_filters;
+      const advancedFilters = filters?.advanced_report_filters ?? {};
       if (
         statusFilter?.length &&
         !statusFilter.includes(report.status?.toLowerCase() ?? '')
@@ -150,13 +150,13 @@ export const ReportTable = ({
       // filter from filters json
       if (
         scanTypeFilter?.length &&
-        (!scanTypeFilter.includes(filters.scan_type) || isNil(filters.scan_type))
+        (!scanTypeFilter.includes(filters?.scan_type) || isNil(filters?.scan_type))
       ) {
         return false;
       }
       if (
         nodeTypeFilter?.length &&
-        (!nodeTypeFilter.includes(filters.node_type) || isNil(filters.node_type))
+        (!nodeTypeFilter.includes(filters?.node_type) || isNil(filters?.node_type))
       ) {
         return false;
       }
