@@ -415,7 +415,7 @@ export const searchQueries = createQueryKeys('search', {
               contains_filter: {
                 filter_in: {
                   pseudo: [false],
-                  ...(active !== undefined && { active: [active === true] }),
+                  ...(active && { active: [active === true] }),
                 },
               },
               not_contains_filter: {
@@ -637,8 +637,8 @@ export const searchQueries = createQueryKeys('search', {
             filters: {
               contains_filter: {
                 filter_in: {
-                  ...(active !== undefined && { active: [active === true] }),
-                  ...(cloudProvider !== undefined && { cloud_provider: [cloudProvider] }),
+                  ...(active && { active: [active === true] }),
+                  ...(cloudProvider && { cloud_provider: [cloudProvider] }),
                 },
               },
               order_filter: {
