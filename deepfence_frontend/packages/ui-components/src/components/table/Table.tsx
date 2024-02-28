@@ -232,7 +232,7 @@ const CustomTable = <TData extends RowData>(
       >
         <table
           className={cn(
-            `w-full bg-bg-grid-default border-spacing-0 border-collapse table-fixed`,
+            `w-full dark:bg-bg-grid-default bg-white border-spacing-0 border-collapse table-fixed`,
           )}
           cellPadding="0"
           cellSpacing="0"
@@ -250,7 +250,7 @@ const CustomTable = <TData extends RowData>(
         </table>
         {enablePagination ? (
           <div
-            className="w-full bg-bg-grid-header h-12 flex items-center border-t border-bg-grid-border px-4"
+            className="w-full dark:bg-bg-grid-header bg-white h-12 flex items-center border-t border-bg-grid-border px-4"
             data-testid="pagination-container"
           >
             {enableRowSelection && !!table.getSelectedRowModel().flatRows.length && (
@@ -337,7 +337,7 @@ function TableHead<TData>({
   size: SizeOf;
 }) {
   return (
-    <thead className="bg-bg-grid-header">
+    <thead className="dark:bg-bg-grid-header bg-[#f5f5f5]">
       {headerGroups.map((headerGroup) => (
         <tr key={headerGroup.id} data-testid="table-header-row">
           {headerGroup.headers.map((header) => (
@@ -362,15 +362,15 @@ function Th<TData>({
       colSpan={header.colSpan}
       className={cn(
         'relative border-0 text-text-text-and-icon',
-        'border-b-[1.5px] border-bg-grid-border',
-        'text-t5 uppercase',
+        'border-b-[1.5px] dark:border-bg-grid-border border-[#dcdcdc]',
+        'text-p11',
         { 'cursor-pointer select-none': header.column.getCanSort() },
       )}
       style={{ width: header.getSize() }}
       onClick={header.column.getToggleSortingHandler()}
     >
       <div
-        className={cn(`w-full h-full flex truncate pl-4 pr-2.5`, {
+        className={cn(`w-full h-full flex truncate pl-4 pr-2.5 items-center`, {
           ['py-4']: size === 'default',
           ['py-2.5']: size === 'compact',
           ['py-[13px]']: size === 'medium',
@@ -397,7 +397,7 @@ function Th<TData>({
               </span>
             ) : null}
             {!header.column.getIsSorted() ? (
-              <span className="h-4 w-4">
+              <span className="h-4 w-4 dark:text-text-text-and-icon text-text-helper">
                 <TableChevronDefault
                   data-testid={`column-unsorted-indicator-${header.id}`}
                 />
@@ -417,7 +417,7 @@ function Th<TData>({
           aria-hidden="true"
           data-testid={`column-resizer-${header.id}`}
         >
-          <div className="ml-[3px] w-[1px] mr-[1px] h-full bg-bg-grid-border" />
+          <div className="ml-[3px] w-[1px] mr-[1px] h-full dark:bg-bg-grid-border bg-[#dcdcdc]" />
         </div>
       )}
     </th>
@@ -441,9 +441,9 @@ function TableBody<TData>({
             <tr
               {...rowProps}
               className={cn(
-                `hover:bg-bg-hover-2`,
+                `dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar`,
                 {
-                  '!bg-bg-active-selection hover:!bg-bg-active-selection/90':
+                  'dark:!bg-bg-active-selection dark:hover:!bg-bg-active-selection/90 !bg-bg-breadcrumb-bar hover:!bg-bg-breadcrumb-bar/90':
                     row.getIsSelected(),
                 },
                 'transition-colors',
@@ -467,7 +467,7 @@ function TableBody<TData>({
               <tr>
                 <td
                   colSpan={row.getVisibleCells().length}
-                  className="border-b border-t border-bg-grid-border"
+                  className="border-b border-t border-bg-grid-border "
                 >
                   {renderSubComponent?.({ row })}
                 </td>
@@ -499,7 +499,7 @@ function Td<TData>({
       key={cell.id}
       style={{ width: cell.column.getSize() }}
       className={cn(
-        `text-p4 text-text-text-and-icon px-4 truncate min-w-0`,
+        `text-[13px] font-medium leading-[18px] text-text-text-and-icon px-4 truncate min-w-0`,
         {
           'border-b border-bg-grid-border': rowIdx !== totalRows - 1,
           ['h-[48px]']: size === 'default',

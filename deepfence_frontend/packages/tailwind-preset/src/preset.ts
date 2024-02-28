@@ -170,6 +170,7 @@ const colors = {
       'text-input-value': '#000000',
       'text-text-inverse': '#ffffff',
       'text-link': '#006FE6',
+      'text-helper': '#737373',
       'accent-accent': '#185FEC',
       'accent-alt': '#006FE6',
       'bg-page': '#F8F8F8',
@@ -223,6 +224,7 @@ const colors = {
       'text-input-value': '#eeeeee',
       'text-text-inverse': '#000000',
       'text-link': '#0ca7ff',
+      'text-helper': '#737373',
       'accent-accent': '#489cff',
       'accent-alt': '#489cff', // same as accent-accent for dark theme
       'bg-page': '#020617',
@@ -429,6 +431,13 @@ const preset = {
             fontWeight: '400',
           },
         ],
+        p11: [
+          '13px',
+          {
+            lineHeight: '18px',
+            fontWeight: '600',
+          },
+        ],
         t1: [
           '12px',
           {
@@ -490,6 +499,7 @@ const preset = {
           'input-value': colorVariable('var(--text-input-value)'),
           'text-inverse': colorVariable('var(--text-text-inverse)'),
           link: colorVariable('var(--text-link)'),
+          helper: colorVariable('var(--text-helper)'),
         },
         accent: {
           accent: colorVariable('var(--accent-accent)'),

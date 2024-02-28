@@ -21,6 +21,7 @@ export const dfTwMerge: typeof twMerge = extendTailwindMerge({
       'text-p7',
       'text-p8',
       'text-p9',
+      'text-p11',
       'text-t1',
       'text-t2',
       'text-t3',
