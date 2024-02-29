@@ -70,6 +70,45 @@ type ResultGroupResp struct {
 	Groups []ResultGroup `json:"groups"`
 }
 
+func CountAllNodeLabels(ctx context.Context) (map[string]int64, error) {
+	res := map[string]int64{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	query := `CALL apoc.meta.stats() YIELD labels RETURN labels;`
+	r, err := tx.Run(query, map[string]interface{}{})
+	if err != nil {
+		return res, err
+	}
+	rec, err := r.Single()
+	if err != nil {
+		return res, err
+	}
+
+	val, found := rec.Get("labels")
+	if !found {
+		return res, nil
+	}
+
+	labels := val.(map[string]interface{})
+	for k, v := range labels {
+		res[k] = v.(int64)
+	}
+
+	return res, nil
+}
+
 func CountNodes(ctx context.Context) (NodeCountResp, error) {
 	res := NodeCountResp{}
 	driver, err := directory.Neo4jClient(ctx)
