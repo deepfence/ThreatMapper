@@ -10,6 +10,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 )
 
+const PerPageCount = 100
+
 type Project struct {
 	ID                           int    `json:"id"`
 	Name                         string `json:"name"`
@@ -95,21 +97,30 @@ func listImages(gitlabServerURL, gitlabRegistryURL, accessToken string) ([]model
 }
 
 func getProjects(gitlabServerURL, accessToken string) ([]Project, error) {
-	url := fmt.Sprintf("%s/api/v4/projects?private_token=%s&simple=false&membership=true", gitlabServerURL, accessToken)
+	var gitlabProjects []Project
+	i := 1
+	for {
+		url := fmt.Sprintf("%s/api/v4/projects?private_token=%s&simple=false&membership=true&per_page=%d&page=%d", gitlabServerURL, accessToken, PerPageCount, i)
 
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
+		resp, err := http.Get(url)
+		if err != nil {
+			return gitlabProjects, err
+		}
+		defer resp.Body.Close()
+
+		var projects []Project
+		err = json.NewDecoder(resp.Body).Decode(&projects)
+		if err != nil {
+			return gitlabProjects, err
+		}
+		if len(projects) == 0 {
+			break
+		}
+		gitlabProjects = append(gitlabProjects, projects...)
+		i++
 	}
-	defer resp.Body.Close()
 
-	var projects []Project
-	err = json.NewDecoder(resp.Body).Decode(&projects)
-	if err != nil {
-		return nil, err
-	}
-
-	return projects, nil
+	return gitlabProjects, nil
 }
 
 func getImagesWithTags(gitlabServerURL, accessToken string, projectID int) ([]Image, error) {

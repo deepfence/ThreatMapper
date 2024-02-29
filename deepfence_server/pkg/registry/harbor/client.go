@@ -13,6 +13,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
+const PerPageCount = 100
+
 var client = &http.Client{
 	Timeout: 10 * time.Second,
 	Transport: &http.Transport{
@@ -24,7 +26,7 @@ func listImages(url, project, username, password string) ([]model.IngestedContai
 
 	var images []model.IngestedContainerImage
 
-	repos, err := listRepos(url, project, username, password)
+	repos, err := getRepos(url, project, username, password)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
@@ -43,15 +45,36 @@ func listImages(url, project, username, password string) ([]model.IngestedContai
 	return images, nil
 }
 
-func listRepos(url, project, username, password string) ([]Repository, error) {
+func getRepos(url, project, name, password string) ([]Repository, error) {
+	var repositories []Repository
+	var queryURL string
+	i := 0
+	for {
+		i++
+		if len(repositories) == 0 {
+			queryURL = fmt.Sprintf("%s/api/v2.0/projects/%s/repositories?page_size=%d", url, project, PerPageCount)
+		} else {
+			queryURL = fmt.Sprintf("%s/api/v2.0/projects/%s/repositories?page=%d&page_size=%d", url, project, i, PerPageCount)
+		}
+		repos, err := listRepos(queryURL, name, password)
+		if err != nil {
+			return repositories, err
+		}
+		if len(repos) == 0 {
+			break
+		}
+		repositories = append(repositories, repos...)
+	}
+	return repositories, nil
+}
+
+func listRepos(url, username, password string) ([]Repository, error) {
 	var (
 		repositories []Repository
 		err          error
 	)
 
-	listReposURL := "%s/api/v2.0/projects/%s/repositories"
-	queryURL := fmt.Sprintf(listReposURL, url, project)
-	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err

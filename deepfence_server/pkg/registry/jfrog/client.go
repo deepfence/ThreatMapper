@@ -12,6 +12,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
+const PerPageCount = 100
+
 var client = &http.Client{
 	Timeout: 10 * time.Second,
 	Transport: &http.Transport{
@@ -25,7 +27,7 @@ func listImagesRegistryV2(url, repository, userName, password string) ([]model.I
 		images []model.IngestedContainerImage
 	)
 
-	repos, err := listCatalogRegistryV2(url, repository, userName, password)
+	repos, err := getRepos(url, repository, userName, password)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
@@ -42,6 +44,27 @@ func listImagesRegistryV2(url, repository, userName, password string) ([]model.I
 	}
 
 	return images, nil
+}
+
+func getRepos(url, repository, name, password string) ([]string, error) {
+	var repositories []string
+	var queryURL string
+	for {
+		if len(repositories) == 0 {
+			queryURL = fmt.Sprintf("%s/artifactory/api/docker/%s/v2/_catalog?n=%d", url, repository, PerPageCount)
+		} else {
+			queryURL = fmt.Sprintf("%s/artifactory/api/docker/%s/v2/_catalog?last=%s&n=%d", url, repository, repositories[len(repositories)-1], PerPageCount)
+		}
+		repos, err := listCatalogRegistryV2(queryURL, repository, name, password)
+		if err != nil {
+			return repositories, err
+		}
+		if len(repos) == 0 {
+			break
+		}
+		repositories = append(repositories, repos...)
+	}
+	return repositories, nil
 }
 
 func listCatalogRegistryV2(url, repository, userName, password string) ([]string, error) {

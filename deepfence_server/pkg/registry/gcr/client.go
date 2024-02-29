@@ -11,6 +11,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
+const PerPageCount = 100
+
 var client = &http.Client{Timeout: 10 * time.Second}
 
 func listImagesRegistryV2(url, namespace, userName, password string) ([]model.IngestedContainerImage, error) {
@@ -19,7 +21,7 @@ func listImagesRegistryV2(url, namespace, userName, password string) ([]model.In
 		images []model.IngestedContainerImage
 	)
 
-	repos, err := listCatalogRegistryV2(url, namespace, userName, password)
+	repos, err := getRepos(url, userName, password)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
@@ -38,15 +40,31 @@ func listImagesRegistryV2(url, namespace, userName, password string) ([]model.In
 	return images, nil
 }
 
-func listCatalogRegistryV2(url, namespace, userName, password string) ([]string, error) {
-	var (
-		repositories []string
-		err          error
-	)
+func getRepos(url, name, password string) ([]string, error) {
+	var repositories []string
+	var queryURL string
+	for {
+		if len(repositories) == 0 {
+			queryURL = fmt.Sprintf("%s/v2/_catalog?n=%d", url, PerPageCount)
+		} else {
+			queryURL = fmt.Sprintf("%s/v2/_catalog?last=%s&n=%d", url, repositories[len(repositories)-1], PerPageCount)
+		}
+		repos, err := listCatalogRegistryV2(queryURL, name, password)
+		if err != nil {
+			return repositories, err
+		}
+		if len(repos) == 0 {
+			break
+		}
+		repositories = append(repositories, repos...)
+	}
+	return repositories, nil
+}
 
-	listReposURL := "%s/v2/_catalog"
-	queryURL := fmt.Sprintf(listReposURL, url)
-	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
+func listCatalogRegistryV2(url, userName, password string) ([]string, error) {
+	var err error
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
@@ -79,9 +97,7 @@ func listCatalogRegistryV2(url, namespace, userName, password string) ([]string,
 		return nil, err
 	}
 
-	repositories = append(repositories, repos.Repositories...)
-
-	return repositories, err
+	return repos.Repositories, err
 }
 
 func listRepoTagsV2(url, namespace, userName, password, repoName string) (RepoTagsResp, error) {
