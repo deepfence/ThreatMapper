@@ -189,7 +189,7 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 
 	worker.AddRetryableHandler(utils.SyncRegistryPostgresNeo4jTask, cronjobs.SyncRegistryPostgresNeo4jTask)
 
-	worker.AddRetryableHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
+	worker.AddRetryableHandler(utils.CloudComplianceControlsTask, cronjobs.AddCloudControls)
 
 	worker.AddOneShotHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders)
 
@@ -229,6 +229,8 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 	worker.AddRetryableHandler(utils.UpdatePodScanStatusTask, scans.UpdatePodScanStatus)
 
 	worker.AddOneShotHandler(utils.BulkDeleteScans, scans.BulkDeleteScans)
+
+	worker.AddRetryableHandler(utils.ThreatIntelUpdateTask, cronjobs.FetchThreatIntel)
 
 	return worker, cancel, nil
 }

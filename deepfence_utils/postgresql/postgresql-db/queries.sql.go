@@ -93,6 +93,18 @@ func (q *Queries) CountGenerativeAiIntegrationByLabel(ctx context.Context, label
 	return count, err
 }
 
+const countLicenses = `-- name: CountLicenses :one
+SELECT count(*)
+FROM license
+`
+
+func (q *Queries) CountLicenses(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countLicenses)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countUsers = `-- name: CountUsers :one
 SELECT count(*)
 FROM users
@@ -736,6 +748,38 @@ WHERE created_by_user_id = $1
 func (q *Queries) DeleteUserInviteByUserID(ctx context.Context, createdByUserID int64) error {
 	_, err := q.db.ExecContext(ctx, deleteUserInviteByUserID, createdByUserID)
 	return err
+}
+
+const getActiveLicense = `-- name: GetActiveLicense :one
+SELECT id, license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type, deepfence_support_email, notification_threshold_percentage, notification_threshold_updated_at, registry_credentials, message, description, created_at, updated_at
+FROM license
+WHERE is_active = true
+ORDER BY end_date DESC
+LIMIT 1
+`
+
+func (q *Queries) GetActiveLicense(ctx context.Context) (License, error) {
+	row := q.db.QueryRowContext(ctx, getActiveLicense)
+	var i License
+	err := row.Scan(
+		&i.ID,
+		&i.LicenseKey,
+		&i.StartDate,
+		&i.EndDate,
+		&i.NoOfHosts,
+		&i.CurrentHosts,
+		&i.IsActive,
+		&i.LicenseType,
+		&i.DeepfenceSupportEmail,
+		&i.NotificationThresholdPercentage,
+		&i.NotificationThresholdUpdatedAt,
+		&i.RegistryCredentials,
+		&i.Message,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const getActiveSchedules = `-- name: GetActiveSchedules :many
@@ -1831,6 +1875,67 @@ func (q *Queries) GetIntegrationsFromType(ctx context.Context, integrationType s
 	return items, nil
 }
 
+const getLicense = `-- name: GetLicense :one
+SELECT id, license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type, deepfence_support_email, notification_threshold_percentage, notification_threshold_updated_at, registry_credentials, message, description, created_at, updated_at
+FROM license
+LIMIT 1
+`
+
+func (q *Queries) GetLicense(ctx context.Context) (License, error) {
+	row := q.db.QueryRowContext(ctx, getLicense)
+	var i License
+	err := row.Scan(
+		&i.ID,
+		&i.LicenseKey,
+		&i.StartDate,
+		&i.EndDate,
+		&i.NoOfHosts,
+		&i.CurrentHosts,
+		&i.IsActive,
+		&i.LicenseType,
+		&i.DeepfenceSupportEmail,
+		&i.NotificationThresholdPercentage,
+		&i.NotificationThresholdUpdatedAt,
+		&i.RegistryCredentials,
+		&i.Message,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getLicenseByKey = `-- name: GetLicenseByKey :one
+SELECT id, license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type, deepfence_support_email, notification_threshold_percentage, notification_threshold_updated_at, registry_credentials, message, description, created_at, updated_at
+FROM license
+WHERE license_key = $1
+LIMIT 1
+`
+
+func (q *Queries) GetLicenseByKey(ctx context.Context, licenseKey uuid.UUID) (License, error) {
+	row := q.db.QueryRowContext(ctx, getLicenseByKey, licenseKey)
+	var i License
+	err := row.Scan(
+		&i.ID,
+		&i.LicenseKey,
+		&i.StartDate,
+		&i.EndDate,
+		&i.NoOfHosts,
+		&i.CurrentHosts,
+		&i.IsActive,
+		&i.LicenseType,
+		&i.DeepfenceSupportEmail,
+		&i.NotificationThresholdPercentage,
+		&i.NotificationThresholdUpdatedAt,
+		&i.RegistryCredentials,
+		&i.Message,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getPasswordHash = `-- name: GetPasswordHash :one
 SELECT password_hash
 FROM users
@@ -2668,6 +2773,23 @@ func (q *Queries) UpdateIntegrationStatus(ctx context.Context, arg UpdateIntegra
 	return err
 }
 
+const updateNotificationThreshold = `-- name: UpdateNotificationThreshold :exec
+UPDATE license
+SET notification_threshold_percentage = $1,
+    notification_threshold_updated_at = now()
+WHERE license_key = $2
+`
+
+type UpdateNotificationThresholdParams struct {
+	NotificationThresholdPercentage int32     `json:"notification_threshold_percentage"`
+	LicenseKey                      uuid.UUID `json:"license_key"`
+}
+
+func (q *Queries) UpdateNotificationThreshold(ctx context.Context, arg UpdateNotificationThresholdParams) error {
+	_, err := q.db.ExecContext(ctx, updateNotificationThreshold, arg.NotificationThresholdPercentage, arg.LicenseKey)
+	return err
+}
+
 const updatePassword = `-- name: UpdatePassword :exec
 UPDATE users
 SET password_hash = $1
@@ -2860,6 +2982,78 @@ func (q *Queries) UpdateUserInvite(ctx context.Context, arg UpdateUserInvitePara
 		&i.CompanyID,
 		&i.Accepted,
 		&i.Expiry,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const upsertLicense = `-- name: UpsertLicense :one
+INSERT INTO license (license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type,
+                     deepfence_support_email, notification_threshold_percentage, registry_credentials, message,
+                     description)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+ON CONFLICT (license_key) DO UPDATE
+    SET start_date                        = $2,
+        end_date                          = $3,
+        no_of_hosts                       = $4,
+        current_hosts                     = $5,
+        is_active                         = $6,
+        license_type                      = $7,
+        deepfence_support_email           = $8,
+        notification_threshold_percentage = $9,
+        registry_credentials              = $10,
+        message                           = $11,
+        description                       = $12
+RETURNING id, license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type, deepfence_support_email, notification_threshold_percentage, notification_threshold_updated_at, registry_credentials, message, description, created_at, updated_at
+`
+
+type UpsertLicenseParams struct {
+	LicenseKey                      uuid.UUID       `json:"license_key"`
+	StartDate                       time.Time       `json:"start_date"`
+	EndDate                         time.Time       `json:"end_date"`
+	NoOfHosts                       int64           `json:"no_of_hosts"`
+	CurrentHosts                    int64           `json:"current_hosts"`
+	IsActive                        bool            `json:"is_active"`
+	LicenseType                     string          `json:"license_type"`
+	DeepfenceSupportEmail           string          `json:"deepfence_support_email"`
+	NotificationThresholdPercentage int32           `json:"notification_threshold_percentage"`
+	RegistryCredentials             json.RawMessage `json:"registry_credentials"`
+	Message                         string          `json:"message"`
+	Description                     string          `json:"description"`
+}
+
+func (q *Queries) UpsertLicense(ctx context.Context, arg UpsertLicenseParams) (License, error) {
+	row := q.db.QueryRowContext(ctx, upsertLicense,
+		arg.LicenseKey,
+		arg.StartDate,
+		arg.EndDate,
+		arg.NoOfHosts,
+		arg.CurrentHosts,
+		arg.IsActive,
+		arg.LicenseType,
+		arg.DeepfenceSupportEmail,
+		arg.NotificationThresholdPercentage,
+		arg.RegistryCredentials,
+		arg.Message,
+		arg.Description,
+	)
+	var i License
+	err := row.Scan(
+		&i.ID,
+		&i.LicenseKey,
+		&i.StartDate,
+		&i.EndDate,
+		&i.NoOfHosts,
+		&i.CurrentHosts,
+		&i.IsActive,
+		&i.LicenseType,
+		&i.DeepfenceSupportEmail,
+		&i.NotificationThresholdPercentage,
+		&i.NotificationThresholdUpdatedAt,
+		&i.RegistryCredentials,
+		&i.Message,
+		&i.Description,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

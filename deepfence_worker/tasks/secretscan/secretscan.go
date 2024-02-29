@@ -6,6 +6,7 @@ import (
 	"io/ioutil" //nolint:staticcheck
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/deepfence/SecretScanner/signature"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
@@ -25,9 +27,10 @@ import (
 
 var ScanMap sync.Map
 
-func init() {
-	initSecretScanner()
-}
+var secretsRulesFile = "config.yaml"
+var secretsRulesDir = "/"
+var secretsRulesHash = ""
+var secretsRuleLock = new(sync.Mutex)
 
 type SecretScan struct {
 	ingestC chan *kgo.Record
@@ -35,6 +38,32 @@ type SecretScan struct {
 
 func NewSecretScanner(ingest chan *kgo.Record) SecretScan {
 	return SecretScan{ingestC: ingest}
+}
+
+func checkSecretsRulesUpdate(ctx context.Context) error {
+	// fetch rules url
+	_, hash, path, err := threatintel.FetchSecretsRulesInfo(ctx)
+	if err != nil {
+		return err
+	}
+
+	secretsRuleLock.Lock()
+	defer secretsRuleLock.Unlock()
+
+	if secretsRulesHash != hash {
+		secretsRulesHash = hash
+
+		// remove old rules
+		os.RemoveAll(filepath.Join(secretsRulesDir, secretsRulesFile))
+
+		log.Info().Msgf("update rules from path: %s", path)
+		if err := workerUtils.UpdateRules(ctx, path, secretsRulesDir); err != nil {
+			return err
+		}
+		initSecretScanner()
+	}
+
+	return nil
 }
 
 func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error {
@@ -69,6 +98,11 @@ func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error 
 func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error {
 
 	log := log.WithCtx(ctx)
+
+	if err := checkSecretsRulesUpdate(ctx); err != nil {
+		log.Error().Err(err).Msg("failed to update secrets rules")
+		return err
+	}
 
 	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {

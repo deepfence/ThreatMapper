@@ -15,7 +15,6 @@ import (
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 	"github.com/hibiken/asynq"
 	"github.com/robfig/cron/v3"
 )
@@ -60,11 +59,6 @@ func NewScheduler() (*Scheduler, error) {
 }
 
 func (s *Scheduler) Init() {
-	// download updated vulnerability database
-	_, err := s.cron.AddFunc("@every 120m", vulnerability_db.DownloadDatabase)
-	if err != nil {
-		return
-	}
 
 	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
 		return "scheduler addJobs", s.AddJobs(ctx)
@@ -274,7 +268,7 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 
 	// Adding CloudComplianceTask only to ensure data is ingested if task fails on startup
 	jobID, err = s.cron.AddFunc("@every 60m",
-		s.enqueueTask(namespace, utils.CloudComplianceTask, true, utils.CritialTaskOpts()...))
+		s.enqueueTask(namespace, utils.CloudComplianceControlsTask, true, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
@@ -344,6 +338,12 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	}
 	jobIDs = append(jobIDs, jobID)
 
+	jobID, err = s.cron.AddFunc("@every 5h", s.enqueueTask(namespace, utils.ThreatIntelUpdateTask, true, utils.CritialTaskOpts()...))
+	if err != nil {
+		return err
+	}
+	jobIDs = append(jobIDs, jobID)
+
 	s.jobs.CronJobs[namespace] = CronJobs{jobIDs: jobIDs}
 
 	return nil
@@ -374,11 +374,13 @@ func (s *Scheduler) startInitJobs(ctx context.Context) error {
 	log.Info().Msgf("Start immediate cronjobs for namespace %s", namespace)
 	s.enqueueTask(namespace, utils.CheckAgentUpgradeTask, true)()
 	s.enqueueTask(namespace, utils.SyncRegistryPostgresNeo4jTask, true, utils.CritialTaskOpts()...)()
-	s.enqueueTask(namespace, utils.CloudComplianceTask, true, utils.CritialTaskOpts()...)()
+	s.enqueueTask(namespace, utils.CloudComplianceControlsTask, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.ReportCleanUpTask, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.CachePostureProviders, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.RedisRewriteAOF, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.AsynqDeleteAllArchivedTasks, true, utils.CritialTaskOpts()...)()
+
+	s.enqueueTask(namespace, utils.ThreatIntelUpdateTask, true, utils.CritialTaskOpts()...)()
 
 	return nil
 }

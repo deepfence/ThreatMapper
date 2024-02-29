@@ -13,9 +13,9 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	postgresqldb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/report"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 )
 
 func (d *OpenAPIDocs) AddUserAuthOperations() {
@@ -835,7 +835,7 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 	// Database upload
 	d.AddOperation("uploadVulnerabilityDatabase", http.MethodPut, "/deepfence/database/vulnerability",
 		"Upload Vulnerability Database", "Upload Vulnerability Database for use in vulnerability scans",
-		http.StatusOK, []string{tagSettings}, bearerToken, new(vulnerability_db.DBUploadRequest), new(MessageResponse))
+		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
 }
 
 func (d *OpenAPIDocs) AddDiffAddOperations() {

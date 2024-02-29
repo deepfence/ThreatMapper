@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
+	ctls "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -54,12 +55,20 @@ func (c ConsoleController) TriggerConsoleControls(ctx context.Context, t *asynq.
 
 	for _, action := range actions {
 		log.Info().Msgf("Init execute: %v", action.ID)
+		if shouldSkipApply(action.ID) {
+			log.Info().Msgf("skip control %v", action.ID)
+			continue
+		}
 		err := ctl.ApplyControl(ctx, action)
 		if err != nil {
 			log.Error().Msgf("Control %v failed: %v", action, err)
 		}
 	}
 	return nil
+}
+
+func shouldSkipApply(action ctls.ActionID) bool {
+	return action == ctls.UpdateAgentThreatIntel
 }
 
 // list of task types to count towards running

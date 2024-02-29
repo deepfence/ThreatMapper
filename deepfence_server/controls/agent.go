@@ -10,6 +10,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
@@ -65,7 +66,13 @@ func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int) (
 		actions = append(actions, scanActions...)
 	}
 
-	return actions, []error{scanErr, upgradeErr, diagnosticLogErr, stopActionsErr}
+	threatintelActions, threatintelLogErr := ExtractPendingAgentThreatIntelTask(ctx, nodeID)
+	workNumToExtract -= len(threatintelActions)
+	if threatintelLogErr == nil {
+		actions = append(actions, threatintelActions...)
+	}
+
+	return actions, []error{scanErr, upgradeErr, diagnosticLogErr, stopActionsErr, threatintelLogErr}
 }
 
 func GetPendingAgentScans(ctx context.Context, nodeID string, availableWorkload int) ([]controls.Action, error) {
@@ -401,6 +408,40 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeID string, maxWrok int) 
 
 	return res, err
 
+}
+
+func ExtractPendingAgentThreatIntelTask(ctx context.Context, nodeID string) ([]controls.Action, error) {
+	res := []controls.Action{}
+	if len(nodeID) == 0 {
+		return res, ErrMissingNodeID
+	}
+
+	var (
+		req controls.ThreatIntelInfo
+		err error
+	)
+
+	req.MalwareRulesURL, req.MalwareRulesHash, _, err = threatintel.FetchMalwareRulesInfo(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	req.SecretsRulesURL, req.SecretsRulesHash, _, err = threatintel.FetchSecretsRulesInfo(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	payload, err := json.Marshal(req)
+	if err != nil {
+		return res, err
+	}
+
+	res = append(res, controls.Action{
+		ID:             controls.UpdateAgentThreatIntel,
+		RequestPayload: string(payload),
+	})
+
+	return res, err
 }
 
 func hasPendingAgentUpgrade(ctx context.Context, client neo4j.DriverWithContext, nodeID string, maxWork int) (bool, error) {

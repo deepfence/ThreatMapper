@@ -7,7 +7,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 	"github.com/pressly/goose/v3"
 )
 
@@ -105,8 +104,4 @@ func InitMinioDatabase() {
 		}
 		break
 	}
-
-	// download vulnerability database once on init
-	vulnerability_db.DownloadDatabase()
-
 }

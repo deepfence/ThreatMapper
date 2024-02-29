@@ -10,7 +10,7 @@ brew install sqlc
 ```
 - go install
 ```shell
-go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
+go install -v github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 ```
 
 ## Generate Go code

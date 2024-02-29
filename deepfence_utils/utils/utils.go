@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"archive/tar"
 	"archive/zip"
 	"bytes"
+	"compress/gzip"
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/tls"
@@ -21,6 +23,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -689,4 +692,56 @@ func TopicWithNamespace(topic, ns string) string {
 		return fmt.Sprintf("%s-%s", topic, ns)
 	}
 	return topic
+}
+
+func ExtractTarGz(gzipStream io.Reader, targetPath string) error {
+
+	// create the target path
+	os.MkdirAll(targetPath, 0755)
+
+	uncompressedStream, err := gzip.NewReader(gzipStream)
+	if err != nil {
+		log.Error().Err(err).Msg("ExtractTarGz: NewReader failed")
+		return err
+	}
+
+	tarReader := tar.NewReader(uncompressedStream)
+
+	for {
+		header, err := tarReader.Next()
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			log.Error().Err(err).Msg("ExtractTarGz: Next() failed")
+			return err
+		}
+
+		switch header.Typeflag {
+		case tar.TypeDir:
+			if err := os.Mkdir(path.Join(targetPath, header.Name), 0755); err != nil {
+				log.Error().Err(err).Msg("ExtractTarGz: Mkdir() failed")
+				return err
+			}
+		case tar.TypeReg:
+			outFile, err := os.Create(path.Join(targetPath, header.Name))
+			if err != nil {
+				log.Error().Err(err).Msg("ExtractTarGz: Create() failed")
+				return err
+			}
+			if _, err := io.Copy(outFile, tarReader); err != nil {
+				log.Error().Err(err).Msg("ExtractTarGz: Copy() failed")
+				return err
+			}
+			outFile.Close()
+
+		default:
+			log.Error().Msgf("ExtractTarGz: uknown type: %s in %s",
+				string(header.Typeflag), header.Name)
+		}
+	}
+
+	return nil
 }

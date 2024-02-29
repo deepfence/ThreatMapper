@@ -707,3 +707,50 @@ DELETE
 FROM scheduler
 WHERE id = $1
   AND is_system = 'f';
+
+-- name: UpsertLicense :one
+INSERT INTO license (license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type,
+                     deepfence_support_email, notification_threshold_percentage, registry_credentials, message,
+                     description)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+ON CONFLICT (license_key) DO UPDATE
+    SET start_date                        = $2,
+        end_date                          = $3,
+        no_of_hosts                       = $4,
+        current_hosts                     = $5,
+        is_active                         = $6,
+        license_type                      = $7,
+        deepfence_support_email           = $8,
+        notification_threshold_percentage = $9,
+        registry_credentials              = $10,
+        message                           = $11,
+        description                       = $12
+RETURNING *;
+
+-- name: GetLicenseByKey :one
+SELECT *
+FROM license
+WHERE license_key = $1
+LIMIT 1;
+
+-- name: GetLicense :one
+SELECT *
+FROM license
+LIMIT 1;
+
+-- name: GetActiveLicense :one
+SELECT *
+FROM license
+WHERE is_active = true
+ORDER BY end_date DESC
+LIMIT 1;
+
+-- name: CountLicenses :one
+SELECT count(*)
+FROM license;
+
+-- name: UpdateNotificationThreshold :exec
+UPDATE license
+SET notification_threshold_percentage = $1,
+    notification_threshold_updated_at = now()
+WHERE license_key = $2;

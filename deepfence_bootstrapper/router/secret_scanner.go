@@ -4,18 +4,24 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
+	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/supervisor"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	dfUtils "github.com/deepfence/df-utils"
 )
 
 var (
-	ebpfSocketPath = getDfInstallDir() + "/tmp/secret-scanner.sock"
+	ebpfSocketPath = dfUtils.GetDfInstallDir() + "/tmp/secret-scanner.sock"
 	scanDir        string
+
+	// track rule hash
+	secretsRuleshash string
 )
 
 func init() {
@@ -108,4 +114,46 @@ func StopSecretScan(req ctl.StopSecretScanRequest) error {
 	}
 
 	return err
+}
+
+// download, update rules and restart scanner
+func UpdateSecretsRules(req ctl.ThreatIntelInfo) error {
+	if req.SecretsRulesHash == secretsRuleshash {
+		log.Warn().Msgf("skip secrets rules update already new")
+		return nil
+	}
+
+	// set to new hash
+	secretsRuleshash = req.SecretsRulesHash
+
+	newRules := "new_secret_rules.tar.gz"
+	configPath := "/home/deepfence/bin/secret-scanner/config"
+
+	if err := downloadFile(newRules, req.SecretsRulesURL); err != nil {
+		log.Error().Err(err).Msg("failed to downlaod secrets rules")
+		return err
+	}
+	defer os.Remove(newRules)
+
+	// remove old rules
+	if err := Backup(configPath); err != nil {
+		log.Error().Err(err).Msg("failed to create directory")
+		return err
+	}
+
+	if err := extractTarGz(newRules, filepath.Base(configPath)); err != nil {
+		log.Error().Err(err).Msg("failed to extract rules")
+		return err
+	}
+
+	// restart scanner
+	if err := supervisor.StopProcess("secret_scanner"); err != nil {
+		log.Error().Err(err).Msg("error on stop secrets scanner")
+	}
+
+	if err := supervisor.StartProcess("secret_scanner"); err != nil {
+		log.Error().Err(err).Msg("error on start secrets scanner")
+	}
+
+	return nil
 }

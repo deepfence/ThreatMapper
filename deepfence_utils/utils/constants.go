@@ -43,7 +43,7 @@ const (
 	ReportGeneratorTask               = "tasks_generate_report"
 	ComputeThreatTask                 = "compute_threat"
 	SendNotificationTask              = "tasks_send_notification"
-	CloudComplianceTask               = "cloud_compliance"
+	CloudComplianceControlsTask       = "cloud_compliance_controls"
 	CachePostureProviders             = "cache_posture_providers"
 	ReportCleanUpTask                 = "tasks_cleanup_reports"
 	LinkCloudResourceTask             = "link_cloud_resource"
@@ -57,6 +57,8 @@ const (
 	AutoFetchGenerativeAIIntegrations = "auto_fetch_generative_ai_integrations"
 	AsynqDeleteAllArchivedTasks       = "asynq_delete_all_archived_tasks"
 	RedisRewriteAOF                   = "redis_rewrite_aof"
+
+	ThreatIntelUpdateTask = "threat_intel_update"
 )
 
 const (
@@ -202,7 +204,7 @@ var Tasks = []string{
 	ReportGeneratorTask,
 	ComputeThreatTask,
 	SendNotificationTask,
-	CloudComplianceTask,
+	CloudComplianceControlsTask,
 	CachePostureProviders,
 	ReportCleanUpTask,
 	LinkCloudResourceTask,
@@ -212,6 +214,7 @@ var Tasks = []string{
 	StopVulnerabilityScanTask,
 	UpdateCloudResourceScanStatusTask,
 	UpdatePodScanStatusTask,
+	ThreatIntelUpdateTask,
 }
 
 type ReportType string

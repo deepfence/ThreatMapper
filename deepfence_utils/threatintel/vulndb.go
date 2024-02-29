@@ -1,15 +1,10 @@
-//nolint:stylecheck
-package vulnerability_db
+package threatintel
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"mime/multipart"
-	"net/http"
 	"os"
 	"path"
 	"sort"
@@ -17,6 +12,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/minio/minio-go/v7"
 )
@@ -27,10 +23,10 @@ const (
 )
 
 var (
-	ListingJSON             = "listing.json"
-	VulnerabilityDBStore    = "vulnerability"
-	ListingPath             = path.Join(VulnerabilityDBStore, ListingJSON)
-	DeepfenceThreatIntelURL = "https://threat-intel.deepfence.io/vulnerability-db/listing.json"
+	ListingJSON          = "listing.json"
+	VulnerabilityDBStore = "vulnerability"
+	ListingPath          = path.Join(VulnerabilityDBStore, ListingJSON)
+	// DeepfenceVulnDBURL   = "https://threat-intel.deepfence.io/vulnerability-db/listing.json"
 )
 
 type DBUploadRequest struct {
@@ -100,39 +96,24 @@ func (v *VulnerabilityDBListing) Latest(version string) *Database {
 	return nil
 }
 
-func UploadToMinio(ctx context.Context, fb []byte, fName string) (string, string, error) {
-
-	mc, err := directory.MinioClient(directory.WithDatabaseContext(ctx))
-	if err != nil {
-		return "", "", err
-	}
-
-	dbFile := path.Join(VulnerabilityDBStore, fName)
-	info, err := mc.UploadFile(directory.WithDatabaseContext(ctx), dbFile, fb, true, minio.PutObjectOptions{})
-	if err != nil {
-		return "", "", err
-	}
-
-	return info.Key, utils.SHA256sum(fb), nil
-}
-
-func UpdateListing(newFile, newFileCheckSum string, buildTime time.Time) {
+func VulnDBUpdateListing(ctx context.Context, newFile, newFileCheckSum string, buildTime time.Time) error {
 	log.Info().Msg("update vulnerability database listing")
 
-	ctx := context.Background()
 	mc, err := directory.MinioClient(directory.WithDatabaseContext(ctx))
 	if err != nil {
 		log.Error().Msg(err.Error())
-		return
+		return err
 	}
 
+	// if err ignore, listing file is missing
 	data, err := mc.DownloadFileContexts(ctx, ListingPath, minio.GetObjectOptions{})
 	if err != nil {
-		log.Error().Err(err).Msg("failed to load listing file")
+		log.Error().Err(err).Msg("failed to load listing file might be missing")
 	}
 
 	listing, err := LoadListing(data)
 	if err != nil {
+		log.Warn().Msg("failed to load listing file create new listing")
 		listing = NewVulnerabilityDBListing()
 	}
 
@@ -142,7 +123,8 @@ func UpdateListing(newFile, newFileCheckSum string, buildTime time.Time) {
 	minioBucket := os.Getenv("DEEPFENCE_MINIO_DB_BUCKET")
 
 	// for aws s3
-	fileURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", minioBucket, minioRegion, newFile)
+	fileURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s",
+		minioBucket, minioRegion, newFile)
 	if minioHost != "s3.amazonaws.com" {
 		fileURL = fmt.Sprintf("http://%s:%s/%s",
 			minioHost, minioPort, path.Join(string(directory.DatabaseDirKey), newFile))
@@ -161,105 +143,44 @@ func UpdateListing(newFile, newFileCheckSum string, buildTime time.Time) {
 	lb, err := listing.Bytes()
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		return
+		return err
 	}
 
-	_, err = mc.UploadFile(ctx, ListingPath, lb, true, minio.PutObjectOptions{ContentType: "application/json"})
+	_, err = mc.UploadFile(ctx, ListingPath, lb, true,
+		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		return
+		return err
 	}
 
 	log.Info().Msgf("vulnerability db listing updated with file %s checksum %s",
 		newFile, newFileCheckSum)
 
+	return nil
+
 }
 
-func DownloadDatabase() {
+func DownloadVulnerabilityDB(ctx context.Context, info Entry) error {
 
 	log.Info().Msg("download latest vulnerability database")
 
-	dfListingURL := utils.GetEnvOrDefault(
-		"DEEPFENCE_THREAT_INTEL_URL",
-		DeepfenceThreatIntelURL,
-	)
+	ctx, span := telemetry.NewSpan(ctx, "threatintel", "download-vulnerability-db")
+	defer span.End()
 
-	client := http.Client{Timeout: 60 * time.Second}
-
-	resp, err := client.Get(dfListingURL)
+	data, err := downloadFile(ctx, info.URL)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		log.Error().Msgf("listing url response: %s", resp.Status)
-		return
+		return err
 	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Error().Msgf(err.Error())
-		return
-	}
-
-	var listing VulnerabilityDBListing
-	if err := json.Unmarshal(body, &listing); err != nil {
-		log.Error().Msgf(err.Error())
-		return
-	}
-
-	log.Info().Msgf("available vulnerability databases V3=%d V5=%d",
-		len(listing.Available[Version3]), len(listing.Available[Version5]))
-
-	// sort by built time
-	// listing.Sort(model.Version5)
-
-	latest := listing.Latest(Version5)
-	if latest == nil {
-		log.Error().Msgf("latest v5 database are empty, check listing url")
-		return
-	}
-
-	log.Info().Msgf("latest threat intel db: %v", latest)
-
-	data, err := downloadFile(latest.URL)
-	if err != nil {
-		log.Error().Msgf(err.Error())
-		return
-	}
-
-	path, _, err := UploadToMinio(context.Background(), data.Bytes(), path.Base(latest.URL))
+	path, _, err := UploadToMinio(ctx, data.Bytes(), VulnerabilityDBStore,
+		fmt.Sprintf("vuln-db-%d.tar.gz", info.Built.Unix()))
 	if err != nil {
 		log.Error().Msg(err.Error())
-		return
+		return err
 	}
 
 	// update listing.json file
-	UpdateListing(path, latest.Checksum, latest.Built)
+	return VulnDBUpdateListing(ctx, path, info.Checksum, info.Built)
 
-}
-
-func downloadFile(url string) (*bytes.Buffer, error) {
-
-	client := http.Client{Timeout: 600 * time.Second}
-
-	resp, err := client.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("bad status: %s", resp.Status)
-	}
-
-	var out bytes.Buffer
-	_, err = io.Copy(bufio.NewWriter(&out), resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return &out, nil
 }

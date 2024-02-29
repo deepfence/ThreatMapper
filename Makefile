@@ -101,11 +101,11 @@ file-server:
 
 .PHONY: server
 server: alpine_builder
-	(cd ./deepfence_server && make image)
+	(cd ./deepfence_server && VERSION=$(VERSION) make image)
 
 .PHONY: worker
 worker: alpine_builder
-	(cd ./deepfence_worker && make image)
+	(cd ./deepfence_worker && VERSION=$(VERSION) make image)
 
 .PHONY: jaeger
 jaeger:

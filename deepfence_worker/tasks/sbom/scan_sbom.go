@@ -165,8 +165,10 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 	log.Info().Msgf("sbom file %s", sbomFilePath)
+
 	sbomFile := NewUnzippedFile(f)
-	err = mc.DownloadFileTo(context.Background(), params.SBOMFilePath, sbomFile, minio.GetObjectOptions{})
+
+	err = mc.DownloadFileTo(ctx, params.SBOMFilePath, sbomFile, minio.GetObjectOptions{})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err

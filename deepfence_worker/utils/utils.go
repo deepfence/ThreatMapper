@@ -11,6 +11,9 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
@@ -88,4 +91,23 @@ func GetVulnerabilityNodeID(packageName, cveID, entityID string) string {
 		nodeId = nodeId + "_" + entityID
 	}
 	return nodeId
+}
+
+func UpdateRules(ctx context.Context, path string, rulesPath string) error {
+
+	mc, err := directory.MinioClient(directory.WithDatabaseContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	data, err := mc.DownloadFileContexts(ctx, path, minio.GetObjectOptions{})
+	if err != nil {
+		return err
+	}
+
+	if err := utils.ExtractTarGz(bytes.NewReader(data), rulesPath); err != nil {
+		return err
+	}
+
+	return nil
 }
