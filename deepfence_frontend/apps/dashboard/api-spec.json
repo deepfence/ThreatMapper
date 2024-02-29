@@ -12795,6 +12795,7 @@
           "active": { "type": "boolean" },
           "cloud_provider": { "type": "string" },
           "compliance_percentage": { "type": "number" },
+          "host_node_id": { "type": "string" },
           "last_scan_id": { "type": "string" },
           "last_scan_status": { "type": "string" },
           "node_id": { "type": "string" },
@@ -13147,6 +13148,7 @@
         "type": "object",
         "properties": {
           "count": { "type": "integer" },
+          "ips": { "type": "array", "items": {}, "nullable": true },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" }
         }

@@ -27,6 +27,12 @@ export interface ModelConnection {
     count?: number;
     /**
      * 
+     * @type {Array<any>}
+     * @memberof ModelConnection
+     */
+    ips?: Array<any> | null;
+    /**
+     * 
      * @type {string}
      * @memberof ModelConnection
      */
@@ -59,6 +65,7 @@ export function ModelConnectionFromJSONTyped(json: any, ignoreDiscriminator: boo
     return {
         
         'count': !exists(json, 'count') ? undefined : json['count'],
+        'ips': !exists(json, 'ips') ? undefined : json['ips'],
         'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
         'node_name': !exists(json, 'node_name') ? undefined : json['node_name'],
     };
@@ -74,6 +81,7 @@ export function ModelConnectionToJSON(value?: ModelConnection | null): any {
     return {
         
         'count': value.count,
+        'ips': value.ips,
         'node_id': value.node_id,
         'node_name': value.node_name,
     };
