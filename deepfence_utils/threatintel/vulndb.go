@@ -66,7 +66,21 @@ func (v *VulnerabilityDBListing) Bytes() ([]byte, error) {
 }
 
 func (v *VulnerabilityDBListing) Append(db Database, version string) {
-	v.Available[version] = append(v.Available[version], db)
+	exists := false
+	index := 0
+
+	for i, d := range v.Available[version] {
+		if d.URL == db.URL {
+			exists = true
+			index = i
+		}
+	}
+
+	if !exists {
+		v.Available[version] = append(v.Available[version], db)
+	} else {
+		v.Available[version][index] = db
+	}
 }
 
 func (v *VulnerabilityDBListing) Sort(version string) {
@@ -173,7 +187,7 @@ func DownloadVulnerabilityDB(ctx context.Context, info Entry) error {
 		return err
 	}
 
-	path, _, err := UploadToMinio(ctx, data.Bytes(), VulnerabilityDBStore,
+	path, checksum, err := UploadToMinio(ctx, data.Bytes(), VulnerabilityDBStore,
 		fmt.Sprintf("vuln-db-%d.tar.gz", info.Built.Unix()))
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -181,6 +195,6 @@ func DownloadVulnerabilityDB(ctx context.Context, info Entry) error {
 	}
 
 	// update listing.json file
-	return VulnDBUpdateListing(ctx, path, info.Checksum, info.Built)
+	return VulnDBUpdateListing(ctx, path, checksum, info.Built)
 
 }
