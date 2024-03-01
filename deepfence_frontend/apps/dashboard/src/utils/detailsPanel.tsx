@@ -1,16 +1,18 @@
 import { isNil } from 'lodash-es';
+interface KVPair<T> {
+  key: keyof T;
+  value: T[keyof T] | string;
+}
 
 export function getFieldsKeyValue<T extends Record<string, any>>(
   issueObj: T,
   fieldsConfig: {
     hiddenFields: Array<keyof T>;
     priorityFields: Array<keyof T>;
+    base64EncodedFields?: Array<keyof T>;
   },
-): Array<{
-  key: keyof T;
-  value: T[keyof T] | '-';
-}> {
-  const result: ReturnType<typeof getFieldsKeyValue> = [];
+): Array<KVPair<T>> {
+  const result: Array<KVPair<T>> = [];
 
   const emptyFields: Array<keyof T> = [];
 
@@ -49,6 +51,15 @@ export function getFieldsKeyValue<T extends Record<string, any>>(
       value: '-',
     });
   });
+
+  if (fieldsConfig.base64EncodedFields?.length) {
+    return result.map((r) => {
+      if (!fieldsConfig.base64EncodedFields?.includes(r.key)) {
+        return r;
+      }
+      return { key: r.key, value: atob(r.value) };
+    });
+  }
 
   return result;
 }
