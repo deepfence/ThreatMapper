@@ -767,7 +767,7 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 		    r.right_pids = coalesce(r.right_pids, []) + pids.right,
 			r.local_ports = coalesce(r.local_ports, []) + pids.local_port,
 			r.left_ips = coalesce(r.left_ips, []) + pids.left_ip,
-			r.right_ips = coalesce(r.right_ips, []) + pids.rigth_ip`,
+			r.right_ips = coalesce(r.right_ips, []) + pids.right_ip`,
 		map[string]interface{}{"batch": batches.EndpointEdgesBatch}); err != nil {
 		return err
 	}
