@@ -71,10 +71,6 @@ export const secretQueries = createQueryKeys('secret', {
           totalRows: 0,
         };
 
-        const scanFilters = {} as {
-          status?: string[];
-        };
-
         const nodeFilters = {
           node_type: nodeTypes,
         } as {
@@ -82,7 +78,7 @@ export const secretQueries = createQueryKeys('secret', {
           host_name?: string[];
           node_id?: string[];
           docker_image_id?: string[];
-          kubernetes_cluster_id?: string[];
+          secret_scan_status?: string[];
         };
         if (hosts && hosts?.length > 0) {
           nodeFilters.host_name = nodeFilters.host_name
@@ -99,9 +95,17 @@ export const secretQueries = createQueryKeys('secret', {
             ? nodeFilters.docker_image_id.concat(images)
             : images;
         }
-
-        if (clusters && clusters?.length > 0) {
-          nodeFilters.kubernetes_cluster_id = clusters;
+        if (secretScanStatus) {
+          if (secretScanStatus === SecretScanGroupedStatus.neverScanned) {
+            nodeFilters.secret_scan_status = [
+              ...SECRET_SCAN_STATUS_GROUPS.complete,
+              ...SECRET_SCAN_STATUS_GROUPS.error,
+              ...SECRET_SCAN_STATUS_GROUPS.inProgress,
+              ...SECRET_SCAN_STATUS_GROUPS.starting,
+            ];
+          } else {
+            nodeFilters.secret_scan_status = SECRET_SCAN_STATUS_GROUPS[secretScanStatus];
+          }
         }
 
         const scanRequestParams: SearchSearchScanReq = {
@@ -125,7 +129,7 @@ export const secretQueries = createQueryKeys('secret', {
             filters: {
               match_filter: { filter_in: {} },
               order_filter: { order_fields: [] },
-              contains_filter: { filter_in: { ...scanFilters } },
+              contains_filter: { filter_in: {} },
               compare_filter: null,
               not_contains_filter: {
                 filter_in: {},
@@ -153,24 +157,6 @@ export const secretQueries = createQueryKeys('secret', {
               descending: true,
             },
           ];
-        }
-        if (secretScanStatus) {
-          if (secretScanStatus === SecretScanGroupedStatus.neverScanned) {
-            scanRequestParams.scan_filters.filters.not_contains_filter!.filter_in = {
-              ...scanRequestParams.scan_filters.filters.not_contains_filter!.filter_in,
-              status: [
-                ...SECRET_SCAN_STATUS_GROUPS.complete,
-                ...SECRET_SCAN_STATUS_GROUPS.error,
-                ...SECRET_SCAN_STATUS_GROUPS.inProgress,
-                ...SECRET_SCAN_STATUS_GROUPS.starting,
-              ],
-            };
-          } else {
-            scanRequestParams.scan_filters.filters.contains_filter.filter_in = {
-              ...scanRequestParams.scan_filters.filters.contains_filter.filter_in,
-              status: SECRET_SCAN_STATUS_GROUPS[secretScanStatus],
-            };
-          }
         }
 
         if (registryAccounts?.length) {
@@ -201,6 +187,90 @@ export const secretQueries = createQueryKeys('secret', {
               },
             },
           };
+        }
+        if (clusters && clusters?.length > 0) {
+          if (scanRequestParams.related_node_filter) {
+            scanRequestParams.related_node_filter.next_filter = {
+              relation_ship: 'INSTANCIATE',
+              node_filter: {
+                filters: {
+                  compare_filter: null,
+                  contains_filter: {
+                    filter_in: {
+                      node_id: clusters,
+                    },
+                  },
+                  match_filter: {
+                    filter_in: {},
+                  },
+                  not_contains_filter: {
+                    filter_in: {},
+                  },
+                  order_filter: {
+                    order_fields: [],
+                  },
+                },
+                in_field_filter: null,
+                window: {
+                  offset: 0,
+                  size: 0,
+                },
+              },
+            };
+          } else {
+            scanRequestParams.related_node_filter = {
+              relation_ship: 'HOSTS',
+              node_filter: {
+                filters: {
+                  compare_filter: null,
+                  contains_filter: {
+                    filter_in: {},
+                  },
+                  match_filter: {
+                    filter_in: {},
+                  },
+                  not_contains_filter: {
+                    filter_in: {},
+                  },
+                  order_filter: {
+                    order_fields: [],
+                  },
+                },
+                in_field_filter: null,
+                window: {
+                  offset: 0,
+                  size: 0,
+                },
+              },
+              next_filter: {
+                relation_ship: 'INSTANCIATE',
+                node_filter: {
+                  filters: {
+                    compare_filter: null,
+                    contains_filter: {
+                      filter_in: {
+                        node_id: clusters,
+                      },
+                    },
+                    match_filter: {
+                      filter_in: {},
+                    },
+                    not_contains_filter: {
+                      filter_in: {},
+                    },
+                    order_filter: {
+                      order_fields: [],
+                    },
+                  },
+                  in_field_filter: null,
+                  window: {
+                    offset: 0,
+                    size: 0,
+                  },
+                },
+              },
+            };
+          }
         }
 
         const searchSecretsScanApi = apiWrapper({
