@@ -308,7 +308,11 @@ const CountWidget = () => {
     );
   }
 
-  const { images = 0, tags = 0, scans_in_progress = 0 } = data.summary as ModelSummary;
+  const {
+    repositories = 0,
+    images = 0,
+    scans_in_progress = 0,
+  } = data.summary as ModelSummary;
 
   return (
     <div className="grid grid-cols-12 px-6 items-center w-full">
@@ -322,7 +326,7 @@ const CountWidget = () => {
             className="text-h1 dark:text-text-input-value"
             data-testid="totalRegistryImagesId"
           >
-            {abbreviateNumber(images)}
+            {abbreviateNumber(repositories)}
           </span>
           <span className="text-p1">Total repositories</span>
         </div>
@@ -338,7 +342,7 @@ const CountWidget = () => {
             className="text-h1 dark:text-text-input-value"
             data-testid="totalRegistryImageTagsId"
           >
-            {abbreviateNumber(tags)}
+            {abbreviateNumber(images)}
           </span>
           <span className="text-p1">Total images</span>
         </div>

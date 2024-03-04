@@ -14633,10 +14633,10 @@
         "properties": {
           "images": { "type": "integer" },
           "registries": { "type": "integer" },
+          "repositories": { "type": "integer" },
           "scans_complete": { "type": "integer" },
           "scans_in_progress": { "type": "integer" },
-          "scans_total": { "type": "integer" },
-          "tags": { "type": "integer" }
+          "scans_total": { "type": "integer" }
         }
       },
       "ModelTopologyDeltaReq": {
