@@ -59,14 +59,14 @@ export const TableSkeleton: React.FC<TableSkeletonProps> = ({
       cellPadding="0"
       cellSpacing="0"
     >
-      <thead className="bg-gray-50 dark:bg-bg-grid-header">
+      <thead className="bg-[#F5F5F5] dark:bg-bg-grid-header">
         <tr>
           {Array.from({ length: columns }).map((_, index) => (
             <th
               key={index}
-              className="relative border-0 text-gray-500 dark:text-df-gray-500 border-b-[1.5px] border-gray-200 dark:border-bg-grid-border"
+              className="relative border-0 text-gray-500 dark:text-df-gray-500 border-b-[1.5px] border-bg-grid-border dark:border-bg-grid-border"
             >
-              <Skeleton size={size} location="header" />
+              <Skeleton size={size} location="header" className={'bg-[#B0B0B0]'} />
             </th>
           ))}
         </tr>
@@ -77,11 +77,11 @@ export const TableSkeleton: React.FC<TableSkeletonProps> = ({
             {Array.from({ length: columns }).map((_, index) => (
               <td
                 key={index}
-                className={cn('border-gray-200 dark:border-bg-grid-border', {
+                className={cn('border-bg-grid-border dark:border-bg-grid-border', {
                   ['border-b']: rowIdx !== rows - 1,
                 })}
               >
-                <Skeleton size={size} location="body" />
+                <Skeleton size={size} location="body" className={'bg-bg-grid-border'} />
               </td>
             ))}
           </tr>

@@ -9,7 +9,10 @@ export const Card = (props: CardType) => {
   return (
     <div
       className={cn(
-        'rounded-[5px] bg-bg-card dark:shadow-none shadow-md border border-bg-grid-border dark:border-none text-text-text-and-icon',
+        'text-text-text-and-icon',
+        'rounded-[5px] bg-bg-card',
+        'dark:shadow-none shadow-[0_0_4px_0px_rgba(34,34,34,0.20)]',
+        'dark:border-none border border-bg-grid-border',
         className,
       )}
     >

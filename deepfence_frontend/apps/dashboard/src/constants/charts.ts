@@ -4,13 +4,12 @@ import { Mode } from '@/theme/ThemeContext';
 
 export const getSeverityColorMap = (theme: Mode) => {
   const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
-  const grayCode = theme === 'light' ? '400' : '600';
   return {
-    critical: color['status-error'],
-    high: color.chart.orange,
-    medium: color['status-warning'],
-    low: color.chart.yellow1,
-    unknown: color['df-gray'][grayCode],
+    critical: color['severity-critical'],
+    high: color['severity-high'],
+    medium: color['severity-medium'],
+    low: color['severity-low'],
+    unknown: color['severity-unknown'],
   };
 };
 

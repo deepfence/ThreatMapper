@@ -8,19 +8,26 @@ import { AlertIcon } from '@/components/sideNavigation/icons/Alert';
 import { getSeverityColorMap } from '@/constants/charts';
 import { CardHeader } from '@/features/dashboard/components/CardHeader';
 import { RuntimeIncidentsCheckIcon } from '@/features/dashboard/components/images/RuntimeIncidentCheck';
-import { useTheme } from '@/theme/ThemeContext';
+import { RuntimeIncidentsLight } from '@/features/dashboard/components/images/RuntimeIncidentLight';
+import { THEME_DARK, useTheme } from '@/theme/ThemeContext';
 
 export const TopRisksRuntimeDummy = () => {
+  const { mode } = useTheme();
   return (
     <Card className="rounded-[5px] flex flex-col h-full">
       <CardHeader icon={<AlertIcon />} title="Runtime incidents" />
       <div className="flex-1 flex flex-col mb-4 items-center">
         <div className="relative mt-2">
           <div className="h-[152px] w-[152px] blur-[5px] opacity-[0.15]">
-            <DummyDonutChart />
+            {mode === THEME_DARK ? <DummyDonutChart /> : null}
           </div>
+
           <div className="absolute h-[150px] w-[150px] inset-0">
-            <RuntimeIncidentsCheckIcon />
+            {mode === THEME_DARK ? (
+              <RuntimeIncidentsCheckIcon />
+            ) : (
+              <RuntimeIncidentsLight />
+            )}
           </div>
         </div>
         <div className="text-h3 text-text-input-value">Runtime Protection</div>

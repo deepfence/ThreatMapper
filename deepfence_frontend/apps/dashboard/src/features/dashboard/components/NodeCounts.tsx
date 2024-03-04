@@ -168,7 +168,7 @@ const CountCardSkeleton = ({
       <div className="text-p1 text-text-text-and-icon">{title}</div>
       <div className="flex gap-3 items-center">
         <div className="h-6 w-6 shrink-0 text-text-text-and-icon">{icon}</div>
-        <div className="h-9 w-12 dark:bg-accent-accent bg-df-gray-200 opacity-30 rounded" />
+        <div className="h-9 w-12 dark:bg-accent-accent bg-bg-grid-border opacity-30 rounded" />
       </div>
     </DFLink>
   );

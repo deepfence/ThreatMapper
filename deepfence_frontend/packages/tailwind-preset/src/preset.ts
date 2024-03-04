@@ -256,11 +256,11 @@ const colors = {
       'brand-error': '#f56682',
 
       /** In the dark theme, these are referring to some other dark theme colors */
-      'severity-critical': '#E0516D',
+      'severity-critical': '#f56682',
       'severity-high': '#FF7C02',
-      'severity-medium': '#FFA442',
+      'severity-medium': '#ff9c32',
       'severity-low': '#E5C354',
-      'severity-unknown': '#61717D',
+      'severity-unknown': '#9CA3AF',
 
       /** following are just copied over from light theme, as
        * in dark theme they are not used. acts as a placeholder.
