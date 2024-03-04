@@ -150,11 +150,11 @@ export const RegistryImagesTable = ({
         },
         minSize: 50,
       }),
-      columnHelper.accessor('tags', {
+      columnHelper.accessor('images', {
         enableSorting: false,
-        header: () => 'Total Tags',
+        header: () => 'Total Images',
         // count tags
-        cell: (info) => info.getValue()?.length,
+        cell: (info) => info.getValue(),
         maxSize: 50,
       }),
     ],
