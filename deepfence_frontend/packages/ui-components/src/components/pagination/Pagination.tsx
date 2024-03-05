@@ -38,7 +38,7 @@ const PageButton = ({
     <button
       className={cn(
         // we donot want border to be overlap so we use border right here
-        'flex justify-center items-center text-p7 bg-bg-card',
+        'flex justify-center items-center text-p7a bg-bg-card',
         'px-3 py-[5px] border-r border-y border-bg-grid-border',
         'text-text-icon overflow-hidden',
         'hover:text-text-input-value',

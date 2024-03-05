@@ -47,14 +47,14 @@ export function getColorForCompliancePercent(
 ): string {
   const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
   if (percent === undefined || percent === null) {
-    return theme === 'dark' ? color['df-gray']['600'] : color['df-gray']['400'];
+    return color['severity-unknown'];
   }
   if (percent >= 80 && percent <= 100) {
-    return color['status-success'];
+    return color['btn-green'];
   } else if (percent >= 30 && percent < 80) {
     return color['status-warning'];
   } else if (percent < 30) {
     return color['status-error'];
   }
-  return theme === 'dark' ? color['df-gray']['600'] : color['df-gray']['400'];
+  return color['severity-unknown'];
 }

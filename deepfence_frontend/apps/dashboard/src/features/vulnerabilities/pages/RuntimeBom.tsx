@@ -28,6 +28,7 @@ import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { SbomModal } from '@/features/vulnerabilities/components/SBOMModal';
 import { queries } from '@/queries';
@@ -166,7 +167,7 @@ const Filters = () => {
 
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['nodeType']}
@@ -349,7 +350,7 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 

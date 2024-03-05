@@ -330,7 +330,7 @@ const preset = {
           '30px',
           {
             lineHeight: '36px',
-            fontWeight: '600',
+            fontWeight: '700',
           },
         ],
         h2: [
@@ -351,7 +351,7 @@ const preset = {
           '16px',
           {
             lineHeight: '24px',
-            fontWeight: '400',
+            fontWeight: '500',
           },
         ],
         h5: [
@@ -368,28 +368,42 @@ const preset = {
             fontWeight: '600',
           },
         ],
-        p1: [
+        p1a: [
           '14px',
           {
             lineHeight: '24px',
             fontWeight: '400',
+          },
+        ],
+        p1: [
+          '14px',
+          {
+            lineHeight: '24px',
+            fontWeight: '500',
           },
         ],
         p2: [
           '14px',
           {
             lineHeight: '24px',
-            fontWeight: '400',
+            fontWeight: '500',
           },
         ],
         p3: [
-          '13px',
+          '14px',
           {
             lineHeight: '18px',
             fontWeight: '700',
           },
         ],
         p4: [
+          '13px',
+          {
+            lineHeight: '18px',
+            fontWeight: '500',
+          },
+        ],
+        p4a: [
           '13px',
           {
             lineHeight: '18px',
@@ -400,7 +414,7 @@ const preset = {
           '13px',
           {
             lineHeight: '18px',
-            fontWeight: '400',
+            fontWeight: '500',
           },
         ],
         p6: [
@@ -411,6 +425,13 @@ const preset = {
           },
         ],
         p7: [
+          '12px',
+          {
+            lineHeight: '24px',
+            fontWeight: '500',
+          },
+        ],
+        p7a: [
           '12px',
           {
             lineHeight: '18px',
@@ -428,21 +449,42 @@ const preset = {
           '10px',
           {
             lineHeight: '13px',
-            fontWeight: '400',
+            fontWeight: '600',
+          },
+        ],
+        p10: [
+          '13px',
+          {
+            lineHeight: '18px',
+            fontWeight: '300',
           },
         ],
         p11: [
           '13px',
           {
             lineHeight: '18px',
-            fontWeight: '600',
+            fontWeight: '700',
+          },
+        ],
+        p12: [
+          '15px',
+          {
+            lineHeight: '24px',
+            fontWeight: '400',
+          },
+        ],
+        p13: [
+          '15px',
+          {
+            lineHeight: '24px',
+            fontWeight: '500',
           },
         ],
         t1: [
           '12px',
           {
             lineHeight: '16px',
-            fontWeight: '800',
+            fontWeight: '700',
             letterSpacing: '0.1em',
           },
         ],
@@ -451,14 +493,14 @@ const preset = {
           {
             lineHeight: '16px',
             fontWeight: '700',
-            letterSpacing: '0.1em',
+            letterSpacing: '0.08em',
           },
         ],
         t3: [
           '11px',
           {
             lineHeight: '16px',
-            fontWeight: '800',
+            fontWeight: '700',
             letterSpacing: '0.1em',
           },
         ],
@@ -466,7 +508,7 @@ const preset = {
           '11px',
           {
             lineHeight: '16px',
-            fontWeight: '600',
+            fontWeight: '700',
             letterSpacing: '0.05em',
           },
         ],
@@ -474,7 +516,7 @@ const preset = {
           '10px',
           {
             lineHeight: '16px',
-            fontWeight: '600',
+            fontWeight: '700',
             letterSpacing: '0.05em',
           },
         ],

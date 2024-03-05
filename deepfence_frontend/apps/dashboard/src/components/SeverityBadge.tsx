@@ -22,14 +22,14 @@ export const SeverityBadge = ({
   return (
     <div
       className={cn(
-        'flex items-center capitalize justify-center font-semibold leading-4 text-[11px] dark:text-text-text-inverse text-text-text-inverse py-0.5 max-w-[62px] min-w-[62px]',
+        'flex items-center capitalize justify-center font-semibold leading-4 text-[11px] text-text-text-inverse py-0.5 max-w-[62px] min-w-[62px]',
         ' rounded-[5px]',
         {
-          'bg-status-error': severity === 'critical',
-          'bg-chart-orange text-text-input-value': severity === 'high',
-          'bg-status-warning text-text-input-value': severity === 'medium',
-          'bg-chart-yellow1 text-text-input-value': severity === 'low',
-          'dark:bg-df-gray-500 bg-df-gray-600': !severity || severity === 'unknown',
+          'bg-severity-critical': severity === 'critical',
+          'bg-severity-high': severity === 'high',
+          'bg-severity-medium': severity === 'medium',
+          'bg-severity-low': severity === 'low',
+          'bg-severity-unknown': !severity || severity === 'unknown',
         },
         className,
       )}
@@ -105,7 +105,7 @@ export const SeverityLegend = ({
   return (
     <div
       className={cn(
-        'flex items-center gap-2 flex-nowrap text-p7 text-text-text-and-icon capitalize',
+        'flex items-center gap-2 flex-nowrap text-p7 text-text-icon capitalize',
         className,
       )}
     >
@@ -113,12 +113,11 @@ export const SeverityLegend = ({
         className={cn(
           'rounded-full h-3 w-3 shrink-0',
           {
-            'bg-status-error': severity === 'critical',
-            'bg-chart-orange text-text-input-value': severity === 'high',
-            'bg-status-warning text-text-input-value': severity === 'medium',
-            'bg-chart-yellow1 text-text-input-value': severity === 'low',
-            'dark:bg-df-gray-500 bg-df-gray-600 text-text-input-value':
-              !severity || severity === 'unknown',
+            'bg-severity-critical': severity === 'critical',
+            'bg-severity-high': severity === 'high',
+            'bg-severity-medium': severity === 'medium',
+            'bg-severity-low': severity === 'low',
+            'bg-severity-unknown': !severity || severity === 'unknown',
           },
           iconClassName,
         )}

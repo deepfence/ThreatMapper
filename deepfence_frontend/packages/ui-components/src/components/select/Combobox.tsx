@@ -173,7 +173,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           'border border-bg-grid-border rounded-[5px]',
                           // bg
                           'bg-bg-card dark:hover:bg-bg-active-selection hover:bg-bg-breadcrumb-bar',
-                          'text-p7 text-text-text-and-icon',
+                          'text-p7a text-text-text-and-icon',
                           'py-[7px] px-3',
                           {
                             'border-bg-hover-3 dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value':
@@ -273,7 +273,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           <div
                             className={cn(
                               'max-h-60 w-full select-none',
-                              'text-p7',
+                              'text-p4a',
                               'overflow-auto',
                               'focus:visible:outline-none',
                               'text-text-text-and-icon',
@@ -358,11 +358,11 @@ export function ComboboxOption<TType>({
           'relative select-none',
           'pt-1.5 pb-1.5 px-3',
           'flex gap-1.5',
-          'cursor-pointer',
+          'cursor-pointer text-p4a',
           'dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar',
           {
-            'dark:bg-bg-grid-header bg-bg-breadcrumb-bar': active,
-            'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value':
+            'dark:bg-bg-grid-header bg-bg-breadcrumb-bar text-p4a': active,
+            'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value text-p4a':
               selected,
           },
         );

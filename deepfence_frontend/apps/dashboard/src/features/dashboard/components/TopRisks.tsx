@@ -119,7 +119,7 @@ const TopRisksContent = ({
                 className="text-p4"
                 to={`${to}?severity=${severity}`}
               />
-              <div className="text-text-input-value text-p7">
+              <div className="text-text-input-value text-p11">
                 {abbreviateNumber(
                   data.severityBreakdown[severity as keyof typeof data.severityBreakdown],
                 )}

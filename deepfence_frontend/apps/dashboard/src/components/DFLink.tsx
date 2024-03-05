@@ -3,7 +3,7 @@ import { Link, LinkProps } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 
 const baseClassName =
-  'text-accent-accent dark:text-text-link hover:underline focus:underline visited:text-accent-accent dark:visited:text-text-link';
+  'text-text-link hover:underline focus:underline visited:text-text-link';
 
 type AnchorProps = React.ComponentPropsWithRef<'a'> & {
   unstyled?: boolean;
