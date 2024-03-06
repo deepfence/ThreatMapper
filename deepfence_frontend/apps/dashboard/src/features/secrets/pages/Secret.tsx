@@ -12,13 +12,18 @@ import {
   UniqueSecretsCountsCard,
 } from '@/features/secrets/components/landing/SecretsCountsCard';
 import { TopNSecretCard } from '@/features/secrets/components/landing/TopNSecretCard';
+import { THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
 
 const Secret = () => {
+  const { mode } = useTheme();
   return (
     <div>
       <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4 flex items-center">
         <Breadcrumb>
-          <BreadcrumbLink icon={<SecretsIcon />} className="text-text-input-value">
+          <BreadcrumbLink
+            icon={<SecretsIcon />}
+            className="text-text-input-value leading-[30px]"
+          >
             Secrets
           </BreadcrumbLink>
         </Breadcrumb>
@@ -59,13 +64,22 @@ const Secret = () => {
           <MostExploitableSecretsCountsCard />
         </div>
         <div className="col-span-6">
-          <Card className="rounded min-h-[450px] flex flex-col">
+          <Card className="rounded min-h-[380px] flex flex-col">
             <CardHeader
               icon={<ThreatGraphIcon />}
               title={'Top Attack Paths'}
               path={'/threatgraph'}
             />
-            <div className="flex-1 flex gap-2 items-center justify-center p-6 text-text-text-and-icon">
+            <div
+              className="flex-1 flex gap-2 items-center justify-center p-6 text-text-text-and-icon"
+              style={{
+                mixBlendMode: mode === THEME_LIGHT ? 'multiply' : 'normal',
+                background:
+                  mode === 'dark'
+                    ? 'linear-gradient(0deg, rgba(22, 37, 59, 0.6), rgba(22, 37, 59, 0.6)), radial-gradient(48.55% 48.55% at 50.04% 51.45%, rgba(27, 47, 77, 0.35) 0%, #020617 100%)'
+                    : 'radial-gradient(96.81% 77.58% at 50.04% 50%, rgba(247, 247, 247, 0.50) 8.84%, rgba(180, 193, 219, 0.50) 94.89%)',
+              }}
+            >
               <div className="h-6 w-6 shrink-0">
                 <ErrorStandardLineIcon />
               </div>

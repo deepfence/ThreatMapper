@@ -53,14 +53,14 @@ import { TimesIcon } from '@/components/icons/common/Times';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
+import { SeverityBadgeIcon } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { TruncatedText } from '@/components/TruncatedText';
-import { getSeverityColorMap } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
-import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -410,7 +410,7 @@ const Filters = () => {
 
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['nodeType']}
@@ -659,7 +659,7 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 
@@ -672,7 +672,6 @@ const ScansTable = ({
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
   onTableAction: (row: ModelScanInfo, actionType: ActionEnumType) => void;
 }) => {
-  const { mode } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = useSuspenseQuery({
     ...queries.secret.scanList({
@@ -806,12 +805,7 @@ const ScansTable = ({
           params.set('severity', 'critical');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{
-                  backgroundColor: getSeverityColorMap(mode)['critical'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="critical" />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -837,12 +831,7 @@ const ScansTable = ({
           params.set('severity', 'high');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{
-                  backgroundColor: getSeverityColorMap(mode)['high'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="high" />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -868,12 +857,7 @@ const ScansTable = ({
           params.set('severity', 'medium');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{
-                  backgroundColor: getSeverityColorMap(mode)['medium'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="medium" />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -899,12 +883,7 @@ const ScansTable = ({
           params.set('severity', 'low');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-2 h-2 rounded-full shrink-0"
-                style={{
-                  backgroundColor: getSeverityColorMap(mode)['low'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="low" />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -930,12 +909,7 @@ const ScansTable = ({
           params.set('severity', 'unknown');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{
-                  backgroundColor: getSeverityColorMap(mode)['unknown'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="unknown" />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -1280,7 +1254,7 @@ const SecretScans = () => {
           />
         ) : null}
       </>
-      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4 flex items-center">
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<SecretsIcon />} isLink>
             <DFLink to={'/secret'} unstyled>

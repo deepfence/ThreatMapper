@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { capitalize, keys } from 'lodash-es';
+import { capitalize, keys, upperFirst } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
@@ -10,6 +10,7 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { toast } from 'sonner';
+import { cn } from 'tailwind-preset';
 import {
   Badge,
   Breadcrumb,
@@ -67,16 +68,17 @@ import {
   ScanStatusStopped,
   ScanStatusStopping,
 } from '@/components/ScanStatusMessage';
-import { SeverityBadge } from '@/components/SeverityBadge';
+import { SeverityBadgeIcon } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { TruncatedText } from '@/components/TruncatedText';
 import { getSeverityColorMap } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { SecretScanResultsPieChart } from '@/features/secrets/components/scan-results/SecretScanResultsPieChart';
 import { SecretsCompare } from '@/features/secrets/components/scan-results/SecretsCompare';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
-import { useTheme } from '@/theme/ThemeContext';
+import { THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -1190,7 +1192,7 @@ const Filters = () => {
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['visibility']}
@@ -1315,7 +1317,7 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 const TablePlaceholder = ({
@@ -1453,7 +1455,12 @@ const SecretTable = ({
         maxSize: 165,
       }),
       columnHelper.accessor('level', {
-        cell: (info) => <SeverityBadge severity={info.getValue()} />,
+        cell: (info) => (
+          <div className="text-p4 text-text-text-and-icon gap-1 inline-flex">
+            <SeverityBadgeIcon severity={info.getValue()} />
+            {upperFirst(info.getValue())}
+          </div>
+        ),
         header: () => 'Severity',
         minSize: 30,
         size: 50,
@@ -1690,15 +1697,17 @@ const ScanResults = () => {
         </div>
       </div>
       {filtersExpanded ? <Filters /> : null}
-      <Suspense fallback={<TableSkeleton columns={7} rows={10} />}>
-        <SecretTable
-          onTableAction={onTableAction}
-          setShowDeleteDialog={setShowDeleteDialog}
-          setIdsToDelete={setIdsToDelete}
-          rowSelectionState={rowSelectionState}
-          setRowSelectionState={setRowSelectionState}
-        />
-      </Suspense>
+      <div className="dark:shadow-none shadow-md">
+        <Suspense fallback={<TableSkeleton columns={7} rows={10} />}>
+          <SecretTable
+            onTableAction={onTableAction}
+            setShowDeleteDialog={setShowDeleteDialog}
+            setIdsToDelete={setIdsToDelete}
+            rowSelectionState={rowSelectionState}
+            setRowSelectionState={setRowSelectionState}
+          />
+        </Suspense>
+      </div>
       {showDeleteDialog && (
         <DeleteConfirmationModal
           showDialog={showDeleteDialog}
@@ -1727,7 +1736,7 @@ const SeverityCounts = ({
     <>
       {Object.keys(severityCounts)?.map((key) => {
         return (
-          <div className="flex gap-2 w-full py-[3px] items-center" key={key}>
+          <div className="flex gap-x-2 w-full gap-y-1 items-center" key={key}>
             <div
               className="h-3 w-3 rounded-full"
               style={{
@@ -1736,7 +1745,7 @@ const SeverityCounts = ({
               }}
             ></div>
             <button
-              className="capitalize text-p7 text-text-text-and-icon"
+              className="capitalize text-p7 text-text-icon"
               onClick={() => {
                 setSearchParams((prev) => {
                   prev.delete('page');
@@ -1750,7 +1759,7 @@ const SeverityCounts = ({
             >
               {key}
             </button>
-            <div className="ml-auto text-p7 text-text-input-value">
+            <div className="ml-auto text-p11 text-text-input-value">
               {abbreviateNumber(severityCounts?.[key] ?? 0)}
             </div>
           </div>
@@ -1881,25 +1890,37 @@ const Top5Widget = () => {
           {data.data?.map?.((secret) => {
             return (
               <tr key={secret.node_id}>
-                <td className="w-[70%] px-0 pt-0 pb-2">
+                <td className="w-[80%] px-0 pt-0 pb-2 inline-flex gap-x-[5px] items-center">
+                  <div
+                    className={cn('w-[3px] h-[18px] shrink-0', {
+                      'bg-severity-critical': secret.level === 'critical',
+                      'bg-severity-high': secret.level === 'high',
+                      'bg-severity-medium': secret.level === 'medium',
+                      'bg-severity-low': secret.level === 'low',
+                      'bg-severity-unknown': !secret.level || secret.level === 'unknown',
+                    })}
+                  ></div>
+                  <div className="w-[14px] h-[14px] shrink-0">
+                    <SecretsIcon />
+                  </div>
                   <DFLink
                     to={{
                       pathname: `./${encodeURIComponent(secret.node_id)}`,
                       search: searchParams.toString(),
                     }}
-                    className="flex items-center gap-3"
+                    className="flex items-center gap-3 min-w-0"
                   >
-                    <div className="w-[14px] h-[14px] shrink-0">
-                      <SecretsIcon />
-                    </div>
                     <div className="text-p7 truncate">
                       <TruncatedText text={secret.node_id} />
                     </div>
                   </DFLink>
                 </td>
-                <td className="w-[30%] px-0 pt-0 pb-2">
-                  <div className="flex items-center justify-end">
-                    <SeverityBadge severity={secret.level} />
+                <td className="w-[20%] px-0 pt-0 pb-2">
+                  <div className="flex items-center justify-center gap-1">
+                    <SeverityBadgeIcon severity={secret.level} />
+                    <span className="text-p4 text-text-text-and-icon">
+                      {upperFirst(secret.level)}
+                    </span>
                   </div>
                 </td>
               </tr>
@@ -1911,12 +1932,22 @@ const Top5Widget = () => {
   );
 };
 const TopAttackPath = () => {
+  const { mode } = useTheme();
   const { data: scanResult } = useScanResults();
   const { scanStatusResult } = scanResult;
 
   return (
     <ScanStatusWrapper scanStatusResult={scanStatusResult}>
-      <ScanStatusNoData />
+      <div
+        className={cn(
+          'h-full w-full relative select-none flex items-center justify-center',
+          {
+            'bg-[#F5F5F5]/50': mode === THEME_LIGHT,
+          },
+        )}
+      >
+        <ScanStatusNoData />
+      </div>
     </ScanStatusWrapper>
   );
 };
