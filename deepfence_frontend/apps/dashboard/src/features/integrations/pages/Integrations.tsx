@@ -188,8 +188,8 @@ const Count = ({
     .length;
   return (
     <div className="flex items-center gap-x-2 mt-1">
-      <span className="text-h1 text-text-input-value">{len}</span>
-      <span className="text-p4 text-text-text-and-icon">
+      <span className="text-h2 text-text-input-value">{len}</span>
+      <span className="text-p7 text-text-text-and-icon">
         {`Connection${len && len > 1 ? 's' : ''}`}
       </span>
     </div>
@@ -219,10 +219,16 @@ const IntegrationTypes = ({ integration }: { integration: IIntegrationType }) =>
     <div className="mt-2 flex flex-wrap gap-4">
       {integration?.types?.map((type) => {
         return (
-          <DFLink to={type.path} unstyled key={type.name} data-testid={`${type.id}Id`}>
-            <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-bg-hover-3 dark:hover:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:shadow-[0px_0px_6px_1px_#044AFF] dark:focus:ring-1 cursor-pointer">
+          <DFLink
+            to={type.path}
+            unstyled
+            key={type.name}
+            data-testid={`${type.id}Id`}
+            className="hover:shadow-[0px_0px_6px_1px_#044AFF] focus:shadow-[0px_0px_6px_1px_#044AFF] cursor-pointer rounded-[5px]"
+          >
+            <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-1 dark:focus:ring-bg-hover-3 hover:border-bg-hover-3 focus:border-bg-hover-3">
               <div className="flex items-center gap-x-4">
-                <div className="dark:bg-bg-grid-default bg-bg-hover-2 rounded-full p-3 flex justify-center items-center">
+                <div className="dark:bg-bg-grid-default bg-df-gray-100 rounded-full p-3 flex justify-center items-center">
                   <span className="h-9 w-9">{type.icon}</span>
                 </div>
                 <CardContent type={type} data={data} />
@@ -260,7 +266,7 @@ const Skeleton = ({ count }: { count: number }) => {
 const Integrations = () => {
   return (
     <>
-      <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4">
+      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none">
         <Breadcrumb>
           <BreadcrumbLink icon={<IntegrationsIcon />} className="text-text-input-value">
             Integrations
@@ -272,7 +278,9 @@ const Integrations = () => {
         {IntegrationsData.map((integration, index) => {
           return (
             <section key={integration.name} className="flex flex-col">
-              <h2 className="text-t3 text-text-input-value">{integration.name}</h2>
+              <h2 className="text-t3 dark:text-text-input-value text-text-text-and-icon">
+                {integration.name}
+              </h2>
               <Suspense
                 fallback={<Skeleton count={IntegrationsData[index].types.length} />}
               >
@@ -294,7 +302,7 @@ const ReportCount = () => {
 
   return (
     <div className="flex gap-x-2 items-center">
-      <span className="text-h1 dark:text-text-input-value" data-testid="reportCountId">
+      <span className="text-h2 dark:text-text-input-value" data-testid="reportCountId">
         {reportCount}
       </span>
 
@@ -308,20 +316,24 @@ const DownloadReport = () => {
 
   return (
     <div>
-      <h2 className="text-t3 text-text-input-value">Download reports</h2>
+      <h2 className="text-t3 dark:text-text-input-value text-text-text-and-icon">
+        Download reports
+      </h2>
       <div className="mt-2 flex gap-x-4 items-center">
         <div className="flex flex-col w-fit min-w-[208px]" data-testid="reportWrapperId">
-          <DFLink to={'/integrations/download/report'} className="h-[84px]" unstyled>
+          <DFLink
+            to={'/integrations/download/report'}
+            className="h-[84px] hover:shadow-[0px_0px_6px_1px_#044AFF] focus:shadow-[0px_0px_6px_1px_#044AFF] cursor-pointer rounded-[5px]"
+            unstyled
+          >
             <Card
               className={cn(
                 'p-3 flex shrink-0 items-center h-full gap-x-4',
                 'text-text-text-and-icon',
-                'hover:ring-bg-hover-3 hover:ring-1',
-                'focus:ring-bg-hover-3 focus:ring-1 cursor-pointer',
-                'hover:shadow-[0px_0px_6px_1px_#044AFF] focus:shadow-[0px_0px_6px_1px_#044AFF]',
+                'ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-1 dark:focus:ring-bg-hover-3 hover:border-bg-hover-3 focus:border-bg-hover-3',
               )}
             >
-              <div className="bg-bg-grid-default bg-bg-hover-2 rounded-full p-3 flex justify-center items-center">
+              <div className="dark:bg-bg-grid-default bg-df-gray-100 rounded-full p-3 flex justify-center items-center">
                 <span className="h-9 w-9">
                   <DownloadReportIcon />
                 </span>
@@ -393,24 +405,28 @@ const AIIntegrations = () => {
       {AI_INTEGRATION_TYPES.map((type) => {
         const count = groupedData[type.type] ?? 0;
         return (
-          <DFLink to="/integrations/gen-ai" unstyled key={type.type}>
+          <DFLink
+            to="/integrations/gen-ai"
+            unstyled
+            key={type.type}
+            className="hover:shadow-[0px_0px_6px_1px_#044AFF] focus:shadow-[0px_0px_6px_1px_#044AFF] cursor-pointer rounded-[5px]"
+          >
             <Card
               className={cn(
-                'p-3 flex flex-col shrink-0 min-w-[208px] ring-inset',
-                'hover:ring-bg-hover-3 hover:ring-1 hover:shadow-[0px_0px_6px_1px_#044AFF]',
-                'focus:ring-bg-hover-3 focus:shadow-[0px_0px_6px_1px_#044AFF] focus:ring-1 cursor-pointer',
+                'p-3 flex flex-col shrink-0 min-w-[208px] ',
+                'ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-1 dark:focus:ring-bg-hover-3 hover:border-bg-hover-3 focus:border-bg-hover-3',
               )}
             >
               <div className="flex items-center gap-x-6">
-                <div className="dark:bg-bg-grid-default bg-bg-hover-2 rounded-full p-3 flex justify-center items-center">
+                <div className="dark:bg-bg-grid-default bg-df-gray-100 rounded-full p-3 flex justify-center items-center">
                   <span className="h-9 w-9">{type.icon}</span>
                 </div>
                 <div className="flex flex-col">
                   <h4 className="text-h6 text-text-input-value">{type.label}</h4>
 
-                  <div className="flex items-center gap-x-2 mt-2">
-                    <span className="text-h1 text-text-input-value">{count}</span>
-                    <span className="text-p4 text-text-text-and-icon">
+                  <div className="flex items-center gap-x-2 mt-1">
+                    <span className="text-h2 text-text-input-value">{count}</span>
+                    <span className="text-p7 text-text-text-and-icon">
                       {`Connection`}
                     </span>
                   </div>
@@ -427,8 +443,8 @@ const AIIntegrations = () => {
 const ThreatRx = () => {
   return (
     <section className="flex flex-col">
-      <h2 className="flex items-center gap-2 text-h5 animate-text-gradient text-transparent bg-gradient-to-r from-pink-400 via-orange-400 to-fuchsia-300 bg-clip-text">
-        <div className="h-4 w-4 dark:text-orange-400 text-orange-500">
+      <h2 className="flex items-center gap-2 text-h5 animate-text-gradient text-transparent bg-gradient-to-r dark:from-pink-400 dark:via-orange-400 dark:to-fuchsia-300 from-pink-600 via-orange-700 to-fuchsia-600 bg-clip-text">
+        <div className="h-4 w-4 dark:text-orange-400 text-orange-700">
           <SparkleLineIcon />
         </div>
         ThreatRx

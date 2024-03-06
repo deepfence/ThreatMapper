@@ -94,8 +94,8 @@ const CardSkeleton = ({ count }: { count: number }) => {
 const CardHeader = ({ name }: { name: string }) => {
   return (
     <div className="flex items-center w-full relative">
-      <div className="bg-bg-grid-default bg-bg-hover-2 absolute -top-[34px] left-[12px] rounded-full p-3">
-        <span className="w-10 h-10 block">
+      <div className="dark:bg-bg-grid-default bg-df-gray-100 border-[1px] dark:border-bg-grid-default border-df-gray-300 absolute -top-[34px] left-[12px] rounded-full p-3">
+        <span className="w-[38px] h-[38px] block">
           <PostureLogos name={name} />
         </span>
       </div>
@@ -147,7 +147,7 @@ const CardIconSection = ({ provider }: { provider: ModelPostureProvider }) => {
 };
 
 const CardCountSection = ({ provider }: { provider: ModelPostureProvider }) => {
-  const textStyle = 'text-p7 leading-6 text-text-text-and-icon min-w-[120px]';
+  const textStyle = 'text-p7a leading-6 text-text-text-and-icon min-w-[120px]';
   const countStyle = 'text-h3 text-text-input-value';
   return (
     <div className="ml-[42px]">
@@ -210,7 +210,7 @@ const PostureCard = ({ provider }: { provider: ModelPostureProvider }) => {
   return (
     <Card
       className={cn(
-        'relative group pt-2 pb-3 flex flex-col bg-bg-card hover:shadow-[0px_0px_6px_1px_#044AFF]',
+        'relative group pt-2 pb-4 flex flex-col bg-bg-card hover:shadow-[0px_0px_6px_1px_#044AFF]',
         'hover:outline outline-2 outline-bg-hover-3',
         "before:content-none hover:before:content-[''] before:w-[68px] before:h-[68px]",
         'before:bg-bg-hover-3 before:shadow-[0px_0px_7px_-1px_#044AFF] before:absolute before:-top-[28px]',
@@ -219,7 +219,7 @@ const PostureCard = ({ provider }: { provider: ModelPostureProvider }) => {
     >
       <DFLink to={`/posture/accounts/${provider.name}`} unstyled>
         <CardHeader name={provider.name || ''} />
-        <div className="mt-6 mb-2 flex w-[322px]">
+        <div className="mt-4 flex w-[322px]">
           <CardIconSection provider={provider} />
           <CardCountSection provider={provider} />
         </div>
@@ -269,7 +269,7 @@ const PosturenNonCloudList = () => {
 const Posture = () => {
   return (
     <>
-      <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4">
+      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none">
         <Breadcrumb>
           <BreadcrumbLink icon={<PostureIcon />} className="text-text-input-value">
             Posture

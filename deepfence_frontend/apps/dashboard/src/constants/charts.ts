@@ -50,9 +50,9 @@ export function getColorForCompliancePercent(
     return color['severity-unknown'];
   }
   if (percent >= 80 && percent <= 100) {
-    return color['btn-green'];
+    return color['status-success'];
   } else if (percent >= 30 && percent < 80) {
-    return color['status-warning'];
+    return color['severity-medium'];
   } else if (percent < 30) {
     return color['status-error'];
   }

@@ -20,29 +20,29 @@ const RegistrySkeleton = () => {
     <>
       {Array.from(Array(9).keys()).map((k) => (
         <Card
-          className="p-2 animate-pulse pb-3 flex flex-col bg-bg-card min-w-[322px]"
+          className="py-3 px-4 animate-pulse flex flex-col bg-bg-card min-w-[322px]"
           key={k}
         >
           <div className="flex items-center w-full relative">
-            <div className="bg-bg-grid-border absolute -top-[34px] left-[12px] rounded-full">
-              <div className="w-[68px] h-[68px]"></div>
+            <div className="bg-bg-grid-border absolute -top-[45px] left-[6px] rounded-full">
+              <div className="w-[74px] h-[74px]"></div>
             </div>
             <div className="ml-[102px]">
               <div className="h-4 w-20 bg-bg-grid-border rounded"></div>
             </div>
           </div>
-          <div className="flex mt-8 gap-x-[48px] justify-center items-center w-[322px]">
+          <div className="flex mt-6 gap-x-[48px] justify-center items-center w-[322px]">
             <div className="flex flex-col justify-center text-p4 text-text-text-and-icon gap-y-4">
-              <div className="h-2 w-14 bg-bg-grid-border rounded"></div>
               <div className="h-6 w-4 bg-bg-grid-border rounded"></div>
+              <div className="h-2 w-14 bg-bg-grid-border rounded"></div>
             </div>
             <div className="flex flex-col justify-center text-p4 text-text-text-and-icon gap-y-4">
-              <div className="h-2 w-14 bg-bg-grid-border rounded"></div>
               <div className="h-6 w-4 bg-bg-grid-border rounded"></div>
+              <div className="h-2 w-14 bg-bg-grid-border rounded"></div>
             </div>
             <div className="flex flex-col justify-center text-p4 text-text-text-and-icon gap-y-4">
-              <div className="h-2 w-14 bg-bg-grid-border rounded"></div>
               <div className="h-6 w-4 bg-bg-grid-border rounded"></div>
+              <div className="h-2 w-14 bg-bg-grid-border rounded"></div>
             </div>
           </div>
         </Card>
@@ -56,13 +56,13 @@ const CardHeader = ({ registry }: { registry: RegistryResponseType }) => {
 
   return (
     <div className="flex items-center w-full relative">
-      <div className="dark:bg-bg-grid-default bg-bg-hover-2 absolute -top-[34px] left-[12px] rounded-full p-3">
+      <div className="dark:bg-bg-grid-default bg-df-gray-100 border-[1px] dark:border-bg-grid-default border-df-gray-300 absolute -top-[48px] left-[4px] rounded-full p-4">
         <RegistryLogos
           registryType={registry.type as unknown as keyof typeof RegistryType}
         />
       </div>
 
-      <span className="ml-[102px] flex items-center gap-2 text-t4 uppercase text-text-input-value pt-1">
+      <span className="ml-[102px] flex items-center gap-2 text-t4 uppercase text-text-input-value">
         {name}
       </span>
     </div>
@@ -74,30 +74,30 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
     <DFLink className="flex flex-col" to={`/registries/${registry.type}`} unstyled>
       <Card
         className={cn(
-          'relative group p-2 pb-3 flex flex-col',
+          'relative group py-3 px-4 flex flex-col',
           'bg-bg-card hover:outline outline-2 outline-bg-hover-3 hover:shadow-[0px_0px_6px_1px_#044AFF]',
-          "before:content-none hover:before:content-[''] before:w-[68px] before:h-[68px]",
-          'before:bg-bg-hover-3 before:hover:shadow-[0px_0px_7px_-1px_#044AFF] before:absolute before:-top-[28px]',
+          "before:content-none hover:before:content-[''] before:w-[78px] before:h-[78px]",
+          'before:bg-bg-hover-3 before:hover:shadow-[0px_0px_7px_-1px_#044AFF] before:absolute before:-top-[38px]',
           'before:left-[18px] before:rounded-full before:-z-10 cursor-pointer',
         )}
         key={registry.type}
       >
         <CardHeader registry={registry} />
-        <div className="flex mt-6 gap-x-[48px] justify-center items-center w-[322px]">
-          <div className="flex flex-col justify-center text-p4 text-text-text-and-icon">
-            <span className="text-h1 text-text-input-value">
+        <div className="flex mt-4 gap-x-[48px] justify-center items-center w-[322px]">
+          <div className="flex flex-col justify-center text-p4a text-text-text-and-icon">
+            <span className="text-h1 dark:text-text-input-value text-text-text-and-icon">
               {abbreviateNumber(registry.registries ?? 0)}
             </span>
             Registries
           </div>
-          <div className="flex flex-col justify-center text-p4 text-text-text-and-icon">
-            <span className="text-h1 text-text-input-value">
+          <div className="flex flex-col justify-center text-p4a text-text-text-and-icon">
+            <span className="text-h1 dark:text-text-input-value text-text-text-and-icon">
               {abbreviateNumber(registry.images ?? 0)}
             </span>
             Images
           </div>
-          <div className="flex flex-col justify-center text-p4 text-text-text-and-icon">
-            <span className="text-h1 text-text-input-value">
+          <div className="flex flex-col justify-center text-p4a text-text-text-and-icon">
+            <span className="text-h1 dark:text-text-input-value text-text-text-and-icon">
               {abbreviateNumber(registry.tags ?? 0)}
             </span>
             Tags
@@ -124,7 +124,7 @@ const RegistryList = () => {
 const Registries = () => {
   return (
     <>
-      <div className="bg-bg-breadcrumb-bar bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4">
+      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none">
         <Breadcrumb>
           <BreadcrumbLink icon={<RegistryIcon />} className="text-text-input-value">
             Registries
@@ -133,12 +133,12 @@ const Registries = () => {
       </div>
       <Suspense
         fallback={
-          <div className="mx-4 my-10 flex gap-x-4 gap-y-10 flex-wrap">
+          <div className="mx-4 my-14 flex gap-x-4 gap-y-14 flex-wrap">
             <RegistrySkeleton />
           </div>
         }
       >
-        <div className="mx-4 my-10 flex gap-x-4 gap-y-10 flex-wrap">
+        <div className="mx-4 my-14 flex gap-x-4 gap-y-14 flex-wrap">
           <RegistryList />
         </div>
       </Suspense>
