@@ -48,7 +48,7 @@ export const TableSkeleton: React.FC<TableSkeletonProps> = ({
   <div
     className={cn(
       `overflow-x-auto overflow-y-hidden`,
-      `rounded-[5px] dark:border dark:border-bg-grid-border`,
+      `rounded-[5px] border border-bg-grid-border`,
       className,
     )}
     data-testid={'tableSkeletonWrapperId'}

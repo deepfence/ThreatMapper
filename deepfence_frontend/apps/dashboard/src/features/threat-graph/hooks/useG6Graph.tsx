@@ -6,29 +6,30 @@ import { colors, preset } from 'tailwind-preset';
 
 import { g6Toolbar } from '@/components/graph/plugin';
 import { G6Graph, G6GraphOptionsWithoutContainer } from '@/features/topology/types/graph';
-import { Mode, useTheme } from '@/theme/ThemeContext';
+import { Mode, THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
 
 const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
-  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
+  const isLightTheme = theme === THEME_LIGHT;
+  const color = colors[isLightTheme ? 'variables' : 'darkVariables'].DEFAULT;
 
   if (!active) {
     return {
       offset: 50,
       radius: 20,
       lineWidth: 1.5,
-      stroke: color['brand-blue'],
+      stroke: isLightTheme ? color['text-link'] : color['brand-blue'],
       endArrow: {
         path: G6.Arrow.triangle(4, 5, 8),
         d: 10,
-        fill: color['brand-blue'],
-        stroke: color['brand-blue'],
+        fill: isLightTheme ? color['text-link'] : color['brand-blue'],
+        stroke: isLightTheme ? color['text-link'] : color['brand-blue'],
       },
     };
   }
   return {
     lineWidth: 1.5,
     shadowBlur: 14,
-    shadowColor: color['brand-error'],
+    shadowColor: isLightTheme ? '#FF214C' : color['brand-error'],
     stroke: color['brand-error'],
     endArrow: {
       path: G6.Arrow.triangle(4, 5, 8),
@@ -67,13 +68,13 @@ const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => 
       fill: color['text-text-and-icon'],
       fontFamily: preset.theme.extend.fontFamily.body.join(','),
       fontSize: 13,
-      fontWeight: 300,
+      fontWeight: 500,
       background: getLabelBgStyles({ active, theme }),
     };
   }
 
   return {
-    fill: color['text-input-value'],
+    fill: color['text-text-and-icon'],
     fontFamily: preset.theme.extend.fontFamily.body.join(','),
     fontSize: 13,
     fontWeight: 700,
@@ -82,12 +83,17 @@ const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => 
 };
 
 const getNodeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
-  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
+  const isLightTheme = theme === THEME_LIGHT;
+  const color = colors[isLightTheme ? 'variables' : 'darkVariables'].DEFAULT;
 
   if (!active) {
     return {
       lineWidth: 0,
-      fill: color['bg-map-node'],
+      fill: isLightTheme ? color['bg-card'] : color['bg-map-node'],
+      shadowBlur: isLightTheme ? 10 : 0,
+      shadowColor: isLightTheme ? color['df-gray'][400] : '',
+      stroke: isLightTheme ? color['df-gray'][400] : '',
+      background: isLightTheme ? color['bg-card'] : '',
     };
   }
   return {
@@ -95,7 +101,7 @@ const getNodeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
     shadowBlur: 10,
     shadowColor: color['brand-error'],
     stroke: color['brand-error'],
-    fill: color['bg-map-node'],
+    fill: isLightTheme ? color['bg-card'] : color['bg-map-node'],
   };
 };
 

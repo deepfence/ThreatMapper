@@ -17,7 +17,7 @@ import {
 } from '@/features/topology/types/graph';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
 import { queries } from '@/queries';
-import { Mode, useTheme } from '@/theme/ThemeContext';
+import { Mode, THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
 
 const setActiveState = (item: INode | IEdge, active: boolean) => {
   if (active) {
@@ -105,10 +105,11 @@ export const ThreatGraphComponent = ({
         <div
           className="absolute inset-0 flex gap-2 flex-col items-center justify-center p-6"
           style={{
+            mixBlendMode: mode === THEME_LIGHT ? 'multiply' : 'normal',
             background:
               mode === 'dark'
                 ? 'linear-gradient(0deg, rgba(22, 37, 59, 0.60) 0%, rgba(22, 37, 59, 0.60) 100%), radial-gradient(48.55% 48.55% at 50.04% 51.45%, rgba(27, 47, 77, 0.35) 0%, #020617 100%)'
-                : '',
+                : 'radial-gradient(96.81% 77.58% at 50.04% 50%, rgba(247, 247, 247, 0.50) 8.84%, rgba(180, 193, 219, 0.50) 94.89%)',
           }}
         >
           <div className="w-8 h-8 text-status-info">
@@ -173,6 +174,7 @@ function getGraphData(
       height: 40,
     },
     nonInteractive: true,
+    theme,
   });
 
   Object.keys(data).forEach((cloudKey) => {
@@ -201,6 +203,7 @@ function getGraphData(
         height: 30,
       },
       nonInteractive: true,
+      theme,
     });
     edgesMap.set(`The Internet<->${cloudRootId}`, {
       source: 'The Internet',
@@ -216,6 +219,7 @@ function getGraphData(
                 id: node,
                 label: node,
                 cloudId: cloudKey,
+                theme,
               });
             }
             if (index) {
@@ -256,6 +260,7 @@ function getGraphData(
             style: {
               cursor: 'pointer',
             },
+            theme,
           });
         }
       }

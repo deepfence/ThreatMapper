@@ -142,10 +142,11 @@ function getChartOptions({
   theme: Mode;
 }) {
   const color = colors[theme === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
+  const isDarkTheme = theme === THEME_DARK;
   const series: ECOption['series'] = [
     {
       type: 'pie',
-      radius: ['75%', '70%'],
+      radius: ['75%', '80%'],
       itemStyle: {
         borderWidth: 2,
         borderColor: color['bg-card'],
@@ -157,9 +158,8 @@ function getChartOptions({
         },
         offset: [0, 28],
         fontSize: '14px',
-        color:
-          theme === THEME_DARK ? color['text-input-value'] : color['text-text-and-icon'],
-        fontWeight: 600,
+        color: isDarkTheme ? color['text-input-value'] : color['text-text-and-icon'],
+        fontWeight: 400,
         fontFamily: preset.theme.extend.fontFamily.sans.join(','),
       },
       cursor: 'none',
@@ -182,7 +182,7 @@ function getChartOptions({
     },
     {
       type: 'pie',
-      radius: ['78%', '100%'],
+      radius: isDarkTheme ? ['78%', '100%'] : ['82%', '100%'],
       itemStyle: {
         borderWidth: 2,
         borderColor: color['bg-card'],
@@ -192,9 +192,9 @@ function getChartOptions({
         formatter: function () {
           return abbreviateNumber(total).toString();
         },
-        fontSize: '30px',
+        fontSize: '24px',
         color: color['text-input-value'],
-        fontWeight: 600,
+        fontWeight: 700,
         fontFamily: preset.theme.extend.fontFamily.sans.join(','),
       },
       cursor: 'pointer',
@@ -216,7 +216,7 @@ function getChartOptions({
         }),
     },
   ];
-  if (theme === THEME_DARK) {
+  if (isDarkTheme) {
     series.splice(0, 1);
   }
 

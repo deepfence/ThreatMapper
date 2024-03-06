@@ -165,7 +165,7 @@ const colors = {
       'brand-blue': '#2742E7',
       'brand-magenta': '#D91590',
       'brand-purple': '#6D32E5',
-      'text-text-and-icon': '#222', // referred in figma as 'light-text-default'
+      'text-text-and-icon': '#222', // referred in figma as 'light-text-default or Light-Text-Default-2'
       'text-icon': '#444444', // referred in figma as 'Light-Icon'
       'text-input-value': '#000000',
       'text-text-inverse': '#ffffff',
@@ -197,9 +197,9 @@ const colors = {
       'status-warning': '#FF992B',
       'status-info': '#0B6FDA',
 
-      'chart-splitline': '#F3F6FA',
+      'chart-splitline': '#C1CDD4',
       'chart-axislabel': '#61717D',
-      'brand-error': '#f56682',
+      'brand-error': '#E41D4B',
 
       'severity-critical': '#B50909',
       'severity-high': '#E41D4B',

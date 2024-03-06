@@ -13,6 +13,7 @@ import { getSeverityColorMap } from '@/constants/charts';
 import { CardHeader } from '@/features/vulnerabilities/components/landing/CardHeader';
 import { queries } from '@/queries';
 import { Mode, useTheme } from '@/theme/ThemeContext';
+import { abbreviateNumber } from '@/utils/number';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export interface TopNVulnerableChartData {
@@ -98,12 +99,18 @@ function getChartOptions({
       type: 'value',
       splitLine: {
         lineStyle: {
+          opacity: 0.6,
           color: color['chart-splitline'],
         },
       },
       axisLabel: {
+        fontSize: 10,
         fontWeight: 600,
+        lineHeight: 13,
         color: color['chart-axislabel'],
+        formatter: (value) => {
+          return abbreviateNumber(value);
+        },
       },
     },
     yAxis: {
@@ -112,7 +119,8 @@ function getChartOptions({
         formatter: (value: string) => {
           return truncate(value, { length: 20 });
         },
-        fontSize: '12px',
+        fontSize: 13,
+        lineHeight: 18,
         color: color['text-text-and-icon'],
       },
       axisLine: {
@@ -212,7 +220,7 @@ const TopNCardContent = ({ type }: { type: 'host' | 'container' | 'image' }) => 
   const chartOptions = getChartOptions({ data: data, theme: mode });
   const { navigate } = usePageNavigation();
   return (
-    <div className="pb-3 pt-5 px-5 h-[300px] flex items-center justify-center">
+    <div className="px-2 h-[300px] flex items-center justify-center">
       {data.length ? (
         <ReactECharts
           theme="dark"

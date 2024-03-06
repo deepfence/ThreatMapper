@@ -5,6 +5,7 @@ import { useSuspenseQuery } from '@suspensive/react-query';
 import { truncate } from 'lodash-es';
 import { Suspense, useEffect, useState } from 'react';
 import { useMeasure } from 'react-use';
+import { cn } from 'tailwind-preset';
 import { Card, CircleSpinner } from 'ui-components';
 
 import { GraphIndividualThreatGraph } from '@/api/generated';
@@ -17,12 +18,12 @@ import { G6GraphData, G6Node } from '@/features/topology/types/graph';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
 import { CardHeader } from '@/features/vulnerabilities/components/landing/CardHeader';
 import { queries } from '@/queries';
-import { Mode, useTheme } from '@/theme/ThemeContext';
+import { Mode, THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
 
 export const TopAttackPaths = ({ nodeIds }: { nodeIds?: string[] }) => {
   const { mode } = useTheme();
   return (
-    <Card className="rounded min-h-[450px] h-full flex flex-col">
+    <Card className="rounded min-h-[380px] h-full flex flex-col">
       <CardHeader
         icon={<ThreatGraphIcon />}
         title={'Top Attack Paths'}
@@ -31,10 +32,11 @@ export const TopAttackPaths = ({ nodeIds }: { nodeIds?: string[] }) => {
       <div
         className="flex-1"
         style={{
+          mixBlendMode: mode === THEME_LIGHT ? 'multiply' : 'normal',
           background:
             mode === 'dark'
               ? 'linear-gradient(0deg, rgba(22, 37, 59, 0.6), rgba(22, 37, 59, 0.6)), radial-gradient(48.55% 48.55% at 50.04% 51.45%, rgba(27, 47, 77, 0.35) 0%, #020617 100%)'
-              : '',
+              : 'radial-gradient(96.81% 77.58% at 50.04% 50%, rgba(247, 247, 247, 0.50) 8.84%, rgba(180, 193, 219, 0.50) 94.89%)',
         }}
       >
         <Suspense
@@ -95,7 +97,7 @@ const tooltip = new G6.Tooltip({
       return '';
     }
     return `
-    <div role="tooltip" class="rounded-[5px] dark:bg-[#C1CFD9] py-1.5 px-2.5 dark:text-text-text-inverse flex-col flex gap-2 max-w-[200px]">
+    <div role="tooltip" class="rounded-[5px] dark:bg-[#C1CFD9] bg-white border py-1.5 px-2.5 text-black flex-col flex gap-2 max-w-[200px]">
       <div>
         <h5 class="text-p3">Name</h5>
         <div class="text-p4">${model?.id}</div>
@@ -188,7 +190,12 @@ export const VulnerabilityThreatGraph = ({
   }, [graph]);
 
   return (
-    <div className="h-full w-full relative select-none" ref={measureRef}>
+    <div
+      className={cn('h-full w-full relative select-none', {
+        'bg-[#F5F5F5]/50': mode === THEME_LIGHT,
+      })}
+      ref={measureRef}
+    >
       <div className="absolute inset-0" ref={setContainer} />
       {isGraphEmpty(data) ? (
         <div className="absolute inset-0 flex gap-2 items-center justify-center p-6 text-text-text-and-icon">
@@ -271,6 +278,7 @@ function getGraphData(
               cve_attack_vector: paths.cve_attack_vector,
               ports: paths.ports,
               direction,
+              theme,
             });
           }
           if (index) {

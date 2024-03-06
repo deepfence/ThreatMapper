@@ -105,7 +105,7 @@ export const SeverityLegend = ({
   return (
     <div
       className={cn(
-        'flex items-center gap-2 flex-nowrap text-p7 text-text-icon capitalize',
+        'flex items-center gap-2 flex-nowrap text-p4 text-text-text-and-icon capitalize',
         className,
       )}
     >
