@@ -1,5 +1,6 @@
 import { getAuthenticationApiClient } from '@/api/api';
 import { ModelResponseAccessToken, ResponseError } from '@/api/generated';
+import { showUserInfoGuard, waitForUserInfoGuard } from '@/components/UserInfoGuard';
 import { queryClient } from '@/queries/client';
 import { historyHelper } from '@/utils/router';
 import storage from '@/utils/storage';
@@ -117,6 +118,13 @@ export function apiWrapper<F extends Func<any[], any>>({
           throw new Error('Service unavailable', {
             cause: { status: 503 },
           });
+        } else if (error.response.status === 404) {
+          showUserInfoGuard();
+          if (await waitForUserInfoGuard()) {
+            if (await refreshAccessTokenIfPossible()) {
+              return apiWrapper({ fn, options })(...args);
+            }
+          }
         }
         return { ok: false, error };
       }

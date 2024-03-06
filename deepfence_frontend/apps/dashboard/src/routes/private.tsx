@@ -7,6 +7,7 @@ import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareS
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { actionStopScan } from '@/components/scan-configure-forms/StopScanForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
+import { module as userInfoGuardModule } from '@/components/UserInfoGuard';
 import { module as logoutAction } from '@/features/auth/data-components/logoutAction';
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
 import { action as downloadSBOMAction } from '@/features/common/data-component/downloadSBOMAction';
@@ -634,6 +635,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'malware/classes/scan/:scanId',
         ...malwareClassesForScan,
+      },
+      {
+        path: 'user-info-guard',
+        ...userInfoGuardModule,
       },
     ],
   },
