@@ -61,7 +61,8 @@ func (h *Handler) APIAuthHandler(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypeAPIToken)
+	// licenseActive - not needed in this api
+	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypeAPIToken, false)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -86,7 +87,19 @@ func (h *Handler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, grantType)
+
+	licenseActive := false
+	if grantType == model.GrantTypePassword {
+		pgClient, err := directory.PostgresClient(r.Context())
+		if err == nil {
+			license, err := model.GetLicense(r.Context(), pgClient)
+			if err == nil {
+				licenseActive = license.IsActive
+			}
+		}
+	}
+
+	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, grantType, licenseActive)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -181,7 +194,16 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	accessTokenResponse, err := u.GetAccessToken(h.TokenAuth, model.GrantTypePassword)
+
+	licenseActive := false
+	licenseRegistered := false
+	license, err := model.GetLicense(ctx, pgClient)
+	if err == nil {
+		licenseRegistered = true
+		licenseActive = license.IsActive
+	}
+
+	accessTokenResponse, err := u.GetAccessToken(h.TokenAuth, model.GrantTypePassword, licenseActive)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -194,6 +216,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseAccessToken: *accessTokenResponse,
 		OnboardingRequired:  model.IsOnboardingRequired(ctx),
 		PasswordInvalidated: u.PasswordInvalidated,
+		LicenseRegistered:   licenseRegistered,
 	})
 	if err != nil {
 		log.Error().Msg(err.Error())

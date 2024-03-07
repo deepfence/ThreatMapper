@@ -50,6 +50,7 @@ const (
 	ResourceRegistry    = "container-registry"
 	ResourceIntegration = "integration"
 	ResourceReport      = "report"
+	ResourceLicense     = "license"
 )
 
 // func telemetryInjector(next http.Handler) http.Handler {
@@ -355,6 +356,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			})
 
 			r.Route("/scan/start", func(r chi.Router) {
+				r.Use(directory.CheckLicenseActive)
+
 				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartVulnerabilityScanHandler))
 				r.Post("/secret", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartSecretScanHandler))
 				r.Post("/compliance", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartComplianceScanHandler))
@@ -381,6 +384,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListCloudComplianceScansHandler))
 			})
 			r.Route("/scan/results", func(r chi.Router) {
+				r.Use(directory.CheckLicenseActive)
+
 				r.Get("/fields", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetScanReportFields))
 
 				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListVulnerabilityScanResultsHandler))
@@ -444,6 +449,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			r.Post("/scan/nodes-in-result", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetAllNodesInScanResultBulkHandler))
 
 			r.Route("/scan/sbom", func(r chi.Router) {
+				r.Use(directory.CheckLicenseActive)
+
 				r.Post("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetSbomHandler))
 				r.Post("/download", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.SbomDownloadHandler))
 			})
@@ -486,6 +493,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 
 			// Reports
 			r.Route("/reports", func(r chi.Router) {
+				r.Use(directory.CheckLicenseActive)
+
 				r.Get("/", dfHandler.AuthHandler(ResourceReport, PermissionRead, dfHandler.ListReports))
 				r.Get("/{report_id}", dfHandler.AuthHandler(ResourceReport, PermissionRead, dfHandler.GetReport))
 				r.Post("/", dfHandler.AuthHandler(ResourceReport, PermissionGenerate, dfHandler.GenerateReport))
@@ -537,6 +546,12 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			// vulnerability db management
 			r.Route("/database", func(r chi.Router) {
 				r.Put("/vulnerability", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadVulnerabilityDB))
+			})
+
+			r.Route("/license", func(r chi.Router) {
+				r.Post("/generate", dfHandler.AuthHandler(ResourceLicense, PermissionWrite, dfHandler.GenerateLicenseHandler))
+				r.Post("/", dfHandler.AuthHandler(ResourceLicense, PermissionWrite, dfHandler.RegisterLicenseHandler))
+				r.Get("/", dfHandler.AuthHandler(ResourceLicense, PermissionRead, dfHandler.GetLicenseHandler))
 			})
 		})
 	})

@@ -12,6 +12,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/minio/minio-go/v7 v7.0.66
 	github.com/neo4j/neo4j-go-driver/v5 v5.17.0
+	github.com/raito-io/neo4j-tracing v0.0.4
 	github.com/redis/go-redis/v9 v9.4.0
 	github.com/rs/zerolog v1.31.0
 	github.com/twmb/franz-go v1.15.4
@@ -45,7 +46,6 @@ require (
 	github.com/minio/sha256-simd v1.0.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/neo4j/neo4j-go-driver/v5 v5.17.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.19 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect

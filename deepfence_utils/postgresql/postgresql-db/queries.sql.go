@@ -663,7 +663,7 @@ func (q *Queries) DeleteIntegrationByUserID(ctx context.Context, createdByUserID
 const deleteIntegrations = `-- name: DeleteIntegrations :exec
 DELETE
 FROM integration
-WHERE id = ANY($1::int[])
+WHERE id = ANY ($1::int[])
 `
 
 func (q *Queries) DeleteIntegrations(ctx context.Context, dollar_1 []int32) error {
@@ -751,7 +751,7 @@ func (q *Queries) DeleteUserInviteByUserID(ctx context.Context, createdByUserID 
 }
 
 const getActiveLicense = `-- name: GetActiveLicense :one
-SELECT id, license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type, deepfence_support_email, notification_threshold_percentage, notification_threshold_updated_at, registry_credentials, message, description, created_at, updated_at
+SELECT id, license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type, deepfence_support_email, notification_threshold_percentage, notification_threshold_updated_at, registry_credentials, message, description, created_at, updated_at, no_of_cloud_accounts, no_of_registries, no_of_images_in_registry
 FROM license
 WHERE is_active = true
 ORDER BY end_date DESC
@@ -778,6 +778,9 @@ func (q *Queries) GetActiveLicense(ctx context.Context) (License, error) {
 		&i.Description,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NoOfCloudAccounts,
+		&i.NoOfRegistries,
+		&i.NoOfImagesInRegistry,
 	)
 	return i, err
 }
@@ -1876,7 +1879,7 @@ func (q *Queries) GetIntegrationsFromType(ctx context.Context, integrationType s
 }
 
 const getLicense = `-- name: GetLicense :one
-SELECT id, license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type, deepfence_support_email, notification_threshold_percentage, notification_threshold_updated_at, registry_credentials, message, description, created_at, updated_at
+SELECT id, license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type, deepfence_support_email, notification_threshold_percentage, notification_threshold_updated_at, registry_credentials, message, description, created_at, updated_at, no_of_cloud_accounts, no_of_registries, no_of_images_in_registry
 FROM license
 LIMIT 1
 `
@@ -1901,12 +1904,15 @@ func (q *Queries) GetLicense(ctx context.Context) (License, error) {
 		&i.Description,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NoOfCloudAccounts,
+		&i.NoOfRegistries,
+		&i.NoOfImagesInRegistry,
 	)
 	return i, err
 }
 
 const getLicenseByKey = `-- name: GetLicenseByKey :one
-SELECT id, license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type, deepfence_support_email, notification_threshold_percentage, notification_threshold_updated_at, registry_credentials, message, description, created_at, updated_at
+SELECT id, license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type, deepfence_support_email, notification_threshold_percentage, notification_threshold_updated_at, registry_credentials, message, description, created_at, updated_at, no_of_cloud_accounts, no_of_registries, no_of_images_in_registry
 FROM license
 WHERE license_key = $1
 LIMIT 1
@@ -1932,6 +1938,9 @@ func (q *Queries) GetLicenseByKey(ctx context.Context, licenseKey uuid.UUID) (Li
 		&i.Description,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NoOfCloudAccounts,
+		&i.NoOfRegistries,
+		&i.NoOfImagesInRegistry,
 	)
 	return i, err
 }
@@ -2991,8 +3000,8 @@ func (q *Queries) UpdateUserInvite(ctx context.Context, arg UpdateUserInvitePara
 const upsertLicense = `-- name: UpsertLicense :one
 INSERT INTO license (license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type,
                      deepfence_support_email, notification_threshold_percentage, registry_credentials, message,
-                     description)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                     description, no_of_cloud_accounts, no_of_registries, no_of_images_in_registry)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 ON CONFLICT (license_key) DO UPDATE
     SET start_date                        = $2,
         end_date                          = $3,
@@ -3004,8 +3013,11 @@ ON CONFLICT (license_key) DO UPDATE
         notification_threshold_percentage = $9,
         registry_credentials              = $10,
         message                           = $11,
-        description                       = $12
-RETURNING id, license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type, deepfence_support_email, notification_threshold_percentage, notification_threshold_updated_at, registry_credentials, message, description, created_at, updated_at
+        description                       = $12,
+        no_of_cloud_accounts              = $13,
+        no_of_registries                  = $14,
+        no_of_images_in_registry          = $15
+RETURNING id, license_key, start_date, end_date, no_of_hosts, current_hosts, is_active, license_type, deepfence_support_email, notification_threshold_percentage, notification_threshold_updated_at, registry_credentials, message, description, created_at, updated_at, no_of_cloud_accounts, no_of_registries, no_of_images_in_registry
 `
 
 type UpsertLicenseParams struct {
@@ -3021,6 +3033,9 @@ type UpsertLicenseParams struct {
 	RegistryCredentials             json.RawMessage `json:"registry_credentials"`
 	Message                         string          `json:"message"`
 	Description                     string          `json:"description"`
+	NoOfCloudAccounts               int64           `json:"no_of_cloud_accounts"`
+	NoOfRegistries                  int64           `json:"no_of_registries"`
+	NoOfImagesInRegistry            int64           `json:"no_of_images_in_registry"`
 }
 
 func (q *Queries) UpsertLicense(ctx context.Context, arg UpsertLicenseParams) (License, error) {
@@ -3037,6 +3052,9 @@ func (q *Queries) UpsertLicense(ctx context.Context, arg UpsertLicenseParams) (L
 		arg.RegistryCredentials,
 		arg.Message,
 		arg.Description,
+		arg.NoOfCloudAccounts,
+		arg.NoOfRegistries,
+		arg.NoOfImagesInRegistry,
 	)
 	var i License
 	err := row.Scan(
@@ -3056,6 +3074,9 @@ func (q *Queries) UpsertLicense(ctx context.Context, arg UpsertLicenseParams) (L
 		&i.Description,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NoOfCloudAccounts,
+		&i.NoOfRegistries,
+		&i.NoOfImagesInRegistry,
 	)
 	return i, err
 }

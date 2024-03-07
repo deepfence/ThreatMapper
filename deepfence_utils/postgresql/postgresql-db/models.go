@@ -99,6 +99,9 @@ type License struct {
 	Description                     string          `json:"description"`
 	CreatedAt                       time.Time       `json:"created_at"`
 	UpdatedAt                       time.Time       `json:"updated_at"`
+	NoOfCloudAccounts               int64           `json:"no_of_cloud_accounts"`
+	NoOfRegistries                  int64           `json:"no_of_registries"`
+	NoOfImagesInRegistry            int64           `json:"no_of_images_in_registry"`
 }
 
 type PasswordReset struct {
