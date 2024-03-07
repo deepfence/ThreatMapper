@@ -29,7 +29,7 @@ Please reduce the number of hosts or upgrade your license by contacting %s`
 )
 
 const (
-	LicenseServerURL      = "https://license.deepfence.io/threatmapper"
+	LicenseServerURL      = "https://license.deepfence.space/threatmapper"
 	GenerateLicenseAPIURL = LicenseServerURL + "/generate-license?first_name=%s&last_name=%s&email=%s&company=%s&resend_email=%t"
 	GetLicenseAPIURL      = LicenseServerURL + "/license?license_key=%s"
 )
