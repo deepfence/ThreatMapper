@@ -34,6 +34,7 @@ import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { queries } from '@/queries';
 import {
   ComplianceScanNodeTypeEnum,
@@ -67,7 +68,7 @@ function Filters() {
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <SearchableClusterList
           defaultSelectedClusters={searchParams.getAll('clusters')}
@@ -165,7 +166,7 @@ function Filters() {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 }
 

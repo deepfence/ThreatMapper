@@ -37,6 +37,7 @@ import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { SearchableCloudAccountForHost } from '@/features/topology/data-components/tables/SearchableCloudAccountForHost';
 import { queries } from '@/queries';
@@ -295,7 +296,7 @@ function Filters() {
   };
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <SearchableHostList
           scanType={'none'}
@@ -610,7 +611,7 @@ function Filters() {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 }
 
