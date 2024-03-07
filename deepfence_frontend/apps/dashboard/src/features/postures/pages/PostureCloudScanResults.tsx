@@ -71,6 +71,7 @@ import {
 import { PostureStatusBadgeIcon } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { TruncatedText } from '@/components/TruncatedText';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { useGetCloudFilters } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { FilterWrapper } from '@/features/common/FilterWrapper';
@@ -1569,7 +1570,7 @@ const CloudPostureTable = ({
 
 const Header = () => {
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
+    <BreadcrumbWrapper>
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<PostureIcon />} isLink>
@@ -1588,7 +1589,7 @@ const Header = () => {
           </Suspense>
         </Breadcrumb>
       </>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 const DynamicBreadcrumbs = () => {

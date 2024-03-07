@@ -20,6 +20,7 @@ import {
   ModelAddGenerativeAiBedrockIntegrationModelIdEnum,
   ModelAddGenerativeAiOpenAIIntegrationModelIdEnum,
 } from '@/api/generated';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries } from '@/queries';
 import { GenerativeAIIntegrationType } from '@/types/common';
@@ -171,9 +172,9 @@ const AIIntegrationAdd = () => {
     >
       <SlidingModalCloseButton />
       <SlidingModalHeader>
-        <div className="text-h3 text-text-text-and-icon py-4 px-4 bg-bg-header">
+        <SlidingModalHeaderWrapper>
           Add Generative AI Integration
-        </div>
+        </SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalContent>
         {!fetcher.data?.success ? (

@@ -23,6 +23,7 @@ import { PopOutIcon } from '@/components/icons/common/PopOut';
 import { CveCVSSScore, SeverityBadge } from '@/components/SeverityBadge';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
@@ -279,11 +280,11 @@ export const VulnerabilitiesCompare = ({
       >
         <SlidingModalCloseButton />
         <SlidingModalHeader>
-          <div className="p-4 text-h3 text-text-text-and-icon bg-bg-header">
+          <SlidingModalHeaderWrapper>
             <div className="overflow-hidden">
               <TruncatedText text="Scan comparision" />
             </div>
-          </div>
+          </SlidingModalHeaderWrapper>
         </SlidingModalHeader>
         <SlidingModalContent>
           <div className="mx-4">

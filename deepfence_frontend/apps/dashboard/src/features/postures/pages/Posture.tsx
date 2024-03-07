@@ -8,6 +8,7 @@ import { DFLink } from '@/components/DFLink';
 import { ComplianceIconByPercent, PostureLogos } from '@/components/icons/posture';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { getColorForCompliancePercent } from '@/constants/charts';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
 import { abbreviateNumber, formatPercentage } from '@/utils/number';
@@ -269,7 +270,7 @@ const PosturenNonCloudList = () => {
 const Posture = () => {
   return (
     <>
-      <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4 flex items-center">
+      <BreadcrumbWrapper>
         <Breadcrumb>
           <BreadcrumbLink
             icon={<PostureIcon />}
@@ -278,7 +279,7 @@ const Posture = () => {
             Posture
           </BreadcrumbLink>
         </Breadcrumb>
-      </div>
+      </BreadcrumbWrapper>
       <div className="mx-4 my-10 flex gap-x-4 flex-wrap gap-y-10">
         <Suspense
           fallback={

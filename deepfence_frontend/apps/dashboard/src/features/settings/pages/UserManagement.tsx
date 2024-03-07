@@ -37,6 +37,7 @@ import { EyeHideSolid } from '@/components/icons/common/EyeHideSolid';
 import { EyeSolidIcon } from '@/components/icons/common/EyeSolid';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { RefreshIcon } from '@/components/icons/common/Refresh';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
@@ -331,9 +332,7 @@ const ChangePasswordModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 text-text-text-and-icon py-4 px-4 bg-bg-header">
-          Change your password
-        </div>
+        <SlidingModalHeaderWrapper>Change your password</SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>
@@ -356,9 +355,7 @@ const InviteUserModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 text-text-text-and-icon py-4 px-4 bg-bg-header">
-          Invite user
-        </div>
+        <SlidingModalHeaderWrapper>Invite user</SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>
@@ -478,9 +475,7 @@ const EditUserModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 text-text-text-and-icon py-4 px-4 bg-bg-header">
-          Update user
-        </div>
+        <SlidingModalHeaderWrapper>Update user</SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>

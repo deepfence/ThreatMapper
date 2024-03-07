@@ -493,7 +493,7 @@ const DeleteConfirmationModal = ({
 const Header = ({ title }: { title: string }) => {
   return (
     <SlidingModalHeader>
-      <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+      <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-header bg-bg-breadcrumb-bar">
         {title}
       </div>
     </SlidingModalHeader>

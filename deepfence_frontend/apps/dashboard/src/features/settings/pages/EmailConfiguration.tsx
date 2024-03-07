@@ -18,6 +18,7 @@ import {
 import { getSettingsApiClient } from '@/api/api';
 import { ModelEmailConfigurationAdd, ModelEmailConfigurationResp } from '@/api/generated';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getFieldErrors, getResponseErrors } from '@/utils/403';
@@ -165,9 +166,7 @@ const EmailConfigurationModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 text-text-text-and-icon py-4 px-4 bg-bg-header">
-          Add email configuration
-        </div>
+        <SlidingModalHeaderWrapper>Add email configuration</SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>

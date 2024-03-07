@@ -30,6 +30,7 @@ import { TimesIcon } from '@/components/icons/common/Times';
 import { SeverityBadgeIcon } from '@/components/SeverityBadge';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
@@ -511,7 +512,7 @@ const UniqueVulnerabilities = () => {
 
   return (
     <div>
-      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
+      <BreadcrumbWrapper>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<VulnerabilityIcon />} isLink>
             <DFLink to={'/vulnerability'} unstyled>
@@ -526,7 +527,7 @@ const UniqueVulnerabilities = () => {
         <div className="ml-2 flex items-center">
           {isFetching ? <CircleSpinner size="sm" /> : null}
         </div>
-      </div>
+      </BreadcrumbWrapper>
       <div className="mx-4">
         <div className="h-12 flex items-center">
           <Button

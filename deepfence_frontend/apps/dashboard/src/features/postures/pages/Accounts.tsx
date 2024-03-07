@@ -66,6 +66,7 @@ import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { getColorForCompliancePercent } from '@/constants/charts';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { FilterWrapper } from '@/features/common/FilterWrapper';
 import {
@@ -1279,7 +1280,7 @@ const Header = () => {
   });
 
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
+    <BreadcrumbWrapper>
       <Breadcrumb>
         <BreadcrumbLink asChild icon={<PostureIcon />} isLink>
           <DFLink to={'/posture'} unstyled>
@@ -1295,7 +1296,7 @@ const Header = () => {
       <div className="ml-2 flex items-center">
         {isFetching ? <CircleSpinner size="sm" /> : null}
       </div>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 const Accounts = () => {

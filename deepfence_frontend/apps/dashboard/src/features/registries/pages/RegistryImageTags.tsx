@@ -26,6 +26,7 @@ import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { StartScanIcon } from '@/components/icons/registries/StartScan';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { RegistryImageTagsTable } from '@/features/registries/components/RegistryImageTagsTable';
 import {
   ActionEnumType,
@@ -142,7 +143,7 @@ export const useScanResults = () => {
 
 const Header = () => {
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
+    <BreadcrumbWrapper>
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<RegistryIcon />} isLink>
@@ -161,7 +162,7 @@ const Header = () => {
           </Suspense>
         </Breadcrumb>
       </>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 

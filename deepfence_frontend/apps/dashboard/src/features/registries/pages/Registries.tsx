@@ -7,6 +7,7 @@ import { ModelSummary } from '@/api/generated/models/ModelSummary';
 import { DFLink } from '@/components/DFLink';
 import { RegistryLogos } from '@/components/icons/registries';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { queries } from '@/queries';
 import { RegistryType, registryTypeToNameMapping } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
@@ -124,13 +125,16 @@ const RegistryList = () => {
 const Registries = () => {
   return (
     <>
-      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none">
+      <BreadcrumbWrapper>
         <Breadcrumb>
-          <BreadcrumbLink icon={<RegistryIcon />} className="text-text-input-value">
+          <BreadcrumbLink
+            icon={<RegistryIcon />}
+            className="text-text-input-value leading-[30px]"
+          >
             Registries
           </BreadcrumbLink>
         </Breadcrumb>
-      </div>
+      </BreadcrumbWrapper>
       <Suspense
         fallback={
           <div className="mx-4 my-14 flex gap-x-4 gap-y-14 flex-wrap">

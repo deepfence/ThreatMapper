@@ -21,6 +21,7 @@ import {
   UtilsReportFiltersScanTypeEnum,
   UtilsReportFiltersSeverityOrCheckTypeEnum,
 } from '@/api/generated';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { AdvancedFilter } from '@/features/integrations/components/report-form/AdvanceFilter';
 import { CloudComplianceForm } from '@/features/integrations/components/report-form/CloudComplianceForm';
 import { CommonForm } from '@/features/integrations/components/report-form/CommonForm';
@@ -177,9 +178,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 const Header = () => {
   return (
     <SlidingModalHeader>
-      <div className="text-h3 text-text-text-and-icon py-4 px-4 bg-bg-header">
-        Create new report
-      </div>
+      <SlidingModalHeaderWrapper>Create new report</SlidingModalHeaderWrapper>
     </SlidingModalHeader>
   );
 };

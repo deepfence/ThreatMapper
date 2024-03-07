@@ -28,6 +28,7 @@ import { FilterIcon } from '@/components/icons/common/Filter';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import {
   getReportDownloadAppliedFiltersCount,
   ReportFilters,
@@ -247,7 +248,7 @@ const DeleteConfirmationModal = ({
 
 const Header = () => {
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
+    <BreadcrumbWrapper>
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<IntegrationsIcon />} isLink>
@@ -260,7 +261,7 @@ const Header = () => {
           </BreadcrumbLink>
         </Breadcrumb>
       </>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 

@@ -29,6 +29,7 @@ import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { TruncatedText } from '@/components/TruncatedText';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getResponseErrors } from '@/utils/403';
@@ -446,9 +447,7 @@ const AgentDiagnosticsLogsModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 text-text-text-and-icon py-4 px-4 bg-bg-header">
-          Agent diagnostic logs
-        </div>
+        <SlidingModalHeaderWrapper>Agent diagnostic logs</SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>
