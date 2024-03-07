@@ -1,10 +1,10 @@
 package router
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
 	"google.golang.org/grpc"
@@ -13,6 +13,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/supervisor"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	dfUtils "github.com/deepfence/df-utils"
 )
 
@@ -123,11 +124,10 @@ func UpdateSecretsRules(req ctl.ThreatIntelInfo) error {
 		return nil
 	}
 
-	// set to new hash
-	secretsRuleshash = req.SecretsRulesHash
-
 	newRules := "new_secret_rules.tar.gz"
 	configPath := "/home/deepfence/bin/secret-scanner/config"
+
+	log.Info().Msgf("download rules file from url %s", req.MalwareRulesURL)
 
 	if err := downloadFile(newRules, req.SecretsRulesURL); err != nil {
 		log.Error().Err(err).Msg("failed to downlaod secrets rules")
@@ -135,25 +135,34 @@ func UpdateSecretsRules(req ctl.ThreatIntelInfo) error {
 	}
 	defer os.Remove(newRules)
 
-	// remove old rules
-	if err := Backup(configPath); err != nil {
-		log.Error().Err(err).Msg("failed to create directory")
-		return err
-	}
-
-	if err := extractTarGz(newRules, filepath.Base(configPath)); err != nil {
-		log.Error().Err(err).Msg("failed to extract rules")
-		return err
-	}
-
-	// restart scanner
+	// stop secret scanner
 	if err := supervisor.StopProcess("secret_scanner"); err != nil {
 		log.Error().Err(err).Msg("error on stop secrets scanner")
 	}
 
+	// remove old rules
+	os.RemoveAll(configPath)
+
+	data, err := os.ReadFile(newRules)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to open new rules")
+		return err
+	}
+
+	if err := utils.ExtractTarGz(bytes.NewReader(data), configPath); err != nil {
+		log.Error().Err(err).Msg("failed to extract rules")
+		return err
+	}
+
+	log.Info().Msg("secrets rules updated starting secret scanner")
+
+	// start scanner
 	if err := supervisor.StartProcess("secret_scanner"); err != nil {
 		log.Error().Err(err).Msg("error on start secrets scanner")
 	}
+
+	// set to new hash
+	secretsRuleshash = req.SecretsRulesHash
 
 	return nil
 }

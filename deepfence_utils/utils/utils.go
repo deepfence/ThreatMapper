@@ -709,7 +709,10 @@ func TopicWithNamespace(topic, ns string) string {
 func ExtractTarGz(gzipStream io.Reader, targetPath string) error {
 
 	// create the target path
-	os.MkdirAll(targetPath, 0755)
+	if err := os.MkdirAll(targetPath, 0755); err != nil {
+		log.Error().Err(err).Msg("ExtractTarGz: create target path failed")
+		return err
+	}
 
 	uncompressedStream, err := gzip.NewReader(gzipStream)
 	if err != nil {
@@ -721,20 +724,18 @@ func ExtractTarGz(gzipStream io.Reader, targetPath string) error {
 
 	for {
 		header, err := tarReader.Next()
-
 		if err == io.EOF {
+			log.Info().Msgf("ExtractTarGz: EOF reached")
 			break
-		}
-
-		if err != nil {
+		} else if err != nil {
 			log.Error().Err(err).Msg("ExtractTarGz: Next() failed")
 			return err
 		}
 
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if err := os.Mkdir(path.Join(targetPath, header.Name), 0755); err != nil {
-				log.Error().Err(err).Msg("ExtractTarGz: Mkdir() failed")
+			if err := os.MkdirAll(path.Join(targetPath, header.Name), 0755); err != nil {
+				log.Error().Err(err).Msg("ExtractTarGz: MkdirAll() failed")
 				return err
 			}
 		case tar.TypeReg:
