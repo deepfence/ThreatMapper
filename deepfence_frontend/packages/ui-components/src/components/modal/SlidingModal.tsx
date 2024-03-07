@@ -100,7 +100,7 @@ export const SlidingModal: FC<ModalProps> = ({
               'overflow-hidden focus:outline-none',
               'bg-white text-gray-900',
               'dark:bg-bg-side-panel text-text-text-and-icon bg-white',
-              'border-bg-grid-border isolate',
+              'dark:border-bg-grid-border border-bg-border-form isolate',
               {
                 '-left-[100%] border-r': direction === 'left',
                 '-right-[100%] border-l': direction === 'right',
