@@ -371,10 +371,10 @@ function Th<TData>({
     >
       <div
         className={cn(`w-full h-full flex truncate pl-4 pr-2.5 items-center`, {
-          ['py-4']: size === 'default',
-          ['py-2.5']: size === 'compact',
-          ['py-[13px]']: size === 'medium',
-          ['py-[19px]']: size === 'relaxed',
+          ['py-[15px]']: size === 'default',
+          ['py-[9px]']: size === 'compact',
+          ['py-[12px]']: size === 'medium',
+          ['py-[18px]']: size === 'relaxed',
         })}
       >
         <span className="flex-1 truncate text-start">
@@ -417,7 +417,7 @@ function Th<TData>({
           aria-hidden="true"
           data-testid={`column-resizer-${header.id}`}
         >
-          <div className="ml-[3px] w-[1px] mr-[1px] h-full dark:bg-bg-grid-border bg-[#dcdcdc]" />
+          <div className="ml-[3px] w-[1px] mr-[1px] h-full dark:bg-bg-grid-border bg-[#999999]" />
         </div>
       )}
     </th>
