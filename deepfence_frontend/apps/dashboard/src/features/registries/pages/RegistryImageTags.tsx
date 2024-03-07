@@ -27,6 +27,7 @@ import { TimesIcon } from '@/components/icons/common/Times';
 import { StartScanIcon } from '@/components/icons/registries/StartScan';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { RegistryImageTagsTable } from '@/features/registries/components/RegistryImageTagsTable';
 import {
   ActionEnumType,
@@ -230,7 +231,7 @@ const Filters = () => {
   }
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           value={
@@ -394,7 +395,7 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 

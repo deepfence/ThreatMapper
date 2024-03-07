@@ -299,7 +299,7 @@ const CountWidget = () => {
   return (
     <div className="grid grid-cols-12 px-6 items-center w-full">
       <div className="col-span-4 flex items-center text-text-text-and-icon gap-x-3 justify-center">
-        <div className="w-8 h-8">
+        <div className="w-8 h-8 text-text-icon">
           <ImageIcon />
         </div>
 
@@ -315,7 +315,7 @@ const CountWidget = () => {
       </div>
 
       <div className="col-span-4 flex items-center text-text-text-and-icon gap-x-3 justify-center">
-        <div className="w-8 h-8">
+        <div className="w-8 h-8 text-text-icon">
           <TagsIcon />
         </div>
 
@@ -330,7 +330,7 @@ const CountWidget = () => {
         </div>
       </div>
       <div className="col-span-4 flex items-center text-text-text-and-icon gap-x-3 justify-center">
-        <div className="w-8 h-8">
+        <div className="w-8 h-8 text-text-icon">
           <InProgressIcon />
         </div>
 

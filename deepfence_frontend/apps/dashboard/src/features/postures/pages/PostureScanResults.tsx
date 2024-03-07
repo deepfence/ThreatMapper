@@ -1755,7 +1755,7 @@ const SeverityCountWidget = () => {
             {keys(statusCounts).length > 0 ? (
               <>
                 <TaskIcon />
-                <span className="text-h1 text-text-input pl-1.5">
+                <span className="text-h1 dark:text-text-input-value text-text-text-and-icon pl-1.5">
                   {abbreviateNumber(total)}
                 </span>
               </>
