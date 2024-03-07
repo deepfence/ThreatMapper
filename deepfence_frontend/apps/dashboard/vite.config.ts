@@ -13,7 +13,7 @@ const current = fileURLToPath(import.meta.url);
 const root = path.dirname(current);
 
 const matomoPlugin = (enable: string) => {
-  if (enable.trim() === 'true') {
+  if (enable?.trim() === 'true') {
     return {
       name: 'analytics-tracking',
       transformIndexHtml(html) {
