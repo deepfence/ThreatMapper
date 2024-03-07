@@ -1378,6 +1378,7 @@ const SecretTable = ({
   rowSelectionState: RowSelectionState;
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
 }) => {
+  const { mode: theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = useScanResults();
   const { data: scanResultData, scanStatusResult } = data;
@@ -1457,7 +1458,10 @@ const SecretTable = ({
       columnHelper.accessor('level', {
         cell: (info) => (
           <div className="text-p4 text-text-text-and-icon gap-1 inline-flex">
-            <SeverityBadgeIcon severity={info.getValue()} />
+            <SeverityBadgeIcon
+              severity={info.getValue() as SecretSeverityType}
+              theme={theme}
+            />
             {upperFirst(info.getValue())}
           </div>
         ),
@@ -1874,6 +1878,7 @@ const SeverityCountWidget = () => {
 };
 
 const Top5Widget = () => {
+  const { mode: theme } = useTheme();
   const { data } = useTop5Secrets();
   const [searchParams] = useSearchParams();
 
@@ -1917,7 +1922,10 @@ const Top5Widget = () => {
                 </td>
                 <td className="w-[20%] px-0 pt-0 pb-2">
                   <div className="flex items-center justify-center gap-1">
-                    <SeverityBadgeIcon severity={secret.level} />
+                    <SeverityBadgeIcon
+                      severity={secret.level as SecretSeverityType}
+                      theme={theme}
+                    />
                     <span className="text-p4 text-text-text-and-icon">
                       {upperFirst(secret.level)}
                     </span>

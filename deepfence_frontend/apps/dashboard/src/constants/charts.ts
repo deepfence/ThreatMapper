@@ -26,18 +26,17 @@ export function getColorForCVSSScore(theme: Mode, score: number | undefined): st
 
 export const getPostureColor = (theme: Mode) => {
   const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
-  const grayCode = theme === 'light' ? '400' : '600';
 
   return {
     alarm: color['status-error'],
     info: color['status-info'],
     ok: color['status-success'],
-    skip: color['df-gray'][grayCode],
+    skip: color['severity-unknown'],
 
     pass: color['status-success'],
     warn: color['status-warning'],
-    note: color['df-gray'][grayCode],
-    delete: color['status-error'],
+    note: color['severity-unknown'],
+    delete: color['btn-red'],
   };
 };
 
@@ -50,7 +49,7 @@ export function getColorForCompliancePercent(
     return color['severity-unknown'];
   }
   if (percent >= 80 && percent <= 100) {
-    return color['status-success'];
+    return color['btn-green'];
   } else if (percent >= 30 && percent < 80) {
     return color['severity-medium'];
   } else if (percent < 30) {

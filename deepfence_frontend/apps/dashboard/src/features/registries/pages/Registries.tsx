@@ -56,7 +56,7 @@ const CardHeader = ({ registry }: { registry: RegistryResponseType }) => {
 
   return (
     <div className="flex items-center w-full relative">
-      <div className="dark:bg-bg-grid-default bg-df-gray-100 border-[1px] dark:border-bg-grid-default border-df-gray-300 absolute -top-[48px] left-[4px] rounded-full p-4">
+      <div className="dark:bg-bg-grid-default bg-df-gray-100 border-[1px] dark:border-bg-grid-default border-df-gray-300 absolute -top-[48px] left-[4px] rounded-full p-4 dark:shadow-none shadow-[0_0_4px_0px_rgba(34,34,34,0.20)]">
         <RegistryLogos
           registryType={registry.type as unknown as keyof typeof RegistryType}
         />

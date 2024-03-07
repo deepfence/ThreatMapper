@@ -94,7 +94,7 @@ const CardSkeleton = ({ count }: { count: number }) => {
 const CardHeader = ({ name }: { name: string }) => {
   return (
     <div className="flex items-center w-full relative">
-      <div className="dark:bg-bg-grid-default bg-df-gray-100 border-[1px] dark:border-bg-grid-default border-df-gray-300 absolute -top-[34px] left-[12px] rounded-full p-3">
+      <div className="dark:bg-bg-grid-default bg-df-gray-100 border-[1px] dark:border-bg-grid-default border-df-gray-300 absolute -top-[34px] left-[12px] rounded-full p-3 dark:shadow-none shadow-[0_0_4px_0px_rgba(34,34,34,0.20)]">
         <span className="w-[38px] h-[38px] block">
           <PostureLogos name={name} />
         </span>
@@ -269,9 +269,12 @@ const PosturenNonCloudList = () => {
 const Posture = () => {
   return (
     <>
-      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none">
+      <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4 flex items-center">
         <Breadcrumb>
-          <BreadcrumbLink icon={<PostureIcon />} className="text-text-input-value">
+          <BreadcrumbLink
+            icon={<PostureIcon />}
+            className="text-text-input-value leading-[30px]"
+          >
             Posture
           </BreadcrumbLink>
         </Breadcrumb>

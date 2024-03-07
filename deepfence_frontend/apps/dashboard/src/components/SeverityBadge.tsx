@@ -8,9 +8,13 @@ import { SeverityLow } from '@/components/icons/common/SeverityLow';
 import { SeverityMedium } from '@/components/icons/common/SeverityMedium';
 import { SeverityScoreIcon } from '@/components/icons/common/SeverityScore';
 import { SeverityUnknown } from '@/components/icons/common/SeverityUnknown';
-import { getColorForCVSSScore, getPostureColor } from '@/constants/charts';
-import { useTheme } from '@/theme/ThemeContext';
-import { PostureSeverityType } from '@/types/common';
+import {
+  getColorForCVSSScore,
+  getPostureColor,
+  getSeverityColorMap,
+} from '@/constants/charts';
+import { Mode, useTheme } from '@/theme/ThemeContext';
+import { PostureSeverityType, VulnerabilitySeverityType } from '@/types/common';
 
 export const SeverityBadge = ({
   severity,
@@ -50,11 +54,8 @@ export const PostureStatusBadge = ({
   return (
     <div
       className={cn(
-        'flex items-center capitalize justify-center font-semibold leading-4 text-[11px] dark:text-text-text-inverse text-text-input-value py-0.5 max-w-[62px] min-w-[62px]',
+        'flex items-center capitalize justify-center font-semibold leading-4 text-[11px] text-text-text-inverse py-0.5 max-w-[62px] min-w-[62px]',
         'bg-df-gray-500 rounded-[5px]',
-        {
-          'text-text-text-inverse': status === 'alarm' || status === 'delete',
-        },
         className,
       )}
       style={{
@@ -62,6 +63,33 @@ export const PostureStatusBadge = ({
       }}
     >
       {status}
+    </div>
+  );
+};
+
+export const PostureStatusBadgeIcon = ({
+  theme,
+  status,
+  className,
+}: {
+  theme: Mode;
+  status: PostureSeverityType;
+  className?: string;
+}) => {
+  return (
+    <div
+      className={cn('w-[18px] h-[18px]', className)}
+      style={{ color: getPostureColor(theme)[status] }}
+    >
+      {status === 'alarm' && <SeverityCritical />}
+      {status === 'info' && <SeverityHigh />}
+      {status === 'ok' && <SeverityLow />}
+      {status === 'skip' && <SeverityUnknown />}
+
+      {status === 'pass' && <SeverityMedium />}
+      {status === 'warn' && <SeverityCritical />}
+      {status === 'note' && <SeverityHigh />}
+      {status === 'delete' && <SeverityLow />}
     </div>
   );
 };
@@ -134,14 +162,19 @@ export const SeverityLegend = ({
 };
 
 export const SeverityBadgeIcon = ({
+  theme,
   severity,
   className,
 }: {
-  severity: string;
+  severity: VulnerabilitySeverityType;
   className?: string;
+  theme: Mode;
 }) => {
   return (
-    <div className={cn('w-[18px] h-[18px]', className)}>
+    <div
+      className={cn('w-[18px] h-[18px]', className)}
+      style={{ color: getSeverityColorMap(theme)[severity] }}
+    >
       {severity === 'critical' && <SeverityCritical />}
       {severity === 'high' && <SeverityHigh />}
       {severity === 'medium' && <SeverityMedium />}

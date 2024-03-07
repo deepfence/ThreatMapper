@@ -8,7 +8,7 @@ export const SeverityLow = () => (
   >
     <path
       d="M9 3C5.68629 3 3 5.68629 3 9C3 12.3137 5.68629 15 9 15C12.3137 15 15 12.3137 15 9C15 7.4087 14.3679 5.88258 13.2426 4.75736C12.1174 3.63214 10.5913 3 9 3Z"
-      fill="#F0C800"
+      fill="currentColor"
     />
     <path
       fillRule="evenodd"

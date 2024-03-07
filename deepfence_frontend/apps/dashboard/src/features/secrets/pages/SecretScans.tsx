@@ -61,6 +61,7 @@ import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -672,6 +673,7 @@ const ScansTable = ({
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
   onTableAction: (row: ModelScanInfo, actionType: ActionEnumType) => void;
 }) => {
+  const { mode: theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = useSuspenseQuery({
     ...queries.secret.scanList({
@@ -805,7 +807,7 @@ const ScansTable = ({
           params.set('severity', 'critical');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <SeverityBadgeIcon severity="critical" />
+              <SeverityBadgeIcon severity="critical" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -831,7 +833,7 @@ const ScansTable = ({
           params.set('severity', 'high');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <SeverityBadgeIcon severity="high" />
+              <SeverityBadgeIcon severity="high" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -857,7 +859,7 @@ const ScansTable = ({
           params.set('severity', 'medium');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <SeverityBadgeIcon severity="medium" />
+              <SeverityBadgeIcon severity="medium" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -883,7 +885,7 @@ const ScansTable = ({
           params.set('severity', 'low');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <SeverityBadgeIcon severity="low" />
+              <SeverityBadgeIcon severity="low" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -909,7 +911,7 @@ const ScansTable = ({
           params.set('severity', 'unknown');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <SeverityBadgeIcon severity="unknown" />
+              <SeverityBadgeIcon severity="unknown" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),

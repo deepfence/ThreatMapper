@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { capitalize, keys } from 'lodash-es';
+import { capitalize, keys, upperFirst } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
@@ -24,7 +24,6 @@ import {
   Dropdown,
   DropdownItem,
   getRowSelectionColumn,
-  IconButton,
   Modal,
   RowSelectionState,
   SortingState,
@@ -69,12 +68,12 @@ import {
   ScanStatusStopped,
   ScanStatusStopping,
 } from '@/components/ScanStatusMessage';
-import { PostureStatusBadge } from '@/components/SeverityBadge';
+import { PostureStatusBadgeIcon } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { TruncatedText } from '@/components/TruncatedText';
-import { getPostureColor } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { useGetCloudFilters } from '@/features/common/data-component/searchCloudFiltersApiLoader';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { PostureScanResultsPieChart } from '@/features/postures/components/scan-result/PostureScanResultsPieChart';
 import { PosturesCloudCompare } from '@/features/postures/components/scan-result/PosturesCloudCompare';
 import { SearchableControl } from '@/features/postures/components/scan-result/SearchableControl';
@@ -989,7 +988,7 @@ const Filters = () => {
   const benchmarks = complianceType[params.nodeType];
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['visibility']}
@@ -1215,7 +1214,7 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 const CloudPostureResults = () => {
@@ -1359,6 +1358,7 @@ const CloudPostureTable = ({
   rowSelectionState: RowSelectionState;
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
 }) => {
+  const { mode } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = useScanResults();
   const columnHelper = createColumnHelper<ModelCloudCompliance>();
@@ -1447,7 +1447,15 @@ const CloudPostureTable = ({
         maxSize: 65,
         header: () => <div>Status</div>,
         cell: (info) => {
-          return <PostureStatusBadge status={info.getValue() as PostureSeverityType} />;
+          return (
+            <div className="flex items-center gap-x-2">
+              <PostureStatusBadgeIcon
+                status={info.getValue() as PostureSeverityType}
+                theme={mode}
+              />
+              {upperFirst(info.getValue())}
+            </div>
+          );
         },
       }),
       columnHelper.accessor('reason', {
@@ -1640,13 +1648,11 @@ const StatusesCount = ({
                   });
                 }}
               >
-                <span
-                  className="h-4 w-4 rounded-full"
-                  style={{
-                    backgroundColor:
-                      getPostureColor(mode)[key.toLowerCase() as PostureSeverityType],
-                  }}
-                ></span>
+                <PostureStatusBadgeIcon
+                  theme={mode}
+                  status={key.toLowerCase() as PostureSeverityType}
+                  className="h-6 w-6"
+                />
                 <span className="text-h1 text-text-input-value pl-1.5">
                   {abbreviateNumber(statusCounts?.[key])}
                 </span>
@@ -1761,7 +1767,7 @@ const SeverityCountWidget = () => {
         <div className="col-span-2 text-text-text-and-icon">
           <span className="text-p1">Total compliances</span>
           <button
-            className="flex flex-1 max-w-[160px] gap-1 items-center text-text-input-value"
+            className="flex flex-1 max-w-[160px] gap-1 items-center dark:text-text-input-value text-text-text-and-icon"
             onClick={() => {
               setSearchParams((prev) => {
                 prev.delete('status');
@@ -1773,7 +1779,7 @@ const SeverityCountWidget = () => {
             {keys(statusCounts).length > 0 ? (
               <>
                 <TaskIcon />
-                <span className="text-h1 text-text-input pl-1.5">
+                <span className="text-h1 dark:text-text-input-value text-text-text-and-icon pl-1.5">
                   {abbreviateNumber(total)}
                 </span>
               </>

@@ -32,7 +32,8 @@ import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerabili
 import { TruncatedText } from '@/components/TruncatedText';
 import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { queries } from '@/queries';
-import { ScanTypeEnum } from '@/types/common';
+import { useTheme } from '@/theme/ThemeContext';
+import { ScanTypeEnum, VulnerabilitySeverityType } from '@/types/common';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -314,6 +315,7 @@ const Filters = () => {
   );
 };
 const UniqueTable = () => {
+  const { mode: theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const columnHelper = createColumnHelper<ModelVulnerability>();
   const [sort, setSort] = useSortingState();
@@ -353,7 +355,10 @@ const UniqueTable = () => {
         enableResizing: true,
         cell: (info) => (
           <div className="text-p4 text-text-text-and-icon gap-1 inline-flex">
-            <SeverityBadgeIcon severity={info.getValue()} />
+            <SeverityBadgeIcon
+              severity={info.getValue() as VulnerabilitySeverityType}
+              theme={theme}
+            />
             {upperFirst(info.getValue())}
           </div>
         ),

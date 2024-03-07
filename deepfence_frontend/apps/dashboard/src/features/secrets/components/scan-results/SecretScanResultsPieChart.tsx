@@ -93,9 +93,7 @@ function getChartOptions({
         }),
     },
   ];
-  if (isDarkTheme) {
-    series.splice(0, 1);
-  }
+
   const option: ECOption = {
     backgroundColor: 'transparent',
     tooltip: {
@@ -104,7 +102,7 @@ function getChartOptions({
     legend: {
       show: false,
     },
-    series,
+    series: theme === THEME_DARK ? series[1] : series,
   };
   return option;
 }

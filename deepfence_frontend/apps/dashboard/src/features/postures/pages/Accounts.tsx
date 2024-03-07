@@ -67,6 +67,7 @@ import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { getColorForCompliancePercent } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import {
   isKubernetesProvider,
   isLinuxProvider,
@@ -317,7 +318,7 @@ const Filters = () => {
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['status']}
@@ -542,7 +543,7 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 const DeleteConfirmationModal = ({
