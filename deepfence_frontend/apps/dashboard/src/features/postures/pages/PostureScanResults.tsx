@@ -1454,7 +1454,7 @@ const PostureTable = ({
       );
     }
     return columns;
-  }, [setSearchParams, params.nodeType]);
+  }, [setSearchParams, params.nodeType, mode]);
 
   const { data: scanResultData, scanStatusResult } = data;
 

@@ -1503,7 +1503,7 @@ const SecretTable = ({
     ];
 
     return columns;
-  }, [setSearchParams, nodeType]);
+  }, [setSearchParams, nodeType, theme]);
 
   return (
     <Table

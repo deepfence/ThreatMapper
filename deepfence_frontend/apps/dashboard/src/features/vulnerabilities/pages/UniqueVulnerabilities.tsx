@@ -424,7 +424,7 @@ const UniqueTable = () => {
     ];
 
     return columns;
-  }, [searchParams]);
+  }, [searchParams, theme]);
 
   const { data } = useSuspenseQuery({
     ...queries.vulnerability.uniqueVulnerabilities({

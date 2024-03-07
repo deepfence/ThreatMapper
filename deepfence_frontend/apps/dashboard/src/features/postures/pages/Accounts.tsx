@@ -1188,7 +1188,7 @@ const AccountTable = ({
     }
 
     return columns;
-  }, [rowSelectionState, searchParams, data, nodeType, versions]);
+  }, [rowSelectionState, searchParams, data, nodeType, versions, theme]);
 
   return (
     <>

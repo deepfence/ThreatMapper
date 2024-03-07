@@ -85,10 +85,9 @@ export const PostureStatusBadgeIcon = ({
       {status === 'info' && <SeverityHigh />}
       {status === 'ok' && <SeverityLow />}
       {status === 'skip' && <SeverityUnknown />}
-
-      {status === 'pass' && <SeverityMedium />}
-      {status === 'warn' && <SeverityCritical />}
-      {status === 'note' && <SeverityHigh />}
+      {status === 'pass' && <SeverityCritical />}
+      {status === 'warn' && <SeverityMedium />}
+      {status === 'note' && <SeverityLow />}
       {status === 'delete' && <SeverityLow />}
     </div>
   );

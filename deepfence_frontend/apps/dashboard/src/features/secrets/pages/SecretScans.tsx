@@ -930,7 +930,7 @@ const ScansTable = ({
     ];
 
     return columns;
-  }, []);
+  }, [theme]);
 
   return (
     <>

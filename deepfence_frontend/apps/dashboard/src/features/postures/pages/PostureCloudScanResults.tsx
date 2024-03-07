@@ -1482,7 +1482,7 @@ const CloudPostureTable = ({
     ];
 
     return columns;
-  }, [setSearchParams]);
+  }, [setSearchParams, mode]);
 
   const { data: scanResultData, scanStatusResult } = data;
 
