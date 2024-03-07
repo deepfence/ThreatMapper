@@ -26,6 +26,7 @@ import { InProgressIcon } from '@/components/icons/registries/InProgress';
 import { StartScanIcon } from '@/components/icons/registries/StartScan';
 import { TagsIcon } from '@/components/icons/registries/Tags';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { RegistryImagesTable } from '@/features/registries/components/RegistryImagesTable';
 import { queries } from '@/queries';
 import {
@@ -139,7 +140,7 @@ function getScanOptions(
 
 const Header = () => {
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
+    <BreadcrumbWrapper>
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<RegistryIcon />} isLink>
@@ -158,7 +159,7 @@ const Header = () => {
           </Suspense>
         </Breadcrumb>
       </>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 const DynamicBreadcrumbs = () => {
@@ -298,7 +299,7 @@ const CountWidget = () => {
   return (
     <div className="grid grid-cols-12 px-6 items-center w-full">
       <div className="col-span-4 flex items-center text-text-text-and-icon gap-x-3 justify-center">
-        <div className="w-8 h-8">
+        <div className="w-8 h-8 text-text-icon">
           <ImageIcon />
         </div>
 
@@ -314,7 +315,7 @@ const CountWidget = () => {
       </div>
 
       <div className="col-span-4 flex items-center text-text-text-and-icon gap-x-3 justify-center">
-        <div className="w-8 h-8">
+        <div className="w-8 h-8 text-text-icon">
           <TagsIcon />
         </div>
 
@@ -329,7 +330,7 @@ const CountWidget = () => {
         </div>
       </div>
       <div className="col-span-4 flex items-center text-text-text-and-icon gap-x-3 justify-center">
-        <div className="w-8 h-8">
+        <div className="w-8 h-8 text-text-icon">
           <InProgressIcon />
         </div>
 

@@ -102,7 +102,7 @@ function getChartOptions({
     legend: {
       show: false,
     },
-    series: theme === THEME_DARK ? series[1] : series,
+    series: theme === THEME_DARK ? [series[1]] : series,
   };
   return option;
 }

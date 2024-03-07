@@ -6,6 +6,7 @@ import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLi
 import { SeverityLegend } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { ThreatGraphIcon } from '@/components/sideNavigation/icons/ThreatGraph';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { CardHeader } from '@/features/secrets/components/landing/CardHeader';
 import {
   MostExploitableSecretsCountsCard,
@@ -18,7 +19,7 @@ const Secret = () => {
   const { mode } = useTheme();
   return (
     <div>
-      <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4 flex items-center">
+      <BreadcrumbWrapper>
         <Breadcrumb>
           <BreadcrumbLink
             icon={<SecretsIcon />}
@@ -27,7 +28,7 @@ const Secret = () => {
             Secrets
           </BreadcrumbLink>
         </Breadcrumb>
-      </div>
+      </BreadcrumbWrapper>
       <div className="mx-4 h-12 flex items-center">
         <div className="-ml-2.5">
           <DFLink unstyled to="/secret/scans" className="ml-auto">

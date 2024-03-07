@@ -51,7 +51,7 @@ export const StepIndicator = ({
       >
         <div className="overflow-hidden">
           <div
-            className={cn('bg-bg-card', {
+            className={cn('dark:bg-bg-card bg-bg-breadcrumb-bar', {
               'rounded-full': rounded,
             })}
           >

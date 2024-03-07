@@ -56,6 +56,7 @@ import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { SeverityBadgeIcon } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { TruncatedText } from '@/components/TruncatedText';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
@@ -930,7 +931,7 @@ const ScansTable = ({
     ];
 
     return columns;
-  }, []);
+  }, [theme]);
 
   return (
     <>
@@ -1256,7 +1257,7 @@ const SecretScans = () => {
           />
         ) : null}
       </>
-      <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4 flex items-center">
+      <BreadcrumbWrapper>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<SecretsIcon />} isLink>
             <DFLink to={'/secret'} unstyled>
@@ -1271,7 +1272,7 @@ const SecretScans = () => {
         <div className="ml-2 flex items-center">
           {isFetching ? <CircleSpinner size="sm" /> : null}
         </div>
-      </div>
+      </BreadcrumbWrapper>
 
       <div className="mx-4">
         <div className="h-12 flex items-center">

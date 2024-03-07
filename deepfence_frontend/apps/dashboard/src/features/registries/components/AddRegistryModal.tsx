@@ -8,15 +8,16 @@ import {
 } from 'ui-components';
 
 import { RegistryConnectorForm } from '@/features/common/data-component/RegistryConnectorForm';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { registryTypeToNameMapping } from '@/types/common';
 
 const Header = ({ title }: { title: string }) => {
   return (
     <SlidingModalHeader>
-      <div className="text-h3 text-text-text-and-icon py-4 px-4 bg-bg-header">
+      <SlidingModalHeaderWrapper>
         Add Registry: &nbsp;{registryTypeToNameMapping[title]}
-      </div>
+      </SlidingModalHeaderWrapper>
     </SlidingModalHeader>
   );
 };

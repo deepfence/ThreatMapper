@@ -40,8 +40,7 @@ function getChartOptions({
         },
         fontSize: '14px',
         offset: [0, 28],
-        color:
-          theme === THEME_DARK ? color['text-input-value'] : color['text-text-and-icon'],
+        color: color['text-text-and-icon'],
         fontWeight: 400,
         fontFamily: preset.theme.extend.fontFamily.sans.join(','),
       },
@@ -99,9 +98,6 @@ function getChartOptions({
         }),
     },
   ];
-  if (isDarkTheme) {
-    series.splice(0, 1);
-  }
   const option: ECOption = {
     backgroundColor: 'transparent',
     tooltip: {
@@ -110,7 +106,7 @@ function getChartOptions({
     legend: {
       show: false,
     },
-    series,
+    series: theme === THEME_DARK ? [series[1]] : series,
   };
   return option;
 }

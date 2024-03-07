@@ -46,7 +46,7 @@ export const DropdownSubMenu: React.FC<
     'text-p4 text-text-text-and-icon',
     // hover // focus
     'focus:outline-none',
-    'dark:focus:bg-bg-grid-header focus:bg-bg-grid-border dark:focus:text-text-text-and-icon text-text-input-value',
+    'dark:focus:bg-bg-grid-header focus:bg-bg-grid-border dark:focus:text-text-text-and-icon',
     {
       'cursor-pointer': !disabled,
       'cursor-auto dark:text-gray-600 text-severity-unknown': disabled,
@@ -138,7 +138,7 @@ export const DropdownItem: React.ForwardRefExoticComponent<
     'text-p4 text-text-text-and-icon',
     'px-6 pt-2 pb-1', // hover // focus
     'focus:outline-none',
-    'dark:focus:bg-bg-grid-header focus:bg-bg-breadcrumb-bar dark:focus:text-text-text-and-icon text-text-input-value',
+    'dark:focus:bg-bg-grid-header focus:bg-bg-breadcrumb-bar dark:focus:text-text-text-and-icon',
     {
       'cursor-pointer': !disabled,
       'cursor-auto dark:text-gray-600 text-severity-unknown': disabled,

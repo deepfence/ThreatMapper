@@ -58,7 +58,7 @@ export const ScanStatusBadge = ({
   } else if (isNeverScanned(status)) {
     return (
       <div className={wrapperClassName}>
-        <span className={cn(iconWrapper, 'text-df-gray-400 dark:text-df-gray-600')}>
+        <span className={cn(iconWrapper, 'text-severity-unknown')}>
           <NotStartedIcon />
         </span>
         <TruncatedText text={'Never Scanned'} />

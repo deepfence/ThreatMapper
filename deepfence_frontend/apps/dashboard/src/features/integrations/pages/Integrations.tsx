@@ -30,6 +30,7 @@ import { SumoLogicIcon } from '@/components/icons/integration/SumoLogic';
 import { TeamsIcon } from '@/components/icons/integration/Teams';
 import { AmazonECRRegistryIcon } from '@/components/icons/registries/AmazonEcr';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { IntegrationType } from '@/features/integrations/components/IntegrationForm';
 import { useGetReports } from '@/features/integrations/pages/DownloadReport';
 import { queries } from '@/queries';
@@ -266,13 +267,16 @@ const Skeleton = ({ count }: { count: number }) => {
 const Integrations = () => {
   return (
     <>
-      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none">
+      <BreadcrumbWrapper>
         <Breadcrumb>
-          <BreadcrumbLink icon={<IntegrationsIcon />} className="text-text-input-value">
+          <BreadcrumbLink
+            icon={<IntegrationsIcon />}
+            className="text-text-input-value leading-[30px]"
+          >
             Integrations
           </BreadcrumbLink>
         </Breadcrumb>
-      </div>
+      </BreadcrumbWrapper>
       <div className="m-4 gap-y-6 flex flex-col">
         <ThreatRx />
         {IntegrationsData.map((integration, index) => {

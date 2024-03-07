@@ -72,6 +72,7 @@ import { PostureStatusBadge, PostureStatusBadgeIcon } from '@/components/Severit
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { TruncatedText } from '@/components/TruncatedText';
 import { getPostureColor } from '@/constants/charts';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { PostureScanResultsPieChart } from '@/features/postures/components/scan-result/PostureScanResultsPieChart';
@@ -1454,7 +1455,7 @@ const PostureTable = ({
       );
     }
     return columns;
-  }, [setSearchParams, params.nodeType]);
+  }, [setSearchParams, params.nodeType, mode]);
 
   const { data: scanResultData, scanStatusResult } = data;
 
@@ -1541,7 +1542,7 @@ const PostureTable = ({
 
 const Header = () => {
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
+    <BreadcrumbWrapper>
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<PostureIcon />} isLink>
@@ -1560,7 +1561,7 @@ const Header = () => {
           </Suspense>
         </Breadcrumb>
       </>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 
@@ -1754,7 +1755,7 @@ const SeverityCountWidget = () => {
             {keys(statusCounts).length > 0 ? (
               <>
                 <TaskIcon />
-                <span className="text-h1 text-text-input pl-1.5">
+                <span className="text-h1 dark:text-text-input-value text-text-text-and-icon pl-1.5">
                   {abbreviateNumber(total)}
                 </span>
               </>

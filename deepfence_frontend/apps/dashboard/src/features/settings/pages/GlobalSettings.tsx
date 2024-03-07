@@ -19,6 +19,7 @@ import {
 import { getSettingsApiClient } from '@/api/api';
 import { ModelSettingsResponse, ModelSettingUpdateRequestKeyEnum } from '@/api/generated';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getResponseErrors } from '@/utils/403';
@@ -89,9 +90,7 @@ const EditGlobalSettingModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 text-text-text-and-icon py-4 px-4 bg-bg-header">
-          Update setting
-        </div>
+        <SlidingModalHeaderWrapper>Update setting</SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>

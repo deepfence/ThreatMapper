@@ -22,6 +22,7 @@ import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { PostureStatusBadge } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { TruncatedText } from '@/components/TruncatedText';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { queries } from '@/queries';
 import { PostureSeverityType } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
@@ -260,11 +261,11 @@ export const PosturesCompare = ({
       >
         <SlidingModalCloseButton />
         <SlidingModalHeader>
-          <div className="p-4 text-h3 text-text-text-and-icon bg-bg-header">
+          <SlidingModalHeaderWrapper>
             <div className="overflow-hidden">
               <TruncatedText text="Scan comparision" />
             </div>
-          </div>
+          </SlidingModalHeaderWrapper>
         </SlidingModalHeader>
         <SlidingModalContent>
           <div className="mx-4">

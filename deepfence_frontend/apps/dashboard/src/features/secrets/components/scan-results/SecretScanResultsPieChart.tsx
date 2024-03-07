@@ -36,7 +36,7 @@ function getChartOptions({
       },
       cursor: 'none',
       emphasis: {
-        scale: false,
+        disabled: true,
       },
       data: Object.keys(data)
         .filter((key) => data[key] > 0)
@@ -76,7 +76,7 @@ function getChartOptions({
       },
       cursor: 'pointer',
       emphasis: {
-        scale: false,
+        disabled: true,
       },
       data: Object.keys(data)
         .filter((key) => data[key] > 0)
@@ -102,7 +102,7 @@ function getChartOptions({
     legend: {
       show: false,
     },
-    series: theme === THEME_DARK ? series[1] : series,
+    series: theme === THEME_DARK ? [series[1]] : series,
   };
   return option;
 }
