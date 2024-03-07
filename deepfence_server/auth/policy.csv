@@ -85,3 +85,8 @@ p, admin, settings, write
 p, admin, settings, delete
 p, standard-user, settings, read
 p, standard-user, settings, write
+
+p, admin, license, read
+p, admin, license, write
+p, standard-user, license, read
+p, read-only-user, license, read

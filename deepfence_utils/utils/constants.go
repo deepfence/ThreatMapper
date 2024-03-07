@@ -58,6 +58,8 @@ const (
 	AsynqDeleteAllArchivedTasks       = "asynq_delete_all_archived_tasks"
 	RedisRewriteAOF                   = "redis_rewrite_aof"
 
+	UpdateLicenseTask = "update_license"
+
 	ThreatIntelUpdateTask = "threat_intel_update"
 )
 

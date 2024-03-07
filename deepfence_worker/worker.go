@@ -230,6 +230,8 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 
 	worker.AddOneShotHandler(utils.BulkDeleteScans, scans.BulkDeleteScans)
 
+	worker.AddOneShotHandler(utils.UpdateLicenseTask, cronjobs.UpdateLicenseStatus)
+
 	worker.AddRetryableHandler(utils.ThreatIntelUpdateTask, cronjobs.FetchThreatIntel)
 
 	return worker, cancel, nil

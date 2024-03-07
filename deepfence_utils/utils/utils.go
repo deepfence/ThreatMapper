@@ -215,6 +215,18 @@ func GetStringValueFromInterfaceMap(claims map[string]interface{}, key string) (
 	return fmt.Sprintf("%v", val), nil
 }
 
+func GetBoolValueFromInterfaceMap(claims map[string]interface{}, key string) (bool, error) {
+	val, ok := claims[key]
+	if !ok {
+		return false, fmt.Errorf("key %s not found in JWT claims", key)
+	}
+	valBool, ok := val.(bool)
+	if !ok {
+		return false, nil
+	}
+	return valBool, nil
+}
+
 func StructToMap[T any](c T) map[string]interface{} {
 	t := reflect.TypeOf(c)
 	v := reflect.ValueOf(c)
