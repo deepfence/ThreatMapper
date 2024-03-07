@@ -8,21 +8,30 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
 )
 
 var (
-	threatintelURL = "http://threat-intel.deepfence.space/threat-intel/listing.json"
-	product        = "ThreatMapper"
+	threatIntelURL = "http://threat-intel.deepfence.space/threat-intel/listing.json"
 )
 
 // FetchLicense gets license key from database
 func FetchLicense(ctx context.Context) (string, error) {
-	return "", nil
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return "", err
+	}
+	license, err := model.GetLicense(ctx, pgClient)
+	if err != nil {
+		return "", err
+	}
+	return license.LicenseKey, nil
 }
 
 func FetchThreatIntelListing(ctx context.Context, token string) (threatintel.Listing, error) {
@@ -34,7 +43,7 @@ func FetchThreatIntelListing(ctx context.Context, token string) (threatintel.Lis
 
 	hc := http.Client{Timeout: 10 * time.Second}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, threatintelURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, threatIntelURL, nil)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to construct new http request")
 		return listing, err
@@ -44,7 +53,7 @@ func FetchThreatIntelListing(ctx context.Context, token string) (threatintel.Lis
 
 	q := req.URL.Query()
 	q.Add("version", ConsoleVersion)
-	q.Add("product", product)
+	q.Add("product", utils.Project)
 	req.URL.RawQuery = q.Encode()
 
 	log.Info().Msgf("query threatintel at %s", req.URL.String())
@@ -90,7 +99,7 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 
 	// check if token is present
 	token, err := FetchLicense(ctx)
-	if err != nil {
+	if err != nil || token == "" {
 		log.Error().Err(err).Msg("token is required to access threat intel")
 		return err
 	}
