@@ -842,7 +842,7 @@ func (d *OpenAPIDocs) AddLicenseOperations() {
 	// License
 	d.AddOperation("generateLicense", http.MethodPost, "/deepfence/license/generate",
 		"Generate License Key", "Generate a new ThreatMapper license key",
-		http.StatusOK, []string{tagSettings}, bearerToken, new(GenerateLicenseRequest), new(MessageResponse))
+		http.StatusOK, []string{tagSettings}, bearerToken, new(GenerateLicenseRequest), new(GenerateLicenseResponse))
 
 	d.AddOperation("registerLicense", http.MethodPost, "/deepfence/license",
 		"Register License", "Register new license key to the console and activate",

@@ -13,7 +13,7 @@ import (
 
 var (
 	licenseAddedError         = ForbiddenError{errors.New("license key already added")}
-	licenseNotConfiguredError = NotFoundError{errors.New("license not added")}
+	licenseNotConfiguredError = BadDecoding{errors.New("license not registered")}
 )
 
 func (h *Handler) GenerateLicenseHandler(w http.ResponseWriter, r *http.Request) {

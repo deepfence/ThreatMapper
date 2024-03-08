@@ -8,6 +8,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/google/uuid"
@@ -40,6 +41,12 @@ type GenerateLicenseRequest struct {
 	Email       string `json:"email" validate:"required,email" required:"true"`
 	Company     string `json:"company" validate:"required,company_name,min=2,max=32" required:"true"`
 	ResendEmail bool   `json:"resend_email" required:"true"`
+}
+
+type GenerateLicenseResponse struct {
+	Message             string `json:"message" required:"true"`
+	Success             bool   `json:"success" required:"true"`
+	GenerateLicenseLink string `json:"generate_license_link"`
 }
 
 type RegisterLicenseRequest struct {
@@ -84,8 +91,7 @@ type LicenseServerResponse struct {
 	Success bool `json:"success"`
 }
 
-func GenerateLicense(req GenerateLicenseRequest) (*MessageResponse, error) {
-	message := MessageResponse{Message: ""}
+func GenerateLicense(req GenerateLicenseRequest) (*GenerateLicenseResponse, error) {
 	generateLicenseAPIURL := fmt.Sprintf(GenerateLicenseAPIURL, req.FirstName, req.LastName, req.Email, req.Company, req.ResendEmail)
 	var msg string
 	var err error
@@ -104,11 +110,11 @@ func GenerateLicense(req GenerateLicenseRequest) (*MessageResponse, error) {
 		break
 	}
 	if err != nil {
-		message.Message = errGenerateLicense + generateLicenseAPIURL
-		return &message, err
+		log.Error().Msgf("Could not generate license key: %v", err)
+		return &GenerateLicenseResponse{
+			Message: errGenerateLicense, Success: false, GenerateLicenseLink: generateLicenseAPIURL}, nil
 	}
-	message.Message = msg
-	return &message, nil
+	return &GenerateLicenseResponse{Message: msg, Success: true}, nil
 }
 
 func generateLicense(generateLicenseAPIURL string) (string, error) {
@@ -116,7 +122,7 @@ func generateLicense(generateLicenseAPIURL string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	httpClient.Timeout = 15 * time.Second
+	httpClient.Timeout = 10 * time.Second
 	resp, err := httpClient.Get(generateLicenseAPIURL)
 	if err != nil {
 		return "", err
@@ -129,6 +135,7 @@ func generateLicense(generateLicenseAPIURL string) (string, error) {
 	var licenseResp LicenseServerResponse
 	err = json.Unmarshal(respBody, &licenseResp)
 	if err != nil {
+		log.Warn().Msgf("Error in generating license: %s", string(respBody))
 		return "", err
 	}
 	if resp.StatusCode != 200 {
@@ -167,7 +174,7 @@ func fetchLicense(licenseKey string) (*License, error) {
 	if err != nil {
 		return nil, err
 	}
-	httpClient.Timeout = 15 * time.Second
+	httpClient.Timeout = 10 * time.Second
 	resp, err := httpClient.Get(fmt.Sprintf(GetLicenseAPIURL, licenseKey))
 	if err != nil {
 		return nil, err
