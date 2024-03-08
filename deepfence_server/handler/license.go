@@ -62,14 +62,17 @@ func (h *Handler) RegisterLicenseHandler(w http.ResponseWriter, r *http.Request)
 		h.respondError(err, w)
 		return
 	}
-	licensesCount, err := pgClient.CountLicenses(ctx)
-	if err != nil {
+	dbLicense, err := model.GetLicense(ctx, pgClient)
+	if errors.Is(err, sql.ErrNoRows) {
+		// Nothing to do
+	} else if err != nil {
 		h.respondError(err, w)
 		return
-	}
-	if licensesCount > 0 {
-		h.respondError(&licenseAddedError, w)
-		return
+	} else {
+		if dbLicense.LicenseKey != req.LicenseKey {
+			h.respondError(&licenseAddedError, w)
+			return
+		}
 	}
 	license, err := model.FetchLicense(req.LicenseKey)
 	if err != nil {
