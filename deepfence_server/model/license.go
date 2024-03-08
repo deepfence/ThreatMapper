@@ -26,6 +26,14 @@ To renew your license, please contact %s`
 	numberOfHostsExceededDescription = `Your license doesn't allow you to use Deepfence on more than %d hosts. Current usage is %d.
 Please reduce the number of hosts or upgrade your license by contacting %s`
 
+	licenseDefaultNumberOfHosts            = 25
+	licenseDefaultNumberOfCloudAccounts    = 20
+	licenseDefaultNumberOfRegistries       = 5
+	licenseDefaultNumberOfImagesInRegistry = 20
+	licenseDefaultDuration                 = 30 * 24 * time.Hour
+
+	DeepfenceSupportEmail = "community-support@deepfence.io"
+
 	errGenerateLicense = "Could not generate license. Please navigate to this URL in the browser to generate one: "
 )
 
@@ -64,23 +72,21 @@ type RegistryCredentials struct {
 }
 
 type License struct {
-	LicenseKey                      string              `json:"key"`
-	LicenseKeyUUID                  uuid.UUID           `json:"-"`
-	IsActive                        bool                `json:"is_active"`
-	EndDate                         string              `json:"end_date"`
-	NoOfHosts                       int64               `json:"no_of_hosts"`
-	NoOfCloudAccounts               int64               `json:"no_of_cloud_accounts"`
-	NoOfRegistries                  int64               `json:"no_of_registries"`
-	NoOfImagesInRegistry            int64               `json:"no_of_images_in_registry"`
-	CurrentHosts                    int64               `json:"current_hosts"`
-	DeepfenceSupportEmail           string              `json:"deepfence_support_email"`
-	NotificationThresholdPercentage int32               `json:"notification_threshold_percentage"`
-	NotificationThresholdUpdatedAt  int64               `json:"notification_threshold_updated_at"`
-	StartDate                       string              `json:"start_date"`
-	Message                         string              `json:"message"`
-	Description                     string              `json:"description"`
-	LicenseType                     string              `json:"license_type"`
-	RegistryCredentials             RegistryCredentials `json:"registry_credentials"`
+	LicenseKey            string              `json:"key"`
+	LicenseKeyUUID        uuid.UUID           `json:"-"`
+	IsActive              bool                `json:"is_active"`
+	EndDate               string              `json:"end_date"`
+	NoOfHosts             int64               `json:"no_of_hosts"`
+	NoOfCloudAccounts     int64               `json:"no_of_cloud_accounts"`
+	NoOfRegistries        int64               `json:"no_of_registries"`
+	NoOfImagesInRegistry  int64               `json:"no_of_images_in_registry"`
+	CurrentHosts          int64               `json:"current_hosts"`
+	DeepfenceSupportEmail string              `json:"deepfence_support_email"`
+	StartDate             string              `json:"start_date"`
+	Message               string              `json:"message"`
+	Description           string              `json:"description"`
+	LicenseType           string              `json:"license_type"`
+	RegistryCredentials   RegistryCredentials `json:"registry_credentials"`
 }
 
 type LicenseServerResponse struct {
@@ -147,7 +153,7 @@ func generateLicense(generateLicenseAPIURL string) (string, error) {
 	return licenseResp.Data.Message, nil
 }
 
-func FetchLicense(licenseKey string) (*License, error) {
+func FetchLicense(ctx context.Context, licenseKey string, pgClient *postgresqlDb.Queries) (*License, error) {
 	var license *License
 	var err error
 	retryCounter := 0
@@ -164,7 +170,8 @@ func FetchLicense(licenseKey string) (*License, error) {
 		break
 	}
 	if err != nil {
-		return nil, err
+		log.Error().Msgf("Could not fetch license details: %v", err)
+		return generateDefaultLicense(ctx, pgClient), nil
 	}
 	return license, nil
 }
@@ -204,6 +211,48 @@ func fetchLicense(licenseKey string) (*License, error) {
 	return &license, nil
 }
 
+func generateDefaultLicense(ctx context.Context, pgClient *postgresqlDb.Queries) *License {
+	// In case of air-gapped environment, or when license server is not reachable, create license with default values
+	var defaultLicenseUUID uuid.UUID
+	var startDate time.Time
+
+	dbLicense, err := GetLicense(ctx, pgClient)
+	if err != nil {
+		defaultLicenseUUID = utils.NewUUID()
+		startDate = time.Now().UTC()
+	} else {
+		defaultLicenseUUID = dbLicense.LicenseKeyUUID
+		startDate, err = parseDate(dbLicense.StartDate)
+		if err != nil {
+			startDate = time.Now().UTC()
+		} else {
+			now := time.Now().UTC()
+			if now.Before(startDate) {
+				startDate = time.Now().UTC()
+			}
+		}
+	}
+	endDate := startDate.Add(licenseDefaultDuration)
+
+	return &License{
+		LicenseKey:            defaultLicenseUUID.String(),
+		LicenseKeyUUID:        defaultLicenseUUID,
+		IsActive:              true,
+		EndDate:               formatDate(endDate),
+		NoOfHosts:             licenseDefaultNumberOfHosts,
+		NoOfCloudAccounts:     licenseDefaultNumberOfCloudAccounts,
+		NoOfRegistries:        licenseDefaultNumberOfRegistries,
+		NoOfImagesInRegistry:  licenseDefaultNumberOfImagesInRegistry,
+		CurrentHosts:          0,
+		DeepfenceSupportEmail: DeepfenceSupportEmail,
+		StartDate:             formatDate(startDate),
+		Message:               licenseDefaultMessage,
+		Description:           licenseDefaultDescription,
+		LicenseType:           "monthly_subscription",
+		RegistryCredentials:   RegistryCredentials{},
+	}
+}
+
 func (l *License) Save(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	registryCredentials, err := json.Marshal(l.RegistryCredentials)
 	if err != nil {
@@ -231,21 +280,20 @@ func (l *License) Save(ctx context.Context, pgClient *postgresqlDb.Queries) erro
 		description = fmt.Sprintf(licenseExpiredDescription, endDate, l.DeepfenceSupportEmail)
 	}
 	_, err = pgClient.UpsertLicense(ctx, postgresqlDb.UpsertLicenseParams{
-		LicenseKey:                      l.LicenseKeyUUID,
-		StartDate:                       startDate,
-		EndDate:                         endDate,
-		NoOfHosts:                       l.NoOfHosts,
-		NoOfCloudAccounts:               l.NoOfCloudAccounts,
-		NoOfRegistries:                  l.NoOfRegistries,
-		NoOfImagesInRegistry:            l.NoOfImagesInRegistry,
-		CurrentHosts:                    l.CurrentHosts,
-		IsActive:                        isActive,
-		LicenseType:                     l.LicenseType,
-		DeepfenceSupportEmail:           l.DeepfenceSupportEmail,
-		NotificationThresholdPercentage: l.NotificationThresholdPercentage,
-		RegistryCredentials:             registryCredentials,
-		Message:                         message,
-		Description:                     description,
+		LicenseKey:            l.LicenseKeyUUID,
+		StartDate:             startDate,
+		EndDate:               endDate,
+		NoOfHosts:             l.NoOfHosts,
+		NoOfCloudAccounts:     l.NoOfCloudAccounts,
+		NoOfRegistries:        l.NoOfRegistries,
+		NoOfImagesInRegistry:  l.NoOfImagesInRegistry,
+		CurrentHosts:          l.CurrentHosts,
+		IsActive:              isActive,
+		LicenseType:           l.LicenseType,
+		DeepfenceSupportEmail: l.DeepfenceSupportEmail,
+		RegistryCredentials:   registryCredentials,
+		Message:               message,
+		Description:           description,
 	})
 	return err
 }
@@ -268,28 +316,22 @@ func GetLicense(ctx context.Context, pgClient *postgresqlDb.Queries) (*License, 
 		return nil, err
 	}
 	endDate := formatDate(pgLicense.EndDate)
-	thresholdUpdatedAt := int64(0)
-	if pgLicense.NotificationThresholdUpdatedAt.Valid {
-		thresholdUpdatedAt = pgLicense.NotificationThresholdUpdatedAt.Time.Unix()
-	}
 	license := License{
-		LicenseKey:                      pgLicense.LicenseKey.String(),
-		LicenseKeyUUID:                  pgLicense.LicenseKey,
-		IsActive:                        pgLicense.IsActive,
-		EndDate:                         endDate,
-		NoOfHosts:                       pgLicense.NoOfHosts,
-		NoOfCloudAccounts:               pgLicense.NoOfCloudAccounts,
-		NoOfRegistries:                  pgLicense.NoOfRegistries,
-		NoOfImagesInRegistry:            pgLicense.NoOfImagesInRegistry,
-		CurrentHosts:                    pgLicense.CurrentHosts,
-		DeepfenceSupportEmail:           pgLicense.DeepfenceSupportEmail,
-		NotificationThresholdPercentage: pgLicense.NotificationThresholdPercentage,
-		NotificationThresholdUpdatedAt:  thresholdUpdatedAt,
-		StartDate:                       formatDate(pgLicense.StartDate),
-		Message:                         pgLicense.Message,
-		Description:                     pgLicense.Description,
-		LicenseType:                     pgLicense.LicenseType,
-		RegistryCredentials:             registryCredentials,
+		LicenseKey:            pgLicense.LicenseKey.String(),
+		LicenseKeyUUID:        pgLicense.LicenseKey,
+		IsActive:              pgLicense.IsActive,
+		EndDate:               endDate,
+		NoOfHosts:             pgLicense.NoOfHosts,
+		NoOfCloudAccounts:     pgLicense.NoOfCloudAccounts,
+		NoOfRegistries:        pgLicense.NoOfRegistries,
+		NoOfImagesInRegistry:  pgLicense.NoOfImagesInRegistry,
+		CurrentHosts:          pgLicense.CurrentHosts,
+		DeepfenceSupportEmail: pgLicense.DeepfenceSupportEmail,
+		StartDate:             formatDate(pgLicense.StartDate),
+		Message:               pgLicense.Message,
+		Description:           pgLicense.Description,
+		LicenseType:           pgLicense.LicenseType,
+		RegistryCredentials:   registryCredentials,
 	}
 	return &license, err
 }

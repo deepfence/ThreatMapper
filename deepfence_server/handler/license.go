@@ -74,7 +74,7 @@ func (h *Handler) RegisterLicenseHandler(w http.ResponseWriter, r *http.Request)
 			return
 		}
 	}
-	license, err := model.FetchLicense(req.LicenseKey)
+	license, err := model.FetchLicense(ctx, req.LicenseKey, pgClient)
 	if err != nil {
 		h.respondError(err, w)
 		return
