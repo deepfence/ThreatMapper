@@ -118,8 +118,7 @@ export function apiWrapper<F extends Func<any[], any>>({
           throw new Error('Service unavailable', {
             cause: { status: 503 },
           });
-        } else if (error.response.status === 400) {
-          // TODO:                           ^^^ change this to 402 later
+        } else if (error.response.status === 402) {
           showUserInfoGuard();
           if (await waitForUserInfoGuard()) {
             if (await refreshAccessTokenIfPossible()) {
