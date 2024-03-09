@@ -256,6 +256,7 @@
     }
 
   </style>
+<script src="https://go-echarts.github.io/go-echarts-assets/assets/echarts.min.js"></script>
 </head>
 
 <body>
@@ -265,6 +266,7 @@
   {{ $scan_types := list "vulnerability" "secret" "malware" }}
   {{ if mustHas .ScanType $scan_types }}
     {{ template "summary-table" . }}
+    {{ template "piechart" . }}
   {{ end }}
 
   {{ if eq .ScanType "compliance" }}
