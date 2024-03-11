@@ -552,6 +552,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/generate", dfHandler.AuthHandler(ResourceLicense, PermissionWrite, dfHandler.GenerateLicenseHandler))
 				r.Post("/", dfHandler.AuthHandler(ResourceLicense, PermissionWrite, dfHandler.RegisterLicenseHandler))
 				r.Get("/", dfHandler.AuthHandler(ResourceLicense, PermissionRead, dfHandler.GetLicenseHandler))
+				r.Delete("/", dfHandler.AuthHandler(ResourceLicense, PermissionDelete, dfHandler.DeleteLicenseHandler))
 			})
 		})
 	})

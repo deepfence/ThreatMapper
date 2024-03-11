@@ -757,3 +757,8 @@ UPDATE license
 SET notification_threshold_percentage = $1,
     notification_threshold_updated_at = now()
 WHERE license_key = $2;
+
+-- name: DeleteLicense :exec
+DELETE
+FROM license
+WHERE license_key = $1;

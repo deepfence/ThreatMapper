@@ -305,6 +305,10 @@ func (l *License) UpdateNotificationThresholdPercentage(ctx context.Context, pgC
 	})
 }
 
+func (l *License) Delete(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	return pgClient.DeleteLicense(ctx, l.LicenseKeyUUID)
+}
+
 func GetLicense(ctx context.Context, pgClient *postgresqlDb.Queries) (*License, error) {
 	pgLicense, err := pgClient.GetLicense(ctx)
 	if err != nil {

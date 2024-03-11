@@ -1,13 +1,16 @@
 package handler
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
+	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
 )
 
@@ -84,7 +87,25 @@ func (h *Handler) RegisterLicenseHandler(w http.ResponseWriter, r *http.Request)
 		h.respondError(err, w)
 		return
 	}
+
+	err = h.RunThreatIntelUpdateTask(ctx)
+	if err != nil {
+		log.Warn().Msgf("Could not trigger ThreatIntelUpdateTask: %v", err)
+	}
+
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) RunThreatIntelUpdateTask(ctx context.Context) error {
+	worker, err := directory.Worker(ctx)
+	if err != nil {
+		return err
+	}
+	err = worker.EnqueueUnique(utils.ThreatIntelUpdateTask, []byte{}, utils.CritialTaskOpts()...)
+	if err != nil && err != asynq.ErrTaskIDConflict {
+		return err
+	}
+	return nil
 }
 
 func (h *Handler) GetLicenseHandler(w http.ResponseWriter, r *http.Request) {
@@ -113,4 +134,30 @@ func (h *Handler) GetLicenseHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
+}
+
+func (h *Handler) DeleteLicenseHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	license, err := model.GetLicense(ctx, pgClient)
+	if errors.Is(err, sql.ErrNoRows) {
+		h.respondError(&licenseNotConfiguredError, w)
+		return
+	} else if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+	err = license.Delete(ctx, pgClient)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

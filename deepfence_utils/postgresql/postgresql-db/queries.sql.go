@@ -671,6 +671,17 @@ func (q *Queries) DeleteIntegrations(ctx context.Context, dollar_1 []int32) erro
 	return err
 }
 
+const deleteLicense = `-- name: DeleteLicense :exec
+DELETE
+FROM license
+WHERE license_key = $1
+`
+
+func (q *Queries) DeleteLicense(ctx context.Context, licenseKey uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteLicense, licenseKey)
+	return err
+}
+
 const deletePasswordResetByExpiry = `-- name: DeletePasswordResetByExpiry :exec
 DELETE
 FROM password_reset

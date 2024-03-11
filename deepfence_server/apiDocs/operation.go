@@ -851,6 +851,10 @@ func (d *OpenAPIDocs) AddLicenseOperations() {
 	d.AddOperation("getLicense", http.MethodGet, "/deepfence/license",
 		"Get License Details", "Get license status and expiry",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(License))
+
+	d.AddOperation("deleteLicense", http.MethodDelete, "/deepfence/license",
+		"Delete License", "Delete license from the console database",
+		http.StatusNoContent, []string{tagSettings}, bearerToken, nil, nil)
 }
 
 func (d *OpenAPIDocs) AddDiffAddOperations() {
