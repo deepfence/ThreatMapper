@@ -1,5 +1,5 @@
 import { QueryObserver, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { Button, Modal, TextInput } from 'ui-components';
 
@@ -79,18 +79,10 @@ interface ActionData {
 }
 const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
-  const intent = formData.get('intent');
-  debugger;
-  if (intent === SEND_EMAIL) {
-    // return {
-    //   licenseSuccess: false,
-    //   emailSuccess: {
-    //     success: true,
-    //     generate_license_link: 'hi',
-    //     message: 'mess',
-    //   },
-    //   action: intent,
-    // };
+  const intent = formData.get('intent')?.toString() ?? '';
+  const resendIntent = formData.get('resendIntent');
+
+  if (intent === SEND_EMAIL || resendIntent === SEND_EMAIL) {
     const apiFunctionApi = apiWrapper({
       fn: getSettingsApiClient().generateLicense,
     });
@@ -147,15 +139,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       licenseSuccess: false,
     };
   } else if (intent === SAVE_LICENSE) {
-    // return {
-    //   licenseSuccess: true,
-    //   emailSuccess: {
-    //     success: true,
-    //     generate_license_link: 'hi',
-    //     message: 'mess',
-    //   },
-    //   action: intent,
-    // };
     const apiFunctionApi = apiWrapper({
       fn: getSettingsApiClient().registerLicense,
     });
@@ -214,15 +197,6 @@ const UserInfoModalContent = ({
 }) => {
   const fetcher = useFetcher<ActionData>();
   const { data } = fetcher;
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    companyName: '',
-    resend: false,
-    licenseKey: '',
-    intent: '',
-  });
 
   useEffect(() => {
     if (data?.licenseSuccess) {
@@ -230,7 +204,7 @@ const UserInfoModalContent = ({
     }
   }, [data]);
 
-  const isLicenseToBeGeneratedThroughLink = useMemo(() => {
+  const isLicenseLinkGenerated = useMemo(() => {
     return (
       data?.emailSuccess?.success === false &&
       data?.emailSuccess?.generate_license_link !== undefined &&
@@ -261,13 +235,6 @@ const UserInfoModalContent = ({
           name="firstname"
           color={data?.fieldErrors?.firstname ? 'error' : 'default'}
           helperText={data?.fieldErrors?.firstname}
-          disabled={data?.emailSuccess?.success || isLicenseToBeGeneratedThroughLink}
-          onChange={(e) => {
-            setFormData({
-              ...formData,
-              firstName: e.target.value,
-            });
-          }}
         />
         <TextInput
           className="autofill:bg-transparent"
@@ -277,13 +244,6 @@ const UserInfoModalContent = ({
           name="lastname"
           color={data?.fieldErrors?.lastname ? 'error' : 'default'}
           helperText={data?.fieldErrors?.lastname}
-          disabled={data?.emailSuccess?.success || isLicenseToBeGeneratedThroughLink}
-          onChange={(e) => {
-            setFormData({
-              ...formData,
-              lastName: e.target.value,
-            });
-          }}
         />
         <TextInput
           className="autofill:bg-transparent"
@@ -293,13 +253,6 @@ const UserInfoModalContent = ({
           name="email"
           color={data?.fieldErrors?.email ? 'error' : 'default'}
           helperText={data?.fieldErrors?.email}
-          disabled={data?.emailSuccess?.success || isLicenseToBeGeneratedThroughLink}
-          onChange={(e) => {
-            setFormData({
-              ...formData,
-              email: e.target.value,
-            });
-          }}
         />
         <TextInput
           className="autofill:bg-transparent"
@@ -309,16 +262,9 @@ const UserInfoModalContent = ({
           name="company"
           color={data?.fieldErrors?.company ? 'error' : 'default'}
           helperText={data?.fieldErrors?.company}
-          disabled={data?.emailSuccess?.success || isLicenseToBeGeneratedThroughLink}
-          onChange={(e) => {
-            setFormData({
-              ...formData,
-              companyName: e.target.value,
-            });
-          }}
         />
 
-        {data?.emailSuccess?.success || isLicenseToBeGeneratedThroughLink ? (
+        {data?.emailSuccess?.success || isLicenseLinkGenerated ? (
           <TextInput
             className="autofill:bg-transparent"
             label="License Key"
@@ -327,12 +273,6 @@ const UserInfoModalContent = ({
             name="licenseKey"
             color={data?.fieldErrors?.licenseKey ? 'error' : 'default'}
             helperText={data?.fieldErrors?.licenseKey}
-            onChange={(e) => {
-              setFormData({
-                ...formData,
-                licenseKey: e.target.value,
-              });
-            }}
           />
         ) : null}
       </div>
@@ -341,7 +281,7 @@ const UserInfoModalContent = ({
         <div className={`text-center m-1.5 text-p7 text-status-error`}>{data.error}</div>
       )}
 
-      {isLicenseToBeGeneratedThroughLink ? (
+      {isLicenseLinkGenerated ? (
         <div>
           <div className={`my-1.5 text-p7 text-text-text-and-icon`}>
             {data?.emailSuccess.message}
@@ -365,11 +305,13 @@ const UserInfoModalContent = ({
 
       {data?.emailSuccess?.success ? (
         <div className="flex mt-4 text-p4 text-text-text-and-icon gap-x-2">
+          <input hidden value={SEND_EMAIL} name="resendIntent" readOnly />
+          <input hidden value={'true'} name="resend" readOnly />
           Not receiving license detail?{' '}
           <Button
             size="sm"
             className="p-0 tracking-normal"
-            type="button"
+            type="submit"
             variant="flat"
             disabled={
               fetcher.state !== 'idle' && fetcher.formData?.get('intent') === SEND_EMAIL
@@ -377,20 +319,6 @@ const UserInfoModalContent = ({
             loading={
               fetcher.state !== 'idle' && fetcher.formData?.get('intent') === SEND_EMAIL
             }
-            onClick={(e) => {
-              e.preventDefault();
-              const data = new FormData();
-              data.append('firstname', formData.firstName);
-              data.append('lastname', formData.lastName);
-              data.append('email', formData.email);
-              data.append('company', formData.companyName);
-              data.append('intent', SEND_EMAIL);
-              data.append('resend', 'true');
-              fetcher.submit(data, {
-                method: 'POST',
-                action: '/data-component/user-info-guard',
-              });
-            }}
           >
             Resend now.
           </Button>
@@ -408,7 +336,7 @@ const UserInfoModalContent = ({
         >
           Cancel
         </Button>
-        {data?.emailSuccess?.success || isLicenseToBeGeneratedThroughLink ? (
+        {data?.emailSuccess?.success || isLicenseLinkGenerated ? (
           <>
             <input hidden value={SAVE_LICENSE} name="intent" readOnly />
             <Button
