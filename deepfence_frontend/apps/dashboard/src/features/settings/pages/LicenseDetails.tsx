@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { upperFirst } from 'lodash-es';
 import { Suspense } from 'react';
+import { cn } from 'tailwind-preset';
 import { Card, CircleSpinner } from 'ui-components';
 
 import { ModelLicense } from '@/api/generated';
@@ -30,9 +31,17 @@ const LicenseDetailsContent = () => {
 const LicenseCard = ({ licenseData }: { licenseData: ModelLicense }) => {
   return (
     <Card className="p-4 rounded-[5px]">
-      <h4 className="text-status-error text-h4">
-        {upperFirst(licenseData.message) ?? 'License'}
-      </h4>
+      {licenseData.message && licenseData.message.length ? (
+        <h4
+          className={cn('text-status-error text-h4', {
+            'text-status-error': !licenseData.is_active,
+            'text-status-success': licenseData.is_active,
+          })}
+        >
+          {upperFirst(licenseData.message)}
+        </h4>
+      ) : null}
+
       <div className="flex flex-col gap-3 mt-4">
         <div className="flex">
           <span className="text-p7 min-w-[160px] dark:text-text-text-and-icon">
