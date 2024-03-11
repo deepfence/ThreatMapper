@@ -426,14 +426,14 @@ func StopScan(ctx context.Context, scanType string, scanIds []string) error {
 	return tx.Commit()
 }
 
-func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanID string, scanIDs []string) error {
+func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanID string, scanIDs []string, integrationIDs []int32) error {
 	switch scanType {
 	case utils.NEO4JVulnerabilityScan:
 		res, common, err := GetSelectedScanResults[model.Vulnerability](ctx, scanType, scanID, scanIDs)
 		if err != nil {
 			return err
 		}
-		if err := Notify[model.Vulnerability](ctx, res, common, string(scanType)); err != nil {
+		if err := Notify[model.Vulnerability](ctx, res, common, string(scanType), integrationIDs); err != nil {
 			return err
 		}
 	case utils.NEO4JSecretScan:
@@ -441,7 +441,7 @@ func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanID 
 		if err != nil {
 			return err
 		}
-		if err := Notify[model.Secret](ctx, res, common, string(scanType)); err != nil {
+		if err := Notify[model.Secret](ctx, res, common, string(scanType), integrationIDs); err != nil {
 			return err
 		}
 	case utils.NEO4JMalwareScan:
@@ -449,7 +449,7 @@ func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanID 
 		if err != nil {
 			return err
 		}
-		if err := Notify[model.Malware](ctx, res, common, string(scanType)); err != nil {
+		if err := Notify[model.Malware](ctx, res, common, string(scanType), integrationIDs); err != nil {
 			return err
 		}
 	case utils.NEO4JComplianceScan:
@@ -457,7 +457,7 @@ func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanID 
 		if err != nil {
 			return err
 		}
-		if err := Notify[model.Compliance](ctx, res, common, string(scanType)); err != nil {
+		if err := Notify[model.Compliance](ctx, res, common, string(scanType), integrationIDs); err != nil {
 			return err
 		}
 	case utils.NEO4JCloudComplianceScan:
@@ -465,7 +465,7 @@ func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanID 
 		if err != nil {
 			return err
 		}
-		if err := Notify[model.CloudCompliance](ctx, res, common, string(scanType)); err != nil {
+		if err := Notify[model.CloudCompliance](ctx, res, common, string(scanType), integrationIDs); err != nil {
 			return err
 		}
 	}
