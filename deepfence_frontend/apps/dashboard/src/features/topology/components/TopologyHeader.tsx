@@ -49,9 +49,10 @@ const SummaryTab = ({
       <button
         className={cn(
           `flex items-center gap-[6px] p-3 hover:text-text-input-value dark:hover:bg-bg-grid-header hover:bg-bg-page`,
-          'hover:shadow-[0_-4px_0_var(--tw-shadow-color)_inset] shadow-accent-accent transition-shadow duration-[0.2s] ease-[ease-in]',
+          'shadow-accent-accent transition-shadow duration-[0.2s] ease-[ease-in]',
+          'dark:hover:shadow-[0_-4px_0_var(--tw-shadow-color)_inset] hover:shadow-[0_-1px_0_var(--tw-shadow-color)_inset]',
           {
-            'text-text-input-value dark:bg-bg-active-selection bg-white shadow-[0_-4px_0_var(--tw-shadow-color)_inset] dark:hover:bg-bg-active-selection hover:bg-white':
+            'text-text-input-value dark:bg-bg-active-selection bg-white dark:hover:bg-bg-active-selection hover:bg-white shadow-[0_-4px_0_var(--tw-shadow-color)_inset]':
               isActive,
           },
         )}
@@ -87,7 +88,7 @@ export const TopologyHeader = () => {
   const params = useParams();
   const viewType = params.viewType;
   return (
-    <div className="flex items-center text-text-text-and-icon text-p1a px-3 bg-bg-breadcrumb-bar">
+    <div className="flex items-center text-text-text-and-icon text-p1a px-3 bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
       <SummaryTab
         icon={<CloudLine />}
         name="Clouds"

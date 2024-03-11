@@ -126,7 +126,7 @@ export const AvailabilityCharts = ({
               />
             ) : (
               <div className="flex items-center justify-center h-full w-full gap-2">
-                <div className="h-6 w-6 shrink-0 text-text-text-and-icon">
+                <div className="h-6 w-6 shrink-0 text-text-icon">
                   <ErrorStandardLineIcon />
                 </div>
                 <p className="text-text-text-and-icon text-h3">Not available</p>
@@ -144,7 +144,7 @@ export const AvailabilityCharts = ({
               />
             ) : (
               <div className="flex items-center justify-center h-full w-full gap-2">
-                <div className="h-6 w-6 shrink-0 text-text-text-and-icon">
+                <div className="h-6 w-6 shrink-0 text-text-icon">
                   <ErrorStandardLineIcon />
                 </div>
                 <p className="text-text-text-and-icon text-h3">Not available</p>

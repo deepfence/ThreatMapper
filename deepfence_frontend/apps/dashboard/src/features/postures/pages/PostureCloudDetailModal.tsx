@@ -240,7 +240,7 @@ const DetailsComponent = ({
               </div>
               <CopyField value={valueAsStr} />
             </div>
-            <div className="text-p1 text-text-input-value break-words">
+            <div className="text-p1 dark:text-text-input-value text-text-text-and-icon break-words">
               {key in timeFormatKey ? formatMilliseconds(+valueAsStr) : valueAsStr}
             </div>
           </div>
@@ -257,7 +257,7 @@ const DetailsComponent = ({
               return (
                 <div
                   key={resource.node_id}
-                  className="text-p1 text-text-input-value break-words"
+                  className="text-p1 dark:text-text-input-value text-text-text-and-icon break-words"
                 >
                   {resource.name}
                 </div>
