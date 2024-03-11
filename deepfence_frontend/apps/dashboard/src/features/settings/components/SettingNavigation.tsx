@@ -42,7 +42,7 @@ const MenuItems: Array<{
 
 const linkClass = cn(
   'text-p5 text-text-text-and-icon py-3 px-6',
-  'dark:hover:bg-bg-breadcrumb-bar hover:bg-bg-hover-2',
+  'dark:hover:bg-bg-breadcrumb-bar hover:bg-bg-breadcrumb-bar',
   'flex relative border-b border-bg-grid-border',
 );
 
@@ -53,7 +53,7 @@ export const SettingNavigation = () => {
         orientation="vertical"
         className={cn(
           'overflow-x-hidden overflow-y-auto',
-          'border-r border-bg-top-header ml-4 h-screen w-[208px]',
+          'border-r dark:border-bg-top-header border-bg-grid-border ml-4 h-screen w-[208px]',
         )}
       >
         <NavigationMenu.List>
@@ -62,7 +62,8 @@ export const SettingNavigation = () => {
               <div
                 className={cn(
                   `${linkClass}`,
-                  'text-h6 text-text-input-value hover:bg-transparent',
+                  'text-h6 dark:text-text-input-value',
+                  'dark:border-bg-grid-border dark:hover:bg-transparent hover:bg-transparent bg-transparent',
                 )}
               >
                 Setting options

@@ -191,7 +191,7 @@ const SecretScanSummary = () => {
       />
 
       <DFLink to={'/secret'} unstyled>
-        <div className="dark:text-accent-accent dark:hover:text-bg-hover-1 text-p4">
+        <div className="dark:text-accent-accent text-text-link hover:text-bg-hover-1 text-p4">
           Go to Secret Dashboard to view details scan result
         </div>
       </DFLink>

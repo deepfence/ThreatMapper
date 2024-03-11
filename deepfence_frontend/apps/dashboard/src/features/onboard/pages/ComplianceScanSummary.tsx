@@ -322,7 +322,7 @@ const ComplianceScanSummary = () => {
       />
 
       <DFLink to={'/posture'} unstyled>
-        <div className="dark:text-accent-accent dark:hover:text-bg-hover-1 text-p4">
+        <div className="dark:text-accent-accent text-text-link hover:text-bg-hover-1 text-p4">
           Go to Posture dashboard to view detailed scan results
         </div>
       </DFLink>

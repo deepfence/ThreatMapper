@@ -93,9 +93,13 @@ export const ConnectorHeader = ({
       </div>
       <div className="flex items-center">
         <div>
-          <h1 className={`text-h2 text-text-input-value`}>{title}</h1>
+          <h1 className="text-h2 dark:text-text-input-value text-text-text-and-icon">
+            {title}
+          </h1>
           {description && (
-            <p className={`text-p4 mt-1.5 mb-4  text-gray-900`}>{description}</p>
+            <p className="text-p4 mt-1.5 mb-4 dark:text-text-input-value text-text-text-and-icon">
+              {description}
+            </p>
           )}
         </div>
         {endComponent ? <div className="ml-auto">{endComponent}</div> : null}

@@ -2,18 +2,22 @@ import { Outlet } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbLink } from 'ui-components';
 
 import { SettingsIcon } from '@/components/sideNavigation/icons/Settings';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { SettingNavigation } from '@/features/settings/components/SettingNavigation';
 
 const Settings = () => {
   return (
     <>
-      <div className="bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border py-2 px-4">
+      <BreadcrumbWrapper>
         <Breadcrumb>
-          <BreadcrumbLink icon={<SettingsIcon />} className="text-text-input-value">
+          <BreadcrumbLink
+            icon={<SettingsIcon />}
+            className="text-text-input-value leading-[30px]"
+          >
             Settings
           </BreadcrumbLink>
         </Breadcrumb>
-      </div>
+      </BreadcrumbWrapper>
       <div className="flex">
         <div>
           <SettingNavigation />

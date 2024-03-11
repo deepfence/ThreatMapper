@@ -51,7 +51,7 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
       >
         <div className="w-10 h-10">{icon}</div>
         <div className="whitespace-nowrap overflow-hidden text-ellipsis">{label}</div>
-        <span className="w-6 h-6 ml-auto">
+        <span className="w-6 h-6 ml-auto text-text-icon">
           <ArrowLine className="rotate-90" />
         </span>
       </button>
@@ -93,7 +93,10 @@ const Cloud = () => {
         <div className="flex flex-col text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div key={connector.label} className="hover:bg-bg-hover-2">
+              <div
+                key={connector.label}
+                className="dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar"
+              >
                 <CardConnect {...connector} />
               </div>
             );
@@ -163,7 +166,10 @@ const Host = () => {
         <div className="flex flex-col text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div key={connector.label} className="hover:bg-bg-hover-2">
+              <div
+                key={connector.label}
+                className="dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar"
+              >
                 <CardConnect {...connector} />
               </div>
             );
@@ -260,7 +266,10 @@ const Registries = () => {
         <div className="flex flex-col text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div key={connector.path} className="hover:bg-bg-hover-2">
+              <div
+                key={connector.path}
+                className="dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar"
+              >
                 <CardConnect {...connector} />
               </div>
             );
