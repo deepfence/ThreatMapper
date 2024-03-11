@@ -1,5 +1,5 @@
 import { QueryObserver, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { Button, Modal, TextInput } from 'ui-components';
 
@@ -92,7 +92,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
         last_name: formData.get('lastname') as string,
         company: formData.get('company') as string,
         email: formData.get('email') as string,
-        resend_email: formData.get('resend') === 'true',
+        resend_email: true, // lets keep this flag for future use
       },
     });
     if (!result.ok) {
@@ -196,6 +196,7 @@ const UserInfoModalContent = ({
   closeModal: (success: boolean) => void;
 }) => {
   const fetcher = useFetcher<ActionData>();
+  const [isOnResendClick, setIsOnResendClick] = useState(false);
   const { data } = fetcher;
 
   useEffect(() => {
@@ -305,7 +306,13 @@ const UserInfoModalContent = ({
 
       {data?.emailSuccess?.success ? (
         <div className="flex mt-4 text-p4 text-text-text-and-icon gap-x-2">
-          <input hidden value={SEND_EMAIL} name="resendIntent" readOnly />
+          <input
+            hidden
+            value={SEND_EMAIL}
+            name="resendIntent"
+            readOnly
+            disabled={!isOnResendClick}
+          />
           <input hidden value={'true'} name="resend" readOnly />
           Not receiving license detail?{' '}
           <Button
@@ -319,6 +326,9 @@ const UserInfoModalContent = ({
             loading={
               fetcher.state !== 'idle' && fetcher.formData?.get('intent') === SEND_EMAIL
             }
+            onClick={() => {
+              setIsOnResendClick(true);
+            }}
           >
             Resend now.
           </Button>
@@ -350,6 +360,9 @@ const UserInfoModalContent = ({
                 fetcher.state !== 'idle' &&
                 fetcher.formData?.get('intent') === SAVE_LICENSE
               }
+              onClick={() => {
+                setIsOnResendClick(false);
+              }}
             >
               Save and continue
             </Button>
