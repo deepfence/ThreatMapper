@@ -38,6 +38,10 @@ const MenuItems: Array<{
     title: 'Connection instructions',
     to: '/settings/connection-instructions',
   },
+  {
+    title: 'License Details',
+    to: '/settings/license-details',
+  },
 ];
 
 const linkClass = cn(

@@ -1146,7 +1146,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/FormDataVulnerabilityDbDBUploadRequest"
+                "$ref": "#/components/schemas/FormDataThreatintelDBUploadRequest"
               }
             }
           }
@@ -3942,6 +3942,182 @@
             }
           }
         }
+      }
+    },
+    "/deepfence/license": {
+      "delete": {
+        "tags": ["Settings"],
+        "summary": "Delete License",
+        "description": "Delete license from the console database",
+        "operationId": "deleteLicense",
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      },
+      "get": {
+        "tags": ["Settings"],
+        "summary": "Get License Details",
+        "description": "Get license status and expiry",
+        "operationId": "getLicense",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelLicense" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      },
+      "post": {
+        "tags": ["Settings"],
+        "summary": "Register License",
+        "description": "Register new license key to the console and activate",
+        "operationId": "registerLicense",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelRegisterLicenseRequest" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/license/generate": {
+      "post": {
+        "tags": ["Settings"],
+        "summary": "Generate License Key",
+        "description": "Generate a new ThreatMapper license key",
+        "operationId": "generateLicense",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelGenerateLicenseRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelGenerateLicenseResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
       }
     },
     "/deepfence/lookup/cloud-compliances": {
@@ -11836,7 +12012,7 @@
           "service_account_json": { "$ref": "#/components/schemas/MultipartFile" }
         }
       },
-      "FormDataVulnerabilityDbDBUploadRequest": {
+      "FormDataThreatintelDBUploadRequest": {
         "required": ["database"],
         "type": "object",
         "properties": { "database": { "$ref": "#/components/schemas/MultipartFile" } }
@@ -13379,6 +13555,26 @@
           }
         }
       },
+      "ModelGenerateLicenseRequest": {
+        "required": ["first_name", "last_name", "email", "company", "resend_email"],
+        "type": "object",
+        "properties": {
+          "company": { "type": "string" },
+          "email": { "type": "string" },
+          "first_name": { "type": "string" },
+          "last_name": { "type": "string" },
+          "resend_email": { "type": "boolean" }
+        }
+      },
+      "ModelGenerateLicenseResponse": {
+        "required": ["message", "success"],
+        "type": "object",
+        "properties": {
+          "generate_license_link": { "type": "string" },
+          "message": { "type": "string" },
+          "success": { "type": "boolean" }
+        }
+      },
       "ModelGenerateReportReq": {
         "required": ["report_type"],
         "type": "object",
@@ -13751,6 +13947,27 @@
           "node_name": { "type": "string" }
         }
       },
+      "ModelLicense": {
+        "type": "object",
+        "properties": {
+          "current_hosts": { "type": "integer" },
+          "deepfence_support_email": { "type": "string" },
+          "description": { "type": "string" },
+          "end_date": { "type": "string" },
+          "is_active": { "type": "boolean" },
+          "key": { "type": "string" },
+          "license_type": { "type": "string" },
+          "message": { "type": "string" },
+          "no_of_cloud_accounts": { "type": "integer" },
+          "no_of_hosts": { "type": "integer" },
+          "no_of_images_in_registry": { "type": "integer" },
+          "no_of_registries": { "type": "integer" },
+          "registry_credentials": {
+            "$ref": "#/components/schemas/ModelRegistryCredentials"
+          },
+          "start_date": { "type": "string" }
+        }
+      },
       "ModelListAgentVersionResp": {
         "required": ["versions"],
         "type": "object",
@@ -13768,11 +13985,13 @@
           "access_token",
           "refresh_token",
           "onboarding_required",
-          "password_invalidated"
+          "password_invalidated",
+          "license_registered"
         ],
         "type": "object",
         "properties": {
           "access_token": { "type": "string" },
+          "license_registered": { "type": "boolean" },
           "onboarding_required": { "type": "boolean" },
           "password_invalidated": { "type": "boolean" },
           "refresh_token": { "type": "string" }
@@ -14070,6 +14289,11 @@
           "password": { "type": "string" }
         }
       },
+      "ModelRegisterLicenseRequest": {
+        "required": ["license_key"],
+        "type": "object",
+        "properties": { "license_key": { "type": "string" } }
+      },
       "ModelRegistryAccount": {
         "required": ["node_id", "name", "container_images", "registry_type", "syncing"],
         "type": "object",
@@ -14103,6 +14327,14 @@
       "ModelRegistryCountResp": {
         "type": "object",
         "properties": { "count": { "type": "integer" } }
+      },
+      "ModelRegistryCredentials": {
+        "type": "object",
+        "properties": {
+          "password": { "type": "string" },
+          "registry_url": { "type": "string" },
+          "username": { "type": "string" }
+        }
       },
       "ModelRegistryImageStubsReq": {
         "required": ["registry_id", "image_filter", "window"],

@@ -30,6 +30,12 @@ export interface ModelLoginResponse {
      * @type {boolean}
      * @memberof ModelLoginResponse
      */
+    license_registered: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ModelLoginResponse
+     */
     onboarding_required: boolean;
     /**
      * 
@@ -51,6 +57,7 @@ export interface ModelLoginResponse {
 export function instanceOfModelLoginResponse(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "access_token" in value;
+    isInstance = isInstance && "license_registered" in value;
     isInstance = isInstance && "onboarding_required" in value;
     isInstance = isInstance && "password_invalidated" in value;
     isInstance = isInstance && "refresh_token" in value;
@@ -69,6 +76,7 @@ export function ModelLoginResponseFromJSONTyped(json: any, ignoreDiscriminator: 
     return {
         
         'access_token': json['access_token'],
+        'license_registered': json['license_registered'],
         'onboarding_required': json['onboarding_required'],
         'password_invalidated': json['password_invalidated'],
         'refresh_token': json['refresh_token'],
@@ -85,6 +93,7 @@ export function ModelLoginResponseToJSON(value?: ModelLoginResponse | null): any
     return {
         
         'access_token': value.access_token,
+        'license_registered': value.license_registered,
         'onboarding_required': value.onboarding_required,
         'password_invalidated': value.password_invalidated,
         'refresh_token': value.refresh_token,
