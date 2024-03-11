@@ -377,6 +377,7 @@ export function getSettingsApiClient() {
     generateLicense: settingsApi.generateLicense.bind(settingsApi),
     registerLicense: settingsApi.registerLicense.bind(settingsApi),
     getLicense: settingsApi.getLicense.bind(settingsApi),
+    deleteLicense: settingsApi.deleteLicense.bind(settingsApi),
   };
 }
 

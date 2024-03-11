@@ -191,6 +191,21 @@ export interface SettingsApiInterface {
     deleteEmailConfiguration(requestParameters: DeleteEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
+     * Delete license from the console database
+     * @summary Delete License
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    deleteLicenseRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Delete license from the console database
+     * Delete License
+     */
+    deleteLicense(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
      * Generate a new ThreatMapper license key
      * @summary Generate License Key
      * @param {ModelGenerateLicenseRequest} [modelGenerateLicenseRequest] 
@@ -554,6 +569,41 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      */
     async deleteEmailConfiguration(requestParameters: DeleteEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.deleteEmailConfigurationRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Delete license from the console database
+     * Delete License
+     */
+    async deleteLicenseRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/license`,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete license from the console database
+     * Delete License
+     */
+    async deleteLicense(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.deleteLicenseRaw(initOverrides);
     }
 
     /**

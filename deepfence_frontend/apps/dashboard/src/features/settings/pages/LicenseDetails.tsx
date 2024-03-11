@@ -1,17 +1,18 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { upperFirst } from 'lodash-es';
 import { Suspense, useState } from 'react';
-import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
+import { useFetcher } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 import { Button, Card, CircleSpinner, Modal } from 'ui-components';
 
-import { getSettingsApiClient } from '@/api/api';
+import { getAuthenticationApiClient, getSettingsApiClient } from '@/api/api';
 import { ModelLicense } from '@/api/generated';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { invalidateAllQueries, queries } from '@/queries';
+import { queries } from '@/queries';
 import { get403Message, getResponseErrors } from '@/utils/403';
-import { apiWrapper } from '@/utils/api';
+import { apiWrapper, redirectToLogin } from '@/utils/api';
+import storage from '@/utils/storage';
 
 interface ActionReturnType {
   error?: string;
@@ -19,48 +20,45 @@ interface ActionReturnType {
   success?: boolean;
 }
 
-enum ActionEnumType {
-  DELETE = 'delete',
+async function cleanupAndLogout() {
+  const logoutApi = apiWrapper({
+    fn: getAuthenticationApiClient().logout,
+    options: {
+      handleAuthError: false,
+    },
+  });
+  const logoutResponse = await logoutApi();
+  if (!logoutResponse.ok) {
+    console.error(logoutResponse.error);
+    console.error('unable to log out from the console, continuing...');
+  }
+
+  storage.clearAuth();
+  throw redirectToLogin();
 }
 
-export const action = async ({
-  request,
-}: ActionFunctionArgs): Promise<ActionReturnType> => {
-  const formData = await request.formData();
-  const _actionType = formData.get('_actionType')?.toString() as ActionEnumType;
-
-  if (!_actionType) {
-    return {
-      message: 'Action Type is required',
-      success: false,
-    };
-  }
-  if (_actionType === ActionEnumType.DELETE) {
-    const id = formData.get('id');
-    const deleteApi = apiWrapper({
-      fn: getSettingsApiClient().deleteEmailConfiguration,
-    });
-    const deleteResponse = await deleteApi({
-      configId: id as string,
-    });
-    if (!deleteResponse.ok) {
-      if (deleteResponse.error.response.status === 400) {
-        const { message } = await getResponseErrors(deleteResponse.error);
-        return {
-          success: false,
-          message,
-        };
-      } else if (deleteResponse.error.response.status === 403) {
-        const message = await get403Message(deleteResponse.error);
-        return {
-          message,
-          success: false,
-        };
-      }
-      throw deleteResponse.error;
+export const action = async (): Promise<ActionReturnType> => {
+  const deleteApi = apiWrapper({
+    fn: getSettingsApiClient().deleteLicense,
+  });
+  const deleteResponse = await deleteApi();
+  if (!deleteResponse.ok) {
+    if (deleteResponse.error.response.status === 400) {
+      const { message } = await getResponseErrors(deleteResponse.error);
+      return {
+        success: false,
+        message,
+      };
+    } else if (deleteResponse.error.response.status === 403) {
+      const message = await get403Message(deleteResponse.error);
+      return {
+        message,
+        success: false,
+      };
     }
+    throw deleteResponse.error;
   }
-  invalidateAllQueries();
+  await cleanupAndLogout();
   return {
     success: true,
   };
@@ -102,13 +100,6 @@ const DeleteConfirmationModal = ({
               Cancel
             </Button>
             <fetcher.Form method="post">
-              {/* <input readOnly type="hidden" name="id" value={id} /> */}
-              <input
-                readOnly
-                type="hidden"
-                name="_actionType"
-                value={ActionEnumType.DELETE}
-              />
               <Button
                 color="error"
                 type="submit"
@@ -127,7 +118,9 @@ const DeleteConfirmationModal = ({
     >
       {!fetcher.data?.success ? (
         <div className="grid">
-          <span>You will be required to registerd a license key if you delete it.</span>
+          <span>
+            You will require to relogin and register a license key if you delete it.
+          </span>
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
@@ -240,4 +233,5 @@ const LicenseCard = ({ licenseData }: { licenseData: ModelLicense }) => {
 
 export const module = {
   element: <LicenseDetails />,
+  action,
 };
