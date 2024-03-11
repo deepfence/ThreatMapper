@@ -15,6 +15,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
+	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -110,6 +111,9 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
+	// download rules/db in parallel
+	g, ctx := errgroup.WithContext(ctx)
+
 	// download vulnerability db
 	vulnDBInfo, err := listing.GetLatest(ConsoleVersion, threatintel.DBTypeVulnerability)
 	if err != nil {
@@ -117,10 +121,13 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if err := threatintel.DownloadVulnerabilityDB(ctx, vulnDBInfo); err != nil {
-		log.Error().Err(err).Msg("failed to download vuln db")
-		return err
-	}
+	g.Go(func() error {
+		if err := threatintel.DownloadVulnerabilityDB(ctx, vulnDBInfo); err != nil {
+			log.Error().Err(err).Msg("failed to download vuln db")
+			return err
+		}
+		return nil
+	})
 
 	// download rules for secret scanner
 	secretsRulesInfo, err := listing.GetLatest(ConsoleVersion, threatintel.DBTypeSecrets)
@@ -129,21 +136,28 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	if err := threatintel.DownloadSecretsRules(ctx, secretsRulesInfo); err != nil {
-		log.Error().Err(err).Msg("failed to download secrets rules")
-		return err
-	}
+	g.Go(func() error {
+		if err := threatintel.DownloadSecretsRules(ctx, secretsRulesInfo); err != nil {
+			log.Error().Err(err).Msg("failed to download secrets rules")
+			return err
+		}
+		return nil
+	})
 
-	// download rules for malware scaner
+	// download rules for malware scanner
 	malwareRulesInfo, err := listing.GetLatest(ConsoleVersion, threatintel.DBTypeMalware)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get malware rules info")
 		return err
 	}
-	if err := threatintel.DownloadMalwareRules(ctx, malwareRulesInfo); err != nil {
-		log.Error().Err(err).Msg("failed to download malware rules")
-		return err
-	}
+
+	g.Go(func() error {
+		if err := threatintel.DownloadMalwareRules(ctx, malwareRulesInfo); err != nil {
+			log.Error().Err(err).Msg("failed to download malware rules")
+			return err
+		}
+		return nil
+	})
 
 	// download cloud controls and populate them
 	complianceInfo, err := listing.GetLatestN(ConsoleVersion,
@@ -154,10 +168,14 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 		log.Error().Err(err).Msg("failed to get compliance controls info")
 		return err
 	}
-	if err := threatintel.DownloadAndPopulateCloudControls(ctx, complianceInfo); err != nil {
-		log.Error().Err(err).Msg("failed to download cloud controls")
-		return err
-	}
 
-	return nil
+	g.Go(func() error {
+		if err := threatintel.DownloadAndPopulateCloudControls(ctx, complianceInfo); err != nil {
+			log.Error().Err(err).Msg("failed to download cloud controls")
+			return err
+		}
+		return nil
+	})
+
+	return g.Wait()
 }

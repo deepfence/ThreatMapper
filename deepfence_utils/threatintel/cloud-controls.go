@@ -9,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -26,18 +27,29 @@ func DownloadAndPopulateCloudControls(ctx context.Context, entries []Entry) erro
 	os.RemoveAll(cloudControlsBasePath)
 	os.MkdirAll(cloudControlsBasePath, 0755)
 
-	// download cloud controls
-	for _, e := range entries {
-		content, err := downloadFile(ctx, e.URL)
-		if err != nil {
-			log.Error().Err(err).Msgf("failed to download controls type %s", e.Type)
-			return err
-		}
+	// download cloud controls in parallel
+	g, ctx := errgroup.WithContext(ctx)
 
-		if err := utils.ExtractTarGz(content, cloudControlsBasePath); err != nil {
-			log.Error().Err(err).Msgf("failed to exract the cloud controls file type %s", e.Type)
-			return err
-		}
+	for _, entry := range entries {
+		e := entry
+		g.Go(func() error {
+			content, err := downloadFile(ctx, e.URL)
+			if err != nil {
+				log.Error().Err(err).Msgf("failed to download controls type %s", e.Type)
+				return err
+			}
+
+			if err := utils.ExtractTarGz(content, cloudControlsBasePath); err != nil {
+				log.Error().Err(err).Msgf("failed to exract the cloud controls file type %s", e.Type)
+				return err
+			}
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		log.Error().Err(err).Msg("error while downloading cloud controls")
+		return err
 	}
 
 	// trigger job to load cloud controls
