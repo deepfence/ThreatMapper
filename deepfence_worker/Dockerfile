@@ -10,7 +10,7 @@ FROM alpine:3.18 AS final
 LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
 
-ADD deepfence_server/cloud_controls /cloud_controls
+# ADD deepfence_server/cloud_controls /cloud_controls
 ADD deepfence_utils/postgresql/migrate /usr/local/postgresql-migrate
 
 RUN apk add --no-cache curl kafkacat docker-cli openrc bash skopeo jansson-dev \
