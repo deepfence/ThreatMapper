@@ -364,7 +364,7 @@ const UserInfoModalContent = ({
                 setIsOnResendClick(false);
               }}
             >
-              Save and continue
+              Register and continue
             </Button>
           </>
         ) : (

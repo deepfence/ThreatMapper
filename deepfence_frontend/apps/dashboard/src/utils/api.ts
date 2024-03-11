@@ -128,7 +128,7 @@ export function apiWrapper<F extends Func<any[], any>>({
             const response = new Response(
               JSON.stringify({
                 // TODO: change the message to something more meaningful
-                message: 'Please obtain ThreatMapper license.',
+                message: 'Please register ThreatMapper license.',
                 error_fields: {},
                 error_index: null,
               }),
