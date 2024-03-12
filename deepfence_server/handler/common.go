@@ -97,6 +97,7 @@ func (i *InternalServerError) Error() string {
 
 type ValidatorError struct {
 	err                       error
+	errs                      []error
 	skipOverwriteErrorMessage bool
 	errorIndex                map[string][]int
 }
@@ -134,7 +135,7 @@ func (h *Handler) respondWithErrorCode(err error, w http.ResponseWriter, code in
 	var errorFields map[string]string
 	var errMsg string
 	if code == http.StatusBadRequest {
-		errorFields, errMsg = h.ParseValidatorError(err, false)
+		errorFields, errMsg = h.ParseValidatorError(err, nil, false)
 	} else {
 		errMsg = err.Error()
 	}
@@ -173,7 +174,7 @@ func (h *Handler) respondError(err error, w http.ResponseWriter) {
 		code = http.StatusBadRequest
 		var validatorError *ValidatorError
 		errors.As(err, &validatorError)
-		errorFields, errMsg = h.ParseValidatorError(validatorError.err, validatorError.skipOverwriteErrorMessage)
+		errorFields, errMsg = h.ParseValidatorError(validatorError.err, validatorError.errs, validatorError.skipOverwriteErrorMessage)
 		errorIndex = validatorError.errorIndex
 	case *ForbiddenError:
 		code = http.StatusForbidden

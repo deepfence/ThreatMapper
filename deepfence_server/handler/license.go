@@ -41,11 +41,15 @@ func (h *Handler) GenerateLicenseHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	if len(errorFields) > 0 {
-		for k, v := range errorFields {
-			// TODO: Only the first error is sent, need to send all
-			h.respondError(&ValidatorError{err: fmt.Errorf("%s:%s", k, v)}, w)
-			return
+		validatorError := ValidatorError{
+			errs:                      []error{},
+			skipOverwriteErrorMessage: true,
 		}
+		for k, v := range errorFields {
+			validatorError.errs = append(validatorError.errs, fmt.Errorf("%s:%s", k, v))
+		}
+		h.respondError(&validatorError, w)
+		return
 	}
 	err = httpext.JSON(w, http.StatusOK, message)
 	if err != nil {
