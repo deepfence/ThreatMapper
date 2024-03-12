@@ -10,7 +10,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
-	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
 )
 
@@ -101,8 +100,8 @@ func (h *Handler) RunThreatIntelUpdateTask(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = worker.EnqueueUnique(utils.ThreatIntelUpdateTask, []byte{}, utils.CritialTaskOpts()...)
-	if err != nil && err != asynq.ErrTaskIDConflict {
+	err = worker.Enqueue(utils.ThreatIntelUpdateTask, []byte{}, utils.CritialTaskOpts()...)
+	if err != nil {
 		return err
 	}
 	return nil

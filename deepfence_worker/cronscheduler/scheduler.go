@@ -344,7 +344,7 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 5h", s.enqueueTask(namespace, utils.ThreatIntelUpdateTask, true, utils.CritialTaskOpts()...))
+	jobID, err = s.cron.AddFunc("@every 5h", s.enqueueTask(namespace, utils.ThreatIntelUpdateTask, false, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
@@ -386,7 +386,7 @@ func (s *Scheduler) startInitJobs(ctx context.Context) error {
 	s.enqueueTask(namespace, utils.RedisRewriteAOF, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.AsynqDeleteAllArchivedTasks, true, utils.CritialTaskOpts()...)()
 
-	s.enqueueTask(namespace, utils.ThreatIntelUpdateTask, true, utils.CritialTaskOpts()...)()
+	s.enqueueTask(namespace, utils.ThreatIntelUpdateTask, false, utils.CritialTaskOpts()...)()
 
 	return nil
 }
