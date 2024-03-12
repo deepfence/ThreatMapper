@@ -17,7 +17,7 @@ func Notify[T any](ctx context.Context, res []T, common model.ScanResultsCommon,
 	if err != nil {
 		return nil
 	}
-	integrations := []postgresql_db.Integration{}
+	var integrations []postgresql_db.Integration
 	// get all integration if integrationIDs is empty, else get only the integrations in integrationIDs
 	if len(integrationIDs) == 0 {
 		integrations, err = pgClient.GetIntegrations(ctx)
