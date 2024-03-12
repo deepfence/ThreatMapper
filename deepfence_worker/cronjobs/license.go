@@ -32,6 +32,18 @@ func UpdateLicenseStatus(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
+	startDate, err := time.Parse(model.DateLayout2, license.StartDate)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return err
+	}
+	endDate, err := time.Parse(model.DateLayout2, license.EndDate)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return err
+	}
+	license.StartDate = startDate.Format(model.DateLayout1)
+	license.EndDate = endDate.Format(model.DateLayout1)
 	license.CurrentHosts, err = getCurrentActiveAgents(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())

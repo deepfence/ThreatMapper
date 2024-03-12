@@ -102,6 +102,7 @@ func (h *Handler) RegisterLicenseHandler(w http.ResponseWriter, r *http.Request)
 	}
 	err = license.Save(ctx, pgClient)
 	if err != nil {
+		log.Error().Msg(err.Error())
 		h.respondError(err, w)
 		return
 	}

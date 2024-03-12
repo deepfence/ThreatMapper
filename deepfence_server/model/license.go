@@ -16,9 +16,8 @@ import (
 )
 
 const (
-	dateLayout                = "2006-01-02 15:04:05.999999-07:00"
-	dateLayout2               = "2006-01-02 15:04:05"
-	dateLayout3               = "2006-01-02 15:04:05 UTC"
+	DateLayout1               = "2006-01-02 15:04:05.999999-07:00"
+	DateLayout2               = "2006-01-02 15:04:05 UTC"
 	licenseDefaultMessage     = "License Active"
 	licenseDefaultDescription = "Your license is valid and active"
 	licenseExpiredMessage     = "License Expired"
@@ -227,7 +226,7 @@ func generateDefaultLicense(ctx context.Context, pgClient *postgresqlDb.Queries)
 		startDate = time.Now().UTC()
 	} else {
 		defaultLicenseUUID = dbLicense.LicenseKeyUUID
-		startDate, err = time.Parse(dateLayout3, dbLicense.StartDate)
+		startDate, err = time.Parse(DateLayout2, dbLicense.StartDate)
 		if err != nil {
 			startDate = time.Now().UTC()
 		} else {
@@ -243,14 +242,14 @@ func generateDefaultLicense(ctx context.Context, pgClient *postgresqlDb.Queries)
 		LicenseKey:            defaultLicenseUUID.String(),
 		LicenseKeyUUID:        defaultLicenseUUID,
 		IsActive:              true,
-		EndDate:               formatDate(endDate),
+		EndDate:               endDate.Format(DateLayout1),
 		NoOfHosts:             licenseDefaultNumberOfHosts,
 		NoOfCloudAccounts:     licenseDefaultNumberOfCloudAccounts,
 		NoOfRegistries:        licenseDefaultNumberOfRegistries,
 		NoOfImagesInRegistry:  licenseDefaultNumberOfImagesInRegistry,
 		CurrentHosts:          0,
 		DeepfenceSupportEmail: DeepfenceSupportEmail,
-		StartDate:             formatDate(startDate),
+		StartDate:             startDate.Format(DateLayout1),
 		Message:               licenseDefaultMessage,
 		Description:           licenseDefaultDescription,
 		LicenseType:           "monthly_subscription",
@@ -346,9 +345,9 @@ func GetLicense(ctx context.Context, pgClient *postgresqlDb.Queries) (*License, 
 }
 
 func formatDate(dt time.Time) string {
-	return dt.Format(dateLayout2) + " UTC"
+	return dt.Format(DateLayout2)
 }
 
 func parseDate(dateString string) (time.Time, error) {
-	return time.Parse(dateLayout, dateString)
+	return time.Parse(DateLayout1, dateString)
 }
