@@ -48,6 +48,7 @@ func (h *Handler) GenerateLicenseHandler(w http.ResponseWriter, r *http.Request)
 		for k, v := range errorFields {
 			validatorError.errs = append(validatorError.errs, fmt.Errorf("%s:%s", k, v))
 		}
+		validatorError.err = validatorError.errs[0]
 		h.respondError(&validatorError, w)
 		return
 	}

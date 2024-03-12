@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	dateLayout                = "2006-01-02 15:04:05.999999-07:00"
+	dateLayout                = "2006-01-02 15:04:05 UTC"
 	dateLayout2               = "2006-01-02 15:04:05"
 	licenseDefaultMessage     = "License Active"
 	licenseDefaultDescription = "Your license is valid and active"
