@@ -540,12 +540,6 @@ const NotifyModal = ({
                 </div>
               </>
             ) : null}
-
-            {fetcher.data?.message && (
-              <p className="mt-2 text-p7 dark:text-status-error">
-                {fetcher.data?.message}
-              </p>
-            )}
             {fetcher.data?.message && (
               <p className="mt-2 text-p7 dark:text-status-error">
                 {fetcher.data?.message}
