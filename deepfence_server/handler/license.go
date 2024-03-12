@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -15,7 +16,7 @@ import (
 
 var (
 	licenseAddedError         = ForbiddenError{errors.New("license key already added")}
-	licenseNotConfiguredError = BadDecoding{errors.New("license not registered")}
+	licenseNotConfiguredError = BadDecoding{errors.New("console not registered")}
 )
 
 func (h *Handler) GenerateLicenseHandler(w http.ResponseWriter, r *http.Request) {
@@ -33,11 +34,18 @@ func (h *Handler) GenerateLicenseHandler(w http.ResponseWriter, r *http.Request)
 		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	message, err := model.GenerateLicense(req)
+	message, errorFields, err := model.GenerateLicense(req)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		h.respondError(&ValidatorError{err: err}, w)
+		h.respondError(&BadDecoding{err: err}, w)
 		return
+	}
+	if len(errorFields) > 0 {
+		for k, v := range errorFields {
+			// TODO: Only the first error is sent, need to send all
+			h.respondError(&ValidatorError{err: fmt.Errorf("%s:%s", k, v)}, w)
+			return
+		}
 	}
 	err = httpext.JSON(w, http.StatusOK, message)
 	if err != nil {

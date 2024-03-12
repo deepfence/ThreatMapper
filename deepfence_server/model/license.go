@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -92,19 +93,21 @@ type License struct {
 type LicenseServerResponse struct {
 	Data  License `json:"data"`
 	Error struct {
-		Message string `json:"message"`
+		ErrorFields map[string]string `json:"error_fields"`
+		Message     string            `json:"message"`
 	} `json:"error"`
 	Success bool `json:"success"`
 }
 
-func GenerateLicense(req GenerateLicenseRequest) (*GenerateLicenseResponse, error) {
+func GenerateLicense(req GenerateLicenseRequest) (*GenerateLicenseResponse, map[string]string, error) {
 	generateLicenseAPIURL := fmt.Sprintf(GenerateLicenseAPIURL, req.FirstName, req.LastName, req.Email, req.Company, req.ResendEmail)
-	var msg string
+	var licenseResp *LicenseServerResponse
+	var responseCode int
 	var err error
 
 	retryCounter := 0
 	for {
-		msg, err = generateLicense(generateLicenseAPIURL)
+		licenseResp, responseCode, err = generateLicense(generateLicenseAPIURL)
 		if err != nil {
 			retryCounter += 1
 			if retryCounter > 3 {
@@ -118,39 +121,41 @@ func GenerateLicense(req GenerateLicenseRequest) (*GenerateLicenseResponse, erro
 	if err != nil {
 		log.Error().Msgf("Could not generate license key: %v", err)
 		return &GenerateLicenseResponse{
-			Message: errGenerateLicense, Success: false, GenerateLicenseLink: generateLicenseAPIURL}, nil
+			Message: errGenerateLicense, Success: false, GenerateLicenseLink: generateLicenseAPIURL}, nil, nil
 	}
-	return &GenerateLicenseResponse{Message: msg, Success: true}, nil
+	if responseCode == http.StatusBadRequest || licenseResp.Success == false {
+		if len(licenseResp.Error.ErrorFields) > 0 {
+			return nil, licenseResp.Error.ErrorFields, nil
+		} else {
+			return &GenerateLicenseResponse{
+				Message: licenseResp.Error.Message, Success: false, GenerateLicenseLink: generateLicenseAPIURL}, nil, nil
+		}
+	}
+	return &GenerateLicenseResponse{Message: licenseResp.Data.Message, Success: true}, nil, nil
 }
 
-func generateLicense(generateLicenseAPIURL string) (string, error) {
+func generateLicense(generateLicenseAPIURL string) (*LicenseServerResponse, int, error) {
 	httpClient, err := utils.NewHTTPClient()
 	if err != nil {
-		return "", err
+		return nil, 0, err
 	}
 	httpClient.Timeout = 10 * time.Second
 	resp, err := httpClient.Get(generateLicenseAPIURL)
 	if err != nil {
-		return "", err
+		return nil, 0, err
 	}
 	defer resp.Body.Close()
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return nil, 0, err
 	}
 	var licenseResp LicenseServerResponse
 	err = json.Unmarshal(respBody, &licenseResp)
 	if err != nil {
 		log.Warn().Msgf("Error in generating license: %s", string(respBody))
-		return "", err
+		return nil, resp.StatusCode, err
 	}
-	if resp.StatusCode != 200 {
-		return "", errors.New(licenseResp.Error.Message)
-	}
-	if !licenseResp.Success {
-		return "", errors.New(licenseResp.Error.Message)
-	}
-	return licenseResp.Data.Message, nil
+	return &licenseResp, resp.StatusCode, nil
 }
 
 func FetchLicense(ctx context.Context, licenseKey string, pgClient *postgresqlDb.Queries) (*License, error) {
