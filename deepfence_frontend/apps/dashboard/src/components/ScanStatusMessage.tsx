@@ -69,6 +69,17 @@ export const ScanStatusStopped = ({ errorMessage }: { errorMessage: string }) =>
   );
 };
 
+export const ScanStatusDeletePending = () => {
+  return (
+    <div className="flex items-center justify-center gap-x-2">
+      <CircleSpinner size="md" />
+      <span className="text-h3 font-medium dark:text-text-text-and-icon">
+        Scan delete pending
+      </span>
+    </div>
+  );
+};
+
 export const ScanStatusNoData = ({ message }: { message?: string }) => {
   return (
     <div className="flex-1 flex gap-2 items-center justify-center p-6 dark:text-text-text-and-icon">

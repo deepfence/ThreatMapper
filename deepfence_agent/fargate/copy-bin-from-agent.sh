@@ -23,9 +23,39 @@ rm -rf $folder
 # create folder
 mkdir -p $folder
 
+copy_bin_amd64() {
+  cp -R bin $folder/
+}
+
+copy_bin_arm64() {
+  cp -R bin-arm64 $folder/
+  cp $folder/busybox $folder/cat
+  cp $folder/busybox $folder/chmod
+  cp $folder/busybox $folder/cp
+  cp $folder/busybox $folder/gzip
+  cp $folder/busybox $folder/hostname
+  cp $folder/busybox $folder/kill
+  cp $folder/busybox $folder/ln
+  cp $folder/busybox $folder/ls
+  cp $folder/busybox $folder/mkdir
+  cp $folder/busybox $folder/nice
+  cp $folder/busybox $folder/rm
+  cp $folder/busybox $folder/sed
+  cp $folder/busybox $folder/sleep
+  cp $folder/busybox $folder/tar
+}
+
 copy() {
   echo "Copying ..."
-  deep_docker_copy "/bin/." "$folder/bin/."
+
+  architecture=$(uname -m)
+  if [[ $architecture == "aarch64" || $architecture == "arm" ]]; then
+    copy_bin_arm64
+  else
+    copy_bin_amd64
+  fi
+
+  deep_docker_copy "/bin/deepfenced" "$folder/bin/."
   deep_docker_copy "/home/." "$folder/home/."
   deep_docker_copy "/opt/." "$folder/opt/."
   deep_docker_copy "/usr/bin/." "$folder/usr/bin/."
@@ -38,6 +68,7 @@ copy() {
   deep_docker_copy "/etc/td-agent-bit/." "$folder/etc/td-agent-bit/."
 
   echo "Copy some required binaries..."
+  cp start_deepfenced.sh $folder/home/deepfence/
   deep_docker_copy "/usr/bin/envsubst" "$folder/bin/envsubst"
 
   # delete rules.tar (not needed)
@@ -48,8 +79,12 @@ copy
 
 echo "Creating tar.gz file..."
 rm -rf $folder.tar.gz
-tar -czvf $folder.tar.gz $folder
+sudo chown -R root:root $folder
+cd $folder
+sudo tar -czvf $folder.tar.gz .
+sudo mv $folder.tar.gz ../
 
-rm -rf $folder
+cd ../
+# rm -rf $folder
 
 echo "Done"

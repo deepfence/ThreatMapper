@@ -308,7 +308,9 @@ const Header = () => {
         </BreadcrumbLink>
       </Breadcrumb>
       <div className="ml-2 flex items-center">
-        {isFetching ? <CircleSpinner size="sm" /> : null}
+        {isFetching ? (
+          <CircleSpinner size="sm" data-testid="registryAccountSpinnerId" />
+        ) : null}
       </div>
     </div>
   );
@@ -324,8 +326,8 @@ const CountWidget = () => {
   }
 
   const {
+    repositories = 0,
     images = 0,
-    tags = 0,
     scans_in_progress = 0,
     registries = 0,
   } = data.summary as ModelSummary;
@@ -351,9 +353,9 @@ const CountWidget = () => {
 
         <div className="flex flex-col items-start">
           <span className="text-h1 dark:text-text-input-value">
-            {abbreviateNumber(images)}
+            {abbreviateNumber(repositories)}
           </span>
-          <span className="text-p1">Total images</span>
+          <span className="text-p1">Total repositories</span>
         </div>
       </div>
       <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
@@ -363,9 +365,9 @@ const CountWidget = () => {
 
         <div className="flex flex-col items-start">
           <span className="text-h1 dark:text-text-input-value">
-            {abbreviateNumber(tags)}
+            {abbreviateNumber(images)}
           </span>
-          <span className="text-p1">Total tags</span>
+          <span className="text-p1">Total images</span>
         </div>
       </div>
       <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
@@ -377,7 +379,7 @@ const CountWidget = () => {
           <span className="text-h1 dark:text-text-input-value">
             {abbreviateNumber(scans_in_progress)}
           </span>
-          <span className="text-p1">In Progress</span>
+          <span className="text-p1">In progress</span>
         </div>
       </div>
     </div>

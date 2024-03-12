@@ -42,6 +42,12 @@ export interface ModelCloudNodeAccountInfo {
      * @type {string}
      * @memberof ModelCloudNodeAccountInfo
      */
+    host_node_id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudNodeAccountInfo
+     */
     last_scan_id?: string;
     /**
      * 
@@ -97,6 +103,7 @@ export function ModelCloudNodeAccountInfoFromJSONTyped(json: any, ignoreDiscrimi
         'active': !exists(json, 'active') ? undefined : json['active'],
         'cloud_provider': !exists(json, 'cloud_provider') ? undefined : json['cloud_provider'],
         'compliance_percentage': !exists(json, 'compliance_percentage') ? undefined : json['compliance_percentage'],
+        'host_node_id': !exists(json, 'host_node_id') ? undefined : json['host_node_id'],
         'last_scan_id': !exists(json, 'last_scan_id') ? undefined : json['last_scan_id'],
         'last_scan_status': !exists(json, 'last_scan_status') ? undefined : json['last_scan_status'],
         'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
@@ -118,6 +125,7 @@ export function ModelCloudNodeAccountInfoToJSON(value?: ModelCloudNodeAccountInf
         'active': value.active,
         'cloud_provider': value.cloud_provider,
         'compliance_percentage': value.compliance_percentage,
+        'host_node_id': value.host_node_id,
         'last_scan_id': value.last_scan_id,
         'last_scan_status': value.last_scan_status,
         'node_id': value.node_id,

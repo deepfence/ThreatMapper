@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -325,14 +326,22 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
+	failureMsg := "Failed to add registry, Error: %s"
 
 	if err := r.ParseMultipartForm(1024 * 1024); err != nil {
-		h.respondError(&BadDecoding{err}, w)
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{fmt.Errorf(failureMsg, err.Error())}, w)
 		return
 	}
+
 	file, fileHeader, err := r.FormFile("service_account_json")
 	if err != nil {
-		h.respondError(&BadDecoding{err}, w)
+		log.Error().Msgf("%v", err)
+		if err == http.ErrMissingFile {
+			h.respondError(&BadDecoding{fmt.Errorf(failureMsg, "Missing file")}, w)
+		} else {
+			h.respondError(&BadDecoding{fmt.Errorf(failureMsg, err.Error())}, w)
+		}
 		return
 	}
 	defer file.Close()
@@ -347,7 +356,8 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 
 	fileBytes, err := io.ReadAll(file)
 	if err != nil {
-		h.respondError(&BadDecoding{err}, w)
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{fmt.Errorf(failureMsg, err.Error())}, w)
 		return
 	}
 
@@ -371,7 +381,8 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 
 	var sa gcr.ServiceAccountJSON
 	if err := json.Unmarshal(fileBytes, &sa); err != nil {
-		h.respondError(&BadDecoding{err}, w)
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{fmt.Errorf(failureMsg, err.Error())}, w)
 		return
 	}
 
@@ -387,14 +398,14 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	b, err := json.Marshal(req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		h.respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{fmt.Errorf(failureMsg, err.Error())}, w)
 		return
 	}
 
 	registry, err := registry.GetRegistry(constants.GCR, b)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		h.respondError(&BadDecoding{err}, w)
+		h.respondError(&BadDecoding{fmt.Errorf(failureMsg, err.Error())}, w)
 		return
 	}
 
@@ -420,6 +431,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
+		log.Error().Msgf("%v", err)
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
@@ -612,7 +624,7 @@ func (h *Handler) getImages(w http.ResponseWriter, r *http.Request) ([]model.Con
 		return images, err
 	}
 
-	images, err = model.ListImages(r.Context(), req.RegistryID, req.ImageFilter, req.Window)
+	images, err = model.ListImages(r.Context(), req.RegistryID, req.ImageFilter, req.ImageStubFilter, req.Window)
 	if err != nil {
 		log.Error().Msgf("failed list images: %v", err)
 		h.respondError(err, w)

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
@@ -24,6 +25,13 @@ import (
 )
 
 const NOTIFICATION_INTERVAL = 60000 //in milliseconds
+
+var (
+	NotificationRecordsCounts = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "notification_records_total",
+		Help: "Total number of records sent by notification types",
+	}, []string{"resource", "type", "status", "namespace"})
+)
 
 var fieldsMap = map[string]map[string]string{
 	utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
@@ -342,6 +350,24 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 	}
 	neo4j_query_c := time.Since(profileStart).Milliseconds()
 
+	neo4j_query_default := int64(0)
+	if reqNC == nil && reqC == nil {
+		profileStart = time.Now()
+		reqDefault := reporters_search.SearchScanReq{}
+		reqDefault.ScanFilter = reporters_search.SearchFilter{
+			Filters: filters.FieldsFilters,
+		}
+		reqDefault.Window = model.FetchWindow{}
+		defaultScanInfo, err := reporters_search.SearchScansReport(ctx, reqDefault, scanType)
+		if err != nil {
+			log.Error().Msgf("Failed to get default scans, error: %v", err)
+			return err
+		} else if len(defaultScanInfo) > 0 {
+			scansList = append(scansList, defaultScanInfo...)
+		}
+		neo4j_query_default = time.Since(profileStart).Milliseconds()
+	}
+
 	// nothing to notify
 	if len(scansList) == 0 {
 		log.Info().Msgf("No %s scans to notify at timestamp (%d,%d)",
@@ -416,8 +442,26 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		err = integrationModel.SendNotification(ctx, string(messageByte), extras)
 		totalSendTime = totalSendTime + time.Since(profileStart).Milliseconds()
 		if err != nil {
+			NotificationRecordsCounts.WithLabelValues(
+				integrationRow.Resource,
+				integrationRow.IntegrationType,
+				"error",
+				func() string {
+					ns, _ := directory.ExtractNamespace(ctx)
+					return string(ns)
+				}(),
+			).Add(float64(len(updatedResults)))
 			return err
 		}
+		NotificationRecordsCounts.WithLabelValues(
+			integrationRow.Resource,
+			integrationRow.IntegrationType,
+			"success",
+			func() string {
+				ns, _ := directory.ExtractNamespace(ctx)
+				return string(ns)
+			}(),
+		).Add(float64(len(updatedResults)))
 		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken:%d",
 			integrationRow.Resource, len(results), integrationRow.IntegrationType,
 			integrationRow.ID, time.Since(profileStart).Milliseconds())
@@ -426,6 +470,7 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		integrationRow.IntegrationType, time.Since(startTime).Milliseconds())
 	log.Debug().Msgf("Time taken for neo4j_query_nc: %d", neo4j_query_nc)
 	log.Debug().Msgf("Time taken for neo4j_query_c: %d", neo4j_query_c)
+	log.Debug().Msgf("Time taken for neo4j_query_default: %d", neo4j_query_default)
 	log.Debug().Msgf("Time taken for neo4j_query_2: %d", totalQueryTime)
 	log.Debug().Msgf("Time taken for sending data : %d", totalSendTime)
 	return nil

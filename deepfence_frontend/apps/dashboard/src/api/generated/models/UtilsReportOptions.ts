@@ -34,6 +34,7 @@ export interface UtilsReportOptions {
 export const UtilsReportOptionsSbomFormatEnum = {
     SyftJson1101: 'syft-json@11.0.1',
     CyclonedxJson15: 'cyclonedx-json@1.5',
+    SpdxJson22: 'spdx-json@2.2',
     SpdxJson23: 'spdx-json@2.3'
 } as const;
 export type UtilsReportOptionsSbomFormatEnum = typeof UtilsReportOptionsSbomFormatEnum[keyof typeof UtilsReportOptionsSbomFormatEnum];

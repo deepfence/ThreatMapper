@@ -302,6 +302,8 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 		return nil
 	}
 
+	log.Debug().Msgf("Query:%s", fmt.Sprintf(query, scanID))
+
 	tx4, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
@@ -317,6 +319,39 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 	}
 
 	return nil
+}
+
+func MarkScanDeletePending(ctx context.Context, scanType utils.Neo4jScanType,
+	scanIds []string) error {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	query := `MATCH (n:%s) -[:SCANNED]-> (m)
+			WHERE n.node_id IN $scan_ids
+			SET n.status = $delete_pending`
+
+	queryStr := fmt.Sprintf(query, string(scanType))
+
+	log.Debug().Msgf("Query: %s", queryStr)
+
+	if _, err = tx.Run(queryStr,
+		map[string]interface{}{
+			"scan_ids":       scanIds,
+			"delete_pending": utils.ScanStatusDeletePending,
+		}); err != nil {
+		log.Error().Msgf("Failed to mark scans as DELETE_PENDING, Error: %s", err.Error())
+		return err
+	}
+	return tx.Commit()
 }
 
 func StopCloudComplianceScan(ctx context.Context, scanIds []string) error {

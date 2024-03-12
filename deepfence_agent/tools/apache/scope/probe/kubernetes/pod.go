@@ -106,7 +106,7 @@ func (p *pod) GetNode() report.TopologyNode {
 	return report.TopologyNode{
 		Metadata: metadata,
 		Parents: &report.Parent{
-			CloudProvider:     cloudProviderNodeId,
+			//CloudProvider:     cloudProviderNodeId,
 			KubernetesCluster: kubernetesClusterId,
 			Host:              hostname,
 			Namespace:         kubernetesClusterId + "-" + p.GetNamespace(),

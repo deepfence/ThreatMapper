@@ -11,6 +11,7 @@ import { TruncatedText } from '@/components/TruncatedText';
 import {
   isNeverScanned,
   isScanComplete,
+  isScanDeletePending,
   isScanFailed,
   isScanInProgress,
   isScanStopped,
@@ -89,6 +90,15 @@ export const ScanStatusBadge = ({
           <ErrorIcon />
         </span>
 
+        {!justIcon ? <TruncatedText text={scanStatus} /> : null}
+      </div>
+    );
+  } else if (isScanDeletePending(status)) {
+    return (
+      <div className={wrapperClassName}>
+        <span className={iconWrapper}>
+          <CircleSpinner size="sm" />
+        </span>
         {!justIcon ? <TruncatedText text={scanStatus} /> : null}
       </div>
     );

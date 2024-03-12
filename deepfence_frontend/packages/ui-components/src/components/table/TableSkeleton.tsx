@@ -43,6 +43,7 @@ export const TableSkeleton: React.FC<TableSkeletonProps> = ({
   rows,
   className,
   size = 'default',
+  ...props
 }) => (
   <div
     className={cn(
@@ -50,6 +51,8 @@ export const TableSkeleton: React.FC<TableSkeletonProps> = ({
       `rounded-[5px] dark:border dark:border-bg-grid-border`,
       className,
     )}
+    data-testid={'tableSkeletonWrapperId'}
+    {...props}
   >
     <table
       className="w-full bg-white dark:bg-bg-grid-default border-spacing-0 border-collapse"

@@ -294,6 +294,33 @@ export const ConnectionsTable = ({
     },
   ]);
 
+  const expandedConnections = useMemo(() => {
+    const newConnections: ModelConnection[] = [];
+    connections.forEach((connection) => {
+      const ipsMap: Record<string, number> = {};
+      if (connection.ips?.length) {
+        connection.ips.forEach((ip) => {
+          if (ipsMap[ip]) {
+            ipsMap[ip] += 1;
+          } else {
+            ipsMap[ip] = 1;
+          }
+        });
+        Object.keys(ipsMap).forEach((ip) => {
+          newConnections.push({
+            ...connection,
+            node_id: ip,
+            node_name: ip,
+            count: ipsMap[ip],
+          });
+        });
+      } else {
+        newConnections.push(connection);
+      }
+    });
+    return newConnections;
+  }, [connections]);
+
   const columns = useMemo(() => {
     return [
       columnHelper.accessor('node_name', {
@@ -324,7 +351,7 @@ export const ConnectionsTable = ({
       />
       <Table
         columns={columns}
-        data={connections}
+        data={expandedConnections}
         size="compact"
         enablePagination
         pageSize={10}

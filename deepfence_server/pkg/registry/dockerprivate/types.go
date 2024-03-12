@@ -12,6 +12,7 @@ type RegistryDockerPrivate struct {
 }
 
 type NonSecret struct {
+	IsPublic          string `json:"is_public" validate:"required"`
 	DockerRegistryURL string `json:"docker_registry_url" validate:"required,url"`
 	DockerUsername    string `json:"docker_username" validate:"omitempty,min=2"`
 }

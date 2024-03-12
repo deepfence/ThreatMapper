@@ -50,9 +50,10 @@ type RegistryIDPathReq struct {
 }
 
 type RegistryImagesReq struct {
-	RegistryID  string                  `json:"registry_id" validate:"required" required:"true"`
-	ImageFilter reporters.FieldsFilters `json:"image_filter" required:"true"`
-	Window      FetchWindow             `json:"window" required:"true"`
+	RegistryID      string                  `json:"registry_id" validate:"required" required:"true"`
+	ImageFilter     reporters.FieldsFilters `json:"image_filter" required:"true"`
+	ImageStubFilter reporters.FieldsFilters `json:"image_stub_filter" required:"true"`
+	Window          FetchWindow             `json:"window" required:"true"`
 }
 
 type DeleteRegistryBulkReq struct {
@@ -120,6 +121,15 @@ type RegistryListResp struct {
 type RegistrySummaryAllResp map[string]Summary
 
 type Summary struct {
+	Repositories    int `json:"repositories"`
+	Registries      int `json:"registries"`
+	Images          int `json:"images"`
+	ScansComplete   int `json:"scans_complete"`
+	ScansInProgress int `json:"scans_in_progress"`
+	ScansTotal      int `json:"scans_total"`
+}
+
+type SummaryOld struct {
 	Images          int `json:"images"`
 	Registries      int `json:"registries"`
 	ScansComplete   int `json:"scans_complete"`
@@ -128,8 +138,22 @@ type Summary struct {
 	Tags            int `json:"tags"`
 }
 
+var queryRegistryCountByType = `    
+	MATCH (n:RegistryAccount{registry_type:$type})
+    RETURN COUNT(distinct n) as registries
+	`
+
+var queryRegistriesByType = `
+	MATCH (n:RegistryAccount{registry_type:$type})-[:HOSTS]->(i:ImageStub)-[:IS]-(m:ContainerImage)<-[:HOSTS]-(n)
+    WITH COUNT(distinct i.docker_image_name) AS repositories,
+		COUNT(distinct m.docker_image_id) AS images
+    OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(:RegistryAccount{registry_type:$type})
+    RETURN COLLECT(s.status) AS scan_status, repositories, images
+	`
+
 // ListRegistriesSafe doesnot get secret field from DB
-func (rl *RegistryListReq) ListRegistriesSafe(ctx context.Context, pgClient *postgresqlDb.Queries) ([]postgresqlDb.GetContainerRegistriesSafeRow, error) {
+func (rl *RegistryListReq) ListRegistriesSafe(ctx context.Context,
+	pgClient *postgresqlDb.Queries) ([]postgresqlDb.GetContainerRegistriesSafeRow, error) {
 	return pgClient.GetContainerRegistriesSafe(ctx)
 }
 
@@ -181,7 +205,9 @@ func DeleteRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r int32
 	return pgClient.DeleteContainerRegistry(ctx, r)
 }
 
-func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
+func (ra *RegistryAddReq) RegistryExists(ctx context.Context,
+	pgClient *postgresqlDb.Queries) (bool, error) {
+
 	_, err := pgClient.GetContainerRegistryByTypeAndName(ctx, postgresqlDb.GetContainerRegistryByTypeAndNameParams{
 		RegistryType: ra.RegistryType,
 		Name:         ra.Name,
@@ -194,7 +220,8 @@ func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgres
 	return true, nil
 }
 
-func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.Context, pgClient *postgresqlDb.Queries, ns string) (int32, error) {
+func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.Context,
+	pgClient *postgresqlDb.Queries, ns string) (int32, error) {
 	bSecret, err := json.Marshal(ra.Secret)
 	if err != nil {
 		return 0, err
@@ -210,21 +237,23 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 		return 0, err
 	}
 
-	containerRegistry, err := pgClient.CreateContainerRegistry(ctx, postgresqlDb.CreateContainerRegistryParams{
-		Name:            ra.Name,
-		RegistryType:    ra.RegistryType,
-		EncryptedSecret: bSecret,    // rawSecretJSON,
-		NonSecret:       bNonSecret, // rawNonSecretJSON,
-		Extras:          bExtras,    // rawExtrasJSON,
-	})
+	containerRegistry, err := pgClient.CreateContainerRegistry(ctx,
+		postgresqlDb.CreateContainerRegistryParams{
+			Name:            ra.Name,
+			RegistryType:    ra.RegistryType,
+			EncryptedSecret: bSecret,    // rawSecretJSON,
+			NonSecret:       bNonSecret, // rawNonSecretJSON,
+			Extras:          bExtras,    // rawExtrasJSON,
+		})
 	if err != nil {
 		return 0, err
 	}
 
-	cr, err := pgClient.GetContainerRegistryByTypeAndName(ctx, postgresqlDb.GetContainerRegistryByTypeAndNameParams{
-		RegistryType: ra.RegistryType,
-		Name:         ra.Name,
-	})
+	cr, err := pgClient.GetContainerRegistryByTypeAndName(ctx,
+		postgresqlDb.GetContainerRegistryByTypeAndNameParams{
+			RegistryType: ra.RegistryType,
+			Name:         ra.Name,
+		})
 	if err != nil {
 		return 0, err
 	}
@@ -263,7 +292,8 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 	return cr.ID, tx.Commit()
 }
 
-func (ru *RegistryUpdateReq) UpdateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r int32) error {
+func (ru *RegistryUpdateReq) UpdateRegistry(ctx context.Context,
+	pgClient *postgresqlDb.Queries, r int32) error {
 	bSecret, err := json.Marshal(ru.Secret)
 	if err != nil {
 		return err
@@ -279,18 +309,20 @@ func (ru *RegistryUpdateReq) UpdateRegistry(ctx context.Context, pgClient *postg
 		return err
 	}
 
-	_, err = pgClient.UpdateContainerRegistry(ctx, postgresqlDb.UpdateContainerRegistryParams{
-		ID:              r,
-		Name:            ru.Name,
-		RegistryType:    ru.RegistryType,
-		EncryptedSecret: bSecret,    // rawSecretJSON,
-		NonSecret:       bNonSecret, // rawNonSecretJSON,
-		Extras:          bExtras,    // rawExtrasJSON,
-	})
+	_, err = pgClient.UpdateContainerRegistry(ctx,
+		postgresqlDb.UpdateContainerRegistryParams{
+			ID:              r,
+			Name:            ru.Name,
+			RegistryType:    ru.RegistryType,
+			EncryptedSecret: bSecret,    // rawSecretJSON,
+			NonSecret:       bNonSecret, // rawNonSecretJSON,
+			Extras:          bExtras,    // rawExtrasJSON,
+		})
 	return err
 }
 
-func (ru *RegistryUpdateReq) RegistryExists(ctx context.Context, pgClient *postgresqlDb.Queries, id int32) (bool, error) {
+func (ru *RegistryUpdateReq) RegistryExists(ctx context.Context,
+	pgClient *postgresqlDb.Queries, id int32) (bool, error) {
 	registry, err := pgClient.GetContainerRegistry(ctx, id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return false, nil
@@ -326,7 +358,8 @@ func (ru *RegistryUpdateReq) RegistryExists(ctx context.Context, pgClient *postg
 	return true, nil
 }
 
-func GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
+func GetAESValueForEncryption(ctx context.Context,
+	pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
 	aes, err := GetSettingByKey(ctx, pgClient, commonConstants.AESSecret)
 	if err != nil {
 		return nil, err
@@ -345,9 +378,10 @@ func (r *RegistryImageListReq) GetRegistryImages(ctx context.Context) ([]Contain
 }
 
 type ImageStub struct {
-	ID   string   `json:"id"`
-	Name string   `json:"name"`
-	Tags []string `json:"tags"`
+	ID     string   `json:"id"`
+	Name   string   `json:"name"`
+	Images int      `json:"images"`
+	Tags   []string `json:"tags"`
 }
 
 func (i *ImageStub) AddTags(tags ...string) ImageStub {
@@ -355,7 +389,8 @@ func (i *ImageStub) AddTags(tags ...string) ImageStub {
 	return *i
 }
 
-func ListImageStubs(ctx context.Context, registryID string, filter reporters.FieldsFilters, fw FetchWindow) ([]ImageStub, error) {
+func ListImageStubs(ctx context.Context, registryID string,
+	filter reporters.FieldsFilters, fw FetchWindow) ([]ImageStub, error) {
 
 	images := []ImageStub{}
 
@@ -379,12 +414,18 @@ func ListImageStubs(ctx context.Context, registryID string, filter reporters.Fie
 	}
 
 	query := `
-	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub)
+	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub)-[:IS]-(m:ContainerImage)
 	` + reporters.ParseFieldFilters2CypherWhereConditions("l", mo.Some(filter), true) + `
-	WITH distinct l.docker_image_name as name, l.tags as tags, l.node_id as id
-	RETURN name, tags, id
+	MATCH (n) -[:HOSTS]-> (m:ContainerImage)
+	WITH distinct l.docker_image_name as name, 
+		l.tags as tags, 
+		COUNT(distinct m.docker_image_id) as images
+	RETURN name, tags, images
 	ORDER BY name
 	` + fw.FetchWindow2CypherQuery()
+
+	log.Debug().Msgf("Query: %s", query)
+
 	r, err := tx.Run(query, map[string]interface{}{"id": registryID})
 	if err != nil {
 		return images, err
@@ -405,9 +446,10 @@ func ListImageStubs(ctx context.Context, registryID string, filter reporters.Fie
 		}
 		images = append(images,
 			ImageStub{
-				ID:   records[i].Values[0].(string),
-				Name: records[i].Values[0].(string),
-				Tags: tags,
+				ID:     records[i].Values[0].(string),
+				Name:   records[i].Values[0].(string),
+				Images: int(records[i].Values[2].(int64)),
+				Tags:   tags,
 			},
 		)
 	}
@@ -415,7 +457,7 @@ func ListImageStubs(ctx context.Context, registryID string, filter reporters.Fie
 	return images, nil
 }
 
-func ListImages(ctx context.Context, registryID string, filter reporters.FieldsFilters, fw FetchWindow) ([]ContainerImage, error) {
+func ListImages(ctx context.Context, registryID string, filter, stubFilter reporters.FieldsFilters, fw FetchWindow) ([]ContainerImage, error) {
 
 	res := []ContainerImage{}
 
@@ -438,9 +480,11 @@ func ListImages(ctx context.Context, registryID string, filter reporters.FieldsF
 		return res, err
 	}
 
+	condition := reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(filter), true)
+	condition += ` ` + reporters.ParseFieldFilters2CypherWhereConditions("l", mo.Some(stubFilter), condition == "")
 	query := `
-	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub) <-[:IS]- (m:ContainerImage)
-	` + reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(filter), true) + `
+	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub) <-[:IS]- (m:ContainerImage) <-[:HOSTS]- (n)
+	` + condition + `
 	RETURN l, m
 	` + fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("query: %v", query)
@@ -479,6 +523,7 @@ func ListImages(ctx context.Context, registryID string, filter reporters.FieldsF
 		if exists {
 			var tagList []string
 			dockerImageName, _ := dockerImageNameVal.(string)
+			node.Name = dockerImageName
 			for _, imageTag := range node.DockerImageTagList {
 				tokens := strings.Split(imageTag, ":")
 				if len(tokens) > 1 {
@@ -599,7 +644,8 @@ func toScansCount(scans []interface{}) Summary {
 	return counts
 }
 
-func RegistrySummary(ctx context.Context, registryID mo.Option[string], registryType mo.Option[string]) (Summary, error) {
+func RegistrySummary(ctx context.Context, registryID mo.Option[string],
+	registryType mo.Option[string]) (Summary, error) {
 
 	count := Summary{}
 
@@ -618,74 +664,97 @@ func RegistrySummary(ctx context.Context, registryID mo.Option[string], registry
 	defer tx.Close()
 
 	queryPerRegistry := `
-	MATCH (n:RegistryAccount{node_id:$id})-[:HOSTS]->(m:ContainerImage)
-	WITH
-		COUNT(distinct m.docker_image_name) AS images,
-		COUNT(m.docker_image_tag) AS tags,
-		COUNT(distinct n) AS registries
-	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount)
-	WHERE $id IN a.container_registry_ids
-	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
-	`
-
-	queryRegistriesByType := `
-	MATCH (n:RegistryAccount{registry_type:$type})-[:HOSTS]->(m:ContainerImage)
-	WITH
-		COUNT(distinct m.docker_image_name) AS images,
-		COUNT(m.docker_image_tag) AS tags,
-		COUNT(distinct n) AS registries
-	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount{registry_type:$type})
-	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
+	MATCH (n:RegistryAccount{node_id:$id})-[:HOSTS]->(i:ImageStub)-[:IS]-(m:ContainerImage)
+	MATCH (n)-[:HOSTS]->(m)
+	WITH n,
+		COUNT(distinct i.docker_image_name) AS repositories,
+		COUNT(distinct m.docker_image_id) AS images
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(n)
+	RETURN COLLECT(s.status) AS scan_status, repositories, images
 	`
 
 	queryAllRegistries := `
-	MATCH (n:RegistryAccount)-[:HOSTS]->(m:ContainerImage)
-	WITH
-		COUNT(distinct m.docker_image_name) AS images,
-		COUNT(m.docker_image_tag) AS tags,
-		COUNT(distinct n) AS registries
-	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount)
-	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
+	MATCH (n:RegistryAccount)-[:HOSTS]->(i:ImageStub)-[:IS]-(m:ContainerImage)
+	MATCH (n)-[:HOSTS]->(m)
+	WITH COUNT(distinct i.docker_image_name) AS repositories,
+		COUNT(distinct m.docker_image_id) AS images
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(:RegistryAccount)
+	RETURN COLLECT(s.status) AS scan_status, repositories, images
 	`
 
 	var (
-		result neo4j.Result
+		registryResult neo4j.Result
+		result         neo4j.Result
 	)
 	if regID, ok := registryID.Get(); ok {
+		regQuery := `
+		MATCH (n:RegistryAccount{node_id:$id})
+		RETURN COUNT(distinct n) as registries
+		`
+		if registryResult, err = tx.Run(regQuery, map[string]interface{}{"id": regID}); err != nil {
+			log.Error().Err(err).Msgf("failed to get count for registry id %v", regID)
+			return count, err
+		}
+
+		log.Debug().Msgf("summary queryPerRegistry: %s", queryPerRegistry)
 		if result, err = tx.Run(queryPerRegistry, map[string]interface{}{"id": regID}); err != nil {
 			log.Error().Err(err).Msgf("failed to query summary for registry id %v", regID)
 			return count, err
 		}
 	} else if regType, ok := registryType.Get(); ok {
+		if registryResult, err = tx.Run(queryRegistryCountByType,
+			map[string]interface{}{"type": regType}); err != nil {
+			log.Error().Err(err).Msgf("failed to get count for registry type %s", regType)
+			return count, err
+		}
+
+		log.Debug().Msgf("summary queryRegistriesByType: %s", queryRegistriesByType)
 		if result, err = tx.Run(queryRegistriesByType, map[string]interface{}{"type": regType}); err != nil {
 			log.Error().Err(err).Msgf("failed to query summary for registry type %s", regType)
 			return count, err
 		}
 	} else {
+		regQuery := `    
+		MATCH (n:RegistryAccount)
+    	RETURN COUNT (distinct n) as registries
+        `
+		if registryResult, err = tx.Run(regQuery, map[string]interface{}{}); err != nil {
+			log.Error().Err(err).Msgf("failed to get count for all registries")
+			return count, err
+		}
+
+		log.Debug().Msgf("summary queryAllRegistries: %s", queryAllRegistries)
 		if result, err = tx.Run(queryAllRegistries, map[string]interface{}{}); err != nil {
 			log.Error().Err(err).Msgf("failed to query summary for all registries")
 			return count, err
 		}
 	}
 
+	regRecord, err := registryResult.Single()
+	if err != nil {
+		log.Error().Msgf("Error in getting registry count: %s", err.Error())
+		return count, nil
+	}
+
+	registries, has := regRecord.Get("registries")
+	if !has {
+		log.Warn().Msg("registry count  not found in query result")
+	}
+
 	record, err := result.Single()
 	if err != nil {
-		return count, err
+		log.Error().Msgf("Error in getting resuts: %s", err.Error())
+		return count, nil
+	}
+
+	repositories, has := record.Get("repositories")
+	if !has {
+		log.Warn().Msg("repositories not found in query result")
 	}
 
 	images, has := record.Get("images")
 	if !has {
 		log.Warn().Msgf("images not found in query result")
-	}
-
-	tags, has := record.Get("tags")
-	if !has {
-		log.Warn().Msg("tags not found in query result")
-	}
-
-	registries, has := record.Get("registries")
-	if !has {
-		log.Warn().Msg("registries not found in query result")
 	}
 
 	scansStatus, has := record.Get("scan_status")
@@ -694,8 +763,8 @@ func RegistrySummary(ctx context.Context, registryID mo.Option[string], registry
 	}
 
 	count = toScansCount(scansStatus.([]interface{}))
+	count.Repositories = int(repositories.(int64))
 	count.Images = int(images.(int64))
-	count.Tags = int(tags.(int64))
 	count.Registries = int(registries.(int64))
 
 	return count, nil
@@ -719,24 +788,30 @@ func RegistrySummaryAll(ctx context.Context) (RegistrySummaryAllResp, error) {
 	}
 	defer tx.Close()
 
-	queryRegistriesByType := `
-	MATCH (n:RegistryAccount{registry_type:$type})-[:HOSTS]->(m:ContainerImage)
-	WITH
-		COUNT(distinct m.docker_image_name) AS images,
-		COUNT(m.docker_image_tag) AS tags,
-		COUNT(distinct n) AS registries
-	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount{registry_type:$type})
-	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
-	`
-
 	for _, t := range pkgConst.RegistryTypes {
 		var (
-			result neo4j.Result
+			registryResult neo4j.Result
+			result         neo4j.Result
+
 			rCount = Summary{}
 		)
 
+		if registryResult, err = tx.Run(queryRegistryCountByType,
+			map[string]interface{}{"type": t}); err != nil {
+			log.Error().Err(err).Msgf("failed to get count for registry type %s", t)
+			count[t] = rCount
+			continue
+		}
+
 		if result, err = tx.Run(queryRegistriesByType, map[string]interface{}{"type": t}); err != nil {
 			log.Error().Err(err).Msgf("failed to query summary for registry type %s", t)
+			count[t] = rCount
+			continue
+		}
+
+		regRecord, err := registryResult.Single()
+		if err != nil {
+			log.Error().Msgf("Error in getting registry count: %s", err.Error())
 			count[t] = rCount
 			continue
 		}
@@ -747,17 +822,17 @@ func RegistrySummaryAll(ctx context.Context) (RegistrySummaryAllResp, error) {
 			continue
 		}
 
+		repositories, has := record.Get("repositories")
+		if !has {
+			log.Warn().Msgf("Repositories not found in query result")
+		}
+
 		images, has := record.Get("images")
 		if !has {
-			log.Warn().Msgf("images not found in query result")
+			log.Warn().Msg("images not found in query result")
 		}
 
-		tags, has := record.Get("tags")
-		if !has {
-			log.Warn().Msg("tags not found in query result")
-		}
-
-		registries, has := record.Get("registries")
+		registries, has := regRecord.Get("registries")
 		if !has {
 			log.Warn().Msg("registries not found in query result")
 		}
@@ -768,8 +843,8 @@ func RegistrySummaryAll(ctx context.Context) (RegistrySummaryAllResp, error) {
 		}
 
 		rCount = toScansCount(scansStatus.([]interface{}))
+		rCount.Repositories = int(repositories.(int64))
 		rCount.Images = int(images.(int64))
-		rCount.Tags = int(tags.(int64))
 		rCount.Registries = int(registries.(int64))
 
 		count[t] = rCount

@@ -1724,6 +1724,25 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) bulkDeleteScanResults(ctx context.Context, req model.BulkDeleteScansRequest) error {
+	// Mark the scans as delete pending
+	scanType := utils.DetectedNodeScanType[req.ScanType]
+	scansList, err := reportersScan.GetScansList(ctx, scanType, nil,
+		req.Filters, model.FetchWindow{})
+	if err != nil {
+		return err
+	}
+	scanIds := make([]string, 0, len(scansList.ScansInfo))
+	for _, entry := range scansList.ScansInfo {
+		scanIds = append(scanIds, entry.ScanID)
+	}
+
+	err = reportersScan.MarkScanDeletePending(ctx, scanType, scanIds)
+	if err != nil {
+		log.Error().Msgf("Failed to mark the scanids: %v as DELETE_PENDING",
+			scanIds)
+		return err
+	}
+
 	worker, err := directory.Worker(ctx)
 	if err != nil {
 		return err

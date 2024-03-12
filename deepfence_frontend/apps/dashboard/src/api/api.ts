@@ -271,6 +271,7 @@ export function getLookupApiClient() {
     lookupMalwares: lookupApi.getMalwares.bind(lookupApi),
     lookupCompliances: lookupApi.getCompliances.bind(lookupApi),
     lookupCloudCompliances: lookupApi.getCloudCompliances.bind(lookupApi),
+    lookupRegistryAccounts: lookupApi.getRegistryAccount.bind(lookupApi),
   };
 }
 
@@ -401,5 +402,9 @@ export function getScanResultCompletionApiClient() {
     completeVulnerabilityInfo:
       scanCompleteionApi.completeVulnerabilityInfo.bind(scanCompleteionApi),
     completeHostInfo: scanCompleteionApi.completeHostInfo.bind(scanCompleteionApi),
+    completeComplianceInfo:
+      scanCompleteionApi.completeComplianceInfo.bind(scanCompleteionApi),
+    completeCloudCompliance:
+      scanCompleteionApi.completeCloudCompliance.bind(scanCompleteionApi),
   };
 }

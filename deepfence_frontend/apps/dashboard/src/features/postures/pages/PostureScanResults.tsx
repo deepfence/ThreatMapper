@@ -61,6 +61,7 @@ import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanHistoryDropdown } from '@/components/scan-history/HistoryList';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import {
+  ScanStatusDeletePending,
   ScanStatusInError,
   ScanStatusInProgress,
   ScanStatusNoData,
@@ -74,6 +75,7 @@ import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { PostureScanResultsPieChart } from '@/features/postures/components/scan-result/PostureScanResultsPieChart';
 import { PosturesCompare } from '@/features/postures/components/scan-result/PosturesCompare';
+import { SearchablePostureTestNumber } from '@/features/postures/components/scan-result/SearchableTestNumber';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
@@ -88,6 +90,7 @@ import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
 import {
   isScanComplete,
+  isScanDeletePending,
   isScanFailed,
   isScanInProgress,
   isScanStopped,
@@ -283,6 +286,7 @@ const useScanResults = () => {
       }),
       visibility: searchParams.getAll('visibility'),
       status: searchParams.getAll('status'),
+      testNumber: searchParams.getAll('testNumber'),
     }),
     keepPreviousData: true,
   });
@@ -572,7 +576,7 @@ const HistoryControls = () => {
   const { data, fetchStatus } = useScanResults();
   const { nodeType = '' } = useParams();
   const { scanStatusResult } = data;
-  const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
+  const { scan_id, node_id, node_type, created_at, status } = scanStatusResult ?? {};
   const { navigate, goBack } = usePageNavigation();
   const { downloadScan } = useDownloadScan((state) => {
     setIsSubmitting(state === 'submitting');
@@ -592,7 +596,7 @@ const HistoryControls = () => {
   }>({
     baseScanId: '',
     toScanId: '',
-    baseScanTime: updated_at ?? 0,
+    baseScanTime: created_at ?? 0,
     toScanTime: 0,
     showScanTimeModal: false,
   });
@@ -665,7 +669,7 @@ const HistoryControls = () => {
             id: item.scanId,
             isCurrent: item.scanId === scan_id,
             status: item.status,
-            timestamp: item.updatedAt,
+            timestamp: item.createdAt,
             showScanCompareButton: true,
             onScanTimeCompareButtonClick: onCompareScanClick,
             onDeleteClick: (id) => {
@@ -690,7 +694,7 @@ const HistoryControls = () => {
               );
             },
           }))}
-          currentTimeStamp={formatMilliseconds(updated_at ?? '')}
+          currentTimeStamp={formatMilliseconds(created_at ?? '')}
         />
 
         {scanIdToDelete && (
@@ -721,7 +725,7 @@ const HistoryControls = () => {
         )}
         <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
         <ScanStatusBadge status={status ?? ''} />
-        {!isScanInProgress(status ?? '') && (
+        {!isScanInProgress(status ?? '') && !isScanDeletePending(status ?? '') ? (
           <>
             <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
             <div className="pl-1.5 flex">
@@ -770,7 +774,7 @@ const HistoryControls = () => {
                     onClick={() => {
                       setCompareInput({
                         ...compareInput,
-                        baseScanTime: updated_at ?? 0,
+                        baseScanTime: created_at ?? 0,
                         showScanTimeModal: true,
                       });
                     }}
@@ -780,6 +784,23 @@ const HistoryControls = () => {
                 )}
               </>
             </div>
+          </>
+        ) : (
+          <>
+            {!isScanDeletePending(status ?? '') ? (
+              <Button
+                type="button"
+                variant="flat"
+                size="sm"
+                className="absolute right-0 top-0"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpenStopScanModal(true);
+                }}
+              >
+                Cancel scan
+              </Button>
+            ) : null}
           </>
         )}
       </div>
@@ -934,6 +955,7 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   visibility: 'Masked/Unmasked',
   status: 'Status',
   benchmarkType: 'Benchmark',
+  testNumber: 'ID',
 };
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
@@ -1094,6 +1116,27 @@ const Filters = () => {
               );
             })}
         </Combobox>
+        <SearchablePostureTestNumber
+          scanId={params.scanId}
+          defaultSelectedTestNumber={searchParams.getAll('testNumber')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('testNumber');
+              values.forEach((value) => {
+                prev.append('testNumber', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('testNumber');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
 
       {appliedFilterCount > 0 ? (
@@ -1260,6 +1303,13 @@ const TablePlaceholder = ({
       </div>
     );
   }
+  if (isScanDeletePending(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center min-h-[384px]">
+        <ScanStatusDeletePending />
+      </div>
+    );
+  }
 
   return <TableNoDataElement text="No data available" />;
 };
@@ -1281,6 +1331,7 @@ const PostureTable = ({
   const { data } = useScanResults();
   const columnHelper = createColumnHelper<ModelCompliance>();
   const [sort, setSort] = useSortingState();
+  const params = useParams();
 
   const columns = useMemo(() => {
     const columns = [
@@ -1359,9 +1410,9 @@ const PostureTable = ({
       columnHelper.accessor('status', {
         enableResizing: false,
         enableSorting: true,
-        minSize: 60,
-        size: 60,
-        maxSize: 65,
+        minSize: 40,
+        size: 50,
+        maxSize: 60,
         header: () => <div>Status</div>,
         cell: (info) => {
           return <PostureStatusBadge status={info.getValue() as PostureSeverityType} />;
@@ -1379,9 +1430,24 @@ const PostureTable = ({
         ),
       }),
     ];
-
+    if (params.nodeType && params.nodeType === 'kubernetes') {
+      columns.splice(
+        columns.length - 1,
+        0,
+        columnHelper.accessor('resource', {
+          enableResizing: false,
+          minSize: 60,
+          size: 70,
+          maxSize: 80,
+          header: () => <div>Resource (ID)</div>,
+          cell: (info) => {
+            return <TruncatedText text={info.getValue()} />;
+          },
+        }),
+      );
+    }
     return columns;
-  }, [setSearchParams]);
+  }, [setSearchParams, params.nodeType]);
 
   const { data: scanResultData, scanStatusResult } = data;
 
@@ -1607,6 +1673,15 @@ const ScanStatusWrapper = ({
       </div>
     );
   }
+
+  if (isScanDeletePending(scanStatusResult?.status ?? '')) {
+    return (
+      <div className="flex items-center justify-center h-[140px]">
+        <ScanStatusDeletePending />
+      </div>
+    );
+  }
+
   if (displayNoData) {
     return (
       <div className={className}>

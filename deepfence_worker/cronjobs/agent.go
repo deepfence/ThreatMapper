@@ -91,7 +91,7 @@ func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	err = handler.IngestAgentVersion(ctx, tags_with_urls)
+	err = handler.IngestAgentVersion(ctx, tags_with_urls, false)
 	if err != nil {
 		return err
 	}

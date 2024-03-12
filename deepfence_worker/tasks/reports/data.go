@@ -49,6 +49,19 @@ type NodeWiseData[T any] struct {
 func searchScansFilter(params sdkUtils.ReportParams) rptSearch.SearchScanReq {
 	filters := rptSearch.SearchScanReq{}
 
+	filters.ScanFilter = rptSearch.SearchFilter{
+		Window: model.FetchWindow{Offset: 0, Size: 1},
+		Filters: reporters.FieldsFilters{
+			OrderFilter: reporters.OrderFilter{
+				OrderFields: []reporters.OrderSpec{
+					{
+						FieldName:  "updated_at",
+						Descending: false,
+					},
+				},
+			},
+		},
+	}
 	filters.NodeFilter = rptSearch.SearchFilter{
 		Filters: reporters.FieldsFilters{
 			ContainsFilter: reporters.ContainsFilter{
@@ -128,8 +141,8 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time = time.Now()
-		start time.Time = time.Now()
+		end   = time.Now()
+		start = time.Now()
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
@@ -163,7 +176,7 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
-		sort.Slice(result[:], func(i, j int) bool {
+		sort.Slice(result, func(i, j int) bool {
 			return result[i].CveSeverity < result[j].CveSeverity
 		})
 		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
@@ -198,8 +211,8 @@ func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParam
 		return nil, err
 	}
 	var (
-		end   time.Time = time.Now()
-		start time.Time = time.Now()
+		end   = time.Now()
+		start = time.Now()
 	)
 	nodeWiseData := NodeWiseData[model.Vulnerability]{
 		SeverityCount: make(map[string]map[string]int32),
@@ -236,8 +249,8 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time = time.Now()
-		start time.Time = time.Now()
+		end   = time.Now()
+		start = time.Now()
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
@@ -271,7 +284,7 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
-		sort.Slice(result[:], func(i, j int) bool {
+		sort.Slice(result, func(i, j int) bool {
 			return result[i].Level < result[j].Level
 		})
 		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
@@ -298,8 +311,8 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time = time.Now()
-		start time.Time = time.Now()
+		end   = time.Now()
+		start = time.Now()
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
@@ -332,7 +345,7 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
-		sort.Slice(result[:], func(i, j int) bool {
+		sort.Slice(result, func(i, j int) bool {
 			return result[i].FileSeverity < result[j].FileSeverity
 		})
 		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
@@ -359,8 +372,8 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time = time.Now()
-		start time.Time = time.Now()
+		end   = time.Now()
+		start = time.Now()
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
@@ -393,7 +406,7 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
-		sort.Slice(result[:], func(i, j int) bool {
+		sort.Slice(result, func(i, j int) bool {
 			return result[i].ComplianceCheckType < result[j].ComplianceCheckType
 		})
 		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
@@ -420,8 +433,8 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time = time.Now()
-		start time.Time = time.Now()
+		end   = time.Now()
+		start = time.Now()
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
@@ -455,7 +468,7 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
-		sort.Slice(result[:], func(i, j int) bool {
+		sort.Slice(result, func(i, j int) bool {
 			return result[i].ComplianceCheckType < result[j].ComplianceCheckType
 		})
 		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
@@ -479,15 +492,15 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 
 func updateFilters(ctx context.Context, original sdkUtils.ReportFilters) sdkUtils.ReportFilters {
 	if len(original.AdvancedReportFilters.ImageName) > 0 {
-		original.AdvancedReportFilters.ImageName = NodeIdToNodeName(ctx, original.AdvancedReportFilters.ImageName, "container_image")
+		original.AdvancedReportFilters.ImageName = NodeIDToNodeName(ctx, original.AdvancedReportFilters.ImageName, "container_image")
 	}
 	if len(original.AdvancedReportFilters.ContainerName) > 0 {
-		original.AdvancedReportFilters.ContainerName = NodeIdToNodeName(ctx, original.AdvancedReportFilters.ContainerName, "container")
+		original.AdvancedReportFilters.ContainerName = NodeIDToNodeName(ctx, original.AdvancedReportFilters.ContainerName, "container")
 	}
 	return original
 }
 
-func NodeIdToNodeName(ctx context.Context, nodeIds []string, node_type string) []string {
+func NodeIDToNodeName(ctx context.Context, nodeIds []string, node_type string) []string {
 	nodes := []string{}
 
 	driver, err := directory.Neo4jClient(ctx)

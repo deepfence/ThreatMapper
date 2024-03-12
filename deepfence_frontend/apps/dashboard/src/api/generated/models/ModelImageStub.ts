@@ -27,6 +27,12 @@ export interface ModelImageStub {
     id?: string;
     /**
      * 
+     * @type {number}
+     * @memberof ModelImageStub
+     */
+    images?: number;
+    /**
+     * 
      * @type {string}
      * @memberof ModelImageStub
      */
@@ -59,6 +65,7 @@ export function ModelImageStubFromJSONTyped(json: any, ignoreDiscriminator: bool
     return {
         
         'id': !exists(json, 'id') ? undefined : json['id'],
+        'images': !exists(json, 'images') ? undefined : json['images'],
         'name': !exists(json, 'name') ? undefined : json['name'],
         'tags': !exists(json, 'tags') ? undefined : json['tags'],
     };
@@ -74,6 +81,7 @@ export function ModelImageStubToJSON(value?: ModelImageStub | null): any {
     return {
         
         'id': value.id,
+        'images': value.images,
         'name': value.name,
         'tags': value.tags,
     };

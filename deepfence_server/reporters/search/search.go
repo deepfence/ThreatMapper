@@ -70,6 +70,45 @@ type ResultGroupResp struct {
 	Groups []ResultGroup `json:"groups"`
 }
 
+func CountAllNodeLabels(ctx context.Context) (map[string]int64, error) {
+	res := map[string]int64{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	query := `CALL apoc.meta.stats() YIELD labels RETURN labels;`
+	r, err := tx.Run(query, map[string]interface{}{})
+	if err != nil {
+		return res, err
+	}
+	rec, err := r.Single()
+	if err != nil {
+		return res, err
+	}
+
+	val, found := rec.Get("labels")
+	if !found {
+		return res, nil
+	}
+
+	labels := val.(map[string]interface{})
+	for k, v := range labels {
+		res[k] = v.(int64)
+	}
+
+	return res, nil
+}
+
 func CountNodes(ctx context.Context) (NodeCountResp, error) {
 	res := NodeCountResp{}
 	driver, err := directory.Neo4jClient(ctx)
@@ -169,7 +208,7 @@ func constructIndirectMatchInit(
 
 	if doReturn {
 		if extendedField != "" {
-			query += "\n"+`MATCH (` + name + `) -[:IS]-> (e) ` +
+			query += "\n" + `MATCH (` + name + `) -[:IS]-> (e) ` +
 				reporters.ParseFieldFilters2CypherWhereConditions("e", mo.Some(extendedFilter.Filters), true) +
 				reporters.OrderFilter2CypherCondition("e", extendedFilter.Filters.OrderFilter, []string{name}) +
 				` RETURN ` + reporters.FieldFilterCypher(name, filter.InFieldFilter) + `, e` +
@@ -480,7 +519,7 @@ func searchGenericScanInfoReport(ctx context.Context, scanType utils.Neo4jScanTy
 	    ORDER BY n.updated_at DESC` +
 		scanFilter.Window.FetchWindow2CypherQuery() +
 		`}` +
-		` RETURN n.node_id as scan_id, n.status as status, n.status_message as status_message, n.updated_at as updated_at, m.node_id as node_id, COALESCE(m.node_type, m.cloud_provider) as node_type, m.node_name as node_name` +
+		` RETURN n.node_id as scan_id, n.status as status, n.status_message as status_message, n.created_at as created_at, n.updated_at as updated_at, m.node_id as node_id, COALESCE(m.node_type, m.cloud_provider) as node_type, m.node_name as node_name` +
 		reporters.OrderFilter2CypherCondition("", scanFilter.Filters.OrderFilter, nil) +
 		fw.FetchWindow2CypherQuery()
 	log.Debug().Msgf("search query: %v", query)
@@ -507,10 +546,11 @@ func searchGenericScanInfoReport(ctx context.Context, scanType utils.Neo4jScanTy
 			ScanID:         rec.Values[0].(string),
 			Status:         rec.Values[1].(string),
 			StatusMessage:  rec.Values[2].(string),
-			UpdatedAt:      rec.Values[3].(int64),
-			NodeID:         rec.Values[4].(string),
-			NodeType:       rec.Values[5].(string),
-			NodeName:       rec.Values[6].(string),
+			CreatedAt:      rec.Values[3].(int64),
+			UpdatedAt:      rec.Values[4].(int64),
+			NodeID:         rec.Values[5].(string),
+			NodeType:       rec.Values[6].(string),
+			NodeName:       rec.Values[7].(string),
 			SeverityCounts: counts,
 		})
 	}
