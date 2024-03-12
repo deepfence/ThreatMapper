@@ -16,8 +16,9 @@ import (
 )
 
 const (
-	dateLayout                = "2006-01-02 15:04:05 UTC"
+	dateLayout                = "2006-01-02 15:04:05.999999-07:00"
 	dateLayout2               = "2006-01-02 15:04:05"
+	dateLayout3               = "2006-01-02 15:04:05 UTC"
 	licenseDefaultMessage     = "License Active"
 	licenseDefaultDescription = "Your license is valid and active"
 	licenseExpiredMessage     = "License Expired"
@@ -158,12 +159,12 @@ func generateLicense(generateLicenseAPIURL string) (*LicenseServerResponse, int,
 	return &licenseResp, resp.StatusCode, nil
 }
 
-func FetchLicense(ctx context.Context, licenseKey string, pgClient *postgresqlDb.Queries) (*License, error) {
-	var license *License
+func FetchLicense(ctx context.Context, licenseKey string, pgClient *postgresqlDb.Queries) (*License, int, error) {
+	var licenseResp *LicenseServerResponse
 	var err error
 	retryCounter := 0
 	for {
-		license, err = fetchLicense(licenseKey)
+		licenseResp, err = fetchLicense(licenseKey)
 		if err != nil {
 			retryCounter += 1
 			if retryCounter > 3 {
@@ -176,12 +177,22 @@ func FetchLicense(ctx context.Context, licenseKey string, pgClient *postgresqlDb
 	}
 	if err != nil {
 		log.Error().Msgf("Could not fetch license details: %v", err)
-		return generateDefaultLicense(ctx, pgClient), nil
+		return generateDefaultLicense(ctx, pgClient), 0, nil
 	}
-	return license, nil
+
+	if licenseResp.Success == false {
+		return nil, http.StatusBadRequest, errors.New(licenseResp.Error.Message)
+	}
+	license := licenseResp.Data
+	licenseKeyUUID, err := utils.UUIDFromString(license.LicenseKey)
+	if err != nil {
+		return nil, http.StatusBadRequest, err
+	}
+	license.LicenseKeyUUID = licenseKeyUUID
+	return &license, 0, nil
 }
 
-func fetchLicense(licenseKey string) (*License, error) {
+func fetchLicense(licenseKey string) (*LicenseServerResponse, error) {
 	httpClient, err := utils.NewHTTPClient()
 	if err != nil {
 		return nil, err
@@ -199,21 +210,10 @@ func fetchLicense(licenseKey string) (*License, error) {
 	var licenseResp LicenseServerResponse
 	err = json.Unmarshal(respBody, &licenseResp)
 	if err != nil {
+		log.Warn().Msgf("Error in fetching license: %s", string(respBody))
 		return nil, err
 	}
-	if resp.StatusCode != 200 {
-		return nil, errors.New(licenseResp.Error.Message)
-	}
-	if !licenseResp.Success {
-		return nil, errors.New(licenseResp.Error.Message)
-	}
-	license := licenseResp.Data
-	licenseKeyUUID, err := utils.UUIDFromString(license.LicenseKey)
-	if err != nil {
-		return nil, err
-	}
-	license.LicenseKeyUUID = licenseKeyUUID
-	return &license, nil
+	return &licenseResp, nil
 }
 
 func generateDefaultLicense(ctx context.Context, pgClient *postgresqlDb.Queries) *License {
@@ -227,7 +227,7 @@ func generateDefaultLicense(ctx context.Context, pgClient *postgresqlDb.Queries)
 		startDate = time.Now().UTC()
 	} else {
 		defaultLicenseUUID = dbLicense.LicenseKeyUUID
-		startDate, err = parseDate(dbLicense.StartDate)
+		startDate, err = time.Parse(dateLayout3, dbLicense.StartDate)
 		if err != nil {
 			startDate = time.Now().UTC()
 		} else {

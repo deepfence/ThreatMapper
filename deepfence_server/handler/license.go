@@ -89,10 +89,16 @@ func (h *Handler) RegisterLicenseHandler(w http.ResponseWriter, r *http.Request)
 			return
 		}
 	}
-	license, err := model.FetchLicense(ctx, req.LicenseKey, pgClient)
+	license, statusCode, err := model.FetchLicense(ctx, req.LicenseKey, pgClient)
 	if err != nil {
-		h.respondError(err, w)
-		return
+		log.Error().Msg(err.Error())
+		if statusCode == http.StatusBadRequest {
+			h.respondError(&BadDecoding{err: err}, w)
+			return
+		} else {
+			h.respondError(err, w)
+			return
+		}
 	}
 	err = license.Save(ctx, pgClient)
 	if err != nil {
