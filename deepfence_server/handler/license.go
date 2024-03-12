@@ -16,7 +16,7 @@ import (
 
 var (
 	licenseAddedError         = ForbiddenError{errors.New("license key already added")}
-	licenseNotConfiguredError = BadDecoding{errors.New("console not registered")}
+	licenseNotConfiguredError = PaymentRequired{errors.New("console not registered")}
 )
 
 func (h *Handler) GenerateLicenseHandler(w http.ResponseWriter, r *http.Request) {

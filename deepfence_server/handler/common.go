@@ -79,6 +79,14 @@ func respondWith(ctx context.Context, w http.ResponseWriter, code int, response 
 	}
 }
 
+type PaymentRequired struct {
+	err error
+}
+
+func (p *PaymentRequired) Error() string {
+	return p.err.Error()
+}
+
 type BadDecoding struct {
 	err error
 }
@@ -170,6 +178,8 @@ func (h *Handler) respondError(err error, w http.ResponseWriter) {
 		code = http.StatusConflict
 	case *BadDecoding:
 		code = http.StatusBadRequest
+	case *PaymentRequired:
+		code = http.StatusPaymentRequired
 	case *ValidatorError:
 		code = http.StatusBadRequest
 		var validatorError *ValidatorError
