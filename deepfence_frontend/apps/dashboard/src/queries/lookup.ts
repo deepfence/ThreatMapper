@@ -317,4 +317,32 @@ export const lookupQueries = createQueryKeys('lookup', {
       },
     };
   },
+  registryAccount: (filters: { nodeIds: string[] }) => {
+    const { nodeIds } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const lookupRegistryAccounts = apiWrapper({
+          fn: getLookupApiClient().lookupRegistryAccounts,
+        });
+        const lookupRegistryAccountsResponse = await lookupRegistryAccounts({
+          lookupLookupFilter: {
+            node_ids: nodeIds,
+            in_field_filter: [],
+            window: {
+              offset: 0,
+              size: nodeIds.length,
+            },
+          },
+        });
+        if (!lookupRegistryAccountsResponse.ok) {
+          throw lookupRegistryAccountsResponse.error;
+        }
+
+        return {
+          data: lookupRegistryAccountsResponse.value,
+        };
+      },
+    };
+  },
 });

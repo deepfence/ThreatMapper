@@ -32,7 +32,7 @@ const getNodeTypeByProviderName = (providerName: string): string | undefined => 
       return;
   }
 };
-const API_SCAN_TYPE_MAP: {
+export const API_SCAN_TYPE_MAP: {
   [key: string]: ScanTypeEnum;
 } = {
   [UtilsReportFiltersScanTypeEnum.Vulnerability]: ScanTypeEnum.VulnerabilityScan,

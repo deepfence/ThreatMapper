@@ -82,6 +82,18 @@ const useImageSummary = () => {
   });
 };
 
+const useRegistryDetails = () => {
+  const params = useParams() as {
+    nodeId: string;
+  };
+  const nodeId = params?.nodeId;
+  return useSuspenseQuery({
+    ...queries.lookup.registryAccount({
+      nodeIds: [nodeId],
+    }),
+  });
+};
+
 function getScanOptions(
   scanType: ScanTypeEnum,
   nodeIds: string[],
@@ -167,6 +179,9 @@ const DynamicBreadcrumbs = () => {
     account: string;
     nodeId: string;
   };
+
+  const { data } = useRegistryDetails();
+
   return (
     <>
       <BreadcrumbLink>
@@ -179,7 +194,7 @@ const DynamicBreadcrumbs = () => {
         </DFLink>
       </BreadcrumbLink>
       <BreadcrumbLink isLast>
-        <span className="inherit cursor-auto">{nodeId}</span>
+        <span className="inherit cursor-auto">{data.data?.[0]?.name ?? nodeId}</span>
       </BreadcrumbLink>
     </>
   );
@@ -294,7 +309,11 @@ const CountWidget = () => {
     );
   }
 
-  const { images = 0, tags = 0, scans_in_progress = 0 } = data.summary as ModelSummary;
+  const {
+    repositories = 0,
+    images = 0,
+    scans_in_progress = 0,
+  } = data.summary as ModelSummary;
 
   return (
     <div className="grid grid-cols-12 px-6 items-center w-full">
@@ -308,9 +327,9 @@ const CountWidget = () => {
             className="text-h1 dark:text-text-input-value"
             data-testid="totalRegistryImagesId"
           >
-            {abbreviateNumber(images)}
+            {abbreviateNumber(repositories)}
           </span>
-          <span className="text-p1">Total images</span>
+          <span className="text-p1">Total repositories</span>
         </div>
       </div>
 
@@ -324,9 +343,9 @@ const CountWidget = () => {
             className="text-h1 dark:text-text-input-value"
             data-testid="totalRegistryImageTagsId"
           >
-            {abbreviateNumber(tags)}
+            {abbreviateNumber(images)}
           </span>
-          <span className="text-p1">Total tags</span>
+          <span className="text-p1">Total images</span>
         </div>
       </div>
       <div className="col-span-4 flex items-center text-text-text-and-icon gap-x-3 justify-center">
@@ -338,7 +357,7 @@ const CountWidget = () => {
           <span className="text-h1 text-text-input-value">
             {abbreviateNumber(scans_in_progress)}
           </span>
-          <span className="text-p1">In Progress</span>
+          <span className="text-p1">In progress</span>
         </div>
       </div>
     </div>

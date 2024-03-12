@@ -59,14 +59,14 @@ func listRepos(url, namespace, token string) ([]Repositories, error) {
 		resp, err := client.Do(req)
 		if err != nil {
 			log.Error().Msg(err.Error())
-			break
+			return nil, err
 		}
 		defer resp.Body.Close()
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Error().Msg(err.Error())
-			break
+			return nil, err
 		}
 
 		if resp.StatusCode != http.StatusOK {
@@ -76,7 +76,8 @@ func listRepos(url, namespace, token string) ([]Repositories, error) {
 		}
 
 		var repos ReposResp
-		if err := json.Unmarshal(body, &repos); err != nil {
+		err = json.Unmarshal(body, &repos)
+		if err != nil {
 			log.Error().Msg(err.Error())
 			break
 		}

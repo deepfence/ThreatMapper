@@ -6,7 +6,7 @@ title: ThreatMapper Architecture
 
 :::info
 
-Help needed to  provide architectural information for developers
+Help needed to provide architectural information for developers
 
 :::
 

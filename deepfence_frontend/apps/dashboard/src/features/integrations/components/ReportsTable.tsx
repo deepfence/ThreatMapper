@@ -1,4 +1,12 @@
-import { capitalize, isNil, upperCase } from 'lodash-es';
+import {
+  capitalize,
+  findKey,
+  intersection,
+  isEmpty,
+  isNil,
+  upperCase,
+  upperFirst,
+} from 'lodash-es';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useInterval } from 'react-use';
@@ -16,13 +24,22 @@ import {
   TableNoDataElement,
 } from 'ui-components';
 
-import { ModelExportReport } from '@/api/generated';
+import {
+  ModelExportReport,
+  UtilsReportFilters,
+  UtilsReportFiltersNodeTypeEnum,
+  UtilsReportFiltersScanTypeEnum,
+} from '@/api/generated';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
+import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
+import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { TruncatedText } from '@/components/TruncatedText';
-import { DURATION } from '@/features/integrations/pages/CreateReport';
+import { DURATION, RESOURCES } from '@/features/integrations/pages/CreateReport';
 import { useGetReports } from '@/features/integrations/pages/DownloadReport';
 import { invalidateAllQueries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
@@ -102,7 +119,16 @@ export const ReportTable = ({
     const statusFilter = searchParams.getAll('status');
     const reportTypeFilter = searchParams.getAll('reportType');
     const durationFilter = searchParams.getAll('duration');
+    const scanTypeFilter = searchParams.getAll('scanType');
+    const nodeTypeFilter = searchParams.getAll('nodeType');
+    const containerFilter = searchParams.getAll('container');
+    const hostFilter = searchParams.getAll('host');
+    const containerImageFilter = searchParams.getAll('containerImage');
+    const clusterFilter = searchParams.getAll('cluster');
+
     return reports.filter((report) => {
+      const filters = JSON.parse(report.filters ?? '') as UtilsReportFilters;
+      const advancedFilters = filters?.advanced_report_filters ?? {};
       if (
         statusFilter?.length &&
         !statusFilter.includes(report.status?.toLowerCase() ?? '')
@@ -118,6 +144,52 @@ export const ReportTable = ({
       if (
         durationFilter?.length &&
         (!durationFilter.includes(String(report.duration)) || isNil(report.duration))
+      ) {
+        return false;
+      }
+      // filter from filters json
+      if (
+        scanTypeFilter?.length &&
+        (!scanTypeFilter.includes(filters?.scan_type) || isNil(filters?.scan_type))
+      ) {
+        return false;
+      }
+      if (
+        nodeTypeFilter?.length &&
+        (!nodeTypeFilter.includes(filters?.node_type) || isNil(filters?.node_type))
+      ) {
+        return false;
+      }
+      if (
+        containerFilter?.length &&
+        (intersection(containerFilter, advancedFilters?.container_name).length === 0 ||
+          isNil(advancedFilters?.container_name) ||
+          isEmpty(advancedFilters?.container_name))
+      ) {
+        return false;
+      }
+      if (
+        hostFilter?.length &&
+        (intersection(hostFilter, advancedFilters?.host_name).length === 0 ||
+          isNil(advancedFilters?.host_name) ||
+          isEmpty(advancedFilters?.host_name))
+      ) {
+        return false;
+      }
+      if (
+        containerImageFilter?.length &&
+        (intersection(containerImageFilter, advancedFilters?.image_name).length === 0 ||
+          isNil(advancedFilters?.image_name) ||
+          isEmpty(advancedFilters?.image_name))
+      ) {
+        return false;
+      }
+      if (
+        clusterFilter?.length &&
+        (intersection(clusterFilter, advancedFilters?.kubernetes_cluster_name).length ===
+          0 ||
+          isNil(advancedFilters?.kubernetes_cluster_name) ||
+          isEmpty(advancedFilters?.kubernetes_cluster_name))
       ) {
         return false;
       }
@@ -260,11 +332,30 @@ export const ReportTable = ({
     </div>
   );
 };
-
+enum FILTER_SEARCHPARAMS_KEYS_ENUM {
+  container = 'container',
+  host = 'host',
+  containerImage = 'containerImage',
+  cluster = 'cluster',
+  duration = 'duration',
+}
+const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
+  FILTER_SEARCHPARAMS_KEYS_ENUM.container,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.host,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.containerImage,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.cluster,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.duration,
+];
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   status: 'Status',
   reportType: 'Report type',
   duration: 'Duration',
+  scanType: 'Scan type',
+  nodeType: 'Node type',
+  container: 'Container',
+  host: 'Host',
+  containerImage: 'Container image',
+  cluster: 'Cluster',
 };
 
 export const getReportDownloadAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -273,12 +364,37 @@ export const getReportDownloadAppliedFiltersCount = (searchParams: URLSearchPara
   }, 0);
 };
 
+const getResourceDisplayValue = (resource: string) => {
+  if (resource === UtilsReportFiltersScanTypeEnum.CloudCompliance) {
+    return 'Cloud Compliance';
+  } else if (resource === UtilsReportFiltersNodeTypeEnum.ContainerImage) {
+    return 'Container image';
+  }
+  return resource;
+};
+
 export const ReportFilters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [statusSearch, setStatusSearch] = useState('');
   const [reportTypeSearch, setReportTypeSearch] = useState('');
   const [durationSearch, setDurationSearch] = useState('');
+  const [scanTypeSearch, setScanTypeSearch] = useState('');
+  const [nodeTypeSearch, setNodeTypeSearch] = useState('');
   const appliedFilterCount = getReportDownloadAppliedFiltersCount(searchParams);
+
+  const onFilterRemove = ({ key, value }: { key: string; value: string }) => {
+    return () => {
+      setSearchParams((prev) => {
+        const existingValues = prev.getAll(key);
+        prev.delete(key);
+        existingValues.forEach((existingValue) => {
+          if (existingValue !== value) prev.append(key, existingValue);
+        });
+        prev.delete('page');
+        return prev;
+      });
+    };
+  };
 
   return (
     <div className="mt-2 px-4 py-2.5 mb-2 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
@@ -403,32 +519,231 @@ export const ReportFilters = () => {
               );
             })}
         </Combobox>
+        <Combobox
+          getDisplayValue={() => FILTER_SEARCHPARAMS['scanType']}
+          multiple
+          value={searchParams.getAll('scanType')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('scanType');
+              values.forEach((value) => {
+                prev.append('scanType', value);
+              });
+              return prev;
+            });
+          }}
+          onQueryChange={(query) => {
+            setScanTypeSearch(query);
+          }}
+          clearAllElement="Clear"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('scanType');
+              return prev;
+            });
+          }}
+        >
+          {RESOURCES.filter((resource) => {
+            if (!scanTypeSearch.length) return true;
+            if (resource.includes(scanTypeSearch.toLowerCase())) {
+              return true;
+            }
+            return false;
+          }).map((resource, item) => {
+            return (
+              <ComboboxOption key={item} value={resource}>
+                {upperFirst(getResourceDisplayValue(resource))}
+              </ComboboxOption>
+            );
+          })}
+        </Combobox>
+        <Combobox
+          getDisplayValue={() => FILTER_SEARCHPARAMS['nodeType']}
+          multiple
+          value={searchParams.getAll('nodeType')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('nodeType');
+              values.forEach((value) => {
+                prev.append('nodeType', value);
+              });
+              return prev;
+            });
+          }}
+          onQueryChange={(query) => {
+            setNodeTypeSearch(query);
+          }}
+          clearAllElement="Clear"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('nodeType');
+              return prev;
+            });
+          }}
+        >
+          {[
+            UtilsReportFiltersNodeTypeEnum.Host,
+            UtilsReportFiltersNodeTypeEnum.Container,
+            UtilsReportFiltersNodeTypeEnum.ContainerImage,
+            UtilsReportFiltersNodeTypeEnum.Cluster,
+            UtilsReportFiltersNodeTypeEnum.Aws,
+            UtilsReportFiltersNodeTypeEnum.Azure,
+            UtilsReportFiltersNodeTypeEnum.Gcp,
+          ]
+            .filter((resource) => {
+              if (!nodeTypeSearch.length) return true;
+              if (resource.includes(nodeTypeSearch.toLowerCase())) {
+                return true;
+              }
+              return false;
+            })
+            .map((resource, item) => {
+              return (
+                <ComboboxOption key={item} value={resource}>
+                  {upperFirst(getResourceDisplayValue(resource))}
+                </ComboboxOption>
+              );
+            })}
+        </Combobox>
+        <SearchableHostList
+          scanType={'none'}
+          defaultSelectedHosts={searchParams.getAll('host')}
+          agentRunning={false}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('host');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('host');
+              value.forEach((host) => {
+                prev.append('host', host);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
+        <SearchableContainerList
+          scanType={'none'}
+          triggerVariant="button"
+          defaultSelectedContainers={searchParams.getAll('container')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('container');
+              values.forEach((value) => {
+                prev.append('container', value);
+              });
+              return prev;
+            });
+          }}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('container');
+              return prev;
+            });
+          }}
+        />
+        <SearchableImageList
+          scanType={'none'}
+          defaultSelectedImages={searchParams.getAll('containerImage')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('containerImage');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('containerImage');
+              value.forEach((containerImage) => {
+                prev.append('containerImage', containerImage);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
+        <SearchableClusterList
+          valueKey="nodeName"
+          defaultSelectedClusters={searchParams.getAll('cluster')}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('cluster');
+              value.forEach((cluster) => {
+                prev.append('cluster', cluster);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('cluster');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          agentRunning={false}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
-          {Array.from(searchParams)
-            .filter(([key]) => {
+          {(
+            Array.from(searchParams).filter(([key]) => {
               return Object.keys(FILTER_SEARCHPARAMS).includes(key);
-            })
-            .map(([key, value]) => {
+            }) as Array<[FILTER_SEARCHPARAMS_KEYS_ENUM, string]>
+          ).map(([key, value]) => {
+            if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.duration) {
               return (
                 <FilterBadge
                   key={`${key}-${value}`}
-                  onRemove={() => {
-                    setSearchParams((prev) => {
-                      const existingValues = prev.getAll(key);
-                      prev.delete(key);
-                      existingValues.forEach((existingValue) => {
-                        if (existingValue !== value) prev.append(key, existingValue);
-                      });
-                      prev.delete('page');
-                      return prev;
-                    });
-                  }}
-                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                  onRemove={onFilterRemove({ key, value })}
+                  text={
+                    findKey(DURATION, (duration) => {
+                      return duration.toString() === value;
+                    }) ?? 'unknown'
+                  }
+                  label={FILTER_SEARCHPARAMS[key]}
                 />
               );
-            })}
+            }
+            if (FILTER_SEARCHPARAMS_DYNAMIC_KEYS.includes(key)) {
+              return (
+                <FilterBadge
+                  key={`${key}-${value}`}
+                  nodeType={(() => {
+                    if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.host) {
+                      return 'host';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.containerImage) {
+                      return 'containerImage';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.cluster) {
+                      return 'cluster';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.container) {
+                      return 'container';
+                    }
+                    throw new Error('unknown key');
+                  })()}
+                  onRemove={onFilterRemove({ key, value })}
+                  id={value}
+                  label={FILTER_SEARCHPARAMS[key]}
+                />
+              );
+            }
+
+            return (
+              <FilterBadge
+                key={`${key}-${value}`}
+                onRemove={onFilterRemove({ key, value })}
+                text={value}
+                label={FILTER_SEARCHPARAMS[key]}
+              />
+            );
+          })}
           <Button
             variant="flat"
             color="default"

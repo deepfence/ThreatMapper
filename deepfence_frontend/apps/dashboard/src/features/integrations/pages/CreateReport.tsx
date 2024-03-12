@@ -43,7 +43,7 @@ export const DURATION: { [k: string]: ModelGenerateReportReqDurationEnum } = {
   'Last 180 Days': ModelGenerateReportReqDurationEnum.NUMBER_180,
   'All Documents': 0 as ModelGenerateReportReqDurationEnum,
 };
-const RESOURCES = [
+export const RESOURCES = [
   UtilsReportFiltersScanTypeEnum.Vulnerability,
   UtilsReportFiltersScanTypeEnum.Secret,
   UtilsReportFiltersScanTypeEnum.Malware,

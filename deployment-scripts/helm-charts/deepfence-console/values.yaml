@@ -186,6 +186,9 @@ aws_s3_buckets:
 neo4j:
   # Specifies whether a neo4j database instance should be created
   create: true
+  ## use below setting to put Neo4j in maintainance mode
+  ## disables health checks & stops neo4j
+  offlineMaintenanceModeEnabled: false
   # if create false provide name of the existing secret
   # secret format refer templates/console-secrets/neo4j.yaml
   secretName: ""
@@ -223,9 +226,11 @@ neo4j:
   affinity: {}
   podLabels: {}
 
+# DO NOT USE
+# Use deepfence-router helm chart to configure the service and ingress
 # ingress for console
 ingress:
-  enable: false
+  enabled: false
   ## name of the ingress class for ingress provider installed on the cluster, cannot be empty
   ## Example: nginx
   class: nginx

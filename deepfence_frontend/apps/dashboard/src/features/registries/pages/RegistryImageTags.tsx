@@ -167,12 +167,27 @@ const Header = () => {
   );
 };
 
+const useRegistryDetails = () => {
+  const params = useParams() as {
+    nodeId: string;
+  };
+  const nodeId = params?.nodeId;
+  return useSuspenseQuery({
+    ...queries.lookup.registryAccount({
+      nodeIds: [nodeId],
+    }),
+  });
+};
+
 const DynamicBreadcrumbs = () => {
   const { account, nodeId, imageId } = useParams() as {
     account: string;
     nodeId: string;
     imageId: string;
   };
+
+  const { data } = useRegistryDetails();
+
   return (
     <>
       <BreadcrumbLink>
@@ -191,7 +206,7 @@ const DynamicBreadcrumbs = () => {
             nodeId: encodeURIComponent(nodeId),
           })}
         >
-          {nodeId}
+          {data.data?.[0]?.name ?? nodeId}
         </DFLink>
       </BreadcrumbLink>
       <BreadcrumbLink isLast>

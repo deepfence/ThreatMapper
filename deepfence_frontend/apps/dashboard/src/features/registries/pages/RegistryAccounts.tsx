@@ -327,8 +327,8 @@ const CountWidget = () => {
   }
 
   const {
+    repositories = 0,
     images = 0,
-    tags = 0,
     scans_in_progress = 0,
     registries = 0,
   } = data.summary as ModelSummary;
@@ -354,9 +354,9 @@ const CountWidget = () => {
 
         <div className="flex flex-col items-start">
           <span className="text-h1 dark:text-text-input-value text-text-text-and-icon">
-            {abbreviateNumber(images)}
+            {abbreviateNumber(repositories)}
           </span>
-          <span className="text-p1">Total images</span>
+          <span className="text-p1">Total repositories</span>
         </div>
       </div>
       <div className="col-span-3 flex items-center text-text-text-and-icon gap-x-3 justify-center">
@@ -366,9 +366,9 @@ const CountWidget = () => {
 
         <div className="flex flex-col items-start">
           <span className="text-h1 dark:text-text-input-value text-text-text-and-icon">
-            {abbreviateNumber(tags)}
+            {abbreviateNumber(images)}
           </span>
-          <span className="text-p1">Total tags</span>
+          <span className="text-p1">Total images</span>
         </div>
       </div>
       <div className="col-span-3 flex items-center text-text-text-and-icon gap-x-3 justify-center">
@@ -380,7 +380,7 @@ const CountWidget = () => {
           <span className="text-h1 dark:text-text-input-value text-text-text-and-icon">
             {abbreviateNumber(scans_in_progress)}
           </span>
-          <span className="text-p1">In Progress</span>
+          <span className="text-p1">In progress</span>
         </div>
       </div>
     </div>
