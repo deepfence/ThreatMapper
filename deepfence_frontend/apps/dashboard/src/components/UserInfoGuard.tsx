@@ -222,10 +222,7 @@ const UserInfoModalContent = ({
 
   return (
     <fetcher.Form action="/data-component/user-info-guard" method="POST">
-      <div>
-        Before you can perform this action, you need to register this ThreatMapper console
-        with Deepfence. Please enter your details below to continue.
-      </div>
+      <div>Register your console with Deepfence by entering the details below.</div>
 
       <div className="mt-4 flex flex-col gap-3">
         <TextInput
@@ -279,7 +276,7 @@ const UserInfoModalContent = ({
       </div>
 
       {data?.error && (
-        <div className={`text-center m-1.5 text-p7 text-status-error`}>{data.error}</div>
+        <div className={`my-1.5 mr-1.5 text-p7 text-status-error`}>{data.error}</div>
       )}
 
       {isLicenseLinkGenerated ? (
@@ -299,7 +296,7 @@ const UserInfoModalContent = ({
       ) : null}
 
       {isLicenseAlreadyGenerated ? (
-        <div className={`text-center m-1.5 text-p7 text-status-info`}>
+        <div className={`my-1.5 mr-1.5 text-p7 text-status-info`}>
           {data?.emailSuccess?.message}
         </div>
       ) : null}
