@@ -14356,6 +14356,11 @@
         "required": ["scan_id", "result_ids", "scan_type"],
         "type": "object",
         "properties": {
+          "integration_ids": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "nullable": true
+          },
           "notify_individual": { "type": "boolean" },
           "result_ids": {
             "type": "array",
