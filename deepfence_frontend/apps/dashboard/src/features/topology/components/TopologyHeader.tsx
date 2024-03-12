@@ -50,7 +50,7 @@ const SummaryTab = ({
         className={cn(
           `flex items-center gap-[6px] p-3 hover:text-text-input-value dark:hover:bg-bg-grid-header hover:bg-bg-page`,
           'shadow-accent-accent transition-shadow duration-[0.2s] ease-[ease-in]',
-          'dark:hover:shadow-[0_-4px_0_var(--tw-shadow-color)_inset] hover:shadow-[0_-1px_0_var(--tw-shadow-color)_inset]',
+          'hover:shadow-[0_-1px_0_var(--tw-shadow-color)_inset]',
           {
             'text-text-input-value dark:bg-bg-active-selection bg-white dark:hover:bg-bg-active-selection hover:bg-white shadow-[0_-4px_0_var(--tw-shadow-color)_inset]':
               isActive,
@@ -58,9 +58,22 @@ const SummaryTab = ({
         )}
         tabIndex={-1}
       >
-        <div className="h-[16px] w-[16px]">{icon}</div>
+        <div className="h-[16px] w-[16px] text-text-icon">{icon}</div>
         <div>
-          <span className={`${isActive ? 'text-h5' : 'text-h6'}`}>{count}</span> {name}
+          <span
+            className={`${
+              isActive ? 'text-h5 text-text-input-value' : 'text-h6 text-text-and-icon'
+            }`}
+          >
+            {count}
+          </span>
+          <span
+            className={`text-p1 ml-[3px] ${
+              isActive ? 'text-text-input-value' : 'text-text-and-icon'
+            }`}
+          >
+            {name}
+          </span>
         </div>
       </button>
     </DFLink>

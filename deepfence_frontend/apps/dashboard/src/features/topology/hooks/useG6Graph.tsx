@@ -9,7 +9,7 @@ import {
   G6GraphData,
   G6GraphOptionsWithoutContainer,
 } from '@/features/topology/types/graph';
-import { Mode, useTheme } from '@/theme/ThemeContext';
+import { Mode, THEME_DARK, THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
 
 const graphModeEnableOptimize = (mode: string) => {
   return {
@@ -20,36 +20,38 @@ const graphModeEnableOptimize = (mode: string) => {
 };
 
 const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
-  const color = colors[theme === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
+  const isDarkTheme = theme === THEME_DARK;
+  const color = colors[isDarkTheme ? 'darkVariables' : 'variables'].DEFAULT;
 
   if (!active) {
     return {
-      lineWidth: theme === 'dark' ? 1.5 : 2,
-      stroke: theme === 'dark' ? color['brand-blue'] : '#6699CC',
+      lineWidth: isDarkTheme ? 1.5 : 2,
+      stroke: isDarkTheme ? color['brand-blue'] : '#4B88FF',
       endArrow: {
         path: G6.Arrow.triangle(4, 5, 8),
         d: 10,
-        fill: theme === 'dark' ? color['brand-blue'] : '#6699CC',
-        stroke: theme === 'dark' ? color['brand-blue'] : '#6699CC',
+        fill: isDarkTheme ? color['brand-blue'] : '#4B88FF',
+        stroke: isDarkTheme ? color['brand-blue'] : '#4B88FF',
       },
     };
   }
   return {
     lineWidth: 2.5,
-    shadowBlur: 14,
-    shadowColor: theme === 'dark' ? '#8AB9FF' : '#3E8EDE',
-    stroke: theme === 'dark' ? color['accent-accent'] : color['brand-blue'],
+    shadowBlur: 20,
+    shadowColor: isDarkTheme ? '#8AB9FF' : '#0075FF',
+    stroke: isDarkTheme ? color['accent-accent'] : '#0094FF',
     endArrow: {
       path: G6.Arrow.triangle(4, 5, 8),
       d: 10,
-      fill: theme === 'dark' ? color['accent-accent'] : color['brand-blue'],
-      stroke: theme === 'dark' ? color['accent-accent'] : color['brand-blue'],
+      fill: isDarkTheme ? color['accent-accent'] : '#0094FF',
+      stroke: isDarkTheme ? color['accent-accent'] : '#0094FF',
     },
   };
 };
 
 const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
-  const color = colors[theme === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
+  const isDarkTheme = theme === THEME_DARK;
+  const color = colors[isDarkTheme ? 'darkVariables' : 'variables'].DEFAULT;
 
   if (!active) {
     return {
@@ -61,7 +63,7 @@ const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) =
   }
 
   return {
-    fill: color['bg-breadcrumb-bar'],
+    fill: isDarkTheme ? color['bg-breadcrumb-bar'] : '',
     fillOpacity: 1,
     padding: [2, 4, 2, 4],
     radius: 3,
@@ -69,20 +71,21 @@ const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) =
 };
 
 const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
-  const color = colors[theme === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
+  const isDarkTheme = theme === THEME_DARK;
+  const color = colors[isDarkTheme ? 'darkVariables' : 'variables'].DEFAULT;
 
   if (!active) {
     return {
       fill: color['text-text-and-icon'],
       fontFamily: preset.theme.extend.fontFamily.body.join(','),
       fontSize: 13,
-      fontWeight: 300,
+      fontWeight: 500,
       background: getLabelBgStyles({ active, theme }),
     };
   }
 
   return {
-    fill: color['text-input-value'],
+    fill: isDarkTheme ? color['text-input-value'] : color['text-text-and-icon'],
     fontFamily: preset.theme.extend.fontFamily.body.join(','),
     fontSize: 13,
     fontWeight: 700,
@@ -91,21 +94,26 @@ const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => 
 };
 
 const getNodeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
-  const color = colors[theme === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
+  const isLightTheme = theme === THEME_LIGHT;
+  const color = colors[isLightTheme ? 'variables' : 'darkVariables'].DEFAULT;
 
   if (!active) {
     return {
       lineWidth: 0,
-      fill: color['bg-map-node'],
+      fill: isLightTheme ? color['bg-card'] : color['bg-map-node'],
+      shadowBlur: isLightTheme ? 10 : 0,
+      shadowColor: isLightTheme ? color['df-gray'][400] : '',
+      stroke: isLightTheme ? color['df-gray'][400] : '',
+      background: isLightTheme ? color['bg-card'] : '',
     };
   }
 
   return {
-    lineWidth: 2,
-    shadowBlur: 10,
-    shadowColor: color['accent-accent'],
-    stroke: color['accent-accent'],
-    fill: color['bg-map-node'],
+    lineWidth: 2.2,
+    shadowBlur: 20,
+    shadowColor: isLightTheme ? '#0066FF' : color['accent-accent'],
+    stroke: isLightTheme ? '#0075FF' : color['accent-accent'],
+    fill: isLightTheme ? color['bg-card'] : color['bg-map-node'],
   };
 };
 
@@ -137,11 +145,12 @@ const getDefaultOptions = (theme: Mode): G6GraphOptionsWithoutContainer => {
     defaultCombo: {
       padding: 0,
       style: {
-        fill: color['bg-map-cluster'],
+        fill:
+          theme === 'dark' ? color['bg-map-cluster'] : 'r(1, 1, 1) 0:#FAF0F4 1:#7C99C6',
         fillOpacity: 0.25,
         lineWidth: 1.5,
-        stroke: theme === 'dark' ? color['df-gray']['500'] : color['brand-blue'],
-        strokeOpacity: 0.25,
+        stroke: theme === 'dark' ? color['df-gray']['500'] : color['df-gray']['300'],
+        strokeOpacity: theme === 'dark' ? 0.25 : 1,
       },
     },
     nodeStateStyles: {

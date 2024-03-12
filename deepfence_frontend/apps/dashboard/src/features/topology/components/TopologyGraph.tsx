@@ -199,7 +199,7 @@ export const TopologyGraph = () => {
           background:
             mode === 'dark'
               ? `radial-gradient(48.55% 48.55% at 50.04% 51.45%, #16253B 0%, #0B121E 100%)`
-              : 'radial-gradient(48.55% 48.55% at 50.04% 51.45%, #FFFFFF 0%, #f9fbfd 100%)',
+              : 'radial-gradient(70.29% 70.29% at 50.04% 50%, #F3F4F6 48.77%, #CDD4E0 96.42%)',
         }}
       >
         {/** had to use this absolute relative trick, otherwise element does not shrink, only grows */}
@@ -335,7 +335,7 @@ const GraphTooltip = ({
                 onClick={() => {
                   onExpandCollapseClick(model);
                 }}
-                className="px-2.5 text-p6 py-1 dark:hover:bg-text-text-and-icon hover:bg-bg-hover-2 flex items-center gap-2 w-full"
+                className="px-2.5 text-p6 py-1 dark:hover:bg-text-text-and-icon hover:bg-bg-breadcrumb-bar flex items-center gap-2 w-full"
               >
                 <div className="h-4 w-4 shrink-0">
                   {expanded ? <ResizeDownIcon /> : <ResizeUpIcon />}
@@ -350,7 +350,7 @@ const GraphTooltip = ({
                 onClick={() => {
                   onViewDetailsClick(model);
                 }}
-                className="px-2.5 text-p6 py-1 dark:hover:bg-text-text-and-icon hover:bg-bg-hover-2 flex items-center gap-2 w-full"
+                className="px-2.5 text-p6 py-1 dark:hover:bg-text-text-and-icon hover:bg-bg-breadcrumb-bar flex items-center gap-2 w-full"
               >
                 <div className="h-4 w-4 shrink-0">
                   <DetailsLineIcon />
@@ -386,7 +386,7 @@ const NodeLimitExceeded = () => {
   const params = useParams();
   const type = params.viewType ?? 'cloud_provider';
   return (
-    <div className="h-full flex gap-2 flex-col items-center justify-center p-6 bg-bg-hover-2 opacity-50">
+    <div className="h-full flex gap-2 flex-col items-center justify-center p-6 dark:bg-bg-hover-2 bg-bg-breadcrumb-bar opacity-50">
       <div className="w-8 h-8 text-status-info">
         <ErrorStandardSolidIcon />
       </div>

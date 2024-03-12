@@ -42,7 +42,7 @@ const MenuItems: Array<{
 
 const linkClass = cn(
   'text-p5 text-text-text-and-icon py-3 px-6',
-  'dark:hover:bg-bg-breadcrumb-bar hover:bg-bg-breadcrumb-bar',
+  'hover:bg-bg-breadcrumb-bar',
   'flex relative border-b border-bg-grid-border',
 );
 

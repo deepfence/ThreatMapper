@@ -176,7 +176,7 @@ const colors = {
       'bg-page': '#F8F8F8',
       'bg-grid-border': '#DDDDDD', // Light/Light-Border-Grid
       'bg-border-form': '#999999', // Light/Light-Border-Form
-      'bg-tooltip': '#233c7d',
+      'bg-tooltip': '#222222',
       'bg-grid-header': '#0f1e34',
       'bg-header': '#11223b',
       'bg-top-header': '#0c1a33',

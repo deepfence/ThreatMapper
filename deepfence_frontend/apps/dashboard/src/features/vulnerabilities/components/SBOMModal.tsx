@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { upperFirst } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
 import { generatePath } from 'react-router-dom';
 import {
@@ -24,10 +25,12 @@ import { DFLink } from '@/components/DFLink';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
 import { FileLineIcon } from '@/components/icons/common/FileLine';
-import { SeverityBadge } from '@/components/SeverityBadge';
+import { SeverityBadgeIcon } from '@/components/SeverityBadge';
 import { TruncatedText } from '@/components/TruncatedText';
 import { useDownloadSBOM } from '@/features/common/data-component/downloadSBOMAction';
 import { queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
+import { VulnerabilitySeverityType } from '@/types/common';
 
 function useScanSBOM(scanId: string) {
   return useSuspenseQuery({
@@ -160,6 +163,7 @@ export const SbomModal = ({
 };
 
 const ModalContent = ({ scanId }: { scanId: string }) => {
+  const { mode: theme } = useTheme();
   const { data } = useScanSBOM(scanId);
   const [sort, setSort] = useState<SortingState>([
     {
@@ -224,7 +228,15 @@ const ModalContent = ({ scanId }: { scanId: string }) => {
         sortUndefined: -1,
         cell: (info) => {
           if (!info.getValue()) return '';
-          return <SeverityBadge severity={info.getValue() ?? ''} />;
+          return (
+            <div className="flex items-center gap-x-2 tabular-nums">
+              <SeverityBadgeIcon
+                severity={(info.getValue() as VulnerabilitySeverityType) ?? ''}
+                theme={theme}
+              />
+              {upperFirst(info.getValue())}
+            </div>
+          );
         },
         sortingFn: (rowA, rowB) => {
           const severityA = rowA.original.severity?.toLowerCase() || 'default';

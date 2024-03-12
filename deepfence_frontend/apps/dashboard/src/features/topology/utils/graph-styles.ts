@@ -45,7 +45,7 @@ import ProcessLogo from '@/assets/topology/process.svg';
 import ProcessLightLogo from '@/assets/topology/process-light.svg';
 import TheInternetLogo from '@/assets/topology/the-internet.svg';
 import { EnhancedDetailedNodeSummary, G6Node } from '@/features/topology/types/graph';
-import { Mode } from '@/theme/ThemeContext';
+import { Mode, THEME_LIGHT } from '@/theme/ThemeContext';
 
 export const GraphPalette = {
   NODE_OUTLINE_DARK: '#E5E7EB',
@@ -65,11 +65,12 @@ export const nodeStyle = (
   node: EnhancedDetailedNodeSummary,
   override?: ShapeStyle,
 ) => {
-  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
+  const isLightTheme = theme === THEME_LIGHT;
+  const color = colors[isLightTheme ? 'variables' : 'darkVariables'].DEFAULT;
 
   const style: ShapeStyle = {
     cursor: 'pointer',
-    fill: color['bg-map-node'],
+    fill: isLightTheme ? color['bg-card'] : color['bg-map-node'],
   };
   return { ...style, ...override };
 };
