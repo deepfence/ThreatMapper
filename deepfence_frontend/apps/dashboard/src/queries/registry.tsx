@@ -36,8 +36,8 @@ export const registryQueries = createQueryKeys('registry', {
         for (const [key, value] of Object.entries(result.value)) {
           response.push({
             registries: value.registries,
+            repositories: value.repositories,
             images: value.images,
-            tags: value.tags,
             type: key,
           });
         }
