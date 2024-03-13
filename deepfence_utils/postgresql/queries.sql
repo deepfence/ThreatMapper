@@ -625,6 +625,11 @@ FROM integration
 WHERE id = $1
 LIMIT 1;
 
+-- name: GetIntegrationsFromIDs :many
+SELECT *
+FROM integration
+WHERE id = ANY($1::int[]);
+
 -- name: GetIntegrationsFromType :many
 SELECT *
 FROM integration

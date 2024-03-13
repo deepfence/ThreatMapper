@@ -11,6 +11,7 @@ import (
 	"time"
 
 	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
@@ -24,6 +25,13 @@ import (
 )
 
 const NOTIFICATION_INTERVAL = 60000 //in milliseconds
+
+var (
+	NotificationRecordsCounts = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "notification_records_total",
+		Help: "Total number of records sent by notification types",
+	}, []string{"resource", "type", "status", "namespace"})
+)
 
 var fieldsMap = map[string]map[string]string{
 	utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
@@ -434,8 +442,26 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		err = integrationModel.SendNotification(ctx, string(messageByte), extras)
 		totalSendTime = totalSendTime + time.Since(profileStart).Milliseconds()
 		if err != nil {
+			NotificationRecordsCounts.WithLabelValues(
+				integrationRow.Resource,
+				integrationRow.IntegrationType,
+				"error",
+				func() string {
+					ns, _ := directory.ExtractNamespace(ctx)
+					return string(ns)
+				}(),
+			).Add(float64(len(updatedResults)))
 			return err
 		}
+		NotificationRecordsCounts.WithLabelValues(
+			integrationRow.Resource,
+			integrationRow.IntegrationType,
+			"success",
+			func() string {
+				ns, _ := directory.ExtractNamespace(ctx)
+				return string(ns)
+			}(),
+		).Add(float64(len(updatedResults)))
 		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken:%d",
 			integrationRow.Resource, len(results), integrationRow.IntegrationType,
 			integrationRow.ID, time.Since(profileStart).Milliseconds())

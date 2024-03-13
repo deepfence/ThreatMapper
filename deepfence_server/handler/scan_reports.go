@@ -1535,16 +1535,17 @@ func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request
 		}
 		h.AuditUserActivity(r, req.ScanType, ActionDelete, req, true)
 	case "notify":
+		// NotifyIndividual is true, then notify each result individually, meaning create seperate notification for each result
 		if req.NotifyIndividual {
 			for _, resultID := range req.ResultIDs {
-				err = reportersScan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{resultID})
+				err = reportersScan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{resultID}, req.IntegrationIDs)
 				if err != nil {
 					h.respondError(err, w)
 					return
 				}
 			}
 		} else {
-			err = reportersScan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
+			err = reportersScan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs, req.IntegrationIDs)
 			if err != nil {
 				h.respondError(err, w)
 				return
