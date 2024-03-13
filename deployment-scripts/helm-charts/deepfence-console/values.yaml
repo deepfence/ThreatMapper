@@ -15,6 +15,12 @@ global:
   imageTag: 2.1.1
   storageClass: ""
 
+# used to configure ccorporate proxy
+proxy:
+  enabled: false
+  http_proxy: ""
+  https_proxy: ""
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
