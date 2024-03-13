@@ -27,6 +27,7 @@ import type {
   ModelListAgentVersionResp,
   ModelMessageResponse,
   ModelRegisterLicenseRequest,
+  ModelRegisterLicenseResponse,
   ModelSettingUpdateRequest,
   ModelSettingsResponse,
   ModelUpdateScheduledTaskRequest,
@@ -59,6 +60,8 @@ import {
     ModelMessageResponseToJSON,
     ModelRegisterLicenseRequestFromJSON,
     ModelRegisterLicenseRequestToJSON,
+    ModelRegisterLicenseResponseFromJSON,
+    ModelRegisterLicenseResponseToJSON,
     ModelSettingUpdateRequestFromJSON,
     ModelSettingUpdateRequestToJSON,
     ModelSettingsResponseFromJSON,
@@ -335,13 +338,13 @@ export interface SettingsApiInterface {
      * @throws {RequiredError}
      * @memberof SettingsApiInterface
      */
-    registerLicenseRaw(requestParameters: RegisterLicenseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+    registerLicenseRaw(requestParameters: RegisterLicenseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelRegisterLicenseResponse>>;
 
     /**
      * Register new license key to the console and activate
      * Register License
      */
-    registerLicense(requestParameters: RegisterLicenseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+    registerLicense(requestParameters: RegisterLicenseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelRegisterLicenseResponse>;
 
     /**
      * Update scheduled task
@@ -904,7 +907,7 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      * Register new license key to the console and activate
      * Register License
      */
-    async registerLicenseRaw(requestParameters: RegisterLicenseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async registerLicenseRaw(requestParameters: RegisterLicenseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelRegisterLicenseResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -927,15 +930,16 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
             body: ModelRegisterLicenseRequestToJSON(requestParameters.modelRegisterLicenseRequest),
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelRegisterLicenseResponseFromJSON(jsonValue));
     }
 
     /**
      * Register new license key to the console and activate
      * Register License
      */
-    async registerLicense(requestParameters: RegisterLicenseRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.registerLicenseRaw(requestParameters, initOverrides);
+    async registerLicense(requestParameters: RegisterLicenseRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelRegisterLicenseResponse> {
+        const response = await this.registerLicenseRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

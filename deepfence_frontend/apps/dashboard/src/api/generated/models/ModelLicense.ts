@@ -67,6 +67,18 @@ export interface ModelLicense {
      * @type {string}
      * @memberof ModelLicense
      */
+    license_email?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelLicense
+     */
+    license_email_domain?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelLicense
+     */
     license_type?: string;
     /**
      * 
@@ -137,6 +149,8 @@ export function ModelLicenseFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'end_date': !exists(json, 'end_date') ? undefined : json['end_date'],
         'is_active': !exists(json, 'is_active') ? undefined : json['is_active'],
         'key': !exists(json, 'key') ? undefined : json['key'],
+        'license_email': !exists(json, 'license_email') ? undefined : json['license_email'],
+        'license_email_domain': !exists(json, 'license_email_domain') ? undefined : json['license_email_domain'],
         'license_type': !exists(json, 'license_type') ? undefined : json['license_type'],
         'message': !exists(json, 'message') ? undefined : json['message'],
         'no_of_cloud_accounts': !exists(json, 'no_of_cloud_accounts') ? undefined : json['no_of_cloud_accounts'],
@@ -163,6 +177,8 @@ export function ModelLicenseToJSON(value?: ModelLicense | null): any {
         'end_date': value.end_date,
         'is_active': value.is_active,
         'key': value.key,
+        'license_email': value.license_email,
+        'license_email_domain': value.license_email_domain,
         'license_type': value.license_type,
         'message': value.message,
         'no_of_cloud_accounts': value.no_of_cloud_accounts,

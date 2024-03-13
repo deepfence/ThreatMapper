@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { upperFirst } from 'lodash-es';
 import { Suspense, useState } from 'react';
-import { useFetcher } from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 import { Button, Card, CircleSpinner, Modal } from 'ui-components';
 
@@ -9,7 +9,7 @@ import { getAuthenticationApiClient, getSettingsApiClient } from '@/api/api';
 import { ModelLicense } from '@/api/generated';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { queries } from '@/queries';
+import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper, redirectToLogin } from '@/utils/api';
 import storage from '@/utils/storage';
@@ -19,7 +19,10 @@ interface ActionReturnType {
   message?: string;
   success?: boolean;
 }
-
+enum ActionEnumType {
+  DELETE = 'delete',
+  REGISTER_LICENSE = 'registerLicense',
+}
 async function cleanupAndLogout() {
   const logoutApi = apiWrapper({
     fn: getAuthenticationApiClient().logout,
@@ -37,28 +40,59 @@ async function cleanupAndLogout() {
   throw redirectToLogin();
 }
 
-export const action = async (): Promise<ActionReturnType> => {
-  const deleteApi = apiWrapper({
-    fn: getSettingsApiClient().deleteLicense,
-  });
-  const deleteResponse = await deleteApi();
-  if (!deleteResponse.ok) {
-    if (deleteResponse.error.response.status === 400) {
-      const { message } = await getResponseErrors(deleteResponse.error);
-      return {
-        success: false,
-        message,
-      };
-    } else if (deleteResponse.error.response.status === 403) {
-      const message = await get403Message(deleteResponse.error);
-      return {
-        message,
-        success: false,
-      };
+export const action = async ({
+  request,
+}: ActionFunctionArgs): Promise<ActionReturnType> => {
+  const formData = await request.formData();
+  const intent = formData.get('intent')?.toString() ?? '';
+
+  if (intent === ActionEnumType.DELETE) {
+    const deleteApi = apiWrapper({
+      fn: getSettingsApiClient().deleteLicense,
+    });
+    const deleteResponse = await deleteApi();
+    if (!deleteResponse.ok) {
+      if (deleteResponse.error.response.status === 400) {
+        const { message } = await getResponseErrors(deleteResponse.error);
+        return {
+          success: false,
+          message,
+        };
+      } else if (deleteResponse.error.response.status === 403) {
+        const message = await get403Message(deleteResponse.error);
+        return {
+          message,
+          success: false,
+        };
+      }
+      throw deleteResponse.error;
     }
-    throw deleteResponse.error;
+    await cleanupAndLogout();
+  } else if (intent === ActionEnumType.REGISTER_LICENSE) {
+    const licenseApi = apiWrapper({
+      fn: getSettingsApiClient().getLicense,
+    });
+    const response = await licenseApi();
+    if (!response.ok) {
+      if (response.error.response.status === 400) {
+        const { message } = await getResponseErrors(response.error);
+        return {
+          success: false,
+          message,
+        };
+      } else if (response.error.response.status === 403) {
+        const message = await get403Message(response.error);
+        return {
+          message,
+          success: false,
+        };
+      }
+      throw response.error;
+    }
+    invalidateAllQueries();
+  } else {
+    throw new Error('Invalid intent');
   }
-  await cleanupAndLogout();
   return {
     success: true,
   };
@@ -100,6 +134,7 @@ const DeleteConfirmationModal = ({
               Cancel
             </Button>
             <fetcher.Form method="post">
+              <input hidden value={ActionEnumType.DELETE} name="intent" readOnly />
               <Button
                 color="error"
                 type="submit"
@@ -155,6 +190,7 @@ const LicenseDetailsContent = () => {
 
 const LicenseCard = ({ licenseData }: { licenseData: ModelLicense }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const fetcher = useFetcher<ActionReturnType>();
   return (
     <Card className="p-4 rounded-[5px]">
       {licenseData.message && licenseData.message.length ? (
@@ -210,17 +246,32 @@ const LicenseCard = ({ licenseData }: { licenseData: ModelLicense }) => {
           </span>
         </div>
       </div>
-      <Button
-        size="sm"
-        color="error"
-        className="mt-4 w-fit"
-        type="button"
-        onClick={() => {
-          setShowDeleteDialog(true);
-        }}
-      >
-        Delete license key
-      </Button>
+      {licenseData.key && licenseData.key.length ? (
+        <Button
+          size="sm"
+          color="error"
+          className="mt-4 w-fit"
+          type="button"
+          onClick={() => {
+            setShowDeleteDialog(true);
+          }}
+        >
+          Delete license key
+        </Button>
+      ) : (
+        <fetcher.Form method="post">
+          <input hidden value={ActionEnumType.REGISTER_LICENSE} name="intent" readOnly />
+          <Button
+            size="sm"
+            className="mt-4 w-fit"
+            type="submit"
+            loading={fetcher.state !== 'idle'}
+            disabled={fetcher.state !== 'idle'}
+          >
+            Register license key
+          </Button>
+        </fetcher.Form>
+      )}
       {showDeleteDialog && (
         <DeleteConfirmationModal
           showDialog={showDeleteDialog}

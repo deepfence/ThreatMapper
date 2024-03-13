@@ -135,6 +135,7 @@ export * from './ModelPostureProvider';
 export * from './ModelProcess';
 export * from './ModelRegisterInvitedUserRequest';
 export * from './ModelRegisterLicenseRequest';
+export * from './ModelRegisterLicenseResponse';
 export * from './ModelRegistryAccount';
 export * from './ModelRegistryAddReq';
 export * from './ModelRegistryCountResp';

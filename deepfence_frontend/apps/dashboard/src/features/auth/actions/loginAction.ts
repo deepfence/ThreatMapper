@@ -4,6 +4,7 @@ import { getAuthenticationApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { apiWrapper } from '@/utils/api';
 import { handleLoginAndRedirect } from '@/utils/auth';
+import { track } from '@/utils/track';
 
 export type LoginActionReturnType = {
   error?: string;
@@ -51,6 +52,12 @@ export const loginAction: ActionFunction = async ({
       };
     }
     throw loginResponse.error;
+  }
+  if (loginResponse.value?.license_registered) {
+    track({
+      licenseKey: loginResponse.value.license_key,
+      emailDomain: loginResponse.value.email_domain,
+    });
   }
 
   handleLoginAndRedirect(loginResponse.value, url.searchParams);

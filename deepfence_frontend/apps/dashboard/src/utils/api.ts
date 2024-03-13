@@ -128,7 +128,7 @@ export function apiWrapper<F extends Func<any[], any>>({
             const response = new Response(
               JSON.stringify({
                 // TODO: change the message to something more meaningful
-                message: 'Please register ThreatMapper license.',
+                message: 'Please register your console with Deepfence.',
                 error_fields: {},
                 error_index: null,
               }),

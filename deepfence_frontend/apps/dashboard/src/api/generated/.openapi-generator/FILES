@@ -161,6 +161,7 @@ models/ModelPostureProvider.ts
 models/ModelProcess.ts
 models/ModelRegisterInvitedUserRequest.ts
 models/ModelRegisterLicenseRequest.ts
+models/ModelRegisterLicenseResponse.ts
 models/ModelRegistryAccount.ts
 models/ModelRegistryAddReq.ts
 models/ModelRegistryCountResp.ts
