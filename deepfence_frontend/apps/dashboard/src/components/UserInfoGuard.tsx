@@ -8,6 +8,7 @@ import { DFLink } from '@/components/DFLink';
 import { queryClient } from '@/queries/client';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
+import { track } from '@/utils/track';
 
 const queryKey = 'user-info-guard-state';
 const SEND_EMAIL = 'send-email';
@@ -145,6 +146,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     const result = await apiFunctionApi({
       modelRegisterLicenseRequest: {
         license_key: (formData.get('licenseKey') as string)?.trim(),
+        email: formData.get('email') as string,
       },
     });
     if (!result.ok) {
@@ -177,6 +179,10 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       }
       throw result.error;
     }
+    track({
+      licenseKey: result.value.license_key,
+      emailDomain: result.value.email_domain,
+    });
   } else {
     throw new Error('Invalid intent');
   }
@@ -223,7 +229,6 @@ const UserInfoModalContent = ({
   return (
     <fetcher.Form action="/data-component/user-info-guard" method="POST">
       <div>Register your console with Deepfence by entering the details below.</div>
-
       <div className="mt-4 flex flex-col gap-3">
         <TextInput
           className="autofill:bg-transparent"
@@ -233,6 +238,7 @@ const UserInfoModalContent = ({
           name="firstname"
           color={data?.fieldErrors?.firstname ? 'error' : 'default'}
           helperText={data?.fieldErrors?.firstname}
+          readOnly={isLicenseLinkGenerated || isLicenseAlreadyGenerated}
         />
         <TextInput
           className="autofill:bg-transparent"
@@ -242,6 +248,7 @@ const UserInfoModalContent = ({
           name="lastname"
           color={data?.fieldErrors?.lastname ? 'error' : 'default'}
           helperText={data?.fieldErrors?.lastname}
+          readOnly={isLicenseLinkGenerated || isLicenseAlreadyGenerated}
         />
         <TextInput
           className="autofill:bg-transparent"
@@ -251,6 +258,7 @@ const UserInfoModalContent = ({
           name="email"
           color={data?.fieldErrors?.email ? 'error' : 'default'}
           helperText={data?.fieldErrors?.email}
+          readOnly={isLicenseLinkGenerated || isLicenseAlreadyGenerated}
         />
         <TextInput
           className="autofill:bg-transparent"
@@ -260,6 +268,7 @@ const UserInfoModalContent = ({
           name="company"
           color={data?.fieldErrors?.company ? 'error' : 'default'}
           helperText={data?.fieldErrors?.company}
+          readOnly={isLicenseLinkGenerated || isLicenseAlreadyGenerated}
         />
 
         {data?.emailSuccess?.success || isLicenseLinkGenerated ? (
@@ -318,10 +327,12 @@ const UserInfoModalContent = ({
             type="submit"
             variant="flat"
             disabled={
-              fetcher.state !== 'idle' && fetcher.formData?.get('intent') === SEND_EMAIL
+              fetcher.state !== 'idle' &&
+              fetcher.formData?.get('resendIntent') === SEND_EMAIL
             }
             loading={
-              fetcher.state !== 'idle' && fetcher.formData?.get('intent') === SEND_EMAIL
+              fetcher.state !== 'idle' &&
+              fetcher.formData?.get('resendIntent') === SEND_EMAIL
             }
             onClick={() => {
               setIsOnResendClick(true);
@@ -351,11 +362,13 @@ const UserInfoModalContent = ({
               type="submit"
               disabled={
                 fetcher.state !== 'idle' &&
-                fetcher.formData?.get('intent') === SAVE_LICENSE
+                fetcher.formData?.get('intent') === SAVE_LICENSE &&
+                fetcher.formData?.get('resendIntent') !== SEND_EMAIL
               }
               loading={
                 fetcher.state !== 'idle' &&
-                fetcher.formData?.get('intent') === SAVE_LICENSE
+                fetcher.formData?.get('intent') === SAVE_LICENSE &&
+                fetcher.formData?.get('resendIntent') !== SEND_EMAIL
               }
               onClick={() => {
                 setIsOnResendClick(false);

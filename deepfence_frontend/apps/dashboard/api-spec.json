@@ -4037,7 +4037,14 @@
           }
         },
         "responses": {
-          "204": { "description": "No Content" },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelRegisterLicenseResponse" }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -13849,7 +13856,6 @@
         "type": "object",
         "properties": {
           "id": { "type": "string" },
-          "images": { "type": "integer" },
           "name": { "type": "string" },
           "tags": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
@@ -13957,6 +13963,8 @@
           "end_date": { "type": "string" },
           "is_active": { "type": "boolean" },
           "key": { "type": "string" },
+          "license_email": { "type": "string" },
+          "license_email_domain": { "type": "string" },
           "license_type": { "type": "string" },
           "message": { "type": "string" },
           "no_of_cloud_accounts": { "type": "integer" },
@@ -13987,11 +13995,15 @@
           "refresh_token",
           "onboarding_required",
           "password_invalidated",
-          "license_registered"
+          "license_registered",
+          "license_key",
+          "email_domain"
         ],
         "type": "object",
         "properties": {
           "access_token": { "type": "string" },
+          "email_domain": { "type": "string" },
+          "license_key": { "type": "string" },
           "license_registered": { "type": "boolean" },
           "onboarding_required": { "type": "boolean" },
           "password_invalidated": { "type": "boolean" },
@@ -14291,9 +14303,20 @@
         }
       },
       "ModelRegisterLicenseRequest": {
-        "required": ["license_key"],
+        "required": ["email", "license_key"],
         "type": "object",
-        "properties": { "license_key": { "type": "string" } }
+        "properties": {
+          "email": { "type": "string" },
+          "license_key": { "type": "string" }
+        }
+      },
+      "ModelRegisterLicenseResponse": {
+        "required": ["license_key", "email_domain"],
+        "type": "object",
+        "properties": {
+          "email_domain": { "type": "string" },
+          "license_key": { "type": "string" }
+        }
       },
       "ModelRegistryAccount": {
         "required": ["node_id", "name", "container_images", "registry_type", "syncing"],
@@ -14588,11 +14611,6 @@
         "required": ["scan_id", "result_ids", "scan_type"],
         "type": "object",
         "properties": {
-          "integration_ids": {
-            "type": "array",
-            "items": { "type": "integer" },
-            "nullable": true
-          },
           "notify_individual": { "type": "boolean" },
           "result_ids": {
             "type": "array",
@@ -14870,10 +14888,10 @@
         "properties": {
           "images": { "type": "integer" },
           "registries": { "type": "integer" },
-          "repositories": { "type": "integer" },
           "scans_complete": { "type": "integer" },
           "scans_in_progress": { "type": "integer" },
-          "scans_total": { "type": "integer" }
+          "scans_total": { "type": "integer" },
+          "tags": { "type": "integer" }
         }
       },
       "ModelTopologyDeltaReq": {

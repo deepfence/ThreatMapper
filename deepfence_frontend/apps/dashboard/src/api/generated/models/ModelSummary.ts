@@ -36,12 +36,6 @@ export interface ModelSummary {
      * @type {number}
      * @memberof ModelSummary
      */
-    repositories?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelSummary
-     */
     scans_complete?: number;
     /**
      * 
@@ -55,6 +49,12 @@ export interface ModelSummary {
      * @memberof ModelSummary
      */
     scans_total?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelSummary
+     */
+    tags?: number;
 }
 
 /**
@@ -78,10 +78,10 @@ export function ModelSummaryFromJSONTyped(json: any, ignoreDiscriminator: boolea
         
         'images': !exists(json, 'images') ? undefined : json['images'],
         'registries': !exists(json, 'registries') ? undefined : json['registries'],
-        'repositories': !exists(json, 'repositories') ? undefined : json['repositories'],
         'scans_complete': !exists(json, 'scans_complete') ? undefined : json['scans_complete'],
         'scans_in_progress': !exists(json, 'scans_in_progress') ? undefined : json['scans_in_progress'],
         'scans_total': !exists(json, 'scans_total') ? undefined : json['scans_total'],
+        'tags': !exists(json, 'tags') ? undefined : json['tags'],
     };
 }
 
@@ -96,10 +96,10 @@ export function ModelSummaryToJSON(value?: ModelSummary | null): any {
         
         'images': value.images,
         'registries': value.registries,
-        'repositories': value.repositories,
         'scans_complete': value.scans_complete,
         'scans_in_progress': value.scans_in_progress,
         'scans_total': value.scans_total,
+        'tags': value.tags,
     };
 }
 

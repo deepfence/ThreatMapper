@@ -16,55 +16,50 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelImageStub
+ * @interface ModelRegisterLicenseResponse
  */
-export interface ModelImageStub {
+export interface ModelRegisterLicenseResponse {
     /**
      * 
      * @type {string}
-     * @memberof ModelImageStub
+     * @memberof ModelRegisterLicenseResponse
      */
-    id?: string;
+    email_domain: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelImageStub
+     * @memberof ModelRegisterLicenseResponse
      */
-    name?: string;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof ModelImageStub
-     */
-    tags?: Array<string> | null;
+    license_key: string;
 }
 
 /**
- * Check if a given object implements the ModelImageStub interface.
+ * Check if a given object implements the ModelRegisterLicenseResponse interface.
  */
-export function instanceOfModelImageStub(value: object): boolean {
+export function instanceOfModelRegisterLicenseResponse(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "email_domain" in value;
+    isInstance = isInstance && "license_key" in value;
 
     return isInstance;
 }
 
-export function ModelImageStubFromJSON(json: any): ModelImageStub {
-    return ModelImageStubFromJSONTyped(json, false);
+export function ModelRegisterLicenseResponseFromJSON(json: any): ModelRegisterLicenseResponse {
+    return ModelRegisterLicenseResponseFromJSONTyped(json, false);
 }
 
-export function ModelImageStubFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelImageStub {
+export function ModelRegisterLicenseResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelRegisterLicenseResponse {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'id': !exists(json, 'id') ? undefined : json['id'],
-        'name': !exists(json, 'name') ? undefined : json['name'],
-        'tags': !exists(json, 'tags') ? undefined : json['tags'],
+        'email_domain': json['email_domain'],
+        'license_key': json['license_key'],
     };
 }
 
-export function ModelImageStubToJSON(value?: ModelImageStub | null): any {
+export function ModelRegisterLicenseResponseToJSON(value?: ModelRegisterLicenseResponse | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -73,9 +68,8 @@ export function ModelImageStubToJSON(value?: ModelImageStub | null): any {
     }
     return {
         
-        'id': value.id,
-        'name': value.name,
-        'tags': value.tags,
+        'email_domain': value.email_domain,
+        'license_key': value.license_key,
     };
 }
 

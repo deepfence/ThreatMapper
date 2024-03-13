@@ -9,7 +9,7 @@ import { getAuthenticationApiClient, getSettingsApiClient } from '@/api/api';
 import { ModelLicense } from '@/api/generated';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { queries } from '@/queries';
+import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper, redirectToLogin } from '@/utils/api';
 import storage from '@/utils/storage';
@@ -89,6 +89,7 @@ export const action = async ({
       }
       throw response.error;
     }
+    invalidateAllQueries();
   } else {
     throw new Error('Invalid intent');
   }
