@@ -1850,6 +1850,47 @@ func (q *Queries) GetIntegrations(ctx context.Context) ([]Integration, error) {
 	return items, nil
 }
 
+const getIntegrationsFromIDs = `-- name: GetIntegrationsFromIDs :many
+SELECT id, resource, filters, integration_type, interval_minutes, last_sent_time, config, error_msg, created_by_user_id, created_at, updated_at
+FROM integration
+WHERE id = ANY($1::int[])
+`
+
+func (q *Queries) GetIntegrationsFromIDs(ctx context.Context, dollar_1 []int32) ([]Integration, error) {
+	rows, err := q.db.QueryContext(ctx, getIntegrationsFromIDs, pq.Array(dollar_1))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Integration
+	for rows.Next() {
+		var i Integration
+		if err := rows.Scan(
+			&i.ID,
+			&i.Resource,
+			&i.Filters,
+			&i.IntegrationType,
+			&i.IntervalMinutes,
+			&i.LastSentTime,
+			&i.Config,
+			&i.ErrorMsg,
+			&i.CreatedByUserID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getIntegrationsFromType = `-- name: GetIntegrationsFromType :many
 SELECT id, resource, filters, integration_type, interval_minutes, last_sent_time, config, error_msg, created_by_user_id, created_at, updated_at
 FROM integration

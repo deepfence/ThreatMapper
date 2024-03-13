@@ -8,18 +8,29 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
-func Notify[T any](ctx context.Context, res []T, common model.ScanResultsCommon, scanType string) error {
+func Notify[T any](ctx context.Context, res []T, common model.ScanResultsCommon, scanType string, integrationIDs []int32) error {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return nil
 	}
-	integrations, err := pgClient.GetIntegrations(ctx)
-	if err != nil {
-		log.Error().Msgf("Error getting postgresCtx: %v", err)
-		return err
+	var integrations []postgresql_db.Integration
+	// get all integration if integrationIDs is empty, else get only the integrations in integrationIDs
+	if len(integrationIDs) == 0 {
+		integrations, err = pgClient.GetIntegrations(ctx)
+		if err != nil {
+			log.Error().Msgf("Error getting postgresCtx: %v", err)
+			return err
+		}
+	} else {
+		integrations, err = pgClient.GetIntegrationsFromIDs(ctx, integrationIDs)
+		if err != nil {
+			log.Error().Msgf("Error getting postgresCtx: %v", err)
+			return err
+		}
 	}
 
 	neo4jScanType := utils.StringToNeo4jScanType(scanType)
