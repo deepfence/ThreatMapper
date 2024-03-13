@@ -53,10 +53,12 @@ export const loginAction: ActionFunction = async ({
     }
     throw loginResponse.error;
   }
-  track({
-    licenseKey: loginResponse.value.license_key,
-    emailDomain: loginResponse.value.email_domain,
-  });
+  if (loginResponse.value?.license_registered) {
+    track({
+      licenseKey: loginResponse.value.license_key,
+      emailDomain: loginResponse.value.email_domain,
+    });
+  }
 
   handleLoginAndRedirect(loginResponse.value, url.searchParams);
 };
