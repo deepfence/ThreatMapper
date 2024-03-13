@@ -175,10 +175,14 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	licenseActive := false
 	licenseRegistered := false
+	var licenseKey string
+	var licenseEmailDomain string
 	license, err := model.GetLicense(ctx, pgClient)
 	if err == nil {
 		licenseRegistered = true
 		licenseActive = license.IsActive
+		licenseKey = license.LicenseKey
+		licenseEmailDomain = license.LicenseEmailDomain
 	}
 
 	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypePassword, licenseActive)
@@ -194,6 +198,8 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		OnboardingRequired:  model.IsOnboardingRequired(ctx),
 		PasswordInvalidated: user.PasswordInvalidated,
 		LicenseRegistered:   licenseRegistered,
+		LicenseKey:          licenseKey,
+		EmailDomain:         licenseEmailDomain,
 	})
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -284,10 +290,14 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 
 	licenseActive := false
 	licenseRegistered := false
+	var licenseKey string
+	var licenseEmailDomain string
 	license, err := model.GetLicense(ctx, pgClient)
 	if err == nil {
 		licenseRegistered = true
 		licenseActive = license.IsActive
+		licenseKey = license.LicenseKey
+		licenseEmailDomain = license.LicenseEmailDomain
 	}
 
 	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypePassword, licenseActive)
@@ -305,6 +315,8 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		OnboardingRequired:  model.IsOnboardingRequired(ctx),
 		PasswordInvalidated: user.PasswordInvalidated,
 		LicenseRegistered:   licenseRegistered,
+		LicenseKey:          licenseKey,
+		EmailDomain:         licenseEmailDomain,
 	})
 }
 

@@ -846,7 +846,7 @@ func (d *OpenAPIDocs) AddLicenseOperations() {
 
 	d.AddOperation("registerLicense", http.MethodPost, "/deepfence/license",
 		"Register License", "Register new license key to the console and activate",
-		http.StatusNoContent, []string{tagSettings}, bearerToken, new(RegisterLicenseRequest), nil)
+		http.StatusOK, []string{tagSettings}, bearerToken, new(RegisterLicenseRequest), new(RegisterLicenseResponse))
 
 	d.AddOperation("getLicense", http.MethodGet, "/deepfence/license",
 		"Get License Details", "Get license status and expiry",

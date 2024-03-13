@@ -28,7 +28,7 @@ To renew your license, please contact %s`
 Please reduce the number of hosts or upgrade your license by contacting %s`
 
 	licenseDefaultNumberOfHosts            = 25
-	licenseDefaultNumberOfCloudAccounts    = 20
+	licenseDefaultNumberOfCloudAccounts    = 5
 	licenseDefaultNumberOfRegistries       = 5
 	licenseDefaultNumberOfImagesInRegistry = 20
 	licenseDefaultDuration                 = 30 * 24 * time.Hour
@@ -59,7 +59,13 @@ type GenerateLicenseResponse struct {
 }
 
 type RegisterLicenseRequest struct {
+	Email      string `json:"email" validate:"required,email" required:"true"`
 	LicenseKey string `json:"license_key" validate:"required,uuid4" required:"true"`
+}
+
+type RegisterLicenseResponse struct {
+	LicenseKey  string `json:"license_key" required:"true"`
+	EmailDomain string `json:"email_domain" required:"true"`
 }
 
 type NotificationThresholdUpdateRequest struct {
@@ -75,6 +81,8 @@ type RegistryCredentials struct {
 type License struct {
 	LicenseKey            string              `json:"key"`
 	LicenseKeyUUID        uuid.UUID           `json:"-"`
+	LicenseEmail          string              `json:"license_email"`
+	LicenseEmailDomain    string              `json:"license_email_domain"`
 	IsActive              bool                `json:"is_active"`
 	EndDate               string              `json:"end_date"`
 	NoOfHosts             int64               `json:"no_of_hosts"`
@@ -158,7 +166,7 @@ func generateLicense(generateLicenseAPIURL string) (*LicenseServerResponse, int,
 	return &licenseResp, resp.StatusCode, nil
 }
 
-func FetchLicense(ctx context.Context, licenseKey string, pgClient *postgresqlDb.Queries) (*License, int, error) {
+func FetchLicense(ctx context.Context, licenseKey string, email string, pgClient *postgresqlDb.Queries) (*License, int, error) {
 	var licenseResp *LicenseServerResponse
 	var err error
 	retryCounter := 0
@@ -176,13 +184,15 @@ func FetchLicense(ctx context.Context, licenseKey string, pgClient *postgresqlDb
 	}
 	if err != nil {
 		log.Error().Msgf("Could not fetch license details: %v", err)
-		return generateDefaultLicense(ctx, pgClient), 0, nil
+		return generateDefaultLicense(ctx, email, pgClient), 0, nil
 	}
 
 	if licenseResp.Success == false {
 		return nil, http.StatusBadRequest, errors.New(licenseResp.Error.Message)
 	}
 	license := licenseResp.Data
+	emailDomain, _ := utils.GetEmailDomain(license.LicenseEmail)
+	license.LicenseEmailDomain = emailDomain
 	licenseKeyUUID, err := utils.UUIDFromString(license.LicenseKey)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
@@ -215,7 +225,7 @@ func fetchLicense(licenseKey string) (*LicenseServerResponse, error) {
 	return &licenseResp, nil
 }
 
-func generateDefaultLicense(ctx context.Context, pgClient *postgresqlDb.Queries) *License {
+func generateDefaultLicense(ctx context.Context, email string, pgClient *postgresqlDb.Queries) *License {
 	// In case of air-gapped environment, or when license server is not reachable, create license with default values
 	var defaultLicenseUUID uuid.UUID
 	var startDate time.Time
@@ -238,10 +248,14 @@ func generateDefaultLicense(ctx context.Context, pgClient *postgresqlDb.Queries)
 	}
 	endDate := startDate.Add(licenseDefaultDuration)
 
+	emailDomain, _ := utils.GetEmailDomain(email)
+
 	return &License{
 		LicenseKey:            defaultLicenseUUID.String(),
 		LicenseKeyUUID:        defaultLicenseUUID,
 		IsActive:              true,
+		LicenseEmail:          email,
+		LicenseEmailDomain:    emailDomain,
 		EndDate:               endDate.Format(DateLayout1),
 		NoOfHosts:             licenseDefaultNumberOfHosts,
 		NoOfCloudAccounts:     licenseDefaultNumberOfCloudAccounts,
@@ -285,6 +299,8 @@ func (l *License) Save(ctx context.Context, pgClient *postgresqlDb.Queries) erro
 	}
 	_, err = pgClient.UpsertLicense(ctx, postgresqlDb.UpsertLicenseParams{
 		LicenseKey:            l.LicenseKeyUUID,
+		LicenseEmail:          l.LicenseEmail,
+		LicenseEmailDomain:    l.LicenseEmailDomain,
 		StartDate:             startDate,
 		EndDate:               endDate,
 		NoOfHosts:             l.NoOfHosts,
@@ -327,6 +343,8 @@ func GetLicense(ctx context.Context, pgClient *postgresqlDb.Queries) (*License, 
 	license := License{
 		LicenseKey:            pgLicense.LicenseKey.String(),
 		LicenseKeyUUID:        pgLicense.LicenseKey,
+		LicenseEmail:          pgLicense.LicenseEmail,
+		LicenseEmailDomain:    pgLicense.LicenseEmailDomain,
 		IsActive:              pgLicense.IsActive,
 		EndDate:               endDate,
 		NoOfHosts:             pgLicense.NoOfHosts,

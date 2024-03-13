@@ -89,7 +89,7 @@ func (h *Handler) RegisterLicenseHandler(w http.ResponseWriter, r *http.Request)
 			return
 		}
 	}
-	license, statusCode, err := model.FetchLicense(ctx, req.LicenseKey, pgClient)
+	license, statusCode, err := model.FetchLicense(ctx, req.LicenseKey, req.Email, pgClient)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		if statusCode == http.StatusBadRequest {
@@ -112,7 +112,13 @@ func (h *Handler) RegisterLicenseHandler(w http.ResponseWriter, r *http.Request)
 		log.Warn().Msgf("Could not trigger ThreatIntelUpdateTask: %v", err)
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	err = httpext.JSON(w, http.StatusOK, model.RegisterLicenseResponse{
+		LicenseKey:  license.LicenseKey,
+		EmailDomain: license.LicenseEmailDomain,
+	})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) RunThreatIntelUpdateTask(ctx context.Context) error {

@@ -99,6 +99,8 @@ type License struct {
 	Description                     string          `json:"description"`
 	CreatedAt                       time.Time       `json:"created_at"`
 	UpdatedAt                       time.Time       `json:"updated_at"`
+	LicenseEmail                    string          `json:"license_email"`
+	LicenseEmailDomain              string          `json:"license_email_domain"`
 	NoOfCloudAccounts               int64           `json:"no_of_cloud_accounts"`
 	NoOfRegistries                  int64           `json:"no_of_registries"`
 	NoOfImagesInRegistry            int64           `json:"no_of_images_in_registry"`
