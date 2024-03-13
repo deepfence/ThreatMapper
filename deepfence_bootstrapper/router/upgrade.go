@@ -100,9 +100,9 @@ func downloadFile(filepath string, url string) (err error) {
 	}
 	defer out.Close()
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
 	client := &http.Client{Transport: tr}
 	// Get the data
 	resp, err := client.Get(url)

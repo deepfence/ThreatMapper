@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -114,6 +115,9 @@ func ExposeFile(ctx context.Context, fName string) (string, error) {
 }
 
 func downloadFile(ctx context.Context, url string) (*bytes.Buffer, error) {
+
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	client := http.Client{Timeout: 600 * time.Second}
 

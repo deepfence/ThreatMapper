@@ -47,7 +47,8 @@ func BuildHttpClientWithCert(certPath string) (*http.Client, error) {
 	transport := &http.Transport{
 		MaxIdleConnsPerHost: maxIdleConnsPerHost,
 		TLSHandshakeTimeout: 0 * time.Second,
-		TLSClientConfig:     tlsConfig}
+		TLSClientConfig:     tlsConfig,
+	}
 	client := &http.Client{Transport: transport}
 
 	// Load our trusted certificate path

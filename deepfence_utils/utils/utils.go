@@ -56,25 +56,29 @@ var (
 
 func GetHTTPClient() *http.Client {
 	once1.Do(func() {
-		secureClient = &http.Client{Timeout: time.Second * 10}
+		secureClient = &http.Client{
+			Timeout:   time.Second * 10,
+			Transport: http.DefaultTransport.(*http.Transport).Clone(),
+		}
 	})
 
 	return secureClient
 }
 
-func GetHTTPClientWithTimeout(duration time.Duration) *http.Client {
-	return &http.Client{Timeout: duration}
-}
-
 func GetInsecureHTTPClient() *http.Client {
 	once2.Do(func() {
-		tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
+		tlsConfig := &tls.Config{
+			RootCAs:            x509.NewCertPool(),
+			InsecureSkipVerify: true,
+		}
+		// clone default transport
+		tr := http.DefaultTransport.(*http.Transport).Clone()
+		tr.TLSClientConfig = tlsConfig
+		tr.WriteBufferSize = 10240
+
 		insecureClient = &http.Client{
-			Timeout: time.Second * 10,
-			Transport: &http.Transport{
-				TLSClientConfig: tlsConfig,
-				WriteBufferSize: 10240,
-			},
+			Timeout:   time.Second * 10,
+			Transport: tr,
 		}
 	})
 
@@ -516,9 +520,14 @@ func UploadFile(url string, fileName string) ([]byte, int, error) {
 
 func NewHTTPClient() (*http.Client, error) {
 	// Set up our own certificate pool
-	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
+	tlsConfig := &tls.Config{
+		RootCAs:            x509.NewCertPool(),
+		InsecureSkipVerify: true,
+	}
+
 	client := &http.Client{
 		Transport: &http.Transport{
+			Proxy:               http.ProxyFromEnvironment,
 			TLSClientConfig:     tlsConfig,
 			DisableKeepAlives:   false,
 			MaxIdleConnsPerHost: 1024,

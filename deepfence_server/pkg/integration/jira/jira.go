@@ -31,6 +31,7 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 
 	auth := jira.BasicAuthTransport{
 		Transport: &http.Transport{
+			Proxy:           http.ProxyFromEnvironment,
 			TLSClientConfig: &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true},
 		},
 	}
@@ -147,6 +148,7 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 func (j Jira) IsValidCredential(ctx context.Context) (bool, error) {
 	auth := jira.BasicAuthTransport{
 		Transport: &http.Transport{
+			Proxy:           http.ProxyFromEnvironment,
 			TLSClientConfig: &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true},
 		},
 	}

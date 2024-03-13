@@ -2,6 +2,7 @@ package cronjobs
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -42,7 +43,14 @@ func FetchThreatIntelListing(ctx context.Context, token string) (threatintel.Lis
 
 	var listing threatintel.Listing
 
-	hc := http.Client{Timeout: 10 * time.Second}
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.TLSClientConfig = &tls.Config{
+		InsecureSkipVerify: true,
+	}
+	hc := http.Client{
+		Timeout:   10 * time.Second,
+		Transport: tr,
+	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, threatIntelURL, nil)
 	if err != nil {
