@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { upperFirst } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
@@ -20,11 +21,13 @@ import { ModelVulnerability } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { PopOutIcon } from '@/components/icons/common/PopOut';
-import { CveCVSSScore, SeverityBadge } from '@/components/SeverityBadge';
+import { CveCVSSScore, SeverityBadgeIcon } from '@/components/SeverityBadge';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
 import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
+import { VulnerabilitySeverityType } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
 
@@ -48,6 +51,7 @@ const useGetScanDiff = (props: { baseScanId: string; toScanId: string }) => {
 };
 
 const CompareTable = (props: IScanCompareProps & { type: string }) => {
+  const { mode: theme } = useTheme();
   const { data } = useGetScanDiff({
     baseScanId: props.baseScanId,
     toScanId: props.toScanId,
@@ -91,9 +95,7 @@ const CompareTable = (props: IScanCompareProps & { type: string }) => {
       }),
       columnHelper.accessor('cve_cvss_score', {
         cell: (info) => (
-          <div>
-            <CveCVSSScore score={info.getValue()} />
-          </div>
+          <div className="text-p3 text-text-text-and-icon">{info.getValue()}</div>
         ),
         header: () => <TruncatedText text="CVSS Score" />,
         minSize: 50,
@@ -102,8 +104,12 @@ const CompareTable = (props: IScanCompareProps & { type: string }) => {
       }),
       columnHelper.accessor('cve_severity', {
         cell: (info) => (
-          <div>
-            <SeverityBadge severity={info.getValue()} />
+          <div className="text-p4 text-text-text-and-icon gap-1 inline-flex">
+            <SeverityBadgeIcon
+              severity={info.getValue() as VulnerabilitySeverityType}
+              theme={theme}
+            />
+            {upperFirst(info.getValue())}
           </div>
         ),
         header: () => 'Severity',

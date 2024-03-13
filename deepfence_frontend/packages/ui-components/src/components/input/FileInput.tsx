@@ -18,7 +18,7 @@ const inputCva = cva(
     'disabled:cursor-not-allowed',
     'focus:outline-none',
     // ring styles
-    'file:border-0 file:cursor-pointer file:hover:bg-bg-hover-1',
+    'file:border-0 file:cursor-pointer dark:file:hover:bg-bg-hover-1 file:hover:bg-[#1466B8]',
     'file:h-ful file:bg-btn-blue file:px-3',
   ],
   {

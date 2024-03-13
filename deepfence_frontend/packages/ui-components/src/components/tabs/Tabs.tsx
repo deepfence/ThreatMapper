@@ -45,7 +45,7 @@ const tabListCva = cva(
   },
 );
 
-const tabItemCva = cva(['text-t4 cursor-pointer'], {
+const tabItemCva = cva(['text-t3 cursor-pointer'], {
   variants: {
     size: {
       md: '',
@@ -54,7 +54,7 @@ const tabItemCva = cva(['text-t4 cursor-pointer'], {
       true: [
         cn(
           'pb-[9px] pt-[15px] px-3 flex items-center justify-center box-border',
-          'data-[state=active]:text-text-input-value',
+          'text-text-text-and-icon data-[state=active]:text-text-input-value',
           'data-[state=active]:border-text-link dark:data-[state=active]:border-accent-accent',
           // selected
           'transition-shadow duration-[0.2s] ease-[ease-in]',

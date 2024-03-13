@@ -45,7 +45,7 @@ const ModalHeader: FC<{ title?: React.ReactNode }> = ({ title }) => {
         className={cn(
           'absolute top-[30px] right-6 cursor-pointer',
           // text
-          'dark:text-text-text-and-icon text-text-icon',
+          'text-text-icon',
         )}
         id={'modal-close-button'}
         data-testid={'modal-close-button'}

@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { upperFirst } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
@@ -19,11 +20,12 @@ import {
 import { ModelCompliance } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
-import { PostureStatusBadge } from '@/components/SeverityBadge';
+import { PostureStatusBadgeIcon } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { TruncatedText } from '@/components/TruncatedText';
 import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import { PostureSeverityType } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
@@ -48,6 +50,7 @@ const useGetScanDiff = (props: { baseScanId: string; toScanId: string }) => {
 };
 
 const CompareTable = (props: IScanCompareProps & { type: string }) => {
+  const { mode: theme } = useTheme();
   const { data } = useGetScanDiff({
     baseScanId: props.baseScanId,
     toScanId: props.toScanId,
@@ -103,7 +106,15 @@ const CompareTable = (props: IScanCompareProps & { type: string }) => {
       }),
       columnHelper.accessor('status', {
         cell: (info) => {
-          return <PostureStatusBadge status={info.getValue() as PostureSeverityType} />;
+          return (
+            <div className="flex items-center gap-x-2">
+              <PostureStatusBadgeIcon
+                status={info.getValue() as PostureSeverityType}
+                theme={theme}
+              />
+              {upperFirst(info.getValue())}
+            </div>
+          );
         },
         header: () => 'Status',
         minSize: 70,

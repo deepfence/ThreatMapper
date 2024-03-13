@@ -43,9 +43,9 @@ export const BreadcrumbLink = React.forwardRef<
         {...props}
         className={cn(
           `inline-flex items-center`,
-          'text-text-text-and-icon text-p1',
+          'text-text-text-and-icon dark:text-text-input-value text-p1',
           {
-            'text-text-link': isLink,
+            'dark:text-text-link text-accent-accent': isLink,
           },
           className,
         )}

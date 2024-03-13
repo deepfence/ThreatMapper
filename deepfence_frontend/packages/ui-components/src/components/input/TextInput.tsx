@@ -104,7 +104,7 @@ const InfoIcon = () => {
 };
 const inputCva = cva(
   [
-    'text-p4 block w-full disabled:cursor-not-allowed',
+    'text-p4a block w-full disabled:cursor-not-allowed',
     'focus:outline-none',
     'pl-1.5 pt-1.5 pb-[5px]',
     'border-b',
@@ -116,14 +116,14 @@ const inputCva = cva(
         default: [
           cn(
             // border
-            'border-bg-border-form dark:disabled:border-text-text-and-icon disabled:border-bg-border-form',
+            'border-bg-border-form dark:disabled:border-df-gray-600/50 disabled:border-severity-unknown/50',
             // placeholder styles
-            'placeholder-df-gray-500 disabled:placeholder-severity-unknown/50',
+            'placeholder-text-helper disabled:placeholder-severity-unknown/50',
             'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
             // text styles
-            'dark:text-text-input-value text-text-text-and-icon',
+            'text-text-input-value',
             // disabled text color
-            'disabled:text-severity-unknown/50 dark:disabled:text-df-gray-600',
+            'disabled:text-severity-unknown/60 dark:disabled:text-df-gray-600',
             // focus style
             'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
             'focus:border-b-accent-accent',
@@ -136,9 +136,9 @@ const inputCva = cva(
         error: [
           cn(
             // border
-            'dark:border-chart-red border-status-error dark:disabled:border-text-text-and-icon disabled:border-bg-border-form',
+            'dark:border-chart-red border-status-error dark:disabled:border-df-gray-600/50 disabled:border-severity-unknown/50',
             // placeholder styles
-            'placeholder-df-gray-500 disabled:placeholder-severity-unknown/60',
+            'placeholder-text-helper disabled:placeholder-severity-unknown/60',
             'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
             // text font
             // text styles

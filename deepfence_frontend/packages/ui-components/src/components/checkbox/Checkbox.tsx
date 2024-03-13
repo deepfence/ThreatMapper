@@ -33,7 +33,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
         className={cn(
           'flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] peer group',
           'data-[state=unchecked]:bg-transparent data-[state=unchecked]:border border-text-icon',
-          'data-[state=checked]:bg-accent-accent',
+          'dark:data-[state=checked]:bg-accent-accent data-[state=checked]:bg-text-link',
           // uncheck disabled
           'dark:data-[state=unchecked]:disabled:bg-gray-600 dark:data-[state=unchecked]:disabled:border-none',
           // light uncheck disabled
@@ -45,7 +45,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
           'data-[state=checked]:disabled:bg-severity-unknown/60 data-[state=checked]:disabled:border-none',
           'disabled:cursor-not-allowed',
           {
-            'bg-accent-accent': internalChecked === 'indeterminate',
+            'dark:bg-accent-accent bg-text-link': internalChecked === 'indeterminate',
           },
           'transition-colors',
           className,

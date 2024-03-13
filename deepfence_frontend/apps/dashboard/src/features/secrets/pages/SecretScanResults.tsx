@@ -1936,7 +1936,7 @@ const Top5Widget = () => {
                   </DFLink>
                 </td>
                 <td className="w-[20%] px-0 pt-0 pb-2">
-                  <div className="flex items-center justify-center gap-1">
+                  <div className="flex gap-1">
                     <SeverityBadgeIcon
                       severity={secret.level as SecretSeverityType}
                       theme={theme}

@@ -207,7 +207,7 @@ const colors = {
       'severity-low': '#F0C800',
       'severity-unknown': '#939A9F',
 
-      'btn-blue': '#1E61E6',
+      'btn-blue': '#185FEC',
       'btn-red': '#DE2121',
       'btn-green': '#1C8804',
 
