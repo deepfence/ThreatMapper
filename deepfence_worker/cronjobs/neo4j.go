@@ -151,8 +151,7 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 	// host images
 	if _, err = session.Run(ctx, `
 		MATCH (n:ContainerImage)
-		WHERE exists((n)<-[:HOSTS]-(:Node))
-		AND NOT exists((n)<-[:HOSTS]-(:RegistryAccount))
+		WHERE NOT exists((n)<-[:HOSTS]-(:RegistryAccount))
 		AND n.updated_at < TIMESTAMP()-$time_ms
 		AND n.active = true
 		WITH n LIMIT 10000
@@ -811,11 +810,22 @@ func LinkNodes(ctx context.Context, task *asynq.Task) error {
 		MATCH (n:ContainerImage)
 		WHERE NOT exists((n) -[:ALIAS]-> ())
 		MERGE (t:ImageTag{node_id: n.docker_image_name + "_" + n.docker_image_tag})
-		MERGE (n) -[:ALIAS]-> (t)
-		SET t.updated_at = TIMESTAMP()`,
+		MERGE (n) -[a:ALIAS]-> (t)
+		SET t.updated_at = TIMESTAMP(), 
+			a.updated_at = TIMESTAMP()`,
 		map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}
+
+	if _, err = session.Run(ctx, `
+		MATCH (n:RegistryAccount)-[h:HOSTS]->(m:ContainerImage) -[r:ALIAS]-> (a)
+		MATCH (a) <- [b:ALIAS] - (l:ContainerImage) -[h2:HOSTS]- (n)
+		WHERE l.node_id <> m.node_id
+		DELETE CASE WHEN r.updated_at < b.updated_at THEN h ELSE h2 END`,
+		map[string]interface{}{}, txConfig); err != nil {
+		return err
+	}
+
 	log.Debug().Msgf("Link Nodes task took: %v", time.Since(start))
 
 	return nil

@@ -72,6 +72,7 @@ import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { TruncatedText } from '@/components/TruncatedText';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
+import { SelectNotificationChannel } from '@/features/integrations/components/SelectNotificationChannel';
 import { SecretScanResultsPieChart } from '@/features/secrets/components/scan-results/SecretScanResultsPieChart';
 import { SecretsCompare } from '@/features/secrets/components/scan-results/SecretsCompare';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
@@ -135,12 +136,17 @@ const action = async ({
     const apiFunctionApi = apiWrapper({
       fn: apiFunction,
     });
+    const integrationIds = formData.getAll('integrationIds[]') as Array<string>;
     const result = await apiFunctionApi({
       modelScanResultsActionRequest: {
         result_ids: [...ids],
         scan_id: _scanId,
         scan_type: ScanTypeEnum.SecretScan,
         notify_individual: notifyIndividual === 'on',
+        integration_ids:
+          actionType === ActionEnumType.NOTIFY
+            ? integrationIds.map((id) => Number(id))
+            : null,
       },
     });
     if (!result.ok) {
@@ -524,10 +530,16 @@ const NotifyModal = ({
           <div className="grid">
             <span>The selected secrets will be notified.</span>
             <br />
-            <span>Do you want to notify each secret separately?</span>
-            <div className="mt-2">
-              <Checkbox label="Yes notify them separately" name="notifyIndividual" />
-            </div>
+            <SelectNotificationChannel />
+            <br />
+            {ids.length > 1 ? (
+              <>
+                <span>Do you want to notify each secret separately?</span>
+                <div className="mt-2">
+                  <Checkbox label="Yes notify them separately" name="notifyIndividual" />
+                </div>
+              </>
+            ) : null}
             {fetcher.data?.message && (
               <p className="mt-2 text-p7 dark:text-status-error">
                 {fetcher.data?.message}
@@ -841,142 +853,148 @@ const ActionDropdown = ({
   isDockerImageNameEmpty: boolean;
 }) => {
   const isHost = nodeType === 'host';
+  const [openNotifyModal, setOpenNotifyModal] = useState<boolean>(false);
   return (
-    <Dropdown
-      triggerAsChild={true}
-      align={'start'}
-      content={
-        <>
-          {isHost ? (
+    <>
+      {openNotifyModal && (
+        <NotifyModal open={true} closeModal={setOpenNotifyModal} ids={ids} />
+      )}
+      <Dropdown
+        triggerAsChild={true}
+        align={'start'}
+        content={
+          <>
+            {isHost ? (
+              <DropdownItem
+                onClick={() =>
+                  onTableAction(
+                    ids,
+                    ActionEnumType.MASK,
+                    ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                  )
+                }
+              >
+                Mask secret for this host
+              </DropdownItem>
+            ) : (
+              <>
+                {!isDockerImageNameEmpty && (
+                  <>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.MASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
+                        )
+                      }
+                    >
+                      Mask secret for this image tag
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.MASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
+                        )
+                      }
+                    >
+                      Mask secret for this image(all tags)
+                    </DropdownItem>
+                  </>
+                )}
+              </>
+            )}
             <DropdownItem
               onClick={() =>
                 onTableAction(
                   ids,
                   ActionEnumType.MASK,
-                  ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                  ModelScanResultsMaskRequestMaskActionEnum.Global,
                 )
               }
             >
-              Mask secret for this host
+              Mask secret across hosts and images
             </DropdownItem>
-          ) : (
-            <>
-              {!isDockerImageNameEmpty && (
-                <>
-                  <DropdownItem
-                    onClick={() =>
-                      onTableAction(
-                        ids,
-                        ActionEnumType.MASK,
-                        ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
-                      )
-                    }
-                  >
-                    Mask secret for this image tag
-                  </DropdownItem>
-                  <DropdownItem
-                    onClick={() =>
-                      onTableAction(
-                        ids,
-                        ActionEnumType.MASK,
-                        ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
-                      )
-                    }
-                  >
-                    Mask secret for this image(all tags)
-                  </DropdownItem>
-                </>
-              )}
-            </>
-          )}
-          <DropdownItem
-            onClick={() =>
-              onTableAction(
-                ids,
-                ActionEnumType.MASK,
-                ModelScanResultsMaskRequestMaskActionEnum.Global,
-              )
-            }
-          >
-            Mask secret across hosts and images
-          </DropdownItem>
-          <DropdownSeparator />
-          {isHost ? (
+            <DropdownSeparator />
+            {isHost ? (
+              <DropdownItem
+                onClick={() =>
+                  onTableAction(
+                    ids,
+                    ActionEnumType.UNMASK,
+                    ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                  )
+                }
+              >
+                Un-mask secret for this host
+              </DropdownItem>
+            ) : (
+              <>
+                {!isDockerImageNameEmpty && (
+                  <>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.UNMASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
+                        )
+                      }
+                    >
+                      Un-mask secret for this image tag
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.UNMASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
+                        )
+                      }
+                    >
+                      Un-mask secret for this image(all tags)
+                    </DropdownItem>
+                  </>
+                )}
+              </>
+            )}
             <DropdownItem
               onClick={() =>
                 onTableAction(
                   ids,
                   ActionEnumType.UNMASK,
-                  ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                  ModelScanResultsMaskRequestMaskActionEnum.Global,
                 )
               }
             >
-              Un-mask secret for this host
+              Un-mask secret across hosts and images
             </DropdownItem>
-          ) : (
-            <>
-              {!isDockerImageNameEmpty && (
-                <>
-                  <DropdownItem
-                    onClick={() =>
-                      onTableAction(
-                        ids,
-                        ActionEnumType.UNMASK,
-                        ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
-                      )
-                    }
-                  >
-                    Un-mask secret for this image tag
-                  </DropdownItem>
-                  <DropdownItem
-                    onClick={() =>
-                      onTableAction(
-                        ids,
-                        ActionEnumType.UNMASK,
-                        ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
-                      )
-                    }
-                  >
-                    Un-mask secret for this image(all tags)
-                  </DropdownItem>
-                </>
-              )}
-            </>
-          )}
-          <DropdownItem
-            onClick={() =>
-              onTableAction(
-                ids,
-                ActionEnumType.UNMASK,
-                ModelScanResultsMaskRequestMaskActionEnum.Global,
-              )
-            }
-          >
-            Un-mask secret across hosts and images
-          </DropdownItem>
-          <DropdownSeparator />
-          <DropdownItem
-            onClick={() => {
-              onTableAction(ids, ActionEnumType.NOTIFY);
-            }}
-          >
-            Notify
-          </DropdownItem>
-          <DropdownSeparator />
-          <DropdownItem
-            onClick={() => {
-              setIdsToDelete(ids);
-              setShowDeleteDialog(true);
-            }}
-            className="dark:text-status-error dark:hover:text-[#C45268]"
-          >
-            Delete
-          </DropdownItem>
-        </>
-      }
-    >
-      {trigger}
-    </Dropdown>
+            <DropdownSeparator />
+            <DropdownItem
+              onClick={() => {
+                setOpenNotifyModal(true);
+              }}
+            >
+              Notify
+            </DropdownItem>
+            <DropdownSeparator />
+            <DropdownItem
+              onClick={() => {
+                setIdsToDelete(ids);
+                setShowDeleteDialog(true);
+              }}
+              className="dark:text-status-error dark:hover:text-[#C45268]"
+            >
+              Delete
+            </DropdownItem>
+          </>
+        }
+      >
+        {trigger}
+      </Dropdown>
+    </>
   );
 };
 
@@ -1160,11 +1178,7 @@ const BulkActions = ({
         startIcon={<BellLineIcon />}
         disabled={!ids.length}
         onClick={() => {
-          if (ids.length === 1) {
-            onTableAction(ids, ActionEnumType.NOTIFY);
-          } else {
-            setOpenNotifyModal(true);
-          }
+          setOpenNotifyModal(true);
         }}
       >
         Notify

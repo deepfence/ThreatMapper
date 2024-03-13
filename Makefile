@@ -59,7 +59,7 @@ agent-binary: agent agent-binary-tar
 
 .PHONY: agent-binary-tar
 agent-binary-tar:
-	ID=$$(docker create $(IMAGE_REPOSITORY)/deepfence_agent:$(DF_IMG_TAG)); \
+	ID=$$(docker create $(IMAGE_REPOSITORY)/deepfence_agent_ce:$(DF_IMG_TAG)); \
 	(cd $(DEEPFENCE_FARGATE_DIR) &&\
 	CONTAINER_ID=$$ID VERSION="$(VERSION)" bash copy-bin-from-agent.sh); \
 	docker rm -v $$ID
