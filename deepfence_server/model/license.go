@@ -42,6 +42,7 @@ const (
 	LicenseServerURL      = "https://license.deepfence.space/threatmapper"
 	GenerateLicenseAPIURL = LicenseServerURL + "/generate-license?first_name=%s&last_name=%s&email=%s&company=%s&resend_email=%t"
 	GetLicenseAPIURL      = LicenseServerURL + "/license?license_key=%s"
+	ReportLicenseUsageURL = LicenseServerURL + "/report-license"
 )
 
 type GenerateLicenseRequest struct {
@@ -79,23 +80,25 @@ type RegistryCredentials struct {
 }
 
 type License struct {
-	LicenseKey            string              `json:"key"`
-	LicenseKeyUUID        uuid.UUID           `json:"-"`
-	LicenseEmail          string              `json:"license_email"`
-	LicenseEmailDomain    string              `json:"license_email_domain"`
-	IsActive              bool                `json:"is_active"`
-	EndDate               string              `json:"end_date"`
-	NoOfHosts             int64               `json:"no_of_hosts"`
-	NoOfCloudAccounts     int64               `json:"no_of_cloud_accounts"`
-	NoOfRegistries        int64               `json:"no_of_registries"`
-	NoOfImagesInRegistry  int64               `json:"no_of_images_in_registry"`
-	CurrentHosts          int64               `json:"current_hosts"`
-	DeepfenceSupportEmail string              `json:"deepfence_support_email"`
-	StartDate             string              `json:"start_date"`
-	Message               string              `json:"message"`
-	Description           string              `json:"description"`
-	LicenseType           string              `json:"license_type"`
-	RegistryCredentials   RegistryCredentials `json:"registry_credentials"`
+	LicenseKey                      string              `json:"key"`
+	LicenseKeyUUID                  uuid.UUID           `json:"-"`
+	LicenseEmail                    string              `json:"license_email"`
+	LicenseEmailDomain              string              `json:"license_email_domain"`
+	IsActive                        bool                `json:"is_active"`
+	EndDate                         string              `json:"end_date"`
+	NoOfHosts                       int64               `json:"no_of_hosts"`
+	NoOfCloudAccounts               int64               `json:"no_of_cloud_accounts"`
+	NoOfRegistries                  int64               `json:"no_of_registries"`
+	NoOfImagesInRegistry            int64               `json:"no_of_images_in_registry"`
+	CurrentHosts                    int64               `json:"current_hosts"`
+	DeepfenceSupportEmail           string              `json:"deepfence_support_email"`
+	NotificationThresholdPercentage int32               `json:"notification_threshold_percentage"`
+	NotificationThresholdUpdatedAt  int64               `json:"notification_threshold_updated_at"`
+	StartDate                       string              `json:"start_date"`
+	Message                         string              `json:"message"`
+	Description                     string              `json:"description"`
+	LicenseType                     string              `json:"license_type"`
+	RegistryCredentials             RegistryCredentials `json:"registry_credentials"`
 }
 
 type LicenseServerResponse struct {
@@ -191,8 +194,6 @@ func FetchLicense(ctx context.Context, licenseKey string, email string, pgClient
 		return nil, http.StatusBadRequest, errors.New(licenseResp.Error.Message)
 	}
 	license := licenseResp.Data
-	emailDomain, _ := utils.GetEmailDomain(license.LicenseEmail)
-	license.LicenseEmailDomain = emailDomain
 	licenseKeyUUID, err := utils.UUIDFromString(license.LicenseKey)
 	if err != nil {
 		return nil, http.StatusBadRequest, err

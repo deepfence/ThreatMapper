@@ -232,6 +232,8 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 
 	worker.AddOneShotHandler(utils.UpdateLicenseTask, cronjobs.UpdateLicenseStatus)
 
+	worker.AddOneShotHandler(utils.ReportLicenseUsageTask, cronjobs.PublishLicenseUsageToLicenseServer)
+
 	worker.AddRetryableHandler(utils.ThreatIntelUpdateTask, cronjobs.FetchThreatIntel)
 
 	return worker, cancel, nil

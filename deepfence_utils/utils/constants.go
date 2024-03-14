@@ -58,7 +58,8 @@ const (
 	AsynqDeleteAllArchivedTasks       = "asynq_delete_all_archived_tasks"
 	RedisRewriteAOF                   = "redis_rewrite_aof"
 
-	UpdateLicenseTask = "update_license"
+	UpdateLicenseTask      = "update_license"
+	ReportLicenseUsageTask = "report_license_usage"
 
 	ThreatIntelUpdateTask = "threat_intel_update"
 )
@@ -216,6 +217,10 @@ var Tasks = []string{
 	StopVulnerabilityScanTask,
 	UpdateCloudResourceScanStatusTask,
 	UpdatePodScanStatusTask,
+
+	UpdateLicenseTask,
+	ReportLicenseUsageTask,
+
 	ThreatIntelUpdateTask,
 }
 
