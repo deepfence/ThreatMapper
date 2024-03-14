@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -172,9 +173,20 @@ func listRepoTagsV2(url, namespace, userName, password, repoName string) (RepoTa
 
 func getImageWithTags(url, namespace, userName, password, repoName string, repoTags RepoTagsResp) []model.IngestedContainerImage {
 	var imageAndTag []model.IngestedContainerImage
+
 	for _, tag := range repoTags.Tags {
 		digest, details := getImageDetails(tag, repoTags)
 		imageID, shortImageID := model.DigestToID(*digest)
+
+		timeUploaded := ""
+		timeMS, err := strconv.ParseInt(details.TimeUploadedMs, 10, 64)
+		if err != nil {
+			timeUploaded = details.TimeUploadedMs
+		} else {
+			tm := timeMS / 1000
+			timeUploaded = strconv.FormatInt(tm, 10)
+		}
+
 		tt := model.IngestedContainerImage{
 			ID:            imageID,
 			DockerImageID: imageID,
@@ -185,7 +197,7 @@ func getImageWithTags(url, namespace, userName, password, repoName string, repoT
 			Metadata: model.Metadata{
 				"timeCreatedMs": details.TimeCreatedMs,
 				"digest":        *digest,
-				"last_updated":  details.TimeUploadedMs,
+				"last_updated":  timeUploaded,
 			},
 		}
 		imageAndTag = append(imageAndTag, tt)

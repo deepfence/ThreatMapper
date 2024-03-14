@@ -32,7 +32,7 @@ docker run -dit \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-    deepfenceio/deepfence_agent_ce:2.1.0
+    deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION
 ```
 
 Optionally the sensor container can be tagged using ```USER_DEFINED_TAGS=""``` in the above command. Tags should be comma separated, for example, ```"dev,front-end"```.
