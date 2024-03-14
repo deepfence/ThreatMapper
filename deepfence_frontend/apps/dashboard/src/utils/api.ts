@@ -127,8 +127,7 @@ export function apiWrapper<F extends Func<any[], any>>({
           } else {
             const response = new Response(
               JSON.stringify({
-                // TODO: change the message to something more meaningful
-                message: 'Please register your console with Deepfence.',
+                message: '',
                 error_fields: {},
                 error_index: null,
               }),

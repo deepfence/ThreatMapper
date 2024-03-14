@@ -13856,6 +13856,7 @@
         "type": "object",
         "properties": {
           "id": { "type": "string" },
+          "images": { "type": "integer" },
           "name": { "type": "string" },
           "tags": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
@@ -14611,6 +14612,11 @@
         "required": ["scan_id", "result_ids", "scan_type"],
         "type": "object",
         "properties": {
+          "integration_ids": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "nullable": true
+          },
           "notify_individual": { "type": "boolean" },
           "result_ids": {
             "type": "array",
@@ -14888,10 +14894,10 @@
         "properties": {
           "images": { "type": "integer" },
           "registries": { "type": "integer" },
+          "repositories": { "type": "integer" },
           "scans_complete": { "type": "integer" },
           "scans_in_progress": { "type": "integer" },
-          "scans_total": { "type": "integer" },
-          "tags": { "type": "integer" }
+          "scans_total": { "type": "integer" }
         }
       },
       "ModelTopologyDeltaReq": {

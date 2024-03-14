@@ -228,7 +228,9 @@ const UserInfoModalContent = ({
 
   return (
     <fetcher.Form action="/data-component/user-info-guard" method="POST">
-      <div>Register your console with Deepfence by entering the details below.</div>
+      <div>
+        Register your console to get vulnerability feeds and other appropriate rules.
+      </div>
       <div className="mt-4 flex flex-col gap-3">
         <TextInput
           className="autofill:bg-transparent"
