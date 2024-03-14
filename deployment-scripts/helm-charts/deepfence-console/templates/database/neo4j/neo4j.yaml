@@ -42,7 +42,7 @@ spec:
             - configMapRef:
                 name: {{ include "deepfence-console.fullname" . }}-neo4j-config
           env:
-            - name: NEO4J_OFFLINE_MAINTENANCE_MODE_ENABLED
+            - name: OFFLINE_MAINTENANCE_MODE_ENABLED
               value: {{ .Values.neo4j.offlineMaintenanceModeEnabled | quote }}
           ports:
             - name: ui
