@@ -103,18 +103,18 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
               className="text-h1 text-gray-900 dark:text-text-input-value"
               data-testid="totalRepositoriesId"
             >
-              {abbreviateNumber(registry.images ?? 0)}
+              {abbreviateNumber(registry.repositories ?? 0)}
             </span>
-            Images
+            Repositories
           </div>
           <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
             <span
               className="text-h1 text-gray-900 dark:text-text-input-value"
               data-testid="totalImagesId"
             >
-              {abbreviateNumber(registry.tags ?? 0)}
+              {abbreviateNumber(registry.images ?? 0)}
             </span>
-            Tags
+            Images
           </div>
         </div>
       </Card>

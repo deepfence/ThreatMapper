@@ -73,6 +73,7 @@ import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { TruncatedText } from '@/components/TruncatedText';
 import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
+import { SelectNotificationChannel } from '@/features/integrations/components/SelectNotificationChannel';
 import { PostureScanResultsPieChart } from '@/features/postures/components/scan-result/PostureScanResultsPieChart';
 import { PosturesCompare } from '@/features/postures/components/scan-result/PosturesCompare';
 import { SearchablePostureTestNumber } from '@/features/postures/components/scan-result/SearchableTestNumber';
@@ -141,12 +142,17 @@ const action = async ({
     const resultApi = apiWrapper({
       fn: apiFunction,
     });
+    const integrationIds = formData.getAll('integrationIds[]') as Array<string>;
     const result = await resultApi({
       modelScanResultsActionRequest: {
         result_ids: [...ids],
         scan_id: _scanId,
         scan_type: ScanTypeEnum.ComplianceScan,
         notify_individual: notifyIndividual === 'on',
+        integration_ids:
+          actionType === ActionEnumType.NOTIFY
+            ? integrationIds.map((id) => Number(id))
+            : null,
       },
     });
     if (!result.ok) {
@@ -513,10 +519,16 @@ const NotifyModal = ({
           <div className="grid">
             <span>The selected compliances will be notified.</span>
             <br />
-            <span>Do you want to notify each compliance separately?</span>
-            <div className="mt-2">
-              <Checkbox label="Yes notify them separately" name="notifyIndividual" />
-            </div>
+            <SelectNotificationChannel />
+            <br />
+            {ids.length > 1 ? (
+              <>
+                <span>Do you want to notify each compliance separately?</span>
+                <div className="mt-2">
+                  <Checkbox label="Yes notify them separately" name="notifyIndividual" />
+                </div>
+              </>
+            ) : null}
             {fetcher.data?.message && (
               <p className="mt-2 text-p7 dark:text-status-error">
                 {fetcher.data?.message}
@@ -821,39 +833,46 @@ const ActionDropdown = ({
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   onTableAction: (ids: string[], actionType: string) => void;
 }) => {
+  const [openNotifyModal, setOpenNotifyModal] = useState<boolean>(false);
+
   return (
-    <Dropdown
-      triggerAsChild={true}
-      align={'start'}
-      content={
-        <>
-          <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.MASK)}>
-            Mask
-          </DropdownItem>
-          <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK)}>
-            Un-mask
-          </DropdownItem>
-          <DropdownItem
-            onClick={() => {
-              onTableAction(ids, ActionEnumType.NOTIFY);
-            }}
-          >
-            Notify
-          </DropdownItem>
-          <DropdownItem
-            onClick={() => {
-              setIdsToDelete(ids);
-              setShowDeleteDialog(true);
-            }}
-            className="dark:text-status-error dark:hover:text-[#C45268]"
-          >
-            Delete
-          </DropdownItem>
-        </>
-      }
-    >
-      {trigger}
-    </Dropdown>
+    <>
+      {openNotifyModal && (
+        <NotifyModal open={true} closeModal={setOpenNotifyModal} ids={ids} />
+      )}
+      <Dropdown
+        triggerAsChild={true}
+        align={'start'}
+        content={
+          <>
+            <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.MASK)}>
+              Mask
+            </DropdownItem>
+            <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK)}>
+              Un-mask
+            </DropdownItem>
+            <DropdownItem
+              onClick={() => {
+                setOpenNotifyModal(true);
+              }}
+            >
+              Notify
+            </DropdownItem>
+            <DropdownItem
+              onClick={() => {
+                setIdsToDelete(ids);
+                setShowDeleteDialog(true);
+              }}
+              className="dark:text-status-error dark:hover:text-[#C45268]"
+            >
+              Delete
+            </DropdownItem>
+          </>
+        }
+      >
+        {trigger}
+      </Dropdown>
+    </>
   );
 };
 
@@ -926,11 +945,7 @@ const BulkActions = ({
         startIcon={<BellLineIcon />}
         disabled={!ids.length}
         onClick={() => {
-          if (ids.length === 1) {
-            onTableAction(ids, ActionEnumType.NOTIFY);
-          } else {
-            setOpenNotifyModal(true);
-          }
+          setOpenNotifyModal(true);
         }}
       >
         Notify

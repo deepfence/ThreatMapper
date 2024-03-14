@@ -41,6 +41,9 @@ spec:
                 name: {{ include "deepfence-console.fullname" . }}-neo4j-secret
             - configMapRef:
                 name: {{ include "deepfence-console.fullname" . }}-neo4j-config
+          env:
+            - name: NEO4J_OFFLINE_MAINTENANCE_MODE_ENABLED
+              value: {{ .Values.neo4j.offlineMaintenanceModeEnabled | quote }}
           ports:
             - name: ui
               containerPort: 7474
@@ -48,16 +51,22 @@ spec:
             - name: http
               containerPort: 7687
               protocol: TCP
+          {{- if not .Values.neo4j.offlineMaintenanceModeEnabled }}
           livenessProbe:
-            tcpSocket:
-              port: http
+            exec:
+              command:
+              - /bin/bash
+              - /startup/health-check.sh
             initialDelaySeconds: 60
             periodSeconds: 30
           readinessProbe:
-            tcpSocket:
-              port: http
+            exec:
+              command:
+              - /bin/bash
+              - /startup/health-check.sh
             initialDelaySeconds: 60
             periodSeconds: 30
+          {{- end }}
           resources:
             {{- toYaml .Values.neo4j.resources | nindent 12 }}
           volumeMounts:
