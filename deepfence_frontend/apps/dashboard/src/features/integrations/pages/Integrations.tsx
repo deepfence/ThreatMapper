@@ -247,14 +247,14 @@ const Skeleton = ({ count }: { count: number }) => {
       {Array.from(Array(count).keys()).map((k) => (
         <Card key={k} className="p-3 flex flex-col shrink-0 min-w-[208px] w-fit">
           <div className="flex items-center gap-x-6">
-            <div className="bg-bg-grid-border rounded-full p-3 flex justify-center items-center">
+            <div className="bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-full p-3 flex justify-center items-center">
               <span className="h-9 w-9"></span>
             </div>
             <div className="flex flex-col">
-              <div className="h-3 w-16 bg-bg-grid-border rounded"></div>
+              <div className="h-3 w-16 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
               <div className="flex items-center gap-x-2 mt-4">
-                <div className="h-6 w-6 bg-bg-grid-border rounded"></div>
-                <div className="h-2 w-16 bg-bg-grid-border rounded"></div>
+                <div className="h-6 w-6 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
+                <div className="h-2 w-16 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
               </div>
             </div>
           </div>

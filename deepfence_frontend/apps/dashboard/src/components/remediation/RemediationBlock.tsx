@@ -465,9 +465,10 @@ function RemediationCompletion({ meta }: RemediationCompletionProps) {
         'prose-ol:list-decimal prose-ol:list-inside',
         'prose-ul:list-disc prose-ul:list-inside',
         'prose-p:break-words',
-        'prose-pre:mb-1 prose-pre:rounded-md dark:prose-pre:bg-slate-950',
+        'prose-pre:mb-1 prose-pre:rounded-md dark:prose-pre:bg-slate-950 prose-pre:bg-bg-card',
+        'prose-pre:dark:shadow-none prose-pre:shadow-[0_0_4px_0px_rgba(34,34,34,0.20)]',
         'prose-code:rounded-sm dark:prose-code:bg-slate-950 prose-code:px-1 prose-code:py-0.5',
-        'dark:prose-a:text-text-link dark:prose-a:hover:underline dark:prose-a:focus:underline dark:prose-a:visited:text-purple-600 dark:prose-a:dark:visited:text-purple-500',
+        'dark:prose-a:text-text-link dark:prose-a:hover:underline dark:prose-a:focus:underline dark:prose-a:visited:text-text-link dark:prose-a:dark:visited:text-text-link',
       )}
     >
       {error?.length ? (

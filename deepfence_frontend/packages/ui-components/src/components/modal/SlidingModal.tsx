@@ -22,7 +22,7 @@ export const SlidingModalCloseButton = () => (
     aria-label="Close"
     className={cn(
       'absolute right-0 mr-5 mt-5 cursor-pointer',
-      'dark:text-text-text-and-icon text-text-icon h-5 w-5 p-1',
+      'text-text-icon h-5 w-5 p-1',
     )}
     id={'sliding-modal-close-button'}
     data-testid={'sliding-modal-close-button'}

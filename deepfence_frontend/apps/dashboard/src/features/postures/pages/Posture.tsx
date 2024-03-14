@@ -36,7 +36,7 @@ const HeaderSkeleton = () => {
         <div className="w-[64px] h-[64px]"></div>
       </div>
       <div className="ml-[100px]">
-        <div className="h-4 w-20 bg-bg-grid-border rounded"></div>
+        <div className="h-4 w-20 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
       </div>
     </div>
   );
@@ -44,31 +44,31 @@ const HeaderSkeleton = () => {
 const IconSkeleton = () => {
   return (
     <div className="min-w-[84px] flex flex-col items-center justify-center">
-      <div className="h-2 w-4 bg-bg-grid-border rounded"></div>
+      <div className="h-2 w-4 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
       <div className="my-1.5">
-        <div className="h-6 w-6 bg-bg-grid-border rounded"></div>
+        <div className="h-6 w-6 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
       </div>
-      <div className="h-4 w-4 bg-bg-grid-border rounded"></div>
+      <div className="h-4 w-4 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
     </div>
   );
 };
 const TextSkeleton = () => {
   return (
     <div className="min-w-[112px] gap-y-4 flex flex-col">
-      <div className="h-2 w-32 bg-bg-grid-border rounded"></div>
-      <div className="h-2 w-28 bg-bg-grid-border rounded"></div>
-      <div className="h-2 w-24 bg-bg-grid-border rounded"></div>
-      <div className="h-2 w-28 bg-bg-grid-border rounded"></div>
+      <div className="h-2 w-32 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
+      <div className="h-2 w-28 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
+      <div className="h-2 w-24 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
+      <div className="h-2 w-28 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
     </div>
   );
 };
 const CountSkeleton = () => {
   return (
     <div className="min-w-[34px] flex flex-col gap-y-2">
-      <div className="h-5 w-5 bg-bg-grid-border rounded"></div>
-      <div className="h-5 w-5 bg-bg-grid-border rounded"></div>
-      <div className="h-5 w-5 bg-bg-grid-border rounded"></div>
-      <div className="h-5 w-5 bg-bg-grid-border rounded"></div>
+      <div className="h-5 w-5 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
+      <div className="h-5 w-5 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
+      <div className="h-5 w-5 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
+      <div className="h-5 w-5 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
     </div>
   );
 };

@@ -12,7 +12,7 @@ export const RemediationPre = ({ children }: { children?: ReactNode }) => {
       {children}
       <button
         className={cn(
-          'absolute flex gap-4 items-center dark:text-bg-hover-1 right-2 top-2 h-8 w-8 p-2 dark:bg-slate-800 rounded-md',
+          'absolute flex gap-4 items-center dark:text-bg-hover-1 hover:text-[#1466B8] right-2 top-2 h-8 w-8 p-2 dark:bg-slate-800 rounded-md',
           {
             'text-status-success': isCopied,
           },

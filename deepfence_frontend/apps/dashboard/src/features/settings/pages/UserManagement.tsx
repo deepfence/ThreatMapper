@@ -589,22 +589,22 @@ const EditUserModal = ({
 const APITokenSkeletonComponent = () => {
   return (
     <div className="flex flex-col gap-y-4 animate-pulse min-w-[400px]">
-      <div className="h-10 w-72 bg-gray-200 dark:bg-bg-grid-border py-4 rounded-md"></div>
+      <div className="h-10 w-72 bg-[#939A9F]/25 dark:bg-bg-grid-border py-4 rounded-md"></div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
-        <div className="h-5 w-56 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-16 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-56 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
-        <div className="h-5 w-56 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-16 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-56 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
-        <div className="h-5 w-56 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-16 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-56 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
-        <div className="h-5 w-56 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-16 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-56 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
       </div>
     </div>
   );
@@ -916,7 +916,7 @@ const UserManagement = () => {
         </div>
         <Suspense
           fallback={
-            <div className="animate-pulse h-6 w-32 bg-gray-200 dark:bg-bg-grid-border rounded"></div>
+            <div className="animate-pulse h-6 w-32 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
           }
         >
           <InviteButton setOpenInviteUserForm={setOpenInviteUserForm} />

@@ -204,9 +204,12 @@ const CardContent = ({ data, to }: { data: SecretsCountsCardData; to: string }) 
       <div className="mt-2 flex flex-col min-w-[160px] self-center">
         {Object.keys(data.severityBreakdown).map((severity) => {
           return (
-            <div key={severity} className="flex items-center w-full justify-between pr-2">
+            <div
+              key={severity}
+              className="flex items-center w-full justify-between py-[3px] pr-2"
+            >
               <SeverityLegend severity={severity} to={`${to}?severity=${severity}`} />
-              <div className="text-text-input-value text-p7">
+              <div className="text-text-input-value text-p11">
                 {abbreviateNumber(
                   data.severityBreakdown[severity as keyof typeof data.severityBreakdown],
                 )}
