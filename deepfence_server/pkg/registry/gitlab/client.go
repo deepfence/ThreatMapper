@@ -3,6 +3,8 @@ package gitlab
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Jeffail/tunny"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"net/http"
 	"strconv"
 	"time"
@@ -10,7 +12,15 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 )
 
-const PerPageCount = 100
+const (
+	PerPageCount       = 100
+	ParallelImageFetch = 10
+)
+
+var (
+	parllelImageProcessor *tunny.Pool
+	queue                 chan model.IngestedContainerImage
+)
 
 type Project struct {
 	ID                           int    `json:"id"`
@@ -47,6 +57,20 @@ type TagDetail struct {
 	Totalsize     int    `json:"total_size"`
 }
 
+type RepoDetails struct {
+	Url         string
+	TagName     string
+	AccessToken string
+	ProjectId   int
+	ImageId     int
+	ImagePath   string
+}
+
+func init() {
+	parllelImageProcessor = tunny.NewFunc(ParallelImageFetch, fetchImageWithTags)
+	queue = make(chan model.IngestedContainerImage)
+}
+
 func listImages(gitlabServerURL, gitlabRegistryURL, accessToken string) ([]model.IngestedContainerImage, error) {
 
 	containerImages := []model.IngestedContainerImage{}
@@ -70,30 +94,58 @@ func listImages(gitlabServerURL, gitlabRegistryURL, accessToken string) ([]model
 		for _, image := range images {
 			for _, tag := range image.Tags {
 				// Retrieve tag details
-				tagDetail, err := getTagDetail(gitlabServerURL, tag.Name, accessToken, project.ID, image.ID)
-				if err != nil {
-					return nil, err
+				r := RepoDetails{
+					Url:         gitlabServerURL,
+					TagName:     tag.Name,
+					AccessToken: accessToken,
+					ProjectId:   project.ID,
+					ImageId:     image.ID,
+					ImagePath:   image.Path,
 				}
-
-				imageID, shortImageID := model.DigestToID(tagDetail.Digest)
-				containerImage := model.IngestedContainerImage{
-					ID:            imageID,
-					DockerImageID: imageID,
-					ShortImageID:  shortImageID,
-					Name:          image.Path,
-					Tag:           tag.Name,
-					Size:          strconv.Itoa(tagDetail.Totalsize),
-					Metadata: model.Metadata{
-						"digest":       tagDetail.Digest,
-						"last_updated": time.Now().Unix(),
-						"created_at":   tagDetail.CreatedAt,
-					},
+				go parllelImageProcessor.Process(r)
+			}
+			for _, _ = range image.Tags {
+				select {
+				case t := <-queue:
+					containerImages = append(containerImages, t)
 				}
-				containerImages = append(containerImages, containerImage)
 			}
 		}
 	}
 	return containerImages, nil
+}
+
+func fetchImageWithTags(rInterface interface{}) interface{} {
+	r, ok := rInterface.(*RepoDetails)
+	if !ok {
+		log.Error().Msg("Error processing repo details")
+		queue <- model.IngestedContainerImage{}
+		return false
+	}
+	tagDetail, err := getTagDetail(r.Url, r.TagName, r.AccessToken, r.ProjectId, r.ImageId)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		queue <- model.IngestedContainerImage{}
+		return false
+	}
+
+	imageID, shortImageID := model.DigestToID(tagDetail.Digest)
+	containerImage := model.IngestedContainerImage{
+		ID:            imageID,
+		DockerImageID: imageID,
+		ShortImageID:  shortImageID,
+		Name:          r.ImagePath,
+		Tag:           r.TagName,
+		Size:          strconv.Itoa(tagDetail.Totalsize),
+		Metadata: model.Metadata{
+			"digest":       tagDetail.Digest,
+			"last_updated": time.Now().Unix(),
+			"created_at":   tagDetail.CreatedAt,
+		},
+	}
+
+	queue <- containerImage
+	return true
 }
 
 func getProjects(gitlabServerURL, accessToken string) ([]Project, error) {

@@ -3,6 +3,7 @@ package quay
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Jeffail/tunny"
 	"io"
 	"net/http"
 	"time"
@@ -11,7 +12,28 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
-var client = &http.Client{Timeout: 10 * time.Second}
+const (
+	ParallelImageFetch = 10
+)
+
+var (
+	client                = &http.Client{Timeout: 10 * time.Second}
+	parllelImageProcessor *tunny.Pool
+	queue                 chan []model.IngestedContainerImage
+)
+
+func init() {
+	parllelImageProcessor = tunny.NewFunc(ParallelImageFetch, fetchImageWithTags)
+	queue = make(chan []model.IngestedContainerImage)
+}
+
+type RepoDetails struct {
+	Url        string
+	Token      string
+	Password   string
+	NameSpace  string
+	Repository Repositories
+}
 
 func listImages(url, namespace, token string) ([]model.IngestedContainerImage, error) {
 
@@ -25,17 +47,41 @@ func listImages(url, namespace, token string) ([]model.IngestedContainerImage, e
 		return nil, err
 	}
 	for _, repo := range repos {
-		tags, err := listRepoTags(url, namespace, token, repo.Name)
-		if err != nil {
-			log.Error().Msg(err.Error())
-			continue
+		r := RepoDetails{
+			Url:        url,
+			NameSpace:  namespace,
+			Token:      token,
+			Repository: repo,
 		}
-		log.Debug().Msgf("tags for image %s/%s are %v", repo.Namespace, repo.Name, tags)
-
-		images = append(images, getImageWithTags(repo, tags)...)
+		go parllelImageProcessor.Process(r)
+	}
+	for _, _ = range repos {
+		select {
+		case t := <-queue:
+			images = append(images, t...)
+		}
 	}
 
 	return images, nil
+}
+func fetchImageWithTags(rInterface interface{}) interface{} {
+	r, ok := rInterface.(*RepoDetails)
+	if !ok {
+		log.Error().Msg("Error processing repo details")
+		queue <- []model.IngestedContainerImage{}
+		return false
+	}
+	tags, err := listRepoTags(r.Url, r.NameSpace, r.Token, r.Repository.Name)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		queue <- []model.IngestedContainerImage{}
+		return false
+	}
+	log.Debug().Msgf("tags for image %s/%s are %v", r.Repository.Namespace, r.Repository.Name, tags)
+
+	images := getImageWithTags(r.Repository, tags)
+	queue <- images
+	return true
 }
 
 func listRepos(url, namespace, token string) ([]Repositories, error) {

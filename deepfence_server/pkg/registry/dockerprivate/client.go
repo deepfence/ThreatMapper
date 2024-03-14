@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/Jeffail/tunny"
 	"io"
 	"net/http"
 	"time"
@@ -12,14 +13,33 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
-const PerPageCount = 100
+const (
+	PerPageCount       = 100
+	ParallelImageFetch = 10
+)
 
-var client = &http.Client{
-	Timeout: 10 * time.Second,
-	Transport: &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	},
+func init() {
+	parllelImageProcessor = tunny.NewFunc(ParallelImageFetch, fetchImageWithTags)
+	queue = make(chan []model.IngestedContainerImage)
 }
+
+type RepoDetails struct {
+	Url        string
+	UserName   string
+	Password   string
+	Repository string
+}
+
+var (
+	client = &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+	parllelImageProcessor *tunny.Pool
+	queue                 chan []model.IngestedContainerImage
+)
 
 func listImagesRegistryV2(url, userName, password string) ([]model.IngestedContainerImage, error) {
 
@@ -33,17 +53,42 @@ func listImagesRegistryV2(url, userName, password string) ([]model.IngestedConta
 		return nil, err
 	}
 	for _, repo := range repos {
-		repoTags, err := listRepoTagsV2(url, userName, password, repo)
-		if err != nil {
-			log.Error().Msg(err.Error())
-			continue
+		r := RepoDetails{
+			Url:        url,
+			UserName:   userName,
+			Password:   password,
+			Repository: repo,
 		}
-		log.Debug().Msgf("tags for image %s/%s are %s", repo, repoTags.Name, repoTags.Tags)
-
-		images = append(images, getImageWithTags(url, userName, password, repo, repoTags)...)
+		go parllelImageProcessor.Process(r)
+	}
+	for _, _ = range repos {
+		select {
+		case t := <-queue:
+			images = append(images, t...)
+		}
 	}
 
 	return images, nil
+}
+
+func fetchImageWithTags(rInterface interface{}) interface{} {
+	r, ok := rInterface.(*RepoDetails)
+	if !ok {
+		log.Error().Msg("Error processing repo details")
+		queue <- []model.IngestedContainerImage{}
+		return false
+	}
+	repoTags, err := listRepoTagsV2(r.Url, r.UserName, r.Password, r.Repository)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		queue <- []model.IngestedContainerImage{}
+		return false
+	}
+	log.Debug().Msgf("tags for image %s/%s are %s", r.Repository, repoTags.Name, repoTags.Tags)
+
+	images := getImageWithTags(r.Url, r.UserName, r.Password, r.Repository, repoTags)
+	queue <- images
+	return true
 }
 
 func getRepos(url, name, password string) ([]string, error) {
