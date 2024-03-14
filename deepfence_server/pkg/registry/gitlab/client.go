@@ -13,13 +13,14 @@ import (
 )
 
 const (
-	PerPageCount       = 100
-	ParallelImageFetch = 10
+	PerPageCount         = 100
+	ParallelImageFetch   = 10
+	ImageQueueBufferSize = 100
 )
 
 var (
-	parllelImageProcessor *tunny.Pool
-	queue                 chan model.IngestedContainerImage
+	parallelImageProcessor *tunny.Pool
+	queue                  chan model.IngestedContainerImage
 )
 
 type Project struct {
@@ -58,22 +59,24 @@ type TagDetail struct {
 }
 
 type RepoDetails struct {
-	Url         string
+	URL         string
 	TagName     string
 	AccessToken string
-	ProjectId   int
-	ImageId     int
+	ProjectID   int
+	ImageID     int
 	ImagePath   string
 }
 
 func init() {
-	parllelImageProcessor = tunny.NewFunc(ParallelImageFetch, fetchImageWithTags)
-	queue = make(chan model.IngestedContainerImage)
+	parallelImageProcessor = tunny.NewFunc(ParallelImageFetch, fetchImageWithTags)
+	queue = make(chan model.IngestedContainerImage, ImageQueueBufferSize)
 }
 
 func listImages(gitlabServerURL, gitlabRegistryURL, accessToken string) ([]model.IngestedContainerImage, error) {
 
 	containerImages := []model.IngestedContainerImage{}
+	parallelImageProcessor.SetSize(ParallelImageFetch)
+	defer parallelImageProcessor.SetSize(0)
 
 	// Retrieve a list of projects
 	projects, err := getProjects(gitlabServerURL, accessToken)
@@ -95,19 +98,21 @@ func listImages(gitlabServerURL, gitlabRegistryURL, accessToken string) ([]model
 			for _, tag := range image.Tags {
 				// Retrieve tag details
 				r := RepoDetails{
-					Url:         gitlabServerURL,
+					URL:         gitlabServerURL,
 					TagName:     tag.Name,
 					AccessToken: accessToken,
-					ProjectId:   project.ID,
-					ImageId:     image.ID,
+					ProjectID:   project.ID,
+					ImageID:     image.ID,
 					ImagePath:   image.Path,
 				}
-				go parllelImageProcessor.Process(r)
+				go parallelImageProcessor.Process(r)
 			}
 			for _, _ = range image.Tags {
 				select {
 				case t := <-queue:
-					containerImages = append(containerImages, t)
+					if t.ID != "" {
+						containerImages = append(containerImages, t)
+					}
 				}
 			}
 		}
@@ -116,21 +121,23 @@ func listImages(gitlabServerURL, gitlabRegistryURL, accessToken string) ([]model
 }
 
 func fetchImageWithTags(rInterface interface{}) interface{} {
+	var containerImage model.IngestedContainerImage
+	defer func() {
+		queue <- containerImage
+	}()
 	r, ok := rInterface.(*RepoDetails)
 	if !ok {
 		log.Error().Msg("Error processing repo details")
-		queue <- model.IngestedContainerImage{}
 		return false
 	}
-	tagDetail, err := getTagDetail(r.Url, r.TagName, r.AccessToken, r.ProjectId, r.ImageId)
+	tagDetail, err := getTagDetail(r.URL, r.TagName, r.AccessToken, r.ProjectID, r.ImageID)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		queue <- model.IngestedContainerImage{}
 		return false
 	}
 
 	imageID, shortImageID := model.DigestToID(tagDetail.Digest)
-	containerImage := model.IngestedContainerImage{
+	containerImage = model.IngestedContainerImage{
 		ID:            imageID,
 		DockerImageID: imageID,
 		ShortImageID:  shortImageID,

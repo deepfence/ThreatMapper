@@ -15,17 +15,18 @@ import (
 )
 
 const (
-	PerPageCount       = 100
-	ParallelImageFetch = 10
+	PerPageCount         = 100
+	ParallelImageFetch   = 10
+	ImageQueueBufferSize = 100
 )
 
 func init() {
-	parllelImageProcessor = tunny.NewFunc(ParallelImageFetch, fetchImageWithTags)
-	queue = make(chan []model.IngestedContainerImage)
+	parallelImageProcessor = tunny.NewFunc(ParallelImageFetch, fetchImageWithTags)
+	queue = make(chan []model.IngestedContainerImage, ImageQueueBufferSize)
 }
 
 type RepoDetails struct {
-	Url        string
+	URL        string
 	UserName   string
 	Password   string
 	Project    string
@@ -39,13 +40,15 @@ var (
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
 	}
-	parllelImageProcessor *tunny.Pool
-	queue                 chan []model.IngestedContainerImage
+	parallelImageProcessor *tunny.Pool
+	queue                  chan []model.IngestedContainerImage
 )
 
 func listImages(url, project, username, password string) ([]model.IngestedContainerImage, error) {
 
 	var images []model.IngestedContainerImage
+	parallelImageProcessor.SetSize(ParallelImageFetch)
+	defer parallelImageProcessor.SetSize(0)
 
 	repos, err := getRepos(url, project, username, password)
 	if err != nil {
@@ -54,13 +57,13 @@ func listImages(url, project, username, password string) ([]model.IngestedContai
 	}
 	for _, repo := range repos {
 		r := RepoDetails{
-			Url:        url,
+			URL:        url,
 			UserName:   username,
 			Password:   password,
 			Project:    project,
 			Repository: repo,
 		}
-		go parllelImageProcessor.Process(r)
+		go parallelImageProcessor.Process(r)
 	}
 	for _, _ = range repos {
 		select {
@@ -84,22 +87,23 @@ func listImages(url, project, username, password string) ([]model.IngestedContai
 }
 
 func fetchImageWithTags(rInterface interface{}) interface{} {
+	var images []model.IngestedContainerImage
+	defer func() {
+		queue <- images
+	}()
 	r, ok := rInterface.(*RepoDetails)
 	if !ok {
 		log.Error().Msg("Error processing repo details")
-		queue <- []model.IngestedContainerImage{}
 		return false
 	}
-	artifacts, err := listArtifacts(r.Url, r.UserName, r.Password, r.Project, r.Repository.Name)
+	artifacts, err := listArtifacts(r.URL, r.UserName, r.Password, r.Project, r.Repository.Name)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		queue <- []model.IngestedContainerImage{}
 		return false
 	}
 	log.Debug().Msgf("tags for image %d/%s are %s", r.Repository.ProjectID, r.Repository.Name, artifacts)
 
-	images := getImageWithTags(r.Repository, artifacts)
-	queue <- images
+	images = getImageWithTags(r.Repository, artifacts)
 	return true
 }
 
