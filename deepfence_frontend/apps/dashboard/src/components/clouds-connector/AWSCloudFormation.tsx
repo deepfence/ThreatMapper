@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from '@suspensive/react-query';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -11,6 +12,7 @@ import {
 
 import { DFLink } from '@/components/DFLink';
 import { InfoIcon } from '@/components/icons/common/Info';
+import { queries } from '@/queries';
 
 const AWS_REGIONS = [
   'us-east-1',
@@ -40,8 +42,19 @@ const AWS_REGIONS = [
   'us-gov-west-1',
 ];
 
+const PLACEHOLDER_VERSION = '---PRODUCT_TAG_VERSION--';
+
+const useGetVersion = () => {
+  return useSuspenseQuery({
+    ...queries.setting.productVersion(),
+  });
+};
+
 export const AWSCloudFormation = () => {
   const [region, setRegion] = useState('us-east-1');
+  const { data: dataVersion } = useGetVersion();
+  const version = dataVersion.version || PLACEHOLDER_VERSION;
+
   return (
     <div className="w-full sm:w-1/2">
       <Stepper>
@@ -113,7 +126,7 @@ export const AWSCloudFormation = () => {
               information on AWS Organizations and account types, see AWS docs.
             </p>
             <DFLink
-              href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:2.1.0`}
+              href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:${version}`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center mt-4"
@@ -132,7 +145,7 @@ export const AWSCloudFormation = () => {
             </DFLink>
 
             <DFLink
-              href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:2.1.0`}
+              href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:${version}`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center mt-4"
