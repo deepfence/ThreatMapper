@@ -27,11 +27,11 @@ To renew your license, please contact %s`
 	numberOfHostsExceededDescription = `Your license doesn't allow you to use Deepfence on more than %d hosts. Current usage is %d.
 Please reduce the number of hosts or upgrade your license by contacting %s`
 
-	licenseDefaultNumberOfHosts            = 25
-	licenseDefaultNumberOfCloudAccounts    = 5
-	licenseDefaultNumberOfRegistries       = 5
-	licenseDefaultNumberOfImagesInRegistry = 20
-	licenseDefaultDuration                 = 30 * 24 * time.Hour
+	licenseDefaultNumberOfHosts            = 100000
+	licenseDefaultNumberOfCloudAccounts    = 100000
+	licenseDefaultNumberOfRegistries       = 100000
+	licenseDefaultNumberOfImagesInRegistry = 1000000
+	licenseDefaultDuration                 = 365 * 24 * time.Hour
 
 	DeepfenceSupportEmail = "community-support@deepfence.io"
 
@@ -252,23 +252,24 @@ func generateDefaultLicense(ctx context.Context, email string, pgClient *postgre
 	emailDomain, _ := utils.GetEmailDomain(email)
 
 	return &License{
-		LicenseKey:            defaultLicenseUUID.String(),
-		LicenseKeyUUID:        defaultLicenseUUID,
-		IsActive:              true,
-		LicenseEmail:          email,
-		LicenseEmailDomain:    emailDomain,
-		EndDate:               endDate.Format(DateLayout1),
-		NoOfHosts:             licenseDefaultNumberOfHosts,
-		NoOfCloudAccounts:     licenseDefaultNumberOfCloudAccounts,
-		NoOfRegistries:        licenseDefaultNumberOfRegistries,
-		NoOfImagesInRegistry:  licenseDefaultNumberOfImagesInRegistry,
-		CurrentHosts:          0,
-		DeepfenceSupportEmail: DeepfenceSupportEmail,
-		StartDate:             startDate.Format(DateLayout1),
-		Message:               licenseDefaultMessage,
-		Description:           licenseDefaultDescription,
-		LicenseType:           "monthly_subscription",
-		RegistryCredentials:   RegistryCredentials{},
+		LicenseKey:                      defaultLicenseUUID.String(),
+		LicenseKeyUUID:                  defaultLicenseUUID,
+		LicenseEmail:                    email,
+		LicenseEmailDomain:              emailDomain,
+		IsActive:                        true,
+		EndDate:                         endDate.Format(DateLayout1),
+		NoOfHosts:                       licenseDefaultNumberOfHosts,
+		NoOfCloudAccounts:               licenseDefaultNumberOfCloudAccounts,
+		NoOfRegistries:                  licenseDefaultNumberOfRegistries,
+		NoOfImagesInRegistry:            licenseDefaultNumberOfImagesInRegistry,
+		CurrentHosts:                    0,
+		DeepfenceSupportEmail:           DeepfenceSupportEmail,
+		NotificationThresholdPercentage: 100,
+		StartDate:                       startDate.Format(DateLayout1),
+		Message:                         licenseDefaultMessage,
+		Description:                     licenseDefaultDescription,
+		LicenseType:                     "annual_subscription",
+		RegistryCredentials:             RegistryCredentials{},
 	}
 }
 
