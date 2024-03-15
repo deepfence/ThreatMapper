@@ -16,7 +16,7 @@ export DEEPFENCE_FARGATE_DIR=$(DEEPFENCE_AGENT_DIR)/fargate
 export IMAGE_REPOSITORY?=deepfenceio
 export DF_IMG_TAG?=latest
 export IS_DEV_BUILD?=false
-export VERSION?="2.1.1"
+export VERSION?="2.2.0"
 
 default: bootstrap console_plugins agent console fargate-local
 
