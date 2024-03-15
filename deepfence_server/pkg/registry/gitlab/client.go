@@ -3,11 +3,24 @@ package gitlab
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Jeffail/tunny"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+)
+
+const (
+	PerPageCount         = 100
+	ParallelImageFetch   = 10
+	ImageQueueBufferSize = 100
+)
+
+var (
+	parallelImageProcessor *tunny.Pool
+	queue                  chan model.IngestedContainerImage
 )
 
 type Project struct {
@@ -45,9 +58,25 @@ type TagDetail struct {
 	Totalsize     int    `json:"total_size"`
 }
 
+type RepoDetails struct {
+	URL         string
+	TagName     string
+	AccessToken string
+	ProjectID   int
+	ImageID     int
+	ImagePath   string
+}
+
+func init() {
+	parallelImageProcessor = tunny.NewFunc(ParallelImageFetch, fetchImageWithTags)
+	queue = make(chan model.IngestedContainerImage, ImageQueueBufferSize)
+}
+
 func listImages(gitlabServerURL, gitlabRegistryURL, accessToken string) ([]model.IngestedContainerImage, error) {
 
 	containerImages := []model.IngestedContainerImage{}
+	parallelImageProcessor.SetSize(ParallelImageFetch)
+	defer parallelImageProcessor.SetSize(0)
 
 	// Retrieve a list of projects
 	projects, err := getProjects(gitlabServerURL, accessToken)
@@ -68,48 +97,89 @@ func listImages(gitlabServerURL, gitlabRegistryURL, accessToken string) ([]model
 		for _, image := range images {
 			for _, tag := range image.Tags {
 				// Retrieve tag details
-				tagDetail, err := getTagDetail(gitlabServerURL, tag.Name, accessToken, project.ID, image.ID)
-				if err != nil {
-					return nil, err
+				r := RepoDetails{
+					URL:         gitlabServerURL,
+					TagName:     tag.Name,
+					AccessToken: accessToken,
+					ProjectID:   project.ID,
+					ImageID:     image.ID,
+					ImagePath:   image.Path,
 				}
-
-				imageID, shortImageID := model.DigestToID(tagDetail.Digest)
-				containerImage := model.IngestedContainerImage{
-					ID:            imageID,
-					DockerImageID: imageID,
-					ShortImageID:  shortImageID,
-					Name:          image.Path,
-					Tag:           tag.Name,
-					Size:          strconv.Itoa(tagDetail.Totalsize),
-					Metadata: model.Metadata{
-						"digest":       tagDetail.Digest,
-						"last_updated": time.Now().Unix(),
-						"created_at":   tagDetail.CreatedAt,
-					},
+				go parallelImageProcessor.Process(r)
+			}
+			for _, _ = range image.Tags {
+				select {
+				case t := <-queue:
+					if t.ID != "" {
+						containerImages = append(containerImages, t)
+					}
 				}
-				containerImages = append(containerImages, containerImage)
 			}
 		}
 	}
 	return containerImages, nil
 }
 
+func fetchImageWithTags(rInterface interface{}) interface{} {
+	var containerImage model.IngestedContainerImage
+	defer func() {
+		queue <- containerImage
+	}()
+	r, ok := rInterface.(*RepoDetails)
+	if !ok {
+		log.Error().Msg("Error processing repo details")
+		return false
+	}
+	tagDetail, err := getTagDetail(r.URL, r.TagName, r.AccessToken, r.ProjectID, r.ImageID)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return false
+	}
+
+	imageID, shortImageID := model.DigestToID(tagDetail.Digest)
+	containerImage = model.IngestedContainerImage{
+		ID:            imageID,
+		DockerImageID: imageID,
+		ShortImageID:  shortImageID,
+		Name:          r.ImagePath,
+		Tag:           r.TagName,
+		Size:          strconv.Itoa(tagDetail.Totalsize),
+		Metadata: model.Metadata{
+			"digest":       tagDetail.Digest,
+			"last_updated": time.Now().Unix(),
+			"created_at":   tagDetail.CreatedAt,
+		},
+	}
+
+	queue <- containerImage
+	return true
+}
+
 func getProjects(gitlabServerURL, accessToken string) ([]Project, error) {
-	url := fmt.Sprintf("%s/api/v4/projects?private_token=%s&simple=false&membership=true", gitlabServerURL, accessToken)
+	var gitlabProjects []Project
+	i := 1
+	for {
+		url := fmt.Sprintf("%s/api/v4/projects?private_token=%s&simple=false&membership=true&per_page=%d&page=%d", gitlabServerURL, accessToken, PerPageCount, i)
 
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
+		resp, err := http.Get(url)
+		if err != nil {
+			return gitlabProjects, err
+		}
+		defer resp.Body.Close()
+
+		var projects []Project
+		err = json.NewDecoder(resp.Body).Decode(&projects)
+		if err != nil {
+			return gitlabProjects, err
+		}
+		if len(projects) == 0 {
+			break
+		}
+		gitlabProjects = append(gitlabProjects, projects...)
+		i++
 	}
-	defer resp.Body.Close()
 
-	var projects []Project
-	err = json.NewDecoder(resp.Body).Decode(&projects)
-	if err != nil {
-		return nil, err
-	}
-
-	return projects, nil
+	return gitlabProjects, nil
 }
 
 func getImagesWithTags(gitlabServerURL, accessToken string, projectID int) ([]Image, error) {

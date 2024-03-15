@@ -37,7 +37,7 @@ docker run -dit \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-    $ACC/deepfence_agent_ce:2.1.0
+    $ACC/deepfence_agent_ce:THREATMAPPER_VERSION
 ```
 
 ## Installing and Running the Sensor Agents in a Kubernetes Cluster
@@ -52,7 +52,7 @@ You can use these instructions for helm-based installations in standalone and ho
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 helm repo update
 
-helm show values deepfence/deepfence-agent --version 2.1.0 > deepfence_agent_values.yaml
+helm show values deepfence/deepfence-agent --version TM_AGENT_HELM_CHART_VERSION > deepfence_agent_values.yaml
 
 # You will need to update the following values:
 #   image:name and image:clusterAgentImageName - change the account to point to your images
@@ -62,7 +62,7 @@ vim deepfence_agent_values.yaml
 helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-agent \
     --namespace deepfence \
     --create-namespace \
-    --version 2.1.0
+    --version TM_AGENT_HELM_CHART_VERSION
 ```
 
 Allow a few seconds for the containers to pull and deploy in your Kubernetes environment.

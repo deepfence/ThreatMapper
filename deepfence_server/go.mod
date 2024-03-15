@@ -5,6 +5,7 @@ go 1.21
 replace github.com/deepfence/ThreatMapper/deepfence_utils => ../deepfence_utils
 
 require (
+	github.com/Jeffail/tunny v0.1.4
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/PagerDuty/go-pagerduty v1.7.0
 	github.com/andygrunwald/go-jira v1.16.0
