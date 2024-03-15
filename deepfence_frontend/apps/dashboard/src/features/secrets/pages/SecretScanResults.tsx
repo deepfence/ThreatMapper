@@ -651,7 +651,7 @@ const HistoryControls = () => {
   };
 
   return (
-    <div className="flex items-center relative flex-grow gap-2">
+    <div className="flex items-center relative flex-grow gap-4">
       {openStopScanModal && (
         <StopScanForm
           open={openStopScanModal}
@@ -746,11 +746,11 @@ const HistoryControls = () => {
             }}
           />
         )}
-        <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
-        <ScanStatusBadge status={status ?? ''} />
+        <div className="h-3 w-[1px] dark:bg-bg-grid-border bg-bg-border-form"></div>
+        <ScanStatusBadge status={status ?? ''} className="text-p1" />
         {!isScanInProgress(status ?? '') && !isScanDeletePending(status ?? '') ? (
           <>
-            <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
+            <div className="h-3 w-[1px] dark:bg-bg-grid-border bg-bg-border-form"></div>
             <div className="flex">
               <Button
                 variant="flat"
@@ -1755,7 +1755,7 @@ const SeverityCounts = ({
     <>
       {Object.keys(severityCounts)?.map((key) => {
         return (
-          <div className="flex gap-x-2 w-full gap-y-1 items-center" key={key}>
+          <div className="flex gap-x-2 w-full items-center" key={key}>
             <div
               className="h-3 w-3 rounded-full"
               style={{
@@ -1764,7 +1764,7 @@ const SeverityCounts = ({
               }}
             ></div>
             <button
-              className="capitalize text-p7 text-text-icon"
+              className="capitalize text-p4 text-text-icon"
               onClick={() => {
                 setSearchParams((prev) => {
                   prev.delete('page');
@@ -1875,13 +1875,13 @@ const SeverityCountWidget = () => {
           />
         </div>
         <div className="flex flex-1 justify-center">
-          <div className="flex flex-col flex-1 max-w-[160px] gap-1">
+          <div className="flex flex-col flex-1 max-w-[160px]">
             {keys(severityCounts).length === 0 ? (
-              <div className="flex flex-col flex-1 gap-1">
+              <div className="flex flex-col flex-1">
                 <ScanStatusNoData />
               </div>
             ) : (
-              <div className="flex flex-col flex-1 max-w-[160px] gap-1">
+              <div className="flex flex-col flex-1 max-w-[160px] gap-y-[6px]">
                 <SeverityCounts severityCounts={severityCounts} />
               </div>
             )}
@@ -1910,9 +1910,9 @@ const Top5Widget = () => {
           {data.data?.map?.((secret) => {
             return (
               <tr key={secret.node_id}>
-                <td className="w-[80%] px-0 pt-0 pb-2 inline-flex gap-x-[5px] items-center">
+                <td className="w-[80%] px-0 pt-0 pb-1 inline-flex gap-x-[8px] items-center">
                   <div
-                    className={cn('w-[3px] h-[18px] shrink-0', {
+                    className={cn('w-[3px] h-[18px] rounded shrink-0', {
                       'bg-severity-critical': secret.level === 'critical',
                       'bg-severity-high': secret.level === 'high',
                       'bg-severity-medium': secret.level === 'medium',
@@ -1928,14 +1928,14 @@ const Top5Widget = () => {
                       pathname: `./${encodeURIComponent(secret.node_id)}`,
                       search: searchParams.toString(),
                     }}
-                    className="flex items-center gap-3 min-w-0"
+                    className="flex items-center min-w-0"
                   >
                     <div className="text-p7 truncate">
-                      <TruncatedText text={secret.node_id} />
+                      <TruncatedText text={secret.name} />
                     </div>
                   </DFLink>
                 </td>
-                <td className="w-[20%] px-0 pt-0 pb-2">
+                <td className="w-[20%] px-0 pt-0 pb-1">
                   <div className="flex gap-1">
                     <SeverityBadgeIcon
                       severity={secret.level as SecretSeverityType}

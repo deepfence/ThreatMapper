@@ -13,6 +13,17 @@ export const getSeverityColorMap = (theme: Mode) => {
   };
 };
 
+export const getSeverityChartInnerColorMap = (theme: Mode) => {
+  // const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
+  return {
+    critical: '#B50909AA',
+    high: '#E41D4BAA',
+    medium: '#F57600AA',
+    low: '#F0C800AA',
+    unknown: '#939A9FAA',
+  };
+};
+
 // TODO: take theme into account
 export function getColorForCVSSScore(theme: Mode, score: number | undefined): string {
   const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;

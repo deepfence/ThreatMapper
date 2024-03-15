@@ -46,7 +46,10 @@ export const ScanHistoryDropdown = ({
                   scan.onScanClick(scan.id);
                 }}
               >
-                <div className="flex items-center gap-1.5" key={scan.id}>
+                <div
+                  className="grid grid-flow-col grid-cols-[fit-content_1fr_1fr] gap-1.5 w-full items-center"
+                  key={scan.id}
+                >
                   <ScanStatusBadge
                     status={scan.status}
                     justIcon
@@ -55,63 +58,65 @@ export const ScanHistoryDropdown = ({
                     })}
                   />
                   <span
-                    className={cn('text-p7 text-text-text-and-icon', {
+                    className={cn('text-p7 text-text-text-and-icon w-max', {
                       'text-text-input-value': scan.isCurrent,
                     })}
                   >
                     {formatMilliseconds(scan.timestamp)}
                   </span>
 
-                  <div className="flex items-center text-text-link">
-                    {isScanComplete(scan.status) ? (
-                      <IconButton
-                        variant="flat"
-                        icon={
-                          <span className="h-3 w-3">
-                            <DownloadLineIcon />
-                          </span>
-                        }
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          scan.onDownloadClick(scan.id);
-                          setOpen(false);
-                        }}
-                      />
-                    ) : null}
-                    {isScanComplete(scan.status) || isScanFailed(scan.status) ? (
-                      <IconButton
-                        variant="flat"
-                        icon={
-                          <span className="h-3 w-3">
-                            <TrashLineIcon />
-                          </span>
-                        }
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          scan.onDeleteClick(scan.id);
-                          setOpen(false);
-                        }}
-                      />
-                    ) : null}
-                    {scan.showScanCompareButton && isScanComplete(scan.status) ? (
-                      <IconButton
-                        variant="flat"
-                        icon={
-                          <span className="h-3 w-3">
-                            <BalanceLineIcon />
-                          </span>
-                        }
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          scan?.onScanTimeCompareButtonClick?.(scan.timestamp);
-                          setOpen(false);
-                        }}
-                      />
-                    ) : null}
+                  <div className="flex justify-end text-text-link">
+                    <IconButton
+                      variant="flat"
+                      disabled={!isScanComplete(scan.status)}
+                      icon={
+                        <span className="h-3 w-3">
+                          <DownloadLineIcon />
+                        </span>
+                      }
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        scan.onDownloadClick(scan.id);
+                        setOpen(false);
+                      }}
+                    />
+                    <IconButton
+                      variant="flat"
+                      disabled={
+                        !(isScanComplete(scan.status) || isScanFailed(scan.status))
+                      }
+                      icon={
+                        <span className="h-3 w-3">
+                          <TrashLineIcon />
+                        </span>
+                      }
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        scan.onDeleteClick(scan.id);
+                        setOpen(false);
+                      }}
+                    />
+
+                    <IconButton
+                      variant="flat"
+                      disabled={
+                        !(scan.showScanCompareButton && isScanComplete(scan.status))
+                      }
+                      icon={
+                        <span className="h-3 w-3">
+                          <BalanceLineIcon />
+                        </span>
+                      }
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        scan?.onScanTimeCompareButtonClick?.(scan.timestamp);
+                        setOpen(false);
+                      }}
+                    />
                   </div>
                 </div>
               </DropdownItem>

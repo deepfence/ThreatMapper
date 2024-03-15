@@ -69,6 +69,7 @@ const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => 
       fontFamily: preset.theme.extend.fontFamily.body.join(','),
       fontSize: 13,
       fontWeight: 500,
+      lineHeight: 18,
       background: getLabelBgStyles({ active, theme }),
     };
   }
@@ -76,8 +77,9 @@ const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => 
   return {
     fill: color['text-text-and-icon'],
     fontFamily: preset.theme.extend.fontFamily.body.join(','),
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: 700,
+    lineHeight: 18,
     background: getLabelBgStyles({ active, theme }),
   };
 };

@@ -6,7 +6,7 @@ import { Card, CircleSpinner } from 'ui-components';
 import { ECOption, ReactECharts } from '@/components/ReactEcharts';
 import { SeverityLegend } from '@/components/SeverityBadge';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
-import { getSeverityColorMap } from '@/constants/charts';
+import { getSeverityChartInnerColorMap, getSeverityColorMap } from '@/constants/charts';
 import { CardHeader } from '@/features/vulnerabilities/components/landing/CardHeader';
 import { queries } from '@/queries';
 import { Mode, THEME_DARK, useTheme } from '@/theme/ThemeContext';
@@ -28,9 +28,9 @@ function getChartOptions({
   const series: ECOption['series'] = [
     {
       type: 'pie',
-      radius: ['66%', '70%'],
+      radius: ['63%', '65%'],
       itemStyle: {
-        borderWidth: 2,
+        borderWidth: 0,
         borderColor: color['bg-card'],
       },
       label: {
@@ -39,9 +39,8 @@ function getChartOptions({
           return 'Total';
         },
         fontSize: '14px',
-        offset: [0, 28],
-        color:
-          theme === THEME_DARK ? color['text-input-value'] : color['text-text-and-icon'],
+        offset: [0, 26],
+        color: isDarkTheme ? color['text-input-value'] : color['text-icon'],
         fontWeight: 400,
         fontFamily: preset.theme.extend.fontFamily.sans.join(','),
       },
@@ -52,7 +51,7 @@ function getChartOptions({
       data: Object.keys(data)
         .filter((key) => data[key] > 0)
         .map((key) => {
-          const colorMap = getSeverityColorMap(theme);
+          const colorMap = getSeverityChartInnerColorMap(theme);
           return {
             value: data[key],
             name: key,
@@ -64,7 +63,7 @@ function getChartOptions({
     },
     {
       type: 'pie',
-      radius: isDarkTheme ? ['66%', '86%'] : ['72%', '86%'],
+      radius: isDarkTheme ? ['66%', '86%'] : ['68%', '86%'],
       itemStyle: {
         borderWidth: 2,
         borderColor: color['bg-card'],
@@ -74,9 +73,11 @@ function getChartOptions({
         formatter: function () {
           return abbreviateNumber(total).toString();
         },
-        fontSize: '24px',
-        color: color['text-input-value'],
-        fontWeight: 700,
+        offset: isDarkTheme ? [0, 0] : [0, -8],
+        fontSize: '30px',
+        color: isDarkTheme ? color['text-input-value'] : color['text-icon'],
+        fontWeight: 600,
+        lineHeight: 36,
         fontFamily: preset.theme.extend.fontFamily.sans.join(','),
       },
       cursor: 'pointer',

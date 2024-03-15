@@ -9,6 +9,7 @@ import { RegistryLogos } from '@/components/icons/registries';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { queries } from '@/queries';
+import { THEME_DARK, useTheme } from '@/theme/ThemeContext';
 import { RegistryType, registryTypeToNameMapping } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
 
@@ -57,7 +58,13 @@ const CardHeader = ({ registry }: { registry: RegistryResponseType }) => {
 
   return (
     <div className="flex items-center w-full relative">
-      <div className="dark:bg-bg-grid-default bg-df-gray-100 border-[1px] dark:border-bg-grid-default border-df-gray-300 absolute -top-[48px] left-[4px] rounded-full p-4 dark:shadow-none shadow-[0_0_4px_0px_rgba(34,34,34,0.20)]">
+      <div
+        className={cn(
+          'dark:bg-bg-grid-default bg-df-gray-100 border-[1px]',
+          'dark:border-bg-grid-default border-df-gray-300',
+          'absolute -top-[48px] left-[4px] rounded-full p-4',
+        )}
+      >
         <RegistryLogos
           registryType={registry.type as unknown as keyof typeof RegistryType}
         />
@@ -71,15 +78,25 @@ const CardHeader = ({ registry }: { registry: RegistryResponseType }) => {
 };
 
 const Registry = ({ registry }: { registry: RegistryResponseType }) => {
+  const { mode: theme } = useTheme();
   return (
     <DFLink className="flex flex-col" to={`/registries/${registry.type}`} unstyled>
       <Card
         className={cn(
           'relative group py-3 px-4 flex flex-col',
-          'bg-bg-card hover:outline outline-2 outline-bg-hover-3 hover:shadow-[0px_0px_6px_1px_#044AFF]',
-          "before:content-none hover:before:content-[''] before:w-[78px] before:h-[78px]",
-          'before:bg-bg-hover-3 before:hover:shadow-[0px_0px_7px_-1px_#044AFF] before:absolute before:-top-[38px]',
-          'before:left-[18px] before:rounded-full before:-z-10 cursor-pointer',
+          'hover:outline dark:hover:outline-2 hover:outline-1',
+          'dark:hover:outline-bg-hover-3 hover:outline-text-link',
+          'hover:shadow-[0px_0px_6px_2px_#044AFF]',
+
+          "hover:before:content-['']",
+          'before:w-[74px] before:h-[74px] hover:before:w-[78px] hover:before:h-[78px]',
+          'hover:before:shadow-[0px_-1px_7px_-1px_#044AFF]',
+          'before:shadow-[0_0_10px_0px_rgba(34,34,34,0.20)]',
+          'dark:hover:before:bg-bg-hover-3 hover:before:bg-text-link before:absolute before:-top-[36px] hover:before:-top-[38px]',
+          'before:left-[20px] hover:before:left-[18px] before:rounded-full before:-z-10 cursor-pointer',
+          {
+            'before:content-none': theme === THEME_DARK,
+          },
         )}
         key={registry.type}
       >

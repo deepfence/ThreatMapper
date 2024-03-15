@@ -640,7 +640,7 @@ const HistoryControls = () => {
   };
 
   return (
-    <div className="flex items-center relative flex-grow">
+    <div className="flex items-center relative flex-grow gap-4">
       {openStopScanModal && (
         <StopScanForm
           open={openStopScanModal}
@@ -736,11 +736,11 @@ const HistoryControls = () => {
             }}
           />
         )}
-        <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
-        <ScanStatusBadge status={status ?? ''} />
+        <div className="h-3 w-[1px] dark:bg-bg-grid-border bg-bg-border-form"></div>
+        <ScanStatusBadge status={status ?? ''} className="text-p1" />
         {!isScanInProgress(status ?? '') && !isScanDeletePending(status ?? '') ? (
           <>
-            <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
+            <div className="h-3 w-[1px] dark:bg-bg-grid-border bg-bg-border-form"></div>
             <div className="pl-1.5 flex">
               <Button
                 variant="flat"

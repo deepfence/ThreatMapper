@@ -1,6 +1,7 @@
 import { ShieldCheckSolidIcon } from '@/components/icons/posture/ShieldCheckSolid';
 import { ShieldWarningSolidIcon } from '@/components/icons/posture/ShieldWarningSolid';
 import { ShieldXSolidIcon } from '@/components/icons/posture/ShieldXSolid';
+import { useTheme } from '@/theme/ThemeContext';
 
 import { AwsIcon } from './Aws';
 import { AzureIcon } from './Azure';
@@ -28,12 +29,13 @@ export const PostureLogos = ({ name }: { name: string }) => {
 };
 
 export const ComplianceIconByPercent = ({ percent }: { percent?: number | null }) => {
-  if (!percent && percent !== 0) return <ShieldWarningSolidIcon />;
+  const { mode: theme } = useTheme();
+  if (!percent && percent !== 0) return <ShieldWarningSolidIcon theme={theme} />;
 
   if (percent >= 80 && percent <= 100) {
     return <ShieldCheckSolidIcon />;
   } else if (percent >= 30 && percent < 80) {
-    return <ShieldWarningSolidIcon />;
+    return <ShieldWarningSolidIcon theme={theme} />;
   } else if (percent < 30) {
     return <ShieldXSolidIcon />;
   }

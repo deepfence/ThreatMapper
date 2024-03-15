@@ -8,7 +8,7 @@ import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 export const RemediationPre = ({ children }: { children?: ReactNode }) => {
   const { copy, isCopied } = useCopyToClipboardState();
   return (
-    <pre className="relative overflow-hidden [&>code]:block [&>code]:overflow-x-auto [&>code]:p-4">
+    <pre className="relative overflow-hidden [&>code]:block [&>code]:overflow-x-auto [&>code]:p-4 [&>code]:text-p1">
       {children}
       <button
         className={cn(

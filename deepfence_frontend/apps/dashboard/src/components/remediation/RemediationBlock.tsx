@@ -460,7 +460,7 @@ function RemediationCompletion({ meta }: RemediationCompletionProps) {
   return (
     <div
       className={cn(
-        'pb-2 px-5 h-full overflow-y-auto',
+        'text-p1a pb-2 px-5 h-full overflow-y-auto',
         'prose-invert max-w-none space-y-2',
         'prose-ol:list-decimal prose-ol:list-inside',
         'prose-ul:list-disc prose-ul:list-inside',

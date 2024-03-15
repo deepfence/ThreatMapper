@@ -318,7 +318,7 @@ const MenuItemLink = ({
             isActive
               ? cn(
                   linkClass,
-                  'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value',
+                  'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value shadow-[0px_0px_1px_0px_rgba(0,0,0,0.25)_inset]',
                 )
               : linkClass
           }
@@ -327,7 +327,7 @@ const MenuItemLink = ({
             return (
               <>
                 {isActive && (
-                  <div className="absolute w-1 left-0 top-0 bottom-0 bg-brand-dark-blue" />
+                  <div className="absolute w-1 left-0 top-0 bottom-0 bg-brand-dark-blue rounded-br rounded-tr" />
                 )}
                 <div
                   className={cn('w-5 h-5 text-text-text-and-icon shrink-0', {

@@ -71,6 +71,7 @@ import {
   isNeverScanned,
   isScanComplete,
   isScanDeletePending,
+  isScanFailed,
   isScanInProgress,
   isScanStopping,
   SCAN_STATUS_GROUPS,
@@ -786,7 +787,11 @@ const ScansTable = ({
         enableSorting: false,
         cell: (info) => (
           <div className="flex items-center justify-end tabular-nums">
-            <span className="truncate">{info.getValue()}</span>
+            {!isScanComplete(info.row.original.status) ? (
+              <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>
+            ) : (
+              <span className="truncate">{info.getValue()}</span>
+            )}
           </div>
         ),
         header: () => (
@@ -801,8 +806,8 @@ const ScansTable = ({
       columnHelper.accessor('critical', {
         enableSorting: false,
         cell: (info) => {
-          if (isScanDeletePending(info.row.original.status)) {
-            return <TruncatedText text={info.getValue()?.toString()} />;
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
           params.set('severity', 'critical');
@@ -827,8 +832,8 @@ const ScansTable = ({
       columnHelper.accessor('high', {
         enableSorting: false,
         cell: (info) => {
-          if (isScanDeletePending(info.row.original.status)) {
-            return <TruncatedText text={info.getValue()?.toString()} />;
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
           params.set('severity', 'high');
@@ -853,8 +858,8 @@ const ScansTable = ({
       columnHelper.accessor('medium', {
         enableSorting: false,
         cell: (info) => {
-          if (isScanDeletePending(info.row.original.status)) {
-            return <TruncatedText text={info.getValue()?.toString()} />;
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
           params.set('severity', 'medium');
@@ -879,8 +884,8 @@ const ScansTable = ({
       columnHelper.accessor('low', {
         enableSorting: false,
         cell: (info) => {
-          if (isScanDeletePending(info.row.original.status)) {
-            return <TruncatedText text={info.getValue()?.toString()} />;
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
           params.set('severity', 'low');
@@ -905,8 +910,8 @@ const ScansTable = ({
       columnHelper.accessor('unknown', {
         enableSorting: false,
         cell: (info) => {
-          if (isScanDeletePending(info.row.original.status)) {
-            return <TruncatedText text={info.getValue()?.toString()} />;
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
           params.set('severity', 'unknown');

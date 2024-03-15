@@ -42,7 +42,11 @@ export const TopRisksRuntimeDummy = () => {
           href="https://deepfence.io/threatstryker/"
           target="_blank"
         >
-          <Button color="success" endIcon={<ArrowLine className="rotate-90" />}>
+          <Button
+            color="success"
+            endIcon={<ArrowLine className="rotate-90" />}
+            className="bg-[#009852] dark:bg-[#15b77e]"
+          >
             Get ThreatStryker
           </Button>
         </DFLink>

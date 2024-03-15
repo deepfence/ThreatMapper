@@ -8,7 +8,7 @@ import { SeverityLegend } from '@/components/SeverityBadge';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
-import { getSeverityColorMap } from '@/constants/charts';
+import { getSeverityChartInnerColorMap, getSeverityColorMap } from '@/constants/charts';
 import { CardHeader } from '@/features/dashboard/components/CardHeader';
 import { queries } from '@/queries';
 import { Mode, THEME_DARK, useTheme } from '@/theme/ThemeContext';
@@ -146,9 +146,9 @@ function getChartOptions({
   const series: ECOption['series'] = [
     {
       type: 'pie',
-      radius: ['75%', '80%'],
+      radius: ['77%', '80%'],
       itemStyle: {
-        borderWidth: 2,
+        borderWidth: 0,
         borderColor: color['bg-card'],
       },
       label: {
@@ -156,9 +156,9 @@ function getChartOptions({
         formatter: function () {
           return 'Total';
         },
-        offset: [0, 28],
+        offset: [0, 26],
         fontSize: '14px',
-        color: isDarkTheme ? color['text-input-value'] : color['text-text-and-icon'],
+        color: isDarkTheme ? color['text-input-value'] : color['text-icon'],
         fontWeight: 400,
         fontFamily: preset.theme.extend.fontFamily.sans.join(','),
       },
@@ -174,8 +174,8 @@ function getChartOptions({
             name: key,
             itemStyle: {
               color:
-                getSeverityColorMap(theme)[key as VulnerabilitySeverityType] ??
-                getSeverityColorMap(theme)['unknown'],
+                getSeverityChartInnerColorMap(theme)[key as VulnerabilitySeverityType] ??
+                getSeverityChartInnerColorMap(theme)['unknown'],
             },
           };
         }),
@@ -184,7 +184,7 @@ function getChartOptions({
       type: 'pie',
       radius: isDarkTheme ? ['78%', '100%'] : ['82%', '100%'],
       itemStyle: {
-        borderWidth: 2,
+        borderWidth: 3,
         borderColor: color['bg-card'],
       },
       label: {
@@ -192,9 +192,11 @@ function getChartOptions({
         formatter: function () {
           return abbreviateNumber(total).toString();
         },
-        fontSize: '24px',
-        color: color['text-input-value'],
-        fontWeight: 700,
+        offset: isDarkTheme ? [0, 0] : [0, -8],
+        fontSize: '30px',
+        color: isDarkTheme ? color['text-input-value'] : color['text-icon'],
+        fontWeight: 600,
+        lineHeight: 36,
         fontFamily: preset.theme.extend.fontFamily.sans.join(','),
       },
       cursor: 'pointer',

@@ -24,7 +24,7 @@ function usePostureSummary() {
 
 export const Posture = () => {
   return (
-    <Card className="rounded-[5px] flex flex-col h-full">
+    <Card className="flex flex-col h-full shadow-none">
       <CardHeader icon={<PostureIcon />} title="Posture" link="/posture" />
       <div className="flex-1">
         <Suspense
@@ -78,16 +78,12 @@ const PostureCardItem = ({ provider }: { provider: ModelPostureProvider }) => {
       unstyled
       to={generatePath(`/posture/accounts/${provider.name}`)}
       className={cn(
-        'ring-inset dark:border-none border border-bg-grid-border rounded-[5px]',
-        'dark:shadow-none shadow-[0_0_4px_0px_rgba(34,34,34,0.20)]',
-        'hover:ring-bg-hover-3 hover:ring-1 hover:shadow-[0px_0px_6px_1px_#044AFF]',
+        'ring-inset dark:border-none border border-bg-grid-border rounded-[5px] overflow-hidden',
+        'hover:ring-bg-hover-3 hover:ring-1 hover:shadow-[0px_0px_6px_2px_#044AFF]',
         'focus:ring-bg-hover-3 focus:shadow-[0px_0px_6px_1px_#044AFF] focus:ring-1',
       )}
     >
-      <div
-        className="dark:bg-bg-side-panel bg-white rounded-[5px] flex"
-        key={provider.name}
-      >
+      <div className="dark:bg-bg-side-panel bg-white flex" key={provider.name}>
         <div className="flex items-center justify-center p-3">
           <div className="h-14 w-14 shrink-0 dark:bg-bg-breadcrumb-bar bg-df-gray-100 rounded-full flex items-center justify-center">
             <span className="w-9 h-9 block">

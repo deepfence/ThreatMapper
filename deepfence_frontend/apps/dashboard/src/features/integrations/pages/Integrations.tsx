@@ -227,7 +227,7 @@ const IntegrationTypes = ({ integration }: { integration: IIntegrationType }) =>
             data-testid={`${type.id}Id`}
             className="hover:shadow-[0px_0px_6px_1px_#044AFF] focus:shadow-[0px_0px_6px_1px_#044AFF] cursor-pointer rounded-[5px]"
           >
-            <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-1 dark:focus:ring-bg-hover-3 hover:border-bg-hover-3 focus:border-bg-hover-3">
+            <Card className="p-3 flex flex-col shrink-0 min-w-[208px] ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-1 dark:focus:ring-bg-hover-3 hover:border-text-link focus:border-text-link">
               <div className="flex items-center gap-x-4">
                 <div className="dark:bg-bg-grid-default bg-df-gray-100 rounded-full p-3 flex justify-center items-center">
                   <span className="h-9 w-9">{type.icon}</span>
@@ -334,7 +334,7 @@ const DownloadReport = () => {
               className={cn(
                 'p-3 flex shrink-0 items-center h-full gap-x-4',
                 'text-text-text-and-icon',
-                'ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-1 dark:focus:ring-bg-hover-3 hover:border-bg-hover-3 focus:border-bg-hover-3',
+                'ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-1 dark:focus:ring-bg-hover-3 hover:border-text-link focus:border-text-link',
               )}
             >
               <div className="dark:bg-bg-grid-default bg-df-gray-100 rounded-full p-3 flex justify-center items-center">
@@ -418,7 +418,7 @@ const AIIntegrations = () => {
             <Card
               className={cn(
                 'p-3 flex flex-col shrink-0 min-w-[208px] ',
-                'ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-1 dark:focus:ring-bg-hover-3 hover:border-bg-hover-3 focus:border-bg-hover-3',
+                'ring-inset dark:hover:ring-bg-hover-3 dark:hover:ring-1 dark:focus:ring-1 dark:focus:ring-bg-hover-3 hover:border-text-link focus:border-text-link',
               )}
             >
               <div className="flex items-center gap-x-6">

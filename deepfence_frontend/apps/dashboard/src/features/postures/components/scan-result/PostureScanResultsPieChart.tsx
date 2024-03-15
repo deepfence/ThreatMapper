@@ -18,43 +18,7 @@ function getChartOptions({
   const series: ECOption['series'] = [
     {
       type: 'pie',
-      radius: ['58%', '80%'],
-      itemStyle: {
-        borderWidth: 2,
-        borderColor: color['bg-card'],
-      },
-      label: {
-        position: 'center',
-        formatter: function () {
-          return 'Total';
-        },
-        fontSize: '14px',
-        offset: [0, 20],
-        color: color['text-input-value'],
-        fontWeight: 600,
-        fontFamily: preset.theme.extend.fontFamily.sans.join(','),
-      },
-      cursor: 'none',
-      emphasis: {
-        scale: false,
-      },
-      data: Object.keys(data)
-        .filter((key) => data[key] > 0)
-        .map((key) => {
-          return {
-            value: data[key],
-            name: key,
-            itemStyle: {
-              color:
-                getPostureColor(theme)[key as PostureSeverityType] ??
-                getPostureColor(theme)['skip'],
-            },
-          };
-        }),
-    },
-    {
-      type: 'pie',
-      radius: isDarkTheme ? ['60%', '85%'] : ['64%', '85%'],
+      radius: ['60%', '85%'],
       itemStyle: {
         borderWidth: 2,
         borderColor: color['bg-card'],
@@ -69,8 +33,7 @@ function getChartOptions({
           ).toString();
         },
         fontSize: '24px',
-        offset: [0, -5],
-        color: color['text-input-value'],
+        color: isDarkTheme ? color['text-input-value'] : color['text-icon'],
         fontWeight: 600,
         fontFamily: preset.theme.extend.fontFamily.sans.join(','),
       },
@@ -102,7 +65,7 @@ function getChartOptions({
     legend: {
       show: false,
     },
-    series: theme === THEME_DARK ? [series[1]] : series,
+    series,
   };
   return option;
 }

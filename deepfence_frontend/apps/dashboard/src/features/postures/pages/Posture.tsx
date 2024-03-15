@@ -211,10 +211,10 @@ const PostureCard = ({ provider }: { provider: ModelPostureProvider }) => {
   return (
     <Card
       className={cn(
-        'relative group pt-2 pb-4 flex flex-col bg-bg-card hover:shadow-[0px_0px_6px_1px_#044AFF]',
-        'hover:outline outline-2 outline-bg-hover-3',
+        'relative group pt-2 pb-4 flex flex-col bg-bg-card',
+        'hover:outline dark:outline-2 outline-1 dark:hover:outline-bg-hover-3 hover:outline-text-link hover:shadow-[0px_0px_6px_2px_#044AFF] dark:hover:shadow-none',
         "before:content-none hover:before:content-[''] before:w-[68px] before:h-[68px]",
-        'before:bg-bg-hover-3 before:shadow-[0px_0px_7px_-1px_#044AFF] before:absolute before:-top-[28px]',
+        'dark:before:bg-bg-hover-3 before:bg-text-link dark:shadow-none before:shadow-[0px_0px_7px_-1px_#044AFF] before:absolute before:-top-[28px]',
         'before:left-[10px] before:rounded-full before:-z-10 cursor-pointer',
       )}
     >
