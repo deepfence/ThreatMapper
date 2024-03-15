@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/Jeffail/tunny"
 	"io"
 	"net/http"
 	"time"
@@ -12,47 +13,113 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
-var client = &http.Client{
-	Timeout: 10 * time.Second,
-	Transport: &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	},
+const (
+	PerPageCount         = 100
+	ParallelImageFetch   = 10
+	ImageQueueBufferSize = 100
+)
+
+func init() {
+	parallelImageProcessor = tunny.NewFunc(ParallelImageFetch, fetchImageWithTags)
+	queue = make(chan []model.IngestedContainerImage, ImageQueueBufferSize)
 }
+
+type RepoDetails struct {
+	URL        string
+	UserName   string
+	Password   string
+	Repository string
+}
+
+var (
+	client = &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+	parallelImageProcessor *tunny.Pool
+	queue                  chan []model.IngestedContainerImage
+)
 
 func listImagesRegistryV2(url, userName, password string) ([]model.IngestedContainerImage, error) {
 
 	var (
 		images []model.IngestedContainerImage
 	)
+	parallelImageProcessor.SetSize(ParallelImageFetch)
+	defer parallelImageProcessor.SetSize(0)
 
-	repos, err := listCatalogRegistryV2(url, userName, password)
+	repos, err := getRepos(url, userName, password)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
 	}
 	for _, repo := range repos {
-		repoTags, err := listRepoTagsV2(url, userName, password, repo)
-		if err != nil {
-			log.Error().Msg(err.Error())
-			continue
+		r := RepoDetails{
+			URL:        url,
+			UserName:   userName,
+			Password:   password,
+			Repository: repo,
 		}
-		log.Debug().Msgf("tags for image %s/%s are %s", repo, repoTags.Name, repoTags.Tags)
-
-		images = append(images, getImageWithTags(url, userName, password, repo, repoTags)...)
+		go parallelImageProcessor.Process(r)
+	}
+	for _, _ = range repos {
+		select {
+		case t := <-queue:
+			images = append(images, t...)
+		}
 	}
 
 	return images, nil
 }
 
-func listCatalogRegistryV2(url, userName, password string) ([]string, error) {
-	var (
-		repositories []string
-		err          error
-	)
+func fetchImageWithTags(rInterface interface{}) interface{} {
+	var images []model.IngestedContainerImage
+	defer func() {
+		queue <- images
+	}()
+	r, ok := rInterface.(*RepoDetails)
+	if !ok {
+		log.Error().Msg("Error processing repo details")
+		return false
+	}
+	repoTags, err := listRepoTagsV2(r.URL, r.UserName, r.Password, r.Repository)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return false
+	}
+	log.Debug().Msgf("tags for image %s/%s are %s", r.Repository, repoTags.Name, repoTags.Tags)
 
-	listReposURL := "%s/v2/_catalog"
-	queryURL := fmt.Sprintf(listReposURL, url)
-	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
+	images = getImageWithTags(r.URL, r.UserName, r.Password, r.Repository, repoTags)
+	return true
+}
+
+func getRepos(url, name, password string) ([]string, error) {
+	var repositories []string
+	var queryURL string
+	for {
+		if len(repositories) == 0 {
+			queryURL = fmt.Sprintf("%s/v2/_catalog?n=%d", url, PerPageCount)
+		} else {
+			queryURL = fmt.Sprintf("%s/v2/_catalog?last=%s&n=%d", url, repositories[len(repositories)-1], PerPageCount)
+		}
+		repos, err := listCatalogRegistryV2(queryURL, name, password)
+		if err != nil {
+			return repositories, err
+		}
+		if len(repos) == 0 {
+			break
+		}
+		repositories = append(repositories, repos...)
+	}
+	return repositories, nil
+}
+
+func listCatalogRegistryV2(url, userName, password string) ([]string, error) {
+	var err error
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
@@ -87,9 +154,7 @@ func listCatalogRegistryV2(url, userName, password string) ([]string, error) {
 		return nil, err
 	}
 
-	repositories = append(repositories, repos.Repositories...)
-
-	return repositories, err
+	return repos.Repositories, err
 }
 
 func listRepoTagsV2(url, userName, password, repoName string) (RepoTagsResp, error) {
