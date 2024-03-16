@@ -10,6 +10,7 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { toast } from 'sonner';
+import { cn } from 'tailwind-preset';
 import {
   Badge,
   Breadcrumb,
@@ -85,6 +86,14 @@ import { invalidateAllQueries, queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
 import {
   ComplianceScanNodeTypeEnum,
+  isAlarmStatus,
+  isDeleteStatus,
+  isInfoStatus,
+  isNoteStatus,
+  isOkStatus,
+  isPassStatus,
+  isSkipStatus,
+  isWarnStatus,
   PostureSeverityType,
   ScanTypeEnum,
 } from '@/types/common';
@@ -1577,6 +1586,30 @@ const CloudPostureTable = ({
           message={scanStatusResult?.status_message ?? ''}
         />
       }
+      getTdProps={(cell) => {
+        const status = cell.row.original.status;
+        return {
+          className: cn(
+            'relative',
+            'first:before:content-[""]',
+            'first:before:absolute',
+            'first:before:h-full',
+            'first:before:w-1',
+            'first:before:left-0',
+            'first:before:top-px',
+            {
+              'first:before:bg-status-error': isAlarmStatus(status),
+              'first:before:bg-status-info': isInfoStatus(status),
+              'first:before:bg-status-success':
+                isOkStatus(status) || isPassStatus(status),
+              'first:before:bg-severity-unknown':
+                isSkipStatus(status) || isNoteStatus(status),
+              'first:before:bg-status-warning': isWarnStatus(status),
+              'first:before:bg-btn-red': isDeleteStatus(status),
+            },
+          ),
+        };
+      }}
     />
   );
 };

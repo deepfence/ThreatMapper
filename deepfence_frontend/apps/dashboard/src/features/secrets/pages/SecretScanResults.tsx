@@ -81,7 +81,15 @@ import { SecretsCompare } from '@/features/secrets/components/scan-results/Secre
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
-import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
+import {
+  isCriticalSeverity,
+  isHighSeverity,
+  isLowSeverity,
+  isMediumSeverity,
+  isUnknownSeverity,
+  ScanTypeEnum,
+  SecretSeverityType,
+} from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
@@ -1595,6 +1603,27 @@ const SecretTable = ({
           message={scanStatusResult?.status_message ?? ''}
         />
       }
+      getTdProps={(cell) => {
+        const severity = cell.row.original.level;
+        return {
+          className: cn(
+            'relative',
+            'first:before:content-[""]',
+            'first:before:absolute',
+            'first:before:h-full',
+            'first:before:w-1',
+            'first:before:left-0',
+            'first:before:top-px',
+            {
+              'first:before:bg-severity-critical': isCriticalSeverity(severity),
+              'first:before:bg-severity-high': isHighSeverity(severity),
+              'first:before:bg-severity-medium': isMediumSeverity(severity),
+              'first:before:bg-severity-low': isLowSeverity(severity),
+              'first:before:bg-severity-unknown': isUnknownSeverity(severity),
+            },
+          ),
+        };
+      }}
     />
   );
 };

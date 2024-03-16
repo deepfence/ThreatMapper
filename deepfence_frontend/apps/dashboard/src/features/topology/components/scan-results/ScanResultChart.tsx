@@ -20,37 +20,7 @@ export const ScanResultChart = ({
   const series: ECOption['series'] = [
     {
       type: 'pie',
-      radius: ['55%', '65%'],
-      itemStyle: {
-        borderWidth: 2,
-        borderColor: color['bg-card'],
-      },
-      label: {
-        position: 'center',
-        formatter: function () {
-          return 'Total';
-        },
-        fontSize: '13px',
-        offset: [0, 15],
-        color: isDarkTheme ? color['text-input-value'] : color['text-text-and-icon'],
-        fontWeight: 400,
-        fontFamily: preset.theme.extend.fontFamily.sans.join(','),
-      },
-      cursor: 'none',
-      emphasis: {
-        disabled: true,
-      },
-      data: [
-        ...data.map((d) => ({
-          value: d.value,
-          name: d.name,
-          itemStyle: { color: d.color },
-        })),
-      ],
-    },
-    {
-      type: 'pie',
-      radius: isDarkTheme ? ['65%', '91%'] : ['62%', '80%'],
+      radius: ['65%', '91%'],
       itemStyle: {
         borderWidth: 2,
         borderColor: color['bg-card'],
@@ -61,8 +31,7 @@ export const ScanResultChart = ({
           return abbreviateNumber(totalValue).toString();
         },
         fontSize: '18px',
-        offset: [0, -5],
-        color: color['text-input-value'],
+        color: isDarkTheme ? color['text-input-value'] : color['text-icon'],
         fontWeight: 600,
         fontFamily: preset.theme.extend.fontFamily.sans.join(','),
       },
