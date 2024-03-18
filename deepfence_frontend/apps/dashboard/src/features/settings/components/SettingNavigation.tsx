@@ -40,7 +40,7 @@ const MenuItems: Array<{
   },
   {
     title: 'License Details',
-    to: '/settings/license-details',
+    to: '/settings/tm-license-details',
   },
 ];
 
