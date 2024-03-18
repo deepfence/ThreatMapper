@@ -340,7 +340,10 @@ const CountWidget = () => {
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input-value">
+          <span
+            className="text-h1 dark:text-text-input-value"
+            data-testid="totalRegistriesId"
+          >
             {abbreviateNumber(registries)}
           </span>
           <span className="text-p1">Total registries</span>
@@ -352,7 +355,10 @@ const CountWidget = () => {
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input-value">
+          <span
+            className="text-h1 dark:text-text-input-value"
+            data-testid="totalRepositoriesId"
+          >
             {abbreviateNumber(repositories)}
           </span>
           <span className="text-p1">Total repositories</span>
@@ -364,7 +370,10 @@ const CountWidget = () => {
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input-value">
+          <span
+            className="text-h1 dark:text-text-input-value"
+            data-testid="totalImagesId"
+          >
             {abbreviateNumber(images)}
           </span>
           <span className="text-p1">Total images</span>
@@ -540,7 +549,15 @@ const RegistryAccountsResults = () => {
           }
         />
       </div>
-      <Suspense fallback={<TableSkeleton columns={7} rows={DEFAULT_PAGE_SIZE} />}>
+      <Suspense
+        fallback={
+          <TableSkeleton
+            columns={7}
+            rows={DEFAULT_PAGE_SIZE}
+            data-testid="registryAccountSkeletonId"
+          />
+        }
+      >
         <RegistryAccountsTable
           onTableAction={onTableAction}
           setShowDeleteDialog={setShowDeleteDialog}
