@@ -80,7 +80,12 @@ const CardHeader = ({ registry }: { registry: RegistryResponseType }) => {
 const Registry = ({ registry }: { registry: RegistryResponseType }) => {
   const { mode: theme } = useTheme();
   return (
-    <DFLink className="flex flex-col" to={`/registries/${registry.type}`} unstyled>
+    <DFLink
+      className="flex flex-col"
+      to={`/registries/${registry.type}`}
+      unstyled
+      data-testid={registry?.type + 'Id'}
+    >
       <Card
         className={cn(
           'relative group py-3 px-4 flex flex-col',
@@ -103,19 +108,28 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
         <CardHeader registry={registry} />
         <div className="flex mt-4 gap-x-[48px] justify-center items-center w-[322px]">
           <div className="flex flex-col justify-center text-p4a text-text-text-and-icon">
-            <span className="text-h1 dark:text-text-input-value text-text-text-and-icon">
+            <span
+              className="text-h1 dark:text-text-input-value text-text-text-and-icon"
+              data-testid="totalRegistriesId"
+            >
               {abbreviateNumber(registry.registries ?? 0)}
             </span>
             Registries
           </div>
           <div className="flex flex-col justify-center text-p4a text-text-text-and-icon">
-            <span className="text-h1 dark:text-text-input-value text-text-text-and-icon">
+            <span
+              className="text-h1 dark:text-text-input-value text-text-text-and-icon"
+              data-testid="totalRepositoriesId"
+            >
               {abbreviateNumber(registry.repositories ?? 0)}
             </span>
             Repositories
           </div>
           <div className="flex flex-col justify-center text-p4a text-text-text-and-icon">
-            <span className="text-h1 dark:text-text-input-value text-text-text-and-icon">
+            <span
+              className="text-h1 dark:text-text-input-value text-text-text-and-icon"
+              data-testid="totalImagesId"
+            >
               {abbreviateNumber(registry.images ?? 0)}
             </span>
             Images
@@ -154,7 +168,10 @@ const Registries = () => {
       </BreadcrumbWrapper>
       <Suspense
         fallback={
-          <div className="mx-4 my-14 flex gap-x-4 gap-y-14 flex-wrap">
+          <div
+            className="mx-4 my-14 flex gap-x-4 gap-y-14 flex-wrap"
+            data-testid="registriesCardSkeletonId"
+          >
             <RegistrySkeleton />
           </div>
         }

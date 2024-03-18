@@ -107,6 +107,12 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
       fn: getSettingsApiClient().uploadVulnerabilityDatabase,
     });
     const filename = formData.get('vulnerabilityDatabase')?.toString() ?? '';
+    if (!filename.trim()) {
+      return {
+        uploadSuccess: false,
+        message: 'Please select file to upload',
+      };
+    }
     const file = files[filename];
     const uploadApiResponse = await uploadVulnerabilityDatabase({
       database: file,
@@ -261,7 +267,14 @@ const UploadVulnerabilityDatabase = () => {
             disabled={state !== 'idle'}
             onClick={() => {
               const formData = new FormData();
-              formData.append('vulnerabilityDatabase', vulnerabilityDatabaseFile as File);
+              if (!vulnerabilityDatabaseFile) {
+                formData.append('vulnerabilityDatabase', '');
+              } else {
+                formData.append(
+                  'vulnerabilityDatabase',
+                  vulnerabilityDatabaseFile as File,
+                );
+              }
               formData.append('actionType', ActionEnumType.UPLOAD);
               fetcher.submit(formData, {
                 method: 'post',
