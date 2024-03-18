@@ -31,7 +31,7 @@ export const RemediationNoIntegration = ({
           permission to Amazon Bedrock, please{' '}
           <button
             type="button"
-            className="text-blue-600 dark:text-text-link hover:underline focus:underline"
+            className="text-text-link hover:underline focus:underline"
             onClick={(e) => {
               e.preventDefault();
               add();
