@@ -119,10 +119,10 @@ spec:
     name: {{ include "deepfence-console.fullname" . }}-ingester
 ---
 {{- if .Values.ingester.autoscaling.enabled }}
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: deepfence-ingester
+  name: {{ include "deepfence-console.fullname" . }}-ingester
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: ingester
@@ -139,12 +139,16 @@ spec:
     - type: Resource
       resource:
         name: cpu
-        targetAverageUtilization: {{ .Values.ingester.autoscaling.targetCPUUtilizationPercentage }}
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.ingester.autoscaling.targetCPUUtilizationPercentage }}
     {{- end }}
     {{- if .Values.ingester.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
         name: memory
-        targetAverageUtilization: {{ .Values.ingester.autoscaling.targetMemoryUtilizationPercentage }}
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.ingester.autoscaling.targetMemoryUtilizationPercentage }}
     {{- end }}
 {{- end }}

@@ -140,7 +140,7 @@ spec:
 {{- end }}
 ---
 {{- if .Values.router.autoscaling.enabled }}
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "deepfence-console.fullname" . }}-router
@@ -159,13 +159,17 @@ spec:
     - type: Resource
       resource:
         name: cpu
-        targetAverageUtilization: {{ .Values.router.autoscaling.targetCPUUtilizationPercentage }}
+        target:
+          type: Utilization
+          averageUtilization:  {{ .Values.router.autoscaling.targetCPUUtilizationPercentage }}
     {{- end }}
     {{- if .Values.router.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
         name: memory
-        targetAverageUtilization: {{ .Values.router.autoscaling.targetMemoryUtilizationPercentage }}
+        target:
+          type: Utilization
+          averageUtilization:  {{ .Values.router.autoscaling.targetMemoryUtilizationPercentage }}
     {{- end }}
 {{- end }}
 ---
