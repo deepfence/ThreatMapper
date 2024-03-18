@@ -13,24 +13,46 @@ import (
 func listIAMPrivateImages(sess *session.Session, awsConfig aws.Config, awsAccountID string) ([]model.IngestedContainerImage, error) {
 	svc := ecr.New(sess, &awsConfig)
 
-	result, err := svc.DescribeRepositories(&ecr.DescribeRepositoriesInput{
+	var images []model.IngestedContainerImage
+	err := svc.DescribeRepositoriesPages(&ecr.DescribeRepositoriesInput{
 		RegistryId: aws.String(awsAccountID),
+	}, func(result *ecr.DescribeRepositoriesOutput, lastPage bool) bool {
+		repoImages, err := listPrivateImagesWithTags(result, svc)
+		if err != nil {
+			return false
+		}
+		if len(result.Repositories) == 0 {
+			return false
+		}
+		images = append(images, repoImages...)
+		return true
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error describing repositories: %v", err)
 	}
 
-	return listPrivateImagesWithTags(result, svc)
+	return images, nil
 }
 
 func listIAMPublicImages(sess *session.Session, awsConfig aws.Config, awsAccountID string) ([]model.IngestedContainerImage, error) {
 	svc := ecrpublic.New(sess, &awsConfig)
-	result, err := svc.DescribeRepositories(&ecrpublic.DescribeRepositoriesInput{
+	var images []model.IngestedContainerImage
+	err := svc.DescribeRepositoriesPages(&ecrpublic.DescribeRepositoriesInput{
 		RegistryId: aws.String(awsAccountID),
+	}, func(result *ecrpublic.DescribeRepositoriesOutput, lastPage bool) bool {
+		repoImages, err := listPublicImagesWithTags(result, svc)
+		if err != nil {
+			return false
+		}
+		if len(result.Repositories) == 0 {
+			return false
+		}
+		images = append(images, repoImages...)
+		return true
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error describing repositories: %v", err)
 	}
 
-	return listPublicImagesWithTags(result, svc)
+	return images, nil
 }
