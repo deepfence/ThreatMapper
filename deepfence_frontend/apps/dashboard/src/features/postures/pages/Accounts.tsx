@@ -404,6 +404,7 @@ const Filters = () => {
             onClearAll={() => {
               setSearchParams((prev) => {
                 prev.delete('org_accounts');
+                prev.delete('page');
                 return prev;
               });
             }}
@@ -413,6 +414,7 @@ const Filters = () => {
                 value.forEach((id) => {
                   prev.append('org_accounts', id);
                 });
+                prev.delete('page');
                 return prev;
               });
             }}
@@ -426,6 +428,7 @@ const Filters = () => {
             onClearAll={() => {
               setSearchParams((prev) => {
                 prev.delete(`${nodeType}_accounts`);
+                prev.delete('page');
                 return prev;
               });
             }}
@@ -435,6 +438,7 @@ const Filters = () => {
                 value.forEach((id) => {
                   prev.append(`${nodeType}_accounts`, id);
                 });
+                prev.delete('page');
                 return prev;
               });
             }}
