@@ -127,7 +127,7 @@ func UpdateSecretsRules(req ctl.ThreatIntelInfo) error {
 	newRules := "new_secret_rules.tar.gz"
 	configPath := "/home/deepfence/bin/secret-scanner/config"
 
-	log.Info().Msgf("download rules file from url %s", req.MalwareRulesURL)
+	log.Info().Msgf("download rules file from url %s", req.SecretsRulesURL)
 
 	if err := downloadFile(newRules, req.SecretsRulesURL); err != nil {
 		log.Error().Err(err).Msg("failed to downlaod secrets rules")
