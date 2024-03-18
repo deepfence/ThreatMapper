@@ -127,13 +127,13 @@ func UpdateSecretsRules(req ctl.ThreatIntelInfo) error {
 	newRules := "new_secret_rules.tar.gz"
 	configPath := "/home/deepfence/bin/secret-scanner/config"
 
-	log.Info().Msgf("download rules file from url %s", req.SecretsRulesURL)
-
 	if err := downloadFile(newRules, req.SecretsRulesURL); err != nil {
 		log.Error().Err(err).Msg("failed to downlaod secrets rules")
 		return err
 	}
 	defer os.Remove(newRules)
+
+	log.Info().Msgf("completed downloading rules from url %s", req.SecretsRulesURL)
 
 	// stop secret scanner
 	if err := supervisor.StopProcess("secret_scanner"); err != nil {
