@@ -2,8 +2,8 @@ FROM alpine:3.18
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
-ENV MINIO_ROOT_USER=deepfence \
-    MINIO_ROOT_PASSWORD=deepfence \
+ENV FILE_SERVER_ROOT_USER=deepfence \
+    FILE_SERVER_ROOT_PASSWORD=deepfence \
     BUCKET_NAME=deepfence
 
 RUN apk add envsubst

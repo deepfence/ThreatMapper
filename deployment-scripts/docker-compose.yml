@@ -16,20 +16,20 @@ x-service-variables: &common-creds
     DEEPFENCE_KAFKA_BROKERS: deepfence-kafka-broker:9092
     # public bucket with read permisons on objects for hosting vulnerability database
     # S3 bucket permissions {"Version":"2012-10-17","Statement":[{"Sid":"database","Effect":"Allow","Principal":"*","Action":"s3:GetObject","Resource":["arn:aws:s3:::<bucket-name>/database/*","arn:aws:s3:::<bucket-name>/database"]}]}
-    DEEPFENCE_MINIO_DB_BUCKET: database
+    DEEPFENCE_FILE_SERVER_DB_BUCKET: database
     # prvate bucket to host reports, sbom, etc.
-    DEEPFENCE_MINIO_BUCKET: default
+    DEEPFENCE_FILE_SERVER_BUCKET: default
     # set s3.amazonaws.com if using s3 buckets
-    DEEPFENCE_MINIO_HOST: deepfence-file-server
-    DEEPFENCE_MINIO_PORT: 9000
+    DEEPFENCE_FILE_SERVER_HOST: deepfence-file-server
+    DEEPFENCE_FILE_SERVER_PORT: 9000
     # uncomment to set access key if using s3 buckets
-    # DEEPFENCE_MINIO_USER: miniouser
+    # DEEPFENCE_FILE_SERVER_USER: fileserveruser
     # uncomment to set secret key if using s3 buckets
-    # DEEPFENCE_MINIO_PASSWORD: changeme
+    # DEEPFENCE_FILE_SERVER_PASSWORD: changeme
     # set true if using s3 buckets
-    DEEPFENCE_MINIO_SECURE: "false"
+    DEEPFENCE_FILE_SERVER_SECURE: "false"
     # set aws s3 buckets region if using s3 buckets
-    DEEPFENCE_MINIO_REGION: ""
+    DEEPFENCE_FILE_SERVER_REGION: ""
     DEEPFENCE_REDIS_DB_NUMBER: 0
     DEEPFENCE_REDIS_HOST: deepfence-redis
     DEEPFENCE_REDIS_PORT: 6379
@@ -175,9 +175,10 @@ services:
     networks:
       - deepfence_net
     restart: unless-stopped
-    # environment:
-    #   - MINIO_ROOT_USER=deepfence
-    #   - MINIO_ROOT_PASSWORD=deepfence
+    environment:
+      <<: *common-creds
+    #   - FILE_SERVER_ROOT_USER=deepfence
+    #   - FILE_SERVER_ROOT_PASSWORD=deepfence
     ports:
       - "127.0.0.1:9000:9000"
       - "127.0.0.1:9333:9333"

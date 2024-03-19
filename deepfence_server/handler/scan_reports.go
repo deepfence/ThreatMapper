@@ -642,7 +642,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mc, err := directory.MinioClient(r.Context())
+	mc, err := directory.FileServerClient(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -1808,7 +1808,7 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 		return
 	}
 
-	mc, err := directory.MinioClient(r.Context())
+	mc, err := directory.FileServerClient(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)

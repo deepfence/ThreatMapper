@@ -21,7 +21,7 @@ func CleanUpReports(ctx context.Context, task *asynq.Task) error {
 
 	log.Info().Msg("Start reports cleanup")
 
-	mc, err := directory.MinioClient(ctx)
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return err
 	}

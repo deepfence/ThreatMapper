@@ -95,7 +95,7 @@ func GetVulnerabilityNodeID(packageName, cveID, entityID string) string {
 
 func UpdateRules(ctx context.Context, path string, rulesPath string) error {
 
-	mc, err := directory.MinioClient(directory.WithDatabaseContext(ctx))
+	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
 	if err != nil {
 		return err
 	}

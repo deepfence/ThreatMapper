@@ -167,7 +167,7 @@ cli: bootstrap
 	(cd $(DEEPFENCE_CTL) && make clean && make all)
 
 .PHONY: publish
-publish: publish-redis publish-postgres publish-kafka publish-router publish-minio publish-server publish-worker publish-ui publish-agent publish-cluster-agent publish-packagescanner publish-secretscanner publish-malwarescanner publish-graphdb publish-jaeger
+publish: publish-redis publish-postgres publish-kafka publish-router publish-file-server publish-server publish-worker publish-ui publish-agent publish-cluster-agent publish-packagescanner publish-secretscanner publish-malwarescanner publish-graphdb publish-jaeger
 
 .PHONY: publish-redis
 publish-redis:
@@ -185,8 +185,8 @@ publish-kafka:
 publish-router:
 	docker push $(IMAGE_REPOSITORY)/deepfence_router_ce:$(DF_IMG_TAG)
 
-.PHONY: publish-minio
-publish-minio:
+.PHONY: publish-file-server
+publish-file-server:
 	docker push $(IMAGE_REPOSITORY)/deepfence_file_server_ce:$(DF_IMG_TAG)
 
 .PHONY: publish-server

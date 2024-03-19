@@ -86,14 +86,14 @@ func initSqlDatabase(ctx context.Context) error {
 
 func InitMinioDatabase() {
 	ctx := directory.NewContextWithNameSpace("database")
-	mc, err := directory.MinioClient(ctx)
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return
 	}
 	retries := 3
 	for {
-		if err := mc.CreatePublicBucket(ctx, directory.MinioDatabaseBucket); err != nil {
+		if err := mc.CreatePublicBucket(ctx, directory.FileServerDatabaseBucket); err != nil {
 			log.Error().Err(err).Msgf("failed to create bucket")
 			retries -= 1
 			if retries != 0 {

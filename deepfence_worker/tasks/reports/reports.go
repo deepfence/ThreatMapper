@@ -117,8 +117,8 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 		os.Remove(localReportPath)
 	}()
 
-	// upload file to minio
-	mc, err := directory.MinioClient(ctx)
+	// upload file to file server
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get minio client")
 		return nil

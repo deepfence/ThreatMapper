@@ -240,7 +240,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 		}
 
 		// remove sbom
-		mc, err := directory.MinioClient(ctx)
+		mc, err := directory.FileServerClient(ctx)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to get minio client")
 			return err

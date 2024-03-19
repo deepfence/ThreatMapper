@@ -84,7 +84,7 @@ func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mc, err := directory.MinioClient(r.Context())
+	mc, err := directory.FileServerClient(r.Context())
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get minio client")
 		h.respondError(err, w)
@@ -209,8 +209,8 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	var report model.ExportReport
 	utils.FromMap(da.Props, &report)
 
-	// upload file to minio
-	mc, err := directory.MinioClient(r.Context())
+	// upload file to file server
+	mc, err := directory.FileServerClient(r.Context())
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get minio client")
 		h.respondError(err, w)

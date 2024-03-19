@@ -122,7 +122,7 @@ func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.C
 	}
 	zipWriter.Flush()
 
-	mc, err := directory.MinioClient(ctx)
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return err
 	}
