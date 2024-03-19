@@ -1939,32 +1939,35 @@ const Top5Widget = () => {
           {data.data?.map?.((secret) => {
             return (
               <tr key={secret.node_id}>
-                <td className="w-[80%] px-0 pt-0 pb-1 inline-flex gap-x-[8px] items-center">
-                  <div
-                    className={cn('w-[3px] h-[18px] rounded shrink-0', {
-                      'bg-severity-critical': secret.level === 'critical',
-                      'bg-severity-high': secret.level === 'high',
-                      'bg-severity-medium': secret.level === 'medium',
-                      'bg-severity-low': secret.level === 'low',
-                      'bg-severity-unknown': !secret.level || secret.level === 'unknown',
-                    })}
-                  ></div>
-                  <div className="w-[14px] h-[14px] shrink-0">
-                    <SecretsIcon />
-                  </div>
-                  <DFLink
-                    to={{
-                      pathname: `./${encodeURIComponent(secret.node_id)}`,
-                      search: searchParams.toString(),
-                    }}
-                    className="flex items-center min-w-0"
-                  >
-                    <div className="text-p7 truncate">
-                      <TruncatedText text={secret.name} />
+                <td className="w-[80%] px-0 pt-0 pb-1">
+                  <div className="flex gap-x-[8px] items-center">
+                    <div
+                      className={cn('w-[3px] h-[18px] rounded shrink-0', {
+                        'bg-severity-critical': secret.level === 'critical',
+                        'bg-severity-high': secret.level === 'high',
+                        'bg-severity-medium': secret.level === 'medium',
+                        'bg-severity-low': secret.level === 'low',
+                        'bg-severity-unknown':
+                          !secret.level || secret.level === 'unknown',
+                      })}
+                    ></div>
+                    <div className="w-[14px] h-[14px] shrink-0">
+                      <SecretsIcon />
                     </div>
-                  </DFLink>
+                    <DFLink
+                      to={{
+                        pathname: `./${encodeURIComponent(secret.node_id)}`,
+                        search: searchParams.toString(),
+                      }}
+                      className="flex items-center min-w-0"
+                    >
+                      <div className="text-p7 truncate">
+                        <TruncatedText text={secret.name} />
+                      </div>
+                    </DFLink>
+                  </div>
                 </td>
-                <td className="w-[20%] px-0 pt-0 pb-1">
+                <td className="w-[20%] px-0 pt-0 pb-1 pl-1">
                   <div className="flex gap-1">
                     <SeverityBadgeIcon
                       severity={secret.level as SecretSeverityType}
