@@ -298,7 +298,10 @@ const CustomTable = <TData extends RowData>(
                       );
                     })}
                   >
-                    <button className="text-text-input-value flex items-center gap-1 text-p3">
+                    <button
+                      className="text-text-input-value flex items-center gap-1 text-p3"
+                      data-testid="showRowId"
+                    >
                       {table.getState().pagination.pageSize}{' '}
                       <div className="h-3 w-3">
                         <TableChevronDown />

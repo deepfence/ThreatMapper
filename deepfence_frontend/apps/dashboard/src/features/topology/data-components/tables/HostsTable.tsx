@@ -789,7 +789,7 @@ const DataTable = ({
 
                   <Tooltip
                     content={
-                      <div className="flex-col gap-2 dark:text-text-text-and-icon">
+                      <div className="flex-col gap-2 dark:text-text-text-and-icon text-text-text-inverse">
                         <div className="text-h5">Update Available</div>
                         <div className="text-p6">
                           Version <span className="text-h6">{versions[0]}</span> is
@@ -797,6 +797,7 @@ const DataTable = ({
                           <DFLink
                             href="https://community.deepfence.io/threatmapper/docs/sensors/"
                             target="_blank"
+                            className="dark:text-text-link text-blue-500"
                           >
                             the instructions
                           </DFLink>{' '}
@@ -804,6 +805,7 @@ const DataTable = ({
                           <DFLink
                             href="https://www.deepfence.io/threatstryker"
                             target="_blank"
+                            className="dark:text-text-link text-blue-500"
                           >
                             ThreatStryker
                           </DFLink>

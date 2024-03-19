@@ -131,17 +131,20 @@ export const Pagination = ({
     <div className="flex justify-end items-center gap-4">
       <div className={`text-text-text-and-icon text-p4`}>
         Showing{' '}
-        <span className="text-text-input-value text-p3">
+        <span className="text-text-input-value text-p3" data-testid="showingId">
           {currentShowing[0]}-{currentShowing[1]}
         </span>
         {!approximatePagination ? (
           <>
             <span> of</span>
-            <span className="text-text-input-value text-p3"> {totalRows}</span>
+            <span className="text-text-input-value text-p3" data-testid="ofTotalRowsId">
+              {' '}
+              {totalRows}
+            </span>
           </>
         ) : null}
       </div>
-      <div className={cn(`flex flex-row flex-nowrap`)}>
+      <div className={cn(`flex flex-row flex-nowrap`)} data-testid="pageButtonId">
         <PageButton
           data-testid="pagination-prev"
           label={

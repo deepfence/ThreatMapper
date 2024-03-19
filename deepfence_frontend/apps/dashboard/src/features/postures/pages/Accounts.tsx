@@ -407,6 +407,7 @@ const Filters = () => {
             onClearAll={() => {
               setSearchParams((prev) => {
                 prev.delete('org_accounts');
+                prev.delete('page');
                 return prev;
               });
             }}
@@ -416,6 +417,7 @@ const Filters = () => {
                 value.forEach((id) => {
                   prev.append('org_accounts', id);
                 });
+                prev.delete('page');
                 return prev;
               });
             }}
@@ -429,6 +431,7 @@ const Filters = () => {
             onClearAll={() => {
               setSearchParams((prev) => {
                 prev.delete(`${nodeType}_accounts`);
+                prev.delete('page');
                 return prev;
               });
             }}
@@ -438,6 +441,7 @@ const Filters = () => {
                 value.forEach((id) => {
                   prev.append(`${nodeType}_accounts`, id);
                 });
+                prev.delete('page');
                 return prev;
               });
             }}
@@ -1150,7 +1154,7 @@ const AccountTable = ({
                 {upgradeAvailable && (
                   <Tooltip
                     content={
-                      <div className="flex-col gap-2 dark:text-text-text-and-icon">
+                      <div className="flex-col gap-2 dark:text-text-text-and-icon text-text-text-inverse">
                         <div className="text-h5">Update Available.</div>
                         <div className="text-p6">
                           Version <span className="text-h6">{versions[0]}</span> is
@@ -1158,6 +1162,7 @@ const AccountTable = ({
                           <DFLink
                             href="https://community.deepfence.io/threatmapper/docs/cloudscanner/"
                             target="_blank"
+                            className="dark:text-text-link text-blue-500"
                           >
                             these instructions
                           </DFLink>{' '}
@@ -1166,6 +1171,7 @@ const AccountTable = ({
                           <DFLink
                             href="https://www.deepfence.io/threatstryker"
                             target="_blank"
+                            className="dark:text-text-link text-blue-500"
                           >
                             ThreatStryker
                           </DFLink>

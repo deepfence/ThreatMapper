@@ -32,15 +32,15 @@ interface CardConnectProps {
 }
 
 const ACCOUNT_CONNECTOR_TITLE: { [k: string]: string } = {
-  docker: 'Docker container',
-  aws: 'Amazon web services',
-  gcp: 'Google cloud platform',
-  azure: 'Microsoft azure',
-  linux: 'Linux bare-metal/vm',
+  docker: 'Connect a Docker Container',
+  aws: 'Connect to Amazon Web Services',
+  gcp: 'Connect to Google Cloud',
+  azure: 'Connect to Azure Cloud',
+  linux: 'Connect a Linux Machine',
   host: 'Host',
-  kubernetes: 'Kubernetes cluster',
+  kubernetes: 'Connect a Kubernetes Cluster',
   cluster: 'Cluster',
-  aws_ecs: 'AWS ECS (EC2 Provider)',
+  aws_ecs: 'Connect AWS ECS (EC2 Provider)',
 } as const;
 
 const CardConnect = ({ label, path, icon }: CardConnectProps) => {
@@ -208,13 +208,13 @@ const Host = () => {
 const Instructions = ({ connectorType }: { connectorType: string }) => {
   return (
     <>
-      <div className="mt-2 flex gap-x-2 items-center">
+      <div className="my-2 flex gap-x-2 items-center">
         <DFLink to={'../connection-instructions'}>
           <div className="w-6 h-6 -rotate-90">
             <ArrowLine />
           </div>
         </DFLink>
-        <h3 className="font-medium text-gray-900 dark:text-white text-base">
+        <h3 className="text-h4 text-text-input-value">
           {ACCOUNT_CONNECTOR_TITLE[connectorType]}
         </h3>
       </div>
@@ -239,9 +239,7 @@ const Connectors = () => {
   return (
     <div className="max-w-[900px]">
       <div className="mt-2">
-        <h3 className="font-medium text-gray-900 dark:text-white text-base">
-          Connection instructions
-        </h3>
+        <h3 className="text-h6 text-text-input-value">Connection instructions</h3>
       </div>
       <div className="h-full dark:text-white mt-4">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 sm:grid-cols-2">

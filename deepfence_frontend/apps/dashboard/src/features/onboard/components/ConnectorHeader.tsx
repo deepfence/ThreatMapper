@@ -97,7 +97,7 @@ export const ConnectorHeader = ({
             {title}
           </h1>
           {description && (
-            <p className="text-p4 mt-1.5 mb-4 dark:text-text-input-value text-text-text-and-icon">
+            <p className="text-p4a mt-1.5 mb-4 dark:text-text-input-value text-text-text-and-icon">
               {description}
             </p>
           )}

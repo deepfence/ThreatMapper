@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Checkbox, TextInput } from 'ui-components';
+import { Card, Checkbox, TextInput } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
@@ -27,22 +27,22 @@ export const DockerPriavateConnectorForm = ({
 
   return (
     <>
-      <>
-        <div className="text-p4 text-text-input-value">
-          Using Certificate based Docker client Authentication? A custom certificate is
-          configured by creating a directory under /etc/docker/certs.d on Deepfence
-          console machine, using the same name as the registry&apos;s hostname provided
-          above. All *.crt files are added to this directory as CA roots &nbsp;
-          <DFLink
-            href={`https://docs.docker.com/engine/security/certificates/`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            More information
-          </DFLink>
-          .
-        </div>
-        <p className="mt-6 text-p1 text-text-input-value">Enter Information</p>
+      <div className="text-p4 text-text-input-value -mt-2.5 mb-4">
+        Using Certificate based Docker client Authentication? A custom certificate is
+        configured by creating a directory under /etc/docker/certs.d on Deepfence console
+        machine, using the same name as the registry&apos;s hostname provided above. All
+        *.crt files are added to this directory as CA roots &nbsp;
+        <DFLink
+          href={`https://docs.docker.com/engine/security/certificates/`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          More information
+        </DFLink>
+        .
+      </div>
+      <Card className="p-4">
+        <p className="text-p1 text-text-input-value">Enter Information</p>
         <div className="w-full relative mt-4 flex flex-col gap-y-8">
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
@@ -100,12 +100,12 @@ export const DockerPriavateConnectorForm = ({
             </div>
           )}
 
-          <div className="text-p7 text-text-input-value">
+          <div className="text-p7a text-text-input-value">
             Supported Versions: API version v2
           </div>
         </div>
-        {errorMessage && <p className="mt-4 text-status-error text-p7">{errorMessage}</p>}
-      </>
+        {errorMessage && <p className="mt-2 text-status-error text-p7">{errorMessage}</p>}
+      </Card>
     </>
   );
 };

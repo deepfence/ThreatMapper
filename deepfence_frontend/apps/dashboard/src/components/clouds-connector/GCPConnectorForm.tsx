@@ -18,7 +18,7 @@ export const GCPConnectorForm = () => {
         }
         title="Terraform"
       >
-        <div className="text-p7 text-text-text-and-icon">
+        <div className="text-p7a text-text-text-and-icon">
           Connect to your Google Cloud Account via Terraform. Find out more information by{' '}
           <DFLink
             href={`https://community.deepfence.io/threatmapper/docs/v2.1/cloudscanner/gcp`}
