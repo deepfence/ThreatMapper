@@ -26,5 +26,12 @@
         {{ end }}
     </table>
 </div>
+{{ range $key, $value := .NodeWiseData.SeverityCount }}
+{{ $scanData := index $.NodeWiseData.ScanData $key }}
+{{ if $scanData.ScanResults }}
 <div class="page-break"></div>
+{{ break }}
+{{ end }}
+{{ end }}
+
 {{ end }}
