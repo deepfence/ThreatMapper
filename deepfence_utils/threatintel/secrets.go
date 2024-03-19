@@ -43,6 +43,10 @@ func DownloadSecretsRules(ctx context.Context, entry Entry) error {
 	}
 
 	// create node in neo4j
+	return UpdateSecretsRulesInfo(ctx, url, sha, strings.TrimPrefix(path, "database/"))
+}
+
+func UpdateSecretsRulesInfo(ctx context.Context, url, hash, path string) error {
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -58,8 +62,8 @@ func DownloadSecretsRules(ctx context.Context, entry Entry) error {
 			n.updated_at=TIMESTAMP()`,
 		map[string]interface{}{
 			"rules_url": url,
-			"hash":      sha,
-			"path":      strings.TrimPrefix(path, "database/"),
+			"hash":      hash,
+			"path":      path,
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("failed to update SecretsRules on neo4j")

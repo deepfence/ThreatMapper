@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"mime/multipart"
 	"os"
 	"path"
 	"sort"
@@ -28,10 +27,6 @@ var (
 	ListingPath          = path.Join(VulnerabilityDBStore, ListingJSON)
 	// DeepfenceVulnDBURL   = "https://threat-intel.deepfence.io/vulnerability-db/listing.json"
 )
-
-type DBUploadRequest struct {
-	Database multipart.File `formData:"database" json:"database" validate:"required" required:"true"`
-}
 
 type VulnerabilityDBListing struct {
 	Available map[string][]Database `json:"available"`

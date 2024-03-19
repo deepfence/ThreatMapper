@@ -1,10 +1,12 @@
 package cronjobs
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -13,10 +15,14 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
+	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
+
+const cloudControlsBasePath = "/cloud_controls"
 
 var BenchmarksAvailableMap = map[string][]string{
 	"aws":        {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2"},
@@ -52,6 +58,33 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 
 	log := log.WithCtx(ctx)
 
+	// fetch rules from file server
+	_, _, fpath, err := threatintel.FetchPostureControlsInfo(ctx)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		return err
+	}
+
+	mc, err := directory.MinioClient(directory.WithDatabaseContext(ctx))
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		return err
+	}
+
+	buff, err := mc.DownloadFileContexts(ctx, fpath, minio.GetObjectOptions{})
+	if err != nil {
+		log.Error().Err(err).Msgf("failed to download file %s", fpath)
+		return err
+	}
+
+	// cleanup old controls
+	os.RemoveAll(cloudControlsBasePath)
+	os.MkdirAll(cloudControlsBasePath, 0755)
+
+	if err := utils.ExtractTarGz(bytes.NewReader(buff), cloudControlsBasePath); err != nil {
+		return err
+	}
+
 	log.Info().Msgf("Starting Cloud Compliance Population")
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -79,7 +112,7 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 		ctx, span := telemetry.NewSpan(ctx, "cloud-compliance", cloud+"-cloud-compliance-control")
 		defer span.End()
 
-		cwd := "/cloud_controls/" + cloud
+		cwd := path.Join(cloudControlsBasePath, cloud)
 		for _, benchmark := range benchmarksAvailable {
 			controlFilePath := fmt.Sprintf("%s/%s.json", cwd, benchmark)
 			controlsJson, err := os.ReadFile(controlFilePath)

@@ -734,7 +734,6 @@ func ExtractTarGz(gzipStream io.Reader, targetPath string) error {
 	for {
 		header, err := tarReader.Next()
 		if err == io.EOF {
-			log.Info().Msgf("ExtractTarGz: EOF reached")
 			break
 		} else if err != nil {
 			log.Error().Err(err).Msg("ExtractTarGz: Next() failed")

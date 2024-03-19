@@ -836,6 +836,15 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 	d.AddOperation("uploadVulnerabilityDatabase", http.MethodPut, "/deepfence/database/vulnerability",
 		"Upload Vulnerability Database", "Upload Vulnerability Database for use in vulnerability scans",
 		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
+	d.AddOperation("uploadSecretsRules", http.MethodPut, "/deepfence/database/secret",
+		"Upload Secrets Rules", "Upload secrets rules for use in secrets scans",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
+	d.AddOperation("uploadMalwareRules", http.MethodPut, "/deepfence/database/malware",
+		"Upload Malware Rules", "Upload malware rules for use in malware scans",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
+	d.AddOperation("uploadPostureControls", http.MethodPut, "/deepfence/database/posture",
+		"Upload Posture Controls", "Upload posture controls for use in posture scans",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
 }
 
 func (d *OpenAPIDocs) AddLicenseOperations() {

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"path"
@@ -23,13 +24,15 @@ const (
 	threatintelPollDuration = 5 * time.Hour
 
 	// database types
-	DBTypeVulnerability        = "vulnerability-scan"
-	DBTypeSecrets              = "secret-scan"
-	DBTypeMalware              = "malware-scan"
-	DBTypeLinuxCompliance      = "compliance-scan/linux"
-	DBTypeKubernetesCompliance = "compliance-scan/kubernetes"
-	DBTypeCloudCompliance      = "compliance-scan/cloud"
+	DBTypeVulnerability = "vulnerability"
+	DBTypeSecrets       = "secret"
+	DBTypeMalware       = "malware"
+	DBTypePosture       = "posture"
 )
+
+type DBUploadRequest struct {
+	Database multipart.File `formData:"database" json:"database" validate:"required" required:"true"`
+}
 
 var ErrDatabaseNotFound = errors.New("database type not found")
 

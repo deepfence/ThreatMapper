@@ -2,66 +2,125 @@ package threatintel
 
 import (
 	"context"
-	"os"
+	"fmt"
+	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
-	"golang.org/x/sync/errgroup"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-const (
-	cloudControlsBasePath = "/cloud_controls"
+var (
+	PostureControlsStore = "posture"
 )
 
-func DownloadAndPopulateCloudControls(ctx context.Context, entries []Entry) error {
+func DownloadAndPopulateCloudControls(ctx context.Context, entry Entry) error {
 
 	log.Info().Msg("download latest cloud controls")
 
 	ctx, span := telemetry.NewSpan(ctx, "threatintel", "download-and-populate-cloud-controls")
 	defer span.End()
 
-	// cleanup old controls
-	os.RemoveAll(cloudControlsBasePath)
-	os.MkdirAll(cloudControlsBasePath, 0755)
-
-	// download cloud controls in parallel
-	g, ctx := errgroup.WithContext(ctx)
-
-	for _, entry := range entries {
-		e := entry
-		g.Go(func() error {
-			content, err := downloadFile(ctx, e.URL)
-			if err != nil {
-				log.Error().Err(err).Msgf("failed to download controls type %s", e.Type)
-				return err
-			}
-
-			if err := utils.ExtractTarGz(content, cloudControlsBasePath); err != nil {
-				log.Error().Err(err).Msgf("failed to exract the cloud controls file type %s", e.Type)
-				return err
-			}
-			return nil
-		})
+	// download latest rules and uplaod to minio
+	content, err := downloadFile(ctx, entry.URL)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to download posture controls")
+		return err
 	}
 
-	if err := g.Wait(); err != nil {
-		log.Error().Err(err).Msg("error while downloading cloud controls")
+	path, sha, err := UploadToMinio(ctx, content.Bytes(),
+		PostureControlsStore, fmt.Sprintf("posture-controls-%d.tar.gz", entry.Built.Unix()))
+	if err != nil {
+		log.Error().Err(err).Msg("failed to uplaod posture controls to fileserver")
+		return err
+	}
+
+	url, err := ExposeFile(ctx, path)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to expose posture controls on fileserver")
+		return err
+	}
+
+	if err := UpdatePostureControlsInfo(ctx, url, sha, strings.TrimPrefix(path, "database/")); err != nil {
 		return err
 	}
 
 	// trigger job to load cloud controls
+
+	return TriggerLoadCloudControls(ctx)
+}
+
+func TriggerLoadCloudControls(ctx context.Context) error {
 	worker, err := directory.Worker(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get worker instance")
 		return err
 	}
-	err = worker.EnqueueUnique(utils.CloudComplianceControlsTask, []byte{}, utils.CritialTaskOpts()...)
+	err = worker.Enqueue(utils.CloudComplianceControlsTask, []byte{}, utils.CritialTaskOpts()...)
 	if err != nil && err != asynq.ErrTaskIDConflict {
 		log.Error().Err(err).Msgf("failed to enqueue %s", utils.CloudComplianceControlsTask)
 		return err
 	}
 	return nil
+}
+
+func UpdatePostureControlsInfo(ctx context.Context, url, hash, path string) error {
+	nc, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	_, err = session.Run(ctx, `
+	MERGE (n:PostureControls{node_id: "latest"})
+	SET n.rules_url=$rules_url,
+		n.rules_hash=$hash,
+		n.path=$path,
+		n.updated_at=TIMESTAMP()`,
+		map[string]interface{}{
+			"rules_url": url,
+			"hash":      hash,
+			"path":      path,
+		})
+	if err != nil {
+		log.Error().Err(err).Msg("failed to update PostureControls on neo4j")
+		return err
+	}
+
+	return nil
+}
+
+func FetchPostureControlsInfo(ctx context.Context) (url, hash, path string, err error) {
+	nc, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return "", "", "", err
+	}
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx)
+	if err != nil {
+		return "", "", "", err
+	}
+	defer tx.Close(ctx)
+
+	queryPostureControls := `
+	MATCH (s:PostureControls{node_id: "latest"})
+	RETURN s.rules_url, s.rules_hash, s.path`
+
+	r, err := tx.Run(ctx, queryPostureControls, map[string]interface{}{})
+	if err != nil {
+		return "", "", "", err
+	}
+	rec, err := r.Single(ctx)
+	if err != nil {
+		return "", "", "", err
+	}
+
+	return rec.Values[0].(string), rec.Values[1].(string), rec.Values[2].(string), nil
+
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -115,6 +116,10 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 
 	listing, err := FetchThreatIntelListing(ctx, token)
 	if err != nil {
+		// renew rules url expiry
+		if err := UpdateRulesUrlExpiry(ctx); err != nil {
+			log.Err(err).Msgf("failed to renew url rules expiry")
+		}
 		log.Error().Err(err).Msg("failed to load latest listing")
 		return err
 	}
@@ -168,17 +173,14 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 	})
 
 	// download cloud controls and populate them
-	complianceInfo, err := listing.GetLatestN(ConsoleVersion,
-		threatintel.DBTypeCloudCompliance,
-		threatintel.DBTypeKubernetesCompliance,
-		threatintel.DBTypeLinuxCompliance)
+	postureInfo, err := listing.GetLatest(ConsoleVersion, threatintel.DBTypePosture)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get compliance controls info")
 		return err
 	}
 
 	g.Go(func() error {
-		if err := threatintel.DownloadAndPopulateCloudControls(ctx, complianceInfo); err != nil {
+		if err := threatintel.DownloadAndPopulateCloudControls(ctx, postureInfo); err != nil {
 			log.Error().Err(err).Msg("failed to download cloud controls")
 			return err
 		}
@@ -186,4 +188,45 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 	})
 
 	return g.Wait()
+}
+
+func UpdateRulesUrlExpiry(ctx context.Context) error {
+
+	// renew secrets rules
+	_, shash, spath, err := threatintel.FetchSecretsRulesInfo(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get secrets rules info")
+		return err
+	}
+
+	surl, err := threatintel.ExposeFile(ctx, path.Join("database", spath))
+	if err != nil {
+		log.Error().Err(err).Msg("failed to expose secrets rule file")
+		return err
+	}
+
+	if err := threatintel.UpdateSecretsRulesInfo(ctx, surl, shash, spath); err != nil {
+		log.Error().Err(err).Msg("failed to update secrets rule file")
+		return err
+	}
+
+	// renew malware rules
+	_, mhash, mpath, err := threatintel.FetchMalwareRulesInfo(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get malware rules info")
+		return err
+	}
+
+	url, err := threatintel.ExposeFile(ctx, path.Join("database", mpath))
+	if err != nil {
+		log.Error().Err(err).Msg("failed to expose malware rule file")
+		return err
+	}
+
+	if err := threatintel.UpdateMalwareRulesInfo(ctx, url, mhash, mpath); err != nil {
+		log.Error().Err(err).Msg("failed to update malware rule file")
+		return err
+	}
+
+	return nil
 }

@@ -551,6 +551,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			// vulnerability db management
 			r.Route("/database", func(r chi.Router) {
 				r.Put("/vulnerability", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadVulnerabilityDB))
+				r.Put("/secret", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadSecretsRules))
+				r.Put("/malware", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadMalwareRules))
+				r.Put("/posture", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadPostureControls))
 			})
 
 			r.Route("/license", func(r chi.Router) {
