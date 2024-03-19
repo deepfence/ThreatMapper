@@ -609,7 +609,7 @@ export const useIntegrationTableColumn = (
           return (
             <Tooltip
               content={
-                <pre className="text-p7 text-text-input-value h-[300px] overflow-auto">
+                <pre className="text-p7 dark:text-text-input-value text-text-text-inverse max-h-[300px] overflow-auto">
                   {JSON.stringify(displayFilters, null, 2)}
                 </pre>
               }

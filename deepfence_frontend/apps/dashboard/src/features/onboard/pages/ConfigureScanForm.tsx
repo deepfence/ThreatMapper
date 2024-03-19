@@ -34,7 +34,7 @@ const SelectedAccountComponent = ({
   accounts: string[];
 }) => {
   return (
-    <span className={'text-p4 text-gray-500 text-text-text-and-icon'}>
+    <span className={'text-p4 text-text-text-and-icon'}>
       {accounts.length > 0 ? `${type} / ${accounts[0]}` : null}
       &nbsp;
       {accounts.length > 1 && (
@@ -43,11 +43,12 @@ const SelectedAccountComponent = ({
             <ul>
               {accounts.map((node, index) => {
                 return (
-                  <li key={node}>
-                    <span className="text-p7 text-text-input-value py-2 pr-1">
-                      {index + 1}.
-                    </span>
-                    <span className="text-p7 text-text-input-value">{node}</span>
+                  <li
+                    key={node}
+                    className="text-p7 dark:text-text-input-value text-text-text-inverse"
+                  >
+                    <span className="py-2 pr-1">{index + 1}.</span>
+                    <span className="">{node}</span>
                   </li>
                 );
               })}
@@ -55,9 +56,7 @@ const SelectedAccountComponent = ({
           }
           triggerAsChild
         >
-          <span className={'text-p7 text-text-input-value'}>
-            +{accounts.length - 1} more
-          </span>
+          <span className={'text-p7 cursor-pointer'}>+{accounts.length - 1} more</span>
         </Tooltip>
       )}
     </span>
