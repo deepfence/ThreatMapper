@@ -18,7 +18,7 @@ export const RegisterUser = () => {
         Register for Deepfence
       </h1>
       <TextInput
-        className="mt-8"
+        className="mt-6"
         label="First Name"
         type={'text'}
         placeholder="First Name"
@@ -31,7 +31,7 @@ export const RegisterUser = () => {
         type={'text'}
         placeholder="Last Name"
         name="lastName"
-        className="mt-8"
+        className="mt-6"
         color={data?.fieldErrors?.lastName ? 'error' : 'default'}
         helperText={data?.fieldErrors?.lastName}
       />
@@ -40,7 +40,7 @@ export const RegisterUser = () => {
         type={'text'}
         placeholder="Email"
         name="email"
-        className="mt-8"
+        className="mt-6"
         color={data?.fieldErrors?.email ? 'error' : 'default'}
         helperText={data?.fieldErrors?.email}
       />
@@ -49,7 +49,7 @@ export const RegisterUser = () => {
         type={'password'}
         placeholder="Password"
         name="password"
-        className="mt-8"
+        className="mt-6"
         color={data?.fieldErrors?.password ? 'error' : 'default'}
         helperText={data?.fieldErrors?.password}
       />
@@ -58,7 +58,7 @@ export const RegisterUser = () => {
         type={'password'}
         placeholder="Confirm Password"
         name="confirmPassword"
-        className="mt-8"
+        className="mt-6"
         color={data?.fieldErrors?.confirmPassword ? 'error' : 'default'}
         helperText={data?.fieldErrors?.confirmPassword}
       />
@@ -67,11 +67,11 @@ export const RegisterUser = () => {
         type={'text'}
         placeholder="Company"
         name="company"
-        className="mt-8"
+        className="mt-6"
         color={data?.fieldErrors?.company ? 'error' : 'default'}
         helperText={data?.fieldErrors?.company}
       />
-      <div className={`mt-8 text-p7`}>
+      <div className={`mt-6 text-p7`}>
         <Checkbox
           checked={eulaAccepted}
           onCheckedChange={(checked) => {
@@ -99,7 +99,7 @@ export const RegisterUser = () => {
       )}
 
       <div
-        className={cn('flex flex-col w-full mt-6', {
+        className={cn('flex flex-col w-full mt-4', {
           'mt-4 ': data?.error?.length,
         })}
       >

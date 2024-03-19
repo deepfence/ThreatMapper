@@ -384,12 +384,7 @@ export function ListboxOption<TType>({
     >
       {({ selected }) => (
         <>
-          {multiple ? (
-            <span className="relative">
-              <span className="absolute inset-0"></span>
-              <Checkbox checked={selected} />
-            </span>
-          ) : null}
+          {multiple ? <Checkbox checked={selected} /> : null}
           {children}
         </>
       )}
