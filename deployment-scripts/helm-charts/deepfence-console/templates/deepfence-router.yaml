@@ -46,9 +46,9 @@ spec:
               value: {{ include "deepfence-console.fullname" . }}-server
             - name: API_SERVICE_PORT
               value: {{ .Values.server.service.port | quote }}
-            - name: DEEPFENCE_MINIO_HOST
+            - name: DEEPFENCE_FILE_SERVER_HOST
               value: {{ include "deepfence-console.fullname" . }}-file-server
-            - name: DEEPFENCE_MINIO_PORT
+            - name: DEEPFENCE_FILE_SERVER_PORT
               value: "9000"
           envFrom:
             - configMapRef:

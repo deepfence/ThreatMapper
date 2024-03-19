@@ -118,7 +118,7 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 	if err != nil {
 		return err
 	}
-	mc, err := directory.MinioClient(ctx)
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return err
 	}

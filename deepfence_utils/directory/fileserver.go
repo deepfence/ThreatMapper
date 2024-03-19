@@ -24,13 +24,13 @@ import (
 )
 
 var (
-	MinioBucket         = utils.GetEnvOrDefault("DEEPFENCE_MINIO_BUCKET", string(NonSaaSDirKey))
-	MinioDatabaseBucket = utils.GetEnvOrDefault("DEEPFENCE_MINIO_DB_BUCKET", string(DatabaseDirKey))
-	minioClientMap      sync.Map
+	FileServerBucket         = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_BUCKET", string(NonSaaSDirKey))
+	FileServerDatabaseBucket = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_DB_BUCKET", string(DatabaseDirKey))
+	fileServerClientMap      sync.Map
 )
 
 func init() {
-	minioClientMap = sync.Map{}
+	fileServerClientMap = sync.Map{}
 }
 
 type AlreadyPresentError struct {
@@ -73,7 +73,7 @@ type FileManager interface {
 	CleanNamespace(ctx context.Context) error
 }
 
-type MinioFileManager struct {
+type FileServerFileManager struct {
 	client    *minio.Client
 	bucket    string
 	namespace string
@@ -106,7 +106,7 @@ func checkIfFileExists(ctx context.Context, client *minio.Client, bucket, filena
 	return info.Key, true
 }
 
-func (mfm *MinioFileManager) optionallyAddNamespacePrefix(filePath string, addFilePathPrefix bool) string {
+func (mfm *FileServerFileManager) optionallyAddNamespacePrefix(filePath string, addFilePathPrefix bool) string {
 	if addFilePathPrefix {
 		return mfm.addNamespacePrefix(filePath)
 	} else {
@@ -114,11 +114,11 @@ func (mfm *MinioFileManager) optionallyAddNamespacePrefix(filePath string, addFi
 	}
 }
 
-func (mfm *MinioFileManager) addNamespacePrefix(filePath string) string {
+func (mfm *FileServerFileManager) addNamespacePrefix(filePath string) string {
 	return filepath.Join(mfm.namespace, filePath)
 }
 
-func (mfm *MinioFileManager) ListFiles(ctx context.Context, pathPrefix string, recursive bool, maxKeys int, skipDir bool) []ObjectInfo {
+func (mfm *FileServerFileManager) ListFiles(ctx context.Context, pathPrefix string, recursive bool, maxKeys int, skipDir bool) []ObjectInfo {
 
 	ctx, span := telemetry.NewSpan(ctx, "fileserver", "list-files")
 	defer span.End()
@@ -154,7 +154,7 @@ func (mfm *MinioFileManager) ListFiles(ctx context.Context, pathPrefix string, r
 	return objectsInfo
 }
 
-func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context,
+func (mfm *FileServerFileManager) UploadLocalFile(ctx context.Context,
 	filename string, localFilename string, overwrite bool, extra interface{}) (UploadResult, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "fileserver", "upload-local-file")
@@ -200,7 +200,7 @@ func (mfm *MinioFileManager) UploadLocalFile(ctx context.Context,
 	}, nil
 }
 
-func (mfm *MinioFileManager) UploadFile(ctx context.Context,
+func (mfm *FileServerFileManager) UploadFile(ctx context.Context,
 	filename string, data []byte, overwrite bool, extra interface{}) (UploadResult, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "fileserver", "upload-file")
@@ -246,21 +246,21 @@ func (mfm *MinioFileManager) UploadFile(ctx context.Context,
 	}, nil
 }
 
-func (mfm *MinioFileManager) DeleteFile(ctx context.Context, filePath string, addFilePathPrefix bool, extra interface{}) error {
+func (mfm *FileServerFileManager) DeleteFile(ctx context.Context, filePath string, addFilePathPrefix bool, extra interface{}) error {
 	ctx, span := telemetry.NewSpan(ctx, "fileserver", "delete-file")
 	defer span.End()
 
 	return mfm.client.RemoveObject(ctx, mfm.bucket, mfm.optionallyAddNamespacePrefix(filePath, addFilePathPrefix), extra.(minio.RemoveObjectOptions))
 }
 
-func (mfm *MinioFileManager) DownloadFile(ctx context.Context, remoteFile string, localFile string, extra interface{}) error {
+func (mfm *FileServerFileManager) DownloadFile(ctx context.Context, remoteFile string, localFile string, extra interface{}) error {
 	ctx, span := telemetry.NewSpan(ctx, "fileserver", "download-file")
 	defer span.End()
 
 	return mfm.client.FGetObject(ctx, mfm.bucket, mfm.addNamespacePrefix(remoteFile), localFile, extra.(minio.GetObjectOptions))
 }
 
-func (mfm *MinioFileManager) DownloadFileTo(ctx context.Context, remoteFile string, writer io.WriteCloser, extra interface{}) error {
+func (mfm *FileServerFileManager) DownloadFileTo(ctx context.Context, remoteFile string, writer io.WriteCloser, extra interface{}) error {
 	ctx, span := telemetry.NewSpan(ctx, "fileserver", "download-file-to")
 	defer span.End()
 
@@ -277,7 +277,7 @@ func (mfm *MinioFileManager) DownloadFileTo(ctx context.Context, remoteFile stri
 	return writer.Close()
 }
 
-func (mfm *MinioFileManager) DownloadFileContexts(ctx context.Context, remoteFile string, extra interface{}) ([]byte, error) {
+func (mfm *FileServerFileManager) DownloadFileContexts(ctx context.Context, remoteFile string, extra interface{}) ([]byte, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "fileserver", "download-file-contents")
 	defer span.End()
@@ -297,7 +297,7 @@ func (mfm *MinioFileManager) DownloadFileContexts(ctx context.Context, remoteFil
 	return buff.Bytes(), nil
 }
 
-func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error) {
+func (mfm *FileServerFileManager) ExposeFile(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error) {
 	// Force browser to download file - url.Values{"response-content-disposition": []string{"attachment; filename=\"b.txt\""}},
 
 	ctx, span := telemetry.NewSpan(ctx, "fileserver", "expose-file")
@@ -340,7 +340,7 @@ func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, ad
 	return updateURL(urlLink.String(), consoleIP), nil
 }
 
-func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error) {
+func (mfm *FileServerFileManager) CreatePublicUploadURL(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "fileserver", "create-public-upload-url")
 	defer span.End()
@@ -373,15 +373,15 @@ func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath
 	return updateURL(urlLink.String(), consoleIP), nil
 }
 
-func (mfm *MinioFileManager) Client() interface{} {
+func (mfm *FileServerFileManager) Client() interface{} {
 	return mfm.client
 }
 
-func (mfm *MinioFileManager) Bucket() string {
+func (mfm *FileServerFileManager) Bucket() string {
 	return mfm.bucket
 }
 
-func (mfm *MinioFileManager) createBucketIfNeeded(ctx context.Context) error {
+func (mfm *FileServerFileManager) createBucketIfNeeded(ctx context.Context) error {
 
 	ctx, span := telemetry.NewSpan(ctx, "fileserver", "create-bucket-if-needed")
 	defer span.End()
@@ -399,7 +399,7 @@ func (mfm *MinioFileManager) createBucketIfNeeded(ctx context.Context) error {
 	return err
 }
 
-func (mfm *MinioFileManager) CreatePublicBucket(ctx context.Context, bucket string) error {
+func (mfm *FileServerFileManager) CreatePublicBucket(ctx context.Context, bucket string) error {
 
 	ctx, span := telemetry.NewSpan(ctx, "fileserver", "create-public-bucket")
 	defer span.End()
@@ -421,7 +421,7 @@ func (mfm *MinioFileManager) CreatePublicBucket(ctx context.Context, bucket stri
 	return nil
 }
 
-func (mfm *MinioFileManager) CleanNamespace(ctx context.Context) error {
+func (mfm *FileServerFileManager) CleanNamespace(ctx context.Context) error {
 
 	ctx, span := telemetry.NewSpan(ctx, "fileserver", "clear-namespace")
 	defer span.End()
@@ -439,31 +439,31 @@ func (mfm *MinioFileManager) CleanNamespace(ctx context.Context) error {
 }
 
 func updateURL(url string, consoleIP string) string {
-	minioHost := utils.GetEnvOrDefault("DEEPFENCE_MINIO_HOST", "deepfence-file-server")
-	minioPort := utils.GetEnvOrDefault("DEEPFENCE_MINIO_PORT", "9000")
+	fileServerHost := utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_HOST", "deepfence-file-server")
+	fileServerPort := utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_PORT", "9000")
 
 	updated := strings.ReplaceAll(url,
-		fmt.Sprintf("%s:%s", minioHost, minioPort),
+		fmt.Sprintf("%s:%s", fileServerHost, fileServerPort),
 		fmt.Sprintf("%s/file-server", consoleIP),
 	)
 
 	return strings.ReplaceAll(updated, "http://", "https://")
 }
 
-func newMinioClient(endpoints DBConfigs) (*minio.Client, error) {
-	if endpoints.Minio == nil {
+func newFileServerClient(endpoints DBConfigs) (*minio.Client, error) {
+	if endpoints.FileServer == nil {
 		return nil, errors.New("no defined minio config")
 	}
-	minioClient, err := minio.New(endpoints.Minio.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(endpoints.Minio.Username, endpoints.Minio.Password, ""),
-		Secure: endpoints.Minio.Secure,
-		Region: endpoints.Minio.Region,
+	minioClient, err := minio.New(endpoints.FileServer.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(endpoints.FileServer.Username, endpoints.FileServer.Password, ""),
+		Secure: endpoints.FileServer.Secure,
+		Region: endpoints.FileServer.Region,
 	})
 	return minioClient, err
 }
 
-func MinioClient(ctx context.Context) (FileManager, error) {
-	client, err := getClient(NewGlobalContext(), &minioClientMap, newMinioClient)
+func FileServerClient(ctx context.Context) (FileManager, error) {
+	client, err := getClient(NewGlobalContext(), &fileServerClientMap, newFileServerClient)
 	if err != nil {
 		return nil, err
 	}
@@ -473,12 +473,12 @@ func MinioClient(ctx context.Context) (FileManager, error) {
 		return nil, err
 	}
 
-	bucket := MinioBucket
+	bucket := FileServerBucket
 	if ns == DatabaseDirKey {
-		bucket = MinioDatabaseBucket
+		bucket = FileServerDatabaseBucket
 	}
 
-	return &MinioFileManager{
+	return &FileServerFileManager{
 		client:    client,
 		bucket:    bucket,
 		namespace: string(ns),

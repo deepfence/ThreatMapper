@@ -74,7 +74,7 @@ func (d *DockerConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.Conte
 	}
 	zipWriter.Flush()
 
-	mc, err := directory.MinioClient(ctx)
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return err
 	}

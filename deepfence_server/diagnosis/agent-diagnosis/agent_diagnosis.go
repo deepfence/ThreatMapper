@@ -116,7 +116,7 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 	if err != nil {
 		return err
 	}
-	mc, err := directory.MinioClient(ctx)
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return err
 	}

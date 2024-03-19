@@ -65,7 +65,7 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	mc, err := directory.MinioClient(directory.WithDatabaseContext(ctx))
+	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return err

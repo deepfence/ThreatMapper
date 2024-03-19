@@ -206,7 +206,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 	}
 
 	// upload sbom to minio
-	mc, err := directory.MinioClient(ctx)
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err

@@ -57,7 +57,7 @@ func sbomReport(ctx context.Context, params utils.ReportParams) (string, error) 
 	}
 
 	sbomFilePath := path.Join("/sbom", utils.ScanIDReplacer.Replace(params.Filters.ScanID)+".json.gz")
-	mc, err := directory.MinioClient(ctx)
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return "", err
 	}

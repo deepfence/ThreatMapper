@@ -33,10 +33,10 @@ import (
 var (
 	grypeConfig         = "/usr/local/bin/grype.yaml"
 	grypeBin            = "grype"
-	minioHost           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_HOST", "deepfence-file-server")
-	minioPort           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_PORT", "9000")
-	minioRegion         = os.Getenv("DEEPFENCE_MINIO_REGION")
-	minioBucket         = os.Getenv("DEEPFENCE_MINIO_DB_BUCKET")
+	minioHost           = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_HOST", "deepfence-file-server")
+	minioPort           = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_PORT", "9000")
+	minioRegion         = os.Getenv("DEEPFENCE_FILE_SERVER_REGION")
+	minioBucket         = os.Getenv("DEEPFENCE_FILE_SERVER_DB_BUCKET")
 	GRYPE_DB_UPDATE_URL string
 )
 
@@ -151,7 +151,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	}()
 
 	ctx, downloadSpan := telemetry.NewSpan(ctx, "vuln-scan", "download-sbom")
-	mc, err := directory.MinioClient(ctx)
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		downloadSpan.EndWithErr(err)

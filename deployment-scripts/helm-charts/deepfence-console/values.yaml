@@ -147,8 +147,8 @@ fileserver:
   # if create true then below values are used to create postgres database instance
   # set the below to change the default credentials
   # secrets:
-  #   MINIO_ROOT_USER: ""
-  #   MINIO_ROOT_PASSWORD: ""
+  #   FILE_SERVER_ROOT_USER: ""
+  #   FILE_SERVER_ROOT_PASSWORD: ""
   image:
     repository: deepfenceio/deepfence_file_server_ce
     pullPolicy: Always

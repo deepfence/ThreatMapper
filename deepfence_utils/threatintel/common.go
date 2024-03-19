@@ -88,7 +88,7 @@ func (l *Listing) GetLatestN(version string, dbType ...string) ([]Entry, error) 
 
 func UploadToMinio(ctx context.Context, fb []byte, dbPath, fName string) (string, string, error) {
 
-	mc, err := directory.MinioClient(directory.WithDatabaseContext(ctx))
+	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
 	if err != nil {
 		return "", "", err
 	}
@@ -104,7 +104,7 @@ func UploadToMinio(ctx context.Context, fb []byte, dbPath, fName string) (string
 
 func ExposeFile(ctx context.Context, fName string) (string, error) {
 
-	mc, err := directory.MinioClient(directory.WithDatabaseContext(ctx))
+	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
 	if err != nil {
 		return "", err
 	}

@@ -82,7 +82,7 @@ type GetDiagnosticLogsResponse struct {
 }
 
 func GetDiagnosticLogs(ctx context.Context) (*GetDiagnosticLogsResponse, error) {
-	mc, err := directory.MinioClient(ctx)
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return nil, err
 	}

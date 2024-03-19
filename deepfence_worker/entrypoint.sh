@@ -23,8 +23,8 @@ do
 done
 
 # wait for file server to start
-if [ "$DEEPFENCE_MINIO_HOST" != "s3.amazonaws.com" ]; then
-  until nc -z ${DEEPFENCE_MINIO_HOST} ${DEEPFENCE_MINIO_PORT};
+if [ "$DEEPFENCE_FILE_SERVER_HOST" != "s3.amazonaws.com" ]; then
+  until nc -z ${DEEPFENCE_FILE_SERVER_HOST} ${DEEPFENCE_FILE_SERVER_PORT};
   do
     echo "file server is unavailable - sleeping"
     sleep 5;
@@ -40,9 +40,9 @@ fi
 # DEEPFENCE_MALWARE_RULES_URL=""
 
 # for aws s3
-export GRYPE_DB_UPDATE_URL="http://${DEEPFENCE_MINIO_HOST}:${DEEPFENCE_MINIO_PORT}/database/database/vulnerability/listing.json"
-if [ "$DEEPFENCE_MINIO_HOST" == "s3.amazonaws.com" ]; then
-  export GRYPE_DB_UPDATE_URL="https://${DEEPFENCE_MINIO_DB_BUCKET}.s3.${DEEPFENCE_MINIO_REGION}.amazonaws.com/database/vulnerability/listing.json"
+export GRYPE_DB_UPDATE_URL="http://${DEEPFENCE_FILE_SERVER_HOST}:${DEEPFENCE_FILE_SERVER_PORT}/database/database/vulnerability/listing.json"
+if [ "$DEEPFENCE_FILE_SERVER_HOST" == "s3.amazonaws.com" ]; then
+  export GRYPE_DB_UPDATE_URL="https://${DEEPFENCE_FILE_SERVER_DB_BUCKET}.s3.${DEEPFENCE_FILE_SERVER_REGION}.amazonaws.com/database/vulnerability/listing.json"
 fi
 
 # update vulnerability databae

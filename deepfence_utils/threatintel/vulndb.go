@@ -108,7 +108,7 @@ func (v *VulnerabilityDBListing) Latest(version string) *Database {
 func VulnDBUpdateListing(ctx context.Context, newFile, newFileCheckSum string, buildTime time.Time) error {
 	log.Info().Msg("update vulnerability database listing")
 
-	mc, err := directory.MinioClient(directory.WithDatabaseContext(ctx))
+	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
@@ -126,10 +126,10 @@ func VulnDBUpdateListing(ctx context.Context, newFile, newFileCheckSum string, b
 		listing = NewVulnerabilityDBListing()
 	}
 
-	minioHost := utils.GetEnvOrDefault("DEEPFENCE_MINIO_HOST", "deepfence-file-server")
-	minioPort := utils.GetEnvOrDefault("DEEPFENCE_MINIO_PORT", "9000")
-	minioRegion := os.Getenv("DEEPFENCE_MINIO_REGION")
-	minioBucket := os.Getenv("DEEPFENCE_MINIO_DB_BUCKET")
+	minioHost := utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_HOST", "deepfence-file-server")
+	minioPort := utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_PORT", "9000")
+	minioRegion := os.Getenv("DEEPFENCE_FILE_SERVER_REGION")
+	minioBucket := os.Getenv("DEEPFENCE_FILE_SERVER_DB_BUCKET")
 
 	// for aws s3
 	fileURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s",

@@ -7,10 +7,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	url2 "net/url"
 	"path/filepath"
 	"time"
-
-	url2 "net/url"
 
 	m "github.com/minio/minio-go/v7"
 
@@ -90,7 +89,7 @@ func PrepareAgentBinariesReleases(ctx context.Context, versionedTarball map[stri
 	defer span.End()
 
 	processedTags := map[string]string{}
-	minio, err := directory.MinioClient(ctx)
+	minio, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return processedTags, err
 	}
