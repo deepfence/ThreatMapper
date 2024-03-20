@@ -7,6 +7,7 @@ export const comboboxInputCva = cva(
     'focus:outline-none',
     'pt-1.5 pb-[5px]',
     'border-b',
+    'bg-transparent',
     'transition-[background-size] duration-[0.2s] ease-[ease]',
   ],
   {
@@ -19,7 +20,7 @@ export const comboboxInputCva = cva(
             // bg styles
             'bg-df-gray-50',
             // text font
-            'text-p4',
+            'text-p4a',
             // text styles
             'dark:text-text-input-value text-text-text-and-icon',
             // disabled text color
@@ -38,7 +39,7 @@ export const comboboxInputCva = cva(
             // bg styles
             'bg-df-gray-50',
             // text font
-            'text-p4',
+            'text-p4a',
             // text styles
             'dark:text-text-input-value text-text-text-and-icon',
             // disabled text color

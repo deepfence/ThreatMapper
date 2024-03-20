@@ -116,14 +116,14 @@ const inputCva = cva(
         default: [
           cn(
             // border
-            'border-bg-border-form dark:disabled:border-df-gray-600/50 disabled:border-severity-unknown/50',
+            'dark:border-text-text-and-icon border-bg-border-form dark:disabled:border-df-gray-600/50 disabled:border-severity-unknown/50',
             // placeholder styles
-            'placeholder-text-helper disabled:placeholder-severity-unknown/50',
-            'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
+            'placeholder:text-severity-unknown/60 disabled:placeholder:text-severity-unknown/50',
+            'dark:placeholder:text-df-gray-600 dark:disabled:placeholder:text-df-gray-600/60',
             // text styles
             'text-text-input-value',
             // disabled text color
-            'disabled:text-severity-unknown/60 dark:disabled:text-df-gray-600',
+            'disabled:text-severity-unknown/60 dark:disabled:text-df-gray-600/60',
             // focus style
             'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
             'focus:border-b-accent-accent',
@@ -138,13 +138,13 @@ const inputCva = cva(
             // border
             'dark:border-chart-red border-status-error dark:disabled:border-df-gray-600/50 disabled:border-severity-unknown/50',
             // placeholder styles
-            'placeholder-text-helper disabled:placeholder-severity-unknown/60',
-            'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
+            'placeholder:text-severity-unknown/60 disabled:placeholder:text-severity-unknown/60',
+            'dark:placeholder:text-df-gray-600 dark:disabled:placeholder:text-df-gray-600/60',
             // text font
             // text styles
             'dark:text-text-input-value text-text-text-and-icon',
             // disabled text color
-            'disabled:text-severity-unknown/60 dark:disabled:text-df-gray-600',
+            'disabled:text-severity-unknown/60 dark:disabled:text-df-gray-600/60',
             // focus style
             'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
             'dark:focus:border-b-chart-red focus:border-b-status-error',

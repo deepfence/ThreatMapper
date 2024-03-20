@@ -151,9 +151,12 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
               {label?.length && (
                 <HUICombobox.Label
                   htmlFor={inputBtnId}
-                  className={cn('text-p3 text-text-text-and-icon pb-[10px]', {
-                    'text-df-gray-400 dark:text-df-gray-600': disabled,
-                  })}
+                  className={cn(
+                    'text-p3 dark:text-text-input-value text-text-text-and-icon" pb-[10px]',
+                    {
+                      'text-severity-unknown/60 dark:text-df-gray-600/60': disabled,
+                    },
+                  )}
                 >
                   {label}
                 </HUICombobox.Label>
@@ -170,7 +173,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           // display
                           'flex items-center gap-1.5 w-fit',
                           // border
-                          'border border-bg-grid-border rounded-[5px]',
+                          'border border-text-text-and-icon rounded-[5px]',
                           // bg
                           'bg-bg-card dark:hover:bg-bg-active-selection hover:bg-bg-breadcrumb-bar',
                           'text-p7a text-text-text-and-icon',
@@ -217,7 +220,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           ) : null}
                           <div
                             className={cn('pl-1.5', {
-                              'text-df-gray-400 dark:text-df-gray-600':
+                              'text-severity-unknown/60 dark:text-df-gray-600':
                                 !getDisplayValue?.(value as unknown as any),
                             })}
                           >
@@ -235,7 +238,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                     <PopoverPrimitive.Content asChild align="start" sideOffset={2}>
                       <div
                         className={cn(
-                          `bg-bg-card border border-bg-grid-border rounded-[5px] overflow-hidden data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down shadow-md dark:shadow-none`,
+                          `bg-bg-card border border-text-text-and-icon rounded-[5px] overflow-hidden data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down shadow-md dark:shadow-none`,
                           {
                             'w-[var(--radix-popper-anchor-width)]':
                               triggerVariant === 'select',
@@ -258,7 +261,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                             className={cn(
                               'pl-[6px] text-p6 dark:text-text-input-value text-text-text-and-icon',
                               'focus-visible:outline-none bg-bg-card',
-                              'placeholder:text-df-gray-600',
+                              'placeholder:text-severity-unknown/60 dark:placeholder:text-df-gray-600',
                               'min-w-0 w-full',
                             )}
                             onChange={(event) => {

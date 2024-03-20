@@ -25,18 +25,15 @@ const defaultStyle = cn(
   'border-bg-grid-border',
   // bg styles
   'bg-bg-card',
-  // placeholder styles
-  'placeholder-text-text-text-and-icon disabled:placeholder-severity-unknown/60',
-  'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
   // text styles
   'dark:text-text-input-value text-text-text-and-icon',
   // disabled text color
-  'disabled:text-severity-unknown/60 dark:disabled:text-gray-600',
+  'disabled:text-severity-unknown/60 dark:disabled:text-gray-600/60',
 );
 const defaultUnderlineStyle = cn(
   'focus-visible:outline-none',
   'border-transparent border-b rounded-none',
-  'dark:border-b-text-text-and-icon border-b-bg-border-form dark:disabled:border-b-gray-600 disabled:border-b-severity-unknown/60',
+  'dark:border-b-text-text-and-icon border-b-bg-border-form dark:disabled:border-b-gray-600/60 disabled:border-b-severity-unknown/60',
   // active
   'transition-[background-size] duration-[0.2s] ease-[ease]',
   'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
@@ -47,8 +44,6 @@ const defaultUnderlineStyle = cn(
   'data-[headlessui-state=open]:dark:border-b-accent-accent',
   'data-[headlessui-state=open]:border-b-[#0598f6]',
 
-  'placeholder-text-text-text-and-icon disabled:placeholder-severity-unknown/60',
-  'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
   // text styles
   'dark:text-text-input-value text-text-text-and-icon',
   // disabled text color
@@ -57,7 +52,7 @@ const defaultUnderlineStyle = cn(
 const defaultUnderlineJErrorStyle = cn(
   'focus-visible:outline-none',
   'border-transparent border-b rounded-none',
-  'dark:border-b-text-text-and-icon border-b-bg-border-form dark:disabled:border-b-gray-600 disabled:border-b-severity-unknown',
+  'dark:border-b-text-text-and-icon border-b-bg-border-form <dark:disabled:border-b-gray-600/60></dark:disabled:border-b-gray-600/60> disabled:border-b-severity-unknown',
   // active
   'transition-[background-size] duration-[0.2s] ease-[ease]',
   'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
@@ -67,8 +62,6 @@ const defaultUnderlineJErrorStyle = cn(
 
   'data-[headlessui-state=open]:border-b-status-error',
 
-  'placeholder-text-text-text-and-icon disabled:placeholder-severity-unknown/60',
-  'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
   // text styles
   'dark:text-text-input-value text-text-text-and-icon',
   // disabled text color
@@ -228,9 +221,12 @@ export function Listbox<TType, TActualType>({
               {label && (
                 <HUIListbox.Label
                   htmlFor={_id}
-                  className={cn('text-p3 text-text-text-and-icon pb-[10px]', {
-                    'text-severity-unknown dark:text-gray-600': disabled,
-                  })}
+                  className={cn(
+                    'text-p3 dark:text-text-input-value text-text-text-and-icon" pb-[10px]',
+                    {
+                      'text-severity-unknown/60 dark:text-df-gray-600/60': disabled,
+                    },
+                  )}
                 >
                   {required && <span>*</span>}
                   {label}
@@ -252,7 +248,7 @@ export function Listbox<TType, TActualType>({
                       {startIcon ? (
                         <div className="w-4 h-4 shrink-0">{startIcon}</div>
                       ) : null}
-                      <span className="truncate text-start block text-p4">
+                      <span className="truncate text-start block text-p4a">
                         {getPlaceholderValue(value, getDisplayValue, placeholder)}
                       </span>
                     </div>
@@ -401,9 +397,27 @@ function getPlaceholderValue<T extends unknown | unknown[]>(
     (typeof value === 'string' && isEmpty(value)) ||
     (Array.isArray(value) && value.length === 0)
   ) {
-    return <span className="block">{defaultPlaceholder || 'Select...'}</span>;
+    return (
+      <span
+        className={cn(
+          'text-severity-unknown/60 disabled:severity-unknown/60',
+          'dark:text-df-gray-600 dark:disabled:text-df-gray-600/60',
+        )}
+      >
+        {defaultPlaceholder || 'Select...'}
+      </span>
+    );
   } else if (getDisplayValue) {
     return getDisplayValue(value);
   }
-  return 'Select...';
+  return (
+    <span
+      className={cn(
+        'text-severity-unknown/60 disabled:severity-unknown/60',
+        'dark:text-df-gray-600 dark:disabled:text-df-gray-600/60',
+      )}
+    >
+      Select...
+    </span>
+  );
 }

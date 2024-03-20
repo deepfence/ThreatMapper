@@ -192,6 +192,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
           success: false,
           fieldErrors: {
             email: fieldErrors?.email,
+            role: fieldErrors?.role,
           },
         };
       } else if (inviteResponse.error.response.status === 403) {
@@ -380,11 +381,13 @@ const InviteUserModal = ({
               helperText={data?.fieldErrors?.email}
             />
             <Listbox
+              required
               variant="underline"
               value={_role}
               name="role"
               label={'Role'}
               placeholder="Role"
+              color={data?.fieldErrors?.role ? 'error' : 'default'}
               helperText={data?.fieldErrors?.role}
               onChange={(item: string) => {
                 _setRole(item);
@@ -904,12 +907,12 @@ const UserManagement = () => {
         />
       )}
       <APITokenComponent />
-      {openInviteUserForm && (
+      {openInviteUserForm ? (
         <InviteUserModal
           showDialog={openInviteUserForm}
           setShowDialog={setOpenInviteUserForm}
         />
-      )}
+      ) : null}
       <div className="mt-6" data-testid="userAccountsWrapperId">
         <div className="mt-2">
           <h3 className="text-h6 text-text-input-value">User accounts</h3>
