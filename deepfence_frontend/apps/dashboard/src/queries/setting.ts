@@ -256,7 +256,7 @@ export const settingQueries = createQueryKeys('setting', {
   },
   getLicense: () => {
     return {
-      queryKey: ['getCompanyLicense'],
+      queryKey: ['getLicense'],
       queryFn: async () => {
         const api = apiWrapper({
           fn: getSettingsApiClient().getLicence,
