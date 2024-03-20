@@ -70,10 +70,10 @@ import { module as connectorInstructions } from '@/features/settings/pages/Conne
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
 import { module as emailConfiguration } from '@/features/settings/pages/EmailConfiguration';
 import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
-import { module as licenseDetailsSettings } from '@/features/settings/pages/LicenseDetails';
 import { module as scanHistoryAndDbManagement } from '@/features/settings/pages/ScanHistoryAndDbManagement';
 import { module as scheduledJobs } from '@/features/settings/pages/ScheduledJobs';
 import { module as settings } from '@/features/settings/pages/Settings';
+import { module as threatMapperLicenseDetailsSettings } from '@/features/settings/pages/ThreatMapperLicenseDetails';
 import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
@@ -567,8 +567,8 @@ export const privateRoutes: CustomRouteObject[] = [
             ...connectorInstructions,
           },
           {
-            path: 'license-details',
-            ...licenseDetailsSettings,
+            path: 'tm-license-details',
+            ...threatMapperLicenseDetailsSettings,
             meta: { title: 'License Details' },
           },
         ],

@@ -167,7 +167,7 @@ const DeleteConfirmationModal = ({
   );
 };
 
-export const LicenseDetails = () => {
+export const ThreatMapperLicenseDetails = () => {
   return (
     <div className="space-y-2">
       <div className="mt-2">
@@ -283,6 +283,6 @@ const LicenseCard = ({ licenseData }: { licenseData: ModelLicense }) => {
 };
 
 export const module = {
-  element: <LicenseDetails />,
+  element: <ThreatMapperLicenseDetails />,
   action,
 };

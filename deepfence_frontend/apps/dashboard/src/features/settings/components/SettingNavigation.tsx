@@ -2,6 +2,8 @@ import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { NavLink } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 
+import { isThreatMapper } from '@/utils/version';
+
 const MenuItems: Array<{
   title: string;
   to: string;
@@ -38,11 +40,14 @@ const MenuItems: Array<{
     title: 'Connection instructions',
     to: '/settings/connection-instructions',
   },
-  {
-    title: 'License Details',
-    to: '/settings/license-details',
-  },
 ];
+
+if (isThreatMapper) {
+  MenuItems.push({
+    title: 'License Details',
+    to: '/settings/tm-license-details',
+  });
+}
 
 const linkClass = cn(
   'text-p5 dark:text-text-text-and-icon py-3 px-6',
