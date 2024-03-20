@@ -342,7 +342,7 @@ const ActionDropdown = ({
             >
               <span
                 className={cn('flex items-center text-red-700 dark:text-status-error', {
-                  'dark:text-gray-600':
+                  'dark:text-gray-600 text-severity-unknown':
                     isScanInProgress(scanStatus) || isScanDeletePending(scanStatus),
                 })}
               >

@@ -86,13 +86,13 @@ export function AppHeader() {
                   Theme
                 </DropdownSubMenu>
                 <DropdownItem
-                  onClick={() => {
+                  onSelect={() => {
                     fetcher.submit(null, {
                       method: 'post',
                       action: '/data-component/auth/logout',
                     });
                   }}
-                  className="text-status-error"
+                  className="text-status-error focus:text-status-error"
                 >
                   Logout
                 </DropdownItem>
