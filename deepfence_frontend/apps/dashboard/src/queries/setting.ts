@@ -254,4 +254,30 @@ export const settingQueries = createQueryKeys('setting', {
       },
     };
   },
+  getLicense: () => {
+    return {
+      queryKey: ['getCompanyLicense'],
+      queryFn: async () => {
+        const api = apiWrapper({
+          fn: getSettingsApiClient().getLicence,
+        });
+        const response = await api();
+
+        if (!response.ok) {
+          if (
+            response.error.response.status === 403 ||
+            response.error.response.status === 400
+          ) {
+            const message = await get403Message(response.error);
+            return {
+              message,
+            };
+          }
+          throw response.error;
+        }
+
+        return response.value;
+      },
+    };
+  },
 });

@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { upperFirst } from 'lodash-es';
+import { Suspense, useEffect, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import {
   Button,
@@ -8,6 +10,7 @@ import {
   Modal,
   Radio,
   Separator,
+  Tooltip,
 } from 'ui-components';
 
 import { getScanResultsApiClient, getSettingsApiClient } from '@/api/api';
@@ -17,8 +20,17 @@ import {
   ModelBulkDeleteScansRequest,
   ModelBulkDeleteScansRequestScanTypeEnum,
 } from '@/api/generated';
+import { DFLink } from '@/components/DFLink';
+import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
+import { ErrorIcon } from '@/components/icons/common/ScanStatuses';
+import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
+import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
+import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
+import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { TruncatedText } from '@/components/TruncatedText';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { queries } from '@/queries';
 import { invalidateAllQueries } from '@/queries';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -37,7 +49,10 @@ const files: { [filename: string]: File } = {};
 
 enum ActionEnumType {
   DELETE = 'delete',
-  UPLOAD = 'upload',
+  UPLOAD_VULNERABILITY = 'upload_vulnerability',
+  UPLOAD_SECRET = 'upload_secret',
+  UPLOAD_MALWARE = 'upload_malware',
+  UPLOAD_POSTURE = 'upload_posture',
 }
 export type ActionReturnType = {
   deleteSuccess?: boolean;
@@ -102,11 +117,22 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
     return {
       deleteSuccess: true,
     };
-  } else if (actionType === ActionEnumType.UPLOAD) {
-    const uploadVulnerabilityDatabase = apiWrapper({
-      fn: getSettingsApiClient().uploadVulnerabilityDatabase,
+  } else if (
+    actionType === ActionEnumType.UPLOAD_VULNERABILITY ||
+    actionType === ActionEnumType.UPLOAD_SECRET ||
+    actionType === ActionEnumType.UPLOAD_MALWARE ||
+    actionType === ActionEnumType.UPLOAD_POSTURE
+  ) {
+    const uploadDatabaseApi = apiWrapper({
+      fn: {
+        [ActionEnumType.UPLOAD_VULNERABILITY]:
+          getSettingsApiClient().uploadVulnerabilityDatabase,
+        [ActionEnumType.UPLOAD_SECRET]: getSettingsApiClient().uploadSecretsRules,
+        [ActionEnumType.UPLOAD_MALWARE]: getSettingsApiClient().uploadMalwareRules,
+        [ActionEnumType.UPLOAD_POSTURE]: getSettingsApiClient().uploadPostureControls,
+      }[actionType],
     });
-    const filename = formData.get('vulnerabilityDatabase')?.toString() ?? '';
+    const filename = formData.get('database')?.toString() ?? '';
     if (!filename.trim()) {
       return {
         uploadSuccess: false,
@@ -114,7 +140,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
       };
     }
     const file = files[filename];
-    const uploadApiResponse = await uploadVulnerabilityDatabase({
+    const uploadApiResponse = await uploadDatabaseApi({
       database: file,
     });
     if (!uploadApiResponse.ok) {
@@ -169,7 +195,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.deleteSuccess ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -216,7 +242,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (
@@ -225,75 +251,399 @@ const DeleteConfirmationModal = ({
     </Modal>
   );
 };
+const useGetVersion = () => {
+  return useSuspenseQuery({
+    ...queries.setting.productVersion(),
+  });
+};
+const useGetLicense = () => {
+  return useSuspenseQuery({
+    ...queries.setting.getLicense(),
+  });
+};
+
+const useGetLink = (version: string, licenseKey?: string) => {
+  const fetchLinks = async () => {
+    const threats: {
+      data?: { type: string; url: string }[];
+      error?: string;
+    } = {
+      data: [],
+    };
+    if (!licenseKey) {
+      return threats;
+    }
+    const requestHeaders: HeadersInit = new Headers();
+    requestHeaders.set('x-license-key', licenseKey);
+    const response = await fetch(
+      `https://threat-intel.deepfence.space/threat-intel/listing.json?version=v${version}&product=ThreatMapper`,
+      {
+        method: 'GET',
+        headers: requestHeaders,
+      },
+    );
+    if (!response.ok) {
+      threats.error = 'Fail to fetch threat intel rules';
+      return threats;
+    }
+    const data = (await response.json()) as Record<
+      string,
+      Record<
+        string,
+        {
+          type: string;
+          url: string;
+        }[]
+      >
+    >;
+    const links = data.available[`v${version}`];
+    const sortMap: { [key: string]: number } = {
+      vulnerability: 1,
+      secret: 2,
+      malware: 3,
+      posture: 4,
+    };
+    threats.data = links
+      ?.sort((link1, link2) => sortMap[link1.type] - sortMap[link2.type])
+      .map?.((link) => ({ type: link.type, url: link.url }));
+    return threats;
+  };
+  return useSuspenseQuery({
+    queryKey: ['threat-intel-feeds'],
+    queryFn: fetchLinks,
+  });
+};
+
+const RuleLinks = () => {
+  const { data: product } = useGetVersion();
+  const { data: license } = useGetLicense();
+  const { data: threats } = useGetLink(product.version, license.key);
+
+  return (
+    <>
+      <h3 className="py-1 text-p4 text-text-input-value">
+        In case the management console is air-gapped, please download the threat intel
+        feeds from here and upload them:
+      </h3>
+      <div className="mt-2 max-w-lg">
+        {threats.data ? (
+          <div className="flex flex-col gap-y-1">
+            {threats.data?.map((link) => {
+              return (
+                <div key={link.type} className="py-1 text-p7">
+                  <div className="flex gap-x-1 text-text-text-and-icon">
+                    <div className="w-4 h-4 ">
+                      {link.type === 'vulnerability' ? <VulnerabilityIcon /> : null}
+                      {link.type === 'secret' ? <SecretsIcon /> : null}
+                      {link.type === 'malware' ? <MalwareIcon /> : null}
+                      {link.type === 'posture' ? <PostureIcon /> : null}
+                    </div>
+                    <span className="text-p4">{upperFirst(link.type)}</span>
+                  </div>
+                  <DFLink
+                    href={link.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-text-text-and-icon text-p4"
+                  >
+                    <TruncatedText text={link.url} />
+                  </DFLink>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {threats.error ? (
+          <Tooltip content={threats.error}>
+            <p className="flex items-center gap-x-1 text-status-error text-p7 py-1">
+              <div className="h-4 w-4">
+                <ErrorIcon />
+              </div>
+              Failed to get links
+            </p>
+          </Tooltip>
+        ) : null}
+      </div>
+    </>
+  );
+};
+const SkeletonLinks = () => {
+  return (
+    <div className="flex flex-col gap-y-4 mt-2">
+      <div className="flex h-4 w-[350px] bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
+      <div className="flex h-4 w-[322px] bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
+      <div className="flex h-4 w-[322px] bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
+      <div className="flex h-4 w-[322px] bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
+      <div className="flex h-4 w-[322px] bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
+    </div>
+  );
+};
+const Database = () => {
+  return (
+    <>
+      <div className="mt-9">
+        <h3 className="text-h6 text-text-input-value">Database Management</h3>
+      </div>
+      <Suspense fallback={<SkeletonLinks />}>
+        <RuleLinks />
+      </Suspense>
+      <UploadVulnerabilityDatabase />
+      <UploadSecretDatabase />
+      <UploadMalwareDatabase />
+      <UploadPostureDatabase />
+      <br />
+    </>
+  );
+};
 const UploadVulnerabilityDatabase = () => {
   const fetcher = useFetcher<{
     uploadSuccess?: boolean;
     message?: string;
   }>();
   const { state } = fetcher;
-  const [vulnerabilityDatabaseFile, setVulnerabilityDatabaseFile] = useState<File | null>(
-    null,
-  );
+  const [databaseFile, setDatabaseFile] = useState<File | null>(null);
 
   return (
     <>
-      <div className="mt-9">
-        <h3 className="text-h6 dark:text-text-input-value">Database management</h3>
-      </div>
+      <p className="mt-6 text-p5 text-text-text-and-icon">Vulnerability scan feeds</p>
+      <div className="flex items-center gap-x-8">
+        <FileInput
+          className="mt-2 min-[200px] max-w-xs"
+          label="Please select a file to upload"
+          sizing="sm"
+          accept="application/tar+gzip"
+          onChoosen={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              files[file.name] = file;
+              setDatabaseFile(file);
+            }
+          }}
+        />
 
-      <p className="mt-4 text-p4 dark:text-text-text-and-icon">
-        You can upload affected database, and scan and check their results
-      </p>
-      <FileInput
-        className="mt-2 min-[200px] max-w-xs"
-        label="Please select a file to upload"
-        sizing="md"
-        accept="application/tar+gzip"
-        onChoosen={(e) => {
-          const file = e.target.files?.[0];
-          if (file) {
-            files[file.name] = file;
-            setVulnerabilityDatabaseFile(file);
-          }
-        }}
-      />
-
-      <div className="w-fit mt-6">
-        <div className="flex gap-x-4 items-center">
-          <Button
-            className="w-[108px]"
-            type="button"
-            loading={state !== 'idle'}
-            disabled={state !== 'idle'}
-            onClick={() => {
-              const formData = new FormData();
-              if (!vulnerabilityDatabaseFile) {
-                formData.append('vulnerabilityDatabase', '');
-              } else {
-                formData.append(
-                  'vulnerabilityDatabase',
-                  vulnerabilityDatabaseFile as File,
-                );
-              }
-              formData.append('actionType', ActionEnumType.UPLOAD);
-              fetcher.submit(formData, {
-                method: 'post',
-              });
-            }}
-          >
-            Upload
-          </Button>
-          {!fetcher.data?.uploadSuccess && fetcher.data?.message ? (
-            <p className="dark:text-status-error text-p7">{fetcher.data?.message}</p>
-          ) : null}
-          {fetcher.data?.uploadSuccess ? (
-            <p className="text-green-500 text-sm">Upload successfull</p>
-          ) : null}
+        <div className="w-fit mt-8">
+          <div className="flex gap-x-4 items-center">
+            <Button
+              className="w-[108px]"
+              type="button"
+              size="sm"
+              startIcon={<ArrowLine />}
+              loading={state !== 'idle'}
+              disabled={state !== 'idle'}
+              onClick={() => {
+                const formData = new FormData();
+                if (!databaseFile) {
+                  formData.append('database', '');
+                } else {
+                  formData.append('database', databaseFile as File);
+                }
+                formData.append('actionType', ActionEnumType.UPLOAD_VULNERABILITY);
+                fetcher.submit(formData, {
+                  method: 'post',
+                });
+              }}
+            >
+              Upload
+            </Button>
+            {!fetcher.data?.uploadSuccess && fetcher.data?.message ? (
+              <p className="text-status-error text-p7">{fetcher.data?.message}</p>
+            ) : null}
+            {fetcher.data?.uploadSuccess ? (
+              <p className="text-green-500 text-p7">Upload successfull</p>
+            ) : null}
+          </div>
         </div>
       </div>
     </>
   );
 };
+const UploadSecretDatabase = () => {
+  const fetcher = useFetcher<{
+    uploadSuccess?: boolean;
+    message?: string;
+  }>();
+  const { state } = fetcher;
+  const [databaseFile, setDatabaseFile] = useState<File | null>(null);
+  return (
+    <>
+      <p className="mt-8 text-p5 text-text-text-and-icon">Secret scan rules</p>
+      <div className="flex items-center gap-x-8">
+        <FileInput
+          className="mt-2 min-[200px] max-w-xs"
+          label="Please select a file to upload"
+          sizing="sm"
+          accept="application/tar+gzip"
+          onChoosen={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              files[file.name] = file;
+              setDatabaseFile(file);
+            }
+          }}
+        />
+
+        <div className="w-fit mt-8">
+          <div className="flex gap-x-4 items-center">
+            <Button
+              className="w-[108px]"
+              type="button"
+              size="sm"
+              startIcon={<ArrowLine />}
+              loading={state !== 'idle'}
+              disabled={state !== 'idle'}
+              onClick={() => {
+                const formData = new FormData();
+                if (!databaseFile) {
+                  formData.append('database', '');
+                } else {
+                  formData.append('database', databaseFile as File);
+                }
+                formData.append('actionType', ActionEnumType.UPLOAD_SECRET);
+                fetcher.submit(formData, {
+                  method: 'post',
+                });
+              }}
+            >
+              Upload
+            </Button>
+            {!fetcher.data?.uploadSuccess && fetcher.data?.message ? (
+              <p className="text-status-error text-p7">{fetcher.data?.message}</p>
+            ) : null}
+            {fetcher.data?.uploadSuccess ? (
+              <p className="text-p7 text-status-success">Upload successfull</p>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+const UploadMalwareDatabase = () => {
+  const fetcher = useFetcher<{
+    uploadSuccess?: boolean;
+    message?: string;
+  }>();
+  const { state } = fetcher;
+  const [databaseFile, setDatabaseFile] = useState<File | null>(null);
+
+  return (
+    <>
+      <p className="mt-8 text-p5 text-text-text-and-icon">Malware scan rules</p>
+      <div className="flex items-center gap-x-8">
+        <FileInput
+          className="mt-2 min-[200px] max-w-xs"
+          label="Please select a file to upload"
+          sizing="sm"
+          accept="application/tar+gzip"
+          onChoosen={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              files[file.name] = file;
+              setDatabaseFile(file);
+            }
+          }}
+        />
+
+        <div className="w-fit mt-8">
+          <div className="flex gap-x-4 items-center">
+            <Button
+              className="w-[108px]"
+              type="button"
+              size="sm"
+              startIcon={<ArrowLine />}
+              loading={state !== 'idle'}
+              disabled={state !== 'idle'}
+              onClick={() => {
+                const formData = new FormData();
+                if (!databaseFile) {
+                  formData.append('database', '');
+                } else {
+                  formData.append('database', databaseFile as File);
+                }
+                formData.append('actionType', ActionEnumType.UPLOAD_MALWARE);
+                fetcher.submit(formData, {
+                  method: 'post',
+                });
+              }}
+            >
+              Upload
+            </Button>
+            {!fetcher.data?.uploadSuccess && fetcher.data?.message ? (
+              <p className="text-status-error text-p7">{fetcher.data?.message}</p>
+            ) : null}
+            {fetcher.data?.uploadSuccess ? (
+              <p className="text-p7 text-status-success">Upload successfull</p>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+const UploadPostureDatabase = () => {
+  const fetcher = useFetcher<{
+    uploadSuccess?: boolean;
+    message?: string;
+  }>();
+  const { state } = fetcher;
+  const [databaseFile, setDatabaseFile] = useState<File | null>(null);
+
+  return (
+    <>
+      <p className="mt-8 text-p5 text-text-text-and-icon">Posture scan controls</p>
+      <div className="flex items-center gap-x-8">
+        <FileInput
+          className="mt-2 min-[200px] max-w-xs"
+          label="Please select a file to upload"
+          sizing="sm"
+          accept="application/tar+gzip"
+          onChoosen={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              files[file.name] = file;
+              setDatabaseFile(file);
+            }
+          }}
+        />
+
+        <div className="w-fit mt-8">
+          <div className="flex gap-x-4 items-center">
+            <Button
+              className="w-[108px]"
+              type="button"
+              size="sm"
+              startIcon={<ArrowLine />}
+              loading={state !== 'idle'}
+              disabled={state !== 'idle'}
+              onClick={() => {
+                const formData = new FormData();
+                if (!databaseFile) {
+                  formData.append('database', '');
+                } else {
+                  formData.append('database', databaseFile as File);
+                }
+                formData.append('actionType', ActionEnumType.UPLOAD_POSTURE);
+                fetcher.submit(formData, {
+                  method: 'post',
+                });
+              }}
+            >
+              Upload
+            </Button>
+            {!fetcher.data?.uploadSuccess && fetcher.data?.message ? (
+              <p className="text-status-error text-p7">{fetcher.data?.message}</p>
+            ) : null}
+            {fetcher.data?.uploadSuccess ? (
+              <p className="text-p7 text-status-success">Upload successfull</p>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
 const resources: {
   label: string;
   value: ModelBulkDeleteScansRequestScanTypeEnum;
@@ -311,14 +661,15 @@ const resources: {
     value: ModelBulkDeleteScansRequestScanTypeEnum.Malware,
   },
   {
-    label: 'Compliance',
+    label: 'Posture',
     value: ModelBulkDeleteScansRequestScanTypeEnum.Compliance,
   },
   {
-    label: 'Cloud Compliance',
+    label: 'Cloud Posture',
     value: ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance,
   },
 ];
+
 const ScanHistoryAndDbManagement = () => {
   const [, setSeverityOrResources] = useState('severity');
   const [selectedResource, setSelectedResource] = useState<string>(
@@ -354,10 +705,8 @@ const ScanHistoryAndDbManagement = () => {
         Please specify the resource and duration you would like to delete from the scan
         history.
       </p>
-      <div className="mt-4 flex flex-col">
-        <h6 className="text-p3 text-text-text-and-icon dark:text-text-text-and-icon pb-[10px]">
-          Choose resource
-        </h6>
+      <div className="mt-2 flex flex-col">
+        <h6 className="text-p3 text-text-input-value pb-[10px]">Choose resource</h6>
         <Radio
           direction="row"
           name="severityOrStatus"
@@ -397,13 +746,14 @@ const ScanHistoryAndDbManagement = () => {
         <Button
           type="button"
           className="mt-4 w-full"
+          size="sm"
           onClick={() => setShowDeleteDialog(true)}
         >
           Submit
         </Button>
       </div>
       <Separator className="mt-6 dark:bg-bg-grid-border h-px w-full" />
-      <UploadVulnerabilityDatabase />
+      <Database />
     </>
   );
 };
