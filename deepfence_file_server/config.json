@@ -10,8 +10,8 @@
       "name": "admin",
       "credentials": [
         {
-          "accessKey": "$MINIO_ROOT_USER",
-          "secretKey": "$MINIO_ROOT_PASSWORD"
+          "accessKey": "$FILE_SERVER_ROOT_USER",
+          "secretKey": "$FILE_SERVER_ROOT_PASSWORD"
         }
       ],
       "actions": [

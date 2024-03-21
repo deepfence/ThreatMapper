@@ -33,7 +33,7 @@ func NewIngester(ns directory.NamespaceID, cfg wtils.Config, cancel context.Canc
 
 	log.Info().Msgf("topics %s", ing.topics)
 
-	//create if any topics is missing
+	// create if any topics is missing
 	err := utils.CreateMissingTopics(cfg.KafkaBrokers, ing.topics,
 		cfg.KafkaTopicPartitions, cfg.KafkaTopicReplicas, cfg.KafkaTopicRetentionMs,
 	)

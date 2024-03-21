@@ -7,6 +7,7 @@ import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareS
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { actionStopScan } from '@/components/scan-configure-forms/StopScanForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
+import { module as userInfoGuardModule } from '@/components/UserInfoGuard';
 import { module as logoutAction } from '@/features/auth/data-components/logoutAction';
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
 import { action as downloadSBOMAction } from '@/features/common/data-component/downloadSBOMAction';
@@ -72,6 +73,7 @@ import { module as globalSettings } from '@/features/settings/pages/GlobalSettin
 import { module as scanHistoryAndDbManagement } from '@/features/settings/pages/ScanHistoryAndDbManagement';
 import { module as scheduledJobs } from '@/features/settings/pages/ScheduledJobs';
 import { module as settings } from '@/features/settings/pages/Settings';
+import { module as threatMapperLicenseDetailsSettings } from '@/features/settings/pages/ThreatMapperLicenseDetails';
 import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
@@ -564,6 +566,11 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'connection-instructions/:connectorType',
             ...connectorInstructions,
           },
+          {
+            path: 'tm-license-details',
+            ...threatMapperLicenseDetailsSettings,
+            meta: { title: 'License Details' },
+          },
         ],
       },
       {
@@ -634,6 +641,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'malware/classes/scan/:scanId',
         ...malwareClassesForScan,
+      },
+      {
+        path: 'user-info-guard',
+        ...userInfoGuardModule,
       },
     ],
   },

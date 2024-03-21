@@ -24,7 +24,7 @@ USER_DEFINED_TAGS=""
 DEEPFENCE_KEY=""
 DF_HOSTNAME=""
 INSTANCE_ID_SUFFIX="N"
-IMAGE_REPOSITORY=${IMAGE_REPOSITORY:-docker.io/deepfenceio}
+IMAGE_REPOSITORY=${IMAGE_REPOSITORY:-quay.io/deepfenceio}
 
 check_options() {
   if [ "$#" -lt 1 ]; then
@@ -111,7 +111,7 @@ start_agent() {
     -e DEEPFENCE_KEY="$DEEPFENCE_KEY" \
     -e DF_USE_DUMMY_SCOPE="$DF_USE_DUMMY_SCOPE" \
     -e DF_USE_FAT_DUMMY_SCOPE="$DF_USE_FAT_DUMMY_SCOPE" \
-    "$IMAGE_REPOSITORY"/deepfence_agent_ce:"${DF_IMG_TAG:-2.1.1}"
+    "$IMAGE_REPOSITORY"/deepfence_agent_ce:"${DF_IMG_TAG:-2.2.0}"
 }
 
 main() {

@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"syscall"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/supervisor"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
@@ -100,10 +101,13 @@ func downloadFile(filepath string, url string) (err error) {
 	}
 	defer out.Close()
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
+	client := &http.Client{
+		Timeout:   5 * time.Minute,
+		Transport: tr,
 	}
-	client := &http.Client{Transport: tr}
 	// Get the data
 	resp, err := client.Get(url)
 	if err != nil {

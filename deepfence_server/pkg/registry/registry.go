@@ -1,6 +1,7 @@
 package registry
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -443,7 +444,7 @@ type Registry interface {
 	DecryptExtras(aes encryption.AES) error
 	GetSecret() map[string]interface{}
 	GetExtras() map[string]interface{}
-	FetchImagesFromRegistry() ([]model.IngestedContainerImage, error)
+	FetchImagesFromRegistry(ctx context.Context) ([]model.IngestedContainerImage, error)
 	GetNamespace() string
 	GetRegistryType() string
 	GetUsername() string

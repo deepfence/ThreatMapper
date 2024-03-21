@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
@@ -19,6 +20,10 @@ func New(ctx context.Context, b []byte) (*GoogleChronicle, error) {
 }
 
 func (g GoogleChronicle) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+
+	_, span := telemetry.NewSpan(ctx, "integrations", "google-chronicle-send-notification")
+	defer span.End()
+
 	var req *http.Request
 	var err error
 
@@ -28,6 +33,7 @@ func (g GoogleChronicle) SendNotification(ctx context.Context, message string, e
 	// Set up the HTTP request.
 	req, err = http.NewRequest("POST", g.Config.URL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
+		span.EndWithErr(err)
 		return err
 	}
 
@@ -44,6 +50,7 @@ func (g GoogleChronicle) SendNotification(ctx context.Context, message string, e
 	client := utils.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
+		span.EndWithErr(err)
 		return err
 	}
 	defer resp.Body.Close()

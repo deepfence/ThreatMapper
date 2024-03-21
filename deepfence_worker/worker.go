@@ -47,7 +47,7 @@ func (w *Worker) Run(ctx context.Context) error {
 
 func telemetryCallbackWrapper(task string, taskCallback wtils.WorkerHandler) wtils.WorkerHandler {
 	return func(ctx context.Context, t *asynq.Task) error {
-		span := telemetry.NewSpan(context.Background(), "workerjobs", task)
+		ctx, span := telemetry.NewSpan(ctx, "workerjobs", task)
 		defer span.End()
 		err := taskCallback(ctx, t)
 		if err != nil {
@@ -189,7 +189,7 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 
 	worker.AddRetryableHandler(utils.SyncRegistryPostgresNeo4jTask, cronjobs.SyncRegistryPostgresNeo4jTask)
 
-	worker.AddRetryableHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
+	worker.AddRetryableHandler(utils.CloudComplianceControlsTask, cronjobs.AddCloudControls)
 
 	worker.AddOneShotHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders)
 
@@ -229,6 +229,12 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 	worker.AddRetryableHandler(utils.UpdatePodScanStatusTask, scans.UpdatePodScanStatus)
 
 	worker.AddOneShotHandler(utils.BulkDeleteScans, scans.BulkDeleteScans)
+
+	worker.AddOneShotHandler(utils.UpdateLicenseTask, cronjobs.UpdateLicenseStatus)
+
+	worker.AddOneShotHandler(utils.ReportLicenseUsageTask, cronjobs.PublishLicenseUsageToLicenseServer)
+
+	worker.AddRetryableHandler(utils.ThreatIntelUpdateTask, cronjobs.FetchThreatIntel)
 
 	return worker, cancel, nil
 }

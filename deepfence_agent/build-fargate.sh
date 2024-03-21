@@ -12,4 +12,4 @@ mkdir -p fargate/$BINPATH
 tar -zxvf deepfence-agent-2.tar.gz -C fargate/$BINPATH/
 rm -rf deepfence-agent-2.tar.gz
 
-docker build --network host --rm=true --tag=$IMAGE_REPOSITORY/deepfence_agent_ce:fargate-${DF_IMG_TAG:-latest} -f fargate/Dockerfile.fargate .
+docker build --build-arg BINPATH="$BINPATH" --network host --rm=true --tag=$IMAGE_REPOSITORY/deepfence_agent_ce:fargate-${DF_IMG_TAG:-latest} -f fargate/Dockerfile.fargate .

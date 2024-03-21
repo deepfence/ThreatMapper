@@ -35,6 +35,7 @@ var (
 	client = &http.Client{
 		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
+			Proxy:           http.ProxyFromEnvironment,
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
 	}

@@ -11,7 +11,8 @@ require (
 	github.com/lestrrat-go/jwx/v2 v2.0.18
 	github.com/lib/pq v1.10.9
 	github.com/minio/minio-go/v7 v7.0.66
-	github.com/neo4j/neo4j-go-driver/v4 v4.4.7
+	github.com/neo4j/neo4j-go-driver/v5 v5.17.0
+	github.com/raito-io/neo4j-tracing v0.0.4
 	github.com/redis/go-redis/v9 v9.4.0
 	github.com/rs/zerolog v1.31.0
 	github.com/twmb/franz-go v1.15.4

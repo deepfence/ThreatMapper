@@ -6,7 +6,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/pressly/goose/v3"
 )
 
@@ -15,6 +15,9 @@ const migrationsPath = "/usr/local/postgresql-migrate"
 func applyDatabaseMigrations(ctx context.Context) error {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "apply-sql-db-migration")
+	defer span.End()
 
 	log.Info().Msg("apply database migrations")
 	defer log.Info().Msg("complete database migrations")
@@ -41,6 +44,9 @@ func applyDatabaseMigrations(ctx context.Context) error {
 func initSqlDatabase(ctx context.Context) error {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "init-sql-database")
+	defer span.End()
 
 	// apply database migrations first
 	err := applyDatabaseMigrations(ctx)
@@ -80,14 +86,14 @@ func initSqlDatabase(ctx context.Context) error {
 
 func InitMinioDatabase() {
 	ctx := directory.NewContextWithNameSpace("database")
-	mc, err := directory.MinioClient(ctx)
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return
 	}
 	retries := 3
 	for {
-		if err := mc.CreatePublicBucket(ctx, directory.MinioDatabaseBucket); err != nil {
+		if err := mc.CreatePublicBucket(ctx, directory.FileServerDatabaseBucket); err != nil {
 			log.Error().Err(err).Msgf("failed to create bucket")
 			retries -= 1
 			if retries != 0 {
@@ -98,8 +104,4 @@ func InitMinioDatabase() {
 		}
 		break
 	}
-
-	// download vulnerability database once on init
-	vulnerability_db.DownloadDatabase()
-
 }

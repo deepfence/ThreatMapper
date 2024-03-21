@@ -8,11 +8,16 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func GetKubernetesClusterActions(ctx context.Context, nodeID string, workNumToExtract int) ([]controls.Action, []error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "get-kubernetes-cluster-actions")
+	defer span.End()
+
 	// Append more actions here
 	var actions []controls.Action
 
@@ -42,6 +47,10 @@ func GetKubernetesClusterActions(ctx context.Context, nodeID string, workNumToEx
 }
 
 func ExtractStartingKubernetesClusterScans(ctx context.Context, nodeID string, maxWork int) ([]controls.Action, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "extract-starting-kubernetes-cluster-scans")
+	defer span.End()
+
 	var res []controls.Action
 	if len(nodeID) == 0 {
 		return res, ErrMissingNodeID
@@ -52,19 +61,19 @@ func ExtractStartingKubernetesClusterScans(ctx context.Context, nodeID string, m
 		return res, err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return res, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:KubernetesCluster{node_id:$id})
+	r, err := tx.Run(ctx, `MATCH (s) -[:SCHEDULED]-> (n:KubernetesCluster{node_id:$id})
 		WHERE s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work
@@ -77,7 +86,7 @@ func ExtractStartingKubernetesClusterScans(ctx context.Context, nodeID string, m
 		return res, err
 	}
 
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -97,11 +106,15 @@ func ExtractStartingKubernetesClusterScans(ctx context.Context, nodeID string, m
 		res = append(res, action)
 	}
 
-	return res, tx.Commit()
+	return res, tx.Commit(ctx)
 
 }
 
 func ExtractPendingKubernetesClusterUpgrade(ctx context.Context, nodeID string, maxWork int) ([]controls.Action, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "extract-pending-kubernetes-cluster-upgrade")
+	defer span.End()
+
 	var res []controls.Action
 	if len(nodeID) == 0 {
 		return res, ErrMissingNodeID
@@ -112,16 +125,16 @@ func ExtractPendingKubernetesClusterUpgrade(ctx context.Context, nodeID string, 
 		return res, err
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(`MATCH (s:AgentVersion) -[r:SCHEDULED]-> (n:KubernetesCluster{node_id:$id})
+	r, err := tx.Run(ctx, `MATCH (s:AgentVersion) -[r:SCHEDULED]-> (n:KubernetesCluster{node_id:$id})
 		WHERE r.status = '`+utils.ScanStatusStarting+`'
 		AND r.retries < 3
 		WITH r LIMIT $max_work
@@ -134,7 +147,7 @@ func ExtractPendingKubernetesClusterUpgrade(ctx context.Context, nodeID string, 
 		return res, err
 	}
 
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -154,6 +167,6 @@ func ExtractPendingKubernetesClusterUpgrade(ctx context.Context, nodeID string, 
 		res = append(res, action)
 	}
 
-	return res, tx.Commit()
+	return res, tx.Commit(ctx)
 
 }

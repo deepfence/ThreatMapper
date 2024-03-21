@@ -20,9 +20,14 @@ import type {
   ModelAddScheduledTaskRequest,
   ModelEmailConfigurationAdd,
   ModelEmailConfigurationResp,
+  ModelGenerateLicenseRequest,
+  ModelGenerateLicenseResponse,
   ModelGetAuditLogsRequest,
+  ModelLicense,
   ModelListAgentVersionResp,
   ModelMessageResponse,
+  ModelRegisterLicenseRequest,
+  ModelRegisterLicenseResponse,
   ModelSettingUpdateRequest,
   ModelSettingsResponse,
   ModelUpdateScheduledTaskRequest,
@@ -41,12 +46,22 @@ import {
     ModelEmailConfigurationAddToJSON,
     ModelEmailConfigurationRespFromJSON,
     ModelEmailConfigurationRespToJSON,
+    ModelGenerateLicenseRequestFromJSON,
+    ModelGenerateLicenseRequestToJSON,
+    ModelGenerateLicenseResponseFromJSON,
+    ModelGenerateLicenseResponseToJSON,
     ModelGetAuditLogsRequestFromJSON,
     ModelGetAuditLogsRequestToJSON,
+    ModelLicenseFromJSON,
+    ModelLicenseToJSON,
     ModelListAgentVersionRespFromJSON,
     ModelListAgentVersionRespToJSON,
     ModelMessageResponseFromJSON,
     ModelMessageResponseToJSON,
+    ModelRegisterLicenseRequestFromJSON,
+    ModelRegisterLicenseRequestToJSON,
+    ModelRegisterLicenseResponseFromJSON,
+    ModelRegisterLicenseResponseToJSON,
     ModelSettingUpdateRequestFromJSON,
     ModelSettingUpdateRequestToJSON,
     ModelSettingsResponseFromJSON,
@@ -77,8 +92,16 @@ export interface DeleteEmailConfigurationRequest {
     configId: string;
 }
 
+export interface GenerateLicenseRequest {
+    modelGenerateLicenseRequest?: ModelGenerateLicenseRequest;
+}
+
 export interface GetUserAuditLogsRequest {
     modelGetAuditLogsRequest?: ModelGetAuditLogsRequest;
+}
+
+export interface RegisterLicenseRequest {
+    modelRegisterLicenseRequest?: ModelRegisterLicenseRequest;
 }
 
 export interface UpdateScheduledTaskRequest {
@@ -171,6 +194,37 @@ export interface SettingsApiInterface {
     deleteEmailConfiguration(requestParameters: DeleteEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
+     * Delete license from the console database
+     * @summary Delete License
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    deleteLicenseRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Delete license from the console database
+     * Delete License
+     */
+    deleteLicense(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Generate a new ThreatMapper license key
+     * @summary Generate License Key
+     * @param {ModelGenerateLicenseRequest} [modelGenerateLicenseRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    generateLicenseRaw(requestParameters: GenerateLicenseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelGenerateLicenseResponse>>;
+
+    /**
+     * Generate a new ThreatMapper license key
+     * Generate License Key
+     */
+    generateLicense(requestParameters: GenerateLicenseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelGenerateLicenseResponse>;
+
+    /**
      * Get available agent versions
      * @summary Get available agent versions
      * @param {*} [options] Override http request option.
@@ -199,6 +253,21 @@ export interface SettingsApiInterface {
      * Get Email Configurations
      */
     getEmailConfiguration(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelEmailConfigurationResp>>;
+
+    /**
+     * Get license status and expiry
+     * @summary Get License Details
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    getLicenseRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelLicense>>;
+
+    /**
+     * Get license status and expiry
+     * Get License Details
+     */
+    getLicense(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelLicense>;
 
     /**
      * Get scheduled tasks
@@ -260,6 +329,22 @@ export interface SettingsApiInterface {
      * Get user audit logs count
      */
     getUserAuditLogsCount(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Register new license key to the console and activate
+     * @summary Register License
+     * @param {ModelRegisterLicenseRequest} [modelRegisterLicenseRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    registerLicenseRaw(requestParameters: RegisterLicenseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelRegisterLicenseResponse>>;
+
+    /**
+     * Register new license key to the console and activate
+     * Register License
+     */
+    registerLicense(requestParameters: RegisterLicenseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelRegisterLicenseResponse>;
 
     /**
      * Update scheduled task
@@ -490,6 +575,80 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
     }
 
     /**
+     * Delete license from the console database
+     * Delete License
+     */
+    async deleteLicenseRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/license`,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete license from the console database
+     * Delete License
+     */
+    async deleteLicense(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.deleteLicenseRaw(initOverrides);
+    }
+
+    /**
+     * Generate a new ThreatMapper license key
+     * Generate License Key
+     */
+    async generateLicenseRaw(requestParameters: GenerateLicenseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelGenerateLicenseResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/license/generate`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelGenerateLicenseRequestToJSON(requestParameters.modelGenerateLicenseRequest),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelGenerateLicenseResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Generate a new ThreatMapper license key
+     * Generate License Key
+     */
+    async generateLicense(requestParameters: GenerateLicenseRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelGenerateLicenseResponse> {
+        const response = await this.generateLicenseRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get available agent versions
      * Get available agent versions
      */
@@ -558,6 +717,42 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      */
     async getEmailConfiguration(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelEmailConfigurationResp>> {
         const response = await this.getEmailConfigurationRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get license status and expiry
+     * Get License Details
+     */
+    async getLicenseRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelLicense>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/license`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelLicenseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get license status and expiry
+     * Get License Details
+     */
+    async getLicense(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelLicense> {
+        const response = await this.getLicenseRaw(initOverrides);
         return await response.value();
     }
 
@@ -705,6 +900,45 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      */
     async getUserAuditLogsCount(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.getUserAuditLogsCountRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Register new license key to the console and activate
+     * Register License
+     */
+    async registerLicenseRaw(requestParameters: RegisterLicenseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelRegisterLicenseResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/license`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelRegisterLicenseRequestToJSON(requestParameters.modelRegisterLicenseRequest),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelRegisterLicenseResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Register new license key to the console and activate
+     * Register License
+     */
+    async registerLicense(requestParameters: RegisterLicenseRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelRegisterLicenseResponse> {
+        const response = await this.registerLicenseRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

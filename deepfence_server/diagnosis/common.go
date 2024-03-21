@@ -12,7 +12,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 const (
@@ -82,7 +82,7 @@ type GetDiagnosticLogsResponse struct {
 }
 
 func GetDiagnosticLogs(ctx context.Context) (*GetDiagnosticLogsResponse, error) {
-	mc, err := directory.MinioClient(ctx)
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -148,16 +148,16 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 	if err != nil {
 		return diagnosticLogs
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return diagnosticLogs
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 		MATCH (n:AgentDiagnosticLogs)-[:SCHEDULEDLOGS]->(m)
 		RETURN n.node_id, n.minio_file_name, n.message, n.status, n.updated_at, m.node_name, m.node_type`, map[string]interface{}{})
 	if err != nil {
@@ -165,7 +165,7 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 	}
 
 	nodeIDToName := make(map[string]string)
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return diagnosticLogs
@@ -246,16 +246,16 @@ func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager
 	if err != nil {
 		return diagnosticLogs, err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return diagnosticLogs, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 		MATCH (n:CloudScannerDiagnosticLogs)-[:SCHEDULEDLOGS]->(m)
 		RETURN n.node_id, n.minio_file_name, n.message, n.status, n.updated_at, m.node_name`, map[string]interface{}{})
 	if err != nil {
@@ -263,7 +263,7 @@ func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager
 	}
 
 	nodeIDToName := make(map[string]string)
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 	if err != nil {
 		return diagnosticLogs, err
 	}

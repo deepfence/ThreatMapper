@@ -16,8 +16,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j/db"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/db"
 	redis2 "github.com/redis/go-redis/v9"
 )
 
@@ -381,7 +381,7 @@ loop:
 
 		if send {
 			send = false
-			span := telemetry.NewSpan(context.Background(), "ingester", "ResolversUpdater")
+			_, span := telemetry.NewSpan(context.Background(), "ingester", "ResolversUpdater")
 			finalBatch := mergeResolvers(batch[:elements])
 			nc.resolvers.cleanMaps()
 			nc.resolvers.pushMaps(&finalBatch)
@@ -711,15 +711,18 @@ func (nc *neo4jIngester) IsReady() bool {
 	return !breaker.Load()
 }
 
-func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.Session) error {
+func (nc *neo4jIngester) PushToDBSeq(ctx context.Context, batches ReportIngestionData, session neo4j.SessionWithContext) error {
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "push-to-db-seq")
+	defer span.End()
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MERGE (n:ContainerImage{node_id:row.node_id})
 		MERGE (s:ImageStub{node_id: row.docker_image_name, docker_image_name: row.docker_image_name})
@@ -735,7 +738,7 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 		return err
 	}
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
 		WITH n, row
@@ -746,7 +749,7 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 		return err
 	}
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
 		MATCH (m:Node{node_id: row.destination})
@@ -756,7 +759,7 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 		return err
 	}
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
 		MATCH (m:Node{node_id: row.destination})
@@ -772,18 +775,21 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
-func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Session) error {
+func (nc *neo4jIngester) PushToDB(ctx context.Context, batches ReportIngestionData, session neo4j.SessionWithContext) error {
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "push-to-db")
+	defer span.End()
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MERGE (n:Node{node_id:row.node_id})
 		ON CREATE SET n.created_at = TIMESTAMP(), n+= row,
@@ -794,7 +800,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MERGE (n:Container{node_id:row.node_id})
 		ON CREATE SET n.created_at = TIMESTAMP(),n+= row, n.updated_at = TIMESTAMP(),
@@ -805,7 +811,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MERGE (n:Process{node_id:row.node_id})
 		SET n+= row, n.updated_at = TIMESTAMP()`,
@@ -813,7 +819,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MATCH (n:Container{node_id: row.source})
 		WITH n, row
@@ -824,7 +830,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
 		WITH n, row
@@ -835,11 +841,11 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	// if _, err = tx.Run("UNWIND $batch as row MERGE (n:TEndpoint{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Endpoint_batch}); err != nil {
+	// if _, err = tx.Run(ctx,"UNWIND $batch as row MERGE (n:TEndpoint{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Endpoint_batch}); err != nil {
 	// return err
 	//}
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
 		WITH n, row
@@ -850,7 +856,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.node_id})
 		OPTIONAL MATCH (n:Node{node_id: 'in-the-internet'}) -[ri:CONNECTS]-> (n)
@@ -860,7 +866,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MERGE (n:KubernetesCluster{node_id:row.node_id})
 		ON CREATE SET n.created_at = TIMESTAMP(),
@@ -872,7 +878,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MERGE (n:Pod{node_id:row.node_id})
 		ON CREATE SET n.created_at = TIMESTAMP(), n+= row,
@@ -882,7 +888,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MATCH (n:KubernetesCluster{node_id: row.source})
 		WITH n, row
@@ -893,7 +899,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
 		WITH n, row
@@ -904,7 +910,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	if _, err := tx.Run(`
+	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MATCH (n:KubernetesCluster{node_id: row.source})
 		WITH n, row
@@ -915,7 +921,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func (nc *neo4jIngester) runIngester() {
@@ -980,28 +986,28 @@ func isClosedError(err error) bool {
 func (nc *neo4jIngester) runDBPusher(
 	ctx context.Context,
 	dbPusher, dbPusherSeq, dbPusherRetry chan ReportIngestionData,
-	pusher func(ReportIngestionData, neo4j.Session) error) {
+	pusher func(context.Context, ReportIngestionData, neo4j.SessionWithContext) error) {
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msgf("Failed to get client: %v", err)
 		return
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 
 	for batches := range dbPusher {
-		span := telemetry.NewSpan(context.Background(), "ingester", "PushAgentReportsToDB")
+		ctx, span := telemetry.NewSpan(ctx, "ingester", "PushAgentReportsToDB")
 		for {
-			err := pusher(batches, session)
+			err := pusher(ctx, batches, session)
 			if err != nil {
 				batches.Retries += 1
 				if batches.Retries < 2 && isClosedError(err) {
 					log.Warn().Msg("Renew session")
-					var newDriver neo4j.Driver
+					var newDriver neo4j.DriverWithContext
 					newDriver, err = directory.Neo4jClient(ctx)
 					if err == nil {
-						_ = session.Close()
-						session = newDriver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+						_ = session.Close(ctx)
+						session = newDriver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 						continue
 					}
 				}
@@ -1028,7 +1034,7 @@ func (nc *neo4jIngester) runDBPusher(
 			break
 		}
 	}
-	session.Close()
+	session.Close(ctx)
 	log.Info().Msgf("runDBPusher ended")
 }
 
@@ -1212,7 +1218,7 @@ func FetchPushBack(ctx context.Context) int32 {
 		return prevPushBack
 	}
 	// Received num at the time of push back change
-	newValue, err := GetPushBack(driver)
+	newValue, err := GetPushBack(ctx, driver)
 	if err != nil {
 		log.Error().Msgf("Fail to get push back value: %v", err)
 	} else {
@@ -1262,17 +1268,17 @@ func UpdatePushBack(ctx context.Context, newValue *atomic.Int32, prev int32) err
 		return err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(5 * time.Second))
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(5*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	var rec *db.Record
 	if newValue.Load() != prev {
-		res, err := tx.Run(`
+		res, err := tx.Run(ctx, `
 			MATCH (n:Node{node_id:"deepfence-console-cron"})
 			CALL apoc.atomic.update(n, 'push_back','`+strconv.Itoa(int(newValue.Load()))+`')
 			YIELD oldValue, newValue
@@ -1280,38 +1286,38 @@ func UpdatePushBack(ctx context.Context, newValue *atomic.Int32, prev int32) err
 		if err != nil {
 			return err
 		}
-		rec, err = res.Single()
+		rec, err = res.Single(ctx)
 		if err != nil {
 			return err
 		}
 	} else {
-		res, err := tx.Run(`
+		res, err := tx.Run(ctx, `
 			MATCH (n:Node{node_id:"deepfence-console-cron"})
 			RETURN n.push_back`, map[string]interface{}{})
 		if err != nil {
 			return err
 		}
-		rec, err = res.Single()
+		rec, err = res.Single(ctx)
 		if err != nil {
 			return err
 		}
 	}
 	newValue.Store(int32(rec.Values[0].(int64)))
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
-func GetPushBack(driver neo4j.Driver) (int32, error) {
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+func GetPushBack(ctx context.Context, driver neo4j.DriverWithContext) (int32, error) {
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(5 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(5*time.Second))
 	if err != nil {
 		return 0, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	res, err := tx.Run(`
+	res, err := tx.Run(ctx, `
 		MATCH (n:Node{node_id:"deepfence-console-cron"})
 		RETURN n.push_back
 		`,
@@ -1319,7 +1325,7 @@ func GetPushBack(driver neo4j.Driver) (int32, error) {
 	if err != nil {
 		return 0, err
 	}
-	rec, err := res.Single()
+	rec, err := res.Single(ctx)
 	if err != nil {
 		return 0, err
 	}

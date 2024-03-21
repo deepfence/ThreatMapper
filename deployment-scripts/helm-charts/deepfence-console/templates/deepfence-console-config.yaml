@@ -10,3 +10,9 @@ data:
   DEEPFENCE_DEBUG: "false"
   DEEPFENCE_SAAS_DEPLOYMENT: "false"
   DEEPFENCE_TELEMETRY_ENABLED: "false"
+  {{- if .Values.proxy.enabled }}
+  http_proxy: {{ .Values.proxy.http_proxy }}
+  https_proxy: {{ .Values.proxy.https_proxy }}
+  no_proxy: "{{ include "deepfence-console.fullname" . }}-file-server, {{ include "deepfence-console.fullname" . }}-postgres, {{ include "deepfence-console.fullname" . }}-redis, {{ include "deepfence-console.fullname" . }}-neo4j, {{ include "deepfence-console.fullname" . }}-kafka-broker, {{ include "deepfence-console.fullname" . }}-ui, {{ include "deepfence-console.fullname" . }}-server, {{ include "deepfence-console.fullname" . }}-router, *.{{ .Release.Namespace  }}.svc"
+  {{- end }}
+

@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/rs/zerolog/log"
 )
@@ -31,6 +32,10 @@ func New(ctx context.Context, b []byte) (Splunk, error) {
 }
 
 func (s Splunk) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+
+	_, span := telemetry.NewSpan(ctx, "integrations", "splunk-send-notification")
+	defer span.End()
+
 	s.client = utils.GetInsecureHTTPClient()
 	var msg []map[string]interface{}
 	d := json.NewDecoder(strings.NewReader(message))

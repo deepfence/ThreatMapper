@@ -13,8 +13,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 	"github.com/hibiken/asynq"
 	"github.com/robfig/cron/v3"
 )
@@ -59,11 +59,6 @@ func NewScheduler() (*Scheduler, error) {
 }
 
 func (s *Scheduler) Init() {
-	// download updated vulnerability database
-	_, err := s.cron.AddFunc("@every 120m", vulnerability_db.DownloadDatabase)
-	if err != nil {
-		return
-	}
 
 	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
 		return "scheduler addJobs", s.AddJobs(ctx)
@@ -74,6 +69,9 @@ func (s *Scheduler) Init() {
 }
 
 func (s *Scheduler) AddJobs(ctx context.Context) error {
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "add-jobs")
+	defer span.End()
+
 	err := s.addCronJobs(ctx)
 	if err != nil {
 		return err
@@ -121,6 +119,8 @@ func (s *Scheduler) updateScheduledJobs() {
 
 	for range ticker.C {
 		directory.ForEachNamespace(func(ctx context.Context) (string, error) {
+			ctx, span := telemetry.NewSpan(ctx, "cronjobs", "update-scheduled-jobs")
+			defer span.End()
 			return "Update scheduled jobs", s.addScheduledJobs(ctx)
 		})
 	}
@@ -129,6 +129,9 @@ func (s *Scheduler) updateScheduledJobs() {
 func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "add-scheduled-jobs")
+	defer span.End()
 
 	// Get scheduled tasks
 	pgClient, err := directory.PostgresClient(ctx)
@@ -189,6 +192,9 @@ func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
 func (s *Scheduler) addCronJobs(ctx context.Context) error {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "add-cron-jobs")
+	defer span.End()
 
 	namespace, err := directory.ExtractNamespace(ctx)
 	if err != nil {
@@ -262,7 +268,7 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 
 	// Adding CloudComplianceTask only to ensure data is ingested if task fails on startup
 	jobID, err = s.cron.AddFunc("@every 60m",
-		s.enqueueTask(namespace, utils.CloudComplianceTask, true, utils.CritialTaskOpts()...))
+		s.enqueueTask(namespace, utils.CloudComplianceControlsTask, true, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
@@ -332,6 +338,24 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	}
 	jobIDs = append(jobIDs, jobID)
 
+	jobID, err = s.cron.AddFunc("@every 2h", s.enqueueTask(namespace, utils.UpdateLicenseTask, true, utils.CritialTaskOpts()...))
+	if err != nil {
+		return err
+	}
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 1h", s.enqueueTask(namespace, utils.ReportLicenseUsageTask, true, utils.CritialTaskOpts()...))
+	if err != nil {
+		return err
+	}
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 5h", s.enqueueTask(namespace, utils.ThreatIntelUpdateTask, false, utils.CritialTaskOpts()...))
+	if err != nil {
+		return err
+	}
+	jobIDs = append(jobIDs, jobID)
+
 	s.jobs.CronJobs[namespace] = CronJobs{jobIDs: jobIDs}
 
 	return nil
@@ -340,6 +364,9 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 func (s *Scheduler) startInitJobs(ctx context.Context) error {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "start-init-jobs")
+	defer span.End()
 
 	namespace, err := directory.ExtractNamespace(ctx)
 	if err != nil {
@@ -359,11 +386,12 @@ func (s *Scheduler) startInitJobs(ctx context.Context) error {
 	log.Info().Msgf("Start immediate cronjobs for namespace %s", namespace)
 	s.enqueueTask(namespace, utils.CheckAgentUpgradeTask, true)()
 	s.enqueueTask(namespace, utils.SyncRegistryPostgresNeo4jTask, true, utils.CritialTaskOpts()...)()
-	s.enqueueTask(namespace, utils.CloudComplianceTask, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.ReportCleanUpTask, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.CachePostureProviders, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.RedisRewriteAOF, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.AsynqDeleteAllArchivedTasks, true, utils.CritialTaskOpts()...)()
+
+	s.enqueueTask(namespace, utils.ThreatIntelUpdateTask, false, utils.CritialTaskOpts()...)()
 
 	return nil
 }

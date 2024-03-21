@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/klauspost/compress/gzip"
 
@@ -28,6 +29,10 @@ func New(ctx context.Context, b []byte) (*S3, error) {
 }
 
 func (s S3) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+
+	_, span := telemetry.NewSpan(ctx, "integrations", "s3-send-notification")
+	defer span.End()
+
 	// Create an AWS session with your credentials and region
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(s.Config.AWSRegion),
@@ -35,6 +40,7 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 	})
 	if err != nil {
 		fmt.Println("Failed to create AWS session", err)
+		span.EndWithErr(err)
 		return err
 	}
 	if s.Config.UseIAMRole == "true" {
@@ -71,6 +77,7 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 	gzWriter, err := gzip.NewWriterLevel(s.Buffer, gzip.DefaultCompression)
 	if err != nil {
 		fmt.Println("Failed to get the gzip writer", err)
+		span.EndWithErr(err)
 		return err
 	}
 
@@ -87,6 +94,7 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 	})
 	if err != nil {
 		fmt.Println("Failed to upload JSON data to S3", err)
+		span.EndWithErr(err)
 		return err
 	}
 

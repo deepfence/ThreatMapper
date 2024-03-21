@@ -8,8 +8,9 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry"
@@ -23,6 +24,10 @@ var ChunkSize = 500
 
 func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, row postgresqlDb.GetContainerRegistriesRow) error {
 	syncStatus := SyncStatus{}
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "sync-registry")
+	defer span.End()
+
 	log := log.WithCtx(ctx)
 
 	// set registry account syncing
@@ -63,7 +68,7 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 		return err
 	}
 
-	list, err := r.FetchImagesFromRegistry()
+	list, err := r.FetchImagesFromRegistry(ctx)
 	if err != nil {
 		if err == dferror.ErrTooManyRequests {
 			log.Warn().Msgf("rate limit exceeded for registry even after retry id=%d type=%s", row.ID, r.GetRegistryType())
@@ -113,23 +118,26 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage,
 	r registry.Registry, pgID int32, name string) error {
 
+	ctx, span := telemetry.NewSpan(ctx, "registry", "insert-to-neo4j")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
 	timeOut := time.Duration(120 * time.Second)
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(timeOut))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(timeOut))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	imageMap := RegistryImagesToMaps(images)
 
@@ -156,7 +164,7 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage,
 		s.updated_at = TIMESTAMP(),
 		s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`
 
-	_, err = tx.Run(insertQuery,
+	_, err = tx.Run(ctx, insertQuery,
 		map[string]interface{}{
 			"batch": imageMap, "registry_id": registryID,
 			"pgId": pgID, "registry_type": r.GetRegistryType(),
@@ -166,7 +174,7 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage,
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func RegistryImagesToMaps(ms []model.IngestedContainerImage) []map[string]interface{} {
@@ -207,21 +215,25 @@ type SyncStatus struct {
 }
 
 func SetRegistryAccountSyncing(ctx context.Context, syncStatus SyncStatus, r registry.Registry, pgID int32) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "set-registry-account-syncing")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(ctx)
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	registryID := utils.GetRegistryID(r.GetRegistryType(), r.GetNamespace(), pgID)
 
@@ -232,7 +244,7 @@ func SetRegistryAccountSyncing(ctx context.Context, syncStatus SyncStatus, r reg
 		query += `, m.last_synced_at=TIMESTAMP()`
 	}
 
-	_, err = tx.Run(query,
+	_, err = tx.Run(ctx, query,
 		map[string]interface{}{
 			"registry_id": registryID,
 			"syncing":     syncStatus.Syncing,
@@ -241,7 +253,7 @@ func SetRegistryAccountSyncing(ctx context.Context, syncStatus SyncStatus, r reg
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func chunkBy(items []model.IngestedContainerImage, chunkSize int) (chunks [][]model.IngestedContainerImage) {

@@ -17,6 +17,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 )
 
 var agentReportIngesters sync.Map
@@ -26,6 +27,10 @@ func init() {
 }
 
 func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[report.CompressedReport], error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "agent-report", "get-agent-report-ingester")
+	defer span.End()
+
 	nid, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return nil, err

@@ -11,12 +11,13 @@ commonLabels: {}
 global:
   # this image tag is used every where for agents
   # to override set tag at agents level
-  imageTag: 2.1.1
+  imageTag: 2.2.0
 
 imagePullSecret:
   # Specifies whether a image pull secret should be created
   create: false
-  registry: "https://index.docker.io/v1/"
+  registry: "quay.io"
+  # registry: "https://index.docker.io/v1/"
   username: ""
   password: ""
   # The name of the imagePullSecret to use.
@@ -26,8 +27,8 @@ imagePullSecret:
 # deepfence agent runs as a daemonset in all nodes in the cluster
 agent:
   image:
-    name: deepfenceio/deepfence_agent_ce
-    # tag: 2.1.1
+    name: quay.io/deepfenceio/deepfence_agent_ce
+    # tag: 2.2.0
     pullPolicy: Always
   affinity: {}
   podLabels: {}
@@ -50,8 +51,8 @@ agent:
 # cluster agent runs as a single pod
 cluster_agent:
   image:
-    name: deepfenceio/deepfence_cluster_agent_ce
-    # tag: 2.1.1
+    name: quay.io/deepfenceio/deepfence_cluster_agent_ce
+    # tag: 2.2.0
     pullPolicy: Always
   affinity: {}
   podLabels: {}

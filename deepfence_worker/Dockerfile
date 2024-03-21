@@ -10,7 +10,7 @@ FROM alpine:3.18 AS final
 LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
 
-ADD deepfence_server/cloud_controls /cloud_controls
+# ADD deepfence_server/cloud_controls /cloud_controls
 ADD deepfence_utils/postgresql/migrate /usr/local/postgresql-migrate
 
 RUN apk add --no-cache curl kafkacat docker-cli openrc bash skopeo jansson-dev \
@@ -27,7 +27,7 @@ ENV DEEPFENCE_KAFKA_TOPIC_PARTITIONS=3 \
     DEEPFENCE_MODE=worker \
     LD_LIBRARY_PATH=/usr/local/yara/lib
 
-# ENV GRYPE_DB_UPDATE_URL="http://${DEEPFENCE_MINIO_HOST}:${DEEPFENCE_MINIO_PORT}/database/database/vulnerability/listing.json"
+# ENV GRYPE_DB_UPDATE_URL="http://${DEEPFENCE_FILE_SERVER_HOST}:${DEEPFENCE_FILE_SERVER_PORT}/database/database/vulnerability/listing.json"
 
 # RUN apk add --no-cache --update bash curl \
 #     && apk upgrade \
@@ -39,14 +39,14 @@ COPY --from=packagescanner /usr/local/bin/syft /usr/local/bin/syft
 COPY --from=packagescanner /usr/local/bin/grype /usr/local/bin/grype
 COPY --from=packagescanner /root/.grype.yaml /usr/local/bin/grype.yaml
 
-COPY --from=secretscanner /home/deepfence/usr/config.yaml /config.yaml
+# COPY --from=secretscanner /home/deepfence/usr/config.yaml /config.yaml
 
 COPY --from=yarahunter /home/deepfence/usr/config.yaml /malware-config/config.yaml
 
 COPY ./deepfence_worker/deepfence_worker /usr/local/bin/deepfence_worker
 COPY ./deepfence_worker/entrypoint.sh /entrypoint.sh
 
-COPY --from=builder-yara /root/yara-rules /usr/local/yara-rules
+# COPY --from=builder-yara /root/yara-rules /usr/local/yara-rules
 
 COPY --from=builder-yara /usr/local/yara.tar.gz /usr/local/yara.tar.gz
 # extract yara
@@ -55,7 +55,7 @@ RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \
     && chmod +x /entrypoint.sh
     # && sed -i 's/auto-update: true/auto-update: false/g' /usr/local/bin/grype.yaml
 
-RUN export GRYPE_DB_UPDATE_URL=https://threat-intel.deepfence.io/vulnerability-db/listing.json && grype db update
+# RUN export GRYPE_DB_UPDATE_URL=https://threat-intel.deepfence.io/vulnerability-db/listing.json && grype db update
 
 COPY --from=builder-yara /go/bin/asynq /usr/local/bin/asynq
 

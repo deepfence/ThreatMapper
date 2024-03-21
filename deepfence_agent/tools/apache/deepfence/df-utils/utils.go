@@ -47,7 +47,8 @@ func BuildHttpClientWithCert(certPath string) (*http.Client, error) {
 	transport := &http.Transport{
 		MaxIdleConnsPerHost: maxIdleConnsPerHost,
 		TLSHandshakeTimeout: 0 * time.Second,
-		TLSClientConfig:     tlsConfig}
+		TLSClientConfig:     tlsConfig,
+	}
 	client := &http.Client{Transport: transport}
 
 	// Load our trusted certificate path
@@ -433,4 +434,13 @@ func GetDefaultRouteIPAddress() (ipaddr string, interfaceName string, err error)
 		}
 	}
 	return "", "", errors.New("no interfaces found")
+}
+
+func GetDfInstallDir() string {
+	installDir, exists := os.LookupEnv("DF_INSTALL_DIR")
+	if exists {
+		return installDir
+	} else {
+		return ""
+	}
 }

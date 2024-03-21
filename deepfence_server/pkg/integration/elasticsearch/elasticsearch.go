@@ -10,6 +10,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
@@ -23,6 +24,10 @@ func New(ctx context.Context, b []byte) (*ElasticSearch, error) {
 }
 
 func (e ElasticSearch) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+
+	_, span := telemetry.NewSpan(ctx, "integrations", "elasticsearch-send-notification")
+	defer span.End()
+
 	var req *http.Request
 	var err error
 	var msg []map[string]interface{}
@@ -47,6 +52,7 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message string, ext
 	endpointURL := strings.TrimRight(e.Config.EndpointURL, "/")
 	req, err = http.NewRequest("POST", endpointURL+"/_bulk", bytes.NewBuffer([]byte(payloadMsg)))
 	if err != nil {
+		span.EndWithErr(err)
 		return err
 	}
 
@@ -63,6 +69,7 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message string, ext
 	client := utils.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
+		span.EndWithErr(err)
 		return err
 	}
 	defer resp.Body.Close()

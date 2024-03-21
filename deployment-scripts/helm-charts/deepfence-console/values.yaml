@@ -9,11 +9,18 @@ fullnameOverride: ""
 commonLabels: {}
 
 global:
-  imageRepoPrefix: "docker.io"
+  imageRepoPrefix: "quay.io"
+  # imageRepoPrefix: "docker.io"
   # this image tag is used everywhere for console services
   # to override set tag at service level
-  imageTag: 2.1.1
+  imageTag: 2.2.0
   storageClass: ""
+
+# used to configure ccorporate proxy
+proxy:
+  enabled: false
+  http_proxy: ""
+  https_proxy: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -27,7 +34,8 @@ serviceAccount:
 imagePullSecret:
   # Specifies whether a image pull secret should be created
   create: false
-  registry: "https://index.docker.io/v1/"
+  registry: "quay.io"
+  # registry: "https://index.docker.io/v1/"
   username: ""
   password: ""
   # The name of the imagePullSecret to use.
@@ -46,7 +54,7 @@ kafka:
     repository: deepfenceio/deepfence_kafka_broker_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.1.1
+    # tag: 2.2.0
   config:
     # required, recommended to generate new UUID using kafka-storage tool
     STORAGE_UUID: hNQ55qppT5GGybF52ZGlOQ
@@ -84,7 +92,7 @@ postgres:
     repository: deepfenceio/deepfence_postgres_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.1.1
+    # tag: 2.2.0
   storageClass: ""
   volumeSize: 50G
   resources:
@@ -113,7 +121,7 @@ redis:
     repository: deepfenceio/deepfence_redis_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.1.1
+    # tag: 2.2.0
   storageClass: ""
   volumeSize: 30G
   resources:
@@ -141,13 +149,13 @@ fileserver:
   # if create true then below values are used to create postgres database instance
   # set the below to change the default credentials
   # secrets:
-  #   MINIO_ROOT_USER: ""
-  #   MINIO_ROOT_PASSWORD: ""
+  #   FILE_SERVER_ROOT_USER: ""
+  #   FILE_SERVER_ROOT_PASSWORD: ""
   image:
     repository: deepfenceio/deepfence_file_server_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.1.1
+    # tag: 2.2.0
   storageClass: ""
   volumeSize: 100G
   resources:
@@ -202,13 +210,13 @@ neo4j:
     # AWS_SECRET_KEY: ""
     # DF_REMOTE_BACKUP_ROOT: "" # S3 bucket name
   config:
-    NEO4J_dbms_memory_pagecache_size: 2600m
-    NEO4J_dbms_tx__log_rotation_retention__policy: "3 files"
-    NEO4JLABS_PLUGINS: '["apoc"]'
+    NEO4J_server_memory_pagecache_size: 2600m
+    NEO4J_db_tx__log_rotation_retention__policy: "3 files"
+    NEO4J_PLUGINS: '["apoc"]'
   image:
     repository: deepfenceio/deepfence_neo4j_ce
     pullPolicy: Always
-    # tag: 2.1.1
+    # tag: 2.2.0
   storageClass: ""
   volumeSize: 100G
   resources:
@@ -262,7 +270,7 @@ router:
     repository: deepfenceio/deepfence_router_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.1.1
+    # tag: 2.2.0
   forceHttpsRedirect: true
   podAnnotations: {}
   podSecurityContext: {}
@@ -325,7 +333,7 @@ server:
     repository: deepfenceio/deepfence_server_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.1.1
+    # tag: 2.2.0
   podAnnotations: {}
   podSecurityContext: {}
   securityContext: {}
@@ -357,7 +365,7 @@ worker:
     repository: deepfenceio/deepfence_worker_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.1.1
+    # tag: 2.2.0
   podAnnotations: {}
   podSecurityContext: {}
   securityContext: {}
@@ -388,7 +396,7 @@ ingester:
     repository: deepfenceio/deepfence_worker_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.1.1
+    # tag: 2.2.0
   podAnnotations: {}
   podSecurityContext: {}
   securityContext: {}
@@ -418,7 +426,7 @@ scheduler:
     repository: deepfenceio/deepfence_worker_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.1.1
+    # tag: 2.2.0
   service:
     type: ClusterIP
     port: 8080
@@ -443,7 +451,7 @@ ui:
     repository: deepfenceio/deepfence_ui_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.1.1
+    # tag: 2.2.0
   service:
     type: ClusterIP
     port: 8081
@@ -492,7 +500,7 @@ console_agents:
       repository: deepfenceio/deepfence_agent_ce
       pullPolicy: Always
       # Overrides the image tag whose default is .global.imageTag
-      # tag: 2.1.1
+      # tag: 2.2.0
     resources:
       requests:
         cpu: 150m
@@ -516,7 +524,7 @@ console_agents:
       repository: deepfenceio/deepfence_cluster_agent_ce
       pullPolicy: Always
       # Overrides the image tag whose default is .global.imageTag
-      # tag: 2.1.1
+      # tag: 2.2.0
     resources:
       requests:
         cpu: 25m

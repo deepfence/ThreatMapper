@@ -46,9 +46,9 @@ spec:
               value: {{ include "deepfence-console.fullname" . }}-server
             - name: API_SERVICE_PORT
               value: {{ .Values.server.service.port | quote }}
-            - name: DEEPFENCE_MINIO_HOST
+            - name: DEEPFENCE_FILE_SERVER_HOST
               value: {{ include "deepfence-console.fullname" . }}-file-server
-            - name: DEEPFENCE_MINIO_PORT
+            - name: DEEPFENCE_FILE_SERVER_PORT
               value: "9000"
           envFrom:
             - configMapRef:
@@ -140,7 +140,7 @@ spec:
 {{- end }}
 ---
 {{- if .Values.router.autoscaling.enabled }}
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "deepfence-console.fullname" . }}-router
@@ -159,13 +159,17 @@ spec:
     - type: Resource
       resource:
         name: cpu
-        targetAverageUtilization: {{ .Values.router.autoscaling.targetCPUUtilizationPercentage }}
+        target:
+          type: Utilization
+          averageUtilization:  {{ .Values.router.autoscaling.targetCPUUtilizationPercentage }}
     {{- end }}
     {{- if .Values.router.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
         name: memory
-        targetAverageUtilization: {{ .Values.router.autoscaling.targetMemoryUtilizationPercentage }}
+        target:
+          type: Utilization
+          averageUtilization:  {{ .Values.router.autoscaling.targetMemoryUtilizationPercentage }}
     {{- end }}
 {{- end }}
 ---

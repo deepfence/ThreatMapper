@@ -20,6 +20,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/rs/zerolog/log"
 )
 
@@ -34,6 +35,10 @@ type EmailSender interface {
 }
 
 func NewEmailSender(ctx context.Context) (EmailSender, error) {
+
+	_, span := telemetry.NewSpan(ctx, "send-email", "new-email-sender")
+	defer span.End()
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return nil, err
