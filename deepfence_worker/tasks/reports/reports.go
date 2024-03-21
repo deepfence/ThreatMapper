@@ -13,11 +13,12 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 var ErrUnknownReportType = errors.New("unknown report type")
@@ -95,12 +96,12 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 		return nil
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
 	updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.ScanStatusInProgress)
 
@@ -116,8 +117,8 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 		os.Remove(localReportPath)
 	}()
 
-	// upload file to minio
-	mc, err := directory.MinioClient(ctx)
+	// upload file to file server
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get minio client")
 		return nil
@@ -147,15 +148,18 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 	return nil
 }
 
-func updateReportState(ctx context.Context, session neo4j.Session, reportID, url, path, status string) {
+func updateReportState(ctx context.Context, session neo4j.SessionWithContext, reportID, url, path, status string) {
 
 	log := log.WithCtx(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	ctx, span := telemetry.NewSpan(ctx, "reports", "update-report-state")
+	defer span.End()
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	// update url in neo4j report node
 	query := `
@@ -169,12 +173,12 @@ func updateReportState(ctx context.Context, session neo4j.Session, reportID, url
 		"status": status,
 		"path":   path,
 	}
-	_, err = tx.Run(query, vars)
+	_, err = tx.Run(ctx, query, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
 
-	if err := tx.Commit(); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		log.Error().Err(err).Msg("failed to commit tx")
 	}
 }

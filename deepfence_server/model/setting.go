@@ -13,6 +13,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
@@ -133,6 +134,10 @@ func GetVisibleSettings(ctx context.Context, pgClient *postgresqlDb.Queries) ([]
 }
 
 func GetSettingByKey(ctx context.Context, pgClient *postgresqlDb.Queries, key string) (*Setting, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "setting", "get-setting-by-key")
+	defer span.End()
+
 	setting, err := pgClient.GetSetting(ctx, key)
 	if err != nil {
 		return nil, err
@@ -151,6 +156,9 @@ func GetSettingByKey(ctx context.Context, pgClient *postgresqlDb.Queries, key st
 }
 
 func SetScanResultsDeletionSetting(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "set-scan-results-deletion-setting")
+	defer span.End()
+
 	_, err := pgClient.GetSetting(ctx, InactiveNodesDeleteScanResultsKey)
 	if errors.Is(err, sql.ErrNoRows) {
 		s := Setting{
@@ -174,6 +182,9 @@ func SetScanResultsDeletionSetting(ctx context.Context, pgClient *postgresqlDb.Q
 }
 
 func SetConsoleIDSetting(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "set-console-id-setting")
+	defer span.End()
+
 	_, err := pgClient.GetSetting(ctx, ConsoleIDKey)
 	if errors.Is(err, sql.ErrNoRows) {
 		randomInt, err := utils.GenerateRandomNumber(13)
@@ -201,6 +212,9 @@ func SetConsoleIDSetting(ctx context.Context, pgClient *postgresqlDb.Queries) er
 }
 
 func InitializeAESSetting(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "init-aes-setting")
+	defer span.End()
+
 	// set aes_secret in setting table, if !exists
 	// TODO
 	// generate aes and aes-iv

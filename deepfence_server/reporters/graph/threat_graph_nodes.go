@@ -9,8 +9,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
 )
 
 type IndividualThreatGraphRequest struct {
@@ -67,14 +67,14 @@ func GetIndividualThreatGraph[T reporters.Cypherable](ctx context.Context, graph
 		return individualThreatGraph, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(60 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(60*time.Second))
 	if err != nil {
 		return individualThreatGraph, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	var dummy T
 	query := fmt.Sprintf(`
@@ -88,12 +88,12 @@ func GetIndividualThreatGraph[T reporters.Cypherable](ctx context.Context, graph
 
 	log.Debug().Msgf("q: %s", query)
 
-	res, err := tx.Run(query, map[string]interface{}{})
+	res, err := tx.Run(ctx, query, map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	recs, err := res.Collect()
+	recs, err := res.Collect(ctx)
 
 	if err != nil {
 		return individualThreatGraph, err
@@ -134,12 +134,12 @@ func GetIndividualThreatGraph[T reporters.Cypherable](ctx context.Context, graph
 	`, dummy.NodeType(), getNeo4jNodeIDField(dummy))
 
 	log.Debug().Msgf("q: %s", query)
-	res, err = tx.Run(query, map[string]interface{}{"node_ids": nodeIDs})
+	res, err = tx.Run(ctx, query, map[string]interface{}{"node_ids": nodeIDs})
 	if err != nil {
 		return nil, err
 	}
 
-	recs, err = res.Collect()
+	recs, err = res.Collect(ctx)
 	if err != nil {
 		return individualThreatGraph, err
 	}
@@ -152,7 +152,7 @@ func GetIndividualThreatGraph[T reporters.Cypherable](ctx context.Context, graph
 		}
 	}
 
-	res, err = tx.Run(`
+	res, err = tx.Run(ctx, `
 		MATCH p=shortestPath((n:Node{node_id:'in-the-internet'}) -[:CONNECTS*1..3]-> (m:Node))
 		WHERE m.node_id IN $node_ids
 		RETURN m.node_id, p
@@ -161,7 +161,7 @@ func GetIndividualThreatGraph[T reporters.Cypherable](ctx context.Context, graph
 		return nil, err
 	}
 
-	recs, err = res.Collect()
+	recs, err = res.Collect(ctx)
 
 	if err != nil {
 		return individualThreatGraph, err

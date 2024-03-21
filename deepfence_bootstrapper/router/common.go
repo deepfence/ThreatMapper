@@ -32,7 +32,8 @@ func RegisterControl[T ctl.StartVulnerabilityScanRequest |
 	ctl.StopSecretScanRequest |
 	ctl.StopMalwareScanRequest |
 	ctl.StopVulnerabilityScanRequest |
-	ctl.StopComplianceScanRequest](id ctl.ActionID, callback func(req T) error) error {
+	ctl.StopComplianceScanRequest |
+	ctl.ThreatIntelInfo](id ctl.ActionID, callback func(req T) error) error {
 
 	controlsGuard.Lock()
 	defer controlsGuard.Unlock()

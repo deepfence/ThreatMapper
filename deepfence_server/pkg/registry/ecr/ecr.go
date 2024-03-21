@@ -1,11 +1,13 @@
 package ecr
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
 )
@@ -77,7 +79,9 @@ func (e *RegistryECR) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (e *RegistryECR) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
+func (e *RegistryECR) FetchImagesFromRegistry(ctx context.Context) ([]model.IngestedContainerImage, error) {
+	_, span := telemetry.NewSpan(ctx, "registry", "fetch-images-from-registry")
+	defer span.End()
 	// based on iamrole we need to fetch images
 	if e.NonSecret.UseIAMRole == trueStr {
 		return listIAMImages(e.NonSecret.AWSRegionName, e.NonSecret.AWSAccountID, e.NonSecret.TargetAccountRoleARN, e.NonSecret.IsPublic == trueStr)

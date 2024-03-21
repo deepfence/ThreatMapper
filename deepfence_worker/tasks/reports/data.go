@@ -15,7 +15,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 const (
@@ -509,19 +509,19 @@ func NodeIDToNodeName(ctx context.Context, nodeIds []string, node_type string) [
 		return nodes
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nodes
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nodes
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	query := ""
 	nodeStr := strings.Join(nodeIds, "\", \"")
@@ -541,13 +541,13 @@ func NodeIDToNodeName(ctx context.Context, nodeIds []string, node_type string) [
 		`
 	}
 
-	result, err := tx.Run(fmt.Sprintf(query, nodeStr), map[string]interface{}{})
+	result, err := tx.Run(ctx, fmt.Sprintf(query, nodeStr), map[string]interface{}{})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nodes
 	}
 
-	records, err := result.Collect()
+	records, err := result.Collect(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nodes

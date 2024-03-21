@@ -2,12 +2,14 @@ package dockerhub
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -93,7 +95,9 @@ func (d *RegistryDockerHub) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (d *RegistryDockerHub) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
+func (d *RegistryDockerHub) FetchImagesFromRegistry(ctx context.Context) ([]model.IngestedContainerImage, error) {
+	_, span := telemetry.NewSpan(ctx, "registry", "fetch-images-from-registry")
+	defer span.End()
 	return getImagesList(d.NonSecret.DockerHubUsername, d.Secret.DockerHubPassword, d.NonSecret.DockerHubNamespace)
 }
 

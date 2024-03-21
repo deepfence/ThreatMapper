@@ -1,6 +1,7 @@
 package acr
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -72,7 +74,9 @@ func (d *RegistryACR) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (d *RegistryACR) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
+func (d *RegistryACR) FetchImagesFromRegistry(ctx context.Context) ([]model.IngestedContainerImage, error) {
+	_, span := telemetry.NewSpan(ctx, "registry", "fetch-images-from-registry")
+	defer span.End()
 	return listImagesRegistryV2(d.NonSecret.AzureRegistryURL, "",
 		d.NonSecret.AzureRegistryUsername, d.Secret.AzureRegistryPassword)
 }

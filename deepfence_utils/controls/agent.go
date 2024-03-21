@@ -2,6 +2,7 @@ package controls
 
 import (
 	"encoding/json"
+	"time"
 )
 
 type ActionID int
@@ -20,6 +21,8 @@ const (
 	StopMalwareScan
 	StopVulnerabilityScan
 	StopComplianceScan
+
+	UpdateAgentThreatIntel
 )
 
 type ScanResource int
@@ -184,4 +187,42 @@ func GetBinArgs(t interface{}) map[string]string {
 		return val.BinArgs
 	}
 	return nil
+}
+
+type ThreatIntelInfo struct {
+	SecretsRulesURL   string `json:"secret_scanner_rules_url" required:"true"`
+	SecretsRulesHash  string `json:"secret_scanner_rules_hash" required:"true"`
+	MalwareRulesURL   string `json:"malware_scanner_rules_url" required:"true"`
+	MalwareRulesHash  string `json:"malware_scanner_rules_hash" required:"true"`
+	CloudControlsURL  string `json:"cloud_controls_url" required:"true"`
+	CloudControlsHash string `json:"cloud_controls_hash" required:"true"`
+	UpdatedAt         int64  `json:"updated_at" required:"true"`
+}
+
+func (ThreatIntelInfo) GetLabel() string {
+	return "ThreatIntelInfo"
+}
+
+func (ThreatIntelInfo) GetAction() ActionID {
+	return UpdateAgentThreatIntel
+}
+
+func (e ThreatIntelInfo) GetNodeID() string {
+	return "latest"
+}
+
+func (e ThreatIntelInfo) HasPolicies() bool {
+	return false
+}
+
+func (e ThreatIntelInfo) SetEmptyUpdatedAts(now time.Time) ThreatIntelInfo {
+	if e.UpdatedAt == 0 {
+		e.UpdatedAt = now.UnixMilli()
+	}
+	return e
+}
+
+func (e ThreatIntelInfo) SetNodeID(nodeID string) ThreatIntelInfo {
+	// Stub implementation
+	return e
 }

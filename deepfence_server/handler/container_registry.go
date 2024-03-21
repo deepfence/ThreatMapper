@@ -19,6 +19,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
@@ -553,6 +554,10 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 
 }
 func (h *Handler) deleteRegistryHelper(ctx context.Context, nodeIDs []string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "registry", "delete-registry-helper")
+	defer span.End()
+
 	pgIDs, err := model.GetRegistryPgIDs(ctx, nodeIDs)
 	if err != nil {
 		return &NotFoundError{err}

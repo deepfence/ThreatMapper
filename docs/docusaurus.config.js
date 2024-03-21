@@ -1,8 +1,8 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/vsLight');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const lightCodeTheme = require('prism-react-renderer').themes.vsLight;
+const darkCodeTheme = require('prism-react-renderer').themes.dracula;
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -42,11 +42,16 @@ const config = {
           lastVersion: 'current',
           versions: {
             "current": {
+              label: 'v2.2',
+              banner: 'none',
+            },
+            "v2.1": {
               label: 'v2.1',
+              path: 'v2.1',
               banner: 'none',
             },
             "v2.0": {
-              label: 'v2.0',
+              label: 'v2.0 (deprecated)',
               path: 'v2.0',
               banner: 'none',
             },

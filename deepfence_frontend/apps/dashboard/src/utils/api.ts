@@ -1,9 +1,11 @@
 import { getAuthenticationApiClient } from '@/api/api';
 import { ModelResponseAccessToken, ResponseError } from '@/api/generated';
+import { showUserInfoGuard, waitForUserInfoGuard } from '@/components/UserInfoGuard';
 import { queryClient } from '@/queries/client';
 import { historyHelper } from '@/utils/router';
 import storage from '@/utils/storage';
 import { sleep } from '@/utils/timers';
+import { isThreatMapper } from '@/utils/version';
 
 export const isResponse = (response: unknown): response is Response => {
   return response instanceof Response;
@@ -117,6 +119,29 @@ export function apiWrapper<F extends Func<any[], any>>({
           throw new Error('Service unavailable', {
             cause: { status: 503 },
           });
+        } else if (error.response.status === 402 && isThreatMapper) {
+          showUserInfoGuard();
+          if (await waitForUserInfoGuard()) {
+            if (await refreshAccessTokenIfPossible()) {
+              return apiWrapper({ fn, options })(...args);
+            }
+          } else {
+            const response = new Response(
+              JSON.stringify({
+                message: '',
+                error_fields: {},
+                error_index: null,
+              }),
+              {
+                status: 400,
+                statusText: 'Bad Request',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              },
+            );
+            return { ok: false, error: new ResponseError(response) };
+          }
         }
         return { ok: false, error };
       }

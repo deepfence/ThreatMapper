@@ -23,12 +23,13 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/samber/lo"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -60,6 +61,10 @@ func bulkScanID() string {
 }
 
 func GetImageFromID(ctx context.Context, nodeID string) (string, string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-image-from-id")
+	defer span.End()
+
 	var name string
 	var tag string
 
@@ -68,19 +73,19 @@ func GetImageFromID(ctx context.Context, nodeID string) (string, string, error) 
 		return name, tag, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return name, tag, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return name, tag, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	res, err := tx.Run(`
+	res, err := tx.Run(ctx, `
 		MATCH (n:ContainerImage{node_id:$node_id})
 		RETURN  n.docker_image_name, n.docker_image_tag`,
 		map[string]interface{}{"node_id": nodeID})
@@ -88,7 +93,7 @@ func GetImageFromID(ctx context.Context, nodeID string) (string, string, error) 
 		return name, tag, err
 	}
 
-	rec, err := res.Single()
+	rec, err := res.Single(ctx)
 	if err != nil {
 		return name, tag, err
 	}
@@ -104,6 +109,10 @@ func GetImageFromID(ctx context.Context, nodeID string) (string, string, error) 
 }
 
 func GetContainerKubeClusterNameFromID(ctx context.Context, nodeID string) (string, string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-container-kube-cluster-name-from-id")
+	defer span.End()
+
 	var clusterID string
 	var clusterName string
 
@@ -112,19 +121,19 @@ func GetContainerKubeClusterNameFromID(ctx context.Context, nodeID string) (stri
 		return clusterID, clusterName, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return clusterID, clusterName, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return clusterID, clusterName, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	res, err := tx.Run(`
+	res, err := tx.Run(ctx, `
 		MATCH (n:Container{node_id:$node_id})
 		RETURN n.kubernetes_cluster_id, n.kubernetes_cluster_name`,
 		map[string]interface{}{"node_id": nodeID})
@@ -132,7 +141,7 @@ func GetContainerKubeClusterNameFromID(ctx context.Context, nodeID string) (stri
 		return clusterID, clusterName, err
 	}
 
-	rec, err := res.Single()
+	rec, err := res.Single(ctx)
 	if err != nil {
 		return clusterID, clusterName, err
 	}
@@ -148,6 +157,9 @@ func GetContainerKubeClusterNameFromID(ctx context.Context, nodeID string) (stri
 }
 
 func StartScanActionBuilder(ctx context.Context, scanType controls.ActionID, additionalBinArgs map[string]string) func(string, model.NodeIdentifier, int32) (controls.Action, error) {
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "start-scan-action-builder")
+	defer span.End()
+
 	return func(scanId string, req model.NodeIdentifier, registryId int32) (controls.Action, error) {
 		registryIDStr := ""
 		if registryId != -1 {
@@ -630,7 +642,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mc, err := directory.MinioClient(r.Context())
+	mc, err := directory.FileServerClient(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -1248,17 +1260,17 @@ func groupSecrets(ctx context.Context) ([]reporters_search.ResultGroup, error) {
 		return results, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return results, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return results, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	query := `
 	MATCH (n:Secret)-[:IS]->(m:SecretRule)
@@ -1266,12 +1278,12 @@ func groupSecrets(ctx context.Context) ([]reporters_search.ResultGroup, error) {
 	RETURN m.name as name, n.level as severity, count(*) as count
 	`
 
-	res, err := tx.Run(query, map[string]interface{}{})
+	res, err := tx.Run(ctx, query, map[string]interface{}{})
 	if err != nil {
 		return results, err
 	}
 
-	recs, err := res.Collect()
+	recs, err := res.Collect(ctx)
 	if err != nil {
 		return results, err
 	}
@@ -1314,17 +1326,17 @@ func groupMalwares(ctx context.Context, byClass bool) ([]reporters_search.Result
 		return results, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return results, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return results, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	query := `
 	MATCH (n:Malware)-[:IS]->(m:MalwareRule)
@@ -1340,12 +1352,12 @@ func groupMalwares(ctx context.Context, byClass bool) ([]reporters_search.Result
 		`
 	}
 
-	res, err := tx.Run(query, map[string]interface{}{})
+	res, err := tx.Run(ctx, query, map[string]interface{}{})
 	if err != nil {
 		return results, err
 	}
 
-	recs, err := res.Collect()
+	recs, err := res.Collect(ctx)
 	if err != nil {
 		return results, err
 	}
@@ -1452,13 +1464,13 @@ func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scanT
 	return entries, common, nil
 }
 
-func getNodeIDs(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode controls.ScanResource, filter reporters.ContainsFilter) ([]model.NodeIdentifier, error) {
+func getNodeIDs(ctx context.Context, tx neo4j.ExplicitTransaction, ids []model.NodeIdentifier, neo4jNode controls.ScanResource, filter reporters.ContainsFilter) ([]model.NodeIdentifier, error) {
 	res := []model.NodeIdentifier{}
 	wherePattern := reporters.ContainsFilter2CypherWhereConditions("n", filter, false)
 	if len(wherePattern) == 0 {
 		return ids, nil
 	}
-	nres, err := tx.Run(fmt.Sprintf(`
+	nres, err := tx.Run(ctx, fmt.Sprintf(`
 		MATCH (n:%s)
 		WHERE n.node_id IN $ids
 		%s
@@ -1470,7 +1482,7 @@ func getNodeIDs(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode cont
 		return res, err
 	}
 
-	rec, err := nres.Collect()
+	rec, err := nres.Collect(ctx)
 	if err != nil {
 		return res, err
 	}
@@ -1796,7 +1808,7 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 		return
 	}
 
-	mc, err := directory.MinioClient(r.Context())
+	mc, err := directory.FileServerClient(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -1867,19 +1879,19 @@ func FindNodesMatching(ctx context.Context,
 		return res, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return res, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	rh, err := getNodeIDs(tx, hostIDs, controls.Host, filter.HostScanFilter)
+	rh, err := getNodeIDs(ctx, tx, hostIDs, controls.Host, filter.HostScanFilter)
 	if err != nil {
 		return res, err
 	}
@@ -1893,24 +1905,24 @@ func FindNodesMatching(ctx context.Context,
 		}
 		res = append(res, ri...)
 	} else {
-		ri, err := getNodeIDs(tx, imageIDs, controls.Image, filter.ImageScanFilter)
+		ri, err := getNodeIDs(ctx, tx, imageIDs, controls.Image, filter.ImageScanFilter)
 		if err != nil {
 			return res, err
 		}
 		res = append(res, ri...)
 	}
 
-	rc, err := getNodeIDs(tx, containerIDs, controls.Container, filter.ContainerScanFilter)
+	rc, err := getNodeIDs(ctx, tx, containerIDs, controls.Container, filter.ContainerScanFilter)
 	if err != nil {
 		return res, err
 	}
 	res = append(res, rc...)
-	rca, err := getNodeIDs(tx, cloudAccountIDs, controls.CloudAccount, filter.CloudAccountScanFilter)
+	rca, err := getNodeIDs(ctx, tx, cloudAccountIDs, controls.CloudAccount, filter.CloudAccountScanFilter)
 	if err != nil {
 		return res, err
 	}
 	res = append(res, rca...)
-	rk, err := getNodeIDs(tx, kubernetesClusterIDs, controls.KubernetesCluster, filter.KubernetesClusterScanFilter)
+	rk, err := getNodeIDs(ctx, tx, kubernetesClusterIDs, controls.KubernetesCluster, filter.KubernetesClusterScanFilter)
 	if err != nil {
 		return res, err
 	}
@@ -1928,18 +1940,18 @@ func GetImagesFromAdvanceFilter(ctx context.Context, ids []model.NodeIdentifier,
 		return res, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	for i := range filter.FieldsValues["docker_image_name"] {
-		rr, err := tx.Run(`
+		rr, err := tx.Run(ctx, `
 		MATCH (n:ContainerImage)-[:IS]->(m:ImageStub)
 		WHERE n.node_id IN $ids
 		AND m.docker_image_name = $image_name
@@ -1952,7 +1964,7 @@ func GetImagesFromAdvanceFilter(ctx context.Context, ids []model.NodeIdentifier,
 			return res, err
 		}
 
-		rec, err := rr.Collect()
+		rec, err := rr.Collect(ctx)
 		if err != nil {
 			return res, err
 		}
@@ -2008,19 +2020,19 @@ func FindImageRegistryIDs(ctx context.Context, imageID string) ([]int32, error) 
 		return res, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return res, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	nres, err := tx.Run(`
+	nres, err := tx.Run(ctx, `
 		MATCH (n:ContainerImage{node_id:$node_id})
 		MATCH (m:RegistryAccount) -[:HOSTS]-> (n)
 		RETURN m.container_registry_ids
@@ -2030,7 +2042,7 @@ func FindImageRegistryIDs(ctx context.Context, imageID string) ([]int32, error) 
 		return res, err
 	}
 
-	rec, err := nres.Single()
+	rec, err := nres.Single(ctx)
 	if err != nil {
 		return res, nil
 	}
@@ -2072,6 +2084,9 @@ func StartMultiScan(ctx context.Context,
 	scanType utils.Neo4jScanType,
 	req model.ScanTriggerCommon,
 	actionBuilder func(string, model.NodeIdentifier, int32) (controls.Action, error)) ([]string, string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "start-multi-scan")
+	defer span.End()
 
 	isPriority := req.IsPriority
 
@@ -2130,17 +2145,17 @@ func StartMultiScan(ctx context.Context,
 		return nil, "", err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return nil, "", err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(60 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(60*time.Second))
 	if err != nil {
 		return nil, "", err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 	scanIds := []string{}
 	for _, req := range reqs {
 		if req.NodeType == controls.ResourceTypeToString(controls.Pod) {
@@ -2167,7 +2182,7 @@ func StartMultiScan(ctx context.Context,
 			return nil, "", err
 		}
 
-		err = ingesters.AddNewScan(ingesters.WriteDBTransaction{Tx: tx},
+		err = ingesters.AddNewScan(ctx, tx,
 			scanType,
 			scanID,
 			controls.StringToResourceType(req.NodeType),
@@ -2195,13 +2210,13 @@ func StartMultiScan(ctx context.Context,
 	var bulkID string
 	if genBulkID {
 		bulkID = bulkScanID()
-		err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, scanType, bulkID, scanIds)
+		err = ingesters.AddBulkScan(ctx, tx, scanType, bulkID, scanIds)
 		if err != nil {
 			log.Error().Msgf("%v", err)
 			return nil, "", err
 		}
 	}
-	return scanIds, bulkID, tx.Commit()
+	return scanIds, bulkID, tx.Commit(ctx)
 }
 
 func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentifier,
@@ -2212,24 +2227,26 @@ func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 		return nil, "", err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return nil, "", err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return nil, "", err
 	}
 
-	defer tx.Close()
+	defer tx.Close(ctx)
 	scanIds := []string{}
 
 	for _, req := range reqs {
 		scanID := cloudComplianceScanID(req.NodeID)
 
-		err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
+		err = ingesters.AddNewCloudComplianceScan(
+			ctx,
+			tx,
 			scanID,
 			benchmarkTypes,
 			req.NodeID,
@@ -2259,13 +2276,13 @@ func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 	if reqs[0].NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || reqs[0].NodeType == controls.ResourceTypeToString(controls.Host) {
 		scanType = utils.NEO4JComplianceScan
 	}
-	err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, scanType, bulkID, scanIds)
+	err = ingesters.AddBulkScan(ctx, tx, scanType, bulkID, scanIds)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		return nil, "", err
 	}
 
-	return scanIds, bulkID, tx.Commit()
+	return scanIds, bulkID, tx.Commit(ctx)
 }
 
 func startMultiComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, benchmarkTypes []string) ([]string, string, error) {

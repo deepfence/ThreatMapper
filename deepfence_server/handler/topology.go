@@ -14,6 +14,7 @@ import (
 	reportersGraph "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
@@ -123,6 +124,9 @@ func (h *Handler) GetTopologyDelta(w http.ResponseWriter, req *http.Request) {
 func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, getGraph func(context.Context, reportersGraph.TopologyFilters, reportersGraph.TopologyReporter) (reportersGraph.RenderedGraph, error)) {
 
 	ctx := req.Context()
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-topology-graph")
+	defer span.End()
 
 	body, err := io.ReadAll(req.Body)
 	if err != nil {

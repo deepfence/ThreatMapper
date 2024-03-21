@@ -15,8 +15,9 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/samber/mo"
 )
 
@@ -49,7 +50,10 @@ type ResourceStub struct {
 	IDs          []NodeID `json:"ids"`
 }
 
-func (ntp *neo4jTopologyReporter) GetProcessConnections(tx neo4j.Transaction, hosts []string) ([]ConnectionSummary, error) {
+func (ntp *neo4jTopologyReporter) GetProcessConnections(ctx context.Context, tx neo4j.ExplicitTransaction, hosts []string) ([]ConnectionSummary, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-process-connections")
+	defer span.End()
 
 	res := []ConnectionSummary{}
 
@@ -57,7 +61,7 @@ func (ntp *neo4jTopologyReporter) GetProcessConnections(tx neo4j.Transaction, ho
 		hosts = append(hosts, "in-the-internet")
 	}
 
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 	MATCH (n:Node) -[r:CONNECTS]-> (m:Node)
 	WHERE n.node_id IN $host_ids
 	WITH CASE WHEN coalesce(n.kubernetes_cluster_id, '') <> ''
@@ -77,7 +81,7 @@ func (ntp *neo4jTopologyReporter) GetProcessConnections(tx neo4j.Transaction, ho
 		return []ConnectionSummary{}, err
 	}
 
-	edges, err := r.Collect()
+	edges, err := r.Collect(ctx)
 	if err != nil {
 		return []ConnectionSummary{}, err
 	}
@@ -117,14 +121,17 @@ func (ntp *neo4jTopologyReporter) GetProcessConnections(tx neo4j.Transaction, ho
 	return res, nil
 }
 
-func (ntp *neo4jTopologyReporter) GetHostConnections(tx neo4j.Transaction, regionK8s, notHosts []string) ([]ConnectionSummary, error) {
+func (ntp *neo4jTopologyReporter) GetHostConnections(ctx context.Context, tx neo4j.ExplicitTransaction, regionK8s, notHosts []string) ([]ConnectionSummary, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-host-connections")
+	defer span.End()
 
 	res := []ConnectionSummary{}
 	if len(regionK8s) == 0 {
 		return res, nil
 	}
 
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 	MATCH (c)
 	WHERE c:KubernetesCluster or c:CloudRegion
 	AND CASE WHEN $region_k8s IS NULL THEN true ELSE c.node_id IN $region_k8s END
@@ -138,7 +145,7 @@ func (ntp *neo4jTopologyReporter) GetHostConnections(tx neo4j.Transaction, regio
 	if err != nil {
 		return []ConnectionSummary{}, err
 	}
-	edges, err := r.Collect()
+	edges, err := r.Collect(ctx)
 
 	if err != nil {
 		return []ConnectionSummary{}, err
@@ -172,11 +179,14 @@ func (ntp *neo4jTopologyReporter) GetHostConnections(tx neo4j.Transaction, regio
 	return res, nil
 }
 
-func (ntp *neo4jTopologyReporter) GetKubernetesClusterConnections(tx neo4j.Transaction, notHosts []string) ([]ConnectionSummary, error) {
+func (ntp *neo4jTopologyReporter) GetKubernetesClusterConnections(ctx context.Context, tx neo4j.ExplicitTransaction, notHosts []string) ([]ConnectionSummary, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-kubernetes-cluster-connections")
+	defer span.End()
 
 	res := []ConnectionSummary{}
 
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 	MATCH (c:KubernetesCluster) -[:HOSTS]-> (n:Node)
 	WHERE NOT CASE WHEN $not_hosts IS NULL THEN false ELSE n.node_id IN $not_hosts END
 	MATCH (n) -[r:CONNECTS]-> (m:Node)
@@ -187,7 +197,7 @@ func (ntp *neo4jTopologyReporter) GetKubernetesClusterConnections(tx neo4j.Trans
 	if err != nil {
 		return []ConnectionSummary{}, err
 	}
-	edges, err := r.Collect()
+	edges, err := r.Collect(ctx)
 
 	if err != nil {
 		return []ConnectionSummary{}, err
@@ -221,14 +231,17 @@ func (ntp *neo4jTopologyReporter) GetKubernetesClusterConnections(tx neo4j.Trans
 	return res, nil
 }
 
-func (ntp *neo4jTopologyReporter) GetRegionClusterConnections(tx neo4j.Transaction, cloudProvider, notRegionCluster []string) ([]ConnectionSummary, error) {
+func (ntp *neo4jTopologyReporter) GetRegionClusterConnections(ctx context.Context, tx neo4j.ExplicitTransaction, cloudProvider, notRegionCluster []string) ([]ConnectionSummary, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-region-cluster-connections")
+	defer span.End()
 
 	res := []ConnectionSummary{}
 	if len(cloudProvider) == 0 {
 		return res, nil
 	}
 
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 	MATCH (p:CloudProvider) -[:HOSTS]-> (c)
 	WHERE CASE WHEN $cloud_providers IS NULL THEN true ELSE p.node_id IN $cloud_providers END
 	AND (c:CloudRegion OR c:KubernetesCluster)
@@ -243,7 +256,7 @@ func (ntp *neo4jTopologyReporter) GetRegionClusterConnections(tx neo4j.Transacti
 	if err != nil {
 		return []ConnectionSummary{}, err
 	}
-	edges, err := r.Collect()
+	edges, err := r.Collect(ctx)
 
 	if err != nil {
 		return []ConnectionSummary{}, err
@@ -275,27 +288,30 @@ func (ntp *neo4jTopologyReporter) GetRegionClusterConnections(tx neo4j.Transacti
 	return res, nil
 }
 
-func (ntp *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction,
+func (ntp *neo4jTopologyReporter) GetConnections(ctx context.Context, tx neo4j.ExplicitTransaction,
 	cloudProvider,
 	cloudRegion,
 	k8sCluster,
 	hosts []string) ([]ConnectionSummary, error) {
 
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-connections")
+	defer span.End()
+
 	start := time.Now()
 	res := []ConnectionSummary{}
-	procConn, err := ntp.GetProcessConnections(tx, hosts)
+	procConn, err := ntp.GetProcessConnections(ctx, tx, hosts)
 	if err != nil {
 		return res, err
 	}
 	log.Info().Msgf("Proc: %v / %v", time.Since(start), len(procConn))
 	res = append(res, procConn...)
-	hostConn, err := ntp.GetHostConnections(tx, append(cloudRegion, k8sCluster...), hosts)
+	hostConn, err := ntp.GetHostConnections(ctx, tx, append(cloudRegion, k8sCluster...), hosts)
 	if err != nil {
 		return res, err
 	}
 	res = append(res, hostConn...)
 	log.Info().Msgf("Hosts: %v / %v", time.Since(start), len(hostConn))
-	rcConn, err := ntp.GetRegionClusterConnections(tx, cloudProvider, append(cloudRegion, k8sCluster...))
+	rcConn, err := ntp.GetRegionClusterConnections(ctx, tx, cloudProvider, append(cloudRegion, k8sCluster...))
 	if err != nil {
 		return res, err
 	}
@@ -305,25 +321,28 @@ func (ntp *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction,
 	return res, nil
 }
 
-func (ntp *neo4jTopologyReporter) GetKubernetesConnections(tx neo4j.Transaction,
+func (ntp *neo4jTopologyReporter) GetKubernetesConnections(ctx context.Context, tx neo4j.ExplicitTransaction,
 	k8sCluster,
 	hosts []string) ([]ConnectionSummary, error) {
 
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-kubernetes-connections")
+	defer span.End()
+
 	start := time.Now()
 	res := []ConnectionSummary{}
-	procConn, err := ntp.GetProcessConnections(tx, hosts)
+	procConn, err := ntp.GetProcessConnections(ctx, tx, hosts)
 	if err != nil {
 		return res, err
 	}
 	log.Info().Msgf("Proc: %v / %v", time.Since(start), len(procConn))
 	res = append(res, procConn...)
-	hostConn, err := ntp.GetHostConnections(tx, k8sCluster, hosts)
+	hostConn, err := ntp.GetHostConnections(ctx, tx, k8sCluster, hosts)
 	if err != nil {
 		return res, err
 	}
 	res = append(res, hostConn...)
 	log.Info().Msgf("Hosts: %v / %v", time.Since(start), len(hostConn))
-	rcConn, err := ntp.GetKubernetesClusterConnections(tx, hosts)
+	rcConn, err := ntp.GetKubernetesClusterConnections(ctx, tx, hosts)
 	if err != nil {
 		return res, err
 	}
@@ -348,13 +367,18 @@ func nodeIDs2nodeID(nodeIDs []NodeID) string {
 }
 
 func (ntp *neo4jTopologyReporter) GetNonPublicCloudResources(
-	tx neo4j.Transaction,
+	ctx context.Context,
+	tx neo4j.ExplicitTransaction,
 	cloudProvider []string,
 	cloudRegions []string,
 	cloudServices []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-non-public-cloud-resources")
+	defer span.End()
+
 	res := map[NodeID][]ResourceStub{}
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 		MATCH (s:CloudResource)
 		WHERE s.depth IS NULL
 		AND CASE WHEN $services IS NULL THEN [1] ELSE s.node_type IN $services END
@@ -370,7 +394,7 @@ func (ntp *neo4jTopologyReporter) GetNonPublicCloudResources(
 	if err != nil {
 		return res, err
 	}
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -413,13 +437,17 @@ func extractResourceNodeIds(ids []interface{}) []NodeID {
 }
 
 func (ntp *neo4jTopologyReporter) GetCloudServices(
-	tx neo4j.Transaction,
+	ctx context.Context,
+	tx neo4j.ExplicitTransaction,
 	cloudProvider []string,
 	cloudRegions []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
 
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-cloud-services")
+	defer span.End()
+
 	res := map[NodeID][]ResourceStub{}
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 		MATCH (cp: CloudProvider)
 		WHERE CASE WHEN $providers IS NULL THEN true ELSE cp.node_id IN $providers END
 		MATCH (cp) -[:HOSTS]-> (cr: CloudRegion)
@@ -438,7 +466,7 @@ func (ntp *neo4jTopologyReporter) GetCloudServices(
 	if err != nil {
 		return res, err
 	}
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -464,13 +492,18 @@ func (ntp *neo4jTopologyReporter) GetCloudServices(
 }
 
 func (ntp *neo4jTopologyReporter) GetPublicCloudResources(
-	tx neo4j.Transaction,
+	ctx context.Context,
+	tx neo4j.ExplicitTransaction,
 	cloudProvider []string,
 	cloudRegions []string,
 	cloudServices []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-public-cloud-resources")
+	defer span.End()
+
 	res := map[NodeID][]ResourceStub{}
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 		MATCH (cp: CloudProvider)
 		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE cp.node_id IN $providers END
 		MATCH (cp) -[:HOSTS]-> (cr: CloudRegion)
@@ -491,7 +524,7 @@ func (ntp *neo4jTopologyReporter) GetPublicCloudResources(
 	if err != nil {
 		return res, err
 	}
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -525,9 +558,13 @@ func (ntp *neo4jTopologyReporter) GetPublicCloudResources(
 
 }
 
-func (ntp *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]NodeStub, error) {
+func (ntp *neo4jTopologyReporter) getCloudProviders(ctx context.Context, tx neo4j.ExplicitTransaction) ([]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-cloud-providers")
+	defer span.End()
+
 	res := []NodeStub{}
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 		MATCH (n:CloudProvider)
 		WHERE n.active = true
 		RETURN n.node_id`, nil)
@@ -535,7 +572,7 @@ func (ntp *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]Nod
 	if err != nil {
 		return res, err
 	}
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -549,9 +586,13 @@ func (ntp *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]Nod
 	return res, nil
 }
 
-func (ntp *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloudProvider []string) (map[NodeID][]NodeStub, error) {
+func (ntp *neo4jTopologyReporter) getCloudRegions(ctx context.Context, tx neo4j.ExplicitTransaction, cloudProvider []string) (map[NodeID][]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-cloud-regions")
+	defer span.End()
+
 	res := map[NodeID][]NodeStub{}
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 		MATCH (cr:CloudProvider)
 		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE cr.node_id IN $providers END
 		MATCH (cr) -[:HOSTS]-> (n:CloudRegion)
@@ -562,7 +603,7 @@ func (ntp *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloudPro
 	if err != nil {
 		return res, err
 	}
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -581,11 +622,16 @@ func (ntp *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloudPro
 }
 
 func (ntp *neo4jTopologyReporter) getCloudKubernetes(
-	tx neo4j.Transaction,
+	ctx context.Context,
+	tx neo4j.ExplicitTransaction,
 	cloudProvider []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-cloud-kubernetes")
+	defer span.End()
+
 	res := map[NodeID][]NodeStub{}
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 		MATCH (cr:CloudProvider)
 		WHERE CASE WHEN $providers IS NULL THEN true ELSE cr.node_id IN $providers END
 		MATCH (cr) -[:HOSTS]-> (n:KubernetesCluster)
@@ -598,7 +644,7 @@ func (ntp *neo4jTopologyReporter) getCloudKubernetes(
 	if err != nil {
 		return res, err
 	}
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -627,9 +673,14 @@ func filterNil(params map[string]interface{}) map[string]interface{} {
 }
 
 func (ntp *neo4jTopologyReporter) getHosts(
-	tx neo4j.Transaction,
+	ctx context.Context,
+	tx neo4j.ExplicitTransaction,
 	cloudProvider, cloudRegions, cloudKubernetes []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-hosts")
+	defer span.End()
+
 	res := map[NodeID][]NodeStub{}
 
 	query := `
@@ -645,13 +696,13 @@ func (ntp *neo4jTopologyReporter) getHosts(
 
 	params := filterNil(map[string]interface{}{"providers": cloudProvider, "regions": cloudRegions})
 
-	r, err := tx.Run(query, params)
+	r, err := tx.Run(ctx, query, params)
 	if err != nil {
 		return res, err
 	}
 	// log.Info().Msgf("get hosts query: %s params: %v", query, params)
 
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 	if err != nil {
 		return res, err
 	}
@@ -670,7 +721,7 @@ func (ntp *neo4jTopologyReporter) getHosts(
 		res[parent] = append(res[parent], NodeStub{ID: hostID, Name: string(hostID)})
 	}
 
-	r, err = tx.Run(`
+	r, err = tx.Run(ctx, `
 		MATCH (k:KubernetesCluster) -[:INSTANCIATE]-> (n:Node)
 		WHERE CASE WHEN $kubernetes IS NULL THEN true ELSE k.node_id IN $kubernetes END
 		AND n.active = true
@@ -681,7 +732,7 @@ func (ntp *neo4jTopologyReporter) getHosts(
 		return res, err
 	}
 
-	records, err = r.Collect()
+	records, err = r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -705,11 +756,16 @@ func (ntp *neo4jTopologyReporter) getHosts(
 }
 
 func (ntp *neo4jTopologyReporter) getProcesses(
-	tx neo4j.Transaction, hosts,
+	ctx context.Context,
+	tx neo4j.ExplicitTransaction, hosts,
 	containers []string) (map[NodeID][]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-processes")
+	defer span.End()
+
 	res := map[NodeID][]NodeStub{}
 
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 		MATCH (n:Node)
 		WHERE n.node_id IN $hosts WITH n
 		MATCH (n)-[:HOSTS]->(m:Process)
@@ -718,7 +774,7 @@ func (ntp *neo4jTopologyReporter) getProcesses(
 	if err != nil {
 		return res, err
 	}
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -737,7 +793,7 @@ func (ntp *neo4jTopologyReporter) getProcesses(
 	// Note that this code is overwritting
 	// previous parents in `res` and thus needs to be done
 	// in that specific order
-	r, err = tx.Run(`
+	r, err = tx.Run(ctx, `
 		MATCH (n:Container)
 		WHERE n.node_id IN $containers WITH n
 		MATCH (n)-[:HOSTS]->(m:Process)
@@ -746,7 +802,7 @@ func (ntp *neo4jTopologyReporter) getProcesses(
 	if err != nil {
 		return res, err
 	}
-	records, err = r.Collect()
+	records, err = r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -766,12 +822,17 @@ func (ntp *neo4jTopologyReporter) getProcesses(
 }
 
 func (ntp *neo4jTopologyReporter) getPods(
-	tx neo4j.Transaction,
+	ctx context.Context,
+	tx neo4j.ExplicitTransaction,
 	hosts []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-pods")
+	defer span.End()
+
 	res := map[NodeID][]NodeStub{}
 
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 		MATCH (n:Pod)
 		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, true)+`
 		MATCH (m:Node{node_id:n.host_name})
@@ -781,7 +842,7 @@ func (ntp *neo4jTopologyReporter) getPods(
 	if err != nil {
 		return res, err
 	}
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -801,12 +862,17 @@ func (ntp *neo4jTopologyReporter) getPods(
 }
 
 func (ntp *neo4jTopologyReporter) getContainers(
-	tx neo4j.Transaction,
+	ctx context.Context,
+	tx neo4j.ExplicitTransaction,
 	hosts, pods []string,
 	fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-containers")
+	defer span.End()
+
 	res := map[NodeID][]NodeStub{}
 
-	r, err := tx.Run(`
+	r, err := tx.Run(ctx, `
 		MATCH (n:Node)
 		WHERE n.active = true
 		AND (CASE WHEN $hosts IS NULL THEN [1] ELSE n.host_name IN $hosts END
@@ -820,7 +886,7 @@ func (ntp *neo4jTopologyReporter) getContainers(
 	if err != nil {
 		return res, err
 	}
-	records, err := r.Collect()
+	records, err := r.Collect(ctx)
 
 	if err != nil {
 		return res, err
@@ -889,6 +955,10 @@ const (
 func (ntp *neo4jTopologyReporter) getContainerGraph(
 	ctx context.Context,
 	filters TopologyFilters) (RenderedGraph, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-container-graph")
+	defer span.End()
+
 	res := RenderedGraph{}
 
 	driver, err := directory.Neo4jClient(ctx)
@@ -896,16 +966,16 @@ func (ntp *neo4jTopologyReporter) getContainerGraph(
 		return res, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	tmp, err := ntp.getContainers(tx, nil, nil, mo.Some(filters.FieldFilter))
+	tmp, err := ntp.getContainers(ctx, tx, nil, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
 	}
@@ -915,7 +985,7 @@ func (ntp *neo4jTopologyReporter) getContainerGraph(
 		res.Containers[rootNodeID] = append(res.Containers[rootNodeID], containers...)
 	}
 
-	res.Processes, err = ntp.getProcesses(tx, []string{}, filters.ContainerFilter)
+	res.Processes, err = ntp.getProcesses(ctx, tx, []string{}, filters.ContainerFilter)
 	if err != nil {
 		return res, err
 	}
@@ -926,6 +996,10 @@ func (ntp *neo4jTopologyReporter) getContainerGraph(
 func (ntp *neo4jTopologyReporter) getPodGraph(
 	ctx context.Context,
 	filters TopologyFilters) (RenderedGraph, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-pod-graph")
+	defer span.End()
+
 	res := RenderedGraph{}
 
 	podFilter := filters.PodFilter
@@ -935,16 +1009,16 @@ func (ntp *neo4jTopologyReporter) getPodGraph(
 		return res, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	tmp, err := ntp.getPods(tx, nil, mo.Some(filters.FieldFilter))
+	tmp, err := ntp.getPods(ctx, tx, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
 	}
@@ -953,7 +1027,7 @@ func (ntp *neo4jTopologyReporter) getPodGraph(
 	for _, pods := range tmp {
 		res.Pods[rootNodeID] = append(res.Pods[rootNodeID], pods...)
 	}
-	res.Containers, err = ntp.getContainers(tx, []string{}, podFilter, mo.None[reporters.FieldsFilters]())
+	res.Containers, err = ntp.getContainers(ctx, tx, []string{}, podFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -962,6 +1036,10 @@ func (ntp *neo4jTopologyReporter) getPodGraph(
 }
 
 func (ntp *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-kubernetes-graph")
+	defer span.End()
+
 	res := RenderedGraph{}
 
 	kubernetesFilter := filters.KubernetesFilter
@@ -973,33 +1051,33 @@ func (ntp *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filter
 		return res, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
 	if !filters.SkipConnections {
-		connTx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
+		connTx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(10*time.Second))
 		if err != nil {
 			log.Error().Msgf("Topology get transaction: %v", err)
 			res.SkippedConnections = true
 		} else {
-			res.Connections, err = ntp.GetKubernetesConnections(connTx, kubernetesFilter, hostFilter)
+			res.Connections, err = ntp.GetKubernetesConnections(ctx, connTx, kubernetesFilter, hostFilter)
 			if err != nil {
 				log.Error().Msgf("Topology get connections: %v", err)
 				res.SkippedConnections = true
 			}
-			connTx.Close()
+			connTx.Close(ctx)
 		}
 	} else {
 		res.SkippedConnections = true
 	}
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	tmp, err := ntp.getCloudKubernetes(tx, nil, mo.Some(filters.FieldFilter))
+	tmp, err := ntp.getCloudKubernetes(ctx, tx, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
 	}
@@ -1008,15 +1086,15 @@ func (ntp *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filter
 	for _, kubs := range tmp {
 		res.Kubernetes[rootNodeID] = append(res.Kubernetes[rootNodeID], kubs...)
 	}
-	res.Hosts, err = ntp.getHosts(tx, nil, []string{}, kubernetesFilter, mo.None[reporters.FieldsFilters]())
+	res.Hosts, err = ntp.getHosts(ctx, tx, nil, []string{}, kubernetesFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = ntp.getPods(tx, hostFilter, mo.None[reporters.FieldsFilters]())
+	res.Pods, err = ntp.getPods(ctx, tx, hostFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Containers, err = ntp.getContainers(tx, hostFilter, podFilter, mo.None[reporters.FieldsFilters]())
+	res.Containers, err = ntp.getContainers(ctx, tx, hostFilter, podFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -1025,6 +1103,10 @@ func (ntp *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filter
 }
 
 func (ntp *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-host-graph")
+	defer span.End()
+
 	res := RenderedGraph{}
 
 	hostFilter := filters.HostFilter
@@ -1035,33 +1117,33 @@ func (ntp *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topo
 		return res, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
 	if !filters.SkipConnections {
-		connTx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
+		connTx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(10*time.Second))
 		if err != nil {
 			log.Error().Msgf("Topology get transaction: %v", err)
 			res.SkippedConnections = true
 		} else {
-			res.Connections, err = ntp.GetHostConnections(connTx, nil, nil)
+			res.Connections, err = ntp.GetHostConnections(ctx, connTx, nil, nil)
 			if err != nil {
 				log.Error().Msgf("Topology get connections: %v", err)
 				res.SkippedConnections = true
 			}
-			connTx.Close()
+			connTx.Close(ctx)
 		}
 	} else {
 		res.SkippedConnections = true
 	}
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	tmp, err := ntp.getHosts(tx, nil, nil, nil, mo.Some(filters.FieldFilter))
+	tmp, err := ntp.getHosts(ctx, tx, nil, nil, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
 	}
@@ -1070,15 +1152,15 @@ func (ntp *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topo
 	for _, hosts := range tmp {
 		res.Hosts[rootNodeID] = append(res.Hosts[rootNodeID], hosts...)
 	}
-	res.Processes, err = ntp.getProcesses(tx, hostFilter, []string{})
+	res.Processes, err = ntp.getProcesses(ctx, tx, hostFilter, []string{})
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = ntp.getPods(tx, hostFilter, mo.None[reporters.FieldsFilters]())
+	res.Pods, err = ntp.getPods(ctx, tx, hostFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Containers, err = ntp.getContainers(tx, hostFilter, podFilter, mo.None[reporters.FieldsFilters]())
+	res.Containers, err = ntp.getContainers(ctx, tx, hostFilter, podFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -1087,6 +1169,10 @@ func (ntp *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topo
 }
 
 func (ntp *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-graph")
+	defer span.End()
+
 	res := RenderedGraph{}
 
 	cloudFilter := filters.CloudFilter
@@ -1101,59 +1187,59 @@ func (ntp *neo4jTopologyReporter) getGraph(ctx context.Context, filters Topology
 		return res, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
 	if !filters.SkipConnections {
-		connTx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
+		connTx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(10*time.Second))
 		if err != nil {
 			return res, err
 		}
-		res.Connections, err = ntp.GetConnections(connTx, cloudFilter, regionFilter, kubernetesFilter, hostFilter)
+		res.Connections, err = ntp.GetConnections(ctx, connTx, cloudFilter, regionFilter, kubernetesFilter, hostFilter)
 		if err != nil {
 			log.Error().Msgf("Topology get connections: %v", err)
 			res.SkippedConnections = true
 		}
-		connTx.Close()
+		connTx.Close(ctx)
 	} else {
 		res.SkippedConnections = true
 	}
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	res.Providers, err = ntp.getCloudProviders(tx)
+	res.Providers, err = ntp.getCloudProviders(ctx, tx)
 	if err != nil {
 		return res, err
 	}
-	res.Regions, err = ntp.getCloudRegions(tx, cloudFilter)
+	res.Regions, err = ntp.getCloudRegions(ctx, tx, cloudFilter)
 	if err != nil {
 		return res, err
 	}
-	res.Kubernetes, err = ntp.getCloudKubernetes(tx, cloudFilter, mo.None[reporters.FieldsFilters]())
+	res.Kubernetes, err = ntp.getCloudKubernetes(ctx, tx, cloudFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Hosts, err = ntp.getHosts(tx, cloudFilter, regionFilter, kubernetesFilter, mo.None[reporters.FieldsFilters]())
+	res.Hosts, err = ntp.getHosts(ctx, tx, cloudFilter, regionFilter, kubernetesFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Processes, err = ntp.getProcesses(tx, hostFilter, containerFilter)
+	res.Processes, err = ntp.getProcesses(ctx, tx, hostFilter, containerFilter)
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = ntp.getPods(tx, hostFilter, mo.None[reporters.FieldsFilters]())
+	res.Pods, err = ntp.getPods(ctx, tx, hostFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Containers, err = ntp.getContainers(tx, hostFilter, podFilter, mo.None[reporters.FieldsFilters]())
+	res.Containers, err = ntp.getContainers(ctx, tx, hostFilter, podFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.CloudServices, err = ntp.GetCloudServices(tx, cloudFilter, regionFilter, mo.None[reporters.FieldsFilters]())
+	res.CloudServices, err = ntp.GetCloudServices(ctx, tx, cloudFilter, regionFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -1190,6 +1276,9 @@ func NewNeo4jCollector(ctx context.Context) (TopologyReporter, error) {
 func GetTopologyDelta(ctx context.Context,
 	deltaReq model.TopologyDeltaReq) (model.TopologyDeltaResponse, error) {
 
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-topology-delta")
+	defer span.End()
+
 	deltaResp := model.TopologyDeltaResponse{}
 	deltaResp.Additions = make([]model.NodeIdentifier, 0)
 	deltaResp.Deletions = make([]model.NodeIdentifier, 0)
@@ -1199,22 +1288,22 @@ func GetTopologyDelta(ctx context.Context,
 		return deltaResp, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return deltaResp, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	processRecords := func(isAdd bool, query string, timestamp int64) error {
-		r, err := tx.Run(query, map[string]interface{}{})
+		r, err := tx.Run(ctx, query, map[string]interface{}{})
 		if err != nil {
 			return err
 		}
 
-		records, err := r.Collect()
+		records, err := r.Collect(ctx)
 		if err != nil {
 			return err
 		}

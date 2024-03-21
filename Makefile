@@ -13,10 +13,10 @@ export COMPLIANCE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/compliance
 export DEEPFENCE_CTL=$(PWD)/deepfence_ctl
 export DEEPFENCED=$(PWD)/deepfence_bootstrapper
 export DEEPFENCE_FARGATE_DIR=$(DEEPFENCE_AGENT_DIR)/fargate
-export IMAGE_REPOSITORY?=deepfenceio
+export IMAGE_REPOSITORY?=quay.io/deepfenceio
 export DF_IMG_TAG?=latest
 export IS_DEV_BUILD?=false
-export VERSION?="2.1.1"
+export VERSION?="2.2.0"
 
 default: bootstrap console_plugins agent console fargate-local
 
@@ -101,11 +101,11 @@ file-server:
 
 .PHONY: server
 server: alpine_builder
-	(cd ./deepfence_server && make image)
+	(cd ./deepfence_server && VERSION=$(VERSION) make image)
 
 .PHONY: worker
 worker: alpine_builder
-	(cd ./deepfence_worker && make image)
+	(cd ./deepfence_worker && VERSION=$(VERSION) make image)
 
 .PHONY: jaeger
 jaeger:
@@ -167,7 +167,7 @@ cli: bootstrap
 	(cd $(DEEPFENCE_CTL) && make clean && make all)
 
 .PHONY: publish
-publish: publish-redis publish-postgres publish-kafka publish-router publish-minio publish-server publish-worker publish-ui publish-agent publish-cluster-agent publish-packagescanner publish-secretscanner publish-malwarescanner publish-graphdb publish-jaeger
+publish: publish-redis publish-postgres publish-kafka publish-router publish-file-server publish-server publish-worker publish-ui publish-agent publish-cluster-agent publish-packagescanner publish-secretscanner publish-malwarescanner publish-graphdb publish-jaeger
 
 .PHONY: publish-redis
 publish-redis:
@@ -185,8 +185,8 @@ publish-kafka:
 publish-router:
 	docker push $(IMAGE_REPOSITORY)/deepfence_router_ce:$(DF_IMG_TAG)
 
-.PHONY: publish-minio
-publish-minio:
+.PHONY: publish-file-server
+publish-file-server:
 	docker push $(IMAGE_REPOSITORY)/deepfence_file_server_ce:$(DF_IMG_TAG)
 
 .PHONY: publish-server

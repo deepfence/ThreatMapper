@@ -13,7 +13,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/minio/minio-go/v7"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func UpdateScanResultNodeFields(ctx context.Context, scanType utils.Neo4jScanType, scanID string, nodeIDs []string, key, value string) error {
@@ -23,23 +23,23 @@ func UpdateScanResultNodeFields(ctx context.Context, scanType utils.Neo4jScanTyp
 	if err != nil {
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	_, err = tx.Run(`
+	_, err = tx.Run(ctx, `
 		MATCH (m:`+string(scanType)+`) -[r:DETECTED]-> (n)
 		WHERE n.node_id IN $node_ids AND m.node_id = $scan_id
 		SET n.`+key+` = $value`, map[string]interface{}{"node_ids": nodeIDs, "value": value, "scan_id": scanID})
 	if err != nil {
 		return err
 	}
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskRequest, value bool) error {
@@ -47,14 +47,14 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	if err != nil {
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	switch req.MaskAction {
 	case utils.MaskGlobal:
@@ -100,7 +100,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 
 		log.Debug().Msgf("mask_global query: %s", globalQuery)
 
-		_, err = tx.Run(globalQuery, map[string]interface{}{"node_ids": req.ResultIDs, "value": value, "active": !value})
+		_, err = tx.Run(ctx, globalQuery, map[string]interface{}{"node_ids": req.ResultIDs, "value": value, "active": !value})
 
 	case utils.MaskAllImageTag:
 		entityQuery := `
@@ -123,7 +123,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 
 		entityQuery = fmt.Sprintf(entityQuery, imageStubQuery)
 		log.Debug().Msgf("mask_all_image_tag query: %s", entityQuery)
-		_, err = tx.Run(entityQuery, map[string]interface{}{"node_ids": req.ResultIDs,
+		_, err = tx.Run(ctx, entityQuery, map[string]interface{}{"node_ids": req.ResultIDs,
 			"value": value, "scan_id": req.ScanID})
 
 	case utils.MaskEntity:
@@ -134,7 +134,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 
 		log.Debug().Msgf("mask_entity query: %s", entityQuery)
 
-		_, err = tx.Run(entityQuery, map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
+		_, err = tx.Run(ctx, entityQuery, map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
 
 	case utils.MaskImageTag:
 		maskImageTagQuery := `
@@ -147,7 +147,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 
 		log.Debug().Msgf("mask_image_tag query: %s", maskImageTagQuery)
 
-		_, err = tx.Run(maskImageTagQuery,
+		_, err = tx.Run(ctx, maskImageTagQuery,
 			map[string]interface{}{"node_ids": req.ResultIDs, "value": value, "scan_id": req.ScanID})
 
 	default:
@@ -158,7 +158,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 
 		log.Debug().Msgf("mask_image_tag query: %s", defaultMaskQuery)
 
-		_, err = tx.Run(defaultMaskQuery,
+		_, err = tx.Run(ctx, defaultMaskQuery,
 			map[string]interface{}{"node_ids": req.ResultIDs, "value": value, "scan_id": req.ScanID})
 
 	}
@@ -166,7 +166,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	if err != nil {
 		return err
 	}
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string, docIds []string) error {
@@ -174,17 +174,17 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 	if err != nil {
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	if len(docIds) > 0 {
-		_, err = tx.Run(`
+		_, err = tx.Run(ctx, `
 		MATCH (m:`+string(scanType)+`) -[r:DETECTED]-> (n)
 		WHERE n.node_id IN $node_ids AND m.node_id = $scan_id
 		DELETE r`, map[string]interface{}{"node_ids": docIds, "scan_id": scanID})
@@ -192,7 +192,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 			return err
 		}
 	} else {
-		_, err = tx.Run(`
+		_, err = tx.Run(ctx, `
 		MATCH (m:`+string(scanType)+`{node_id: $scan_id})
 		OPTIONAL MATCH (m)-[r:DETECTED]-> (n:`+utils.ScanTypeDetectedNode[scanType]+`)
 		DETACH DELETE m,r`, map[string]interface{}{"scan_id": scanID})
@@ -200,47 +200,47 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 			return err
 		}
 	}
-	err = tx.Commit()
+	err = tx.Commit(ctx)
 	if err != nil {
 		return err
 	}
-	tx2, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx2, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx2.Close()
+	defer tx2.Close(ctx)
 	// Delete results which are not part of any scans now
-	_, err = tx2.Run(`
-		MATCH (n:`+utils.ScanTypeDetectedNode[scanType]+`)
+	_, err = tx2.Run(ctx,
+		`MATCH (n:`+utils.ScanTypeDetectedNode[scanType]+`)
 		WHERE not (n)<-[:DETECTED]-(:`+string(scanType)+`)
 		DETACH DELETE (n)`, map[string]interface{}{})
 	if err != nil {
 		return err
 	}
-	err = tx2.Commit()
+	err = tx2.Commit(ctx)
 	if err != nil {
 		return err
 	}
 	if scanType == utils.NEO4JVulnerabilityScan {
-		tx3, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+		tx3, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 		if err != nil {
 			return err
 		}
-		defer tx3.Close()
-		_, err = tx3.Run(`
-			MATCH (n:`+reporters.ScanResultMaskNode[scanType]+`)
+		defer tx3.Close(ctx)
+		_, err = tx3.Run(ctx,
+			`MATCH (n:`+reporters.ScanResultMaskNode[scanType]+`)
 			WHERE not (n)<-[:IS]-(:`+utils.ScanTypeDetectedNode[scanType]+`)
 			DETACH DELETE (n)`, map[string]interface{}{})
 		if err != nil {
 			return err
 		}
-		err = tx3.Commit()
+		err = tx3.Commit(ctx)
 		if err != nil {
 			return err
 		}
 
 		// remove sbom
-		mc, err := directory.MinioClient(ctx)
+		mc, err := directory.FileServerClient(ctx)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to get minio client")
 			return err
@@ -293,18 +293,17 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 		return nil
 	}
 
-	log.Debug().Msgf("Query:%s", fmt.Sprintf(query, scanID))
+	tx4, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx4.Close(ctx)
 
-	tx4, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	_, err = tx4.Run(ctx, fmt.Sprintf(query, scanID), map[string]interface{}{})
 	if err != nil {
 		return err
 	}
-	defer tx4.Close()
-	_, err = tx4.Run(fmt.Sprintf(query, scanID), map[string]interface{}{})
-	if err != nil {
-		return err
-	}
-	err = tx4.Commit()
+	err = tx4.Commit(ctx)
 	if err != nil {
 		return err
 	}
@@ -318,13 +317,13 @@ func MarkScanDeletePending(ctx context.Context, scanType utils.Neo4jScanType,
 	if err != nil {
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	query := `MATCH (n:%s) -[:SCANNED]-> (m)
 			WHERE n.node_id IN $scan_ids
@@ -334,7 +333,7 @@ func MarkScanDeletePending(ctx context.Context, scanType utils.Neo4jScanType,
 
 	log.Debug().Msgf("Query: %s", queryStr)
 
-	if _, err = tx.Run(queryStr,
+	if _, err = tx.Run(ctx, queryStr,
 		map[string]interface{}{
 			"scan_ids":       scanIds,
 			"delete_pending": utils.ScanStatusDeletePending,
@@ -342,7 +341,7 @@ func MarkScanDeletePending(ctx context.Context, scanType utils.Neo4jScanType,
 		log.Error().Msgf("Failed to mark scans as DELETE_PENDING, Error: %s", err.Error())
 		return err
 	}
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func StopCloudComplianceScan(ctx context.Context, scanIds []string) error {
@@ -351,21 +350,21 @@ func StopCloudComplianceScan(ctx context.Context, scanIds []string) error {
 	if err != nil {
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	query := `MATCH (n:CloudComplianceScan{node_id: $scan_id}) -[:SCANNED]-> ()
         WHERE n.status = $in_progress
         SET n.status = $cancel_pending`
 
 	for _, scanid := range scanIds {
-		if _, err = tx.Run(query,
+		if _, err = tx.Run(ctx, query,
 			map[string]interface{}{
 				"scan_id":        scanid,
 				"in_progress":    utils.ScanStatusInProgress,
@@ -376,7 +375,7 @@ func StopCloudComplianceScan(ctx context.Context, scanIds []string) error {
 		}
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func StopScan(ctx context.Context, scanType string, scanIds []string) error {
@@ -384,13 +383,13 @@ func StopScan(ctx context.Context, scanType string, scanIds []string) error {
 	if err != nil {
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	nodeStatusField := ingestersUtil.ScanStatusField[utils.Neo4jScanType(scanType)]
 
@@ -403,7 +402,7 @@ func StopScan(ctx context.Context, scanType string, scanIds []string) error {
 
 	queryStr := fmt.Sprintf(query, scanType, nodeStatusField)
 	for _, scanid := range scanIds {
-		if _, err = tx.Run(queryStr,
+		if _, err = tx.Run(ctx, queryStr,
 			map[string]interface{}{
 				"scan_id":        scanid,
 				"starting":       utils.ScanStatusStarting,
@@ -414,7 +413,7 @@ func StopScan(ctx context.Context, scanType string, scanIds []string) error {
 			return err
 		}
 	}
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanID string, scanIDs []string, integrationIDs []int32) error {
@@ -471,27 +470,27 @@ func GetSelectedScanResults[T any](ctx context.Context, scanType utils.Neo4jScan
 	if err != nil {
 		return res, common, err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return res, common, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	query := `MATCH (n:%s) -[:DETECTED]-> (m)
 		WHERE m.node_id IN $scan_ids
 		AND n.node_id = $scan_id
 		RETURN m{.*}`
 
-	result, err := tx.Run(fmt.Sprintf(query, scanType), map[string]interface{}{"scan_ids": scanIDs, "scan_id": scanID})
+	result, err := tx.Run(ctx, fmt.Sprintf(query, scanType), map[string]interface{}{"scan_ids": scanIDs, "scan_id": scanID})
 	if err != nil {
 		log.Error().Msgf("NotifyScanResult: Error in getting the scan result nodes from neo4j: %v", err)
 		return res, common, err
 	}
 
-	recs, err := result.Collect()
+	recs, err := result.Collect(ctx)
 	if err != nil {
 		log.Error().Msgf("NotifyScanResult: Error in collecting the scan result nodes from neo4j: %v", err)
 		return res, common, err
@@ -503,7 +502,7 @@ func GetSelectedScanResults[T any](ctx context.Context, scanType utils.Neo4jScan
 		res = append(res, tmp)
 	}
 
-	ncommonres, err := tx.Run(`
+	ncommonres, err := tx.Run(ctx, `
 	MATCH (m:`+string(scanType)+`{node_id: $scan_id}) -[:SCANNED]-> (n)
 	RETURN n{.*, scan_id: m.node_id, updated_at:m.updated_at, created_at:m.created_at}`,
 		map[string]interface{}{"scan_id": scanID})
@@ -511,7 +510,7 @@ func GetSelectedScanResults[T any](ctx context.Context, scanType utils.Neo4jScan
 		return res, common, err
 	}
 
-	rec, err := ncommonres.Single()
+	rec, err := ncommonres.Single(ctx)
 	if err != nil {
 		return res, common, err
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/Masterminds/sprig/v3"
 	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
@@ -25,6 +26,9 @@ var (
 )
 
 func generatePDF(ctx context.Context, params utils.ReportParams) (string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "reports", "generate-pdf-report")
+	defer span.End()
 
 	log := log.WithCtx(ctx)
 

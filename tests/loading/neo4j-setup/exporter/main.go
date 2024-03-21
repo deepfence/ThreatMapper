@@ -8,7 +8,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func main() {
@@ -31,11 +31,11 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer session.Close()
+		defer session.Close(ctx)
 		internal_count := 0
 		for query := range batch {
 
-			_, err = session.Run(query, map[string]interface{}{})
+			_, err = session.Run(ctx, query, map[string]interface{}{})
 			if err != nil {
 				log.Println(err)
 			}

@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"archive/tar"
 	"archive/zip"
 	"bytes"
+	"compress/gzip"
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/tls"
@@ -21,6 +23,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -53,25 +56,29 @@ var (
 
 func GetHTTPClient() *http.Client {
 	once1.Do(func() {
-		secureClient = &http.Client{Timeout: time.Second * 10}
+		secureClient = &http.Client{
+			Timeout:   time.Second * 10,
+			Transport: http.DefaultTransport.(*http.Transport).Clone(),
+		}
 	})
 
 	return secureClient
 }
 
-func GetHTTPClientWithTimeout(duration time.Duration) *http.Client {
-	return &http.Client{Timeout: duration}
-}
-
 func GetInsecureHTTPClient() *http.Client {
 	once2.Do(func() {
-		tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
+		tlsConfig := &tls.Config{
+			RootCAs:            x509.NewCertPool(),
+			InsecureSkipVerify: true,
+		}
+		// clone default transport
+		tr := http.DefaultTransport.(*http.Transport).Clone()
+		tr.TLSClientConfig = tlsConfig
+		tr.WriteBufferSize = 10240
+
 		insecureClient = &http.Client{
-			Timeout: time.Second * 10,
-			Transport: &http.Transport{
-				TLSClientConfig: tlsConfig,
-				WriteBufferSize: 10240,
-			},
+			Timeout:   time.Second * 10,
+			Transport: tr,
 		}
 	})
 
@@ -210,6 +217,18 @@ func GetStringValueFromInterfaceMap(claims map[string]interface{}, key string) (
 		return "", fmt.Errorf("key %s not found in JWT claims", key)
 	}
 	return fmt.Sprintf("%v", val), nil
+}
+
+func GetBoolValueFromInterfaceMap(claims map[string]interface{}, key string) (bool, error) {
+	val, ok := claims[key]
+	if !ok {
+		return false, fmt.Errorf("key %s not found in JWT claims", key)
+	}
+	valBool, ok := val.(bool)
+	if !ok {
+		return false, nil
+	}
+	return valBool, nil
 }
 
 func StructToMap[T any](c T) map[string]interface{} {
@@ -501,9 +520,14 @@ func UploadFile(url string, fileName string) ([]byte, int, error) {
 
 func NewHTTPClient() (*http.Client, error) {
 	// Set up our own certificate pool
-	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
+	tlsConfig := &tls.Config{
+		RootCAs:            x509.NewCertPool(),
+		InsecureSkipVerify: true,
+	}
+
 	client := &http.Client{
 		Transport: &http.Transport{
+			Proxy:               http.ProxyFromEnvironment,
 			TLSClientConfig:     tlsConfig,
 			DisableKeepAlives:   false,
 			MaxIdleConnsPerHost: 1024,
@@ -689,4 +713,56 @@ func TopicWithNamespace(topic, ns string) string {
 		return fmt.Sprintf("%s-%s", topic, ns)
 	}
 	return topic
+}
+
+func ExtractTarGz(gzipStream io.Reader, targetPath string) error {
+
+	// create the target path
+	if err := os.MkdirAll(targetPath, 0755); err != nil {
+		log.Error().Err(err).Msg("ExtractTarGz: create target path failed")
+		return err
+	}
+
+	uncompressedStream, err := gzip.NewReader(gzipStream)
+	if err != nil {
+		log.Error().Err(err).Msg("ExtractTarGz: NewReader failed")
+		return err
+	}
+
+	tarReader := tar.NewReader(uncompressedStream)
+
+	for {
+		header, err := tarReader.Next()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			log.Error().Err(err).Msg("ExtractTarGz: Next() failed")
+			return err
+		}
+
+		switch header.Typeflag {
+		case tar.TypeDir:
+			if err := os.MkdirAll(path.Join(targetPath, header.Name), 0755); err != nil {
+				log.Error().Err(err).Msg("ExtractTarGz: MkdirAll() failed")
+				return err
+			}
+		case tar.TypeReg:
+			outFile, err := os.Create(path.Join(targetPath, header.Name))
+			if err != nil {
+				log.Error().Err(err).Msg("ExtractTarGz: Create() failed")
+				return err
+			}
+			if _, err := io.Copy(outFile, tarReader); err != nil {
+				log.Error().Err(err).Msg("ExtractTarGz: Copy() failed")
+				return err
+			}
+			outFile.Close()
+
+		default:
+			log.Error().Msgf("ExtractTarGz: uknown type: %s in %s",
+				string(header.Typeflag), header.Name)
+		}
+	}
+
+	return nil
 }

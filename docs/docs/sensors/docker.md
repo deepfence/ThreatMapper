@@ -15,7 +15,7 @@ For Windows Server hosts, experimental support exists, but it is not suitable fo
 Install and start the latest release of the deepfence sensor.  Run the following command to start the sensor on the host, replacing the `CONSOLE_URL` and `DEEPFENCE_KEY` values:
 
 :::info
-Image tag `deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION-multiarch` is supported in amd64 and arm64/v8 architectures.
+Image tag `quay.io/deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION-multiarch` is supported in amd64 and arm64/v8 architectures.
 :::
 
 ### Docker
@@ -39,7 +39,7 @@ docker run -dit \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-    deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION
+    quay.io/deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION
 ```
 
 ### Podman
@@ -66,7 +66,7 @@ sudo podman run -dit \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-    docker.io/deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION
+    quay.io/deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION
 ```
 
 :::tip

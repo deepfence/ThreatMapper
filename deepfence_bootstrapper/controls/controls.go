@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	ErrMissingScanID = errors.New("missing scan id in the StopComplianceScanRequest")
+	ErrMissingScanID = errors.New("missing scan id in the request")
 	ErrStopScan      = errors.New("failed to stop scan")
 )
 
@@ -188,5 +188,26 @@ func SetAgentControls() {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("set controls")
+	}
+
+	err = router.RegisterControl(ctl.UpdateAgentThreatIntel,
+		func(req ctl.ThreatIntelInfo) error {
+
+			var errs []error
+
+			if err := router.UpdateSecretsRules(req); err != nil {
+				log.Error().Err(err).Msg("failed to update secrets rules")
+				errs = append(errs, err)
+			}
+
+			if err := router.UpdateMalwareRules(req); err != nil {
+				log.Error().Err(err).Msg("failed to update malware rules")
+				errs = append(errs, err)
+			}
+
+			return errors.Join(errs...)
+		})
+	if err != nil {
+		log.Error().Err(err).Msgf("set controls: %v", err)
 	}
 }

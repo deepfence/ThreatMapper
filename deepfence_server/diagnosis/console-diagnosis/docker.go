@@ -13,6 +13,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -35,6 +36,10 @@ func NewDockerConsoleDiagnosisHandler() (*DockerConsoleDiagnosisHandler, error) 
 }
 
 func (d *DockerConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.Context, tail string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "generate-diagnostic-logs-docker")
+	defer span.End()
+
 	zipFile, err := os.Create(fmt.Sprintf("/tmp/deepfence-console-logs-%s.zip", time.Now().Format("2006-01-02-15-04-05")))
 	if err != nil {
 		return err
@@ -69,7 +74,7 @@ func (d *DockerConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.Conte
 	}
 	zipWriter.Flush()
 
-	mc, err := directory.MinioClient(ctx)
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -85,6 +90,10 @@ func (d *DockerConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.Conte
 }
 
 func (d *DockerConsoleDiagnosisHandler) addContainerLogs(ctx context.Context, container *types.Container, logOptions types.ContainerLogsOptions, zipWriter *zip.Writer) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "add-container-logs")
+	defer span.End()
+
 	if len(container.Names) == 0 {
 		return nil
 	}
@@ -116,6 +125,9 @@ func (d *DockerConsoleDiagnosisHandler) addContainerLogs(ctx context.Context, co
 }
 
 func (d *DockerConsoleDiagnosisHandler) getContainerLogs(ctx context.Context, containerID string, options types.ContainerLogsOptions) (io.ReadCloser, error) {
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "get-container-logs")
+	defer span.End()
+
 	logs, err := d.dockerCli.ContainerLogs(ctx, containerID, options)
 	if err != nil {
 		return nil, err
@@ -124,6 +136,9 @@ func (d *DockerConsoleDiagnosisHandler) getContainerLogs(ctx context.Context, co
 }
 
 func (d *DockerConsoleDiagnosisHandler) getContainers(ctx context.Context, options types.ContainerListOptions) []types.Container {
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "get-containers")
+	defer span.End()
+
 	containers, err := d.dockerCli.ContainerList(ctx, options)
 	if err != nil {
 		panic(err)
@@ -132,6 +147,9 @@ func (d *DockerConsoleDiagnosisHandler) getContainers(ctx context.Context, optio
 }
 
 func (d *DockerConsoleDiagnosisHandler) CopyFromContainer(ctx context.Context, containerID string, containerName string, srcPath string, zipWriter *zip.Writer) error {
+	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "copy-from-container")
+	defer span.End()
+
 	tarStream, _, err := d.dockerCli.CopyFromContainer(ctx, containerID, srcPath)
 	if err != nil {
 		return err
