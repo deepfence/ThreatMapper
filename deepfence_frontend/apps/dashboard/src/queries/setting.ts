@@ -218,7 +218,7 @@ export const settingQueries = createQueryKeys('setting', {
         const data = await fetch(`${window.location.origin}/product_version.txt`);
         const version = await data.text();
         return {
-          version,
+          version: version?.trim(),
         };
       },
     };
