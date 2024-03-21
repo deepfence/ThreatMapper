@@ -14134,6 +14134,8 @@
           "no_of_hosts": { "type": "integer" },
           "no_of_images_in_registry": { "type": "integer" },
           "no_of_registries": { "type": "integer" },
+          "notification_threshold_percentage": { "type": "integer" },
+          "notification_threshold_updated_at": { "type": "integer" },
           "registry_credentials": {
             "$ref": "#/components/schemas/ModelRegistryCredentials"
           },

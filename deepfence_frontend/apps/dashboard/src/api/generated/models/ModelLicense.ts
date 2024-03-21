@@ -112,6 +112,18 @@ export interface ModelLicense {
     no_of_registries?: number;
     /**
      * 
+     * @type {number}
+     * @memberof ModelLicense
+     */
+    notification_threshold_percentage?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelLicense
+     */
+    notification_threshold_updated_at?: number;
+    /**
+     * 
      * @type {ModelRegistryCredentials}
      * @memberof ModelLicense
      */
@@ -157,6 +169,8 @@ export function ModelLicenseFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'no_of_hosts': !exists(json, 'no_of_hosts') ? undefined : json['no_of_hosts'],
         'no_of_images_in_registry': !exists(json, 'no_of_images_in_registry') ? undefined : json['no_of_images_in_registry'],
         'no_of_registries': !exists(json, 'no_of_registries') ? undefined : json['no_of_registries'],
+        'notification_threshold_percentage': !exists(json, 'notification_threshold_percentage') ? undefined : json['notification_threshold_percentage'],
+        'notification_threshold_updated_at': !exists(json, 'notification_threshold_updated_at') ? undefined : json['notification_threshold_updated_at'],
         'registry_credentials': !exists(json, 'registry_credentials') ? undefined : ModelRegistryCredentialsFromJSON(json['registry_credentials']),
         'start_date': !exists(json, 'start_date') ? undefined : json['start_date'],
     };
@@ -185,6 +199,8 @@ export function ModelLicenseToJSON(value?: ModelLicense | null): any {
         'no_of_hosts': value.no_of_hosts,
         'no_of_images_in_registry': value.no_of_images_in_registry,
         'no_of_registries': value.no_of_registries,
+        'notification_threshold_percentage': value.notification_threshold_percentage,
+        'notification_threshold_updated_at': value.notification_threshold_updated_at,
         'registry_credentials': ModelRegistryCredentialsToJSON(value.registry_credentials),
         'start_date': value.start_date,
     };
