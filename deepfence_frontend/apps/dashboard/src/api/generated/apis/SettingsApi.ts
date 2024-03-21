@@ -118,6 +118,18 @@ export interface UploadAgentVersionRequest {
     tarball: Blob;
 }
 
+export interface UploadMalwareRulesRequest {
+    database: Blob;
+}
+
+export interface UploadPostureControlsRequest {
+    database: Blob;
+}
+
+export interface UploadSecretsRulesRequest {
+    database: Blob;
+}
+
 export interface UploadVulnerabilityDatabaseRequest {
     database: Blob;
 }
@@ -395,6 +407,54 @@ export interface SettingsApiInterface {
      * Upload New agent version
      */
     uploadAgentVersion(requestParameters: UploadAgentVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Upload malware rules for use in malware scans
+     * @summary Upload Malware Rules
+     * @param {Blob} database 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    uploadMalwareRulesRaw(requestParameters: UploadMalwareRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
+
+    /**
+     * Upload malware rules for use in malware scans
+     * Upload Malware Rules
+     */
+    uploadMalwareRules(requestParameters: UploadMalwareRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
+
+    /**
+     * Upload posture controls for use in posture scans
+     * @summary Upload Posture Controls
+     * @param {Blob} database 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    uploadPostureControlsRaw(requestParameters: UploadPostureControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
+
+    /**
+     * Upload posture controls for use in posture scans
+     * Upload Posture Controls
+     */
+    uploadPostureControls(requestParameters: UploadPostureControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
+
+    /**
+     * Upload secrets rules for use in secrets scans
+     * @summary Upload Secrets Rules
+     * @param {Blob} database 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    uploadSecretsRulesRaw(requestParameters: UploadSecretsRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
+
+    /**
+     * Upload secrets rules for use in secrets scans
+     * Upload Secrets Rules
+     */
+    uploadSecretsRules(requestParameters: UploadSecretsRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
     /**
      * Upload Vulnerability Database for use in vulnerability scans
@@ -1084,6 +1144,189 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      */
     async uploadAgentVersion(requestParameters: UploadAgentVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.uploadAgentVersionRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Upload malware rules for use in malware scans
+     * Upload Malware Rules
+     */
+    async uploadMalwareRulesRaw(requestParameters: UploadMalwareRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
+        if (requestParameters.database === null || requestParameters.database === undefined) {
+            throw new runtime.RequiredError('database','Required parameter requestParameters.database was null or undefined when calling uploadMalwareRules.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters.database !== undefined) {
+            formParams.append('database', requestParameters.database as any);
+        }
+
+        const response = await this.request({
+            path: `/deepfence/database/malware`,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Upload malware rules for use in malware scans
+     * Upload Malware Rules
+     */
+    async uploadMalwareRules(requestParameters: UploadMalwareRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.uploadMalwareRulesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Upload posture controls for use in posture scans
+     * Upload Posture Controls
+     */
+    async uploadPostureControlsRaw(requestParameters: UploadPostureControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
+        if (requestParameters.database === null || requestParameters.database === undefined) {
+            throw new runtime.RequiredError('database','Required parameter requestParameters.database was null or undefined when calling uploadPostureControls.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters.database !== undefined) {
+            formParams.append('database', requestParameters.database as any);
+        }
+
+        const response = await this.request({
+            path: `/deepfence/database/posture`,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Upload posture controls for use in posture scans
+     * Upload Posture Controls
+     */
+    async uploadPostureControls(requestParameters: UploadPostureControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.uploadPostureControlsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Upload secrets rules for use in secrets scans
+     * Upload Secrets Rules
+     */
+    async uploadSecretsRulesRaw(requestParameters: UploadSecretsRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
+        if (requestParameters.database === null || requestParameters.database === undefined) {
+            throw new runtime.RequiredError('database','Required parameter requestParameters.database was null or undefined when calling uploadSecretsRules.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters.database !== undefined) {
+            formParams.append('database', requestParameters.database as any);
+        }
+
+        const response = await this.request({
+            path: `/deepfence/database/secret`,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Upload secrets rules for use in secrets scans
+     * Upload Secrets Rules
+     */
+    async uploadSecretsRules(requestParameters: UploadSecretsRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.uploadSecretsRulesRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

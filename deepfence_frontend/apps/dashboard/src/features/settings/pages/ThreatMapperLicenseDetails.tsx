@@ -182,7 +182,7 @@ export const ThreatMapperLicenseDetails = () => {
 
 const LicenseDetailsContent = () => {
   const { data: licenseData } = useSuspenseQuery({
-    ...queries.setting.getCompanyLicense(),
+    ...queries.setting.getLicense(),
   });
 
   return <LicenseCard licenseData={licenseData} />;

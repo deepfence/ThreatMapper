@@ -254,12 +254,12 @@ export const settingQueries = createQueryKeys('setting', {
       },
     };
   },
-  getCompanyLicense: () => {
+  getLicense: () => {
     return {
-      queryKey: ['getCompanyLicense'],
+      queryKey: ['getLicense'],
       queryFn: async () => {
         const api = apiWrapper({
-          fn: getSettingsApiClient().getLicense,
+          fn: getSettingsApiClient().getLicence,
         });
         const response = await api();
 
