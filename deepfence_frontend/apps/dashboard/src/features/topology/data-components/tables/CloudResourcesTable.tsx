@@ -409,6 +409,7 @@ function Filters() {
           onClearAll={() => {
             setSearchParams((prev) => {
               prev.delete('aws_account_ids');
+              prev.delete('page');
               return prev;
             });
           }}
@@ -418,6 +419,7 @@ function Filters() {
               value.forEach((id) => {
                 prev.append('aws_account_ids', id);
               });
+              prev.delete('page');
               return prev;
             });
           }}
@@ -429,6 +431,7 @@ function Filters() {
           onClearAll={() => {
             setSearchParams((prev) => {
               prev.delete('gcp_account_ids');
+              prev.delete('page');
               return prev;
             });
           }}
@@ -438,6 +441,7 @@ function Filters() {
               value.forEach((id) => {
                 prev.append('gcp_account_ids', id);
               });
+              prev.delete('page');
               return prev;
             });
           }}
@@ -449,6 +453,7 @@ function Filters() {
           onClearAll={() => {
             setSearchParams((prev) => {
               prev.delete('azure_account_ids');
+              prev.delete('page');
               return prev;
             });
           }}
@@ -458,6 +463,7 @@ function Filters() {
               value.forEach((id) => {
                 prev.append('azure_account_ids', id);
               });
+              prev.delete('page');
               return prev;
             });
           }}
