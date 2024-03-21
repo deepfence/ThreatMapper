@@ -275,37 +275,42 @@ const useGetLink = (version: string, licenseKey?: string) => {
     }
     const requestHeaders: HeadersInit = new Headers();
     requestHeaders.set('x-license-key', licenseKey);
-    const response = await fetch(
-      `https://threat-intel.deepfence.space/threat-intel/listing.json?version=v${version}&product=ThreatMapper`,
-      {
-        method: 'GET',
-        headers: requestHeaders,
-      },
-    );
-    if (!response.ok) {
-      threats.error = 'Fail to fetch threat intel rules';
-      return threats;
-    }
-    const data = (await response.json()) as Record<
-      string,
-      Record<
-        string,
+    try {
+      const response = await fetch(
+        `https://threat-intel.deepfence.space/threat-intel/listing.json?version=v${version}&product=ThreatMapper`,
         {
-          type: string;
-          url: string;
-        }[]
-      >
-    >;
-    const links = data.available[`v${version}`];
-    const sortMap: { [key: string]: number } = {
-      vulnerability: 1,
-      secret: 2,
-      malware: 3,
-      posture: 4,
-    };
-    threats.data = links
-      ?.sort((link1, link2) => sortMap[link1.type] - sortMap[link2.type])
-      .map?.((link) => ({ type: link.type, url: link.url }));
+          method: 'GET',
+          headers: requestHeaders,
+        },
+      );
+      if (!response.ok) {
+        threats.error = 'Fail to fetch threat intel feeds and rules';
+        return threats;
+      }
+      const data = (await response.json()) as Record<
+        string,
+        Record<
+          string,
+          {
+            type: string;
+            url: string;
+          }[]
+        >
+      >;
+      const links = data.available[`v${version}`];
+      const sortMap: { [key: string]: number } = {
+        vulnerability: 1,
+        secret: 2,
+        malware: 3,
+        posture: 4,
+      };
+      threats.data = links
+        ?.sort((link1, link2) => sortMap[link1.type] - sortMap[link2.type])
+        .map?.((link) => ({ type: link.type, url: link.url }));
+    } catch (error) {
+      threats.error = 'Fail to fetch threat intel feeds and rules';
+    }
+
     return threats;
   };
   return useSuspenseQuery({
@@ -360,7 +365,7 @@ const RuleLinks = () => {
               <div className="h-4 w-4">
                 <ErrorIcon />
               </div>
-              Failed to get links
+              {threats.error}
             </p>
           </Tooltip>
         ) : null}
@@ -412,7 +417,7 @@ const UploadVulnerabilityDatabase = () => {
           className="mt-2 min-[200px] max-w-xs"
           label="Please select a file to upload"
           sizing="sm"
-          accept="application/tar+gzip"
+          accept=".gz"
           onChoosen={(e) => {
             const file = e.target.files?.[0];
             if (file) {
@@ -473,7 +478,7 @@ const UploadSecretDatabase = () => {
           className="mt-2 min-[200px] max-w-xs"
           label="Please select a file to upload"
           sizing="sm"
-          accept="application/tar+gzip"
+          accept=".gz"
           onChoosen={(e) => {
             const file = e.target.files?.[0];
             if (file) {
@@ -535,7 +540,7 @@ const UploadMalwareDatabase = () => {
           className="mt-2 min-[200px] max-w-xs"
           label="Please select a file to upload"
           sizing="sm"
-          accept="application/tar+gzip"
+          accept=".gz"
           onChoosen={(e) => {
             const file = e.target.files?.[0];
             if (file) {
@@ -597,7 +602,7 @@ const UploadPostureDatabase = () => {
           className="mt-2 min-[200px] max-w-xs"
           label="Please select a file to upload"
           sizing="sm"
-          accept="application/tar+gzip"
+          accept=".gz"
           onChoosen={(e) => {
             const file = e.target.files?.[0];
             if (file) {
