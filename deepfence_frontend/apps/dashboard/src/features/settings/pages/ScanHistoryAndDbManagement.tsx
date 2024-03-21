@@ -360,14 +360,12 @@ const RuleLinks = () => {
         ) : null}
 
         {threats.error ? (
-          <Tooltip content={threats.error}>
-            <p className="flex items-center gap-x-1 text-status-error text-p7 py-1">
-              <div className="h-4 w-4">
-                <ErrorIcon />
-              </div>
-              {threats.error}
-            </p>
-          </Tooltip>
+          <p className="flex items-center gap-x-1 text-status-error text-p7 py-1">
+            <div className="h-4 w-4">
+              <ErrorIcon />
+            </div>
+            {threats.error}
+          </p>
         ) : null}
       </div>
     </>
