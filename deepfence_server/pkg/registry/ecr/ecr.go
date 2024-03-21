@@ -14,6 +14,7 @@ import (
 
 var (
 	errAccessKeyMissing     = errors.New("access key and secret key are required")
+	errAccountIDMissing     = errors.New("account id is required")
 	errPublicRegistryRegion = errors.New("region should be set to " + publicRegistryRegion + " for public registry")
 )
 
@@ -34,6 +35,9 @@ func (e *RegistryECR) ValidateFields(v *validator.Validate) error {
 	}
 	if e.NonSecret.UseIAMRole == trueStr {
 		// IAM role based authentication
+		if e.NonSecret.AWSAccountID == "" {
+			return errAccountIDMissing
+		}
 		return v.Struct(e)
 	} else {
 		// Key based authentication

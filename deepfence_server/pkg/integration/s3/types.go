@@ -2,9 +2,19 @@ package s3
 
 import (
 	"bytes"
+	"errors"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/go-playground/validator/v10"
+)
+
+const (
+	trueStr = "true"
+)
+
+var (
+	errAccessKeyMissing = errors.New("access key and secret key are required")
+	errAccountIDMissing = errors.New("account id is required")
 )
 
 type S3 struct {
@@ -28,5 +38,16 @@ type Config struct {
 }
 
 func (s S3) ValidateConfig(validate *validator.Validate) error {
+	if s.Config.UseIAMRole == trueStr {
+		// IAM role based authentication
+		if s.Config.AWSAccountID == "" {
+			return errAccountIDMissing
+		}
+	} else {
+		// Key based authentication
+		if s.Config.AWSAccessKey == "" || s.Config.AWSSecretKey == "" {
+			return errAccessKeyMissing
+		}
+	}
 	return validate.Struct(s.Config)
 }
