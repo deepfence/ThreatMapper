@@ -18,7 +18,7 @@ If container runtime is unknown, please follow [these](#identify-container-runti
 :::
 
 :::info
-Image tag `deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION-multiarch` is supported in amd64 and arm64/v8 architectures.
+Image tag `quay.io/deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION-multiarch` is supported in amd64 and arm64/v8 architectures.
 :::
 
 ### Deploy deepfence-agent helm chart

@@ -96,7 +96,7 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 			"docker_image_virtual_size":         "1.2 GB",
 			"docker_image_id":                   "53dad07920dd2ca6d619b3b35d424407e9b39e015a8ba8406b27cac05cf96f44",
 			"host_node_id":                      "k8s-cluster-pool-7xaib1tqu-mkdk4;<host>",
-			"docker_image_name":                 "docker.io/deepfenceio/deepfence_agent_ce",
+			"docker_image_name":                 "quay.io/deepfenceio/deepfence_agent_ce",
 			"user_defined_tags":                 "",
 			"node_id":                           "",
 		}

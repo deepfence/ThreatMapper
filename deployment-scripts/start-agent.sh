@@ -26,7 +26,7 @@ USER_DEFINED_TAGS=""
 DEEPFENCE_KEY=""
 DF_HOSTNAME=""
 INSTANCE_ID_SUFFIX="N"
-IMAGE_REPOSITORY=${IMAGE_REPOSITORY:-deepfenceio}
+IMAGE_REPOSITORY=${IMAGE_REPOSITORY:-quay.io/deepfenceio}
 
 check_options() {
   if [ "$#" -lt 1 ]; then

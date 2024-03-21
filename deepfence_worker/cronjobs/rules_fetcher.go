@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	threatIntelURL = "http://threat-intel.deepfence.space/threat-intel/listing.json"
+	threatIntelURL = "https://threat-intel.deepfence.io/threat-intel/listing.json"
 )
 
 // FetchLicense gets license key from database
