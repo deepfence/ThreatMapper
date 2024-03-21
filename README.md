@@ -52,7 +52,7 @@ You [deploy the Management Console first](https://community.deepfence.io/threatm
 ```shell script
 # Docker installation process for ThreatMapper Management Console
 
-wget https://github.com/deepfence/ThreatMapper/raw/release-2.1/deployment-scripts/docker-compose.yml
+wget https://github.com/deepfence/ThreatMapper/raw/release-2.2/deployment-scripts/docker-compose.yml
 docker-compose -f docker-compose.yml up --detach
 ```
 
