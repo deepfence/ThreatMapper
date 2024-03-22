@@ -173,7 +173,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           // display
                           'flex items-center gap-1.5 w-fit',
                           // border
-                          'border border-text-text-and-icon rounded-[5px]',
+                          'border border-bg-grid-border rounded-[5px]',
                           // bg
                           'bg-bg-card dark:hover:bg-bg-active-selection hover:bg-bg-breadcrumb-bar',
                           'text-p7a text-text-text-and-icon',
@@ -238,7 +238,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                     <PopoverPrimitive.Content asChild align="start" sideOffset={2}>
                       <div
                         className={cn(
-                          `bg-bg-card border border-text-text-and-icon rounded-[5px] overflow-hidden data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down shadow-md dark:shadow-none`,
+                          `bg-bg-card border border-bg-grid-border rounded-[5px] overflow-hidden data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down shadow-md dark:shadow-none`,
                           {
                             'w-[var(--radix-popper-anchor-width)]':
                               triggerVariant === 'select',

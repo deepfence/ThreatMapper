@@ -1,4 +1,6 @@
-export const SeverityHigh = () => (
+import { Mode, THEME_DARK } from '@/theme/ThemeContext';
+
+export const SeverityHigh = ({ theme }: { theme: Mode }) => (
   <svg
     width="100%"
     height="100%"
@@ -14,7 +16,7 @@ export const SeverityHigh = () => (
       fillRule="evenodd"
       clipRule="evenodd"
       d="M9.00002 4.9967C8.66865 4.9967 8.40002 5.22964 8.40002 5.51697V9.97643C8.40002 10.2638 8.66865 10.4967 9.00002 10.4967C9.3314 10.4967 9.60002 10.2638 9.60002 9.97643V5.51697C9.60002 5.22964 9.3314 4.9967 9.00002 4.9967ZM8.25 12.2533C8.25 12.6675 8.58579 13.0033 9 13.0033C9.41421 13.0033 9.75 12.6675 9.75 12.2533C9.75 11.839 9.41421 11.5033 9 11.5033C8.58579 11.5033 8.25 11.839 8.25 12.2533Z"
-      fill="white"
+      fill={theme === THEME_DARK ? 'black' : 'white'}
     />
   </svg>
 );

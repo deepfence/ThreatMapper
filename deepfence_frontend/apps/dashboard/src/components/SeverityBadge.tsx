@@ -81,14 +81,14 @@ export const PostureStatusBadgeIcon = ({
       className={cn('w-[18px] h-[18px]', className)}
       style={{ color: getPostureColor(theme)[status] }}
     >
-      {status === 'alarm' && <SeverityCritical />}
-      {status === 'info' && <SeverityHigh />}
-      {status === 'ok' && <SeverityLow />}
+      {status === 'alarm' && <SeverityCritical theme={theme} />}
+      {status === 'info' && <SeverityHigh theme={theme} />}
+      {status === 'ok' && <SeverityLow theme={theme} />}
       {status === 'skip' && <SeverityUnknown />}
-      {status === 'pass' && <SeverityLow />}
-      {status === 'warn' && <SeverityMedium />}
-      {status === 'note' && <SeverityLow />}
-      {status === 'delete' && <SeverityMedium />}
+      {status === 'pass' && <SeverityLow theme={theme} />}
+      {status === 'warn' && <SeverityMedium theme={theme} />}
+      {status === 'note' && <SeverityLow theme={theme} />}
+      {status === 'delete' && <SeverityMedium theme={theme} />}
     </div>
   );
 };
@@ -174,10 +174,10 @@ export const SeverityBadgeIcon = ({
       className={cn('w-[18px] h-[18px]', className)}
       style={{ color: getSeverityColorMap(theme)[severity] }}
     >
-      {severity === 'critical' && <SeverityCritical />}
-      {severity === 'high' && <SeverityHigh />}
-      {severity === 'medium' && <SeverityMedium />}
-      {severity === 'low' && <SeverityLow />}
+      {severity === 'critical' && <SeverityCritical theme={theme} />}
+      {severity === 'high' && <SeverityHigh theme={theme} />}
+      {severity === 'medium' && <SeverityMedium theme={theme} />}
+      {severity === 'low' && <SeverityLow theme={theme} />}
       {!severity || (severity === 'unknown' && <SeverityUnknown />)}
     </div>
   );
