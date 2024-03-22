@@ -14,7 +14,7 @@
 
 _ThreatMapper versions v1.x are depreciated. Please upgrade to the latest version._
 
-<!---  > [ThreatMapper 2.1.1](https://github.com/deepfence/ThreatMapper/releases/tag/v2.1.1) adds ThreatGraph, a rich visualization that uses runtime context such as network flows to prioritize threat scan results.  ThreatGraph enables organizations to narrow down attack path alerts from thousands to a handful of the most meaningful (and threatening). Release 2.1.1 also adds agentless cloud security posture management (CSPM) of cloud assets and agent-based posture management of hosts, evaluating posture against industry-standard compliance benchmarks. --->
+<!---  > [ThreatMapper 2.2.0](https://github.com/deepfence/ThreatMapper/releases/tag/v2.2.0) adds ThreatGraph, a rich visualization that uses runtime context such as network flows to prioritize threat scan results.  ThreatGraph enables organizations to narrow down attack path alerts from thousands to a handful of the most meaningful (and threatening). Release 2.2.0 also adds agentless cloud security posture management (CSPM) of cloud assets and agent-based posture management of hosts, evaluating posture against industry-standard compliance benchmarks. --->
 
 # ThreatMapper - Runtime Threat Management and Attack Path Enumeration for Cloud Native
 
@@ -52,7 +52,7 @@ You [deploy the Management Console first](https://community.deepfence.io/threatm
 ```shell script
 # Docker installation process for ThreatMapper Management Console
 
-wget https://github.com/deepfence/ThreatMapper/raw/release-2.1/deployment-scripts/docker-compose.yml
+wget https://github.com/deepfence/ThreatMapper/raw/release-2.2/deployment-scripts/docker-compose.yml
 docker-compose -f docker-compose.yml up --detach
 ```
 
@@ -96,10 +96,10 @@ docker run -dit \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-    deepfenceio/deepfence_agent_ce:2.1.1
+    quay.io/deepfenceio/deepfence_agent_ce:2.2.0
 ```
 
-Note: Image tag `deepfenceio/deepfence_agent_ce:2.1.1-multiarch` is supported in amd64 and arm64/v8 architectures.
+Note: Image tag `quay.io/deepfenceio/deepfence_agent_ce:2.2.0-multiarch` is supported in amd64 and arm64/v8 architectures.
 
 On a Kubernetes platform, the sensors are installed using [helm chart](https://community.deepfence.io/threatmapper/docs/v2.1/sensors/kubernetes/)
 

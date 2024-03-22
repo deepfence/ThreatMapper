@@ -7,9 +7,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 )
 
 func (i *Ingester) StartAuditLogProcessor(ctx context.Context) error {
@@ -35,23 +34,17 @@ func (i *Ingester) processAuditLog(ctx context.Context) {
 
 			var err error
 
-			spanCtx, span := otel.Tracer("audit-log").Start(context.Background(), "ingest-audit-log")
-			defer func() {
-				if err != nil {
-					span.RecordError(err)
-					span.SetStatus(codes.Error, err.Error())
-				}
-				span.End()
-			}()
-
 			namespace := getNamespace(record.Headers)
 
-			ctx := directory.ContextWithNameSpace(spanCtx, directory.NamespaceID(namespace))
+			ctx := directory.ContextWithNameSpace(context.Background(), directory.NamespaceID(namespace))
+
+			ctx, span := telemetry.NewSpan(ctx, "audit-log", "ingest-audit-log")
 
 			log := log.WithCtx(ctx)
 
 			pgClient, err := directory.PostgresClient(ctx)
 			if err != nil {
+				span.EndWithErr(err)
 				log.Error().Err(err).Msg("failed to get db connection")
 			}
 
@@ -59,11 +52,13 @@ func (i *Ingester) processAuditLog(ctx context.Context) {
 
 			if err := json.Unmarshal(record.Value, &params); err != nil {
 				log.Error().Err(err).Msg("failed to unmarshal audit log")
+				span.EndWithErr(err)
 				continue
 			}
 
 			if err := pgClient.CreateAuditLog(ctx, params); err != nil {
 				log.Error().Err(err).Msgf("failed to insert audit log params: %+v", params)
+				span.EndWithErr(err)
 				continue
 			}
 

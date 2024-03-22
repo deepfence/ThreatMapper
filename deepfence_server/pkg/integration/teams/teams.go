@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/rs/zerolog/log"
 )
@@ -44,6 +45,10 @@ func (t Teams) FormatMessage(message map[string]interface{}, position int, entir
 }
 
 func (t Teams) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+
+	_, span := telemetry.NewSpan(ctx, "integrations", "teams-send-notification")
+	defer span.End()
+
 	t.client = utils.GetHTTPClient()
 
 	var msg []map[string]interface{}

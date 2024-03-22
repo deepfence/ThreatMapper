@@ -11,6 +11,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
@@ -78,6 +79,9 @@ func (h *Handler) AuditUserActivity(
 	resources interface{},
 	success bool,
 ) {
+
+	_, span := telemetry.NewSpan(req.Context(), "audit-log", "audit-user-activity")
+	defer span.End()
 
 	var (
 		userEmail string
@@ -194,6 +198,7 @@ func (h *Handler) GetAuditLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get db connection")

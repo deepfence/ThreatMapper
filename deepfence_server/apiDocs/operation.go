@@ -13,9 +13,9 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	postgresqldb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/report"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 )
 
 func (d *OpenAPIDocs) AddUserAuthOperations() {
@@ -835,7 +835,35 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 	// Database upload
 	d.AddOperation("uploadVulnerabilityDatabase", http.MethodPut, "/deepfence/database/vulnerability",
 		"Upload Vulnerability Database", "Upload Vulnerability Database for use in vulnerability scans",
-		http.StatusOK, []string{tagSettings}, bearerToken, new(vulnerability_db.DBUploadRequest), new(MessageResponse))
+		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
+	d.AddOperation("uploadSecretsRules", http.MethodPut, "/deepfence/database/secret",
+		"Upload Secrets Rules", "Upload secrets rules for use in secrets scans",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
+	d.AddOperation("uploadMalwareRules", http.MethodPut, "/deepfence/database/malware",
+		"Upload Malware Rules", "Upload malware rules for use in malware scans",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
+	d.AddOperation("uploadPostureControls", http.MethodPut, "/deepfence/database/posture",
+		"Upload Posture Controls", "Upload posture controls for use in posture scans",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
+}
+
+func (d *OpenAPIDocs) AddLicenseOperations() {
+	// License
+	d.AddOperation("generateLicense", http.MethodPost, "/deepfence/license/generate",
+		"Generate License Key", "Generate a new ThreatMapper license key",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(GenerateLicenseRequest), new(GenerateLicenseResponse))
+
+	d.AddOperation("registerLicense", http.MethodPost, "/deepfence/license",
+		"Register License", "Register new license key to the console and activate",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(RegisterLicenseRequest), new(RegisterLicenseResponse))
+
+	d.AddOperation("getLicense", http.MethodGet, "/deepfence/license",
+		"Get License Details", "Get license status and expiry",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(License))
+
+	d.AddOperation("deleteLicense", http.MethodDelete, "/deepfence/license",
+		"Delete License", "Delete license from the console database",
+		http.StatusNoContent, []string{tagSettings}, bearerToken, nil, nil)
 }
 
 func (d *OpenAPIDocs) AddDiffAddOperations() {

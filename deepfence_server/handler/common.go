@@ -10,10 +10,10 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	httpext "github.com/go-playground/pkg/v5/net/http"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j/db"
-	"github.com/opentracing/opentracing-go"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/db"
 	"github.com/ugorji/go/codec"
 )
 
@@ -48,6 +48,10 @@ func (h *Handler) OpenAPIDocsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func respondWith(ctx context.Context, w http.ResponseWriter, code int, response interface{}) {
+
+	ctx, span := telemetry.NewSpan(ctx, "common", "respond-with")
+	defer span.End()
+
 	if err, ok := response.(error); ok {
 		switch response.(type) {
 		case *neo4j.ConnectivityError:
@@ -65,9 +69,6 @@ func respondWith(ctx context.Context, w http.ResponseWriter, code int, response 
 		code = 499
 		response = nil
 	}
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		span.LogKV("response-code", code)
-	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Add("Cache-Control", "no-cache")
@@ -76,6 +77,14 @@ func respondWith(ctx context.Context, w http.ResponseWriter, code int, response 
 	if err := encoder.Encode(response); err != nil {
 		log.Error().Msgf("Error encoding response: %v", err)
 	}
+}
+
+type PaymentRequired struct {
+	err error
+}
+
+func (p *PaymentRequired) Error() string {
+	return p.err.Error()
 }
 
 type BadDecoding struct {
@@ -96,6 +105,7 @@ func (i *InternalServerError) Error() string {
 
 type ValidatorError struct {
 	err                       error
+	errs                      []error
 	skipOverwriteErrorMessage bool
 	errorIndex                map[string][]int
 }
@@ -129,10 +139,11 @@ func isTransientError(err error) bool {
 }
 
 func (h *Handler) respondWithErrorCode(err error, w http.ResponseWriter, code int) {
+
 	var errorFields map[string]string
 	var errMsg string
 	if code == http.StatusBadRequest {
-		errorFields, errMsg = h.ParseValidatorError(err, false)
+		errorFields, errMsg = h.ParseValidatorError(err, nil, false)
 	} else {
 		errMsg = err.Error()
 	}
@@ -167,11 +178,13 @@ func (h *Handler) respondError(err error, w http.ResponseWriter) {
 		code = http.StatusConflict
 	case *BadDecoding:
 		code = http.StatusBadRequest
+	case *PaymentRequired:
+		code = http.StatusPaymentRequired
 	case *ValidatorError:
 		code = http.StatusBadRequest
 		var validatorError *ValidatorError
 		errors.As(err, &validatorError)
-		errorFields, errMsg = h.ParseValidatorError(validatorError.err, validatorError.skipOverwriteErrorMessage)
+		errorFields, errMsg = h.ParseValidatorError(validatorError.err, validatorError.errs, validatorError.skipOverwriteErrorMessage)
 		errorIndex = validatorError.errorIndex
 	case *ForbiddenError:
 		code = http.StatusForbidden

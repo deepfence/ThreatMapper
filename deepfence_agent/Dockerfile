@@ -73,12 +73,12 @@ COPY supervisord.conf /home/deepfence/supervisord.conf
 COPY run_discovery.sh /home/deepfence/
 COPY plugins/etc/run_fluentbit.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
-RUN mkdir -p /home/deepfence/bin && mkdir -p /home/deepfence/bin/secret-scanner && mkdir -p /home/deepfence/bin/yara-hunter
-COPY plugins/yara-rules /home/deepfence/bin/yara-hunter/yara-rules
+RUN mkdir -p /home/deepfence/bin && mkdir -p /home/deepfence/bin/secret-scanner/config && mkdir -p /home/deepfence/bin/yara-hunter
+# COPY plugins/yara-rules /home/deepfence/bin/yara-hunter/yara-rules
 COPY deepfenced /bin/deepfenced
 
 COPY --from=secret_build /home/deepfence/usr/SecretScanner /home/deepfence/bin/secret-scanner
-COPY --from=secret_build /home/deepfence/usr/config.yaml /home/deepfence/bin/secret-scanner
+# COPY --from=secret_build /home/deepfence/usr/config.yaml /home/deepfence/bin/secret-scanner/config
 COPY --from=package_build /usr/local/bin/syft /usr/local/bin/syft
 COPY --from=package_build /usr/local/bin/package-scanner /home/deepfence/bin
 COPY --from=malware_build /usr/local/yara/lib /usr/lib

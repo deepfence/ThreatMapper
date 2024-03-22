@@ -269,13 +269,19 @@ func NewValidator() (*validator.Validate, ut.Translator, error) {
 	return apiValidator, trans, nil
 }
 
-func (h *Handler) ParseValidatorError(err error, skipOverwriteErrorMessage bool) (map[string]string, string) {
+func (h *Handler) ParseValidatorError(err error, errs []error, skipOverwriteErrorMessage bool) (map[string]string, string) {
 	fields := make(map[string]string)
 	var errSplit []string
 	var errorList []string
 
 	if skipOverwriteErrorMessage {
-		errorList = append(errorList, err.Error())
+		if len(errs) > 0 {
+			for _, e := range errs {
+				errorList = append(errorList, e.Error())
+			}
+		} else {
+			errorList = append(errorList, err.Error())
+		}
 	} else {
 		var errs validator.ValidationErrors
 		errors.As(err, &errs)

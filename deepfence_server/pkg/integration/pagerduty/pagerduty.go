@@ -11,6 +11,7 @@ import (
 
 	"github.com/PagerDuty/go-pagerduty"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
@@ -38,6 +39,10 @@ func New(ctx context.Context, b []byte) (*PagerDuty, error) {
 }
 
 func (p PagerDuty) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+
+	_, span := telemetry.NewSpan(ctx, "integrations", "pagerduty-send-notification")
+	defer span.End()
+
 	if p.Config.APIKey == "" {
 		log.Error().Msg("API key is empty")
 		return nil
@@ -78,6 +83,7 @@ func (p PagerDuty) SendNotification(ctx context.Context, message string, extras 
 	err = createPagerDutyEvent(p.Config.APIKey, incident)
 	if err != nil {
 		log.Error().Msgf("PagerDuty: %+v", err)
+		span.EndWithErr(err)
 	}
 	return nil
 }

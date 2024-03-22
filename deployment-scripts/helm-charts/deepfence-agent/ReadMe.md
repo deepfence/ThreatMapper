@@ -33,7 +33,8 @@ helm show values deepfence/deepfence-agent > deepfence_agent_values.yaml
 imagePullSecret:
   # Specifies whether a image pull secret should be created
   create: true
-  registry: "https://index.docker.io/v1/"
+  registry: "quay.io"
+  # registry: "https://index.docker.io/v1/"
   username: ""
   password: ""
   # The name of the imagePullSecret to use.

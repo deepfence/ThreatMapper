@@ -218,7 +218,7 @@ export const settingQueries = createQueryKeys('setting', {
         const data = await fetch(`${window.location.origin}/product_version.txt`);
         const version = await data.text();
         return {
-          version,
+          version: version?.trim(),
         };
       },
     };
@@ -251,6 +251,32 @@ export const settingQueries = createQueryKeys('setting', {
           versions: response.value.versions || [],
           message: '',
         };
+      },
+    };
+  },
+  getLicense: () => {
+    return {
+      queryKey: ['getLicense'],
+      queryFn: async () => {
+        const api = apiWrapper({
+          fn: getSettingsApiClient().getLicence,
+        });
+        const response = await api();
+
+        if (!response.ok) {
+          if (
+            response.error.response.status === 403 ||
+            response.error.response.status === 400
+          ) {
+            const message = await get403Message(response.error);
+            return {
+              message,
+            };
+          }
+          throw response.error;
+        }
+
+        return response.value;
       },
     };
   },

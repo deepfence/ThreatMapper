@@ -1,21 +1,27 @@
 package ingesters
 
 import (
+	"context"
 	"encoding/json"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/scans"
 	"github.com/hibiken/asynq"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data []Status) error {
-	return func(ns string, data []Status) error {
-		ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
+func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ctx context.Context, ns string, data []Status) error {
+	return func(ctx context.Context, ns string, data []Status) error {
+
+		ctx = directory.ContextWithNameSpace(ctx, directory.NamespaceID(ns))
+
+		ctx, span := telemetry.NewSpan(ctx, "ingesters", "commit-func-status")
+		defer span.End()
 
 		log := log.WithCtx(ctx)
 
@@ -28,17 +34,17 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			return nil
 		}
 
-		session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+		session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 		if err != nil {
 			return err
 		}
-		defer session.Close()
+		defer session.Close(ctx)
 
-		tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+		tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 		if err != nil {
 			return err
 		}
-		defer tx.Close()
+		defer tx.Close(ctx)
 
 		query := `
 		UNWIND $batch as row
@@ -59,7 +65,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 		in_progress, others := splitInprogressStatus(recordMap)
 		if len(in_progress) > 0 {
 			log.Debug().Msgf("query: %v", query)
-			if _, err = tx.Run(query, map[string]interface{}{
+			if _, err = tx.Run(ctx, query, map[string]interface{}{
 				"batch":         in_progress,
 				"cancel_states": []string{utils.ScanStatusCancelling, utils.ScanStatusCancelPending}}); err != nil {
 				log.Error().Msgf("Error while updating scan status: %+v", err)
@@ -69,7 +75,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 
 		if len(others) > 0 {
 			log.Debug().Msgf("query: %v", query)
-			if _, err = tx.Run(query, map[string]interface{}{
+			if _, err = tx.Run(ctx, query, map[string]interface{}{
 				"batch":         others,
 				"cancel_states": []string{}}); err != nil {
 				log.Error().Msgf("Error while updating scan status: %+v", err)
@@ -77,7 +83,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			}
 		}
 
-		err = tx.Commit()
+		err = tx.Commit(ctx)
 		if err != nil {
 			return err
 		}

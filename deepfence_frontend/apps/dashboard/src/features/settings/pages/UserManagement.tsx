@@ -10,6 +10,7 @@ import {
   createColumnHelper,
   Dropdown,
   DropdownItem,
+  IconButton,
   Listbox,
   ListboxOption,
   Modal,
@@ -30,6 +31,8 @@ import {
 } from '@/api/generated';
 import { ModelUser } from '@/api/generated/models/ModelUser';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { DFLink } from '@/components/DFLink';
+import { CheckIcon } from '@/components/icons/common/Check';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
@@ -342,6 +345,25 @@ const ChangePasswordModal = ({
     </SlidingModal>
   );
 };
+const CopyField = ({ value }: { value: string }) => {
+  const { copy, isCopied } = useCopyToClipboardState();
+
+  return (
+    <div className="absolute right-0 top-0 group-hover:block">
+      {isCopied ? (
+        <IconButton size="sm" variant="flat" color="success" icon={<CheckIcon />} />
+      ) : (
+        <IconButton
+          size="sm"
+          variant="flat"
+          onClick={() => copy(value)}
+          icon={<CopyLineIcon />}
+        />
+      )}
+    </div>
+  );
+};
+
 const InviteUserModal = ({
   showDialog,
   setShowDialog,
@@ -445,10 +467,23 @@ const InviteUserModal = ({
               </Button>
             </div>
             {data?.invite_url && (
-              <p className={`mt-1.5 font-normal text-center text-sm text-green-500`}>
-                Invite URL: <span data-testid="inviteUrlId">{data?.invite_url}</span>,
-                invite will expire after {data?.invite_expiry_hours} hours
-              </p>
+              <div className={`mt-1.5 font-normal text-p4 group relative`}>
+                <DFLink
+                  unstyled
+                  href={data?.invite_url ?? ''}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-text-link underline block w-[94%]"
+                  data-testid="inviteUrlId"
+                >
+                  {data?.invite_url}
+                </DFLink>
+                <CopyField value={data?.invite_url} />
+                <span className="mt-4 block">
+                  Use above invite link for registration, the link will expire after{' '}
+                  {data?.invite_expiry_hours} hours.
+                </span>
+              </div>
             )}
           </fetcher.Form>
         )}

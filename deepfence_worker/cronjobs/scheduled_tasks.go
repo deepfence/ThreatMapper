@@ -14,6 +14,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
 )
@@ -62,6 +63,9 @@ var (
 func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]interface{}) error {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "run-system-scheduled-tasks")
+	defer span.End()
 
 	payload := messagePayload["payload"].(map[string]interface{})
 	nodeType := payload["node_type"].(string)
@@ -164,6 +168,9 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]interface{}) error {
 
 	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "run-custom-scheduled-tasks")
+	defer span.End()
 
 	var payload model.ScheduleTaskPayload
 	val := messagePayload["payload"].(map[string]interface{})

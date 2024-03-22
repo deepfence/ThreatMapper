@@ -9,11 +9,11 @@ metadata:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: file-server
 stringData:
-  DEEPFENCE_MINIO_HOST: "s3.amazonaws.com"
-  DEEPFENCE_MINIO_SECURE: "true"
-  DEEPFENCE_MINIO_DB_BUCKET: {{ .Values.aws_s3_buckets.vulnerability_db_bucket | quote }}
-  DEEPFENCE_MINIO_BUCKET: {{ .Values.aws_s3_buckets.data_bucket | quote }}
-  DEEPFENCE_MINIO_PASSWORD: {{ .Values.aws_s3_buckets.secret_access_key | quote }}
-  DEEPFENCE_MINIO_USER: {{ .Values.aws_s3_buckets.access_key_id | quote }}
-  DEEPFENCE_MINIO_REGION: {{.Values.aws_s3_buckets.region | quote }}
+  DEEPFENCE_FILE_SERVER_HOST: "s3.amazonaws.com"
+  DEEPFENCE_FILE_SERVER_SECURE: "true"
+  DEEPFENCE_FILE_SERVER_DB_BUCKET: {{ .Values.aws_s3_buckets.vulnerability_db_bucket | quote }}
+  DEEPFENCE_FILE_SERVER_BUCKET: {{ .Values.aws_s3_buckets.data_bucket | quote }}
+  DEEPFENCE_FILE_SERVER_PASSWORD: {{ .Values.aws_s3_buckets.secret_access_key | quote }}
+  DEEPFENCE_FILE_SERVER_USER: {{ .Values.aws_s3_buckets.access_key_id | quote }}
+  DEEPFENCE_FILE_SERVER_REGION: {{.Values.aws_s3_buckets.region | quote }}
 {{- end }}

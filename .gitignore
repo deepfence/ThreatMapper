@@ -59,3 +59,5 @@ deepfence_agent/tools/apache/scope/docker/deepfenceutil
 deepfence_agent/tools/apache/scope/docker/deepfence_exe
 deepfence_agent/tools/apache/scope/docker/deepfence
 deepfence_agent/tools/apache/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId
+deepfence_agent/deepfenced
+deepfence_agent/fargate/*

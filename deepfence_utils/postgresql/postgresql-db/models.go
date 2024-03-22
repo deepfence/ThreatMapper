@@ -82,6 +82,30 @@ type Integration struct {
 	UpdatedAt       time.Time       `json:"updated_at"`
 }
 
+type License struct {
+	ID                              int32           `json:"id"`
+	LicenseKey                      uuid.UUID       `json:"license_key"`
+	StartDate                       time.Time       `json:"start_date"`
+	EndDate                         time.Time       `json:"end_date"`
+	NoOfHosts                       int64           `json:"no_of_hosts"`
+	CurrentHosts                    int64           `json:"current_hosts"`
+	IsActive                        bool            `json:"is_active"`
+	LicenseType                     string          `json:"license_type"`
+	DeepfenceSupportEmail           string          `json:"deepfence_support_email"`
+	NotificationThresholdPercentage int32           `json:"notification_threshold_percentage"`
+	NotificationThresholdUpdatedAt  sql.NullTime    `json:"notification_threshold_updated_at"`
+	RegistryCredentials             json.RawMessage `json:"registry_credentials"`
+	Message                         string          `json:"message"`
+	Description                     string          `json:"description"`
+	CreatedAt                       time.Time       `json:"created_at"`
+	UpdatedAt                       time.Time       `json:"updated_at"`
+	LicenseEmail                    string          `json:"license_email"`
+	LicenseEmailDomain              string          `json:"license_email_domain"`
+	NoOfCloudAccounts               int64           `json:"no_of_cloud_accounts"`
+	NoOfRegistries                  int64           `json:"no_of_registries"`
+	NoOfImagesInRegistry            int64           `json:"no_of_images_in_registry"`
+}
+
 type PasswordReset struct {
 	ID        int32     `json:"id"`
 	UserID    int64     `json:"user_id"`

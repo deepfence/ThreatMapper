@@ -27,6 +27,24 @@ export interface ModelLoginResponse {
     access_token: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelLoginResponse
+     */
+    email_domain: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelLoginResponse
+     */
+    license_key: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ModelLoginResponse
+     */
+    license_registered: boolean;
+    /**
+     * 
      * @type {boolean}
      * @memberof ModelLoginResponse
      */
@@ -51,6 +69,9 @@ export interface ModelLoginResponse {
 export function instanceOfModelLoginResponse(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "access_token" in value;
+    isInstance = isInstance && "email_domain" in value;
+    isInstance = isInstance && "license_key" in value;
+    isInstance = isInstance && "license_registered" in value;
     isInstance = isInstance && "onboarding_required" in value;
     isInstance = isInstance && "password_invalidated" in value;
     isInstance = isInstance && "refresh_token" in value;
@@ -69,6 +90,9 @@ export function ModelLoginResponseFromJSONTyped(json: any, ignoreDiscriminator: 
     return {
         
         'access_token': json['access_token'],
+        'email_domain': json['email_domain'],
+        'license_key': json['license_key'],
+        'license_registered': json['license_registered'],
         'onboarding_required': json['onboarding_required'],
         'password_invalidated': json['password_invalidated'],
         'refresh_token': json['refresh_token'],
@@ -85,6 +109,9 @@ export function ModelLoginResponseToJSON(value?: ModelLoginResponse | null): any
     return {
         
         'access_token': value.access_token,
+        'email_domain': value.email_domain,
+        'license_key': value.license_key,
+        'license_registered': value.license_registered,
         'onboarding_required': value.onboarding_required,
         'password_invalidated': value.password_invalidated,
         'refresh_token': value.refresh_token,

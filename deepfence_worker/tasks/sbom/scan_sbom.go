@@ -16,6 +16,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	workerUtil "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/deepfence/golang_deepfence_sdk/utils/tasks"
@@ -25,17 +26,17 @@ import (
 	psUtils "github.com/deepfence/package-scanner/utils"
 	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 var (
 	grypeConfig         = "/usr/local/bin/grype.yaml"
 	grypeBin            = "grype"
-	minioHost           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_HOST", "deepfence-file-server")
-	minioPort           = utils.GetEnvOrDefault("DEEPFENCE_MINIO_PORT", "9000")
-	minioRegion         = os.Getenv("DEEPFENCE_MINIO_REGION")
-	minioBucket         = os.Getenv("DEEPFENCE_MINIO_DB_BUCKET")
+	minioHost           = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_HOST", "deepfence-file-server")
+	minioPort           = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_PORT", "9000")
+	minioRegion         = os.Getenv("DEEPFENCE_FILE_SERVER_REGION")
+	minioBucket         = os.Getenv("DEEPFENCE_FILE_SERVER_DB_BUCKET")
 	GRYPE_DB_UPDATE_URL string
 )
 
@@ -149,13 +150,14 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		close(res)
 	}()
 
-	// send inprogress status
-
-	mc, err := directory.MinioClient(ctx)
+	ctx, downloadSpan := telemetry.NewSpan(ctx, "vuln-scan", "download-sbom")
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
+		downloadSpan.EndWithErr(err)
 		return err
 	}
+	downloadSpan.End()
 
 	sbomFilePath := path.Join("/tmp", utils.ScanIDReplacer.Replace(params.ScanID)+".json")
 	f, err := os.Create(sbomFilePath)
@@ -163,8 +165,10 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 	log.Info().Msgf("sbom file %s", sbomFilePath)
+
 	sbomFile := NewUnzippedFile(f)
-	err = mc.DownloadFileTo(context.Background(), params.SBOMFilePath, sbomFile, minio.GetObjectOptions{})
+
+	err = mc.DownloadFileTo(ctx, params.SBOMFilePath, sbomFile, minio.GetObjectOptions{})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
@@ -174,11 +178,13 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		os.Remove(sbomFilePath)
 	}()
 
+	ctx, scanSpan := telemetry.NewSpan(ctx, "vuln-scan", "scan-sbom")
 	log.Info().Msg("scanning sbom for vulnerabilities ...")
 	env := []string{GRYPE_DB_UPDATE_URL}
 	vulnerabilities, err := grype.Scan(grypeBin, grypeConfig, sbomFilePath, &env)
 	if err != nil {
 		log.Error().Msgf("error: %s output: %s", err.Error(), string(vulnerabilities))
+		scanSpan.EndWithErr(err)
 		return err
 	}
 
@@ -195,8 +201,10 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	report, err := grype.PopulateFinalReport(vulnerabilities, cfg)
 	if err != nil {
 		log.Error().Msgf("error on generate vulnerability report: %s", err)
+		scanSpan.EndWithErr(err)
 		return err
 	}
+	scanSpan.End()
 
 	details := psOutput.CountBySeverity(&report)
 
@@ -217,24 +225,26 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		}
 	}
 
+	ctx, runtimeSpan := telemetry.NewSpan(ctx, "vuln-scan", "runtime-sbom")
 	// generate runtime sbom needs entity Id
 	driver, err := directory.Neo4jClient(directory.NewContextWithNameSpace(directory.NamespaceID(tenantID)))
 	if err != nil {
+		runtimeSpan.EndWithErr(err)
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	entityID, err := workerUtil.GetEntityIdFromScanID(params.ScanID, string(utils.NEO4JVulnerabilityScan), tx)
+	entityID, err := workerUtil.GetEntityIdFromScanID(ctx, params.ScanID, string(utils.NEO4JVulnerabilityScan), tx)
 	if err != nil {
 		log.Error().Msgf("Error in getting entityId: %v", err)
 	}
@@ -243,22 +253,25 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	runtimeSbom, err := generateRuntimeSBOM(sbomFilePath, report, entityID)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to generate runtime sbom")
+		runtimeSpan.EndWithErr(err)
 		return err
 	}
 
 	runtimeSbomBytes, err := json.Marshal(runtimeSbom)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to marshal runtime sbom")
+		runtimeSpan.EndWithErr(err)
 		return err
 	}
 
 	runtimeSbomPath := path.Join("/sbom/", "runtime-"+utils.ScanIDReplacer.Replace(params.ScanID)+".json")
-	uploadInfo, err := mc.UploadFile(context.Background(), runtimeSbomPath, runtimeSbomBytes, true,
+	uploadInfo, err := mc.UploadFile(ctx, runtimeSbomPath, runtimeSbomBytes, true,
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to upload runtime sbom")
 		return err
 	}
+	runtimeSpan.End()
 
 	log.Info().
 		Msgf("scan_id: %s, runtime sbom minio file info: %+v", params.ScanID, uploadInfo)

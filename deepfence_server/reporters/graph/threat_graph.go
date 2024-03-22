@@ -8,8 +8,9 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
 )
 
 type ThreatGraphReporter struct {
@@ -32,6 +33,10 @@ const (
 var CloudAll = [...]string{CloudAws, CloudAzure, CloudGcp, CloudPrivate}
 
 func (tc *ThreatGraphReporter) GetThreatGraph(ctx context.Context, filter ThreatFilters) (ThreatGraph, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "graph", "get-threat-graph")
+	defer span.End()
+
 	aggreg, err := tc.GetRawThreatGraph(ctx, filter)
 	if err != nil {
 		return ThreatGraph{}, err
@@ -120,27 +125,30 @@ func buildAttackPaths(paths AttackPaths, root int64, visited map[int64]struct{})
 
 func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters ThreatFilters) (map[string]AttackPaths, error) {
 
+	ctx, span := telemetry.NewSpan(ctx, "graph", "get-raw-threat-graph")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return nil, err
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(120 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(120*time.Second))
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	// The following statement makes sure all threat graph are exclusively executed.
 	// This is required as threat node & threat cloud resource are created on the fly.
-	_, err = tx.Run(`
+	_, err = tx.Run(ctx, `
 		MERGE (n:ThreatNode{node_id:'root'})
 		SET n.lock = true
 	`, map[string]interface{}{})
@@ -148,7 +156,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters Th
 		return nil, err
 	}
 
-	_, err = tx.Run(`
+	_, err = tx.Run(ctx, `
 		MATCH (n:ThreatCloudResource)
 		REMOVE n:ThreatCloudResource
 	`, map[string]interface{}{})
@@ -156,7 +164,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters Th
 		return nil, err
 	}
 
-	_, err = tx.Run(`
+	_, err = tx.Run(ctx, `
 		MATCH (n:ThreatNode)
 		REMOVE n:ThreatNode
 	`, map[string]interface{}{})
@@ -164,7 +172,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters Th
 		return nil, err
 	}
 
-	_, err = tx.Run(`
+	_, err = tx.Run(ctx, `
 		MATCH (n:CloudResource)
 		WHERE n.depth IS NOT NULL
 		AND (
@@ -194,7 +202,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters Th
 		return nil, err
 	}
 
-	_, err = tx.Run(`
+	_, err = tx.Run(ctx, `
 		MATCH (n:Node)
 		WHERE n.depth IS NOT NULL
 		AND (
@@ -242,10 +250,10 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters Th
 				continue
 			}
 		}
-		var res neo4j.Result
+		var res neo4j.ResultWithContext
 		switch {
 		case cloudProvider != CloudPrivate:
-			res, err = tx.Run(`
+			res, err = tx.Run(ctx, `
 				CALL apoc.nodes.group(['ThreatCloudResource','ThreatNode'], ['node_type', 'depth', 'cloud_provider'],
 				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_exploitable_cve: 'sum', sum_secrets: 'sum', sum_exploitable_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum', sum_warn_alarm: 'sum', sum_cloud_warn_alarm: 'sum',
 				node_id:'collect', vulnerabilities_count: 'collect', exploitable_vulnerabilities_count: 'collect', secrets_count:'collect', exploitable_secrets_count: 'collect', compliances_count:'collect', cloud_compliances_count: 'collect', warn_alarm_count: 'collect', cloud_warn_alarm_count: 'collect'},
@@ -255,7 +263,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters Th
 				RETURN node, relationships
 				`, map[string]interface{}{})
 		case !filters.CloudResourceOnly:
-			res, err = tx.Run(`
+			res, err = tx.Run(ctx, `
 				CALL apoc.nodes.group(['ThreatNode'], ['node_type', 'depth', 'cloud_provider'],
 				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_exploitable_cve: 'sum', sum_secrets: 'sum', sum_exploitable_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum', sum_warn_alarm: 'sum', sum_cloud_warn_alarm: 'sum',
 				node_id:'collect', vulnerabilities_count: 'collect', exploitable_vulnerabilities_count: 'collect', secrets_count:'collect', exploitable_secrets_count: 'collect', compliances_count:'collect', cloud_compliances_count:'collect', warn_alarm_count: 'collect', cloud_warn_alarm_count: 'collect'},
@@ -273,7 +281,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters Th
 			return nil, err
 		}
 
-		records, err := res.Collect()
+		records, err := res.Collect(ctx)
 		if err != nil {
 			return nil, err
 		}

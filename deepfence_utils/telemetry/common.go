@@ -2,8 +2,10 @@ package telemetry
 
 import (
 	"context"
+	"fmt"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -12,9 +14,12 @@ type SpanWrapper struct {
 	impl trace.Span
 }
 
-func NewSpan(ctx context.Context, tracerName string, operationName string) SpanWrapper {
-	_, span := otel.Tracer(tracerName).Start(ctx, operationName)
-	return SpanWrapper{impl: span}
+func NewSpan(ctx context.Context, tracerName string, operationName string) (context.Context, SpanWrapper) {
+	ctx, span := otel.GetTracerProvider().Tracer(tracerName).Start(ctx, operationName)
+	if ns := ctx.Value("namespace"); ns != nil {
+		span.SetAttributes(attribute.String("namespace", fmt.Sprintf("%v", ns)))
+	}
+	return ctx, SpanWrapper{impl: span}
 }
 
 func (sw SpanWrapper) End() {

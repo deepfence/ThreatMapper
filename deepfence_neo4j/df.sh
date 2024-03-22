@@ -14,10 +14,10 @@ if [ -z "$NEO4J_AUTH" ]; then
     export NEO4J_AUTH=$DEEPFENCE_NEO4J_USER/$DEEPFENCE_NEO4J_PASSWORD
 fi
 
-if [ "$NEO4J_OFFLINE_MAINTENANCE_MODE_ENABLED" = true ]; then
+if [ "$OFFLINE_MAINTENANCE_MODE_ENABLED" = true ]; then
     while true;
     do
-        echo 'Neo4j is not running. Remove NEO4J_OFFLINE_MAINTENANCE_MODE_ENABLED env var or set offlineMaintenanceModeEnabled to false to resume normal operation.';
+        echo 'Neo4j is not running. Remove OFFLINE_MAINTENANCE_MODE_ENABLED env var or set offlineMaintenanceModeEnabled to false to resume normal operation.';
         sleep 60;
     done
 fi
