@@ -62,7 +62,7 @@ Once the Management Console is up and running, you can [register an admin accoun
 
 ThreatMapper [Cloud Scanner tasks](https://community.deepfence.io/threatmapper/docs/v2.1/cloudscanner/) are responsible for querying the cloud provider APIs to gather configuration and identify deviations from compliance benchmarks.
 
-The task is deployed using a Terraform module. The ThreatMapper Management Console will present a basic configuration that may be deployed with Terraform, or you can refer to the expert configurations to fine-tune the deployment ([AWS](https://github.com/deepfence/terraform-aws-cloud-scanner), [Azure](https://github.com/deepfence/terraform-azure-cloud-scanner), [GCP](https://github.com/deepfence/terraform-gcp-cloud-scanner).
+The task is deployed using a Terraform module. The ThreatMapper Management Console will present a basic configuration that may be deployed with Terraform, or you can refer to the expert configurations to fine-tune the deployment ([AWS](https://community.deepfence.io/threatmapper/docs/cloudscanner/aws), [Azure](https://community.deepfence.io/threatmapper/docs/cloudscanner/azure), [GCP](https://community.deepfence.io/threatmapper/docs/cloudscanner/gcp)).
 
 ### Sensor Agents
 
