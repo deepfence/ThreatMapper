@@ -473,7 +473,7 @@ const InviteUserModal = ({
                   href={data?.invite_url ?? ''}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-text-link underline block w-[98%]"
+                  className="text-text-link underline block w-[94%]"
                   data-testid="inviteUrlId"
                 >
                   {data?.invite_url}
