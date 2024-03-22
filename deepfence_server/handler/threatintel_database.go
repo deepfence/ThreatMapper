@@ -57,12 +57,11 @@ func (h *Handler) UploadVulnerabilityDB(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	go func() {
-		err := threatintel.VulnDBUpdateListing(ctx, path, checksum, time.Now())
-		if err != nil {
-			log.Error().Err(err).Msg("failed to update database listing")
-		}
-	}()
+	if err := threatintel.VulnDBUpdateListing(ctx, path, checksum, time.Now()); err != nil {
+		log.Error().Err(err).Msg("failed to update database listing")
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
 
 	_ = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: path + " " + checksum})
 }
