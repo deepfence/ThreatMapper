@@ -708,7 +708,7 @@ const CurrentUserInfo = ({
     <div data-testid="currentUserWrapperId">
       <div className="flex items-center">
         <div className="flex items-end gap-x-4">
-          <span className="text-2xl dark:text-gray-100 font-semibold min-w-[124px]">
+          <span className="text-2xl dark:text-text-input-value text-text-text-and-icon font-semibold min-w-[124px]">
             {`${currentUser?.first_name || ''} ${currentUser?.last_name || ''}`}
           </span>
           <Button
@@ -722,9 +722,9 @@ const CurrentUserInfo = ({
         </div>
       </div>
       <div className="flex mt-4 mb-2" data-testid="loginUserStatusWrapperId">
-        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Status</span>
+        <span className="text-p4 min-w-[140px] text-text-text-and-icon">Status</span>
         <span
-          className={cn('text-p1 text-text-input-value', {
+          className={cn('text-p4a text-text-input-value', {
             'text-status-success': currentUser?.is_active,
             'text-gray-700 dark:text-df-gray-400': !currentUser?.is_active,
           })}
@@ -733,24 +733,24 @@ const CurrentUserInfo = ({
         </span>
       </div>
       <div className="flex mt-4 mb-2" data-testid="loginUserEmailWrapperId">
-        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Email</span>
-        <span className="text-p1 dark:text-text-input-value">
+        <span className="text-p4 min-w-[140px] text-text-text-and-icon">Email</span>
+        <span className="text-p4a text-text-input-value">
           {currentUser?.email || '-'}
         </span>
       </div>
       <div className="flex my-3">
-        <span className="text-p3 min-w-[140px] text-text-text-and-icon">Company</span>
-        <span className="text-p1 text-text-input-value">
+        <span className="text-p4 min-w-[140px] text-text-text-and-icon">Company</span>
+        <span className="text-p4a text-text-input-value">
           {currentUser?.company || '-'}
         </span>
       </div>
       <div className="flex my-3">
-        <span className="text-p3 min-w-[140px] text-text-text-and-icon">Role</span>
-        <span className="text-p1 text-text-input-value">{currentUser?.role || '-'}</span>
+        <span className="text-p4 min-w-[140px] text-text-text-and-icon">Role</span>
+        <span className="text-p4a text-text-input-value">{currentUser?.role || '-'}</span>
       </div>
       <div className="flex my-3">
-        <span className="text-p3 min-w-[140px] text-text-text-and-icon">API key</span>
-        <div className="text-p1 items-center text-text-input-value flex gap-x-2">
+        <span className="text-p4 min-w-[140px] text-text-text-and-icon">API key</span>
+        <div className="text-p4a items-center text-text-input-value flex gap-x-2">
           <Suspense fallback={<CircleSpinner size="sm" />}>
             <ApiToken />
           </Suspense>
