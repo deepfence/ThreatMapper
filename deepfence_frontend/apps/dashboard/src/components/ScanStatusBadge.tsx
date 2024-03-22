@@ -28,7 +28,7 @@ export const ScanStatusBadge = ({
   justIcon?: boolean;
 }) => {
   const wrapperClassName = cn(
-    'flex items-center gap-1.5 text-text-text-and-icon text-p4',
+    'flex items-center gap-1.5 text-text-text-and-icon text-p4a',
     className,
   );
 

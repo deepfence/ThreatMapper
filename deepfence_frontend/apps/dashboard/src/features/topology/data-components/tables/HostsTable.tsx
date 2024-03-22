@@ -762,6 +762,9 @@ const DataTable = ({
       }),
       columnHelper.accessor('os', {
         cell: (info) => {
+          if (!info.getValue()) {
+            return <div className="border-b w-[8px] border-text-icon"></div>;
+          }
           return <TruncatedText text={info.getValue() ?? ''} />;
         },
         header: () => <span>OS</span>,
