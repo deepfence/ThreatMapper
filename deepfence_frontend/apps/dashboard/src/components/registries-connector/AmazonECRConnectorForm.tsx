@@ -54,8 +54,9 @@ export const AmazonECRConnectorForm = ({
         />
         <TextInput
           className="grow min-[200px] max-w-xs"
-          label="AWS Account ID (optional)"
+          label="AWS Account ID"
           type={'text'}
+          required
           name="non_secret.aws_account_id"
           placeholder="AWS Account ID"
           info="(Optional) Pull from registries belonging to other AWS Accounts"

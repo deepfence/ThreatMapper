@@ -945,6 +945,7 @@ export const IntegrationForm = ({
                       name="awsAccount"
                       label="AWS Account ID"
                       placeholder="AWS account id"
+                      required
                       info="(Optional) S3 belonging to other AWS Accounts"
                       helperText={fieldErrors?.aws_account_id}
                       color={fieldErrors?.aws_account_id ? 'error' : 'default'}
