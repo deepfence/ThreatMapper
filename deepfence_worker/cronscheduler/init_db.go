@@ -68,7 +68,7 @@ func initSqlDatabase(ctx context.Context) error {
 		// Copy ConsoleURLSetting to FileServerURLSetting
 		consoleURLSetting, err := model.GetSettingByKey(ctx, pgClient, model.ConsoleURLSettingKey)
 		// Skip if ConsoleURLSetting is not set
-		if err != nil {
+		if err == nil {
 			fileServerURLSetting := model.Setting{
 				Key: model.FileServerURLSettingKey,
 				Value: &model.SettingValue{
@@ -80,7 +80,7 @@ func initSqlDatabase(ctx context.Context) error {
 			}
 			_, err = fileServerURLSetting.Create(ctx, pgClient)
 			if err != nil {
-
+				log.Error().Err(err).Msg("failed to set FileServerURLSetting")
 			}
 		}
 	}
