@@ -303,7 +303,7 @@ func (mfm *FileServerFileManager) ExposeFile(ctx context.Context, filePath strin
 	ctx, span := telemetry.NewSpan(ctx, "fileserver", "expose-file")
 	defer span.End()
 
-	consoleIP, err := GetManagementHost(ctx)
+	consoleIP, err := GetFileServerHost(ctx)
 	if err != nil {
 		span.EndWithErr(err)
 		return "", err
@@ -345,7 +345,7 @@ func (mfm *FileServerFileManager) CreatePublicUploadURL(ctx context.Context, fil
 	ctx, span := telemetry.NewSpan(ctx, "fileserver", "create-public-upload-url")
 	defer span.End()
 
-	consoleIP, err := GetManagementHost(ctx)
+	consoleIP, err := GetFileServerHost(ctx)
 	if err != nil {
 		span.EndWithErr(err)
 		return "", err

@@ -101,7 +101,7 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 	log.Info().Msgf("Fetch threat intel")
 	defer log.Info().Msgf("Fetch threat intel done")
 
-	_, err := directory.GetManagementHost(ctx)
+	_, err := directory.GetFileServerHost(ctx)
 	if err != nil {
 		log.Warn().Msg("FetchThreatIntel Management console URL not configured yet")
 		return nil

@@ -242,3 +242,8 @@ const (
 	MaskEntity      = "mask_entity"
 	MaskImageTag    = "mask_image_tag"
 )
+
+const (
+	FileServerURLSettingLabel       = "Console File Server URL"
+	FileServerURLSettingDescription = "Serve threat intel feeds to agents. If agents are connected using a different URL than Console URL, please change this"
+)
