@@ -46,10 +46,10 @@ x-telemetry-variables: &telemetry-variables
 
 x-proxy-variables: &proxy-variables
     # use below variables to set http/s proxy env
-    # http_proxy: ""
-    # https_proxy: ""
+    http_proxy: ""
+    https_proxy: ""
     # no need to proxy internal services
-    # no_proxy: "127.0.0.1,localhost,deepfence-file-server,deepfence-postgres,deepfence-redis,deepfence-neo4j,deepfence-kafka-broker,deepfence-ui,deepfence-server,deepfence-router"
+    no_proxy: "127.0.0.1,localhost,deepfence-file-server,deepfence-postgres,deepfence-redis,deepfence-neo4j,deepfence-kafka-broker,deepfence-ui,deepfence-server,deepfence-router"
 
 services:
 
