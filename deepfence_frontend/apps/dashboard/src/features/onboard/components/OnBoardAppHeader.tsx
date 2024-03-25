@@ -107,7 +107,7 @@ export const OnboardAppHeader = () => {
             }
           >
             <button
-              className="dark:text-text-text-and-icon text-bg-grid-border flex gap-[6px] items-center text-p1"
+              className="dark:text-text-text-and-icon text-bg-grid-border flex gap-[6px] items-center text-p1a"
               data-testid="buttonLoginUserDropdownId"
             >
               <div className="h-[18px] w-[18px]">

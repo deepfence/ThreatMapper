@@ -259,7 +259,9 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           <div className="flex gap-2 pb-[10px] items-center">
             <LabelPrimitive.Root
               htmlFor={_id}
-              className={cn('text-p3 dark:text-text-input-value text-text-text-and-icon')}
+              className={cn(
+                'text-p11 dark:text-text-input-value text-text-text-and-icon',
+              )}
             >
               {required && <span>*</span>}
               {label}

@@ -85,7 +85,7 @@ const ThreatGraphHeader = ({
         <div className="h-4 w-4 shrink-0">
           <ThreatGraphIcon />
         </div>
-        <div className="text-p1">ThreatGraph</div>
+        <div className="text-p1a">ThreatGraph</div>
       </div>
       <Button
         variant="flat"

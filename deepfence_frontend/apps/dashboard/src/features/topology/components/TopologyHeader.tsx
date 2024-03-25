@@ -68,7 +68,7 @@ const SummaryTab = ({
             {count}
           </span>
           <span
-            className={`text-p1 ml-[3px] ${
+            className={`text-p1a ml-[3px] ${
               isActive ? 'text-text-input-value' : 'text-text-and-icon'
             }`}
           >

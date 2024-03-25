@@ -271,7 +271,7 @@ const CountCard = ({
         </div>
         <div className="text-h1">{abbreviateNumber(count)}</div>
       </div>
-      <div className="text-p1 text-text-text-and-icon">{label}</div>
+      <div className="text-p1a text-text-text-and-icon">{label}</div>
     </Wrapper>
   );
 };

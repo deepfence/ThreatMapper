@@ -153,7 +153,7 @@ const DetailsComponent = ({
   if (!secrets.length) {
     return (
       <div className="flex items-center p-4 justify-center">
-        <h3 className="text-p1">No details found</h3>
+        <h3 className="text-p1a">No details found</h3>
       </div>
     );
   }

@@ -222,7 +222,7 @@ export function Listbox<TType, TActualType>({
                 <HUIListbox.Label
                   htmlFor={_id}
                   className={cn(
-                    'text-p3 dark:text-text-input-value text-text-text-and-icon" pb-[10px]',
+                    'text-p11 dark:text-text-input-value text-text-text-and-icon" pb-[10px]',
                     {
                       'text-severity-unknown/60 dark:text-df-gray-600/60': disabled,
                     },

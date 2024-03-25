@@ -1681,7 +1681,7 @@ const StatusesCount = ({
         {Object.keys(statusCounts)?.map((key: string) => {
           return (
             <div key={key} className="col-span-2 text-text-text-and-icon">
-              <span className="text-p1">{capitalize(key)}</span>
+              <span className="text-p1a">{capitalize(key)}</span>
               <button
                 className="flex flex-1 max-w-[160px] gap-1 items-center"
                 onClick={() => {
@@ -1812,7 +1812,7 @@ const SeverityCountWidget = () => {
       </ScanStatusWrapper>
       {isScanComplete(scanStatusResult?.status ?? '') ? (
         <div className="col-span-2 text-text-text-and-icon">
-          <span className="text-p1">Total compliances</span>
+          <span className="text-p1a">Total compliances</span>
           <button
             className="flex flex-1 max-w-[160px] gap-1 items-center dark:text-text-input-value text-text-text-and-icon"
             onClick={() => {

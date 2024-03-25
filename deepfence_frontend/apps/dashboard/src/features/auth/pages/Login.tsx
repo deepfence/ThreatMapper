@@ -10,7 +10,7 @@ export const Login = () => {
 
   return (
     <fetcher.Form method="post">
-      <h1 className="text-p1 font-normal text-center text-text-text-and-icon">
+      <h1 className="text-p1a font-normal text-center text-text-text-and-icon">
         Welcome to
         <br />
         <span className="text-h2">Deepfence portal</span>

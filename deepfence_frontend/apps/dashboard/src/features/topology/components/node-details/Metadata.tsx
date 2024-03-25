@@ -31,7 +31,7 @@ export const Metadata = ({
             <div className="text-p3 text-text-text-and-icon capitalize">
               {toTopologyMetadataKey(key)}
             </div>
-            <div className="text-p1 dark:text-text-input-value text-text-text-and-icon break-words">
+            <div className="text-p1a dark:text-text-input-value text-text-text-and-icon break-words">
               {key in timeFormatKey ? uptimeText(data[key]) : data[key]}
             </div>
           </div>

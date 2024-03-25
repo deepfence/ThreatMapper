@@ -176,7 +176,7 @@ const CompareCountWidget = ({
   return (
     <div className="flex flex-col text-text-text-and-icon items-center">
       <div className="flex flex-col gap-y-1.5">
-        <span className="text-p1">{title}</span>
+        <span className="text-p1a">{title}</span>
         <div className="flex flex-1 max-w-[160px] text-text-input-value items-baseline">
           <>
             <div

@@ -80,7 +80,7 @@ export const FileInput = forwardRef<HTMLInputElement, TextInputProps>(
           <div className="flex gap-2 items-center">
             <LabelPrimitive.Root
               htmlFor={_id}
-              className="text-p4 dark:text-text-input-value text-text-text-and-icon"
+              className="text-p11 dark:text-text-input-value text-text-text-and-icon"
             >
               {required && <span>*</span>}
               {label}

@@ -347,7 +347,7 @@ const CountWidget = () => {
           >
             {abbreviateNumber(registries)}
           </span>
-          <span className="text-p1">Total registries</span>
+          <span className="text-p1a">Total registries</span>
         </div>
       </div>
       <div className="col-span-3 flex items-center text-text-text-and-icon gap-x-3 justify-center">
@@ -362,7 +362,7 @@ const CountWidget = () => {
           >
             {abbreviateNumber(repositories)}
           </span>
-          <span className="text-p1">Total repositories</span>
+          <span className="text-p1a">Total repositories</span>
         </div>
       </div>
       <div className="col-span-3 flex items-center text-text-text-and-icon gap-x-3 justify-center">
@@ -377,7 +377,7 @@ const CountWidget = () => {
           >
             {abbreviateNumber(images)}
           </span>
-          <span className="text-p1">Total images</span>
+          <span className="text-p1a">Total images</span>
         </div>
       </div>
       <div className="col-span-3 flex items-center text-text-text-and-icon gap-x-3 justify-center">
@@ -389,7 +389,7 @@ const CountWidget = () => {
           <span className="text-h1 dark:text-text-input-value text-text-text-and-icon">
             {abbreviateNumber(scans_in_progress)}
           </span>
-          <span className="text-p1">In progress</span>
+          <span className="text-p1a">In progress</span>
         </div>
       </div>
     </div>
