@@ -28,7 +28,7 @@ type ListingFormat struct {
 	} `json:"available"`
 }
 
-const DefaultConsoleVersion = "v2.1.1"
+const DefaultConsoleVersion = "v2.2.0"
 
 var ConsoleVersion string
 
