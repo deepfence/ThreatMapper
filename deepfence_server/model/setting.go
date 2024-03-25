@@ -19,6 +19,7 @@ import (
 
 const (
 	ConsoleURLSettingKey              = "console_url"
+	FileServerURLSettingKey           = "file_server_url"
 	EmailConfigurationKey             = "email_configuration"
 	EmailSettingSES                   = "amazon_ses"
 	EmailSettingSMTP                  = "smtp"
@@ -65,7 +66,7 @@ type GetAuditLogsRequest struct {
 
 type SettingUpdateRequest struct {
 	ID    int64  `path:"id" validate:"required" required:"true"`
-	Key   string `json:"key" validate:"required,oneof=console_url inactive_delete_scan_results" required:"true" enum:"console_url,inactive_delete_scan_results"`
+	Key   string `json:"key" validate:"required,oneof=console_url file_server_url inactive_delete_scan_results" required:"true" enum:"console_url,file_server_url,inactive_delete_scan_results"`
 	Value string `json:"value" validate:"required" required:"true"`
 }
 

@@ -199,7 +199,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	var value interface{}
 	switch currentSettings.Key {
-	case model.ConsoleURLSettingKey:
+	case model.ConsoleURLSettingKey, model.FileServerURLSettingKey:
 		var parsedURL *url.URL
 		if parsedURL, err = url.ParseRequestURI(strings.TrimSpace(req.Value)); err != nil {
 			h.respondError(&errInvalidURL, w)
