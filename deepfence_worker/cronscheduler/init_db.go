@@ -7,6 +7,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/pressly/goose/v3"
 )
 
@@ -59,6 +60,29 @@ func initSqlDatabase(ctx context.Context) error {
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get db client")
 		return err
+	}
+
+	_, err = model.GetSettingByKey(ctx, pgClient, model.FileServerURLSettingKey)
+	if err != nil {
+		// FileServerURLSetting is not set
+		// Copy ConsoleURLSetting to FileServerURLSetting
+		consoleURLSetting, err := model.GetSettingByKey(ctx, pgClient, model.ConsoleURLSettingKey)
+		// Skip if ConsoleURLSetting is not set
+		if err == nil {
+			fileServerURLSetting := model.Setting{
+				Key: model.FileServerURLSettingKey,
+				Value: &model.SettingValue{
+					Label:       utils.FileServerURLSettingLabel,
+					Value:       consoleURLSetting.Value.Value,
+					Description: utils.FileServerURLSettingDescription,
+				},
+				IsVisibleOnUI: true,
+			}
+			_, err = fileServerURLSetting.Create(ctx, pgClient)
+			if err != nil {
+				log.Error().Err(err).Msg("failed to set FileServerURLSetting")
+			}
+		}
 	}
 
 	err = model.InitializeScheduledTasks(ctx, pgClient)

@@ -20,7 +20,6 @@ const (
 	AwsEc2ResourceId          = "aws_ec2_instance"
 	GcpComputeResourceId      = "gcp_compute_instance"
 	AzureComputeResourceId    = "azure_compute_virtual_machine"
-	DeepfenceVersion          = "2.1.1"
 )
 
 func CommitFuncCloudResource(ctx context.Context, ns string, cs []ingestersUtil.CloudResource) error {
@@ -150,7 +149,7 @@ func ResourceToMaps(ms []ingestersUtil.CloudResource) ([]map[string]interface{},
 				"active":                  true,
 				"cloud_provider":          v.CloudProvider,
 				"agent_running":           false,
-				"version":                 DeepfenceVersion,
+				"version":                 "",
 				"instance_id":             newmap["node_id"],
 				"host_name":               v.Name,
 				"node_id":                 v.Name,

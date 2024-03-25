@@ -40,14 +40,16 @@ x-service-variables: &common-creds
     DEEPFENCE_TASKS_CONCURRENCY: 50
     DEEPFENCE_TASKS_MAX_RETRIES: 3
     DEEPFENCE_MAX_SCAN_WORKLOAD: 5
-    # use below variables to set http/s proxy env
-    # http_proxy: ""
-    # https_proxy: ""
-    # no need to proxy internal services
-    # no_proxy: "deepfence-file-server,deepfence-postgres,deepfence-redis,deepfence-neo4j,deepfence-kafka-broker,deepfence-ui,deepfence-server,deepfence-router"
 
 x-telemetry-variables: &telemetry-variables
     DEEPFENCE_TELEMETRY_ENABLED: "false"
+
+x-proxy-variables: &proxy-variables
+    # use below variables to set http/s proxy env
+    http_proxy: ""
+    https_proxy: ""
+    # no need to proxy internal services
+    no_proxy: "127.0.0.1,localhost,deepfence-file-server,deepfence-postgres,deepfence-redis,deepfence-neo4j,deepfence-kafka-broker,deepfence-ui,deepfence-server,deepfence-router"
 
 services:
 
@@ -197,7 +199,7 @@ services:
     tmpfs:
       - /tmp
     environment:
-      <<: [*common-creds, *telemetry-variables]
+      <<: [*common-creds, *telemetry-variables, *proxy-variables]
       ELASTICSEARCH_SCHEME: "http"
       DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES: 5
       DEEPFENCE_CONSOLE_ORCHESTRATOR: "docker"
@@ -236,7 +238,7 @@ services:
       options:
         max-size: "200m"
     environment:
-      <<: [*common-creds, *telemetry-variables]
+      <<: [*common-creds, *telemetry-variables, *proxy-variables]
     volumes:
       - /etc/docker/certs.d:/etc/docker/certs.d:ro
       - /var/run/docker.sock:/var/run/docker.sock
@@ -290,7 +292,7 @@ services:
       core: 0
     restart: unless-stopped
     environment:
-      <<: [*common-creds, *telemetry-variables]
+      <<: [*common-creds, *telemetry-variables, *proxy-variables]
       DEEPFENCE_MODE: scheduler
     networks:
       - deepfence_net
@@ -346,7 +348,7 @@ services:
     ports:
       - "127.0.0.1:8181:8181"
     environment:
-      <<: [*common-creds, *telemetry-variables]
+      <<: [*common-creds, *telemetry-variables, *proxy-variables]
       DEEPFENCE_MODE: ingester
     networks:
       - deepfence_net
