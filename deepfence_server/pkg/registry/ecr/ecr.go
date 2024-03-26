@@ -33,19 +33,13 @@ func (e *RegistryECR) ValidateFields(v *validator.Validate) error {
 			return errPublicRegistryRegion
 		}
 	}
-	if e.NonSecret.UseIAMRole == trueStr {
-		// IAM role based authentication
-		if e.NonSecret.AWSAccountID == "" {
-			return errAccountIDMissing
-		}
-		return v.Struct(e)
-	} else {
+	if e.NonSecret.UseIAMRole != trueStr {
 		// Key based authentication
 		if e.NonSecret.AWSAccessKeyID == "" || e.Secret.AWSSecretAccessKey == "" {
 			return errAccessKeyMissing
 		}
-		return v.Struct(e)
 	}
+	return v.Struct(e)
 }
 
 func (e *RegistryECR) IsValidCredential() bool {
