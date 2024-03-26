@@ -39,6 +39,7 @@ export interface ModelSettingUpdateRequest {
  */
 export const ModelSettingUpdateRequestKeyEnum = {
     ConsoleUrl: 'console_url',
+    FileServerUrl: 'file_server_url',
     InactiveDeleteScanResults: 'inactive_delete_scan_results'
 } as const;
 export type ModelSettingUpdateRequestKeyEnum = typeof ModelSettingUpdateRequestKeyEnum[keyof typeof ModelSettingUpdateRequestKeyEnum];
