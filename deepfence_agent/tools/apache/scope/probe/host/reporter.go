@@ -89,7 +89,7 @@ func getCloudMetadata(cloudProvider string) (string, cloud_metadata.CloudMetadat
 		if err == nil && !foundContainerSocketPath {
 			cloudProvider = report.CloudProviderServerless
 			cloudMetadata.CloudProvider = report.CloudProviderServerless
-			cloudMetadata.Region = report.CloudProviderServerless
+			cloudMetadata.Region = report.CloudRegionServerless
 		}
 		if cloudProvider == "" {
 			cloudProvider = DefaultCloud
