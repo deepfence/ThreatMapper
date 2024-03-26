@@ -97,7 +97,7 @@ const tooltip = new G6.Tooltip({
       return '';
     }
     return `
-    <div role="tooltip" class="rounded-[5px] dark:bg-[#C1CFD9] bg-white border py-1.5 px-2.5 text-black flex-col flex gap-2 max-w-[200px]">
+    <div role="tooltip" class="rounded-[5px] dark:bg-[#C1CFD9] bg-[#f8f8f8] dark:shadow-none shadow-[0_0_6px_2px_rgba(34,34,34,0.20)] py-1.5 px-2.5 text-black flex-col flex gap-2 max-w-[200px]">
       <div>
         <h5 class="text-p3">Name</h5>
         <div class="text-p4">${model?.id}</div>

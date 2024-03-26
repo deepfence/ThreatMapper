@@ -721,7 +721,7 @@ const CurrentUserInfo = ({
           </Button>
         </div>
       </div>
-      <div className="flex mt-4 mb-2" data-testid="loginUserStatusWrapperId">
+      <div className="flex mt-4 mb-2 items-center" data-testid="loginUserStatusWrapperId">
         <span className="text-p4 min-w-[140px] text-text-text-and-icon">Status</span>
         <span
           className={cn('text-p4a text-text-input-value', {

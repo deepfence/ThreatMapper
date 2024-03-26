@@ -315,9 +315,8 @@ const GraphTooltip = ({
     <div
       role="tooltip"
       className={cn(
-        'inline-block rounded-[5px] dark:bg-[#C1CFD9] bg-white w-[200px] select-text',
+        'inline-block rounded-[5px] dark:bg-[#C1CFD9] bg-[#f8f8f8] dark:shadow-none shadow-[0_0_6px_2px_rgba(34,34,34,0.20)] w-[200px] select-text',
         'pt-1.5 pb-1.5 px-2.5 dark:text-text-text-inverse text-text-input-value',
-        'shadow-md',
       )}
     >
       <div className="text-p3 capitalize">
