@@ -24,7 +24,7 @@ export interface ModelRegisterLicenseRequest {
      * @type {string}
      * @memberof ModelRegisterLicenseRequest
      */
-    email: string;
+    email?: string;
     /**
      * 
      * @type {string}
@@ -38,7 +38,6 @@ export interface ModelRegisterLicenseRequest {
  */
 export function instanceOfModelRegisterLicenseRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "email" in value;
     isInstance = isInstance && "license_key" in value;
 
     return isInstance;
@@ -54,7 +53,7 @@ export function ModelRegisterLicenseRequestFromJSONTyped(json: any, ignoreDiscri
     }
     return {
         
-        'email': json['email'],
+        'email': !exists(json, 'email') ? undefined : json['email'],
         'license_key': json['license_key'],
     };
 }
