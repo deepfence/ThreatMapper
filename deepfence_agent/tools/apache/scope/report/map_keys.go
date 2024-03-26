@@ -121,15 +121,18 @@ const (
 	ScopeVersion      = "host_scope_version"
 
 	CloudProviderServerless = "Serverless"
+	CloudRegionServerless   = "Global"
 	// probe/overlay/weave
 	WeavePeerName     = "weave_peer_name"
 	WeavePeerNickName = "weave_peer_nick_name"
 )
 
-/* Lookup table to allow msgpack/json decoder to avoid heap allocation
-   for common ps.Map keys. The map is static so we don't have to lock
-   access from multiple threads and don't have to worry about it
-   getting clogged with values that are only used once.
+/*
+Lookup table to allow msgpack/json decoder to avoid heap allocation
+
+	for common ps.Map keys. The map is static so we don't have to lock
+	access from multiple threads and don't have to worry about it
+	getting clogged with values that are only used once.
 */
 var commonKeys = map[string]string{
 	Endpoint:       Endpoint,
