@@ -258,7 +258,7 @@ const useGetVersion = () => {
 };
 const useGetLicense = () => {
   return useSuspenseQuery({
-    ...queries.setting.getLicense(),
+    ...queries.setting.getThreatMapperLicense(),
   });
 };
 

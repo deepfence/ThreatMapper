@@ -48,7 +48,7 @@ export const action = async ({
 
   if (intent === ActionEnumType.DELETE) {
     const deleteApi = apiWrapper({
-      fn: getSettingsApiClient().deleteLicense,
+      fn: getSettingsApiClient().deleteThreatMapperLicense,
     });
     const deleteResponse = await deleteApi();
     if (!deleteResponse.ok) {
@@ -70,7 +70,7 @@ export const action = async ({
     await cleanupAndLogout();
   } else if (intent === ActionEnumType.REGISTER_LICENSE) {
     const licenseApi = apiWrapper({
-      fn: getSettingsApiClient().getLicense,
+      fn: getSettingsApiClient().getThreatMapperLicense,
     });
     const response = await licenseApi();
     if (!response.ok) {
@@ -182,7 +182,7 @@ export const ThreatMapperLicenseDetails = () => {
 
 const LicenseDetailsContent = () => {
   const { data: licenseData } = useSuspenseQuery({
-    ...queries.setting.getLicense(),
+    ...queries.setting.getThreatMapperLicense(),
   });
 
   return <LicenseCard licenseData={licenseData} />;
