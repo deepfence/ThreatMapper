@@ -17,6 +17,10 @@ import (
 var (
 	licenseAddedError         = ForbiddenError{errors.New("license key already added")}
 	licenseNotConfiguredError = PaymentRequired{errors.New("console not registered")}
+	errEmailRequired          = ValidatorError{
+		err:                       errors.New("email:email is required"),
+		skipOverwriteErrorMessage: true,
+	}
 )
 
 func (h *Handler) GenerateLicenseHandler(w http.ResponseWriter, r *http.Request) {
@@ -69,6 +73,11 @@ func (h *Handler) RegisterLicenseHandler(w http.ResponseWriter, r *http.Request)
 	err = h.Validator.Struct(req)
 	if err != nil {
 		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+	// Not part of validator to keep RegisterLicenseRequest same in TM and TS
+	if req.Email == "" {
+		h.respondError(&errEmailRequired, w)
 		return
 	}
 	ctx := r.Context()
