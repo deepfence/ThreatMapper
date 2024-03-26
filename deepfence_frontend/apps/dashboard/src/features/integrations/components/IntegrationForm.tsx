@@ -927,6 +927,25 @@ export const IntegrationForm = ({
                   color={fieldErrors?.s3_folder_name ? 'error' : 'default'}
                   required
                 />
+                <TextInput
+                  defaultValue={formData?.config?.aws_account_id}
+                  name="awsAccount"
+                  label="AWS Account ID"
+                  placeholder="AWS account id"
+                  required
+                  info="S3 belonging to other AWS Accounts"
+                  helperText={fieldErrors?.aws_account_id}
+                  color={fieldErrors?.aws_account_id ? 'error' : 'default'}
+                />
+                <TextInputType
+                  defaultValue={formData?.config?.aws_region}
+                  name="region"
+                  label="Region"
+                  placeholder="AWS region"
+                  helperText={fieldErrors?.aws_region}
+                  color={fieldErrors?.aws_region ? 'error' : 'default'}
+                  required
+                />
                 <div className="col-span-2">
                   <Checkbox
                     label="Use AWS IAM Role"
@@ -939,27 +958,15 @@ export const IntegrationForm = ({
                   />
                 </div>
                 {useIAMRole ? (
-                  <>
-                    <TextInput
-                      defaultValue={formData?.config?.aws_account_id}
-                      name="awsAccount"
-                      label="AWS Account ID"
-                      placeholder="AWS account id"
-                      required
-                      info="(Optional) S3 belonging to other AWS Accounts"
-                      helperText={fieldErrors?.aws_account_id}
-                      color={fieldErrors?.aws_account_id ? 'error' : 'default'}
-                    />
-                    <TextInput
-                      defaultValue={formData?.config?.target_account_role_arn}
-                      name="awsARN"
-                      label="Target Account Role ARN"
-                      placeholder="Target account role arn"
-                      info="(Optional) S3 belonging to other AWS Accounts"
-                      helperText={fieldErrors?.target_account_role_arn}
-                      color={fieldErrors?.target_account_role_arn ? 'error' : 'default'}
-                    />
-                  </>
+                  <TextInput
+                    defaultValue={formData?.config?.target_account_role_arn}
+                    name="awsARN"
+                    label="Target Account Role ARN"
+                    placeholder="Target account role arn"
+                    info="S3 belonging to other AWS Accounts"
+                    helperText={fieldErrors?.target_account_role_arn}
+                    color={fieldErrors?.target_account_role_arn ? 'error' : 'default'}
+                  />
                 ) : (
                   <>
                     <TextInputType
@@ -979,16 +986,6 @@ export const IntegrationForm = ({
                     />
                   </>
                 )}
-
-                <TextInputType
-                  defaultValue={formData?.config?.aws_region}
-                  name="region"
-                  label="Region"
-                  placeholder="AWS region"
-                  helperText={fieldErrors?.aws_region}
-                  color={fieldErrors?.aws_region ? 'error' : 'default'}
-                  required
-                />
               </>
             )}
 
