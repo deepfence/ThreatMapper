@@ -85,7 +85,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 
   if (intent === SEND_EMAIL || resendIntent === SEND_EMAIL) {
     const apiFunctionApi = apiWrapper({
-      fn: getSettingsApiClient().generateLicense,
+      fn: getSettingsApiClient().generateThreatMapperLicense,
     });
     const result = await apiFunctionApi({
       modelGenerateLicenseRequest: {
@@ -141,7 +141,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     };
   } else if (intent === SAVE_LICENSE) {
     const apiFunctionApi = apiWrapper({
-      fn: getSettingsApiClient().registerLicense,
+      fn: getSettingsApiClient().registerThreatMapperLicense,
     });
     const result = await apiFunctionApi({
       modelRegisterLicenseRequest: {
