@@ -14468,7 +14468,7 @@
         }
       },
       "ModelRegisterLicenseRequest": {
-        "required": ["email", "license_key"],
+        "required": ["license_key"],
         "type": "object",
         "properties": {
           "email": { "type": "string" },
@@ -15015,7 +15015,7 @@
         "type": "object",
         "properties": {
           "key": {
-            "enum": ["console_url", "inactive_delete_scan_results"],
+            "enum": ["console_url", "file_server_url", "inactive_delete_scan_results"],
             "type": "string"
           },
           "value": { "type": "string" }

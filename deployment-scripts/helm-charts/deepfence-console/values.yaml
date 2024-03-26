@@ -16,12 +16,6 @@ global:
   imageTag: 2.2.0
   storageClass: ""
 
-# used to configure ccorporate proxy
-proxy:
-  enabled: false
-  http_proxy: ""
-  https_proxy: ""
-
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -41,6 +35,13 @@ imagePullSecret:
   # The name of the imagePullSecret to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
+
+proxy:
+  # Configure proxy server
+  enabled: false
+  # Example: http://my.internal.server:port
+  http_proxy: ""
+  https_proxy: ""
 
 kafka:
   # Specifies whether a kafka cluster should be created
@@ -478,7 +479,7 @@ ui:
 
 console_agents:
   enabled: true
-  cluster_name: "tm-cluster"
+  cluster_name: "tm-console"
   enableGraphReport: true
   userDefinedTags: ""
   instanceIdSuffix: "N"

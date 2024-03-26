@@ -60,7 +60,7 @@ type GenerateLicenseResponse struct {
 }
 
 type RegisterLicenseRequest struct {
-	Email      string `json:"email" validate:"required,email" required:"true"`
+	Email      string `json:"email" validate:"omitempty,email"`
 	LicenseKey string `json:"license_key" validate:"required,uuid4" required:"true"`
 }
 

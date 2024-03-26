@@ -372,16 +372,15 @@ export function getSettingsApiClient() {
     uploadSecretsRules: settingsApi.uploadSecretsRules.bind(settingsApi),
     uploadMalwareRules: settingsApi.uploadMalwareRules.bind(settingsApi),
     uploadPostureControls: settingsApi.uploadPostureControls.bind(settingsApi),
-    getLicence: settingsApi.getLicense.bind(settingsApi),
     getScheduledTasks: settingsApi.getScheduledTasks.bind(settingsApi),
     updateScheduledTask: settingsApi.updateScheduledTask.bind(settingsApi),
     deleteCustomScheduledTask: settingsApi.deleteCustomScheduledTask.bind(settingsApi),
     addScheduledTask: settingsApi.addScheduledTask.bind(settingsApi),
     getAgentVersions: settingsApi.getAgentVersions.bind(settingsApi),
-    generateLicense: settingsApi.generateLicense.bind(settingsApi),
-    registerLicense: settingsApi.registerLicense.bind(settingsApi),
-    getLicense: settingsApi.getLicense.bind(settingsApi),
-    deleteLicense: settingsApi.deleteLicense.bind(settingsApi),
+    generateThreatMapperLicense: settingsApi.generateLicense.bind(settingsApi),
+    registerThreatMapperLicense: settingsApi.registerLicense.bind(settingsApi),
+    getThreatMapperLicense: settingsApi.getLicense.bind(settingsApi),
+    deleteThreatMapperLicense: settingsApi.deleteLicense.bind(settingsApi),
   };
 }
 

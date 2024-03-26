@@ -41,7 +41,7 @@ export const AmazonECRConnectorForm = ({
         .
       </div>
       <Card className="p-4">
-        <p className="text-p1 text-text-input-value">Enter Information</p>
+        <p className="text-p1 dark:text-text-input-value">Enter Information</p>
         <div className="w-full flex flex-col relative mt-4 gap-y-8">
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
@@ -55,8 +55,9 @@ export const AmazonECRConnectorForm = ({
           />
           <TextInput
             className="grow min-[200px] max-w-xs"
-            label="AWS Account ID (optional)"
+            label="AWS Account ID"
             type={'text'}
+            required
             name="non_secret.aws_account_id"
             placeholder="AWS Account ID"
             info="(Optional) Pull from registries belonging to other AWS Accounts"
@@ -72,116 +73,136 @@ export const AmazonECRConnectorForm = ({
                 setIsPublic(checked);
               }}
             />
-            <>
-              <input hidden value={String(useIAMRole)} name="non_secret.use_iam_role" />
+            <TextInput
+              className="grow min-[200px] max-w-xs"
+              label="AWS Account ID (optional)"
+              type={'text'}
+              name="non_secret.aws_account_id"
+              placeholder="AWS Account ID"
+              info="(Optional) Pull from registries belonging to other AWS Accounts"
+              color={fieldErrors?.['aws_account_id'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['aws_account_id']}
+            />
+            <div className="flex flex-col gap-y-4">
+              <input hidden value={String(isPublic)} name="non_secret.is_public" />
               <Checkbox
-                label="Use AWS IAM Role"
-                checked={useIAMRole}
+                label="Public Registry"
+                checked={isPublic}
                 onCheckedChange={(checked: boolean) => {
-                  setUseIAMRole(checked);
+                  setIsPublic(checked);
                 }}
               />
-            </>
-          </div>
-          <div className="flex flex-row gap-8 flex-wrap">
-            {!isPublic && !useIAMRole && (
               <>
-                <TextInput
-                  className="grow min-[200px] max-w-xs"
-                  label="AWS Access Key"
-                  type={'text'}
-                  name="non_secret.aws_access_key_id"
-                  placeholder="AWS Access Key"
-                  color={fieldErrors?.['aws_access_key_id'] ? 'error' : 'default'}
-                  helperText={fieldErrors?.['aws_access_key_id']}
-                  required
-                />
-                <TextInput
-                  className="grow min-[200px] max-w-xs"
-                  label="AWS Secret Key"
-                  type={'password'}
-                  name="secret.aws_secret_access_key"
-                  placeholder="AWS Secret Key"
-                  color={fieldErrors?.['aws_secret_access_key'] ? 'error' : 'default'}
-                  helperText={fieldErrors?.['aws_secret_access_key']}
-                  required
-                />
-                <TextInput
-                  className="w-3/4 min-[200px] max-w-xs"
-                  label="AWS Region"
-                  type={'text'}
-                  name="non_secret.aws_region_name"
-                  placeholder="AWS Region"
-                  color={fieldErrors?.['aws_region_name'] ? 'error' : 'default'}
-                  helperText={fieldErrors?.['aws_region_name']}
-                  required
+                <input hidden value={String(useIAMRole)} name="non_secret.use_iam_role" />
+                <Checkbox
+                  label="Use AWS IAM Role"
+                  checked={useIAMRole}
+                  onCheckedChange={(checked: boolean) => {
+                    setUseIAMRole(checked);
+                  }}
                 />
               </>
-            )}
-            {isPublic && !useIAMRole && (
-              <>
-                <TextInput
-                  className="grow min-[200px] max-w-xs"
-                  label="AWS Access Key"
-                  type={'text'}
-                  name="non_secret.aws_access_key_id"
-                  placeholder="AWS Access Key"
-                  color={fieldErrors?.['aws_access_key_id'] ? 'error' : 'default'}
-                  helperText={fieldErrors?.['aws_access_key_id']}
-                  required
-                />
-                <TextInput
-                  className="grow min-[200px] max-w-xs"
-                  label="AWS Secret Key"
-                  type={'password'}
-                  name="secret.aws_secret_access_key"
-                  placeholder="AWS Secret Key"
-                  color={fieldErrors?.['aws_secret_access_key'] ? 'error' : 'default'}
-                  helperText={fieldErrors?.['aws_secret_access_key']}
-                  required
-                />
-                <input hidden value="us-east-1" name="non_secret.aws_region_name" />
-              </>
-            )}
-            {!isPublic && useIAMRole && (
-              <>
-                <TextInput
-                  className="grow min-[200px] max-w-xs"
-                  label="Target Account Role ARN (optional)"
-                  type={'text'}
-                  name="non_secret.target_account_role_arn"
-                  placeholder="Target Account Role ARN"
-                  info="(Optional) Pull from registries belonging to other AWS Accounts"
-                  color={fieldErrors?.['target_account_role_arn'] ? 'error' : 'default'}
-                  helperText={fieldErrors?.['target_account_role_arn']}
-                />
-                <TextInput
-                  className="w-3/4 min-[200px] max-w-xs"
-                  label="AWS Region"
-                  type={'text'}
-                  name="non_secret.aws_region_name"
-                  placeholder="AWS Region"
-                  color={fieldErrors?.['aws_region_name'] ? 'error' : 'default'}
-                  helperText={fieldErrors?.['aws_region_name']}
-                  required
-                />
-              </>
-            )}
-            {isPublic && useIAMRole && (
-              <>
-                <TextInput
-                  className="grow min-[200px] max-w-xs"
-                  label="Target Account Role ARN (optional)"
-                  type={'text'}
-                  name="non_secret.target_account_role_arn"
-                  placeholder="Target Account Role ARN"
-                  info="(Optional) Pull from registries belonging to other AWS Accounts"
-                  color={fieldErrors?.['target_account_role_arn'] ? 'error' : 'default'}
-                  helperText={fieldErrors?.['target_account_role_arn']}
-                />
-                <input hidden value="us-east-1" name="non_secret.aws_region_name" />
-              </>
-            )}
+            </div>
+            <div className="flex flex-row gap-8 flex-wrap">
+              {!isPublic && !useIAMRole && (
+                <>
+                  <TextInput
+                    className="grow min-[200px] max-w-xs"
+                    label="AWS Access Key"
+                    type={'text'}
+                    name="non_secret.aws_access_key_id"
+                    placeholder="AWS Access Key"
+                    color={fieldErrors?.['aws_access_key_id'] ? 'error' : 'default'}
+                    helperText={fieldErrors?.['aws_access_key_id']}
+                    required
+                  />
+                  <TextInput
+                    className="grow min-[200px] max-w-xs"
+                    label="AWS Secret Key"
+                    type={'password'}
+                    name="secret.aws_secret_access_key"
+                    placeholder="AWS Secret Key"
+                    color={fieldErrors?.['aws_secret_access_key'] ? 'error' : 'default'}
+                    helperText={fieldErrors?.['aws_secret_access_key']}
+                    required
+                  />
+                  <TextInput
+                    className="w-3/4 min-[200px] max-w-xs"
+                    label="AWS Region"
+                    type={'text'}
+                    name="non_secret.aws_region_name"
+                    placeholder="AWS Region"
+                    color={fieldErrors?.['aws_region_name'] ? 'error' : 'default'}
+                    helperText={fieldErrors?.['aws_region_name']}
+                    required
+                  />
+                </>
+              )}
+              {isPublic && !useIAMRole && (
+                <>
+                  <TextInput
+                    className="grow min-[200px] max-w-xs"
+                    label="AWS Access Key"
+                    type={'text'}
+                    name="non_secret.aws_access_key_id"
+                    placeholder="AWS Access Key"
+                    color={fieldErrors?.['aws_access_key_id'] ? 'error' : 'default'}
+                    helperText={fieldErrors?.['aws_access_key_id']}
+                    required
+                  />
+                  <TextInput
+                    className="grow min-[200px] max-w-xs"
+                    label="AWS Secret Key"
+                    type={'password'}
+                    name="secret.aws_secret_access_key"
+                    placeholder="AWS Secret Key"
+                    color={fieldErrors?.['aws_secret_access_key'] ? 'error' : 'default'}
+                    helperText={fieldErrors?.['aws_secret_access_key']}
+                    required
+                  />
+                  <input hidden value="us-east-1" name="non_secret.aws_region_name" />
+                </>
+              )}
+              {!isPublic && useIAMRole && (
+                <>
+                  <TextInput
+                    className="grow min-[200px] max-w-xs"
+                    label="Target Account Role ARN (optional)"
+                    type={'text'}
+                    name="non_secret.target_account_role_arn"
+                    placeholder="Target Account Role ARN"
+                    info="(Optional) Pull from registries belonging to other AWS Accounts"
+                    color={fieldErrors?.['target_account_role_arn'] ? 'error' : 'default'}
+                    helperText={fieldErrors?.['target_account_role_arn']}
+                  />
+                  <TextInput
+                    className="w-3/4 min-[200px] max-w-xs"
+                    label="AWS Region"
+                    type={'text'}
+                    name="non_secret.aws_region_name"
+                    placeholder="AWS Region"
+                    color={fieldErrors?.['aws_region_name'] ? 'error' : 'default'}
+                    helperText={fieldErrors?.['aws_region_name']}
+                    required
+                  />
+                </>
+              )}
+              {isPublic && useIAMRole && (
+                <>
+                  <TextInput
+                    className="grow min-[200px] max-w-xs"
+                    label="Target Account Role ARN (optional)"
+                    type={'text'}
+                    name="non_secret.target_account_role_arn"
+                    placeholder="Target Account Role ARN"
+                    info="(Optional) Pull from registries belonging to other AWS Accounts"
+                    color={fieldErrors?.['target_account_role_arn'] ? 'error' : 'default'}
+                    helperText={fieldErrors?.['target_account_role_arn']}
+                  />
+                  <input hidden value="us-east-1" name="non_secret.aws_region_name" />
+                </>
+              )}
+            </div>
           </div>
         </div>
         {errorMessage && <p className="mt-2 text-status-error text-p7">{errorMessage}</p>}
