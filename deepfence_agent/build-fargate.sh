@@ -9,4 +9,4 @@ wget https://deepfence-public.s3.amazonaws.com/ThreatMapper/agent-sensor/v2.1.0/
 tar -zxvf deepfence-agent-2.tar.gz -C $AGENT_BINARY_BUILD/
 rm -rf deepfence-agent-2.tar.gz
 
-docker build --build-arg AGENT_BINARY_BUILD="$AGENT_BINARY_BUILD" --build-arg AGENT_BINARY_DIST="$AGENT_BINARY_DIST" --network host --rm=true --tag=$IMAGE_REPOSITORY/deepfence_agent_ce:fargate-${DF_IMG_TAG:-latest} -f fargate/Dockerfile.fargate .
+docker build --build-arg AGENT_BINARY_BUILD_RELATIVE="$AGENT_BINARY_BUILD_RELATIVE" --network host --rm=true --tag=$IMAGE_REPOSITORY/deepfence_agent_ce:fargate-${DF_IMG_TAG:-latest} -f fargate/Dockerfile.fargate ..

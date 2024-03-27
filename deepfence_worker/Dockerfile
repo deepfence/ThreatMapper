@@ -1,6 +1,6 @@
 ARG DF_IMG_TAG=latest
 ARG IMAGE_REPOSITORY=deepfenceio
-ARG AGENT_BINARY_DIST
+ARG AGENT_BINARY_DIST_RELATIVE
 FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS packagescanner
 FROM $IMAGE_REPOSITORY/deepfence_secret_scanner_ce:$DF_IMG_TAG AS secretscanner
 FROM $IMAGE_REPOSITORY/deepfence_malware_scanner_ce:$DF_IMG_TAG AS yarahunter
@@ -59,7 +59,7 @@ RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \
 
 # RUN export GRYPE_DB_UPDATE_URL=https://threat-intel.deepfence.io/vulnerability-db/listing.json && grype db update
 
-COPY ${AGENT_BINARY_DIST}/* /opt/deepfence
+COPY $AGENT_BINARY_DIST_RELATIVE/* /opt/deepfence
 
 COPY --from=builder-yara /go/bin/asynq /usr/local/bin/asynq
 

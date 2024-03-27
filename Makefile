@@ -18,7 +18,9 @@ export DF_IMG_TAG?=latest
 export IS_DEV_BUILD?=false
 export VERSION?="2.2.0"
 export AGENT_BINARY_BUILD=$(DEEPFENCE_FARGATE_DIR)/build
+export AGENT_BINARY_BUILD_RELATIVE="deepfence_agent/fargate/build"
 export AGENT_BINARY_DIST=$(DEEPFENCE_FARGATE_DIR)/dist
+export AGENT_BINARY_DIST_RELATIVE="deepfence_agent/fargate/dist"
 export AGENT_BINARY_FILENAME="deepfence-agent-$(shell dpkg --print-architecture)-$(VERSION).tar.gz"
 
 default: bootstrap console_plugins agent console fargate-local
@@ -110,8 +112,6 @@ server: alpine_builder
 
 .PHONY: worker
 worker: alpine_builder agent-binary-tar
-	mkdir -p ./deepfence_worker/agent-binary
-	cp $(DEEPFENCE_FARGATE_DIR)/deepfence-agent-bin-$(VERSION).tar.gz deepfence_worker/agent-binary/deepfence-agent-$(ARCHITECTURE)-$(VERSION).tar.gz
 	(cd ./deepfence_worker && VERSION=$(VERSION) AGENT_BINARY_DIST="$(AGENT_BINARY_DIST)" make image)
 
 .PHONY: jaeger
