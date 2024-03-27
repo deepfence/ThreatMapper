@@ -1,6 +1,6 @@
 ARG DF_IMG_TAG=latest
 ARG IMAGE_REPOSITORY=deepfenceio
-ARG AGENT_BINARY_DIST_RELATIVE
+
 FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS packagescanner
 FROM $IMAGE_REPOSITORY/deepfence_secret_scanner_ce:$DF_IMG_TAG AS secretscanner
 FROM $IMAGE_REPOSITORY/deepfence_malware_scanner_ce:$DF_IMG_TAG AS yarahunter
@@ -8,6 +8,9 @@ FROM surnet/alpine-wkhtmltopdf:3.17.0-0.12.6-full as wkhtmltopdf
 FROM $IMAGE_REPOSITORY/deepfence_builder_ce:$DF_IMG_TAG AS builder-yara
 
 FROM alpine:3.18 AS final
+
+ARG AGENT_BINARY_DIST_RELATIVE
+
 LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
 
@@ -58,8 +61,7 @@ RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \
     # && sed -i 's/auto-update: true/auto-update: false/g' /usr/local/bin/grype.yaml
 
 # RUN export GRYPE_DB_UPDATE_URL=https://threat-intel.deepfence.io/vulnerability-db/listing.json && grype db update
-
-COPY $AGENT_BINARY_DIST_RELATIVE/* /opt/deepfence
+COPY ./${AGENT_BINARY_DIST_RELATIVE}/* /opt/deepfence
 
 COPY --from=builder-yara /go/bin/asynq /usr/local/bin/asynq
 
