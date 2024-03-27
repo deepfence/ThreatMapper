@@ -10,7 +10,7 @@ if [ -z "$ID" ]; then
   exit 1
 fi
 
-folder=$AGENT_BINARY_DIR
+folder=$AGENT_BINARY_BUILD
 
 deep_docker_copy() {
   echo "Copying $1 to $2"
@@ -78,10 +78,10 @@ copy() {
 copy
 
 echo "Creating tar.gz file..."
-rm -rf $folder.tar.gz
+binary_filename="$AGENT_BINARY_DIST/$AGENT_BINARY_FILENAME"
+rm -rf $binary_filename
 cd $folder
-tar -czvf $folder.tar.gz .
-mv $folder.tar.gz ../
+tar -czvf $binary_filename .
 
 cd ../
 # rm -rf $folder
