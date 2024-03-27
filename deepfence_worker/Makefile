@@ -20,5 +20,6 @@ deepfence_worker: vendor $(shell find . -path ./vendor -prune -o -name '*.go')
 clean:
 	-rm deepfence_worker
 	-rm -rf ./vendor
+	-rm -rf ./agent-binary
 
 .PHONY: all clean image local

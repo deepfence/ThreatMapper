@@ -17,6 +17,7 @@ export IMAGE_REPOSITORY?=quay.io/deepfenceio
 export DF_IMG_TAG?=latest
 export IS_DEV_BUILD?=false
 export VERSION?="2.2.0"
+export ARCHITECTURE=$(shell dpkg --print-architecture)
 
 default: bootstrap console_plugins agent console fargate-local
 
@@ -104,8 +105,10 @@ server: alpine_builder
 	(cd ./deepfence_server && VERSION=$(VERSION) make image)
 
 .PHONY: worker
-worker: alpine_builder
-	(cd ./deepfence_worker && VERSION=$(VERSION) make image)
+worker: alpine_builder agent-binary-tar
+	mkdir -p ./deepfence_worker/agent-binary
+	cp -r $(DEEPFENCE_FARGATE_DIR)/deepfence-agent-bin-$(VERSION).tar.gz deepfence-agent-$(ARCHITECTURE)-$(VERSION).tar.gz
+	(cd ./deepfence_worker && VERSION=$(VERSION) AGENT_BINARY_TAR_PATH=$(DEEPFENCE_FARGATE_DIR)/dist make image)
 
 .PHONY: jaeger
 jaeger:

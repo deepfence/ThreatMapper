@@ -37,6 +37,7 @@ deepfence_agent/tools/apache/scope/vendor/
 
 deepfence_server/vendor
 deepfence_worker/vendor
+deepfence_worker/agent-binary
 
 deepfence_server/deepfence_server
 deepfence_worker/deepfence_worker

@@ -52,10 +52,13 @@ COPY --from=builder-yara /usr/local/yara.tar.gz /usr/local/yara.tar.gz
 # extract yara
 RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \
     && rm /usr/local/yara.tar.gz \
-    && chmod +x /entrypoint.sh
+    && chmod +x /entrypoint.sh \
+    && mkdir -p /opt/deepfence/agent-binary
     # && sed -i 's/auto-update: true/auto-update: false/g' /usr/local/bin/grype.yaml
 
 # RUN export GRYPE_DB_UPDATE_URL=https://threat-intel.deepfence.io/vulnerability-db/listing.json && grype db update
+
+COPY ./agent-binary /opt/deepfence/agent-binary
 
 COPY --from=builder-yara /go/bin/asynq /usr/local/bin/asynq
 
