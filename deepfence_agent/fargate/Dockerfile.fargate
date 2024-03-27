@@ -1,6 +1,6 @@
 FROM alpine:3.19 as builder
 
-ARG BINPATH
+ARG AGENT_BINARY_DIR
 # renovate: source=github-tags name=curl/curl versioning=regex:^(?:curl-)?(?<major>\d+)_(?<minor>\d+)_(?<patch>\d+)$ extractVersion=^(?:curl-)?(?<version>[\d_]+)$
 ENV CURL_VERSION="8_5_0"
 
@@ -116,7 +116,7 @@ LABEL deepfence.role=system
 
 WORKDIR /
 
-COPY fargate/$BINPATH /deepfence
+COPY fargate/$AGENT_BINARY_DIR /deepfence
 
 COPY fargate/deepfence-entry-point-scratch.sh deepfence/usr/local/bin/deepfence-entry-point-scratch.sh 
 COPY --from=builder /tmp/rootfs/bin/curl /deepfence/bin/curl

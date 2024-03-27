@@ -17,7 +17,7 @@ export IMAGE_REPOSITORY?=quay.io/deepfenceio
 export DF_IMG_TAG?=latest
 export IS_DEV_BUILD?=false
 export VERSION?="2.2.0"
-export ARCHITECTURE=$(shell dpkg --print-architecture)
+export AGENT_BINARY_DIR="deepfence-agent-$(shell dpkg --print-architecture)-$(VERSION)"
 
 default: bootstrap console_plugins agent console fargate-local
 
@@ -62,18 +62,18 @@ agent-binary: agent agent-binary-tar
 agent-binary-tar:
 	ID=$$(docker create $(IMAGE_REPOSITORY)/deepfence_agent_ce:$(DF_IMG_TAG)); \
 	(cd $(DEEPFENCE_FARGATE_DIR) &&\
-	CONTAINER_ID=$$ID VERSION="$(VERSION)" bash copy-bin-from-agent.sh); \
+	CONTAINER_ID=$$ID VERSION="$(VERSION)" AGENT_BINARY_DIR="$(AGENT_BINARY_DIR)" bash copy-bin-from-agent.sh); \
 	docker rm -v $$ID
 
 .PHONY: fargate-local
 fargate-local: agent-binary-tar
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
-	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" bash build-fargate-local-bin.sh)
+	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" AGENT_BINARY_DIR="$(AGENT_BINARY_DIR)" bash build-fargate-local-bin.sh)
 
 .PHONY: fargate
 fargate: 
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
-	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" bash build-fargate.sh)
+	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" AGENT_BINARY_DIR="$(AGENT_BINARY_DIR)" bash build-fargate.sh)
 
 .PHONY: deepfenced
 deepfenced: alpine_builder bootstrap bootstrap-agent-plugins
@@ -107,8 +107,8 @@ server: alpine_builder
 .PHONY: worker
 worker: alpine_builder agent-binary-tar
 	mkdir -p ./deepfence_worker/agent-binary
-	cp -r $(DEEPFENCE_FARGATE_DIR)/deepfence-agent-bin-$(VERSION).tar.gz deepfence-agent-$(ARCHITECTURE)-$(VERSION).tar.gz
-	(cd ./deepfence_worker && VERSION=$(VERSION) AGENT_BINARY_TAR_PATH=$(DEEPFENCE_FARGATE_DIR)/dist make image)
+	cp $(DEEPFENCE_FARGATE_DIR)/deepfence-agent-bin-$(VERSION).tar.gz deepfence_worker/agent-binary/deepfence-agent-$(ARCHITECTURE)-$(VERSION).tar.gz
+	(cd ./deepfence_worker && VERSION=$(VERSION) AGENT_BINARY_DIST=$(DEEPFENCE_FARGATE_DIR)/dist make image)
 
 .PHONY: jaeger
 jaeger:
@@ -239,3 +239,4 @@ clean:
 	-(cd $(ROOT_MAKEFILE_DIR)/deepfence_server && make clean)
 	-(cd $(ROOT_MAKEFILE_DIR)/deepfence_worker && make clean)
 	-(cd $(DEEPFENCED) && make clean && rm $(DEEPFENCE_AGENT_DIR)/deepfenced)
+	-rm -rf AGENT_BINARY_DIST/*
