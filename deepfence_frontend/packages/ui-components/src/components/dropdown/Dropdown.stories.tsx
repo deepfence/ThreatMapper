@@ -39,7 +39,9 @@ const DefaultTemplate: StoryFn<typeof Dropdown> = (args) => {
           <DropdownItem>Third Action</DropdownItem>
           <DropdownItem>Fourth Action</DropdownItem>
           <DropdownSeparator />
-          <DropdownItem className="text-red-500 dark:text-red-500">Sign Out</DropdownItem>
+          <DropdownItem color="success" disabled>
+            Sign Out
+          </DropdownItem>
         </>
       }
     >

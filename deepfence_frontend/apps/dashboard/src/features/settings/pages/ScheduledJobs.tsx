@@ -221,10 +221,9 @@ const ActionDropdown = ({
                   console.warn('No schedule job to delete');
                 }
               }}
+              color="error"
             >
-              <span className="text-status-error hover:text-red-500 focus:text-red-500">
-                Delete
-              </span>
+              Delete
             </DropdownItem>
           ) : null}
         </>

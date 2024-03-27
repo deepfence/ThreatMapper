@@ -733,22 +733,19 @@ const ActionDropdown = ({
               </span>
             </DropdownItem>
             <DropdownItem
-              disabled={!scanId || !nodeType || isScanDeletePending(scanStatus)}
+              disabled={
+                !scanId ||
+                !nodeType ||
+                isScanInProgress(scanStatus) ||
+                isNeverScanned(scanStatus) ||
+                isScanDeletePending(scanStatus)
+              }
               onSelect={() => {
                 if (!scanId || !nodeType) return;
                 onTableAction(row, ActionEnumType.DELETE_SCAN);
               }}
             >
-              <span
-                className={cn('flex items-center text-status-error', {
-                  'dark:text-gray-600 text-severity-unknown':
-                    isScanInProgress(scanStatus) ||
-                    isNeverScanned(scanStatus) ||
-                    isScanDeletePending(scanStatus),
-                })}
-              >
-                Delete latest scan
-              </span>
+              Delete latest scan
             </DropdownItem>
             <DropdownItem
               onSelect={() => {
