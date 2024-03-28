@@ -147,7 +147,7 @@ func InitFileServerDatabase() {
 				return nil
 			}
 
-			dbFileName := path.Join(utils.FileServerPathAgentBinary, fileName)
+			dbFileName := path.Join(utils.FileServerPathAgentBinary, info.Name())
 			_, err = mc.UploadLocalFile(ctx, dbFileName, fileName, true, minio.PutObjectOptions{})
 			if err != nil {
 				return err

@@ -1,9 +1,5 @@
 package utils
 
-import (
-	"os"
-)
-
 const (
 	Project           = "ThreatMapper"
 	ErrorUserNotFound = "user not found"
@@ -253,17 +249,5 @@ const (
 )
 
 const (
-	fileServerPathAgentBinaryPrefix = "agent-binary"
+	FileServerPathAgentBinary = "agent-binary"
 )
-
-var (
-	FileServerPathAgentBinary string
-)
-
-func init() {
-	agentBinarySecretkey := os.Getenv("FILE_SERVER_AGENT_BINARY_KEY")
-	FileServerPathAgentBinary = fileServerPathAgentBinaryPrefix
-	if agentBinarySecretkey != "" {
-		FileServerPathAgentBinary += agentBinarySecretkey
-	}
-}

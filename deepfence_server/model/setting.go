@@ -64,6 +64,13 @@ type GetAuditLogsRequest struct {
 	Window FetchWindow `json:"window"  required:"true"`
 }
 
+type GetAgentBinaryDownloadURLResponse struct {
+	BinaryAmd64DownloadURL          string `json:"binary_amd_64_download_url"`
+	BinaryArm64DownloadURL          string `json:"binary_arm_64_download_url"`
+	StartAgentScriptDownloadURL     string `json:"start_agent_script_download_url"`
+	UninstallAgentScriptDownloadURL string `json:"uninstall_agent_script_download_url"`
+}
+
 type SettingUpdateRequest struct {
 	ID    int64  `path:"id" validate:"required" required:"true"`
 	Key   string `json:"key" validate:"required,oneof=console_url file_server_url inactive_delete_scan_results" required:"true" enum:"console_url,file_server_url,inactive_delete_scan_results"`

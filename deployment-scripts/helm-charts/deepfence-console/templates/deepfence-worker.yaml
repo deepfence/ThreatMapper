@@ -38,8 +38,6 @@ spec:
           env:
             - name: DEEPFENCE_MODE
               value: worker
-            - name: FILE_SERVER_AGENT_BINARY_KEY
-              value: {{ .Values.fileServerAgentBinaryKey }}
           envFrom:
             - configMapRef:
                 name: "{{ include "deepfence-console.fullname" . }}-config"

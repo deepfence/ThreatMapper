@@ -57,7 +57,7 @@ bootstrap-agent-plugins:
 .PHONY: agent
 agent: go1_20_builder debian_builder deepfenced console_plugins
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
-	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" bash build.sh)
+	IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) bash build.sh)
 
 .PHONY: agent-binary
 agent-binary: agent agent-binary-tar
@@ -67,19 +67,19 @@ agent-binary-tar:
 	mkdir -p $(AGENT_BINARY_DIST) $(AGENT_BINARY_BUILD)
 	ID=$$(docker create $(IMAGE_REPOSITORY)/deepfence_agent_ce:$(DF_IMG_TAG)); \
 	(cd $(DEEPFENCE_FARGATE_DIR) &&\
-	CONTAINER_ID=$$ID VERSION="$(VERSION)" AGENT_BINARY_BUILD="$(AGENT_BINARY_BUILD)" AGENT_BINARY_DIST="$(AGENT_BINARY_DIST)" AGENT_BINARY_FILENAME="$(AGENT_BINARY_FILENAME)" bash copy-bin-from-agent.sh); \
+	CONTAINER_ID=$$ID VERSION=$(VERSION) AGENT_BINARY_BUILD=$(AGENT_BINARY_BUILD) AGENT_BINARY_DIST=$(AGENT_BINARY_DIST) AGENT_BINARY_FILENAME=$(AGENT_BINARY_FILENAME) bash copy-bin-from-agent.sh); \
 	docker rm -v $$ID
 
 .PHONY: fargate-local
 fargate-local: agent-binary-tar
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
-	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" AGENT_BINARY_BUILD_RELATIVE="$(AGENT_BINARY_BUILD_RELATIVE)" AGENT_BINARY_FILENAME="$(AGENT_BINARY_FILENAME)" bash build-fargate-local-bin.sh)
+	IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) AGENT_BINARY_BUILD_RELATIVE=$(AGENT_BINARY_BUILD_RELATIVE) AGENT_BINARY_FILENAME=$(AGENT_BINARY_FILENAME) bash build-fargate-local-bin.sh)
 
 .PHONY: fargate
 fargate:
 	mkdir -p $(AGENT_BINARY_BUILD)
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
-	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" AGENT_BINARY_BUILD="$(AGENT_BINARY_BUILD)" AGENT_BINARY_BUILD_RELATIVE="$(AGENT_BINARY_BUILD_RELATIVE)" bash build-fargate.sh)
+	IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) AGENT_BINARY_BUILD=$(AGENT_BINARY_BUILD) AGENT_BINARY_BUILD_RELATIVE=$(AGENT_BINARY_BUILD_RELATIVE) bash build-fargate.sh)
 
 .PHONY: deepfenced
 deepfenced: alpine_builder bootstrap bootstrap-agent-plugins
@@ -112,7 +112,7 @@ server: alpine_builder
 
 .PHONY: worker
 worker: alpine_builder agent-binary-tar
-	(cd ./deepfence_worker && VERSION=$(VERSION) AGENT_BINARY_DIST_RELATIVE="$(AGENT_BINARY_DIST_RELATIVE)" make image)
+	(cd ./deepfence_worker && VERSION=$(VERSION) AGENT_BINARY_DIST_RELATIVE=$(AGENT_BINARY_DIST_RELATIVE) make image)
 
 .PHONY: jaeger
 jaeger:

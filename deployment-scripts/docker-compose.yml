@@ -30,8 +30,6 @@ x-service-variables: &common-creds
     DEEPFENCE_FILE_SERVER_SECURE: "false"
     # set aws s3 buckets region if using s3 buckets
     DEEPFENCE_FILE_SERVER_REGION: ""
-    # If agent binaries are deployed, this secret key will be added in the download URL
-    FILE_SERVER_AGENT_BINARY_KEY: ""
     DEEPFENCE_REDIS_DB_NUMBER: 0
     DEEPFENCE_REDIS_HOST: deepfence-redis
     DEEPFENCE_REDIS_PORT: 6379

@@ -491,6 +491,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Get("/diagnostic-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.GetDiagnosticLogs))
 			})
 
+			r.Route("/agent-deployment", func(r chi.Router) {
+				r.Get("/binary/download-url", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetAgentBinaryDownloadURL))
+			})
+
 			// Reports
 			r.Route("/reports", func(r chi.Router) {
 				r.Use(directory.CheckLicenseActive)

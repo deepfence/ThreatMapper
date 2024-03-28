@@ -14,12 +14,6 @@ import (
 	"golang.org/x/mod/semver"
 )
 
-const (
-	DefaultAgentImageName = "deepfence.io"
-	DefaultAgentImageTag  = "thomas"
-	DefaultAgentVersion   = "0.0.1"
-)
-
 func PrepareAgentUpgradeAction(ctx context.Context, version string) (controls.Action, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "control", "prepare-agent-upgrade-action")

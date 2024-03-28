@@ -34,17 +34,10 @@ import (
 	wtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 )
 
-// build info
-var (
-	Version   string
-	Commit    string
-	BuildTime string
-)
-
 func main() {
 
 	log.Info().Msgf("\n version: %s\n commit: %s\n build-time: %s\n",
-		Version, Commit, BuildTime)
+		wtils.Version, wtils.Commit, wtils.BuildTime)
 
 	var cfg wtils.Config
 	var err error
