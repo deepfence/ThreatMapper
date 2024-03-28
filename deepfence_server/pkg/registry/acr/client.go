@@ -3,10 +3,11 @@ package acr
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Jeffail/tunny"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/Jeffail/tunny"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -55,7 +56,7 @@ func listImagesRegistryV2(url, namespace, userName, password string) ([]model.In
 			NameSpace:  namespace,
 			Repository: repo,
 		}
-		go parallelImageProcessor.Process(r)
+		go parallelImageProcessor.Process(&r)
 	}
 	for _, _ = range repos {
 		select {

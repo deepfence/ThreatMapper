@@ -4,11 +4,12 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/Jeffail/tunny"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/Jeffail/tunny"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -64,7 +65,7 @@ func listImages(url, project, username, password string) ([]model.IngestedContai
 			Project:    project,
 			Repository: repo,
 		}
-		go parallelImageProcessor.Process(r)
+		go parallelImageProcessor.Process(&r)
 	}
 	for _, _ = range repos {
 		select {
