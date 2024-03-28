@@ -42,6 +42,9 @@ proxy:
   # Example: http://my.internal.server:port
   http_proxy: ""
   https_proxy: ""
+  
+# If agent binaries are deployed, this secret key will be added in the download URL
+fileServerAgentBinaryKey: ""
 
 kafka:
   # Specifies whether a kafka cluster should be created

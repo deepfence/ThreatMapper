@@ -3,14 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"path"
 	"runtime"
 	"syscall"
 	"time"
-
-	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -134,7 +133,7 @@ func main() {
 		}
 	case "scheduler":
 		log.Info().Msg("Starting scheduler")
-		go cs.InitMinioDatabase()
+		go cs.InitFileServerDatabase()
 		time.Sleep(10 * time.Second)
 		scheduler, err := cs.NewScheduler()
 		if err != nil {

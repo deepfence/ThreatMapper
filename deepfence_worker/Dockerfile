@@ -61,6 +61,7 @@ RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \
     # && sed -i 's/auto-update: true/auto-update: false/g' /usr/local/bin/grype.yaml
 
 # RUN export GRYPE_DB_UPDATE_URL=https://threat-intel.deepfence.io/vulnerability-db/listing.json && grype db update
+COPY ./deepfence_agent/binary-install-scripts/* /opt/deepfence
 COPY ./${AGENT_BINARY_DIST_RELATIVE}/* /opt/deepfence
 
 COPY --from=builder-yara /go/bin/asynq /usr/local/bin/asynq

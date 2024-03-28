@@ -1,5 +1,9 @@
 package utils
 
+import (
+	"os"
+)
+
 const (
 	Project           = "ThreatMapper"
 	ErrorUserNotFound = "user not found"
@@ -247,3 +251,19 @@ const (
 	FileServerURLSettingLabel       = "Console File Server URL"
 	FileServerURLSettingDescription = "Serve threat intel feeds to agents. If agents are connected using a different URL than Console URL, please change this"
 )
+
+const (
+	fileServerPathAgentBinaryPrefix = "agent-binary"
+)
+
+var (
+	FileServerPathAgentBinary string
+)
+
+func init() {
+	agentBinarySecretkey := os.Getenv("FILE_SERVER_AGENT_BINARY_KEY")
+	FileServerPathAgentBinary = fileServerPathAgentBinaryPrefix
+	if agentBinarySecretkey != "" {
+		FileServerPathAgentBinary += agentBinarySecretkey
+	}
+}
