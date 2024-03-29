@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/rs/zerolog"
@@ -83,6 +84,8 @@ func StartKafkaProducer(
 		kgo.SeedBrokers(brokers...),
 		kgo.WithLogger(KgoLogger),
 		kgo.UnknownTopicRetries(3),
+		kgo.RecordRetries(10),
+		kgo.AutoCommitInterval(1 * time.Second),
 	}
 
 	kClient, err := kgo.NewClient(opts...)
