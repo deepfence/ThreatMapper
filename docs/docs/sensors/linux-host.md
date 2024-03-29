@@ -26,14 +26,14 @@ MANAGEMENT_CONSOLE_URL="$MGMT_CONSOLE_URL_SCHEMA://$MGMT_CONSOLE_URL:$MGMT_CONSO
 OS_ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
 if [[ "$OS_ID" == "amzn" || "$OS_ID" == "centos" ]]; then
     # Do necessary installs for Amazon Linux
-    yum -y install logrotate jq
+    yum -y install logrotate jq curl
     if [[ "$?" != "0" ]]; then
         echo "Failed to install logrotate"
         exit 1
     fi
 else
     # Do necessary installs for Ubuntu
-    apt-get -y install logrotate jq
+    apt-get -y install logrotate jq curl
     if [[ "$?" != "0" ]]; then
         echo "Failed to install logrotate"
         exit 1
@@ -75,7 +75,7 @@ if [[ $uninstall_agent_script_download_url == "" ]]; then
   echo "$download_url_response"
   exit 1
 fi
-wget --no-check-certificate -O uninstall_deepfence.sh "$uninstall_agent_script_download_url"
+curl -k -o uninstall_deepfence.sh "$uninstall_agent_script_download_url"
 chmod +x uninstall_deepfence.sh
 
 echo "Uninstalling existing Deepfence agent installation, if any"
@@ -107,9 +107,9 @@ if [[ $agent_binary_download_url == "" || $agent_binary_filename == "" ]]; then
 fi
 
 echo "Downloading agent binary from $agent_binary_download_url to /opt/deepfence/$agent_binary_filename"
-wget --no-check-certificate -O "/opt/deepfence/$agent_binary_filename" "$agent_binary_download_url"
+curl -k -o "/opt/deepfence/$agent_binary_filename" "$agent_binary_download_url"
 
-wget --no-check-certificate -O /opt/deepfence/start_deepfence_agent.sh "$start_agent_script_download_url"
+curl -k -o /opt/deepfence/start_deepfence_agent.sh "$start_agent_script_download_url"
 chmod +x "/opt/deepfence/start_deepfence_agent.sh"
 
 tar -xzf "/opt/deepfence/$agent_binary_filename" -C /opt/deepfence/
