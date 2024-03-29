@@ -2,6 +2,7 @@ package ingesters
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -73,7 +74,7 @@ func CVEsToMaps(ms []ingestersUtil.Vulnerability) ([]map[string]interface{}, err
 			"rule":    utils.ToMap(rule),
 			"data":    utils.ToMap(data),
 			"scan_id": v.ScanID,
-			"node_id": data.CveCausedByPackagePath + data.CveCausedByPackage + rule.CveID,
+			"node_id": strings.Join([]string{data.CveCausedByPackagePath + data.CveCausedByPackage + rule.CveID}, "_"),
 		})
 	}
 	return res, nil
