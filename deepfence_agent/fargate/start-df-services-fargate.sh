@@ -4,8 +4,6 @@ set -x
 
 # Some defaults
 export DF_SERVERLESS=${DF_SERVERLESS:-"true"}
-export DF_FIM_ON=${DF_FIM_ON:-"Y"}
-export DF_TRAFFIC_ANALYSIS_ON=${DF_TRAFFIC_ANALYSIS_ON:-"Y"}
 export DF_INSTALL_DIR=${DF_INSTALL_DIR:-"/opt/deepfence"}
 export DF_BASE_DIR="/deepfence"
 

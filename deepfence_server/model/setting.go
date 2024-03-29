@@ -65,8 +65,8 @@ type GetAuditLogsRequest struct {
 }
 
 type GetAgentBinaryDownloadURLResponse struct {
-	BinaryAmd64DownloadURL          string `json:"binary_amd_64_download_url"`
-	BinaryArm64DownloadURL          string `json:"binary_arm_64_download_url"`
+	AgentBinaryAmd64DownloadURL     string `json:"agent_binary_amd64_download_url"`
+	AgentBinaryArm64DownloadURL     string `json:"agent_binary_arm64_download_url"`
 	StartAgentScriptDownloadURL     string `json:"start_agent_script_download_url"`
 	UninstallAgentScriptDownloadURL string `json:"uninstall_agent_script_download_url"`
 }

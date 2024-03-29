@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path"
 
 	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
 	"google.golang.org/grpc"
@@ -125,7 +126,7 @@ func UpdateSecretsRules(req ctl.ThreatIntelInfo) error {
 	}
 
 	newRules := "new_secret_rules.tar.gz"
-	configPath := "/home/deepfence/bin/secret-scanner/config"
+	configPath := path.Join(dfUtils.GetDfInstallDir(), "/home/deepfence/bin/secret-scanner/config")
 
 	if err := downloadFile(newRules, req.SecretsRulesURL); err != nil {
 		log.Error().Err(err).Msg("failed to downlaod secrets rules")

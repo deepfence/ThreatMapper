@@ -30,7 +30,7 @@ var (
 	errInvalidEmailConfigType = ValidatorError{
 		err: fmt.Errorf("email_provider:must be %s or %s", model.EmailSettingSMTP, model.EmailSettingSES), skipOverwriteErrorMessage: true}
 
-	getAgentBinaryDownloadURLExpiry = 365 * 24 * time.Hour
+	getAgentBinaryDownloadURLExpiry = 24 * time.Hour
 )
 
 func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) {
@@ -273,19 +273,19 @@ func getAgentBinaryDownloadURL(ctx context.Context) (*model.GetAgentBinaryDownlo
 
 	resp := model.GetAgentBinaryDownloadURLResponse{}
 
-	resp.StartAgentScriptDownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, startAgentScript), false, getAgentBinaryDownloadURLExpiry, url.Values{})
+	resp.StartAgentScriptDownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, startAgentScript), true, getAgentBinaryDownloadURLExpiry, url.Values{})
 	if err != nil {
 		log.Warn().Msg(err.Error())
 	}
-	resp.UninstallAgentScriptDownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, uninstallAgentScript), false, getAgentBinaryDownloadURLExpiry, url.Values{})
+	resp.UninstallAgentScriptDownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, uninstallAgentScript), true, getAgentBinaryDownloadURLExpiry, url.Values{})
 	if err != nil {
 		log.Warn().Msg(err.Error())
 	}
-	resp.StartAgentScriptDownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, fmt.Sprintf(agentBinaryFileAmd64, constants.Version)), false, getAgentBinaryDownloadURLExpiry, url.Values{})
+	resp.AgentBinaryAmd64DownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, fmt.Sprintf(agentBinaryFileAmd64, constants.Version)), true, getAgentBinaryDownloadURLExpiry, url.Values{})
 	if err != nil {
 		log.Warn().Msg(err.Error())
 	}
-	resp.StartAgentScriptDownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, fmt.Sprintf(agentBinaryFileArm64, constants.Version)), false, getAgentBinaryDownloadURLExpiry, url.Values{})
+	resp.AgentBinaryArm64DownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, fmt.Sprintf(agentBinaryFileArm64, constants.Version)), true, getAgentBinaryDownloadURLExpiry, url.Values{})
 	if err != nil {
 		log.Warn().Msg(err.Error())
 	}
