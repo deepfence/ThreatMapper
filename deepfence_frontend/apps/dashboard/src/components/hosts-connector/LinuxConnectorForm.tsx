@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useState } from 'react';
+import { Suspense } from 'react';
 import { Card, IconButton, Step, StepIndicator, StepLine, Stepper } from 'ui-components';
 
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
@@ -13,11 +13,7 @@ const useGetApiToken = () => {
     ...queries.auth.apiToken(),
   });
 };
-const useGetVersion = () => {
-  return useSuspenseQuery({
-    ...queries.setting.productVersion(),
-  });
-};
+
 const PLACEHOLDER_API_KEY = '---DEEPFENCE-API-KEY--';
 
 const SetConsoleURLCommand = ({ command }: { command: string }) => {
@@ -30,7 +26,7 @@ const SetConsoleURLCommand = ({ command }: { command: string }) => {
       : apiToken === undefined
       ? PLACEHOLDER_API_KEY
       : apiToken;
-  const { data: dataVersion } = useGetVersion();
+
   return (
     <div className="relative flex items-center">
       <pre className="h-fit text-p7 dark:text-text-text-and-icon">
@@ -51,13 +47,11 @@ const SetConsoleURLCommand = ({ command }: { command: string }) => {
   );
 };
 
-const UninstallDeepfenceCommand = () => {
+const Command = ({ command }: { command: string }) => {
   const { copy, isCopied } = useCopyToClipboardState();
   return (
     <div className="relative flex items-center">
-      <pre className="h-fit text-p7 dark:text-text-text-and-icon">
-        sudo bash uninstall_deepfence.sh
-      </pre>
+      <pre className="h-fit text-p7 dark:text-text-text-and-icon">{command}</pre>
       <div className="flex items-center ml-auto self-start">
         {isCopied ? 'copied' : null}
         <IconButton
@@ -65,7 +59,7 @@ const UninstallDeepfenceCommand = () => {
           icon={<CopyLineIcon />}
           variant="flat"
           onClick={() => {
-            copy('sudo bash uninstall_deepfence.sh');
+            copy(command);
           }}
         />
       </div>
@@ -78,30 +72,13 @@ const Skeleton = () => {
     <>
       <div className="animate-pulse flex flex-col gap-y-2">
         <div className="h-2 w-[384px] bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-2 w-[350px] bg-gray-200 dark:bg-gray-700 rounded"></div>
         <div className="h-2 w-[420px] bg-gray-200 dark:bg-gray-700 rounded"></div>
-
-        <div className="h-2 w-[200px] bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-2 w-[300px] bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-2 w-[280px] bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-2 w-[380px] bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-2 w-[370px] bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-2 w-[360px] bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-2 w-[480px] bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-2 w-[200px] bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-2 w-[180px] bg-gray-200 dark:bg-gray-700 rounded"></div>
       </div>
     </>
   );
 };
 
 export const LinuxConnectorForm = () => {
-  const [instructionConsoleURL] = useState(`export MGMT_CONSOLE_URL="${
-    window.location.host ?? '---CONSOLE-IP---'
-  }"
-export DEEPFENCE_KEY="${PLACEHOLDER_API_KEY}"`);
-  const [instructionStart] = useState(`sudo bash install_deepfence_agent.sh`);
-
   return (
     <Stepper>
       <Step
@@ -170,7 +147,12 @@ export DEEPFENCE_KEY="${PLACEHOLDER_API_KEY}"`);
           </p>
           <Card className="w-full relative p-4">
             <Suspense fallback={<Skeleton />}>
-              <SetConsoleURLCommand command={instructionConsoleURL} />
+              <SetConsoleURLCommand
+                command={`export MGMT_CONSOLE_URL="${
+                  window.location.host ?? '---CONSOLE-IP---'
+                }"
+export DEEPFENCE_KEY="${PLACEHOLDER_API_KEY}"`}
+              />
             </Suspense>
           </Card>
         </div>
@@ -185,12 +167,10 @@ export DEEPFENCE_KEY="${PLACEHOLDER_API_KEY}"`);
       >
         <div>
           <p className="mb-2.5 text-p7 dark:text-text-text-and-icon">
-            Run the following command as a privileged user to start Deepfence agent
+            Run the following command as a privileged user to start Deepfence agent.
           </p>
-          <Card className="w-full relative p-4">
-            <Suspense fallback={<Skeleton />}>
-              <SetConsoleURLCommand command={instructionStart} />
-            </Suspense>
+          <Card className="w-full relative py-2 px-4">
+            <Command command="sudo bash install_deepfence_agent.sh" />
           </Card>
         </div>
         <div className="mt-4">
@@ -198,8 +178,8 @@ export DEEPFENCE_KEY="${PLACEHOLDER_API_KEY}"`);
             This will also create a new file <b>uninstall_deepfence.sh</b>. You can run to
             to uninstall Deepfence agent.
           </p>
-          <Card className="w-full relative p-4">
-            <UninstallDeepfenceCommand />
+          <Card className="w-full relative py-2 px-4">
+            <Command command="sudo bash uninstall_deepfence.sh" />
           </Card>
         </div>
       </Step>
