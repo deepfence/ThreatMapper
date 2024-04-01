@@ -22,6 +22,16 @@ func DownloadSecretsRules(ctx context.Context, entry Entry) error {
 	ctx, span := telemetry.NewSpan(ctx, "threatintel", "download-secrets-rules")
 	defer span.End()
 
+	// remove old rule file
+	_, _, existing, err := FetchSecretsRulesInfo(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("no existing secret rules info found")
+	} else {
+		if err := DeleteFileMinio(ctx, existing); err != nil {
+			log.Error().Err(err).Msgf("failed to delete file %s", existing)
+		}
+	}
+
 	// download latest rules and uplaod to minio
 	content, err := downloadFile(ctx, entry.URL)
 	if err != nil {
