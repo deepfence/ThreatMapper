@@ -29,18 +29,8 @@ func listIAMImages(awsRegion, awsAccountID, targetAccountRoleARN string, isPubli
 	// if targetRoleARN is empty, that means
 	// it is not a crossaccount ecr, no need to use stscreds
 	if targetAccountRoleARN != "" {
-		if awsAccountID == "" {
-			return nil, fmt.Errorf("for cross account ECR, account ID is mandatory")
-		}
 		creds := stscreds.NewCredentials(sess, targetAccountRoleARN)
 		awsConfig.Credentials = creds
-	}
-	// in case of single account, fetch accountid if not provided
-	if awsAccountID == "" {
-		awsAccountID, err = getAWSAccountID()
-		if err != nil {
-			return nil, fmt.Errorf("error getting AWS account ID: make sure IAMRole has instance profile ARN attached: %v", err)
-		}
 	}
 
 	if isPublic {

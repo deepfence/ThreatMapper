@@ -734,7 +734,7 @@ const CurrentUserInfo = ({
       </div>
       <div className="flex mt-4 mb-2" data-testid="loginUserEmailWrapperId">
         <span className="text-p4 min-w-[140px] text-text-text-and-icon">Email</span>
-        <span className="text-p4a text-text-input-value">
+        <span className="text-p4a text-text-input-value" data-testid="currentUserEmailId">
           {currentUser?.email || '-'}
         </span>
       </div>

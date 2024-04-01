@@ -3,11 +3,12 @@ package gitlab
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Jeffail/tunny"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/Jeffail/tunny"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 )
@@ -105,7 +106,7 @@ func listImages(gitlabServerURL, gitlabRegistryURL, accessToken string) ([]model
 					ImageID:     image.ID,
 					ImagePath:   image.Path,
 				}
-				go parallelImageProcessor.Process(r)
+				go parallelImageProcessor.Process(&r)
 			}
 			for _, _ = range image.Tags {
 				select {

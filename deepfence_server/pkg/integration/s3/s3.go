@@ -34,23 +34,9 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 	defer span.End()
 
 	// Create an AWS session with your credentials and region
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(s.Config.AWSRegion),
-		Credentials: credentials.NewStaticCredentials(s.Config.AWSAccessKey, s.Config.AWSSecretKey, ""),
-	})
-	if err != nil {
-		fmt.Println("Failed to create AWS session", err)
-		span.EndWithErr(err)
-		return err
-	}
-	if s.Config.UseIAMRole == "true" {
-		sess, err := session.NewSession(&aws.Config{
-			Region: aws.String(s.Config.AWSRegion),
-		})
-		if err != nil {
-			return fmt.Errorf("error creating session: %v", err)
-		}
-
+	var sess *session.Session
+	var err error
+	if s.Config.UseIAMRole == trueStr {
 		awsConfig := aws.Config{
 			Region: aws.String(s.Config.AWSRegion),
 		}
@@ -58,11 +44,23 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 		// if targetRoleARN is empty, that means
 		// it is not a crossaccount ecr, no need to use stscreds
 		if s.Config.TargetAccountRoleARN != "" {
-			if s.Config.AWSAccountID == "" {
-				return fmt.Errorf("for cross account ECR, account ID is mandatory")
-			}
 			creds := stscreds.NewCredentials(sess, s.Config.TargetAccountRoleARN)
 			awsConfig.Credentials = creds
+		}
+
+		sess, err = session.NewSession(&awsConfig)
+		if err != nil {
+			return fmt.Errorf("error creating session: %v", err)
+		}
+
+	} else {
+		sess, err = session.NewSession(&aws.Config{
+			Region:      aws.String(s.Config.AWSRegion),
+			Credentials: credentials.NewStaticCredentials(s.Config.AWSAccessKey, s.Config.AWSSecretKey, ""),
+		})
+		if err != nil {
+			fmt.Println("Failed to create AWS session", err)
+			return err
 		}
 	}
 
@@ -103,36 +101,33 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 }
 
 func (s S3) IsValidCredential(ctx context.Context) (bool, error) {
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(s.Config.AWSRegion),
-		Credentials: credentials.NewStaticCredentials(s.Config.AWSAccessKey, s.Config.AWSSecretKey, ""),
-	})
-	if err != nil {
-		fmt.Println("Failed to create AWS session", err)
-		return false, err
-	}
-	if s.Config.UseIAMRole == "true" {
-		sess, err := session.NewSession(&aws.Config{
-			Region: aws.String(s.Config.AWSRegion),
-		})
-		if err != nil {
-			fmt.Printf("error creating session: %v", err)
-			return false, err
-		}
-
+	var sess *session.Session
+	var err error
+	if s.Config.UseIAMRole == trueStr {
 		awsConfig := aws.Config{
 			Region: aws.String(s.Config.AWSRegion),
 		}
 
 		// if targetRoleARN is empty, that means
-		// it is not a crossaccount ecr, no need to use stscreds
+		// it is not a cross account ecr, no need to use stscreds
 		if s.Config.TargetAccountRoleARN != "" {
-			if s.Config.AWSAccountID == "" {
-				fmt.Printf("for cross account ECR, account ID is mandatory")
-				return false, err
-			}
 			creds := stscreds.NewCredentials(sess, s.Config.TargetAccountRoleARN)
 			awsConfig.Credentials = creds
+		}
+
+		sess, err = session.NewSession(&awsConfig)
+		if err != nil {
+			fmt.Printf("error creating session: %v", err)
+			return false, err
+		}
+	} else {
+		sess, err = session.NewSession(&aws.Config{
+			Region:      aws.String(s.Config.AWSRegion),
+			Credentials: credentials.NewStaticCredentials(s.Config.AWSAccessKey, s.Config.AWSSecretKey, ""),
+		})
+		if err != nil {
+			fmt.Println("Failed to create AWS session", err)
+			return false, err
 		}
 	}
 

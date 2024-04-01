@@ -85,7 +85,7 @@ export const ScheduleScanForm = () => {
   }, [period, daysOfMonth, daysOfWeek, hours, minutes]);
 
   return (
-    <div className="flex flex-col mt-6">
+    <div className="flex flex-col mt-6" data-testid="scheduleScanWrapperId">
       <h6 className={'text-p3 text-text-text-and-icon'}>Schedule your scan</h6>
       <div className="mt-2 mb-4">
         <Switch

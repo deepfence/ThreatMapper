@@ -4,6 +4,7 @@ package apiDocs //nolint:stylecheck
 import (
 	"net/http"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/swaggest/openapi-go/openapi3"
 )
@@ -87,7 +88,7 @@ func InitializeOpenAPIReflector() *OpenAPIDocs {
 					Name: "Apache 2.0",
 					URL:  &licenseURL,
 				},
-				Version: "2.0.0",
+				Version: constants.Version,
 			},
 			ExternalDocs: &openapi3.ExternalDocumentation{
 				Description: &externalDocsDesc,

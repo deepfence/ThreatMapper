@@ -1,20 +1,24 @@
 package handler
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
-
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
@@ -25,6 +29,8 @@ var (
 	errInvalidInteger         = BadDecoding{err: errors.New("must be integer")}
 	errInvalidEmailConfigType = ValidatorError{
 		err: fmt.Errorf("email_provider:must be %s or %s", model.EmailSettingSMTP, model.EmailSettingSES), skipOverwriteErrorMessage: true}
+
+	getAgentBinaryDownloadURLExpiry = 24 * time.Hour
 )
 
 func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) {
@@ -236,4 +242,53 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	h.AuditUserActivity(r, EventSettings, ActionUpdate, setting, true)
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) GetAgentBinaryDownloadURL(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	getAgentBinaryDownloadURLResponse, err := getAgentBinaryDownloadURL(ctx)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	err = httpext.JSON(w, http.StatusOK, getAgentBinaryDownloadURLResponse)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
+}
+
+const (
+	startAgentScript     = "start_deepfence_agent.sh"
+	uninstallAgentScript = "uninstall_deepfence_agent.sh"
+	agentBinaryFileAmd64 = "deepfence-agent-amd64-%s.tar.gz"
+	agentBinaryFileArm64 = "deepfence-agent-arm64-%s.tar.gz"
+)
+
+func getAgentBinaryDownloadURL(ctx context.Context) (*model.GetAgentBinaryDownloadURLResponse, error) {
+	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	resp := model.GetAgentBinaryDownloadURLResponse{}
+
+	resp.StartAgentScriptDownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, startAgentScript), true, getAgentBinaryDownloadURLExpiry, url.Values{})
+	if err != nil {
+		log.Warn().Msg(err.Error())
+	}
+	resp.UninstallAgentScriptDownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, uninstallAgentScript), true, getAgentBinaryDownloadURLExpiry, url.Values{})
+	if err != nil {
+		log.Warn().Msg(err.Error())
+	}
+	resp.AgentBinaryAmd64DownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, fmt.Sprintf(agentBinaryFileAmd64, constants.Version)), true, getAgentBinaryDownloadURLExpiry, url.Values{})
+	if err != nil {
+		log.Warn().Msg(err.Error())
+	}
+	resp.AgentBinaryArm64DownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, fmt.Sprintf(agentBinaryFileArm64, constants.Version)), true, getAgentBinaryDownloadURLExpiry, url.Values{})
+	if err != nil {
+		log.Warn().Msg(err.Error())
+	}
+
+	return &resp, nil
 }

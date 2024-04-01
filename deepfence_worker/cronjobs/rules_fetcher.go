@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,8 +17,9 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	wutils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/hibiken/asynq"
-	"golang.org/x/sync/errgroup"
+	"github.com/sourcegraph/conc"
 )
 
 var (
@@ -62,7 +64,7 @@ func FetchThreatIntelListing(ctx context.Context, token string) (threatintel.Lis
 	req.Header.Set("x-license-key", token)
 
 	q := req.URL.Query()
-	q.Add("version", ConsoleVersion)
+	q.Add("version", wutils.Version)
 	q.Add("product", utils.Project)
 	req.URL.RawQuery = q.Encode()
 
@@ -125,69 +127,73 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// download rules/db in parallel
-	g, ctx := errgroup.WithContext(ctx)
+	var wg conc.WaitGroup
+	var errs []error
 
 	// download vulnerability db
-	vulnDBInfo, err := listing.GetLatest(ConsoleVersion, threatintel.DBTypeVulnerability)
+	vulnDBInfo, err := listing.GetLatest(wutils.Version, threatintel.DBTypeVulnerability)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get vuln db info")
 		return err
+	} else {
+		wg.Go(func() {
+			if err := threatintel.DownloadVulnerabilityDB(ctx, vulnDBInfo); err != nil {
+				log.Error().Err(err).Msg("failed to download vuln db")
+				errs = append(errs, err)
+			}
+		})
 	}
 
-	g.Go(func() error {
-		if err := threatintel.DownloadVulnerabilityDB(ctx, vulnDBInfo); err != nil {
-			log.Error().Err(err).Msg("failed to download vuln db")
-			return err
-		}
-		return nil
-	})
-
 	// download rules for secret scanner
-	secretsRulesInfo, err := listing.GetLatest(ConsoleVersion, threatintel.DBTypeSecrets)
+	secretsRulesInfo, err := listing.GetLatest(wutils.Version, threatintel.DBTypeSecrets)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get secrets rules db info")
 		return err
+	} else {
+		wg.Go(func() {
+			if err := threatintel.DownloadSecretsRules(ctx, secretsRulesInfo); err != nil {
+				log.Error().Err(err).Msg("failed to download secrets rules")
+				errs = append(errs, err)
+			}
+		})
 	}
 
-	g.Go(func() error {
-		if err := threatintel.DownloadSecretsRules(ctx, secretsRulesInfo); err != nil {
-			log.Error().Err(err).Msg("failed to download secrets rules")
-			return err
-		}
-		return nil
-	})
-
 	// download rules for malware scanner
-	malwareRulesInfo, err := listing.GetLatest(ConsoleVersion, threatintel.DBTypeMalware)
+	malwareRulesInfo, err := listing.GetLatest(wutils.Version, threatintel.DBTypeMalware)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get malware rules info")
 		return err
+	} else {
+		wg.Go(func() {
+			if err := threatintel.DownloadMalwareRules(ctx, malwareRulesInfo); err != nil {
+				log.Error().Err(err).Msg("failed to download malware rules")
+				errs = append(errs, err)
+			}
+		})
 	}
 
-	g.Go(func() error {
-		if err := threatintel.DownloadMalwareRules(ctx, malwareRulesInfo); err != nil {
-			log.Error().Err(err).Msg("failed to download malware rules")
-			return err
-		}
-		return nil
-	})
-
 	// download cloud controls and populate them
-	postureInfo, err := listing.GetLatest(ConsoleVersion, threatintel.DBTypePosture)
+	postureInfo, err := listing.GetLatest(wutils.Version, threatintel.DBTypePosture)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get compliance controls info")
 		return err
+	} else {
+		wg.Go(func() {
+			if err := threatintel.DownloadAndPopulateCloudControls(ctx, postureInfo); err != nil {
+				log.Error().Err(err).Msg("failed to download cloud controls")
+				errs = append(errs, err)
+			}
+		})
 	}
 
-	g.Go(func() error {
-		if err := threatintel.DownloadAndPopulateCloudControls(ctx, postureInfo); err != nil {
-			log.Error().Err(err).Msg("failed to download cloud controls")
-			return err
-		}
-		return nil
-	})
+	wg.Wait()
 
-	return g.Wait()
+	// check if there were any errors
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+
+	return nil
 }
 
 func UpdateRulesUrlExpiry(ctx context.Context) error {

@@ -4,10 +4,11 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/Jeffail/tunny"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/Jeffail/tunny"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -66,7 +67,7 @@ func listImagesRegistryV2(url, repository, userName, password string) ([]model.I
 			NameSpace:  repository,
 			Repository: repo,
 		}
-		go parallelImageProcessor.Process(r)
+		go parallelImageProcessor.Process(&r)
 	}
 	for _, _ = range repos {
 		select {
@@ -126,9 +127,8 @@ func listCatalogRegistryV2(url, repository, userName, password string) ([]string
 		err          error
 	)
 
-	listReposURL := "%s/artifactory/api/docker/%s/v2/_catalog"
-	queryURL := fmt.Sprintf(listReposURL, url, repository)
-	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
+	log.Debug().Msgf("url:%s", url)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err

@@ -247,3 +247,7 @@ const (
 	FileServerURLSettingLabel       = "Console File Server URL"
 	FileServerURLSettingDescription = "Serve threat intel feeds to agents. If agents are connected using a different URL than Console URL, please change this"
 )
+
+const (
+	FileServerPathAgentBinary = "agent-binary"
+)

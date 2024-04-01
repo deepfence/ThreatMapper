@@ -298,9 +298,10 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 			MATCH (n:`+string(ts)+`) -[:SCANNED]-> (r)
 			WHERE n.retries >= 3
 			WITH n, r LIMIT 10000
-			SET n.status = $new_status,
-				r.`+ingestersUtil.ScanStatusField[ts]+`=n.status,
-				r.`+ingestersUtil.LatestScanIDField[ts]+`=n.node_id`,
+			SET n.status = $new_status
+			WITH n, r
+			MATCH (r) WHERE r.`+ingestersUtil.LatestScanIDField[ts]+`=n.node_id
+			SET r.`+ingestersUtil.ScanStatusField[ts]+`=n.status`,
 			map[string]interface{}{
 				"time_ms":    dbScanTimeout.Milliseconds(),
 				"new_status": utils.ScanStatusFailed,
