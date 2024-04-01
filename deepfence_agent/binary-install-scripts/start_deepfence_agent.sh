@@ -1,62 +1,52 @@
 #!/bin/bash
 
-set -x
+export DF_SERVERLESS="true"
+export DF_BASE_DIR="/opt/deepfence"
+export DF_INSTALL_DIR="/opt/deepfence"
+export MGMT_CONSOLE_URL=$MGMT_CONSOLE_URL
+export DEEPFENCE_KEY=$DEEPFENCE_KEY
 
-# Some defaults
-export DF_SERVERLESS=${DF_SERVERLESS:-"true"}
-export DF_FIM_ON=${DF_FIM_ON:-"Y"}
-export DF_TRAFFIC_ANALYSIS_ON=${DF_TRAFFIC_ANALYSIS_ON:-"Y"}
-export DF_INSTALL_DIR=${DF_INSTALL_DIR:-"/opt/deepfence"}
-export DF_BASE_DIR="/deepfence"
-
-deep_copy() {
-  #eval source=${1}
-  mkdir -p "$(dirname "$2")" && cp -r $1 "$2"
-}
+if [[ -z "${DF_BASE_DIR}" ]]; then
+    DF_BASE_DIR="/deepfence"
+else
+    DF_BASE_DIR="${DF_BASE_DIR}"
+fi
 
 setup_env_paths() {
-  export DF_BIN_DIR="$DF_BASE_DIR/bin"
-  export PATH=$PATH:$DF_BIN_DIR
-  echo "PATH is $PATH"
+    export DF_BIN_DIR="$DF_BASE_DIR/bin"
+    export PATH=$DF_BIN_DIR::$PATH
 
-  if [[ -z "${SCOPE_HOSTNAME}" ]]; then
-    SCOPE_HOSTNAME="$(hostname)"
-    echo "Got hostname: "
-    echo "$SCOPE_HOSTNAME"
-    export SCOPE_HOSTNAME="$SCOPE_HOSTNAME"
-  fi
-  if [ "$INSTANCE_ID_SUFFIX" == "Y" ]; then
-    cloud_instance_id=$(getCloudInstanceId)
-    cloud_instance_id="${cloud_instance_id//[$'\t\r\n ']/}"
-    export SCOPE_HOSTNAME="$SCOPE_HOSTNAME-$cloud_instance_id"
-  fi
-  container_info=$(sed -n '/name=systemd/p' /proc/self/cgroup)
-  # echo "Container info: $container_info"
-  # container_id=$(echo $container_info | cut -d/ -f4 | cut -c1-12,31-)
-  # echo "Container id: $container_id"
-  # if [[ -z "${container_id}" ]]; then
-  #  container_id=$(echo $container_info | cut -d/ -f3 | cut -c1-12)
-  #  echo "updated container id: $container_id"
-  # fi
-  # export SCOPE_HOSTNAME="$SCOPE_HOSTNAME-$container_id"
+    if [[ -z "${SCOPE_HOSTNAME}" ]]; then
+        SCOPE_HOSTNAME="$(hostname)"
+        echo "Got hostname: "
+        echo "$SCOPE_HOSTNAME"
+        export SCOPE_HOSTNAME="$SCOPE_HOSTNAME"
+    fi
+    if [ "$INSTANCE_ID_SUFFIX" == "Y" ]; then
+        cloud_instance_id=$(getCloudInstanceId)
+        cloud_instance_id="${cloud_instance_id//[$'\t\r\n ']/}"
+        export SCOPE_HOSTNAME="$SCOPE_HOSTNAME-$cloud_instance_id"
+    fi
 
-  if [[ -z "${DF_INSTALL_DIR}" ]]; then
-    export DF_INSTALL_DIR="$DF_BASE_DIR/df-agents/$SCOPE_HOSTNAME"
-  else
-    export DF_INSTALL_DIR="$DF_INSTALL_DIR/df-agents/$SCOPE_HOSTNAME"
-  fi
+    if [[ -z "${DF_INSTALL_DIR}" ]]; then
+        export DF_INSTALL_DIR="$DF_BASE_DIR/df-agents/$SCOPE_HOSTNAME"
+    else
+        export DF_INSTALL_DIR="$DF_INSTALL_DIR/df-agents/$SCOPE_HOSTNAME"
+    fi
 
-  echo "Deepfence agent install dir: $DF_INSTALL_DIR"
+    echo "Deepfence agent install dir: $DF_INSTALL_DIR"
 
-  export PATH=$PATH:$DF_INSTALL_DIR/bin:$DF_INSTALL_DIR/usr/local/bin:$DF_INSTALL_DIR/home/deepfence:$DF_INSTALL_DIR/usr/bin
-  echo "UPDATED PATH is $PATH"
+    export PATH=$DF_INSTALL_DIR/bin:$DF_INSTALL_DIR/usr/local/bin:$DF_INSTALL_DIR/home/deepfence:$PATH
+    echo $PATH
 
-  export FILEBEAT_CERT_PATH="$DF_INSTALL_DIR/etc/filebeat/filebeat.crt"
+    export FILEBEAT_CERT_PATH="/etc/filebeat/filebeat.crt" # no need to put DF_INSTALL_DIR here, deepfenced already prepends it
 
-  export MGMT_CONSOLE_PORT=443
-  export DF_TLS_ON="1"
-  export SECRET_SCANNER_LD_LIBRARY_PATH=$DF_INSTALL_DIR/home/deepfence/lib:$LD_LIBRARY_PATH
+    export MGMT_CONSOLE_PORT=443
+    export DF_TLS_ON="1"
+    export SECRET_SCANNER_LD_LIBRARY_PATH=$DF_INSTALL_DIR/home/deepfence/lib:$LD_LIBRARY_PATH
 }
+
+setup_env_paths
 
 trim() {
     local var="$*"
@@ -116,14 +106,13 @@ launch_deepfenced() {
     echo "Deepfence agent hostname: $SCOPE_HOSTNAME"
     echo "Deepfence management console url: $MGMT_CONSOLE_URL"
     echo "Deepfence management console port: $MGMT_CONSOLE_PORT"
+    echo "Deepfence key: $DEEPFENCE_KEY"
     # $DF_INSTALL_DIR/bin/deepfenced&
     # start in background using nohup
     mkdir -p "$DF_INSTALL_DIR/var/log/supervisor"
     touch "$DF_INSTALL_DIR/var/log/supervisor/deepfenced.log"
 
-    echo "Starting agent ..."
-    /bin/sh -c "ulimit -l unlimited; $DF_INSTALL_DIR/bin/deepfenced >> $DF_INSTALL_DIR/var/log/supervisor/deepfenced.log 2>&1"
-
+    $DF_INSTALL_DIR/home/deepfence/start_deepfenced.sh &
 }
 
 create_cgroups() {
@@ -131,43 +120,40 @@ create_cgroups() {
     /bin/sh $DF_INSTALL_DIR/home/deepfence/create-cgroups.sh >/dev/null 2>&1
 }
 
-setup_env_paths
+deep_copy() {
+    #eval source=${1}
+    mkdir -p "$(dirname "$2")" && cp -r $1 "$2"
+}
 
-# Setup and install DF agent
-if [[ "$DF_BASE_DIR" != "$DF_INSTALL_DIR" ]]; then
-  mkdir -p $DF_INSTALL_DIR
-  echo "Copying agent to DF installation dir"
-  deep_copy "$DF_BASE_DIR/bin/*" "$DF_INSTALL_DIR/bin/."
-  deep_copy "$DF_BASE_DIR/etc/*" "$DF_INSTALL_DIR/etc/."
-  deep_copy "$DF_BASE_DIR/home/*" "$DF_INSTALL_DIR/home/."
-  deep_copy "$DF_BASE_DIR/usr/*" "$DF_INSTALL_DIR/usr/."
-  deep_copy "$DF_BASE_DIR/opt/*" "$DF_INSTALL_DIR/opt/."
-fi
+main() {
+    sudo ln -sf bash /bin/sh
 
-# Make rules.tar.gz
-cd $DF_INSTALL_DIR/home/deepfence && $DF_INSTALL_DIR/bin/tar czvf rules.tar.gz rules
-cd -
+    # mounting host file system at /fenced/mnt/host
+    sudo ln -s / /fenced/mnt/host
 
-# To create fenced log and tmp directory
-mkdir -p $DF_INSTALL_DIR/var/log/fenced/ $DF_INSTALL_DIR/var/log/supervisor/ $DF_INSTALL_DIR/var/log/fenced/coredump
-chmod +x $DF_INSTALL_DIR/home/deepfence/*.sh
+    # Setup and install DF agent
+    if [[ "$DF_BASE_DIR" != "$DF_INSTALL_DIR" ]]; then
+        mkdir -p $DF_INSTALL_DIR
+        echo "Copying agent to DF installation dir"
+        deep_copy "$DF_BASE_DIR/bin/*" "$DF_INSTALL_DIR/bin/."
+        deep_copy "$DF_BASE_DIR/etc/*" "$DF_INSTALL_DIR/etc/."
+        deep_copy "$DF_BASE_DIR/home/*" "$DF_INSTALL_DIR/home/."
+        deep_copy "$DF_BASE_DIR/usr/*" "$DF_INSTALL_DIR/usr/."
+        deep_copy "$DF_BASE_DIR/var/*" "$DF_INSTALL_DIR/var/."
+        deep_copy "$DF_BASE_DIR/opt/*" "$DF_INSTALL_DIR/opt/."
+        deep_copy "$DF_BASE_DIR/deepfence/*" "$DF_INSTALL_DIR/deepfence/."
+        # deep_copy "$DF_BASE_DIR/tmp/*" "$DF_INSTALL_DIR/tmp/."
+    fi
 
-# for compliance change config
-cat $DF_INSTALL_DIR/usr/local/bin/compliance_check/config.json | jq --arg dfinstalldir "$DF_INSTALL_DIR" '.[] |= . + { "files": [ $dfinstalldir + .files[] ] }' > modified_config.json
-rm $DF_INSTALL_DIR/usr/local/bin/compliance_check/config.json
-mv modified_config.json $DF_INSTALL_DIR/usr/local/bin/compliance_check/config.json
+    launch_deepfenced
+}
 
 if [ "$DF_USE_DUMMY_SCOPE" == "" ]; then
     pidVal=$(/bin/pidof $DF_INSTALL_DIR/bin/deepfenced)
     if [ -n "$pidVal" ]; then
         echo "Warning: Another bootstrap is running."
     fi
-    # create_cgroups
+    create_cgroups
 fi
 
-echo "Start Deepfence services... Console is $MGMT_CONSOLE_URL"
-launch_deepfenced
-
-sleep 2
-
-tail --follow=name $DF_INSTALL_DIR/var/log/supervisor/deepfenced.log &
+main "$@"

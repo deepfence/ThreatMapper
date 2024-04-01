@@ -845,6 +845,10 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 	d.AddOperation("uploadPostureControls", http.MethodPut, "/deepfence/database/posture",
 		"Upload Posture Controls", "Upload posture controls for use in posture scans",
 		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
+
+	d.AddOperation("getAgentBinaryDownloadURL", http.MethodGet, "/deepfence/agent-deployment/binary/download-url",
+		"Get agent binary download url", "Get agent binary download url",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(GetAgentBinaryDownloadURLResponse))
 }
 
 func (d *OpenAPIDocs) AddLicenseOperations() {

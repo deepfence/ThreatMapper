@@ -10,7 +10,7 @@ if [ -z "$ID" ]; then
   exit 1
 fi
 
-folder="deepfence-agent-bin-$VERSION"
+folder=$AGENT_BINARY_BUILD
 
 deep_docker_copy() {
   echo "Copying $1 to $2"
@@ -78,11 +78,10 @@ copy() {
 copy
 
 echo "Creating tar.gz file..."
-rm -rf $folder.tar.gz
-sudo chown -R root:root $folder
+binary_filename="$AGENT_BINARY_DIST/$AGENT_BINARY_FILENAME"
+rm -rf $binary_filename
 cd $folder
-sudo tar -czvf $folder.tar.gz .
-sudo mv $folder.tar.gz ../
+tar -czvf $binary_filename .
 
 cd ../
 # rm -rf $folder

@@ -16,6 +16,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	wutils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/hibiken/asynq"
 	"golang.org/x/sync/errgroup"
 )
@@ -62,7 +63,7 @@ func FetchThreatIntelListing(ctx context.Context, token string) (threatintel.Lis
 	req.Header.Set("x-license-key", token)
 
 	q := req.URL.Query()
-	q.Add("version", ConsoleVersion)
+	q.Add("version", wutils.Version)
 	q.Add("product", utils.Project)
 	req.URL.RawQuery = q.Encode()
 
@@ -128,7 +129,7 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 	g, ctx := errgroup.WithContext(ctx)
 
 	// download vulnerability db
-	vulnDBInfo, err := listing.GetLatest(ConsoleVersion, threatintel.DBTypeVulnerability)
+	vulnDBInfo, err := listing.GetLatest(wutils.Version, threatintel.DBTypeVulnerability)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get vuln db info")
 		return err
@@ -143,7 +144,7 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 	})
 
 	// download rules for secret scanner
-	secretsRulesInfo, err := listing.GetLatest(ConsoleVersion, threatintel.DBTypeSecrets)
+	secretsRulesInfo, err := listing.GetLatest(wutils.Version, threatintel.DBTypeSecrets)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get secrets rules db info")
 		return err
@@ -158,7 +159,7 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 	})
 
 	// download rules for malware scanner
-	malwareRulesInfo, err := listing.GetLatest(ConsoleVersion, threatintel.DBTypeMalware)
+	malwareRulesInfo, err := listing.GetLatest(wutils.Version, threatintel.DBTypeMalware)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get malware rules info")
 		return err
@@ -173,7 +174,7 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 	})
 
 	// download cloud controls and populate them
-	postureInfo, err := listing.GetLatest(ConsoleVersion, threatintel.DBTypePosture)
+	postureInfo, err := listing.GetLatest(wutils.Version, threatintel.DBTypePosture)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get compliance controls info")
 		return err
