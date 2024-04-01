@@ -34,8 +34,8 @@ deepfence_frontend/product_version.txt
 
 deepfence_agent/tools/apache/scope/proto/
 deepfence_agent/tools/apache/scope/vendor/
-deepfence_agent/fargate/build
-deepfence_agent/fargate/dist
+deepfence_agent/agent-binary/build
+deepfence_agent/agent-binary/dist
 
 deepfence_server/vendor
 deepfence_worker/vendor
