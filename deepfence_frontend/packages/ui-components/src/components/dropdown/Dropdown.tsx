@@ -1,4 +1,5 @@
 import * as DropdownPrimitive from '@radix-ui/react-dropdown-menu';
+import { cva } from 'cva';
 import React from 'react';
 import { cn } from 'tailwind-preset';
 
@@ -124,31 +125,46 @@ export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) =>
 };
 Dropdown.displayName = 'Dropdown';
 
+export type ColorType = 'default' | 'error' | 'success';
 export const DropdownItem: React.ForwardRefExoticComponent<
   DropdownPrimitive.DropdownMenuItemProps &
     React.RefAttributes<HTMLDivElement> & {
       selected?: boolean;
       icon?: React.ReactNode;
+      color?: ColorType;
     }
 > = React.forwardRef((props, forwardedRef) => {
-  const { children, className, disabled, selected, icon, ...rest } = props;
+  const { children, className, disabled, selected, icon, color, ...rest } = props;
   const classes = cn(
     'flex gap-x-2',
     // text
     'text-p4 text-text-text-and-icon',
     'px-6 pt-2 pb-1', // hover // focus
     'focus:outline-none',
-    'dark:focus:bg-bg-grid-header focus:bg-bg-breadcrumb-bar focus:text-text-text-and-icon',
+    'dark:focus:bg-bg-grid-header focus:bg-bg-breadcrumb-bar',
+  );
+  const itemCva = cn(
+    cva(classes, {
+      variants: {
+        color: {
+          default: 'text-text-text-and-icon',
+          error: 'text-btn-red dark:hover:text-btn-error hover:text-red-600',
+          success: 'text-btn-green dark:hover:text-status-success hover:text-green-600',
+        },
+      },
+    })({ color }),
     {
       'cursor-pointer': !disabled,
-      'cursor-auto dark:text-gray-600 text-severity-unknown': disabled,
+      'cursor-not-allowed text-text-text-and-icon text-opacity-60 dark:hover:text-text-text-and-icon hover:text-text-text-and-icon dark:hover:text-opacity-60 hover:text-opacity-60':
+        disabled,
       'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value': selected,
     },
     className,
   );
+
   return (
     <DropdownPrimitive.Item
-      className={classes}
+      className={itemCva}
       disabled={disabled}
       {...rest}
       ref={forwardedRef}
