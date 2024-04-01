@@ -118,9 +118,9 @@ WORKDIR /
 
 COPY $AGENT_BINARY_BUILD_RELATIVE /deepfence
 
-COPY deepfence_agent/fargate/deepfence-entry-point-scratch.sh deepfence/usr/local/bin/deepfence-entry-point-scratch.sh
+COPY deepfence_agent/agent-binary/deepfence-entry-point-scratch.sh deepfence/usr/local/bin/deepfence-entry-point-scratch.sh
 COPY --from=builder /tmp/rootfs/bin/curl /deepfence/bin/curl
-COPY deepfence_agent/fargate/start-df-services-fargate.sh deepfence/usr/local/bin/start-df-services-fargate.sh
+COPY deepfence_agent/agent-binary/start-df-services-fargate.sh deepfence/usr/local/bin/start-df-services-fargate.sh
 
 VOLUME ["/deepfence"]
 

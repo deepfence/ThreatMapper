@@ -12,15 +12,15 @@ export PACKAGE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/package-scanner
 export COMPLIANCE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/compliance
 export DEEPFENCE_CTL=$(PWD)/deepfence_ctl
 export DEEPFENCED=$(PWD)/deepfence_bootstrapper
-export DEEPFENCE_FARGATE_DIR=$(DEEPFENCE_AGENT_DIR)/fargate
+export DEEPFENCE_FARGATE_DIR=$(DEEPFENCE_AGENT_DIR)/agent-binary
 export IMAGE_REPOSITORY?=quay.io/deepfenceio
 export DF_IMG_TAG?=latest
 export IS_DEV_BUILD?=false
 export VERSION?="2.2.0"
 export AGENT_BINARY_BUILD=$(DEEPFENCE_FARGATE_DIR)/build
-export AGENT_BINARY_BUILD_RELATIVE="deepfence_agent/fargate/build"
+export AGENT_BINARY_BUILD_RELATIVE="deepfence_agent/agent-binary/build"
 export AGENT_BINARY_DIST=$(DEEPFENCE_FARGATE_DIR)/dist
-export AGENT_BINARY_DIST_RELATIVE="deepfence_agent/fargate/dist"
+export AGENT_BINARY_DIST_RELATIVE="deepfence_agent/agent-binary/dist"
 export AGENT_BINARY_FILENAME="deepfence-agent-$(shell dpkg --print-architecture)-$(VERSION).tar.gz"
 
 default: bootstrap console_plugins agent console fargate-local
