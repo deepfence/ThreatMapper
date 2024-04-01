@@ -24,6 +24,16 @@ func DownloadAndPopulateCloudControls(ctx context.Context, entry Entry) error {
 	ctx, span := telemetry.NewSpan(ctx, "threatintel", "download-and-populate-cloud-controls")
 	defer span.End()
 
+	// remove old rule file
+	_, _, existing, err := FetchPostureControlsInfo(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("no existing posture control info found")
+	} else {
+		if err := DeleteFileMinio(ctx, existing); err != nil {
+			log.Error().Err(err).Msgf("failed to delete file %s", existing)
+		}
+	}
+
 	// download latest rules and uplaod to minio
 	content, err := downloadFile(ctx, entry.URL)
 	if err != nil {
