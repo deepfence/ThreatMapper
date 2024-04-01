@@ -119,7 +119,7 @@ export const DockerConnectorForm = () => {
           Deploy Deepfence agent sensor as a docker container. Find out more information
           by{' '}
           <DFLink
-            href={`https://community.deepfence.io/threatmapper/docs/v2.1/sensors/docker`}
+            href={`https://community.deepfence.io/threatmapper/docs/v2.2/sensors/docker`}
             target="_blank"
             rel="noreferrer"
             className="mt-2"

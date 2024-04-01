@@ -97,7 +97,7 @@ export const LinuxConnectorForm = () => {
         <div className="text-p7 dark:text-text-text-and-icon">
           Connect to Linux VM. Find out more information by{' '}
           <DFLink
-            href={`https://community.deepfence.io/threatmapper/docs/v2.1/sensors/linux-host`}
+            href={`https://community.deepfence.io/threatmapper/docs/v2.2/sensors/linux-host`}
             target="_blank"
             rel="noreferrer"
             className="mt-2"
@@ -120,7 +120,7 @@ export const LinuxConnectorForm = () => {
           <p className="mb-2.5 text-p7 dark:text-text-text-and-icon">
             Copy the install script from{' '}
             <DFLink
-              href={`https://community.deepfence.io/threatmapper/docs/v2.1/sensors/linux-host#threatmapper-sensor-agents`}
+              href={`https://community.deepfence.io/threatmapper/docs/v2.2/sensors/linux-host#threatmapper-sensor-agents`}
               target="_blank"
               rel="noreferrer"
               className="mt-2"
