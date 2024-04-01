@@ -156,11 +156,10 @@ func (h *Handler) TestConfiguredEmail(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	ctx := r.Context()
 
-	// get email from body
-	var req model.EmailConfigurationTest
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	user, statusCode, _, err := h.GetUserFromJWT(ctx)
 	if err != nil {
-		h.respondError(&BadDecoding{err}, w)
+		log.Debug().Msgf("error getting user from jwt: %v", err)
+		h.respondWithErrorCode(err, w, statusCode)
 		return
 	}
 
@@ -170,7 +169,7 @@ func (h *Handler) TestConfiguredEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = emailSender.Send([]string{req.EmailID}, "Deepfence Testmail", "This is a test email", "", nil)
+	err = emailSender.Send([]string{user.Email}, "Deepfence Testmail", "This is a test email", "", nil)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return

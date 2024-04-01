@@ -799,7 +799,7 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 		http.StatusNoContent, []string{tagSettings}, bearerToken, new(ConfigIDPathReq), nil)
 	d.AddOperation("testConfiguredEmail", http.MethodPost, "/deepfence/settings/email/test",
 		"Test Configured Email", "Test Configured Email",
-		http.StatusOK, []string{tagSettings}, bearerToken, new(EmailConfigurationTest), new(MessageResponse))
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(MessageResponse))
 	d.AddOperation("getSettings", http.MethodGet, "/deepfence/settings/global-settings",
 		"Get settings", "Get all settings",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]SettingsResponse))
