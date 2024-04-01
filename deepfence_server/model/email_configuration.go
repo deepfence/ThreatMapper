@@ -37,6 +37,10 @@ type EmailConfigurationAdd struct {
 	SesRegion       string `json:"ses_region"`
 }
 
+type EmailConfigurationTest struct {
+	EmailID string `json:"email_id" validate:"required,email"`
+}
+
 type EmailConfigurationResp struct {
 	ID              int64  `json:"id"`
 	EmailProvider   string `json:"email_provider"`

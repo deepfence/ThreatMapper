@@ -16,6 +16,7 @@ import (
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/sendemail"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -149,6 +150,37 @@ func (h *Handler) DeleteEmailConfiguration(w http.ResponseWriter, r *http.Reques
 	h.AuditUserActivity(r, EventSettings, ActionDelete,
 		map[string]interface{}{"config_id": configID}, true)
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) TestConfiguredEmail(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	ctx := r.Context()
+
+	// get email from body
+	var req model.EmailConfigurationTest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	emailSender, err := sendemail.NewEmailSender(ctx)
+	if err != nil {
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	err = emailSender.Send([]string{req.EmailID}, "Deepfence Testmail", "This is a test email", "", nil)
+	if err != nil {
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessEmailConfigTest})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
+
 }
 
 func (h *Handler) GetGlobalSettings(w http.ResponseWriter, r *http.Request) {
