@@ -96,7 +96,7 @@ export const ProcessTable = ({
   }, []);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="topologyProcessTableId">
       <TableHeading text="Processes" />
       <Table
         columns={columns}
@@ -187,7 +187,7 @@ export const ContainerTable = ({
   }, []);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="topologyContainerTableId">
       <TableHeading text="Containers" />
       <Table
         columns={columns}
@@ -259,7 +259,7 @@ export const ImageTable = ({
   }, []);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="topologyContainerImageTableId">
       <TableHeading text="Container images" />
       <Table
         columns={columns}
@@ -345,7 +345,7 @@ export const ConnectionsTable = ({
   }, []);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="topologyInboundOutbountTableId">
       <TableHeading
         text={type === 'inbound' ? 'Inbound connections' : 'Outbound connections'}
       />
