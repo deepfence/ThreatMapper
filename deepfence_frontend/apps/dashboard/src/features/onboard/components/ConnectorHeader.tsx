@@ -34,7 +34,7 @@ export const ConnectorHeader = ({
   };
 
   return (
-    <div className="pt-6 mb-4">
+    <div className="pt-6">
       <div className="mb-4">
         <Breadcrumb>
           <BreadcrumbLink isLink>

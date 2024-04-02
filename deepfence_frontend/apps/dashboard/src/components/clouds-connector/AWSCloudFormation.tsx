@@ -100,7 +100,7 @@ export const AWSCloudFormation = () => {
   const [region, setRegion] = useState('us-east-1');
 
   return (
-    <div className="w-full sm:w-1/2">
+    <div className="w-full sm:w-1/2 mt-4">
       <Stepper>
         <Step
           indicator={

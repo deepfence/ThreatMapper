@@ -6,7 +6,7 @@ import { InfoIcon } from '@/components/icons/common/Info';
 
 export const AWSTerraform = memo(() => {
   return (
-    <div className="w-full sm:w-1/2">
+    <div className="w-full sm:w-1/2 mt-4">
       <Stepper>
         <Step
           indicator={

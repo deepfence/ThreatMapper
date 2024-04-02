@@ -178,7 +178,7 @@ export const SeverityBadgeIcon = ({
       {severity === 'high' && <SeverityHigh theme={theme} />}
       {severity === 'medium' && <SeverityMedium theme={theme} />}
       {severity === 'low' && <SeverityLow theme={theme} />}
-      {!severity || (severity === 'unknown' && <SeverityUnknown />)}
+      {(!severity || severity === 'unknown') && <SeverityUnknown />}
     </div>
   );
 };

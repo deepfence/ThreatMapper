@@ -29,7 +29,7 @@ export const AmazonECRConnectorForm = ({
   const [useIAMRole, setUseIAMRole] = useState(false);
   return (
     <>
-      <div className="text-p4 text-text-input-value -mt-2.5 mb-4">
+      <div className="text-p4a text-text-input-value mt-1.5 mb-4">
         Connect to your Amazon ECR Registry. Find out more information by{' '}
         <DFLink
           href={`https://community.deepfence.io/threatmapper/docs/v2.2/registries/aws-ecr`}

@@ -329,7 +329,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
   --create-namespace`);
 
   return (
-    <div className="w-full">
+    <div className="w-full mt-4">
       <Stepper>
         <Step
           indicator={
