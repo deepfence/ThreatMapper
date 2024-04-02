@@ -154,6 +154,7 @@ func (s Slack) SendNotification(ctx context.Context, message string, extras map[
 
 		payloadBytes, err := json.Marshal(payload)
 		if err != nil {
+			span.EndWithErr(err)
 			return err
 		}
 
@@ -161,6 +162,7 @@ func (s Slack) SendNotification(ctx context.Context, message string, extras map[
 		// Set up the HTTP request.
 		req, err := http.NewRequest("POST", s.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
 		if err != nil {
+			span.EndWithErr(err)
 			return err
 		}
 		req.Header.Set("Content-Type", "application/json")
@@ -169,6 +171,7 @@ func (s Slack) SendNotification(ctx context.Context, message string, extras map[
 		client := utils.GetHTTPClient()
 		resp, err := client.Do(req)
 		if err != nil {
+			span.EndWithErr(err)
 			return err
 		}
 
@@ -186,7 +189,6 @@ func (s Slack) SendNotification(ctx context.Context, message string, extras map[
 				}
 			}
 			resp.Body.Close()
-			span.EndWithErr(err)
 			return fmt.Errorf("failed to send notification batch %d, status code: %d , error: %s", i+1, resp.StatusCode, errorMsg)
 		}
 		resp.Body.Close()
