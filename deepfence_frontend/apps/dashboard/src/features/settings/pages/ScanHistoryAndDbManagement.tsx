@@ -703,7 +703,7 @@ const ScanHistoryAndDbManagement = () => {
         <h3 className="text-h6 text-text-input-value">Scan History</h3>
       </div>
 
-      <p className="mt-4 text-p4 text-text-text-and-icon">
+      <p className="mt-2 text-p4 text-text-text-and-icon">
         Please specify the resource and duration you would like to delete from the scan
         history.
       </p>
