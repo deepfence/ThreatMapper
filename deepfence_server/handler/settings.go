@@ -58,6 +58,11 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 			AmazonSecretKey: req.AmazonSecretKey,
 			SesRegion:       req.SesRegion,
 		})
+	case model.EmailSettingSendGrid:
+		err = h.Validator.Struct(model.EmailConfigurationSendGrid{
+			EmailID: req.EmailID,
+			APIKey:  req.APIKey,
+		})
 	default:
 		h.respondError(&errInvalidEmailConfigType, w)
 		return

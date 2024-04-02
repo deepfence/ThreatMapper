@@ -25,6 +25,11 @@ type EmailConfigurationSES struct {
 	SesRegion       string `json:"ses_region" validate:"required,oneof=us-east-1 us-east-2 us-west-1 us-west-2 af-south-1 ap-east-1 ap-south-1 ap-northeast-1 ap-northeast-2 ap-northeast-3 ap-southeast-1 ap-southeast-2 ap-southeast-3 ca-central-1 eu-central-1 eu-west-1 eu-west-2 eu-west-3 eu-south-1 eu-north-1 me-south-1 me-central-1 sa-east-1 us-gov-east-1 us-gov-west-1"`
 }
 
+type EmailConfigurationSendGrid struct {
+	EmailID string `json:"email_id" validate:"required,email"`
+	APIKey  string `json:"apikey" validate:"required,min=3,max=128"`
+}
+
 type EmailConfigurationAdd struct {
 	EmailProvider   string `json:"email_provider"`
 	CreatedByUserID int64  `json:"created_by_user_id"`
@@ -35,6 +40,7 @@ type EmailConfigurationAdd struct {
 	AmazonAccessKey string `json:"amazon_access_key"`
 	AmazonSecretKey string `json:"amazon_secret_key"`
 	SesRegion       string `json:"ses_region"`
+	APIKey          string `json:"apikey"`
 }
 
 type EmailConfigurationResp struct {
