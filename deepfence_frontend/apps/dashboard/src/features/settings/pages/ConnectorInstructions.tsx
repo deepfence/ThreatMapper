@@ -101,9 +101,7 @@ const Cloud = () => {
         </span>
       </div>
       <div className="mb-4">
-        <p
-          className={`px-6 text-sm font-normal leading-6 text-text-text-and-icon min-h-[110px]`}
-        >
+        <p className={`px-6 text-p1a text-text-text-and-icon min-h-[110px]`}>
           Connect an AWS, GCP, or Azure cloud account to check for compliance
           misconfigurations.
         </p>
@@ -178,9 +176,7 @@ const Host = () => {
         </span>
       </div>
       <div className="mb-4">
-        <p
-          className={`px-6 text-sm font-normal leading-6 text-text-text-and-icon min-h-[110px]`}
-        >
+        <p className={`px-6 text-p1a text-text-text-and-icon min-h-[110px]`}>
           Connect a K8s cluster, Docker container, or Linux host to check for
           vulnerabilities, secrets, malware, and compliance misconfigurations.
         </p>
@@ -196,7 +192,7 @@ const Host = () => {
             );
           })}
           {!showAll ? (
-            <Button size="sm" onClick={onShowAll} className="ml-3 mt-2">
+            <Button size="sm" onClick={onShowAll} className="mx-6 mt-2">
               +1 more
             </Button>
           ) : null}
@@ -218,7 +214,7 @@ const Instructions = ({ connectorType }: { connectorType: string }) => {
           {ACCOUNT_CONNECTOR_TITLE[connectorType]}
         </h3>
       </div>
-      <div className="pt-2">
+      <div>
         {ACCOUNT_CONNECTOR.DOCKER === connectorType && <DockerConnectorForm />}
         {ACCOUNT_CONNECTOR.KUBERNETES === connectorType && <K8ConnectorForm />}
         {ACCOUNT_CONNECTOR.LINUX === connectorType && <LinuxConnectorForm />}

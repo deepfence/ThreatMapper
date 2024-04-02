@@ -175,7 +175,7 @@ const Host = () => {
             );
           })}
           {!showAll ? (
-            <Button size="sm" onClick={onShowAll} className="ml-3 mt-2">
+            <Button size="sm" onClick={onShowAll} className="mx-6 mt-2">
               +1 more
             </Button>
           ) : null}
@@ -275,7 +275,7 @@ const Registries = () => {
             );
           })}
           {!showAll ? (
-            <Button size="sm" onClick={onShowAll} className="ml-3 mt-2">
+            <Button size="sm" onClick={onShowAll} className="mx-6 mt-2">
               +6 more
             </Button>
           ) : null}

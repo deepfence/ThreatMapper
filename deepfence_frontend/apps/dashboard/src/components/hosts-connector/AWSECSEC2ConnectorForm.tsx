@@ -5,7 +5,7 @@ import { InfoIcon } from '@/components/icons/common/Info';
 
 export const AWSECSEC2ConnectorForm = () => {
   return (
-    <div className="mt-8">
+    <div className="mt-6">
       <Stepper>
         <Step
           indicator={
