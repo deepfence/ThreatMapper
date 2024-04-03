@@ -103,6 +103,7 @@ export * from './ModelGenerativeAiIntegrationListResponse';
 export * from './ModelGenerativeAiIntegrationMalwareRequest';
 export * from './ModelGenerativeAiIntegrationSecretRequest';
 export * from './ModelGenerativeAiIntegrationVulnerabilityRequest';
+export * from './ModelGetAgentBinaryDownloadURLResponse';
 export * from './ModelGetAuditLogsRequest';
 export * from './ModelGraphResult';
 export * from './ModelHost';
