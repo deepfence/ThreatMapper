@@ -76,6 +76,34 @@ func NewEmailSender(ctx context.Context) (EmailSender, error) {
 	}
 }
 
+func NewEmailSendByConfiguration(ctx context.Context, emailConfig model.EmailConfigurationAdd) (EmailSender, error) {
+	_, span := telemetry.NewSpan(ctx, "send-email", "new-email-sender")
+	defer span.End()
+
+	switch emailConfig.EmailProvider {
+	case model.EmailSettingSMTP:
+		return &emailSenderSMTP{
+			emailSenderCommon{
+				emailConfig: emailConfig,
+			},
+		}, nil
+	case model.EmailSettingSendGrid:
+		return &emailSenderSendGrid{
+			emailSenderCommon{
+				emailConfig: emailConfig,
+			},
+		}, nil
+	case model.EmailSettingSES:
+		return &emailSenderSES{
+			emailSenderCommon{
+				emailConfig: emailConfig,
+			},
+		}, nil
+	default:
+		return nil, errors.New("invalid email provider")
+	}
+}
+
 func (c *emailSenderCommon) getEmailBody(from string, recipients []string, subject string, text string, html string, attachments map[string][]byte) []byte {
 	isPlainText := text != ""
 	buf := bytes.NewBuffer(nil)
@@ -248,14 +276,27 @@ func (e *emailSenderSendGrid) Send(recipients []string, subject string, text str
 	to := mail.NewEmail("", recipients[0])
 
 	client := sendgrid.NewSendClient(e.emailConfig.APIKey)
-	message := mail.NewSingleEmail(from, subject, to, "", string(e.getEmailBody(e.emailConfig.EmailID, recipients, subject, text, html, attachments)))
+	message := mail.NewSingleEmail(from, subject, to, text, html)
+
+	// add attachment
+	for k, v := range attachments {
+		att := mail.NewAttachment()
+		att.SetContent(base64.StdEncoding.EncodeToString(v))
+		att.SetType(http.DetectContentType(v))
+		att.SetFilename(k)
+		att.SetDisposition("attachment")
+		att.SetContentID(k)
+		att.SetContent(base64.StdEncoding.EncodeToString(v))
+		message.AddAttachment(att)
+	}
 	response, err := client.Send(message)
 	if err != nil {
 		log.Error().Msg("Error in emailSenderSendGrid Send(): " + err.Error())
 		return err
 	}
-	if response.StatusCode != http.StatusOK {
-		return errors.New("sendgrid failed to send email")
+	// check 2xx
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return errors.New("sendgrid error: " + response.Body)
 	}
 	return nil
 }

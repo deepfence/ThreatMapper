@@ -104,6 +104,13 @@ func (e *EmailConfigurationAdd) Create(ctx context.Context, pgClient *postgresql
 			return err
 		}
 	}
+	if e.APIKey != "" {
+		e.APIKey, err = aes.Encrypt(e.APIKey)
+		if err != nil {
+			log.Error().Msgf(err.Error())
+			return err
+		}
+	}
 	settingVal, err := json.Marshal(*e)
 	if err != nil {
 		log.Error().Msgf(err.Error())
