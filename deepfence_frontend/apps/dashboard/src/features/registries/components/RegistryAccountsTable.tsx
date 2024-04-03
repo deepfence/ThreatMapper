@@ -178,7 +178,7 @@ export const RegistryAccountsTable = ({
         maxSize: 120,
       }),
       columnHelper.accessor('is_syncing', {
-        header: () => 'Sync Status',
+        header: () => 'Sync status',
         cell: (info) => (
           <>
             {info.getValue() === true ? (

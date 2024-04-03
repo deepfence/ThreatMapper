@@ -1425,7 +1425,7 @@ const PostureTable = ({
         enableSorting: true,
         enableResizing: false,
         cell: (info) => info.getValue().toUpperCase(),
-        header: () => 'Check Type',
+        header: () => 'Check type',
         minSize: 60,
         size: 60,
         maxSize: 70,

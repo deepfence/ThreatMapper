@@ -572,7 +572,7 @@ const DataTable = () => {
             </div>
           );
         },
-        header: () => <TruncatedText text="service type" />,
+        header: () => <TruncatedText text="Service type" />,
         minSize: 80,
         size: 100,
         maxSize: 300,
@@ -593,7 +593,7 @@ const DataTable = () => {
             </div>
           );
         },
-        header: () => <TruncatedText text="cloud provider" />,
+        header: () => <TruncatedText text="Cloud provider" />,
         minSize: 50,
         size: 80,
         maxSize: 300,
@@ -602,7 +602,7 @@ const DataTable = () => {
         cell: (info) => {
           return <TruncatedText text={info.getValue()} />;
         },
-        header: () => <TruncatedText text="cloud region" />,
+        header: () => <TruncatedText text="Cloud region" />,
         minSize: 50,
         size: 70,
         maxSize: 300,
@@ -641,7 +641,7 @@ const DataTable = () => {
           }
           return <TruncatedText text={info.getValue()} />;
         },
-        header: () => <TruncatedText text="account id" />,
+        header: () => <TruncatedText text="Account id" />,
         minSize: 70,
         size: 120,
         maxSize: 300,

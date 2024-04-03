@@ -8,7 +8,6 @@ import {
   useFetcher,
   useSearchParams,
 } from 'react-router-dom';
-import { cn } from 'tailwind-preset';
 import {
   Badge,
   Breadcrumb,
@@ -776,7 +775,7 @@ const ScansTable = ({
       columnHelper.accessor('status', {
         enableSorting: true,
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
-        header: () => <TruncatedText text="Scan Status" />,
+        header: () => <TruncatedText text="Scan status" />,
         minSize: 100,
         size: 110,
         maxSize: 110,

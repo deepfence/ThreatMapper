@@ -131,7 +131,7 @@ export const useIntegrationTableColumn = (
                 '-'
               ),
 
-            header: () => <TruncatedText text={'IAM Role'} />,
+            header: () => <TruncatedText text={'IAM role'} />,
             minSize: 50,
             size: 55,
             maxSize: 60,
@@ -141,7 +141,7 @@ export const useIntegrationTableColumn = (
             cell: (cell) => (
               <TruncatedText text={cell.row.original.config?.aws_access_key || '-'} />
             ),
-            header: () => <TruncatedText text="AWS Access Key" />,
+            header: () => <TruncatedText text="AWS access key" />,
             minSize: 50,
             size: 55,
             maxSize: 60,
@@ -151,7 +151,7 @@ export const useIntegrationTableColumn = (
             cell: (cell) => (
               <TruncatedText text={cell.row.original.config?.aws_account_id || '-'} />
             ),
-            header: () => <TruncatedText text="AWS Account ID" />,
+            header: () => <TruncatedText text="AWS account id" />,
             minSize: 50,
             size: 55,
             maxSize: 60,
@@ -163,7 +163,7 @@ export const useIntegrationTableColumn = (
                 text={cell.row.original.config?.target_account_role_arn || '-'}
               />
             ),
-            header: () => <TruncatedText text="Account Role ARN" />,
+            header: () => <TruncatedText text="Account role ARN" />,
             minSize: 50,
             size: 55,
             maxSize: 60,
@@ -514,14 +514,14 @@ export const useIntegrationTableColumn = (
 
       columnHelper.accessor('integration_type', {
         cell: (cell) => cell.getValue(),
-        header: () => 'Integration Type',
+        header: () => 'Integration type',
         minSize: 65,
         size: 70,
         maxSize: 75,
       }),
       columnHelper.accessor('notification_type', {
         cell: (cell) => cell.getValue(),
-        header: () => 'Notification Type',
+        header: () => 'Notification type',
         minSize: 65,
         size: 70,
         maxSize: 75,

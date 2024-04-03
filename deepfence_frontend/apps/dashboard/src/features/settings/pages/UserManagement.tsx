@@ -820,14 +820,14 @@ const UsersTable = ({
       }),
       columnHelper.accessor('first_name', {
         cell: (cell) => cell.getValue(),
-        header: () => 'First Name',
+        header: () => 'First name',
         minSize: 30,
         size: 80,
         maxSize: 85,
       }),
       columnHelper.accessor('last_name', {
         cell: (cell) => cell.getValue(),
-        header: () => 'Last Name',
+        header: () => 'Last name',
         minSize: 30,
         size: 80,
         maxSize: 85,

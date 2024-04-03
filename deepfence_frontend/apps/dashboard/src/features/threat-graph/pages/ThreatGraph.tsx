@@ -8,6 +8,7 @@ import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudA
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { ThreatGraphIcon } from '@/components/sideNavigation/icons/ThreatGraph';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { ThreatGraphComponent } from '@/features/threat-graph/components/ThreatGraph';
 import { DetailsModal } from '@/features/threat-graph/data-components/DetailsModal';
@@ -80,7 +81,7 @@ const ThreatGraphHeader = ({
 }) => {
   const [searchParams] = useSearchParams();
   return (
-    <div className="flex py-2 items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
+    <BreadcrumbWrapper>
       <div className="px-4 flex items-center gap-[6px] text-text-input-value">
         <div className="h-4 w-4 shrink-0">
           <ThreatGraphIcon />
@@ -111,7 +112,7 @@ const ThreatGraphHeader = ({
       >
         Filter
       </Button>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 
@@ -275,7 +276,7 @@ const Filters = () => {
         />
       </div>
       {appliedFilterCount > 0 ? (
-        <div className="flex gap-2.5 flex-wrap items-center">
+        <div className="flex gap-2.5 my-4 flex-wrap items-center">
           {Array.from(searchParams)
             .filter(([key]) => {
               return Object.keys(FILTER_SEARCHPARAMS).includes(key);

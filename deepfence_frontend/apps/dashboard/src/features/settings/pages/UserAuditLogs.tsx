@@ -68,7 +68,7 @@ const AuditTable = () => {
       }),
       columnHelper.accessor('email', {
         cell: (cell) => cell.getValue(),
-        header: () => 'User Email',
+        header: () => 'User email',
         minSize: 30,
         size: 50,
         maxSize: 60,
@@ -76,7 +76,7 @@ const AuditTable = () => {
       }),
       columnHelper.accessor('role', {
         cell: (cell) => cell.getValue(),
-        header: () => <TruncatedText text={'User Role'} />,
+        header: () => <TruncatedText text={'User role'} />,
         minSize: 30,
         size: 30,
         maxSize: 35,

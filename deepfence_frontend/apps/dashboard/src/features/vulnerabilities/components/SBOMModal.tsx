@@ -178,7 +178,7 @@ const ModalContent = ({ scanId }: { scanId: string }) => {
     const columns = [
       columnHelper.accessor('package_name', {
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
-        header: () => <TruncatedText text="Package Name" />,
+        header: () => <TruncatedText text="Package name" />,
         minSize: 50,
         size: 70,
         maxSize: 100,

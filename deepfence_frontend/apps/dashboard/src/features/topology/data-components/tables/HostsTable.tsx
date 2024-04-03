@@ -719,7 +719,7 @@ const DataTable = ({
             </div>
           );
         },
-        header: () => 'name',
+        header: () => 'Name',
         minSize: 300,
         size: 400,
         maxSize: 600,
@@ -776,7 +776,7 @@ const DataTable = ({
         cell: (info) => {
           return <TruncatedText text={info.getValue() ? 'Yes' : 'No'} />;
         },
-        header: () => <TruncatedText text="Agent Running?" />,
+        header: () => <TruncatedText text="Agent running?" />,
         minSize: 50,
         size: 60,
         maxSize: 120,
@@ -827,7 +827,7 @@ const DataTable = ({
           }
           return <TruncatedText text={info.getValue() ?? ''} />;
         },
-        header: () => <TruncatedText text="Agent Version" />,
+        header: () => <TruncatedText text="Agent version" />,
         minSize: 150,
         size: 200,
         maxSize: 300,

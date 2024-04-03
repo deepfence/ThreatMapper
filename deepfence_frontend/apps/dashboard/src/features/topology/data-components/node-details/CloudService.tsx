@@ -167,7 +167,7 @@ const TabContent = ({
         cell: (cell) => {
           return <ScanStatusBadge status={cell.getValue()} />;
         },
-        header: () => 'status',
+        header: () => 'Status',
         minSize: 50,
         size: 50,
         maxSize: 70,

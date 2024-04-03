@@ -428,7 +428,7 @@ const AIIntegrationTable = () => {
         maxSize: 300,
       }),
       columnHelper.accessor('default_integration', {
-        header: () => 'Is Default?',
+        header: () => 'Is default?',
         cell: (info) => {
           return info.getValue() ? 'Yes' : 'No';
         },
@@ -437,7 +437,7 @@ const AIIntegrationTable = () => {
         maxSize: 150,
       }),
       columnHelper.accessor('last_error_msg', {
-        header: () => 'Last Error Message',
+        header: () => 'Last error message',
         cell: (info) => {
           const error = info.getValue();
 

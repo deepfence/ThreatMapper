@@ -572,7 +572,7 @@ const DataTable = ({
           }
           return '-';
         },
-        header: () => <TruncatedText text={'Created On'} />,
+        header: () => <TruncatedText text={'Created on'} />,
         minSize: 100,
         size: 105,
         maxSize: 110,

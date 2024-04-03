@@ -477,7 +477,7 @@ const DataTable = ({
             </div>
           );
         },
-        header: () => <TruncatedText text="Pod Name" />,
+        header: () => <TruncatedText text="Pod name" />,
         minSize: 130,
         size: 140,
         maxSize: 145,
@@ -486,7 +486,7 @@ const DataTable = ({
         cell: (info) => {
           return <TruncatedText text={info.getValue()} />;
         },
-        header: () => <TruncatedText text="Cluster Name" />,
+        header: () => <TruncatedText text="Cluster name" />,
         minSize: 80,
         size: 80,
         maxSize: 90,
@@ -495,7 +495,7 @@ const DataTable = ({
         cell: (info) => {
           return <TruncatedText text={info.getValue()} />;
         },
-        header: () => <TruncatedText text="Kubernetes Namespace" />,
+        header: () => <TruncatedText text="Kubernetes namespace" />,
         minSize: 100,
         size: 105,
         maxSize: 110,
@@ -504,7 +504,7 @@ const DataTable = ({
         cell: (info) => {
           return <TruncatedText text={info.getValue()} />;
         },
-        header: () => <TruncatedText text="Kubernetes State" />,
+        header: () => <TruncatedText text="Kubernetes state" />,
         minSize: 80,
         size: 80,
         maxSize: 90,

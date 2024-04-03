@@ -129,7 +129,7 @@ export function TopologyCloudTable() {
             </div>
           );
         },
-        header: () => 'name',
+        header: () => 'Name',
         minSize: 400,
         size: 500,
         maxSize: 1000,
@@ -139,7 +139,7 @@ export function TopologyCloudTable() {
         cell: (info) => {
           return info.getValue?.()?.replaceAll('_', ' ');
         },
-        header: () => <span>type</span>,
+        header: () => 'Type',
         minSize: 340,
         size: 400,
         maxSize: 500,

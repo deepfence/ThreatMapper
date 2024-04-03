@@ -311,7 +311,7 @@ const UniqueTable = () => {
         enableSorting: false,
         enableResizing: true,
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
-        header: () => <TruncatedText text="Matched Content" />,
+        header: () => <TruncatedText text="Matched content" />,
         minSize: 100,
         size: 120,
         maxSize: 130,

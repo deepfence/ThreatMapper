@@ -193,7 +193,7 @@ const ConsoleDiagnosticLogsTable = () => {
             return formatMilliseconds(createdAt);
           }
         },
-        header: () => 'Created At',
+        header: () => 'Created at',
         minSize: 75,
         size: 80,
         maxSize: 85,
@@ -278,7 +278,7 @@ const AgentDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('created_at', {
         cell: (cell) => cell.getValue(),
-        header: () => 'Created At',
+        header: () => 'Created at',
         minSize: 75,
         size: 80,
         maxSize: 85,
@@ -387,7 +387,7 @@ const SelectCloudAccount = ({
 }: {
   fetcher: FetcherWithComponents<ActionData>;
 }) => {
-  const [cloud, setCloud] = useState('');
+  const [cloud, setCloud] = useState('AWS');
   const [selectedCloudAccounts, setSelectedCloudAccounts] = useState<string[]>([]);
 
   return (

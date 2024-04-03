@@ -382,7 +382,7 @@ const UniqueTable = () => {
       columnHelper.accessor('cve_attack_vector', {
         enableSorting: false,
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
-        header: () => <TruncatedText text="Attack Vector" />,
+        header: () => <TruncatedText text="Attack vector" />,
         minSize: 100,
         size: 120,
         maxSize: 250,

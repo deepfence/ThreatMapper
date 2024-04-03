@@ -1449,7 +1449,7 @@ const CloudPostureTable = ({
         enableSorting: true,
         enableResizing: false,
         cell: (info) => <TruncatedText text={info.getValue().toUpperCase()} />,
-        header: () => 'Benchmark Type',
+        header: () => 'Benchmark type',
         minSize: 40,
         size: 50,
         maxSize: 60,

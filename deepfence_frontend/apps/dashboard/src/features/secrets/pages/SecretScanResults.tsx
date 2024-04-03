@@ -1473,7 +1473,7 @@ const SecretTable = ({
       }),
       columnHelper.accessor('matched_content', {
         cell: (info) => <TruncatedText text={info.getValue()} />,
-        header: () => 'Matched Content',
+        header: () => 'Matched content',
         minSize: 130,
         size: 140,
         maxSize: 165,
@@ -1509,7 +1509,7 @@ const SecretTable = ({
         cell: (info) => {
           return <TruncatedText text={info.getValue()?.join(', ') ?? ''} />;
         },
-        header: () => <TruncatedText text="Affected Resources" />,
+        header: () => <TruncatedText text="Affected resources" />,
         minSize: 100,
         size: 120,
         maxSize: 190,
