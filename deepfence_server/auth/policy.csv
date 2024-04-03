@@ -37,6 +37,7 @@ p, admin, cloud-node, register
 p, admin, cloud-node, write
 p, admin, cloud-node, read
 p, admin, cloud-node, update
+p, admin, cloud-node, delete
 p, standard-user, cloud-node, register
 p, standard-user, cloud-node, write
 p, standard-user, cloud-node, read
