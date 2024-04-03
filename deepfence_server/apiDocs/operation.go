@@ -800,6 +800,9 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 	d.AddOperation("testConfiguredEmail", http.MethodPost, "/deepfence/settings/email/test",
 		"Test Configured Email", "Test Configured Email",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(MessageResponse))
+	d.AddOperation("testUnconfiguredEmail", http.MethodPost, "/deepfence/settings/email/test-unconfigured",
+		"Test Unconfigured Email", "Test Unconfigured Email",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(EmailConfigurationAdd), new(MessageResponse))
 	d.AddOperation("getSettings", http.MethodGet, "/deepfence/settings/global-settings",
 		"Get settings", "Get all settings",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]SettingsResponse))

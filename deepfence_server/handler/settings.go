@@ -58,6 +58,11 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 			AmazonSecretKey: req.AmazonSecretKey,
 			SesRegion:       req.SesRegion,
 		})
+	case model.EmailSettingSendGrid:
+		err = h.Validator.Struct(model.EmailConfigurationSendGrid{
+			EmailID: req.EmailID,
+			APIKey:  req.APIKey,
+		})
 	default:
 		h.respondError(&errInvalidEmailConfigType, w)
 		return
@@ -88,6 +93,7 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 	req.Password = ""
 	req.AmazonAccessKey = ""
 	req.AmazonSecretKey = ""
+	req.APIKey = ""
 	h.AuditUserActivity(r, EventSettings, ActionCreate, req, true)
 	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessEmailConfigCreated})
 	if err != nil {
@@ -180,6 +186,44 @@ func (h *Handler) TestConfiguredEmail(w http.ResponseWriter, r *http.Request) {
 		log.Error().Msgf("%v", err)
 	}
 
+}
+
+func (h *Handler) TestUnconfiguredEmail(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	ctx := r.Context()
+	var req model.EmailConfigurationAdd
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+	emailSender, err := sendemail.NewEmailSendByConfiguration(ctx, req)
+	if err != nil {
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	user, statusCode, _, err := h.GetUserFromJWT(ctx)
+	if err != nil {
+		log.Debug().Msgf("error getting user from jwt: %v", err)
+		h.respondWithErrorCode(err, w, statusCode)
+		return
+	}
+
+	// send email to user
+	email := user.Email
+	err = emailSender.Send([]string{email}, "Deepfence Testmail", "This is a test email", "", nil)
+	if err != nil {
+		h.respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	err = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessEmailConfigTest})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
+	return
 }
 
 func (h *Handler) GetGlobalSettings(w http.ResponseWriter, r *http.Request) {
