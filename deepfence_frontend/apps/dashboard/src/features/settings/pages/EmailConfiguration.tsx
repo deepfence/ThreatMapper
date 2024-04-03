@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { isEmpty } from 'lodash-es';
 import { Suspense, useEffect, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import {
@@ -37,6 +38,7 @@ type ActionReturnType = {
     port?: string;
     ses_region?: string;
     smtp?: string;
+    apiKey?: string;
   };
 };
 
@@ -44,11 +46,13 @@ const emailProviders: { [key: string]: string } = {
   'Amazon SES': 'amazon_ses',
   'Google SMTP': 'smtp',
   SMTP: 'smtp',
+  SendGrid: 'sendgrid',
 };
 
 enum ActionEnumType {
   DELETE = 'delete',
   ADD_CONFIGURATION = 'addConfiguration',
+  SEND_TEST_EMAIL = 'testEmail',
 }
 
 const useEmailConfiguration = () => {
@@ -61,6 +65,7 @@ export const action = async ({
 }: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
   const _actionType = formData.get('_actionType')?.toString() as ActionEnumType;
+  const testEmail = formData.get('testEmail');
 
   if (!_actionType) {
     return {
@@ -104,21 +109,26 @@ export const action = async ({
       data.amazon_access_key = body.amazon_access_key as string;
       data.amazon_secret_key = body.amazon_secret_key as string;
       data.ses_region = body.ses_region as string;
+    } else if (emailProvider === 'SendGrid') {
+      data.apikey = body.apiKey as string;
     } else {
       data.smtp = body.smtp as string;
       data.port = body.port as string;
       data.password = body.password as string;
     }
-    const addApi = apiWrapper({
-      fn: getSettingsApiClient().addEmailConfiguration,
+    const api = apiWrapper({
+      fn:
+        testEmail === 'true'
+          ? getSettingsApiClient().testUnconfiguredEmail
+          : getSettingsApiClient().addEmailConfiguration,
     });
-    const addResponse = await addApi({
+    const response = await api({
       modelEmailConfigurationAdd: data,
     });
-    if (!addResponse.ok) {
-      if (addResponse.error.response.status === 400) {
-        const fieldErrors = await getFieldErrors(addResponse.error);
-        const { message } = await getResponseErrors(addResponse.error);
+    if (!response.ok) {
+      if (response.error.response.status === 400) {
+        const fieldErrors = await getFieldErrors(response.error);
+        const { message } = await getResponseErrors(response.error);
         return {
           success: false,
           message,
@@ -128,6 +138,8 @@ export const action = async ({
             port: fieldErrors?.port,
             smtp: fieldErrors?.smtp,
 
+            apiKey: fieldErrors?.api_key,
+
             ses_region: fieldErrors?.ses_region,
             amazon_access_key: fieldErrors?.amazon_access_key,
             amazon_secret_key: fieldErrors?.amazon_secret_key,
@@ -135,14 +147,14 @@ export const action = async ({
             email_provider: fieldErrors?.email_provider,
           },
         };
-      } else if (addResponse.error.response.status === 403) {
-        const message = await get403Message(addResponse.error);
+      } else if (response.error.response.status === 403) {
+        const message = await get403Message(response.error);
         return {
           message,
           success: false,
         };
       }
-      throw addResponse.error;
+      throw response.error;
     }
   }
   invalidateAllQueries();
@@ -151,6 +163,93 @@ export const action = async ({
   };
 };
 
+const SMTPForm = ({
+  emailProvider,
+  data,
+}: {
+  emailProvider: string;
+  data: ActionReturnType | undefined;
+}) => {
+  return (
+    <>
+      <TextInput
+        label="Password"
+        type={'password'}
+        placeholder="Password"
+        name="password"
+        required
+        color={data?.fieldErrors?.password ? 'error' : 'default'}
+        helperText={data?.fieldErrors?.password}
+      />
+      <TextInput
+        label="Port"
+        type={'number'}
+        placeholder={
+          emailProvider === 'SMTP' ? 'SMTP port (SSL)' : 'Gmail SMTP port (SSL)'
+        }
+        name="port"
+        required
+        color={data?.fieldErrors?.port ? 'error' : 'default'}
+        helperText={data?.fieldErrors?.port}
+      />
+      <TextInput
+        label="SMTP"
+        type={'text'}
+        placeholder="SMTP server"
+        name="smtp"
+        required
+        color={data?.fieldErrors?.smtp ? 'error' : 'default'}
+        helperText={data?.fieldErrors?.smtp}
+      />
+    </>
+  );
+};
+const AmazonSesForm = ({ data }: { data: ActionReturnType | undefined }) => {
+  return (
+    <>
+      <TextInput
+        label="SES Region"
+        type={'text'}
+        placeholder="SES Region"
+        name="ses_region"
+        required
+        color={data?.fieldErrors?.ses_region ? 'error' : 'default'}
+        helperText={data?.fieldErrors?.ses_region}
+      />
+      <TextInput
+        label="Amazon Access Key"
+        type={'text'}
+        placeholder="Amazon Access Key"
+        name="amazon_access_key"
+        required
+        color={data?.fieldErrors?.amazon_access_key ? 'error' : 'default'}
+        helperText={data?.fieldErrors?.amazon_access_key}
+      />
+      <TextInput
+        label="Amazon Secret Key"
+        type="password"
+        placeholder="Amazon Secret Key"
+        name="amazon_secret_key"
+        required
+        color={data?.fieldErrors?.amazon_secret_key ? 'error' : 'default'}
+        helperText={data?.fieldErrors?.amazon_secret_key}
+      />
+    </>
+  );
+};
+const SendGridForm = ({ data }: { data: ActionReturnType | undefined }) => {
+  return (
+    <TextInput
+      label="API Key"
+      type="text"
+      placeholder="Api key"
+      name="apiKey"
+      required
+      color={data?.fieldErrors?.apiKey ? 'error' : 'default'}
+      helperText={data?.fieldErrors?.apiKey}
+    />
+  );
+};
 const EmailConfigurationModal = ({
   showDialog,
   setShowDialog,
@@ -165,7 +264,7 @@ const EmailConfigurationModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+        <div className="text-h3 text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar bg-white">
           Add email configuration
         </div>
       </SlidingModalHeader>
@@ -188,7 +287,7 @@ const EmailConfigurationModal = ({
               placeholder="Email Provider"
               onChange={(value) => setEmailProvider(value)}
               getDisplayValue={(item) => {
-                return ['Google SMTP', 'Amazon SES', 'SMTP'].filter(
+                return ['Google SMTP', 'Amazon SES', 'SMTP', 'SendGrid'].filter(
                   (value) => value === item,
                 )[0];
               }}
@@ -197,6 +296,7 @@ const EmailConfigurationModal = ({
               <ListboxOption value={'Google SMTP'}>Google SMTP</ListboxOption>
               <ListboxOption value={'Amazon SES'}>Amazon SES</ListboxOption>
               <ListboxOption value={'SMTP'}>SMTP</ListboxOption>
+              <ListboxOption value={'SendGrid'}>SendGrid</ListboxOption>
             </Listbox>
             <TextInput
               label="Email"
@@ -207,71 +307,13 @@ const EmailConfigurationModal = ({
               color={data?.fieldErrors?.email_id ? 'error' : 'default'}
               helperText={data?.fieldErrors?.email_id}
             />
-            {emailProvider !== 'Amazon SES' ? (
-              <>
-                <TextInput
-                  label="Password"
-                  type={'password'}
-                  placeholder="Password"
-                  name="password"
-                  required
-                  color={data?.fieldErrors?.password ? 'error' : 'default'}
-                  helperText={data?.fieldErrors?.password}
-                />
-                <TextInput
-                  label="Port"
-                  type={'number'}
-                  placeholder={
-                    emailProvider === 'SMTP' ? 'SMTP port (SSL)' : 'Gmail SMTP port (SSL)'
-                  }
-                  name="port"
-                  required
-                  color={data?.fieldErrors?.port ? 'error' : 'default'}
-                  helperText={data?.fieldErrors?.port}
-                />
-                <TextInput
-                  label="SMTP"
-                  type={'text'}
-                  placeholder="SMTP server"
-                  name="smtp"
-                  required
-                  color={data?.fieldErrors?.smtp ? 'error' : 'default'}
-                  helperText={data?.fieldErrors?.smtp}
-                />
-              </>
-            ) : (
-              <>
-                <TextInput
-                  label="SES Region"
-                  type={'text'}
-                  placeholder="SES Region"
-                  name="ses_region"
-                  required
-                  color={data?.fieldErrors?.ses_region ? 'error' : 'default'}
-                  helperText={data?.fieldErrors?.ses_region}
-                />
-                <TextInput
-                  label="Amazon Access Key"
-                  type={'text'}
-                  placeholder="Amazon Access Key"
-                  name="amazon_access_key"
-                  required
-                  color={data?.fieldErrors?.amazon_access_key ? 'error' : 'default'}
-                  helperText={data?.fieldErrors?.amazon_access_key}
-                />
-                <TextInput
-                  label="Amazon Secret Key"
-                  type="password"
-                  placeholder="Amazon Secret Key"
-                  name="amazon_secret_key"
-                  required
-                  color={data?.fieldErrors?.amazon_secret_key ? 'error' : 'default'}
-                  helperText={data?.fieldErrors?.amazon_secret_key}
-                />
-              </>
-            )}
-            {!data?.success ? (
-              <div className={`text-red-600 dark:text-status-error text-p7`}>
+            {emailProvider === 'Google SMTP' || emailProvider === 'SMTP' ? (
+              <SMTPForm emailProvider={emailProvider} data={data} />
+            ) : null}
+            {emailProvider === 'Amazon SES' ? <AmazonSesForm data={data} /> : null}
+            {emailProvider === 'SendGrid' ? <SendGridForm data={data} /> : null}
+            {!data?.success && data?.message && isEmpty(data?.fieldErrors) ? (
+              <div className={`text-status-error text-p7`}>
                 <span>{data?.message}</span>
               </div>
             ) : null}
@@ -280,8 +322,8 @@ const EmailConfigurationModal = ({
               <Button
                 size="sm"
                 type="submit"
-                disabled={state !== 'idle'}
-                loading={state !== 'idle'}
+                disabled={state !== 'idle' && fetcher.formData?.get('testEmail') === null}
+                loading={state !== 'idle' && fetcher.formData?.get('testEmail') === null}
               >
                 Submit
               </Button>
@@ -291,6 +333,24 @@ const EmailConfigurationModal = ({
                 onClick={() => setShowDialog(false)}
               >
                 Cancel
+              </Button>
+
+              <Button
+                name="testEmail"
+                value="true"
+                variant="flat"
+                type="submit"
+                disabled={
+                  fetcher.state !== 'idle' &&
+                  fetcher.formData?.get('testEmail') === 'true'
+                }
+                loading={
+                  fetcher.state !== 'idle' &&
+                  fetcher.formData?.get('testEmail') === 'true'
+                }
+                className="ml-auto"
+              >
+                Send test email
               </Button>
             </div>
           </fetcher.Form>
@@ -310,9 +370,9 @@ const AddEmailConfigurationComponent = ({
   return (
     <>
       {show && (
-        <Card className="p-4 max-w-sm dark:bg-bg-card">
-          <h4 className="text-p2 pb-2 dark:text-text-text-and-icon">Setup</h4>
-          <p className="text-p7 dark:text-text-text-and-icon">
+        <Card className="p-4 max-w-sm bg-bg-card">
+          <h4 className="text-p2 pb-2 text-text-text-and-icon">Setup</h4>
+          <p className="text-p7 text-text-text-and-icon">
             Please connect an email provider in order to configure email, you can click on
             Add Configuration to set up email configurations
           </p>
@@ -349,7 +409,7 @@ const Configuration = () => {
   }, [configData]);
 
   if (message) {
-    return <p className="text-p7 dark:text-status-error">{message}</p>;
+    return <p className="text-p7 text-status-error">{message}</p>;
   }
 
   return (
@@ -373,49 +433,95 @@ const Configuration = () => {
         <Card className="p-4 flex flex-col gap-y-3">
           <div className="flex">
             <div className="flex flex-col">
-              <span className="text-h4 dark:text-text-text-and-icon">Configuration</span>
+              <span className="text-h4 text-text-text-and-icon">Configuration</span>
             </div>
           </div>
-          <div className="flex mt-2">
-            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-              Email Provider
-            </span>
-            <span className="text-p4 dark:text-text-input-value">
-              {configuration?.email_provider || '-'}
-            </span>
-          </div>
-          <div className="flex">
-            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-              Email Id
-            </span>
-            <span className="text-p4 dark:text-text-input-value">
-              {configuration?.email_id || '-'}
-            </span>
-          </div>
-          <div className="flex">
-            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-              Region
-            </span>
-            <span className="text-p4 dark:text-text-input-value">
-              {configuration?.ses_region || '-'}
-            </span>
-          </div>
-          <div className="flex">
-            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-              Port
-            </span>
-            <span className="text-p4 dark:text-text-input-value">
-              {configuration.port || '-'}
-            </span>
-          </div>
-          <div className="flex">
-            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-              SMTP
-            </span>
-            <span className="text-p4 dark:text-text-input-value">
-              {configuration.smtp || '-'}
-            </span>
-          </div>
+          {configuration.email_provider === emailProviders['SendGrid'] ? (
+            <>
+              <div className="flex mt-2">
+                <span className="text-p7 min-w-[140px] text-text-text-and-icon">
+                  Email Provider
+                </span>
+                <span className="text-p4 text-text-input-value">
+                  {configuration?.email_provider || '-'}
+                </span>
+              </div>
+              <div className="flex">
+                <span className="text-p7 min-w-[140px] text-text-text-and-icon">
+                  Email Id
+                </span>
+                <span className="text-p4 text-text-input-value">
+                  {configuration?.email_id || '-'}
+                </span>
+              </div>
+            </>
+          ) : null}
+          {configuration.email_provider === emailProviders['Google SMTP'] ||
+          configuration.email_provider === emailProviders['SMTP'] ? (
+            <>
+              <div className="flex mt-2">
+                <span className="text-p7 min-w-[140px] text-text-text-and-icon">
+                  Email Provider
+                </span>
+                <span className="text-p4 text-text-input-value">
+                  {configuration?.email_provider || '-'}
+                </span>
+              </div>
+              <div className="flex">
+                <span className="text-p7 min-w-[140px] text-text-text-and-icon">
+                  Email Id
+                </span>
+                <span className="text-p4 text-text-input-value">
+                  {configuration?.email_id || '-'}
+                </span>
+              </div>
+              <div className="flex">
+                <span className="text-p7 min-w-[140px] text-text-text-and-icon">
+                  Port
+                </span>
+                <span className="text-p4 text-text-input-value">
+                  {configuration.port || '-'}
+                </span>
+              </div>
+              <div className="flex">
+                <span className="text-p7 min-w-[140px] text-text-text-and-icon">
+                  SMTP
+                </span>
+                <span className="text-p4 text-text-input-value">
+                  {configuration.smtp || '-'}
+                </span>
+              </div>
+            </>
+          ) : null}
+          {configuration.email_provider === emailProviders['Amazon SES'] ? (
+            <>
+              <div className="flex mt-2">
+                <span className="text-p7 min-w-[140px] text-text-text-and-icon">
+                  Email Provider
+                </span>
+                <span className="text-p4 text-text-input-value">
+                  {configuration?.email_provider || '-'}
+                </span>
+              </div>
+              <div className="flex">
+                <span className="text-p7 min-w-[140px] text-text-text-and-icon">
+                  Email Id
+                </span>
+                <span className="text-p4 text-text-input-value">
+                  {configuration?.email_id || '-'}
+                </span>
+              </div>
+              <div className="flex">
+                <span className="text-p7 min-w-[140px] text-text-text-and-icon">
+                  Region
+                </span>
+                <span className="text-p4 text-text-input-value">
+                  {configuration?.ses_region || '-'}
+                </span>
+              </div>
+            </>
+          ) : null}
+
           <Button
             size="sm"
             color="error"
@@ -442,7 +548,7 @@ const EmailConfiguration = () => {
   return (
     <div>
       <div className="mt-2">
-        <h3 className="text-h6 dark:text-text-input-value">Email configurations</h3>
+        <h3 className="text-h6 text-text-input-value">Email configurations</h3>
       </div>
       <div className="mt-2">
         <Suspense fallback={<CircleSpinner size="sm" />}>
@@ -484,7 +590,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -533,7 +639,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : undefined}

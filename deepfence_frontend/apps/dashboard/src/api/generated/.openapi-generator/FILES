@@ -129,6 +129,7 @@ models/ModelGenerativeAiIntegrationListResponse.ts
 models/ModelGenerativeAiIntegrationMalwareRequest.ts
 models/ModelGenerativeAiIntegrationSecretRequest.ts
 models/ModelGenerativeAiIntegrationVulnerabilityRequest.ts
+models/ModelGetAgentBinaryDownloadURLResponse.ts
 models/ModelGetAuditLogsRequest.ts
 models/ModelGraphResult.ts
 models/ModelHost.ts
