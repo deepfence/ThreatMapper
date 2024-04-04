@@ -535,7 +535,6 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	SET n.type=$type
 	SET n.status=$status
 	SET n.filters=$filters
-	SET n.duration=$duration
 	SET n.from_timestamp=$from_timestamp
 	SET n.to_timestamp=$to_timestamp
 	RETURN n`
