@@ -424,7 +424,7 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 		toTimestamp = time.UnixMilli(req.ToTimestamp).UTC()
 
 		now := time.Now().UTC()
-		tomorrowDate := time.Date(now.Year(), now.Month(), now.Day()+1, 1, 0, 0, 0, time.UTC)
+		tomorrowDate := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 1, 0, time.UTC)
 		if tomorrowDate.Before(toTimestamp) {
 			h.respondError(&errToDateGreaterThanToday, w)
 			return
@@ -437,11 +437,9 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 			h.respondError(&errFromAndToDateDifference, w)
 			return
 		}
-	} else {
-		if req.FromTimestamp > 0 || req.ToTimestamp > 0 {
-			h.respondError(&errFromAndToDateRequired, w)
-			return
-		}
+	} else if req.FromTimestamp > 0 || req.ToTimestamp > 0 {
+		h.respondError(&errFromAndToDateRequired, w)
+		return
 	}
 
 	// report task params
