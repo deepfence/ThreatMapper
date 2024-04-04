@@ -215,7 +215,7 @@ func (h *Handler) TestUnconfiguredEmail(w http.ResponseWriter, r *http.Request) 
 	email := user.Email
 	err = emailSender.Send([]string{email}, "Deepfence Testmail", "This is a test email", "", nil)
 	if err != nil {
-		h.respondError(&InternalServerError{err}, w)
+		h.respondWithErrorCode(err, w, http.StatusBadRequest)
 		return
 	}
 
