@@ -5,10 +5,11 @@ import (
 )
 
 type GenerateReportReq struct {
-	ReportType string              `json:"report_type" validate:"required" required:"true" enum:"pdf,xlsx,sbom"`
-	Duration   int                 `json:"duration" enum:"0,1,7,30,60,90,180"`
-	Filters    utils.ReportFilters `json:"filters"`
-	Options    utils.ReportOptions `json:"options" validate:"omitempty"`
+	ReportType    string              `json:"report_type" validate:"required" required:"true" enum:"pdf,xlsx,sbom"`
+	FromTimestamp int64               `json:"from_timestamp"` // timestamp in milliseconds
+	ToTimestamp   int64               `json:"to_timestamp"`   // timestamp in milliseconds
+	Filters       utils.ReportFilters `json:"filters"`
+	Options       utils.ReportOptions `json:"options" validate:"omitempty"`
 }
 
 type GenerateReportResp struct {

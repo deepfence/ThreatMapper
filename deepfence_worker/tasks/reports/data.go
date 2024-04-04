@@ -145,8 +145,9 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 		start = time.Now()
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
-		start = end.AddDate(0, 0, -params.Duration)
+	if !params.FromTimestamp.IsZero() && len(params.Filters.ScanID) == 0 {
+		start = params.FromTimestamp
+		end = params.ToTimestamp
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
@@ -253,8 +254,9 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 		start = time.Now()
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
-		start = end.AddDate(0, 0, -params.Duration)
+	if !params.FromTimestamp.IsZero() && len(params.Filters.ScanID) == 0 {
+		start = params.FromTimestamp
+		end = params.ToTimestamp
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
@@ -315,8 +317,9 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 		start = time.Now()
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
-		start = end.AddDate(0, 0, -params.Duration)
+	if !params.FromTimestamp.IsZero() && len(params.Filters.ScanID) == 0 {
+		start = params.FromTimestamp
+		end = params.ToTimestamp
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
@@ -376,8 +379,9 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 		start = time.Now()
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
-		start = end.AddDate(0, 0, -params.Duration)
+	if !params.FromTimestamp.IsZero() && len(params.Filters.ScanID) == 0 {
+		start = params.FromTimestamp
+		end = params.ToTimestamp
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
@@ -437,8 +441,9 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 		start = time.Now()
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
-		start = end.AddDate(0, 0, -params.Duration)
+	if !params.FromTimestamp.IsZero() && len(params.Filters.ScanID) == 0 {
+		start = params.FromTimestamp
+		end = params.ToTimestamp
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
