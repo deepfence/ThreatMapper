@@ -107,6 +107,10 @@ export interface RegisterLicenseRequest {
     modelRegisterLicenseRequest?: ModelRegisterLicenseRequest;
 }
 
+export interface TestUnconfiguredEmailRequest {
+    modelEmailConfigurationAdd?: ModelEmailConfigurationAdd;
+}
+
 export interface UpdateScheduledTaskRequest {
     id: number;
     modelUpdateScheduledTaskRequest?: ModelUpdateScheduledTaskRequest;
@@ -375,6 +379,37 @@ export interface SettingsApiInterface {
      * Register License
      */
     registerLicense(requestParameters: RegisterLicenseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelRegisterLicenseResponse>;
+
+    /**
+     * Test Configured Email
+     * @summary Test Configured Email
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    testConfiguredEmailRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
+
+    /**
+     * Test Configured Email
+     * Test Configured Email
+     */
+    testConfiguredEmail(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
+
+    /**
+     * Test Unconfigured Email
+     * @summary Test Unconfigured Email
+     * @param {ModelEmailConfigurationAdd} [modelEmailConfigurationAdd] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    testUnconfiguredEmailRaw(requestParameters: TestUnconfiguredEmailRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
+
+    /**
+     * Test Unconfigured Email
+     * Test Unconfigured Email
+     */
+    testUnconfiguredEmail(requestParameters: TestUnconfiguredEmailRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
     /**
      * Update scheduled task
@@ -1053,6 +1088,81 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      */
     async registerLicense(requestParameters: RegisterLicenseRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelRegisterLicenseResponse> {
         const response = await this.registerLicenseRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Test Configured Email
+     * Test Configured Email
+     */
+    async testConfiguredEmailRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/settings/email/test`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Test Configured Email
+     * Test Configured Email
+     */
+    async testConfiguredEmail(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.testConfiguredEmailRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Test Unconfigured Email
+     * Test Unconfigured Email
+     */
+    async testUnconfiguredEmailRaw(requestParameters: TestUnconfiguredEmailRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/settings/email/test-unconfigured`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelEmailConfigurationAddToJSON(requestParameters.modelEmailConfigurationAdd),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Test Unconfigured Email
+     * Test Unconfigured Email
+     */
+    async testUnconfiguredEmail(requestParameters: TestUnconfiguredEmailRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.testUnconfiguredEmailRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

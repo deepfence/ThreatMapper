@@ -381,6 +381,7 @@ export function getSettingsApiClient() {
     registerThreatMapperLicense: settingsApi.registerLicense.bind(settingsApi),
     getThreatMapperLicense: settingsApi.getLicense.bind(settingsApi),
     deleteThreatMapperLicense: settingsApi.deleteLicense.bind(settingsApi),
+    testUnconfiguredEmail: settingsApi.testUnconfiguredEmail.bind(settingsApi),
   };
 }
 

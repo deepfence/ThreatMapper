@@ -33,6 +33,12 @@ export interface ModelEmailConfigurationAdd {
     amazon_secret_key?: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelEmailConfigurationAdd
+     */
+    apikey?: string;
+    /**
+     * 
      * @type {number}
      * @memberof ModelEmailConfigurationAdd
      */
@@ -96,6 +102,7 @@ export function ModelEmailConfigurationAddFromJSONTyped(json: any, ignoreDiscrim
         
         'amazon_access_key': !exists(json, 'amazon_access_key') ? undefined : json['amazon_access_key'],
         'amazon_secret_key': !exists(json, 'amazon_secret_key') ? undefined : json['amazon_secret_key'],
+        'apikey': !exists(json, 'apikey') ? undefined : json['apikey'],
         'created_by_user_id': !exists(json, 'created_by_user_id') ? undefined : json['created_by_user_id'],
         'email_id': !exists(json, 'email_id') ? undefined : json['email_id'],
         'email_provider': !exists(json, 'email_provider') ? undefined : json['email_provider'],
@@ -117,6 +124,7 @@ export function ModelEmailConfigurationAddToJSON(value?: ModelEmailConfiguration
         
         'amazon_access_key': value.amazon_access_key,
         'amazon_secret_key': value.amazon_secret_key,
+        'apikey': value.apikey,
         'created_by_user_id': value.created_by_user_id,
         'email_id': value.email_id,
         'email_provider': value.email_provider,
