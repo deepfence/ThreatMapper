@@ -33,9 +33,6 @@ func GetScanStatus(ctx context.Context, scanType utils.Neo4jScanType, scanIDs []
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return model.ScanStatusResp{}, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -113,9 +110,6 @@ func GetComplianceScanStatus(ctx context.Context, scanType utils.Neo4jScanType, 
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return scanResponse, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -189,9 +183,6 @@ func GetRegistriesImageIDs(ctx context.Context, registryIds []model.NodeIdentifi
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return res, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -237,9 +228,6 @@ func GetKubernetesImageIDs(ctx context.Context, k8sIds []model.NodeIdentifier) (
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return res, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -286,9 +274,6 @@ func GetKubernetesHostsIDs(ctx context.Context, k8sIds []model.NodeIdentifier) (
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return res, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -334,9 +319,6 @@ func GetKubernetesContainerIDs(ctx context.Context, k8sIds []model.NodeIdentifie
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return res, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -383,9 +365,6 @@ func GetPodContainerIDs(ctx context.Context, podIds []model.NodeIdentifier) ([]m
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return res, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -430,9 +409,6 @@ func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdenti
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return res, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -517,9 +493,6 @@ func GetScansList(ctx context.Context, scanType utils.Neo4jScanType, nodeIDs []m
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return model.ScanListResp{}, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -603,9 +576,6 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return model.CloudComplianceScanListResp{}, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -692,9 +662,6 @@ func GetScanResultDiff[T any](ctx context.Context, scanType utils.Neo4jScanType,
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return res, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -789,9 +756,6 @@ func GetScanResults[T any](ctx context.Context, scanType utils.Neo4jScanType, sc
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return res, common, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -902,15 +866,15 @@ func GetFilters(ctx context.Context, having map[string]interface{}, detectedType
 	andQuery += "}"
 
 	res := make(map[string][]string)
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return res, err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return res, err
-	}
 	defer session.Close(ctx)
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return res, err
@@ -977,15 +941,13 @@ func GetSevCounts(ctx context.Context, scanType utils.Neo4jScanType, scanID stri
 	defer span.End()
 
 	res := map[string]int32{}
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return res, err
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return res, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -1031,15 +993,13 @@ func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, re
 	if len(resultIds) == 0 {
 		return res, nil
 	}
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return res, err
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return res, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -1095,15 +1055,13 @@ func GetCloudComplianceStats(ctx context.Context, scanID string, neo4jCompliance
 
 	res := map[string]int32{}
 	additionalInfo := model.ComplianceAdditionalInfo{StatusCounts: res, CompliancePercentage: 0.0}
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return additionalInfo, err
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return additionalInfo, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -1176,15 +1134,13 @@ func GetBulkScans(ctx context.Context, scanType utils.Neo4jScanType, scanID stri
 	scanIDs := model.ScanStatusResp{
 		Statuses: map[string]model.ScanInfo{},
 	}
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return scanIDs, err
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return scanIDs, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -1262,6 +1218,7 @@ func GetComplianceBulkScans(ctx context.Context, scanType utils.Neo4jScanType, s
 	scanIDs := model.ComplianceScanStatusResp{
 		Statuses: []model.ComplianceScanInfo{},
 	}
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msgf("Neo4j client init failed: %+v", err)
@@ -1269,10 +1226,6 @@ func GetComplianceBulkScans(ctx context.Context, scanType utils.Neo4jScanType, s
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		log.Error().Msgf("Neo4j session creation failed: %+v", err)
-		return scanIDs, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))

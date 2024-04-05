@@ -23,6 +23,7 @@ const (
 	EmailConfigurationKey             = "email_configuration"
 	EmailSettingSES                   = "amazon_ses"
 	EmailSettingSMTP                  = "smtp"
+	EmailSettingSendGrid              = "sendgrid"
 	InactiveNodesDeleteScanResultsKey = "inactive_delete_scan_results"
 	ConsoleIDKey                      = "console_id"
 )

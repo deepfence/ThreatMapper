@@ -148,8 +148,10 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 	if err != nil {
 		return diagnosticLogs
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -246,6 +248,7 @@ func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager
 	if err != nil {
 		return diagnosticLogs, err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 

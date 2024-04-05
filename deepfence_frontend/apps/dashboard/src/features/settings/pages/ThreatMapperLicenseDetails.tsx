@@ -195,9 +195,9 @@ const LicenseCard = ({ licenseData }: { licenseData: ModelLicense }) => {
     <Card className="p-4 rounded-[5px]">
       {licenseData.message && licenseData.message.length ? (
         <h4
-          className={cn('text-status-error text-h4', {
-            'text-status-error': !licenseData.is_active,
-            'text-status-success': licenseData.is_active,
+          className={cn('text-status-error', {
+            'text-status-error text-p7': !licenseData.is_active,
+            'text-status-success text-h4': licenseData.is_active,
           })}
         >
           {upperFirst(licenseData.message)}
@@ -255,18 +255,29 @@ const LicenseCard = ({ licenseData }: { licenseData: ModelLicense }) => {
           Delete license key
         </Button>
       ) : (
-        <fetcher.Form method="post">
-          <input hidden value={ActionEnumType.REGISTER_LICENSE} name="intent" readOnly />
-          <Button
-            size="sm"
-            className="mt-4 w-fit"
-            type="submit"
-            loading={fetcher.state !== 'idle'}
-            disabled={fetcher.state !== 'idle'}
-          >
-            Register license key
-          </Button>
-        </fetcher.Form>
+        <>
+          {licenseData.message &&
+          (licenseData.message.match(/not have enough permission/g)?.length ?? 0) >
+            0 ? null : (
+            <fetcher.Form method="post">
+              <input
+                hidden
+                value={ActionEnumType.REGISTER_LICENSE}
+                name="intent"
+                readOnly
+              />
+              <Button
+                size="sm"
+                className="mt-4 w-fit"
+                type="submit"
+                loading={fetcher.state !== 'idle'}
+                disabled={fetcher.state !== 'idle'}
+              >
+                Register license key
+              </Button>
+            </fetcher.Form>
+          )}
+        </>
       )}
       {showDeleteDialog && (
         <DeleteConfirmationModal

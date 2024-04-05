@@ -23,6 +23,7 @@ func UpdateScanResultNodeFields(ctx context.Context, scanType utils.Neo4jScanTyp
 	if err != nil {
 		return err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 
@@ -47,6 +48,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	if err != nil {
 		return err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 
@@ -174,6 +176,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 	if err != nil {
 		return err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 
@@ -317,8 +320,10 @@ func MarkScanDeletePending(ctx context.Context, scanType utils.Neo4jScanType,
 	if err != nil {
 		return err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
@@ -350,6 +355,7 @@ func StopCloudComplianceScan(ctx context.Context, scanIds []string) error {
 	if err != nil {
 		return err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 
@@ -383,6 +389,7 @@ func StopScan(ctx context.Context, scanType string, scanIds []string) error {
 	if err != nil {
 		return err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
@@ -470,6 +477,7 @@ func GetSelectedScanResults[T any](ctx context.Context, scanType utils.Neo4jScan
 	if err != nil {
 		return res, common, err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 

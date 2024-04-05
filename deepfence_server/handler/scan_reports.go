@@ -74,9 +74,6 @@ func GetImageFromID(ctx context.Context, nodeID string) (string, string, error) 
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return name, tag, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -122,9 +119,6 @@ func GetContainerKubeClusterNameFromID(ctx context.Context, nodeID string) (stri
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return clusterID, clusterName, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -1261,9 +1255,6 @@ func groupSecrets(ctx context.Context) ([]reporters_search.ResultGroup, error) {
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return results, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -1327,9 +1318,6 @@ func groupMalwares(ctx context.Context, byClass bool) ([]reporters_search.Result
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return results, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -1880,9 +1868,6 @@ func FindNodesMatching(ctx context.Context,
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return res, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -1941,7 +1926,6 @@ func GetImagesFromAdvanceFilter(ctx context.Context, ids []model.NodeIdentifier,
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -2021,9 +2005,6 @@ func FindImageRegistryIDs(ctx context.Context, imageID string) ([]int32, error) 
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return res, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -2146,9 +2127,6 @@ func StartMultiScan(ctx context.Context,
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return nil, "", err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(60*time.Second))
@@ -2228,9 +2206,6 @@ func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return nil, "", err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))

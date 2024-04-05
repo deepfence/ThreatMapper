@@ -127,9 +127,6 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage,
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
 	defer session.Close(ctx)
 
 	timeOut := time.Duration(120 * time.Second)
@@ -223,10 +220,8 @@ func SetRegistryAccountSyncing(ctx context.Context, syncStatus SyncStatus, r reg
 	if err != nil {
 		return err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx)

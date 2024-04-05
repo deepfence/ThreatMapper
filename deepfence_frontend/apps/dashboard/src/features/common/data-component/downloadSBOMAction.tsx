@@ -4,7 +4,6 @@ import { toast } from 'sonner';
 import { getReportsApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
-  ModelGenerateReportReqDurationEnum,
   ModelGenerateReportReqReportTypeEnum,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
@@ -35,7 +34,6 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<null> => 
 
   const getReportIdApiResponse = await getReportIdApi({
     modelGenerateReportReq: {
-      duration: ModelGenerateReportReqDurationEnum.NUMBER_0,
       filters: {
         node_type: nodeType,
         scan_type: scanType,

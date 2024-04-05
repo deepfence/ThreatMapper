@@ -277,9 +277,6 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return nil, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -383,9 +380,6 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return CloudNodeAccountsListResp{Total: 0}, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -504,9 +498,6 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return benchmarks, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -568,9 +559,6 @@ func (c *CloudAccountRefreshReq) SetCloudAccountRefresh(ctx context.Context) err
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -603,9 +591,6 @@ func (c *CloudAccountRefreshReq) GetCloudAccountRefresh(ctx context.Context) ([]
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return updatedNodeIDs, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))

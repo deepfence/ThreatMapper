@@ -39,7 +39,7 @@ import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { TruncatedText } from '@/components/TruncatedText';
-import { DURATION, RESOURCES } from '@/features/integrations/pages/CreateReport';
+import { RESOURCES } from '@/features/integrations/pages/CreateReport';
 import { useGetReports } from '@/features/integrations/pages/DownloadReport';
 import { invalidateAllQueries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
@@ -118,7 +118,6 @@ export const ReportTable = ({
     }
     const statusFilter = searchParams.getAll('status');
     const reportTypeFilter = searchParams.getAll('reportType');
-    const durationFilter = searchParams.getAll('duration');
     const scanTypeFilter = searchParams.getAll('scanType');
     const nodeTypeFilter = searchParams.getAll('nodeType');
     const containerFilter = searchParams.getAll('container');
@@ -138,12 +137,6 @@ export const ReportTable = ({
       if (
         reportTypeFilter?.length &&
         !reportTypeFilter.includes(report.type?.toLowerCase() ?? '')
-      ) {
-        return false;
-      }
-      if (
-        durationFilter?.length &&
-        (!durationFilter.includes(String(report.duration)) || isNil(report.duration))
       ) {
         return false;
       }
@@ -214,8 +207,8 @@ export const ReportTable = ({
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
-        minSize: 10,
-        size: 15,
+        minSize: 15,
+        size: 20,
         maxSize: 30,
       }),
       columnHelper.display({
@@ -241,49 +234,49 @@ export const ReportTable = ({
         },
         header: () => '',
         minSize: 20,
-        size: 20,
-        maxSize: 20,
+        size: 25,
+        maxSize: 30,
         enableResizing: false,
       }),
       columnHelper.accessor('type', {
         enableSorting: true,
         cell: (cell) => <span className="uppercase">{cell.getValue()}</span>,
         header: () => 'Report Type',
-        minSize: 40,
-        size: 50,
+        minSize: 30,
+        size: 40,
         maxSize: 55,
       }),
       columnHelper.accessor('created_at', {
         enableSorting: true,
         cell: (cell) => formatMilliseconds(cell.getValue() ?? ''),
         header: () => 'Created At',
-        minSize: 65,
-        size: 65,
+        minSize: 40,
+        size: 50,
         maxSize: 70,
       }),
-      columnHelper.accessor('duration', {
-        enableSorting: true,
+      columnHelper.display({
+        id: 'duration',
         cell: (cell) => {
-          const duration = cell.getValue();
-          if (duration === 1) {
-            return 'Last 1 day';
-          } else if (duration === 0) {
+          const fromTimestamp = cell.row.original.from_timestamp;
+          const toTimestamp = cell.row.original.to_timestamp;
+          if (!fromTimestamp || !toTimestamp) {
             return 'All documents';
-          } else {
-            return `Last ${duration} days`;
           }
+          return `${formatMilliseconds(fromTimestamp)} - ${formatMilliseconds(
+            toTimestamp,
+          )}`;
         },
         header: () => 'Duration',
         minSize: 50,
-        size: 55,
-        maxSize: 60,
+        size: 70,
+        maxSize: 80,
       }),
       columnHelper.accessor('status', {
         enableSorting: true,
         cell: (cell) => <ScanStatusBadge status={cell.getValue() ?? ''} />,
         header: () => 'Status',
-        minSize: 60,
-        size: 65,
+        minSize: 30,
+        size: 40,
         maxSize: 70,
       }),
       columnHelper.accessor('filters', {
@@ -291,8 +284,8 @@ export const ReportTable = ({
         cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
         header: () => 'Filters',
         minSize: 75,
-        size: 85,
-        maxSize: 85,
+        size: 140,
+        maxSize: 150,
       }),
     ];
     return columns;
@@ -317,6 +310,7 @@ export const ReportTable = ({
           setPageSize(newSize);
         }}
         enableRowSelection
+        enableColumnResizing
         rowSelectionState={rowSelectionState}
         onRowSelectionChange={setRowSelectionState}
         getRowId={(row) => {
@@ -337,19 +331,16 @@ enum FILTER_SEARCHPARAMS_KEYS_ENUM {
   host = 'host',
   containerImage = 'containerImage',
   cluster = 'cluster',
-  duration = 'duration',
 }
 const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
   FILTER_SEARCHPARAMS_KEYS_ENUM.container,
   FILTER_SEARCHPARAMS_KEYS_ENUM.host,
   FILTER_SEARCHPARAMS_KEYS_ENUM.containerImage,
   FILTER_SEARCHPARAMS_KEYS_ENUM.cluster,
-  FILTER_SEARCHPARAMS_KEYS_ENUM.duration,
 ];
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   status: 'Status',
   reportType: 'Report type',
-  duration: 'Duration',
   scanType: 'Scan type',
   nodeType: 'Node type',
   container: 'Container',
@@ -377,7 +368,6 @@ export const ReportFilters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [statusSearch, setStatusSearch] = useState('');
   const [reportTypeSearch, setReportTypeSearch] = useState('');
-  const [durationSearch, setDurationSearch] = useState('');
   const [scanTypeSearch, setScanTypeSearch] = useState('');
   const [nodeTypeSearch, setNodeTypeSearch] = useState('');
   const appliedFilterCount = getReportDownloadAppliedFiltersCount(searchParams);
@@ -475,46 +465,6 @@ export const ReportFilters = () => {
               return (
                 <ComboboxOption key={item} value={item}>
                   {capitalize(item.replace('_', ' '))}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
-        <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['duration']}
-          multiple
-          value={searchParams.getAll('duration')}
-          onChange={(values) => {
-            setSearchParams((prev) => {
-              prev.delete('duration');
-              values.forEach((value) => {
-                prev.append('duration', value);
-              });
-              return prev;
-            });
-          }}
-          onQueryChange={(query) => {
-            setDurationSearch(query);
-          }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('duration');
-              return prev;
-            });
-          }}
-        >
-          {Object.entries(DURATION)
-            .filter(([str]) => {
-              if (!durationSearch.length) return true;
-              if (str.includes(durationSearch.toLowerCase())) {
-                return true;
-              }
-              return false;
-            })
-            .map(([str, item]) => {
-              return (
-                <ComboboxOption key={item} value={String(item)}>
-                  {str}
                 </ComboboxOption>
               );
             })}
@@ -698,20 +648,6 @@ export const ReportFilters = () => {
               return Object.keys(FILTER_SEARCHPARAMS).includes(key);
             }) as Array<[FILTER_SEARCHPARAMS_KEYS_ENUM, string]>
           ).map(([key, value]) => {
-            if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.duration) {
-              return (
-                <FilterBadge
-                  key={`${key}-${value}`}
-                  onRemove={onFilterRemove({ key, value })}
-                  text={
-                    findKey(DURATION, (duration) => {
-                      return duration.toString() === value;
-                    }) ?? 'unknown'
-                  }
-                  label={FILTER_SEARCHPARAMS[key]}
-                />
-              );
-            }
             if (FILTER_SEARCHPARAMS_DYNAMIC_KEYS.includes(key)) {
               return (
                 <FilterBadge

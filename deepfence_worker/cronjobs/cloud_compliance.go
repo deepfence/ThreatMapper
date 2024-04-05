@@ -244,15 +244,13 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 
 	log.Info().Msgf("Caching Posture Providers")
 	defer log.Info().Msgf("Caching Posture Providers - Done")
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(120*time.Second))

@@ -4,18 +4,17 @@ import { ActionFunctionArgs, useFetcher, useSearchParams } from 'react-router-do
 import {
   Button,
   Checkbox,
+  DateTimeInput,
   Listbox,
   ListboxOption,
   SlidingModal,
   SlidingModalCloseButton,
   SlidingModalHeader,
-  TextInput,
 } from 'ui-components';
 
 import { getReportsApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
-  ModelGenerateReportReqDurationEnum,
   ModelGenerateReportReqReportTypeEnum,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
@@ -34,15 +33,6 @@ import { apiWrapper } from '@/utils/api';
 import { getArrayTypeValuesFromFormData } from '@/utils/formData';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
-export const DURATION: { [k: string]: ModelGenerateReportReqDurationEnum } = {
-  'Last 1 Day': ModelGenerateReportReqDurationEnum.NUMBER_1,
-  'Last 7 Days': ModelGenerateReportReqDurationEnum.NUMBER_7,
-  'Last 30 Days': ModelGenerateReportReqDurationEnum.NUMBER_30,
-  'Last 60 Days': ModelGenerateReportReqDurationEnum.NUMBER_60,
-  'Last 90 Days': ModelGenerateReportReqDurationEnum.NUMBER_90,
-  'Last 180 Days': ModelGenerateReportReqDurationEnum.NUMBER_180,
-  'All Documents': 0 as ModelGenerateReportReqDurationEnum,
-};
 export const RESOURCES = [
   UtilsReportFiltersScanTypeEnum.Vulnerability,
   UtilsReportFiltersScanTypeEnum.Secret,
@@ -63,7 +53,20 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
   const body = Object.fromEntries(formData);
 
-  const duration = body.duration as keyof typeof DURATION;
+  const fromDate = body.fromDate;
+  const fromTime = body.fromTime;
+  const toDate = body.toDate;
+  const toTime = body.toTime;
+
+  const fromTimeStamp =
+    fromDate.length && fromTime.length
+      ? new Date(`${fromDate}T${fromTime}`).getTime()
+      : undefined;
+
+  const toTimeStamp =
+    toDate.length && toTime.length
+      ? new Date(`${toDate}T${toTime}`).getTime()
+      : undefined;
 
   const reportType = body.downloadType.toString();
   const _reportType: ModelGenerateReportReqReportTypeEnum = REPORT_TYPES[reportType];
@@ -75,7 +78,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 
   const masked = formData.getAll('mask[]');
   const status = formData.getAll('status[]');
-  const interval = formData.get('interval'); // send this when backend is ready to support
 
   const accountIds = getArrayTypeValuesFromFormData(formData, 'cloudAccountsFilter');
   const severitiesOrCheckTypes = getArrayTypeValuesFromFormData(
@@ -139,7 +141,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 
   const r = await generateReportApi({
     modelGenerateReportReq: {
-      duration: DURATION[duration],
+      from_timestamp: fromTimeStamp,
+      to_timestamp: toTimeStamp,
       filters: {
         advanced_report_filters: advanced_report_filters,
         include_dead_nodes: body.deadNodes === 'on',
@@ -193,7 +196,6 @@ const getResourceDisplayValue = (resource: string) => {
 const ReportForm = () => {
   const [resource, setResource] = useState('');
   const [provider, setProvider] = useState('');
-  const [duration, setDuration] = useState('');
   const [downloadType, setDownloadType] = useState('');
   const [deadNodes, setIncludeDeadNodes] = useState(false);
 
@@ -263,36 +265,29 @@ const ReportForm = () => {
               />
             ) : null}
 
-            <Listbox
-              variant="underline"
-              label="Select Duration"
-              value={duration}
-              name="duration"
-              onChange={(value) => {
-                setDuration(value);
+            <DateTimeInput
+              label="From Date"
+              timeInputProps={{
+                name: 'fromTime',
+                defaultValue: '00:00',
               }}
-              placeholder="Select duration"
-              getDisplayValue={(item) => {
-                return Object.keys(DURATION).find((person) => person === item) ?? '';
+              dateInputProps={{
+                name: 'fromDate',
               }}
-            >
-              {Object.keys(DURATION).map((resource) => {
-                return (
-                  <ListboxOption value={resource} key={resource}>
-                    {resource}
-                  </ListboxOption>
-                );
-              })}
-            </Listbox>
-
-            <TextInput
-              className="w-full"
-              label={'Schedule Interval In Days'}
-              type={'text'}
-              sizing="md"
-              name={'interval'}
-              placeholder={'Interval'}
-              helperText="Maximum upto 180 days supported"
+              helperText={fieldErrors?.from_timestamp}
+              color={fieldErrors?.from_timestamp ? 'error' : 'default'}
+            />
+            <DateTimeInput
+              label="To Date"
+              timeInputProps={{
+                name: 'toTime',
+                defaultValue: '23:59',
+              }}
+              dateInputProps={{
+                name: 'toDate',
+              }}
+              helperText={fieldErrors?.to_timestamp}
+              color={fieldErrors?.to_timestamp ? 'error' : 'default'}
             />
 
             <Listbox
