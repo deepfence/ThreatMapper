@@ -226,16 +226,15 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	}
 
 	ctx, runtimeSpan := telemetry.NewSpan(ctx, "vuln-scan", "runtime-sbom")
+
 	// generate runtime sbom needs entity Id
 	driver, err := directory.Neo4jClient(directory.NewContextWithNameSpace(directory.NamespaceID(tenantID)))
 	if err != nil {
 		runtimeSpan.EndWithErr(err)
 		return err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))

@@ -145,8 +145,10 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 	if err != nil {
 		return err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
@@ -195,6 +197,7 @@ func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context, nodeIDs []string) 
 	if err != nil {
 		return controls.Action{}, err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 

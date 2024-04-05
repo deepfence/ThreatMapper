@@ -27,16 +27,16 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 	if err != nil {
 		return inProgressNodeIds, err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return inProgressNodeIds, err
-	}
 	defer session.Close(ctx)
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return inProgressNodeIds, err
 	}
 	defer tx.Close(ctx)
+
 	nodeIDs := make([]string, len(nodeIdentifiers))
 	for i, n := range nodeIdentifiers {
 		nodeIDs[i] = n.NodeID
@@ -86,11 +86,10 @@ func UpdateAgentDiagnosticLogsStatus(ctx context.Context, status diagnosis.Diagn
 	if err != nil {
 		return err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
 	defer session.Close(ctx)
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
@@ -143,11 +142,10 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 	if err != nil {
 		return err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
 	defer session.Close(ctx)
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
