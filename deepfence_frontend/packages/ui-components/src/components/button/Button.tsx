@@ -48,7 +48,8 @@ export const Loader = ({
             {
               variant: 'outline',
               color: 'default',
-              className: 'text-bg-active-selection fill-accent-accent',
+              className:
+                'text-[#0055ff]/50 fill-btn-blue dark:text-[#0055ff]/50 dark:fill-btn-blue',
             },
             {
               variant: 'outline',
@@ -63,7 +64,8 @@ export const Loader = ({
             {
               variant: 'flat',
               color: 'default',
-              className: 'text-bg-active-selection fill-accent-accent',
+              className:
+                'text-[#0055ff]/50 fill-btn-blue dark:text-[#0055ff]/50 dark:fill-btn-blue',
             },
             {
               variant: 'flat',
