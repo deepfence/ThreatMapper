@@ -198,6 +198,36 @@ func (h *Handler) TestUnconfiguredEmail(w http.ResponseWriter, r *http.Request) 
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}
+
+	switch req.EmailProvider {
+	case model.EmailSettingSMTP:
+		err = h.Validator.Struct(model.EmailConfigurationSMTP{
+			EmailID:  req.EmailID,
+			SMTP:     req.SMTP,
+			Port:     req.Port,
+			Password: req.Password,
+		})
+	case model.EmailSettingSES:
+		err = h.Validator.Struct(model.EmailConfigurationSES{
+			EmailID:         req.EmailID,
+			AmazonAccessKey: req.AmazonAccessKey,
+			AmazonSecretKey: req.AmazonSecretKey,
+			SesRegion:       req.SesRegion,
+		})
+	case model.EmailSettingSendGrid:
+		err = h.Validator.Struct(model.EmailConfigurationSendGrid{
+			EmailID: req.EmailID,
+			APIKey:  req.APIKey,
+		})
+	default:
+		h.respondError(&errInvalidEmailConfigType, w)
+		return
+	}
+	if err != nil {
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
 	emailSender, err := sendemail.NewEmailSendByConfiguration(ctx, req)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
@@ -215,7 +245,7 @@ func (h *Handler) TestUnconfiguredEmail(w http.ResponseWriter, r *http.Request) 
 	email := user.Email
 	err = emailSender.Send([]string{email}, "Deepfence Testmail", "This is a test email", "", nil)
 	if err != nil {
-		h.respondWithErrorCode(err, w, http.StatusBadRequest)
+		h.respondWithErrorCode(err, w, http.StatusForbidden)
 		return
 	}
 
