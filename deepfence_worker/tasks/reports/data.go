@@ -505,10 +505,6 @@ func NodeIDToNodeName(ctx context.Context, nodeIds []string, node_type string) [
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return nodes
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))

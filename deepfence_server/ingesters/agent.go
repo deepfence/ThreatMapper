@@ -1270,6 +1270,7 @@ func UpdatePushBack(ctx context.Context, newValue *atomic.Int32, prev int32) err
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(5*time.Second))
 	if err != nil {
 		return err

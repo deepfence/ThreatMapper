@@ -49,10 +49,6 @@ func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -166,10 +162,6 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -264,10 +256,6 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -324,10 +312,6 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -476,10 +460,6 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
