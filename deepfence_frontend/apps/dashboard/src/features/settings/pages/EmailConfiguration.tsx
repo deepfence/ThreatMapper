@@ -241,7 +241,7 @@ const SendGridForm = ({ data }: { data: ActionReturnType | undefined }) => {
   return (
     <TextInput
       label="API Key"
-      type="text"
+      type="password"
       placeholder="Api key"
       name="apiKey"
       required
