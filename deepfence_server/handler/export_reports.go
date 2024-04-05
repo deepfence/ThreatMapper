@@ -385,8 +385,12 @@ const (
 )
 
 var (
-	errFromAndToDateRequired = ValidatorError{
-		err:                       errors.New("from_timestamp:both from date and to date are required"),
+	errFromDateRequired = ValidatorError{
+		err:                       errors.New("from_timestamp:required if 'to date' is set"),
+		skipOverwriteErrorMessage: true,
+	}
+	errToDateRequired = ValidatorError{
+		err:                       errors.New("to_timestamp:required if 'from date' is set"),
 		skipOverwriteErrorMessage: true,
 	}
 	errFromDateLessThanToDate = ValidatorError{
@@ -437,8 +441,11 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 			h.respondError(&errFromAndToDateDifference, w)
 			return
 		}
-	} else if req.FromTimestamp > 0 || req.ToTimestamp > 0 {
-		h.respondError(&errFromAndToDateRequired, w)
+	} else if req.FromTimestamp > 0 {
+		h.respondError(&errToDateRequired, w)
+		return
+	} else if req.ToTimestamp > 0 {
+		h.respondError(&errFromDateRequired, w)
 		return
 	}
 
