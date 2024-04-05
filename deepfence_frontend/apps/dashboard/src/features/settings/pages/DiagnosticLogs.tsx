@@ -386,7 +386,7 @@ const SelectCloudAccount = ({
 }: {
   fetcher: FetcherWithComponents<ActionData>;
 }) => {
-  const [cloud, setCloud] = useState('');
+  const [cloud, setCloud] = useState('AWS');
   const [selectedCloudAccounts, setSelectedCloudAccounts] = useState<string[]>([]);
 
   return (
