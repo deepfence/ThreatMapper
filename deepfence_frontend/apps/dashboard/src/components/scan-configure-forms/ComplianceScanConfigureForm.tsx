@@ -524,10 +524,6 @@ export const ComplianceScanConfigureForm = ({
 
         <input type="text" name="_nodeIds" hidden readOnly value={nodeIds.join(',')} />
         <input type="text" name="_nodeType" readOnly hidden value={nodeType} />
-
-        {fetcherData?.message && (
-          <p className="dark:text-status-error text-p7 py-3">{fetcherData.message}</p>
-        )}
         {showAdvancedOptions && (
           <Suspense
             fallback={
@@ -577,6 +573,9 @@ export const ComplianceScanConfigureForm = ({
             </Button>
           ) : null}
         </div>
+        {fetcherData?.message && (
+          <p className="dark:text-status-error text-p7 py-3">{fetcherData.message}</p>
+        )}
       </fetcher.Form>
     </>
   );
