@@ -13835,11 +13835,12 @@
         "type": "object",
         "properties": {
           "created_at": { "type": "integer" },
-          "duration": { "type": "integer" },
           "filters": { "type": "string" },
+          "from_timestamp": { "type": "integer" },
           "report_id": { "type": "string" },
           "status": { "type": "string" },
           "storage_path": { "type": "string" },
+          "to_timestamp": { "type": "integer" },
           "type": { "type": "string" },
           "updated_at": { "type": "integer" },
           "url": { "type": "string" }
@@ -13893,13 +13894,11 @@
         "required": ["report_type"],
         "type": "object",
         "properties": {
-          "duration": {
-            "enum": ["0", "1", "7", "30", "60", "90", "180"],
-            "type": "integer"
-          },
           "filters": { "$ref": "#/components/schemas/UtilsReportFilters" },
+          "from_timestamp": { "type": "integer" },
           "options": { "$ref": "#/components/schemas/UtilsReportOptions" },
-          "report_type": { "enum": ["pdf", "xlsx", "sbom"], "type": "string" }
+          "report_type": { "enum": ["pdf", "xlsx", "sbom"], "type": "string" },
+          "to_timestamp": { "type": "integer" }
         }
       },
       "ModelGenerateReportResp": {

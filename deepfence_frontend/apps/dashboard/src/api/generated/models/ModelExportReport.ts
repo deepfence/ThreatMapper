@@ -27,16 +27,16 @@ export interface ModelExportReport {
     created_at?: number;
     /**
      * 
-     * @type {number}
-     * @memberof ModelExportReport
-     */
-    duration?: number;
-    /**
-     * 
      * @type {string}
      * @memberof ModelExportReport
      */
     filters?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelExportReport
+     */
+    from_timestamp?: number;
     /**
      * 
      * @type {string}
@@ -55,6 +55,12 @@ export interface ModelExportReport {
      * @memberof ModelExportReport
      */
     storage_path?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelExportReport
+     */
+    to_timestamp?: number;
     /**
      * 
      * @type {string}
@@ -95,11 +101,12 @@ export function ModelExportReportFromJSONTyped(json: any, ignoreDiscriminator: b
     return {
         
         'created_at': !exists(json, 'created_at') ? undefined : json['created_at'],
-        'duration': !exists(json, 'duration') ? undefined : json['duration'],
         'filters': !exists(json, 'filters') ? undefined : json['filters'],
+        'from_timestamp': !exists(json, 'from_timestamp') ? undefined : json['from_timestamp'],
         'report_id': !exists(json, 'report_id') ? undefined : json['report_id'],
         'status': !exists(json, 'status') ? undefined : json['status'],
         'storage_path': !exists(json, 'storage_path') ? undefined : json['storage_path'],
+        'to_timestamp': !exists(json, 'to_timestamp') ? undefined : json['to_timestamp'],
         'type': !exists(json, 'type') ? undefined : json['type'],
         'updated_at': !exists(json, 'updated_at') ? undefined : json['updated_at'],
         'url': !exists(json, 'url') ? undefined : json['url'],
@@ -116,11 +123,12 @@ export function ModelExportReportToJSON(value?: ModelExportReport | null): any {
     return {
         
         'created_at': value.created_at,
-        'duration': value.duration,
         'filters': value.filters,
+        'from_timestamp': value.from_timestamp,
         'report_id': value.report_id,
         'status': value.status,
         'storage_path': value.storage_path,
+        'to_timestamp': value.to_timestamp,
         'type': value.type,
         'updated_at': value.updated_at,
         'url': value.url,
