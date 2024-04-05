@@ -126,7 +126,7 @@ const inputCva = cva(
             'disabled:text-severity-unknown/60 dark:disabled:text-df-gray-600/60',
             // focus style
             'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
-            'focus:border-b-accent-accent',
+            'focus:border-b-accent-accent dark:focus:border-b-accent-accent',
             // bg styles
             'bg-[length:0%_100%] bg-no-repeat',
             'bg-gradient-to-b from-transparent from-95% to-accent-accent to-95%',
