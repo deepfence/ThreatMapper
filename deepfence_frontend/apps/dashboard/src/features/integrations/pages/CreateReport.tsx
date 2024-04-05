@@ -10,7 +10,6 @@ import {
   SlidingModal,
   SlidingModalCloseButton,
   SlidingModalHeader,
-  TextInput,
 } from 'ui-components';
 
 import { getReportsApiClient } from '@/api/api';
@@ -78,7 +77,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 
   const masked = formData.getAll('mask[]');
   const status = formData.getAll('status[]');
-  const interval = formData.get('interval'); // send this when backend is ready to support
 
   const accountIds = getArrayTypeValuesFromFormData(formData, 'cloudAccountsFilter');
   const severitiesOrCheckTypes = getArrayTypeValuesFromFormData(
@@ -291,15 +289,6 @@ const ReportForm = () => {
               }}
               helperText={fieldErrors?.to_timestamp}
               color={fieldErrors?.to_timestamp ? 'error' : 'default'}
-            />
-            <TextInput
-              className="w-full"
-              label={'Schedule Interval In Days'}
-              type={'text'}
-              sizing="md"
-              name={'interval'}
-              placeholder={'Interval'}
-              helperText="Maximum upto 180 days supported"
             />
 
             <Listbox
