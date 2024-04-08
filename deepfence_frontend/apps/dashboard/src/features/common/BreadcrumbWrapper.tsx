@@ -9,12 +9,7 @@ export const BreadcrumbWrapper = ({
   className?: string;
 }) => {
   return (
-    <div
-      className={cn(
-        'flex px-4 py-2 items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border',
-        className,
-      )}
-    >
+    <div className={cn('flex px-4 py-2 items-center bg-bg-breadcrumb-bar', className)}>
       {children}
     </div>
   );

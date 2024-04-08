@@ -129,7 +129,7 @@ export const AvailabilityCharts = ({
                 <div className="h-6 w-6 shrink-0 text-text-icon">
                   <ErrorStandardLineIcon />
                 </div>
-                <p className="text-text-text-and-icon text-h3">Not available</p>
+                <p className="text-text-text-and-icon text-h4">Not available</p>
               </div>
             )}
           </div>
@@ -147,7 +147,7 @@ export const AvailabilityCharts = ({
                 <div className="h-6 w-6 shrink-0 text-text-icon">
                   <ErrorStandardLineIcon />
                 </div>
-                <p className="text-text-text-and-icon text-h3">Not available</p>
+                <p className="text-text-text-and-icon text-h4">Not available</p>
               </div>
             )}
           </div>

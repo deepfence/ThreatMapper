@@ -118,7 +118,7 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
         'dark:bg-bg-left-nav bg-white',
         'transition-[width]',
         'fixed left-0 z-10 scrolling-touch',
-        'border-r dark:border-bg-top-header border-bg-grid-border',
+        'dark:border-r dark:border-bg-top-header',
         'dark:shadow-none shadow-md',
       )}
       style={{
@@ -130,7 +130,7 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
       <ul className={cn('flex flex-col h-full')}>
         <li>
           <button
-            className="h-12 w-full mb-2 flex pl-5 items-center border dark:border-bg-top-header border-bg-bg-grid-border"
+            className="h-12 w-full mb-2 flex pl-5 items-center dark:border dark:border-bg-top-header"
             onClick={(e) => {
               e.preventDefault();
               onExpandedChange(!expanded);
