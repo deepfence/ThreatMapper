@@ -20,7 +20,7 @@ describe(`Component IconButton`, () => {
       <IconButton id="id" color="default" icon={<Plus />} onClick={onClick} />,
     );
     const buttonId = getByTestId('icon-button-id');
-    expect(buttonId).toHaveClass('dark:bg-accent-accent');
+    expect(buttonId).toHaveClass('bg-btn-blue');
 
     // action
     fireEvent.click(buttonId);
