@@ -1,7 +1,13 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { isNil } from 'lodash-es';
 import { Suspense, useCallback, useMemo, useState } from 'react';
-import { ActionFunctionArgs, Outlet, useFetcher, useNavigate } from 'react-router-dom';
+import {
+  ActionFunctionArgs,
+  Outlet,
+  useFetcher,
+  useNavigate,
+  useParams,
+} from 'react-router-dom';
 import {
   Breadcrumb,
   BreadcrumbLink,
@@ -28,11 +34,14 @@ import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations
 import { TruncatedText } from '@/components/TruncatedText';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { GenerativeAIIntegrationType } from '@/types/common';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
-export const CLOUD_TRAIL_ALERT = 'CloudTrail Alert';
-export const USER_ACTIVITIES = 'User Activities';
+export const AI_INTEGRATION_TYPES: Record<GenerativeAIIntegrationType, string> = {
+  openai: 'OpenAI',
+  'amazon-bedrock': 'Amazon Bedrock',
+};
 
 export enum ActionEnumType {
   DELETE = 'delete',
@@ -288,19 +297,33 @@ const MakeDefaultConfirmationModal = ({
 const AIIntegrationList = () => {
   const navigate = useNavigate();
 
+  const params = useParams() as {
+    integrationType?: GenerativeAIIntegrationType;
+  };
+  const breadcrumbs = [
+    <BreadcrumbLink key="1" asChild icon={<IntegrationsIcon />} isLink>
+      <DFLink to={'/integrations'} unstyled>
+        Integrations
+      </DFLink>
+    </BreadcrumbLink>,
+    <BreadcrumbLink key="2">
+      <span className="inherit cursor-auto">Generative AI</span>
+    </BreadcrumbLink>,
+  ];
+
+  if (params.integrationType?.length) {
+    breadcrumbs.push(
+      <BreadcrumbLink>
+        <span className="inherit cursor-auto">
+          {AI_INTEGRATION_TYPES[params.integrationType] ?? params.integrationType}
+        </span>
+      </BreadcrumbLink>,
+    );
+  }
   return (
     <>
       <div className="px-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
-        <Breadcrumb>
-          <BreadcrumbLink asChild icon={<IntegrationsIcon />} isLink>
-            <DFLink to={'/integrations'} unstyled>
-              Integrations
-            </DFLink>
-          </BreadcrumbLink>
-          <BreadcrumbLink>
-            <span className="inherit cursor-auto">Generative AI</span>
-          </BreadcrumbLink>
-        </Breadcrumb>
+        <Breadcrumb>{breadcrumbs}</Breadcrumb>
       </div>
       <div className="m-4">
         <div className="flex gapx-8">
@@ -373,6 +396,16 @@ const AIIntegrationTable = () => {
   const {
     data: { data, message },
   } = useListAIIntegrations();
+
+  const params = useParams() as {
+    integrationType?: string;
+  };
+
+  const filteredData = params.integrationType?.length
+    ? data.filter(
+        (integration) => integration.integration_type === params.integrationType,
+      )
+    : data;
 
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
   const [idToMakeDefault, setIdToMakeDefault] = useState<number | null>(null);
@@ -460,7 +493,7 @@ const AIIntegrationTable = () => {
   return (
     <>
       <Table
-        data={data}
+        data={filteredData}
         columns={columns}
         enableColumnResizing
         noDataElement={

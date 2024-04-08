@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { ReactNode, Suspense } from 'react';
+import { generatePath } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 import {
   Breadcrumb,
@@ -410,7 +411,9 @@ const AIIntegrations = () => {
         const count = groupedData[type.type] ?? 0;
         return (
           <DFLink
-            to="/integrations/gen-ai"
+            to={generatePath('/integrations/gen-ai/:integrationType', {
+              integrationType: type.type,
+            })}
             unstyled
             key={type.type}
             className="hover:shadow-[0px_0px_6px_1px_#044AFF] focus:shadow-[0px_0px_6px_1px_#044AFF] cursor-pointer rounded-[5px]"
