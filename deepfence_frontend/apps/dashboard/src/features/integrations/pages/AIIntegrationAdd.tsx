@@ -20,6 +20,7 @@ import {
   ModelAddGenerativeAiBedrockIntegrationModelIdEnum,
   ModelAddGenerativeAiOpenAIIntegrationModelIdEnum,
 } from '@/api/generated';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries } from '@/queries';
 import { GenerativeAIIntegrationType } from '@/types/common';
@@ -171,18 +172,15 @@ const AIIntegrationAdd = () => {
     >
       <SlidingModalCloseButton />
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+        <SlidingModalHeaderWrapper>
           Add Generative AI Integration
-        </div>
+        </SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalContent>
         {!fetcher.data?.success ? (
           <fetcher.Form method="POST" className="flex flex-col gap-8 m-4">
             <div className="flex flex-col gap-2">
-              <label
-                htmlFor="genAIProviders"
-                className="text-p3 text-gray-900 dark:text-text-text-and-icon"
-              >
+              <label htmlFor="genAIProviders" className="text-p3 text-text-text-and-icon">
                 Select Provider
               </label>
               <Radio
@@ -213,7 +211,7 @@ const AIIntegrationAdd = () => {
             )}
 
             {fetcher.data?.message && (
-              <p className="dark:text-status-error text-p7">{fetcher.data?.message}</p>
+              <p className="text-status-error text-p7">{fetcher.data?.message}</p>
             )}
 
             <div className="flex gap-x-2 p-1">
@@ -315,10 +313,10 @@ const AmazonBedrockFormFields = ({ fetcherData }: { fetcherData?: ActionData }) 
         onCheckedChange={(val) => setUseIAM(val as boolean)}
         label={
           <div className="pl-3 cursor-pointer">
-            <p className="text-h5 text-gray-900 dark:text-text-text-and-icon">
+            <p className="text-h5 text-text-text-and-icon">
               Automatically add Bedrock integrations
             </p>
-            <p className="text-p6 text-gray-900 dark:text-text-text-and-icon">
+            <p className="text-p6 text-text-text-and-icon">
               If the management console is deployed in AWS with instance role and read
               permission to Bedrock, integrations will be added automatically
             </p>

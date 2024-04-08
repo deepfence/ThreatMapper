@@ -66,7 +66,9 @@ import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { getColorForCompliancePercent } from '@/constants/charts';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import {
   isKubernetesProvider,
   isLinuxProvider,
@@ -75,6 +77,7 @@ import {
 } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import {
   ComplianceScanNodeTypeEnum,
   isCloudNode,
@@ -316,7 +319,7 @@ const Filters = () => {
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['status']}
@@ -545,7 +548,7 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 const DeleteConfirmationModal = ({
@@ -593,7 +596,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -634,7 +637,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (
@@ -730,22 +733,19 @@ const ActionDropdown = ({
               </span>
             </DropdownItem>
             <DropdownItem
-              disabled={!scanId || !nodeType || isScanDeletePending(scanStatus)}
+              disabled={
+                !scanId ||
+                !nodeType ||
+                isScanInProgress(scanStatus) ||
+                isNeverScanned(scanStatus) ||
+                isScanDeletePending(scanStatus)
+              }
               onSelect={() => {
                 if (!scanId || !nodeType) return;
                 onTableAction(row, ActionEnumType.DELETE_SCAN);
               }}
             >
-              <span
-                className={cn('flex items-center text-red-700 dark:text-status-error', {
-                  'dark:text-gray-600':
-                    isScanInProgress(scanStatus) ||
-                    isNeverScanned(scanStatus) ||
-                    isScanDeletePending(scanStatus),
-                })}
-              >
-                Delete latest scan
-              </span>
+              Delete latest scan
             </DropdownItem>
             <DropdownItem
               onSelect={() => {
@@ -936,6 +936,7 @@ const AccountTable = ({
   rowSelectionState: RowSelectionState;
   onTableAction: (row: ModelCloudNodeAccountInfo, actionType: ActionEnumType) => void;
 }) => {
+  const { mode: theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = usePostureAccounts();
   const { data: versionsData } = useGetAgentVersions();
@@ -1021,7 +1022,7 @@ const AccountTable = ({
               onTableAction={onTableAction}
               trigger={
                 <button className="p-1 flex">
-                  <span className="block h-4 w-4 dark:text-text-text-and-icon rotate-90 shrink-0">
+                  <span className="block h-4 w-4 text-text-text-and-icon rotate-90 shrink-0">
                     <EllipsisIcon />
                   </span>
                 </button>
@@ -1082,7 +1083,7 @@ const AccountTable = ({
             return (
               <span
                 style={{
-                  color: getColorForCompliancePercent(percent),
+                  color: getColorForCompliancePercent(theme, percent),
                 }}
               >
                 {formatPercentage(percent, {
@@ -1116,12 +1117,12 @@ const AccountTable = ({
               return (
                 <>
                   <div className="flex gap-x-1.5 items-center" key={current}>
-                    <span className="dark:text-text-input-value font-medium">
+                    <span className="text-text-input-value font-medium">
                       {data[current]}
                     </span>
                     <ScanStatusBadge status={scanStatus ?? ''} />
                     {index < keys.length - 1 ? (
-                      <div className="mx-2 w-px h-[20px] dark:bg-bg-grid-border" />
+                      <div className="mx-2 w-px h-[20px] bg-bg-grid-border" />
                     ) : null}
                   </div>
                 </>
@@ -1150,7 +1151,7 @@ const AccountTable = ({
                 {upgradeAvailable && (
                   <Tooltip
                     content={
-                      <div className="flex-col gap-2 dark:text-text-text-and-icon">
+                      <div className="flex-col gap-2 dark:text-text-text-and-icon text-text-text-inverse">
                         <div className="text-h5">Update Available.</div>
                         <div className="text-p6">
                           Version <span className="text-h6">{versions[0]}</span> is
@@ -1158,6 +1159,7 @@ const AccountTable = ({
                           <DFLink
                             href="https://community.deepfence.io/threatmapper/docs/cloudscanner/"
                             target="_blank"
+                            className="dark:text-text-link text-blue-500"
                           >
                             these instructions
                           </DFLink>{' '}
@@ -1166,6 +1168,7 @@ const AccountTable = ({
                           <DFLink
                             href="https://www.deepfence.io/threatstryker"
                             target="_blank"
+                            className="dark:text-text-link text-blue-500"
                           >
                             ThreatStryker
                           </DFLink>
@@ -1189,7 +1192,7 @@ const AccountTable = ({
     }
 
     return columns;
-  }, [rowSelectionState, searchParams, data, nodeType, versions]);
+  }, [rowSelectionState, searchParams, data, nodeType, versions, theme]);
 
   return (
     <>
@@ -1280,7 +1283,7 @@ const Header = () => {
   });
 
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <BreadcrumbWrapper>
       <Breadcrumb>
         <BreadcrumbLink asChild icon={<PostureIcon />} isLink>
           <DFLink to={'/posture'} unstyled>
@@ -1296,7 +1299,7 @@ const Header = () => {
       <div className="ml-2 flex items-center">
         {isFetching ? <CircleSpinner size="sm" /> : null}
       </div>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 const Accounts = () => {

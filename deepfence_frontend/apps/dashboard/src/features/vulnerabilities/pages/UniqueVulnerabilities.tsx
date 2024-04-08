@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useIsFetching } from '@tanstack/react-query';
-import { capitalize } from 'lodash-es';
+import { capitalize, upperFirst } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
 import {
@@ -27,11 +27,14 @@ import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { PopOutIcon } from '@/components/icons/common/PopOut';
 import { TimesIcon } from '@/components/icons/common/Times';
-import { CveCVSSScore, SeverityBadge } from '@/components/SeverityBadge';
+import { SeverityBadgeIcon } from '@/components/SeverityBadge';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { queries } from '@/queries';
-import { ScanTypeEnum } from '@/types/common';
+import { useTheme } from '@/theme/ThemeContext';
+import { ScanTypeEnum, VulnerabilitySeverityType } from '@/types/common';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -88,7 +91,7 @@ const Filters = () => {
 
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['severity']}
@@ -309,10 +312,11 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 const UniqueTable = () => {
+  const { mode: theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const columnHelper = createColumnHelper<ModelVulnerability>();
   const [sort, setSort] = useSortingState();
@@ -329,7 +333,7 @@ const UniqueTable = () => {
             className="flex items-center gap-x-2"
           >
             <div className="p-2 bg-gray-100 dark:bg-gray-500/10 rounded-lg shrink-0">
-              <div className="w-3 h-3 dark:text-status-error">
+              <div className="w-3 h-3 text-status-error">
                 <VulnerabilityIcon />
               </div>
             </div>
@@ -350,7 +354,15 @@ const UniqueTable = () => {
       }),
       columnHelper.accessor('cve_severity', {
         enableResizing: true,
-        cell: (info) => <SeverityBadge severity={info.getValue()} />,
+        cell: (info) => (
+          <div className="text-p4 text-text-text-and-icon gap-1 inline-flex">
+            <SeverityBadgeIcon
+              severity={info.getValue() as VulnerabilitySeverityType}
+              theme={theme}
+            />
+            {upperFirst(info.getValue())}
+          </div>
+        ),
         header: () => <TruncatedText text="Severity" />,
         minSize: 80,
         size: 80,
@@ -359,7 +371,9 @@ const UniqueTable = () => {
       columnHelper.accessor('cve_cvss_score', {
         enableResizing: false,
         enableSorting: false,
-        cell: (info) => <CveCVSSScore score={info.getValue()} />,
+        cell: (info) => (
+          <div className="text-p3 text-text-text-and-icon">{info.getValue()}</div>
+        ),
         header: () => <TruncatedText text="Score" />,
         minSize: 70,
         size: 60,
@@ -368,7 +382,7 @@ const UniqueTable = () => {
       columnHelper.accessor('cve_attack_vector', {
         enableSorting: false,
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
-        header: () => <TruncatedText text="Attack Vector" />,
+        header: () => <TruncatedText text="Attack vector" />,
         minSize: 100,
         size: 120,
         maxSize: 250,
@@ -411,7 +425,7 @@ const UniqueTable = () => {
     ];
 
     return columns;
-  }, [searchParams]);
+  }, [searchParams, theme]);
 
   const { data } = useSuspenseQuery({
     ...queries.vulnerability.uniqueVulnerabilities({
@@ -498,7 +512,7 @@ const UniqueVulnerabilities = () => {
 
   return (
     <div>
-      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <BreadcrumbWrapper>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<VulnerabilityIcon />} isLink>
             <DFLink to={'/vulnerability'} unstyled>
@@ -513,7 +527,7 @@ const UniqueVulnerabilities = () => {
         <div className="ml-2 flex items-center">
           {isFetching ? <CircleSpinner size="sm" /> : null}
         </div>
-      </div>
+      </BreadcrumbWrapper>
       <div className="mx-4">
         <div className="h-12 flex items-center">
           <Button

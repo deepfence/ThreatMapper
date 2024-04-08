@@ -133,6 +133,8 @@ importers:
 
   packages/tailwind-preset:
     specifiers:
+      '@mertasan/tailwindcss-variables': ^2.7.0
+      '@types/mertasan__tailwindcss-variables': ^2.6.4
       classnames: ^2.3.2
       tailwind-merge: ^1.14.0
       tailwindcss: ^3.3.3
@@ -141,6 +143,8 @@ importers:
       classnames: 2.3.2
       tailwind-merge: 1.14.0
     devDependencies:
+      '@mertasan/tailwindcss-variables': 2.7.0_gtkfdoc4yzqy2xj3ku2n5fmgdy
+      '@types/mertasan__tailwindcss-variables': 2.6.4
       tailwindcss: 3.3.3
       typescript: 5.1.6
 
@@ -194,6 +198,7 @@ importers:
       jsdom: ^22.1.0
       lodash-es: ^4.17.21
       postcss: ^8.4.27
+      postcss-import: ^15.1.0
       react: ^18.2.0
       react-dom: ^18.2.0
       react-use: ^17.4.0
@@ -258,6 +263,7 @@ importers:
       eslint-plugin-storybook: 0.6.13_qj3u6ezxe2airdzjq3nyoxe24m
       jsdom: 22.1.0
       postcss: 8.4.27
+      postcss-import: 15.1.0_postcss@8.4.27
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       resize-observer-polyfill: 1.5.1
@@ -2332,6 +2338,18 @@ packages:
       '@types/mdx': 2.0.6
       '@types/react': 18.2.20
       react: 18.2.0
+    dev: true
+
+  /@mertasan/tailwindcss-variables/2.7.0_gtkfdoc4yzqy2xj3ku2n5fmgdy:
+    resolution: {integrity: sha512-rKPhxi/0r6XWP0+OjPmsfrloX/TtQmvONj2Pr3Nl8BNBznQVP3M9sphguDBUDC0AiKYx2xgup3XzAhlIDLPLIA==}
+    engines: {node: '>=12.13.0'}
+    peerDependencies:
+      autoprefixer: ^10.0.2
+      postcss: ^8.0.9
+    dependencies:
+      autoprefixer: 10.4.15_postcss@8.4.27
+      lodash: 4.17.21
+      postcss: 8.4.27
     dev: true
 
   /@microsoft/api-extractor-model/7.27.6:
@@ -4914,6 +4932,14 @@ packages:
 
   /@types/mdx/2.0.6:
     resolution: {integrity: sha512-sVcwEG10aFU2KcM7cIA0M410UPv/DesOPyG8zMVk0QUDexHA3lYmGucpEpZ2dtWWhi2ip3CG+5g/iH0PwoW4Fw==}
+    dev: true
+
+  /@types/mertasan__tailwindcss-variables/2.6.4:
+    resolution: {integrity: sha512-gMiHep7/ProK1THXJtPhUGQpOcEV18aySFZKq5WyNR+AsFGcPNrAUka7O4MFglM3d5mBcL5s+oM71PUkeI0uvQ==}
+    dependencies:
+      tailwindcss: 3.3.3
+    transitivePeerDependencies:
+      - ts-node
     dev: true
 
   /@types/mime-types/2.1.1:

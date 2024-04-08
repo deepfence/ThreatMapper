@@ -12,7 +12,7 @@ const PostureConnectorLayout = () => {
 
   return (
     <>
-      <div className="flex pl-4 py-2 w-full bg-white dark:bg-bg-breadcrumb-bar">
+      <div className="flex pl-4 py-2 w-full bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
         <Breadcrumb>
           <BreadcrumbLink icon={<PostureIcon />} asChild isLink>
             <DFLink to="/posture" unstyled>

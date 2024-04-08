@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { upperFirst } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
@@ -19,10 +20,12 @@ import {
 import { ModelCloudCompliance } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
-import { PostureStatusBadge } from '@/components/SeverityBadge';
+import { PostureStatusBadgeIcon } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { TruncatedText } from '@/components/TruncatedText';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import { PostureSeverityType } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
@@ -47,6 +50,7 @@ const useGetScanDiff = (props: { baseScanId: string; toScanId: string }) => {
 };
 
 const CompareTable = (props: IScanCompareProps & { type: string }) => {
+  const { mode: theme } = useTheme();
   const { data } = useGetScanDiff({
     baseScanId: props.baseScanId,
     toScanId: props.toScanId,
@@ -74,7 +78,7 @@ const CompareTable = (props: IScanCompareProps & { type: string }) => {
               }}
               className="flex items-center gap-x-[6px]"
             >
-              <div className="w-4 h-4 dark:text-text-text-and-icon">
+              <div className="w-4 h-4 text-text-text-and-icon">
                 <PostureIcon />
               </div>
               <TruncatedText
@@ -97,7 +101,15 @@ const CompareTable = (props: IScanCompareProps & { type: string }) => {
       }),
       columnHelper.accessor('status', {
         cell: (info) => {
-          return <PostureStatusBadge status={info.getValue() as PostureSeverityType} />;
+          return (
+            <div className="flex items-center gap-x-2">
+              <PostureStatusBadgeIcon
+                status={info.getValue() as PostureSeverityType}
+                theme={theme}
+              />
+              {upperFirst(info.getValue())}
+            </div>
+          );
         },
         header: () => 'Status',
         minSize: 70,
@@ -157,15 +169,15 @@ const CompareCountWidget = ({
   const counts = !isDeleted ? data.added : data.deleted;
 
   return (
-    <div className="flex flex-col  dark:text-text-text-and-icon items-center">
+    <div className="flex flex-col text-text-text-and-icon items-center">
       <div className="flex flex-col gap-y-1.5">
-        <span className="text-p1">{title}</span>
-        <div className="flex flex-1 max-w-[160px] dark:text-text-input-value items-baseline">
+        <span className="text-p1a">{title}</span>
+        <div className="flex flex-1 max-w-[160px] text-text-input-value items-baseline">
           <>
             <div
               className={cn('h-5 w-5', {
-                'dark:text-status-success rotate-180': isDeleted,
-                'dark:text-status-error': !isDeleted,
+                'text-status-success rotate-180': isDeleted,
+                'text-status-error': !isDeleted,
               })}
             >
               <ArrowLine />
@@ -207,13 +219,13 @@ const CountWidget = (props: {
 const ScanComapareTime = ({ baseScanTime, toScanTime }: IScanCompareProps) => {
   return (
     <div className="px-1.5 flex items-center h-12">
-      <div className="dark:text-text-text-and-icon text-p4 flex gap-x-1">
+      <div className="text-text-text-and-icon text-p4 flex gap-x-1">
         Comparing scan{' '}
-        <span className="dark:text-text-input-value text-p4">
+        <span className="text-text-input-value text-p4">
           {formatMilliseconds(baseScanTime)}
         </span>{' '}
         with{' '}
-        <span className="dark:text-text-input-value text-p4">
+        <span className="text-text-input-value text-p4">
           {formatMilliseconds(toScanTime)}
         </span>
       </div>
@@ -255,11 +267,11 @@ export const PosturesCloudCompare = ({
       >
         <SlidingModalCloseButton />
         <SlidingModalHeader>
-          <div className="p-4 text-h3 dark:text-text-text-and-icon dark:bg-bg-breadcrumb-bar ">
+          <SlidingModalHeaderWrapper>
             <div className="overflow-hidden">
               <TruncatedText text="Scan comparision" />
             </div>
-          </div>
+          </SlidingModalHeaderWrapper>
         </SlidingModalHeader>
         <SlidingModalContent>
           <div className="mx-4">

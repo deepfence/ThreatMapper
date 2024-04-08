@@ -143,10 +143,10 @@ const CountCard = ({
 }) => {
   return (
     <DFLink to={link} unstyled className="group flex flex-col gap-1 cursor-pointer">
-      <div className="text-p1 dark:text-text-text-and-icon truncate">{title}</div>
+      <div className="text-p12 text-text-text-and-icon truncate">{title}</div>
       <div className="flex gap-3 items-center">
-        <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">{icon}</div>
-        <div className="text-h1 dark:text-accent-accent group-hover:underline">
+        <div className="h-6 w-6 shrink-0 text-text-icon">{icon}</div>
+        <div className="text-h1 text-accent-accent group-hover:underline">
           {abbreviateNumber(count)}
         </div>
       </div>
@@ -165,10 +165,10 @@ const CountCardSkeleton = ({
 }) => {
   return (
     <DFLink to={link} unstyled className="flex flex-col gap-1 cursor-pointer">
-      <div className="text-p1 dark:text-text-text-and-icon">{title}</div>
+      <div className="text-p12 text-text-text-and-icon">{title}</div>
       <div className="flex gap-3 items-center">
-        <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">{icon}</div>
-        <div className="h-9 w-12 dark:bg-accent-accent/30 rounded" />
+        <div className="h-6 w-6 shrink-0 text-text-icon">{icon}</div>
+        <div className="h-9 w-12 dark:bg-accent-accent bg-bg-grid-border opacity-30 rounded" />
       </div>
     </DFLink>
   );

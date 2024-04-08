@@ -68,7 +68,7 @@ const AuditTable = () => {
       }),
       columnHelper.accessor('email', {
         cell: (cell) => cell.getValue(),
-        header: () => 'User Email',
+        header: () => 'User email',
         minSize: 30,
         size: 50,
         maxSize: 60,
@@ -76,7 +76,7 @@ const AuditTable = () => {
       }),
       columnHelper.accessor('role', {
         cell: (cell) => cell.getValue(),
-        header: () => <TruncatedText text={'User Role'} />,
+        header: () => <TruncatedText text={'User role'} />,
         minSize: 30,
         size: 30,
         maxSize: 35,
@@ -129,7 +129,7 @@ const AuditTable = () => {
   return (
     <div className="mt-2">
       {data.message ? (
-        <p className="dark:text-status-error text-p7">{data.message}</p>
+        <p className="text-status-error text-p7">{data.message}</p>
       ) : (
         <Table
           size="default"
@@ -175,7 +175,7 @@ const UserAuditLogs = () => {
   return (
     <div className="h-full">
       <div className="mt-2">
-        <h3 className="text-h6 dark:text-text-input-value">User audit logs</h3>
+        <h3 className="text-h6 text-text-input-value">User audit logs</h3>
       </div>
       <Suspense
         fallback={

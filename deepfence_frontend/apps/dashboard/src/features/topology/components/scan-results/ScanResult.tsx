@@ -8,11 +8,17 @@ import { DFLink } from '@/components/DFLink';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
 import { ScanStatusDeletePending } from '@/components/ScanStatusMessage';
-import { POSTURE_STATUS_COLORS, SEVERITY_COLORS } from '@/constants/charts';
+import { SeverityBadgeIcon } from '@/components/SeverityBadge';
+import { getPostureColor, getSeverityColorMap } from '@/constants/charts';
 import { ScanResultChart } from '@/features/topology/components/scan-results/ScanResultChart';
 import { queries } from '@/queries';
-import { useTheme } from '@/theme/ThemeContext';
-import { ScanTypeEnum } from '@/types/common';
+import { Mode, useTheme } from '@/theme/ThemeContext';
+import {
+  PostureSeverityType,
+  ScanTypeEnum,
+  SecretSeverityType,
+  VulnerabilitySeverityType,
+} from '@/types/common';
 import { sortBySeverity } from '@/utils/array';
 import { formatToRelativeTimeFromNow } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
@@ -50,9 +56,12 @@ function useScanResultSummaryCounts(scanId = '', type: ScanTypeEnum) {
   }[type];
 }
 
-const getSeriesOption = (counts: {
-  [x: string]: number;
-}): Array<{
+const getSeriesOption = (
+  theme: Mode,
+  counts: {
+    [x: string]: number;
+  },
+): Array<{
   name: string;
   value: number;
   color: string;
@@ -63,8 +72,8 @@ const getSeriesOption = (counts: {
         name: key,
         value: counts[key],
         color:
-          SEVERITY_COLORS[key as keyof typeof SEVERITY_COLORS] ??
-          POSTURE_STATUS_COLORS[key as keyof typeof POSTURE_STATUS_COLORS] ??
+          getSeverityColorMap(theme)[key as SecretSeverityType] ??
+          getPostureColor(theme)[key as PostureSeverityType] ??
           '',
       };
     }),
@@ -115,10 +124,12 @@ const ScanResultHeading = ({
           {title}
         </DFLink>
       ) : (
-        <h5 className="text-h5 dark:text-text-input-value">{title}</h5>
+        <h5 className="text-h5 dark:text-text-input-value text-text-text-and-icon">
+          {title}
+        </h5>
       )}
       {timestamp ? (
-        <div className="dark:text-text-text-and-icon text-p8">
+        <div className="text-text-text-and-icon text-p8">
           {formatToRelativeTimeFromNow(timestamp)}
         </div>
       ) : null}
@@ -129,10 +140,10 @@ const ScanResultHeading = ({
 const ScanStatusError = () => {
   return (
     <div className="flex items-center justify-center h-full w-full gap-2">
-      <div className="h-6 w-6 shrink-0 dark:text-status-error">
+      <div className="h-6 w-6 shrink-0 text-status-error">
         <ErrorStandardSolidIcon />
       </div>
-      <p className="dark:text-text-text-and-icon text-h3">Scan failed</p>
+      <p className="text-text-text-and-icon text-h4">Scan failed</p>
     </div>
   );
 };
@@ -141,7 +152,7 @@ const ScanStatusInProgress = () => {
   return (
     <div className="flex items-center justify-center h-full w-full gap-2">
       <CircleSpinner size="sm" />
-      <p className="dark:text-text-text-and-icon text-h3">Scan in progress</p>
+      <p className="text-text-text-and-icon text-h4">Scan in progress</p>
     </div>
   );
 };
@@ -149,10 +160,10 @@ const ScanStatusInProgress = () => {
 const ScanStatusNeverScanned = () => {
   return (
     <div className="flex items-center justify-center h-full w-full gap-2">
-      <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">
+      <div className="h-6 w-6 shrink-0 text-text-icon">
         <ErrorStandardLineIcon />
       </div>
-      <p className="dark:text-text-text-and-icon text-h3">Never scanned</p>
+      <p className="text-text-text-and-icon text-h4">Never scanned</p>
     </div>
   );
 };
@@ -195,39 +206,37 @@ const ScanResultComponent = ({
             <div className="flex items-center justify-center">
               <div className="h-[100px] w-[100px]">
                 <ScanResultChart
-                  data={getSeriesOption(scanSummary.counts)}
+                  data={getSeriesOption(mode, scanSummary.counts)}
                   theme={mode}
                   to={to}
                 />
               </div>
             </div>
             <div className="flex flex-col gap-1 self-center min-w-[150px] ml-auto pr-8">
-              {getSeriesOption(scanSummary.counts).map((count) => {
+              {getSeriesOption(mode, scanSummary.counts).map((count) => {
                 return (
                   <div className="flex gap-2 w-full items-center" key={count.name}>
-                    <div
-                      className="h-[9px] w-[9px] rounded-full shrink-0"
-                      style={{
-                        backgroundColor: count.color,
-                      }}
-                    ></div>
+                    <SeverityBadgeIcon
+                      severity={count.name?.toLowerCase() as VulnerabilitySeverityType}
+                      theme={mode}
+                    />
                     <DFLink
-                      to={`${to}=${count.name.toLowerCase()}`}
+                      to={`${to}=${count.name?.toLowerCase()}`}
                       target="_blank"
                       rel="noreferrer"
                       unstyled
-                      className="capitalize text-p8 dark:text-text-input-value"
+                      className="capitalize text-p7a text-text-text-and-icon"
                     >
                       {count.name}
                     </DFLink>
-                    <div className="ml-auto text-p7 dark:text-text-input-value">
+                    <div className="ml-auto text-p6 text-text-input-value">
                       {abbreviateNumber(count.value)}
                     </div>
                   </div>
                 );
               })}
               {!Object.keys(scanSummary.counts).length ? (
-                <div className="dark:text-text-text-and-icon pr-3">No issues found</div>
+                <div className="text-text-text-and-icon pr-3">No issues found</div>
               ) : null}
             </div>
           </div>

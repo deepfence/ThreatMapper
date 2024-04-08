@@ -118,7 +118,7 @@ export const RegistryImagesTable = ({
               onTableAction={onTableAction}
               trigger={
                 <button className="p-1">
-                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                  <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
                     <EllipsisIcon />
                   </div>
                 </button>
@@ -152,7 +152,7 @@ export const RegistryImagesTable = ({
       }),
       columnHelper.accessor('images', {
         enableSorting: false,
-        header: () => 'Total Images',
+        header: () => 'Total images',
         cell: (info) => info.getValue() ?? 0,
         maxSize: 50,
       }),

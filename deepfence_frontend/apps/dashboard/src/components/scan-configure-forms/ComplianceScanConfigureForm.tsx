@@ -376,7 +376,7 @@ const ControlTable = ({
   return (
     <>
       {data.message ? (
-        <p className="dark:text-status-error text-p7 p-3">{data.message}</p>
+        <p className="text-status-error text-p7 p-3">{data.message}</p>
       ) : null}
       <Table
         size="compact"
@@ -468,7 +468,7 @@ export const ControlsTable = memo(
                       selectedTab={selectedTab}
                     />
                     {!isCheckTypeEnabled ? (
-                      <div className="inset-0 dark:bg-bg-left-nav/70 absolute pointer-events-none"></div>
+                      <div className="inset-0 bg-bg-left-nav/70 absolute pointer-events-none"></div>
                     ) : null}
                   </Suspense>
                 </div>
@@ -542,7 +542,7 @@ export const ComplianceScanConfigureForm = ({
           </Suspense>
         )}
         {nodeIds.length > 1 ? (
-          <span className="text-p4 dark:text-text-text-and-icon">
+          <span className="text-p4 text-text-text-and-icon">
             Click on start scan to find compliance issues
           </span>
         ) : null}
@@ -551,7 +551,7 @@ export const ComplianceScanConfigureForm = ({
         !isCloudOrgNode(nodeType) &&
         !isKubernetesNode(nodeType) ? (
           <div className="flex flex-col gap-y-2 mt-4">
-            <h6 className={'text-p3 dark:text-text-text-and-icon'}>Priority scan</h6>
+            <h6 className={'text-p3 text-text-text-and-icon'}>Priority scan</h6>
             <Checkbox name="isPriorityScan" label="Priority scan" />
           </div>
         ) : null}
@@ -574,7 +574,7 @@ export const ComplianceScanConfigureForm = ({
           ) : null}
         </div>
         {fetcherData?.message && (
-          <p className="dark:text-status-error text-p7 py-3">{fetcherData.message}</p>
+          <p className="text-status-error text-p7a py-3">{fetcherData.message}</p>
         )}
       </fetcher.Form>
     </>

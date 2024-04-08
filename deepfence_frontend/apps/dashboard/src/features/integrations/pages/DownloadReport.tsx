@@ -28,6 +28,7 @@ import { FilterIcon } from '@/components/icons/common/Filter';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import {
   getReportDownloadAppliedFiltersCount,
   ReportFilters,
@@ -194,7 +195,7 @@ const DeleteConfirmationModal = ({
       }}
       title={
         !fetcher.data?.deleteSuccess ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -235,7 +236,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message ? (
-            <p className="mt-2 dark:text-status-error text-p7">{fetcher.data?.message}</p>
+            <p className="mt-2 text-status-error text-p7">{fetcher.data?.message}</p>
           ) : null}
         </div>
       ) : (
@@ -247,7 +248,7 @@ const DeleteConfirmationModal = ({
 
 const Header = () => {
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <BreadcrumbWrapper>
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<IntegrationsIcon />} isLink>
@@ -260,7 +261,7 @@ const Header = () => {
           </BreadcrumbLink>
         </Breadcrumb>
       </>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 

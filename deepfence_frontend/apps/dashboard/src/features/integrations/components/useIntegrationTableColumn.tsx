@@ -40,7 +40,7 @@ const ActionDropdown = ({
           </DropdownItem>
           <DropdownItem
             onClick={() => onTableAction(row, ActionEnumType.DELETE)}
-            className="dark:text-status-error dark:hover:text-[#C45268]"
+            color="error"
           >
             Delete
           </DropdownItem>
@@ -131,7 +131,7 @@ export const useIntegrationTableColumn = (
                 '-'
               ),
 
-            header: () => <TruncatedText text={'IAM Role'} />,
+            header: () => <TruncatedText text={'IAM role'} />,
             minSize: 50,
             size: 55,
             maxSize: 60,
@@ -141,7 +141,7 @@ export const useIntegrationTableColumn = (
             cell: (cell) => (
               <TruncatedText text={cell.row.original.config?.aws_access_key || '-'} />
             ),
-            header: () => <TruncatedText text="AWS Access Key" />,
+            header: () => <TruncatedText text="AWS access key" />,
             minSize: 50,
             size: 55,
             maxSize: 60,
@@ -151,7 +151,7 @@ export const useIntegrationTableColumn = (
             cell: (cell) => (
               <TruncatedText text={cell.row.original.config?.aws_account_id || '-'} />
             ),
-            header: () => <TruncatedText text="AWS Account ID" />,
+            header: () => <TruncatedText text="AWS account id" />,
             minSize: 50,
             size: 55,
             maxSize: 60,
@@ -163,7 +163,7 @@ export const useIntegrationTableColumn = (
                 text={cell.row.original.config?.target_account_role_arn || '-'}
               />
             ),
-            header: () => <TruncatedText text="Account Role ARN" />,
+            header: () => <TruncatedText text="Account role ARN" />,
             minSize: 50,
             size: 55,
             maxSize: 60,
@@ -490,7 +490,7 @@ export const useIntegrationTableColumn = (
               onTableAction={onTableAction}
               trigger={
                 <button className="p-1">
-                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                  <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
                     <EllipsisIcon />
                   </div>
                 </button>
@@ -514,14 +514,14 @@ export const useIntegrationTableColumn = (
 
       columnHelper.accessor('integration_type', {
         cell: (cell) => cell.getValue(),
-        header: () => 'Integration Type',
+        header: () => 'Integration type',
         minSize: 65,
         size: 70,
         maxSize: 75,
       }),
       columnHelper.accessor('notification_type', {
         cell: (cell) => cell.getValue(),
-        header: () => 'Notification Type',
+        header: () => 'Notification type',
         minSize: 65,
         size: 70,
         maxSize: 75,
@@ -532,11 +532,11 @@ export const useIntegrationTableColumn = (
             cell.row.original?.last_error_msg &&
             cell.row.original?.last_error_msg?.trim()?.length > 0;
           return (
-            <div className="flex items-center dark:text-text-text-and-icon text-p4">
+            <div className="flex items-center text-text-text-and-icon text-p4">
               {isError ? (
                 <Tooltip content={cell.row.original?.last_error_msg}>
                   <div className="flex gap-1.5">
-                    <span className="w-[18px] h-[18px] shrink-0 flex dark:text-status-error">
+                    <span className="w-[18px] h-[18px] shrink-0 flex text-status-error">
                       <ErrorIcon />
                     </span>
                     Error
@@ -609,7 +609,7 @@ export const useIntegrationTableColumn = (
           return (
             <Tooltip
               content={
-                <pre className="text-p7 text-text-input-value h-[300px] overflow-auto">
+                <pre className="text-p7 dark:text-text-input-value text-text-text-inverse max-h-[300px] overflow-auto">
                   {JSON.stringify(displayFilters, null, 2)}
                 </pre>
               }

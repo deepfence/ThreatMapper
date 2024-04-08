@@ -13,7 +13,7 @@ export const FieldSelection = ({
 }) => {
   return (
     <div className="flex flex-col col-span-2">
-      <div className="pt-4 flex  dark:text-text-input-value ">
+      <div className="pt-4 flex text-text-input-value ">
         <div className="text-h5">Customize Notification (Optional)</div>
       </div>
       <div className="grid grid-cols-2 gap-x-8 gap-y-6 pt-4">

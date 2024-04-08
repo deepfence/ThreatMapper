@@ -82,7 +82,7 @@ const RegisterWithInvite = () => {
 
   return (
     <fetcher.Form method="post">
-      <h1 className="dark:text-text-text-and-icon text-h2 text-center">
+      <h1 className="text-text-text-and-icon text-h2 text-center">
         Register for Deepfence
       </h1>
       <input
@@ -141,7 +141,7 @@ const RegisterWithInvite = () => {
               I agree to terms and conditions outlined in{' '}
               <Link
                 to="/end-user-license-agreement"
-                className="text-blue-600 dark:text-accent-accent"
+                className="text-text-link"
                 target="_blank"
               >
                 License Agreement
@@ -151,9 +151,7 @@ const RegisterWithInvite = () => {
         />
       </div>
       {data?.error && (
-        <div className={`text-center mt-1.5 text-p7 dark:text-status-error`}>
-          {data.error}
-        </div>
+        <div className={`text-center mt-1.5 text-p7 text-status-error`}>{data.error}</div>
       )}
       <div
         className={cn('flex flex-col w-full mt-6', {
@@ -172,10 +170,10 @@ const RegisterWithInvite = () => {
       </div>
 
       <div
-        className={`flex flex-row justify-center text-p7 mt-4 dark:text-text-text-and-icon`}
+        className={`flex flex-row justify-center text-p7 mt-4 text-text-text-and-icon`}
       >
         Already have an account?&nbsp;
-        <DFLink to="/auth/login" className="underline dark:text-accent-accent" unstyled>
+        <DFLink to="/auth/login" className="underline text-accent-accent" unstyled>
           Login
         </DFLink>
       </div>

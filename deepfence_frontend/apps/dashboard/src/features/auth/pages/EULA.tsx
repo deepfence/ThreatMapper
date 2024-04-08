@@ -1,8 +1,11 @@
+import { useMemo } from 'react';
 import { useLoaderData } from 'react-router-dom';
 import { Card } from 'ui-components';
 
 import { getCommonApiClient } from '@/api/api';
 import AuthBg from '@/assets/auth-bg.svg';
+import AuthBgLight from '@/assets/auth-bg-light.svg';
+import { useTheme } from '@/theme/ThemeContext';
 import { apiWrapper } from '@/utils/api';
 
 type LoaderData = {
@@ -29,12 +32,19 @@ const loader = async (): Promise<LoaderData> => {
 
 const EULA = () => {
   const loaderData = useLoaderData() as LoaderData;
+  const { mode } = useTheme();
+  const bg = useMemo(() => {
+    if (mode === 'light') {
+      return AuthBgLight;
+    }
+    return AuthBg;
+  }, [mode]);
 
   return (
     <div
-      className="grid h-screen place-items-center overflow-auto dark:bg-bg-card dark:text-text-text-and-icon"
+      className="grid h-screen place-items-center overflow-auto bg-bg-card text-text-text-and-icon"
       style={{
-        background: `url("${AuthBg}") no-repeat center center`,
+        background: `url("${bg}") no-repeat center center`,
         backgroundSize: 'cover',
         backgroundColor: '#150C58',
       }}

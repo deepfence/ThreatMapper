@@ -32,7 +32,7 @@ export const IntegrationTable = ({
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   if (message) {
-    return <p className="dark:text-status-error text-p7">{message}</p>;
+    return <p className="text-status-error text-p7">{message}</p>;
   }
   const tableData = data.filter(
     (integration) => params.integrationType === integration.integration_type,

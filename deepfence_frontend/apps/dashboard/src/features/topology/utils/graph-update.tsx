@@ -22,8 +22,14 @@ import {
   LayoutExecutor,
 } from '@/features/topology/utils/graph-layout';
 import { getNodeIconConfig, nodeStyle } from '@/features/topology/utils/graph-styles';
+import { Mode } from '@/theme/ThemeContext';
 
-export const updateGraph = (graph: G6Graph, apiDiff: ApiDiff, action: TopologyAction) => {
+export const updateGraph = (
+  theme: Mode,
+  graph: G6Graph,
+  apiDiff: ApiDiff,
+  action: TopologyAction,
+) => {
   const modelNodesDiff = convertApiNodesDiffToModelNodesDiff(graph, apiDiff.nodesDiff);
   const modelEdgesDiff = convertApiEdgesDiffToModelEdgesDiff(apiDiff.edgesDiff);
 
@@ -75,7 +81,7 @@ export const updateGraph = (graph: G6Graph, apiDiff: ApiDiff, action: TopologyAc
   for (const update of updates) {
     if ('root' in update) {
       try {
-        processRootUpdate(graph, update.root.diff);
+        processRootUpdate(theme, graph, update.root.diff);
         layouts.push({ nodeId: 'root' });
       } catch (e) {
         console.error('Error on processUpdates', e);
@@ -84,7 +90,7 @@ export const updateGraph = (graph: G6Graph, apiDiff: ApiDiff, action: TopologyAc
       const { nodeId, diff } = update.node;
       try {
         const expanding = isExpanding(nodeId, action);
-        processNodeUpdate(graph, nodeId, diff, expanding);
+        processNodeUpdate(theme, graph, nodeId, diff, expanding);
         layouts.push({
           nodeId,
           options: {
@@ -119,7 +125,7 @@ export const updateGraph = (graph: G6Graph, apiDiff: ApiDiff, action: TopologyAc
   // END: executing layouts
 };
 
-function processRootUpdate(graph: G6Graph, diff: EnhancedDiff['nodesDiff']) {
+function processRootUpdate(theme: Mode, graph: G6Graph, diff: EnhancedDiff['nodesDiff']) {
   for (const nodeId of diff.remove) {
     const node = graph.findById(nodeId) as G6Node | undefined;
     if (!node) {
@@ -137,14 +143,15 @@ function processRootUpdate(graph: G6Graph, diff: EnhancedDiff['nodesDiff']) {
       ...node,
       x: pointAround(center_x),
       y: pointAround(center_y),
-      style: nodeStyle(node, {}),
+      style: nodeStyle(theme, node, {}),
       type: 'circle',
-      icon: getNodeIconConfig(node) ?? undefined,
+      icon: getNodeIconConfig(theme, node) ?? undefined,
     });
   }
 }
 
 function processNodeUpdate(
+  theme: Mode,
   graph: G6Graph,
   nodeId: string,
   diff: EnhancedDiff['nodesDiff'],
@@ -192,13 +199,13 @@ function processNodeUpdate(
       for (const nodeToAdd of diff.add) {
         graph.addItem('node', {
           ...nodeToAdd,
-          style: nodeStyle(nodeToAdd, {}),
+          style: nodeStyle(theme, nodeToAdd, {}),
           parent_id: itemModel.id,
           comboId: comboId,
           x: numNodesInCombo > 1 ? pointAround(center_model.x!) : center_model.x,
           y: numNodesInCombo > 1 ? pointAround(center_model.y!) : center_model.y,
           type: 'circle',
-          icon: getNodeIconConfig(nodeToAdd) ?? undefined,
+          icon: getNodeIconConfig(theme, nodeToAdd) ?? undefined,
         });
 
         graph.addItem('edge', {
@@ -219,9 +226,9 @@ function processNodeUpdate(
           x: pointAround(itemModel.x!),
           y: pointAround(itemModel.y!),
           parent_id: nodeId,
-          style: nodeStyle(nodeToAdd, {}),
+          style: nodeStyle(theme, nodeToAdd, {}),
           type: 'circle',
-          icon: getNodeIconConfig(nodeToAdd) ?? undefined,
+          icon: getNodeIconConfig(theme, nodeToAdd) ?? undefined,
         }) as G6Node;
         graph.addItem('edge', {
           ...pseudoEdge(nodeId, nodeToAdd.id!),

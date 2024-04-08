@@ -48,18 +48,32 @@ const SummaryTab = ({
     >
       <button
         className={cn(
-          `flex items-center gap-[6px] p-3 dark:hover:text-text-input-value dark:hover:bg-bg-grid-header`,
-          'dark:hover:shadow-[0_-4px_0_var(--tw-shadow-color)_inset] dark:shadow-accent-accent transition-shadow duration-[0.2s] ease-[ease-in]',
+          `flex items-center gap-[6px] p-3 hover:text-text-input-value dark:hover:bg-bg-grid-header hover:bg-bg-page`,
+          'shadow-accent-accent transition-shadow duration-[0.2s] ease-[ease-in]',
+          'hover:shadow-[0_-1px_0_var(--tw-shadow-color)_inset]',
           {
-            'dark:text-text-input-value dark:bg-bg-active-selection dark:shadow-[0_-4px_0_var(--tw-shadow-color)_inset] dark:hover:bg-bg-active-selection':
+            'text-text-input-value dark:bg-bg-active-selection bg-white dark:hover:bg-bg-active-selection hover:bg-white shadow-[0_-4px_0_var(--tw-shadow-color)_inset]':
               isActive,
           },
         )}
         tabIndex={-1}
       >
-        <div className="h-[16px] w-[16px]">{icon}</div>
+        <div className="h-[16px] w-[16px] text-text-icon">{icon}</div>
         <div>
-          <span className={`${isActive ? 'text-h5' : 'text-h6'}`}>{count}</span> {name}
+          <span
+            className={`${
+              isActive ? 'text-h5 text-text-input-value' : 'text-h6 text-text-and-icon'
+            }`}
+          >
+            {count}
+          </span>
+          <span
+            className={`text-p1a ml-[3px] ${
+              isActive ? 'text-text-input-value' : 'text-text-and-icon'
+            }`}
+          >
+            {name}
+          </span>
         </div>
       </button>
     </DFLink>
@@ -87,7 +101,7 @@ export const TopologyHeader = () => {
   const params = useParams();
   const viewType = params.viewType;
   return (
-    <div className="flex items-center dark:text-text-text-and-icon text-p1 px-3 dark:bg-bg-breadcrumb-bar">
+    <div className="flex items-center text-text-text-and-icon text-p1a px-3 bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
       <SummaryTab
         icon={<CloudLine />}
         name="Clouds"
@@ -175,8 +189,8 @@ const ViewSwitcher = () => {
           to={`/topology/graph/${type}`}
           type="button"
           className={cn('flex items-center', {
-            ['dark:text-text-text-and-icon']: !isGraphView,
-            ['dark:text-accent-accent']: isGraphView,
+            ['text-text-text-and-icon']: !isGraphView,
+            ['text-accent-accent']: isGraphView,
           })}
         >
           <button className="h-6 w-6 shrink-0" tabIndex={-1}>
@@ -194,8 +208,8 @@ const ViewSwitcher = () => {
           to={`/topology/table/${type}`}
           type="button"
           className={cn('flex items-center', {
-            ['dark:text-text-text-and-icon']: isGraphView,
-            ['dark:text-accent-accent']: !isGraphView,
+            ['text-text-text-and-icon']: isGraphView,
+            ['text-accent-accent']: !isGraphView,
           })}
         >
           <div className="h-6 w-6 shrink-0" tabIndex={-1}>

@@ -48,26 +48,34 @@ export const Tooltip = (props: TooltipProps) => {
               'data-[side=bottom]:animate-slide-up-fade',
               'data-[side=left]:animate-slide-right-fade',
               'rounded-md px-2.5 py-1.5 max-w-[400px]',
-              'bg-bg-tooltip dark:bg-bg-tooltip',
+              'bg-bg-tooltip',
               className,
             )}
           >
             <TooltipPrimitive.Arrow
               height={9}
               width={16}
-              className={cn('fill-bg-tooltip dark:fill-bg-tooltip', arrowClassName)}
+              className={cn('fill-bg-tooltip', arrowClassName)}
             />
             <>
               {label && (
                 <span
-                  className={cn('text-p6', 'text-text-input-value', 'block', 'pb-[3px]')}
+                  className={cn(
+                    'text-p6',
+                    'dark:text-text-input-value text-text-text-inverse',
+                    'block',
+                    'pb-[3px]',
+                  )}
                 >
                   {label}
                 </span>
               )}
               {typeof content === 'string' ? (
                 <span
-                  className={cn('text-p4', 'text-text-input-value block')}
+                  className={cn(
+                    'text-p4',
+                    'dark:text-text-input-value text-text-text-inverse block',
+                  )}
                   style={{
                     wordBreak: 'break-word',
                   }}

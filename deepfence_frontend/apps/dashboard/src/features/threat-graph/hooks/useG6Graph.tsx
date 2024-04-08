@@ -2,63 +2,47 @@ import G6 from '@antv/g6';
 import { merge } from 'lodash-es';
 import { useEffect, useState } from 'react';
 import { useUpdateEffect } from 'react-use';
-import { preset } from 'tailwind-preset';
+import { colors, preset } from 'tailwind-preset';
 
 import { g6Toolbar } from '@/components/graph/plugin';
 import { G6Graph, G6GraphOptionsWithoutContainer } from '@/features/topology/types/graph';
-import { Mode, useTheme } from '@/theme/ThemeContext';
+import { Mode, THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
 
 const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
+  const isLightTheme = theme === THEME_LIGHT;
+  const color = colors[isLightTheme ? 'variables' : 'darkVariables'].DEFAULT;
+
   if (!active) {
     return {
       offset: 50,
       radius: 20,
       lineWidth: 1.5,
-      stroke:
-        theme === 'dark'
-          ? preset.theme.extend.colors['brand-dark'].blue
-          : preset.theme.extend.colors['brand-light'].blue,
+      stroke: isLightTheme ? color['text-link'] : color['brand-blue'],
       endArrow: {
         path: G6.Arrow.triangle(4, 5, 8),
         d: 10,
-        fill:
-          theme === 'dark'
-            ? preset.theme.extend.colors['brand-dark'].blue
-            : preset.theme.extend.colors['brand-light'].blue,
-        stroke:
-          theme === 'dark'
-            ? preset.theme.extend.colors['brand-dark'].blue
-            : preset.theme.extend.colors['brand-light'].blue,
+        fill: isLightTheme ? color['text-link'] : color['brand-blue'],
+        stroke: isLightTheme ? color['text-link'] : color['brand-blue'],
       },
     };
   }
   return {
     lineWidth: 1.5,
     shadowBlur: 14,
-    shadowColor:
-      theme === 'dark'
-        ? preset.theme.extend.colors.status.error
-        : preset.theme.extend.colors.status.error,
-    stroke:
-      theme === 'dark'
-        ? preset.theme.extend.colors.status.error
-        : preset.theme.extend.colors.status.error,
+    shadowColor: isLightTheme ? '#FF214C' : color['brand-error'],
+    stroke: color['brand-error'],
     endArrow: {
       path: G6.Arrow.triangle(4, 5, 8),
       d: 10,
-      fill:
-        theme === 'dark'
-          ? preset.theme.extend.colors.status.error
-          : preset.theme.extend.colors.status.error,
-      stroke:
-        theme === 'dark'
-          ? preset.theme.extend.colors.status.error
-          : preset.theme.extend.colors.status.error,
+      fill: color['brand-error'],
+      stroke: color['brand-error'],
     },
   };
 };
 
 const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
+
   if (!active) {
     return {
       fill: 'transparent',
@@ -69,10 +53,7 @@ const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) =
   }
 
   return {
-    fill:
-      theme === 'dark'
-        ? preset.theme.extend.colors.bg['breadcrumb-bar']
-        : preset.theme.extend.colors.bg['breadcrumb-bar'],
+    fill: color['bg-breadcrumb-bar'],
     fillOpacity: 1,
     padding: [2, 4, 2, 4],
     radius: 3,
@@ -80,50 +61,49 @@ const getLabelBgStyles = ({ active, theme }: { active: boolean; theme: Mode }) =
 };
 
 const getLabelStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
+
   if (!active) {
     return {
-      fill:
-        theme === 'dark'
-          ? preset.theme.extend.colors.text['text-and-icon']
-          : preset.theme.extend.colors.text['text-and-icon'],
+      fill: color['text-text-and-icon'],
       fontFamily: preset.theme.extend.fontFamily.body.join(','),
       fontSize: 13,
-      fontWeight: 300,
+      fontWeight: 500,
+      lineHeight: 18,
       background: getLabelBgStyles({ active, theme }),
     };
   }
 
   return {
-    fill:
-      theme === 'dark'
-        ? preset.theme.extend.colors.text['input-value']
-        : preset.theme.extend.colors.text['input-value'],
+    fill: color['text-text-and-icon'],
     fontFamily: preset.theme.extend.fontFamily.body.join(','),
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: 700,
+    lineHeight: 18,
     background: getLabelBgStyles({ active, theme }),
   };
 };
 
 const getNodeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
+  const isLightTheme = theme === THEME_LIGHT;
+  const color = colors[isLightTheme ? 'variables' : 'darkVariables'].DEFAULT;
+
   if (!active) {
     return {
       lineWidth: 0,
-      fill: preset.theme.extend.colors.bg['map-node'],
+      fill: isLightTheme ? color['bg-card'] : color['bg-map-node'],
+      shadowBlur: isLightTheme ? 10 : 0,
+      shadowColor: isLightTheme ? color['df-gray'][400] : '',
+      stroke: isLightTheme ? color['df-gray'][400] : '',
+      background: isLightTheme ? color['bg-card'] : '',
     };
   }
   return {
     lineWidth: 2,
     shadowBlur: 10,
-    shadowColor:
-      theme === 'dark'
-        ? preset.theme.extend.colors.status.error
-        : preset.theme.extend.colors.status.error,
-    stroke:
-      theme === 'dark'
-        ? preset.theme.extend.colors.status.error
-        : preset.theme.extend.colors.status.error,
-    fill: preset.theme.extend.colors.bg['map-node'],
+    shadowColor: color['brand-error'],
+    stroke: color['brand-error'],
+    fill: isLightTheme ? color['bg-card'] : color['bg-map-node'],
   };
 };
 

@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { ReactNode, Suspense } from 'react';
-import { preset } from 'tailwind-preset';
+import { colors, preset } from 'tailwind-preset';
 import { Card, CircleSpinner } from 'ui-components';
 
 import { ECOption, ReactECharts } from '@/components/ReactEcharts';
@@ -8,9 +8,10 @@ import { SeverityLegend } from '@/components/SeverityBadge';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
-import { SEVERITY_COLORS } from '@/constants/charts';
+import { getSeverityChartInnerColorMap, getSeverityColorMap } from '@/constants/charts';
 import { CardHeader } from '@/features/dashboard/components/CardHeader';
 import { queries } from '@/queries';
+import { Mode, THEME_DARK, useTheme } from '@/theme/ThemeContext';
 import { VulnerabilitySeverityType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -85,11 +86,13 @@ const TopRisksContent = ({
   type: 'vulnerability' | 'secret' | 'malware';
   to: string;
 }) => {
+  const { mode } = useTheme();
   const { data } = useSummary(type);
   if (!data) throw new Error('data is empty');
   const chartOptions = getChartOptions({
     data: data.severityBreakdown,
     total: data.total,
+    theme: mode,
   });
 
   const { navigate } = usePageNavigation();
@@ -116,7 +119,7 @@ const TopRisksContent = ({
                 className="text-p4"
                 to={`${to}?severity=${severity}`}
               />
-              <div className="dark:text-text-input-value text-p7">
+              <div className="text-text-input-value text-p11">
                 {abbreviateNumber(
                   data.severityBreakdown[severity as keyof typeof data.severityBreakdown],
                 )}
@@ -132,10 +135,93 @@ const TopRisksContent = ({
 function getChartOptions({
   data,
   total,
+  theme,
 }: {
   data: { [key: string]: number };
   total: number;
+  theme: Mode;
 }) {
+  const color = colors[theme === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
+  const isDarkTheme = theme === THEME_DARK;
+  const series: ECOption['series'] = [
+    {
+      type: 'pie',
+      radius: ['77%', '80%'],
+      itemStyle: {
+        borderWidth: 0,
+        borderColor: color['bg-card'],
+      },
+      label: {
+        position: 'center',
+        formatter: function () {
+          return 'Total';
+        },
+        offset: [0, 26],
+        fontSize: '14px',
+        color: isDarkTheme ? color['text-input-value'] : color['text-icon'],
+        fontWeight: 400,
+        fontFamily: preset.theme.extend.fontFamily.sans.join(','),
+      },
+      cursor: 'none',
+      emphasis: {
+        disabled: true,
+      },
+      data: Object.keys(data)
+        .filter((key) => data[key] > 0)
+        .map((key) => {
+          return {
+            value: data[key],
+            name: key,
+            itemStyle: {
+              color:
+                getSeverityChartInnerColorMap(theme)[key as VulnerabilitySeverityType] ??
+                getSeverityChartInnerColorMap(theme)['unknown'],
+            },
+          };
+        }),
+    },
+    {
+      type: 'pie',
+      radius: isDarkTheme ? ['78%', '100%'] : ['82%', '100%'],
+      itemStyle: {
+        borderWidth: 3,
+        borderColor: color['bg-card'],
+      },
+      label: {
+        position: 'center',
+        formatter: function () {
+          return abbreviateNumber(total).toString();
+        },
+        offset: isDarkTheme ? [0, 0] : [0, -8],
+        fontSize: '30px',
+        color: isDarkTheme ? color['text-input-value'] : color['text-icon'],
+        fontWeight: 600,
+        lineHeight: 36,
+        fontFamily: preset.theme.extend.fontFamily.sans.join(','),
+      },
+      cursor: 'pointer',
+      emphasis: {
+        disabled: true,
+      },
+      data: Object.keys(data)
+        .filter((key) => data[key] > 0)
+        .map((key) => {
+          return {
+            value: data[key],
+            name: key,
+            itemStyle: {
+              color:
+                getSeverityColorMap(theme)[key as VulnerabilitySeverityType] ??
+                getSeverityColorMap(theme)['unknown'],
+            },
+          };
+        }),
+    },
+  ];
+  if (isDarkTheme) {
+    series.splice(0, 1);
+  }
+
   const option: ECOption = {
     backgroundColor: 'transparent',
     tooltip: {
@@ -144,43 +230,7 @@ function getChartOptions({
     legend: {
       show: false,
     },
-    series: [
-      {
-        type: 'pie',
-        radius: ['72%', '100%'],
-        itemStyle: {
-          borderWidth: 2,
-          borderColor: preset.theme.extend.colors.bg.card,
-        },
-        label: {
-          position: 'center',
-          formatter: function () {
-            return abbreviateNumber(total).toString();
-          },
-          fontSize: '30px',
-          color: preset.theme.extend.colors.text['input-value'],
-          fontWeight: 600,
-          fontFamily: preset.theme.extend.fontFamily.sans.join(','),
-        },
-        cursor: 'pointer',
-        emphasis: {
-          disabled: true,
-        },
-        data: Object.keys(data)
-          .filter((key) => data[key] > 0)
-          .map((key) => {
-            return {
-              value: data[key],
-              name: key,
-              itemStyle: {
-                color:
-                  SEVERITY_COLORS[key as VulnerabilitySeverityType] ??
-                  SEVERITY_COLORS['unknown'],
-              },
-            };
-          }),
-      },
-    ],
+    series,
   };
   return option;
 }

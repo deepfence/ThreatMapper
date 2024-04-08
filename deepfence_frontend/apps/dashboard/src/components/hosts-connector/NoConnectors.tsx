@@ -16,7 +16,7 @@ export const ACCOUNT_CONNECTOR = {
 export const NoConnectors = () => {
   return (
     <div className="flex flex-col items-center h-full w-full justify-center">
-      <div className="w-6 h-6 dark:text-status-error rounded-full">
+      <div className="w-6 h-6 text-status-error rounded-full">
         <ErrorStandardSolidIcon />
       </div>
       <p className={`mt-2 text-gray-900 dark:text-gray-400 text-p2`}>

@@ -7,8 +7,8 @@ import { ObjectWithNonNullableValues } from '@/types/utils';
 const helperTextClasses = cva('text-p8', {
   variants: {
     color: {
-      default: 'text-gray-500 dark:text-text-text-and-icon',
-      error: 'text-red-600 dark:text-chart-red',
+      default: 'text-[#737373] dark:text-text-text-and-icon',
+      error: 'text-status-error dark:text-chart-red',
     },
   },
   defaultVariants: {

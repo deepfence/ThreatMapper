@@ -84,7 +84,7 @@ const ActionDropdown = ({
           </DropdownItem>
           <DropdownItem
             onClick={() => onTableAction(row, ActionEnumType.DELETE)}
-            className="dark:text-status-error dark:hover:text-[#C45268]"
+            color="error"
           >
             Delete
           </DropdownItem>
@@ -224,7 +224,7 @@ export const ReportTable = ({
               onTableAction={onTableAction}
               trigger={
                 <button className="p-1">
-                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                  <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
                     <EllipsisIcon />
                   </div>
                 </button>
@@ -292,7 +292,7 @@ export const ReportTable = ({
   }, []);
 
   if (message) {
-    return <p className="dark:text-status-error text-p7">{message}</p>;
+    return <p className="text-status-error text-p7">{message}</p>;
   }
   return (
     <div className="mt-2">

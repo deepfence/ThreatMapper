@@ -43,9 +43,9 @@ export const BreadcrumbLink = React.forwardRef<
         {...props}
         className={cn(
           `inline-flex items-center`,
-          'text-gray-700 dark:text-text-text-and-icon text-[14px] font-normal leading-[30px]',
+          'text-text-text-and-icon dark:text-text-input-value text-p1',
           {
-            'dark:text-text-link': isLink,
+            'dark:text-text-link text-accent-accent': isLink,
           },
           className,
         )}
@@ -55,7 +55,7 @@ export const BreadcrumbLink = React.forwardRef<
         <Slottable>{children}</Slottable>
       </Comp>
       {!isLast && (
-        <span className="ml-1.5 w-[30px] h-[30px] dark:text-df-gray-500">
+        <span className="ml-1.5 w-[30px] h-[30px] text-df-gray-500">
           <CaretIcon />
         </span>
       )}

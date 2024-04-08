@@ -47,7 +47,7 @@ export const NotStartedIcon = () => {
     >
       <path
         d="M9 3C5.68629 3 3 5.68629 3 9C3 12.3137 5.68629 15 9 15C12.3137 15 15 12.3137 15 9C15 5.68629 12.3137 3 9 3Z"
-        fill="#61717D"
+        fill="currentColor"
       />
     </svg>
   );

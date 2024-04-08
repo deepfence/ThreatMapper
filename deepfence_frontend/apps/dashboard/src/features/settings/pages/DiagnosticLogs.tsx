@@ -29,6 +29,7 @@ import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { TruncatedText } from '@/components/TruncatedText';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getResponseErrors } from '@/utils/403';
@@ -192,7 +193,7 @@ const ConsoleDiagnosticLogsTable = () => {
             return formatMilliseconds(createdAt);
           }
         },
-        header: () => 'Created At',
+        header: () => 'Created at',
         minSize: 75,
         size: 80,
         maxSize: 85,
@@ -219,7 +220,7 @@ const ConsoleDiagnosticLogsTable = () => {
               href={cell.row.original.url_link ?? ''}
               download
               target={'_blank'}
-              className="flex items-center gap-x-1 dark:text-accent-accent dark:hover:text-bg-hover-1"
+              className="flex items-center gap-x-1 text-accent-accent hover:text-bg-hover-1"
               unstyled
             >
               <span className="h-3 w-3">
@@ -241,7 +242,7 @@ const ConsoleDiagnosticLogsTable = () => {
   const { data: _logs, message } = data;
   const consoleLogs = _logs?.console_logs ?? [];
   if (message) {
-    return <p className="dark:text-status-error text-p7">{message}</p>;
+    return <p className="text-status-error text-p7">{message}</p>;
   }
   return (
     <Table
@@ -277,7 +278,7 @@ const AgentDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('created_at', {
         cell: (cell) => cell.getValue(),
-        header: () => 'Created At',
+        header: () => 'Created at',
         minSize: 75,
         size: 80,
         maxSize: 85,
@@ -308,7 +309,7 @@ const AgentDiagnosticLogsTable = () => {
               href={cell.row.original.url_link}
               download
               target={'_blank'}
-              className="flex items-center gap-x-1 dark:text-accent-accent dark:hover:text-bg-hover-1"
+              className="flex items-center gap-x-1 text-accent-accent hover:text-bg-hover-1"
               unstyled
             >
               <span className="h-3 w-3">
@@ -332,7 +333,7 @@ const AgentDiagnosticLogsTable = () => {
   }, 20000);
 
   if (message) {
-    return <p className="dark:text-status-error text-p7">{message}</p>;
+    return <p className="text-status-error text-p7">{message}</p>;
   }
 
   return (
@@ -446,9 +447,7 @@ const AgentDiagnosticsLogsModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
-          Agent diagnostic logs
-        </div>
+        <SlidingModalHeaderWrapper>Agent diagnostic logs</SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>
@@ -506,9 +505,7 @@ const AgentDiagnosticsLogsModal = ({
               {nodeType === 'cloud account' && <SelectCloudAccount fetcher={fetcher} />}
 
               {fetcher?.data?.message ? (
-                <p className="text-p7 dark:text-status-error pt-2">
-                  {fetcher.data.message}
-                </p>
+                <p className="text-p7 text-status-error pt-2">{fetcher.data.message}</p>
               ) : null}
 
               <div className="flex gap-x-2 mt-8">

@@ -20,6 +20,7 @@ import {
   UtilsReportFiltersScanTypeEnum,
   UtilsReportFiltersSeverityOrCheckTypeEnum,
 } from '@/api/generated';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { AdvancedFilter } from '@/features/integrations/components/report-form/AdvanceFilter';
 import { CloudComplianceForm } from '@/features/integrations/components/report-form/CloudComplianceForm';
 import { CommonForm } from '@/features/integrations/components/report-form/CommonForm';
@@ -180,9 +181,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 const Header = () => {
   return (
     <SlidingModalHeader>
-      <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
-        Create new report
-      </div>
+      <SlidingModalHeaderWrapper>Create new report</SlidingModalHeaderWrapper>
     </SlidingModalHeader>
   );
 };
@@ -336,7 +335,7 @@ const ReportForm = () => {
           />
 
           {data?.message ? (
-            <p className="mt-4 text-p7 dark:text-status-error">{data?.message}</p>
+            <p className="mt-4 text-p7 text-status-error">{data?.message}</p>
           ) : null}
 
           <div className="mt-14 flex gap-x-2">

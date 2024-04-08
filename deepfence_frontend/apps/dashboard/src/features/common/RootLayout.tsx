@@ -12,7 +12,7 @@ export const RootLayout = () => {
   );
   return (
     <>
-      <div className="bg-white min-h-screen dark:bg-bg-page isolate">
+      <div className="min-h-screen bg-bg-page isolate">
         <AppHeader />
         <SideNavigation
           expanded={sideNavExpanded}

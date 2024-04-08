@@ -37,7 +37,7 @@ export const ProcessTable = ({
         cell: (cell) => {
           return (
             <button
-              className="dark:text-text-link hover:underline w-full text-left"
+              className="text-text-link hover:underline w-full text-left"
               type="button"
               onClick={() => {
                 onNodeClick(cell.row.original.node_id, 'process');
@@ -137,7 +137,7 @@ export const ContainerTable = ({
         cell: (cell) => {
           return (
             <button
-              className="dark:text-text-link hover:underline w-full text-left"
+              className="text-text-link hover:underline w-full text-left"
               type="button"
               onClick={() => {
                 onNodeClick(cell.row.original.node_id, 'container');
@@ -228,7 +228,7 @@ export const ImageTable = ({
         cell: (cell) => {
           return (
             <button
-              className="dark:text-text-link hover:underline w-full text-left"
+              className="text-text-link hover:underline w-full text-left"
               type="button"
               onClick={() => {
                 onNodeClick(cell.row.original.node_id, 'container_image');

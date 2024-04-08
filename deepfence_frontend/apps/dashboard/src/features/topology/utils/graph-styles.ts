@@ -1,6 +1,6 @@
 import { IEdge, INode, ShapeStyle } from '@antv/g6';
 import { truncate } from 'lodash-es';
-import { preset } from 'tailwind-preset';
+import { colors } from 'tailwind-preset';
 
 import AWSLogo from '@/assets/topology/aws.svg';
 import AWSEc2ALBLogo from '@/assets/topology/aws_ec2_application_load_balancer.svg';
@@ -14,6 +14,7 @@ import AWSLambdaFunctionLogo from '@/assets/topology/aws_lambda_function.svg';
 import AWSRDSDBClusterLogo from '@/assets/topology/aws_rds_db_cluster.svg';
 import AWSRDSDBInstanceLogo from '@/assets/topology/aws_rds_db_instance.svg';
 import AWSS3BucketLogo from '@/assets/topology/aws_s3_bucket.svg';
+import AWSLightLogo from '@/assets/topology/aws-light.svg';
 import AzureLogo from '@/assets/topology/azure.svg';
 import AzureAppServiceFunction from '@/assets/topology/azure_app_service_function_app.svg';
 import AzureComputeVirtualMachine from '@/assets/topology/azure_compute_virtual_machine.svg';
@@ -21,20 +22,30 @@ import AzureStorageContainer from '@/assets/topology/azure_storage_container.svg
 import AzureStorageQueue from '@/assets/topology/azure_storage_queue.svg';
 import AzureStorageTable from '@/assets/topology/azure_storage_table.svg';
 import CloudLogo from '@/assets/topology/cloud.svg';
+import CloudLightLogo from '@/assets/topology/cloud-light.svg';
 import CloudRegionLogo from '@/assets/topology/cloud-region.svg';
+import CloudRegionLightLogo from '@/assets/topology/cloud-region-light.svg';
 import ContainerLogo from '@/assets/topology/container.svg';
 import ContainerImageLogo from '@/assets/topology/container_image.svg';
+import ContainerImageLightLogo from '@/assets/topology/container_image-light.svg';
+import ContainerLightLogo from '@/assets/topology/container-light.svg';
 import DigitalOceanLogo from '@/assets/topology/digital_ocean.svg';
 import GCPLogo from '@/assets/topology/gcp.svg';
 import GCPComputeInstance from '@/assets/topology/gcp_compute_instance.svg';
 import GCPDatabaseInstance from '@/assets/topology/gcp_sql_database_instance.svg';
 import GCPStorageBucket from '@/assets/topology/gcp_storage_bucket.svg';
+import GCPLightLogo from '@/assets/topology/gcp-light.svg';
 import HostLogo from '@/assets/topology/host.svg';
+import HostLightLogo from '@/assets/topology/host-light.svg';
 import KubernetesClusterLogo from '@/assets/topology/kubernetes-cluster.svg';
+import KubernetesClusterLightLogo from '@/assets/topology/kubernetes-cluster-light.svg';
 import PodLogo from '@/assets/topology/pod.svg';
+import PodLightLogo from '@/assets/topology/pod-light.svg';
 import ProcessLogo from '@/assets/topology/process.svg';
+import ProcessLightLogo from '@/assets/topology/process-light.svg';
 import TheInternetLogo from '@/assets/topology/the-internet.svg';
 import { EnhancedDetailedNodeSummary, G6Node } from '@/features/topology/types/graph';
+import { Mode, THEME_LIGHT } from '@/theme/ThemeContext';
 
 export const GraphPalette = {
   NODE_OUTLINE_DARK: '#E5E7EB',
@@ -49,29 +60,26 @@ export const GraphPalette = {
   COMBO_FILL_LIGHT: '#EBF5FF',
 };
 
-const DEFAULT_FILL_COLOR = preset.theme.extend.colors.bg['map-node'];
-const NODE_FILL_COLORS: Record<string, string> = {
-  cloud_provider: DEFAULT_FILL_COLOR,
-  region: DEFAULT_FILL_COLOR,
-  host: DEFAULT_FILL_COLOR,
-  pod: DEFAULT_FILL_COLOR,
-  container: DEFAULT_FILL_COLOR,
-  process: DEFAULT_FILL_COLOR,
-};
+export const nodeStyle = (
+  theme: Mode,
+  node: EnhancedDetailedNodeSummary,
+  override?: ShapeStyle,
+) => {
+  const isLightTheme = theme === THEME_LIGHT;
+  const color = colors[isLightTheme ? 'variables' : 'darkVariables'].DEFAULT;
 
-export const nodeStyle = (node: EnhancedDetailedNodeSummary, override?: ShapeStyle) => {
   const style: ShapeStyle = {
     cursor: 'pointer',
-    fill: NODE_FILL_COLORS[node?.df_data?.type ?? ''] || DEFAULT_FILL_COLOR,
+    fill: isLightTheme ? color['bg-card'] : color['bg-map-node'],
   };
   return { ...style, ...override };
 };
 
-export const getNodeIconConfig = (node: EnhancedDetailedNodeSummary) => {
-  if (node.df_data && getNodeImage(node.df_data.type ?? '')) {
+export const getNodeIconConfig = (theme: Mode, node: EnhancedDetailedNodeSummary) => {
+  if (node.df_data && getNodeImage(theme, node.df_data.type ?? '')) {
     return {
       show: true,
-      img: getNodeImage(node.df_data.type ?? '', node.df_data.label),
+      img: getNodeImage(theme, node.df_data.type ?? '', node.df_data.label),
       width: ['pseudo'].includes(node.df_data.type ?? '') ? 35 : 30,
       height: ['pseudo'].includes(node.df_data.type ?? '') ? 35 : 30,
       cursor: 'pointer',
@@ -125,48 +133,55 @@ const setActiveState = (item: INode | IEdge, active: boolean) => {
 };
 
 export const getNodeImage = (
+  theme: Mode,
   nodeType: string,
   nodeLabel?: string,
 ): string | undefined => {
-  const path = getNodeImagePath(nodeType, nodeLabel);
+  const path = getNodeImagePath(theme, nodeType, nodeLabel);
   if (path) {
     return getImageFullPath(path);
   }
 };
 
-const getNodeImagePath = (nodeType: string, nodeLabel?: string): string | undefined => {
+const getNodeImagePath = (
+  theme: Mode,
+  nodeType: string,
+  nodeLabel?: string,
+): string | undefined => {
+  const isDarkTheme = theme === 'dark';
+
   if (nodeType === 'cloud_provider') {
     if (nodeLabel && nodeLabel === 'aws') {
-      return AWSLogo;
+      return isDarkTheme ? AWSLogo : AWSLightLogo;
     } else if (nodeLabel && nodeLabel === 'digital_ocean') {
       return DigitalOceanLogo;
     } else if (nodeLabel && nodeLabel === 'azure') {
       return AzureLogo;
     } else if (nodeLabel && nodeLabel === 'gcp') {
-      return GCPLogo;
+      return isDarkTheme ? GCPLogo : GCPLightLogo;
     }
-    return CloudLogo;
+    return isDarkTheme ? CloudLogo : CloudLightLogo;
   } else if (nodeType === 'pseudo') {
     return TheInternetLogo;
   } else if (nodeType === 'cloud_region') {
-    return CloudRegionLogo;
+    return isDarkTheme ? CloudRegionLogo : CloudRegionLightLogo;
   } else if (nodeType === 'host') {
-    return HostLogo;
+    return isDarkTheme ? HostLogo : HostLightLogo;
   } else if (nodeType === 'kubernetes_cluster') {
-    return KubernetesClusterLogo;
+    return isDarkTheme ? KubernetesClusterLogo : KubernetesClusterLightLogo;
   } else if (nodeType === 'container') {
-    return ContainerLogo;
+    return isDarkTheme ? ContainerLogo : ContainerLightLogo;
   } else if (nodeType === 'container_image') {
-    return ContainerImageLogo;
+    return isDarkTheme ? ContainerImageLogo : ContainerImageLightLogo;
   } else if (nodeType === 'pod') {
-    return PodLogo;
+    return isDarkTheme ? PodLogo : PodLightLogo;
   } else if (nodeType === 'process') {
-    return ProcessLogo;
+    return isDarkTheme ? ProcessLogo : ProcessLightLogo;
   } else if (nodeType.startsWith('aws_')) {
     if (nodeType === 'aws_ec2_instance') {
       return AWSEc2InstanceLogo;
     } else if (nodeType === 'aws_eks_cluster') {
-      return KubernetesClusterLogo;
+      return isDarkTheme ? KubernetesClusterLogo : KubernetesClusterLightLogo;
     } else if (nodeType === 'aws_s3_bucket') {
       return AWSS3BucketLogo;
     } else if (nodeType === 'aws_lambda_function') {

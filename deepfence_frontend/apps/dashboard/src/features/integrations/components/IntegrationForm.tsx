@@ -245,7 +245,7 @@ const AdvancedFilters = ({
 
   return (
     <div className="col-span-2 mt-6">
-      <div className="flex dark:text-text-input-value ">
+      <div className="flex text-text-input-value ">
         <div className="text-h5">Advanced Filter (Optional)</div>
       </div>
       <div className="grid grid-cols-2 gap-y-8 gap-x-8 pt-4">
@@ -342,21 +342,17 @@ const AdvancedFilters = ({
                   return value && value.length ? `${value.length} selected` : '';
                 }}
               >
-                <div className="px-3 pt-2 text-p3 text-gray-900 dark:text-text-text-and-icon">
-                  Host
-                </div>
+                <div className="px-3 pt-2 text-p3 text-text-text-and-icon">Host</div>
                 <ListboxOption value={'Alarm'}>Alarm</ListboxOption>
                 <ListboxOption value={'Note'}>Note</ListboxOption>
                 <ListboxOption value={'Ok'}>Ok</ListboxOption>
-                <div className="px-3 pt-4 text-p3 text-gray-900 dark:text-text-text-and-icon">
+                <div className="px-3 pt-4 text-p3 text-text-text-and-icon">
                   Kubernetes
                 </div>
                 <ListboxOption value={'Pass'}>Pass</ListboxOption>
                 <ListboxOption value={'Skip'}>Skip</ListboxOption>
                 <ListboxOption value={'Warn'}>Warn</ListboxOption>
-                <div className="px-3 pt-4 text-p3 text-gray-900 dark:text-text-text-and-icon">
-                  Common
-                </div>
+                <div className="px-3 pt-4 text-p3 text-text-text-and-icon">Common</div>
                 <ListboxOption value={'Info'}>Info</ListboxOption>
               </Listbox>
             )}
@@ -1001,9 +997,7 @@ export const IntegrationForm = ({
               hidden
               value={isNil(formData) ? ActionEnumType.ADD : ActionEnumType.EDIT}
             />
-            {data?.message && (
-              <p className="dark:text-status-error text-p7">{data.message}</p>
-            )}
+            {data?.message && <p className="text-status-error text-p7">{data.message}</p>}
           </div>
           <div className="mt-14 flex gap-x-2 p-1">
             <Button

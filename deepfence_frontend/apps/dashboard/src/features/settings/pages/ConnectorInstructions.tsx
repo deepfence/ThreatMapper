@@ -32,15 +32,15 @@ interface CardConnectProps {
 }
 
 const ACCOUNT_CONNECTOR_TITLE: { [k: string]: string } = {
-  docker: 'Docker container',
-  aws: 'Amazon web services',
-  gcp: 'Google cloud platform',
-  azure: 'Microsoft azure',
-  linux: 'Linux bare-metal/vm',
+  docker: 'Connect a Docker Container',
+  aws: 'Connect to Amazon Web Services',
+  gcp: 'Connect to Google Cloud',
+  azure: 'Connect to Azure Cloud',
+  linux: 'Connect a Linux Machine',
   host: 'Host',
-  kubernetes: 'Kubernetes cluster',
+  kubernetes: 'Connect a Kubernetes Cluster',
   cluster: 'Cluster',
-  aws_ecs: 'AWS ECS (EC2 Provider)',
+  aws_ecs: 'Connect AWS ECS (EC2 Provider)',
 } as const;
 
 const CardConnect = ({ label, path, icon }: CardConnectProps) => {
@@ -64,7 +64,7 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
       >
         <div className="w-10 h-10">{icon}</div>
         <div className="whitespace-nowrap overflow-hidden text-ellipsis">{label}</div>
-        <span className="w-6 h-6 ml-auto">
+        <span className="w-6 h-6 ml-auto text-text-icon">
           <ArrowLine className="rotate-90" />
         </span>
       </button>
@@ -101,16 +101,17 @@ const Cloud = () => {
         </span>
       </div>
       <div className="mb-4">
-        <p
-          className={`px-6 text-sm font-normal leading-6 text-gray-700 dark:text-gray-400 min-h-[110px]`}
-        >
+        <p className={`px-6 text-p1a text-text-text-and-icon min-h-[110px]`}>
           Connect an AWS, GCP, or Azure cloud account to check for compliance
           misconfigurations.
         </p>
-        <div className="flex flex-col dark:text-text-text-and-icon">
+        <div className="flex flex-col text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div key={connector.label} className="dark:hover:bg-bg-hover-2">
+              <div
+                key={connector.label}
+                className="dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar"
+              >
                 <CardConnect {...connector} />
               </div>
             );
@@ -141,7 +142,7 @@ const Host = () => {
     },
     {
       icon: (
-        <div className="dark:text-[#F68633]">
+        <div className="text-orange-400">
           <AWSECSEC2Icon />
         </div>
       ),
@@ -175,22 +176,23 @@ const Host = () => {
         </span>
       </div>
       <div className="mb-4">
-        <p
-          className={`px-6 text-sm font-normal leading-6 text-gray-700 dark:text-gray-400 min-h-[110px]`}
-        >
+        <p className={`px-6 text-p1a text-text-text-and-icon min-h-[110px]`}>
           Connect a K8s cluster, Docker container, or Linux host to check for
           vulnerabilities, secrets, malware, and compliance misconfigurations.
         </p>
-        <div className="flex flex-col dark:text-text-text-and-icon">
+        <div className="flex flex-col text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div key={connector.label} className="dark:hover:bg-bg-hover-2">
+              <div
+                key={connector.label}
+                className="dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar"
+              >
                 <CardConnect {...connector} />
               </div>
             );
           })}
           {!showAll ? (
-            <Button size="sm" onClick={onShowAll} className="ml-3 mt-2">
+            <Button size="sm" onClick={onShowAll} className="mx-6 mt-2">
               +1 more
             </Button>
           ) : null}
@@ -202,17 +204,17 @@ const Host = () => {
 const Instructions = ({ connectorType }: { connectorType: string }) => {
   return (
     <>
-      <div className="mt-2 flex gap-x-2 items-center">
+      <div className="my-2 flex gap-x-2 items-center">
         <DFLink to={'../connection-instructions'}>
           <div className="w-6 h-6 -rotate-90">
             <ArrowLine />
           </div>
         </DFLink>
-        <h3 className="font-medium text-gray-900 dark:text-white text-base">
+        <h3 className="text-h4 text-text-input-value">
           {ACCOUNT_CONNECTOR_TITLE[connectorType]}
         </h3>
       </div>
-      <div className="pt-2">
+      <div>
         {ACCOUNT_CONNECTOR.DOCKER === connectorType && <DockerConnectorForm />}
         {ACCOUNT_CONNECTOR.KUBERNETES === connectorType && <K8ConnectorForm />}
         {ACCOUNT_CONNECTOR.LINUX === connectorType && <LinuxConnectorForm />}
@@ -233,9 +235,7 @@ const Connectors = () => {
   return (
     <div className="max-w-[900px]">
       <div className="mt-2">
-        <h3 className="font-medium text-gray-900 dark:text-white text-base">
-          Connection instructions
-        </h3>
+        <h3 className="text-h6 text-text-input-value">Connection instructions</h3>
       </div>
       <div className="h-full dark:text-white mt-4">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 sm:grid-cols-2">

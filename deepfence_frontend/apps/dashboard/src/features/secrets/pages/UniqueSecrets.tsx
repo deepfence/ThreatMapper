@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useIsFetching } from '@tanstack/react-query';
-import { capitalize } from 'lodash-es';
+import { capitalize, upperFirst } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
 import {
@@ -26,11 +26,14 @@ import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
-import { SeverityBadge } from '@/components/SeverityBadge';
+import { SeverityBadgeIcon } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { TruncatedText } from '@/components/TruncatedText';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { queries } from '@/queries';
-import { ScanTypeEnum } from '@/types/common';
+import { useTheme } from '@/theme/ThemeContext';
+import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -84,7 +87,7 @@ const Filters = () => {
 
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['severity']}
@@ -266,10 +269,11 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 const UniqueTable = () => {
+  const { mode: theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const columnHelper = createColumnHelper<ModelSecret>();
   const [sort, setSort] = useSortingState();
@@ -285,7 +289,7 @@ const UniqueTable = () => {
             }}
             className="flex items-center gap-x-2"
           >
-            <div className="w-4 h-4 shrink-0 dark:text-text-text-and-icon">
+            <div className="w-4 h-4 shrink-0 text-text-text-and-icon">
               <SecretsIcon />
             </div>
             <TruncatedText text={info.row.original.name ?? info.getValue() ?? ''} />
@@ -307,14 +311,22 @@ const UniqueTable = () => {
         enableSorting: false,
         enableResizing: true,
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
-        header: () => <TruncatedText text="Matched Content" />,
+        header: () => <TruncatedText text="Matched content" />,
         minSize: 100,
         size: 120,
         maxSize: 130,
       }),
       columnHelper.accessor('level', {
         enableResizing: true,
-        cell: (info) => <SeverityBadge severity={info.getValue()} />,
+        cell: (info) => (
+          <div className="text-p4 text-text-text-and-icon gap-1 inline-flex">
+            <SeverityBadgeIcon
+              severity={info.getValue() as SecretSeverityType}
+              theme={theme}
+            />
+            {upperFirst(info.getValue())}
+          </div>
+        ),
         header: () => <TruncatedText text="Severity" />,
         minSize: 40,
         size: 50,
@@ -340,7 +352,7 @@ const UniqueTable = () => {
     ];
 
     return columns;
-  }, [searchParams]);
+  }, [searchParams, theme]);
 
   const { data } = useSuspenseQuery({
     ...queries.secret.uniqueSecrets({
@@ -426,7 +438,7 @@ const UniqueSecrets = () => {
 
   return (
     <div>
-      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <BreadcrumbWrapper>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<SecretsIcon />} isLink>
             <DFLink to={'/secret'} unstyled>
@@ -441,7 +453,7 @@ const UniqueSecrets = () => {
         <div className="ml-2 flex items-center">
           {isFetching ? <CircleSpinner size="sm" /> : null}
         </div>
-      </div>
+      </BreadcrumbWrapper>
       <div className="mx-4">
         <div className="h-12 flex items-center">
           <Button
