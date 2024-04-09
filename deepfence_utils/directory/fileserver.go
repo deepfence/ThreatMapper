@@ -46,7 +46,7 @@ type PathDoesNotExistsError struct {
 }
 
 func (e PathDoesNotExistsError) Error() string {
-	return fmt.Sprintf("Path doesnot exists here: %s", e.Path)
+	return fmt.Sprintf("Path does not exist here: %s", e.Path)
 }
 
 type FileDeleteError struct {

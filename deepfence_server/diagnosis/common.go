@@ -102,7 +102,7 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 	// Get completed files from minio
 	objects := mc.ListFiles(ctx, pathPrefix, false, 0, true)
 	log.Debug().Msgf("diagnosis logs at %s: %v", pathPrefix, objects)
-	diagnosticLogsResponse := make([]DiagnosticLogsLink, 0, len(objects))
+	var diagnosticLogsResponse []DiagnosticLogsLink
 	for _, obj := range objects {
 		if len(obj.Key) == 0 {
 			continue

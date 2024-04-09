@@ -297,7 +297,7 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	var report model.ExportReport
 	utils.FromMap(da.Props, &report)
 
-	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -359,7 +359,7 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var fileServerURL string
-	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -387,9 +387,13 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 				"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
 			}
 		}
-		fileServerURL, err = mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, r.Header.Get(constants.HostHeader))
-		if err == nil {
-			report.URL = fileServerURL
+		if report.StoragePath != "" {
+			fileServerURL, err = mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, r.Header.Get(constants.HostHeader))
+			if err == nil {
+				report.URL = fileServerURL
+			} else {
+				log.Warn().Err(err).Msg("Failed to expose report file")
+			}
 		}
 
 		reports = append(reports, report)

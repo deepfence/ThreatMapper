@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"path/filepath"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
@@ -234,8 +233,7 @@ func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context, nodeIDs []string, 
 		log.Error().Msgf("Unmarshal of action failed: %v", err)
 		return controls.Action{}, err
 	}
-	uploadURL, err := mc.CreatePublicUploadURL(ctx,
-		filepath.Join(diagnosis.AgentDiagnosisFileServerPrefix, sendAgentDiagnosticLogsRequest.UploadURL), true, time.Minute*10, url.Values{}, consoleURL)
+	uploadURL, err := mc.CreatePublicUploadURL(ctx, sendAgentDiagnosticLogsRequest.UploadURL, true, time.Minute*10, url.Values{}, consoleURL)
 	if err != nil {
 		log.Error().Msgf("Cannot create public upload URL: %v", err)
 		return controls.Action{}, err

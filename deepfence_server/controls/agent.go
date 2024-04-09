@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
-	"path/filepath"
 	"time"
 
-	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -241,8 +239,7 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeID string, nodeT
 			continue
 		}
 
-		uploadURL, err := mc.CreatePublicUploadURL(ctx,
-			filepath.Join(diagnosis.AgentDiagnosisFileServerPrefix, sendAgentDiagnosticLogsRequest.UploadURL), true, time.Minute*10, url.Values{}, consoleURL)
+		uploadURL, err := mc.CreatePublicUploadURL(ctx, sendAgentDiagnosticLogsRequest.UploadURL, true, time.Minute*10, url.Values{}, consoleURL)
 		if err != nil {
 			log.Error().Msgf("Cannot create public upload URL: %v", err)
 			continue
