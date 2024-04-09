@@ -65,6 +65,10 @@ const ActionDropdown = ({
     return status && status.toLowerCase() === 'complete';
   }, [row]);
 
+  const isError = useMemo(() => {
+    return status && status.toLowerCase() === 'error';
+  }, [row]);
+
   return (
     <Dropdown
       triggerAsChild={true}
@@ -83,8 +87,9 @@ const ActionDropdown = ({
             Download report
           </DropdownItem>
           <DropdownItem
-            onClick={() => onTableAction(row, ActionEnumType.DELETE)}
+            onSelect={() => onTableAction(row, ActionEnumType.DELETE)}
             color="error"
+            disabled={!isCompleted && !isError}
           >
             Delete
           </DropdownItem>

@@ -272,16 +272,25 @@ const DownloadReport = () => {
   const fetcher = useFetcher<ActionData>();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
-  const selectdRow = useMemo<
+  const selectdDeleteableRow = useMemo<
     {
       status: string;
       id: string;
     }[]
   >(() => {
-    return Object.keys(rowSelectionState).map((item) => {
-      return JSON.parse(item);
-    });
+    return Object.keys(rowSelectionState)
+      .map((item) => {
+        return JSON.parse(item);
+      })
+      .filter((value) => {
+        console.log(value);
+        return (
+          value.status?.toLowerCase() === 'complete' ||
+          value.status?.toLowerCase() === 'error'
+        );
+      });
   }, [rowSelectionState]);
+
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [searchParams] = useSearchParams();
 
@@ -318,10 +327,10 @@ const DownloadReport = () => {
             variant="flat"
             color="error"
             loading={fetcher.state === 'submitting'}
-            disabled={selectdRow.length === 0 || fetcher.state === 'submitting'}
+            disabled={selectdDeleteableRow.length === 0 || fetcher.state === 'submitting'}
             onClick={(e) => {
               e.preventDefault();
-              setReportIdsToDelete(selectdRow.map((row) => row.id));
+              setReportIdsToDelete(selectdDeleteableRow.map((row) => row.id));
               setShowDeleteDialog(true);
             }}
           >
