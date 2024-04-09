@@ -283,7 +283,6 @@ const DownloadReport = () => {
         return JSON.parse(item);
       })
       .filter((value) => {
-        console.log(value);
         return (
           value.status?.toLowerCase() === 'complete' ||
           value.status?.toLowerCase() === 'error'
