@@ -68,14 +68,16 @@ export const useIntegrationTableColumn = (
     switch (integrationType) {
       case IntegrationType.slack:
         return [
-          columnHelper.accessor('channel', {
+          columnHelper.display({
+            id: 'config.channel',
             cell: (cell) => cell.row.original.config?.channel,
             header: () => <TruncatedText text={'Channel'} />,
             minSize: 75,
             size: 80,
             maxSize: 85,
           }),
-          columnHelper.accessor('webhook_url_masked', {
+          columnHelper.display({
+            id: 'config.webhook_url_masked',
             cell: (cell) => (
               <TruncatedText text={cell.row.original.config?.webhook_url_masked} />
             ),
@@ -87,7 +89,8 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.s3:
         return [
-          columnHelper.accessor('aws_region', {
+          columnHelper.display({
+            id: 'config.aws_region',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.aws_region || '-'} />
@@ -99,7 +102,8 @@ export const useIntegrationTableColumn = (
             size: 55,
             maxSize: 60,
           }),
-          columnHelper.accessor('s3_bucket_name', {
+          columnHelper.display({
+            id: 'config.s3_bucket_name',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.s3_bucket_name || '-'} />
@@ -111,7 +115,8 @@ export const useIntegrationTableColumn = (
             size: 50,
             maxSize: 55,
           }),
-          columnHelper.accessor('s3_folder_name', {
+          columnHelper.display({
+            id: 'config.s3_folder_name',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.s3_folder_name || '-'} />
@@ -123,7 +128,8 @@ export const useIntegrationTableColumn = (
             size: 55,
             maxSize: 60,
           }),
-          columnHelper.accessor('use_iam_role', {
+          columnHelper.display({
+            id: 'config.use_iam_role',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.use_iam_role} />
@@ -136,7 +142,8 @@ export const useIntegrationTableColumn = (
             size: 55,
             maxSize: 60,
           }),
-          columnHelper.accessor('aws_access_key', {
+          columnHelper.display({
+            id: 'config.aws_access_key',
             enableSorting: false,
             cell: (cell) => (
               <TruncatedText text={cell.row.original.config?.aws_access_key || '-'} />
@@ -146,7 +153,8 @@ export const useIntegrationTableColumn = (
             size: 55,
             maxSize: 60,
           }),
-          columnHelper.accessor('aws_account_id', {
+          columnHelper.display({
+            id: 'config.aws_account_id',
             enableSorting: false,
             cell: (cell) => (
               <TruncatedText text={cell.row.original.config?.aws_account_id || '-'} />
@@ -156,7 +164,8 @@ export const useIntegrationTableColumn = (
             size: 55,
             maxSize: 60,
           }),
-          columnHelper.accessor('target_account_role_arn', {
+          columnHelper.display({
+            id: 'config.target_account_role_arn',
             enableSorting: false,
             cell: (cell) => (
               <TruncatedText
@@ -172,7 +181,7 @@ export const useIntegrationTableColumn = (
       case IntegrationType.jira:
         return [
           columnHelper.display({
-            id: 'api_token_masked',
+            id: 'config.api_token_masked',
             header: () => <TruncatedText text={'Auth type'} />,
             minSize: 50,
             size: 55,
@@ -189,7 +198,8 @@ export const useIntegrationTableColumn = (
               }
             },
           }),
-          columnHelper.accessor('issueType', {
+          columnHelper.display({
+            id: 'config.issueType',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.issueType || '-'} />
@@ -201,7 +211,8 @@ export const useIntegrationTableColumn = (
             size: 50,
             maxSize: 55,
           }),
-          columnHelper.accessor('jiraAssignee', {
+          columnHelper.display({
+            id: 'config.jiraAssignee',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.jiraAssignee || '-'} />
@@ -213,7 +224,8 @@ export const useIntegrationTableColumn = (
             size: 55,
             maxSize: 60,
           }),
-          columnHelper.accessor('username', {
+          columnHelper.display({
+            id: 'config.username',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.username || '-'} />
@@ -225,7 +237,8 @@ export const useIntegrationTableColumn = (
             size: 55,
             maxSize: 60,
           }),
-          columnHelper.accessor('jiraSiteUrl', {
+          columnHelper.display({
+            id: 'config.jiraSiteUrl',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.jiraSiteUrl || '-'} />
@@ -240,7 +253,8 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.splunk:
         return [
-          columnHelper.accessor('endpoint_url', {
+          columnHelper.display({
+            id: 'config.endpoint_url',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.endpoint_url || '-'} />
@@ -252,7 +266,8 @@ export const useIntegrationTableColumn = (
             size: 50,
             maxSize: 55,
           }),
-          columnHelper.accessor('token_masked', {
+          columnHelper.display({
+            id: 'config.token_masked',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.token_masked || '-'} />
@@ -267,7 +282,8 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.elasticsearch:
         return [
-          columnHelper.accessor('endpoint_url', {
+          columnHelper.display({
+            id: 'config.endpoint_url',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.endpoint_url || '-'} />
@@ -280,7 +296,8 @@ export const useIntegrationTableColumn = (
             size: 50,
             maxSize: 55,
           }),
-          columnHelper.accessor('index', {
+          columnHelper.display({
+            id: 'config.index',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.index || '-'} />
@@ -292,7 +309,8 @@ export const useIntegrationTableColumn = (
             size: 50,
             maxSize: 55,
           }),
-          columnHelper.accessor('auth_header_masked', {
+          columnHelper.display({
+            id: 'config.auth_header_masked',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.auth_header_masked || '-'} />
@@ -304,7 +322,8 @@ export const useIntegrationTableColumn = (
             size: 50,
             maxSize: 55,
           }),
-          columnHelper.accessor('docType', {
+          columnHelper.display({
+            id: 'config.docType',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.docType || '-'} />
@@ -319,7 +338,8 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.sumoLogic:
         return [
-          columnHelper.accessor('endpoint_url', {
+          columnHelper.display({
+            id: 'config.endpoint_url',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.endpoint_url || '-'} />
@@ -334,7 +354,8 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.googleChronicle:
         return [
-          columnHelper.accessor('url', {
+          columnHelper.display({
+            id: 'config.url',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.url || '-'} />
@@ -346,7 +367,8 @@ export const useIntegrationTableColumn = (
             size: 50,
             maxSize: 55,
           }),
-          columnHelper.accessor('auth_header_masked', {
+          columnHelper.display({
+            id: 'config.auth_header_masked',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.auth_header_masked || '-'} />
@@ -361,7 +383,8 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.awsSecurityHub:
         return [
-          columnHelper.accessor('aws_access_key', {
+          columnHelper.display({
+            id: 'config.aws_access_key',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.aws_access_key || '-'} />
@@ -373,7 +396,8 @@ export const useIntegrationTableColumn = (
             size: 60,
             maxSize: 55,
           }),
-          columnHelper.accessor('aws_region', {
+          columnHelper.display({
+            id: 'config.aws_region',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? row.original.config.aws_region : '-',
             minSize: 45,
@@ -383,7 +407,8 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.microsoftTeams:
         return [
-          columnHelper.accessor('webhook_url_masked', {
+          columnHelper.display({
+            id: 'config.webhook_url_masked',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.webhook_url_masked || '-'} />
@@ -398,7 +423,8 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.pagerDuty:
         return [
-          columnHelper.accessor('service_key_masked', {
+          columnHelper.display({
+            id: 'config.service_key_masked',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.service_key_masked || '-'} />
@@ -410,7 +436,8 @@ export const useIntegrationTableColumn = (
             size: 50,
             maxSize: 55,
           }),
-          columnHelper.accessor('api_key_masked', {
+          columnHelper.display({
+            id: 'config.api_key_masked',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.api_key_masked || '-'} />
@@ -425,7 +452,8 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.httpEndpoint:
         return [
-          columnHelper.accessor('url', {
+          columnHelper.display({
+            id: 'config.url',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.url} />
@@ -437,7 +465,8 @@ export const useIntegrationTableColumn = (
             size: 50,
             maxSize: 55,
           }),
-          columnHelper.accessor('auth_header_masked', {
+          columnHelper.display({
+            id: 'config.auth_header_masked',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? (
                 <TruncatedText text={row.original.config.auth_header_masked || '-'} />
@@ -453,7 +482,7 @@ export const useIntegrationTableColumn = (
       case IntegrationType.email:
         return [
           columnHelper.display({
-            id: 'email_id',
+            id: 'config.email_id',
             header: () => <TruncatedText text={'Email id'} />,
             cell: (info) => (
               <TruncatedText text={info.row.original.config?.email_id ?? '-'} />

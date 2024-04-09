@@ -23,6 +23,7 @@ export const IntegrationTable = ({
 }) => {
   const columns = useIntegrationTableColumn(onTableAction);
   const { data: list } = useListIntegrations();
+  console.log(list);
 
   const { data = [], message } = list ?? {};
   const params = useParams() as {
