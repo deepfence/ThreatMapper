@@ -29,6 +29,6 @@
   },
   "dependencies": {
     "classnames": "^2.5.1",
-    "tailwind-merge": "^1.14.0"
+    "tailwind-merge": "^2.2.2"
   }
 }
