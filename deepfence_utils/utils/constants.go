@@ -1,5 +1,9 @@
 package utils
 
+import (
+	"time"
+)
+
 const (
 	Project           = "ThreatMapper"
 	ErrorUserNotFound = "user not found"
@@ -62,6 +66,10 @@ const (
 	ReportLicenseUsageTask = "report_license_usage"
 
 	ThreatIntelUpdateTask = "threat_intel_update"
+)
+
+const (
+	ReportRetentionTime = 24 * time.Hour
 )
 
 const (

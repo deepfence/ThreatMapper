@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sort"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -295,6 +297,26 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	var report model.ExportReport
 	utils.FromMap(da.Props, &report)
 
+	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+	var cd url.Values
+	if report.FileName != "" {
+		cd = url.Values{
+			"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
+		}
+	}
+	fileServerURL, err := mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, r.Header.Get(constants.HostHeader))
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+	report.URL = fileServerURL
+
 	err = httpext.JSON(w, http.StatusOK, report)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -336,6 +358,14 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var fileServerURL string
+	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+
 	reports := []model.ExportReport{}
 	for _, rec := range records {
 		i, ok := rec.Get("n")
@@ -350,6 +380,18 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 		}
 		var report model.ExportReport
 		utils.FromMap(da.Props, &report)
+
+		var cd url.Values
+		if report.FileName != "" {
+			cd = url.Values{
+				"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
+			}
+		}
+		fileServerURL, err = mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, r.Header.Get(constants.HostHeader))
+		if err == nil {
+			report.URL = fileServerURL
+		}
+
 		reports = append(reports, report)
 	}
 

@@ -125,6 +125,11 @@ func FetchPostureControlsInfo(ctx context.Context, consoleURL string) (url, hash
 		return "", "", "", err
 	}
 
+	if rec.Values[0] == nil {
+		log.Warn().Msg("rules_key not found in PostureControls")
+		return "", "", "", nil
+	}
+
 	exposedURL, err := ExposeFile(ctx, rec.Values[0].(string), consoleURL)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to expose posture controls on fileserver")

@@ -31,6 +31,7 @@ type ExportReport struct {
 	Filters       string `json:"filters"`
 	Type          string `json:"type"`
 	URL           string `json:"url"`
+	FileName      string `json:"-"`
 	Status        string `json:"status"`
 	StoragePath   string `json:"storage_path"`
 	FromTimestamp int64  `json:"from_timestamp"` // timestamp in milliseconds

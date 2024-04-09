@@ -104,6 +104,11 @@ func FetchSecretsRulesInfo(ctx context.Context, consoleURL string) (url, hash, p
 		return "", "", "", err
 	}
 
+	if rec.Values[0] == nil {
+		log.Warn().Msg("rules_key not found in SecretsRules")
+		return "", "", "", nil
+	}
+
 	exposedURL, err := ExposeFile(ctx, rec.Values[0].(string), consoleURL)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to expose secrets rules on fileserver")
