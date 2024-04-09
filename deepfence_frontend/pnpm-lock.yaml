@@ -169,7 +169,6 @@ importers:
       '@storybook/addon-themes': ^8.0.6
       '@storybook/react': ^8.0.6
       '@storybook/react-vite': ^8.0.6
-      '@storybook/testing-library': ^0.2.2
       '@storybook/theming': ^8.0.6
       '@tanstack/react-table': ^8.15.3
       '@testing-library/jest-dom': ^6.4.2
@@ -236,7 +235,6 @@ importers:
       '@storybook/addon-themes': 8.0.6
       '@storybook/react': 8.0.6_dlq6i6czlmpd4puctt46qdvjfm
       '@storybook/react-vite': 8.0.6_aycoh77aicizdd3kqbsd4kd72y
-      '@storybook/testing-library': 0.2.2
       '@storybook/theming': 8.0.6_biqbaboplfbrettd7655fr4n2y
       '@testing-library/jest-dom': 6.4.2_vitest@1.4.0
       '@testing-library/react': 14.3.0_biqbaboplfbrettd7655fr4n2y
@@ -4472,14 +4470,6 @@ packages:
       - '@types/jest'
       - jest
       - vitest
-    dev: true
-
-  /@storybook/testing-library/0.2.2:
-    resolution: {integrity: sha512-L8sXFJUHmrlyU2BsWWZGuAjv39Jl1uAqUHdxmN42JY15M4+XCMjGlArdCCjDe1wpTSW6USYISA9axjZojgtvnw==}
-    dependencies:
-      '@testing-library/dom': 9.3.4
-      '@testing-library/user-event': 14.5.2_@testing-library+dom@9.3.4
-      ts-dedent: 2.2.0
     dev: true
 
   /@storybook/theming/8.0.6_biqbaboplfbrettd7655fr4n2y:

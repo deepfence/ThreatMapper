@@ -57,7 +57,6 @@
     "@storybook/addon-themes": "^8.0.6",
     "@storybook/react": "^8.0.6",
     "@storybook/react-vite": "^8.0.6",
-    "@storybook/testing-library": "^0.2.2",
     "@storybook/theming": "^8.0.6",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.3.0",
