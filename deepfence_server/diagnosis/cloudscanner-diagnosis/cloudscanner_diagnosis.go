@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"path/filepath"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
@@ -118,16 +119,12 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 	if err != nil {
 		return err
 	}
-	mc, err := directory.FileServerClient(ctx)
-	if err != nil {
-		return err
-	}
 
-	actionBuilder := func(nodeIdentifier diagnosis.NodeIdentifier, uploadUrl string, fileName string, tail string) (controls.Action, error) {
+	actionBuilder := func(nodeIdentifier diagnosis.NodeIdentifier, uploadKey string, fileName string, tail string) (controls.Action, error) {
 		req := controls.SendAgentDiagnosticLogsRequest{
 			NodeID:    nodeIdentifier.NodeID,
 			NodeType:  controls.StringToResourceType(nodeIdentifier.NodeType),
-			UploadURL: uploadUrl,
+			UploadURL: uploadKey,
 			Tail:      tail,
 			FileName:  fileName,
 		}
@@ -161,11 +158,7 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 			continue
 		}
 		fileName := "deepfence-cloudscanner-logs-" + nodeIdentifier.NodeID + fileNameSuffix
-		uploadURL, err := mc.CreatePublicUploadURL(ctx, diagnosis.CloudScannerDiagnosticLogsPrefix+fileName, true, time.Minute*10, url.Values{})
-		if err != nil {
-			return err
-		}
-		action, err := actionBuilder(nodeIdentifier, uploadURL, fileName, tail)
+		action, err := actionBuilder(nodeIdentifier, diagnosis.CloudScannerDiagnosticLogsPrefix+fileName, fileName, tail)
 		if err != nil {
 			log.Error().Err(err)
 			return err
@@ -192,7 +185,7 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 
 }
 
-func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context, nodeIDs []string) (controls.Action, error) {
+func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context, nodeIDs []string, consoleURL string) (controls.Action, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return controls.Action{}, err
@@ -230,6 +223,30 @@ func GetQueuedCloudScannerDiagnosticLogs(ctx context.Context, nodeIDs []string) 
 	if err := json.Unmarshal([]byte(rec[0].Values[0].(string)), &action); err != nil {
 		return controls.Action{}, err
 	}
+
+	mc, err := directory.FileServerClient(ctx)
+	if err != nil {
+		return controls.Action{}, err
+	}
+	var sendAgentDiagnosticLogsRequest controls.SendAgentDiagnosticLogsRequest
+	err = json.Unmarshal([]byte(action.RequestPayload), &sendAgentDiagnosticLogsRequest)
+	if err != nil {
+		log.Error().Msgf("Unmarshal of action failed: %v", err)
+		return controls.Action{}, err
+	}
+	uploadURL, err := mc.CreatePublicUploadURL(ctx,
+		filepath.Join(diagnosis.AgentDiagnosisFileServerPrefix, sendAgentDiagnosticLogsRequest.UploadURL), true, time.Minute*10, url.Values{}, consoleURL)
+	if err != nil {
+		log.Error().Msgf("Cannot create public upload URL: %v", err)
+		return controls.Action{}, err
+	}
+	sendAgentDiagnosticLogsRequest.UploadURL = uploadURL
+	requestPayload, err := json.Marshal(sendAgentDiagnosticLogsRequest)
+	if err != nil {
+		log.Error().Msgf("Cannot marshal sendAgentDiagnosticLogsRequest: %v", err)
+		return controls.Action{}, err
+	}
+	action.RequestPayload = string(requestPayload)
 
 	return action, nil
 

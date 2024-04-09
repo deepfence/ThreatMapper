@@ -43,7 +43,7 @@ func (c ConsoleController) TriggerConsoleControls(ctx context.Context, t *asynq.
 		return nil
 	}
 
-	actions, errs := controls.GetAgentActions(ctx, ConsoleAgentId, int(allocatable))
+	actions, errs := controls.GetAgentActions(ctx, ConsoleAgentId, int(allocatable), "")
 	for _, e := range errs {
 		if e != nil {
 			log.Error().Msgf(e.Error())

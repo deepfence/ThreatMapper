@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 	"path"
 	"strings"
@@ -15,7 +14,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -103,13 +101,13 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 	}
 	defer session.Close(ctx)
 
-	updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.ScanStatusInProgress)
+	updateReportState(ctx, session, params.ReportID, "", sdkUtils.ScanStatusInProgress)
 
 	// generate reportName
 	localReportPath, err := generateReport(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to generate report with params %+v", params)
-		updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.ScanStatusFailed)
+		updateReportState(ctx, session, params.ReportID, "", sdkUtils.ScanStatusFailed)
 		return nil
 	}
 	log.Info().Msgf("report file path %s", localReportPath)
@@ -132,23 +130,12 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 		return nil
 	}
 
-	cd := url.Values{
-		"response-content-disposition": []string{
-			"attachment; filename=\"" + reportFileName(params) + "\""},
-	}
-	url, err := mc.ExposeFile(ctx, res.Key, false, utils.ReportRetentionTime, cd)
-	if err != nil {
-		log.Error().Err(err)
-		return err
-	}
-	log.Info().Msgf("exposed report URL: %s", url)
-
-	updateReportState(ctx, session, params.ReportID, url, res.Key, sdkUtils.ScanStatusSuccess)
+	updateReportState(ctx, session, params.ReportID, res.Key, sdkUtils.ScanStatusSuccess)
 
 	return nil
 }
 
-func updateReportState(ctx context.Context, session neo4j.SessionWithContext, reportID, url, path, status string) {
+func updateReportState(ctx context.Context, session neo4j.SessionWithContext, reportID, path, status string) {
 
 	log := log.WithCtx(ctx)
 
@@ -169,7 +156,6 @@ func updateReportState(ctx context.Context, session neo4j.SessionWithContext, re
 	`
 	vars := map[string]interface{}{
 		"uid":    reportID,
-		"url":    url,
 		"status": status,
 		"path":   path,
 	}

@@ -4,8 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/url"
+	"path/filepath"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -23,7 +26,7 @@ var (
 	ErrMissingNodeID = errors.New("missing node_id")
 )
 
-func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int) ([]controls.Action, []error) {
+func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int, consoleURL string) ([]controls.Action, []error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "control", "get-agent-actions")
 	defer span.End()
@@ -45,7 +48,7 @@ func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int) (
 	}
 
 	// Diagnostic logs not part of workNumToExtract
-	diagnosticLogActions, diagnosticLogErr := ExtractAgentDiagnosticLogRequests(ctx, nodeID, controls.Host, maxWork)
+	diagnosticLogActions, diagnosticLogErr := ExtractAgentDiagnosticLogRequests(ctx, nodeID, controls.Host, maxWork, consoleURL)
 	if diagnosticLogErr == nil {
 		actions = append(actions, diagnosticLogActions...)
 	}
@@ -54,7 +57,7 @@ func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int) (
 		return actions, []error{stopActionsErr, diagnosticLogErr}
 	}
 
-	upgradeActions, upgradeErr := ExtractPendingAgentUpgrade(ctx, nodeID, workNumToExtract)
+	upgradeActions, upgradeErr := ExtractPendingAgentUpgrade(ctx, nodeID, workNumToExtract, consoleURL)
 	workNumToExtract -= len(upgradeActions)
 	if upgradeErr == nil {
 		actions = append(actions, upgradeActions...)
@@ -66,7 +69,7 @@ func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int) (
 		actions = append(actions, scanActions...)
 	}
 
-	threatintelActions, threatintelLogErr := ExtractPendingAgentThreatIntelTask(ctx, nodeID)
+	threatintelActions, threatintelLogErr := ExtractPendingAgentThreatIntelTask(ctx, nodeID, consoleURL)
 	workNumToExtract -= len(threatintelActions)
 	if threatintelLogErr == nil {
 		actions = append(actions, threatintelActions...)
@@ -173,7 +176,7 @@ func hasAgentDiagnosticLogRequests(ctx context.Context, client neo4j.DriverWithC
 	return len(records) != 0, err
 }
 
-func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeID string, nodeType controls.ScanResource, maxWork int) ([]controls.Action, error) {
+func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeID string, nodeType controls.ScanResource, maxWork int, consoleURL string) ([]controls.Action, error) {
 	res := []controls.Action{}
 	if len(nodeID) == 0 {
 		return res, ErrMissingNodeID
@@ -214,17 +217,44 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeID string, nodeT
 		return res, err
 	}
 
+	mc, err := directory.FileServerClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
 	for _, record := range records {
 		var action controls.Action
 		if record.Values[0] == nil {
 			log.Error().Msgf("Invalid neo4j trigger_action result, skipping")
 			continue
 		}
-		err := json.Unmarshal([]byte(record.Values[0].(string)), &action)
+		err = json.Unmarshal([]byte(record.Values[0].(string)), &action)
 		if err != nil {
 			log.Error().Msgf("Unmarshal of action failed: %v", err)
 			continue
 		}
+
+		var sendAgentDiagnosticLogsRequest controls.SendAgentDiagnosticLogsRequest
+		err = json.Unmarshal([]byte(action.RequestPayload), &sendAgentDiagnosticLogsRequest)
+		if err != nil {
+			log.Error().Msgf("Unmarshal of action failed: %v", err)
+			continue
+		}
+
+		uploadURL, err := mc.CreatePublicUploadURL(ctx,
+			filepath.Join(diagnosis.AgentDiagnosisFileServerPrefix, sendAgentDiagnosticLogsRequest.UploadURL), true, time.Minute*10, url.Values{}, consoleURL)
+		if err != nil {
+			log.Error().Msgf("Cannot create public upload URL: %v", err)
+			continue
+		}
+		sendAgentDiagnosticLogsRequest.UploadURL = uploadURL
+		requestPayload, err := json.Marshal(sendAgentDiagnosticLogsRequest)
+		if err != nil {
+			log.Error().Msgf("Cannot marshal sendAgentDiagnosticLogsRequest: %v", err)
+			continue
+		}
+		action.RequestPayload = string(requestPayload)
+
 		res = append(res, action)
 	}
 
@@ -410,7 +440,7 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeID string, maxWrok int) 
 
 }
 
-func ExtractPendingAgentThreatIntelTask(ctx context.Context, nodeID string) ([]controls.Action, error) {
+func ExtractPendingAgentThreatIntelTask(ctx context.Context, nodeID string, consoleURL string) ([]controls.Action, error) {
 	res := []controls.Action{}
 	if len(nodeID) == 0 {
 		return res, ErrMissingNodeID
@@ -421,12 +451,12 @@ func ExtractPendingAgentThreatIntelTask(ctx context.Context, nodeID string) ([]c
 		err error
 	)
 
-	req.MalwareRulesURL, req.MalwareRulesHash, _, err = threatintel.FetchMalwareRulesInfo(ctx)
+	req.MalwareRulesURL, req.MalwareRulesHash, _, err = threatintel.FetchMalwareRulesInfo(ctx, consoleURL)
 	if err != nil {
 		return res, err
 	}
 
-	req.SecretsRulesURL, req.SecretsRulesHash, _, err = threatintel.FetchSecretsRulesInfo(ctx)
+	req.SecretsRulesURL, req.SecretsRulesHash, _, err = threatintel.FetchSecretsRulesInfo(ctx, consoleURL)
 	if err != nil {
 		return res, err
 	}
@@ -473,7 +503,7 @@ func hasPendingAgentUpgrade(ctx context.Context, client neo4j.DriverWithContext,
 	return len(records) != 0, err
 }
 
-func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int) ([]controls.Action, error) {
+func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int, consoleURL string) ([]controls.Action, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "control", "extract-pending-agent-upgrade")
 	defer span.End()

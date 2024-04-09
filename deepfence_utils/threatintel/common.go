@@ -123,14 +123,14 @@ func DeleteFileMinio(ctx context.Context, fName string) error {
 	return nil
 }
 
-func ExposeFile(ctx context.Context, fName string) (string, error) {
+func ExposeFile(ctx context.Context, fName string, consoleURL string) (string, error) {
 
 	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
 	if err != nil {
 		return "", err
 	}
 
-	url, err := mc.ExposeFile(ctx, fName, false, threatintelPollDuration*3, url.Values{})
+	url, err := mc.ExposeFile(ctx, fName, false, threatintelPollDuration*3, url.Values{}, consoleURL)
 	if err != nil {
 		return "", err
 	}

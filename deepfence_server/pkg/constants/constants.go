@@ -72,3 +72,7 @@ var SensitiveFields = map[string]struct{}{
 const (
 	RedisKeyPostureProviders = "PostureProviders"
 )
+
+const (
+	HostHeader = "Host"
+)

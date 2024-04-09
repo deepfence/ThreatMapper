@@ -81,24 +81,24 @@ type GetDiagnosticLogsResponse struct {
 	CloudScannerLogs []DiagnosticLogsLink `json:"cloud_scanner_logs"`
 }
 
-func GetDiagnosticLogs(ctx context.Context) (*GetDiagnosticLogsResponse, error) {
+func GetDiagnosticLogs(ctx context.Context, consoleURL string) (*GetDiagnosticLogsResponse, error) {
 	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return nil, err
 	}
-	cloudScannerDiagnosticLogs, err := getCloudScannerDiagnosticLogs(ctx, mc, CloudScannerDiagnosticLogsPrefix)
+	cloudScannerDiagnosticLogs, err := getCloudScannerDiagnosticLogs(ctx, mc, CloudScannerDiagnosticLogsPrefix, consoleURL)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
 	diagnosticLogs := GetDiagnosticLogsResponse{
-		ConsoleLogs:      getDiagnosticLogsHelper(ctx, mc, ConsoleDiagnosisFileServerPrefix, diagnosticLogsTypeConsole),
-		AgentLogs:        getAgentDiagnosticLogs(ctx, mc, AgentDiagnosisFileServerPrefix),
+		ConsoleLogs:      getDiagnosticLogsHelper(ctx, mc, ConsoleDiagnosisFileServerPrefix, diagnosticLogsTypeConsole, consoleURL),
+		AgentLogs:        getAgentDiagnosticLogs(ctx, mc, AgentDiagnosisFileServerPrefix, consoleURL),
 		CloudScannerLogs: cloudScannerDiagnosticLogs,
 	}
 	return &diagnosticLogs, nil
 }
 
-func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, pathPrefix string, logsType string) []DiagnosticLogsLink {
+func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, pathPrefix string, logsType string, consoleURL string) []DiagnosticLogsLink {
 	// Get completed files from minio
 	objects := mc.ListFiles(ctx, pathPrefix, false, 0, true)
 	log.Debug().Msgf("diagnosis logs at %s: %v", pathPrefix, objects)
@@ -109,7 +109,7 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 		}
 
 		message := diagnosticLogsStatusSuccess
-		urlLink, err := mc.ExposeFile(ctx, obj.Key, false, DiagnosisLinkExpiry, url.Values{})
+		urlLink, err := mc.ExposeFile(ctx, obj.Key, false, DiagnosisLinkExpiry, url.Values{}, consoleURL)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to list diagnosis logs")
 			var minioError utils.MinioError
@@ -136,8 +136,8 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 	return diagnosticLogsResponse
 }
 
-func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathPrefix string) []DiagnosticLogsLink {
-	diagnosticLogs := getDiagnosticLogsHelper(ctx, mc, AgentDiagnosisFileServerPrefix, "")
+func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathPrefix string, consoleURL string) []DiagnosticLogsLink {
+	diagnosticLogs := getDiagnosticLogsHelper(ctx, mc, AgentDiagnosisFileServerPrefix, "", consoleURL)
 	minioAgentLogsKeys := make(map[string]int)
 	for i, log := range diagnosticLogs {
 		minioAgentLogsKeys[log.FileName] = i
@@ -236,8 +236,8 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 	return diagnosticLogs
 }
 
-func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathPrefix string) ([]DiagnosticLogsLink, error) {
-	diagnosticLogs := getDiagnosticLogsHelper(ctx, mc, CloudScannerDiagnosticLogsPrefix, diagnosticLogsTypeCloudScanner)
+func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathPrefix string, consoleURL string) ([]DiagnosticLogsLink, error) {
+	diagnosticLogs := getDiagnosticLogsHelper(ctx, mc, CloudScannerDiagnosticLogsPrefix, diagnosticLogsTypeCloudScanner, consoleURL)
 	minioAgentLogsKeys := make(map[string]int)
 	for i, log := range diagnosticLogs {
 		minioAgentLogsKeys[log.FileName] = i

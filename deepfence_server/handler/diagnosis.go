@@ -7,6 +7,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	agentdiagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/agent-diagnosis"
 	cloudscannerdiagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/cloudscanner-diagnosis"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
@@ -133,7 +134,7 @@ func (h *Handler) UpdateCloudScannerDiagnosticLogsStatus(w http.ResponseWriter, 
 }
 
 func (h *Handler) GetDiagnosticLogs(w http.ResponseWriter, r *http.Request) {
-	resp, err := diagnosis.GetDiagnosticLogs(r.Context())
+	resp, err := diagnosis.GetDiagnosticLogs(r.Context(), r.Header.Get(constants.HostHeader))
 	if err != nil {
 		h.respondError(&BadDecoding{err}, w)
 		return

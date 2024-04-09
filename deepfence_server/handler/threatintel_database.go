@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
 	httpext "github.com/go-playground/pkg/v5/net/http"
@@ -104,7 +105,7 @@ func (h *Handler) UploadSecretsRules(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := threatintel.ExposeFile(ctx, path)
+	url, err := threatintel.ExposeFile(ctx, path, r.Header.Get(constants.HostHeader))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(&BadDecoding{err}, w)
@@ -158,7 +159,7 @@ func (h *Handler) UploadMalwareRules(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := threatintel.ExposeFile(ctx, path)
+	url, err := threatintel.ExposeFile(ctx, path, r.Header.Get(constants.HostHeader))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(&BadDecoding{err}, w)
@@ -212,7 +213,7 @@ func (h *Handler) UploadPostureControls(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	url, err := threatintel.ExposeFile(ctx, path)
+	url, err := threatintel.ExposeFile(ctx, path, r.Header.Get(constants.HostHeader))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(&BadDecoding{err}, w)

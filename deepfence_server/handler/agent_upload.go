@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	url2 "net/url"
 	"path/filepath"
 	"time"
 
@@ -62,13 +61,13 @@ func (h *Handler) UploadAgentBinaries(w http.ResponseWriter, r *http.Request) {
 		vername: bytes.NewBuffer(tarball),
 	}
 
-	tagsWithURLs, err := PrepareAgentBinariesReleases(ctx, versionedTarball)
+	tagsWithFileServerKeys, err := PrepareAgentBinariesReleases(ctx, versionedTarball)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
-	err = IngestAgentVersion(ctx, tagsWithURLs, true)
+	err = IngestAgentVersion(ctx, tagsWithFileServerKeys, true)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
@@ -89,13 +88,13 @@ func PrepareAgentBinariesReleases(ctx context.Context, versionedTarball map[stri
 	defer span.End()
 
 	processedTags := map[string]string{}
-	minio, err := directory.FileServerClient(ctx)
+	fileServerClient, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return processedTags, err
 	}
 
 	for version, b := range versionedTarball {
-		res, err := minio.UploadFile(ctx,
+		res, err := fileServerClient.UploadFile(ctx,
 			version,
 			b.Bytes(),
 			false,
@@ -114,18 +113,13 @@ func PrepareAgentBinariesReleases(ctx context.Context, versionedTarball map[stri
 			key = res.Key
 		}
 
-		url, err := minio.ExposeFile(ctx, key, false, 10*time.Hour, url2.Values{})
-		if err != nil {
-			log.Error().Err(err)
-			continue
-		}
-		log.Debug().Msgf("Exposed URL: %v", url)
-		processedTags[version] = url
+		log.Debug().Msgf("File server key: %v", key)
+		processedTags[version] = key
 	}
 	return processedTags, nil
 }
 
-func IngestAgentVersion(ctx context.Context, tagsToURL map[string]string, manual bool) error {
+func IngestAgentVersion(ctx context.Context, tagsWithFileServerKeys map[string]string, manual bool) error {
 
 	ctx, span := telemetry.NewSpan(ctx, "agent", "ingest-agent-version")
 	defer span.End()
@@ -144,14 +138,14 @@ func IngestAgentVersion(ctx context.Context, tagsToURL map[string]string, manual
 	defer tx.Close(ctx)
 
 	tagsToIngest := []map[string]string{}
-	for k, v := range tagsToURL {
-		tagsToIngest = append(tagsToIngest, map[string]string{"tag": k, "url": v})
+	for k, v := range tagsWithFileServerKeys {
+		tagsToIngest = append(tagsToIngest, map[string]string{"tag": k, "key": v})
 	}
 
 	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row
 		MERGE (n:AgentVersion{node_id: row.tag})
-		SET n.url = row.url,
+		SET n.key = row.key,
 			n.manual = $manual`,
 		map[string]interface{}{
 			"batch":  tagsToIngest,
@@ -185,7 +179,7 @@ func CleanUpAgentVersion(ctx context.Context, tagsToKeep []string) error {
 		MATCH (n:AgentVersion)
 		WHERE NOT n.node_id IN $tags
 		AND COALESCE(n.manual, false) = false
-		SET n.url = NULL`,
+		SET n.key = NULL`,
 		map[string]interface{}{"tags": tagsToKeep}); err != nil {
 		return err
 	}
@@ -290,7 +284,7 @@ func GetAgentVersionList(ctx context.Context) ([]string, error) {
 
 	res, err := tx.Run(ctx, `
 		MATCH (n:AgentVersion)
-		WHERE NOT n.url IS NULL
+		WHERE NOT n.key IS NULL
 		RETURN n.node_id
 		ORDER BY n.node_id DESC`,
 		map[string]interface{}{})

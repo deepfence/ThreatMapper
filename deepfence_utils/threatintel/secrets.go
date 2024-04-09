@@ -23,7 +23,7 @@ func DownloadSecretsRules(ctx context.Context, entry Entry) error {
 	defer span.End()
 
 	// remove old rule file
-	_, _, existing, err := FetchSecretsRulesInfo(ctx)
+	_, _, existing, err := FetchSecretsRulesInfo(ctx, "")
 	if err != nil {
 		log.Error().Err(err).Msg("no existing secret rules info found")
 	} else {
@@ -46,17 +46,11 @@ func DownloadSecretsRules(ctx context.Context, entry Entry) error {
 		return err
 	}
 
-	url, err := ExposeFile(ctx, path)
-	if err != nil {
-		log.Error().Err(err).Msg("failed to expose secrets rules on fileserver")
-		return err
-	}
-
 	// create node in neo4j
-	return UpdateSecretsRulesInfo(ctx, url, sha, strings.TrimPrefix(path, "database/"))
+	return UpdateSecretsRulesInfo(ctx, path, sha, strings.TrimPrefix(path, "database/"))
 }
 
-func UpdateSecretsRulesInfo(ctx context.Context, url, hash, path string) error {
+func UpdateSecretsRulesInfo(ctx context.Context, fileServerKey, hash, path string) error {
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -66,12 +60,12 @@ func UpdateSecretsRulesInfo(ctx context.Context, url, hash, path string) error {
 
 	_, err = session.Run(ctx, `
 		MERGE (n:SecretsRules{node_id: "latest"})
-		SET n.rules_url=$rules_url,
+		SET n.rules_key=$rules_key,
 			n.rules_hash=$hash,
 			n.path=$path,
 			n.updated_at=TIMESTAMP()`,
 		map[string]interface{}{
-			"rules_url": url,
+			"rules_key": fileServerKey,
 			"hash":      hash,
 			"path":      path,
 		})
@@ -83,7 +77,7 @@ func UpdateSecretsRulesInfo(ctx context.Context, url, hash, path string) error {
 	return nil
 }
 
-func FetchSecretsRulesInfo(ctx context.Context) (url, hash, path string, err error) {
+func FetchSecretsRulesInfo(ctx context.Context, consoleURL string) (url, hash, path string, err error) {
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return "", "", "", err
@@ -99,7 +93,7 @@ func FetchSecretsRulesInfo(ctx context.Context) (url, hash, path string, err err
 
 	querySecretsRules := `
 	MATCH (s:SecretsRules{node_id: "latest"})
-	RETURN s.rules_url, s.rules_hash, s.path`
+	RETURN s.rules_key, s.rules_hash, s.path`
 
 	r, err := tx.Run(ctx, querySecretsRules, map[string]interface{}{})
 	if err != nil {
@@ -110,6 +104,12 @@ func FetchSecretsRulesInfo(ctx context.Context) (url, hash, path string, err err
 		return "", "", "", err
 	}
 
-	return rec.Values[0].(string), rec.Values[1].(string), rec.Values[2].(string), nil
+	exposedURL, err := ExposeFile(ctx, rec.Values[0].(string), consoleURL)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to expose secrets rules on fileserver")
+		return "", "", "", err
+	}
+
+	return exposedURL, rec.Values[1].(string), rec.Values[2].(string), nil
 
 }

@@ -310,7 +310,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	var value interface{}
 	switch currentSettings.Key {
-	case model.ConsoleURLSettingKey, model.FileServerURLSettingKey:
+	case model.ConsoleURLSettingKey:
 		var parsedURL *url.URL
 		if parsedURL, err = url.ParseRequestURI(strings.TrimSpace(req.Value)); err != nil {
 			h.respondError(&errInvalidURL, w)
@@ -352,7 +352,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetAgentBinaryDownloadURL(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	getAgentBinaryDownloadURLResponse, err := getAgentBinaryDownloadURL(ctx)
+	getAgentBinaryDownloadURLResponse, err := getAgentBinaryDownloadURL(ctx, r.Header.Get(constants.HostHeader))
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -370,7 +370,7 @@ const (
 	agentBinaryFileArm64 = "deepfence-agent-arm64-%s.tar.gz"
 )
 
-func getAgentBinaryDownloadURL(ctx context.Context) (*model.GetAgentBinaryDownloadURLResponse, error) {
+func getAgentBinaryDownloadURL(ctx context.Context, consoleURL string) (*model.GetAgentBinaryDownloadURLResponse, error) {
 	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
 	if err != nil {
 		return nil, err
@@ -378,19 +378,19 @@ func getAgentBinaryDownloadURL(ctx context.Context) (*model.GetAgentBinaryDownlo
 
 	resp := model.GetAgentBinaryDownloadURLResponse{}
 
-	resp.StartAgentScriptDownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, startAgentScript), true, getAgentBinaryDownloadURLExpiry, url.Values{})
+	resp.StartAgentScriptDownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, startAgentScript), true, getAgentBinaryDownloadURLExpiry, url.Values{}, consoleURL)
 	if err != nil {
 		log.Warn().Msg(err.Error())
 	}
-	resp.UninstallAgentScriptDownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, uninstallAgentScript), true, getAgentBinaryDownloadURLExpiry, url.Values{})
+	resp.UninstallAgentScriptDownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, uninstallAgentScript), true, getAgentBinaryDownloadURLExpiry, url.Values{}, consoleURL)
 	if err != nil {
 		log.Warn().Msg(err.Error())
 	}
-	resp.AgentBinaryAmd64DownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, fmt.Sprintf(agentBinaryFileAmd64, constants.Version)), true, getAgentBinaryDownloadURLExpiry, url.Values{})
+	resp.AgentBinaryAmd64DownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, fmt.Sprintf(agentBinaryFileAmd64, constants.Version)), true, getAgentBinaryDownloadURLExpiry, url.Values{}, consoleURL)
 	if err != nil {
 		log.Warn().Msg(err.Error())
 	}
-	resp.AgentBinaryArm64DownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, fmt.Sprintf(agentBinaryFileArm64, constants.Version)), true, getAgentBinaryDownloadURLExpiry, url.Values{})
+	resp.AgentBinaryArm64DownloadURL, err = mc.ExposeFile(ctx, filepath.Join(utils.FileServerPathAgentBinary, fmt.Sprintf(agentBinaryFileArm64, constants.Version)), true, getAgentBinaryDownloadURLExpiry, url.Values{}, consoleURL)
 	if err != nil {
 		log.Warn().Msg(err.Error())
 	}

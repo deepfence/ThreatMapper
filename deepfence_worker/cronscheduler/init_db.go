@@ -70,26 +70,11 @@ func initSqlDatabase(ctx context.Context) error {
 		return err
 	}
 
-	_, err = model.GetSettingByKey(ctx, pgClient, model.FileServerURLSettingKey)
-	if err != nil {
-		// FileServerURLSetting is not set
-		// Copy ConsoleURLSetting to FileServerURLSetting
-		consoleURLSetting, err := model.GetSettingByKey(ctx, pgClient, model.ConsoleURLSettingKey)
-		// Skip if ConsoleURLSetting is not set
-		if err == nil {
-			fileServerURLSetting := model.Setting{
-				Key: model.FileServerURLSettingKey,
-				Value: &model.SettingValue{
-					Label:       utils.FileServerURLSettingLabel,
-					Value:       consoleURLSetting.Value.Value,
-					Description: utils.FileServerURLSettingDescription,
-				},
-				IsVisibleOnUI: true,
-			}
-			_, err = fileServerURLSetting.Create(ctx, pgClient)
-			if err != nil {
-				log.Error().Err(err).Msg("failed to set FileServerURLSetting")
-			}
+	fileServerURLSetting, err := model.GetSettingByKey(ctx, pgClient, model.FileServerURLSettingKey)
+	if err == nil {
+		err = fileServerURLSetting.Delete(ctx, pgClient)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to delete FileServerURLSettingKey")
 		}
 	}
 
