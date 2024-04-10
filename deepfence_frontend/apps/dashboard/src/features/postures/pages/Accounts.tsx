@@ -884,8 +884,11 @@ const ActionDropdown = ({
             </DropdownItem>
             {isCloudNode(nodeType) || isCloudOrgNode(nodeType) ? (
               <DropdownItem
-                disabled={!(isScanComplete(scanStatus) || isScanFailed(scanStatus))}
+                disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
                 onSelect={() => {
+                  if (isScanInProgress(scanStatus) || isScanStopping(scanStatus)) {
+                    return;
+                  }
                   onTableAction(row, ActionEnumType.DELETE_ACCOUNT);
                 }}
               >
@@ -960,7 +963,9 @@ const BulkActions = ({
 
   const nodeIdsToDelete = useMemo(() => {
     return selectedRows
-      .filter((row) => isScanComplete(row.scanStatus) || isScanFailed(row.scanStatus))
+      .filter(
+        (row) => !(isScanInProgress(row.scanStatus) || isScanStopping(row.scanStatus)),
+      )
       .map((row) => row.nodeId);
   }, [selectedRows]);
 
