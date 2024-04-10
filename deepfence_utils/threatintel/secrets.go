@@ -8,6 +8,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
@@ -77,12 +78,12 @@ func UpdateSecretsRulesInfo(ctx context.Context, fileServerKey, hash, path strin
 	return nil
 }
 
-func FetchSecretsRulesURL(ctx context.Context, consoleURL string) (string, string, error) {
+func FetchSecretsRulesURL(ctx context.Context, consoleURL string, ttlCache *ttlcache.Cache[string, string]) (string, string, error) {
 	rulesKey, hash, _, err := FetchSecretsRulesInfo(ctx)
 	if err != nil {
 		return "", "", err
 	}
-	exposedURL, err := ExposeFile(ctx, rulesKey, consoleURL)
+	exposedURL, err := ExposeFile(ctx, rulesKey, consoleURL, ttlCache)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to expose secrets rules on fileserver")
 		return "", "", err

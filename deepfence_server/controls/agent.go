@@ -13,6 +13,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
@@ -24,7 +25,7 @@ var (
 	ErrMissingNodeID = errors.New("missing node_id")
 )
 
-func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int, consoleURL string) ([]controls.Action, []error) {
+func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int, consoleURL string, ttlCache *ttlcache.Cache[string, string]) ([]controls.Action, []error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "control", "get-agent-actions")
 	defer span.End()
@@ -67,7 +68,7 @@ func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int, c
 		actions = append(actions, scanActions...)
 	}
 
-	threatintelActions, threatintelLogErr := ExtractPendingAgentThreatIntelTask(ctx, nodeID, consoleURL)
+	threatintelActions, threatintelLogErr := ExtractPendingAgentThreatIntelTask(ctx, nodeID, consoleURL, ttlCache)
 	workNumToExtract -= len(threatintelActions)
 	if threatintelLogErr == nil {
 		actions = append(actions, threatintelActions...)
@@ -76,7 +77,7 @@ func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int, c
 	return actions, []error{scanErr, upgradeErr, diagnosticLogErr, stopActionsErr, threatintelLogErr}
 }
 
-func GetPendingAgentScans(ctx context.Context, nodeID string, availableWorkload int) ([]controls.Action, error) {
+func GetPendingAgentScans(ctx context.Context, nodeID string, availableWorkload int, ttlCache *ttlcache.Cache[string, string]) ([]controls.Action, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "control", "get-pending-agent-scans")
 	defer span.End()
@@ -437,7 +438,7 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeID string, maxWrok int) 
 
 }
 
-func ExtractPendingAgentThreatIntelTask(ctx context.Context, nodeID string, consoleURL string) ([]controls.Action, error) {
+func ExtractPendingAgentThreatIntelTask(ctx context.Context, nodeID string, consoleURL string, ttlCache *ttlcache.Cache[string, string]) ([]controls.Action, error) {
 	res := []controls.Action{}
 	if len(nodeID) == 0 {
 		return res, ErrMissingNodeID
@@ -448,12 +449,12 @@ func ExtractPendingAgentThreatIntelTask(ctx context.Context, nodeID string, cons
 		err error
 	)
 
-	req.MalwareRulesURL, req.MalwareRulesHash, err = threatintel.FetchMalwareRulesURL(ctx, consoleURL)
+	req.MalwareRulesURL, req.MalwareRulesHash, err = threatintel.FetchMalwareRulesURL(ctx, consoleURL, ttlCache)
 	if err != nil {
 		return res, err
 	}
 
-	req.SecretsRulesURL, req.SecretsRulesHash, err = threatintel.FetchSecretsRulesURL(ctx, consoleURL)
+	req.SecretsRulesURL, req.SecretsRulesHash, err = threatintel.FetchSecretsRulesURL(ctx, consoleURL, ttlCache)
 	if err != nil {
 		return res, err
 	}
