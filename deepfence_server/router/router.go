@@ -352,7 +352,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 
 			r.Route("/cloud-node", func(r chi.Router) {
 				r.Post("/account", dfHandler.AuthHandler(ResourceCloudNode, PermissionRegister, dfHandler.RegisterCloudNodeAccountHandler))
-				r.Delete("/account", dfHandler.AuthHandler(ResourceCloudNode, PermissionDelete, dfHandler.DeleteCloudAccountHandler))
+				r.Patch("/account/delete", dfHandler.AuthHandler(ResourceCloudNode, PermissionDelete, dfHandler.DeleteCloudAccountHandler))
 				r.Post("/account/refresh", dfHandler.AuthHandler(ResourceCloudNode, PermissionWrite, dfHandler.RefreshCloudAccountHandler))
 				r.Post("/list/accounts", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeAccountHandler))
 				r.Get("/list/providers", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeProvidersHandler))
