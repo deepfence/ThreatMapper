@@ -25,7 +25,7 @@ func DownloadAndPopulateCloudControls(ctx context.Context, entry Entry) error {
 	defer span.End()
 
 	// remove old rule file
-	_, _, existing, err := FetchPostureControlsInfo(ctx, "")
+	_, existing, err := FetchPostureControlsInfo(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("no existing posture control info found")
 	} else {
@@ -98,17 +98,17 @@ func UpdatePostureControlsInfo(ctx context.Context, fileServerKey, hash, path st
 	return nil
 }
 
-func FetchPostureControlsInfo(ctx context.Context, consoleURL string) (url, hash, path string, err error) {
+func FetchPostureControlsInfo(ctx context.Context) (hash, path string, err error) {
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return "", "", "", err
+		return "", "", err
 	}
 	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx)
 	if err != nil {
-		return "", "", "", err
+		return "", "", err
 	}
 	defer tx.Close(ctx)
 
@@ -118,24 +118,18 @@ func FetchPostureControlsInfo(ctx context.Context, consoleURL string) (url, hash
 
 	r, err := tx.Run(ctx, queryPostureControls, map[string]interface{}{})
 	if err != nil {
-		return "", "", "", err
+		return "", "", err
 	}
 	rec, err := r.Single(ctx)
 	if err != nil {
-		return "", "", "", err
+		return "", "", err
 	}
 
 	if rec.Values[0] == nil {
 		log.Warn().Msg("rules_key not found in PostureControls")
-		return "", "", "", nil
+		return "", "", nil
 	}
 
-	exposedURL, err := ExposeFile(ctx, rec.Values[0].(string), consoleURL)
-	if err != nil {
-		log.Error().Err(err).Msg("failed to expose posture controls on fileserver")
-		return "", "", "", err
-	}
-
-	return exposedURL, rec.Values[1].(string), rec.Values[2].(string), nil
+	return rec.Values[1].(string), rec.Values[2].(string), nil
 
 }

@@ -352,7 +352,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetAgentBinaryDownloadURL(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	getAgentBinaryDownloadURLResponse, err := getAgentBinaryDownloadURL(ctx, r.Header.Get(constants.HostHeader))
+	getAgentBinaryDownloadURLResponse, err := getAgentBinaryDownloadURL(ctx, r.Host)
 	if err != nil {
 		h.respondError(err, w)
 		return

@@ -8,7 +8,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	httpext "github.com/go-playground/pkg/v5/net/http"
@@ -27,7 +26,7 @@ func (h *Handler) GetAgentControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actions, errs := controls.GetAgentActions(ctx, agentID.NodeID, agentID.AvailableWorkload, r.Header.Get(constants.HostHeader))
+	actions, errs := controls.GetAgentActions(ctx, agentID.NodeID, agentID.AvailableWorkload, r.Host)
 	for _, err := range errs {
 		if err != nil {
 			log.Warn().Msgf("Cannot process some actions for %s: %v, skipping",

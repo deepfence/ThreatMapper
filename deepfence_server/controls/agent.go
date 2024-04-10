@@ -448,12 +448,12 @@ func ExtractPendingAgentThreatIntelTask(ctx context.Context, nodeID string, cons
 		err error
 	)
 
-	req.MalwareRulesURL, req.MalwareRulesHash, _, err = threatintel.FetchMalwareRulesInfo(ctx, consoleURL)
+	req.MalwareRulesURL, req.MalwareRulesHash, err = threatintel.FetchMalwareRulesURL(ctx, consoleURL)
 	if err != nil {
 		return res, err
 	}
 
-	req.SecretsRulesURL, req.SecretsRulesHash, _, err = threatintel.FetchSecretsRulesInfo(ctx, consoleURL)
+	req.SecretsRulesURL, req.SecretsRulesHash, err = threatintel.FetchSecretsRulesURL(ctx, consoleURL)
 	if err != nil {
 		return res, err
 	}

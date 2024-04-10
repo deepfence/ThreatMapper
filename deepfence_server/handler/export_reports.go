@@ -11,7 +11,6 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -309,7 +308,7 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 			"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
 		}
 	}
-	fileServerURL, err := mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, r.Header.Get(constants.HostHeader))
+	fileServerURL, err := mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, r.Host)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -388,7 +387,7 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if report.StoragePath != "" {
-			fileServerURL, err = mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, r.Header.Get(constants.HostHeader))
+			fileServerURL, err = mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, r.Host)
 			if err == nil {
 				report.URL = fileServerURL
 			} else {

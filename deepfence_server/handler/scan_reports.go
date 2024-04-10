@@ -17,7 +17,6 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	reportersScan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
@@ -1830,7 +1829,7 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 			"response-content-disposition": []string{
 				"attachment; filename=" + strconv.Quote(utils.ScanIDReplacer.Replace(req.ScanID)+".json.gz")},
 		}
-		url, err := mc.ExposeFile(r.Context(), sbomFile, true, DownloadReportURLExpiry, cd, r.Header.Get(constants.HostHeader))
+		url, err := mc.ExposeFile(r.Context(), sbomFile, true, DownloadReportURLExpiry, cd, r.Host)
 		if err != nil {
 			log.Error().Msg(err.Error())
 			h.respondError(err, w)

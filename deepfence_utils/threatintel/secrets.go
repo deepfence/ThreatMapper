@@ -23,7 +23,7 @@ func DownloadSecretsRules(ctx context.Context, entry Entry) error {
 	defer span.End()
 
 	// remove old rule file
-	_, _, existing, err := FetchSecretsRulesInfo(ctx, "")
+	_, _, existing, err := FetchSecretsRulesInfo(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("no existing secret rules info found")
 	} else {
@@ -77,7 +77,20 @@ func UpdateSecretsRulesInfo(ctx context.Context, fileServerKey, hash, path strin
 	return nil
 }
 
-func FetchSecretsRulesInfo(ctx context.Context, consoleURL string) (url, hash, path string, err error) {
+func FetchSecretsRulesURL(ctx context.Context, consoleURL string) (string, string, error) {
+	rulesKey, hash, _, err := FetchSecretsRulesInfo(ctx)
+	if err != nil {
+		return "", "", err
+	}
+	exposedURL, err := ExposeFile(ctx, rulesKey, consoleURL)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to expose secrets rules on fileserver")
+		return "", "", err
+	}
+	return exposedURL, hash, nil
+}
+
+func FetchSecretsRulesInfo(ctx context.Context) (rulesKey, hash, path string, err error) {
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return "", "", "", err
@@ -109,12 +122,5 @@ func FetchSecretsRulesInfo(ctx context.Context, consoleURL string) (url, hash, p
 		return "", "", "", nil
 	}
 
-	exposedURL, err := ExposeFile(ctx, rec.Values[0].(string), consoleURL)
-	if err != nil {
-		log.Error().Err(err).Msg("failed to expose secrets rules on fileserver")
-		return "", "", "", err
-	}
-
-	return exposedURL, rec.Values[1].(string), rec.Values[2].(string), nil
-
+	return rec.Values[0].(string), rec.Values[1].(string), rec.Values[2].(string), nil
 }
