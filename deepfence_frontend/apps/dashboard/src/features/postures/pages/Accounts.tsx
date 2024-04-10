@@ -930,7 +930,10 @@ const BulkActions = ({
   const scanIdsToDeleteScan = useMemo(() => {
     return selectedRows
       .filter(
-        (row) => !isNeverScanned(row.scanStatus) && !isScanDeletePending(row.scanStatus),
+        (row) =>
+          !isNeverScanned(row.scanStatus) &&
+          !isScanDeletePending(row.scanStatus) &&
+          !isScanInProgress(row.scanStatus),
       )
       .map((row) => row.scanId);
   }, [selectedRows]);
