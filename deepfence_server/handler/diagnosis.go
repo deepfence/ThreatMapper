@@ -133,7 +133,7 @@ func (h *Handler) UpdateCloudScannerDiagnosticLogsStatus(w http.ResponseWriter, 
 }
 
 func (h *Handler) GetDiagnosticLogs(w http.ResponseWriter, r *http.Request) {
-	resp, err := diagnosis.GetDiagnosticLogs(r.Context(), r.Host)
+	resp, err := diagnosis.GetDiagnosticLogs(r.Context(), h.GetHostURL(r))
 	if err != nil {
 		h.respondError(&BadDecoding{err}, w)
 		return

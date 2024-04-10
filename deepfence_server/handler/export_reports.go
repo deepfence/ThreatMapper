@@ -308,7 +308,7 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 			"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
 		}
 	}
-	fileServerURL, err := mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, r.Host)
+	fileServerURL, err := mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, h.GetHostURL(r))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -387,7 +387,7 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if report.StoragePath != "" {
-			fileServerURL, err = mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, r.Host)
+			fileServerURL, err = mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, h.GetHostURL(r))
 			if err == nil {
 				report.URL = fileServerURL
 			} else {

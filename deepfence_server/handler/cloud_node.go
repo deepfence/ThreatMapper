@@ -125,7 +125,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 				scanList[scan.ScanID] = scanDetail
 			}
 		}
-		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, append(monitoredNodeIds, nodeID), r.Host)
+		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, append(monitoredNodeIds, nodeID), h.GetHostURL(r))
 		if err != nil {
 			log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
 		}
@@ -146,7 +146,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			return
 		}
 		// get log request for cloudscanner, if any
-		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeID}, r.Host)
+		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeID}, h.GetHostURL(r))
 		if err != nil {
 			log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
 		}

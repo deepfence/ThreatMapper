@@ -1829,7 +1829,7 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 			"response-content-disposition": []string{
 				"attachment; filename=" + strconv.Quote(utils.ScanIDReplacer.Replace(req.ScanID)+".json.gz")},
 		}
-		url, err := mc.ExposeFile(r.Context(), sbomFile, true, DownloadReportURLExpiry, cd, r.Host)
+		url, err := mc.ExposeFile(r.Context(), sbomFile, true, DownloadReportURLExpiry, cd, h.GetHostURL(r))
 		if err != nil {
 			log.Error().Msg(err.Error())
 			h.respondError(err, w)
