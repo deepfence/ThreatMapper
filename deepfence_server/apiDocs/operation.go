@@ -412,7 +412,7 @@ func (d *OpenAPIDocs) AddCloudNodeOperations() {
 		"Register Cloud Node Account", "Register Cloud Node Account and return any pending compliance scans from console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountRegisterReq), new(CloudNodeAccountRegisterResp))
 
-	d.AddOperation("deleteCloudNodeAccount", http.MethodDelete, "/deepfence/cloud-node/account",
+	d.AddOperation("deleteCloudNodeAccount", http.MethodPatch, "/deepfence/cloud-node/account/delete",
 		"Delete Cloud Node Account", "Delete Cloud Node Account and related resources",
 		http.StatusAccepted, []string{tagCloudNodes}, bearerToken, new(CloudAccountDeleteReq), nil)
 
