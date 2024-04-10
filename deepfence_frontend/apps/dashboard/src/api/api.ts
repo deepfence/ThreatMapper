@@ -251,6 +251,7 @@ export function getCloudNodesApiClient() {
     listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
     listCloudProviders: cloudNodesApi.listCloudProviders.bind(cloudNodesApi),
     refreshCloudNodeAccount: cloudNodesApi.refreshCloudNodeAccount.bind(cloudNodesApi),
+    deleteCloudNodeAccount: cloudNodesApi.deleteCloudNodeAccount.bind(cloudNodesApi),
   };
 }
 

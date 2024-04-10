@@ -324,6 +324,51 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/cloud-node/account/delete": {
+      "patch": {
+        "tags": ["Cloud Nodes"],
+        "summary": "Delete Cloud Node Account",
+        "description": "Delete Cloud Node Account and related resources",
+        "operationId": "deleteCloudNodeAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelCloudAccountDeleteReq" }
+            }
+          }
+        },
+        "responses": {
+          "202": { "description": "Accepted" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/cloud-node/account/refresh": {
       "post": {
         "tags": ["Cloud Nodes"],
@@ -13140,6 +13185,13 @@
             ],
             "type": "string"
           }
+        }
+      },
+      "ModelCloudAccountDeleteReq": {
+        "required": ["node_ids"],
+        "type": "object",
+        "properties": {
+          "node_ids": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
       },
       "ModelCloudAccountRefreshReq": {
