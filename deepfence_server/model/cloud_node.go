@@ -622,3 +622,7 @@ func (c *CloudAccountRefreshReq) GetCloudAccountRefresh(ctx context.Context) ([]
 	}
 	return updatedNodeIDs, tx.Commit(ctx)
 }
+
+type CloudAccountDeleteReq struct {
+	NodeIDs []string `json:"node_ids" validate:"required,gt=0" required:"true"`
+}

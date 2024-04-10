@@ -57,6 +57,7 @@ const (
 	AutoFetchGenerativeAIIntegrations = "auto_fetch_generative_ai_integrations"
 	AsynqDeleteAllArchivedTasks       = "asynq_delete_all_archived_tasks"
 	RedisRewriteAOF                   = "redis_rewrite_aof"
+	DeleteCloudAccounts               = "delete_cloud_accounts"
 
 	UpdateLicenseTask      = "update_license"
 	ReportLicenseUsageTask = "report_license_usage"
