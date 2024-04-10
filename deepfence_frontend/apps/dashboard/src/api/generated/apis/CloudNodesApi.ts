@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
+  ModelCloudAccountDeleteReq,
   ModelCloudAccountRefreshReq,
   ModelCloudNodeAccountRegisterReq,
   ModelCloudNodeAccountRegisterResp,
@@ -29,6 +30,8 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
+    ModelCloudAccountDeleteReqFromJSON,
+    ModelCloudAccountDeleteReqToJSON,
     ModelCloudAccountRefreshReqFromJSON,
     ModelCloudAccountRefreshReqToJSON,
     ModelCloudNodeAccountRegisterReqFromJSON,
@@ -42,6 +45,10 @@ import {
     ModelCloudNodeProvidersListRespFromJSON,
     ModelCloudNodeProvidersListRespToJSON,
 } from '../models';
+
+export interface DeleteCloudNodeAccountRequest {
+    modelCloudAccountDeleteReq?: ModelCloudAccountDeleteReq;
+}
 
 export interface ListCloudNodeAccountRequest {
     modelCloudNodeAccountsListReq?: ModelCloudNodeAccountsListReq;
@@ -62,6 +69,22 @@ export interface RegisterCloudNodeAccountRequest {
  * @interface CloudNodesApiInterface
  */
 export interface CloudNodesApiInterface {
+    /**
+     * Delete Cloud Node Account and related resources
+     * @summary Delete Cloud Node Account
+     * @param {ModelCloudAccountDeleteReq} [modelCloudAccountDeleteReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CloudNodesApiInterface
+     */
+    deleteCloudNodeAccountRaw(requestParameters: DeleteCloudNodeAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Delete Cloud Node Account and related resources
+     * Delete Cloud Node Account
+     */
+    deleteCloudNodeAccount(requestParameters: DeleteCloudNodeAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
     /**
      * List Cloud Node Accounts registered with the console
      * @summary List Cloud Node Accounts
@@ -131,6 +154,44 @@ export interface CloudNodesApiInterface {
  * 
  */
 export class CloudNodesApi extends runtime.BaseAPI implements CloudNodesApiInterface {
+
+    /**
+     * Delete Cloud Node Account and related resources
+     * Delete Cloud Node Account
+     */
+    async deleteCloudNodeAccountRaw(requestParameters: DeleteCloudNodeAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/cloud-node/account/delete`,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelCloudAccountDeleteReqToJSON(requestParameters.modelCloudAccountDeleteReq),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete Cloud Node Account and related resources
+     * Delete Cloud Node Account
+     */
+    async deleteCloudNodeAccount(requestParameters: DeleteCloudNodeAccountRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.deleteCloudNodeAccountRaw(requestParameters, initOverrides);
+    }
 
     /**
      * List Cloud Node Accounts registered with the console

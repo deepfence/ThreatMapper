@@ -81,6 +81,7 @@ models/ModelAgentUpgrade.ts
 models/ModelBasicNode.ts
 models/ModelBulkDeleteReportReq.ts
 models/ModelBulkDeleteScansRequest.ts
+models/ModelCloudAccountDeleteReq.ts
 models/ModelCloudAccountRefreshReq.ts
 models/ModelCloudCompliance.ts
 models/ModelCloudComplianceBenchmark.ts

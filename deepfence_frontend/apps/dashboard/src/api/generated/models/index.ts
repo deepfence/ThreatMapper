@@ -55,6 +55,7 @@ export * from './ModelAgentUpgrade';
 export * from './ModelBasicNode';
 export * from './ModelBulkDeleteReportReq';
 export * from './ModelBulkDeleteScansRequest';
+export * from './ModelCloudAccountDeleteReq';
 export * from './ModelCloudAccountRefreshReq';
 export * from './ModelCloudCompliance';
 export * from './ModelCloudComplianceBenchmark';
