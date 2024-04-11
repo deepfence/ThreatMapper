@@ -85,8 +85,8 @@ export const ScheduleScanForm = () => {
   }, [period, daysOfMonth, daysOfWeek, hours, minutes]);
 
   return (
-    <div className="flex flex-col mt-6">
-      <h6 className={'text-p3 dark:text-text-text-and-icon'}>Schedule your scan</h6>
+    <div className="flex flex-col mt-6" data-testid="scheduleScanWrapperId">
+      <h6 className={'text-p3 text-text-text-and-icon'}>Schedule your scan</h6>
       <div className="mt-2 mb-4">
         <Switch
           label={scheduledScan ? 'On' : 'Off'}
@@ -98,7 +98,7 @@ export const ScheduleScanForm = () => {
       {scheduledScan && (
         <div className="flex flex-col gap-y-6">
           <div className="flex flex-col gap-y-4">
-            <p className="text-p4 dark:text-text-text-and-icon">
+            <p className="text-p4 text-text-text-and-icon">
               {cronstrue.toString(cron)} (All times are in UTC+0)
             </p>
             <input type="text" name="scheduleCron" readOnly hidden value={cron} />

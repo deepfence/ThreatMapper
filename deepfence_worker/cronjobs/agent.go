@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/hibiken/asynq"
 	"golang.org/x/mod/semver"
 )
@@ -26,20 +26,6 @@ type ListingFormat struct {
 		URL      string    `json:"url"`
 		Checksum string    `json:"checksum"`
 	} `json:"available"`
-}
-
-const DefaultConsoleVersion = "v2.2.0"
-
-var ConsoleVersion string
-
-func init() {
-	if len(ConsoleVersion) > 0 && ConsoleVersion[0] != 'v' {
-		ConsoleVersion = fmt.Sprintf("v%s", ConsoleVersion)
-	}
-	if !semver.IsValid(ConsoleVersion) {
-		log.Warn().Msgf("Provided console version %s is not valid, falling back to default %s", ConsoleVersion, DefaultConsoleVersion)
-		ConsoleVersion = DefaultConsoleVersion
-	}
 }
 
 func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
@@ -71,7 +57,7 @@ func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
 		}
 		defer tar_resp.Body.Close()
 
-		if semver.Major(version.Version) != semver.Major(ConsoleVersion) {
+		if semver.Major(version.Version) != semver.Major(utils.Version) {
 			continue
 		}
 
@@ -86,12 +72,12 @@ func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
 		versioned_tarball[version.Version] = bytes.NewBuffer(tarball)
 	}
 
-	tags_with_urls, err := handler.PrepareAgentBinariesReleases(ctx, versioned_tarball)
+	tagsWithFileServerKeys, err := handler.PrepareAgentBinariesReleases(ctx, versioned_tarball)
 	if err != nil {
 		return err
 	}
 
-	err = handler.IngestAgentVersion(ctx, tags_with_urls, false)
+	err = handler.IngestAgentVersion(ctx, tagsWithFileServerKeys, false)
 	if err != nil {
 		return err
 	}

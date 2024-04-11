@@ -1,5 +1,9 @@
 package utils
 
+import (
+	"time"
+)
+
 const (
 	Project           = "ThreatMapper"
 	ErrorUserNotFound = "user not found"
@@ -57,11 +61,16 @@ const (
 	AutoFetchGenerativeAIIntegrations = "auto_fetch_generative_ai_integrations"
 	AsynqDeleteAllArchivedTasks       = "asynq_delete_all_archived_tasks"
 	RedisRewriteAOF                   = "redis_rewrite_aof"
+	DeleteCloudAccounts               = "delete_cloud_accounts"
 
 	UpdateLicenseTask      = "update_license"
 	ReportLicenseUsageTask = "report_license_usage"
 
 	ThreatIntelUpdateTask = "threat_intel_update"
+)
+
+const (
+	ReportRetentionTime = 24 * time.Hour
 )
 
 const (
@@ -246,4 +255,8 @@ const (
 const (
 	FileServerURLSettingLabel       = "Console File Server URL"
 	FileServerURLSettingDescription = "Serve threat intel feeds to agents. If agents are connected using a different URL than Console URL, please change this"
+)
+
+const (
+	FileServerPathAgentBinary = "agent-binary"
 )

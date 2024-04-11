@@ -2,16 +2,24 @@ package cronscheduler
 
 import (
 	"context"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/minio/minio-go/v7"
 	"github.com/pressly/goose/v3"
 )
 
-const migrationsPath = "/usr/local/postgresql-migrate"
+const (
+	migrationsPath = "/usr/local/postgresql-migrate"
+	agentBinaryDir = "/opt/deepfence"
+)
 
 func applyDatabaseMigrations(ctx context.Context) error {
 
@@ -62,26 +70,11 @@ func initSqlDatabase(ctx context.Context) error {
 		return err
 	}
 
-	_, err = model.GetSettingByKey(ctx, pgClient, model.FileServerURLSettingKey)
-	if err != nil {
-		// FileServerURLSetting is not set
-		// Copy ConsoleURLSetting to FileServerURLSetting
-		consoleURLSetting, err := model.GetSettingByKey(ctx, pgClient, model.ConsoleURLSettingKey)
-		// Skip if ConsoleURLSetting is not set
-		if err == nil {
-			fileServerURLSetting := model.Setting{
-				Key: model.FileServerURLSettingKey,
-				Value: &model.SettingValue{
-					Label:       utils.FileServerURLSettingLabel,
-					Value:       consoleURLSetting.Value.Value,
-					Description: utils.FileServerURLSettingDescription,
-				},
-				IsVisibleOnUI: true,
-			}
-			_, err = fileServerURLSetting.Create(ctx, pgClient)
-			if err != nil {
-				log.Error().Err(err).Msg("failed to set FileServerURLSetting")
-			}
+	fileServerURLSetting, err := model.GetSettingByKey(ctx, pgClient, model.FileServerURLSettingKey)
+	if err == nil {
+		err = fileServerURLSetting.Delete(ctx, pgClient)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to delete FileServerURLSettingKey")
 		}
 	}
 
@@ -108,8 +101,8 @@ func initSqlDatabase(ctx context.Context) error {
 	return nil
 }
 
-func InitMinioDatabase() {
-	ctx := directory.NewContextWithNameSpace("database")
+func InitFileServerDatabase() {
+	ctx := directory.NewContextWithNameSpace(directory.DatabaseDirKey)
 	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -123,9 +116,32 @@ func InitMinioDatabase() {
 			if retries != 0 {
 				continue
 			}
-			// donot continue we need this step succesfull
+			// do not continue, we need this step successful
 			panic(err)
 		}
 		break
+	}
+
+	// Add agent binaries to file server
+	err = filepath.Walk(agentBinaryDir,
+		func(fileName string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.Mode().IsRegular() || strings.HasPrefix(info.Name(), ".") {
+				return nil
+			}
+
+			dbFileName := path.Join(utils.FileServerPathAgentBinary, info.Name())
+			_, err = mc.UploadLocalFile(ctx, dbFileName, fileName, true, minio.PutObjectOptions{})
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	)
+	if err != nil {
+		log.Error().Msg(err.Error())
 	}
 }

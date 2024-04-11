@@ -48,7 +48,7 @@ export const action = async ({
 
   if (intent === ActionEnumType.DELETE) {
     const deleteApi = apiWrapper({
-      fn: getSettingsApiClient().deleteLicense,
+      fn: getSettingsApiClient().deleteThreatMapperLicense,
     });
     const deleteResponse = await deleteApi();
     if (!deleteResponse.ok) {
@@ -70,7 +70,7 @@ export const action = async ({
     await cleanupAndLogout();
   } else if (intent === ActionEnumType.REGISTER_LICENSE) {
     const licenseApi = apiWrapper({
-      fn: getSettingsApiClient().getLicense,
+      fn: getSettingsApiClient().getThreatMapperLicense,
     });
     const response = await licenseApi();
     if (!response.ok) {
@@ -182,7 +182,7 @@ export const ThreatMapperLicenseDetails = () => {
 
 const LicenseDetailsContent = () => {
   const { data: licenseData } = useSuspenseQuery({
-    ...queries.setting.getLicense(),
+    ...queries.setting.getThreatMapperLicense(),
   });
 
   return <LicenseCard licenseData={licenseData} />;
@@ -195,9 +195,9 @@ const LicenseCard = ({ licenseData }: { licenseData: ModelLicense }) => {
     <Card className="p-4 rounded-[5px]">
       {licenseData.message && licenseData.message.length ? (
         <h4
-          className={cn('text-status-error text-h4', {
-            'text-status-error': !licenseData.is_active,
-            'text-status-success': licenseData.is_active,
+          className={cn('text-status-error', {
+            'text-status-error text-p7': !licenseData.is_active,
+            'text-status-success text-h4': licenseData.is_active,
           })}
         >
           {upperFirst(licenseData.message)}
@@ -206,42 +206,38 @@ const LicenseCard = ({ licenseData }: { licenseData: ModelLicense }) => {
 
       <div className="flex flex-col gap-3 mt-4">
         <div className="flex">
-          <span className="text-p7 min-w-[160px] dark:text-text-text-and-icon">
+          <span className="text-p4 min-w-[160px] text-text-text-and-icon">
             License key
           </span>
-          <span className="text-p4 dark:text-text-input-value">
-            {licenseData.key ?? '-'}
-          </span>
+          <span className="text-p4a text-text-input-value">{licenseData.key ?? '-'}</span>
         </div>
         <div className="flex">
-          <span className="text-p7 min-w-[160px] dark:text-text-text-and-icon">
+          <span className="text-p4 min-w-[160px] text-text-text-and-icon">
             License type
           </span>
-          <span className="text-p4 dark:text-text-input-value capitalize">
+          <span className="text-p4a text-text-input-value capitalize">
             {(licenseData.license_type ?? '-').replaceAll('_', ' ')}
           </span>
         </div>
         <div className="flex">
-          <span className="text-p7 min-w-[160px] dark:text-text-text-and-icon">
-            End date
-          </span>
-          <span className="text-p4 dark:text-status-error">
+          <span className="text-p4 min-w-[160px] text-text-text-and-icon">End date</span>
+          <span className="text-p4a text-status-error">
             {licenseData.end_date ?? '-'}
           </span>
         </div>
         <div className="flex">
-          <span className="text-p7 min-w-[160px] dark:text-text-text-and-icon">
+          <span className="text-p4 min-w-[160px] text-text-text-and-icon">
             No. of hosts
           </span>
-          <span className="text-p4 dark:text-text-input-value">
+          <span className="text-p4a text-text-input-value">
             {licenseData.no_of_hosts ?? '-'}
           </span>
         </div>
         <div className="flex">
-          <span className="text-p7 min-w-[160px] dark:text-text-text-and-icon">
+          <span className="text-p4 min-w-[160px] text-text-text-and-icon">
             Current No. of hosts
           </span>
-          <span className="text-p4 dark:text-text-input-value">
+          <span className="text-p4a text-text-input-value">
             {licenseData.current_hosts ?? '-'}
           </span>
         </div>
@@ -259,18 +255,29 @@ const LicenseCard = ({ licenseData }: { licenseData: ModelLicense }) => {
           Delete license key
         </Button>
       ) : (
-        <fetcher.Form method="post">
-          <input hidden value={ActionEnumType.REGISTER_LICENSE} name="intent" readOnly />
-          <Button
-            size="sm"
-            className="mt-4 w-fit"
-            type="submit"
-            loading={fetcher.state !== 'idle'}
-            disabled={fetcher.state !== 'idle'}
-          >
-            Register license key
-          </Button>
-        </fetcher.Form>
+        <>
+          {licenseData.message &&
+          (licenseData.message.match(/not have enough permission/g)?.length ?? 0) >
+            0 ? null : (
+            <fetcher.Form method="post">
+              <input
+                hidden
+                value={ActionEnumType.REGISTER_LICENSE}
+                name="intent"
+                readOnly
+              />
+              <Button
+                size="sm"
+                className="mt-4 w-fit"
+                type="submit"
+                loading={fetcher.state !== 'idle'}
+                disabled={fetcher.state !== 'idle'}
+              >
+                Register license key
+              </Button>
+            </fetcher.Form>
+          )}
+        </>
       )}
       {showDeleteDialog && (
         <DeleteConfirmationModal

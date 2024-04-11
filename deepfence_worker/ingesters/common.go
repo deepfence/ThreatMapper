@@ -35,9 +35,6 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ctx context.Conte
 		}
 
 		session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-		if err != nil {
-			return err
-		}
 		defer session.Close(ctx)
 
 		tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))

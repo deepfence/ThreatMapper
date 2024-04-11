@@ -1,13 +1,20 @@
 import { useRef, useState } from 'react';
+import { cn } from 'tailwind-preset';
 import { Tooltip } from 'ui-components';
 
-export const TruncatedText = ({ text }: { text: string }) => {
+export const TruncatedText = ({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const innerRef = useRef<HTMLDivElement>(null);
 
   const inner = (
     <div
-      className="w-full truncate"
+      className={cn('w-full truncate', className ?? '')}
       ref={innerRef}
       onMouseEnter={(e) => {
         if (innerRef.current) {

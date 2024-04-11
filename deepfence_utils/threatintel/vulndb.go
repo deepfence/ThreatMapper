@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"sort"
 	"time"
 
@@ -60,6 +61,10 @@ func (v *VulnerabilityDBListing) Bytes() ([]byte, error) {
 	return json.Marshal(v)
 }
 
+func (v *VulnerabilityDBListing) Set(dbs []Database, version string) {
+	v.Available[version] = dbs
+}
+
 func (v *VulnerabilityDBListing) Append(db Database, version string) {
 	exists := false
 	index := 0
@@ -97,12 +102,32 @@ func (v *VulnerabilityDBListing) Latest(version string) *Database {
 	dbs, ok := v.Available[version]
 	if !ok {
 		return nil
-
 	}
 	if len(dbs) >= 1 {
 		return &dbs[len(dbs)-1]
 	}
 	return nil
+}
+
+func (v *VulnerabilityDBListing) LatestN(version string, num int) (latest []Database, oldest []Database) {
+	// sort
+	v.Sort(version)
+
+	dbs, ok := v.Available[version]
+	if !ok {
+		return latest, oldest
+	}
+
+	if len(dbs) <= num {
+		latest = dbs
+	} else {
+		latest = dbs[len(dbs)-num:]
+	}
+	if len(dbs) > num {
+		oldest = dbs[:len(dbs)-num]
+	}
+
+	return latest, oldest
 }
 
 func VulnDBUpdateListing(ctx context.Context, newFile, newFileCheckSum string, buildTime time.Time) error {
@@ -148,6 +173,20 @@ func VulnDBUpdateListing(ctx context.Context, newFile, newFileCheckSum string, b
 		},
 		Version5,
 	)
+
+	latest, oldest := listing.LatestN(Version5, 3)
+
+	// keep only latest 3 databases
+	listing.Set(latest, Version5)
+
+	// delete old database
+	for _, d := range oldest {
+		fname := path.Join(VulnerabilityDBStore, filepath.Base(d.URL))
+		log.Info().Msgf("remove old vuln db file %s", fname)
+		if err := mc.DeleteFile(ctx, fname, true, minio.RemoveObjectOptions{ForceDelete: true}); err != nil {
+			log.Error().Err(err).Msg("failed to remove old ")
+		}
+	}
 
 	lb, err := listing.Bytes()
 	if err != nil {

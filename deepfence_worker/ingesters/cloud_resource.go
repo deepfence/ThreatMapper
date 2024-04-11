@@ -153,6 +153,7 @@ func ResourceToMaps(ms []ingestersUtil.CloudResource) ([]map[string]interface{},
 				"instance_id":             newmap["node_id"],
 				"host_name":               v.Name,
 				"node_id":                 v.Name,
+				"account_id":              newmap["account_id"],
 			})
 			if k8sClusterName != "" {
 				clusters = append(clusters, map[string]interface{}{
@@ -165,6 +166,7 @@ func ResourceToMaps(ms []ingestersUtil.CloudResource) ([]map[string]interface{},
 					"active":                  true,
 					"cloud_provider":          v.CloudProvider,
 					"agent_running":           false,
+					"account_id":              newmap["account_id"],
 				})
 			}
 		}

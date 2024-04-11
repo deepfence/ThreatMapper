@@ -115,10 +115,11 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
     <nav
       className={cn(
         'overflow-y-auto overflow-x-hidden',
-        'bg-white dark:bg-bg-left-nav',
+        'dark:bg-bg-left-nav bg-white',
         'transition-[width]',
         'fixed left-0 z-10 scrolling-touch',
-        'border-r dark:border-bg-top-header',
+        'dark:border-r dark:border-bg-top-header',
+        'dark:shadow-none shadow-md',
       )}
       style={{
         top: '56px',
@@ -126,16 +127,16 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
         height: 'calc(100vh - 56px)',
       }}
     >
-      <ul className={cn('flex flex-col')}>
+      <ul className={cn('flex flex-col h-full')}>
         <li>
           <button
-            className="h-12 w-full mb-2 flex pl-5 items-center border dark:border-bg-top-header"
+            className="h-12 w-full mb-2 flex pl-5 items-center dark:border dark:border-bg-top-header"
             onClick={(e) => {
               e.preventDefault();
               onExpandedChange(!expanded);
             }}
           >
-            <div className="h-5 w-5 dark:text-text-text-and-icon">
+            <div className="h-5 w-5 text-text-text-and-icon">
               <HamburgerIcon />
             </div>
           </button>
@@ -195,12 +196,12 @@ const MenuItemButton = ({
   }, [location]);
 
   const btnClass = cn(
-    'text-h4 dark:text-text-text-and-icon py-3 pl-5 pr-3',
-    'dark:hover:bg-bg-breadcrumb-bar',
+    'text-h4 text-text-text-and-icon py-3 pl-5 pr-3',
+    'hover:bg-bg-breadcrumb-bar',
     'flex items-center whitespace-nowrap',
     'h-12 w-full text-left relative',
     {
-      'dark:bg-bg-breadcrumb-bar': hasActiveChildren,
+      'bg-bg-breadcrumb-bar': hasActiveChildren,
     },
   );
 
@@ -226,16 +227,16 @@ const MenuItemButton = ({
           }}
         >
           {hasActiveChildren && !expanded && (
-            <div className="absolute w-1 left-0 top-0 bottom-0 dark:bg-brand-dark-blue" />
+            <div className="absolute w-1 left-0 top-0 bottom-0 bg-brand-dark-blue" />
           )}
-          <div className={cn('w-5 h-5 dark:text-text-text-and-icon shrink-0')}>
+          <div className={cn('w-5 h-5 text-text-text-and-icon shrink-0')}>
             {Icon ? <Icon /> : null}
           </div>
           {expanded && <div className="overflow-hidden flex-1 ml-5">{title}</div>}
           {expanded && (
             <div
               className={cn(
-                'h-4 w-4 dark:text-text-text-and-icon shrink-0 transition-all transform -rotate-90 ml-auto',
+                'h-4 w-4 text-text-text-and-icon shrink-0 transition-all transform -rotate-90 ml-auto',
                 {
                   'rotate-0': showSubMenu,
                 },
@@ -254,12 +255,12 @@ const MenuItemButton = ({
             }}
           >
             <ul
-              className="min-w-[200px] dark:bg-bg-card border-y border-r dark:border-bg-left-nav rounded-[5px] py-2 ml-1"
+              className="min-w-[200px] bg-bg-card border-y border-r border-bg-left-nav rounded-[5px] py-2 ml-1"
               style={{
                 boxShadow: '0px 1px 3px 0px rgba(0, 0, 0, 0.25)',
               }}
             >
-              <li className="px-4 py-1.5 text-h4 dark:text-df-gray-500">{title}</li>
+              <li className="px-4 py-1.5 text-h4 text-df-gray-500">{title}</li>
               {subItems.map((subItem) => {
                 return (
                   <MenuSubItemLink
@@ -302,8 +303,8 @@ const MenuItemLink = ({
   Icon?: () => JSX.Element;
 }) => {
   const linkClass = cn(
-    'text-h4 dark:text-text-text-and-icon py-3 px-5',
-    'dark:hover:bg-bg-breadcrumb-bar',
+    'text-h4 text-text-text-and-icon py-3 px-5',
+    'hover:bg-bg-breadcrumb-bar',
     'flex items-center gap-5 whitespace-nowrap relative',
     'h-12 w-full',
   );
@@ -315,7 +316,10 @@ const MenuItemLink = ({
           to={link}
           className={({ isActive }) =>
             isActive
-              ? cn(linkClass, 'dark:bg-bg-active-selection dark:text-text-input-value')
+              ? cn(
+                  linkClass,
+                  'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value shadow-[0px_0px_1px_0px_rgba(0,0,0,0.25)_inset]',
+                )
               : linkClass
           }
         >
@@ -323,11 +327,11 @@ const MenuItemLink = ({
             return (
               <>
                 {isActive && (
-                  <div className="absolute w-1 left-0 top-0 bottom-0 dark:bg-brand-dark-blue" />
+                  <div className="absolute w-1 left-0 top-0 bottom-0 bg-brand-dark-blue rounded-br rounded-tr" />
                 )}
                 <div
-                  className={cn('w-5 h-5 dark:text-text-text-and-icon shrink-0', {
-                    'dark:text-text-input-value': isActive,
+                  className={cn('w-5 h-5 text-text-text-and-icon shrink-0', {
+                    'text-text-input-value': isActive,
                   })}
                 >
                   {Icon ? <Icon /> : null}
@@ -354,8 +358,8 @@ const MenuSubItemLink = ({
   flyout?: boolean;
 }) => {
   const linkClass = cn(
-    'text-h4 dark:text-text-text-and-icon py-3 px-5',
-    'dark:hover:bg-bg-breadcrumb-bar',
+    'text-h4 text-text-text-and-icon py-3 px-5',
+    'hover:bg-bg-breadcrumb-bar',
     'flex items-center gap-5 whitespace-nowrap relative',
     'h-12 w-full',
   );
@@ -366,7 +370,10 @@ const MenuSubItemLink = ({
         to={link}
         className={({ isActive }) =>
           isActive
-            ? cn(linkClass, 'dark:bg-bg-active-selection dark:text-text-input-value')
+            ? cn(
+                linkClass,
+                'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value',
+              )
             : linkClass
         }
         onClick={onLinkClick}
@@ -375,7 +382,7 @@ const MenuSubItemLink = ({
           return (
             <>
               {isActive && (
-                <div className="absolute w-1 left-0 top-0 bottom-0 dark:bg-brand-dark-blue" />
+                <div className="absolute w-1 left-0 top-0 bottom-0 bg-brand-dark-blue" />
               )}
               <div
                 className={cn('overflow-hidden flex-1 pl-10', {

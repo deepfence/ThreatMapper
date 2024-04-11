@@ -51,7 +51,7 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
       >
         <div className="w-10 h-10">{icon}</div>
         <div className="whitespace-nowrap overflow-hidden text-ellipsis">{label}</div>
-        <span className="w-6 h-6 ml-auto">
+        <span className="w-6 h-6 ml-auto text-text-icon">
           <ArrowLine className="rotate-90" />
         </span>
       </button>
@@ -80,20 +80,23 @@ const Cloud = () => {
   return (
     <>
       <div className="py-4 items-center flex px-6 gap-x-2">
-        <span className="w-6 h-6 dark:text-accent-accent">
+        <span className="w-6 h-6 text-accent-accent">
           <CloudLine />
         </span>
-        <span className="dark:text-text-text-and-icon text-h2">Cloud</span>
+        <span className="text-text-text-and-icon text-h2">Cloud</span>
       </div>
       <div className="mb-4">
-        <p className={`px-6 text-p4 dark:text-text-text-and-icon min-h-[110px]`}>
+        <p className={`px-6 text-p4 text-text-text-and-icon min-h-[110px]`}>
           Connect an AWS, GCP, or Azure cloud account to check for compliance
           misconfigurations.
         </p>
-        <div className="flex flex-col dark:text-text-text-and-icon">
+        <div className="flex flex-col text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div key={connector.label} className="dark:hover:bg-bg-hover-2">
+              <div
+                key={connector.label}
+                className="dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar"
+              >
                 <CardConnect {...connector} />
               </div>
             );
@@ -124,7 +127,7 @@ const Host = () => {
     },
     {
       icon: (
-        <div className="dark:text-[#F68633]">
+        <div className="text-orange-400">
           <AWSECSEC2Icon />
         </div>
       ),
@@ -150,26 +153,29 @@ const Host = () => {
   return (
     <>
       <div className="py-4 items-center flex px-6 gap-x-2">
-        <span className="w-6 h-6 dark:text-accent-accent">
+        <span className="w-6 h-6 text-accent-accent">
           <HostIcon />
         </span>
-        <span className="dark:text-text-text-and-icon text-h2">Host</span>
+        <span className="text-text-text-and-icon text-h2">Host</span>
       </div>
       <div className="mb-4">
-        <p className={`px-6 text-p4 dark:text-text-text-and-icon min-h-[110px]`}>
+        <p className={`px-6 text-p4 text-text-text-and-icon min-h-[110px]`}>
           Connect a K8s cluster, Docker container, or Linux host to check for
           vulnerabilities, secrets, malware, and compliance misconfigurations.
         </p>
-        <div className="flex flex-col dark:text-text-text-and-icon">
+        <div className="flex flex-col text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div key={connector.label} className="dark:hover:bg-bg-hover-2">
+              <div
+                key={connector.label}
+                className="dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar"
+              >
                 <CardConnect {...connector} />
               </div>
             );
           })}
           {!showAll ? (
-            <Button size="sm" onClick={onShowAll} className="ml-3 mt-2">
+            <Button size="sm" onClick={onShowAll} className="mx-6 mt-2">
               +1 more
             </Button>
           ) : null}
@@ -246,27 +252,30 @@ const Registries = () => {
   return (
     <>
       <div className="py-4 items-center flex px-6 gap-x-2">
-        <span className="w-6 h-6 dark:text-accent-accent">
+        <span className="w-6 h-6 text-accent-accent">
           <RegistryIcon />
         </span>
-        <span className="dark:text-text-text-and-icon text-h2">Registry</span>
+        <span className="text-text-text-and-icon text-h2">Registry</span>
       </div>
       <div className="mb-4">
-        <p className="px-6 text-p4 dark:text-text-text-and-icon min-h-[110px]">
+        <p className="px-6 text-p4 text-text-text-and-icon min-h-[110px]">
           Connect a registry to scan images for vulnerabilities.
           <br></br>
           &nbsp;
         </p>
-        <div className="flex flex-col dark:text-text-text-and-icon">
+        <div className="flex flex-col text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div key={connector.path} className="dark:hover:bg-bg-hover-2">
+              <div
+                key={connector.path}
+                className="dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar"
+              >
                 <CardConnect {...connector} />
               </div>
             );
           })}
           {!showAll ? (
-            <Button size="sm" onClick={onShowAll} className="ml-3 mt-2">
+            <Button size="sm" onClick={onShowAll} className="mx-6 mt-2">
               +6 more
             </Button>
           ) : null}

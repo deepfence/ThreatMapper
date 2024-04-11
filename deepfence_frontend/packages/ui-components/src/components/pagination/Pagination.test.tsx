@@ -130,7 +130,7 @@ describe(`Component Pagination`, () => {
       getByRole('button', {
         name: /2/,
       }),
-    ).toHaveClass('text-blue-600 bg-blue-100');
+    ).toHaveClass('dark:text-text-input-value text-text-text-inverse');
 
     fireEvent.click(nextButton);
     // now page 3 is highlighted
@@ -138,7 +138,7 @@ describe(`Component Pagination`, () => {
       getByRole('button', {
         name: /3/,
       }),
-    ).toHaveClass('text-blue-600 bg-blue-100');
+    ).toHaveClass('dark:text-text-input-value text-text-text-inverse');
 
     fireEvent.click(previousButton);
     // now page 2 is highlighted back
@@ -146,7 +146,7 @@ describe(`Component Pagination`, () => {
       getByRole('button', {
         name: /2/,
       }),
-    ).toHaveClass('text-blue-600 bg-blue-100');
+    ).toHaveClass('dark:text-text-input-value text-text-text-inverse');
   });
 
   it(`left dot should disappear on click on front pages`, () => {
@@ -234,14 +234,14 @@ describe(`Component Pagination`, () => {
       getByRole('button', {
         name: /1/,
       }),
-    ).toHaveClass('text-blue-600 bg-blue-100');
+    ).toHaveClass('dark:text-text-input-value text-text-text-inverse');
     fireEvent.click(previousButton);
     // page 1 is still highlighted
     expect(
       getByRole('button', {
         name: /1/,
       }),
-    ).toHaveClass('text-blue-600 bg-blue-100');
+    ).toHaveClass('dark:text-text-input-value text-text-text-inverse');
 
     fireEvent.click(
       getByRole('button', {
@@ -255,7 +255,7 @@ describe(`Component Pagination`, () => {
       getByRole('button', {
         name: /3/,
       }),
-    ).toHaveClass('text-blue-600 bg-blue-100');
+    ).toHaveClass('dark:text-text-input-value text-text-text-inverse');
 
     fireEvent.click(nextButton);
     // page 3 is still highlighted
@@ -263,7 +263,7 @@ describe(`Component Pagination`, () => {
       getByRole('button', {
         name: /3/,
       }),
-    ).toHaveClass('text-blue-600 bg-blue-100');
+    ).toHaveClass('dark:text-text-input-value text-text-text-inverse');
   });
 
   it('display showing rows count of total rows', () => {

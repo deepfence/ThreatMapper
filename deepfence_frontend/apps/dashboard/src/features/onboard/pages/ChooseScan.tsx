@@ -145,16 +145,16 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
 
   return (
     <div className="flex w-fit p-3 pt-0 items-center mb-8">
-      <span className="mr-6 w-8 h-8 dark:text-accent-accent">
+      <span className="mr-6 w-8 h-8 text-accent-accent">
         {logoAndTextMap(state.length, mode)[nodeType].logo}
       </span>
       <div className="flex flex-col mr-20">
-        <span className="dark:text-text-input-value text-h4">
+        <span className="text-text-input-value text-h4">
           {logoAndTextMap(state.length, mode)[nodeType].title}
         </span>
         <span>
           <Tooltip content={state[0].accountId ?? ''} triggerAsChild>
-            <span className="text-p7 dark:text-text-text-and-icon">
+            <span className="text-p7 text-text-text-and-icon">
               {getNodeDisplayText(state[0].accountId ?? '')}
             </span>
           </Tooltip>
@@ -166,10 +166,10 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
                   {state.map((node, index) => {
                     return (
                       <li key={node.accountId}>
-                        <span className="text-p7 dark:text-text-input-value py-2 pr-1">
+                        <span className="text-p7 dark:text-text-input-value text-text-text-inverse py-2 pr-1">
                           {index + 1}.
                         </span>
-                        <span className="text-p7 dark:text-text-input-value">
+                        <span className="text-p7 dark:text-text-input-value text-text-text-inverse">
                           {node.accountId}
                         </span>
                       </li>
@@ -179,7 +179,7 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
               }
               triggerAsChild
             >
-              <span className={'text-p7 dark:text-text-input-value'}>
+              <span className={'text-p7 text-text-input-value'}>
                 +{state.length - 1} more
               </span>
             </Tooltip>
@@ -218,25 +218,25 @@ const ScanHeader = ({ state }: { state: OnboardConnectionNode[] }) => {
             <Card key={scanType} className="py-3 px-4 flex flex-col">
               <div>
                 <h2
-                  className={`flex items-center gap-x-2 text-h3 dark:text-text-input-value pb-2`}
+                  className={`flex items-center gap-x-2 text-h3 text-text-input-value pb-2`}
                 >
                   {scanType === ScanTypeEnum.VulnerabilityScan && (
-                    <div className="w-5 h-5 text-blue-600 dark:text-status-info">
+                    <div className="w-5 h-5 text-status-info">
                       <VulnerabilityIcon />
                     </div>
                   )}
                   {scanType === ScanTypeEnum.ComplianceScan && (
-                    <div className="w-5 h-5 text-blue-600 dark:text-status-info">
+                    <div className="w-5 h-5 text-status-info">
                       <PostureIcon />
                     </div>
                   )}
                   {scanType === ScanTypeEnum.SecretScan && (
-                    <div className="w-5 h-5 text-blue-600 dark:text-status-info">
+                    <div className="w-5 h-5 text-status-info">
                       <SecretsIcon />
                     </div>
                   )}
                   {scanType === ScanTypeEnum.MalwareScan && (
-                    <div className="w-5 h-5 text-blue-600 dark:text-status-info">
+                    <div className="w-5 h-5 text-status-info">
                       <MalwareIcon />
                     </div>
                   )}
@@ -245,9 +245,7 @@ const ScanHeader = ({ state }: { state: OnboardConnectionNode[] }) => {
                 <Separator />
               </div>
               <div className="flex-1 flex flex-col justify-between">
-                <p className="text-p4 py-2 text-gray-500 dark:text-text-text-and-icon">
-                  {description}
-                </p>
+                <p className="text-p4 py-2 text-text-text-and-icon">{description}</p>
 
                 <Button
                   size="md"
@@ -297,7 +295,7 @@ const ChooseScan = () => {
       />
       <SelectedAccount state={state} />
       <ScanHeader state={state} />
-      <div className="mt-8 flex items-center sticky bottom-0 py-4 dark:bg-bg-page gap-x-4">
+      <div className="mt-8 flex items-center sticky bottom-0 py-4 bg-bg-page gap-x-4">
         <Button
           onClick={goBack}
           color="default"

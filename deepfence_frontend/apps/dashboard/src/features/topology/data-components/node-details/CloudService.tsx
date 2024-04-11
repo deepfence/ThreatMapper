@@ -62,7 +62,7 @@ export const CloudService = ({
         showInstallAgentOption={false}
       />
       <SlidingModalContent>
-        <div className="dark:bg-bg-breadcrumb-bar">
+        <div className="dark:bg-bg-header bg-bg-breadcrumb-bar">
           <Tabs
             value={'overview'}
             defaultValue={'overview'}
@@ -70,7 +70,7 @@ export const CloudService = ({
           >
             <Suspense
               fallback={
-                <div className="min-h-[300px] flex items-center justify-center dark:bg-bg-side-panel">
+                <div className="min-h-[300px] flex items-center justify-center dark:bg-bg-side-panel bg-white">
                   <CircleSpinner size="lg" />
                 </div>
               }
@@ -167,7 +167,7 @@ const TabContent = ({
         cell: (cell) => {
           return <ScanStatusBadge status={cell.getValue()} />;
         },
-        header: () => 'status',
+        header: () => 'Status',
         minSize: 50,
         size: 50,
         maxSize: 70,
@@ -176,7 +176,7 @@ const TabContent = ({
     ];
   }, []);
   return (
-    <div className="p-5 dark:bg-bg-side-panel">
+    <div className="p-5 dark:bg-bg-side-panel bg-white">
       <Table
         columns={columns}
         data={data.resources}

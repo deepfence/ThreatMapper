@@ -16,7 +16,9 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/minio/minio-go/v7"
 )
 
@@ -88,13 +90,15 @@ func (l *Listing) GetLatestN(version string, dbType ...string) ([]Entry, error) 
 
 func UploadToMinio(ctx context.Context, fb []byte, dbPath, fName string) (string, string, error) {
 
-	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
+	ctx = directory.WithDatabaseContext(ctx)
+
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return "", "", err
 	}
 
 	dbFile := path.Join(dbPath, fName)
-	info, err := mc.UploadFile(directory.WithDatabaseContext(ctx), dbFile, fb, true, minio.PutObjectOptions{})
+	info, err := mc.UploadFile(ctx, dbFile, fb, true, minio.PutObjectOptions{})
 	if err != nil {
 		return "", "", err
 	}
@@ -102,19 +106,44 @@ func UploadToMinio(ctx context.Context, fb []byte, dbPath, fName string) (string
 	return info.Key, utils.SHA256sum(fb), nil
 }
 
-func ExposeFile(ctx context.Context, fName string) (string, error) {
+func DeleteFileMinio(ctx context.Context, fName string) error {
+
+	ctx = directory.WithDatabaseContext(ctx)
+
+	mc, err := directory.FileServerClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = mc.DeleteFile(ctx, fName, true, minio.RemoveObjectOptions{ForceDelete: true})
+	if err != nil {
+		log.Error().Err(err).Msgf("failed to remove file %s", fName)
+		return err
+	}
+
+	return nil
+}
+
+func ExposeFile(ctx context.Context, fName string, consoleURL string, ttlCache *ttlcache.Cache[string, string]) (string, error) {
 
 	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
 	if err != nil {
 		return "", err
 	}
 
-	url, err := mc.ExposeFile(ctx, fName, false, threatintelPollDuration*3, url.Values{})
-	if err != nil {
-		return "", err
+	var exposedURL string
+	cacheVal := ttlCache.Get(consoleURL + fName)
+	if cacheVal == nil {
+		exposedURL, err = mc.ExposeFile(ctx, fName, false, threatintelPollDuration*3, url.Values{}, consoleURL)
+		if err != nil {
+			return "", err
+		}
+		ttlCache.Set(consoleURL+fName, exposedURL, threatintelPollDuration)
+	} else {
+		exposedURL = cacheVal.Value()
 	}
 
-	return url, nil
+	return exposedURL, nil
 }
 
 func downloadFile(ctx context.Context, url string) (*bytes.Buffer, error) {

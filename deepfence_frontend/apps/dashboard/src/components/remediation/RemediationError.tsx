@@ -11,7 +11,7 @@ export const RemediationError = ({
   onBackButtonClick?: () => void;
 }) => {
   return (
-    <div className="mt-8 px-5 dark:text-status-error">
+    <div className="mt-8 px-5 text-status-error">
       <div className="h-10 w-10 mx-auto">
         <ErrorStandardLineIcon />
       </div>

@@ -10,7 +10,6 @@ import {
   Modal,
   Radio,
   Separator,
-  Tooltip,
 } from 'ui-components';
 
 import { getScanResultsApiClient, getSettingsApiClient } from '@/api/api';
@@ -258,7 +257,7 @@ const useGetVersion = () => {
 };
 const useGetLicense = () => {
   return useSuspenseQuery({
-    ...queries.setting.getLicense(),
+    ...queries.setting.getThreatMapperLicense(),
   });
 };
 
@@ -326,7 +325,7 @@ const RuleLinks = () => {
 
   return (
     <>
-      <h3 className="py-1 text-p4 text-text-input-value">
+      <h3 className="py-1 text-p4a text-text-text-and-icon">
         In case the management console is air-gapped, please download the threat intel
         feeds from here and upload them:
       </h3>
@@ -349,7 +348,7 @@ const RuleLinks = () => {
                     href={link.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-text-text-and-icon text-p4"
+                    className="text-text-text-and-icon text-p4a"
                   >
                     <TruncatedText text={link.url} />
                   </DFLink>
@@ -360,7 +359,7 @@ const RuleLinks = () => {
         ) : null}
 
         {threats.error ? (
-          <p className="flex items-center gap-x-1 text-status-error text-p7 py-1">
+          <p className="flex items-center gap-x-1 text-status-error text-p7a py-1">
             <div className="h-4 w-4">
               <ErrorIcon />
             </div>
@@ -450,10 +449,10 @@ const UploadVulnerabilityDatabase = () => {
               Upload
             </Button>
             {!fetcher.data?.uploadSuccess && fetcher.data?.message ? (
-              <p className="text-status-error text-p7">{fetcher.data?.message}</p>
+              <p className="text-status-error text-p7a">{fetcher.data?.message}</p>
             ) : null}
             {fetcher.data?.uploadSuccess ? (
-              <p className="text-green-500 text-p7">Upload successfull</p>
+              <p className="text-green-500 text-p7a">Upload successfull</p>
             ) : null}
           </div>
         </div>
@@ -511,10 +510,10 @@ const UploadSecretDatabase = () => {
               Upload
             </Button>
             {!fetcher.data?.uploadSuccess && fetcher.data?.message ? (
-              <p className="text-status-error text-p7">{fetcher.data?.message}</p>
+              <p className="text-status-error text-p7a">{fetcher.data?.message}</p>
             ) : null}
             {fetcher.data?.uploadSuccess ? (
-              <p className="text-p7 text-status-success">Upload successfull</p>
+              <p className="text-p7a text-status-success">Upload successfull</p>
             ) : null}
           </div>
         </div>
@@ -573,10 +572,10 @@ const UploadMalwareDatabase = () => {
               Upload
             </Button>
             {!fetcher.data?.uploadSuccess && fetcher.data?.message ? (
-              <p className="text-status-error text-p7">{fetcher.data?.message}</p>
+              <p className="text-status-error text-p7a">{fetcher.data?.message}</p>
             ) : null}
             {fetcher.data?.uploadSuccess ? (
-              <p className="text-p7 text-status-success">Upload successfull</p>
+              <p className="text-p7a text-status-success">Upload successfull</p>
             ) : null}
           </div>
         </div>
@@ -635,10 +634,10 @@ const UploadPostureDatabase = () => {
               Upload
             </Button>
             {!fetcher.data?.uploadSuccess && fetcher.data?.message ? (
-              <p className="text-status-error text-p7">{fetcher.data?.message}</p>
+              <p className="text-status-error text-p7a">{fetcher.data?.message}</p>
             ) : null}
             {fetcher.data?.uploadSuccess ? (
-              <p className="text-p7 text-status-success">Upload successfull</p>
+              <p className="text-p7a text-status-success">Upload successfull</p>
             ) : null}
           </div>
         </div>
@@ -701,10 +700,10 @@ const ScanHistoryAndDbManagement = () => {
         />
       )}
       <div className="mt-2">
-        <h3 className="text-h6 dark:text-text-input-value">Scan History</h3>
+        <h3 className="text-h6 text-text-input-value">Scan History</h3>
       </div>
 
-      <p className="mt-4 text-p4 dark:text-text-text-and-icon">
+      <p className="mt-2 text-p4 text-text-text-and-icon">
         Please specify the resource and duration you would like to delete from the scan
         history.
       </p>
@@ -755,7 +754,7 @@ const ScanHistoryAndDbManagement = () => {
           Submit
         </Button>
       </div>
-      <Separator className="mt-6 dark:bg-bg-grid-border h-px w-full" />
+      <Separator className="mt-6 bg-bg-grid-border h-px w-full" />
       <Database />
     </>
   );

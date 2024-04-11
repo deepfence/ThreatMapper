@@ -23,6 +23,23 @@ const (
 	UserInviteGetLink          = "get-invite-link"
 )
 
+const (
+	port80  = ":80"
+	port443 = ":443"
+)
+
+// GetHostURL Host specifies the host on which the URL is sought.
+// This is either the value of the "Host" header or the host name given in the URL itself
+func (h *Handler) GetHostURL(r *http.Request) string {
+	host := r.Host
+	if strings.HasSuffix(host, port443) {
+		return strings.TrimSuffix(host, port443)
+	} else if strings.HasSuffix(host, port80) {
+		return strings.TrimSuffix(host, port80)
+	}
+	return host
+}
+
 func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte("pong"))

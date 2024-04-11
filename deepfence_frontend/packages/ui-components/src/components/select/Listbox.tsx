@@ -1,5 +1,3 @@
-import './../input/input.css';
-
 import {
   Listbox as HUIListbox,
   ListboxOptionProps as HUIListboxOptionProps,
@@ -23,35 +21,51 @@ const ListboxContext = createContext<{
 });
 const defaultStyle = cn(
   // border
-  'dark:border rounded-[5px]',
-  'border-bg-grid-border dark:border-bg-grid-border',
+  'border rounded-[5px]',
+  'border-bg-grid-border',
   // bg styles
-  'bg-bg-card dark:bg-bg-card',
-  // placeholder styles
-  'placeholder-gray-400 disabled:placeholder-gray-500',
-  'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+  'bg-bg-card',
   // text styles
-  'text-text-input-value dark:text-text-input-value',
+  'dark:text-text-input-value text-text-text-and-icon',
   // disabled text color
-  'disabled:text-gray-600 dark:disabled:text-gray-600',
+  'disabled:text-severity-unknown/60 dark:disabled:text-gray-600/60',
 );
 const defaultUnderlineStyle = cn(
   'focus-visible:outline-none',
-  'bg-transparent dark:bg-transparent',
-  'dark:border-transparent dark:border-b rounded-none',
-  'dark:border-b-text-text-and-icon dark:disabled:border-b-gray-600',
+  'border-transparent border-b rounded-none',
+  'dark:border-b-text-text-and-icon border-b-bg-border-form dark:disabled:border-b-gray-600/60 disabled:border-b-severity-unknown/60',
   // active
-  'df-input',
   'transition-[background-size] duration-[0.2s] ease-[ease]',
-  'dark:focus:bg-[length:100%_100%] dark:focus:border-b-accent-accent dark:focus:bg-no-repeat',
-  'data-[headlessui-state=open]:dark:border-b-accent-accent',
+  'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
+  'focus:border-b-accent-accent',
+  'bg-[length:0%_100%] bg-no-repeat',
+  'bg-gradient-to-b from-transparent from-95% to-accent-accent to-95%',
 
-  'placeholder-gray-400 disabled:placeholder-gray-500',
-  'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+  'data-[headlessui-state=open]:dark:border-b-accent-accent',
+  'data-[headlessui-state=open]:border-b-[#0598f6]',
+
   // text styles
-  'text-text-input-value dark:text-text-input-value',
+  'dark:text-text-input-value text-text-text-and-icon',
   // disabled text color
-  'disabled:text-gray-600 dark:disabled:text-gray-600',
+  'disabled:text-severity-unknown/60 dark:disabled:text-gray-600',
+);
+const defaultUnderlineJErrorStyle = cn(
+  'focus-visible:outline-none',
+  'border-transparent border-b rounded-none',
+  'dark:border-b-text-text-and-icon border-b-bg-border-form <dark:disabled:border-b-gray-600/60></dark:disabled:border-b-gray-600/60> disabled:border-b-severity-unknown',
+  // active
+  'transition-[background-size] duration-[0.2s] ease-[ease]',
+  'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
+  'focus:border-b-status-error',
+  'bg-[length:0%_100%] bg-no-repeat',
+  'bg-gradient-to-b from-transparent from-95% to-chart-red to-95%',
+
+  'data-[headlessui-state=open]:border-b-status-error',
+
+  // text styles
+  'dark:text-text-input-value text-text-text-and-icon',
+  // disabled text color
+  'disabled:text-severity-unknown/60 dark:disabled:text-gray-600',
 );
 const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[5px] px-2'], {
   variants: {
@@ -77,8 +91,8 @@ const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[5px] px-2
       variant: 'underline',
       color: 'error',
       className: cn(
-        defaultUnderlineStyle,
-        'df-error data-[headlessui-state=open]:dark:border-b-[#f55b47] dark:focus:border-b-[#f55b47] dark:border-b-[#f55b47]',
+        defaultUnderlineJErrorStyle,
+        'data-[headlessui-state=open]:border-b-status-error focus:border-b-status-error border-b-status-error',
       ),
     },
   ],
@@ -140,7 +154,7 @@ const OptionsWrapper = ({
 }) => {
   if (children === null || isEmpty(children)) {
     return (
-      <div className="py-3 px-2 w-full flex items-center justify-center text-p6 dark:text-text-text-and-icon">
+      <div className="py-3 px-2 w-full flex items-center justify-center text-p6 text-text-text-and-icon">
         {noDataText?.length ? noDataText : 'No results found'}
       </div>
     );
@@ -208,9 +222,9 @@ export function Listbox<TType, TActualType>({
                 <HUIListbox.Label
                   htmlFor={_id}
                   className={cn(
-                    'text-p3 text-text-text-and-icon dark:text-text-text-and-icon pb-[10px]',
+                    'text-p11 dark:text-text-input-value text-text-text-and-icon" pb-[10px]',
                     {
-                      'text-gray-600 dark:text-gray-600': disabled,
+                      'text-severity-unknown/60 dark:text-df-gray-600/60': disabled,
                     },
                   )}
                 >
@@ -234,7 +248,7 @@ export function Listbox<TType, TActualType>({
                       {startIcon ? (
                         <div className="w-4 h-4 shrink-0">{startIcon}</div>
                       ) : null}
-                      <span className="truncate text-start block text-p4">
+                      <span className="truncate text-start block text-p4a">
                         {getPlaceholderValue(value, getDisplayValue, placeholder)}
                       </span>
                     </div>
@@ -260,7 +274,7 @@ export function Listbox<TType, TActualType>({
                 </PopoverPrimitive.Trigger>
                 <PopoverPrimitive.Portal>
                   <PopoverPrimitive.Content align="start" sideOffset={2} asChild>
-                    <div className="data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down w-[var(--radix-popper-anchor-width)] dark:bg-bg-card dark:border dark:border-bg-grid-border rounded-[5px] overflow-hidden">
+                    <div className="data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down w-[var(--radix-popper-anchor-width)] bg-bg-card border border-bg-grid-border rounded-[5px] overflow-hidden shadow-md dark:shadow-none">
                       <HUIListbox.Options>
                         <div
                           className={cn(
@@ -269,7 +283,7 @@ export function Listbox<TType, TActualType>({
                             'overflow-auto',
                             'focus:visible:outline-none',
                             // text
-                            'text-text-text-and-icon dark:text-text-text-and-icon',
+                            'text-text-text-and-icon',
                           )}
                         >
                           <OptionsWrapper noDataText={noDataText}>
@@ -296,7 +310,7 @@ export function Listbox<TType, TActualType>({
                                   onClick={() => {
                                     onClearAll?.();
                                   }}
-                                  className="flex dark:text-accent-accent items-center text-p6"
+                                  className="flex dark:text-accent-accent text-text-link items-center text-p6"
                                 >
                                   {clearAll}
                                 </button>
@@ -353,10 +367,11 @@ export function ListboxOption<TType>({
           'pt-2 pb-1 px-2',
           'flex gap-1.5',
           'cursor-pointer',
-          'dark:hover:bg-bg-grid-header',
+          'dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar',
           {
-            'dark:bg-bg-grid-header': active,
-            'dark:bg-bg-active-selection dark:text-text-input-value': selected,
+            'dark:bg-bg-grid-header bg-bg-breadcrumb-bar': active,
+            'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value':
+              selected,
           },
           'outline-none focus:outline-none',
         );
@@ -365,12 +380,7 @@ export function ListboxOption<TType>({
     >
       {({ selected }) => (
         <>
-          {multiple ? (
-            <span className="relative">
-              <span className="absolute inset-0"></span>
-              <Checkbox checked={selected} />
-            </span>
-          ) : null}
+          {multiple ? <Checkbox checked={selected} /> : null}
           {children}
         </>
       )}
@@ -388,12 +398,26 @@ function getPlaceholderValue<T extends unknown | unknown[]>(
     (Array.isArray(value) && value.length === 0)
   ) {
     return (
-      <span className="dark:text-gray-600 block">
+      <span
+        className={cn(
+          'text-severity-unknown/60 disabled:severity-unknown/60',
+          'dark:text-df-gray-600 dark:disabled:text-df-gray-600/60',
+        )}
+      >
         {defaultPlaceholder || 'Select...'}
       </span>
     );
   } else if (getDisplayValue) {
     return getDisplayValue(value);
   }
-  return 'Select...';
+  return (
+    <span
+      className={cn(
+        'text-severity-unknown/60 disabled:severity-unknown/60',
+        'dark:text-df-gray-600 dark:disabled:text-df-gray-600/60',
+      )}
+    >
+      Select...
+    </span>
+  );
 }

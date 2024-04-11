@@ -19,6 +19,7 @@ import {
 import { getSettingsApiClient } from '@/api/api';
 import { ModelSettingsResponse, ModelSettingUpdateRequestKeyEnum } from '@/api/generated';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getResponseErrors } from '@/utils/403';
@@ -89,9 +90,7 @@ const EditGlobalSettingModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
-          Update setting
-        </div>
+        <SlidingModalHeaderWrapper>Update setting</SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>
@@ -109,7 +108,7 @@ const EditGlobalSettingModal = ({
               helperText={data?.fieldErrors?.value}
               required
             />
-            <div className={`text-red-600 dark:text-status-error text-p7`}>
+            <div className={`text-status-error text-p7`}>
               {!data?.success && data?.message && <span>{data.message}</span>}
             </div>
             <div className="flex gap-x-2">
@@ -192,7 +191,7 @@ const SettingTable = () => {
               setting={cell.row.original}
               trigger={
                 <button className="p-1">
-                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                  <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
                     <EllipsisIcon />
                   </div>
                 </button>
@@ -228,7 +227,7 @@ const SettingTable = () => {
   return (
     <div className="mt-2">
       {data.message ? (
-        <p className="dark:text-status-error text-p7">{data.message}</p>
+        <p className="text-status-error text-p7">{data.message}</p>
       ) : (
         <Table
           size="default"
@@ -252,7 +251,7 @@ const GlobalSettings = () => {
   return (
     <div className="h-full">
       <div className="mt-2">
-        <h3 className="text-h6 dark:text-text-input-value">Global settings</h3>
+        <h3 className="text-h6 text-text-input-value">Global settings</h3>
       </div>
       <Suspense
         fallback={

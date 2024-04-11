@@ -104,7 +104,7 @@ const Connector = () => {
         <RegistriesConnector />
       ) : (
         <>
-          <div className="mt-8 flex items-center sticky bottom-0 py-4 dark:bg-bg-page gap-x-4">
+          <div className="mt-8 flex items-center sticky bottom-0 py-4 bg-bg-page gap-x-4">
             <div className="flex items-center gap-x-2">
               <Button
                 size="md"
@@ -119,7 +119,7 @@ const Connector = () => {
                 Cancel
               </Button>
             </div>
-            <p className="text-p7 dark:text-text-text-and-icon">
+            <p className="text-p7 text-text-text-and-icon">
               Note: After completing the steps above, your connector will appear on
               MyConnector page and you will be able to scan them.
             </p>

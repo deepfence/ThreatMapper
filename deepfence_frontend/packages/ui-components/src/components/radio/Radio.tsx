@@ -60,13 +60,13 @@ const Radio: FC<Props> = (props) => {
                 disabled={disabled}
                 className={cn(
                   'rounded-full py-2 w-4 h-4 flex shrink-0 peer group',
-                  'data-[state=checked]:bg-blue-600 dark:data-[state=checked]:bg-accent-accent',
-                  'bg-gray-50 ring-inset dark:data-[state=unchecked]:ring-1 dark:data-[state=unchecked]:ring-text-text-and-icon dark:bg-transparent',
+                  'data-[state=checked]:bg-accent-accent',
+                  'ring-inset data-[state=unchecked]:ring-1 data-[state=unchecked]:ring-text-icon bg-transparent',
                   'data-[state=disabled]:pointer-events-none',
                   // uncheck disabled
-                  'dark:data-[state=unchecked]:disabled:bg-gray-600 dark:data-[state=unchecked]:disabled:ring-gray-600',
+                  'dark:data-[state=unchecked]:disabled:bg-gray-600 data-[state=unchecked]:disabled:bg-severity-unknown/60 data-[state=unchecked]:disabled:ring-severity-unknown',
                   // check disabled
-                  'dark:data-[state=checked]:disabled:bg-gray-600 dark:data-[state=checked]:disabled:ring-gray-600',
+                  'dark:data-[state=checked]:disabled:bg-gray-600 data-[state=checked]:disabled:bg-severity-unknown/60 data-[state=checked]:disabled:ring-severity-unknown',
                   'disabled:cursor-not-allowed',
                 )}
                 {...rest}
@@ -74,7 +74,7 @@ const Radio: FC<Props> = (props) => {
                 <RadioGroupPrimitive.Indicator
                   className={cn(
                     'flex items-center justify-center w-full h-full relative shrink-0',
-                    'after:bg-white after:content-[""] dark:after:bg-black dark:group-disabled:group-data-[state=checked]:bg-gray-900',
+                    'after:content-[""] after:bg-text-text-inverse dark:group-disabled:group-data-[state=checked]:bg-gray-900 group-disabled:group-data-[state=checked]:bg-white',
                     'after:block after:w-1 after:h-1 after:rounded-full',
                     'data-[state=disabled]:pointer-events-none',
                   )}
@@ -83,7 +83,7 @@ const Radio: FC<Props> = (props) => {
               <Label
                 htmlFor={_id + ''}
                 className={cn(
-                  'pl-1.5 text-p4 dark:text-text-input-value dark:peer-disabled:text-gray-600 peer-disabled:cursor-not-allowed',
+                  'pl-1.5 text-p4 dark:text-text-input-value text-text-text-and-icon dark:peer-disabled:text-gray-600 peer-disabled:text-severity-unknown peer-disabled:cursor-not-allowed',
                 )}
               >
                 {label}

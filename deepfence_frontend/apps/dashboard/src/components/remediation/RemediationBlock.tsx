@@ -139,7 +139,7 @@ export const RemediationBlock = ({ meta, onBackButtonClick }: RemediationBlockPr
     <div className="h-full flex flex-col gap-4">
       <div className="flex flex-col gap-4 px-5 pt-4">
         <div className="flex justify-between items-center">
-          <span className="flex items-center text-p6 gap-2 dark:text-text-input-value">
+          <span className="flex items-center text-p6 gap-2 text-text-input-value">
             {onBackButtonClick && (
               <button
                 type="button"
@@ -460,14 +460,15 @@ function RemediationCompletion({ meta }: RemediationCompletionProps) {
   return (
     <div
       className={cn(
-        'pb-2 px-5 h-full overflow-y-auto',
+        'text-p1a pb-2 px-5 h-full overflow-y-auto',
         'prose-invert max-w-none space-y-2',
         'prose-ol:list-decimal prose-ol:list-inside',
         'prose-ul:list-disc prose-ul:list-inside',
         'prose-p:break-words',
-        'prose-pre:mb-1 prose-pre:rounded-md dark:prose-pre:bg-slate-950',
+        'prose-pre:mb-1 prose-pre:rounded-md dark:prose-pre:bg-slate-950 prose-pre:bg-bg-card',
+        'prose-pre:dark:shadow-none prose-pre:shadow-[0_0_4px_0px_rgba(34,34,34,0.20)]',
         'prose-code:rounded-sm dark:prose-code:bg-slate-950 prose-code:px-1 prose-code:py-0.5',
-        'dark:prose-a:text-text-link dark:prose-a:hover:underline dark:prose-a:focus:underline dark:prose-a:visited:text-purple-600 dark:prose-a:dark:visited:text-purple-500',
+        'dark:prose-a:text-text-link dark:prose-a:hover:underline dark:prose-a:focus:underline dark:prose-a:visited:text-text-link dark:prose-a:dark:visited:text-text-link',
       )}
     >
       {error?.length ? (

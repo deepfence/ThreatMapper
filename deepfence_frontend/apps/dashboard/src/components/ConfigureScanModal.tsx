@@ -54,7 +54,7 @@ export interface ConfigureScanModalProps {
 const Header = ({ title }: { title: string }) => {
   return (
     <SlidingModalHeader>
-      <span className="flex w-full dark:bg-bg-breadcrumb-bar h-[64px] dark:text-text-text-and-icon">
+      <span className="flex w-full dark:bg-bg-header bg-bg-breadcrumb-bar h-[64px] text-text-text-and-icon">
         <span className="px-4 text-h3 inline-flex items-center gap-x-2">
           <span className="w-4 h-4 ">
             <ScanRadarIcon />

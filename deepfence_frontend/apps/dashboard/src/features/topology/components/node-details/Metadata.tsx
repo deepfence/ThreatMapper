@@ -28,10 +28,10 @@ export const Metadata = ({
             key={key}
             className="flex flex-1 basis-[48%] min-w-[48%] max-w-full flex-col gap-y-2"
           >
-            <div className="text-p3  dark:text-text-text-and-icon capitalize">
+            <div className="text-p3 text-text-text-and-icon capitalize">
               {toTopologyMetadataKey(key)}
             </div>
-            <div className="text-p1 dark:text-text-input-value break-words">
+            <div className="text-p1a dark:text-text-input-value text-text-text-and-icon break-words">
               {key in timeFormatKey ? uptimeText(data[key]) : data[key]}
             </div>
           </div>

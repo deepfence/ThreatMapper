@@ -2,8 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sort"
 	"time"
 
@@ -48,10 +50,6 @@ func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -165,10 +163,6 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -263,10 +257,6 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -306,6 +296,26 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	var report model.ExportReport
 	utils.FromMap(da.Props, &report)
 
+	mc, err := directory.FileServerClient(ctx)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+	var cd url.Values
+	if report.FileName != "" {
+		cd = url.Values{
+			"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
+		}
+	}
+	fileServerURL, err := mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, h.GetHostURL(r))
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+	report.URL = fileServerURL
+
 	err = httpext.JSON(w, http.StatusOK, report)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -323,10 +333,6 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -351,6 +357,14 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var fileServerURL string
+	mc, err := directory.FileServerClient(ctx)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+
 	reports := []model.ExportReport{}
 	for _, rec := range records {
 		i, ok := rec.Get("n")
@@ -365,6 +379,22 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 		}
 		var report model.ExportReport
 		utils.FromMap(da.Props, &report)
+
+		var cd url.Values
+		if report.FileName != "" {
+			cd = url.Values{
+				"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
+			}
+		}
+		if report.StoragePath != "" {
+			fileServerURL, err = mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, h.GetHostURL(r))
+			if err == nil {
+				report.URL = fileServerURL
+			} else {
+				log.Warn().Err(err).Msg("Failed to expose report file")
+			}
+		}
+
 		reports = append(reports, report)
 	}
 
@@ -378,6 +408,33 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 		log.Error().Msg(err.Error())
 	}
 }
+
+const (
+	fromDateToDateMaxDifference = 180 * 24 // 180 days in hours
+)
+
+var (
+	errFromDateRequired = ValidatorError{
+		err:                       errors.New("from_timestamp:required if 'to date' is set"),
+		skipOverwriteErrorMessage: true,
+	}
+	errToDateRequired = ValidatorError{
+		err:                       errors.New("to_timestamp:required if 'from date' is set"),
+		skipOverwriteErrorMessage: true,
+	}
+	errFromDateLessThanToDate = ValidatorError{
+		err:                       errors.New("to_timestamp:should be greater than from date"),
+		skipOverwriteErrorMessage: true,
+	}
+	errToDateGreaterThanToday = ValidatorError{
+		err:                       errors.New("to_timestamp:should not be greater than today"),
+		skipOverwriteErrorMessage: true,
+	}
+	errFromAndToDateDifference = ValidatorError{
+		err:                       fmt.Errorf("from_timestamp:difference cannot be more than %d days", fromDateToDateMaxDifference/24),
+		skipOverwriteErrorMessage: true,
+	}
+)
 
 func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
@@ -393,12 +450,41 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var fromTimestamp time.Time
+	var toTimestamp time.Time
+	if req.FromTimestamp > 0 && req.ToTimestamp > 0 {
+		fromTimestamp = time.UnixMilli(req.FromTimestamp).UTC()
+		toTimestamp = time.UnixMilli(req.ToTimestamp).UTC()
+
+		now := time.Now().UTC()
+		tomorrowDate := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 1, 0, time.UTC)
+		if tomorrowDate.Before(toTimestamp) {
+			h.respondError(&errToDateGreaterThanToday, w)
+			return
+		}
+		if fromTimestamp.After(toTimestamp) {
+			h.respondError(&errFromDateLessThanToDate, w)
+			return
+		}
+		if toTimestamp.Sub(fromTimestamp).Hours() > fromDateToDateMaxDifference {
+			h.respondError(&errFromAndToDateDifference, w)
+			return
+		}
+	} else if req.FromTimestamp > 0 {
+		h.respondError(&errToDateRequired, w)
+		return
+	} else if req.ToTimestamp > 0 {
+		h.respondError(&errFromDateRequired, w)
+		return
+	}
+
 	// report task params
 	params := utils.ReportParams{
-		ReportType: req.ReportType,
-		Duration:   req.Duration,
-		Filters:    req.Filters,
-		Options:    req.Options,
+		ReportType:    req.ReportType,
+		FromTimestamp: fromTimestamp,
+		ToTimestamp:   toTimestamp,
+		Filters:       req.Filters,
+		Options:       req.Options,
 	}
 
 	// scan id can only be sent while downloading individual scans
@@ -419,10 +505,6 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -485,14 +567,16 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	SET n.type=$type
 	SET n.status=$status
 	SET n.filters=$filters
-	SET n.duration=$duration
+	SET n.from_timestamp=$from_timestamp
+	SET n.to_timestamp=$to_timestamp
 	RETURN n`
 	createVars := map[string]interface{}{
-		"type":     req.ReportType,
-		"uid":      params.ReportID,
-		"status":   utils.ScanStatusStarting,
-		"filters":  req.Filters.String(),
-		"duration": req.Duration,
+		"type":           req.ReportType,
+		"uid":            params.ReportID,
+		"status":         utils.ScanStatusStarting,
+		"filters":        req.Filters.String(),
+		"from_timestamp": req.FromTimestamp,
+		"to_timestamp":   req.ToTimestamp,
 	}
 
 	_, err = tx.Run(ctx, createQuery, createVars)

@@ -116,7 +116,7 @@ export const RegistryImageTagsTable = ({
               onTableAction={onTableAction}
               trigger={
                 <button className="p-1">
-                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                  <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
                     <EllipsisIcon />
                   </div>
                 </button>
@@ -132,7 +132,7 @@ export const RegistryImageTagsTable = ({
       }),
       columnHelper.accessor('docker_image_tag', {
         enableSorting: false,
-        header: () => 'Image Tag',
+        header: () => 'Image tag',
         cell: (info) => {
           return <TruncatedText text={info.getValue()} />;
         },
@@ -163,19 +163,19 @@ export const RegistryImageTagsTable = ({
       }),
       columnHelper.accessor('vulnerability_scan_status', {
         enableSorting: false,
-        header: () => <TruncatedText text={'Vulnerability Scan Status'} />,
+        header: () => <TruncatedText text={'Vulnerability scan status'} />,
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),
       columnHelper.accessor('secret_scan_status', {
         enableSorting: false,
-        header: () => <TruncatedText text={'Secrets Scan Status'} />,
+        header: () => <TruncatedText text={'Secrets scan status'} />,
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),
       columnHelper.accessor('malware_scan_status', {
         enableSorting: false,
-        header: () => <TruncatedText text={'Malware Scan Status'} />,
+        header: () => <TruncatedText text={'Malware scan status'} />,
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),

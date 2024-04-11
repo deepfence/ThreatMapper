@@ -37,6 +37,7 @@ import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { SearchableCloudAccountForHost } from '@/features/topology/data-components/tables/SearchableCloudAccountForHost';
 import { queries } from '@/queries';
@@ -295,7 +296,7 @@ function Filters() {
   };
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <SearchableHostList
           scanType={'none'}
@@ -610,7 +611,7 @@ function Filters() {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 }
 
@@ -718,7 +719,7 @@ const DataTable = ({
             </div>
           );
         },
-        header: () => 'name',
+        header: () => 'Name',
         minSize: 300,
         size: 400,
         maxSize: 600,
@@ -761,6 +762,9 @@ const DataTable = ({
       }),
       columnHelper.accessor('os', {
         cell: (info) => {
+          if (!info.getValue()) {
+            return <div className="border-b w-[8px] border-text-icon"></div>;
+          }
           return <TruncatedText text={info.getValue() ?? ''} />;
         },
         header: () => <span>OS</span>,
@@ -772,7 +776,7 @@ const DataTable = ({
         cell: (info) => {
           return <TruncatedText text={info.getValue() ? 'Yes' : 'No'} />;
         },
-        header: () => <TruncatedText text="Agent Running?" />,
+        header: () => <TruncatedText text="Agent running?" />,
         minSize: 50,
         size: 60,
         maxSize: 120,
@@ -788,7 +792,7 @@ const DataTable = ({
 
                   <Tooltip
                     content={
-                      <div className="flex-col gap-2 dark:text-text-text-and-icon">
+                      <div className="flex-col gap-2 dark:text-text-text-and-icon text-text-text-inverse">
                         <div className="text-h5">Update Available</div>
                         <div className="text-p6">
                           Version <span className="text-h6">{versions[0]}</span> is
@@ -796,6 +800,7 @@ const DataTable = ({
                           <DFLink
                             href="https://community.deepfence.io/threatmapper/docs/sensors/"
                             target="_blank"
+                            className="dark:text-text-link text-blue-500"
                           >
                             the instructions
                           </DFLink>{' '}
@@ -803,6 +808,7 @@ const DataTable = ({
                           <DFLink
                             href="https://www.deepfence.io/threatstryker"
                             target="_blank"
+                            className="dark:text-text-link text-blue-500"
                           >
                             ThreatStryker
                           </DFLink>
@@ -821,7 +827,7 @@ const DataTable = ({
           }
           return <TruncatedText text={info.getValue() ?? ''} />;
         },
-        header: () => <TruncatedText text="Agent Version" />,
+        header: () => <TruncatedText text="Agent version" />,
         minSize: 150,
         size: 200,
         maxSize: 300,

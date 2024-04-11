@@ -9,6 +9,7 @@ import {
 } from 'ui-components';
 
 import { TruncatedText } from '@/components/TruncatedText';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import {
   Metadata,
   toTopologyMetadataString,
@@ -64,11 +65,11 @@ export const ResourceDetailModal = ({
     >
       <SlidingModalCloseButton />
       <SlidingModalHeader>
-        <div className="p-4 text-h3 dark:text-text-text-and-icon dark:bg-bg-breadcrumb-bar ">
+        <SlidingModalHeaderWrapper>
           <div className="overflow-hidden">
             <TruncatedText text="Resource details" />
           </div>
-        </div>
+        </SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalContent>
         <Suspense

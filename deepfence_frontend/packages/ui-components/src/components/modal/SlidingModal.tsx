@@ -22,7 +22,7 @@ export const SlidingModalCloseButton = () => (
     aria-label="Close"
     className={cn(
       'absolute right-0 mr-5 mt-5 cursor-pointer',
-      'dark:text-text-text-and-icon h-5 w-5 p-1',
+      'text-text-icon h-5 w-5 p-1',
     )}
     id={'sliding-modal-close-button'}
     data-testid={'sliding-modal-close-button'}
@@ -33,7 +33,10 @@ export const SlidingModalCloseButton = () => (
 
 export const SlidingModalHeader: FC<{ children?: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="w-full" data-testid="sliding-modal-title">
+    <div
+      className="w-full dark:text-text-input-value text-text-text-and-icon"
+      data-testid="sliding-modal-title"
+    >
       {children}
     </div>
   );
@@ -96,8 +99,8 @@ export const SlidingModal: FC<ModalProps> = ({
               'flex flex-col fixed top-0 bottom-0',
               'overflow-hidden focus:outline-none',
               'bg-white text-gray-900',
-              'dark:bg-bg-side-panel dark:text-text-text-and-icon',
-              'dark:border-bg-grid-border isolate',
+              'dark:bg-bg-side-panel text-text-text-and-icon bg-white',
+              'dark:border-bg-grid-border border-bg-border-form isolate',
               {
                 '-left-[100%] border-r': direction === 'left',
                 '-right-[100%] border-l': direction === 'right',

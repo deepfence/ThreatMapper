@@ -18,6 +18,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/redis/go-redis/v9"
 	"github.com/riandyrn/otelchi"
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -135,7 +136,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 		Translator:       translator,
 		IngestChan:       ingestC,
 		ConsoleDiagnosis: consoleDiagnosis,
+		TTLCache:         ttlcache.New[string, string](),
 	}
+	go dfHandler.TTLCache.Start()
 
 	r.Use(otelchi.Middleware("deepfence-server", otelchi.WithChiRoutes(r)))
 	r.Use(middleware.Recoverer)
@@ -218,6 +221,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/email", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.AddEmailConfiguration))
 				r.Get("/email", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetEmailConfiguration))
 				r.Delete("/email/{config_id}", dfHandler.AuthHandler(ResourceSettings, PermissionDelete, dfHandler.DeleteEmailConfiguration))
+				r.Post("/email/test", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.TestConfiguredEmail))
+				r.Post("/email/test-unconfigured", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.TestUnconfiguredEmail))
 				r.Put("/agent/version", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadAgentBinaries))
 				r.Get("/agent/versions", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.ListAgentVersion))
 			})
@@ -325,7 +330,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 					r.Post("/enable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.ScheduleAgentPluginsEnable))
 					r.Post("/disable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.ScheduleAgentPluginsDisable))
 				})
-				r.Post("/cloud-node", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetCloudNodeControls))
+				r.Post("/cloud-node", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.GetCloudNodeControls))
 				r.Post("/cloud-node/enable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.EnableCloudNodeControls))
 				r.Post("/cloud-node/disable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.DisableCloudNodeControls))
 			})
@@ -350,6 +355,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 
 			r.Route("/cloud-node", func(r chi.Router) {
 				r.Post("/account", dfHandler.AuthHandler(ResourceCloudNode, PermissionRegister, dfHandler.RegisterCloudNodeAccountHandler))
+				r.Patch("/account/delete", dfHandler.AuthHandler(ResourceCloudNode, PermissionDelete, dfHandler.DeleteCloudAccountHandler))
 				r.Post("/account/refresh", dfHandler.AuthHandler(ResourceCloudNode, PermissionWrite, dfHandler.RefreshCloudAccountHandler))
 				r.Post("/list/accounts", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeAccountHandler))
 				r.Get("/list/providers", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeProvidersHandler))
@@ -489,6 +495,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 					r.Put("/status/{node_id}", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.UpdateCloudScannerDiagnosticLogsStatus))
 				})
 				r.Get("/diagnostic-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.GetDiagnosticLogs))
+			})
+
+			r.Route("/agent-deployment", func(r chi.Router) {
+				r.Get("/binary/download-url", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetAgentBinaryDownloadURL))
 			})
 
 			// Reports

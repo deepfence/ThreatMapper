@@ -13,7 +13,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0"
     },
-    "version": "2.0.0"
+    "version": "2.2.0"
   },
   "externalDocs": {
     "description": "Deepfence Community",
@@ -29,6 +29,53 @@
     { "name": "Vulnerability" }
   ],
   "paths": {
+    "/deepfence/agent-deployment/binary/download-url": {
+      "get": {
+        "tags": ["Settings"],
+        "summary": "Get agent binary download url",
+        "description": "Get agent binary download url",
+        "operationId": "getAgentBinaryDownloadURL",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelGetAgentBinaryDownloadURLResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/api-token": {
       "get": {
         "tags": ["User"],
@@ -247,6 +294,51 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/cloud-node/account/delete": {
+      "patch": {
+        "tags": ["Cloud Nodes"],
+        "summary": "Delete Cloud Node Account",
+        "description": "Delete Cloud Node Account and related resources",
+        "operationId": "deleteCloudNodeAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelCloudAccountDeleteReq" }
+            }
+          }
+        },
+        "responses": {
+          "202": { "description": "Accepted" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -11022,6 +11114,103 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/settings/email/test": {
+      "post": {
+        "tags": ["Settings"],
+        "summary": "Test Configured Email",
+        "description": "Test Configured Email",
+        "operationId": "testConfiguredEmail",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelMessageResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/settings/email/test-unconfigured": {
+      "post": {
+        "tags": ["Settings"],
+        "summary": "Test Unconfigured Email",
+        "description": "Test Unconfigured Email",
+        "operationId": "testUnconfiguredEmail",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelEmailConfigurationAdd" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelMessageResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/settings/email/{config_id}": {
       "delete": {
         "tags": ["Settings"],
@@ -12998,6 +13187,13 @@
           }
         }
       },
+      "ModelCloudAccountDeleteReq": {
+        "required": ["node_ids"],
+        "type": "object",
+        "properties": {
+          "node_ids": { "type": "array", "items": { "type": "string" }, "nullable": true }
+        }
+      },
       "ModelCloudAccountRefreshReq": {
         "required": ["node_ids"],
         "type": "object",
@@ -13665,6 +13861,7 @@
         "properties": {
           "amazon_access_key": { "type": "string" },
           "amazon_secret_key": { "type": "string" },
+          "apikey": { "type": "string" },
           "created_by_user_id": { "type": "integer" },
           "email_id": { "type": "string" },
           "email_provider": { "type": "string" },
@@ -13690,11 +13887,12 @@
         "type": "object",
         "properties": {
           "created_at": { "type": "integer" },
-          "duration": { "type": "integer" },
           "filters": { "type": "string" },
+          "from_timestamp": { "type": "integer" },
           "report_id": { "type": "string" },
           "status": { "type": "string" },
           "storage_path": { "type": "string" },
+          "to_timestamp": { "type": "integer" },
           "type": { "type": "string" },
           "updated_at": { "type": "integer" },
           "url": { "type": "string" }
@@ -13748,13 +13946,11 @@
         "required": ["report_type"],
         "type": "object",
         "properties": {
-          "duration": {
-            "enum": ["0", "1", "7", "30", "60", "90", "180"],
-            "type": "integer"
-          },
           "filters": { "$ref": "#/components/schemas/UtilsReportFilters" },
+          "from_timestamp": { "type": "integer" },
           "options": { "$ref": "#/components/schemas/UtilsReportOptions" },
-          "report_type": { "enum": ["pdf", "xlsx", "sbom"], "type": "string" }
+          "report_type": { "enum": ["pdf", "xlsx", "sbom"], "type": "string" },
+          "to_timestamp": { "type": "integer" }
         }
       },
       "ModelGenerateReportResp": {
@@ -13872,6 +14068,15 @@
             "enum": ["all", "cli", "pulumi", "terraform"],
             "type": "string"
           }
+        }
+      },
+      "ModelGetAgentBinaryDownloadURLResponse": {
+        "type": "object",
+        "properties": {
+          "agent_binary_amd64_download_url": { "type": "string" },
+          "agent_binary_arm64_download_url": { "type": "string" },
+          "start_agent_script_download_url": { "type": "string" },
+          "uninstall_agent_script_download_url": { "type": "string" }
         }
       },
       "ModelGetAuditLogsRequest": {
@@ -14468,7 +14673,7 @@
         }
       },
       "ModelRegisterLicenseRequest": {
-        "required": ["email", "license_key"],
+        "required": ["license_key"],
         "type": "object",
         "properties": {
           "email": { "type": "string" },
@@ -15015,7 +15220,7 @@
         "type": "object",
         "properties": {
           "key": {
-            "enum": ["console_url", "inactive_delete_scan_results"],
+            "enum": ["console_url", "file_server_url", "inactive_delete_scan_results"],
             "type": "string"
           },
           "value": { "type": "string" }

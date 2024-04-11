@@ -1,4 +1,5 @@
 import * as DropdownPrimitive from '@radix-ui/react-dropdown-menu';
+import { cva } from 'cva';
 import React from 'react';
 import { cn } from 'tailwind-preset';
 
@@ -43,13 +44,13 @@ export const DropdownSubMenu: React.FC<
     // paddings
     'px-6 pt-2 pb-1',
     // text
-    'text-gray-500 dark:text-text-text-and-icon',
+    'text-p4 text-text-text-and-icon',
     // hover // focus
-    'focus:outline-none focus:bg-gray-100',
-    'dark:focus:bg-bg-grid-header dark:focus:text-text-text-and-icon',
+    'focus:outline-none',
+    'dark:focus:bg-bg-grid-header focus:bg-bg-grid-border text-text-text-and-icon',
     {
       'cursor-pointer': !disabled,
-      'cursor-auto dark:text-gray-600': disabled,
+      'cursor-auto dark:text-gray-600 text-severity-unknown': disabled,
     },
   );
 
@@ -58,7 +59,7 @@ export const DropdownSubMenu: React.FC<
       <DropdownPrimitive.SubTrigger asChild={triggerAsChild} className={triggerClass}>
         <div className="items-center">
           {children}
-          <span className="ml-auto -mr-2 dark:text-text-text-and-icon">
+          <span className="ml-auto -mr-2 text-text-text-and-icon">
             <CaretIcon />
           </span>
         </div>
@@ -71,9 +72,9 @@ export const DropdownSubMenu: React.FC<
             // font size
             'text-p7',
             // bg
-            'bg-white dark:bg-bg-card',
+            'bg-bg-card',
             // border
-            'border dark:border dark:border-bg-left-nav',
+            'border dark:border-bg-left-nav border-bg-grid-border',
           )}
         >
           {content}
@@ -108,11 +109,11 @@ export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) =>
             'shadow-md min-w-[195px]',
             'overflow-hidden',
             // bg
-            'bg-white dark:bg-bg-card',
+            'bg-bg-card',
             // font size
             'text-p7',
             // border
-            'border dark:border dark:border-bg-left-nav',
+            'border dark:border-bg-left-nav border-bg-grid-border',
             'py-2',
           )}
         >
@@ -124,31 +125,46 @@ export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) =>
 };
 Dropdown.displayName = 'Dropdown';
 
+export type ColorType = 'default' | 'error' | 'success';
 export const DropdownItem: React.ForwardRefExoticComponent<
   DropdownPrimitive.DropdownMenuItemProps &
     React.RefAttributes<HTMLDivElement> & {
       selected?: boolean;
       icon?: React.ReactNode;
+      color?: ColorType;
     }
 > = React.forwardRef((props, forwardedRef) => {
-  const { children, className, disabled, selected, icon, ...rest } = props;
+  const { children, className, disabled, selected, icon, color, ...rest } = props;
   const classes = cn(
     'flex gap-x-2',
     // text
-    'text-p4 text-gray-500 dark:text-text-text-and-icon',
+    'text-p4 text-text-text-and-icon',
     'px-6 pt-2 pb-1', // hover // focus
-    'focus:outline-none focus:bg-gray-100',
-    'dark:focus:bg-bg-grid-header dark:focus:text-text-text-and-icon',
+    'focus:outline-none',
+    'dark:focus:bg-bg-grid-header focus:bg-bg-breadcrumb-bar',
+  );
+  const itemCva = cn(
+    cva(classes, {
+      variants: {
+        color: {
+          default: 'text-text-text-and-icon',
+          error: 'text-btn-red dark:hover:text-btn-error hover:text-red-600',
+          success: 'text-btn-green dark:hover:text-status-success hover:text-green-600',
+        },
+      },
+    })({ color }),
     {
       'cursor-pointer': !disabled,
-      'cursor-auto dark:text-gray-600': disabled,
-      'dark:bg-bg-active-selection dark:text-text-input-value': selected,
+      'cursor-not-allowed text-text-text-and-icon text-opacity-60 dark:hover:text-text-text-and-icon hover:text-text-text-and-icon dark:hover:text-opacity-60 hover:text-opacity-60':
+        disabled,
+      'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value': selected,
     },
     className,
   );
+
   return (
     <DropdownPrimitive.Item
-      className={classes}
+      className={itemCva}
       disabled={disabled}
       {...rest}
       ref={forwardedRef}
@@ -164,7 +180,7 @@ export const DropdownSeparator: React.ForwardRefExoticComponent<
   DropdownPrimitive.DropdownMenuSeparatorProps & React.RefAttributes<HTMLDivElement>
 > = React.forwardRef((props, forwardedRef) => {
   const { className, ...rest } = props;
-  const classes = cn('h-px bg-gray-200 dark:bg-bg-left-nav flex-1', className);
+  const classes = cn('h-px dark:bg-bg-left-nav bg-bg-grid-border flex-1', className);
   return (
     <DropdownPrimitive.Separator
       {...rest}

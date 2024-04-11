@@ -19,7 +19,7 @@ const ErrorComponent = ({ maintenance }: { maintenance: boolean }) => {
       <div className="mt-6 flex flex-col gap-y-14 items-center">
         <h4
           className={cn(
-            'font-semibold text-text-text-and-icon dark:text-text-text-and-icon flex flex-col text-center',
+            'font-semibold text-text-text-and-icon flex flex-col text-center',
             {
               'sm:text-base 2xl:text-xl': !maintenance,
               'sm:text-xl 2xl:text-2xl': maintenance,

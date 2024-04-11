@@ -31,7 +31,7 @@ export const RemediationNoIntegration = ({
           permission to Amazon Bedrock, please{' '}
           <button
             type="button"
-            className="text-blue-600 dark:text-text-link hover:underline focus:underline"
+            className="text-text-link hover:underline focus:underline"
             onClick={(e) => {
               e.preventDefault();
               add();
@@ -43,12 +43,12 @@ export const RemediationNoIntegration = ({
         </div>
       )}
       {state === 'idle' && data?.success === false && (
-        <div className="text-center text-p2 mt-2 px-6 dark:text-status-error">
+        <div className="text-center text-p2 mt-2 px-6 text-status-error">
           {data.message ?? "Couldn't add integration."}
         </div>
       )}
       {state === 'idle' && data?.success && (
-        <div className="text-center text-p2 mt-2 px-6 dark:text-status-success">
+        <div className="text-center text-p2 mt-2 px-6 text-status-success">
           {data.successMessage ?? 'Integration added successfully.'}
         </div>
       )}

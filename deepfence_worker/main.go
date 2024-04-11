@@ -3,14 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"path"
 	"runtime"
 	"syscall"
 	"time"
-
-	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -35,17 +34,10 @@ import (
 	wtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 )
 
-// build info
-var (
-	Version   string
-	Commit    string
-	BuildTime string
-)
-
 func main() {
 
 	log.Info().Msgf("\n version: %s\n commit: %s\n build-time: %s\n",
-		Version, Commit, BuildTime)
+		wtils.Version, wtils.Commit, wtils.BuildTime)
 
 	var cfg wtils.Config
 	var err error
@@ -134,7 +126,7 @@ func main() {
 		}
 	case "scheduler":
 		log.Info().Msg("Starting scheduler")
-		go cs.InitMinioDatabase()
+		go cs.InitFileServerDatabase()
 		time.Sleep(10 * time.Second)
 		scheduler, err := cs.NewScheduler()
 		if err != nil {

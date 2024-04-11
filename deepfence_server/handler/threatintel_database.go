@@ -104,7 +104,7 @@ func (h *Handler) UploadSecretsRules(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := threatintel.ExposeFile(ctx, path)
+	url, err := threatintel.ExposeFile(ctx, path, h.GetHostURL(r), h.TTLCache)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(&BadDecoding{err}, w)
@@ -158,7 +158,7 @@ func (h *Handler) UploadMalwareRules(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := threatintel.ExposeFile(ctx, path)
+	url, err := threatintel.ExposeFile(ctx, path, h.GetHostURL(r), h.TTLCache)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(&BadDecoding{err}, w)
@@ -212,7 +212,7 @@ func (h *Handler) UploadPostureControls(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	url, err := threatintel.ExposeFile(ctx, path)
+	url, err := threatintel.ExposeFile(ctx, path, h.GetHostURL(r), h.TTLCache)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(&BadDecoding{err}, w)

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActionFunctionArgs, useFetcher, useNavigate } from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher, useNavigate, useParams } from 'react-router-dom';
 import {
   Button,
   Checkbox,
@@ -20,6 +20,8 @@ import {
   ModelAddGenerativeAiBedrockIntegrationModelIdEnum,
   ModelAddGenerativeAiOpenAIIntegrationModelIdEnum,
 } from '@/api/generated';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
+import { AI_INTEGRATION_TYPES } from '@/features/integrations/pages/AIIntegrationList';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries } from '@/queries';
 import { GenerativeAIIntegrationType } from '@/types/common';
@@ -159,9 +161,15 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 };
 
 const AIIntegrationAdd = () => {
+  const params = useParams() as {
+    integrationType?: GenerativeAIIntegrationType;
+  };
+
   const navigate = useNavigate();
   const fetcher = useFetcher<ActionData>();
-  const [provider, setProvider] = useState<GenerativeAIIntegrationType>('openai');
+  const [provider, setProvider] = useState<GenerativeAIIntegrationType>(
+    params.integrationType?.length ? params.integrationType : 'openai',
+  );
   return (
     <SlidingModal
       open
@@ -171,49 +179,55 @@ const AIIntegrationAdd = () => {
     >
       <SlidingModalCloseButton />
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
-          Add Generative AI Integration
-        </div>
+        <SlidingModalHeaderWrapper>
+          {params.integrationType?.length
+            ? `Add ${AI_INTEGRATION_TYPES[params.integrationType]} Integration`
+            : 'Add Generative AI Integration'}
+        </SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalContent>
         {!fetcher.data?.success ? (
           <fetcher.Form method="POST" className="flex flex-col gap-8 m-4">
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="genAIProviders"
-                className="text-p3 text-gray-900 dark:text-text-text-and-icon"
-              >
-                Select Provider
-              </label>
-              <Radio
-                id="genAIProviders"
-                direction="row"
-                options={
-                  [
-                    {
-                      label: 'OpenAI',
-                      value: 'openai',
-                    },
-                    {
-                      label: 'Amazon Bedrock',
-                      value: 'amazon-bedrock',
-                    },
-                  ] as Array<{ label: string; value: GenerativeAIIntegrationType }>
-                }
-                value={provider}
-                onValueChange={(newVal) => {
-                  setProvider(newVal as GenerativeAIIntegrationType);
-                }}
-                name="integration_type"
-              />
-            </div>
+            {params.integrationType?.length ? (
+              <input type="hidden" name="integration_type" value={provider} />
+            ) : (
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="genAIProviders"
+                  className="text-p3 text-text-text-and-icon"
+                >
+                  Select Provider
+                </label>
+                <Radio
+                  id="genAIProviders"
+                  direction="row"
+                  options={
+                    [
+                      {
+                        label: 'OpenAI',
+                        value: 'openai',
+                      },
+                      {
+                        label: 'Amazon Bedrock',
+                        value: 'amazon-bedrock',
+                      },
+                    ] as Array<{ label: string; value: GenerativeAIIntegrationType }>
+                  }
+                  value={provider}
+                  onValueChange={(newVal) => {
+                    setProvider(newVal as GenerativeAIIntegrationType);
+                  }}
+                  name="integration_type"
+                />
+              </div>
+            )}
             {provider === 'openai' && <OpenAIFormFields fetcherData={fetcher.data} />}
             {provider === 'amazon-bedrock' && (
               <AmazonBedrockFormFields fetcherData={fetcher.data} />
             )}
 
             {fetcher.data?.message && (
-              <p className="dark:text-status-error text-p7">{fetcher.data?.message}</p>
+              <p className="text-status-error text-p7">{fetcher.data?.message}</p>
             )}
 
             <div className="flex gap-x-2 p-1">
@@ -315,10 +329,10 @@ const AmazonBedrockFormFields = ({ fetcherData }: { fetcherData?: ActionData }) 
         onCheckedChange={(val) => setUseIAM(val as boolean)}
         label={
           <div className="pl-3 cursor-pointer">
-            <p className="text-h5 text-gray-900 dark:text-text-text-and-icon">
+            <p className="text-h5 text-text-text-and-icon">
               Automatically add Bedrock integrations
             </p>
-            <p className="text-p6 text-gray-900 dark:text-text-text-and-icon">
+            <p className="text-p6 text-text-text-and-icon">
               If the management console is deployed in AWS with instance role and read
               permission to Bedrock, integrations will be added automatically
             </p>

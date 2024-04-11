@@ -81,6 +81,7 @@ models/ModelAgentUpgrade.ts
 models/ModelBasicNode.ts
 models/ModelBulkDeleteReportReq.ts
 models/ModelBulkDeleteScansRequest.ts
+models/ModelCloudAccountDeleteReq.ts
 models/ModelCloudAccountRefreshReq.ts
 models/ModelCloudCompliance.ts
 models/ModelCloudComplianceBenchmark.ts
@@ -129,6 +130,7 @@ models/ModelGenerativeAiIntegrationListResponse.ts
 models/ModelGenerativeAiIntegrationMalwareRequest.ts
 models/ModelGenerativeAiIntegrationSecretRequest.ts
 models/ModelGenerativeAiIntegrationVulnerabilityRequest.ts
+models/ModelGetAgentBinaryDownloadURLResponse.ts
 models/ModelGetAuditLogsRequest.ts
 models/ModelGraphResult.ts
 models/ModelHost.ts

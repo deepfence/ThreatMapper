@@ -89,7 +89,7 @@ const ActionDropdown = ({
               setIdsToDelete(ids);
               setShowDeleteDialog(true);
             }}
-            className="dark:text-status-error dark:hover:text-[#C45268]"
+            color="error"
           >
             Delete
           </DropdownItem>
@@ -145,7 +145,7 @@ export const RegistryAccountsTable = ({
               onTableAction={onTableAction}
               trigger={
                 <button className="p-1">
-                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                  <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
                     <EllipsisIcon />
                   </div>
                 </button>
@@ -178,11 +178,11 @@ export const RegistryAccountsTable = ({
         maxSize: 120,
       }),
       columnHelper.accessor('is_syncing', {
-        header: () => 'Sync Status',
+        header: () => 'Sync status',
         cell: (info) => (
           <>
             {info.getValue() === true ? (
-              <span className="flex items-center gap-1.5 dark:text-text-text-and-icon text-p4">
+              <span className="flex items-center gap-1.5 text-text-text-and-icon text-p4">
                 <CircleSpinner size="sm" />
                 Syncing
               </span>

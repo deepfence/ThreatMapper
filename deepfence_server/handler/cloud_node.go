@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -125,7 +126,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 				scanList[scan.ScanID] = scanDetail
 			}
 		}
-		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, append(monitoredNodeIds, nodeID))
+		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, append(monitoredNodeIds, nodeID), h.GetHostURL(r))
 		if err != nil {
 			log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
 		}
@@ -146,7 +147,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			return
 		}
 		// get log request for cloudscanner, if any
-		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeID})
+		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeID}, h.GetHostURL(r))
 		if err != nil {
 			log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
 		}
@@ -323,4 +324,43 @@ func (h *Handler) CachePostureProviders(ctx context.Context) error {
 		return err
 	}
 	return nil
+}
+
+func (h *Handler) DeleteCloudAccountHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.CloudAccountDeleteReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	log.Info().Msgf("delete cloud accounts request: %v", req)
+
+	if len(req.NodeIDs) > 0 {
+		worker, err := directory.Worker(r.Context())
+		if err != nil {
+			log.Error().Msgf("%v", err)
+			h.respondError(&InternalServerError{err}, w)
+			return
+		}
+
+		data, err := json.Marshal(req)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to marshal cloud account delete request")
+			h.respondError(&InternalServerError{err}, w)
+			return
+		}
+
+		if err := worker.Enqueue(utils.DeleteCloudAccounts, data, utils.CritialTaskOpts()...); err != nil {
+			log.Error().Err(err).Msg("failed enqueue task delete cloud accounts")
+			h.respondError(&InternalServerError{err}, w)
+			return
+		}
+	}
+
+	h.AuditUserActivity(r, EventComplianceScan, ActionDelete, req, true)
+
+	w.WriteHeader(http.StatusAccepted)
 }

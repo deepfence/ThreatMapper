@@ -26,6 +26,8 @@ import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { StartScanIcon } from '@/components/icons/registries/StartScan';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { RegistryImageTagsTable } from '@/features/registries/components/RegistryImageTagsTable';
 import {
   ActionEnumType,
@@ -142,7 +144,7 @@ export const useScanResults = () => {
 
 const Header = () => {
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <BreadcrumbWrapper>
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<RegistryIcon />} isLink>
@@ -161,7 +163,7 @@ const Header = () => {
           </Suspense>
         </Breadcrumb>
       </>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 
@@ -244,7 +246,7 @@ const Filters = () => {
   }
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           value={
@@ -408,7 +410,7 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 

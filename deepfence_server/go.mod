@@ -22,6 +22,7 @@ require (
 	github.com/go-playground/validator/v10 v10.16.0
 	github.com/google/uuid v1.5.0
 	github.com/hibiken/asynq v0.24.1
+	github.com/jellydator/ttlcache/v3 v3.2.0
 	github.com/json-iterator/go v1.1.12
 	github.com/k-sone/critbitgo v1.4.0
 	github.com/klauspost/compress v1.17.4
@@ -54,6 +55,11 @@ require (
 	k8s.io/metrics v0.29.0
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
 
+)
+
+require (
+	github.com/sendgrid/rest v2.6.9+incompatible // indirect
+	golang.org/x/sync v0.3.0 // indirect
 )
 
 require (
@@ -126,6 +132,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
+	github.com/sendgrid/sendgrid-go v3.14.0+incompatible
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect

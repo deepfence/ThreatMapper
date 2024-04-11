@@ -412,6 +412,10 @@ func (d *OpenAPIDocs) AddCloudNodeOperations() {
 		"Register Cloud Node Account", "Register Cloud Node Account and return any pending compliance scans from console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountRegisterReq), new(CloudNodeAccountRegisterResp))
 
+	d.AddOperation("deleteCloudNodeAccount", http.MethodPatch, "/deepfence/cloud-node/account/delete",
+		"Delete Cloud Node Account", "Delete Cloud Node Account and related resources",
+		http.StatusAccepted, []string{tagCloudNodes}, bearerToken, new(CloudAccountDeleteReq), nil)
+
 	d.AddOperation("listCloudNodeAccount", http.MethodPost, "/deepfence/cloud-node/list/accounts",
 		"List Cloud Node Accounts", "List Cloud Node Accounts registered with the console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountsListReq), new(CloudNodeAccountsListResp))
@@ -797,6 +801,12 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 	d.AddOperation("deleteEmailConfiguration", http.MethodDelete, "/deepfence/settings/email/{config_id}",
 		"Delete Email Configurations", "Delete Email Smtp / ses Configurations in system",
 		http.StatusNoContent, []string{tagSettings}, bearerToken, new(ConfigIDPathReq), nil)
+	d.AddOperation("testConfiguredEmail", http.MethodPost, "/deepfence/settings/email/test",
+		"Test Configured Email", "Test Configured Email",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(MessageResponse))
+	d.AddOperation("testUnconfiguredEmail", http.MethodPost, "/deepfence/settings/email/test-unconfigured",
+		"Test Unconfigured Email", "Test Unconfigured Email",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(EmailConfigurationAdd), new(MessageResponse))
 	d.AddOperation("getSettings", http.MethodGet, "/deepfence/settings/global-settings",
 		"Get settings", "Get all settings",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]SettingsResponse))
@@ -845,6 +855,10 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 	d.AddOperation("uploadPostureControls", http.MethodPut, "/deepfence/database/posture",
 		"Upload Posture Controls", "Upload posture controls for use in posture scans",
 		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
+
+	d.AddOperation("getAgentBinaryDownloadURL", http.MethodGet, "/deepfence/agent-deployment/binary/download-url",
+		"Get agent binary download url", "Get agent binary download url",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(GetAgentBinaryDownloadURLResponse))
 }
 
 func (d *OpenAPIDocs) AddLicenseOperations() {

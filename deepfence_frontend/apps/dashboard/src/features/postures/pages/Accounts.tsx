@@ -10,7 +10,6 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { toast } from 'sonner';
-import { cn } from 'tailwind-preset';
 import {
   Badge,
   Breadcrumb,
@@ -66,7 +65,9 @@ import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { getColorForCompliancePercent } from '@/constants/charts';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import {
   isKubernetesProvider,
   isLinuxProvider,
@@ -75,6 +76,7 @@ import {
 } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import {
   ComplianceScanNodeTypeEnum,
   isCloudNode,
@@ -90,6 +92,7 @@ import {
   isNeverScanned,
   isScanComplete,
   isScanDeletePending,
+  isScanFailed,
   isScanInProgress,
   isScanStopping,
   SCAN_STATUS_GROUPS,
@@ -105,6 +108,7 @@ import { isUpgradeAvailable } from '@/utils/version';
 enum ActionEnumType {
   DELETE_SCAN = 'delete_scan',
   REFRESH_ACCOUNT = 'refresh_account',
+  DELETE_ACCOUNT = 'delete_account',
   START_SCAN = 'start_scan',
   CANCEL_SCAN = 'cancel_scan',
 }
@@ -224,6 +228,33 @@ const action = async ({
       }
       throw refreshAccountRresult.error;
     }
+  } else if (actionType === ActionEnumType.DELETE_ACCOUNT) {
+    const deleteCloudNodeAccountApi = apiWrapper({
+      fn: getCloudNodesApiClient().deleteCloudNodeAccount,
+    });
+    const deleteAccountRresult = await deleteCloudNodeAccountApi({
+      modelCloudAccountDeleteReq: {
+        node_ids: accountIds,
+      },
+    });
+    if (!deleteAccountRresult.ok) {
+      if (deleteAccountRresult.error.response.status === 400) {
+        const { message } = await getResponseErrors(deleteAccountRresult.error);
+        return {
+          success: false,
+          message,
+          action: ActionEnumType.DELETE_ACCOUNT,
+        };
+      } else if (deleteAccountRresult.error.response.status === 403) {
+        const message = await get403Message(deleteAccountRresult.error);
+        return {
+          message,
+          success: false,
+          action: ActionEnumType.DELETE_ACCOUNT,
+        };
+      }
+      throw deleteAccountRresult.error;
+    }
   }
   invalidateAllQueries();
   return {
@@ -316,7 +347,7 @@ const Filters = () => {
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['status']}
@@ -545,7 +576,7 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 const DeleteConfirmationModal = ({
@@ -593,7 +624,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -634,7 +665,107 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
+          )}
+        </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
+    </Modal>
+  );
+};
+const DeleteAccountConfirmationModal = ({
+  showDialog,
+  accountIds,
+  setShowDialog,
+  onSuccess,
+}: {
+  showDialog: boolean;
+  accountIds: string[];
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onSuccess: () => void;
+}) => {
+  const fetcher = useFetcher();
+  const params = useParams();
+
+  const onDeleteAction = useCallback(
+    (actionType: string) => {
+      const formData = new FormData();
+      formData.append('actionType', actionType);
+      accountIds.forEach((accountId) => formData.append('accountId[]', accountId));
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [accountIds, fetcher],
+  );
+
+  useEffect(() => {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data?.success &&
+      fetcher.data.action === ActionEnumType.DELETE_ACCOUNT
+    ) {
+      onSuccess();
+    }
+  }, [fetcher]);
+
+  return (
+    <Modal
+      size="s"
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title={
+        !fetcher.data?.success ? (
+          <div className="flex gap-3 items-center text-status-error">
+            <span className="h-6 w-6 shrink-0">
+              <ErrorStandardLineIcon />
+            </span>
+            Delete account
+          </div>
+        ) : undefined
+      }
+      footer={
+        !fetcher.data?.success ? (
+          <div className={'flex gap-x-4 justify-end'}>
+            <Button
+              size="md"
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="md"
+              color="error"
+              loading={fetcher.state === 'submitting'}
+              disabled={fetcher.state === 'submitting'}
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteAction(ActionEnumType.DELETE_ACCOUNT);
+              }}
+            >
+              Delete
+            </Button>
+          </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.success ? (
+        <div className="grid">
+          <span>
+            {isCloudNode(params.nodeType)
+              ? `The Selected cloud account, resources and scans related to the account will be
+              deleted.`
+              : isCloudOrgNode(params.nodeType)
+              ? `The Selected org cloud account, child accounts related to org account, resources and scans related to the cloud accounts will be deleted.`
+              : ''}
+          </span>
+          <br />
+          <span>Are you sure you want to delete?</span>
+          {fetcher.data?.message && (
+            <p className="mt-2 text-p7a text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (
@@ -730,22 +861,19 @@ const ActionDropdown = ({
               </span>
             </DropdownItem>
             <DropdownItem
-              disabled={!scanId || !nodeType || isScanDeletePending(scanStatus)}
+              disabled={
+                !scanId ||
+                !nodeType ||
+                isScanInProgress(scanStatus) ||
+                isNeverScanned(scanStatus) ||
+                isScanDeletePending(scanStatus)
+              }
               onSelect={() => {
                 if (!scanId || !nodeType) return;
                 onTableAction(row, ActionEnumType.DELETE_SCAN);
               }}
             >
-              <span
-                className={cn('flex items-center text-red-700 dark:text-status-error', {
-                  'dark:text-gray-600':
-                    isScanInProgress(scanStatus) ||
-                    isNeverScanned(scanStatus) ||
-                    isScanDeletePending(scanStatus),
-                })}
-              >
-                Delete latest scan
-              </span>
+              Delete latest scan
             </DropdownItem>
             <DropdownItem
               onSelect={() => {
@@ -754,6 +882,19 @@ const ActionDropdown = ({
             >
               Refresh account
             </DropdownItem>
+            {isCloudNode(nodeType) || isCloudOrgNode(nodeType) ? (
+              <DropdownItem
+                disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
+                onSelect={() => {
+                  if (isScanInProgress(scanStatus) || isScanStopping(scanStatus)) {
+                    return;
+                  }
+                  onTableAction(row, ActionEnumType.DELETE_ACCOUNT);
+                }}
+              >
+                Delete account
+              </DropdownItem>
+            ) : null}
           </>
         }
       >
@@ -781,6 +922,7 @@ const BulkActions = ({
       scanIdsToCancelScan: string[];
       scanIdsToDeleteScan: string[];
       nodesToStartScan: ComplianceScanConfigureFormProps['data'] | null;
+      nodesToDeleteScan: string[];
     },
     actionType: ActionEnumType,
   ) => void;
@@ -791,7 +933,10 @@ const BulkActions = ({
   const scanIdsToDeleteScan = useMemo(() => {
     return selectedRows
       .filter(
-        (row) => !isNeverScanned(row.scanStatus) && !isScanDeletePending(row.scanStatus),
+        (row) =>
+          !isNeverScanned(row.scanStatus) &&
+          !isScanDeletePending(row.scanStatus) &&
+          !isScanInProgress(row.scanStatus),
       )
       .map((row) => row.scanId);
   }, [selectedRows]);
@@ -814,6 +959,14 @@ const BulkActions = ({
         (row) => isScanInProgress(row.scanStatus) && !isScanDeletePending(row.scanStatus),
       )
       .map((row) => row.scanId);
+  }, [selectedRows]);
+
+  const nodeIdsToDelete = useMemo(() => {
+    return selectedRows
+      .filter(
+        (row) => !(isScanInProgress(row.scanStatus) || isScanStopping(row.scanStatus)),
+      )
+      .map((row) => row.nodeId);
   }, [selectedRows]);
 
   return (
@@ -851,6 +1004,7 @@ const BulkActions = ({
                 nodeIds: nodeIdsToScan,
                 nodeType,
               },
+              nodesToDeleteScan: [],
             },
             ActionEnumType.START_SCAN,
           )
@@ -869,6 +1023,7 @@ const BulkActions = ({
               scanIdsToCancelScan,
               scanIdsToDeleteScan: [],
               nodesToStartScan: null,
+              nodesToDeleteScan: [],
             },
             ActionEnumType.CANCEL_SCAN,
           )
@@ -888,6 +1043,7 @@ const BulkActions = ({
               scanIdsToCancelScan: [],
               scanIdsToDeleteScan,
               nodesToStartScan: null,
+              nodesToDeleteScan: [],
             },
             ActionEnumType.DELETE_SCAN,
           )
@@ -906,6 +1062,7 @@ const BulkActions = ({
               scanIdsToCancelScan: [],
               scanIdsToDeleteScan: [],
               nodesToStartScan: null,
+              nodesToDeleteScan: [],
             },
             ActionEnumType.REFRESH_ACCOUNT,
           )
@@ -913,6 +1070,28 @@ const BulkActions = ({
       >
         Refresh account
       </Button>
+      {isCloudNode(nodeType) || isCloudOrgNode(nodeType) ? (
+        <Button
+          variant="flat"
+          startIcon={<TrashLineIcon />}
+          size="sm"
+          disabled={nodeIdsToDelete.length === 0}
+          color="error"
+          onClick={() =>
+            onBulkAction(
+              {
+                scanIdsToCancelScan: [],
+                scanIdsToDeleteScan: [],
+                nodesToStartScan: null,
+                nodesToDeleteScan: nodeIdsToDelete,
+              },
+              ActionEnumType.DELETE_ACCOUNT,
+            )
+          }
+        >
+          Delete account
+        </Button>
+      ) : null}
     </>
   );
 };
@@ -936,6 +1115,7 @@ const AccountTable = ({
   rowSelectionState: RowSelectionState;
   onTableAction: (row: ModelCloudNodeAccountInfo, actionType: ActionEnumType) => void;
 }) => {
+  const { mode: theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = usePostureAccounts();
   const { data: versionsData } = useGetAgentVersions();
@@ -1021,7 +1201,7 @@ const AccountTable = ({
               onTableAction={onTableAction}
               trigger={
                 <button className="p-1 flex">
-                  <span className="block h-4 w-4 dark:text-text-text-and-icon rotate-90 shrink-0">
+                  <span className="block h-4 w-4 text-text-text-and-icon rotate-90 shrink-0">
                     <EllipsisIcon />
                   </span>
                 </button>
@@ -1082,7 +1262,7 @@ const AccountTable = ({
             return (
               <span
                 style={{
-                  color: getColorForCompliancePercent(percent),
+                  color: getColorForCompliancePercent(theme, percent),
                 }}
               >
                 {formatPercentage(percent, {
@@ -1116,12 +1296,12 @@ const AccountTable = ({
               return (
                 <>
                   <div className="flex gap-x-1.5 items-center" key={current}>
-                    <span className="dark:text-text-input-value font-medium">
+                    <span className="text-text-input-value font-medium">
                       {data[current]}
                     </span>
                     <ScanStatusBadge status={scanStatus ?? ''} />
                     {index < keys.length - 1 ? (
-                      <div className="mx-2 w-px h-[20px] dark:bg-bg-grid-border" />
+                      <div className="mx-2 w-px h-[20px] bg-bg-grid-border" />
                     ) : null}
                   </div>
                 </>
@@ -1150,7 +1330,7 @@ const AccountTable = ({
                 {upgradeAvailable && (
                   <Tooltip
                     content={
-                      <div className="flex-col gap-2 dark:text-text-text-and-icon">
+                      <div className="flex-col gap-2 dark:text-text-text-and-icon text-text-text-inverse">
                         <div className="text-h5">Update Available.</div>
                         <div className="text-p6">
                           Version <span className="text-h6">{versions[0]}</span> is
@@ -1158,6 +1338,7 @@ const AccountTable = ({
                           <DFLink
                             href="https://community.deepfence.io/threatmapper/docs/cloudscanner/"
                             target="_blank"
+                            className="dark:text-text-link text-blue-500"
                           >
                             these instructions
                           </DFLink>{' '}
@@ -1166,6 +1347,7 @@ const AccountTable = ({
                           <DFLink
                             href="https://www.deepfence.io/threatstryker"
                             target="_blank"
+                            className="dark:text-text-link text-blue-500"
                           >
                             ThreatStryker
                           </DFLink>
@@ -1189,7 +1371,7 @@ const AccountTable = ({
     }
 
     return columns;
-  }, [rowSelectionState, searchParams, data, nodeType, versions]);
+  }, [rowSelectionState, searchParams, data, nodeType, versions, theme]);
 
   return (
     <>
@@ -1280,7 +1462,7 @@ const Header = () => {
   });
 
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <BreadcrumbWrapper>
       <Breadcrumb>
         <BreadcrumbLink asChild icon={<PostureIcon />} isLink>
           <DFLink to={'/posture'} unstyled>
@@ -1296,7 +1478,7 @@ const Header = () => {
       <div className="ml-2 flex items-center">
         {isFetching ? <CircleSpinner size="sm" /> : null}
       </div>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 const Accounts = () => {
@@ -1314,6 +1496,7 @@ const Accounts = () => {
   );
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState(false);
   const [showCancelScan, setShowCancelScan] = useState(false);
   const [openStartScan, setOpenStartScan] = useState<boolean>(false);
 
@@ -1339,10 +1522,12 @@ const Accounts = () => {
     scanIdsToCancelScan: string[];
     scanIdsToDeleteScan: string[];
     nodesToStartScan: ComplianceScanConfigureFormProps['data'] | null;
+    nodesToDeleteScan: string[];
   }>({
     scanIdsToCancelScan: [],
     scanIdsToDeleteScan: [],
     nodesToStartScan: null,
+    nodesToDeleteScan: [],
   });
 
   const onTableAction = useCallback(
@@ -1355,6 +1540,7 @@ const Accounts = () => {
             nodeIds: [row.node_id!],
             nodeType: nodeType,
           },
+          nodesToDeleteScan: [],
         });
         setOpenStartScan(true);
         return;
@@ -1371,6 +1557,7 @@ const Accounts = () => {
           scanIdsToCancelScan: [],
           scanIdsToDeleteScan: [row.last_scan_id!],
           nodesToStartScan: null,
+          nodesToDeleteScan: [],
         });
         setShowDeleteDialog(true);
       } else if (actionType === ActionEnumType.CANCEL_SCAN) {
@@ -1378,8 +1565,17 @@ const Accounts = () => {
           scanIdsToCancelScan: [row.last_scan_id!],
           scanIdsToDeleteScan: [],
           nodesToStartScan: null,
+          nodesToDeleteScan: [],
         });
         setShowCancelScan(true);
+      } else if (actionType === ActionEnumType.DELETE_ACCOUNT) {
+        setRowToAction({
+          scanIdsToCancelScan: [],
+          scanIdsToDeleteScan: [],
+          nodesToStartScan: null,
+          nodesToDeleteScan: [row.node_id!],
+        });
+        setShowDeleteAccountDialog(true);
       }
     },
     [fetcher],
@@ -1390,6 +1586,7 @@ const Accounts = () => {
       scanIdsToCancelScan: string[];
       scanIdsToDeleteScan: string[];
       nodesToStartScan: ComplianceScanConfigureFormProps['data'] | null;
+      nodesToDeleteScan: string[];
     },
     actionType: string,
   ) => {
@@ -1397,6 +1594,7 @@ const Accounts = () => {
       scanIdsToCancelScan: data.scanIdsToCancelScan,
       scanIdsToDeleteScan: data.scanIdsToDeleteScan,
       nodesToStartScan: data.nodesToStartScan,
+      nodesToDeleteScan: data.nodesToDeleteScan,
     });
     if (actionType === ActionEnumType.DELETE_SCAN) {
       setShowDeleteDialog(true);
@@ -1411,6 +1609,8 @@ const Accounts = () => {
       fetcher.submit(formData, {
         method: 'post',
       });
+    } else if (actionType === ActionEnumType.DELETE_ACCOUNT) {
+      setShowDeleteAccountDialog(true);
     }
   };
 
@@ -1459,6 +1659,16 @@ const Accounts = () => {
           }}
         />
       )}
+      {showDeleteAccountDialog ? (
+        <DeleteAccountConfirmationModal
+          showDialog={showDeleteAccountDialog}
+          accountIds={rowToAction.nodesToDeleteScan}
+          setShowDialog={setShowDeleteAccountDialog}
+          onSuccess={() => {
+            setRowSelectionState({});
+          }}
+        />
+      ) : null}
       <div className="mb-4 mx-4">
         <div className="flex h-12 items-center">
           <BulkActions

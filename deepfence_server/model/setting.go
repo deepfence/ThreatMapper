@@ -23,6 +23,7 @@ const (
 	EmailConfigurationKey             = "email_configuration"
 	EmailSettingSES                   = "amazon_ses"
 	EmailSettingSMTP                  = "smtp"
+	EmailSettingSendGrid              = "sendgrid"
 	InactiveNodesDeleteScanResultsKey = "inactive_delete_scan_results"
 	ConsoleIDKey                      = "console_id"
 )
@@ -64,6 +65,13 @@ type GetAuditLogsRequest struct {
 	Window FetchWindow `json:"window"  required:"true"`
 }
 
+type GetAgentBinaryDownloadURLResponse struct {
+	AgentBinaryAmd64DownloadURL     string `json:"agent_binary_amd64_download_url"`
+	AgentBinaryArm64DownloadURL     string `json:"agent_binary_arm64_download_url"`
+	StartAgentScriptDownloadURL     string `json:"start_agent_script_download_url"`
+	UninstallAgentScriptDownloadURL string `json:"uninstall_agent_script_download_url"`
+}
+
 type SettingUpdateRequest struct {
 	ID    int64  `path:"id" validate:"required" required:"true"`
 	Key   string `json:"key" validate:"required,oneof=console_url file_server_url inactive_delete_scan_results" required:"true" enum:"console_url,file_server_url,inactive_delete_scan_results"`
@@ -96,6 +104,10 @@ func (s *Setting) Update(ctx context.Context, pgClient *postgresqlDb.Queries) er
 		Value:         settingVal,
 		IsVisibleOnUi: s.IsVisibleOnUI,
 	})
+}
+
+func (s *Setting) Delete(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	return pgClient.DeleteSettingByID(ctx, s.ID)
 }
 
 func GetManagementConsoleURL(ctx context.Context, pgClient *postgresqlDb.Queries) (string, error) {

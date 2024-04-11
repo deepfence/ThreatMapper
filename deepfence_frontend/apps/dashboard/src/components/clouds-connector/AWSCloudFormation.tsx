@@ -100,7 +100,7 @@ export const AWSCloudFormation = () => {
   const [region, setRegion] = useState('us-east-1');
 
   return (
-    <div className="w-full sm:w-1/2">
+    <div className="w-full sm:w-1/2 mt-4">
       <Stepper>
         <Step
           indicator={
@@ -115,12 +115,12 @@ export const AWSCloudFormation = () => {
           }
           title="Cloud Formation"
         >
-          <div className="text-p7 dark:text-text-text-and-icon">
+          <div className="text-p7a text-text-text-and-icon">
             Connect to your AWS Cloud Account via Cloud Formation. Find out more
             information by{' '}
             <Link
-              to="https://community.deepfence.io/threatmapper/docs/v2.1/cloudscanner/aws#cloudformation"
-              className="text-blue-600 dark:text-blue-500"
+              to="https://community.deepfence.io/threatmapper/docs/v2.2/cloudscanner/aws#cloudformation"
+              className="text-text-link"
             >
               reading our documentation
             </Link>
@@ -164,7 +164,7 @@ export const AWSCloudFormation = () => {
           }
           title="Deploy"
         >
-          <div className="text-p7 dark:text-text-text-and-icon">
+          <div className="text-p7a text-text-text-and-icon">
             <p>
               Deploy all modules for Deepfence Posture Scanner for a single account. For
               information on AWS Organizations and account types, see AWS docs.

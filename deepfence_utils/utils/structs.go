@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"encoding/xml"
+	"time"
 )
 
 type MinioError struct {
@@ -76,11 +77,12 @@ type MalwareScanParameters struct {
 }
 
 type ReportParams struct {
-	ReportID   string        `json:"report_id"`
-	ReportType string        `json:"report_type"`
-	Duration   int           `json:"duration"`
-	Filters    ReportFilters `json:"filters"`
-	Options    ReportOptions `json:"options,omitempty"`
+	ReportID      string        `json:"report_id"`
+	ReportType    string        `json:"report_type"`
+	FromTimestamp time.Time     `json:"from_timestamp"`
+	ToTimestamp   time.Time     `json:"to_timestamp"`
+	Filters       ReportFilters `json:"filters"`
+	Options       ReportOptions `json:"options,omitempty"`
 }
 
 type ReportOptions struct {

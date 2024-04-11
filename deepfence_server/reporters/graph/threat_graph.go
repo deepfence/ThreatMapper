@@ -135,9 +135,6 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(ctx context.Context, filters Th
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return nil, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(120*time.Second))

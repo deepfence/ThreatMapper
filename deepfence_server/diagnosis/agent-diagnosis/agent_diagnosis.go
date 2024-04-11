@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"path/filepath"
 	"time"
 
@@ -27,16 +26,16 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 	if err != nil {
 		return inProgressNodeIds, err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return inProgressNodeIds, err
-	}
 	defer session.Close(ctx)
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return inProgressNodeIds, err
 	}
 	defer tx.Close(ctx)
+
 	nodeIDs := make([]string, len(nodeIdentifiers))
 	for i, n := range nodeIdentifiers {
 		nodeIDs[i] = n.NodeID
@@ -86,11 +85,10 @@ func UpdateAgentDiagnosticLogsStatus(ctx context.Context, status diagnosis.Diagn
 	if err != nil {
 		return err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
 	defer session.Close(ctx)
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
@@ -116,16 +114,12 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 	if err != nil {
 		return err
 	}
-	mc, err := directory.FileServerClient(ctx)
-	if err != nil {
-		return err
-	}
 
-	actionBuilder := func(nodeIdentifier diagnosis.NodeIdentifier, uploadUrl string, fileName string, tail string) (controls.Action, error) {
+	actionBuilder := func(nodeIdentifier diagnosis.NodeIdentifier, uploadKey string, fileName string, tail string) (controls.Action, error) {
 		req := controls.SendAgentDiagnosticLogsRequest{
 			NodeID:    nodeIdentifier.NodeID,
 			NodeType:  controls.StringToResourceType(nodeIdentifier.NodeType),
-			UploadURL: uploadUrl,
+			UploadURL: uploadKey,
 			Tail:      tail,
 			FileName:  fileName,
 		}
@@ -143,11 +137,10 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 	if err != nil {
 		return err
 	}
+
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
 	defer session.Close(ctx)
+
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
@@ -160,12 +153,7 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 			continue
 		}
 		fileName := "deepfence-agent-logs-" + nodeIdentifier.NodeID + fileNameSuffix
-		uploadURL, err := mc.CreatePublicUploadURL(ctx,
-			filepath.Join(diagnosis.AgentDiagnosisFileServerPrefix, fileName), true, time.Minute*10, url.Values{})
-		if err != nil {
-			return err
-		}
-		action, err := actionBuilder(nodeIdentifier, uploadURL, fileName, tail)
+		action, err := actionBuilder(nodeIdentifier, filepath.Join(diagnosis.AgentDiagnosisFileServerPrefix, fileName), fileName, tail)
 		if err != nil {
 			log.Error().Err(err)
 			return err

@@ -14,23 +14,23 @@ LABEL deepfence.role=system
 WORKDIR /
 
 COPY tools/apache/scope/docker/deepfence_exe deepfence/usr/local/discovery/deepfence-discovery
-COPY fargate/bin/ deepfence/bin/
+COPY agent-binary/bin/ deepfence/bin/
 COPY etc/certs/* deepfence/etc/filebeat/
 COPY plugins/bin/ deepfence/bin/
 COPY --from=build /go/syft/syftCli /deepfence/usr/local/bin/syft
 
 COPY run_discovery.sh /deepfence/home/deepfence/
-COPY fargate/run_discovery_loop.sh /deepfence/home/deepfence/
+COPY agent-binary/run_discovery_loop.sh /deepfence/home/deepfence/
 
 COPY tools/apache/scope/docker/uploadFile.sh deepfence/home/deepfence/uploadFile.sh
 
-ADD fargate/misc/scanners-1.3.0.tar.gz /deepfence/home/deepfence/
+ADD agent-binary/misc/scanners-1.3.0.tar.gz /deepfence/home/deepfence/
 
 COPY misc/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /deepfence/usr/local/bin/getCloudInstanceId
 COPY tools/apache/scope/docker/deepfenceutil /deepfence/usr/bin/deepfenceutil
 
-COPY fargate/deepfence-entry-point-scratch.sh deepfence/usr/local/bin/deepfence-entry-point-scratch.sh
-COPY fargate/start-df-services.sh deepfence/usr/local/bin/start-df-services.sh
+COPY agent-binary/deepfence-entry-point-scratch.sh deepfence/usr/local/bin/deepfence-entry-point-scratch.sh
+COPY agent-binary/start-df-services.sh deepfence/usr/local/bin/start-df-services.sh
 
 ENTRYPOINT ["/deepfence/bin/ls"]
 

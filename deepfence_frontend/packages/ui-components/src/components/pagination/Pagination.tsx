@@ -38,10 +38,10 @@ const PageButton = ({
     <button
       className={cn(
         // we donot want border to be overlap so we use border right here
-        'flex justify-center items-center text-p7 dark:bg-bg-card',
-        'px-3 py-[5px] border-r border-y border-gray-300 dark:border-bg-grid-border',
-        'dark:text-text-text-and-icon overflow-hidden',
-        'hover:dark:text-text-input-value',
+        'flex justify-center items-center text-p7a bg-bg-card',
+        'px-3 py-[5px] border-r border-y border-bg-grid-border',
+        'text-text-icon overflow-hidden',
+        'hover:text-text-input-value',
         className,
       )}
       onClick={() => {
@@ -129,18 +129,15 @@ export const Pagination = ({
 
   return (
     <div className="flex justify-end items-center gap-4">
-      <div className={`text-gray-500 dark:text-text-text-and-icon text-p4`}>
+      <div className={`text-text-text-and-icon text-p4`}>
         Showing{' '}
-        <span className="text-black dark:text-text-input-value" data-testid="showingId">
+        <span className="text-text-input-value text-p3" data-testid="showingId">
           {currentShowing[0]}-{currentShowing[1]}
         </span>
         {!approximatePagination ? (
           <>
             <span> of</span>
-            <span
-              className="text-black dark:text-text-input-value"
-              data-testid="ofTotalRowsId"
-            >
+            <span className="text-text-input-value text-p3" data-testid="ofTotalRowsId">
               {' '}
               {totalRows}
             </span>
@@ -151,7 +148,7 @@ export const Pagination = ({
         <PageButton
           data-testid="pagination-prev"
           label={
-            <div className="h-4 w-4 rotate-180">
+            <div className="h-4 w-4 rotate-180 text-text-icon">
               <CaretIcon />
             </div>
           }
@@ -168,7 +165,7 @@ export const Pagination = ({
                 label={<DotsHorizontal />}
                 key={page + index}
                 disabled={true}
-                className={'px-2 py-1.5 focus:border-gray-300 focus:dark:border-gray-700'}
+                className={'px-2 py-1.5 foucs:border-gray-700'}
                 data-testid="pagination-button-dots"
               />
             );
@@ -181,8 +178,8 @@ export const Pagination = ({
                 onPageChange(page);
               }}
               disabled={false}
-              className={cn({
-                'bg-blue-100 text-blue-600 dark:bg-bg-active-selection dark:text-text-input-value':
+              className={cn('text-text-icon', {
+                'dark:bg-bg-active-selection bg-text-link dark:text-text-input-value text-text-text-inverse hover:text-text-text-inverse':
                   page === currentPage,
               })}
             />
@@ -191,7 +188,7 @@ export const Pagination = ({
 
         <PageButton
           label={
-            <div className="h-4 w-4">
+            <div className="h-4 w-4 text-text-icon">
               <CaretIcon />
             </div>
           }

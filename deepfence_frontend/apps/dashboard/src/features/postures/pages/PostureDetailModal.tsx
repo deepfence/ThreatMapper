@@ -52,8 +52,8 @@ const Header = ({
 
   return (
     <SlidingModalHeader>
-      <div className="pt-5 px-5 dark:bg-[linear-gradient(to_bottom,_#15253e_96px,_transparent_0)]">
-        <div className="flex items-center gap-2 dark:text-text-text-and-icon pr-8">
+      <div className="pt-5 px-5 dark:bg-[linear-gradient(to_bottom,_#15253e_96px,_transparent_0)] bg-[linear-gradient(to_bottom,_#f6f7f9_96px,_transparent_0)]">
+        <div className="flex items-center gap-2 text-text-text-and-icon pr-8">
           <div className="h-4 w-4 shrink-0">
             <PostureIcon />
           </div>
@@ -146,7 +146,7 @@ const DetailsComponent = ({
   if (!postures.length) {
     return (
       <div className="flex items-center p-4 justify-center">
-        <h3 className="text-p1">No details found</h3>
+        <h3 className="text-p1a">No details found</h3>
       </div>
     );
   }
@@ -233,12 +233,12 @@ const DetailsComponent = ({
             className="flex flex-col grow basis-[45%] max-w-full gap-1 group"
           >
             <div className="flex relative">
-              <div className="text-p3 dark:text-text-text-and-icon first-letter:capitalize">
+              <div className="text-p3 text-text-text-and-icon first-letter:capitalize">
                 {label}
               </div>
               <CopyField value={valueAsStr} />
             </div>
-            <div className="text-p1 dark:text-text-input-value">
+            <div className="text-p1 text-text-input-value">
               {key in timeFormatKey ? formatMilliseconds(+valueAsStr) : valueAsStr}
             </div>
           </div>
@@ -247,7 +247,7 @@ const DetailsComponent = ({
       {posture.resources?.length ? (
         <div className="flex flex-col grow basis-[100%] max-w-full gap-1 group">
           <div className="basis-[45%] flex relative">
-            <div className="text-p3 dark:text-text-text-and-icon">Resources</div>
+            <div className="text-p3 text-text-text-and-icon">Resources</div>
             <CopyField value={JSON.stringify(posture.resources)} />
           </div>
           <div className="text-p1 flex flex-col">

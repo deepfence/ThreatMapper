@@ -2,6 +2,7 @@ package ingesters
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -24,9 +25,6 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -39,6 +37,8 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 	if err != nil {
 		return err
 	}
+
+	log.Debug().Msgf("Committing %d vulnerabilities", len(dataMap))
 
 	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row WITH row.rule as rule, row.data as data, 
@@ -73,7 +73,7 @@ func CVEsToMaps(ms []ingestersUtil.Vulnerability) ([]map[string]interface{}, err
 			"rule":    utils.ToMap(rule),
 			"data":    utils.ToMap(data),
 			"scan_id": v.ScanID,
-			"node_id": data.CveCausedByPackage + rule.CveID,
+			"node_id": strings.Join([]string{data.CveCausedByPackagePath + data.CveCausedByPackage + rule.CveID}, "_"),
 		})
 	}
 	return res, nil

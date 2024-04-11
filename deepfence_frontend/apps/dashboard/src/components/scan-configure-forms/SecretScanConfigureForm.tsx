@@ -288,17 +288,17 @@ export const SecretScanConfigureForm = ({
             <h6 className={'text-md font-medium dark:text-white'}>Advanced Options</h6>
           )}
         {!wantAdvanceOptions && (
-          <p className="text-gray-900 dark:text-text-text-and-icon text-p4 pr-3">
+          <p className="text-text-text-and-icon text-p4 pr-3">
             Click on start scan to find secrets
           </p>
         )}
         {wantAdvanceOptions && isNodeTypeARegistryTagType(nodeType) && (
-          <p className="text-gray-900 dark:text-text-text-and-icon text-p4 pr-3">
+          <p className="text-text-text-and-icon text-p4 pr-3">
             Click on start scan to find secrets
           </p>
         )}
         {wantAdvanceOptions && !isNodeTypeARegistryType(nodeType) && (
-          <p className="text-gray-900 dark:text-text-text-and-icon text-p4 pr-3">
+          <p className="text-text-text-and-icon text-p4 pr-3">
             Click on start scan to find secrets
           </p>
         )}
@@ -324,7 +324,7 @@ export const SecretScanConfigureForm = ({
 
       {shouldSetPriorityScan(nodeType as SecretScanNodeTypeEnum) ? (
         <div className="flex flex-col gap-y-2 mt-4">
-          <h6 className={'text-p3 dark:text-text-text-and-icon'}>Priority scan</h6>
+          <h6 className={'text-p3 text-text-text-and-icon'}>Priority scan</h6>
           <Checkbox name="isPriorityScan" label="Priority scan" />
         </div>
       ) : null}
@@ -332,7 +332,7 @@ export const SecretScanConfigureForm = ({
       {showScheduleScanOptions && <ScheduleScanForm />}
 
       {fetcherData?.message && (
-        <p className="dark:text-status-error text-p7 mt-4">{fetcherData.message}</p>
+        <p className="text-status-error text-p7 mt-4">{fetcherData.message}</p>
       )}
 
       <div className="flex gap-3 mt-14">

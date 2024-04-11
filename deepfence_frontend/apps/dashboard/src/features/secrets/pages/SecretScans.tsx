@@ -8,7 +8,6 @@ import {
   useFetcher,
   useSearchParams,
 } from 'react-router-dom';
-import { cn } from 'tailwind-preset';
 import {
   Badge,
   Breadcrumb,
@@ -53,13 +52,16 @@ import { TimesIcon } from '@/components/icons/common/Times';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
+import { SeverityBadgeIcon } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { TruncatedText } from '@/components/TruncatedText';
-import { SEVERITY_COLORS } from '@/constants/charts';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -68,6 +70,7 @@ import {
   isNeverScanned,
   isScanComplete,
   isScanDeletePending,
+  isScanFailed,
   isScanInProgress,
   isScanStopping,
   SCAN_STATUS_GROUPS,
@@ -197,7 +200,7 @@ const DeleteConfirmationModal = ({
       size="s"
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -238,7 +241,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (
@@ -334,16 +337,15 @@ const ActionDropdown = ({
                 if (!scanId || !nodeType) return;
                 onTableAction(row, ActionEnumType.DELETE_SCAN);
               }}
-              disabled={!scanId || !nodeType || isScanDeletePending(scanStatus)}
+              disabled={
+                !scanId ||
+                !nodeType ||
+                isScanInProgress(scanStatus) ||
+                isScanDeletePending(scanStatus)
+              }
+              color="error"
             >
-              <span
-                className={cn('flex items-center text-red-700 dark:text-status-error', {
-                  'dark:text-gray-600':
-                    isScanInProgress(scanStatus) || isScanDeletePending(scanStatus),
-                })}
-              >
-                Delete scan
-              </span>
+              Delete scan
             </DropdownItem>
           </>
         }
@@ -409,7 +411,7 @@ const Filters = () => {
 
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['nodeType']}
@@ -658,7 +660,7 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 
@@ -671,6 +673,7 @@ const ScansTable = ({
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
   onTableAction: (row: ModelScanInfo, actionType: ActionEnumType) => void;
 }) => {
+  const { mode: theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = useSuspenseQuery({
     ...queries.secret.scanList({
@@ -710,7 +713,7 @@ const ScansTable = ({
             onTableAction={onTableAction}
             trigger={
               <button className="p-1 flex">
-                <span className="block h-4 w-4 dark:text-text-text-and-icon rotate-90 shrink-0">
+                <span className="block h-4 w-4 text-text-text-and-icon rotate-90 shrink-0">
                   <EllipsisIcon />
                 </span>
               </button>
@@ -772,7 +775,7 @@ const ScansTable = ({
       columnHelper.accessor('status', {
         enableSorting: true,
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
-        header: () => <TruncatedText text="Scan Status" />,
+        header: () => <TruncatedText text="Scan status" />,
         minSize: 100,
         size: 110,
         maxSize: 110,
@@ -782,7 +785,11 @@ const ScansTable = ({
         enableSorting: false,
         cell: (info) => (
           <div className="flex items-center justify-end tabular-nums">
-            <span className="truncate">{info.getValue()}</span>
+            {!isScanComplete(info.row.original.status) ? (
+              <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>
+            ) : (
+              <span className="truncate">{info.getValue()}</span>
+            )}
           </div>
         ),
         header: () => (
@@ -797,19 +804,14 @@ const ScansTable = ({
       columnHelper.accessor('critical', {
         enableSorting: false,
         cell: (info) => {
-          if (isScanDeletePending(info.row.original.status)) {
-            return <TruncatedText text={info.getValue()?.toString()} />;
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
           params.set('severity', 'critical');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{
-                  backgroundColor: SEVERITY_COLORS['critical'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="critical" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -828,19 +830,14 @@ const ScansTable = ({
       columnHelper.accessor('high', {
         enableSorting: false,
         cell: (info) => {
-          if (isScanDeletePending(info.row.original.status)) {
-            return <TruncatedText text={info.getValue()?.toString()} />;
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
           params.set('severity', 'high');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{
-                  backgroundColor: SEVERITY_COLORS['high'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="high" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -859,19 +856,14 @@ const ScansTable = ({
       columnHelper.accessor('medium', {
         enableSorting: false,
         cell: (info) => {
-          if (isScanDeletePending(info.row.original.status)) {
-            return <TruncatedText text={info.getValue()?.toString()} />;
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
           params.set('severity', 'medium');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{
-                  backgroundColor: SEVERITY_COLORS['medium'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="medium" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -890,19 +882,14 @@ const ScansTable = ({
       columnHelper.accessor('low', {
         enableSorting: false,
         cell: (info) => {
-          if (isScanDeletePending(info.row.original.status)) {
-            return <TruncatedText text={info.getValue()?.toString()} />;
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
           params.set('severity', 'low');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-2 h-2 rounded-full shrink-0"
-                style={{
-                  backgroundColor: SEVERITY_COLORS['low'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="low" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -921,19 +908,14 @@ const ScansTable = ({
       columnHelper.accessor('unknown', {
         enableSorting: false,
         cell: (info) => {
-          if (isScanDeletePending(info.row.original.status)) {
-            return <TruncatedText text={info.getValue()?.toString()} />;
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
           params.set('severity', 'unknown');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{
-                  backgroundColor: SEVERITY_COLORS['unknown'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="unknown" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -952,7 +934,7 @@ const ScansTable = ({
     ];
 
     return columns;
-  }, []);
+  }, [theme]);
 
   return (
     <>
@@ -1278,7 +1260,7 @@ const SecretScans = () => {
           />
         ) : null}
       </>
-      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <BreadcrumbWrapper>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<SecretsIcon />} isLink>
             <DFLink to={'/secret'} unstyled>
@@ -1293,7 +1275,7 @@ const SecretScans = () => {
         <div className="ml-2 flex items-center">
           {isFetching ? <CircleSpinner size="sm" /> : null}
         </div>
-      </div>
+      </BreadcrumbWrapper>
 
       <div className="mx-4">
         <div className="h-12 flex items-center">

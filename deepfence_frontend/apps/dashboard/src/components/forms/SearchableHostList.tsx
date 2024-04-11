@@ -105,7 +105,7 @@ const SearchableHost = ({
             ? `${selectedHosts.length} selected`
             : displayValue
             ? displayValue
-            : 'Select host'
+            : null
         }
         placeholder="Select host"
         multiple

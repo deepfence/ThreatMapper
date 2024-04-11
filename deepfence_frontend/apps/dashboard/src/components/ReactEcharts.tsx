@@ -29,6 +29,8 @@ import type { CSSProperties } from 'react';
 import { useEffect, useRef } from 'react';
 import { useMeasure } from 'react-use';
 
+import { Mode, useTheme } from '@/theme/ThemeContext';
+
 export type ECOption = ComposeOption<
   | BarSeriesOption
   | GaugeSeriesOption
@@ -46,7 +48,7 @@ export interface ReactEChartsProps {
   style?: CSSProperties;
   settings?: SetOptionOpts;
   loading?: boolean;
-  theme?: 'light' | 'dark';
+  theme?: Mode; // TODO: Remove theme prop
   onChartClick?: (data: {
     name: string;
     value: string | number | Date;
@@ -74,9 +76,9 @@ export function ReactECharts({
   style,
   settings,
   loading,
-  theme,
   onChartClick,
 }: ReactEChartsProps): JSX.Element {
+  const { mode: theme } = useTheme();
   const chartRef = useRef<HTMLDivElement>(null);
   const [measurerRef, { width, height }] = useMeasure<HTMLDivElement>();
 

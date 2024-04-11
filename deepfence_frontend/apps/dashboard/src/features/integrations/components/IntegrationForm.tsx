@@ -245,7 +245,7 @@ const AdvancedFilters = ({
 
   return (
     <div className="col-span-2 mt-6">
-      <div className="flex dark:text-text-input-value ">
+      <div className="flex text-text-input-value ">
         <div className="text-h5">Advanced Filter (Optional)</div>
       </div>
       <div className="grid grid-cols-2 gap-y-8 gap-x-8 pt-4">
@@ -342,21 +342,17 @@ const AdvancedFilters = ({
                   return value && value.length ? `${value.length} selected` : '';
                 }}
               >
-                <div className="px-3 pt-2 text-p3 text-gray-900 dark:text-text-text-and-icon">
-                  Host
-                </div>
+                <div className="px-3 pt-2 text-p3 text-text-text-and-icon">Host</div>
                 <ListboxOption value={'Alarm'}>Alarm</ListboxOption>
                 <ListboxOption value={'Note'}>Note</ListboxOption>
                 <ListboxOption value={'Ok'}>Ok</ListboxOption>
-                <div className="px-3 pt-4 text-p3 text-gray-900 dark:text-text-text-and-icon">
+                <div className="px-3 pt-4 text-p3 text-text-text-and-icon">
                   Kubernetes
                 </div>
                 <ListboxOption value={'Pass'}>Pass</ListboxOption>
                 <ListboxOption value={'Skip'}>Skip</ListboxOption>
                 <ListboxOption value={'Warn'}>Warn</ListboxOption>
-                <div className="px-3 pt-4 text-p3 text-gray-900 dark:text-text-text-and-icon">
-                  Common
-                </div>
+                <div className="px-3 pt-4 text-p3 text-text-text-and-icon">Common</div>
                 <ListboxOption value={'Info'}>Info</ListboxOption>
               </Listbox>
             )}
@@ -927,6 +923,25 @@ export const IntegrationForm = ({
                   color={fieldErrors?.s3_folder_name ? 'error' : 'default'}
                   required
                 />
+                <TextInput
+                  defaultValue={formData?.config?.aws_account_id}
+                  name="awsAccount"
+                  label="AWS Account ID"
+                  placeholder="AWS account id"
+                  required
+                  info="S3 belonging to other AWS Accounts"
+                  helperText={fieldErrors?.aws_account_id}
+                  color={fieldErrors?.aws_account_id ? 'error' : 'default'}
+                />
+                <TextInputType
+                  defaultValue={formData?.config?.aws_region}
+                  name="region"
+                  label="Region"
+                  placeholder="AWS region"
+                  helperText={fieldErrors?.aws_region}
+                  color={fieldErrors?.aws_region ? 'error' : 'default'}
+                  required
+                />
                 <div className="col-span-2">
                   <Checkbox
                     label="Use AWS IAM Role"
@@ -939,26 +954,15 @@ export const IntegrationForm = ({
                   />
                 </div>
                 {useIAMRole ? (
-                  <>
-                    <TextInput
-                      defaultValue={formData?.config?.aws_account_id}
-                      name="awsAccount"
-                      label="AWS Account ID"
-                      placeholder="AWS account id"
-                      info="(Optional) S3 belonging to other AWS Accounts"
-                      helperText={fieldErrors?.aws_account_id}
-                      color={fieldErrors?.aws_account_id ? 'error' : 'default'}
-                    />
-                    <TextInput
-                      defaultValue={formData?.config?.target_account_role_arn}
-                      name="awsARN"
-                      label="Target Account Role ARN"
-                      placeholder="Target account role arn"
-                      info="(Optional) S3 belonging to other AWS Accounts"
-                      helperText={fieldErrors?.target_account_role_arn}
-                      color={fieldErrors?.target_account_role_arn ? 'error' : 'default'}
-                    />
-                  </>
+                  <TextInput
+                    defaultValue={formData?.config?.target_account_role_arn}
+                    name="awsARN"
+                    label="Target Account Role ARN"
+                    placeholder="Target account role arn"
+                    info="S3 belonging to other AWS Accounts"
+                    helperText={fieldErrors?.target_account_role_arn}
+                    color={fieldErrors?.target_account_role_arn ? 'error' : 'default'}
+                  />
                 ) : (
                   <>
                     <TextInputType
@@ -978,16 +982,6 @@ export const IntegrationForm = ({
                     />
                   </>
                 )}
-
-                <TextInputType
-                  defaultValue={formData?.config?.aws_region}
-                  name="region"
-                  label="Region"
-                  placeholder="AWS region"
-                  helperText={fieldErrors?.aws_region}
-                  color={fieldErrors?.aws_region ? 'error' : 'default'}
-                  required
-                />
               </>
             )}
 
@@ -1003,9 +997,7 @@ export const IntegrationForm = ({
               hidden
               value={isNil(formData) ? ActionEnumType.ADD : ActionEnumType.EDIT}
             />
-            {data?.message && (
-              <p className="dark:text-status-error text-p7">{data.message}</p>
-            )}
+            {data?.message && <p className="text-status-error text-p7">{data.message}</p>}
           </div>
           <div className="mt-14 flex gap-x-2 p-1">
             <Button

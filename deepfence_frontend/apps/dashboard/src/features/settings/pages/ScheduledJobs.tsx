@@ -135,7 +135,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -176,7 +176,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
           <div className="flex items-center justify-right gap-4"></div>
         </div>
@@ -221,10 +221,9 @@ const ActionDropdown = ({
                   console.warn('No schedule job to delete');
                 }
               }}
+              color="error"
             >
-              <span className="dark:text-status-error dark:hover:text-[#C45268]">
-                Delete
-              </span>
+              Delete
             </DropdownItem>
           ) : null}
         </>
@@ -292,7 +291,7 @@ const ScheduledJobsTable = ({
               setIdsToDelete={setIdsToDelete}
               trigger={
                 <button className="p-1">
-                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                  <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
                     <EllipsisIcon />
                   </div>
                 </button>
@@ -331,14 +330,14 @@ const ScheduledJobsTable = ({
       }),
       columnHelper.accessor('payload', {
         cell: (cell) => <TruncatedText text={getFormattedNodeType(cell.row.original)} />,
-        header: () => 'Node Type',
+        header: () => 'Node type',
         minSize: 30,
         size: 40,
         maxSize: 85,
       }),
       columnHelper.accessor('cron_expr', {
         cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
-        header: () => <TruncatedText text="Cron Expression" />,
+        header: () => <TruncatedText text="Cron expression" />,
         minSize: 30,
         size: 50,
         maxSize: 60,
@@ -363,7 +362,7 @@ const ScheduledJobsTable = ({
   return (
     <div className="mt-2">
       {data.message ? (
-        <p className="dark:text-status-error text-p7">{data.message}</p>
+        <p className="text-status-error text-p7">{data.message}</p>
       ) : (
         <Table
           size="default"
@@ -411,7 +410,7 @@ const ScheduledJobs = () => {
       <div className="flex justify-between">
         <div>
           <div className="mt-2">
-            <h3 className="text-h6 dark:text-text-input-value">Scheduled jobs</h3>
+            <h3 className="text-h6 text-text-input-value">Scheduled jobs</h3>
           </div>
         </div>
       </div>

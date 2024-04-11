@@ -72,7 +72,7 @@ const ResetPassword = () => {
 
   return !data?.success ? (
     <fetcher.Form method="post">
-      <h1 className="dark:text-text-text-and-icon text-h2 text-center">Reset Password</h1>
+      <h1 className="text-text-text-and-icon text-h2 text-center">Reset Password</h1>
       <input type="hidden" name="code" value={searchParams.get('code') ?? ''} />
       <input type="hidden" name="namespace" value={searchParams.get('namespace') ?? ''} />
 
@@ -96,9 +96,7 @@ const ResetPassword = () => {
         helperText={data?.fieldErrors?.confirmPassword}
       />
       {data?.error && (
-        <div className={`my-1.5 text-p7 text-center dark:text-status-error`}>
-          {data.error}
-        </div>
+        <div className={`my-1.5 text-p7 text-center text-status-error`}>{data.error}</div>
       )}
       <div className="flex flex-col w-full mt-8">
         <Button
@@ -114,7 +112,7 @@ const ResetPassword = () => {
     </fetcher.Form>
   ) : (
     <div className={`mt-1.5 flex flex-col`}>
-      <h1 className="dark:text-status-success text-p4 text-center">
+      <h1 className="text-status-success text-p4 text-center">
         Password updated successfully
       </h1>
       <DFLink

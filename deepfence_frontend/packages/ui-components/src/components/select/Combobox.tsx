@@ -66,7 +66,7 @@ const ButtonStartIcon = () => {
 const OptionsWrapper = ({ children }: { children: React.ReactNode }) => {
   if (children === null || isEmpty(children)) {
     return (
-      <div className="py-3 px-2 w-full flex items-center justify-center text-p6 dark:text-text-text-and-icon">
+      <div className="py-3 px-2 w-full flex items-center justify-center text-p6 text-text-text-and-icon">
         No results found
       </div>
     );
@@ -152,9 +152,9 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                 <HUICombobox.Label
                   htmlFor={inputBtnId}
                   className={cn(
-                    'text-p3 text-gray-900 dark:text-text-text-and-icon pb-[10px]',
+                    'text-p11 dark:text-text-input-value text-text-text-and-icon" pb-[10px]',
                     {
-                      'text-gray-600 dark:text-df-gray-600': disabled,
+                      'text-severity-unknown/60 dark:text-df-gray-600/60': disabled,
                     },
                   )}
                 >
@@ -173,13 +173,13 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           // display
                           'flex items-center gap-1.5 w-fit',
                           // border
-                          'border dark:border-bg-grid-border rounded-[5px]',
+                          'border border-bg-grid-border rounded-[5px]',
                           // bg
-                          'dark:bg-bg-card dark:hover:bg-bg-active-selection',
-                          'text-p7 dark:text-text-text-and-icon',
+                          'bg-bg-card dark:hover:bg-bg-active-selection hover:bg-bg-breadcrumb-bar',
+                          'text-p7a text-text-text-and-icon',
                           'py-[7px] px-3',
                           {
-                            'dark:border-bg-hover-3 dark:bg-bg-active-selection dark:text-text-input-value':
+                            'border-bg-hover-3 dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value':
                               Array.isArray(value) ? !!value.length : !!value,
                           },
                         )}
@@ -220,14 +220,13 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           ) : null}
                           <div
                             className={cn('pl-1.5', {
-                              'dark:text-df-gray-600': !getDisplayValue?.(
-                                value as unknown as any,
-                              ),
+                              'text-severity-unknown/60 dark:text-df-gray-600':
+                                !getDisplayValue?.(value as unknown as any),
                             })}
                           >
                             {getDisplayValue?.(value as unknown as any) ?? placeholder}
                           </div>
-                          <div className="h-2.5 w-2.5 shrink-0 dark:text-text-text-and-icon ml-auto mr-1.5">
+                          <div className="h-2.5 w-2.5 shrink-0 dark:text-text-text-and-icon text-text-icon ml-auto mr-1.5">
                             <CaretDownIcon />
                           </div>
                         </button>
@@ -239,7 +238,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                     <PopoverPrimitive.Content asChild align="start" sideOffset={2}>
                       <div
                         className={cn(
-                          `dark:bg-bg-card dark:border dark:border-bg-grid-border rounded-[5px] overflow-hidden data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down`,
+                          `bg-bg-card border border-bg-grid-border rounded-[5px] overflow-hidden data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down shadow-md dark:shadow-none`,
                           {
                             'w-[var(--radix-popper-anchor-width)]':
                               triggerVariant === 'select',
@@ -250,7 +249,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                         <div className={cn('flex items-center px-3 py-2')}>
                           <span
                             className={cn(
-                              'pointer-events-none dark:text-df-gray-600 h-[16px] w-[16px] shrink-0',
+                              'pointer-events-none text-text-icon dark:text-df-gray-600 h-[16px] w-[16px] shrink-0',
                             )}
                             data-testid={`search-icon`}
                           >
@@ -260,9 +259,9 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                             placeholder="Search"
                             data-testid="comboboxSearchInputId"
                             className={cn(
-                              'pl-[6px] text-p6 dark:text-text-input-value',
-                              'dark:focus-visible:outline-none dark:bg-bg-card',
-                              'dark:placeholder:text-df-gray-600',
+                              'pl-[6px] text-p6 dark:text-text-input-value text-text-text-and-icon',
+                              'focus-visible:outline-none bg-bg-card',
+                              'placeholder:text-severity-unknown/60 dark:placeholder:text-df-gray-600',
                               'min-w-0 w-full',
                             )}
                             onChange={(event) => {
@@ -277,10 +276,10 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           <div
                             className={cn(
                               'max-h-60 w-full select-none',
-                              'text-p7',
+                              'text-p4a',
                               'overflow-auto',
                               'focus:visible:outline-none',
-                              'dark:text-text-text-and-icon',
+                              'text-text-text-and-icon',
                             )}
                           >
                             <OptionsWrapper>{children}</OptionsWrapper>
@@ -305,7 +304,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                               >
                                 <div className="flex items-center justify-center py-[6px]">
                                   <button
-                                    className="dark:text-accent-accent items-center text-p6"
+                                    className="dark:text-accent-accent text-text-link items-center text-p6"
                                     onClick={() => {
                                       onClearAll?.();
                                     }}
@@ -362,11 +361,12 @@ export function ComboboxOption<TType>({
           'relative select-none',
           'pt-1.5 pb-1.5 px-3',
           'flex gap-1.5',
-          'cursor-pointer',
-          'dark:hover:bg-bg-grid-header',
+          'cursor-pointer text-p4a',
+          'dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar',
           {
-            'dark:bg-bg-grid-header': active,
-            'dark:bg-bg-active-selection dark:text-text-input-value': selected,
+            'dark:bg-bg-grid-header bg-bg-breadcrumb-bar text-p4a': active,
+            'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value text-p4a':
+              selected,
           },
         );
       }}

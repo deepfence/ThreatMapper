@@ -89,7 +89,7 @@ const SearchableCluster = ({
             ? `${selectedClusters.length} selected`
             : displayValue
             ? displayValue
-            : 'Select cluster'
+            : null
         }
         placeholder="Select cluster"
         multiple

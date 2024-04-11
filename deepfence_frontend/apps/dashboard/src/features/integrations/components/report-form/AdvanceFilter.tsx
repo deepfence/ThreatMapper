@@ -71,7 +71,7 @@ export const AdvancedFilter = ({
     <>
       {resourceType && provider ? (
         <>
-          <div className="pt-4 flex  dark:text-text-input-value ">
+          <div className="pt-4 flex text-text-input-value ">
             <div className="text-h5">Advanced Filter (Optional)</div>
           </div>
           <div className="grid grid-cols-2 gap-x-8 gap-y-6 pt-4">
