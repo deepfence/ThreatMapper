@@ -56,7 +56,7 @@ func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int, c
 		return actions, []error{stopActionsErr, diagnosticLogErr}
 	}
 
-	upgradeActions, upgradeErr := ExtractPendingAgentUpgrade(ctx, nodeID, workNumToExtract, consoleURL)
+	upgradeActions, upgradeErr := ExtractPendingAgentUpgrade(ctx, nodeID, workNumToExtract, consoleURL, ttlCache)
 	workNumToExtract -= len(upgradeActions)
 	if upgradeErr == nil {
 		actions = append(actions, upgradeActions...)
@@ -501,7 +501,7 @@ func hasPendingAgentUpgrade(ctx context.Context, client neo4j.DriverWithContext,
 	return len(records) != 0, err
 }
 
-func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int, consoleURL string) ([]controls.Action, error) {
+func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int, consoleURL string, ttlCache *ttlcache.Cache[string, string]) ([]controls.Action, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "control", "extract-pending-agent-upgrade")
 	defer span.End()
@@ -543,7 +543,11 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int,
 	}
 
 	records, err := r.Collect(ctx)
+	if err != nil {
+		return res, err
+	}
 
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return res, err
 	}
@@ -554,11 +558,40 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int,
 			log.Error().Msgf("Invalid neo4j trigger_action result, skipping")
 			continue
 		}
-		err := json.Unmarshal([]byte(record.Values[0].(string)), &action)
+		err = json.Unmarshal([]byte(record.Values[0].(string)), &action)
 		if err != nil {
 			log.Error().Msgf("Unmarshal of action failed: %v", err)
 			continue
 		}
+
+		var startAgentUpgradeRequest controls.StartAgentUpgradeRequest
+		err = json.Unmarshal([]byte(action.RequestPayload), &startAgentUpgradeRequest)
+		if err != nil {
+			log.Error().Msgf("Unmarshal of action failed: %v", err)
+			continue
+		}
+
+		var exposedURL string
+		cacheVal := ttlCache.Get(consoleURL + startAgentUpgradeRequest.HomeDirectoryURL)
+		if cacheVal == nil {
+			exposedURL, err = mc.CreatePublicUploadURL(ctx, startAgentUpgradeRequest.HomeDirectoryURL, false, time.Hour*4, url.Values{}, consoleURL)
+			if err != nil {
+				log.Error().Msgf("Cannot create public upload URL: %v", err)
+				continue
+			}
+			ttlCache.Set(consoleURL+startAgentUpgradeRequest.HomeDirectoryURL, exposedURL, time.Hour*3)
+		} else {
+			exposedURL = cacheVal.Value()
+		}
+
+		startAgentUpgradeRequest.HomeDirectoryURL = exposedURL
+		requestPayload, err := json.Marshal(startAgentUpgradeRequest)
+		if err != nil {
+			log.Error().Msgf("Cannot marshal startAgentUpgradeRequest: %v", err)
+			continue
+		}
+		action.RequestPayload = string(requestPayload)
+
 		res = append(res, action)
 	}
 

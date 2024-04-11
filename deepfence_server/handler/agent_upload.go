@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 
 	m "github.com/minio/minio-go/v7"
@@ -21,6 +22,10 @@ import (
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"golang.org/x/mod/semver"
+)
+
+const (
+	agentBinaryExtention = ".tar.gz"
 )
 
 func (h *Handler) UploadAgentBinaries(w http.ResponseWriter, r *http.Request) {
@@ -40,9 +45,9 @@ func (h *Handler) UploadAgentBinaries(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	filename := filepath.Base(fileHeader.Filename)
-	vername := filename[:len(filename)-len(filepath.Ext(filename))]
+	vername := strings.TrimSuffix(filename, agentBinaryExtention)
 	if !semver.IsValid(vername) {
-		h.respondError(&BadDecoding{fmt.Errorf("tarball name should be versioned %v", vername)}, w)
+		h.respondError(&BadDecoding{fmt.Errorf("tarball name should be versioned: %v", vername)}, w)
 		return
 	}
 
@@ -145,7 +150,7 @@ func IngestAgentVersion(ctx context.Context, tagsWithFileServerKeys map[string]s
 	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row
 		MERGE (n:AgentVersion{node_id: row.tag})
-		SET n.key = row.key,
+		SET n.url = row.key,
 			n.manual = $manual`,
 		map[string]interface{}{
 			"batch":  tagsToIngest,
@@ -179,7 +184,7 @@ func CleanUpAgentVersion(ctx context.Context, tagsToKeep []string) error {
 		MATCH (n:AgentVersion)
 		WHERE NOT n.node_id IN $tags
 		AND COALESCE(n.manual, false) = false
-		SET n.key = NULL`,
+		SET n.url = NULL`,
 		map[string]interface{}{"tags": tagsToKeep}); err != nil {
 		return err
 	}
@@ -284,7 +289,7 @@ func GetAgentVersionList(ctx context.Context) ([]string, error) {
 
 	res, err := tx.Run(ctx, `
 		MATCH (n:AgentVersion)
-		WHERE NOT n.key IS NULL
+		WHERE NOT n.url IS NULL
 		RETURN n.node_id
 		ORDER BY n.node_id DESC`,
 		map[string]interface{}{})
