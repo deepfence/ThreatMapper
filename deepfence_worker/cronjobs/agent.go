@@ -72,12 +72,12 @@ func CheckAgentUpgrade(ctx context.Context, task *asynq.Task) error {
 		versioned_tarball[version.Version] = bytes.NewBuffer(tarball)
 	}
 
-	tags_with_urls, err := handler.PrepareAgentBinariesReleases(ctx, versioned_tarball)
+	tagsWithFileServerKeys, err := handler.PrepareAgentBinariesReleases(ctx, versioned_tarball)
 	if err != nil {
 		return err
 	}
 
-	err = handler.IngestAgentVersion(ctx, tags_with_urls, false)
+	err = handler.IngestAgentVersion(ctx, tagsWithFileServerKeys, false)
 	if err != nil {
 		return err
 	}

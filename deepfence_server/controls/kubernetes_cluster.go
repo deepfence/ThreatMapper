@@ -13,7 +13,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-func GetKubernetesClusterActions(ctx context.Context, nodeID string, workNumToExtract int) ([]controls.Action, []error) {
+func GetKubernetesClusterActions(ctx context.Context, nodeID string, workNumToExtract int, consoleURL string) ([]controls.Action, []error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "control", "get-kubernetes-cluster-actions")
 	defer span.End()
@@ -22,7 +22,7 @@ func GetKubernetesClusterActions(ctx context.Context, nodeID string, workNumToEx
 	var actions []controls.Action
 
 	// Diagnostic logs not part of workNumToExtract
-	diagnosticLogActions, diagnosticLogErr := ExtractAgentDiagnosticLogRequests(ctx, nodeID, controls.KubernetesCluster, maxWork)
+	diagnosticLogActions, diagnosticLogErr := ExtractAgentDiagnosticLogRequests(ctx, nodeID, controls.KubernetesCluster, maxWork, consoleURL)
 	if diagnosticLogErr == nil {
 		actions = append(actions, diagnosticLogActions...)
 	}

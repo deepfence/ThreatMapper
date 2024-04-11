@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 	"path"
 	"strings"
@@ -15,7 +14,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -132,23 +130,12 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 		return nil
 	}
 
-	cd := url.Values{
-		"response-content-disposition": []string{
-			"attachment; filename=\"" + reportFileName(params) + "\""},
-	}
-	url, err := mc.ExposeFile(ctx, res.Key, false, utils.ReportRetentionTime, cd)
-	if err != nil {
-		log.Error().Err(err)
-		return err
-	}
-	log.Info().Msgf("exposed report URL: %s", url)
-
-	updateReportState(ctx, session, params.ReportID, url, res.Key, sdkUtils.ScanStatusSuccess)
+	updateReportState(ctx, session, params.ReportID, reportName, res.Key, sdkUtils.ScanStatusSuccess)
 
 	return nil
 }
 
-func updateReportState(ctx context.Context, session neo4j.SessionWithContext, reportID, url, path, status string) {
+func updateReportState(ctx context.Context, session neo4j.SessionWithContext, reportID, reportName, path, status string) {
 
 	log := log.WithCtx(ctx)
 
@@ -161,17 +148,16 @@ func updateReportState(ctx context.Context, session neo4j.SessionWithContext, re
 	}
 	defer tx.Close(ctx)
 
-	// update url in neo4j report node
 	query := `
 	MATCH (n:Report{report_id:$uid})
-	SET n.url=$url, n.updated_at=TIMESTAMP(), n.status = $status, n.storage_path = $path
+	SET n.file_name=$file_name,n.updated_at=TIMESTAMP(), n.status = $status, n.storage_path = $path
 	RETURN n
 	`
 	vars := map[string]interface{}{
-		"uid":    reportID,
-		"url":    url,
-		"status": status,
-		"path":   path,
+		"uid":       reportID,
+		"file_name": reportName,
+		"status":    status,
+		"path":      path,
 	}
 	_, err = tx.Run(ctx, query, vars)
 	if err != nil {

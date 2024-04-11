@@ -106,6 +106,10 @@ func (s *Setting) Update(ctx context.Context, pgClient *postgresqlDb.Queries) er
 	})
 }
 
+func (s *Setting) Delete(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	return pgClient.DeleteSettingByID(ctx, s.ID)
+}
+
 func GetManagementConsoleURL(ctx context.Context, pgClient *postgresqlDb.Queries) (string, error) {
 	setting, err := pgClient.GetSetting(ctx, ConsoleURLSettingKey)
 	if err != nil {

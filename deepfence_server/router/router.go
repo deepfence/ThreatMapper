@@ -18,6 +18,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/redis/go-redis/v9"
 	"github.com/riandyrn/otelchi"
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -135,7 +136,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 		Translator:       translator,
 		IngestChan:       ingestC,
 		ConsoleDiagnosis: consoleDiagnosis,
+		TTLCache:         ttlcache.New[string, string](),
 	}
+	go dfHandler.TTLCache.Start()
 
 	r.Use(otelchi.Middleware("deepfence-server", otelchi.WithChiRoutes(r)))
 	r.Use(middleware.Recoverer)

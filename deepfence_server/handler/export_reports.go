@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sort"
 	"time"
 
@@ -295,6 +296,26 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	var report model.ExportReport
 	utils.FromMap(da.Props, &report)
 
+	mc, err := directory.FileServerClient(ctx)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+	var cd url.Values
+	if report.FileName != "" {
+		cd = url.Values{
+			"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
+		}
+	}
+	fileServerURL, err := mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, h.GetHostURL(r))
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+	report.URL = fileServerURL
+
 	err = httpext.JSON(w, http.StatusOK, report)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -336,6 +357,14 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var fileServerURL string
+	mc, err := directory.FileServerClient(ctx)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+
 	reports := []model.ExportReport{}
 	for _, rec := range records {
 		i, ok := rec.Get("n")
@@ -350,6 +379,22 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 		}
 		var report model.ExportReport
 		utils.FromMap(da.Props, &report)
+
+		var cd url.Values
+		if report.FileName != "" {
+			cd = url.Values{
+				"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
+			}
+		}
+		if report.StoragePath != "" {
+			fileServerURL, err = mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, h.GetHostURL(r))
+			if err == nil {
+				report.URL = fileServerURL
+			} else {
+				log.Warn().Err(err).Msg("Failed to expose report file")
+			}
+		}
+
 		reports = append(reports, report)
 	}
 

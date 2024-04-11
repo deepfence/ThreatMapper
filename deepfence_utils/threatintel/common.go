@@ -18,6 +18,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/minio/minio-go/v7"
 )
 
@@ -123,19 +124,26 @@ func DeleteFileMinio(ctx context.Context, fName string) error {
 	return nil
 }
 
-func ExposeFile(ctx context.Context, fName string) (string, error) {
+func ExposeFile(ctx context.Context, fName string, consoleURL string, ttlCache *ttlcache.Cache[string, string]) (string, error) {
 
 	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
 	if err != nil {
 		return "", err
 	}
 
-	url, err := mc.ExposeFile(ctx, fName, false, threatintelPollDuration*3, url.Values{})
-	if err != nil {
-		return "", err
+	var exposedURL string
+	cacheVal := ttlCache.Get(consoleURL + fName)
+	if cacheVal == nil {
+		exposedURL, err = mc.ExposeFile(ctx, fName, false, threatintelPollDuration*3, url.Values{}, consoleURL)
+		if err != nil {
+			return "", err
+		}
+		ttlCache.Set(consoleURL+fName, exposedURL, threatintelPollDuration)
+	} else {
+		exposedURL = cacheVal.Value()
 	}
 
-	return url, nil
+	return exposedURL, nil
 }
 
 func downloadFile(ctx context.Context, url string) (*bytes.Buffer, error) {
