@@ -134,7 +134,7 @@ func ExposeFile(ctx context.Context, fName string, consoleURL string, ttlCache *
 	var exposedURL string
 	cacheVal := ttlCache.Get(consoleURL + fName)
 	if cacheVal == nil {
-		exposedURL, err = mc.ExposeFile(ctx, fName, false, threatintelPollDuration*3, url.Values{}, consoleURL)
+		exposedURL, err = mc.ExposeFile(ctx, fName, true, threatintelPollDuration*3, url.Values{}, consoleURL)
 		if err != nil {
 			return "", err
 		}

@@ -104,14 +104,7 @@ func (h *Handler) UploadSecretsRules(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := threatintel.ExposeFile(ctx, path, h.GetHostURL(r), h.TTLCache)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(&BadDecoding{err}, w)
-		return
-	}
-
-	if err := threatintel.UpdateSecretsRulesInfo(ctx, url, checksum, strings.TrimPrefix(path, "database/")); err != nil {
+	if err := threatintel.UpdateSecretsRulesInfo(ctx, checksum, strings.TrimPrefix(path, "database/")); err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(&BadDecoding{err}, w)
 		return
@@ -158,14 +151,7 @@ func (h *Handler) UploadMalwareRules(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := threatintel.ExposeFile(ctx, path, h.GetHostURL(r), h.TTLCache)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(&BadDecoding{err}, w)
-		return
-	}
-
-	if err := threatintel.UpdateMalwareRulesInfo(ctx, url, checksum, strings.TrimPrefix(path, "database/")); err != nil {
+	if err := threatintel.UpdateMalwareRulesInfo(ctx, checksum, strings.TrimPrefix(path, "database/")); err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(&BadDecoding{err}, w)
 		return
@@ -212,14 +198,7 @@ func (h *Handler) UploadPostureControls(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	url, err := threatintel.ExposeFile(ctx, path, h.GetHostURL(r), h.TTLCache)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(&BadDecoding{err}, w)
-		return
-	}
-
-	if err := threatintel.UpdatePostureControlsInfo(ctx, url, checksum, strings.TrimPrefix(path, "database/")); err != nil {
+	if err := threatintel.UpdatePostureControlsInfo(ctx, checksum, strings.TrimPrefix(path, "database/")); err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(&BadDecoding{err}, w)
 		return
