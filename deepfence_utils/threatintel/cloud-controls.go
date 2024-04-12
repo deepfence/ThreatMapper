@@ -123,6 +123,6 @@ func FetchPostureControlsInfo(ctx context.Context) (path, hash string, err error
 		return "", "", err
 	}
 
-	return rec.Values[1].(string), rec.Values[2].(string), nil
+	return rec.Values[0].(string), rec.Values[1].(string), nil
 
 }
