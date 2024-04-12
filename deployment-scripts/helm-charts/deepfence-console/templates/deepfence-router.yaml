@@ -39,15 +39,15 @@ spec:
             - name: FORCE_HTTPS_REDIRECT
               value: "{{ .Values.router.forceHttpsRedirect }}"
             - name: UI_SERVICE_NAME
-              value: {{ include "deepfence-console.fullname" . }}-ui
+              value: {{ include "deepfence-console.fullname" . }}-ui.{{ .Release.Namespace }}.svc.{{ .Values.router.cluster_domain }}
             - name: UI_SERVICE_PORT
               value: {{ .Values.ui.service.port | quote }}
             - name: API_SERVICE_HOST
-              value: {{ include "deepfence-console.fullname" . }}-server
+              value: {{ include "deepfence-console.fullname" . }}-server.{{ .Release.Namespace }}.svc.{{ .Values.router.cluster_domain }}
             - name: API_SERVICE_PORT
               value: {{ .Values.server.service.port | quote }}
             - name: DEEPFENCE_FILE_SERVER_HOST
-              value: {{ include "deepfence-console.fullname" . }}-file-server
+              value: {{ include "deepfence-console.fullname" . }}-file-server.{{ .Release.Namespace }}.svc.{{ .Values.router.cluster_domain }}
             - name: DEEPFENCE_FILE_SERVER_PORT
               value: "9000"
           envFrom:
