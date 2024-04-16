@@ -181,7 +181,7 @@ const CompareCountWidget = ({
               <ArrowLine />
             </div>
 
-            <span className="text-h1 text-text-input pl-1.5">
+            <span className="text-h1 text-text-input pl-1.5" data-testid="totalCountId">
               {abbreviateNumber(counts.length)}
             </span>
           </>
