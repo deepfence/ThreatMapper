@@ -242,23 +242,38 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 			return err
 		}
 
+		removeSBOM := false
+		if len(docIds) > 0 {
+			// This means we are deleting some of scan results
+			removeSBOM, err = checkForSBMORemoval(ctx, scanID)
+			if err != nil {
+				log.Error().Msgf(err.Error())
+				return err
+			}
+		} else {
+			// This means we are deleting entire scan
+			removeSBOM = true
+		}
+
 		// remove sbom
-		mc, err := directory.FileServerClient(ctx)
-		if err != nil {
-			log.Error().Err(err).Msg("failed to get minio client")
-			return err
-		}
-		sbomFile := path.Join("/sbom", utils.ScanIDReplacer.Replace(scanID)+".json.gz")
-		err = mc.DeleteFile(ctx, sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
-		if err != nil {
-			log.Error().Err(err).Msgf("failed to delete sbom for scan id %s", scanID)
-			return err
-		}
-		runtimeSbomFile := path.Join("/sbom", "runtime-"+utils.ScanIDReplacer.Replace(scanID)+".json")
-		err = mc.DeleteFile(ctx, runtimeSbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
-		if err != nil {
-			log.Error().Err(err).Msgf("failed to delete runtime sbom for scan id %s", scanID)
-			return err
+		if removeSBOM {
+			mc, err := directory.FileServerClient(ctx)
+			if err != nil {
+				log.Error().Err(err).Msg("failed to get minio client")
+				return err
+			}
+			sbomFile := path.Join("/sbom", utils.ScanIDReplacer.Replace(scanID)+".json.gz")
+			err = mc.DeleteFile(ctx, sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
+			if err != nil {
+				log.Error().Err(err).Msgf("failed to delete sbom for scan id %s", scanID)
+				return err
+			}
+			runtimeSbomFile := path.Join("/sbom", "runtime-"+utils.ScanIDReplacer.Replace(scanID)+".json")
+			err = mc.DeleteFile(ctx, runtimeSbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
+			if err != nil {
+				log.Error().Err(err).Msgf("failed to delete runtime sbom for scan id %s", scanID)
+				return err
+			}
 		}
 	}
 
@@ -526,4 +541,39 @@ func GetSelectedScanResults[T any](ctx context.Context, scanType utils.Neo4jScan
 	utils.FromMap(rec.Values[0].(map[string]interface{}), &common)
 
 	return res, common, err
+}
+
+func checkForSBMORemoval(ctx context.Context, scanID string) (bool, error) {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	txCount, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		return false, err
+	}
+	defer txCount.Close(ctx)
+
+	countRes, err := txCount.Run(ctx,
+		`MATCH (n:VulnerabilityScan{node_id: $scan_id}) -[:DETECTED]-> (v:Vulnerability)
+                RETURN COUNT(v) <> 0 AS Exists`,
+		map[string]interface{}{"scan_id": scanID})
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		return false, err
+	}
+
+	countRec, err := countRes.Single(ctx)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		return false, err
+	}
+	exists := countRec.Values[0].(bool)
+	removeSBOM := !exists
+	return removeSBOM, err
 }
