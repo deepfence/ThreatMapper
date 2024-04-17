@@ -1,6 +1,5 @@
 import {
   capitalize,
-  findKey,
   intersection,
   isEmpty,
   isNil,
@@ -418,7 +417,7 @@ export const ReportFilters = () => {
             });
           }}
         >
-          {['xlsx', 'pdf']
+          {['xlsx', 'pdf', 'sbom']
             .filter((item) => {
               if (!reportTypeSearch.length) return true;
               if (item.includes(reportTypeSearch.toLowerCase())) {
