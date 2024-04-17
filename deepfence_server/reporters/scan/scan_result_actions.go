@@ -298,7 +298,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 		WITH m
 		OPTIONAL MATCH (s:` + string(scanType) + `) - [:SCANNED] -> (m)
 		WITH max(s.updated_at) as most_recent
-		MATCH (m) <-[:SCANNED]- (s:` + string(scanType) + `{updated_at: most_recent})-[:DETECTED]->(c:Vulnerability)
+		MATCH (m) <-[:SCANNED]- (s:` + string(scanType) + `{updated_at: most_recent})-[:DETECTED]->(c:` + utils.ScanTypeDetectedNode[scanType] + `)
 		WITH s, m, count(distinct c) as scan_count
 		SET m.` + latestScanIDField + `=s.node_id, m.` + scanCountField + `=scan_count, m.` + scanStatusField + `=s.status`
 		log.Debug().Msgf("Query to reset scan status: %v", query)
