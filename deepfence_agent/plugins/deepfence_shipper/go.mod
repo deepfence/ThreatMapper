@@ -11,6 +11,7 @@ replace github.com/deepfence/ThreatMapper/deepfence_utils => ../../../deepfence_
 require (
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-20240326010029-867ae2088a6a
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20240319093800-8170dfbbfe5b
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-00010101000000-000000000000
 	github.com/hashicorp/go-retryablehttp v0.7.5
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nxadm/tail v1.4.11

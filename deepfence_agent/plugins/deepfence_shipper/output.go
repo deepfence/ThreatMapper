@@ -11,11 +11,14 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
+	"strings"
 	"sync"
 	"time"
 
 	dfUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	dsc "github.com/deepfence/golang_deepfence_sdk/client"
+	dschttp "github.com/deepfence/golang_deepfence_sdk/utils/http"
 	rhttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/nxadm/tail"
 )
@@ -31,6 +34,7 @@ type Publisher struct {
 	ConsolePort      string
 	ConsoleURL       string
 	Key              string
+	BatchSize        int
 	AccessToken      string
 	RefreshToken     string
 }
@@ -132,7 +136,7 @@ func (p *Publisher) validateTokens() error {
 	return nil
 }
 
-func NewPublisher(cfg PublisherConfig, maxRetries int) *Publisher {
+func NewPublisher(cfg PublisherConfig, maxRetries int, batchSize int) *Publisher {
 
 	rhc := rhttp.NewClient()
 	rhc.HTTPClient.Timeout = 10 * time.Second
@@ -163,12 +167,22 @@ func NewPublisher(cfg PublisherConfig, maxRetries int) *Publisher {
 
 	hc = rhc.StandardClient()
 
+	if dschttp.IsConsoleAgent(cfg.Host) && strings.Trim(cfg.Key, "\"") == "" {
+		internalURL := os.Getenv("MGMT_CONSOLE_URL_INTERNAL")
+		internalPort := os.Getenv("MGMT_CONSOLE_PORT_INTERNAL")
+		var err error
+		if cfg.Key, err = dschttp.GetConsoleApiToken(internalURL, internalPort); err != nil {
+			log.Fatal(err.Error())
+		}
+	}
+
 	pub := &Publisher{
 		ConsoleURLSchema: cfg.URLSchema,
 		ConsoleHost:      cfg.Host,
 		ConsolePort:      cfg.Port,
 		ConsoleURL:       getURL(cfg.URLSchema, cfg.Host, cfg.Port),
 		Key:              cfg.Key,
+		BatchSize:        batchSize,
 	}
 
 	if err := pub.validateTokens(); err != nil {
@@ -186,7 +200,7 @@ func (p *Publisher) pushdata(target string, data []map[string]interface{}) error
 
 	url := getURLWithPath(p.ConsoleURLSchema, p.ConsoleHost, p.ConsolePort, target)
 
-	log.Printf("push #data=%d to url %s", len(data), url)
+	log.Printf("push #data=%d url=%s", len(data), url)
 
 	rawRecords, err := json.Marshal(data)
 	if err != nil {
@@ -235,12 +249,15 @@ func (p *Publisher) Publish(ctx context.Context, entry FileEntry, tail *tail.Tai
 			return
 		case line := <-tail.Lines:
 			var t map[string]interface{}
+			if line == nil {
+				continue
+			}
 			if err := json.Unmarshal([]byte(line.Text), &t); err != nil {
 				log.Printf("error unmarshaling line: %v", err)
 				continue
 			}
 			records = append(records, t)
-			if len(records) > 100 {
+			if len(records) >= p.BatchSize {
 				p.pushdata(entry.RemotePath, records)
 				records = make([]map[string]interface{}, 0)
 			}

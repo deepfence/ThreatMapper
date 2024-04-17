@@ -1,8 +1,6 @@
 package controls
 
 import (
-	"fmt"
-
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	k8sscanner "github.com/deepfence/kubernetes-scanner/v2/scanner/compliance"
@@ -16,7 +14,7 @@ func StartComplianceScan(req ctl.StartComplianceScanRequest) error {
 			ScanId:                    req.BinArgs["scan_id"],
 			NodeId:                    req.NodeID,
 			NodeName:                  req.NodeID,
-			ComplianceResultsFilePath: fmt.Sprintf("/var/log/fenced/compliance/%s.log", req.BinArgs["scan_id"]),
+			ComplianceResultsFilePath: "/var/log/fenced/compliance/compliance-scan.log",
 			ComplianceStatusFilePath:  "/var/log/fenced/compliance-scan-logs/status.log",
 		})
 	if err != nil {

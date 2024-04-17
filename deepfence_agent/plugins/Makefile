@@ -9,6 +9,6 @@ clean:
 	-rm $(PWD)/bin/compliance
 	-(cd agent-plugins-grpc && make clean)
 	-(rm -rf $(PWD)/fluent-bit/build && mkdir $(PWD)/fluent-bit/build)
-	-(cd $(PWD)/fluent-bit/plugins/out_deepfence && make clean)
+	-(cd $(PWD)/deepfence_shipper && make clean)
 
 .PHONY: clean localinit all

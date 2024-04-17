@@ -36,9 +36,6 @@ func truncateFiles(ctx context.Context, entries []FileEntry, basePath string, tr
 						log.Printf("error truncation file %v", err)
 						continue
 					}
-				} else {
-					log.Printf("skip truncate file %s size=%.2fMb",
-						e.LocalPath, float64(fi.Size())/(1000.0*1000.0))
 				}
 			}
 		}

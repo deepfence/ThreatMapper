@@ -34,6 +34,7 @@ func main() {
 	basePath := flag.String("base-path", "/", "base path of log files")
 	truncateAtSize := flag.Int64("truncate-size", 0, "truncate the log files when it reaches the given size (file size in MB)")
 	retryMax := flag.Int("retry-max", 10, "maximum number of time to retry batch while publishing")
+	batchSize := flag.Int("batch-size", 100, "maximum number of documents to send in an api call")
 	usePoll := flag.Bool("poll", false, "poll for file changes instead fo inotify")
 
 	flag.Parse()
@@ -72,7 +73,7 @@ func main() {
 	}
 
 	// publisher
-	pub := NewPublisher(pubCfg, *retryMax)
+	pub := NewPublisher(pubCfg, *retryMax, *batchSize)
 
 	// load last read position for files
 	posFile := path.Join(*basePath, varLogFenced, posFile)
