@@ -250,17 +250,20 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 	defer tx.Close(ctx)
 
 	res, err := tx.Run(ctx, `
-		MATCH (m:`+string(scanType)+`{node_id: $scan_id}) - [:SCANNED] -> (s)
-		WITH s.node_id as node_id, s.node_type as node_type
-		OPTIONAL MATCH (m)-[r:DETECTED]-> (n:`+utils.ScanTypeDetectedNode[scanType]+`)
-		DETACH DELETE m,r
-		RETURN node_id, node_type`, map[string]interface{}{"scan_id": scanID})
+		MATCH (m:`+string(scanType)+`{node_id: $scan_id})-[:SCANNED]-> (n)
+		RETURN n.node_id, n.node_type`, map[string]interface{}{"scan_id": scanID})
 	if err != nil {
 		return err
 	}
 	nodeID, nodeType := getScanNodeID(ctx, res)
-	fmt.Println(nodeID, nodeType)
 
+	_, err = tx.Run(ctx, `
+		MATCH (m:`+string(scanType)+`{node_id: $scan_id})
+		OPTIONAL MATCH (m)-[r:DETECTED]-> (n:`+utils.ScanTypeDetectedNode[scanType]+`)
+		DETACH DELETE m,r`, map[string]interface{}{"scan_id": scanID})
+	if err != nil {
+		return err
+	}
 	err = tx.Commit(ctx)
 	if err != nil {
 		return err
