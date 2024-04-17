@@ -293,12 +293,15 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 		latestScanIDField := ingestersUtil.LatestScanIDField[scanType]
 		scanStatusField := ingestersUtil.ScanStatusField[scanType]
 		scanCountField := ingestersUtil.ScanCountField[scanType]
-		query := `MATCH (s:` + string(scanType) + `) - [:SCANNED] -> (m:` + nodeType2Neo4jType(nodeType) + `{node_id:"` + nodeID + `"})
+		query := `MATCH (m:` + nodeType2Neo4jType(nodeType) + `{node_id:"` + nodeID + `"})
 		SET m.` + latestScanIDField + `="", m.` + scanCountField + `=0, m.` + scanStatusField + `=""
+		WITH m
+		OPTIONAL MATCH (s:` + string(scanType) + `) - [:SCANNED] -> (m)
 		WITH max(s.updated_at) as most_recent
 		MATCH (m) <-[:SCANNED]- (s:` + string(scanType) + `{updated_at: most_recent})-[:DETECTED]->(c:Vulnerability)
 		WITH s, m, count(distinct c) as scan_count
 		SET m.` + latestScanIDField + `=s.node_id, m.` + scanCountField + `=scan_count, m.` + scanStatusField + `=s.status`
+		log.Debug().Msgf("Query to reset scan status: %v", query)
 
 		tx4, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 		if err != nil {
@@ -551,39 +554,4 @@ func GetSelectedScanResults[T any](ctx context.Context, scanType utils.Neo4jScan
 	utils.FromMap(rec.Values[0].(map[string]interface{}), &common)
 
 	return res, common, err
-}
-
-func checkForSBMORemoval(ctx context.Context, scanID string) (bool, error) {
-	driver, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		return false, err
-	}
-
-	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close(ctx)
-
-	txCount, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
-	if err != nil {
-		log.Error().Msgf(err.Error())
-		return false, err
-	}
-	defer txCount.Close(ctx)
-
-	countRes, err := txCount.Run(ctx,
-		`MATCH (n:VulnerabilityScan{node_id: $scan_id}) -[:DETECTED]-> (v:Vulnerability)
-                RETURN COUNT(v) <> 0 AS Exists`,
-		map[string]interface{}{"scan_id": scanID})
-	if err != nil {
-		log.Error().Msgf(err.Error())
-		return false, err
-	}
-
-	countRec, err := countRes.Single(ctx)
-	if err != nil {
-		log.Error().Msgf(err.Error())
-		return false, err
-	}
-	exists := countRec.Values[0].(bool)
-	removeSBOM := !exists
-	return removeSBOM, err
 }
