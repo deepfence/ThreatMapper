@@ -12,7 +12,9 @@ import (
 )
 
 const (
-	spiedReportBufferSize = 1024
+	// There are 4 reports in production, default is spy every 5 seconds, max is 1800 sec (30 min)
+	// This gives us the max number of reports over 30 min
+	spiedReportBufferSize = 4 * 360
 )
 
 // ReportPublisher publishes reports, probably to a remote collector.
@@ -21,20 +23,47 @@ type ReportPublisher interface {
 	PublishInterval() int32
 }
 
-type DrainableChan struct {
-	spiedReports   chan report.Report
-	drainedReports chan report.Report
-	access         sync.Mutex
+type AsyncMerger struct {
+	spiedReports chan report.Report
+	nextReport   report.Report
+	access       sync.Mutex
+	wg           sync.WaitGroup
+	cancel       context.CancelFunc
+	drainCount   int
 }
 
-func NewDrainableChan(bufferSize int) DrainableChan {
-	return DrainableChan{
-		spiedReports:   make(chan report.Report, bufferSize),
-		drainedReports: make(chan report.Report, bufferSize),
+func NewAsyncMerger(bufferSize int) *AsyncMerger {
+	res := &AsyncMerger{
+		spiedReports: make(chan report.Report, spiedReportBufferSize),
+		nextReport:   report.MakeReport(),
 	}
+
+	res.start()
+
+	return res
 }
 
-func (dc *DrainableChan) Add(r *report.Report) error {
+func (dc *AsyncMerger) start() {
+
+	ctx, cancel := context.WithCancel(context.Background())
+	dc.cancel = cancel
+
+	dc.wg.Add(1)
+	go func() {
+		defer dc.wg.Done()
+		for {
+			select {
+			case r := <-dc.spiedReports:
+				dc.nextReport.UnsafeMerge(r)
+				dc.drainCount++
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+}
+
+func (dc *AsyncMerger) Add(r *report.Report) error {
 	dc.access.Lock()
 	defer dc.access.Unlock()
 	select {
@@ -45,13 +74,32 @@ func (dc *DrainableChan) Add(r *report.Report) error {
 	return nil
 }
 
-func (dc *DrainableChan) Drain() <-chan report.Report {
+func (dc *AsyncMerger) stopAndFlush() {
 	dc.access.Lock()
 	defer dc.access.Unlock()
-	tmp := dc.drainedReports
-	dc.drainedReports = dc.spiedReports
-	dc.spiedReports = tmp
-	return dc.drainedReports
+
+	dc.cancel()
+	dc.wg.Wait()
+
+	for len(dc.spiedReports) > 0 {
+		dc.nextReport.UnsafeMerge(<-dc.spiedReports)
+		dc.drainCount++
+	}
+
+}
+
+func (dc *AsyncMerger) Drain() (report.Report, int) {
+	dc.stopAndFlush()
+
+	res := dc.nextReport
+	cnt := dc.drainCount
+
+	dc.nextReport = report.MakeReport()
+	dc.drainCount = 0
+
+	dc.start()
+
+	return res, cnt
 }
 
 // Probe sits there, generating and publishing reports.
@@ -70,7 +118,7 @@ type Probe struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	spiedReports DrainableChan
+	spiedReports *AsyncMerger
 }
 
 // Tagger tags nodes with value-add node metadata.
@@ -120,7 +168,7 @@ func New(
 		publisher:          publisher,
 		ticksPerFullReport: ticksPerFullReport,
 		noControls:         noControls,
-		spiedReports:       NewDrainableChan(spiedReportBufferSize),
+		spiedReports:       NewAsyncMerger(spiedReportBufferSize),
 		ctx:                ctx,
 		cancel:             cancel,
 	}
@@ -226,19 +274,4 @@ func (p *Probe) tag(r report.Report) report.Report {
 		}
 	}
 	return r
-}
-
-func (p *Probe) drainAndSanitise(rpt report.Report, rs <-chan report.Report) (report.Report, int) {
-	//rpt = rpt.Copy()
-	count := 0
-	for len(rs) != 0 {
-		rpt.UnsafeMerge(<-rs)
-		count++
-	}
-	if p.noControls {
-		//rpt.WalkTopologies(func(t *report.Topology) {
-		//	t.Controls = report.Controls{}
-		//})
-	}
-	return rpt, count
 }
