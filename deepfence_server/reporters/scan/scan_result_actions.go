@@ -288,6 +288,34 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 		return err
 	}
 
+	// Reset node's latest_scan_id to the previous scan id, if any
+	if nodeID != "" && nodeType != "" {
+		latestScanIDField := ingestersUtil.LatestScanIDField[scanType]
+		scanStatusField := ingestersUtil.ScanStatusField[scanType]
+		scanCountField := ingestersUtil.ScanCountField[scanType]
+		query := `MATCH (s:` + string(scanType) + `) - [:SCANNED] -> (m:` + nodeType2Neo4jType(nodeType) + `{node_id:"` + nodeID + `"})
+		SET m.` + latestScanIDField + `="", m.` + scanCountField + `=0, m.` + scanStatusField + `=""
+		WITH max(s.updated_at) as most_recent
+		MATCH (m) <-[:SCANNED]- (s:` + string(scanType) + `{updated_at: most_recent})-[:DETECTED]->(c:Vulnerability)
+		WITH s, m, count(distinct c) as scan_count
+		SET m.` + latestScanIDField + `=s.node_id, m.` + scanCountField + `=scan_count, m.` + scanStatusField + `=s.status`
+
+		tx4, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+		if err != nil {
+			return err
+		}
+		defer tx4.Close(ctx)
+
+		_, err = tx4.Run(ctx, query, map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		err = tx4.Commit(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
 	if scanType == utils.NEO4JVulnerabilityScan {
 		mc, err := directory.FileServerClient(ctx)
 		if err != nil {
@@ -306,32 +334,6 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 			log.Error().Err(err).Msgf("failed to delete runtime sbom for scan id %s", scanID)
 			return err
 		}
-	}
-
-	// Reset node's latest_scan_id to the previous scan id, if any
-	latestScanIDField := ingestersUtil.LatestScanIDField[scanType]
-	scanStatusField := ingestersUtil.ScanStatusField[scanType]
-	scanCountField := ingestersUtil.ScanCountField[scanType]
-	query := `MATCH (s:` + string(scanType) + `) -[:SCANNED]->(m:` + nodeType2Neo4jType(nodeType) + `{node_id:` + nodeID + `})
-		SET m.` + latestScanIDField + `="", m.` + scanCountField + `=0, m.` + scanStatusField + `=""
-		WITH max(s.updated_at) as most_recent
-		MATCH (m) <-[:SCANNED]- (s:` + string(scanType) + `{updated_at: most_recent})-[:DETECTED]->(c:Vulnerability)
-		WITH s, m, count(distinct c) as scan_count
-		SET m.` + latestScanIDField + `=s.node_id, m.` + scanCountField + `=scan_count, m.` + scanStatusField + `=s.status`
-
-	tx4, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
-	if err != nil {
-		return err
-	}
-	defer tx4.Close(ctx)
-
-	_, err = tx4.Run(ctx, fmt.Sprintf(query, scanID), map[string]interface{}{})
-	if err != nil {
-		return err
-	}
-	err = tx4.Commit(ctx)
-	if err != nil {
-		return err
 	}
 
 	return nil

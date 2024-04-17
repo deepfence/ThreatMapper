@@ -472,6 +472,8 @@ func nodeType2Neo4jType(nodeType string) string {
 		return "Container"
 	case "image":
 		return "ContainerImage"
+	case "container_image":
+		return "ContainerImage"
 	case "host":
 		return "Node"
 	case "cluster":
