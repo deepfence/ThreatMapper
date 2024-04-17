@@ -24,13 +24,11 @@ func (p *Probe) publishLoop(ctx context.Context) {
 	startTime := time.Now()
 	publishCount := 0
 	var lastFullReport report.Report
-	rpt := report.MakeReport()
 	for {
 		log.Info().Msgf("Report publish interval: %d", p.publisher.PublishInterval())
 		select {
 		case <-time.After(time.Second * time.Duration(p.publisher.PublishInterval())):
-			rpt.Clear()
-			rpt, count := p.drainAndSanitise(rpt, p.spiedReports.Drain())
+			rpt, count := p.spiedReports.Drain()
 			if count == 0 {
 				continue // No data has been collected - don't bother publishing.
 			}
@@ -59,10 +57,6 @@ func (p *Probe) publishLoop(ctx context.Context) {
 				continue
 			}
 			publishCount++
-
-		//case rpt := <-p.shortcutReports:
-		//	rpt, _ = p.drainAndSanitise(rpt, p.shortcutReports)
-		//	err = p.publisher.Publish(rpt)
 
 		case <-p.ctx.Done():
 			return
