@@ -6,7 +6,7 @@ all: deepfence_shipper
 
 local: deepfence_shipper
 
-vendor: go.mod $(shell find ../deepfence_utils -path ../deepfence_utils/vendor -prune -o -name '*.go')
+vendor: go.mod $(shell find ../../../deepfence_utils -path ../../../deepfence_utils/vendor -prune -o -name '*.go')
 	go mod tidy -v
 	go mod vendor
 

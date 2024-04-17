@@ -2,11 +2,11 @@ module github.com/deepfence/ThreatMapper/deepfence_shipper
 
 go 1.21.3
 
-replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_sdk/client/
+replace github.com/deepfence/golang_deepfence_sdk/client => ../../../golang_deepfence_sdk/client/
 
-replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils
+replace github.com/deepfence/golang_deepfence_sdk/utils => ../../../golang_deepfence_sdk/utils
 
-replace github.com/deepfence/ThreatMapper/deepfence_utils => ../deepfence_utils/
+replace github.com/deepfence/ThreatMapper/deepfence_utils => ../../../deepfence_utils/
 
 require (
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-20240326010029-867ae2088a6a
