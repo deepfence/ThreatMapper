@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -171,7 +170,8 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	return tx.Commit(ctx)
 }
 
-func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string, docIds []string) error {
+// DeleteScanResults Delete selected scan results (cves, secrets, etc)
+func DeleteScanResults(ctx context.Context, scanType utils.Neo4jScanType, scanID string, nodeIDs []string) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -186,32 +186,25 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 	}
 	defer tx.Close(ctx)
 
-	if len(docIds) > 0 {
-		_, err = tx.Run(ctx, `
+	_, err = tx.Run(ctx, `
 		MATCH (m:`+string(scanType)+`) -[r:DETECTED]-> (n)
 		WHERE n.node_id IN $node_ids AND m.node_id = $scan_id
-		DELETE r`, map[string]interface{}{"node_ids": docIds, "scan_id": scanID})
-		if err != nil {
-			return err
-		}
-	} else {
-		_, err = tx.Run(ctx, `
-		MATCH (m:`+string(scanType)+`{node_id: $scan_id})
-		OPTIONAL MATCH (m)-[r:DETECTED]-> (n:`+utils.ScanTypeDetectedNode[scanType]+`)
-		DETACH DELETE m,r`, map[string]interface{}{"scan_id": scanID})
-		if err != nil {
-			return err
-		}
+		DELETE r`, map[string]interface{}{"node_ids": nodeIDs, "scan_id": scanID})
+	if err != nil {
+		return err
 	}
+
 	err = tx.Commit(ctx)
 	if err != nil {
 		return err
 	}
+
 	tx2, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
 	defer tx2.Close(ctx)
+
 	// Delete results which are not part of any scans now
 	_, err = tx2.Run(ctx,
 		`MATCH (n:`+utils.ScanTypeDetectedNode[scanType]+`)
@@ -224,92 +217,104 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func getScanNodeID(ctx context.Context, res neo4j.ResultWithContext) (nodeID string, nodeType string) {
+	rec, err := res.Single(ctx)
+	if err != nil {
+		log.Warn().Msg(err.Error())
+		return
+	}
+	if rec.Values[0] != nil && rec.Values[1] != nil {
+		return fmt.Sprintf("%v", rec.Values[0]), fmt.Sprintf("%v", rec.Values[1])
+	}
+	return
+}
+
+// DeleteScan Delete entire scan
+func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string) error {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close(ctx)
+
+	res, err := tx.Run(ctx, `
+		MATCH (m:`+string(scanType)+`{node_id: $scan_id}) - [:SCANNED] -> (s)
+		WITH s.node_id as node_id, s.node_type as node_type
+		OPTIONAL MATCH (m)-[r:DETECTED]-> (n:`+utils.ScanTypeDetectedNode[scanType]+`)
+		DETACH DELETE m,r
+		RETURN node_id, node_type`, map[string]interface{}{"scan_id": scanID})
+	if err != nil {
+		return err
+	}
+	nodeID, nodeType := getScanNodeID(ctx, res)
+	fmt.Println(nodeID, nodeType)
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+
+	tx2, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx2.Close(ctx)
+
+	// Delete results which are not part of any scans now
+	_, err = tx2.Run(ctx,
+		`MATCH (n:`+utils.ScanTypeDetectedNode[scanType]+`)
+		WHERE not (n)<-[:DETECTED]-(:`+string(scanType)+`)
+		DETACH DELETE (n)`, map[string]interface{}{})
+	if err != nil {
+		return err
+	}
+	err = tx2.Commit(ctx)
+	if err != nil {
+		return err
+	}
+
 	if scanType == utils.NEO4JVulnerabilityScan {
-		tx3, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+		mc, err := directory.FileServerClient(ctx)
 		if err != nil {
+			log.Error().Err(err).Msg("failed to get minio client")
 			return err
 		}
-		defer tx3.Close(ctx)
-		_, err = tx3.Run(ctx,
-			`MATCH (n:`+reporters.ScanResultMaskNode[scanType]+`)
-			WHERE not (n)<-[:IS]-(:`+utils.ScanTypeDetectedNode[scanType]+`)
-			DETACH DELETE (n)`, map[string]interface{}{})
+		sbomFile := path.Join("/sbom", utils.ScanIDReplacer.Replace(scanID)+".json.gz")
+		err = mc.DeleteFile(ctx, sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
 		if err != nil {
+			log.Error().Err(err).Msgf("failed to delete sbom for scan id %s", scanID)
 			return err
 		}
-		err = tx3.Commit(ctx)
+		runtimeSbomFile := path.Join("/sbom", "runtime-"+utils.ScanIDReplacer.Replace(scanID)+".json")
+		err = mc.DeleteFile(ctx, runtimeSbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
 		if err != nil {
+			log.Error().Err(err).Msgf("failed to delete runtime sbom for scan id %s", scanID)
 			return err
-		}
-
-		removeSBOM := false
-		if len(docIds) > 0 {
-			// This means we are deleting some of scan results
-			removeSBOM, err = checkForSBMORemoval(ctx, scanID)
-			if err != nil {
-				log.Error().Msgf(err.Error())
-				return err
-			}
-		} else {
-			// This means we are deleting entire scan
-			removeSBOM = true
-		}
-
-		// remove sbom
-		if removeSBOM {
-			mc, err := directory.FileServerClient(ctx)
-			if err != nil {
-				log.Error().Err(err).Msg("failed to get minio client")
-				return err
-			}
-			sbomFile := path.Join("/sbom", utils.ScanIDReplacer.Replace(scanID)+".json.gz")
-			err = mc.DeleteFile(ctx, sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
-			if err != nil {
-				log.Error().Err(err).Msgf("failed to delete sbom for scan id %s", scanID)
-				return err
-			}
-			runtimeSbomFile := path.Join("/sbom", "runtime-"+utils.ScanIDReplacer.Replace(scanID)+".json")
-			err = mc.DeleteFile(ctx, runtimeSbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
-			if err != nil {
-				log.Error().Err(err).Msgf("failed to delete runtime sbom for scan id %s", scanID)
-				return err
-			}
 		}
 	}
 
-	// update nodes scan result
-	query := ""
-	switch scanType {
-	case utils.NEO4JVulnerabilityScan:
-		query = `MATCH (n)
-		WHERE (n:Node OR n:Container or n:ContainerImage)
-		AND n.vulnerability_latest_scan_id="%s"
-		SET n.vulnerability_latest_scan_id="", n.vulnerabilities_count=0, n.vulnerability_scan_status=""`
-	case utils.NEO4JSecretScan:
-		query = `MATCH (n)
-		WHERE (n:Node OR n:Container or n:ContainerImage)
-		AND n.secret_latest_scan_id="%s"
-		SET n.secret_latest_scan_id="", n.secrets_count=0, n.secret_scan_status=""`
-	case utils.NEO4JMalwareScan:
-		query = `MATCH (n)
-		WHERE (n:Node OR n:Container or n:ContainerImage)
-		AND n.malware_latest_scan_id="%s"
-		SET n.malware_latest_scan_id="", n.malwares_count=0, n.malware_scan_status=""`
-	case utils.NEO4JComplianceScan:
-		query = `MATCH (n)
-		WHERE (n:Node OR n:KubernetesCluster)
-		AND n.compliance_latest_scan_id="%s"
-		SET n.compliance_latest_scan_id="", n.compliances_count=0, n.compliance_scan_status=""`
-	case utils.NEO4JCloudComplianceScan:
-		query = `MATCH (n)
-		WHERE (n:CloudResource)
-		AND n.cloud_compliance_latest_scan_id="%s"
-		SET n.cloud_compliance_latest_scan_id="", n.cloud_compliances_count=0, n.cloud_compliance_scan_status=""`
-	}
-
-	if len(query) < 1 {
-		return nil
-	}
+	// Reset node's latest_scan_id to the previous scan id, if any
+	latestScanIDField := ingestersUtil.LatestScanIDField[scanType]
+	scanStatusField := ingestersUtil.ScanStatusField[scanType]
+	scanCountField := ingestersUtil.ScanCountField[scanType]
+	query := `MATCH (s:` + string(scanType) + `) -[:SCANNED]->(m:` + nodeType2Neo4jType(nodeType) + `{node_id:` + nodeID + `})
+		SET m.` + latestScanIDField + `="", m.` + scanCountField + `=0, m.` + scanStatusField + `=""
+		WITH max(s.updated_at) as most_recent
+		MATCH (m) <-[:SCANNED]- (s:` + string(scanType) + `{updated_at: most_recent})-[:DETECTED]->(c:Vulnerability)
+		WITH s, m, count(distinct c) as scan_count
+		SET m.` + latestScanIDField + `=s.node_id, m.` + scanCountField + `=scan_count, m.` + scanStatusField + `=s.status`
 
 	tx4, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
