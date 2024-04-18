@@ -12,7 +12,7 @@ func truncateFiles(ctx context.Context, entries []FileEntry, basePath string, tr
 
 	log.Printf("start monitoring file sizes to truncate at %dMB", truncateSize)
 
-	ticker := time.NewTicker(60 * time.Second)
+	ticker := time.NewTicker(300 * time.Second)
 	defer ticker.Stop()
 
 	for {

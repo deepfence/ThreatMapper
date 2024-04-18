@@ -32,7 +32,7 @@ func main() {
 
 	configPath := flag.String("routes", "routes.yaml", "routes.yaml file path")
 	basePath := flag.String("base-path", "/", "base path of log files")
-	truncateAtSize := flag.Int64("truncate-size", 0, "truncate the log files when it reaches the given size (file size in MB)")
+	truncateAtSize := flag.Int64("truncate-size", 0, "truncate the log files at the given size (file size in MB)")
 	retryMax := flag.Int("retry-max", 10, "maximum number of time to retry batch while publishing")
 	batchSize := flag.Int("batch-size", 100, "maximum number of documents to send in an api call")
 	usePoll := flag.Bool("poll", false, "poll for file changes instead fo inotify")
@@ -60,17 +60,7 @@ func main() {
 	defer cancel()
 
 	// check and create missing paths
-	for _, entry := range route.Routes {
-		required := path.Join(*basePath, entry.LocalPath)
-		_, err := os.Stat(required)
-		if err == nil {
-			continue
-		} else if os.IsNotExist(err) {
-			os.MkdirAll(path.Dir(required), 0755)
-			file, _ := os.Create(required)
-			file.Close()
-		}
-	}
+	createMissingPaths(route.Routes, *basePath)
 
 	// publisher
 	pub := NewPublisher(pubCfg, *retryMax, *batchSize)
@@ -193,4 +183,18 @@ func recordFilePos(ctx context.Context, posFile string, tails map[FileEntry]*tai
 		}
 	}
 
+}
+
+func createMissingPaths(routes []FileEntry, basePath string) {
+	for _, entry := range routes {
+		required := path.Join(basePath, entry.LocalPath)
+		_, err := os.Stat(required)
+		if err == nil {
+			continue
+		} else if os.IsNotExist(err) {
+			os.MkdirAll(path.Dir(required), 0755)
+			file, _ := os.Create(required)
+			file.Close()
+		}
+	}
 }
