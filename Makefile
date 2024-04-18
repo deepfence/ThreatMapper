@@ -40,10 +40,6 @@ bootstrap:
 alpine_builder:
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-alpine .
 
-.PHONY: go1_20_builder
-go1_20_builder:
-	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_go_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-debianfluent-bit .
-
 .PHONY: debian_builder
 debian_builder:
 	docker build --build-arg DF_IMG_TAG=${DF_IMG_TAG} --build-arg IMAGE_REPOSITORY=${IMAGE_REPOSITORY} --tag=$(IMAGE_REPOSITORY)/deepfence_glibc_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-debian .
@@ -56,7 +52,7 @@ bootstrap-agent-plugins:
 	(cd $(MALWARE_SCANNER_DIR) && bash bootstrap.sh)
 
 .PHONY: agent
-agent: go1_20_builder debian_builder deepfenced console_plugins shipper
+agent: debian_builder deepfenced console_plugins shipper
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
 	IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) bash build.sh)
 
