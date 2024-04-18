@@ -472,11 +472,19 @@ func nodeType2Neo4jType(nodeType string) string {
 		return "Container"
 	case "image":
 		return "ContainerImage"
+	case "container_image":
+		return "ContainerImage"
 	case "host":
 		return "Node"
 	case "cluster":
 		return "KubernetesCluster"
 	case "cloud_account":
+		return "CloudNode"
+	case "aws":
+		return "CloudNode"
+	case "gcp":
+		return "CloudNode"
+	case "azure":
 		return "CloudNode"
 	}
 	return "unknown"

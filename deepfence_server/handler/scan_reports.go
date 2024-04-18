@@ -1525,7 +1525,7 @@ func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request
 	}
 	switch action {
 	case "delete":
-		err = reportersScan.DeleteScan(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
+		err = reportersScan.DeleteScanResults(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
 		if req.ScanType == string(utils.NEO4JCloudComplianceScan) {
 			err := h.CachePostureProviders(r.Context())
 			if err != nil {
@@ -1672,7 +1672,7 @@ func (h *Handler) scanIDActionHandler(w http.ResponseWriter, r *http.Request, ac
 		h.AuditUserActivity(r, req.ScanType, ActionDownload, req, true)
 
 	case "delete":
-		err = reportersScan.DeleteScan(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{})
+		err = reportersScan.DeleteScan(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID)
 		if err != nil {
 			h.respondError(err, w)
 			return
