@@ -221,16 +221,15 @@ func DeleteScanResults(ctx context.Context, scanType utils.Neo4jScanType, scanID
 	return nil
 }
 
-func getScanNodeID(ctx context.Context, res neo4j.ResultWithContext) (nodeID string, nodeType string) {
+func getScanNodeID(ctx context.Context, res neo4j.ResultWithContext) (nodeID string, nodeType string, err error) {
 	rec, err := res.Single(ctx)
 	if err != nil {
-		log.Warn().Msg(err.Error())
-		return
+		return "", "", err
 	}
 	if rec.Values[0] != nil && rec.Values[1] != nil {
-		return fmt.Sprintf("%v", rec.Values[0]), fmt.Sprintf("%v", rec.Values[1])
+		return rec.Values[0].(string), rec.Values[1].(string), nil
 	}
-	return
+	return "", "", nil
 }
 
 // DeleteScan Delete entire scan
@@ -255,7 +254,11 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 	if err != nil {
 		return err
 	}
-	nodeID, nodeType := getScanNodeID(ctx, res)
+	nodeID, nodeType, err := getScanNodeID(ctx, res)
+	if err != nil {
+		// This error can be ignored
+		log.Warn().Msg(err.Error())
+	}
 
 	_, err = tx.Run(ctx, `
 		MATCH (m:`+string(scanType)+`{node_id: $scan_id})
@@ -293,6 +296,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 		latestScanIDField := ingestersUtil.LatestScanIDField[scanType]
 		scanStatusField := ingestersUtil.ScanStatusField[scanType]
 		scanCountField := ingestersUtil.ScanCountField[scanType]
+
 		query := `MATCH (m:` + nodeType2Neo4jType(nodeType) + `{node_id:"` + nodeID + `"})
 		SET m.` + latestScanIDField + `="", m.` + scanCountField + `=0, m.` + scanStatusField + `=""
 		WITH m
@@ -301,6 +305,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanID string
 		MATCH (m) <-[:SCANNED]- (s:` + string(scanType) + `{updated_at: most_recent})-[:DETECTED]->(c:` + utils.ScanTypeDetectedNode[scanType] + `)
 		WITH s, m, count(distinct c) as scan_count
 		SET m.` + latestScanIDField + `=s.node_id, m.` + scanCountField + `=scan_count, m.` + scanStatusField + `=s.status`
+
 		log.Debug().Msgf("Query to reset scan status: %v", query)
 
 		tx4, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
