@@ -67,10 +67,10 @@ func main() {
 
 	// load last read position for files
 	posFile := path.Join(*basePath, varLogFenced, posFile)
-	log.Printf("load file positios from path %s", posFile)
+	log.Printf("load file positions from path %s", posFile)
 	posMap, err := LoadFilePos(posFile)
 	if err != nil {
-		log.Printf("error loading file positios %v", err)
+		log.Printf("error loading file positions %v", err)
 	} else {
 		log.Printf("File Read Location: %v", posMap)
 	}
@@ -113,7 +113,7 @@ func main() {
 		go func(ctx context.Context, e FileEntry, t *tail.Tail, pub *Publisher) {
 			defer wg.Done()
 			// publish the lines
-			pub.Publish(ctx, e, t)
+			pub.Publish(ctx, *basePath, e, t)
 		}(ctx, entry, tf, pub)
 	}
 

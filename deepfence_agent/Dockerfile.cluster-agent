@@ -23,7 +23,7 @@ COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
 COPY start_agent.sh /usr/local/bin/start_agent
 RUN chmod +x /usr/local/bin/start_agent
 COPY plugins/deepfence_shipper/deepfence_shipper /home/deepfence/bin/shipper
-COPY plugins/deepfence_shipper/routes.yaml /etc/routes.yaml
+COPY plugins/deepfence_shipper/routes.yaml /home/deepfence/routes.yaml
 
 WORKDIR /opt/steampipe
 COPY tools/apache/scope/probe/kubernetes/kubeconfig /home/deepfence/.kube/config

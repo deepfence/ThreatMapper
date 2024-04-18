@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -233,19 +234,21 @@ func (p *Publisher) pushdata(target string, data []map[string]interface{}) error
 	return nil
 }
 
-func (p *Publisher) Publish(ctx context.Context, entry FileEntry, tail *tail.Tail) {
+func (p *Publisher) Publish(ctx context.Context, basePath string, entry FileEntry, tail *tail.Tail) {
 
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
 	records := make([]map[string]interface{}, 0)
 
-	log.Printf("start publish loop file=%s route=%s", entry.LocalPath, entry.RemotePath)
+	log.Printf("start publish loop file=%s route=%s",
+		path.Join(basePath, entry.LocalPath), entry.RemotePath)
 
 	for {
 		select {
 		case <-ctx.Done():
-			log.Printf("stop publish loop file=%s route=%s", entry.LocalPath, entry.RemotePath)
+			log.Printf("stop publish loop file=%s route=%s",
+				path.Join(basePath, entry.LocalPath), entry.RemotePath)
 			return
 		case line := <-tail.Lines:
 			var t map[string]interface{}

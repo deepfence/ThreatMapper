@@ -72,7 +72,7 @@ RUN mkdir -p /home/deepfence/bin && mkdir -p /home/deepfence/bin/secret-scanner/
 # COPY plugins/yara-rules /home/deepfence/bin/yara-hunter/yara-rules
 COPY deepfenced /bin/deepfenced
 COPY plugins/deepfence_shipper/deepfence_shipper /home/deepfence/bin/shipper
-COPY plugins/deepfence_shipper/routes.yaml /etc/routes.yaml
+COPY plugins/deepfence_shipper/routes.yaml /home/deepfence/routes.yaml
 
 COPY --from=secret_build /home/deepfence/usr/SecretScanner /home/deepfence/bin/secret-scanner
 # COPY --from=secret_build /home/deepfence/usr/config.yaml /home/deepfence/bin/secret-scanner/config
