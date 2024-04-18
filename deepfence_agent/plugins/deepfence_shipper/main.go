@@ -75,6 +75,8 @@ func main() {
 		log.Printf("File Read Location: %v", posMap)
 	}
 
+	log.Printf("using poll instead of inotify: %t", *usePoll)
+
 	tails := map[FileEntry]*tail.Tail{}
 
 	var wg sync.WaitGroup
