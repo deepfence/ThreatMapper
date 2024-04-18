@@ -13,7 +13,7 @@ LABEL deepfence.role=system
 
 WORKDIR /
 
-COPY tools/apache/scope/docker/deepfence_exe deepfence/usr/local/discovery/deepfence-discovery
+COPY tools/apache/scope/docker/discovery deepfence/usr/local/discovery/deepfence-discovery
 COPY agent-binary/bin/ deepfence/bin/
 COPY etc/certs/* deepfence/etc/filebeat/
 COPY plugins/bin/ deepfence/bin/

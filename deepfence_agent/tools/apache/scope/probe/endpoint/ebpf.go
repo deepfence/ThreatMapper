@@ -15,7 +15,6 @@ import (
 	"syscall"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/hashicorp/go-metrics"
 	"github.com/weaveworks/common/fs"
 	"github.com/weaveworks/scope/probe/endpoint/procspy"
 	"github.com/weaveworks/scope/probe/host"
@@ -183,9 +182,6 @@ func (t *EbpfTracker) TCPEventV4(e tracer.TcpV4) {
 		log.Error().Msgf("tcp tracer received event with timestamp %v even though the last timestamp was %v. Stopping the eBPF tracker.", e.Timestamp, t.lastTimestampV4)
 		log.Error().Msgf("***** Alert we are going to ignore this *****")
 		//t.stop()
-		metrics.IncrCounterWithLabels([]string{"ebpf", "errors"}, 1, []metrics.Label{
-			{Name: "kind", Value: "timestamp-out-of-order"},
-		})
 		return
 	}
 
@@ -208,9 +204,6 @@ func (t *EbpfTracker) TCPEventV6(e tracer.TcpV6) {
 // LostV4 handles IPv4 TCP event misses from the eBPF tracer.
 func (t *EbpfTracker) LostV4(count uint64) {
 	log.Error().Msgf("tcp tracer lost %d events. Stopping the eBPF tracker", count)
-	metrics.IncrCounterWithLabels([]string{"ebpf", "errors"}, 1, []metrics.Label{
-		{Name: "kind", Value: "lost-events"},
-	})
 	log.Error().Msgf("***** Alert we are going to ignore this for now")
 	//t.stop()
 }

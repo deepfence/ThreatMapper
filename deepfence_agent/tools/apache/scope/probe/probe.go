@@ -221,7 +221,7 @@ func (p *Probe) spyLoop(ctx context.Context) {
 				}
 			}
 			rpt.Clear()
-			rpt := p.report(rpt)
+			rpt := p.mergeReporters(rpt)
 			rpt = p.tag(rpt)
 			err := p.spiedReports.Add(&rpt)
 			if err != nil {
@@ -233,7 +233,7 @@ func (p *Probe) spyLoop(ctx context.Context) {
 	}
 }
 
-func (p *Probe) report(result report.Report) report.Report {
+func (p *Probe) mergeReporters(result report.Report) report.Report {
 	for i, rep := range p.reporters {
 		go func(rep Reporter) {
 			t := time.Now()

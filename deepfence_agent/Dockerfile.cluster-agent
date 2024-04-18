@@ -42,11 +42,11 @@ RUN steampipe plugin install steampipe \
     && steampipe plugin install kubernetes \
     && git clone https://github.com/turbot/steampipe-mod-kubernetes-compliance.git
 
-COPY tools/apache/scope/docker/deepfence_exe /home/deepfence/
+COPY tools/apache/scope/docker/discovery /home/deepfence/
 COPY deepfenced /bin/deepfenced
 
 USER root
 
-RUN chmod +x /home/deepfence/*.sh /home/deepfence/deepfence_exe
+RUN chmod +x /home/deepfence/*.sh /home/deepfence/discovery
 
 ENTRYPOINT ["/usr/local/bin/start_agent"]
