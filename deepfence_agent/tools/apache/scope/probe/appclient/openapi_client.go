@@ -11,7 +11,6 @@ import (
 	"os"
 	"sync/atomic"
 
-	"github.com/bytedance/sonic"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/client"
 	openapi "github.com/deepfence/golang_deepfence_sdk/utils/http"
@@ -65,7 +64,7 @@ func (ct *OpenapiClient) API() *client.APIClient {
 
 // Publish implements MultiAppClient
 func (ct *OpenapiClient) Publish(r report.Report) error {
-	buf, err := sonic.Marshal(r)
+	buf, err := json.Marshal(r)
 	if err != nil {
 		return err
 	}
