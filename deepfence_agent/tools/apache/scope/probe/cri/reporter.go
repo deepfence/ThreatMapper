@@ -94,8 +94,6 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		imageName, imageTag = docker.ParseImageDigest(c.ImageRef)
 	}
 	var dockerLabels string
-	podName := c.Labels["io.kubernetes.pod.name"]
-	podUid := c.Labels["io.kubernetes.pod.uid"]
 	dockerLabelsJson, err := json.Marshal(c.Labels)
 	if err == nil {
 		dockerLabels = string(dockerLabelsJson)
@@ -129,8 +127,12 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		KubernetesClusterName:     r.kubernetesClusterName,
 		KubernetesClusterId:       r.kubernetesClusterId,
 		DockerLabels:              dockerLabels,
-		PodName:                   podName,
-		PodID:                     podUid,
+		PodName:                   c.Labels[report.PodNameLabel],
+		PodID:                     c.Labels[report.PodIDLabel],
+		KubernetesNamespace:       c.Labels[report.PodNamespaceLabel],
+	}
+	if c.Labels[report.DeepfenceSystemLabelKey] == report.DeepfenceSystemLabelValue {
+		metadata.IsDeepfenceSystem = true
 	}
 	return &report.TopologyNode{
 		Metadata: metadata,
@@ -138,7 +140,7 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 			KubernetesCluster: r.kubernetesClusterId,
 			Host:              r.hostID,
 			ContainerImage:    imageID,
-			Pod:               podUid,
+			Pod:               c.Labels[report.PodIDLabel],
 		},
 	}
 }
