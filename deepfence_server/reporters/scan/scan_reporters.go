@@ -472,11 +472,19 @@ func nodeType2Neo4jType(nodeType string) string {
 		return "Container"
 	case "image":
 		return "ContainerImage"
+	case "container_image":
+		return "ContainerImage"
 	case "host":
 		return "Node"
 	case "cluster":
 		return "KubernetesCluster"
 	case "cloud_account":
+		return "CloudNode"
+	case "aws":
+		return "CloudNode"
+	case "gcp":
+		return "CloudNode"
+	case "azure":
 		return "CloudNode"
 	}
 	return "unknown"
@@ -713,11 +721,12 @@ func GetScanResultDiff[T any](ctx context.Context, scanType utils.Neo4jScanType,
 	OPTIONAL MATCH (n) -[:SCANNED]-> (f)
 	OPTIONAL MATCH (c:ContainerImage{node_id: f.docker_image_id}) -[:ALIAS] ->(t) -[ma:MASKED]-> (d)
 	OPTIONAL MATCH (cb:ContainerImage{node_id: n.docker_image_id}) -[:IS] ->(is) -[mis:MASKED]-> (d)
+	WITH e, d, r, collect(ma) as ma_list, collect(mis) as mis_list
 	WITH apoc.map.merge( e{.*}, 
-	d{.*, masked: coalesce(d.masked or r.masked or e.masked or head(collect(ma.masked)) or head(collect(mis.masked)), false), 
-	name: coalesce(e.name, d.name, '')}) AS d` +
+	d{.*, masked: coalesce(d.masked or r.masked or e.masked or head(ma_list).masked or head(mis_list).masked, false), 
+	name: coalesce(e.name, d.name, '')}) AS merged_data` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
-		ffCondition + ` RETURN d ` +
+		ffCondition + ` RETURN merged_data ` +
 		fw.FetchWindow2CypherQuery()
 	log.Debug().Msgf("diff query: %v", query)
 	nres, err := tx.Run(ctx, query,

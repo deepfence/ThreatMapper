@@ -273,6 +273,9 @@ router:
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.2.0
   forceHttpsRedirect: true
+  # used to in service name generation
+  # <service>.<namespace>.svc.<cluster_domain>
+  cluster_domain: "cluster.local"
   podAnnotations: {}
   podSecurityContext: {}
   securityContext: {}

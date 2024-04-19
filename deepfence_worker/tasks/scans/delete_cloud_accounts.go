@@ -106,7 +106,7 @@ func deleteScans(ctx context.Context, accountID string) error {
 	defer log.Info().Msgf("deleted %d scans for account %s", len(scans.ScansInfo), accountID)
 
 	for _, s := range scans.ScansInfo {
-		err := reportersScan.DeleteScan(ctx, utils.NEO4JCloudComplianceScan, s.ScanID, []string{})
+		err := reportersScan.DeleteScan(ctx, utils.NEO4JCloudComplianceScan, s.ScanID)
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to delete scan id %s", s.ScanID)
 		}

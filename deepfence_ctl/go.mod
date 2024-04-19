@@ -1,6 +1,8 @@
 module github.com/deepfence/ThreatMapper/deepfence_ctl
 
-go 1.20
+go 1.21
+
+toolchain go1.21.5
 
 replace github.com/deepfence/ThreatMapper/deepfence_utils => ../deepfence_utils/
 

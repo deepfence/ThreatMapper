@@ -66,7 +66,7 @@ COPY tools/apache/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /u
 COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
 COPY etc/certs/* /etc/filebeat/
 COPY start_agent.sh /usr/local/bin/start_agent
-COPY tools/apache/scope/docker/deepfence_exe /usr/local/discovery/deepfence-discovery
+COPY tools/apache/scope/docker/discovery /usr/local/discovery/deepfence-discovery
 COPY plugins/compliance/scripts /usr/local/bin/compliance_check/scripts
 COPY plugins/compliance/config.json /usr/local/bin/compliance_check/config.json
 COPY supervisord.conf /home/deepfence/supervisord.conf

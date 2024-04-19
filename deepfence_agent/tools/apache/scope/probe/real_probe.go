@@ -4,6 +4,7 @@
 package probe
 
 import (
+	"context"
 	"math/rand"
 	"time"
 
@@ -15,24 +16,19 @@ import (
 
 // Start starts the probe
 func (p *Probe) Start() {
-	p.done.Add(2)
-	go p.spyLoop()
-	go p.publishLoop()
+	go p.spyLoop(p.ctx)
+	go p.publishLoop(p.ctx)
 }
 
-func (p *Probe) publishLoop() {
-	defer p.done.Done()
+func (p *Probe) publishLoop(ctx context.Context) {
 	startTime := time.Now()
 	publishCount := 0
 	var lastFullReport report.Report
-	ticker := time.NewTicker(time.Second * time.Duration(p.publisher.PublishInterval()))
 	for {
 		log.Info().Msgf("Report publish interval: %d", p.publisher.PublishInterval())
-		ticker.Reset(time.Second * time.Duration(p.publisher.PublishInterval()))
-		var err error
 		select {
-		case <-ticker.C:
-			rpt, count := p.drainAndSanitise(report.MakeReport(), p.spiedReports)
+		case <-time.After(time.Second * time.Duration(p.publisher.PublishInterval())):
+			rpt, count := p.spiedReports.Drain()
 			if count == 0 {
 				continue // No data has been collected - don't bother publishing.
 			}
@@ -40,34 +36,30 @@ func (p *Probe) publishLoop() {
 			fullReport := (publishCount % p.ticksPerFullReport) == 0
 			if !fullReport {
 				rpt.UnsafeUnMerge(lastFullReport)
-			}
-			rpt.Window = time.Now().Sub(startTime)
-			startTime = time.Now()
-			err = p.publisher.Publish(rpt)
-			if err == nil {
+			} else {
 				if fullReport {
 					lastFullReport = rpt
 				}
-				publishCount++
-			} else if err == appclient.PushBackError {
-				rand.Seed(time.Now().UnixNano())
-				randomDelay := rand.Intn(int(p.publisher.PublishInterval()))
-				time.Sleep(time.Duration(randomDelay) * time.Second)
-				continue
-			} else {
+			}
+			rpt.Window = time.Now().Sub(startTime)
+			startTime = time.Now()
+			err := p.publisher.Publish(rpt)
+			if err != nil {
+				log.Error().Msgf("Publish err: %v", err)
+
 				// If we failed to send then drop back to full report next time
 				publishCount = 0
+
+				if err == appclient.PushBackError {
+					randomDelay := rand.Intn(int(p.publisher.PublishInterval()))
+					time.Sleep(time.Duration(randomDelay) * time.Second)
+				}
+				continue
 			}
+			publishCount++
 
-		//case rpt := <-p.shortcutReports:
-		//	rpt, _ = p.drainAndSanitise(rpt, p.shortcutReports)
-		//	err = p.publisher.Publish(rpt)
-
-		case <-p.quit:
+		case <-p.ctx.Done():
 			return
-		}
-		if err != nil {
-			log.Info().Msgf("Publish: %v", err)
 		}
 	}
 }

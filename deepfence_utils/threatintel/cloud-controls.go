@@ -25,7 +25,7 @@ func DownloadAndPopulateCloudControls(ctx context.Context, entry Entry) error {
 	defer span.End()
 
 	// remove old rule file
-	_, existing, err := FetchPostureControlsInfo(ctx)
+	existing, _, err := FetchPostureControlsInfo(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("no existing posture control info found")
 	} else {
@@ -48,7 +48,7 @@ func DownloadAndPopulateCloudControls(ctx context.Context, entry Entry) error {
 		return err
 	}
 
-	if err := UpdatePostureControlsInfo(ctx, path, sha, strings.TrimPrefix(path, "database/")); err != nil {
+	if err := UpdatePostureControlsInfo(ctx, sha, strings.TrimPrefix(path, "database/")); err != nil {
 		return err
 	}
 
@@ -71,7 +71,7 @@ func TriggerLoadCloudControls(ctx context.Context) error {
 	return nil
 }
 
-func UpdatePostureControlsInfo(ctx context.Context, fileServerKey, hash, path string) error {
+func UpdatePostureControlsInfo(ctx context.Context, hash, path string) error {
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -81,14 +81,12 @@ func UpdatePostureControlsInfo(ctx context.Context, fileServerKey, hash, path st
 
 	_, err = session.Run(ctx, `
 	MERGE (n:PostureControls{node_id: "latest"})
-	SET n.rules_key=$rules_key,
-		n.rules_hash=$hash,
+	SET n.rules_hash=$hash,
 		n.path=$path,
 		n.updated_at=TIMESTAMP()`,
 		map[string]interface{}{
-			"rules_key": fileServerKey,
-			"hash":      hash,
-			"path":      path,
+			"hash": hash,
+			"path": path,
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("failed to update PostureControls on neo4j")
@@ -98,7 +96,7 @@ func UpdatePostureControlsInfo(ctx context.Context, fileServerKey, hash, path st
 	return nil
 }
 
-func FetchPostureControlsInfo(ctx context.Context) (hash, path string, err error) {
+func FetchPostureControlsInfo(ctx context.Context) (path, hash string, err error) {
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return "", "", err
@@ -114,7 +112,7 @@ func FetchPostureControlsInfo(ctx context.Context) (hash, path string, err error
 
 	queryPostureControls := `
 	MATCH (s:PostureControls{node_id: "latest"})
-	RETURN s.rules_key, s.rules_hash, s.path`
+	RETURN s.path, s.rules_hash`
 
 	r, err := tx.Run(ctx, queryPostureControls, map[string]interface{}{})
 	if err != nil {
@@ -125,11 +123,6 @@ func FetchPostureControlsInfo(ctx context.Context) (hash, path string, err error
 		return "", "", err
 	}
 
-	if rec.Values[0] == nil {
-		log.Warn().Msg("rules_key not found in PostureControls")
-		return "", "", nil
-	}
-
-	return rec.Values[1].(string), rec.Values[2].(string), nil
+	return rec.Values[0].(string), rec.Values[1].(string), nil
 
 }

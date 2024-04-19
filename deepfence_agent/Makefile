@@ -16,7 +16,7 @@
 # from deepfence.io.
 #
 
-.PHONY: agent
+.PHONY: discovery
 
 GOFLAGS += --ldflags
 GOFLAGS += '-extldflags "-static"'
@@ -37,18 +37,18 @@ tools/apache/scope/vendor: tools/apache/scope/go.mod $(shell find ../deepfence_u
 	($(CD) tools/apache/scope && go mod tidy -v)
 	($(CD) tools/apache/scope && go mod vendor)
 
-agent: tools/apache/scope/vendor
+discovery: tools/apache/scope/vendor
 	($(CD) tools/apache/scope && \
 		env GOGC=off \
 		CGO_ENABLED=1 \
 		go build -buildvcs=false \
 		-ldflags "-X main.version=${VERSION} -X github.com/weaveworks/scope/probe/host.agentCommitID=${VERSION} -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(shell date +"%s%d%m%y") -s -w -extldflags=-static"\
 		-tags 'netgo osusergo unsafe' \
-		-o docker/deepfence_exe \
+		-o docker/discovery \
 		./prog)
 
 clean:
 	-$(RM) tools/apache/deepfence/df-utils/getCloudInstanceId
-	-$(RM) tools/apache/scope/docker/deepfence_exe
+	-$(RM) tools/apache/scope/docker/discovery
 	-(cd plugins && make clean)
 	-$(RM) -rf tools/apache/scope/vendor

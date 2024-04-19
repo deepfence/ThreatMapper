@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/hashicorp/go-metrics"
 
 	"github.com/weaveworks/common/fs"
 	"github.com/weaveworks/scope/probe/process"
@@ -266,7 +265,6 @@ func (w pidWalker) walk(buf *bytes.Buffer) (map[uint64]*Proc, error) {
 		}
 	}
 
-	metrics.SetGauge(namespaceKey, float32(len(namespaces)))
 	return sockets, nil
 }
 

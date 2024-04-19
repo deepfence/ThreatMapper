@@ -1203,8 +1203,8 @@ export const secretQueries = createQueryKeys('secret', {
             order_filter: { order_fields: [] },
             compare_filter: null,
           },
-          base_scan_id: baseScanId,
-          to_scan_id: toScanId,
+          base_scan_id: toScanId,
+          to_scan_id: baseScanId,
           window: {
             offset: 0,
             size: 99999,
@@ -1225,8 +1225,8 @@ export const secretQueries = createQueryKeys('secret', {
             order_filter: { order_fields: [] },
             compare_filter: null,
           },
-          base_scan_id: toScanId,
-          to_scan_id: baseScanId,
+          base_scan_id: baseScanId,
+          to_scan_id: toScanId,
           window: {
             offset: 0,
             size: 99999,

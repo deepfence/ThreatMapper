@@ -6,6 +6,10 @@ title: Kubernetes
 
 In Kubernetes, the ThreatMapper sensors are deployed as a daemonset in the Kubernetes cluster, using a helm chart.
 
+:::info
+The `deepfence-console` helm chart by default runs agent and cluster-agent pods. The `deepfence-agent` helm chart need not be installed in the cluster where console helm chart is deployed.
+:::
+
 ## Quick Installation of ThreatMapper Sensors
 
 Install and start the latest release of the deepfence sensor.  Replace `x.x.x.x` with the IP address of the Management Console and `73f6f3d0-9931-4b31-8967-fd6adf475f80` with the API key.
