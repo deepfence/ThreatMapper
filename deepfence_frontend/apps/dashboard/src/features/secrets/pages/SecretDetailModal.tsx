@@ -148,7 +148,10 @@ const DetailsComponent = ({
     data: { data: secrets },
   } = useGetSecretDetails();
 
-  const [showResourceModal, setShowResourceModal] = useState(false);
+  const [showResourceModal, setShowResourceModal] = useState({
+    resource: '',
+    show: false,
+  });
 
   if (!secrets.length) {
     return (
@@ -243,26 +246,34 @@ const DetailsComponent = ({
             <CopyField value={JSON.stringify(secret.resources)} />
           </div>
           <div className="text-p1">
-            {secret.resources.map((resource) => {
+            {showResourceModal.show ? (
+              <ResourceDetailModal
+                open={showResourceModal.show}
+                onClose={() => {
+                  setShowResourceModal({
+                    show: false,
+                    resource: '',
+                  });
+                }}
+                nodeId={showResourceModal.resource}
+              />
+            ) : null}
+
+            {secret.resources.map((resource, index) => {
               if (!resource.node_id || !resource.node_type) {
                 return null;
               }
               if (resource.node_type === 'container_image') {
                 return (
                   <>
-                    {showResourceModal && (
-                      <ResourceDetailModal
-                        open={showResourceModal}
-                        onClose={setShowResourceModal}
-                        nodeId={resource.node_id}
-                      />
-                    )}
-
                     <button
                       type="button"
-                      key={resource.node_id}
+                      key={resource.node_id + index}
                       onClick={() => {
-                        setShowResourceModal(true);
+                        setShowResourceModal({
+                          show: true,
+                          resource: resource.node_id,
+                        });
                       }}
                       className="text-p1 w-fit text-accent-accent"
                     >

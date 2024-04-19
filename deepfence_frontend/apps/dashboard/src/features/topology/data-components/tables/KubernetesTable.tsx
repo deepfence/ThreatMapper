@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { upperFirst } from 'lodash-es';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -435,9 +436,9 @@ const DataTable = ({
           );
         },
         header: () => 'Name',
-        minSize: 180,
-        size: 190,
-        maxSize: 250,
+        minSize: 140,
+        size: 160,
+        maxSize: 200,
       }),
       columnHelper.accessor('node_id', {
         cell: (info) => {
@@ -447,6 +448,15 @@ const DataTable = ({
         minSize: 200,
         size: 210,
         maxSize: 250,
+      }),
+      columnHelper.accessor('agent_running', {
+        cell: (info) => {
+          return <TruncatedText text={upperFirst(info.getValue() + '' || 'false')} />;
+        },
+        header: () => <span>Agent Running</span>,
+        minSize: 60,
+        size: 100,
+        maxSize: 120,
       }),
     ],
     [],
