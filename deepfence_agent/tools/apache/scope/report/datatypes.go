@@ -13,3 +13,18 @@ const (
 	// Number as an integer or a floating point
 	Number = "number"
 )
+
+const (
+	DeepfenceSystemLabelKey   = "deepfence.role"
+	DeepfenceSystemLabelValue = "system"
+
+	DeepfenceK8sAppLabelKey          = "app"
+	DeepfenceK8sConsoleAppLabelValue = "deepfence-console"
+	DeepfenceK8sAgentAppLabelValue   = "deepfence-agent"
+)
+
+const (
+	PodNamespaceLabel = "io.kubernetes.pod.namespace"
+	PodNameLabel      = "io.kubernetes.pod.name"
+	PodIDLabel        = "io.kubernetes.pod.uid"
+)

@@ -73,6 +73,10 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 	if _, ok := payload["is_priority"]; ok {
 		isPriority = payload["is_priority"].(bool)
 	}
+	deepfenceSystemScan := false
+	if _, ok := payload["deepfence_system_scan"]; ok {
+		deepfenceSystemScan = payload["deepfence_system_scan"].(bool)
+	}
 
 	searchFilter := reporters_search.SearchFilter{
 		InFieldFilter: []string{"node_id"},
@@ -130,7 +134,7 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 	}
 
 	scanTrigger := model.ScanTriggerCommon{NodeIDs: nodeIds,
-		Filters: model.ScanFilter{}, IsPriority: isPriority}
+		Filters: model.ScanFilter{}, IsPriority: isPriority, DeepfenceSystemScan: deepfenceSystemScan}
 
 	switch messagePayload["action"].(string) {
 	case utils.VulnerabilityScan:
@@ -196,7 +200,7 @@ func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]inte
 	}
 
 	scanTrigger := model.ScanTriggerCommon{NodeIDs: nodeIds,
-		Filters: scanFilter, IsPriority: payload.IsPriority}
+		Filters: scanFilter, IsPriority: payload.IsPriority, DeepfenceSystemScan: payload.DeepfenceSystemScan}
 
 	action := utils.Neo4jScanType(messagePayload["action"].(string))
 

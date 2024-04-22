@@ -25,6 +25,14 @@ func (ve *AlreadyRunningScanError) Error() string {
 	return fmt.Sprintf("Scan of type %s already running for %s, id: %s", ve.ScanType, ve.nodeID, ve.ScanID)
 }
 
+type DeepfenceSystemScanError struct {
+	NodeID string
+}
+
+func (ve *DeepfenceSystemScanError) Error() string {
+	return fmt.Sprintf("deepfence_system_scan=true required to scan Deepfence image/pod/container: %s", ve.NodeID)
+}
+
 type AgentNotInstalledError struct {
 	nodeID string
 }
@@ -56,14 +64,15 @@ func AddNewScan(ctx context.Context,
 	nodeType controls.ScanResource,
 	nodeID string,
 	isPriority bool,
-	action controls.Action) error {
+	action controls.Action,
+	deepfenceSystemScan bool) error {
 
 	ctx, span := telemetry.NewSpan(ctx, "ingesters", "add-new-scan")
 	defer span.End()
 
 	res, err := tx.Run(ctx, fmt.Sprintf(`
 		OPTIONAL MATCH (n:%s{node_id:$node_id})
-		RETURN n IS NOT NULL AS Exists`,
+		RETURN n IS NOT NULL AS Exists, n.is_deepfence_system`,
 		controls.ResourceTypeToNeo4j(nodeType)),
 		map[string]interface{}{
 			"node_id": nodeID,
@@ -79,6 +88,11 @@ func AddNewScan(ctx context.Context,
 
 	if !rec.Values[0].(bool) {
 		return &NodeNotFoundError{
+			NodeID: nodeID,
+		}
+	}
+	if !deepfenceSystemScan && rec.Values[1] != nil && rec.Values[1].(bool) {
+		return &DeepfenceSystemScanError{
 			NodeID: nodeID,
 		}
 	}

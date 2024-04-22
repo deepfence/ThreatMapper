@@ -49,6 +49,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "deepfence-router.selectorLabels" -}}
+app: deepfence-router
 app.kubernetes.io/name: {{ include "deepfence-router.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
