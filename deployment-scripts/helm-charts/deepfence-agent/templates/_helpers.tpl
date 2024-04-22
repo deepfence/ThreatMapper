@@ -50,6 +50,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "deepfence-agent.selectorLabels" -}}
+app: deepfence-agent
 app.kubernetes.io/name: {{ include "deepfence-agent.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

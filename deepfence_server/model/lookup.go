@@ -185,6 +185,7 @@ type Pod struct {
 	MalwareScanStatus         string                 `json:"malware_scan_status" required:"true"`
 	SecretScanStatus          string                 `json:"secret_scan_status" required:"true"`
 	VulnerabilityScanStatus   string                 `json:"vulnerability_scan_status" required:"true"`
+	IsDeepfenceSystem         bool                   `json:"is_deepfence_system" required:"true"`
 }
 
 func (Pod) NodeType() string {
@@ -237,6 +238,10 @@ type Container struct {
 	MalwaresCount              int64                  `json:"malwares_count" required:"true"`
 	MalwareScanStatus          string                 `json:"malware_scan_status" required:"true"`
 	MalwareLatestScanID        string                 `json:"malware_latest_scan_id" required:"true"`
+	KubernetesClusterName      string                 `json:"kubernetes_cluster_name" required:"true"`
+	KubernetesClusterID        string                 `json:"kubernetes_cluster_id" required:"true"`
+	KubernetesNamespace        string                 `json:"kubernetes_namespace" required:"true"`
+	IsDeepfenceSystem          bool                   `json:"is_deepfence_system" required:"true"`
 }
 
 func (Container) NodeType() string {
@@ -345,6 +350,7 @@ type ContainerImage struct {
 	MalwareScanStatus         string                 `json:"malware_scan_status" required:"true"`
 	MalwareLatestScanID       string                 `json:"malware_latest_scan_id" required:"true"`
 	Containers                []Container            `json:"containers" required:"true"`
+	IsDeepfenceSystem         bool                   `json:"is_deepfence_system" required:"true"`
 }
 
 func (ContainerImage) NodeType() string {

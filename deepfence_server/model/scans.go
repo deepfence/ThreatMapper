@@ -2,7 +2,6 @@ package model
 
 import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
 type VulnerabilityScanConfigLanguage struct {
@@ -57,9 +56,10 @@ type ScanFilter struct {
 }
 
 type ScanTriggerCommon struct {
-	NodeIDs    []NodeIdentifier `json:"node_ids" required:"true"`
-	Filters    ScanFilter       `json:"filters" required:"true"`
-	IsPriority bool             `json:"is_priority"`
+	NodeIDs             []NodeIdentifier `json:"node_ids" required:"true"`
+	Filters             ScanFilter       `json:"filters" required:"true"`
+	IsPriority          bool             `json:"is_priority"`
+	DeepfenceSystemScan bool             `json:"deepfence_system_scan"` // Scan Deepfence images/containers/pods if present in NodeIDs
 }
 
 type NodeIdentifier struct {
@@ -89,12 +89,6 @@ type ComplianceScanInfo struct {
 	ScanInfo
 	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
 }
-
-const (
-	ScanStatusSuccess    = utils.ScanStatusSuccess
-	ScanStatusStarting   = utils.ScanStatusStarting
-	ScanStatusInProgress = utils.ScanStatusInProgress
-)
 
 type ScanTriggerResp struct {
 	ScanIds    []string `json:"scan_ids" required:"true"`

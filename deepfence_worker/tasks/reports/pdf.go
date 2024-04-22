@@ -105,7 +105,7 @@ func vulnerabilityPDF(ctx context.Context, params utils.ReportParams) (*bytes.Bu
 	var rendered bytes.Buffer
 	err = templates.ExecuteTemplate(&rendered, "base.gohtml", data)
 	if err != nil {
-		log.Error().Err(err)
+		log.Error().Msg(err.Error())
 		return nil, err
 	}
 
@@ -126,7 +126,7 @@ func secretPDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffer, e
 	var rendered bytes.Buffer
 	err = templates.ExecuteTemplate(&rendered, "base.gohtml", data)
 	if err != nil {
-		log.Error().Err(err)
+		log.Error().Msg(err.Error())
 		return nil, err
 	}
 
@@ -146,7 +146,7 @@ func malwarePDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffer, 
 	var rendered bytes.Buffer
 	err = templates.ExecuteTemplate(&rendered, "base.gohtml", data)
 	if err != nil {
-		log.Error().Err(err)
+		log.Error().Msg(err.Error())
 		return nil, err
 	}
 
@@ -166,7 +166,7 @@ func compliancePDF(ctx context.Context, params utils.ReportParams) (*bytes.Buffe
 	var rendered bytes.Buffer
 	err = templates.ExecuteTemplate(&rendered, "base.gohtml", data)
 	if err != nil {
-		log.Error().Err(err)
+		log.Error().Msg(err.Error())
 		return nil, err
 	}
 
@@ -186,7 +186,7 @@ func cloudCompliancePDF(ctx context.Context, params utils.ReportParams) (*bytes.
 	var rendered bytes.Buffer
 	err = templates.ExecuteTemplate(&rendered, "base.gohtml", data)
 	if err != nil {
-		log.Error().Err(err)
+		log.Error().Msg(err.Error())
 		return nil, err
 	}
 
