@@ -159,7 +159,7 @@ func GenerateCloudScannerDiagnosticLogs(ctx context.Context, nodeIdentifiers []d
 		fileName := "deepfence-cloudscanner-logs-" + nodeIdentifier.NodeID + fileNameSuffix
 		action, err := actionBuilder(nodeIdentifier, diagnosis.CloudScannerDiagnosticLogsPrefix+fileName, fileName, tail)
 		if err != nil {
-			log.Error().Err(err)
+			log.Error().Msg(err.Error())
 			return err
 		}
 		b, err := json.Marshal(action)

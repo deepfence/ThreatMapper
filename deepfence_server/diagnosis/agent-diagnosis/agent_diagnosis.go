@@ -155,7 +155,7 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 		fileName := "deepfence-agent-logs-" + nodeIdentifier.NodeID + fileNameSuffix
 		action, err := actionBuilder(nodeIdentifier, filepath.Join(diagnosis.AgentDiagnosisFileServerPrefix, fileName), fileName, tail)
 		if err != nil {
-			log.Error().Err(err)
+			log.Error().Msg(err.Error())
 			return err
 		}
 		b, err := json.Marshal(action)

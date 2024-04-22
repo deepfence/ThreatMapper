@@ -2063,15 +2063,15 @@ func extractBulksNodes(nodes []model.NodeIdentifier) ([]model.NodeIdentifier,
 func StartMultiScan(ctx context.Context,
 	genBulkID bool,
 	scanType utils.Neo4jScanType,
-	req model.ScanTriggerCommon,
+	scanTriggerCommon model.ScanTriggerCommon,
 	actionBuilder func(string, model.NodeIdentifier, int32) (controls.Action, error)) ([]string, string, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "start-multi-scan")
 	defer span.End()
 
-	isPriority := req.IsPriority
+	isPriority := scanTriggerCommon.IsPriority
 
-	regular, k8s, registry, pods := extractBulksNodes(req.NodeIDs)
+	regular, k8s, registry, pods := extractBulksNodes(scanTriggerCommon.NodeIDs)
 
 	imageNodes, err := reportersScan.GetRegistriesImageIDs(ctx, registry)
 	if err != nil {
@@ -2107,13 +2107,13 @@ func StartMultiScan(ctx context.Context,
 			k8sContainerNodes,
 			[]model.NodeIdentifier{},
 			[]model.NodeIdentifier{},
-			req.Filters)
+			scanTriggerCommon.Filters)
 		if err != nil {
 			return nil, "", err
 		}
 		reqs = append(reqs, reqsExtra...)
 	} else {
-		reqs = req.NodeIDs
+		reqs = scanTriggerCommon.NodeIDs
 	}
 
 	if len(podContainerNodes) > 0 {
@@ -2156,7 +2156,7 @@ func StartMultiScan(ctx context.Context,
 
 		action, err := actionBuilder(scanID, req, registryID)
 		if err != nil {
-			log.Error().Err(err)
+			log.Error().Msg(err.Error())
 			return nil, "", err
 		}
 
@@ -2166,7 +2166,8 @@ func StartMultiScan(ctx context.Context,
 			controls.StringToResourceType(req.NodeType),
 			req.NodeID,
 			isPriority,
-			action)
+			action,
+			scanTriggerCommon.DeepfenceSystemScan)
 
 		if err != nil {
 			if e, is := err.(*ingesters.AlreadyRunningScanError); is {
@@ -2174,8 +2175,11 @@ func StartMultiScan(ctx context.Context,
 				continue
 			} else if _, is = err.(*ingesters.AgentNotInstalledError); is {
 				continue
+			} else if _, is = err.(*ingesters.DeepfenceSystemScanError); is {
+				log.Warn().Msg(err.Error())
+				continue
 			}
-			log.Error().Err(err)
+			log.Error().Msg(err.Error())
 			return nil, "", err
 		}
 		scanIds = append(scanIds, scanID)
