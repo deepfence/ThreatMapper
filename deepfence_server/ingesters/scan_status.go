@@ -91,7 +91,7 @@ func AddNewScan(ctx context.Context,
 			NodeID: nodeID,
 		}
 	}
-	if deepfenceSystemScan == false && rec.Values[1] != nil && rec.Values[1].(bool) == true {
+	if !deepfenceSystemScan && rec.Values[1] != nil && rec.Values[1].(bool) {
 		return &DeepfenceSystemScanError{
 			NodeID: nodeID,
 		}
