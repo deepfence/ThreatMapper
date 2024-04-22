@@ -2,6 +2,7 @@ package reports
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -17,6 +18,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
+
+var ErrorMaxRecords = errors.New("number of records in result is greater than ReportRecordsMax, apply more filters to reduce number of records in results")
 
 const (
 	VULNERABILITY    = "vulnerability"
@@ -42,6 +45,7 @@ type ScanData[T any] struct {
 }
 
 type NodeWiseData[T any] struct {
+	RecordCount   uint64
 	SeverityCount map[string]map[string]int32
 	ScanData      map[string]ScanData[T]
 }
@@ -135,6 +139,8 @@ func scanResultFilter(levelKey string, levelValues []string, masked []bool) repo
 
 func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Vulnerability], error) {
 
+	log := log.WithCtx(ctx)
+
 	if params.Filters.MostExploitableReport {
 		return getMostExploitableVulnData(ctx, params)
 	}
@@ -158,12 +164,13 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 		return nil, err
 	}
 
-	log.Info().Msgf("vulnerability scan info: %+v", scans)
+	log.Info().Msgf("found %d vulnerability scans", len(scans))
 
 	severityFilter := scanResultFilter("cve_severity",
 		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.Vulnerability]{
+		RecordCount:   0,
 		SeverityCount: make(map[string]map[string]int32),
 		ScanData:      make(map[string]ScanData[model.Vulnerability]),
 	}
@@ -183,6 +190,7 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 			ScanInfo:    common,
 			ScanResults: result,
 		}
+		nodeWiseData.RecordCount += uint64(len(result))
 	}
 
 	data := Info[model.Vulnerability]{
@@ -194,10 +202,18 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 		NodeWiseData:   nodeWiseData,
 	}
 
+	log.Info().Msgf("total vulnerability records in NodeWiseData is %d", data.NodeWiseData.RecordCount)
+
+	if data.NodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+		return &data, ErrorMaxRecords
+	}
+
 	return &data, nil
 }
 
 func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Vulnerability], error) {
+
+	log := log.WithCtx(ctx)
 
 	var req rptSearch.SearchNodeReq
 	req.ExtendedNodeFilter.Filters.OrderFilter.OrderFields = []reporters.OrderSpec{{FieldName: "cve_cvss_score", Descending: true}}
@@ -214,12 +230,14 @@ func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParam
 		start = time.Now()
 	)
 	nodeWiseData := NodeWiseData[model.Vulnerability]{
+		RecordCount:   0,
 		SeverityCount: make(map[string]map[string]int32),
 		ScanData:      make(map[string]ScanData[model.Vulnerability]),
 	}
 	nodeKey := "most_exploitable_vulnerabilities"
 	nodeWiseData.SeverityCount[nodeKey] = make(map[string]int32)
 	nodeWiseData.ScanData[nodeKey] = ScanData[model.Vulnerability]{ScanResults: entries}
+	nodeWiseData.RecordCount += uint64(len(entries))
 	sevMap := nodeWiseData.SeverityCount[nodeKey]
 	for _, entry := range entries {
 		count, present := sevMap[entry.CveSeverity]
@@ -240,10 +258,19 @@ func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParam
 		NodeWiseData:   nodeWiseData,
 	}
 
+	log.Info().Msgf("total most exploitable vulnerability records in NodeWiseData is %d",
+		data.NodeWiseData.RecordCount)
+
+	if data.NodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+		return &data, ErrorMaxRecords
+	}
+
 	return &data, nil
 }
 
 func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Secret], error) {
+
+	log := log.WithCtx(ctx)
 
 	searchFilter := searchScansFilter(params)
 
@@ -265,12 +292,13 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 		return nil, err
 	}
 
-	log.Info().Msgf("secret scan info: %+v", scans)
+	log.Info().Msgf("found %d secret scans", len(scans))
 
 	severityFilter := scanResultFilter("level",
 		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.Secret]{
+		RecordCount:   0,
 		SeverityCount: make(map[string]map[string]int32),
 		ScanData:      make(map[string]ScanData[model.Secret]),
 	}
@@ -290,6 +318,7 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 			ScanInfo:    common,
 			ScanResults: result,
 		}
+		nodeWiseData.RecordCount += uint64(len(result))
 	}
 
 	data := Info[model.Secret]{
@@ -301,10 +330,18 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 		NodeWiseData:   nodeWiseData,
 	}
 
+	log.Info().Msgf("total secret records in NodeWiseData is %d", data.NodeWiseData.RecordCount)
+
+	if data.NodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+		return &data, ErrorMaxRecords
+	}
+
 	return &data, nil
 }
 
 func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Malware], error) {
+
+	log := log.WithCtx(ctx)
 
 	searchFilter := searchScansFilter(params)
 
@@ -325,12 +362,13 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 		return nil, err
 	}
 
-	log.Info().Msgf("malware scan info: %+v", scans)
+	log.Info().Msgf("found %d malware scans", len(scans))
 
 	severityFilter := scanResultFilter("file_severity",
 		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.Malware]{
+		RecordCount:   0,
 		SeverityCount: make(map[string]map[string]int32),
 		ScanData:      make(map[string]ScanData[model.Malware]),
 	}
@@ -350,6 +388,7 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 			ScanInfo:    common,
 			ScanResults: result,
 		}
+		nodeWiseData.RecordCount += uint64(len(result))
 	}
 
 	data := Info[model.Malware]{
@@ -361,10 +400,18 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 		NodeWiseData:   nodeWiseData,
 	}
 
+	log.Info().Msgf("total malware records in NodeWiseData is %d", data.NodeWiseData.RecordCount)
+
+	if data.NodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+		return &data, ErrorMaxRecords
+	}
+
 	return &data, nil
 }
 
 func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Compliance], error) {
+
+	log := log.WithCtx(ctx)
 
 	searchFilter := searchScansFilter(params)
 
@@ -385,12 +432,13 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 		return nil, err
 	}
 
-	log.Info().Msgf("compliance scan info: %+v", scans)
+	log.Info().Msgf("found %d compliance scans", len(scans))
 
 	severityFilter := scanResultFilter("compliance_check_type",
 		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.Compliance]{
+		RecordCount:   0,
 		SeverityCount: make(map[string]map[string]int32),
 		ScanData:      make(map[string]ScanData[model.Compliance]),
 	}
@@ -410,6 +458,7 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 			ScanInfo:    common,
 			ScanResults: result,
 		}
+		nodeWiseData.RecordCount += uint64(len(result))
 	}
 
 	data := Info[model.Compliance]{
@@ -421,10 +470,18 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 		NodeWiseData:   nodeWiseData,
 	}
 
+	log.Info().Msgf("total compliance records in NodeWiseData is %d", data.NodeWiseData.RecordCount)
+
+	if data.NodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+		return &data, ErrorMaxRecords
+	}
+
 	return &data, nil
 }
 
 func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.CloudCompliance], error) {
+
+	log := log.WithCtx(ctx)
 
 	searchFilter := searchScansFilter(params)
 
@@ -446,12 +503,13 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 		return nil, err
 	}
 
-	log.Info().Msgf("cloud compliance scan info: %+v", scans)
+	log.Info().Msgf("found %d cloud compliance scans", len(scans))
 
 	severityFilter := scanResultFilter("compliance_check_type",
 		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.CloudCompliance]{
+		RecordCount:   0,
 		SeverityCount: make(map[string]map[string]int32),
 		ScanData:      make(map[string]ScanData[model.CloudCompliance]),
 	}
@@ -471,6 +529,7 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 			ScanInfo:    common,
 			ScanResults: result,
 		}
+		nodeWiseData.RecordCount += uint64(len(result))
 	}
 
 	data := Info[model.CloudCompliance]{
@@ -480,6 +539,12 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 		EndTime:        end.Format(time.RFC3339),
 		AppliedFilters: updateFilters(ctx, params.Filters),
 		NodeWiseData:   nodeWiseData,
+	}
+
+	log.Info().Msgf("total cloud compliance records in NodeWiseData is %d", data.NodeWiseData.RecordCount)
+
+	if data.NodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+		return &data, ErrorMaxRecords
 	}
 
 	return &data, nil
@@ -496,6 +561,9 @@ func updateFilters(ctx context.Context, original sdkUtils.ReportFilters) sdkUtil
 }
 
 func NodeIDToNodeName(ctx context.Context, nodeIds []string, node_type string) []string {
+
+	log := log.WithCtx(ctx)
+
 	nodes := []string{}
 
 	driver, err := directory.Neo4jClient(ctx)

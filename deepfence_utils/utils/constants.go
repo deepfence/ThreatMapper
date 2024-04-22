@@ -70,7 +70,9 @@ const (
 )
 
 const (
-	ReportRetentionTime = 24 * time.Hour
+	ReportRetentionTime     = 24 * time.Hour
+	ReportGenerationTimeout = 30 * time.Minute
+	ReportRecordsMax        = 100000
 )
 
 const (

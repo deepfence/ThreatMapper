@@ -53,8 +53,12 @@ func generatePDF(ctx context.Context, params utils.ReportParams) (string, error)
 	}
 
 	if err != nil {
+		log.Error().Err(err).Msg("failed to generate report html")
 		return "", err
 	}
+
+	log.Info().Msgf("report id %s html size %.2fMB",
+		params.ReportID, float64(buffer.Len())/(1000*1000))
 
 	pdfGen, err := wkhtmltopdf.NewPDFGenerator()
 	if err != nil {
