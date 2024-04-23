@@ -84,6 +84,10 @@ const (
 	ScanStatusDeletePending = "DELETE_PENDING"
 )
 
+const (
+	ScanRetryFailedStatusMessage = "scan failed to complete, no scan status received"
+)
+
 // Neo4j Node Labels
 const (
 	NodeTypeCloudProvider     = "CloudProvider"

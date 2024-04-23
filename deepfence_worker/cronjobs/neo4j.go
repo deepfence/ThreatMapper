@@ -298,13 +298,14 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 			MATCH (n:`+string(ts)+`) -[:SCANNED]-> (r)
 			WHERE n.retries >= 3
 			WITH n, r LIMIT 10000
-			SET n.status = $new_status
+			SET n.status = $new_status, n.status_message = $new_status_message
 			WITH n, r
 			MATCH (r) WHERE r.`+ingestersUtil.LatestScanIDField[ts]+`=n.node_id
 			SET r.`+ingestersUtil.ScanStatusField[ts]+`=n.status`,
 			map[string]interface{}{
-				"time_ms":    dbScanTimeout.Milliseconds(),
-				"new_status": utils.ScanStatusFailed,
+				"time_ms":            dbScanTimeout.Milliseconds(),
+				"new_status":         utils.ScanStatusFailed,
+				"new_status_message": utils.ScanRetryFailedStatusMessage,
 			}, txConfig); err != nil {
 			log.Error().Msgf("Error in Clean up DB task: %v", err)
 			return err
@@ -315,10 +316,11 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		MATCH (:AgentVersion) -[n:SCHEDULED]-> (:Node)
 		WHERE n.retries >= 3
 		WITH n LIMIT 10000
-		SET n.status = $new_status`,
+		SET n.status = $new_status, n.status_message = $new_status_message`,
 		map[string]interface{}{
-			"time_ms":    dbUpgradeTimeout.Milliseconds(),
-			"new_status": utils.ScanStatusFailed,
+			"time_ms":            dbUpgradeTimeout.Milliseconds(),
+			"new_status":         utils.ScanStatusFailed,
+			"new_status_message": utils.ScanRetryFailedStatusMessage,
 		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -328,10 +330,11 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		MATCH (n:AgentDiagnosticLogs)
 		WHERE n.retries >= 3
 		WITH n LIMIT 10000
-		SET n.status = $new_status`,
+		SET n.status = $new_status, n.status_message = $new_status_message`,
 		map[string]interface{}{
-			"time_ms":    dbUpgradeTimeout.Milliseconds(),
-			"new_status": utils.ScanStatusFailed,
+			"time_ms":            dbUpgradeTimeout.Milliseconds(),
+			"new_status":         utils.ScanStatusFailed,
+			"new_status_message": utils.ScanRetryFailedStatusMessage,
 		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -341,10 +344,11 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		MATCH (n:CloudScannerDiagnosticLogs)
 		WHERE n.retries >= 3
 		WITH n LIMIT 10000
-		SET n.status = $new_status`,
+		SET n.status = $new_status, n.status_message = $new_status_message`,
 		map[string]interface{}{
-			"time_ms":    dbUpgradeTimeout.Milliseconds(),
-			"new_status": utils.ScanStatusFailed,
+			"time_ms":            dbUpgradeTimeout.Milliseconds(),
+			"new_status":         utils.ScanStatusFailed,
+			"new_status_message": utils.ScanRetryFailedStatusMessage,
 		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
