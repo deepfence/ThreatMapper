@@ -191,6 +191,11 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 			ScanResults: result,
 		}
 		nodeWiseData.RecordCount += uint64(len(result))
+
+		// return early
+		if nodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+			return nil, ErrorMaxRecords
+		}
 	}
 
 	data := Info[model.Vulnerability]{
@@ -202,18 +207,10 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 		NodeWiseData:   nodeWiseData,
 	}
 
-	log.Info().Msgf("total vulnerability records in NodeWiseData is %d", data.NodeWiseData.RecordCount)
-
-	if data.NodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
-		return &data, ErrorMaxRecords
-	}
-
 	return &data, nil
 }
 
 func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Vulnerability], error) {
-
-	log := log.WithCtx(ctx)
 
 	var req rptSearch.SearchNodeReq
 	req.ExtendedNodeFilter.Filters.OrderFilter.OrderFields = []reporters.OrderSpec{{FieldName: "cve_cvss_score", Descending: true}}
@@ -257,9 +254,6 @@ func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParam
 		AppliedFilters: updateFilters(ctx, params.Filters),
 		NodeWiseData:   nodeWiseData,
 	}
-
-	log.Info().Msgf("total most exploitable vulnerability records in NodeWiseData is %d",
-		data.NodeWiseData.RecordCount)
 
 	if data.NodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
 		return &data, ErrorMaxRecords
@@ -318,7 +312,11 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 			ScanInfo:    common,
 			ScanResults: result,
 		}
-		nodeWiseData.RecordCount += uint64(len(result))
+
+		// return early
+		if nodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+			return nil, ErrorMaxRecords
+		}
 	}
 
 	data := Info[model.Secret]{
@@ -328,12 +326,6 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 		EndTime:        end.Format(time.RFC3339),
 		AppliedFilters: updateFilters(ctx, params.Filters),
 		NodeWiseData:   nodeWiseData,
-	}
-
-	log.Info().Msgf("total secret records in NodeWiseData is %d", data.NodeWiseData.RecordCount)
-
-	if data.NodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
-		return &data, ErrorMaxRecords
 	}
 
 	return &data, nil
@@ -389,6 +381,11 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 			ScanResults: result,
 		}
 		nodeWiseData.RecordCount += uint64(len(result))
+
+		// return early
+		if nodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+			return nil, ErrorMaxRecords
+		}
 	}
 
 	data := Info[model.Malware]{
@@ -398,12 +395,6 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 		EndTime:        end.Format(time.RFC3339),
 		AppliedFilters: updateFilters(ctx, params.Filters),
 		NodeWiseData:   nodeWiseData,
-	}
-
-	log.Info().Msgf("total malware records in NodeWiseData is %d", data.NodeWiseData.RecordCount)
-
-	if data.NodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
-		return &data, ErrorMaxRecords
 	}
 
 	return &data, nil
@@ -459,6 +450,11 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 			ScanResults: result,
 		}
 		nodeWiseData.RecordCount += uint64(len(result))
+
+		// return early
+		if nodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+			return nil, ErrorMaxRecords
+		}
 	}
 
 	data := Info[model.Compliance]{
@@ -468,12 +464,6 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 		EndTime:        end.Format(time.RFC3339),
 		AppliedFilters: updateFilters(ctx, params.Filters),
 		NodeWiseData:   nodeWiseData,
-	}
-
-	log.Info().Msgf("total compliance records in NodeWiseData is %d", data.NodeWiseData.RecordCount)
-
-	if data.NodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
-		return &data, ErrorMaxRecords
 	}
 
 	return &data, nil
@@ -530,6 +520,11 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 			ScanResults: result,
 		}
 		nodeWiseData.RecordCount += uint64(len(result))
+
+		// return early
+		if nodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+			return nil, ErrorMaxRecords
+		}
 	}
 
 	data := Info[model.CloudCompliance]{
@@ -539,12 +534,6 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 		EndTime:        end.Format(time.RFC3339),
 		AppliedFilters: updateFilters(ctx, params.Filters),
 		NodeWiseData:   nodeWiseData,
-	}
-
-	log.Info().Msgf("total cloud compliance records in NodeWiseData is %d", data.NodeWiseData.RecordCount)
-
-	if data.NodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
-		return &data, ErrorMaxRecords
 	}
 
 	return &data, nil

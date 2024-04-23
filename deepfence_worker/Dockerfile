@@ -4,7 +4,6 @@ ARG IMAGE_REPOSITORY=deepfenceio
 FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS packagescanner
 FROM $IMAGE_REPOSITORY/deepfence_secret_scanner_ce:$DF_IMG_TAG AS secretscanner
 FROM $IMAGE_REPOSITORY/deepfence_malware_scanner_ce:$DF_IMG_TAG AS yarahunter
-FROM surnet/alpine-wkhtmltopdf:3.17.0-0.12.6-full as wkhtmltopdf
 FROM $IMAGE_REPOSITORY/deepfence_builder_ce:$DF_IMG_TAG AS builder-yara
 
 FROM alpine:3.18 AS final
@@ -30,7 +29,12 @@ ENV DEEPFENCE_KAFKA_TOPIC_PARTITIONS=3 \
     DEEPFENCE_MODE=worker \
     LD_LIBRARY_PATH=/usr/local/yara/lib
 
-COPY --from=wkhtmltopdf /bin/wkhtmltopdf /bin/libwkhtmltox.so /bin/
+# ENV GRYPE_DB_UPDATE_URL="http://${DEEPFENCE_FILE_SERVER_HOST}:${DEEPFENCE_FILE_SERVER_PORT}/database/database/vulnerability/listing.json"
+
+# RUN apk add --no-cache --update bash curl \
+#     && apk upgrade \
+#     && curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin v0.55.0
+
 
 COPY --from=packagescanner /usr/local/bin/syft /usr/local/bin/syft
 COPY --from=packagescanner /usr/local/bin/grype /usr/local/bin/grype

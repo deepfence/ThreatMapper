@@ -148,7 +148,7 @@ func failInprogressReports(ctx context.Context, session neo4j.SessionWithContext
 
 	duration := utils.ReportGenerationTimeout.Milliseconds()
 
-	query := `MATCH (n:Report{status:"$inprogress"}) WHERE TIMESTAMP()-n.updated_at > $duration SET n.status="$error"`
+	query := `MATCH (n:Report{status:$inprogress}) WHERE TIMESTAMP()-n.updated_at > $duration SET n.status=$error`
 	vars := map[string]interface{}{
 		"duration":   duration,
 		"inprogress": utils.ScanStatusInProgress,
