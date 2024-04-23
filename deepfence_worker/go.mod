@@ -1,8 +1,8 @@
 module github.com/deepfence/ThreatMapper/deepfence_worker
 
-go 1.21.0
+go 1.21.1
 
-toolchain go1.21.1
+toolchain go1.21.9
 
 replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_sdk/client/
 
@@ -26,8 +26,6 @@ replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/ag
 require github.com/anchore/syft v0.94.0
 
 require (
-	github.com/Masterminds/sprig/v3 v3.2.3
-	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.9.2
 	github.com/aws/aws-sdk-go v1.49.16
 	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/deepfence/SecretScanner v0.0.0-00010101000000-000000000000
@@ -40,6 +38,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/hibiken/asynq v0.24.1
 	github.com/jellydator/ttlcache/v3 v3.2.0
+	github.com/johnfercher/maroto/v2 v2.0.0-beta.17
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/minio/minio-go/v7 v7.0.66
 	github.com/neo4j/neo4j-go-driver/v5 v5.17.0
@@ -68,6 +67,7 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
+	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Microsoft/hcsshim v0.12.0-rc.0 // indirect
 	github.com/PagerDuty/go-pagerduty v1.7.0 // indirect
@@ -85,6 +85,7 @@ require (
 	github.com/becheran/wildmatch-go v1.0.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.6.0 // indirect
+	github.com/boombuler/barcode v1.0.1 // indirect
 	github.com/casbin/casbin/v2 v2.81.0 // indirect
 	github.com/casbin/govaluate v1.1.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
@@ -113,6 +114,7 @@ require (
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
+	github.com/f-amaral/go-async v0.3.0 // indirect
 	github.com/facebookincubator/nvdtools v0.1.5 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -153,6 +155,8 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.5 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/hhrutter/lzw v1.0.0 // indirect
+	github.com/hhrutter/tiff v1.0.1 // indirect
 	github.com/hillu/go-yara/v4 v4.3.2 // indirect
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/iancoleman/strcase v0.3.0 // indirect
@@ -160,8 +164,10 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/johnfercher/go-tree v1.0.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	github.com/k-sone/critbitgo v1.4.0 // indirect
 	github.com/klauspost/compress v1.17.4 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.6 // indirect
@@ -205,6 +211,7 @@ require (
 	github.com/opencontainers/runtime-spec v1.1.1-0.20230823135140-4fec88fd00a4 // indirect
 	github.com/opencontainers/selinux v1.11.0 // indirect
 	github.com/pborman/indent v1.2.1 // indirect
+	github.com/pdfcpu/pdfcpu v0.6.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/pierrec/lz4/v4 v4.1.19 // indirect
@@ -216,7 +223,7 @@ require (
 	github.com/redis/go-redis/v9 v9.4.0 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.3 // indirect
-	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/samber/lo v1.39.0 // indirect
 	github.com/samber/mo v1.11.0 // indirect
@@ -258,6 +265,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
+	golang.org/x/image v0.15.0 // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/oauth2 v0.13.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
