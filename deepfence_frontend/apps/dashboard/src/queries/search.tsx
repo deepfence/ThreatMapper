@@ -244,6 +244,99 @@ export const searchQueries = createQueryKeys('search', {
       },
     };
   },
+  namespaces: (filters: {
+    searchText?: string;
+    size: number;
+    active?: boolean;
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
+  }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async ({
+        pageParam = 0,
+      }): Promise<{
+        namespaces: {
+          nodeId: string;
+          namespace: string;
+        }[];
+      }> => {
+        const { searchText, size, active, order } = filters;
+        const searchSearchNodeReq: SearchSearchNodeReq = {
+          node_filter: {
+            filters: {
+              contains_filter: {
+                filter_in: {
+                  pseudo: [false],
+                  ...(active && { active: [active === true] }),
+                },
+              },
+              not_contains_filter: {
+                filter_in: {},
+              },
+              order_filter: {
+                order_fields: [
+                  {
+                    field_name: 'updated_at',
+                    descending: true,
+                  },
+                ],
+              },
+              match_filter: { filter_in: {} },
+              compare_filter: null,
+            },
+            in_field_filter: ['kubernetes_namespace', 'kubernetes_cluster_id'],
+            window: {
+              offset: 0,
+              size: 0,
+            },
+          },
+          window: {
+            offset: pageParam,
+            size,
+          },
+        };
+        if (order) {
+          searchSearchNodeReq.node_filter.filters.order_filter.order_fields = [
+            {
+              field_name: order.sortBy,
+              descending: order.descending,
+            },
+          ];
+        }
+        if (searchText?.length) {
+          searchSearchNodeReq.node_filter.filters.match_filter.filter_in = {
+            pod_name: [searchText],
+          };
+        }
+
+        const searchPodsApi = apiWrapper({
+          fn: getSearchApiClient().searchPods,
+        });
+        const searchPodsResponse = await searchPodsApi({
+          searchSearchNodeReq,
+        });
+        if (!searchPodsResponse.ok) {
+          throw searchPodsResponse.error;
+        }
+        if (searchPodsResponse.value === null) {
+          return {
+            namespaces: [],
+          };
+        }
+        return {
+          namespaces: searchPodsResponse.value.slice(0, size).map((res) => {
+            return {
+              nodeId: res.kubernetes_namespace,
+              namespace: res.kubernetes_namespace,
+            };
+          }),
+        };
+      },
+    };
+  },
   containers: (filters: {
     scanType: string;
     searchText?: string;

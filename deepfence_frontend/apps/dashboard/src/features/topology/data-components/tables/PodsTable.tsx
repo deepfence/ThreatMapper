@@ -26,6 +26,7 @@ import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { SearchableNamespaceList } from '@/components/forms/SearchableNamespaceList';
 import { SearchablePodList } from '@/components/forms/SearchablePodList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -249,6 +250,26 @@ function Filters() {
               prev.delete('clusters');
               value.forEach((cluster) => {
                 prev.append('clusters', cluster);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
+        <SearchableNamespaceList
+          defaultSelectedNamespaces={searchParams.getAll('pods')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('pods');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('pods');
+              value.forEach((pod) => {
+                prev.append('pods', pod);
               });
               prev.delete('page');
               return prev;
