@@ -271,6 +271,7 @@ func (h *Handler) DiffAddVulnerabilityScan(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
+		return
 	}
 
 	new, err := reportersScan.GetScanResultDiff[model.Vulnerability](r.Context(), utils.NEO4JVulnerabilityScan, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
@@ -292,6 +293,7 @@ func (h *Handler) DiffAddSecretScan(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
+		return
 	}
 
 	new, err := reportersScan.GetScanResultDiff[model.Secret](r.Context(), utils.NEO4JSecretScan, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
@@ -313,6 +315,7 @@ func (h *Handler) DiffAddComplianceScan(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
+		return
 	}
 
 	new, err := reportersScan.GetScanResultDiff[model.Compliance](r.Context(), utils.NEO4JComplianceScan, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
@@ -334,6 +337,7 @@ func (h *Handler) DiffAddMalwareScan(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
+		return
 	}
 
 	new, err := reportersScan.GetScanResultDiff[model.Malware](r.Context(), utils.NEO4JMalwareScan, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
@@ -355,6 +359,7 @@ func (h *Handler) DiffAddCloudComplianceScan(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
+		return
 	}
 
 	new, err := reportersScan.GetScanResultDiff[model.CloudCompliance](r.Context(), utils.NEO4JCloudComplianceScan, req.BaseScanID, req.ToScanID, req.FieldsFilter, req.Window)
@@ -1381,11 +1386,13 @@ func (h *Handler) CloudComplianceFiltersHandler(w http.ResponseWriter, r *http.R
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
+		return
 	}
 	res, err := reportersScan.GetFilters(r.Context(), req.Having, utils.ScanTypeDetectedNode[utils.NEO4JCloudComplianceScan], req.RequiredFilters)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
+		return
 	}
 	err = httpext.JSON(w, http.StatusOK, model.FiltersResult{Filters: res})
 	if err != nil {
@@ -1400,11 +1407,13 @@ func (h *Handler) ComplianceFiltersHandler(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
+		return
 	}
 	res, err := reportersScan.GetFilters(r.Context(), req.Having, utils.ScanTypeDetectedNode[utils.NEO4JComplianceScan], req.RequiredFilters)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
+		return
 	}
 	err = httpext.JSON(w, http.StatusOK, model.FiltersResult{Filters: res})
 	if err != nil {

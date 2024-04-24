@@ -556,9 +556,11 @@ func searchGenericScanInfoReport(ctx context.Context, scanType utils.Neo4jScanTy
 		return res, err
 	}
 
+	ff := reporters.FieldsFilters{}
+
 	for _, rec := range recs {
 
-		counts, err := reporters_scan.GetSevCounts(ctx, resourceFilter.Filters, scanType, rec.Values[0].(string))
+		counts, err := reporters_scan.GetSevCounts(ctx, ff, scanType, rec.Values[0].(string))
 		if err != nil {
 			log.Error().Msgf("%v", err)
 		}
