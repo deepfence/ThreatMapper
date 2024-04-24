@@ -1,16 +1,8 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { upperFirst } from 'lodash-es';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
-import {
-  Button,
-  FileInput,
-  Listbox,
-  ListboxOption,
-  Modal,
-  Radio,
-  Separator,
-} from 'ui-components';
+import { Button, FileInput, Modal, Radio, Separator, TextInput } from 'ui-components';
 
 import { getScanResultsApiClient, getSettingsApiClient } from '@/api/api';
 import { ModelBulkDeleteScansRequestScanTypeEnum as ModelBulkDeleteScansRequestScanTypeEnumType } from '@/api/generated';
@@ -34,15 +26,7 @@ import { invalidateAllQueries } from '@/queries';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
-const DURATION: { [k: string]: number } = {
-  'Last 1 Day': 86400000,
-  'Last 7 Days': 604800000,
-  'Last 30 Days': 2592000000,
-  'Last 60 Days': 5184000000,
-  'Last 90 Days': 7776000000,
-  'Last 180 Days': 15552000000,
-  All: 0,
-};
+const millisecondsOf1Day = 86400000;
 
 const files: { [filename: string]: File } = {};
 
@@ -64,6 +48,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
 
   if (actionType === ActionEnumType.DELETE) {
     const duration = parseInt(formData.get('duration')?.toString() ?? '0', 10);
+    const scanPeriodOption = formData.get('scanPeriodOption')?.toString();
     const scanType = formData
       .get('selectedResource')
       ?.toString() as ModelBulkDeleteScansRequestScanTypeEnumType;
@@ -81,8 +66,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
       modelBulkDeleteScansRequest.filters.compare_filter = [
         {
           field_name: 'updated_at',
-          field_value: `${Date.now() - duration}`,
-          greater_than: true,
+          field_value: `${Date.now() - duration * millisecondsOf1Day}`,
+          greater_than: scanPeriodOption === 'last',
         },
       ];
     }
@@ -174,6 +159,7 @@ const DeleteConfirmationModal = ({
   showDialog,
   setShowDialog,
   data,
+  scanPeriodOption,
 }: {
   showDialog: boolean;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
@@ -181,6 +167,7 @@ const DeleteConfirmationModal = ({
     duration: number;
     selectedResource: string;
   };
+  scanPeriodOption: 'older' | 'last' | 'all';
 }) => {
   const fetcher = useFetcher<{
     deleteSuccess: boolean;
@@ -220,6 +207,7 @@ const DeleteConfirmationModal = ({
                 const formData = new FormData();
                 formData.append('actionType', ActionEnumType.DELETE);
                 formData.append('selectedResource', data.selectedResource);
+                formData.append('scanPeriodOption', scanPeriodOption);
                 formData.append('duration', data.duration.toString());
                 fetcher.submit(formData, {
                   method: 'post',
@@ -674,10 +662,17 @@ const resources: {
 
 const ScanHistoryAndDbManagement = () => {
   const [, setSeverityOrResources] = useState('severity');
+  const [scanPeriodOption, setScanPeriodOption] = useState<'older' | 'last' | 'all'>(
+    'older',
+  );
   const [selectedResource, setSelectedResource] = useState<string>(
     ModelBulkDeleteScansRequestScanTypeEnumType.Vulnerability,
   );
-  const [duration, setDuration] = useState<number>(DURATION['Last 1 Day']);
+  const [duration, setDuration] = useState({
+    lastDuration: 1,
+    olderDuration: 1,
+    allDuration: 0,
+  });
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -687,6 +682,15 @@ const ScanHistoryAndDbManagement = () => {
     }
   }, [selectedResource]);
 
+  const selectedDuration = useMemo(() => {
+    if (scanPeriodOption === 'older') {
+      return duration.olderDuration;
+    } else if (scanPeriodOption === 'last') {
+      return duration.lastDuration;
+    }
+    return duration.allDuration;
+  }, [duration, scanPeriodOption]);
+
   return (
     <>
       {showDeleteDialog && (
@@ -694,13 +698,14 @@ const ScanHistoryAndDbManagement = () => {
           showDialog={showDeleteDialog}
           setShowDialog={setShowDeleteDialog}
           data={{
-            duration,
+            duration: selectedDuration,
             selectedResource,
           }}
+          scanPeriodOption={scanPeriodOption}
         />
       )}
       <div className="mt-2">
-        <h3 className="text-h6 text-text-input-value">Scan History</h3>
+        <h3 className="text-h6 text-text-input-value">Delete Scan History</h3>
       </div>
 
       <p className="mt-2 text-p4 text-text-text-and-icon">
@@ -720,36 +725,112 @@ const ScanHistoryAndDbManagement = () => {
           }}
         />
       </div>
-      <div className="w-[300px] mt-6">
-        <Listbox
-          label="Choose duration"
-          name="duration"
-          value={duration}
-          onChange={(value) => {
-            setDuration(value);
-          }}
-          getDisplayValue={(item) => {
-            for (const [key, value] of Object.entries(DURATION)) {
-              if (value == item) {
-                return key;
-              }
-            }
-            return 'Last 1 Day';
-          }}
-        >
-          {Object.keys(DURATION).map((key) => {
-            return (
-              <ListboxOption key={key} value={DURATION[key]}>
-                {key}
-              </ListboxOption>
-            );
-          })}
-        </Listbox>
+      <div className="mt-6">
+        <div className="mt-2">
+          <h3 className="text-h6 text-text-input-value">Scan Period</h3>
+        </div>
+        <div className="my-2 flex text-p4 items-center">
+          <Radio
+            value={scanPeriodOption}
+            name="scanPeriodOption"
+            options={[
+              {
+                label: '',
+                value: 'older',
+              },
+            ]}
+            onValueChange={() => {
+              setScanPeriodOption('older');
+              setDuration({
+                lastDuration: 1,
+                olderDuration: 1,
+                allDuration: 0,
+              });
+            }}
+          />
+          <span>Older than</span>
+          <div className="w-[60px] mx-2">
+            <TextInput
+              type="number"
+              name="duration"
+              min={1}
+              value={duration.olderDuration}
+              onChange={(e) => {
+                setDuration({
+                  lastDuration: 1,
+                  olderDuration: parseInt(e.target.value.trim(), 10),
+                  allDuration: 0,
+                });
+              }}
+            />
+          </div>
+          <span>days</span>
+        </div>
+        <div className="my-2 flex text-p4 items-center">
+          <Radio
+            value={scanPeriodOption}
+            name="scanPeriodOption"
+            options={[
+              {
+                label: '',
+                value: 'last',
+              },
+            ]}
+            onValueChange={() => {
+              setScanPeriodOption('last');
+              setDuration({
+                lastDuration: 1,
+                olderDuration: 1,
+                allDuration: 0,
+              });
+            }}
+          />
+          <span>Last</span>
+          <div className="w-[60px] mx-2">
+            <TextInput
+              type="number"
+              name="duration"
+              min={1}
+              value={duration.lastDuration}
+              onChange={(e) => {
+                setDuration({
+                  lastDuration: parseInt(e.target.value.trim(), 10),
+                  olderDuration: 1,
+                  allDuration: 0,
+                });
+              }}
+            />
+          </div>
+          <span>days</span>
+        </div>
+        <div className="my-2 flex text-p4 items-center">
+          <Radio
+            value={scanPeriodOption}
+            name="scanPeriodOption"
+            options={[
+              {
+                label: '',
+                value: 'all',
+              },
+            ]}
+            onValueChange={() => {
+              setScanPeriodOption('all');
+              setDuration({
+                lastDuration: 1,
+                olderDuration: 1,
+                allDuration: 0,
+              });
+            }}
+          />
+          <span>All</span>
+        </div>
+
         <Button
           type="button"
-          className="mt-4 w-full"
+          className="mt-4 w-[240px]"
           size="sm"
           onClick={() => setShowDeleteDialog(true)}
+          disabled={isNaN(duration.olderDuration) || isNaN(duration.lastDuration)}
         >
           Submit
         </Button>
