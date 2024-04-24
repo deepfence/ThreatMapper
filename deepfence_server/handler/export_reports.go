@@ -47,6 +47,7 @@ func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(directory.ErrNamespaceNotFound, w)
+		return
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
@@ -56,6 +57,7 @@ func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
+		return
 	}
 	defer tx.Close(ctx)
 
@@ -160,6 +162,7 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(directory.ErrNamespaceNotFound, w)
+		return
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
@@ -169,6 +172,7 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
+		return
 	}
 	defer tx.Close(ctx)
 
@@ -254,6 +258,7 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(directory.ErrNamespaceNotFound, w)
+		return
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
@@ -263,6 +268,7 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
+		return
 	}
 	defer tx.Close(ctx)
 
@@ -328,6 +334,7 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(directory.ErrNamespaceNotFound, w)
+		return
 	}
 
 	ctx := r.Context()
@@ -339,6 +346,7 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
+		return
 	}
 	defer tx.Close(ctx)
 
@@ -502,6 +510,7 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(directory.ErrNamespaceNotFound, w)
+		return
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
@@ -511,6 +520,7 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
+		return
 	}
 	defer tx.Close(ctx)
 
