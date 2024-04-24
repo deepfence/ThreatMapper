@@ -85,7 +85,7 @@ const (
 )
 
 const (
-	ScanRetryFailedStatusMessage = "scan failed to complete, no scan status received"
+	ScanRetryFailedStatusMessage = "scan failed to complete, please check agent logs"
 )
 
 // Neo4j Node Labels
