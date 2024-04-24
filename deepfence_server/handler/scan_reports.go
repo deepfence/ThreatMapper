@@ -1412,38 +1412,37 @@ func (h *Handler) ComplianceFiltersHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scanType utils.Neo4jScanType) ([]T, model.ScanResultsCommon, error) {
+func listScanResultsHandlerGetScanResults[T any](w http.ResponseWriter, r *http.Request, scanType utils.Neo4jScanType) ([]T, model.ScanResultsReq, model.ScanResultsCommon, error) {
 	defer r.Body.Close()
 	var req model.ScanResultsReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		return nil, model.ScanResultsCommon{}, &BadDecoding{err}
+		return nil, req, model.ScanResultsCommon{}, &BadDecoding{err}
 	}
 
 	entries, common, err := reportersScan.GetScanResults[T](r.Context(), scanType, req.ScanID, req.FieldsFilter, req.Window)
 	if err != nil {
-		return nil, model.ScanResultsCommon{}, err
+		return nil, req, model.ScanResultsCommon{}, err
 	}
 	common.ScanID = req.ScanID
+	return entries, req, common, nil
+}
+
+func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scanType utils.Neo4jScanType) ([]T, model.ScanResultsCommon, error) {
+	entries, _, common, err := listScanResultsHandlerGetScanResults[T](w, r, scanType)
+	if err != nil {
+		return nil, model.ScanResultsCommon{}, err
+	}
 	return entries, common, nil
 }
 
 func listScanResultsHandlerWithSeverityCounts[T any](w http.ResponseWriter, r *http.Request, scanType utils.Neo4jScanType) ([]T, model.ScanResultsCommon, map[string]int32, error) {
 	severityCounts := map[string]int32{}
-	defer r.Body.Close()
-	var req model.ScanResultsReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-	if err != nil {
-		log.Error().Msgf("%v", err)
-		return nil, model.ScanResultsCommon{}, severityCounts, &BadDecoding{err}
-	}
-
-	entries, common, err := reportersScan.GetScanResults[T](r.Context(), scanType, req.ScanID, req.FieldsFilter, req.Window)
+	entries, req, common, err := listScanResultsHandlerGetScanResults[T](w, r, scanType)
 	if err != nil {
 		return nil, model.ScanResultsCommon{}, severityCounts, err
 	}
-	common.ScanID = req.ScanID
 
 	severityCounts, err = reportersScan.GetSevCounts(r.Context(), req.FieldsFilter, scanType, req.ScanID)
 	if err != nil {
@@ -1454,20 +1453,11 @@ func listScanResultsHandlerWithSeverityCounts[T any](w http.ResponseWriter, r *h
 }
 
 func listScanResultsHandlerWithComplianceStats[T any](w http.ResponseWriter, r *http.Request, scanType utils.Neo4jScanType) ([]T, model.ScanResultsCommon, model.ComplianceAdditionalInfo, error) {
-	defer r.Body.Close()
-	var req model.ScanResultsReq
 	var additionalInfo model.ComplianceAdditionalInfo
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-	if err != nil {
-		log.Error().Msgf("%v", err)
-		return nil, model.ScanResultsCommon{}, additionalInfo, &BadDecoding{err}
-	}
-
-	entries, common, err := reportersScan.GetScanResults[T](r.Context(), scanType, req.ScanID, req.FieldsFilter, req.Window)
+	entries, req, common, err := listScanResultsHandlerGetScanResults[T](w, r, scanType)
 	if err != nil {
 		return nil, model.ScanResultsCommon{}, additionalInfo, err
 	}
-	common.ScanID = req.ScanID
 
 	additionalInfo, err = reportersScan.GetCloudComplianceStats(r.Context(), req.FieldsFilter, req.ScanID, scanType)
 	if err != nil {
