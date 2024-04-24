@@ -1122,7 +1122,7 @@ func (h *Handler) ListComplianceScanResultsHandler(w http.ResponseWriter, r *htt
 		h.respondError(err, w)
 		return
 	}
-	additionalInfo, err := reportersScan.GetCloudComplianceStats(r.Context(), common.ScanID, utils.NEO4JComplianceScan)
+	additionalInfo, err := reportersScan.GetCloudComplianceStats(r.Context(), req.FieldsFilter, common.ScanID, utils.NEO4JComplianceScan)
 	if err != nil {
 		log.Error().Err(err).Msg("Counts computation issue")
 	}
@@ -1231,7 +1231,7 @@ func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r
 		return
 	}
 
-	additionalInfo, err := reportersScan.GetCloudComplianceStats(r.Context(), common.ScanID, utils.NEO4JCloudComplianceScan)
+	additionalInfo, err := reportersScan.GetCloudComplianceStats(r.Context(), req.FieldsFilter, common.ScanID, utils.NEO4JCloudComplianceScan)
 	if err != nil {
 		log.Error().Err(err).Msg("Counts computation issue")
 	}

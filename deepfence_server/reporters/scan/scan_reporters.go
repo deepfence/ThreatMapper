@@ -1057,7 +1057,7 @@ func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, re
 	return res, nil
 }
 
-func GetCloudComplianceStats(ctx context.Context, scanID string, neo4jComplianceType utils.Neo4jScanType) (model.ComplianceAdditionalInfo, error) {
+func GetCloudComplianceStats(ctx context.Context, ff reporters.FieldsFilters, scanID string, neo4jComplianceType utils.Neo4jScanType) (model.ComplianceAdditionalInfo, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-cloudcompliance-stats")
 	defer span.End()
@@ -1103,7 +1103,8 @@ func GetCloudComplianceStats(ctx context.Context, scanID string, neo4jCompliance
 		cloudComplianceFields = "DISTINCT d.control_id AS control_id, d.resource AS resource,"
 	}
 	nres, err := tx.Run(ctx, `
-		MATCH (m:`+string(neo4jComplianceType)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
+		MATCH (m:`+string(neo4jComplianceType)+`{node_id: $scan_id}) -[:DETECTED]-> (d)`+
+		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true)+`
 		WITH `+cloudComplianceFields+` d.status AS status
 		RETURN status, COUNT(status)`,
 		map[string]interface{}{"scan_id": scanID})
