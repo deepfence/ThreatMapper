@@ -944,7 +944,7 @@ func type2sevField(scanType utils.Neo4jScanType) string {
 	return "error_sev_field_unknown"
 }
 
-func GetSevCounts(ctx context.Context, scanType utils.Neo4jScanType, scanID string) (map[string]int32, error) {
+func GetSevCounts(ctx context.Context, ff reporters.FieldsFilters, scanType utils.Neo4jScanType, scanID string) (map[string]int32, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-sev-counts")
 	defer span.End()
@@ -967,7 +967,7 @@ func GetSevCounts(ctx context.Context, scanType utils.Neo4jScanType, scanID stri
 
 	query := `
 	MATCH (m:` + string(scanType) + `{node_id: $scan_id, status: "` + utils.ScanStatusSuccess + `"}) -[r:DETECTED]-> (d)
-	WHERE r.masked = false
+	WHERE r.masked = false` + reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), false) + `
 	OPTIONAL MATCH (m) -[:SCANNED] -> (e)
 	OPTIONAL MATCH (c:ContainerImage{node_id: e.docker_image_id}) -[:ALIAS] ->(t) -[ma:MASKED]-> (d)
 	WITH d, ma, r WHERE ma IS NULL OR ma.masked=false

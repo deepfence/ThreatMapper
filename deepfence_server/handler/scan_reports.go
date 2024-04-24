@@ -954,7 +954,7 @@ func (h *Handler) listScansHandler(w http.ResponseWriter, r *http.Request, scanT
 	}
 
 	for i := range infos.ScansInfo {
-		counts, err := reportersScan.GetSevCounts(r.Context(), scanType, infos.ScansInfo[i].ScanID)
+		counts, err := reportersScan.GetSevCounts(r.Context(), req.FieldsFilter, scanType, infos.ScansInfo[i].ScanID)
 		infos.ScansInfo[i].SeverityCounts = counts
 		if err != nil {
 			log.Error().Err(err).Msg("Counts computation issue")
@@ -1026,12 +1026,21 @@ func (h *Handler) GetScanReportFields(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ListVulnerabilityScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, common, err := listScanResultsHandler[model.Vulnerability](w, r, utils.NEO4JVulnerabilityScan)
+	defer r.Body.Close()
+	var req model.ScanResultsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	entries, common, err := listScanResultsHandler[model.Vulnerability](r.Context(), req, utils.NEO4JVulnerabilityScan)
 	if err != nil {
 		h.respondError(err, w)
 		return
 	}
-	counts, err := reportersScan.GetSevCounts(r.Context(), utils.NEO4JVulnerabilityScan, common.ScanID)
+	counts, err := reportersScan.GetSevCounts(r.Context(), req.FieldsFilter, utils.NEO4JVulnerabilityScan, common.ScanID)
 	if err != nil {
 		log.Error().Err(err).Msg("Counts computation issue")
 	}
@@ -1044,13 +1053,22 @@ func (h *Handler) ListVulnerabilityScanResultsHandler(w http.ResponseWriter, r *
 }
 
 func (h *Handler) ListSecretScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, common, err := listScanResultsHandler[model.Secret](w, r, utils.NEO4JSecretScan)
+	defer r.Body.Close()
+	var req model.ScanResultsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	entries, common, err := listScanResultsHandler[model.Secret](r.Context(), req, utils.NEO4JSecretScan)
 	if err != nil {
 		h.respondError(err, w)
 		return
 	}
 
-	counts, err := reportersScan.GetSevCounts(r.Context(), utils.NEO4JSecretScan, common.ScanID)
+	counts, err := reportersScan.GetSevCounts(r.Context(), req.FieldsFilter, utils.NEO4JSecretScan, common.ScanID)
 	if err != nil {
 		log.Error().Err(err).Msg("Counts computation issue")
 	}
@@ -1063,7 +1081,16 @@ func (h *Handler) ListSecretScanResultsHandler(w http.ResponseWriter, r *http.Re
 }
 
 func (h *Handler) ListSecretScanResultRulesHandler(w http.ResponseWriter, r *http.Request) {
-	entries, _, err := listScanResultsHandler[model.Secret](w, r, utils.NEO4JSecretScan)
+	defer r.Body.Close()
+	var req model.ScanResultsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	entries, _, err := listScanResultsHandler[model.Secret](r.Context(), req, utils.NEO4JSecretScan)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -1081,7 +1108,16 @@ func (h *Handler) ListSecretScanResultRulesHandler(w http.ResponseWriter, r *htt
 }
 
 func (h *Handler) ListComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, common, err := listScanResultsHandler[model.Compliance](w, r, utils.NEO4JComplianceScan)
+	defer r.Body.Close()
+	var req model.ScanResultsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	entries, common, err := listScanResultsHandler[model.Compliance](r.Context(), req, utils.NEO4JComplianceScan)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -1099,13 +1135,22 @@ func (h *Handler) ListComplianceScanResultsHandler(w http.ResponseWriter, r *htt
 }
 
 func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, common, err := listScanResultsHandler[model.Malware](w, r, utils.NEO4JMalwareScan)
+	defer r.Body.Close()
+	var req model.ScanResultsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	entries, common, err := listScanResultsHandler[model.Malware](r.Context(), req, utils.NEO4JMalwareScan)
 	if err != nil {
 		h.respondError(err, w)
 		return
 	}
 
-	counts, err := reportersScan.GetSevCounts(r.Context(), utils.NEO4JMalwareScan, common.ScanID)
+	counts, err := reportersScan.GetSevCounts(r.Context(), req.FieldsFilter, utils.NEO4JMalwareScan, common.ScanID)
 	if err != nil {
 		log.Error().Err(err).Msg("Counts computation issue")
 	}
@@ -1117,7 +1162,16 @@ func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.R
 }
 
 func (h *Handler) ListMalwareScanResultRulesHandler(w http.ResponseWriter, r *http.Request) {
-	entries, _, err := listScanResultsHandler[model.Malware](w, r, utils.NEO4JMalwareScan)
+	defer r.Body.Close()
+	var req model.ScanResultsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	entries, _, err := listScanResultsHandler[model.Malware](r.Context(), req, utils.NEO4JMalwareScan)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -1135,7 +1189,16 @@ func (h *Handler) ListMalwareScanResultRulesHandler(w http.ResponseWriter, r *ht
 }
 
 func (h *Handler) ListMalwareScanResultClassHandler(w http.ResponseWriter, r *http.Request) {
-	entries, _, err := listScanResultsHandler[model.Malware](w, r, utils.NEO4JMalwareScan)
+	defer r.Body.Close()
+	var req model.ScanResultsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	entries, _, err := listScanResultsHandler[model.Malware](r.Context(), req, utils.NEO4JMalwareScan)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -1153,7 +1216,16 @@ func (h *Handler) ListMalwareScanResultClassHandler(w http.ResponseWriter, r *ht
 }
 
 func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, common, err := listScanResultsHandler[model.CloudCompliance](w, r, utils.NEO4JCloudComplianceScan)
+	defer r.Body.Close()
+	var req model.ScanResultsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	entries, common, err := listScanResultsHandler[model.CloudCompliance](r.Context(), req, utils.NEO4JCloudComplianceScan)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -1172,7 +1244,16 @@ func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r
 }
 
 func (h *Handler) CountVulnerabilityScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, _, err := listScanResultsHandler[model.Vulnerability](w, r, utils.NEO4JVulnerabilityScan)
+	defer r.Body.Close()
+	var req model.ScanResultsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	entries, _, err := listScanResultsHandler[model.Vulnerability](r.Context(), req, utils.NEO4JVulnerabilityScan)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -1187,7 +1268,16 @@ func (h *Handler) CountVulnerabilityScanResultsHandler(w http.ResponseWriter, r 
 }
 
 func (h *Handler) CountSecretScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, _, err := listScanResultsHandler[model.Secret](w, r, utils.NEO4JSecretScan)
+	defer r.Body.Close()
+	var req model.ScanResultsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	entries, _, err := listScanResultsHandler[model.Secret](r.Context(), req, utils.NEO4JSecretScan)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -1202,7 +1292,16 @@ func (h *Handler) CountSecretScanResultsHandler(w http.ResponseWriter, r *http.R
 }
 
 func (h *Handler) CountComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, _, err := listScanResultsHandler[model.Compliance](w, r, utils.NEO4JComplianceScan)
+	defer r.Body.Close()
+	var req model.ScanResultsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	entries, _, err := listScanResultsHandler[model.Compliance](r.Context(), req, utils.NEO4JComplianceScan)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -1217,7 +1316,16 @@ func (h *Handler) CountComplianceScanResultsHandler(w http.ResponseWriter, r *ht
 }
 
 func (h *Handler) CountMalwareScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, _, err := listScanResultsHandler[model.Malware](w, r, utils.NEO4JMalwareScan)
+	defer r.Body.Close()
+	var req model.ScanResultsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	entries, _, err := listScanResultsHandler[model.Malware](r.Context(), req, utils.NEO4JMalwareScan)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -1232,7 +1340,16 @@ func (h *Handler) CountMalwareScanResultsHandler(w http.ResponseWriter, r *http.
 }
 
 func (h *Handler) CountCloudComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, _, err := listScanResultsHandler[model.CloudCompliance](w, r, utils.NEO4JCloudComplianceScan)
+	defer r.Body.Close()
+	var req model.ScanResultsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	entries, _, err := listScanResultsHandler[model.CloudCompliance](r.Context(), req, utils.NEO4JCloudComplianceScan)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -1435,16 +1552,8 @@ func (h *Handler) ComplianceFiltersHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scanType utils.Neo4jScanType) ([]T, model.ScanResultsCommon, error) {
-	defer r.Body.Close()
-	var req model.ScanResultsReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-	if err != nil {
-		log.Error().Msgf("%v", err)
-		return nil, model.ScanResultsCommon{}, &BadDecoding{err}
-	}
-
-	entries, common, err := reportersScan.GetScanResults[T](r.Context(), scanType, req.ScanID, req.FieldsFilter, req.Window)
+func listScanResultsHandler[T any](ctx context.Context, req model.ScanResultsReq, scanType utils.Neo4jScanType) ([]T, model.ScanResultsCommon, error) {
+	entries, common, err := reportersScan.GetScanResults[T](ctx, scanType, req.ScanID, req.FieldsFilter, req.Window)
 	if err != nil {
 		return nil, model.ScanResultsCommon{}, err
 	}
