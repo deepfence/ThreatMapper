@@ -338,6 +338,7 @@ func (h *Handler) DeleteIntegrations(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
+		return
 	}
 }
 
@@ -367,6 +368,7 @@ func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
+		return
 	}
 
 	h.AuditUserActivity(r, EventIntegration, ActionDelete,
