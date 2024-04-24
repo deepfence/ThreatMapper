@@ -729,7 +729,7 @@ const ScanHistoryAndDbManagement = () => {
         <div className="mt-2">
           <h3 className="text-h6 text-text-input-value">Scan Period</h3>
         </div>
-        <div className="my-2 flex text-p4 items-center">
+        <div className="my-2 flex text-p4 items-center dark:text-text-input-value text-text-text-and-icon">
           <Radio
             value={scanPeriodOption}
             name="scanPeriodOption"
@@ -766,7 +766,7 @@ const ScanHistoryAndDbManagement = () => {
           </div>
           <span>days</span>
         </div>
-        <div className="my-2 flex text-p4 items-center">
+        <div className="my-2 flex text-p4 items-center dark:text-text-input-value text-text-text-and-icon">
           <Radio
             value={scanPeriodOption}
             name="scanPeriodOption"
@@ -803,7 +803,7 @@ const ScanHistoryAndDbManagement = () => {
           </div>
           <span>days</span>
         </div>
-        <div className="my-2 flex text-p4 items-center">
+        <div className="my-2 flex text-p4 items-center dark:text-text-input-value text-text-text-and-icon">
           <Radio
             value={scanPeriodOption}
             name="scanPeriodOption"
