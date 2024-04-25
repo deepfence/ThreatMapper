@@ -234,7 +234,7 @@ export const scanSecretApiAction = async ({
   return scanResponse;
 };
 
-const ScanDeepfenceElements = () => {
+const ScanDeepfenceSystem = () => {
   return (
     <div className="mt-6">
       <Switch
@@ -362,7 +362,7 @@ export const SecretScanConfigureForm = ({
 
       {showScheduleScanOptions && <ScheduleScanForm />}
 
-      {wantDeepfenceSystem(data) ? <ScanDeepfenceElements /> : null}
+      {wantDeepfenceSystem(data) ? <ScanDeepfenceSystem /> : null}
 
       {fetcherData?.message && (
         <p className="text-status-error text-p7 mt-4">{fetcherData.message}</p>
