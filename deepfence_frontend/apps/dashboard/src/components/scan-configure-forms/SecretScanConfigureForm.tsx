@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button, Checkbox, Radio, Switch } from 'ui-components';
+import { Button, Checkbox, Radio, Switch, Tooltip } from 'ui-components';
 
 import { getSecretApiClient, getSettingsApiClient } from '@/api/api';
 import {
@@ -10,6 +10,7 @@ import {
   ModelSecretScanTriggerReq,
   ReportersContainsFilter,
 } from '@/api/generated';
+import { InfoStandardIcon } from '@/components/icons/common/InfoStandard';
 import { ScheduleScanForm } from '@/components/scan-configure-forms/ScheduleScanForm';
 import { invalidateAllQueries } from '@/queries';
 import { SecretScanNodeTypeEnum } from '@/types/common';
@@ -236,11 +237,19 @@ export const scanSecretApiAction = async ({
 
 const ScanDeepfenceSystem = () => {
   return (
-    <div className="mt-6">
+    <div className="mt-6 flex items-center gap-x-1">
       <Switch
         label="Scan selected Deepfence images/containers"
         name="scanDeepfenceSystem"
       />
+      <Tooltip
+        content="If the resources you have selected for the scan include Deepfence images/containers, you can enable this option to scan them. Deepfence images/containers are not scanned by default."
+        triggerAsChild
+      >
+        <span className="w-4 h-4">
+          <InfoStandardIcon />
+        </span>
+      </Tooltip>
     </div>
   );
 };
