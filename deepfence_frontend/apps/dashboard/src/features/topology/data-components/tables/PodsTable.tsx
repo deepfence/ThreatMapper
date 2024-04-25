@@ -107,6 +107,7 @@ enum FILTER_SEARCHPARAMS_KEYS_ENUM {
   clusters = 'clusters',
   kubernetesStatus = 'kubernetesStatus',
   pods = 'pods',
+  namespaces = 'namespaces',
 }
 
 const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
@@ -120,6 +121,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   clusters: 'Cluster',
   kubernetesStatus: 'Kubernetes status',
   pods: 'Pod',
+  namespaces: 'Namespace',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {

@@ -210,6 +210,7 @@ enum FILTER_SEARCHPARAMS_KEYS_ENUM {
   hosts = 'hosts',
   clusters = 'clusters',
   containers = 'containers',
+  namespaces = 'namespaces',
 }
 
 const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
@@ -225,6 +226,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   hosts: 'Host',
   clusters: 'Cluster',
   containers: 'Container',
+  namespaces: 'Namespace',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
