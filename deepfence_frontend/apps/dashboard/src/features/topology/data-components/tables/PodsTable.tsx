@@ -257,19 +257,20 @@ function Filters() {
           }}
         />
         <SearchableNamespaceList
-          defaultSelectedNamespaces={searchParams.getAll('pods')}
+          nodeType="pod"
+          defaultSelectedNamespaces={searchParams.getAll('namespaces')}
           onClearAll={() => {
             setSearchParams((prev) => {
-              prev.delete('pods');
+              prev.delete('namespaces');
               prev.delete('page');
               return prev;
             });
           }}
           onChange={(value) => {
             setSearchParams((prev) => {
-              prev.delete('pods');
+              prev.delete('namespaces');
               value.forEach((pod) => {
-                prev.append('pods', pod);
+                prev.append('namespaces', pod);
               });
               prev.delete('page');
               return prev;
@@ -347,6 +348,7 @@ function useSearchPodsWithPagination() {
       clusterNames: searchParams.getAll('clusters'),
       pods: searchParams.getAll('pods'),
       kubernetesStatus: searchParams.get('kubernetesStatus') ?? undefined,
+      kubernetesNamespace: searchParams.getAll('namespaces'),
     }),
     keepPreviousData: true,
   });

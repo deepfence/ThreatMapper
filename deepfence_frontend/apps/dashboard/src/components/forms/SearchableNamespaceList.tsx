@@ -6,11 +6,11 @@ import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 import { queries } from '@/queries';
 
 export type SearchableNamespaceListProps = {
+  nodeType: 'pod' | 'container';
   onChange?: (value: string[]) => void;
   onClearAll?: () => void;
   defaultSelectedNamespaces?: string[];
   valueKey?: 'nodeId' | 'namespace';
-  active?: boolean;
   triggerVariant?: 'select' | 'button';
   helperText?: string;
   color?: 'error' | 'default';
@@ -18,10 +18,10 @@ export type SearchableNamespaceListProps = {
 
 const PAGE_SIZE = 15;
 const SearchableNamespace = ({
+  nodeType,
   onChange,
   onClearAll,
   defaultSelectedNamespaces: defaultSelectedNamespaces,
-  active,
   triggerVariant,
   helperText,
   color,
@@ -40,16 +40,29 @@ const SearchableNamespace = ({
     setSelectedNamespaces(defaultSelectedNamespaces ?? []);
   }, [defaultSelectedNamespaces]);
 
-  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useSuspenseInfiniteQuery({
-      ...queries.search.namespaces({
+  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } = (function () {
+    if (nodeType === 'pod') {
+      return useSuspenseInfiniteQuery({
+        ...queries.common.searchPodsInfo({
+          size: PAGE_SIZE,
+          searchText,
+          fieldName: 'kubernetes_namespace',
+        }),
+        keepPreviousData: true,
+        getNextPageParam: (lastPage, allPages) => {
+          return allPages.length * PAGE_SIZE;
+        },
+        getPreviousPageParam: (firstPage, allPages) => {
+          if (!allPages.length) return 0;
+          return (allPages.length - 1) * PAGE_SIZE;
+        },
+      });
+    }
+    return useSuspenseInfiniteQuery({
+      ...queries.common.searchContainersInfo({
         size: PAGE_SIZE,
         searchText,
-        active,
-        order: {
-          sortBy: 'kubernetes_namespace',
-          descending: false,
-        },
+        fieldName: 'kubernetes_namespace',
       }),
       keepPreviousData: true,
       getNextPageParam: (lastPage, allPages) => {
@@ -60,6 +73,7 @@ const SearchableNamespace = ({
         return (allPages.length - 1) * PAGE_SIZE;
       },
     });
+  })();
 
   const searchNamespace = debounce((query: string) => {
     setSearchText(query);
@@ -71,13 +85,6 @@ const SearchableNamespace = ({
 
   return (
     <>
-      <input
-        type="text"
-        name="selectedNamespaceLength"
-        hidden
-        readOnly
-        value={selectedNamespaces.length}
-      />
       <Combobox
         startIcon={
           isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
@@ -106,15 +113,12 @@ const SearchableNamespace = ({
       >
         {data?.pages
           .flatMap((page) => {
-            return page.namespaces;
+            return page.data;
           })
-          .map((namespace, index) => {
+          .map((item, index) => {
             return (
-              <ComboboxOption
-                key={`${namespace.namespace}-${index}`}
-                value={namespace.namespace}
-              >
-                {namespace.namespace}
+              <ComboboxOption key={`${item}-${index}`} value={item}>
+                {item}
               </ComboboxOption>
             );
           })}

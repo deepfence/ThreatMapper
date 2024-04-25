@@ -39,7 +39,15 @@ export interface CompleteComplianceInfoRequest {
     completionCompletionNodeFieldReq?: CompletionCompletionNodeFieldReq;
 }
 
+export interface CompleteContainerInfoRequest {
+    completionCompletionNodeFieldReq?: CompletionCompletionNodeFieldReq;
+}
+
 export interface CompleteHostInfoRequest {
+    completionCompletionNodeFieldReq?: CompletionCompletionNodeFieldReq;
+}
+
+export interface CompletePodInfoRequest {
     completionCompletionNodeFieldReq?: CompletionCompletionNodeFieldReq;
 }
 
@@ -91,6 +99,22 @@ export interface CompletionApiInterface {
     completeComplianceInfo(requestParameters: CompleteComplianceInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes>;
 
     /**
+     * Complete Container info
+     * @summary Get Completion for Container fields
+     * @param {CompletionCompletionNodeFieldReq} [completionCompletionNodeFieldReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CompletionApiInterface
+     */
+    completeContainerInfoRaw(requestParameters: CompleteContainerInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CompletionCompletionNodeFieldRes>>;
+
+    /**
+     * Complete Container info
+     * Get Completion for Container fields
+     */
+    completeContainerInfo(requestParameters: CompleteContainerInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes>;
+
+    /**
      * Complete host info
      * @summary Get Completion for host fields
      * @param {CompletionCompletionNodeFieldReq} [completionCompletionNodeFieldReq] 
@@ -105,6 +129,22 @@ export interface CompletionApiInterface {
      * Get Completion for host fields
      */
     completeHostInfo(requestParameters: CompleteHostInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes>;
+
+    /**
+     * Complete Pod info
+     * @summary Get Completion for Pod fields
+     * @param {CompletionCompletionNodeFieldReq} [completionCompletionNodeFieldReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CompletionApiInterface
+     */
+    completePodInfoRaw(requestParameters: CompletePodInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CompletionCompletionNodeFieldRes>>;
+
+    /**
+     * Complete Pod info
+     * Get Completion for Pod fields
+     */
+    completePodInfo(requestParameters: CompletePodInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes>;
 
     /**
      * Complete process info
@@ -224,6 +264,45 @@ export class CompletionApi extends runtime.BaseAPI implements CompletionApiInter
     }
 
     /**
+     * Complete Container info
+     * Get Completion for Container fields
+     */
+    async completeContainerInfoRaw(requestParameters: CompleteContainerInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CompletionCompletionNodeFieldRes>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/complete/container`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CompletionCompletionNodeFieldReqToJSON(requestParameters.completionCompletionNodeFieldReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CompletionCompletionNodeFieldResFromJSON(jsonValue));
+    }
+
+    /**
+     * Complete Container info
+     * Get Completion for Container fields
+     */
+    async completeContainerInfo(requestParameters: CompleteContainerInfoRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes> {
+        const response = await this.completeContainerInfoRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Complete host info
      * Get Completion for host fields
      */
@@ -259,6 +338,45 @@ export class CompletionApi extends runtime.BaseAPI implements CompletionApiInter
      */
     async completeHostInfo(requestParameters: CompleteHostInfoRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes> {
         const response = await this.completeHostInfoRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Complete Pod info
+     * Get Completion for Pod fields
+     */
+    async completePodInfoRaw(requestParameters: CompletePodInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CompletionCompletionNodeFieldRes>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/complete/pod`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CompletionCompletionNodeFieldReqToJSON(requestParameters.completionCompletionNodeFieldReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CompletionCompletionNodeFieldResFromJSON(jsonValue));
+    }
+
+    /**
+     * Complete Pod info
+     * Get Completion for Pod fields
+     */
+    async completePodInfo(requestParameters: CompletePodInfoRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes> {
+        const response = await this.completePodInfoRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

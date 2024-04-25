@@ -1111,6 +1111,7 @@ export const searchQueries = createQueryKeys('search', {
     };
     clusterIds: string[];
     containers: string[];
+    kubernetesNamespace: string[];
   }) => {
     return {
       queryKey: [filters],
@@ -1125,6 +1126,7 @@ export const searchQueries = createQueryKeys('search', {
           order,
           clusterIds,
           containers,
+          kubernetesNamespace,
         } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
@@ -1134,6 +1136,9 @@ export const searchQueries = createQueryKeys('search', {
                 filter_in: {
                   active: [true],
                   ...(hosts.length ? { host_name: hosts } : {}),
+                  ...(kubernetesNamespace.length
+                    ? { kubernetes_namespace: kubernetesNamespace }
+                    : {}),
                 },
               },
               match_filter: {
@@ -1281,6 +1286,7 @@ export const searchQueries = createQueryKeys('search', {
     hosts: string[];
     clusterNames: string[];
     pods: string[];
+    kubernetesNamespace: string[];
     kubernetesStatus?: string;
     order?: {
       sortBy: string;
@@ -1290,8 +1296,16 @@ export const searchQueries = createQueryKeys('search', {
     return {
       queryKey: [filters],
       queryFn: async () => {
-        const { page, pageSize, hosts, pods, order, clusterNames, kubernetesStatus } =
-          filters;
+        const {
+          page,
+          pageSize,
+          hosts,
+          pods,
+          order,
+          clusterNames,
+          kubernetesStatus,
+          kubernetesNamespace,
+        } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
             filters: {
@@ -1304,6 +1318,9 @@ export const searchQueries = createQueryKeys('search', {
                     ? { kubernetes_cluster_name: clusterNames }
                     : {}),
                   ...(pods.length ? { pod_name: pods } : {}),
+                  ...(kubernetesNamespace.length
+                    ? { kubernetes_namespace: kubernetesNamespace }
+                    : {}),
                 },
               },
               match_filter: {
