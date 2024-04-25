@@ -457,6 +457,7 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	pgUsers, err := pgClient.GetUsers(ctx)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
+		return
 	}
 	users := make([]model.User, len(pgUsers))
 	for i, pgUser := range pgUsers {

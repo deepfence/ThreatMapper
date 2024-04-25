@@ -309,9 +309,10 @@ func (h *Handler) extractCloudNodeDetails(w http.ResponseWriter, r *http.Request
 		err = fmt.Errorf("unknown CloudProvider: %s", req.CloudProvider)
 		log.Error().Msgf("%v", err)
 		h.respondError(&NotFoundError{err}, w)
+		return req, err
 	}
 
-	return req, err
+	return req, nil
 }
 
 func (h *Handler) CachePostureProviders(ctx context.Context) error {

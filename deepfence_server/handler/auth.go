@@ -195,6 +195,26 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// If console URL setting is not set, set it now
+	consoleURL, err := model.GetManagementConsoleURL(ctx, pgClient)
+	if err != nil || consoleURL == "" {
+		consoleURLSetting := model.Setting{
+			Key: model.ConsoleURLSettingKey,
+			Value: &model.SettingValue{
+				Label:       "Deepfence Console URL",
+				Value:       "https://" + h.GetHostURL(r),
+				Description: "Deepfence Console URL used for sending emails with links to the console",
+			},
+			IsVisibleOnUI: true,
+		}
+		_, err = consoleURLSetting.Create(ctx, pgClient)
+		if err != nil {
+			log.Error().Msgf(err.Error())
+			h.respondError(err, w)
+			return
+		}
+	}
+
 	licenseActive := false
 	licenseRegistered := false
 	var licenseKey string
