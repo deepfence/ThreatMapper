@@ -82,6 +82,12 @@ export interface ModelContainerImage {
     image_node_id: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelContainerImage
+     */
+    is_deepfence_system: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof ModelContainerImage
      */
@@ -168,6 +174,7 @@ export function instanceOfModelContainerImage(value: object): boolean {
     isInstance = isInstance && "docker_image_tag_list" in value;
     isInstance = isInstance && "docker_image_virtual_size" in value;
     isInstance = isInstance && "image_node_id" in value;
+    isInstance = isInstance && "is_deepfence_system" in value;
     isInstance = isInstance && "malware_latest_scan_id" in value;
     isInstance = isInstance && "malware_scan_status" in value;
     isInstance = isInstance && "malwares_count" in value;
@@ -202,6 +209,7 @@ export function ModelContainerImageFromJSONTyped(json: any, ignoreDiscriminator:
         'docker_image_tag_list': json['docker_image_tag_list'],
         'docker_image_virtual_size': json['docker_image_virtual_size'],
         'image_node_id': json['image_node_id'],
+        'is_deepfence_system': json['is_deepfence_system'],
         'malware_latest_scan_id': json['malware_latest_scan_id'],
         'malware_scan_status': json['malware_scan_status'],
         'malwares_count': json['malwares_count'],
@@ -235,6 +243,7 @@ export function ModelContainerImageToJSON(value?: ModelContainerImage | null): a
         'docker_image_tag_list': value.docker_image_tag_list,
         'docker_image_virtual_size': value.docker_image_virtual_size,
         'image_node_id': value.image_node_id,
+        'is_deepfence_system': value.is_deepfence_system,
         'malware_latest_scan_id': value.malware_latest_scan_id,
         'malware_scan_status': value.malware_scan_status,
         'malwares_count': value.malwares_count,

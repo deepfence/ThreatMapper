@@ -26,6 +26,7 @@ import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { SearchableNamespaceList } from '@/components/forms/SearchableNamespaceList';
 import { SearchablePodList } from '@/components/forms/SearchablePodList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -106,6 +107,7 @@ enum FILTER_SEARCHPARAMS_KEYS_ENUM {
   clusters = 'clusters',
   kubernetesStatus = 'kubernetesStatus',
   pods = 'pods',
+  namespaces = 'namespaces',
 }
 
 const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
@@ -119,6 +121,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   clusters: 'Cluster',
   kubernetesStatus: 'Kubernetes status',
   pods: 'Pod',
+  namespaces: 'Namespace',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -255,6 +258,27 @@ function Filters() {
             });
           }}
         />
+        <SearchableNamespaceList
+          nodeType="pod"
+          defaultSelectedNamespaces={searchParams.getAll('namespaces')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('namespaces');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('namespaces');
+              value.forEach((pod) => {
+                prev.append('namespaces', pod);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -326,6 +350,7 @@ function useSearchPodsWithPagination() {
       clusterNames: searchParams.getAll('clusters'),
       pods: searchParams.getAll('pods'),
       kubernetesStatus: searchParams.get('kubernetesStatus') ?? undefined,
+      kubernetesNamespace: searchParams.getAll('namespaces'),
     }),
     keepPreviousData: true,
   });

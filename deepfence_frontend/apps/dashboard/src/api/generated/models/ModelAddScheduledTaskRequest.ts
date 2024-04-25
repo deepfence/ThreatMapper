@@ -58,6 +58,12 @@ export interface ModelAddScheduledTaskRequest {
     cron_expr?: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelAddScheduledTaskRequest
+     */
+    deepfence_system_scan?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof ModelAddScheduledTaskRequest
      */
@@ -129,6 +135,7 @@ export function ModelAddScheduledTaskRequestFromJSONTyped(json: any, ignoreDiscr
         'action': json['action'],
         'benchmark_types': json['benchmark_types'],
         'cron_expr': !exists(json, 'cron_expr') ? undefined : json['cron_expr'],
+        'deepfence_system_scan': !exists(json, 'deepfence_system_scan') ? undefined : json['deepfence_system_scan'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'filters': ModelScanFilterFromJSON(json['filters']),
         'is_priority': !exists(json, 'is_priority') ? undefined : json['is_priority'],
@@ -149,6 +156,7 @@ export function ModelAddScheduledTaskRequestToJSON(value?: ModelAddScheduledTask
         'action': value.action,
         'benchmark_types': value.benchmark_types,
         'cron_expr': value.cron_expr,
+        'deepfence_system_scan': value.deepfence_system_scan,
         'description': value.description,
         'filters': ModelScanFilterToJSON(value.filters),
         'is_priority': value.is_priority,
