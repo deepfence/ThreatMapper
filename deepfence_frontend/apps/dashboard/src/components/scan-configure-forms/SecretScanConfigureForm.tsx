@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button, Checkbox, Radio } from 'ui-components';
+import { Button, Checkbox, Radio, Switch } from 'ui-components';
 
 import { getSecretApiClient, getSettingsApiClient } from '@/api/api';
 import {
@@ -71,6 +71,7 @@ export const scanSecretApiAction = async ({
   const scheduleCron = `0 ${formData.get('scheduleCron')}`;
 
   const isPriorityScan = formData.get('isPriorityScan') === 'on';
+  const scanDeepfenceSystem = formData.get('scanDeepfenceSystem') === 'on';
 
   const getNodeType = (nodeType: SecretScanNodeTypeEnum | 'container_image') => {
     let _nodeType = nodeType as ModelNodeIdentifierNodeTypeEnum;
@@ -134,6 +135,7 @@ export const scanSecretApiAction = async ({
         nodeTypes[index] as SecretScanNodeTypeEnum,
       ) as ModelNodeIdentifierNodeTypeEnum,
     })),
+    deepfence_system_scan: scanDeepfenceSystem,
   };
 
   let scanResponse = {
@@ -230,6 +232,35 @@ export const scanSecretApiAction = async ({
 
   invalidateAllQueries();
   return scanResponse;
+};
+
+const ScanDeepfenceElements = () => {
+  return (
+    <div className="mt-6">
+      <Switch
+        label="Scan selected Deepfence images/containers"
+        name="scanDeepfenceSystem"
+      />
+    </div>
+  );
+};
+
+const wantDeepfenceSystem = ({
+  nodes,
+}: {
+  nodes: {
+    nodeType: SecretScanNodeTypeEnum;
+  }[];
+}) => {
+  return nodes.find(({ nodeType }) => {
+    return (
+      nodeType === SecretScanNodeTypeEnum.registry ||
+      nodeType === SecretScanNodeTypeEnum.imageTag ||
+      nodeType === SecretScanNodeTypeEnum.container ||
+      nodeType === SecretScanNodeTypeEnum.image ||
+      nodeType === ('container_image' as SecretScanNodeTypeEnum)
+    );
+  });
 };
 
 export const SecretScanConfigureForm = ({
@@ -330,6 +361,8 @@ export const SecretScanConfigureForm = ({
       ) : null}
 
       {showScheduleScanOptions && <ScheduleScanForm />}
+
+      {wantDeepfenceSystem(data) ? <ScanDeepfenceElements /> : null}
 
       {fetcherData?.message && (
         <p className="text-status-error text-p7 mt-4">{fetcherData.message}</p>

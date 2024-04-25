@@ -231,6 +231,12 @@ export interface ReportMetadata {
     is_console_vm?: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof ReportMetadata
+     */
+    is_deepfence_system?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof ReportMetadata
      */
@@ -519,6 +525,7 @@ export function ReportMetadataFromJSONTyped(json: any, ignoreDiscriminator: bool
         'interface_ips': !exists(json, 'interface_ips') ? undefined : json['interface_ips'],
         'interface_names': !exists(json, 'interface_names') ? undefined : json['interface_names'],
         'is_console_vm': !exists(json, 'is_console_vm') ? undefined : json['is_console_vm'],
+        'is_deepfence_system': !exists(json, 'is_deepfence_system') ? undefined : json['is_deepfence_system'],
         'kernel_id': !exists(json, 'kernel_id') ? undefined : json['kernel_id'],
         'kernel_version': !exists(json, 'kernel_version') ? undefined : json['kernel_version'],
         'kubernetes_cluster_id': !exists(json, 'kubernetes_cluster_id') ? undefined : json['kubernetes_cluster_id'],
@@ -605,6 +612,7 @@ export function ReportMetadataToJSON(value?: ReportMetadata | null): any {
         'interface_ips': value.interface_ips,
         'interface_names': value.interface_names,
         'is_console_vm': value.is_console_vm,
+        'is_deepfence_system': value.is_deepfence_system,
         'kernel_id': value.kernel_id,
         'kernel_version': value.kernel_version,
         'kubernetes_cluster_id': value.kubernetes_cluster_id,
