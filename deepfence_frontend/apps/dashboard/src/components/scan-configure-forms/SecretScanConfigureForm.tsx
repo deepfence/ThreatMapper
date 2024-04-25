@@ -267,6 +267,8 @@ const wantDeepfenceSystem = ({
       nodeType === SecretScanNodeTypeEnum.imageTag ||
       nodeType === SecretScanNodeTypeEnum.container ||
       nodeType === SecretScanNodeTypeEnum.image ||
+      nodeType === SecretScanNodeTypeEnum.pod ||
+      nodeType === SecretScanNodeTypeEnum.kubernetes_cluster ||
       nodeType === ('container_image' as SecretScanNodeTypeEnum)
     );
   });

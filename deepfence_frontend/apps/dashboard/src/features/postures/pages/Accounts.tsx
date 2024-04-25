@@ -875,25 +875,28 @@ const ActionDropdown = ({
             >
               Delete latest scan
             </DropdownItem>
-            <DropdownItem
-              onSelect={() => {
-                onTableAction(row, ActionEnumType.REFRESH_ACCOUNT);
-              }}
-            >
-              Refresh account
-            </DropdownItem>
+
             {isCloudNode(nodeType) || isCloudOrgNode(nodeType) ? (
-              <DropdownItem
-                disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
-                onSelect={() => {
-                  if (isScanInProgress(scanStatus) || isScanStopping(scanStatus)) {
-                    return;
-                  }
-                  onTableAction(row, ActionEnumType.DELETE_ACCOUNT);
-                }}
-              >
-                Delete account
-              </DropdownItem>
+              <>
+                <DropdownItem
+                  onSelect={() => {
+                    onTableAction(row, ActionEnumType.REFRESH_ACCOUNT);
+                  }}
+                >
+                  Refresh account
+                </DropdownItem>
+                <DropdownItem
+                  disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
+                  onSelect={() => {
+                    if (isScanInProgress(scanStatus) || isScanStopping(scanStatus)) {
+                      return;
+                    }
+                    onTableAction(row, ActionEnumType.DELETE_ACCOUNT);
+                  }}
+                >
+                  Delete account
+                </DropdownItem>
+              </>
             ) : null}
           </>
         }
@@ -1051,46 +1054,48 @@ const BulkActions = ({
       >
         Delete scan
       </Button>
-      <Button
-        variant="flat"
-        startIcon={<RefreshIcon />}
-        size="sm"
-        disabled={selectedRows.length === 0}
-        onClick={() =>
-          onBulkAction(
-            {
-              scanIdsToCancelScan: [],
-              scanIdsToDeleteScan: [],
-              nodesToStartScan: null,
-              nodesToDeleteScan: [],
-            },
-            ActionEnumType.REFRESH_ACCOUNT,
-          )
-        }
-      >
-        Refresh account
-      </Button>
       {isCloudNode(nodeType) || isCloudOrgNode(nodeType) ? (
-        <Button
-          variant="flat"
-          startIcon={<TrashLineIcon />}
-          size="sm"
-          disabled={nodeIdsToDelete.length === 0}
-          color="error"
-          onClick={() =>
-            onBulkAction(
-              {
-                scanIdsToCancelScan: [],
-                scanIdsToDeleteScan: [],
-                nodesToStartScan: null,
-                nodesToDeleteScan: nodeIdsToDelete,
-              },
-              ActionEnumType.DELETE_ACCOUNT,
-            )
-          }
-        >
-          Delete account
-        </Button>
+        <>
+          <Button
+            variant="flat"
+            startIcon={<RefreshIcon />}
+            size="sm"
+            disabled={selectedRows.length === 0}
+            onClick={() =>
+              onBulkAction(
+                {
+                  scanIdsToCancelScan: [],
+                  scanIdsToDeleteScan: [],
+                  nodesToStartScan: null,
+                  nodesToDeleteScan: [],
+                },
+                ActionEnumType.REFRESH_ACCOUNT,
+              )
+            }
+          >
+            Refresh account
+          </Button>
+          <Button
+            variant="flat"
+            startIcon={<TrashLineIcon />}
+            size="sm"
+            disabled={nodeIdsToDelete.length === 0}
+            color="error"
+            onClick={() =>
+              onBulkAction(
+                {
+                  scanIdsToCancelScan: [],
+                  scanIdsToDeleteScan: [],
+                  nodesToStartScan: null,
+                  nodesToDeleteScan: nodeIdsToDelete,
+                },
+                ActionEnumType.DELETE_ACCOUNT,
+              )
+            }
+          >
+            Delete account
+          </Button>
+        </>
       ) : null}
     </>
   );
