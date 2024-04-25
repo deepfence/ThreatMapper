@@ -190,7 +190,7 @@ func (c *Company) GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlD
 
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email" required:"true"`
-	Password string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
+	Password string `json:"password" validate:"required,min=1,max=32" required:"true"`
 }
 
 type APIAuthRequest struct {
