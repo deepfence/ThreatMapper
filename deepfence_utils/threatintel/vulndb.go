@@ -151,17 +151,22 @@ func VulnDBUpdateListing(ctx context.Context, newFile, newFileCheckSum string, b
 		listing = NewVulnerabilityDBListing()
 	}
 
-	minioHost := utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_HOST", "deepfence-file-server")
-	minioPort := utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_PORT", "9000")
-	minioRegion := os.Getenv("DEEPFENCE_FILE_SERVER_REGION")
-	minioBucket := os.Getenv("DEEPFENCE_FILE_SERVER_DB_BUCKET")
+	fileServerSecure := utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_SECURE", "false")
+	fileServerProtocol := "http"
+	if fileServerSecure == "true" {
+		fileServerProtocol = "https"
+	}
+	fileServerHost := utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_HOST", "deepfence-file-server")
+	fileServerPort := utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_PORT", "9000")
+	fileServerRegion := os.Getenv("DEEPFENCE_FILE_SERVER_REGION")
+	fileServerBucket := os.Getenv("DEEPFENCE_FILE_SERVER_DB_BUCKET")
 
 	// for aws s3
-	fileURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s",
-		minioBucket, minioRegion, newFile)
-	if minioHost != "s3.amazonaws.com" {
-		fileURL = fmt.Sprintf("http://%s:%s/%s",
-			minioHost, minioPort, path.Join(string(directory.DatabaseDirKey), newFile))
+	fileURL := fmt.Sprintf("%s://%s.s3.%s.amazonaws.com/%s",
+		fileServerProtocol, fileServerBucket, fileServerRegion, newFile)
+	if fileServerHost != "s3.amazonaws.com" {
+		fileURL = fmt.Sprintf("%s://%s:%s/%s",
+			fileServerProtocol, fileServerHost, fileServerPort, path.Join(string(directory.DatabaseDirKey), newFile))
 	}
 
 	listing.Append(

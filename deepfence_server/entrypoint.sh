@@ -41,7 +41,7 @@ done
 
 # wait for file server to start
 if [ "$DEEPFENCE_FILE_SERVER_HOST" != "s3.amazonaws.com" ]; then
-  until nc -z ${DEEPFENCE_FILE_SERVER_HOST} ${DEEPFENCE_FILE_SERVER_PORT};
+  until nc -z "${DEEPFENCE_FILE_SERVER_HOST}" "${DEEPFENCE_FILE_SERVER_PORT}";
   do
     echo "file server is unavailable - sleeping"
     sleep 5;
