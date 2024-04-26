@@ -32,7 +32,7 @@ The following instructions explain how to get started with a docker-based instal
 
 Now proceed to the [Initial Configuration](initial-configuration).
 
-### Remove the ThreatMapper Management Console
+## Uninstall the ThreatMapper Management Console
 
 Remove the ThreatMapper Management Console as follows:
 
