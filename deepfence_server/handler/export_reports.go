@@ -308,19 +308,22 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	var cd url.Values
-	if report.FileName != "" {
-		cd = url.Values{
-			"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
+
+	if report.StoragePath != "" {
+		var cd url.Values
+		if report.FileName != "" {
+			cd = url.Values{
+				"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
+			}
 		}
+		fileServerURL, err := mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, h.GetHostURL(r))
+		if err != nil {
+			log.Error().Msg(err.Error())
+			h.respondError(err, w)
+			return
+		}
+		report.URL = fileServerURL
 	}
-	fileServerURL, err := mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, h.GetHostURL(r))
-	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(err, w)
-		return
-	}
-	report.URL = fileServerURL
 
 	err = httpext.JSON(w, http.StatusOK, report)
 	if err != nil {
@@ -388,13 +391,13 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 		var report model.ExportReport
 		utils.FromMap(da.Props, &report)
 
-		var cd url.Values
-		if report.FileName != "" {
-			cd = url.Values{
-				"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
-			}
-		}
 		if report.StoragePath != "" {
+			var cd url.Values
+			if report.FileName != "" {
+				cd = url.Values{
+					"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
+				}
+			}
 			fileServerURL, err = mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, h.GetHostURL(r))
 			if err == nil {
 				report.URL = fileServerURL
