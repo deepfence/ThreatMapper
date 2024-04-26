@@ -3,9 +3,9 @@ entries:
   deepfence-agent:
   - apiVersion: v2
     appVersion: 2.2.0
-    created: "2024-04-19T17:39:52.906029+05:30"
+    created: "2024-04-26T19:19:39.001854+05:30"
     description: Deepfence Agent - Helm chart for Kubernetes
-    digest: 74e7e7606f1786b128ab6072dab1f3f9e9c91cb00cc0ee09b547450ed4665acc
+    digest: 9cacf94ae9eea56ec216240b8ac994ffc97cecd43e8e8be62eefdb6f4c279d3c
     name: deepfence-agent
     type: application
     urls:
@@ -264,9 +264,9 @@ entries:
   deepfence-console:
   - apiVersion: v2
     appVersion: 2.2.0
-    created: "2024-04-19T17:39:52.907459+05:30"
+    created: "2024-04-26T19:19:39.003194+05:30"
     description: A Helm chart for Kubernetes
-    digest: 3cfc4ecb92cb49988ae0a15ecd8f649e0cb8d11eb2dc94a80cac089700b2b2f2
+    digest: 4094e8ab7bcf179d5258e67cc5a58fc87d7b5aa3f5a524bfbd91229096a45358
     name: deepfence-console
     type: application
     urls:
@@ -535,9 +535,9 @@ entries:
   deepfence-router:
   - apiVersion: v2
     appVersion: 2.2.0
-    created: "2024-04-19T17:39:52.907761+05:30"
+    created: "2024-04-26T19:19:39.003549+05:30"
     description: Deepfence Router - Helm chart for Kubernetes
-    digest: 4e5e984ba67dc4607aa35498fd5801ab39b89010f13118c8ce2d665d02a21742
+    digest: ea5b1741528701e850465d6ffbec22e825475b8d6ba0705aade1fee2545814d0
     name: deepfence-router
     type: application
     urls:
@@ -693,4 +693,4 @@ entries:
     urls:
     - deepfence-router-1.0.0.tgz
     version: 1.0.0
-generated: "2024-04-19T17:39:52.90509+05:30"
+generated: "2024-04-26T19:19:39.001299+05:30"

@@ -19,6 +19,8 @@ x-service-variables: &common-creds
     DEEPFENCE_FILE_SERVER_DB_BUCKET: database
     # prvate bucket to host reports, sbom, etc.
     DEEPFENCE_FILE_SERVER_BUCKET: default
+    # If using S3 or other external file server (minio/seaweedfs), set this to true
+    DEEPFENCE_FILE_SERVER_EXTERNAL: "false"
     # set s3.amazonaws.com if using s3 buckets
     DEEPFENCE_FILE_SERVER_HOST: deepfence-file-server
     DEEPFENCE_FILE_SERVER_PORT: 9000
