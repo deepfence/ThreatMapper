@@ -40,6 +40,12 @@ export interface ModelComplianceScanTriggerReq {
     benchmark_types: Array<string> | null;
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelComplianceScanTriggerReq
+     */
+    deepfence_system_scan?: boolean;
+    /**
+     * 
      * @type {ModelScanFilter}
      * @memberof ModelComplianceScanTriggerReq
      */
@@ -81,6 +87,7 @@ export function ModelComplianceScanTriggerReqFromJSONTyped(json: any, ignoreDisc
     return {
         
         'benchmark_types': json['benchmark_types'],
+        'deepfence_system_scan': !exists(json, 'deepfence_system_scan') ? undefined : json['deepfence_system_scan'],
         'filters': ModelScanFilterFromJSON(json['filters']),
         'is_priority': !exists(json, 'is_priority') ? undefined : json['is_priority'],
         'node_ids': (json['node_ids'] === null ? null : (json['node_ids'] as Array<any>).map(ModelNodeIdentifierFromJSON)),
@@ -97,6 +104,7 @@ export function ModelComplianceScanTriggerReqToJSON(value?: ModelComplianceScanT
     return {
         
         'benchmark_types': value.benchmark_types,
+        'deepfence_system_scan': value.deepfence_system_scan,
         'filters': ModelScanFilterToJSON(value.filters),
         'is_priority': value.is_priority,
         'node_ids': (value.node_ids === null ? null : (value.node_ids as Array<any>).map(ModelNodeIdentifierToJSON)),

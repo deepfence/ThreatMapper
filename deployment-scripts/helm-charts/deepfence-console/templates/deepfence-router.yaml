@@ -46,10 +46,6 @@ spec:
               value: {{ include "deepfence-console.fullname" . }}-server.{{ .Release.Namespace }}.svc.{{ .Values.router.cluster_domain }}
             - name: API_SERVICE_PORT
               value: {{ .Values.server.service.port | quote }}
-            - name: DEEPFENCE_FILE_SERVER_HOST
-              value: {{ include "deepfence-console.fullname" . }}-file-server.{{ .Release.Namespace }}.svc.{{ .Values.router.cluster_domain }}
-            - name: DEEPFENCE_FILE_SERVER_PORT
-              value: "9000"
           envFrom:
             - configMapRef:
                 name: "{{ include "deepfence-console.fullname" . }}-config"

@@ -46,6 +46,12 @@ export interface ModelPod {
     host_name: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelPod
+     */
+    is_deepfence_system: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof ModelPod
      */
@@ -143,6 +149,7 @@ export function instanceOfModelPod(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "containers" in value;
     isInstance = isInstance && "host_name" in value;
+    isInstance = isInstance && "is_deepfence_system" in value;
     isInstance = isInstance && "kubernetes_cluster_id" in value;
     isInstance = isInstance && "kubernetes_cluster_name" in value;
     isInstance = isInstance && "kubernetes_created" in value;
@@ -174,6 +181,7 @@ export function ModelPodFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         
         'containers': (json['containers'] === null ? null : (json['containers'] as Array<any>).map(ModelContainerFromJSON)),
         'host_name': json['host_name'],
+        'is_deepfence_system': json['is_deepfence_system'],
         'kubernetes_cluster_id': json['kubernetes_cluster_id'],
         'kubernetes_cluster_name': json['kubernetes_cluster_name'],
         'kubernetes_created': json['kubernetes_created'],
@@ -203,6 +211,7 @@ export function ModelPodToJSON(value?: ModelPod | null): any {
         
         'containers': (value.containers === null ? null : (value.containers as Array<any>).map(ModelContainerToJSON)),
         'host_name': value.host_name,
+        'is_deepfence_system': value.is_deepfence_system,
         'kubernetes_cluster_id': value.kubernetes_cluster_id,
         'kubernetes_cluster_name': value.kubernetes_cluster_name,
         'kubernetes_created': value.kubernetes_created,

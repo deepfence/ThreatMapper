@@ -34,6 +34,12 @@ import {
 export interface ModelSecretScanTriggerReq {
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelSecretScanTriggerReq
+     */
+    deepfence_system_scan?: boolean;
+    /**
+     * 
      * @type {ModelScanFilter}
      * @memberof ModelSecretScanTriggerReq
      */
@@ -73,6 +79,7 @@ export function ModelSecretScanTriggerReqFromJSONTyped(json: any, ignoreDiscrimi
     }
     return {
         
+        'deepfence_system_scan': !exists(json, 'deepfence_system_scan') ? undefined : json['deepfence_system_scan'],
         'filters': ModelScanFilterFromJSON(json['filters']),
         'is_priority': !exists(json, 'is_priority') ? undefined : json['is_priority'],
         'node_ids': (json['node_ids'] === null ? null : (json['node_ids'] as Array<any>).map(ModelNodeIdentifierFromJSON)),
@@ -88,6 +95,7 @@ export function ModelSecretScanTriggerReqToJSON(value?: ModelSecretScanTriggerRe
     }
     return {
         
+        'deepfence_system_scan': value.deepfence_system_scan,
         'filters': ModelScanFilterToJSON(value.filters),
         'is_priority': value.is_priority,
         'node_ids': (value.node_ids === null ? null : (value.node_ids as Array<any>).map(ModelNodeIdentifierToJSON)),

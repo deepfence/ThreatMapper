@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"path"
 	"path/filepath"
 	"sort"
@@ -13,7 +12,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/minio/minio-go/v7"
 )
 
@@ -26,7 +24,6 @@ var (
 	ListingJSON          = "listing.json"
 	VulnerabilityDBStore = "vulnerability"
 	ListingPath          = path.Join(VulnerabilityDBStore, ListingJSON)
-	// DeepfenceVulnDBURL   = "https://threat-intel.deepfence.io/vulnerability-db/listing.json"
 )
 
 type VulnerabilityDBListing struct {
@@ -151,17 +148,13 @@ func VulnDBUpdateListing(ctx context.Context, newFile, newFileCheckSum string, b
 		listing = NewVulnerabilityDBListing()
 	}
 
-	minioHost := utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_HOST", "deepfence-file-server")
-	minioPort := utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_PORT", "9000")
-	minioRegion := os.Getenv("DEEPFENCE_FILE_SERVER_REGION")
-	minioBucket := os.Getenv("DEEPFENCE_FILE_SERVER_DB_BUCKET")
-
 	// for aws s3
-	fileURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s",
-		minioBucket, minioRegion, newFile)
-	if minioHost != "s3.amazonaws.com" {
-		fileURL = fmt.Sprintf("http://%s:%s/%s",
-			minioHost, minioPort, path.Join(string(directory.DatabaseDirKey), newFile))
+	fileURL := fmt.Sprintf("%s://%s.s3.%s.amazonaws.com/%s",
+		directory.FileServerProtocol, directory.FileServerDatabaseBucket, directory.FileServerRegion, newFile)
+	if directory.FileServerHost != "s3.amazonaws.com" {
+		fileURL = fmt.Sprintf("%s://%s:%s/%s",
+			directory.FileServerProtocol, directory.FileServerHost, directory.FileServerPort,
+			path.Join(string(directory.DatabaseDirKey), newFile))
 	}
 
 	listing.Append(

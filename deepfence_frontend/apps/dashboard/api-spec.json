@@ -627,12 +627,124 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/complete/container": {
+      "post": {
+        "tags": ["Completion"],
+        "summary": "Get Completion for Container fields",
+        "description": "Complete Container info",
+        "operationId": "completeContainerInfo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionCompletionNodeFieldReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletionCompletionNodeFieldRes"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/complete/host": {
       "post": {
         "tags": ["Completion"],
         "summary": "Get Completion for host fields",
         "description": "Complete host info",
         "operationId": "completeHostInfo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionCompletionNodeFieldReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletionCompletionNodeFieldRes"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/complete/pod": {
+      "post": {
+        "tags": ["Completion"],
+        "summary": "Get Completion for Pod fields",
+        "description": "Complete Pod info",
+        "operationId": "completePodInfo",
         "requestBody": {
           "content": {
             "application/json": {
@@ -13095,6 +13207,7 @@
             "nullable": true
           },
           "cron_expr": { "type": "string" },
+          "deepfence_system_scan": { "type": "boolean" },
           "description": { "type": "string" },
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
           "is_priority": { "type": "boolean" },
@@ -13676,6 +13789,7 @@
             "items": { "type": "string" },
             "nullable": true
           },
+          "deepfence_system_scan": { "type": "boolean" },
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
           "is_priority": { "type": "boolean" },
           "node_ids": {
@@ -13724,7 +13838,11 @@
           "secret_latest_scan_id",
           "malwares_count",
           "malware_scan_status",
-          "malware_latest_scan_id"
+          "malware_latest_scan_id",
+          "kubernetes_cluster_name",
+          "kubernetes_cluster_id",
+          "kubernetes_namespace",
+          "is_deepfence_system"
         ],
         "type": "object",
         "properties": {
@@ -13746,6 +13864,10 @@
           },
           "host_name": { "type": "string" },
           "image": { "$ref": "#/components/schemas/ModelContainerImage" },
+          "is_deepfence_system": { "type": "boolean" },
+          "kubernetes_cluster_id": { "type": "string" },
+          "kubernetes_cluster_name": { "type": "string" },
+          "kubernetes_namespace": { "type": "string" },
           "malware_latest_scan_id": { "type": "string" },
           "malware_scan_status": { "type": "string" },
           "malwares_count": { "type": "integer" },
@@ -13788,7 +13910,8 @@
           "malwares_count",
           "malware_scan_status",
           "malware_latest_scan_id",
-          "containers"
+          "containers",
+          "is_deepfence_system"
         ],
         "type": "object",
         "properties": {
@@ -13809,6 +13932,7 @@
           },
           "docker_image_virtual_size": { "type": "string" },
           "image_node_id": { "type": "string" },
+          "is_deepfence_system": { "type": "boolean" },
           "malware_latest_scan_id": { "type": "string" },
           "malware_scan_status": { "type": "string" },
           "malwares_count": { "type": "integer" },
@@ -13891,6 +14015,7 @@
           "from_timestamp": { "type": "integer" },
           "report_id": { "type": "string" },
           "status": { "type": "string" },
+          "status_message": { "type": "string" },
           "storage_path": { "type": "string" },
           "to_timestamp": { "type": "integer" },
           "type": { "type": "string" },
@@ -14496,6 +14621,7 @@
         "required": ["node_ids", "filters"],
         "type": "object",
         "properties": {
+          "deepfence_system_scan": { "type": "boolean" },
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
           "is_priority": { "type": "boolean" },
           "node_ids": {
@@ -14582,7 +14708,8 @@
           "kubernetes_created",
           "malware_scan_status",
           "secret_scan_status",
-          "vulnerability_scan_status"
+          "vulnerability_scan_status",
+          "is_deepfence_system"
         ],
         "type": "object",
         "properties": {
@@ -14592,6 +14719,7 @@
             "nullable": true
           },
           "host_name": { "type": "string" },
+          "is_deepfence_system": { "type": "boolean" },
           "kubernetes_cluster_id": { "type": "string" },
           "kubernetes_cluster_name": { "type": "string" },
           "kubernetes_created": { "type": "string" },
@@ -15206,6 +15334,7 @@
         "required": ["node_ids", "filters"],
         "type": "object",
         "properties": {
+          "deepfence_system_scan": { "type": "boolean" },
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
           "is_priority": { "type": "boolean" },
           "node_ids": {
@@ -15550,6 +15679,7 @@
         "required": ["node_ids", "filters", "scan_config"],
         "type": "object",
         "properties": {
+          "deepfence_system_scan": { "type": "boolean" },
           "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
           "is_priority": { "type": "boolean" },
           "node_ids": {
@@ -15634,6 +15764,7 @@
           "interface_ips": { "type": "array", "items": { "type": "string" } },
           "interface_names": { "type": "array", "items": { "type": "string" } },
           "is_console_vm": { "type": "boolean" },
+          "is_deepfence_system": { "type": "boolean" },
           "kernel_id": { "type": "string" },
           "kernel_version": { "type": "string" },
           "kubernetes_cluster_id": { "type": "string" },

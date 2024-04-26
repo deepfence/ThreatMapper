@@ -118,6 +118,30 @@ export interface ModelContainer {
     image: ModelContainerImage;
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelContainer
+     */
+    is_deepfence_system: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    kubernetes_cluster_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    kubernetes_cluster_name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    kubernetes_namespace: string;
+    /**
+     * 
      * @type {string}
      * @memberof ModelContainer
      */
@@ -227,6 +251,10 @@ export function instanceOfModelContainer(value: object): boolean {
     isInstance = isInstance && "docker_labels" in value;
     isInstance = isInstance && "host_name" in value;
     isInstance = isInstance && "image" in value;
+    isInstance = isInstance && "is_deepfence_system" in value;
+    isInstance = isInstance && "kubernetes_cluster_id" in value;
+    isInstance = isInstance && "kubernetes_cluster_name" in value;
+    isInstance = isInstance && "kubernetes_namespace" in value;
     isInstance = isInstance && "malware_latest_scan_id" in value;
     isInstance = isInstance && "malware_scan_status" in value;
     isInstance = isInstance && "malwares_count" in value;
@@ -270,6 +298,10 @@ export function ModelContainerFromJSONTyped(json: any, ignoreDiscriminator: bool
         'docker_labels': json['docker_labels'],
         'host_name': json['host_name'],
         'image': ModelContainerImageFromJSON(json['image']),
+        'is_deepfence_system': json['is_deepfence_system'],
+        'kubernetes_cluster_id': json['kubernetes_cluster_id'],
+        'kubernetes_cluster_name': json['kubernetes_cluster_name'],
+        'kubernetes_namespace': json['kubernetes_namespace'],
         'malware_latest_scan_id': json['malware_latest_scan_id'],
         'malware_scan_status': json['malware_scan_status'],
         'malwares_count': json['malwares_count'],
@@ -311,6 +343,10 @@ export function ModelContainerToJSON(value?: ModelContainer | null): any {
         'docker_labels': value.docker_labels,
         'host_name': value.host_name,
         'image': ModelContainerImageToJSON(value.image),
+        'is_deepfence_system': value.is_deepfence_system,
+        'kubernetes_cluster_id': value.kubernetes_cluster_id,
+        'kubernetes_cluster_name': value.kubernetes_cluster_name,
+        'kubernetes_namespace': value.kubernetes_namespace,
         'malware_latest_scan_id': value.malware_latest_scan_id,
         'malware_scan_status': value.malware_scan_status,
         'malwares_count': value.malwares_count,

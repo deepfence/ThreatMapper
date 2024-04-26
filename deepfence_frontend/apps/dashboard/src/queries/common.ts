@@ -141,6 +141,84 @@ export const commonQueries = createQueryKeys('common', {
       },
     };
   },
+  searchPodsInfo: (filters: { fieldName: string; searchText: string; size: number }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async ({ pageParam = 0 }) => {
+        const { fieldName, searchText, size } = filters;
+
+        const scanResultsReq: CompletionCompletionNodeFieldReq = {
+          completion: searchText,
+          field_name: fieldName,
+          window: {
+            offset: pageParam,
+            size,
+          },
+        };
+
+        const api = apiWrapper({
+          fn: getScanResultCompletionApiClient().completePodInfo,
+        });
+        const response = await api({
+          completionCompletionNodeFieldReq: scanResultsReq,
+        });
+
+        if (!response.ok) {
+          throw response.error;
+        }
+
+        if (response.value === null) {
+          // TODO: handle this case with 404 status maybe
+          throw new Error('Error getting completion pods info');
+        }
+
+        return {
+          data: response.value.possible_values?.slice(0, size) || [],
+        };
+      },
+    };
+  },
+  searchContainersInfo: (filters: {
+    fieldName: string;
+    searchText: string;
+    size: number;
+  }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async ({ pageParam = 0 }) => {
+        const { fieldName, searchText, size } = filters;
+
+        const scanResultsReq: CompletionCompletionNodeFieldReq = {
+          completion: searchText,
+          field_name: fieldName,
+          window: {
+            offset: pageParam,
+            size,
+          },
+        };
+
+        const api = apiWrapper({
+          fn: getScanResultCompletionApiClient().completeContainerInfo,
+        });
+        const response = await api({
+          completionCompletionNodeFieldReq: scanResultsReq,
+        });
+
+        if (!response.ok) {
+          throw response.error;
+        }
+
+        if (response.value === null) {
+          // TODO: handle this case with 404 status maybe
+          throw new Error('Error getting completion containers info');
+        }
+
+        return {
+          data: response.value.possible_values?.slice(0, size) || [],
+        };
+      },
+    };
+  },
   searchPostureCompletionFilters: (filters: {
     scanId: string;
     fieldName: string;

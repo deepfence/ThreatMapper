@@ -264,6 +264,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/host", dfHandler.CompleteHostInfo)
 				r.Post("/cloud-compliance", dfHandler.CompleteCloudComplianceInfo)
 				r.Post("/compliance", dfHandler.CompleteComplianceInfo)
+				r.Post("/pod", dfHandler.CompletePodInfo)
+				r.Post("/container", dfHandler.CompleteContainerInfo)
 			})
 
 			r.Route("/search", func(r chi.Router) {

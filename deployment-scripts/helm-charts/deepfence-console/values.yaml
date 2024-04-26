@@ -144,9 +144,14 @@ fileserver:
   # Specifies whether a file server instance should be created
   # set this to false if using S3
   create: true
-  # if create false provide name of the existing secret
-  # secret format refer templates/console-secrets/minio.yaml
+  # if create false provide name of the existing secret.
+  # Secret format refer templates/deepfence-console-secrets/s3.yaml or templates/deepfence-console-secrets/fileserver.yaml
   secretName: ""
+
+  # Set this if external file server is used and create=false
+  fileServerHost: ""
+  fileServerPort: ""
+
   # if create true then below values are used to create postgres database instance
   # set the below to change the default credentials
   # secrets:
@@ -178,8 +183,8 @@ fileserver:
 aws_s3_buckets:
   # Specifies whether secret should be created
   create: false
-  # if create false provide name of the existing secret
-  # secret format refer templates/deepfence-console-secrets/s3.yaml
+  # if create false provide name of the existing secret.
+  # Secret format refer templates/deepfence-console-secrets/s3.yaml
   secretName: ""
   # public bucket with read permisons on objects for hosting vulnerability database
   # S3 bucket permissions {"Version":"2012-10-17","Statement":[{"Sid":"database","Effect":"Allow","Principal":"*","Action":"s3:GetObject","Resource":["arn:aws:s3:::<bucket-name>/database/*","arn:aws:s3:::<bucket-name>/database"]}]}

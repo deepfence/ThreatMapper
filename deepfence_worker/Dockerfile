@@ -14,7 +14,6 @@ ARG AGENT_BINARY_DIST_RELATIVE
 LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
 
-# ADD deepfence_server/cloud_controls /cloud_controls
 ADD deepfence_utils/postgresql/migrate /usr/local/postgresql-migrate
 
 RUN apk add --no-cache curl kafkacat docker-cli openrc bash skopeo jansson-dev \
@@ -30,12 +29,6 @@ ENV DEEPFENCE_KAFKA_TOPIC_PARTITIONS=3 \
     DEEPFENCE_DEBUG=false \
     DEEPFENCE_MODE=worker \
     LD_LIBRARY_PATH=/usr/local/yara/lib
-
-# ENV GRYPE_DB_UPDATE_URL="http://${DEEPFENCE_FILE_SERVER_HOST}:${DEEPFENCE_FILE_SERVER_PORT}/database/database/vulnerability/listing.json"
-
-# RUN apk add --no-cache --update bash curl \
-#     && apk upgrade \
-#     && curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin v0.55.0
 
 COPY --from=wkhtmltopdf /bin/wkhtmltopdf /bin/libwkhtmltox.so /bin/
 
@@ -58,9 +51,7 @@ RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \
     && rm /usr/local/yara.tar.gz \
     && chmod +x /entrypoint.sh \
     && mkdir -p /opt/deepfence
-    # && sed -i 's/auto-update: true/auto-update: false/g' /usr/local/bin/grype.yaml
 
-# RUN export GRYPE_DB_UPDATE_URL=https://threat-intel.deepfence.io/vulnerability-db/listing.json && grype db update
 COPY ./deepfence_agent/binary-install-scripts/* /opt/deepfence
 COPY ./${AGENT_BINARY_DIST_RELATIVE}/* /opt/deepfence
 

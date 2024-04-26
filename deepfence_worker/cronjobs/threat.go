@@ -9,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/hibiken/asynq"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
@@ -131,6 +132,33 @@ func computeThreatGraph(ctx context.Context, session neo4j.SessionWithContext) e
 	txConfig := neo4j.WithTxTimeout(600 * time.Second)
 
 	var err error
+
+	// reset counts for nodes where there are no scans or all scans are deleted
+	queryNoVulnScans := `MATCH (n:Node|Container|ContainerImage) where n.` + ingestersUtil.LatestScanIDField[utils.NEO4JVulnerabilityScan] + `="" set n.exploitable_vulnerabilities_count=0`
+	queryNoSecretScans := `MATCH (n:Node|Container|ContainerImage) where n.` + ingestersUtil.LatestScanIDField[utils.NEO4JSecretScan] + `="" set n.exploitable_secrets_count=0`
+	queryNoMalwareScans := `MATCH (n:Node|Container|ContainerImage) where n.` + ingestersUtil.LatestScanIDField[utils.NEO4JMalwareScan] + `="" set n.exploitable_malwares_count=0`
+	queryNoComplianceScans := `MATCH (n:Node|KubernetesCluster) where n.` + ingestersUtil.LatestScanIDField[utils.NEO4JComplianceScan] + `="" set n.warn_alarm_count=0`
+	queryNoCloudComplianceScans := `MATCH (n:CloudNode)-[:OWNS]-(r:CloudResource) where n.` + ingestersUtil.LatestScanIDField[utils.NEO4JCloudComplianceScan] + `="" set r.cloud_warn_alarm_count=0`
+
+	if _, err = session.Run(ctx, queryNoVulnScans, map[string]interface{}{}, txConfig); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(ctx, queryNoSecretScans, map[string]interface{}{}, txConfig); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(ctx, queryNoMalwareScans, map[string]interface{}{}, txConfig); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(ctx, queryNoComplianceScans, map[string]interface{}{}, txConfig); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(ctx, queryNoCloudComplianceScans, map[string]interface{}{}, txConfig); err != nil {
+		return err
+	}
 
 	if _, err = session.Run(ctx, `
 		MATCH (s:VulnerabilityScan) -[:SCANNED]-> (m)

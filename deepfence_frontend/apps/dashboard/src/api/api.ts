@@ -415,5 +415,8 @@ export function getScanResultCompletionApiClient() {
       scanCompleteionApi.completeComplianceInfo.bind(scanCompleteionApi),
     completeCloudCompliance:
       scanCompleteionApi.completeCloudCompliance.bind(scanCompleteionApi),
+    completePodInfo: scanCompleteionApi.completePodInfo.bind(scanCompleteionApi),
+    completeContainerInfo:
+      scanCompleteionApi.completeContainerInfo.bind(scanCompleteionApi),
   };
 }
