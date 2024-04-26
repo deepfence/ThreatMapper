@@ -145,7 +145,7 @@ fileserver:
   # set this to false if using S3
   create: true
   # if create false provide name of the existing secret.
-  # Secret format refer templates/console-secrets/minio.yaml
+  # Secret format refer templates/deepfence-console-secrets/s3.yaml or templates/deepfence-console-secrets/fileserver.yaml
   secretName: ""
 
   # Set this if external file server is used and create=false
