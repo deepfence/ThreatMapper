@@ -33,23 +33,16 @@ import (
 var (
 	grypeConfig         = "/usr/local/bin/grype.yaml"
 	grypeBin            = "grype"
-	fileServerSecure    = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_SECURE", "false")
-	fileServerHost      = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_HOST", "deepfence-file-server")
-	fileServerPort      = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_PORT", "9000")
-	fileServerRegion    = os.Getenv("DEEPFENCE_FILE_SERVER_REGION")
-	fileServerBucket    = os.Getenv("DEEPFENCE_FILE_SERVER_DB_BUCKET")
 	GRYPE_DB_UPDATE_URL string
 )
 
 func init() {
-	fileServerProtocol := "http"
-	if fileServerSecure == "true" {
-		fileServerProtocol = "https"
-	}
 	// for aws s3
-	GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=%s://%s.s3.%s.amazonaws.com/database/vulnerability/listing.json", fileServerProtocol, fileServerBucket, fileServerRegion)
-	if fileServerHost != "s3.amazonaws.com" {
-		GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=%s://%s:%s/database/database/vulnerability/listing.json", fileServerProtocol, fileServerHost, fileServerPort)
+	GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=%s://%s.s3.%s.amazonaws.com/database/vulnerability/listing.json",
+		directory.FileServerProtocol, directory.FileServerDatabaseBucket, directory.FileServerRegion)
+	if directory.FileServerHost != "s3.amazonaws.com" {
+		GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=%s://%s:%s/database/database/vulnerability/listing.json",
+			directory.FileServerProtocol, directory.FileServerHost, directory.FileServerPort)
 	}
 	log.Info().Msg(GRYPE_DB_UPDATE_URL)
 }

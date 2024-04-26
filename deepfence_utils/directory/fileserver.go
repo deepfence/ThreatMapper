@@ -24,16 +24,25 @@ import (
 )
 
 var (
-	fileServerExternal       = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_EXTERNAL", "false") == "true"
-	fileServerHost           = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_HOST", "deepfence-file-server")
-	fileServerPort           = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_PORT", "9000")
+	FileServerExternal       = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_EXTERNAL", "false") == "true"
+	FileServerProtocol       string
+	FileServerSecure         = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_SECURE", "false") == "true"
+	FileServerHost           = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_HOST", "deepfence-file-server")
+	FileServerPort           = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_PORT", "9000")
+	FileServerRegion         = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_REGION", "")
 	FileServerBucket         = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_BUCKET", string(NonSaaSDirKey))
 	FileServerDatabaseBucket = utils.GetEnvOrDefault("DEEPFENCE_FILE_SERVER_DB_BUCKET", string(DatabaseDirKey))
-	fileServerClientMap      sync.Map
+
+	fileServerClientMap sync.Map
 )
 
 func init() {
 	fileServerClientMap = sync.Map{}
+
+	FileServerProtocol = "http"
+	if FileServerSecure {
+		FileServerProtocol = "https"
+	}
 }
 
 type AlreadyPresentError struct {
@@ -307,7 +316,7 @@ func (mfm *FileServerFileManager) ExposeFile(ctx context.Context, filePath strin
 	var consoleIP string
 	var err error
 
-	if !fileServerExternal {
+	if !FileServerExternal {
 		// consoleURL can optionally be set based on the host header of the request, in case it's different
 		// from the Console URL saved in global settings.
 		// Format: deepfence.customer.com:8080 or 56.56.56.56
@@ -332,7 +341,7 @@ func (mfm *FileServerFileManager) ExposeFile(ctx context.Context, filePath strin
 	}
 
 	headers := http.Header{}
-	if !fileServerExternal {
+	if !FileServerExternal {
 		headers.Add("Host", consoleIP)
 	}
 
@@ -350,7 +359,7 @@ func (mfm *FileServerFileManager) ExposeFile(ctx context.Context, filePath strin
 		return "", err
 	}
 
-	if fileServerExternal {
+	if FileServerExternal {
 		return urlLink.String(), nil
 	}
 
@@ -365,7 +374,7 @@ func (mfm *FileServerFileManager) CreatePublicUploadURL(ctx context.Context, fil
 	var consoleIP string
 	var err error
 
-	if !fileServerExternal {
+	if !FileServerExternal {
 		// consoleURL can optionally be set based on the host header of the request, in case it's different
 		// from the Console URL saved in global settings.
 		// Format: deepfence.customer.com:8080 or 56.56.56.56
@@ -381,7 +390,7 @@ func (mfm *FileServerFileManager) CreatePublicUploadURL(ctx context.Context, fil
 	}
 
 	headers := http.Header{}
-	if !fileServerExternal {
+	if !FileServerExternal {
 		headers.Add("Host", consoleIP)
 	}
 
@@ -399,7 +408,7 @@ func (mfm *FileServerFileManager) CreatePublicUploadURL(ctx context.Context, fil
 		return "", err
 	}
 
-	if fileServerExternal {
+	if FileServerExternal {
 		return urlLink.String(), nil
 	}
 
@@ -473,7 +482,7 @@ func (mfm *FileServerFileManager) CleanNamespace(ctx context.Context) error {
 
 func updateURL(url string, consoleIP string) string {
 	updated := strings.ReplaceAll(url,
-		fmt.Sprintf("%s:%s", fileServerHost, fileServerPort),
+		fmt.Sprintf("%s:%s", FileServerHost, FileServerPort),
 		fmt.Sprintf("%s/file-server", consoleIP),
 	)
 
