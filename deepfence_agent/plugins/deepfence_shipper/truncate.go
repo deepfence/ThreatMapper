@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path"
 	"time"
@@ -12,6 +11,8 @@ func truncateFiles(ctx context.Context, entries []FileEntry, basePath string, tr
 
 	log.Printf("start monitoring file sizes to truncate at %dMB", truncateSize)
 
+	truncateAtSize := truncateSize * 1000 * 1000
+
 	ticker := time.NewTicker(300 * time.Second)
 	defer ticker.Stop()
 
@@ -19,7 +20,9 @@ func truncateFiles(ctx context.Context, entries []FileEntry, basePath string, tr
 		select {
 		case <-ctx.Done():
 			return
-		case <-ticker.C:
+		case t := <-ticker.C:
+			log.Printf("check size for file truncate at %s", t)
+
 			for _, e := range entries {
 				fpath := path.Join(basePath, e.LocalPath)
 				fi, err := os.Stat(fpath)
@@ -28,28 +31,17 @@ func truncateFiles(ctx context.Context, entries []FileEntry, basePath string, tr
 					continue
 				}
 				// get the size
-				if fi.Size() > truncateSize*1000*1000 {
-					log.Printf("truncate file %s size=%.2fMb",
-						e.LocalPath, float64(fi.Size())/(1000.0*1000.0))
-					err := truncate(fpath, fi.Mode().Perm())
-					if err != nil {
+				if fi.Size() > truncateAtSize {
+					log.Printf("truncate file %s size=%.2fMb", e.LocalPath, float64(fi.Size())/(1000.0*1000.0))
+					// truncate to 1/4th the original size since this operation is async
+					if err := os.Truncate(fpath, truncateAtSize/4); err != nil {
 						log.Printf("error truncation file %v", err)
 						continue
 					}
 				}
 			}
+
 		}
 	}
 
-}
-
-func truncate(filename string, perm os.FileMode) error {
-	f, err := os.OpenFile(filename, os.O_TRUNC, perm)
-	if err != nil {
-		return fmt.Errorf("could not open file %q for truncation: %v", filename, err)
-	}
-	if err = f.Close(); err != nil {
-		return fmt.Errorf("could not close file handler for %q after truncation: %v", filename, err)
-	}
-	return nil
 }
