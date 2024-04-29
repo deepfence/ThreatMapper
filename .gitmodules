@@ -29,4 +29,4 @@
 [submodule "deepfence_agent/plugins/fluent-bit"]
 	path = deepfence_agent/plugins/fluent-bit
 	url = https://github.com/deepfence/fluent-bit
-    branch = release-2.2
+	branch = release-2.2
