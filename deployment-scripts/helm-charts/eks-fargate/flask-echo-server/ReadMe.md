@@ -25,7 +25,7 @@ managementConsolePort: "443"
 - (Optional) Change image
 ```yaml
 deepfenceAgentImage:
-  name: deepfenceio/deepfence_agent_ce
+  name: khulnasoft/deepfence_agent_ce
   tag: latest-fargate
 ```
 - Set deepfence auth key

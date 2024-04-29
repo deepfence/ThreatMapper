@@ -35,7 +35,7 @@ jobs:
         run: |
           mkdir -p /tmp/binaries/$DF_BIN_VER
           cd /tmp/binaries/$DF_BIN_VER
-          id=$(docker create quay.io/deepfenceio/deepfence_agent_ce:latest)
+          id=$(docker create quay.io/khulnasoft/deepfence_agent_ce:latest)
           docker cp $id:/bin/deepfenced self
           docker cp $id:/home/deepfence/bin/package-scanner package_scanner
           docker cp $id:/home/deepfence/bin/yara-hunter/YaraHunter malware_scanner

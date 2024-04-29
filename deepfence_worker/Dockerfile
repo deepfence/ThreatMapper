@@ -1,5 +1,5 @@
 ARG DF_IMG_TAG=latest
-ARG IMAGE_REPOSITORY=deepfenceio
+ARG IMAGE_REPOSITORY=khulnasoft
 
 FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS packagescanner
 FROM $IMAGE_REPOSITORY/deepfence_secret_scanner_ce:$DF_IMG_TAG AS secretscanner

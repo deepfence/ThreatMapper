@@ -159,7 +159,7 @@ spec:
 
       containers:
         - name: deepfence-agent
-          image: deepfenceio/deepfence_agent_ce:bottlerocket
+          image: khulnasoft/deepfence_agent_ce:bottlerocket
           imagePullPolicy: Always
           securityContext:
             privileged: true

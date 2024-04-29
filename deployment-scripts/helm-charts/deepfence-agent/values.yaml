@@ -27,7 +27,7 @@ imagePullSecret:
 # deepfence agent runs as a daemonset in all nodes in the cluster
 agent:
   image:
-    name: quay.io/deepfenceio/deepfence_agent_ce
+    name: quay.io/khulnasoft/deepfence_agent_ce
     # tag: 2.2.0
     pullPolicy: Always
   affinity: {}
@@ -51,7 +51,7 @@ agent:
 # cluster agent runs as a single pod
 cluster_agent:
   image:
-    name: quay.io/deepfenceio/deepfence_cluster_agent_ce
+    name: quay.io/khulnasoft/deepfence_cluster_agent_ce
     # tag: 2.2.0
     pullPolicy: Always
   affinity: {}

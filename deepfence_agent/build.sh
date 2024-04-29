@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE_REPOSITORY=${IMAGE_REPOSITORY:-deepfenceio}
+IMAGE_REPOSITORY=${IMAGE_REPOSITORY:-khulnasoft}
 DF_IMG_TAG=${DF_IMG_TAG:-latest}
 
 building_image(){

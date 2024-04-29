@@ -52,7 +52,7 @@ const Command = () => {
   -e MGMT_CONSOLE_URL="${window.location.host ?? '---CONSOLE-IP---'}" \\
   -e MGMT_CONSOLE_PORT="443" \\
   -e DEEPFENCE_KEY="${dfApiKey}" \\
-  quay.io/deepfenceio/deepfence_agent_ce:${version}`;
+  quay.io/khulnasoft/deepfence_agent_ce:${version}`;
 
   return (
     <>

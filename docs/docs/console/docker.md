@@ -10,7 +10,7 @@ Neo4j version was upgraded to v5.x (from v4.4).
 Please follow [these](neo4j-upgrade) steps before upgrading the management console version.
 :::
 
-The quickest and easiest way to install the ThreatMapper Management Console is to use the pre-built images.  These instructions use pre-built ThreatMapper containers from [DockerHub](https://hub.docker.com/u/deepfenceio).
+The quickest and easiest way to install the ThreatMapper Management Console is to use the pre-built images.  These instructions use pre-built ThreatMapper containers from [DockerHub](https://hub.docker.com/u/khulnasoft).
 
 You can install the Management Console on a single Docker host or [in a dedicated Kubernetes cluster](kubernetes).
 

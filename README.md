@@ -6,7 +6,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues)
 [![Documentation](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/threatmapper/docs/v2.2/)
 [![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://community.deepfence.io/threatmapper/docs/v2.2/demo)
-[![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce)
+[![Docker pulls](https://img.shields.io/docker/pulls/khulnasoft/deepfence_agent_ce)](https://hub.docker.com/r/khulnasoft/deepfence_agent_ce)
 [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
 [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
 
@@ -96,10 +96,10 @@ docker run -dit \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-    quay.io/deepfenceio/deepfence_agent_ce:2.2.0
+    quay.io/khulnasoft/deepfence_agent_ce:2.2.0
 ```
 
-Note: Image tag `quay.io/deepfenceio/deepfence_agent_ce:2.2.0-multiarch` is supported in amd64 and arm64/v8 architectures.
+Note: Image tag `quay.io/khulnasoft/deepfence_agent_ce:2.2.0-multiarch` is supported in amd64 and arm64/v8 architectures.
 
 On a Kubernetes platform, the sensors are installed using [helm chart](https://community.deepfence.io/threatmapper/docs/v2.2/sensors/kubernetes/)
 

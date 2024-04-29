@@ -20,7 +20,7 @@ Refer to the [Docker Installation Instructions](/docs/v2.0/console/docker) along
     wget https://github.com/deepfence/ThreatMapper/raw/release-2.0/deployment-scripts/docker-compose.yml
     ```
 
-2. Execute the following command to install and start the Console.  Note the override to specify your repository `myorg`, rather than the `deepfenceio` default:
+2. Execute the following command to install and start the Console.  Note the override to specify your repository `myorg`, rather than the `khulnasoft` default:
 
     ```bash
     ACC=myorg             # the name of the dockerhub account 

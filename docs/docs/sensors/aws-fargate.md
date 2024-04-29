@@ -25,7 +25,7 @@ Grant IAM permissions for ECS task execution role to access this secret as outli
    * CPU and Memory - 0.5 vCPU, 1.0 Gb is appropriate
    * Define the sidecar containers - 
       * Name - deepfence-agent
-      * Image - ```quay.io/deepfenceio/deepfence_fargate_agent_ce:THREATMAPPER_VERSION```
+      * Image - ```quay.io/khulnasoft/deepfence_fargate_agent_ce:THREATMAPPER_VERSION```
       * Select the checkbox for "Private registry authentication" and provide the Secrets Manager ARN or name
       * Unselect the checkbox for "Essential" - the sidecar container is transient and exits once the sensor is installed
    * Define your application containers

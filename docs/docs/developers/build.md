@@ -67,7 +67,7 @@ for IMG in \
     deepfence_secret_scanner_ce \
     deepfence_neo4j_ce
 do
-    docker tag deepfenceio/$IMG $ACC/$IMG:latest
+    docker tag khulnasoft/$IMG $ACC/$IMG:latest
     docker push $ACC/$IMG:latest
 done
 ```

@@ -34,7 +34,7 @@ docker run -dit \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-    deepfenceio/deepfence_agent_ce:2.0.1
+    khulnasoft/deepfence_agent_ce:2.0.1
 ```
 
 ### Podman
@@ -60,7 +60,7 @@ sudo podman run -dit \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-    docker.io/deepfenceio/deepfence_agent_ce:2.0.1
+    docker.io/khulnasoft/deepfence_agent_ce:2.0.1
 ```
 
 :::tip

@@ -59,7 +59,7 @@ Then create the new policy.
 - Copy and paste the following JSON configuration: (Replace `<DEEPFENCE_KEY>` and `<MGMT_CONSOLE_URL>` with actual values)
 
 :::info
-Image tag `quay.io/deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION-multiarch` is supported in amd64 and arm64/v8 architectures.
+Image tag `quay.io/khulnasoft/deepfence_agent_ce:THREATMAPPER_VERSION-multiarch` is supported in amd64 and arm64/v8 architectures.
 :::
 
 ```json
@@ -125,7 +125,7 @@ Image tag `quay.io/deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION-multiarch
       "memoryReservation": null,
       "volumesFrom": [],
       "stopTimeout": null,
-      "image": "quay.io/deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION",
+      "image": "quay.io/khulnasoft/deepfence_agent_ce:THREATMAPPER_VERSION",
       "startTimeout": null,
       "firelensConfiguration": null,
       "dependsOn": null,

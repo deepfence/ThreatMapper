@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE_REPOSITORY=${IMAGE_REPOSITORY:-deepfenceio}
+IMAGE_REPOSITORY=${IMAGE_REPOSITORY:-khulnasoft}
 
 rm -rf $AGENT_BINARY_BUILD/*
 

@@ -52,7 +52,7 @@ kafka:
   # if create true then below values are used to create kafka cluster
   replicaCount: 1 # recommended 3 for high availability kafka
   image:
-    repository: deepfenceio/deepfence_kafka_broker_ce
+    repository: khulnasoft/deepfence_kafka_broker_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.2.0
@@ -90,7 +90,7 @@ postgres:
   config:
     POSTGRES_DB: users
   image:
-    repository: deepfenceio/deepfence_postgres_ce
+    repository: khulnasoft/deepfence_postgres_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.2.0
@@ -119,7 +119,7 @@ redis:
   secretName: ""
   # if create true then below values are used to create postgres database instance
   image:
-    repository: deepfenceio/deepfence_redis_ce
+    repository: khulnasoft/deepfence_redis_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.2.0
@@ -158,7 +158,7 @@ fileserver:
   #   FILE_SERVER_ROOT_USER: ""
   #   FILE_SERVER_ROOT_PASSWORD: ""
   image:
-    repository: deepfenceio/deepfence_file_server_ce
+    repository: khulnasoft/deepfence_file_server_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.2.0
@@ -220,7 +220,7 @@ neo4j:
     NEO4J_db_tx__log_rotation_retention__policy: "3 files"
     NEO4J_PLUGINS: '["apoc"]'
   image:
-    repository: deepfenceio/deepfence_neo4j_ce
+    repository: khulnasoft/deepfence_neo4j_ce
     pullPolicy: Always
     # tag: 2.2.0
   storageClass: ""
@@ -273,7 +273,7 @@ ingress:
 router:
   replicaCount: 1
   image:
-    repository: deepfenceio/deepfence_router_ce
+    repository: khulnasoft/deepfence_router_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.2.0
@@ -339,7 +339,7 @@ router:
 server:
   replicaCount: 1
   image:
-    repository: deepfenceio/deepfence_server_ce
+    repository: khulnasoft/deepfence_server_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.2.0
@@ -371,7 +371,7 @@ server:
 worker:
   replicaCount: 1
   image:
-    repository: deepfenceio/deepfence_worker_ce
+    repository: khulnasoft/deepfence_worker_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.2.0
@@ -402,7 +402,7 @@ worker:
 ingester:
   replicaCount: 1
   image:
-    repository: deepfenceio/deepfence_worker_ce
+    repository: khulnasoft/deepfence_worker_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.2.0
@@ -432,7 +432,7 @@ ingester:
 
 scheduler:
   image:
-    repository: deepfenceio/deepfence_worker_ce
+    repository: khulnasoft/deepfence_worker_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.2.0
@@ -457,7 +457,7 @@ scheduler:
 ui:
   replicaCount: 1
   image:
-    repository: deepfenceio/deepfence_ui_ce
+    repository: khulnasoft/deepfence_ui_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.2.0
@@ -506,7 +506,7 @@ console_agents:
     podmanSockPath: "/run/podman/podman.sock"
   agent:
     image:
-      repository: deepfenceio/deepfence_agent_ce
+      repository: khulnasoft/deepfence_agent_ce
       pullPolicy: Always
       # Overrides the image tag whose default is .global.imageTag
       # tag: 2.2.0
@@ -530,7 +530,7 @@ console_agents:
     podLabels: {}
   cluster_agent:
     image:
-      repository: deepfenceio/deepfence_cluster_agent_ce
+      repository: khulnasoft/deepfence_cluster_agent_ce
       pullPolicy: Always
       # Overrides the image tag whose default is .global.imageTag
       # tag: 2.2.0

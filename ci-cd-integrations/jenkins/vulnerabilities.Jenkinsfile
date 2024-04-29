@@ -1,6 +1,6 @@
 node {
     def app
-    def full_image_name = 'deepfenceio/jenkins-example:latest'
+    def full_image_name = 'khulnasoft/jenkins-example:latest'
     def deepfence_mgmt_console_url = '127.0.0.1' // URL address of Deepfence management console Note - Please do not mention port 
     def fail_cve_count = 100 // Fail jenkins build if number of vulnerabilities found is >= this number. Set -1 to pass regardless of vulnerabilities.
     def fail_critical_cve_count = 1 // Fail jenkins build if number of critical vulnerabilities found is >= this number. Set -1 to pass regardless of critical vulnerabilities.
@@ -20,7 +20,7 @@ node {
     }
 
     stage('Run Deepfence Vulnerability Mapper'){
-        DeepfenceAgent = docker.image("deepfenceio/deepfence_package_scanner_ce:v2")
+        DeepfenceAgent = docker.image("khulnasoft/deepfence_package_scanner_ce:v2")
         try {
             c = DeepfenceAgent.run("-it --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock:rw", "-deepfence-key=${deepfence_key} -console-url=${deepfence_mgmt_console_url} -source=${full_image_name} -fail-on-count=${fail_cve_count} -fail-on-critical-count=${fail_critical_cve_count} -fail-on-high-count=${fail_high_cve_count} -fail-on-medium-count=${fail_medium_cve_count} -fail-on-low-count=${fail_low_cve_count} -fail-on-score=${fail_cve_score} -mask-cve-ids='${mask_cve_ids}'")
             sh "docker logs -f ${c.id}"

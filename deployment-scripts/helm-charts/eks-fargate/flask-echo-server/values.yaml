@@ -7,7 +7,7 @@ managementConsoleUrl: ""
 managementConsolePort: "443"
 
 deepfenceAgentImage:
-  name: deepfenceio/deepfence_agent_ce
+  name: khulnasoft/deepfence_agent_ce
   tag: fargate
 
 # Auth: Get deepfence api key from UI -> Settings -> User Management

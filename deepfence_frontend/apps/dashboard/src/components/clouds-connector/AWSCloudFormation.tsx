@@ -58,7 +58,7 @@ const Links = ({ region }: { region: string }) => {
   return (
     <>
       <DFLink
-        href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:${version}`}
+        href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/khulnasoft/cloud-scanner:${version}`}
         target="_blank"
         rel="noreferrer"
         className="flex items-center mt-4"
@@ -75,7 +75,7 @@ const Links = ({ region }: { region: string }) => {
         You can refer the single account template from here
       </DFLink>
       <DFLink
-        href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:${version}`}
+        href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/khulnasoft/cloud-scanner:${version}`}
         target="_blank"
         rel="noreferrer"
         className="flex items-center mt-4"

@@ -31,7 +31,7 @@ spec:
 
       containers:
         - name: flask
-          image: deepfenceio/flask-echo-server:latest
+          image: khulnasoft/flask-echo-server:latest
           ports:
           - containerPort: 5000
           command: ["/deepfence/usr/local/bin/deepfence-entry-point-scratch.sh"]
