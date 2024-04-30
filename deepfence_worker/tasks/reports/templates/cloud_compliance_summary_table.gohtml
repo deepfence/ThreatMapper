@@ -1,0 +1,30 @@
+{{ define "cloud-compliance-summary-table" }}
+<h3>Summary</h3>
+<div class="summary-report-table" style="width: 100%;">
+    <table style="table-layout: fixed; word-break: break-all;">
+        <tr>
+            <th style="background: white;   color: black; width: 400px;">Name</th>
+            <th style="background: #0B3E58; color: #ffffff;">Alarm</th>
+            <th style="background: #580B1D; color: #ffffff;">Ok</th>
+            <th style="background: #393E41; color: #ffffff;">Skip</th>
+            <th style="background: #58481C; color: #ffffff;">Info</th>
+            <th>Total</th>
+        </tr>
+        {{ range $key, $value := .NodeWiseData.SeverityCount }}
+        {{ $scanData := index $.NodeWiseData.ScanData $key }}
+        {{ if not $scanData.ScanResults }}
+            {{ continue }}
+        {{ end }}
+        <tr>
+            <td style="width: 400px;"><a style="text-decoration : none;" href="#{{ $key | sha256sum }}">{{ $key }}</a></td>
+            <td>{{ default 0 $value.alarm }}</td>
+            <td>{{ default 0 $value.ok }}</td>
+            <td>{{ default 0 $value.skip }}</td>
+            <td>{{ default 0 $value.info }}</td>
+            <td>{{ add $value.alarm $value.ok $value.skip $value.info }}</td>
+        </tr>
+        {{ end }}
+    </table>
+</div>
+<div class="page-break"></div>
+{{ end }}

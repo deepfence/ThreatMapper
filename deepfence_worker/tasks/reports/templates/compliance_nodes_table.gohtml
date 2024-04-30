@@ -1,0 +1,36 @@
+{{ define "compliance-nodes-table" }}
+{{ range $key, $value := .NodeWiseData.ScanData }}
+{{ if not $value.ScanResults }}
+    {{ continue }}
+{{ end }}
+<div id="{{ $key | sha256sum }}">
+    <h3> {{ $key }} - Details</h3>
+    <br>
+</div>
+<div class="summary-report-table" style="width: 100%;">
+    <table style="table-layout: fixed; word-break: break-all;">
+        <tr>
+            <th style="width: 30px; background: #0576c9; color: white;">No.</th>
+            <th style="width: 80px; background: #0576c9; color: white;">Status</th>
+            <th style="width: 170px; background: #0576c9; color: white;">Category</th>
+            <th style="width: 60px; background: #0576c9; color: white;">Test Number</th>
+            <th style="background: #0576c9; color: white;">Description</th>
+            <th style="width: 80px ;background: #0576c9; color: white;">Check Type</th>
+            <th style="width: 120px ;background: #0576c9; color: white;">Resource</th>
+        </tr>
+        {{ range $i, $v := $value.ScanResults }}
+        <tr>
+            <td style="width: 30px">{{ add1 $i }}</td>
+            <td style="width: 80px">{{ $v.Status }}</td>
+            <td style="width: 170px">{{ $v.TestCategory }}</td>
+            <td style="width: 60px">{{ $v.TestNumber }}</td>
+            <td>{{ trunc 80 $v.TestInfo }}</td>
+            <td style="width: 80px">{{ $v.ComplianceCheckType }}</td>
+            <td style="width: 120px">{{ $v.Resource }}</td>
+        </tr>
+        {{ end }}
+    </table>
+</div>
+<div class="page-break"></div>
+{{ end }}
+{{ end }}

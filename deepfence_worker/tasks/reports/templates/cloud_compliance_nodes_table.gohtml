@@ -1,0 +1,32 @@
+{{ define "cloud-compliance-nodes-table" }}
+{{ range $key, $value := .NodeWiseData.ScanData  }}
+{{ if not $value.ScanResults }}
+    {{ continue }}
+{{ end }}
+<div id="{{ $key | sha256sum }}">
+    <h3> {{ $key }} - Details</h3>
+    <br>
+</div>
+<div class="summary-report-table" style="width: 100%;">
+    <table style="table-layout: fixed; word-break: break-all;">
+        <tr>
+            <th style="width: 40px; background: #0576c9; color: white;">No.</th>
+            <th style="width: 60px; background: #0576c9; color: white;">Status</th>
+            <th style="width: 210px; background: #0576c9; color: white;">Title</th>
+            <th style="background: #0576c9; color: white;">Description</th>
+            <th style="width: 100px ;background: #0576c9; color: white;">Check Type</th>
+        </tr>
+        {{ range $i, $v := $value.ScanResults }}
+        <tr>
+            <td style="width: 40px">{{ add1 $i }}</td>
+            <td style="width: 100px">{{ $v.Status }}</td>
+            <td style="width: 210px">{{ $v.Title }}</td>
+            <td>{{ trunc 80 $v.Description }}</td>
+            <td style="width: 100px">{{ $v.ComplianceCheckType }}</td>
+        </tr>
+        {{ end }}
+    </table>
+</div>
+<div class="page-break"></div>
+{{ end }}
+{{ end }}

@@ -1,0 +1,315 @@
+<html>
+
+<head>
+  <style>
+    html {
+      font-size: 62.5%;
+    }
+
+    body {
+      font-size: 1.2rem;
+      font-family: sans-serif;
+      padding: 0px 8px 0 8px;
+    }
+
+    .page-break {
+      page-break-before: always;
+      padding-top: 10px;
+    }
+
+    .page-header {
+      top: 0px;
+      border-bottom: 2px solid grey;
+      width: 100%;
+    }
+
+    .page-header .logo img {
+      width: 250px;
+    }
+
+    .page-footer {
+      position: fixed;
+      border-top: 1px solid rgb(255, 255, 255);
+      bottom: 0;
+      width: 8.0in;
+      padding-top: 5px;
+    }
+
+    .page-header .logo {
+      display: inline-block;
+      width: 2.6in;
+    }
+
+    .page-header .logo img {
+      width: 250px;
+    }
+
+    .page-header .title {
+      font-size: 2.2rem;
+      line-height: 5.3rem;
+      display: inline-block;
+      text-align: center;
+      font-weight: bold;
+      margin-top: 10px;
+      margin-left: 110px;
+      vertical-align: top;
+      color: black;
+    }
+
+    .page-header .meta {
+      vertical-align: top;
+      margin-left: 60px;
+      right: 0;
+      width: 2.6in;
+      line-height: 1.4rem;
+      display: inline-block;
+      text-align: right;
+      margin-top: 10px;
+    }
+
+
+    .sub-report {
+      display: inline-block;
+      margin-top: 1rem;
+      vertical-align: top;
+      position: relative;
+    }
+
+    .sub-report .title {
+      font-size: 2rem;
+      padding: 5px 0 5px 0;
+      margin-bottom: 5px;
+    }
+
+    .sub-report .title .description {
+      font-size: 1rem;
+    }
+
+    .sub-report .info-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translateX(-50%);
+      color: grey;
+      font-size: 1.1rem;
+    }
+
+    .sub-report .summary {
+      margin-top: 10px;
+    }
+
+    .sub-report .summary.metric {
+      display: flex;
+      justify-content: space-evenly;
+    }
+
+    .sub-report .summary .hero {
+      font-size: 2.8rem;
+      color: grey;
+      text-align: center;
+    }
+
+    .sub-report .summary .meta {
+      font-size: 1.2rem;
+      color: grey;
+      text-align: center;
+    }
+
+    .sub-report .summary .hero .up {
+      color: red;
+      font-family: monospace;
+    }
+
+    .sub-report .summary .hero .down {
+      color: green;
+      font-family: monospace;
+    }
+
+    .summary .line {
+      font-size: 1.4rem;
+      margin-bottom: 10px;
+    }
+
+    .sub-report .summary-report-table {
+      min-height: 15rem;
+    }
+
+    .summary-report-table table {
+      width: 100%;
+    }
+
+    .cve-severity-pie {
+      margin-top: 2rem;
+      width: 49.5%;
+    }
+
+    .cve-image-table {
+      margin-top: 2rem;
+      width: 49.5%;
+    }
+
+    .low-severity-color {
+      color: #0276c9 !important;
+    }
+
+    .high-severity-color {
+      color: #e08a25 !important;
+    }
+
+    .medium-severity-color {
+      color: #e7d036 !important;
+    }
+
+    .critical-severity-color {
+      color: #db2547 !important;
+    }
+
+    .table-header-critical {
+      text-align: center;
+      background: #db2547;
+      color: white;
+    }
+
+    .table-header-high {
+      text-align: center;
+      background: rgb(224, 138, 37);
+      color: white;
+      padding: 11px 5px 11px 5px;
+    }
+
+    .table-header-medium {
+      text-align: center;
+      background: rgb(231, 208, 54);
+      color: white;
+      padding: 11px 5px 11px 5px;
+    }
+
+    .table-header-low {
+      text-align: center;
+      background: rgb(2, 118, 201);
+      color: white;
+      padding: 11px 5px 11px 5px;
+    }
+
+    .table-header-info {
+      text-align: center;
+      background: #6D7A82;
+      color: white;
+      padding: 11px 5px 11px 5px;
+    }
+
+    td {
+      text-align: center;
+      padding: 11px 5px 11px 5px;
+      background: #FAFAFC;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    h3 {
+      color: #6D7A82;
+    }
+
+    .detailed-table-row {
+      text-align: center;
+      padding: 11px 5px 11px 5px;
+    }
+
+    .table-header-detailed {
+      text-align: center;
+      background: #3A3A4A;
+      border-right: 0px solid rgba(0, 0, 0, 0.05);
+      color: white;
+      padding: 11px 5px 11px 5px;
+    }
+
+    .h1-position {
+      text-align: center
+    }
+
+    /* this is for nodewise vulnerability table */
+    .summary-report-table {
+      font-family: sans-serif;
+      table-layout: fixed;
+    }
+
+    .summary-report-table table {
+      border-collapse: collapse;
+    }
+
+    .summary-report-table tr:first-child {
+      background-color: #e2e2e2;
+    }
+
+    .summary-report-table td,
+    th {
+      font-size: 1.2rem;
+      padding: 5px;
+      text-align: left;
+      border: 1px solid #d4d4d4;
+    }
+
+    .summary-report-table th {
+      font-weight: normal;
+    }
+
+  </style>
+</head>
+
+<body>
+  {{ template "header" . }}
+  {{ template "applied-filters" . }}
+
+  {{ $scan_types := list "vulnerability" "secret" "malware" }}
+  {{ if mustHas .ScanType $scan_types }}
+    {{ template "summary-table" . }}
+  {{ end }}
+
+  {{ if eq .ScanType "compliance" }}
+    {{ if eq .AppliedFilters.NodeType "cluster" }}
+      {{ template "cloud-compliance-summary-table" . }}
+    {{ else }}
+      {{ template "compliance-summary-table" . }}
+    {{ end }}
+  {{ end }}
+
+  {{ if eq .ScanType "cloud_compliance" }}
+    {{ template "cloud-compliance-summary-table" . }}
+  {{ end }}
+
+  {{ if eq .ScanType "vulnerability" }}
+    {{ template "vulnerabilities-nodes-table" . }}
+  {{ end }}
+
+  {{ if eq .ScanType "secret" }}
+    {{ template "secrets-nodes-table" . }}
+  {{ end }}
+
+  {{ if eq .ScanType "malware" }}
+    {{ template "malwares-nodes-table" . }}
+  {{ end }}
+
+  {{ if eq .ScanType "compliance" }}
+    {{ template "compliance-nodes-table" . }}
+  {{ end }}
+
+  {{ if eq .ScanType "cloud_compliance" }}
+    {{ template "cloud-compliance-nodes-table" . }}
+  {{ end }}
+  <!-- {% block content %}
+    <div class="content">
+    </div>
+    {% endblock %}
+    {% block footer %}
+    <br>
+    <div class="page-footer">
+      <div style="width: 100%">
+      Deepfence Confidential
+      </div>
+    </div>
+    {% endblock %} -->
+</body>
+
+</html>

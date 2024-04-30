@@ -20,7 +20,6 @@ func CleanUpReports(ctx context.Context, task *asynq.Task) error {
 	log := log.WithCtx(ctx)
 
 	log.Info().Msg("Start reports cleanup")
-	defer log.Info().Msg("Complete reports cleanup")
 
 	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
@@ -39,16 +38,6 @@ func CleanUpReports(ctx context.Context, task *asynq.Task) error {
 		return nil
 	}
 	defer session.Close(ctx)
-
-	// mark reports which are inprogress for long time as failed
-	if err = failInprogressReports(ctx, session); err != nil {
-		log.Error().Err(err).Msg("failed to mark inprogress report")
-	}
-
-	// delete the reports which are in failed state
-	if err = deleteFailedReports(ctx, session); err != nil {
-		log.Error().Err(err).Msg("failed to delete failed report")
-	}
 
 	hoursAgo := time.Now().Add(time.Duration(-utils.ReportRetentionTime))
 
@@ -69,7 +58,12 @@ func CleanUpReports(ctx context.Context, task *asynq.Task) error {
 
 	cleanup(minioReportsPrefix)
 
-	return nil
+	// delete the reports which are in failed state
+	err = deleteFailedReports(ctx, session)
+
+	log.Info().Msg("Complete reports cleanup")
+
+	return err
 }
 
 func deleteReport(ctx context.Context, session neo4j.SessionWithContext, path string) error {
@@ -101,9 +95,6 @@ func deleteFailedReports(ctx context.Context, session neo4j.SessionWithContext) 
 
 	log := log.WithCtx(ctx)
 
-	log.Info().Msg("Start reports cleanup delete failed reports")
-	defer log.Info().Msg("Complete reports cleanup delete failed reports")
-
 	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "delete-failed-reports")
 	defer span.End()
 
@@ -119,40 +110,6 @@ func deleteFailedReports(ctx context.Context, session neo4j.SessionWithContext) 
 	query := `MATCH (n:Report) where TIMESTAMP()-n.created_at > $duration DELETE n`
 	vars := map[string]interface{}{
 		"duration": duration,
-	}
-	_, err = tx.Run(ctx, query, vars)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return err
-	}
-
-	return tx.Commit(ctx)
-}
-
-func failInprogressReports(ctx context.Context, session neo4j.SessionWithContext) error {
-
-	log := log.WithCtx(ctx)
-
-	log.Info().Msg("Start reports cleanup fail long inprogress")
-	defer log.Info().Msg("Complete reports cleanup fail long inprogress")
-
-	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "fail-inprogress-reports")
-	defer span.End()
-
-	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(10*time.Second))
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return err
-	}
-	defer tx.Close(ctx)
-
-	duration := utils.ReportGenerationTimeout.Milliseconds()
-
-	query := `MATCH (n:Report{status:$inprogress}) WHERE TIMESTAMP()-n.updated_at > $duration SET n.status=$error`
-	vars := map[string]interface{}{
-		"duration":   duration,
-		"inprogress": utils.ScanStatusInProgress,
-		"error":      utils.ScanStatusFailed,
 	}
 	_, err = tx.Run(ctx, query, vars)
 	if err != nil {

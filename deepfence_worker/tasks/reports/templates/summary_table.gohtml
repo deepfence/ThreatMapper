@@ -1,0 +1,37 @@
+{{ define "summary-table" }}
+<h3>Scan Summary</h3>
+<div class="summary-report-table" style="width: 100%;">
+    <table style="table-layout: fixed; word-break: break-all;">
+        <tr>
+            <th style="width: 400px;">Name</th>
+            <th style="background: #db2547; color: white;">Critical</th>
+            <th style="background: #e08a25; color: white;">High</th>
+            <th style="background: #e7d135; color: white;">Medium</th>
+            <th style="background: #0576c9; color: white;">Low</th>
+            <th>Total</th>
+        </tr>
+        {{ range $key, $value := .NodeWiseData.SeverityCount }}
+        {{ $scanData := index $.NodeWiseData.ScanData $key }}
+        {{ if not $scanData.ScanResults }}
+            {{ continue }}
+        {{ end }}
+        <tr>
+            <td style="width: 400px;"><a href="#{{ $key | sha256sum }}">{{$key}}</a></td>
+            <td>{{ default 0 $value.critical }}</td>
+            <td>{{ default 0 $value.high }}</td>
+            <td>{{ default 0 $value.medium }}</td>
+            <td>{{ default 0 $value.low }}</td>
+            <td>{{ add $value.critical $value.high $value.medium $value.low }}</td>
+        </tr>
+        {{ end }}
+    </table>
+</div>
+{{ range $key, $value := .NodeWiseData.SeverityCount }}
+{{ $scanData := index $.NodeWiseData.ScanData $key }}
+{{ if $scanData.ScanResults }}
+<div class="page-break"></div>
+{{ break }}
+{{ end }}
+{{ end }}
+
+{{ end }}
