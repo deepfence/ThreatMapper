@@ -1,5 +1,5 @@
 ---
-title: Neo4j Upgrade
+title: Upgrade from v2.1
 ---
 
 ## Upgrade Neo4j from 4.4 to 5.x

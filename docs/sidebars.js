@@ -55,7 +55,7 @@ const sidebars = {
           },
           items: [
             'console/requirements',
-            'console/neo4j-upgrade',
+            'console/upgrade-from-v2.1',
             'console/docker',
             'console/kubernetes',
             'console/managed-database',
