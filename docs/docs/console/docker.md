@@ -7,7 +7,7 @@ title: Docker Installation
 :::info[Neo4j Upgrade]
 Neo4j version was upgraded to v5.x (from v4.4).
 
-Please follow [these](neo4j-upgrade) steps before upgrading the management console version.
+Please follow [these](upgrade-from-v2.1.md) steps before upgrading the management console version.
 :::
 
 The quickest and easiest way to install the ThreatMapper Management Console is to use the pre-built images.  These instructions use pre-built ThreatMapper containers from [DockerHub](https://hub.docker.com/u/deepfenceio).
