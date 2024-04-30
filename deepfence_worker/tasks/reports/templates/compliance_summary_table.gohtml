@@ -1,0 +1,32 @@
+{{ define "compliance-summary-table" }}
+<h3>Summary</h3>
+<div class="summary-report-table" style="width: 100%;">
+    <table style="table-layout: fixed; word-break: break-all;">
+        <tr>
+            <th style="background: white;   color: black; width: 400px;">Name</th>
+            <th style="background: #0B3E58; color: #ffffff;">Pass</th>
+            <th style="background: #580B1D; color: #ffffff;">Fail</th>
+            <th style="background: #393E41; color: #ffffff;">Info</th>
+            <th style="background: #58481C; color: #ffffff;">Warn</th>
+            <th style="background: #58350B; color: #ffffff;">Note</th>
+            <th>Total</th>
+        </tr>
+        {{ range $key, $value := .NodeWiseData.SeverityCount }}
+        {{ $scanData := index $.NodeWiseData.ScanData $key }}
+        {{ if not $scanData.ScanResults }}
+            {{ continue }}
+        {{ end }}
+        <tr>
+            <td style="width: 400px;"><a style="text-decoration : none;" href="#{{ $key | sha256sum }}">{{ $key }}</a></td>
+            <td>{{ default 0 $value.pass }}</td>
+            <td>{{ default 0 $value.fail }}</td>
+            <td>{{ default 0 $value.info }}</td>
+            <td>{{ default 0 $value.warn }}</td>
+            <td>{{ default 0 $value.note }}</td>
+            <td>{{ add $value.pass $value.fail $value.info $value.warn $value.note }}</td>
+        </tr>
+        {{ end }}
+    </table>
+</div>
+<div class="page-break"></div>
+{{ end }}

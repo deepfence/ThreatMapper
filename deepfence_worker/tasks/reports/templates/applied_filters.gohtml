@@ -1,0 +1,32 @@
+{{ define "applied-filters" }}
+<h4>Applied filters</h4>
+<div class="summary-report-table" style="width: 100%;">
+    <table style="table-layout: fixed; word-break: break-word;">
+        <tr>
+            <th>Scan Type</th>
+            <td> {{ .AppliedFilters.ScanType }}</td>
+        </tr>
+        <tr>
+            <th>Node Type</th>
+            <td> {{ .AppliedFilters.NodeType }}</td>
+        </tr>
+        <tr>
+            <th>Time Range</th>
+            <th>{{.StartTime}} - {{.EndTime}}</th>
+        </tr>
+        <tr>
+            {{ $scan_types := list "vulnerability" "secret" "malware" }}
+            {{ if mustHas .ScanType $scan_types }}
+            <th>Severity</th>
+            {{ else }}
+            <th>Check Type</th>
+            {{ end }}
+            <td> {{ .AppliedFilters.SeverityOrCheckType | join "," }}</td>
+        </tr>
+        <tr>
+            <th>Advanced Filters</th>
+            <td> {{ .AppliedFilters.AdvancedReportFilters | toJson }}</td>
+        </tr>
+    </table>
+</div>
+{{ end }}

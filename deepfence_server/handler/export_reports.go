@@ -107,7 +107,7 @@ func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
 		var report model.ExportReport
 		utils.FromMap(dbNode.Props, &report)
 
-		if report.StoragePath != "" {
+		if report.Status != utils.ScanStatusFailed {
 			err = mc.DeleteFile(r.Context(), report.StoragePath, false, minio.RemoveObjectOptions{ForceDelete: true})
 			if err != nil {
 				log.Error().Err(err).Msgf("Failed to delete in file server for report id: %s",
@@ -118,11 +118,15 @@ func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if len(deletedRecs) != len(req.ReportIDs) {
+	if len(deletedRecs) == 0 {
+		log.Error().Msgf("Failed to delete any reports")
+		h.respondError(fmt.Errorf("failed to delete any reports"), w)
+		return
+	} else if len(deletedRecs) != len(req.ReportIDs) {
 		log.Warn().Msgf("Not able to delete all the requested reports")
 	}
 
-	vars["uids"] = req.ReportIDs
+	vars["uids"] = deletedRecs
 	deleteQuery := `MATCH (n:Report) WHERE n.report_id in $uids DELETE n`
 	_, err = tx.Run(ctx, deleteQuery, vars)
 	if err != nil {

@@ -296,7 +296,7 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 30m",
+	jobID, err = s.cron.AddFunc("@every 60m",
 		s.enqueueTask(namespace, utils.ReportCleanUpTask, true, utils.DefaultTaskOpts()...))
 	if err != nil {
 		return err

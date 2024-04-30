@@ -122,11 +122,3 @@ func (r ReportFilters) String() string {
 		return string(b)
 	}
 }
-
-func (ar AdvancedReportFilters) String() string {
-	if b, err := json.Marshal(ar); err != nil {
-		return ""
-	} else {
-		return string(b)
-	}
-}
