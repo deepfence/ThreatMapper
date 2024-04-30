@@ -57,11 +57,6 @@ EOF
 COPY --from=vectorscan /vectorscan.tar.bz2 /
 RUN tar -xjf /vectorscan.tar.bz2 -C / && rm /vectorscan.tar.bz2
 
-RUN mkdir -p /etc/td-agent-bit/
-COPY tools/apache/fluentbit/* /etc/td-agent-bit/
-
-# Copy fluentbit plugin
-COPY plugins/fluent-bit/build/bin/fluent-bit /opt/td-agent-bit/bin/
 COPY tools/apache/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /usr/local/bin/getCloudInstanceId
 COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
 COPY etc/certs/* /etc/filebeat/
@@ -71,11 +66,13 @@ COPY plugins/compliance/scripts /usr/local/bin/compliance_check/scripts
 COPY plugins/compliance/config.json /usr/local/bin/compliance_check/config.json
 COPY supervisord.conf /home/deepfence/supervisord.conf
 COPY run_discovery.sh /home/deepfence/
-COPY plugins/etc/run_fluentbit.sh /home/deepfence/
+COPY plugins/etc/run_shipper.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
 RUN mkdir -p /home/deepfence/bin && mkdir -p /home/deepfence/bin/secret-scanner/config && mkdir -p /home/deepfence/bin/yara-hunter
 # COPY plugins/yara-rules /home/deepfence/bin/yara-hunter/yara-rules
 COPY deepfenced /bin/deepfenced
+COPY plugins/deepfence_shipper/deepfence_shipper /home/deepfence/bin/shipper
+COPY plugins/deepfence_shipper/routes.yaml /home/deepfence/routes.yaml
 
 COPY --from=secret_build /home/deepfence/usr/SecretScanner /home/deepfence/bin/secret-scanner
 # COPY --from=secret_build /home/deepfence/usr/config.yaml /home/deepfence/bin/secret-scanner/config
@@ -92,7 +89,6 @@ RUN apt-get -qq -y --no-install-recommends install libjansson4 libssl1.1 libmagi
     && chmod 700 /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
     && chmod +x /home/deepfence/*.sh \
-    && chmod 600 /etc/td-agent-bit/* \
     && cd /tmp \
     && chmod +x /usr/local/bin/start_agent
 RUN apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
