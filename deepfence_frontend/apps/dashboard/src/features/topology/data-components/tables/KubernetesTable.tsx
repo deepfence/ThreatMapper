@@ -444,7 +444,7 @@ const DataTable = ({
         cell: (info) => {
           return <TruncatedText text={info.getValue() ?? ''} />;
         },
-        header: () => <span>Node Id</span>,
+        header: () => <span>Node id</span>,
         minSize: 200,
         size: 210,
         maxSize: 250,
@@ -453,7 +453,7 @@ const DataTable = ({
         cell: (info) => {
           return <TruncatedText text={upperFirst(info.getValue() + '' || 'false')} />;
         },
-        header: () => <span>Agent Running</span>,
+        header: () => <span>Agent running</span>,
         minSize: 60,
         size: 100,
         maxSize: 120,
