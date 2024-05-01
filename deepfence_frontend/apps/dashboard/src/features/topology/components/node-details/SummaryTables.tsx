@@ -241,7 +241,7 @@ export const ImageTable = ({
             </button>
           );
         },
-        header: () => 'Container',
+        header: () => 'Container image',
         minSize: 75,
         size: 80,
         maxSize: 85,
