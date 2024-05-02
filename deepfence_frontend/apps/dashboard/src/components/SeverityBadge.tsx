@@ -78,7 +78,7 @@ export const PostureStatusBadgeIcon = ({
 }) => {
   return (
     <div
-      className={cn('w-[18px] h-[18px]', className)}
+      className={cn('w-[18px] h-[18px] shrink-0', className)}
       style={{ color: getPostureColor(theme)[status] }}
     >
       {status === 'alarm' && <SeverityCritical theme={theme} />}
@@ -171,7 +171,7 @@ export const SeverityBadgeIcon = ({
 }) => {
   return (
     <div
-      className={cn('w-[18px] h-[18px]', className)}
+      className={cn('w-[18px] h-[18px] shrink-0', className)}
       style={{ color: getSeverityColorMap(theme)[severity] }}
     >
       {severity === 'critical' && <SeverityCritical theme={theme} />}
