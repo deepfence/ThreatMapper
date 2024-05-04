@@ -10,7 +10,6 @@ export SECRET_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/SecretScanner
 export MALWARE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/YaraHunter/
 export PACKAGE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/package-scanner
 export COMPLIANCE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/compliance
-export SHIPPER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/deepfence_shipper
 export DEEPFENCE_CTL=$(PWD)/deepfence_ctl
 export DEEPFENCED=$(PWD)/deepfence_bootstrapper
 export DEEPFENCE_FARGATE_DIR=$(DEEPFENCE_AGENT_DIR)/agent-binary
@@ -52,7 +51,7 @@ bootstrap-agent-plugins:
 	(cd $(MALWARE_SCANNER_DIR) && bash bootstrap.sh)
 
 .PHONY: agent
-agent: debian_builder deepfenced console_plugins shipper
+agent: debian_builder deepfenced console_plugins
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
 	IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) bash build.sh)
 
@@ -126,10 +125,6 @@ ui:
 	docker run --rm --entrypoint=bash -v $(DEEPFENCE_FRONTEND_DIR):/app node:18-bullseye-slim -c "cd /app && corepack enable && corepack prepare pnpm@7.17.1 --activate && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true pnpm install --frozen-lockfile --prefer-offline && ENABLE_ANALYTICS=true pnpm run build" && \
 	docker build -f $(DEEPFENCE_FRONTEND_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG) $(DEEPFENCE_FRONTEND_DIR) && \
 	rm -rf $(DEEPFENCE_FRONTEND_DIR)/console_version.txt $(DEEPFENCE_FRONTEND_DIR)/product_version.txt
-
-.PHONY: shipper
-shipper: alpine_builder
-	(cd $(SHIPPER_DIR) && make all)
 
 .PHONY: secretscanner
 secretscanner: bootstrap-agent-plugins
