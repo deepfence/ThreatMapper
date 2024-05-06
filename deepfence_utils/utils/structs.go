@@ -87,7 +87,7 @@ type ReportParams struct {
 
 type ReportOptions struct {
 	// SBOMFormat Applicable if ReportType is sbom
-	SBOMFormat string `json:"sbom_format" validate:"omitempty,oneof=syft-json@11.0.1 cyclonedx-json@1.5 spdx-json@2.2 spdx-json@2.3" enum:"syft-json@11.0.1,cyclonedx-json@1.5,spdx-json@2.2,spdx-json@2.3"`
+	SBOMFormat string `json:"sbom_format" validate:"omitempty,oneof=syft-json cyclonedx-json@1.5 spdx-json@2.2 spdx-json@2.3" enum:"syft-json,cyclonedx-json@1.5,spdx-json@2.2,spdx-json@2.3"`
 }
 
 type ReportFilters struct {

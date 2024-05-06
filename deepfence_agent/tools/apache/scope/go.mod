@@ -44,7 +44,7 @@ require (
 	github.com/weaveworks/common v0.0.0-20230728070032-dd9e68f319d5
 	github.com/weaveworks/tcptracer-bpf v0.0.0-00010101000000-000000000000
 	golang.org/x/net v0.24.0
-	golang.org/x/sys v0.19.0
+	golang.org/x/sys v0.20.0
 	google.golang.org/grpc v1.63.2
 	k8s.io/api v0.29.0
 	k8s.io/apimachinery v0.29.0
@@ -114,11 +114,11 @@ require (
 	golang.org/x/oauth2 v0.19.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/term v0.19.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.20.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240415180920-8c6c420018be // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
+	google.golang.org/protobuf v1.34.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

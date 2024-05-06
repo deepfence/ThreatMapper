@@ -11,32 +11,32 @@ import (
 	"path"
 	"strings"
 
-	"github.com/anchore/syft/syft/formats"
-	"github.com/anchore/syft/syft/formats/cyclonedxjson"
-	"github.com/anchore/syft/syft/formats/spdxjson"
-	"github.com/anchore/syft/syft/formats/syftjson"
-	"github.com/anchore/syft/syft/sbom"
+	"github.com/anchore/syft/syft/format"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/minio/minio-go/v7"
+	"github.com/rs/zerolog/log"
 	"github.com/spdx/tools-golang/spdx"
 )
 
-var (
-	sbomFormatMap = map[string]sbom.Format{
-		// syft-json@11.0.1
-		syftjson.Format().String(): syftjson.Format(),
-		// spdx-json@2.2
-		spdxjson.Format2_2().String(): spdxjson.Format2_2(),
-		// spdx-json@2.3
-		spdxjson.Format2_3().String(): spdxjson.Format2_3(),
-		// cyclonedx-json@1.5
-		cyclonedxjson.Format1_5().String(): cyclonedxjson.Format1_5(),
-	}
+const (
+	SYFT_JSON          = "syft-json"
+	SPDX_JSON_2_2      = "spdx-json@2.2"
+	SPDX_JSON_2_3      = "spdx-json@2.3"
+	CYCLONEDX_JSON_1_5 = "cyclonedx-json@1.5"
+)
 
+var (
 	ErrUnknownSbomFormat = errors.New("unknown sbom format")
 )
+
+func isSupportedFormat(format string) bool {
+	return format == SYFT_JSON ||
+		format == SPDX_JSON_2_2 ||
+		format == SPDX_JSON_2_3 ||
+		format == CYCLONEDX_JSON_1_5
+}
 
 func generateSBOM(ctx context.Context, params utils.ReportParams) (string, error) {
 	ctx, span := telemetry.NewSpan(ctx, "reports", "generate-sbom-report")
@@ -50,43 +50,51 @@ func generateSBOM(ctx context.Context, params utils.ReportParams) (string, error
 }
 
 func sbomReport(ctx context.Context, params utils.ReportParams) (string, error) {
-	var ok bool
-	var sbomFormat sbom.Format
-	if sbomFormat, ok = sbomFormatMap[params.Options.SBOMFormat]; !ok {
+	sbomFormat := params.Options.SBOMFormat
+
+	if !isSupportedFormat(sbomFormat) {
+		log.Error().Msgf("unsupported format %s", sbomFormat)
 		return "", ErrUnknownSbomFormat
 	}
 
-	sbomFilePath := path.Join("/sbom", utils.ScanIDReplacer.Replace(params.Filters.ScanID)+".json.gz")
+	scanID := utils.ScanIDReplacer.Replace(params.Filters.ScanID)
+
+	sbomFilePath := path.Join("/sbom", scanID+".json.gz")
 	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return "", err
 	}
-	buff, err := mc.DownloadFileContexts(ctx, sbomFilePath, minio.GetObjectOptions{})
+
+	tmpsbomFilePath := path.Join("/tmp", scanID+".json")
+	f, err := os.Create(tmpsbomFilePath)
 	if err != nil {
 		return "", err
 	}
+	defer os.Remove(f.Name())
 
-	if sbomFormat.String() == syftjson.Format().String() {
+	// need to decompress
+	sbomFile := utils.NewUnzippedFile(f)
+
+	err = mc.DownloadFileTo(ctx, sbomFilePath, sbomFile, minio.GetObjectOptions{})
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return "", err
+	}
+
+	sbomContent, err := os.ReadFile(tmpsbomFilePath)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return "", err
+	}
+
+	if strings.HasPrefix(sbomFormat, "syft-json") {
 		// SBOM already in syft-json format
-		return saveSbomToFile(buff, params)
+		return saveSbomToFile(sbomContent, params)
 	}
 
-	gzReader, err := gzip.NewReader(bytes.NewBuffer(buff))
+	newSBOMContent, err := convertSBOMFormat(bytes.NewReader(sbomContent), sbomFormat)
 	if err != nil {
-		return "", err
-	}
-	var sbomContent bytes.Buffer
-	_, err = io.Copy(&sbomContent, gzReader)
-	readerCloseErr := gzReader.Close()
-	if err != nil {
-		return "", err
-	}
-	if readerCloseErr != nil {
-		return "", readerCloseErr
-	}
-
-	newSBOMContent, err := convertSBOMFormat(&sbomContent, sbomFormat)
-	if err != nil {
+		log.Error().Err(err).Msgf("error converting sbom to %s", sbomFormat)
 		return "", err
 	}
 
@@ -120,18 +128,30 @@ func saveSbomToFile(sbomContent []byte, params utils.ReportParams) (string, erro
 	return temp.Name(), nil
 }
 
-func convertSBOMFormat(oldFormatSBOMReader io.Reader, newFormat sbom.Format) ([]byte, error) {
-	oldFormatSBOM, _, err := formats.Decode(oldFormatSBOMReader)
+func convertSBOMFormat(oldFormatSBOMReader io.Reader, newFormat string) ([]byte, error) {
+	oldFormatSBOM, formatID, schema, err := format.Decode(oldFormatSBOMReader)
 	if err != nil {
+		log.Error().Err(err).Msg("error decoding sbom")
 		return nil, err
 	}
 
-	newFormatSBOM, err := formats.Encode(*oldFormatSBOM, newFormat)
+	encoders, err := format.DefaultEncodersConfig().Encoders()
 	if err != nil {
+		log.Error().Err(err).Msg("error getting default encoders")
 		return nil, err
 	}
 
-	if newFormat.String() == spdxjson.Format2_2().String() || newFormat.String() == spdxjson.Format2_3().String() {
+	ec := format.NewEncoderCollection(encoders...)
+	encoder := ec.GetByString(newFormat)
+
+	newFormatSBOM, err := format.Encode(*oldFormatSBOM, encoder)
+	if err != nil {
+		log.Error().Err(err).Msgf("error converting sbom from %s %s to %s",
+			formatID, schema, newFormat)
+		return nil, err
+	}
+
+	if newFormat == SPDX_JSON_2_2 || newFormat == SPDX_JSON_2_3 {
 		// https://tools.spdx.org/app/validate/
 		// spdx validator expects package file name to be relative path (should not start with /)
 		var spdxDoc spdx.Document

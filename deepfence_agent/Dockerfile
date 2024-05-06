@@ -96,7 +96,7 @@ RUN apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 RUN <<EOF
 set -eux
 
-vessel_version="0.12.2"
+vessel_version="0.12.3"
 if [ "$TARGETARCH" = "arm64" ]; then
     ARCHITECTURE="arm64"
 elif [ "$TARGETARCH" = "amd64" ]; then
