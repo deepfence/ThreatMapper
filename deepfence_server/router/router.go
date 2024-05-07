@@ -136,7 +136,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 		Translator:       translator,
 		IngestChan:       ingestC,
 		ConsoleDiagnosis: consoleDiagnosis,
-		TTLCache:         ttlcache.New[string, string](),
+		TTLCache: ttlcache.New[string, string](
+			ttlcache.WithDisableTouchOnHit[string, string](),
+		),
 	}
 	go dfHandler.TTLCache.Start()
 

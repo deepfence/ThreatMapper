@@ -25,7 +25,9 @@ type ConsoleController struct {
 func NewConsoleController(max int) ConsoleController {
 	return ConsoleController{
 		MaxWorkload: max,
-		TTLCache:    ttlcache.New[string, string](),
+		TTLCache: ttlcache.New[string, string](
+			ttlcache.WithDisableTouchOnHit[string, string](),
+		),
 	}
 }
 
