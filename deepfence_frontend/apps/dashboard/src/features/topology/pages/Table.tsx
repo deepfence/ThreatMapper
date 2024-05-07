@@ -1,7 +1,6 @@
 import { useParams } from 'react-router-dom';
 
 import { TopologyCloudTable } from '@/features/topology/components/TopologyCloudTable';
-import { CloudResourcesTable } from '@/features/topology/data-components/tables/CloudResourcesTable';
 import { ContainersTable } from '@/features/topology/data-components/tables/ContainersTable';
 import { HostsTable } from '@/features/topology/data-components/tables/HostsTable';
 import { KubernetesTable } from '@/features/topology/data-components/tables/KubernetesTable';
@@ -18,8 +17,6 @@ const Table = () => {
     return <ContainersTable />;
   } else if (type === 'pod') {
     return <PodsTable />;
-  } else if (type === 'cloud_resource') {
-    return <CloudResourcesTable />;
   }
   return <TopologyCloudTable key={type} />;
 };

@@ -192,22 +192,22 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Dashboard' },
       },
       {
-        path: 'topology',
+        path: 'inventory',
         ...topology,
         children: [
           {
             index: true,
-            loader: () => redirect('/topology/graph', 301),
+            loader: () => redirect('/inventory/compute/cloud_provider/graph', 301),
           },
           {
-            path: 'table/:viewType?',
+            path: 'compute/:viewType/table',
             ...topologyTable,
-            meta: { title: 'Cloud Topology' },
+            meta: { title: 'Cloud Inventory' },
           },
           {
-            path: 'graph/:viewType?',
+            path: 'compute/:viewType/graph',
             ...topologyGraph,
-            meta: { title: 'Cloud Topology' },
+            meta: { title: 'Cloud Inventory' },
           },
         ],
       },
@@ -615,7 +615,7 @@ export const privateRoutes: CustomRouteObject[] = [
         loader: searchCloudFiltersApiLoader,
       },
       {
-        path: 'topology',
+        path: 'inventory',
         ...topologyLoader,
       },
       {

@@ -5,7 +5,7 @@ import { TopologyGraph } from '@/features/topology/components/TopologyGraph';
 const loader = async ({ params }: LoaderFunctionArgs) => {
   const type = params.viewType ?? 'cloud_provider';
   if (type === 'cloud_resource') {
-    throw redirect('/topology/table/cloud_resource');
+    throw redirect('/inventory/compute/cloud_resource/table');
   }
   return null;
 };

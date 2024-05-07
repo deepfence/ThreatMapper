@@ -75,3 +75,25 @@ const WithContent = () => {
 export const TabWithContent: StoryObj<typeof Tab> = {
   render: WithContent,
 };
+
+const WithButton = () => {
+  const [tab, setTab] = useState('tab1');
+  return (
+    <Tab
+      value={tab}
+      defaultValue={tab}
+      tabs={tabs2}
+      onValueChange={(v) => setTab(v)}
+      variant="button"
+      fullWidth={true}
+    >
+      <div className="h-full p-2 dark:text-white">
+        You are now on {tabs2.find((t) => t.value === tab)?.label}
+      </div>
+    </Tab>
+  );
+};
+
+export const TabButton: StoryObj<typeof Tab> = {
+  render: WithButton,
+};

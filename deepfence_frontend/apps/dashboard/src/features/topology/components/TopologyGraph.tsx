@@ -391,7 +391,8 @@ const NodeLimitExceeded = () => {
       </div>
       <div className="text-text-text-and-icon text-lg text-center">
         There are too many nodes to display on the Graph view. Please use the{' '}
-        <DFLink to={`/topology/table/${type}`}>Table view</DFLink> to see all nodes..
+        <DFLink to={`/inventory/compute/${type}/table`}>Table view</DFLink> to see all
+        nodes..
       </div>
     </div>
   );
@@ -426,7 +427,7 @@ function useGraphDataManager() {
     searchParams.set('type', type);
     searchParams.set('action', JSON.stringify(action));
     searchParams.set('filters', JSON.stringify(storageManager.getFilters()));
-    fetcher.load(`/data-component/topology?${searchParams.toString()}`);
+    fetcher.load(`/data-component/inventory?${searchParams.toString()}`);
   };
 
   useEffect(() => {
