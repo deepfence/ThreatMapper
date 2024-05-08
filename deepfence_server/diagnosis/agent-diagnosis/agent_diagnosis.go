@@ -113,6 +113,7 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 
 	inProgressNodeIds, err := verifyNodeIds(ctx, nodeIdentifiers)
 	if err != nil {
+		log.Error().Msgf("Error in verifyNodeIds: %s", err.Error())
 		return err
 	}
 	mc, err := directory.FileServerClient(ctx)
@@ -183,6 +184,7 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 				"action":          string(b),
 				"minio_file_name": fileName,
 			}); err != nil {
+			log.Error().Err(err)
 			return err
 		}
 	}

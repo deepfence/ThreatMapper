@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
 )
 
@@ -25,6 +26,7 @@ func RegisterControl[T ctl.StartVulnerabilityScanRequest |
 	ctl.StartSecretScanRequest |
 	ctl.StartComplianceScanRequest |
 	ctl.StartMalwareScanRequest |
+	ctl.StartCloudComplianceScanRequest |
 	ctl.StartAgentUpgradeRequest |
 	ctl.SendAgentDiagnosticLogsRequest |
 	ctl.DisableAgentPluginRequest |
@@ -33,6 +35,8 @@ func RegisterControl[T ctl.StartVulnerabilityScanRequest |
 	ctl.StopMalwareScanRequest |
 	ctl.StopVulnerabilityScanRequest |
 	ctl.StopComplianceScanRequest |
+	ctl.StopCloudComplianceScanRequest |
+	ctl.RefreshResourcesRequest |
 	ctl.ThreatIntelInfo](id ctl.ActionID, callback func(req T) error) error {
 
 	controlsGuard.Lock()
@@ -55,7 +59,12 @@ func RegisterControl[T ctl.StartVulnerabilityScanRequest |
 func ApplyControl(req openapi.ControlsAction) error {
 	controlsGuard.RLock()
 	defer controlsGuard.RUnlock()
-	return controls[ctl.ActionID(req.GetId())]([]byte(req.GetRequestPayload()))
+	controlExec, ok := controls[ctl.ActionID(req.GetId())]
+	if !ok {
+		log.Warn().Msgf("Unimplemented action:%d", req.GetId())
+		return nil
+	}
+	return controlExec([]byte(req.GetRequestPayload()))
 }
 
 func init() {

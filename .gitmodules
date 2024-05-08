@@ -17,7 +17,7 @@
 [submodule "golang_deepfence_sdk"]
 	path = golang_deepfence_sdk
 	url = https://github.com/deepfence/golang_deepfence_sdk.git
-	branch = main
+	branch = ISSUE-1980
 [submodule "deepfence_agent/plugins/YaraHunter"]
 	path = deepfence_agent/plugins/YaraHunter
 	url = https://github.com/deepfence/YaraHunter.git
@@ -30,3 +30,7 @@
 	path = deepfence_agent/plugins/fluent-bit
 	url = https://github.com/deepfence/fluent-bit
     branch = main
+[submodule "deepfence_agent/plugins/cloud-scanner"]
+	path = deepfence_agent/plugins/cloud-scanner
+	url = git@github.com:deepfence/cloud-scanner.git
+	branch = ISSUE-1980

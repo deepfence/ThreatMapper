@@ -52,6 +52,7 @@ func NewIniConfig(input []byte) (Config, error) {
 				Env:         section.Key("environment").String(),
 				Name:        typeName[1],
 			})
+			log.Info().Msgf("Adding process: %v", processEntries[len(processEntries)-1])
 		} else if typeName[0] == "cgroup" {
 			cgroupEntries = append(cgroupEntries, CgroupEntry{
 				MaxCPU: section.Key("maxcpu").MustInt(),

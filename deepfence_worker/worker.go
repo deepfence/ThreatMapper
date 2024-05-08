@@ -181,6 +181,8 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 
 	worker.AddOneShotHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade)
 
+	worker.AddOneShotHandler(utils.CheckCloudScannerAgentUpgradeTask, cronjobs.CheckCloudScannerAgentUpgrade)
+
 	worker.AddOneShotHandler(utils.TriggerConsoleActionsTask, cronjobs.NewConsoleController(cfg.MaxScanWorkload).TriggerConsoleControls)
 
 	worker.AddOneShotHandler(utils.ScheduledTasks, cronjobs.RunScheduledTasks)

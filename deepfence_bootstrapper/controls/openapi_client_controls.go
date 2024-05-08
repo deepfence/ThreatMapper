@@ -92,7 +92,8 @@ func (ct *ControlsClient) API() *client.APIClient {
 	return ct.client.Client()
 }
 
-func (ct *ControlsClient) StartControlsWatching(nodeID string, isClusterAgent bool) error {
+func (ct *ControlsClient) StartControlsWatching(nodeID string,
+	isClusterAgent bool, nodeType string) error {
 	if isClusterAgent {
 
 	} else {
@@ -102,6 +103,7 @@ func (ct *ControlsClient) StartControlsWatching(nodeID string, isClusterAgent bo
 				getMaxAllocatable(),
 				nodeID,
 				version,
+				nodeType,
 			),
 		)
 		ctl, _, err := ct.API().ControlsAPI.GetAgentInitControlsExecute(req)
@@ -139,6 +141,7 @@ func (ct *ControlsClient) StartControlsWatching(nodeID string, isClusterAgent bo
 	}
 	go func() {
 		agentID := client.NewModelAgentID(getMaxAllocatable(), nodeID)
+		agentID.NodeType = &nodeType
 		ticker := time.NewTicker(time.Second * time.Duration(ct.publishInterval.Load()/2))
 		for {
 			ticker.Reset(time.Second * time.Duration(ct.publishInterval.Load()/2))

@@ -1,0 +1,400 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Deepfence Cloud Scanner Organization Deployment - AWS
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+    - Label:
+        default: Deepfence Configuration
+      Parameters:
+      - ManagementConsoleURL
+      - ManagementConsolePort
+      - DeepfenceKey
+      - CloudScannerImage
+      - DebugLogs
+      - OrgMembers
+      - OrgAccId
+      - SuccessSignalUrl
+      - ParentStackName
+    - Label:
+        default: Cluster Configuration
+      Parameters:
+      - ClusterName
+    - Label:
+        default: Create New VPC
+      Parameters:
+      - VPCName
+      - VPCCIDR
+      - SubnetCIDR
+    - Label:
+        default: >-
+          Use Existing VPC (Optional, Target Member AWS Account ID must be
+          set)
+      Parameters:
+      - VPC
+      - VPCSubnet
+      - IG
+    - Label:
+        default: Task Configuration
+      Parameters:
+      - TaskIAMRole
+      - TaskCPU
+      - TaskMemory
+      - TaskEphemeralStorage
+      - CloudTrailTrails
+    ParameterLabels:
+      ManagementConsoleURL:
+        default: 'Management Console URL. Example: 22.33.44.55 or deepfence.customer.com'
+      ManagementConsolePort:
+        default: Management Console Port
+      DeepfenceKey:
+        default: Deepfence API Key
+      CloudScannerImage:
+        default: Cloud Scanner Image
+      DebugLogs:
+        default: Enable Debug Logs
+      ClusterName:
+        default: ECS Cluster Name
+      VPCName:
+        default: VPC Name
+      VPC:
+        default: Cloud Scanner VPC ID
+      VPCSubnet:
+        default: Cloud Scanner Subnet ID
+      IG:
+        default: Internet Gateway ID
+      VPCCIDR:
+        default: Cloud Scanner VPC CIDR Block
+      SubnetCIDR:
+        default: Cloud Scanner Subnet CIDR Block
+      OrgMembers:
+        default: Organization Member Account Ids which need to be monitored
+      OrgAccId:
+        default: Organization Management Account Id
+      SuccessSignalUrl:
+        default: URL to send notification for successful deployment of ECS Task
+      ParentStackName:
+        default: Parent Stack Name
+      TaskIAMRole:
+        default: >-
+          If SecurityAudit role is chosen, cloud scanner may not find
+          configuration issues in some of the AWS resources like WAF.
+          Also updates will happen only once every day.
+      TaskCPU:
+        default: 'Task CPU Units (Default: 8 vCPU)'
+      TaskMemory:
+        default: 'Task Memory (Default: 16 GB)'
+      TaskEphemeralStorage:
+        default: 'Task Ephemeral Storage (Default: 100 GB)'
+      CloudTrailTrails:
+        default: Cloud Trail ARNs (comma separated) to refresh every hour on changes in the infrastructure
+Parameters:
+  ManagementConsoleURL:
+    Type: String
+  ManagementConsolePort:
+    Type: String
+    Default: '443'
+  DeepfenceKey:
+    NoEcho: true
+    Type: String
+  CloudScannerImage:
+    Default: 'quay.io/deepfenceio/cloud-scanner:2.1.1'
+    Type: String
+  ClusterName:
+    Default: deepfence-cloud-scanner
+    Type: String
+    Description: Name of Cloud Scanner ECS cluster
+  VPCName:
+    Default: deepfence-cloud-scanner-vpc
+    Type: String
+    Description: Name of VPC to be created for cloud scanner to be deployed in
+  VPC:
+    Type: String
+    Description: Existing VPC ID where cloud scanner needs to be deployed
+    Default: ''
+  VPCSubnet:
+    Type: String
+    Description: Subnet within existing VPC to be used for cloud scanner deployment
+    Default: ''
+  VPCCIDR:
+    Type: String
+    Description: VPC CIDR block to use
+    Default: 10.0.0.0/16
+  SubnetCIDR:
+    Type: String
+    Description: Subnet CIDR to use for VPC
+    Default: 10.0.0.0/24
+  IG:
+    Type: String
+    Description: Internet Gateway within existing VPC to connect to internet
+  OrgMembers:
+    Type: String
+  OrgAccId:
+    Type: String
+  DebugLogs:
+    Default: 'false'
+    Type: String
+    AllowedValues:
+    - 'true'
+    - 'false'
+  SuccessSignalUrl:
+    Type: String
+  ParentStackName:
+    Type: String
+  TaskIAMRole:
+    Type: String
+    Description: Task Role
+    Default: 'arn:aws:iam::aws:policy/SecurityAudit'
+    AllowedValues:
+    - 'arn:aws:iam::aws:policy/SecurityAudit'
+    - 'arn:aws:iam::aws:policy/ReadOnlyAccess'
+  TaskCPU:
+    Type: String
+    Description: Task CPU Units
+    Default: '8192'
+  TaskMemory:
+    Type: String
+    Description: Task Memory (MB)
+    Default: '16384'
+  TaskEphemeralStorage:
+    Type: String
+    Description: Ephemeral Storage (GB)
+    Default: '100'
+  CloudTrailTrails:
+    Type: String
+    Description: >-
+      CloudTrail Trail ARNs (Management events with write-only or read-write).
+      If empty, a trail with management events will be automatically chosen if available.
+Conditions:
+  CreateNewVPC: !Equals
+  - !Ref VPC
+  - ''
+  CreateNewSubnet: !Equals
+  - !Ref VPCSubnet
+  - ''
+Resources:
+  CloudScannerVPC:
+    Type: 'AWS::EC2::VPC'
+    Condition: CreateNewVPC
+    Properties:
+      CidrBlock: !Ref VPCCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+      - Key: Name
+        Value: !Ref VPCName
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Condition: CreateNewVPC
+  VPCGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Condition: CreateNewVPC
+    Properties:
+      VpcId: !If
+      - CreateNewVPC
+      - !Ref CloudScannerVPC
+      - !Ref VPC
+      InternetGatewayId: !If
+      - CreateNewVPC
+      - !Ref InternetGateway
+      - !Ref IG
+  SubnetA:
+    Type: 'AWS::EC2::Subnet'
+    Condition: CreateNewSubnet
+    Properties:
+      AvailabilityZone: !Select
+      - 0
+      - !GetAZs ''
+      VpcId: !If
+      - CreateNewVPC
+      - !Ref CloudScannerVPC
+      - !Ref VPC
+      CidrBlock: !Ref SubnetCIDR
+      MapPublicIpOnLaunch: true
+  RouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Condition: CreateNewSubnet
+    Properties:
+      VpcId: !If
+      - CreateNewVPC
+      - !Ref CloudScannerVPC
+      - !Ref VPC
+  InternetRoute:
+    Type: 'AWS::EC2::Route'
+    Condition: CreateNewSubnet
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !If
+      - CreateNewVPC
+      - !Ref InternetGateway
+      - !Ref IG
+      RouteTableId: !Ref RouteTable
+  SubnetARouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Condition: CreateNewSubnet
+    Properties:
+      RouteTableId: !Ref RouteTable
+      SubnetId: !If
+      - CreateNewSubnet
+      - !Ref SubnetA
+      - !Ref VPCSubnet
+  ContainerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: deepfence-cloud-scanner-ecs
+      VpcId: !If [CreateNewVPC, !Ref CloudScannerVPC, !Ref VPC]
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: "0.0.0.0/0"
+      Tags:
+      - Key: Name
+        Value: !Ref ClusterName
+  ECSCluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: !Ref ClusterName
+      Tags:
+      - Key: Name
+        Value: !Ref ClusterName
+  CloudScannerLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+  CloudScannerService:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      ServiceName: deepfence-cloud-scanner-ecs-service
+      Cluster: !GetAtt
+      - ECSCluster
+      - Arn
+      DesiredCount: 1
+      LaunchType: FARGATE
+      PlatformVersion: LATEST
+      TaskDefinition: !Ref CloudScannerTaskDefinition
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+          - !GetAtt ContainerSecurityGroup.GroupId
+          Subnets:
+          - !If
+            - CreateNewSubnet
+            - !Ref SubnetA
+            - !Ref VPCSubnet
+      SchedulingStrategy: REPLICA
+      Tags:
+      - Key: Name
+        Value: !Ref ClusterName
+  CloudScannerTaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      ContainerDefinitions:
+      - Command:
+        - '-mode'
+        - service
+        - '-mgmt-console-url'
+        - !Ref ManagementConsoleURL
+        - '-mgmt-console-port'
+        - !Ref ManagementConsolePort
+        - '-deepfence-key'
+        - !Ref DeepfenceKey
+        - '-multiple-acc-ids'
+        - !Ref OrgMembers
+        - '-org-acc-id'
+        - !Ref OrgAccId
+        - '-success-signal-url'
+        - !Ref SuccessSignalUrl
+        - '-role-prefix'
+        - !Ref ParentStackName
+        - '-debug'
+        - !Ref DebugLogs
+        - '-cloud-audit-log-ids'
+        - !Ref CloudTrailTrails
+        Essential: true
+        Image: !Ref CloudScannerImage
+        Environment:
+        - Name: TASK_ROLE
+          Value: !Ref TaskIAMRole
+        - Name: MGMT_CONSOLE_URL
+          Value: !Ref ManagementConsoleURL
+        - Name: MGMT_CONSOLE_PORT
+          Value: !Ref ManagementConsolePort
+        - Name: DEEPFENCE_KEY
+          Value: !Ref DeepfenceKey
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group: !Ref CloudScannerLogGroup
+            awslogs-region: !Ref 'AWS::Region'
+            awslogs-stream-prefix: deepfence-cloud-scanner
+        Name: deepfence-cloud-scanner-container
+      Family: !Join
+      - '-'
+      - - deepfence
+        - !Ref ParentStackName
+      TaskRoleArn: !GetAtt
+      - TaskRole
+      - Arn
+      ExecutionRoleArn: !GetAtt
+      - TaskExecutionRole
+      - Arn
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+      - FARGATE
+      Cpu: !Ref TaskCPU
+      Memory: !Ref TaskMemory
+      EphemeralStorage:
+        SizeInGiB: !Ref TaskEphemeralStorage
+      Tags:
+      - Key: Name
+        Value: deepfence-cloud-scanner-task-definition
+  TaskExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Path: /
+      RoleName: !Join
+      - ''
+      - - !Ref ParentStackName
+        - Role
+      AssumeRolePolicyDocument: >-
+        {"Version":"2012-10-17","Statement":[{"Sid":"","Effect":"Allow","Principal":{"Service":"ecs-tasks.amazonaws.com"},"Action":"sts:AssumeRole"}]}
+      MaxSessionDuration: 3600
+      ManagedPolicyArns:
+      - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+      Tags:
+      - Key: Name
+        Value: !Join
+        - ''
+        - - !Ref ParentStackName
+          - Role
+  TaskRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Path: /
+      RoleName: !Join
+      - ''
+      - - !Ref ParentStackName
+        - OrgRole
+      AssumeRolePolicyDocument: >-
+        {"Version":"2012-10-17","Statement":[{"Sid":"","Effect":"Allow","Principal":{"Service":"ecs-tasks.amazonaws.com"},"Action":"sts:AssumeRole"}]}
+      MaxSessionDuration: 3600
+      ManagedPolicyArns:
+      - !Ref TaskIAMRole
+      Policies:
+      - PolicyName: deepfence-cloud-scanner-AllowAssumeRoleInChildAccounts
+        PolicyDocument: !Join
+        - ''
+        - - >-
+            {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Resource":["arn:aws:iam::*:role/
+          - !Ref ParentStackName
+          - '-mem-acc-read-only-access"],"Action":"sts:AssumeRole"}]}'
+      Tags:
+      - Key: Name
+        Value: !Join
+        - ''
+        - - !Ref ParentStackName
+          - OrgRole

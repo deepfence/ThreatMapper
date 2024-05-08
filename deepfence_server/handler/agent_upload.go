@@ -98,7 +98,7 @@ func PrepareAgentBinariesReleases(ctx context.Context, versionedTarball map[stri
 		res, err := minio.UploadFile(ctx,
 			version,
 			b.Bytes(),
-			false,
+			true,
 			m.PutObjectOptions{ContentType: "application/gzip"})
 		key := ""
 		if err != nil {

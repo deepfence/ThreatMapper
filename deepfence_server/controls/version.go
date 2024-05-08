@@ -243,7 +243,8 @@ func wasAttachedToNewer(ctx context.Context, version string, nodeID string) (boo
 	return semver.Compare(prevVer, version) == 1, prevVer, nil
 }
 
-func CompleteAgentUpgrade(ctx context.Context, version string, nodeID string) error {
+func CompleteAgentUpgrade(ctx context.Context, version string,
+	nodeID string, nodeType string) error {
 
 	ctx, span := telemetry.NewSpan(ctx, "control", "complete-agent-upgrade")
 	defer span.End()
@@ -288,15 +289,16 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeID string) er
 	}
 
 	_, err = tx.Run(ctx, `
-		MERGE (n:Node{node_id:$node_id})
+		MERGE (n:Node{node_id:$node_id, node_type:$node_type})
 		MERGE (v:AgentVersion{node_id:$version})
 		MERGE (n) -[r:VERSIONED]-> (v)
 		WITH n, v
 		OPTIONAL MATCH (v) -[r:SCHEDULED]-> (n)
 		DELETE r`,
 		map[string]interface{}{
-			"version": version,
-			"node_id": nodeID,
+			"version":   version,
+			"node_id":   nodeID,
+			"node_type": nodeType,
 		})
 
 	if err != nil {

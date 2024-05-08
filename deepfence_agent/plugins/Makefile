@@ -7,6 +7,7 @@ clean:
 	-rm -rf $(PWD)/bin/yara-hunter/
 	-rm $(PWD)/bin/package-scanner
 	-rm $(PWD)/bin/compliance
+	-rm $(PWD)/bin/cloud-scanner
 	-(cd agent-plugins-grpc && make clean)
 	-(rm -rf $(PWD)/fluent-bit/build && mkdir $(PWD)/fluent-bit/build)
 	-(cd $(PWD)/fluent-bit/plugins/out_deepfence && make clean)

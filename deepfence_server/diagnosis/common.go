@@ -30,7 +30,9 @@ const (
 )
 
 var (
-	diagnosticLogsTypeMap = map[string]string{"host": diagnosticLogsTypeAgent, "cluster": diagnosticLogsTypeK8sCluster}
+	diagnosticLogsTypeMap = map[string]string{"host": diagnosticLogsTypeAgent,
+		"cluster":     diagnosticLogsTypeK8sCluster,
+		"cloud_agent": diagnosticLogsTypeCloudScanner}
 )
 
 type DiagnosticNotification struct {

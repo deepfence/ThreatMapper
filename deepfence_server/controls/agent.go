@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -23,7 +24,10 @@ var (
 	ErrMissingNodeID = errors.New("missing node_id")
 )
 
-func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int) ([]controls.Action, []error) {
+func GetAgentActions(ctx context.Context, agentID model.AgentID) ([]controls.Action, []error) {
+	nodeID := agentID.NodeID
+	workNumToExtract := agentID.AvailableWorkload
+	agentType := agentID.NodeType
 
 	ctx, span := telemetry.NewSpan(ctx, "control", "get-agent-actions")
 	defer span.End()
@@ -66,13 +70,27 @@ func GetAgentActions(ctx context.Context, nodeID string, workNumToExtract int) (
 		actions = append(actions, scanActions...)
 	}
 
-	threatintelActions, threatintelLogErr := ExtractPendingAgentThreatIntelTask(ctx, nodeID)
-	workNumToExtract -= len(threatintelActions)
-	if threatintelLogErr == nil {
-		actions = append(actions, threatintelActions...)
+	var refreshActionsErr error
+	if agentType == controls.CLOUD_AGENT {
+		refreshResourceActions, refreshActionsErr := ExtractRefreshResourceAction(ctx,
+			nodeID, workNumToExtract)
+
+		workNumToExtract -= len(refreshResourceActions)
+		if refreshActionsErr == nil && len(refreshResourceActions) > 0 {
+			actions = append(actions, refreshResourceActions...)
+		}
 	}
 
-	return actions, []error{scanErr, upgradeErr, diagnosticLogErr, stopActionsErr, threatintelLogErr}
+	var threatintelLogErr error
+	if agentType != controls.CLOUD_AGENT {
+		threatintelActions, threatintelLogErr := ExtractPendingAgentThreatIntelTask(ctx, nodeID)
+		workNumToExtract -= len(threatintelActions)
+		if threatintelLogErr == nil {
+			actions = append(actions, threatintelActions...)
+		}
+	}
+
+	return actions, []error{scanErr, upgradeErr, diagnosticLogErr, stopActionsErr, threatintelLogErr, refreshActionsErr}
 }
 
 func GetPendingAgentScans(ctx context.Context, nodeID string, availableWorkload int) ([]controls.Action, error) {
@@ -157,7 +175,7 @@ func hasAgentDiagnosticLogRequests(ctx context.Context, client neo4j.DriverWithC
 	defer tx.Close(ctx)
 
 	r, err := tx.Run(ctx, `MATCH (s:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n{node_id:$id})
-		WHERE (n:`+controls.ResourceTypeToNeo4j(nodeType)+`)
+		WHERE (n:`+controls.ResourceTypeToNeo4j(nodeType)+` OR n:CloudNode)
 		AND s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work
@@ -326,7 +344,13 @@ func ExtractStartingAgentScans(ctx context.Context, nodeID string, maxWork int) 
 	}
 
 	if len(res) != 0 {
+		log.Info().Msgf("Commiting the scan status to IN_PROGRESS")
 		err = tx.Commit(ctx)
+		if err != nil {
+			log.Error().Msgf("Error in commiting the scan status: %s", err.Error())
+		} else {
+			log.Info().Msgf("Commited the scan to IN_PROGRESS")
+		}
 	}
 
 	return res, err
@@ -395,6 +419,8 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeID string, maxWrok int) 
 			action.ID = controls.StopVulnerabilityScan
 		case controls.StartComplianceScan:
 			action.ID = controls.StopComplianceScan
+		case controls.StartCloudComplianceScan:
+			action.ID = controls.StopCloudComplianceScan
 		default:
 			log.Info().Msgf("Stop functionality not implemented for action: %d", action.ID)
 			continue
@@ -489,6 +515,9 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int)
 	}
 
 	if has, err := hasPendingAgentUpgrade(ctx, client, nodeID, maxWork); !has || err != nil {
+		if err != nil {
+			log.Error().Msgf(err.Error())
+		}
 		return res, err
 	}
 
@@ -540,6 +569,86 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int)
 
 	return res, err
 
+}
+
+func ExtractRefreshResourceAction(ctx context.Context, nodeID string,
+	maxWork int) ([]controls.Action, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "control", "extract-pending-refresh-resources")
+	defer span.End()
+
+	res := []controls.Action{}
+	if len(nodeID) == 0 {
+		return res, ErrMissingNodeID
+	} else if maxWork <= 0 {
+		//No need proceed as no capacity left
+		return []controls.Action{}, nil
+	}
+
+	client, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		log.Error().Msgf("ExtractRefreshResourceAction, directory.Neo4jClient err: %s", err.Error())
+		return res, err
+	}
+
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close(ctx)
+
+	r, err := tx.Run(ctx, `
+		MATCH(n:Node{node_id:$id}) -[:HOSTS]-> (c:CloudNode)
+		MATCH(r:CloudNodeRefresh{node_id:c.node_id})
+		WHERE r.refresh=true
+		WITH HEAD(collect(r)) AS rnode 
+		WHERE rnode IS NOT NULL
+		WITH rnode, rnode.node_id AS node_id
+		DETACH DELETE rnode
+		RETURN node_id`,
+		map[string]interface{}{"id": nodeID})
+
+	if err != nil {
+		return res, err
+	}
+
+	records, err := r.Collect(ctx)
+
+	if err != nil {
+		return res, err
+	}
+
+	log.Debug().Msgf("num records: %d", len(records))
+
+	for _, record := range records {
+		var action controls.Action
+		if record.Values[0] == nil {
+			log.Error().Msgf("Invalid CloudNode ID, skipping")
+			continue
+		}
+
+		req := controls.RefreshResourcesRequest{}
+		req.NodeId = record.Values[0].(string)
+		req.NodeType = controls.CloudAccount
+
+		reqBytes, err := json.Marshal(req)
+		if err != nil {
+			log.Error().Msgf("Unmarshal of action failed: %v", err)
+			continue
+		}
+		action.RequestPayload = string(reqBytes)
+		action.ID = controls.RefreshResources
+		res = append(res, action)
+	}
+
+	if len(res) != 0 {
+		err = tx.Commit(ctx)
+	}
+
+	return res, err
 }
 
 func CheckNodeExist(ctx context.Context, nodeID string) error {

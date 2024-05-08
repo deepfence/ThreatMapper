@@ -1,0 +1,54 @@
+name: Build & Publish cloud scanner binaries
+
+on:
+  workflow_dispatch:
+    inputs:
+      ver:
+        description: "Binaries Version"
+        required: true
+        type: string
+
+  pull_request:
+
+env:
+  DF_BIN_VER: ${{ inputs.ver }}
+  VERSION: ${{ inputs.ver }}
+
+jobs:
+  docker:
+    runs-on: ['self-hosted']
+    steps:
+
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.CLOUDSCANNER_PAT }}
+          submodules: true
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{secrets.AWS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: us-east-2
+
+      - name: Build cloud scanner binaries
+        id: build
+        run: |
+          make cloudscanner
+
+      - name: Extract cloud scanner binaries
+        id: extract
+        if: steps.build.outcome == 'success'
+        run: |
+          mkdir -p /tmp/binaries/$DF_BIN_VER
+          cd /tmp/binaries/$DF_BIN_VER
+          id=$(docker create quay.io/deepfenceio/cloud-scanner:latest)
+          docker cp $id:/bin/deepfenced self
+          docker cp $cloud_id:/home/deepfence/bin/cloud_scanner cloud_scanner
+          tar zcvf binaries.tar.gz ./*
+          docker rm -v $id
+
+      - name: Upload to s3
+        if: steps.extract.outcome == 'success'
+        run: aws s3 sync --exclude "*" --include "*.tar.gz" /tmp/binaries s3://deepfence-cloud-scanner-binaries
