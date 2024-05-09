@@ -1,17 +1,14 @@
 package sbom
 
 import (
-	"bytes"
-	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"path"
 	"time"
 
-	"github.com/anchore/syft/syft/formats"
+	"github.com/anchore/syft/syft/format"
 	"github.com/anchore/syft/syft/sbom"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -53,42 +50,6 @@ type SbomParser struct {
 
 func NewSBOMScanner(ingest chan *kgo.Record) SbomParser {
 	return SbomParser{ingestC: ingest}
-}
-
-type UnzippedFile struct {
-	file   *os.File
-	buffer *bytes.Buffer
-}
-
-func NewUnzippedFile(file *os.File) UnzippedFile {
-	return UnzippedFile{
-		file:   file,
-		buffer: &bytes.Buffer{},
-	}
-}
-
-func (b UnzippedFile) Write(data []byte) (int, error) {
-	return b.buffer.Write(data)
-}
-
-func (b UnzippedFile) Close() error {
-	gzr, err := gzip.NewReader(b.buffer)
-	if err != nil {
-		return err
-	}
-	sbom, err := io.ReadAll(gzr)
-	if err != nil {
-		return err
-	}
-	err = gzr.Close()
-	if err != nil {
-		return err
-	}
-	_, err = b.file.Write(sbom)
-	if err != nil {
-		return err
-	}
-	return b.file.Close()
 }
 
 func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
@@ -164,7 +125,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 	}
 	log.Info().Msgf("sbom file %s", sbomFilePath)
 
-	sbomFile := NewUnzippedFile(f)
+	sbomFile := utils.NewUnzippedFile(f)
 
 	err = mc.DownloadFileTo(ctx, params.SBOMFilePath, sbomFile, minio.GetObjectOptions{})
 	if err != nil {
@@ -283,8 +244,8 @@ func readSBOM(path string) (*sbom.SBOM, error) {
 		return nil, err
 	}
 	defer fin.Close()
-	sbomOut, format, err := formats.Decode(fin)
-	log.Info().Msgf("path %s sbom format %s", path, format)
+	sbomOut, format, schema, err := format.Decode(fin)
+	log.Info().Msgf("path %s sbom format %s schema %s", path, format, schema)
 	if err != nil {
 		return nil, err
 	}
