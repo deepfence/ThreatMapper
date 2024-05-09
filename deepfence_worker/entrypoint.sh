@@ -49,8 +49,8 @@ if [ "$DEEPFENCE_MODE" == "worker" ]; then
   echo "add cron job to update vulnerability database"
   echo "vulnerability database update url $GRYPE_DB_UPDATE_URL"
   # /usr/local/bin/grype db update
-  echo "0 */2 * * * export GRYPE_DB_UPDATE_URL=${GRYPE_DB_UPDATE_URL} && /usr/local/bin/grype db update" >> /etc/crontabs/root
-  /usr/sbin/crond
+  echo "0 */2 * * * export GRYPE_DB_UPDATE_URL=${GRYPE_DB_UPDATE_URL} && /usr/local/bin/grype db update" >> /etc/cron.d/crontab && chmod 0644 /etc/cron.d/crontab
+  /usr/sbin/cron
 fi
 
 if [[ "${1#-}" != "$1" ]]; then

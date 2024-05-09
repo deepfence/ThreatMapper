@@ -4,9 +4,9 @@ ARG IMAGE_REPOSITORY=deepfenceio
 FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS packagescanner
 FROM $IMAGE_REPOSITORY/deepfence_secret_scanner_ce:$DF_IMG_TAG AS secretscanner
 FROM $IMAGE_REPOSITORY/deepfence_malware_scanner_ce:$DF_IMG_TAG AS yarahunter
-FROM $IMAGE_REPOSITORY/deepfence_builder_ce:$DF_IMG_TAG AS builder-yara
+FROM $IMAGE_REPOSITORY/deepfence_glibc_builder_ce:$DF_IMG_TAG AS builder-yara
 
-FROM alpine:3.18 AS final
+FROM debian:12-slim AS final
 
 ARG AGENT_BINARY_DIST_RELATIVE
 
@@ -15,9 +15,36 @@ LABEL deepfence.role=system
 
 ADD deepfence_utils/postgresql/migrate /usr/local/postgresql-migrate
 
-RUN apk add --no-cache curl kafkacat docker-cli openrc bash skopeo jansson-dev \
-        libmagic libstdc++ libx11 libxrender libxext libssl1.1 ca-certificates \
-        fontconfig freetype ttf-droid ttf-freefont ttf-liberation postgresql15-client
+RUN apt-get update && apt install -y curl && \
+    mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc && \
+    chmod a+r /etc/apt/keyrings/docker.asc && \
+    echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+    tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update && \
+    apt-get install docker-ce-cli -y
+
+RUN apt install -y \
+    cron \
+    netcat-traditional \
+    kafkacat \
+    bash \
+    skopeo \
+    libjansson-dev \
+    libmagic-dev \
+    libstdc++6 \
+    libssl3 \
+    ca-certificates \
+    postgresql-client \
+    libvectorscan5 \
+    gdb \
+    strace && \
+    apt clean && \
+    apt autoclean && \
+    apt auto-remove -y && \
+    rm -rf /var/lib/{apt,dpkg,cache,log}/
 
 RUN curl -fsSL https://raw.githubusercontent.com/pressly/goose/master/install.sh | sh
 
