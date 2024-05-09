@@ -1,4 +1,4 @@
-FROM alpine:3.18
+FROM debian:12-slim
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
@@ -9,7 +9,20 @@ ADD deepfence_server/auth /auth
 ADD deepfence_server/cloud_controls /cloud_controls
 COPY deepfence_server/entrypoint.sh /entrypoint.sh
 
-RUN apk add --no-cache --update bash curl libpcap tar kafkacat postgresql15-client
+RUN apt update && \
+    apt install -y \
+    bash \
+    curl \
+    wget \
+    netcat-traditional \
+    libpcap-dev \
+    tar \
+    kafkacat \
+    postgresql-client && \
+    apt clean && \
+    apt autoclean && \
+    apt auto-remove -y && \
+    rm -rf /var/lib/{apt,dpkg,cache,log}/
 
 RUN chmod +x /entrypoint.sh
 
