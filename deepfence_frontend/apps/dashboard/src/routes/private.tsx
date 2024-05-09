@@ -81,6 +81,7 @@ import { module as topologyLoader } from '@/features/topology/data-components/to
 import { module as apiEndpoints } from '@/features/topology/pages/ApiEndpoints';
 import { module as cloudResourceTable } from '@/features/topology/pages/CloudResourceTable';
 import { module as inventory } from '@/features/topology/pages/Inventory';
+import { module as llm } from '@/features/topology/pages/LLM';
 import { module as visual } from '@/features/topology/pages/ViewType';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
 import { module as runtimeBom } from '@/features/vulnerabilities/pages/RuntimeBom';
@@ -209,6 +210,11 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'api',
             ...apiEndpoints,
             meta: { title: 'Inventory | Api Endpoints' },
+          },
+          {
+            path: 'llm',
+            ...llm,
+            meta: { title: 'Inventory | LLM' },
           },
           {
             path: 'cloud_resource',

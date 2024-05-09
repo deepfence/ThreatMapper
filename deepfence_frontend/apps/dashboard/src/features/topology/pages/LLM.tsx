@@ -3,11 +3,11 @@ import { Button } from 'ui-components';
 import { DFLink } from '@/components/DFLink';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
 
-function ApiEndpoints() {
+function LLM() {
   return (
     <div className="flex flex-col justify-center items-center h-[80%]">
       <h3 className="text-p1 text-text-text-and-icon">
-        Upgrade to ThreatStryker to view Api Endpoints.
+        Upgrade to ThreatStryker to view LLM promt and response.
       </h3>
       <DFLink
         unstyled
@@ -27,5 +27,5 @@ function ApiEndpoints() {
   );
 }
 export const module = {
-  element: <ApiEndpoints />,
+  element: <LLM />,
 };
