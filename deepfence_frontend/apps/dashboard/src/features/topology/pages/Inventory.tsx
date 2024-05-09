@@ -1,11 +1,11 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Suspense, useEffect, useState } from 'react';
+import { generatePath, Outlet, useMatches, useParams } from 'react-router-dom';
 import { Tabs } from 'ui-components';
 
 import { TopologyHeader } from '@/features/topology/components/TopologyHeader';
-import { CloudResourcesTable } from '@/features/topology/data-components/tables/CloudResourcesTable';
 import { queries } from '@/queries';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 function useCloudResourcesCount() {
   return useSuspenseQuery({ ...queries.search.cloudResourcesCount() });
@@ -41,24 +41,49 @@ const inventoryTabs = [
 ];
 
 function InventoryTabs() {
-  const [tab, setTab] = useState<'compute' | 'api' | 'llm' | 'cloud_resource'>('compute');
+  const matches = useMatches();
+  const params = useParams();
+  const { navigate } = usePageNavigation();
+  const [tab, setTab] = useState<string>('');
+  const nodeType = params.viewType ?? 'cloud_provider';
+
+  useEffect(() => {
+    const currentPathName = matches[matches.length - 1]?.pathname ?? '';
+    if (currentPathName.includes('compute')) {
+      setTab('compute');
+    } else {
+      setTab(currentPathName.split('/')?.pop() as string);
+    }
+  }, [matches]);
+
   return (
     <Tabs
       value={tab}
       defaultValue={tab}
       tabs={inventoryTabs}
-      onValueChange={(v) => {
-        setTab(v as any);
+      onValueChange={(value) => {
+        setTab(value);
+        const currentPathName = matches[matches.length - 1]?.pathname ?? '';
+        const visualType = currentPathName.includes('/table') ? 'table' : 'graph';
+
+        if (value.includes('compute')) {
+          const path = generatePath('compute/:viewType/:visualLayout', {
+            viewType: nodeType,
+            visualLayout: visualType,
+          });
+          navigate(path);
+        } else {
+          navigate(value);
+        }
       }}
       fullWidth={true}
     >
       {tab === 'compute' ? <TopologyHeader /> : null}
-      {tab === 'cloud_resource' ? <CloudResourcesTable /> : null}
     </Tabs>
   );
 }
 
-function Topology() {
+function Inventory() {
   return (
     <div className="h-full flex flex-col">
       <InventoryTabs />
@@ -70,5 +95,5 @@ function Topology() {
 }
 
 export const module = {
-  element: <Topology />,
+  element: <Inventory />,
 };

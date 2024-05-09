@@ -78,9 +78,10 @@ import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as topologyLoader } from '@/features/topology/data-components/topologyLoader';
-import { module as topologyGraph } from '@/features/topology/pages/Graph';
-import { module as topologyTable } from '@/features/topology/pages/Table';
-import { module as topology } from '@/features/topology/pages/Topology';
+import { module as apiEndpoints } from '@/features/topology/pages/ApiEndpoints';
+import { module as cloudResourceTable } from '@/features/topology/pages/CloudResourceTable';
+import { module as inventory } from '@/features/topology/pages/Inventory';
+import { module as visual } from '@/features/topology/pages/ViewType';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
 import { module as runtimeBom } from '@/features/vulnerabilities/pages/RuntimeBom';
 import { module as uniqueVulnerabilities } from '@/features/vulnerabilities/pages/UniqueVulnerabilities';
@@ -193,21 +194,26 @@ export const privateRoutes: CustomRouteObject[] = [
       },
       {
         path: 'inventory',
-        ...topology,
+        ...inventory,
         children: [
           {
             index: true,
             loader: () => redirect('/inventory/compute/cloud_provider/graph', 301),
           },
           {
-            path: 'compute/:viewType/table',
-            ...topologyTable,
-            meta: { title: 'Cloud Inventory' },
+            path: 'compute/:viewType/:visualLayout',
+            ...visual,
+            meta: { title: 'Inventory | Cloud' },
           },
           {
-            path: 'compute/:viewType/graph',
-            ...topologyGraph,
-            meta: { title: 'Cloud Inventory' },
+            path: 'api',
+            ...apiEndpoints,
+            meta: { title: 'Inventory | Api Endpoints' },
+          },
+          {
+            path: 'cloud_resource',
+            ...cloudResourceTable,
+            meta: { title: 'Inventory | Cloud Resource' },
           },
         ],
       },
