@@ -39,11 +39,11 @@ spec:
             - name: FORCE_HTTPS_REDIRECT
               value: "{{ .Values.router.forceHttpsRedirect }}"
             - name: UI_SERVICE_NAME
-              value: {{ include "deepfence-console.fullname" . }}-ui.{{ .Release.Namespace }}.svc.{{ .Values.router.cluster_domain }}
+              value: {{ include "deepfence-console.fullname" . }}-ui.{{ .Release.Namespace }}.svc.{{ .Values.global.cluster_domain }}
             - name: UI_SERVICE_PORT
               value: {{ .Values.ui.service.port | quote }}
             - name: API_SERVICE_HOST
-              value: {{ include "deepfence-console.fullname" . }}-server.{{ .Release.Namespace }}.svc.{{ .Values.router.cluster_domain }}
+              value: {{ include "deepfence-console.fullname" . }}-server.{{ .Release.Namespace }}.svc.{{ .Values.global.cluster_domain }}
             - name: API_SERVICE_PORT
               value: {{ .Values.server.service.port | quote }}
           envFrom:
