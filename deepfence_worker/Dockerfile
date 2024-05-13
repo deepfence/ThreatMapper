@@ -83,8 +83,8 @@ RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \
     && chmod +x /entrypoint.sh \
     && mkdir -p /opt/deepfence
 
-COPY ./deepfence_agent/binary-install-scripts/* /opt/deepfence
-COPY ./${AGENT_BINARY_DIST_RELATIVE}/* /opt/deepfence
+COPY ./deepfence_agent/binary-install-scripts/* /opt/deepfence/
+COPY ./${AGENT_BINARY_DIST_RELATIVE}/* /opt/deepfence/
 
 COPY --from=builder-yara /go/bin/asynq /usr/local/bin/asynq
 
