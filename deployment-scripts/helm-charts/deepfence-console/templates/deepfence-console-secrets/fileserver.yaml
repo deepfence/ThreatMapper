@@ -9,7 +9,7 @@ metadata:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: file-server
 stringData:
-  DEEPFENCE_FILE_SERVER_HOST: {{ include "deepfence-console.fullname" . }}-file-server
+  DEEPFENCE_FILE_SERVER_HOST: {{ include "deepfence-console.fullname" . }}-file-server.{{ .Release.Namespace }}.svc.{{ .Values.router.cluster_domain }}
   DEEPFENCE_FILE_SERVER_PORT: "9000"
   DEEPFENCE_FILE_SERVER_SECURE: "false"
   DEEPFENCE_FILE_SERVER_BUCKET: default
