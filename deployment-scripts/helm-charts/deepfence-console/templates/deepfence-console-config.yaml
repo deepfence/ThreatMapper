@@ -11,7 +11,7 @@ data:
   DEEPFENCE_SAAS_DEPLOYMENT: "false"
   DEEPFENCE_TELEMETRY_ENABLED: "false"
   {{- if .Values.fileserver.create }}
-  DEEPFENCE_FILE_SERVER_HOST: {{ include "deepfence-console.fullname" . }}-file-server.{{ .Release.Namespace }}.svc.{{ .Values.router.cluster_domain }}
+  DEEPFENCE_FILE_SERVER_HOST: {{ include "deepfence-console.fullname" . }}-file-server.{{ .Release.Namespace }}.svc.{{ .Values.global.cluster_domain }}
   DEEPFENCE_FILE_SERVER_PORT: "9000"
   DEEPFENCE_FILE_SERVER_EXTERNAL: "false"
   {{- else }}
@@ -23,5 +23,5 @@ data:
   {{- if .Values.proxy.enabled }}
   http_proxy: {{ .Values.proxy.http_proxy }}
   https_proxy: {{ .Values.proxy.https_proxy }}
-  no_proxy: "127.0.0.1, localhost, {{ include "deepfence-console.fullname" . }}-file-server.{{ .Release.Namespace  }}.svc.{{ .Values.router.cluster_domain }}, {{ include "deepfence-console.fullname" . }}-postgres.{{ .Release.Namespace  }}.svc.{{ .Values.router.cluster_domain }}, {{ include "deepfence-console.fullname" . }}-redis.{{ .Release.Namespace  }}.svc.{{ .Values.router.cluster_domain }}, {{ include "deepfence-console.fullname" . }}-neo4j.{{ .Release.Namespace  }}.svc.{{ .Values.router.cluster_domain }}, {{ include "deepfence-console.fullname" . }}-kafka-broker.{{ .Release.Namespace  }}.svc.{{ .Values.router.cluster_domain }}, {{ include "deepfence-console.fullname" . }}-ui.{{ .Release.Namespace  }}.svc.{{ .Values.router.cluster_domain }}, {{ include "deepfence-console.fullname" . }}-server.{{ .Release.Namespace  }}.svc.{{ .Values.router.cluster_domain }}, {{ include "deepfence-console.fullname" . }}-router.{{ .Release.Namespace  }}.svc.{{ .Values.router.cluster_domain }}, *.{{ .Release.Namespace  }}.svc.{{ .Values.router.cluster_domain }}, *.{{ .Values.router.cluster_domain }}, {{ .Values.proxy.additional_no_proxy }}"
+  no_proxy: "127.0.0.1, localhost, {{ include "deepfence-console.fullname" . }}-file-server.{{ .Release.Namespace  }}.svc.{{ .Values.global.cluster_domain }}, {{ include "deepfence-console.fullname" . }}-postgres.{{ .Release.Namespace  }}.svc.{{ .Values.global.cluster_domain }}, {{ include "deepfence-console.fullname" . }}-redis.{{ .Release.Namespace  }}.svc.{{ .Values.global.cluster_domain }}, {{ include "deepfence-console.fullname" . }}-neo4j.{{ .Release.Namespace  }}.svc.{{ .Values.global.cluster_domain }}, {{ include "deepfence-console.fullname" . }}-kafka-broker.{{ .Release.Namespace  }}.svc.{{ .Values.global.cluster_domain }}, {{ include "deepfence-console.fullname" . }}-ui.{{ .Release.Namespace  }}.svc.{{ .Values.global.cluster_domain }}, {{ include "deepfence-console.fullname" . }}-server.{{ .Release.Namespace  }}.svc.{{ .Values.global.cluster_domain }}, {{ include "deepfence-console.fullname" . }}-router.{{ .Release.Namespace  }}.svc.{{ .Values.global.cluster_domain }}, *.{{ .Release.Namespace  }}.svc.{{ .Values.global.cluster_domain }}, *.{{ .Values.global.cluster_domain }}, {{ .Values.proxy.additional_no_proxy }}"
   {{- end }}

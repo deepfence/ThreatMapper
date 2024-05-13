@@ -14,7 +14,10 @@ global:
   # this image tag is used everywhere for console services
   # to override set tag at service level
   imageTag: 2.2.1
-  storageClass: ""
+  storageClass: "standard"
+  # used in service name generation
+  # <service>.<namespace>.svc.<cluster_domain>
+  cluster_domain: "cluster.local"
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -280,9 +283,6 @@ router:
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.2.1
   forceHttpsRedirect: true
-  # used to in service name generation
-  # <service>.<namespace>.svc.<cluster_domain>
-  cluster_domain: "cluster.local"
   podAnnotations: {}
   podSecurityContext: {}
   securityContext: {}
