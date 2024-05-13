@@ -89,11 +89,11 @@ spec:
               memory: {{ .Values.console_agents.agent.resources.limits.memory }}
           env:
             - name: MGMT_CONSOLE_URL_INTERNAL
-              value: {{ include "deepfence-console.fullname" . }}-server
+              value: {{ include "deepfence-console.fullname" . }}-server.{{ .Release.Namespace  }}.svc.{{ .Values.router.cluster_domain }}
             - name: MGMT_CONSOLE_PORT_INTERNAL
               value: "8081"
             - name: MGMT_CONSOLE_URL
-              value: {{ include "deepfence-console.fullname" . }}-router
+              value: {{ include "deepfence-console.fullname" . }}-router.{{ .Release.Namespace  }}.svc.{{ .Values.router.cluster_domain }}
             - name: MGMT_CONSOLE_PORT
               value: "443"
             - name: "DEEPFENCE_KEY"

@@ -71,7 +71,7 @@ spec:
             - name: REPLICAS
               value: "{{ .Values.kafka.replicaCount }}"
             - name: SERVICE
-              value: {{ include "deepfence-console.fullname" . }}-kafka-broker
+              value: {{ include "deepfence-console.fullname" . }}-kafka-broker.{{ .Release.Namespace  }}.svc.{{ .Values.router.cluster_domain }}
             - name: KAFKA_LOG_DIRS
               value: /data/kafka
           envFrom:

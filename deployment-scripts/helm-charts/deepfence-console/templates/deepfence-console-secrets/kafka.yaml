@@ -9,5 +9,5 @@ metadata:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: kafka
 stringData:
-  DEEPFENCE_KAFKA_BROKERS: "{{ include "deepfence-console.fullname" . }}-kafka-broker.{{ .Release.Namespace }}.svc:9092"
+  DEEPFENCE_KAFKA_BROKERS: "{{ include "deepfence-console.fullname" . }}-kafka-broker.{{ .Release.Namespace }}.svc.{{ .Values.router.cluster_domain }}:9092"
 {{- end }}
