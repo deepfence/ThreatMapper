@@ -19,7 +19,6 @@ importers:
       '@antv/layout': ^0.3.23
       '@lukemorales/query-key-factory': ^1.3.2
       '@openapitools/openapi-generator-cli': ^2.7.0
-      '@playwright/test': ^1.37.0
       '@radix-ui/react-navigation-menu': ^1.1.3
       '@suspensive/react': ^1.11.6
       '@suspensive/react-query': ^1.11.6
@@ -51,7 +50,6 @@ importers:
       eslint-plugin-simple-import-sort: ^10.0.0
       lodash-es: ^4.17.21
       msw: ^1.2.3
-      playwright: 1.37.0
       postcss: ^8.4.27
       react: ^18.2.0
       react-dom: ^18.2.0
@@ -98,7 +96,6 @@ importers:
       ui-components: link:../../packages/ui-components
     devDependencies:
       '@openapitools/openapi-generator-cli': 2.7.0
-      '@playwright/test': 1.37.0
       '@tailwindcss/typography': 0.5.10_tailwindcss@3.3.3
       '@testing-library/jest-dom': 6.0.0_vitest@0.34.1
       '@testing-library/react': 14.0.0_biqbaboplfbrettd7655fr4n2y
@@ -120,7 +117,6 @@ importers:
       eslint-plugin-react: 7.33.1_eslint@8.47.0
       eslint-plugin-simple-import-sort: 10.0.0_eslint@8.47.0
       msw: 1.2.3_typescript@5.1.6
-      playwright: 1.37.0
       postcss: 8.4.27
       resize-observer-polyfill: 1.5.1
       rollup-plugin-visualizer: 5.9.2
@@ -128,7 +124,7 @@ importers:
       typescript: 5.1.6
       vite: 4.4.9
       vite-plugin-webfont-dl: 3.7.6_vite@4.4.9
-      vitest: 0.34.1_playwright@1.37.0
+      vitest: 0.34.1
       whatwg-fetch: 3.6.17
 
   packages/tailwind-preset:
@@ -2585,17 +2581,6 @@ packages:
       tslib: 2.6.1
     dev: true
 
-  /@playwright/test/1.37.0:
-    resolution: {integrity: sha512-181WBLk4SRUyH1Q96VZl7BP6HcK0b7lbdeKisn3N/vnjitk+9HbdlFz/L5fey05vxaAhldIDnzo8KUoy8S3mmQ==}
-    engines: {node: '>=16'}
-    hasBin: true
-    dependencies:
-      '@types/node': 20.5.0
-      playwright-core: 1.37.0
-    optionalDependencies:
-      fsevents: 2.3.2
-    dev: true
-
   /@probe.gl/env/3.6.0:
     resolution: {integrity: sha512-4tTZYUg/8BICC3Yyb9rOeoKeijKbZHRXBEKObrfPmX4sQmYB15ZOUpoVBhAyJkOYVAM8EkPci6Uw5dLCwx2BEQ==}
     dependencies:
@@ -4678,7 +4663,7 @@ packages:
       dom-accessibility-api: 0.5.16
       lodash: 4.17.21
       redent: 3.0.0
-      vitest: 0.34.1_playwright@1.37.0
+      vitest: 0.34.1
     dev: true
 
   /@testing-library/react/14.0.0_biqbaboplfbrettd7655fr4n2y:
@@ -5309,7 +5294,7 @@ packages:
       magic-string: 0.30.2
       picocolors: 1.0.0
       std-env: 3.3.3
-      vitest: 0.34.1_playwright@1.37.0
+      vitest: 0.34.1
     dev: true
 
   /@vitest/expect/0.34.1:
@@ -10630,21 +10615,6 @@ packages:
       pathe: 1.1.1
     dev: true
 
-  /playwright-core/1.37.0:
-    resolution: {integrity: sha512-1c46jhTH/myQw6sesrcuHVtLoSNfJv8Pfy9t3rs6subY7kARv0HRw5PpyfPYPpPtQvBOmgbE6K+qgYUpj81LAA==}
-    engines: {node: '>=16'}
-    hasBin: true
-    dev: true
-
-  /playwright/1.37.0:
-    resolution: {integrity: sha512-CrAEFfVioamMwDKmygc/HAkzEAxYAwjD+zod2poTxM7ObivkoDsKHu1ned16fnQV/Tf1kDB8KtsyH8Qd3VzJIg==}
-    engines: {node: '>=16'}
-    hasBin: true
-    requiresBuild: true
-    dependencies:
-      playwright-core: 1.37.0
-    dev: true
-
   /polished/4.2.2:
     resolution: {integrity: sha512-Sz2Lkdxz6F2Pgnpi9U5Ng/WdWAUZxmHrNPoVlm3aAemxoy2Qy7LGjQg4uf8qKelDAUW94F4np3iH2YPf2qefcQ==}
     engines: {node: '>=10'}
@@ -13208,6 +13178,71 @@ packages:
       fsevents: 2.3.2
     dev: true
 
+  /vitest/0.34.1:
+    resolution: {integrity: sha512-G1PzuBEq9A75XSU88yO5G4vPT20UovbC/2osB2KEuV/FisSIIsw7m5y2xMdB7RsAGHAfg2lPmp2qKr3KWliVlQ==}
+    engines: {node: '>=v14.18.0'}
+    hasBin: true
+    peerDependencies:
+      '@edge-runtime/vm': '*'
+      '@vitest/browser': '*'
+      '@vitest/ui': '*'
+      happy-dom: '*'
+      jsdom: '*'
+      playwright: '*'
+      safaridriver: '*'
+      webdriverio: '*'
+    peerDependenciesMeta:
+      '@edge-runtime/vm':
+        optional: true
+      '@vitest/browser':
+        optional: true
+      '@vitest/ui':
+        optional: true
+      happy-dom:
+        optional: true
+      jsdom:
+        optional: true
+      playwright:
+        optional: true
+      safaridriver:
+        optional: true
+      webdriverio:
+        optional: true
+    dependencies:
+      '@types/chai': 4.3.5
+      '@types/chai-subset': 1.3.3
+      '@types/node': 20.5.0
+      '@vitest/expect': 0.34.1
+      '@vitest/runner': 0.34.1
+      '@vitest/snapshot': 0.34.1
+      '@vitest/spy': 0.34.1
+      '@vitest/utils': 0.34.1
+      acorn: 8.10.0
+      acorn-walk: 8.2.0
+      cac: 6.7.14
+      chai: 4.3.7
+      debug: 4.3.4
+      local-pkg: 0.4.3
+      magic-string: 0.30.2
+      pathe: 1.1.1
+      picocolors: 1.0.0
+      std-env: 3.3.3
+      strip-literal: 1.3.0
+      tinybench: 2.5.0
+      tinypool: 0.7.0
+      vite: 4.4.9_@types+node@20.5.0
+      vite-node: 0.34.1_@types+node@20.5.0
+      why-is-node-running: 2.2.2
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+    dev: true
+
   /vitest/0.34.1_jsdom@22.1.0+less@4.2.0:
     resolution: {integrity: sha512-G1PzuBEq9A75XSU88yO5G4vPT20UovbC/2osB2KEuV/FisSIIsw7m5y2xMdB7RsAGHAfg2lPmp2qKr3KWliVlQ==}
     engines: {node: '>=v14.18.0'}
@@ -13263,72 +13298,6 @@ packages:
       tinypool: 0.7.0
       vite: 4.4.9_uuqmdj5lz2g45u22t34hpz6mly
       vite-node: 0.34.1_uuqmdj5lz2g45u22t34hpz6mly
-      why-is-node-running: 2.2.2
-    transitivePeerDependencies:
-      - less
-      - lightningcss
-      - sass
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-    dev: true
-
-  /vitest/0.34.1_playwright@1.37.0:
-    resolution: {integrity: sha512-G1PzuBEq9A75XSU88yO5G4vPT20UovbC/2osB2KEuV/FisSIIsw7m5y2xMdB7RsAGHAfg2lPmp2qKr3KWliVlQ==}
-    engines: {node: '>=v14.18.0'}
-    hasBin: true
-    peerDependencies:
-      '@edge-runtime/vm': '*'
-      '@vitest/browser': '*'
-      '@vitest/ui': '*'
-      happy-dom: '*'
-      jsdom: '*'
-      playwright: '*'
-      safaridriver: '*'
-      webdriverio: '*'
-    peerDependenciesMeta:
-      '@edge-runtime/vm':
-        optional: true
-      '@vitest/browser':
-        optional: true
-      '@vitest/ui':
-        optional: true
-      happy-dom:
-        optional: true
-      jsdom:
-        optional: true
-      playwright:
-        optional: true
-      safaridriver:
-        optional: true
-      webdriverio:
-        optional: true
-    dependencies:
-      '@types/chai': 4.3.5
-      '@types/chai-subset': 1.3.3
-      '@types/node': 20.5.0
-      '@vitest/expect': 0.34.1
-      '@vitest/runner': 0.34.1
-      '@vitest/snapshot': 0.34.1
-      '@vitest/spy': 0.34.1
-      '@vitest/utils': 0.34.1
-      acorn: 8.10.0
-      acorn-walk: 8.2.0
-      cac: 6.7.14
-      chai: 4.3.7
-      debug: 4.3.4
-      local-pkg: 0.4.3
-      magic-string: 0.30.2
-      pathe: 1.1.1
-      picocolors: 1.0.0
-      playwright: 1.37.0
-      std-env: 3.3.3
-      strip-literal: 1.3.0
-      tinybench: 2.5.0
-      tinypool: 0.7.0
-      vite: 4.4.9_@types+node@20.5.0
-      vite-node: 0.34.1_@types+node@20.5.0
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
       - less
