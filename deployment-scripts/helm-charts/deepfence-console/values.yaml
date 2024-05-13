@@ -42,6 +42,8 @@ proxy:
   # Example: http://my.internal.server:port
   http_proxy: ""
   https_proxy: ""
+  # Domains or ip addresses to add in no_proxy env variable, comma-separated string
+  additional_no_proxy: ""
 
 kafka:
   # Specifies whether a kafka cluster should be created
