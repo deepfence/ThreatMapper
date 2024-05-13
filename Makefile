@@ -16,7 +16,7 @@ export DEEPFENCE_FARGATE_DIR=$(DEEPFENCE_AGENT_DIR)/agent-binary
 export IMAGE_REPOSITORY?=quay.io/deepfenceio
 export DF_IMG_TAG?=latest
 export IS_DEV_BUILD?=false
-export VERSION?=2.2.0
+export VERSION?=2.2.1
 export AGENT_BINARY_BUILD=$(DEEPFENCE_FARGATE_DIR)/build
 export AGENT_BINARY_BUILD_RELATIVE=deepfence_agent/agent-binary/build
 export AGENT_BINARY_DIST=$(DEEPFENCE_FARGATE_DIR)/dist
@@ -39,10 +39,6 @@ bootstrap:
 alpine_builder:
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-alpine .
 
-.PHONY: go1_20_builder
-go1_20_builder:
-	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_go_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-debianfluent-bit .
-
 .PHONY: debian_builder
 debian_builder:
 	docker build --build-arg DF_IMG_TAG=${DF_IMG_TAG} --build-arg IMAGE_REPOSITORY=${IMAGE_REPOSITORY} --tag=$(IMAGE_REPOSITORY)/deepfence_glibc_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-debian .
@@ -55,7 +51,7 @@ bootstrap-agent-plugins:
 	(cd $(MALWARE_SCANNER_DIR) && bash bootstrap.sh)
 
 .PHONY: agent
-agent: go1_20_builder debian_builder deepfenced console_plugins
+agent: debian_builder deepfenced console_plugins
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
 	IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) bash build.sh)
 
@@ -107,11 +103,11 @@ file-server:
 	docker build -t $(IMAGE_REPOSITORY)/deepfence_file_server_ce:$(DF_IMG_TAG) $(DEEPFENCE_FILE_SERVER_DIR)
 
 .PHONY: server
-server: alpine_builder
+server: debian_builder
 	(cd ./deepfence_server && VERSION=$(VERSION) make image)
 
 .PHONY: worker
-worker: alpine_builder agent-binary-tar
+worker: debian_builder agent-binary-tar
 	(cd ./deepfence_worker && VERSION=$(VERSION) AGENT_BINARY_DIST_RELATIVE=$(AGENT_BINARY_DIST_RELATIVE) make image)
 
 .PHONY: jaeger

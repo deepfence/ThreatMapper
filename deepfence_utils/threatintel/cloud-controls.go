@@ -25,7 +25,7 @@ func DownloadAndPopulateCloudControls(ctx context.Context, entry Entry) error {
 	defer span.End()
 
 	// remove old rule file
-	_, _, existing, err := FetchPostureControlsInfo(ctx)
+	existing, _, err := FetchPostureControlsInfo(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("no existing posture control info found")
 	} else {
@@ -34,7 +34,7 @@ func DownloadAndPopulateCloudControls(ctx context.Context, entry Entry) error {
 		}
 	}
 
-	// download latest rules and uplaod to minio
+	// download latest rules and upload to file server
 	content, err := downloadFile(ctx, entry.URL)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to download posture controls")
@@ -48,13 +48,7 @@ func DownloadAndPopulateCloudControls(ctx context.Context, entry Entry) error {
 		return err
 	}
 
-	url, err := ExposeFile(ctx, path)
-	if err != nil {
-		log.Error().Err(err).Msg("failed to expose posture controls on fileserver")
-		return err
-	}
-
-	if err := UpdatePostureControlsInfo(ctx, url, sha, strings.TrimPrefix(path, "database/")); err != nil {
+	if err := UpdatePostureControlsInfo(ctx, sha, strings.TrimPrefix(path, "database/")); err != nil {
 		return err
 	}
 
@@ -77,7 +71,7 @@ func TriggerLoadCloudControls(ctx context.Context) error {
 	return nil
 }
 
-func UpdatePostureControlsInfo(ctx context.Context, url, hash, path string) error {
+func UpdatePostureControlsInfo(ctx context.Context, hash, path string) error {
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -87,14 +81,12 @@ func UpdatePostureControlsInfo(ctx context.Context, url, hash, path string) erro
 
 	_, err = session.Run(ctx, `
 	MERGE (n:PostureControls{node_id: "latest"})
-	SET n.rules_url=$rules_url,
-		n.rules_hash=$hash,
+	SET n.rules_hash=$hash,
 		n.path=$path,
 		n.updated_at=TIMESTAMP()`,
 		map[string]interface{}{
-			"rules_url": url,
-			"hash":      hash,
-			"path":      path,
+			"hash": hash,
+			"path": path,
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("failed to update PostureControls on neo4j")
@@ -104,33 +96,33 @@ func UpdatePostureControlsInfo(ctx context.Context, url, hash, path string) erro
 	return nil
 }
 
-func FetchPostureControlsInfo(ctx context.Context) (url, hash, path string, err error) {
+func FetchPostureControlsInfo(ctx context.Context) (path, hash string, err error) {
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return "", "", "", err
+		return "", "", err
 	}
 	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx)
 	if err != nil {
-		return "", "", "", err
+		return "", "", err
 	}
 	defer tx.Close(ctx)
 
 	queryPostureControls := `
 	MATCH (s:PostureControls{node_id: "latest"})
-	RETURN s.rules_url, s.rules_hash, s.path`
+	RETURN s.path, s.rules_hash`
 
 	r, err := tx.Run(ctx, queryPostureControls, map[string]interface{}{})
 	if err != nil {
-		return "", "", "", err
+		return "", "", err
 	}
 	rec, err := r.Single(ctx)
 	if err != nil {
-		return "", "", "", err
+		return "", "", err
 	}
 
-	return rec.Values[0].(string), rec.Values[1].(string), rec.Values[2].(string), nil
+	return rec.Values[0].(string), rec.Values[1].(string), nil
 
 }

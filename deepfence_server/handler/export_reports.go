@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sort"
 	"time"
 
@@ -46,6 +47,7 @@ func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(directory.ErrNamespaceNotFound, w)
+		return
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
@@ -55,6 +57,7 @@ func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
+		return
 	}
 	defer tx.Close(ctx)
 
@@ -104,7 +107,7 @@ func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
 		var report model.ExportReport
 		utils.FromMap(dbNode.Props, &report)
 
-		if report.Status != utils.ScanStatusFailed {
+		if report.StoragePath != "" {
 			err = mc.DeleteFile(r.Context(), report.StoragePath, false, minio.RemoveObjectOptions{ForceDelete: true})
 			if err != nil {
 				log.Error().Err(err).Msgf("Failed to delete in file server for report id: %s",
@@ -115,15 +118,11 @@ func (h *Handler) BulkDeleteReports(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if len(deletedRecs) == 0 {
-		log.Error().Msgf("Failed to delete any reports")
-		h.respondError(fmt.Errorf("failed to delete any reports"), w)
-		return
-	} else if len(deletedRecs) != len(req.ReportIDs) {
+	if len(deletedRecs) != len(req.ReportIDs) {
 		log.Warn().Msgf("Not able to delete all the requested reports")
 	}
 
-	vars["uids"] = deletedRecs
+	vars["uids"] = req.ReportIDs
 	deleteQuery := `MATCH (n:Report) WHERE n.report_id in $uids DELETE n`
 	_, err = tx.Run(ctx, deleteQuery, vars)
 	if err != nil {
@@ -159,6 +158,7 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(directory.ErrNamespaceNotFound, w)
+		return
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
@@ -168,6 +168,7 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
+		return
 	}
 	defer tx.Close(ctx)
 
@@ -253,6 +254,7 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(directory.ErrNamespaceNotFound, w)
+		return
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
@@ -262,6 +264,7 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
+		return
 	}
 	defer tx.Close(ctx)
 
@@ -295,6 +298,29 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	var report model.ExportReport
 	utils.FromMap(da.Props, &report)
 
+	mc, err := directory.FileServerClient(ctx)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+
+	if report.StoragePath != "" {
+		var cd url.Values
+		if report.FileName != "" {
+			cd = url.Values{
+				"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
+			}
+		}
+		fileServerURL, err := mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, h.GetHostURL(r))
+		if err != nil {
+			log.Error().Msg(err.Error())
+			h.respondError(err, w)
+			return
+		}
+		report.URL = fileServerURL
+	}
+
 	err = httpext.JSON(w, http.StatusOK, report)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -307,6 +333,7 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(directory.ErrNamespaceNotFound, w)
+		return
 	}
 
 	ctx := r.Context()
@@ -318,6 +345,7 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
+		return
 	}
 	defer tx.Close(ctx)
 
@@ -330,6 +358,14 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 	}
 
 	records, err := result.Collect(ctx)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(err, w)
+		return
+	}
+
+	var fileServerURL string
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
@@ -350,6 +386,22 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 		}
 		var report model.ExportReport
 		utils.FromMap(da.Props, &report)
+
+		if report.StoragePath != "" {
+			var cd url.Values
+			if report.FileName != "" {
+				cd = url.Values{
+					"response-content-disposition": []string{"attachment; filename=\"" + report.FileName + "\""},
+				}
+			}
+			fileServerURL, err = mc.ExposeFile(ctx, report.StoragePath, false, utils.ReportRetentionTime, cd, h.GetHostURL(r))
+			if err == nil {
+				report.URL = fileServerURL
+			} else {
+				log.Warn().Err(err).Msg("Failed to expose report file")
+			}
+		}
+
 		reports = append(reports, report)
 	}
 
@@ -457,6 +509,7 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(directory.ErrNamespaceNotFound, w)
+		return
 	}
 
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
@@ -466,6 +519,7 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(err, w)
+		return
 	}
 	defer tx.Close(ctx)
 

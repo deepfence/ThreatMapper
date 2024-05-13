@@ -27,6 +27,7 @@ import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { SearchableNamespaceList } from '@/components/forms/SearchableNamespaceList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
@@ -209,6 +210,7 @@ enum FILTER_SEARCHPARAMS_KEYS_ENUM {
   hosts = 'hosts',
   clusters = 'clusters',
   containers = 'containers',
+  namespaces = 'namespaces',
 }
 
 const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
@@ -224,6 +226,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   hosts: 'Host',
   clusters: 'Cluster',
   containers: 'Container',
+  namespaces: 'Namespace',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -422,6 +425,27 @@ function Filters() {
             });
           }}
         />
+        <SearchableNamespaceList
+          nodeType="container"
+          defaultSelectedNamespaces={searchParams.getAll('namespaces')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('namespaces');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('namespaces');
+              value.forEach((pod) => {
+                prev.append('namespaces', pod);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -501,6 +525,7 @@ function useSearchContainersWithPagination() {
       order: getOrderFromSearchParams(searchParams),
       clusterIds: searchParams.getAll('clusters'),
       containers: searchParams.getAll('containers'),
+      kubernetesNamespace: searchParams.getAll('namespaces'),
     }),
     keepPreviousData: true,
   });

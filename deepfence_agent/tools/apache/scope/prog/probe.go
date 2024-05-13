@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"math/rand"
-	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
@@ -18,9 +17,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	dfUtils "github.com/deepfence/df-utils"
 	docker_client "github.com/fsouza/go-dockerclient"
-	"github.com/hashicorp/go-metrics"
-	metrics_prom "github.com/hashicorp/go-metrics/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/weaveworks/common/tracing"
 	"github.com/weaveworks/scope/common/hostname"
 	"github.com/weaveworks/scope/probe"
@@ -44,19 +40,6 @@ const (
 	authCheckPeriod = time.Second * 10
 )
 
-func maybeExportProfileData(flags probeFlags) {
-	if flags.httpListen != "" {
-		go func() {
-			http.Handle("/metrics", promhttp.Handler())
-			if os.Getenv("DEBUG") == "true" {
-				log.Info().Msgf("Profiling data being exported to %s", flags.httpListen)
-				log.Info().Msgf("go tool pprof http://%s/debug/pprof/{profile,heap,block}", flags.httpListen)
-				log.Info().Msgf("Profiling endpoint %s terminated: %v", flags.httpListen, http.ListenAndServe(flags.httpListen, nil))
-			}
-		}()
-	}
-}
-
 func checkFlagsRequiringRoot(flags probeFlags) {
 	if os.Getegid() != 0 {
 		if flags.spyProcs {
@@ -70,7 +53,7 @@ func checkFlagsRequiringRoot(flags probeFlags) {
 }
 
 // Main runs the probe
-func probeMain(flags probeFlags, targets []appclient.Target) {
+func probeMain(flags probeFlags) {
 	setLogLevel(flags.logLevel)
 
 	if flags.basicAuth {
@@ -86,24 +69,6 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		defer traceCloser.Close()
 	}
 
-	cfg := &metrics.Config{
-		ServiceName:      "deepfence-discovery",
-		TimerGranularity: time.Second,
-		FilterDefault:    true, // Don't filter metrics by default
-	}
-	if flags.httpListen == "" {
-		// Setup in memory metrics sink
-		inm := metrics.NewInmemSink(time.Minute, 2*time.Minute)
-		sig := metrics.DefaultInmemSignal(inm)
-		defer sig.Stop()
-		metrics.NewGlobal(cfg, inm)
-	} else {
-		sink, err := metrics_prom.NewPrometheusSink()
-		if err != nil {
-			log.Fatal().Msgf("Failed to create Prometheus metrics sink: %v", err)
-		}
-		metrics.NewGlobal(cfg, sink)
-	}
 	logCensoredArgs()
 	defer log.Info().Msg("probe exiting")
 
@@ -123,7 +88,6 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 
 	checkFlagsRequiringRoot(flags)
 
-	rand.Seed(time.Now().UnixNano())
 	var (
 		probeID  = strconv.FormatInt(rand.Int63(), 16)
 		hostName = hostname.Get()
@@ -202,26 +166,19 @@ endNestedIf:
 	var clients interface {
 		probe.ReportPublisher
 	}
-	if flags.printOnStdout {
-		if len(targets) > 0 {
-			log.Warn().Msgf("Dumping to stdout only: targets %v will be ignored", targets)
+	var multiClients *appclient.OpenapiClient
+	for {
+		multiClients, err = appclient.NewOpenapiClient()
+		if err == nil {
+			break
+		} else if errors.Is(err, common.ConnError) {
+			log.Warn().Msg("Failed to authenticate. Retrying...")
+			time.Sleep(authCheckPeriod)
+		} else {
+			log.Fatal().Msgf("Fatal: %v", err)
 		}
-		log.Fatal().Msg("Print on Stdout not supported")
-	} else {
-		var multiClients *appclient.OpenapiClient
-		for {
-			multiClients, err = appclient.NewOpenapiClient()
-			if err == nil {
-				break
-			} else if errors.Is(err, common.ConnError) {
-				log.Warn().Msg("Failed to authenticate. Retrying...")
-				time.Sleep(authCheckPeriod)
-			} else {
-				log.Fatal().Msgf("Fatal: %v", err)
-			}
-		}
-		clients = multiClients
 	}
+	clients = multiClients
 
 	p := probe.New(flags.spyInterval, flags.publishInterval, clients, flags.ticksPerFullReport, flags.noControls)
 	if os.Getenv("DF_USE_DUMMY_SCOPE") == "" {
@@ -233,12 +190,13 @@ endNestedIf:
 			defer hostReporter.Stop()
 			p.AddReporter(hostReporter)
 			p.AddTagger(host.NewTagger(hostName, cloudProvider, cloudRegion))
+			log.Debug().Msg("Attached host reporter")
 
 			if flags.procEnabled {
 				processCache = process.NewCachingWalker(process.NewWalker(flags.procRoot, false))
 				p.AddTicker(processCache)
 				p.AddReporter(process.NewReporter(processCache, hostName, process.GetDeltaTotalJiffies, flags.noCommandLineArguments, flags.trackProcDeploads))
-				log.Debug().Msg("Attached proc report")
+				log.Debug().Msg("Attached proc reporter")
 			}
 
 			if flags.endpointEnabled {
@@ -262,7 +220,7 @@ endNestedIf:
 				})
 				defer endpointReporter.Stop()
 				p.AddReporter(endpointReporter)
-				log.Debug().Msg("Attached endpoint report")
+				log.Debug().Msg("Attached endpoint reporter")
 			}
 
 		}
@@ -337,7 +295,6 @@ endNestedIf:
 			log.Debug().Msg("Attached k8s tagger")
 		}
 
-		maybeExportProfileData(flags)
 	}
 
 	p.Start()

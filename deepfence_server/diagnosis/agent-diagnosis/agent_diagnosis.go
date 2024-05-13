@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"path/filepath"
 	"time"
 
@@ -115,16 +114,12 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 	if err != nil {
 		return err
 	}
-	mc, err := directory.FileServerClient(ctx)
-	if err != nil {
-		return err
-	}
 
-	actionBuilder := func(nodeIdentifier diagnosis.NodeIdentifier, uploadUrl string, fileName string, tail string) (controls.Action, error) {
+	actionBuilder := func(nodeIdentifier diagnosis.NodeIdentifier, uploadKey string, fileName string, tail string) (controls.Action, error) {
 		req := controls.SendAgentDiagnosticLogsRequest{
 			NodeID:    nodeIdentifier.NodeID,
 			NodeType:  controls.StringToResourceType(nodeIdentifier.NodeType),
-			UploadURL: uploadUrl,
+			UploadURL: uploadKey,
 			Tail:      tail,
 			FileName:  fileName,
 		}
@@ -158,14 +153,9 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 			continue
 		}
 		fileName := "deepfence-agent-logs-" + nodeIdentifier.NodeID + fileNameSuffix
-		uploadURL, err := mc.CreatePublicUploadURL(ctx,
-			filepath.Join(diagnosis.AgentDiagnosisFileServerPrefix, fileName), true, time.Minute*10, url.Values{})
+		action, err := actionBuilder(nodeIdentifier, filepath.Join(diagnosis.AgentDiagnosisFileServerPrefix, fileName), fileName, tail)
 		if err != nil {
-			return err
-		}
-		action, err := actionBuilder(nodeIdentifier, uploadURL, fileName, tail)
-		if err != nil {
-			log.Error().Err(err)
+			log.Error().Msg(err.Error())
 			return err
 		}
 		b, err := json.Marshal(action)

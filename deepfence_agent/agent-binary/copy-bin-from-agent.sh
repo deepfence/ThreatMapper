@@ -65,7 +65,6 @@ copy() {
   deep_docker_copy "/etc/filebeat/." "$folder/etc/filebeat/."
   deep_docker_copy "/etc/logrotate.d/." "$folder/etc/logrotate.d/."
   deep_docker_copy "/etc/supervisor/." "$folder/etc/supervisor/."
-  deep_docker_copy "/etc/td-agent-bit/." "$folder/etc/td-agent-bit/."
 
   echo "Copy some required binaries..."
   cp start_deepfenced.sh $folder/home/deepfence/

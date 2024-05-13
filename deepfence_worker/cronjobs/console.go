@@ -10,6 +10,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_worker/controls"
 	"github.com/hibiken/asynq"
+	"github.com/jellydator/ttlcache/v3"
 )
 
 const (
@@ -18,10 +19,16 @@ const (
 
 type ConsoleController struct {
 	MaxWorkload int
+	TTLCache    *ttlcache.Cache[string, string]
 }
 
 func NewConsoleController(max int) ConsoleController {
-	return ConsoleController{MaxWorkload: max}
+	return ConsoleController{
+		MaxWorkload: max,
+		TTLCache: ttlcache.New[string, string](
+			ttlcache.WithDisableTouchOnHit[string, string](),
+		),
+	}
 }
 
 /*
@@ -43,7 +50,7 @@ func (c ConsoleController) TriggerConsoleControls(ctx context.Context, t *asynq.
 		return nil
 	}
 
-	actions, errs := controls.GetAgentActions(ctx, ConsoleAgentId, int(allocatable))
+	actions, errs := controls.GetAgentActions(ctx, ConsoleAgentId, int(allocatable), "", c.TTLCache)
 	for _, e := range errs {
 		if e != nil {
 			log.Error().Msgf(e.Error())

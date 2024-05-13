@@ -1,5 +1,9 @@
 package utils
 
+import (
+	"time"
+)
+
 const (
 	Project           = "ThreatMapper"
 	ErrorUserNotFound = "user not found"
@@ -57,11 +61,18 @@ const (
 	AutoFetchGenerativeAIIntegrations = "auto_fetch_generative_ai_integrations"
 	AsynqDeleteAllArchivedTasks       = "asynq_delete_all_archived_tasks"
 	RedisRewriteAOF                   = "redis_rewrite_aof"
+	DeleteCloudAccounts               = "delete_cloud_accounts"
 
 	UpdateLicenseTask      = "update_license"
 	ReportLicenseUsageTask = "report_license_usage"
 
 	ThreatIntelUpdateTask = "threat_intel_update"
+)
+
+const (
+	ReportRetentionTime     = 24 * time.Hour
+	ReportGenerationTimeout = 30 * time.Minute
+	ReportRecordsMax        = 100000
 )
 
 const (
@@ -73,6 +84,10 @@ const (
 	ScanStatusCancelling    = "CANCELLING"
 	ScanStatusCancelled     = "CANCELLED"
 	ScanStatusDeletePending = "DELETE_PENDING"
+)
+
+const (
+	ScanRetryFailedStatusMessage = "scan failed to complete, please check agent logs"
 )
 
 // Neo4j Node Labels

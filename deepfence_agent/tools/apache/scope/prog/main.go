@@ -12,7 +12,6 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 
-	"github.com/weaveworks/scope/probe/appclient"
 	"github.com/weaveworks/scope/probe/host"
 	"github.com/weaveworks/scope/probe/kubernetes"
 )
@@ -51,7 +50,6 @@ type flags struct {
 }
 
 type probeFlags struct {
-	printOnStdout          bool
 	basicAuth              bool
 	username               string
 	password               string
@@ -147,7 +145,6 @@ func setupFlags(flags *flags) {
 	flag.Bool("app-only", false, "Only run the app.")
 
 	// Probe flags
-	flag.BoolVar(&flags.probe.printOnStdout, "probe.publish.stdout", false, "Print reports on stdout instead of sending to app, for debugging")
 	flag.BoolVar(&flags.probe.basicAuth, "probe.basicAuth", false, "Use basic authentication to authenticate with app")
 	flag.StringVar(&flags.probe.username, "probe.basicAuth.username", "", "Username for basic authentication")
 	flag.StringVar(&flags.probe.password, "probe.basicAuth.password", "", "Password for basic authentication")
@@ -227,21 +224,6 @@ func main() {
 		}
 	}
 
-	// Special case probe push address parsing
-	targets := []appclient.Target{}
-	var err error
-	if flags.mode == "probe" || flags.dryRun {
-		args := []string{}
-		args = append(args, flag.Args()...)
-		if !flags.dryRun {
-			log.Info().Msgf("publishing to: %s", strings.Join(args, ", "))
-		}
-		targets, err = appclient.ParseTargets(args)
-		if err != nil {
-			log.Fatal().Msgf("Invalid targets: %v", err)
-		}
-	}
-
 	// Node name may be set by environment variable, e.g. from the Kubernetes downward API
 	if flags.probe.kubernetesNodeName == "" {
 		flags.probe.kubernetesNodeName = os.Getenv("KUBERNETES_NODENAME")
@@ -268,7 +250,7 @@ func main() {
 
 	switch flags.mode {
 	case "probe":
-		probeMain(flags.probe, targets)
+		probeMain(flags.probe)
 	case "version":
 		fmt.Println("Weave Scope version", version)
 	case "help":

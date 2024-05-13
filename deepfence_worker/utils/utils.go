@@ -17,8 +17,6 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-var ReportRetentionTime = 24 * time.Hour
-
 func TimeRangeFilter(key string, start, end time.Time) []reporters.CompareFilter {
 	return []reporters.CompareFilter{
 		{

@@ -400,6 +400,7 @@ export const useIntegrationTableColumn = (
             id: 'config.aws_region',
             cell: ({ row }) =>
               !isEmpty(row.original.config) ? row.original.config.aws_region : '-',
+            header: () => <TruncatedText text={'Region'} />,
             minSize: 45,
             size: 60,
             maxSize: 75,

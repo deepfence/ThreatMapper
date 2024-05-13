@@ -24,7 +24,7 @@ done
 
 # wait for file server to start
 if [ "$DEEPFENCE_FILE_SERVER_HOST" != "s3.amazonaws.com" ]; then
-  until nc -z ${DEEPFENCE_FILE_SERVER_HOST} ${DEEPFENCE_FILE_SERVER_PORT};
+  until nc -z "${DEEPFENCE_FILE_SERVER_HOST}" "${DEEPFENCE_FILE_SERVER_PORT}";
   do
     echo "file server is unavailable - sleeping"
     sleep 5;
@@ -33,16 +33,15 @@ else
   echo "S3 mode skip file server health check"
 fi
 
-# threat intel urls
-# DEEPFENCE_VULN_DB_URL=""
-# DEEPFENCE_CLOUD_CONTROLS_URL=""
-# DEEPFENCE_SECRETS_RULES_URL=""
-# DEEPFENCE_MALWARE_RULES_URL=""
-
 # for aws s3
-export GRYPE_DB_UPDATE_URL="http://${DEEPFENCE_FILE_SERVER_HOST}:${DEEPFENCE_FILE_SERVER_PORT}/database/database/vulnerability/listing.json"
+fileServerProtocol="http"
+if [ "$DEEPFENCE_FILE_SERVER_SECURE" == "true" ]; then
+  fileServerProtocol="https"
+fi
+
+export GRYPE_DB_UPDATE_URL="${fileServerProtocol}://${DEEPFENCE_FILE_SERVER_HOST}:${DEEPFENCE_FILE_SERVER_PORT}/database/database/vulnerability/listing.json"
 if [ "$DEEPFENCE_FILE_SERVER_HOST" == "s3.amazonaws.com" ]; then
-  export GRYPE_DB_UPDATE_URL="https://${DEEPFENCE_FILE_SERVER_DB_BUCKET}.s3.${DEEPFENCE_FILE_SERVER_REGION}.amazonaws.com/database/vulnerability/listing.json"
+  export GRYPE_DB_UPDATE_URL="${fileServerProtocol}://${DEEPFENCE_FILE_SERVER_DB_BUCKET}.s3.${DEEPFENCE_FILE_SERVER_REGION}.amazonaws.com/database/vulnerability/listing.json"
 fi
 
 # update vulnerability databae
@@ -50,8 +49,8 @@ if [ "$DEEPFENCE_MODE" == "worker" ]; then
   echo "add cron job to update vulnerability database"
   echo "vulnerability database update url $GRYPE_DB_UPDATE_URL"
   # /usr/local/bin/grype db update
-  echo "0 */2 * * * export GRYPE_DB_UPDATE_URL=${GRYPE_DB_UPDATE_URL} && /usr/local/bin/grype db update" >> /etc/crontabs/root
-  /usr/sbin/crond
+  echo "0 */2 * * * export GRYPE_DB_UPDATE_URL=${GRYPE_DB_UPDATE_URL} && /usr/local/bin/grype db update" >> /etc/cron.d/crontab && chmod 0644 /etc/cron.d/crontab
+  /usr/sbin/cron
 fi
 
 if [[ "${1#-}" != "$1" ]]; then

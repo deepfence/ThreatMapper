@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button, Checkbox, Radio } from 'ui-components';
+import { Button, Checkbox, Radio, Switch, Tooltip } from 'ui-components';
 
 import { getSecretApiClient, getSettingsApiClient } from '@/api/api';
 import {
@@ -10,6 +10,7 @@ import {
   ModelSecretScanTriggerReq,
   ReportersContainsFilter,
 } from '@/api/generated';
+import { InfoStandardIcon } from '@/components/icons/common/InfoStandard';
 import { ScheduleScanForm } from '@/components/scan-configure-forms/ScheduleScanForm';
 import { invalidateAllQueries } from '@/queries';
 import { SecretScanNodeTypeEnum } from '@/types/common';
@@ -71,6 +72,7 @@ export const scanSecretApiAction = async ({
   const scheduleCron = `0 ${formData.get('scheduleCron')}`;
 
   const isPriorityScan = formData.get('isPriorityScan') === 'on';
+  const scanDeepfenceSystem = formData.get('scanDeepfenceSystem') === 'on';
 
   const getNodeType = (nodeType: SecretScanNodeTypeEnum | 'container_image') => {
     let _nodeType = nodeType as ModelNodeIdentifierNodeTypeEnum;
@@ -134,6 +136,7 @@ export const scanSecretApiAction = async ({
         nodeTypes[index] as SecretScanNodeTypeEnum,
       ) as ModelNodeIdentifierNodeTypeEnum,
     })),
+    deepfence_system_scan: scanDeepfenceSystem,
   };
 
   let scanResponse = {
@@ -230,6 +233,45 @@ export const scanSecretApiAction = async ({
 
   invalidateAllQueries();
   return scanResponse;
+};
+
+const ScanDeepfenceSystem = () => {
+  return (
+    <div className="mt-6 flex items-center gap-x-1">
+      <Switch
+        label="Scan selected Deepfence images/containers"
+        name="scanDeepfenceSystem"
+      />
+      <Tooltip
+        content="If the resources you have selected for the scan include Deepfence images/containers, you can enable this option to scan them. Deepfence images/containers are not scanned by default."
+        triggerAsChild
+      >
+        <span className="w-4 h-4">
+          <InfoStandardIcon />
+        </span>
+      </Tooltip>
+    </div>
+  );
+};
+
+const wantDeepfenceSystem = ({
+  nodes,
+}: {
+  nodes: {
+    nodeType: SecretScanNodeTypeEnum;
+  }[];
+}) => {
+  return nodes.find(({ nodeType }) => {
+    return (
+      nodeType === SecretScanNodeTypeEnum.registry ||
+      nodeType === SecretScanNodeTypeEnum.imageTag ||
+      nodeType === SecretScanNodeTypeEnum.container ||
+      nodeType === SecretScanNodeTypeEnum.image ||
+      nodeType === SecretScanNodeTypeEnum.pod ||
+      nodeType === SecretScanNodeTypeEnum.kubernetes_cluster ||
+      nodeType === ('container_image' as SecretScanNodeTypeEnum)
+    );
+  });
 };
 
 export const SecretScanConfigureForm = ({
@@ -330,6 +372,8 @@ export const SecretScanConfigureForm = ({
       ) : null}
 
       {showScheduleScanOptions && <ScheduleScanForm />}
+
+      {wantDeepfenceSystem(data) ? <ScanDeepfenceSystem /> : null}
 
       {fetcherData?.message && (
         <p className="text-status-error text-p7 mt-4">{fetcherData.message}</p>

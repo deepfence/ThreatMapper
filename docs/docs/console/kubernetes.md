@@ -7,7 +7,7 @@ title: Kubernetes Installation
 :::info[Neo4j Upgrade]
 Neo4j version was upgraded to v5.x (from v4.4).
 
-Please follow [these](neo4j-upgrade) steps before upgrading the management console version.
+Please follow [these](upgrade-from-v2.1.md) steps before upgrading the management console version.
 :::
 
 You can install the Management Console on a [single Docker host](docker) or in a dedicated Kubernetes cluster.

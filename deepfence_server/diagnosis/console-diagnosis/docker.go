@@ -16,6 +16,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/docker/docker/api/types"
+	containerTypes "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	dockerClient "github.com/docker/docker/client"
 	"github.com/minio/minio-go/v7"
@@ -51,12 +52,13 @@ func (d *DockerConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.Conte
 	zipWriter := zip.NewWriter(zipFile)
 
 	containerFilters := filters.NewArgs()
-	containers := d.getContainers(ctx, types.ContainerListOptions{
-		Filters: containerFilters,
-		All:     true,
-	})
+	containers := d.getContainers(ctx,
+		containerTypes.ListOptions{
+			Filters: containerFilters,
+			All:     true,
+		})
 
-	logOptions := types.ContainerLogsOptions{
+	logOptions := containerTypes.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Tail:       tail,
@@ -89,7 +91,7 @@ func (d *DockerConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.Conte
 	return nil
 }
 
-func (d *DockerConsoleDiagnosisHandler) addContainerLogs(ctx context.Context, container *types.Container, logOptions types.ContainerLogsOptions, zipWriter *zip.Writer) error {
+func (d *DockerConsoleDiagnosisHandler) addContainerLogs(ctx context.Context, container *types.Container, logOptions containerTypes.LogsOptions, zipWriter *zip.Writer) error {
 
 	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "add-container-logs")
 	defer span.End()
@@ -124,7 +126,7 @@ func (d *DockerConsoleDiagnosisHandler) addContainerLogs(ctx context.Context, co
 	return nil
 }
 
-func (d *DockerConsoleDiagnosisHandler) getContainerLogs(ctx context.Context, containerID string, options types.ContainerLogsOptions) (io.ReadCloser, error) {
+func (d *DockerConsoleDiagnosisHandler) getContainerLogs(ctx context.Context, containerID string, options containerTypes.LogsOptions) (io.ReadCloser, error) {
 	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "get-container-logs")
 	defer span.End()
 
@@ -135,7 +137,7 @@ func (d *DockerConsoleDiagnosisHandler) getContainerLogs(ctx context.Context, co
 	return logs, nil
 }
 
-func (d *DockerConsoleDiagnosisHandler) getContainers(ctx context.Context, options types.ContainerListOptions) []types.Container {
+func (d *DockerConsoleDiagnosisHandler) getContainers(ctx context.Context, options containerTypes.ListOptions) []types.Container {
 	ctx, span := telemetry.NewSpan(ctx, "diagnosis", "get-containers")
 	defer span.End()
 

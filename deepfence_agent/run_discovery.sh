@@ -7,7 +7,7 @@ PROBE_TRACKDEPLOADS=${DF_ENABLE_TRACKDEPLOADS:-"false"}
 PROBE_LOG_LEVEL=${DF_LOG_LEVEL:-info}
 
 if [[ "$DF_CLUSTER_AGENT" == "true" ]]; then
-    exec /home/deepfence/deepfence_exe \
+    exec /home/deepfence/discovery \
         --mode=probe \
         --probe.kubernetes.role=cluster \
         --probe.log.level="$PROBE_LOG_LEVEL" \

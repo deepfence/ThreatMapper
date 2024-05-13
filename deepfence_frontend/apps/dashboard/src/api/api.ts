@@ -251,6 +251,7 @@ export function getCloudNodesApiClient() {
     listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
     listCloudProviders: cloudNodesApi.listCloudProviders.bind(cloudNodesApi),
     refreshCloudNodeAccount: cloudNodesApi.refreshCloudNodeAccount.bind(cloudNodesApi),
+    deleteCloudNodeAccount: cloudNodesApi.deleteCloudNodeAccount.bind(cloudNodesApi),
   };
 }
 
@@ -414,5 +415,8 @@ export function getScanResultCompletionApiClient() {
       scanCompleteionApi.completeComplianceInfo.bind(scanCompleteionApi),
     completeCloudCompliance:
       scanCompleteionApi.completeCloudCompliance.bind(scanCompleteionApi),
+    completePodInfo: scanCompleteionApi.completePodInfo.bind(scanCompleteionApi),
+    completeContainerInfo:
+      scanCompleteionApi.completeContainerInfo.bind(scanCompleteionApi),
   };
 }

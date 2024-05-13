@@ -58,7 +58,7 @@ export const ScanResultChart = ({
         legend: {
           show: false,
         },
-        series: theme === THEME_DARK ? [series[1]] : series,
+        series,
       }}
       onChartClick={({ name }: { name: string; value: string | number | Date }) => {
         window.open(`${to}=${name.toLowerCase()}`, '_blank', 'noopener, noreferrer');

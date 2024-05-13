@@ -412,6 +412,10 @@ func (d *OpenAPIDocs) AddCloudNodeOperations() {
 		"Register Cloud Node Account", "Register Cloud Node Account and return any pending compliance scans from console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountRegisterReq), new(CloudNodeAccountRegisterResp))
 
+	d.AddOperation("deleteCloudNodeAccount", http.MethodPatch, "/deepfence/cloud-node/account/delete",
+		"Delete Cloud Node Account", "Delete Cloud Node Account and related resources",
+		http.StatusAccepted, []string{tagCloudNodes}, bearerToken, new(CloudAccountDeleteReq), nil)
+
 	d.AddOperation("listCloudNodeAccount", http.MethodPost, "/deepfence/cloud-node/list/accounts",
 		"List Cloud Node Accounts", "List Cloud Node Accounts registered with the console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountsListReq), new(CloudNodeAccountsListResp))
@@ -909,5 +913,11 @@ func (d *OpenAPIDocs) AddCompletionOperations() {
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 	d.AddOperation("completeComplianceInfo", http.MethodPost, "/deepfence/complete/compliance",
 		"Get Completion for compliance fields", "Complete compliance info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completePodInfo", http.MethodPost, "/deepfence/complete/pod",
+		"Get Completion for Pod fields", "Complete Pod info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completeContainerInfo", http.MethodPost, "/deepfence/complete/container",
+		"Get Completion for Container fields", "Complete Container info",
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 }

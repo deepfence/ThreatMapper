@@ -472,11 +472,19 @@ func nodeType2Neo4jType(nodeType string) string {
 		return "Container"
 	case "image":
 		return "ContainerImage"
+	case "container_image":
+		return "ContainerImage"
 	case "host":
 		return "Node"
 	case "cluster":
 		return "KubernetesCluster"
 	case "cloud_account":
+		return "CloudNode"
+	case "aws":
+		return "CloudNode"
+	case "gcp":
+		return "CloudNode"
+	case "azure":
 		return "CloudNode"
 	}
 	return "unknown"
@@ -713,11 +721,12 @@ func GetScanResultDiff[T any](ctx context.Context, scanType utils.Neo4jScanType,
 	OPTIONAL MATCH (n) -[:SCANNED]-> (f)
 	OPTIONAL MATCH (c:ContainerImage{node_id: f.docker_image_id}) -[:ALIAS] ->(t) -[ma:MASKED]-> (d)
 	OPTIONAL MATCH (cb:ContainerImage{node_id: n.docker_image_id}) -[:IS] ->(is) -[mis:MASKED]-> (d)
+	WITH e, d, r, collect(ma) as ma_list, collect(mis) as mis_list
 	WITH apoc.map.merge( e{.*}, 
-	d{.*, masked: coalesce(d.masked or r.masked or e.masked or head(collect(ma.masked)) or head(collect(mis.masked)), false), 
-	name: coalesce(e.name, d.name, '')}) AS d` +
+	d{.*, masked: coalesce(d.masked or r.masked or e.masked or head(ma_list).masked or head(mis_list).masked, false), 
+	name: coalesce(e.name, d.name, '')}) AS merged_data` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
-		ffCondition + ` RETURN d ` +
+		ffCondition + ` RETURN merged_data ` +
 		fw.FetchWindow2CypherQuery()
 	log.Debug().Msgf("diff query: %v", query)
 	nres, err := tx.Run(ctx, query,
@@ -935,7 +944,7 @@ func type2sevField(scanType utils.Neo4jScanType) string {
 	return "error_sev_field_unknown"
 }
 
-func GetSevCounts(ctx context.Context, scanType utils.Neo4jScanType, scanID string) (map[string]int32, error) {
+func GetSevCounts(ctx context.Context, ff reporters.FieldsFilters, scanType utils.Neo4jScanType, scanID string) (map[string]int32, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-sev-counts")
 	defer span.End()
@@ -958,7 +967,7 @@ func GetSevCounts(ctx context.Context, scanType utils.Neo4jScanType, scanID stri
 
 	query := `
 	MATCH (m:` + string(scanType) + `{node_id: $scan_id, status: "` + utils.ScanStatusSuccess + `"}) -[r:DETECTED]-> (d)
-	WHERE r.masked = false
+	WHERE r.masked = false` + reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), false) + `
 	OPTIONAL MATCH (m) -[:SCANNED] -> (e)
 	OPTIONAL MATCH (c:ContainerImage{node_id: e.docker_image_id}) -[:ALIAS] ->(t) -[ma:MASKED]-> (d)
 	WITH d, ma, r WHERE ma IS NULL OR ma.masked=false
@@ -1048,7 +1057,7 @@ func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, re
 	return res, nil
 }
 
-func GetCloudComplianceStats(ctx context.Context, scanID string, neo4jComplianceType utils.Neo4jScanType) (model.ComplianceAdditionalInfo, error) {
+func GetCloudComplianceStats(ctx context.Context, ff reporters.FieldsFilters, scanID string, neo4jComplianceType utils.Neo4jScanType) (model.ComplianceAdditionalInfo, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-cloudcompliance-stats")
 	defer span.End()
@@ -1094,7 +1103,8 @@ func GetCloudComplianceStats(ctx context.Context, scanID string, neo4jCompliance
 		cloudComplianceFields = "DISTINCT d.control_id AS control_id, d.resource AS resource,"
 	}
 	nres, err := tx.Run(ctx, `
-		MATCH (m:`+string(neo4jComplianceType)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
+		MATCH (m:`+string(neo4jComplianceType)+`{node_id: $scan_id}) -[:DETECTED]-> (d)`+
+		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true)+`
 		WITH `+cloudComplianceFields+` d.status AS status
 		RETURN status, COUNT(status)`,
 		map[string]interface{}{"scan_id": scanID})

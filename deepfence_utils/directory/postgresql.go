@@ -17,7 +17,7 @@ import (
 var ErrDatabaseConfigNotFound = errors.New("database config not found")
 
 const (
-	FileServerURLSettingKey = "file_server_url"
+	ConsoleURLSettingKey = "console_url"
 )
 
 type SettingValue struct {
@@ -88,7 +88,7 @@ func GetFileServerURL(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	setting, err := pgClient.GetSetting(ctx, FileServerURLSettingKey)
+	setting, err := pgClient.GetSetting(ctx, ConsoleURLSettingKey)
 	if err != nil {
 		return "", err
 	}

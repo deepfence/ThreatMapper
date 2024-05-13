@@ -76,7 +76,7 @@ func SetAgentControls() {
 					ScanID:                    req.BinArgs["scan_id"],
 					NodeID:                    req.NodeID,
 					NodeName:                  req.NodeID,
-					ComplianceResultsFilePath: fmt.Sprintf("%s/var/log/fenced/compliance/%s.log", dfUtils.GetDfInstallDir(), req.BinArgs["scan_id"]),
+					ComplianceResultsFilePath: dfUtils.GetDfInstallDir() + "/var/log/fenced/compliance/compliance-scan.log",
 					ComplianceStatusFilePath:  dfUtils.GetDfInstallDir() + "/var/log/fenced/compliance-scan-logs/status.log",
 				})
 			if err != nil {

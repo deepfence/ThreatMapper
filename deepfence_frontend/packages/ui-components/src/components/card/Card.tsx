@@ -5,7 +5,7 @@ type CardType = {
   className?: string;
 };
 export const Card = (props: CardType) => {
-  const { className = '' } = props;
+  const { className = '', children, ...rest } = props;
   return (
     <div
       className={cn(
@@ -15,8 +15,9 @@ export const Card = (props: CardType) => {
         'dark:border-none border border-bg-grid-border',
         className,
       )}
+      {...rest}
     >
-      {props.children}
+      {children}
     </div>
   );
 };

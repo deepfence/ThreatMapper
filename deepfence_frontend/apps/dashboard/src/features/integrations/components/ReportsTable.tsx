@@ -1,6 +1,5 @@
 import {
   capitalize,
-  findKey,
   intersection,
   isEmpty,
   isNil,
@@ -65,6 +64,10 @@ const ActionDropdown = ({
     return status && status.toLowerCase() === 'complete';
   }, [row]);
 
+  const isError = useMemo(() => {
+    return status && status.toLowerCase() === 'error';
+  }, [row]);
+
   return (
     <Dropdown
       triggerAsChild={true}
@@ -83,8 +86,9 @@ const ActionDropdown = ({
             Download report
           </DropdownItem>
           <DropdownItem
-            onClick={() => onTableAction(row, ActionEnumType.DELETE)}
+            onSelect={() => onTableAction(row, ActionEnumType.DELETE)}
             color="error"
+            disabled={!isCompleted && !isError}
           >
             Delete
           </DropdownItem>
@@ -241,7 +245,7 @@ export const ReportTable = ({
       columnHelper.accessor('type', {
         enableSorting: true,
         cell: (cell) => <span className="uppercase">{cell.getValue()}</span>,
-        header: () => 'Report Type',
+        header: () => 'Report type',
         minSize: 30,
         size: 40,
         maxSize: 55,
@@ -249,7 +253,7 @@ export const ReportTable = ({
       columnHelper.accessor('created_at', {
         enableSorting: true,
         cell: (cell) => formatMilliseconds(cell.getValue() ?? ''),
-        header: () => 'Created At',
+        header: () => 'Created at',
         minSize: 40,
         size: 50,
         maxSize: 70,
@@ -413,7 +417,7 @@ export const ReportFilters = () => {
             });
           }}
         >
-          {['xlsx', 'pdf']
+          {['xlsx', 'pdf', 'sbom']
             .filter((item) => {
               if (!reportTypeSearch.length) return true;
               if (item.includes(reportTypeSearch.toLowerCase())) {

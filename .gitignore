@@ -63,3 +63,6 @@ deepfence_agent/tools/apache/scope/docker/deepfence
 deepfence_agent/tools/apache/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId
 deepfence_agent/deepfenced
 deepfence_agent/fargate/*
+
+deepfence_agent/plugins/deepfence_shipper/vendor
+deepfence_agent/plugins/deepfence_shipper/deepfence_shipper

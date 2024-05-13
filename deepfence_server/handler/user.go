@@ -115,21 +115,6 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	fileServerURLSetting := model.Setting{
-		Key: model.FileServerURLSettingKey,
-		Value: &model.SettingValue{
-			Label:       utils.FileServerURLSettingLabel,
-			Value:       consoleURL,
-			Description: utils.FileServerURLSettingDescription,
-		},
-		IsVisibleOnUI: true,
-	}
-	_, err = fileServerURLSetting.Create(ctx, pgClient)
-	if err != nil {
-		log.Error().Msgf(err.Error())
-		h.respondError(err, w)
-		return
-	}
 
 	emailDomain, _ := utils.GetEmailDomain(registerRequest.Email)
 	c := model.Company{
@@ -472,6 +457,7 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	pgUsers, err := pgClient.GetUsers(ctx)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
+		return
 	}
 	users := make([]model.User, len(pgUsers))
 	for i, pgUser := range pgUsers {

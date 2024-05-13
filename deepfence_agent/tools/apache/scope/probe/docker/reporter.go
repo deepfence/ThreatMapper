@@ -178,6 +178,9 @@ func (r *Reporter) containerImageTopology() report.Topology {
 		}
 
 		metadata.UserDefinedTags = tags
+		if image.Labels[report.DeepfenceSystemLabelKey] == report.DeepfenceSystemLabelValue {
+			metadata.IsDeepfenceSystem = true
+		}
 		dockerImageLabels, err := json.Marshal(image.Labels)
 		if err == nil {
 			metadata.DockerLabels = string(dockerImageLabels)

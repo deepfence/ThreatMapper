@@ -358,8 +358,6 @@ func (c *container) getBaseNode() (report.Metadata, report.Parent) {
 		containerName = c.ID()
 	}
 	var dockerLabels string
-	podName := c.container.Config.Labels["io.kubernetes.pod.name"]
-	podUid := c.container.Config.Labels["io.kubernetes.pod.uid"]
 	dockerLabelsJson, err := json.Marshal(c.container.Config.Labels)
 	if err == nil {
 		dockerLabels = string(dockerLabelsJson)
@@ -375,13 +373,17 @@ func (c *container) getBaseNode() (report.Metadata, report.Parent) {
 		DockerContainerCommand: c.getSanitizedCommand(),
 		DockerImageID:          c.Image(),
 		DockerLabels:           dockerLabels,
-		PodName:                podName,
-		PodID:                  podUid,
+		PodName:                c.container.Config.Labels[report.PodNameLabel],
+		PodID:                  c.container.Config.Labels[report.PodIDLabel],
+		KubernetesNamespace:    c.container.Config.Labels[report.PodNamespaceLabel],
+	}
+	if c.container.Config.Labels[report.DeepfenceSystemLabelKey] == report.DeepfenceSystemLabelValue {
+		result.IsDeepfenceSystem = true
 	}
 	parents := report.Parent{
 		Host:           c.hostID,
 		ContainerImage: c.Image(),
-		Pod:            podUid,
+		Pod:            c.container.Config.Labels[report.PodIDLabel],
 	}
 	if !c.noEnvironmentVariables {
 		dockerEnvJson, err := json.Marshal(c.env())

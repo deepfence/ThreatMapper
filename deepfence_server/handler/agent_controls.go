@@ -26,7 +26,7 @@ func (h *Handler) GetAgentControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actions, errs := controls.GetAgentActions(ctx, agentID.NodeID, agentID.AvailableWorkload)
+	actions, errs := controls.GetAgentActions(ctx, agentID.NodeID, agentID.AvailableWorkload, h.GetHostURL(r), h.TTLCache)
 	for _, err := range errs {
 		if err != nil {
 			log.Warn().Msgf("Cannot process some actions for %s: %v, skipping",
@@ -69,7 +69,7 @@ func (h *Handler) GetAgentInitControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actions, err := controls.GetPendingAgentScans(ctx, agentID.NodeID, agentID.AvailableWorkload)
+	actions, err := controls.GetPendingAgentScans(ctx, agentID.NodeID, agentID.AvailableWorkload, h.TTLCache)
 	if err != nil {
 		log.Warn().Msgf("Cannot get actions: %s, skipping", err)
 	}

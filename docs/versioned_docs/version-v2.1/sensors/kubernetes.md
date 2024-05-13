@@ -18,7 +18,7 @@ If container runtime is unknown, please follow [these](#identify-container-runti
 :::
 
 :::info
-Image tag `deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION-multiarch` is supported in amd64 and arm64/v8 architectures.
+Image tag `deepfenceio/deepfence_agent_ce:2.1.1-multiarch` is supported in amd64 and arm64/v8 architectures.
 :::
 
 ### Deploy deepfence-agent helm chart
@@ -26,13 +26,13 @@ Image tag `deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION-multiarch` is sup
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 helm repo update
 
-# helm show readme deepfence/deepfence-agent --version TM_AGENT_HELM_CHART_VERSION | less
-# helm show values deepfence/deepfence-agent --version TM_AGENT_HELM_CHART_VERSION | less
+# helm show readme deepfence/deepfence-agent --version 2.1.1 | less
+# helm show values deepfence/deepfence-agent --version 2.1.1 | less
 
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
     --set deepfenceKey=73f6f3d0-9931-4b31-8967-fd6adf475f80 \
-    --set global.imageTag=THREATMAPPER_VERSION \
+    --set global.imageTag=2.1.1 \
     --set clusterName="prod-cluster" \
     --set mountContainerRuntimeSocket.containerdSock=true \
     --set mountContainerRuntimeSocket.dockerSock=false \
@@ -42,7 +42,7 @@ helm install deepfence-agent deepfence/deepfence-agent \
     --set logLevel="info" \
     --namespace deepfence \
     --create-namespace \
-    --version TM_AGENT_HELM_CHART_VERSION
+    --version 2.1.1
 ```
 
 ## Fine-tune the Helm deployment
@@ -51,7 +51,7 @@ helm install deepfence-agent deepfence/deepfence-agent \
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 helm repo update
 
-helm show values deepfence/deepfence-agent --version TM_AGENT_HELM_CHART_VERSION > deepfence_agent_values.yaml
+helm show values deepfence/deepfence-agent --version 2.1.1 > deepfence_agent_values.yaml
 
 # You will need to update the following values:
 #   managementConsoleUrl and deepfenceKey - specify your URL/IP and API key value
@@ -63,7 +63,7 @@ vim deepfence_agent_values.yaml
 helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-agent \
     --namespace deepfence \
     --create-namespace \
-    --version TM_AGENT_HELM_CHART_VERSION
+    --version 2.1.1
 ```
 
 ## Delete the ThreatMapper Sensor

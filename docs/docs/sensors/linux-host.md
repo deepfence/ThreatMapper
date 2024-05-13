@@ -15,8 +15,19 @@ Install a docker runtime on the Linux host. Refer to the [Prerequisites for the 
 #!/bin/bash
 
 # MGMT_CONSOLE_URL: Example: threatmapper.customer.com or 65.65.65.65
-export MGMT_CONSOLE_URL=""
-export DEEPFENCE_KEY=""
+export MGMT_CONSOLE_URL="${MGMT_CONSOLE_URL}"
+export DEEPFENCE_KEY="${DEEPFENCE_KEY}"
+
+if [[ -z "$MGMT_CONSOLE_URL" ]]; then
+  echo "env MGMT_CONSOLE_URL is not set"
+  exit 1
+fi
+
+if [[ -z "$DEEPFENCE_KEY" ]]; then
+  echo "env DEEPFENCE_KEY is not set"
+  exit 1
+fi
+
 export MGMT_CONSOLE_PORT="443"
 export MGMT_CONSOLE_URL_SCHEMA="https"
 export DF_HOSTNAME="$(hostname)"

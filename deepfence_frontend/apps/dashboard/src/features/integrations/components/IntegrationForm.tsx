@@ -780,6 +780,7 @@ export const IntegrationForm = ({
                 <TextInputType
                   defaultValue={formData?.config?.aws_access_key}
                   name="accessKey"
+                  required
                   label="Access Key"
                   placeholder="AWS access key"
                   helperText={fieldErrors?.aws_access_key}
@@ -788,6 +789,7 @@ export const IntegrationForm = ({
                 <TextInputType
                   name="secretKey"
                   label="Secret Key"
+                  required
                   placeholder="AWS secret key"
                   helperText={fieldErrors?.aws_secret_key}
                   color={fieldErrors?.aws_secret_key ? 'error' : 'default'}
@@ -796,6 +798,7 @@ export const IntegrationForm = ({
                 <TextInputType
                   defaultValue={formData?.config?.aws_region}
                   name="region"
+                  required
                   label="Region"
                   placeholder="AWS region"
                   helperText={fieldErrors?.aws_region}

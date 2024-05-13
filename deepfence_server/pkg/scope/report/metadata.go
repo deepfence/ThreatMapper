@@ -42,14 +42,15 @@ type Metadata struct {
 	Tags             []string `json:"tags,omitempty"`
 
 	// common
-	Uptime          int      `json:"uptime,omitempty"`
-	Pseudo          bool     `json:"pseudo"`
-	UserDefinedTags []string `json:"user_defined_tags,omitempty"`
-	CPUMax          float64  `json:"cpu_max,omitempty"`
-	CPUUsage        float64  `json:"cpu_usage,omitempty"`
-	MemoryMax       int64    `json:"memory_max,omitempty"`
-	MemoryUsage     int64    `json:"memory_usage,omitempty"`
-	OpenFilesCount  int      `json:"open_files_count,omitempty"`
+	IsDeepfenceSystem bool     `json:"is_deepfence_system,omitempty"` // Is this system pod / container / image
+	Uptime            int      `json:"uptime,omitempty"`
+	Pseudo            bool     `json:"pseudo"`
+	UserDefinedTags   []string `json:"user_defined_tags,omitempty"`
+	CPUMax            float64  `json:"cpu_max,omitempty"`
+	CPUUsage          float64  `json:"cpu_usage,omitempty"`
+	MemoryMax         int64    `json:"memory_max,omitempty"`
+	MemoryUsage       int64    `json:"memory_usage,omitempty"`
+	OpenFilesCount    int      `json:"open_files_count,omitempty"`
 
 	// host
 	Version        string   `json:"version,omitempty"`

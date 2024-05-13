@@ -18,6 +18,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/redis/go-redis/v9"
 	"github.com/riandyrn/otelchi"
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -135,7 +136,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 		Translator:       translator,
 		IngestChan:       ingestC,
 		ConsoleDiagnosis: consoleDiagnosis,
+		TTLCache: ttlcache.New[string, string](
+			ttlcache.WithDisableTouchOnHit[string, string](),
+		),
 	}
+	go dfHandler.TTLCache.Start()
 
 	r.Use(otelchi.Middleware("deepfence-server", otelchi.WithChiRoutes(r)))
 	r.Use(middleware.Recoverer)
@@ -261,6 +266,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/host", dfHandler.CompleteHostInfo)
 				r.Post("/cloud-compliance", dfHandler.CompleteCloudComplianceInfo)
 				r.Post("/compliance", dfHandler.CompleteComplianceInfo)
+				r.Post("/pod", dfHandler.CompletePodInfo)
+				r.Post("/container", dfHandler.CompleteContainerInfo)
 			})
 
 			r.Route("/search", func(r chi.Router) {
@@ -352,6 +359,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 
 			r.Route("/cloud-node", func(r chi.Router) {
 				r.Post("/account", dfHandler.AuthHandler(ResourceCloudNode, PermissionRegister, dfHandler.RegisterCloudNodeAccountHandler))
+				r.Patch("/account/delete", dfHandler.AuthHandler(ResourceCloudNode, PermissionDelete, dfHandler.DeleteCloudAccountHandler))
 				r.Post("/account/refresh", dfHandler.AuthHandler(ResourceCloudNode, PermissionWrite, dfHandler.RefreshCloudAccountHandler))
 				r.Post("/list/accounts", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeAccountHandler))
 				r.Get("/list/providers", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeProvidersHandler))

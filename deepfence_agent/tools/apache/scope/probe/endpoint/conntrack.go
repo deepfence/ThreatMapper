@@ -12,7 +12,6 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/conntrack"
-	"github.com/hashicorp/go-metrics"
 )
 
 const (
@@ -154,7 +153,6 @@ func (c *conntrackWalker) run() {
 				return
 			}
 			if f.Err != nil {
-				metrics.IncrCounter([]string{"conntrack", "errors"}, 1)
 				log.Error().Msgf("conntrack event error: %v", f.Err)
 				stop()
 				return
