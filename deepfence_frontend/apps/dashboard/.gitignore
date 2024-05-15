@@ -23,9 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 /test-results/
-/playwright-report/
-/e2e/reports/*
-/playwright/.cache/
 
 *.env
 !.env.sample

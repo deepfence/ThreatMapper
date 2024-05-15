@@ -11,8 +11,6 @@
     "lint:fix": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --fix --ignore-path ./.gitignore",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "playwright": "playwright test",
-    "playwright:debug": "playwright test --debug",
     "codegen": "pnpm run codegen:clean && openapi-generator-cli generate",
     "codegen:clean": "rm -rf ./src/api/generated"
   },
@@ -44,7 +42,6 @@
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.13.1",
-    "@playwright/test": "^1.43.0",
     "@tailwindcss/typography": "^0.5.12",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.3.0",
@@ -66,7 +63,6 @@
     "eslint-plugin-react": "^7.34.1",
     "eslint-plugin-simple-import-sort": "^12.0.0",
     "msw": "^2.2.13",
-    "playwright": "1.43.0",
     "postcss": "^8.4.38",
     "resize-observer-polyfill": "^1.5.1",
     "rollup-plugin-visualizer": "^5.12.0",
