@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import Button from '@/components/button/Button';
 import { Modal } from '@/components/modal/Modal';
-import { renderUI } from '@/tests/utils';
+import { act, renderUI } from '@/tests/utils';
 
 /**
  * Why user-event???
@@ -46,12 +46,14 @@ describe(`Component Modal`, () => {
         </>
       );
     };
-    const { getByTestId, queryByText, getByText } = renderUI(<UI />);
+    const { getByTestId, queryByText, getByText, findByTestId } = renderUI(<UI />);
     expect(queryByText('This is a content')).toBeNull();
 
     const openBtnForModal = getByTestId('button-trigger-id');
     expect(openBtnForModal).toBeInTheDocument();
-    await user.click(openBtnForModal);
+    await act(() => {
+      return user.click(openBtnForModal);
+    });
 
     expect(getByText('This is a content')).toBeInTheDocument();
 
@@ -59,12 +61,13 @@ describe(`Component Modal`, () => {
     const closeBtnForModal = getByTestId('modal-close-button');
     expect(closeBtnForModal).toBeInTheDocument();
 
-    await user.click(closeBtnForModal);
-    expect(queryByText('This is a content')).toBeNull();
+    await act(() => {
+      return user.click(closeBtnForModal);
+    });
 
     // triggerer focus back
-    const openBtnForModalAfterClose = getByTestId('button-trigger-id');
-    expect(openBtnForModalAfterClose).toHaveFocus();
+    expect(queryByText('This is a content')).toBeNull();
+    expect(await findByTestId('button-trigger-id')).toHaveFocus();
   });
 
   it(`open modal with header and footer`, async () => {
@@ -97,7 +100,9 @@ describe(`Component Modal`, () => {
 
     const openBtnForModal = getByTestId('button-trigger-id');
     expect(openBtnForModal).toBeInTheDocument();
-    await user.click(openBtnForModal);
+    await act(async () => {
+      return user.click(openBtnForModal);
+    });
 
     expect(getByText('This is a content')).toBeInTheDocument();
     expect(getByTestId('modal-title')).toHaveTextContent('Test title');
