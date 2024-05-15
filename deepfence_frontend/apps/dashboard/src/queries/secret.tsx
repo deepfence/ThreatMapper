@@ -500,11 +500,16 @@ export const secretQueries = createQueryKeys('secret', {
       },
     };
   },
-  top5SecretsForScan: (filters: { scanId: string }) => {
+  top5SecretsForScan: (filters: {
+    scanId: string;
+    severity: string[];
+    rules: string[];
+    visibility: string[];
+  }) => {
     return {
       queryKey: [{ filters }],
       queryFn: async () => {
-        const { scanId } = filters;
+        const { scanId, severity, rules, visibility } = filters;
 
         const scanResultsReq: ModelScanResultsReq = {
           fields_filter: {
@@ -528,6 +533,20 @@ export const secretQueries = createQueryKeys('secret', {
             size: 5,
           },
         };
+
+        if (severity.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['level'] = severity;
+        }
+
+        if (rules.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['name'] = rules;
+        }
+
+        if (visibility.length === 1) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['masked'] = [
+            visibility.includes('masked') ? true : false,
+          ];
+        }
 
         const resultSecretScanApi = apiWrapper({
           fn: getSecretApiClient().resultSecretScan,

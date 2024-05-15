@@ -312,9 +312,13 @@ export const useScanResults = () => {
 const useTop5Secrets = () => {
   const params = useParams();
   const scanId = params?.scanId ?? '';
+  const [searchParams] = useSearchParams();
   return useSuspenseQuery({
     ...queries.secret.top5SecretsForScan({
       scanId,
+      rules: searchParams.getAll('rules'),
+      severity: searchParams.getAll('severity'),
+      visibility: searchParams.getAll('visibility'),
     }),
   });
 };
