@@ -31,6 +31,7 @@ importers:
       '@types/lodash-es': ^4.17.12
       '@types/react': ^18.2.75
       '@types/react-dom': ^18.2.24
+      '@types/uuid': ^9.0.6
       '@typescript-eslint/eslint-plugin': ^7.6.0
       '@typescript-eslint/parser': ^7.6.0
       '@vitejs/plugin-react': ^4.2.1
@@ -66,6 +67,7 @@ importers:
       tailwindcss: ^3.4.3
       typescript: ^5.4.4
       ui-components: workspace:*
+      uuid: ^9.0.1
       vite: ^5.2.8
       vite-plugin-webfont-dl: ^3.9.3
       vitest: ^1.4.0
@@ -105,6 +107,7 @@ importers:
       '@types/lodash-es': 4.17.12
       '@types/react': 18.2.75
       '@types/react-dom': 18.2.24
+      '@types/uuid': 9.0.8
       '@typescript-eslint/eslint-plugin': 7.6.0_7mmc262goqpozzafyyx46heoaq
       '@typescript-eslint/parser': 7.6.0_sojhslj24nfrktykmoxvmoo65u
       '@vitejs/plugin-react': 4.2.1_vite@5.2.8
@@ -124,6 +127,7 @@ importers:
       rollup-plugin-visualizer: 5.12.0
       tailwindcss: 3.4.3
       typescript: 5.4.4
+      uuid: 9.0.1
       vite: 5.2.8
       vite-plugin-webfont-dl: 3.9.3_vite@5.2.8
       vitest: 1.4.0
@@ -3754,7 +3758,7 @@ packages:
       '@types/uuid': 9.0.8
       dequal: 2.0.3
       polished: 4.2.2
-      uuid: 9.0.0
+      uuid: 9.0.1
     dev: true
 
   /@storybook/addon-backgrounds/8.0.6:
@@ -12494,8 +12498,8 @@ packages:
     engines: {node: '>= 0.4.0'}
     dev: true
 
-  /uuid/9.0.0:
-    resolution: {integrity: sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==}
+  /uuid/9.0.1:
+    resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
     dev: true
 
